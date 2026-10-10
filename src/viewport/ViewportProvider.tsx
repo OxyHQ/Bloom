@@ -6,6 +6,9 @@ import type { ViewportProviderProps } from './types';
 export function ViewportProvider({ children, root = false }: ViewportProviderProps) {
   const inherited = useContext(ViewportContext);
   const parent = root ? null : inherited;
-  const scope = useMemo<ViewportScope>(() => ({ parent, getNode: null, listeners: new Set() }), [parent]);
+  const scope = useMemo<ViewportScope>(
+    () => ({ parent, getNode: null, listeners: new Set() }),
+    [parent],
+  );
   return <ViewportContext.Provider value={scope}>{children}</ViewportContext.Provider>;
 }

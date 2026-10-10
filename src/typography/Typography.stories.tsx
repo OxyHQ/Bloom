@@ -57,12 +57,12 @@ export const Prose: Story = {
         touching the others.
       </Lead>
       <P>
-        A session is minted per origin and refreshed in the background. Ending one signs that
-        device out immediately.
+        A session is minted per origin and refreshed in the background. Ending one signs that device
+        out immediately.
       </P>
       <Blockquote>
-        A session that cannot be ended from another device is not a session, it is a key you
-        cannot take back.
+        A session that cannot be ended from another device is not a session, it is a key you cannot
+        take back.
       </Blockquote>
       <Large>Ending a session</Large>
       <P>Open the device list, pick a session and choose Sign out.</P>
@@ -101,7 +101,8 @@ export const Quotation: Story = {
       <Blockquote>The rule is a real border, on every platform.</Blockquote>
       <Blockquote
         style={{ borderLeftWidth: 4 }}
-        textStyle={{ fontStyle: 'normal', fontWeight: '600' }}>
+        textStyle={{ fontStyle: 'normal', fontWeight: '600' }}
+      >
         With the container and the text restyled separately.
       </Blockquote>
     </View>
@@ -109,8 +110,33 @@ export const Quotation: Story = {
 };
 
 export const Playground: StoryObj<typeof Text> = {
-  args: { children: 'A shared language for every screen.', variant: 'body-medium', numberOfLines: 2, selectable: true },
-  parameters: { controls: { disable: false, include: ['children', 'variant', 'numberOfLines', 'selectable'] } },
-  argTypes: { children: { control: 'text' }, variant: { control: 'select', options: ['body-medium', 'body-regular', 'headline-medium', 'title-2-semibold', 'caption-1-medium'] }, numberOfLines: { control: { type: 'number', min: 1, max: 10 } }, selectable: { control: 'boolean' } },
-  render: args => <View style={{ width: 520, maxWidth: '100%' }}><Text {...args} /></View>,
+  args: {
+    children: 'A shared language for every screen.',
+    variant: 'body-medium',
+    numberOfLines: 2,
+    selectable: true,
+  },
+  parameters: {
+    controls: { disable: false, include: ['children', 'variant', 'numberOfLines', 'selectable'] },
+  },
+  argTypes: {
+    children: { control: 'text' },
+    variant: {
+      control: 'select',
+      options: [
+        'body-medium',
+        'body-regular',
+        'headline-medium',
+        'title-2-semibold',
+        'caption-1-medium',
+      ],
+    },
+    numberOfLines: { control: { type: 'number', min: 1, max: 10 } },
+    selectable: { control: 'boolean' },
+  },
+  render: (args) => (
+    <View style={{ width: 520, maxWidth: '100%' }}>
+      <Text {...args} />
+    </View>
+  ),
 };

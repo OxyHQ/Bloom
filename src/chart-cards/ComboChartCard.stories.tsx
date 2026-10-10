@@ -8,14 +8,14 @@ import { formatNumber } from './primitives/format';
 
 const meta: Meta<typeof ComboChartCard> = {
   argTypes: {
-    "title": { control: 'text' },
-    "headline": { control: 'number' },
-    "delta": { control: 'number' },
-    "range": { control: 'text' },
-    "defaultRange": { control: 'text' },
-    "tiles": { control: 'boolean' },
-    "headlineFrom": { control: 'select', options: ["bar","line"] },
-    "activeIndex": { control: 'number' }
+    title: { control: 'text' },
+    headline: { control: 'number' },
+    delta: { control: 'number' },
+    range: { control: 'text' },
+    defaultRange: { control: 'text' },
+    tiles: { control: 'boolean' },
+    headlineFrom: { control: 'select', options: ['bar', 'line'] },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Combo Chart',
   component: ComboChartCard,
@@ -74,10 +74,23 @@ export const Default: Story = {
 /** Stat tiles under a 196px plot: the bar total and the line average. */
 export const Tiles: Story = {
   args: { tiles: true },
-  parameters: { controls: { include: ["tiles","title","headline","delta","range","defaultRange","headlineFrom","activeIndex"] } },
+  parameters: {
+    controls: {
+      include: [
+        'tiles',
+        'title',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'headlineFrom',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <ComboChartCard {...args} testID="combo" bar={BAR} line={LINE} ranges={RANGES}  />
+      <ComboChartCard {...args} testID="combo" bar={BAR} line={LINE} ranges={RANGES} />
     </Frame>
   ),
 };
@@ -105,7 +118,11 @@ export const HeadlineFromLine: Story = {
         line={{ ...LINE, label: 'Signups' }}
         data={YEAR}
         delta={0}
-        caption={(row) => (row ? `${formatNumber(Number(row.sessions))} visits, ${row.rate}% converted` : 'last 12 months')}
+        caption={(row) =>
+          row
+            ? `${formatNumber(Number(row.sessions))} visits, ${row.rate}% converted`
+            : 'last 12 months'
+        }
       />
     </Frame>
   ),
@@ -114,10 +131,23 @@ export const HeadlineFromLine: Story = {
 /** Phone width: month labels thin out, tiles go two per row. */
 export const Narrow: Story = {
   args: { tiles: true },
-  parameters: { controls: { include: ["tiles","title","headline","delta","range","defaultRange","headlineFrom","activeIndex"] } },
+  parameters: {
+    controls: {
+      include: [
+        'tiles',
+        'title',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'headlineFrom',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame width={320}>
-      <ComboChartCard {...args} bar={BAR} line={LINE} ranges={RANGES}  />
+      <ComboChartCard {...args} bar={BAR} line={LINE} ranges={RANGES} />
     </Frame>
   ),
 };

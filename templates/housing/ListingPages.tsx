@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { BookingBar, BookingCard } from '../../src/booking';
-import { Button , LinkButton } from '../../src/button';
+import { Button, LinkButton } from '../../src/button';
 import { RangeCalendar, type DateRange } from '../../src/date-picker';
 import { Dialog, useDialogControl } from '../../src/dialog';
 import { RiFlagLine, RiHeart3Fill, RiHeart3Line, RiShareLine } from '../../src/icons/remix';
@@ -169,11 +169,22 @@ function ListingFrame({
           }
         />
         <ListingPhotoGrid photos={photos} onShowAll={noop} onPressPhoto={noop} />
-        <View style={{ flexDirection: lg ? 'row' : 'column', alignItems: lg ? 'flex-start' : 'stretch', gap: lg ? 64 : 8 }}>
-          {!lg && narrowAside === 'inline' ? <View style={{ paddingTop: 8, paddingBottom: 16 }}>{aside}</View> : null}
+        <View
+          style={{
+            flexDirection: lg ? 'row' : 'column',
+            alignItems: lg ? 'flex-start' : 'stretch',
+            gap: lg ? 64 : 8,
+          }}
+        >
+          {!lg && narrowAside === 'inline' ? (
+            <View style={{ paddingTop: 8, paddingBottom: 16 }}>{aside}</View>
+          ) : null}
           <View style={{ flex: lg ? 1 : undefined, minWidth: 0 }}>{children}</View>
           {lg ? (
-            <View style={[{ width: 372, paddingTop: 24 }, webSticky(24)]} testID={`${testID}-aside`}>
+            <View
+              style={[{ width: 372, paddingTop: 24 }, webSticky(24)]}
+              testID={`${testID}-aside`}
+            >
               {aside}
             </View>
           ) : null}
@@ -181,7 +192,13 @@ function ListingFrame({
       </PageColumn>
       {bar ? (
         <View
-          style={{ position: IS_WEB ? WEB_POSITION_FIXED : 'absolute', left: 0, right: 0, bottom: 0, zIndex: Z_INDEX.floating }}
+          style={{
+            position: IS_WEB ? WEB_POSITION_FIXED : 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: Z_INDEX.floating,
+          }}
           testID={`${testID}-bar`}
         >
           {mobileBar}
@@ -196,7 +213,11 @@ function Paragraphs({ text }: { text: string }) {
   return (
     <View style={{ gap: 12 }}>
       {text.split('\n\n').map((paragraph) => (
-        <Text key={paragraph.slice(0, 24)} variant="body-regular" style={{ color: theme.colors.text }}>
+        <Text
+          key={paragraph.slice(0, 24)}
+          variant="body-regular"
+          style={{ color: theme.colors.text }}
+        >
           {paragraph}
         </Text>
       ))}
@@ -206,7 +227,7 @@ function Paragraphs({ text }: { text: string }) {
 
 function ReportLink() {
   return (
-    <LinkButton  linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={noop}>
+    <LinkButton linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={noop}>
       Report this listing
     </LinkButton>
   );
@@ -235,7 +256,9 @@ export function RentListingPage() {
   const [helpful, setHelpful] = useState<Record<number, boolean>>({});
   const [phoneRevealed, setPhoneRevealed] = useState(false);
 
-  const requestedLabel = requested ? `Viewing requested: ${requested}` : 'Usually responds within a day';
+  const requestedLabel = requested
+    ? `Viewing requested: ${requested}`
+    : 'Usually responds within a day';
 
   return (
     <>
@@ -382,7 +405,10 @@ export function SaleListingPage() {
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [reasonsOpen, setReasonsOpen] = useState(false);
 
-  const estimate = useMemo(() => computeMortgage({ price, downPayment: down, years, annualRate: rate }), [price, down, years, rate]);
+  const estimate = useMemo(
+    () => computeMortgage({ price, downPayment: down, years, annualRate: rate }),
+    [price, down, years, rate],
+  );
   const monthly = `Est. ${euro(estimate.monthlyPayment)}/month`;
 
   return (
@@ -482,7 +508,14 @@ export function SaleListingPage() {
         </ListingSection>
       </ListingFrame>
 
-      <Dialog control={mortgage} label="Mortgage calculator" placement={{ base: 'bottom', md: 'center' }} maxWidth={780} contentPadding={0} testID="housing-mortgage">
+      <Dialog
+        control={mortgage}
+        label="Mortgage calculator"
+        placement={{ base: 'bottom', md: 'center' }}
+        maxWidth={780}
+        contentPadding={0}
+        testID="housing-mortgage"
+      >
         <MortgageCalculator
           price={price}
           onPriceChange={setPrice}
@@ -538,12 +571,29 @@ function DatesDialog({
             {formatRange(value) ?? 'Add your travel dates for exact pricing'}
           </Text>
         </View>
-        <RangeCalendar value={value} onChange={onChange} visibleMonths={md ? 2 : 1} defaultMonth={START_MONTH} />
-        <View style={{ alignSelf: 'stretch', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <LinkButton  onPress={() => onChange(null)} disabled={!value}>
+        <RangeCalendar
+          value={value}
+          onChange={onChange}
+          visibleMonths={md ? 2 : 1}
+          defaultMonth={START_MONTH}
+        />
+        <View
+          style={{
+            alignSelf: 'stretch',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <LinkButton onPress={() => onChange(null)} disabled={!value}>
             Clear dates
           </LinkButton>
-          <Button  onPress={() => control.close()} testID="housing-dates-done" tone="accent" appearance="solid">
+          <Button
+            onPress={() => control.close()}
+            testID="housing-dates-done"
+            tone="accent"
+            appearance="solid"
+          >
             Done
           </Button>
         </View>
@@ -560,8 +610,16 @@ export function StayListingPage() {
   const { md } = useHousingLayout();
   const theme = useTheme();
   const dates = useDialogControl();
-  const [range, setRange] = useState<DateRange | null>({ start: new Date(2026, 9, 12), end: new Date(2026, 9, 17) });
-  const [guests, setGuests] = useState<GuestCounts>({ adults: 2, children: 0, infants: 0, pets: 0 });
+  const [range, setRange] = useState<DateRange | null>({
+    start: new Date(2026, 9, 12),
+    end: new Date(2026, 9, 17),
+  });
+  const [guests, setGuests] = useState<GuestCounts>({
+    adults: 2,
+    children: 0,
+    infants: 0,
+    pets: 0,
+  });
   const [guestsOpen, setGuestsOpen] = useState(false);
   const [datesOpen, setDatesOpen] = useState(false);
 
@@ -658,7 +716,14 @@ export function StayListingPage() {
               categories={STAY_REVIEW_CATEGORIES}
               distribution={STAY_REVIEW_DISTRIBUTION}
             />
-            <View style={{ flexDirection: md ? 'row' : 'column', flexWrap: 'wrap', columnGap: 48, rowGap: 32 }}>
+            <View
+              style={{
+                flexDirection: md ? 'row' : 'column',
+                flexWrap: 'wrap',
+                columnGap: 48,
+                rowGap: 32,
+              }}
+            >
               {STAY_REVIEWS.map((review) => (
                 <View key={review.name} style={{ width: md ? '46%' : '100%' }}>
                   <ReviewCard {...review} />
@@ -685,7 +750,12 @@ export function StayListingPage() {
           />
         </ListingSection>
       </ListingFrame>
-      <DatesDialog control={dates} value={range} onChange={setRange} onClose={() => setDatesOpen(false)} />
+      <DatesDialog
+        control={dates}
+        value={range}
+        onChange={setRange}
+        onClose={() => setDatesOpen(false)}
+      />
     </>
   );
 }
@@ -698,8 +768,16 @@ export function SwapListingPage() {
   const { md } = useHousingLayout();
   const dates = useDialogControl();
   const guestsDialog = useDialogControl();
-  const [range, setRange] = useState<DateRange | null>({ start: new Date(2026, 10, 2), end: new Date(2026, 10, 16) });
-  const [guests, setGuests] = useState<GuestCounts>({ adults: 2, children: 2, infants: 0, pets: 0 });
+  const [range, setRange] = useState<DateRange | null>({
+    start: new Date(2026, 10, 2),
+    end: new Date(2026, 10, 16),
+  });
+  const [guests, setGuests] = useState<GuestCounts>({
+    adults: 2,
+    children: 2,
+    infants: 0,
+    pets: 0,
+  });
   const [mode, setMode] = useState<ExchangeMode>('swap');
   const [sent, setSent] = useState(false);
 
@@ -762,8 +840,19 @@ export function SwapListingPage() {
         </ListingSection>
       </ListingFrame>
       <DatesDialog control={dates} value={range} onChange={setRange} title="Swap dates" />
-      <Dialog control={guestsDialog} label="Guests" placement={{ base: 'bottom', md: 'center' }} maxWidth={420} testID="housing-guests">
-        <GuestPicker value={guests} onChange={setGuests} maxGuests={6} onClose={() => guestsDialog.close()} />
+      <Dialog
+        control={guestsDialog}
+        label="Guests"
+        placement={{ base: 'bottom', md: 'center' }}
+        maxWidth={420}
+        testID="housing-guests"
+      >
+        <GuestPicker
+          value={guests}
+          onChange={setGuests}
+          maxGuests={6}
+          onClose={() => guestsDialog.close()}
+        />
       </Dialog>
     </>
   );

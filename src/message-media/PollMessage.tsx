@@ -100,10 +100,7 @@ const OptionRow = memo(function OptionRow({
   const labelBlock = (
     <View style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, gap: 6 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
-        <Text
-          variant="body-2-regular"
-          style={{ color: paint.text, flexGrow: 1, flexShrink: 1 }}
-        >
+        <Text variant="body-2-regular" style={{ color: paint.text, flexGrow: 1, flexShrink: 1 }}>
           {option.label}
         </Text>
         {results ? (
@@ -257,11 +254,14 @@ function PollMessageComponent({
   const results = voted || showResults;
 
   const percentages = useMemo(
-    () => pollPercentages(options.map((o) => o.votes ?? 0), totalVotes),
+    () =>
+      pollPercentages(
+        options.map((o) => o.votes ?? 0),
+        totalVotes,
+      ),
     [options, totalVotes],
   );
-  const total =
-    totalVotes ?? options.reduce((sum, option) => sum + (option.votes ?? 0), 0);
+  const total = totalVotes ?? options.reduce((sum, option) => sum + (option.votes ?? 0), 0);
 
   const isPicked = useCallback(
     (option: PollOption) => (results ? option.selected === true : pending.includes(option.id)),

@@ -123,7 +123,8 @@ function StateSelect({
           <SelectItem
             value={item.value}
             label={item.label}
-            disabled={item.value === disabledOption}>
+            disabled={item.value === disabledOption}
+          >
             <SelectItemIndicator />
             <SelectItemText>{item.label}</SelectItemText>
           </SelectItem>
@@ -323,7 +324,9 @@ export const LeadingMarks: Story = {
             <Select value={status} onValueChange={setStatus} size={size}>
               <SelectTrigger label={`Status (${size})`}>
                 <SelectValue
-                  leading={(item) => (item ? <Badge dot tone={(item as (typeof STATUSES)[number]).tone} /> : null)}
+                  leading={(item) =>
+                    item ? <Badge dot tone={(item as (typeof STATUSES)[number]).tone} /> : null
+                  }
                 />
                 <SelectIcon />
               </SelectTrigger>
@@ -331,7 +334,11 @@ export const LeadingMarks: Story = {
                 label="Status"
                 items={STATUSES}
                 renderItem={(item) => (
-                  <SelectItem value={item.value} label={item.label} leading={<Badge dot tone={item.tone} />}>
+                  <SelectItem
+                    value={item.value}
+                    label={item.label}
+                    leading={<Badge dot tone={item.tone} />}
+                  >
                     <SelectItemText>{item.label}</SelectItemText>
                   </SelectItem>
                 )}
@@ -373,9 +380,31 @@ export const LeadingMarks: Story = {
 export const Playground: StoryObj<typeof Select> = {
   args: { value: 'apple', disabled: false },
   parameters: { controls: { disable: false, include: ['value', 'disabled'] } },
-  argTypes: { value: { control: 'select', options: ['apple','banana','cherry','durian','elderberry'] }, disabled: { control: 'boolean' } },
+  argTypes: {
+    value: { control: 'select', options: ['apple', 'banana', 'cherry', 'durian', 'elderberry'] },
+    disabled: { control: 'boolean' },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 520, maxWidth: '100%' }}><Select {...args} onValueChange={value => updateArgs({ value })}><SelectTrigger label="Pick a fruit"><SelectValue placeholder="Pick a fruit" /><SelectIcon /></SelectTrigger><SelectContent label="Pick a fruit" items={FRUITS} renderItem={item => <SelectItem value={item.value} label={item.label}><SelectItemIndicator /><SelectItemText>{item.label}</SelectItemText></SelectItem>} /></Select></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <Select {...args} onValueChange={(value) => updateArgs({ value })}>
+          <SelectTrigger label="Pick a fruit">
+            <SelectValue placeholder="Pick a fruit" />
+            <SelectIcon />
+          </SelectTrigger>
+          <SelectContent
+            label="Pick a fruit"
+            items={FRUITS}
+            renderItem={(item) => (
+              <SelectItem value={item.value} label={item.label}>
+                <SelectItemIndicator />
+                <SelectItemText>{item.label}</SelectItemText>
+              </SelectItem>
+            )}
+          />
+        </Select>
+      </View>
+    );
   },
 };

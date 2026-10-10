@@ -7,9 +7,9 @@ import type { AgentLimitsContext, AgentLimitsUsageLimit } from './types';
 
 const meta: Meta<typeof AgentLimitsCard> = {
   argTypes: {
-    "plan": { control: 'text' },
-    "expanded": { control: 'boolean' },
-    "defaultExpanded": { control: 'boolean' }
+    plan: { control: 'text' },
+    expanded: { control: 'boolean' },
+    defaultExpanded: { control: 'boolean' },
   },
   title: 'Blocks/Agent Limits',
   component: AgentLimitsCard,
@@ -72,11 +72,11 @@ const LIMITS: AgentLimitsUsageLimit[] = [
 
 /** Press "Context window" to grow the breakdown; press a group to list its members. */
 export const Basic: Story = {
-  args: { plan: "Max (5x)" },
-  parameters: { controls: { include: ["plan","expanded","defaultExpanded"] } },
+  args: { plan: 'Max (5x)' },
+  parameters: { controls: { include: ['plan', 'expanded', 'defaultExpanded'] } },
   render: (args) => (
     <View style={{ maxWidth: '100%', width: 360 }}>
-      <AgentLimitsCard {...args} context={CONTEXT}  limits={LIMITS} />
+      <AgentLimitsCard {...args} context={CONTEXT} limits={LIMITS} />
     </View>
   ),
 };

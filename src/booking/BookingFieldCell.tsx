@@ -1,5 +1,11 @@
 import React from 'react';
-import { Pressable, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Pressable,
+  View,
+  type GestureResponderEvent,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -117,4 +123,3 @@ export function BookingFieldCell({
     </Pressable>
   );
 }
-

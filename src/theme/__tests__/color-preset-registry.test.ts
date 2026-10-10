@@ -161,9 +161,7 @@ describe('single declarative colour preset registry', () => {
     expect(new Set(APP_COLOR_NAMES).size).toBe(64);
     expect(new Set(COLOR_PRESET_REGISTRY.map(({ hex }) => hex)).size).toBe(64);
     expect(Object.keys(APP_COLOR_PRESETS)).toEqual(APP_COLOR_NAMES);
-    expect(Object.keys(HEX_TO_APP_COLOR)).toEqual(
-      COLOR_PRESET_REGISTRY.map(({ hex }) => hex),
-    );
+    expect(Object.keys(HEX_TO_APP_COLOR)).toEqual(COLOR_PRESET_REGISTRY.map(({ hex }) => hex));
   });
 
   it('preserves the ordered identifiers and runtime configuration of all 34 shipped recipes', () => {
@@ -188,9 +186,11 @@ describe('single declarative colour preset registry', () => {
         ...(preset.secondaryHex ? { secondaryHex: preset.secondaryHex } : {}),
         ...(preset.tertiaryHex ? { tertiaryHex: preset.tertiaryHex } : {}),
       }).toEqual(ORIGINAL_RECIPES[name]);
-      expect(Object.keys(preset).filter((key) => key !== 'tokens').sort()).toEqual(
-        ['name', ...Object.keys(ORIGINAL_RECIPES[name])].sort(),
-      );
+      expect(
+        Object.keys(preset)
+          .filter((key) => key !== 'tokens')
+          .sort(),
+      ).toEqual(['name', ...Object.keys(ORIGINAL_RECIPES[name])].sort());
     }
   });
 
@@ -350,7 +350,11 @@ describe('single declarative colour preset registry', () => {
       );
     const pairs: Array<{ names: readonly [string, string]; distance: number }> = [];
     for (let leftIndex = 0; leftIndex < NEW_COMBINATION_NAMES.length; leftIndex += 1) {
-      for (let rightIndex = leftIndex + 1; rightIndex < NEW_COMBINATION_NAMES.length; rightIndex += 1) {
+      for (
+        let rightIndex = leftIndex + 1;
+        rightIndex < NEW_COMBINATION_NAMES.length;
+        rightIndex += 1
+      ) {
         const leftName = NEW_COMBINATION_NAMES[leftIndex];
         const rightName = NEW_COMBINATION_NAMES[rightIndex];
         if (leftName === undefined || rightName === undefined) {
@@ -358,7 +362,8 @@ describe('single declarative colour preset registry', () => {
         }
         const left = signatures.get(leftName);
         const right = signatures.get(rightName);
-        if (left === undefined || right === undefined) throw new Error('combination signature absent');
+        if (left === undefined || right === undefined)
+          throw new Error('combination signature absent');
         pairs.push({ names: [leftName, rightName], distance: distance(left, right) });
       }
     }

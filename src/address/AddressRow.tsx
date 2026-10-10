@@ -147,12 +147,7 @@ function AddressRowComponent({
   if (!splitAction) return row;
 
   return (
-    <View
-      style={[
-        { flexDirection: 'row', alignItems: 'center', paddingRight: space.lg },
-        style,
-      ]}
-    >
+    <View style={[{ flexDirection: 'row', alignItems: 'center', paddingRight: space.lg }, style]}>
       {/*
         `Item`'s `style` lands on its CONTENT view, inside the `Pressable` (or
         the plain `View`) that is actually this row's flex child — so `flex: 1`

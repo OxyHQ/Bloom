@@ -59,72 +59,75 @@ function buildSeedThemeValues(
     tertiarySeed: accents?.tertiarySeed,
   });
 
-  return { chartColors: chartColorsFromTokens(t), colors: {
-    background: g('background'),
-    backgroundSecondary: g('surface'),
-    backgroundTertiary: g('popover'),
+  return {
+    chartColors: chartColorsFromTokens(t),
+    colors: {
+      background: g('background'),
+      backgroundSecondary: g('surface'),
+      backgroundTertiary: g('popover'),
 
-    text: g('foreground'),
-    textSecondary: g('muted-foreground'),
-    // The same ONE quiet-text colour `build-theme.ts` resolves — see the long
-    // note there. The parity suite walks every preset through both paths, so a
-    // change on one side that is not made on the other goes red.
-    textTertiary: g('muted-foreground'),
+      text: g('foreground'),
+      textSecondary: g('muted-foreground'),
+      // The same ONE quiet-text colour `build-theme.ts` resolves — see the long
+      // note there. The parity suite walks every preset through both paths, so a
+      // change on one side that is not made on the other goes red.
+      textTertiary: g('muted-foreground'),
 
-    border: g('border'),
-    borderLight: g('input'),
+      border: g('border'),
+      borderLight: g('input'),
 
-    primary: g('primary'),
-    primaryForeground: g('primary-foreground'),
-    primaryLight: g('surface'),
-    primaryDark: g('background'),
+      primary: g('primary'),
+      primaryForeground: g('primary-foreground'),
+      primaryLight: g('surface'),
+      primaryDark: g('background'),
 
-    secondary: g('secondary'),
-    secondaryForeground: g('secondary-foreground'),
-    secondarySubtle: g('secondary-subtle'),
-    secondarySubtleForeground: g('secondary-text'),
-    tertiary: g('tertiary'),
-    tertiaryForeground: g('tertiary-foreground'),
-    tertiarySubtle: g('tertiary-subtle'),
-    tertiarySubtleForeground: g('tertiary-text'),
+      secondary: g('secondary'),
+      secondaryForeground: g('secondary-foreground'),
+      secondarySubtle: g('secondary-subtle'),
+      secondarySubtleForeground: g('secondary-text'),
+      tertiary: g('tertiary'),
+      tertiaryForeground: g('tertiary-foreground'),
+      tertiarySubtle: g('tertiary-subtle'),
+      tertiarySubtleForeground: g('tertiary-text'),
 
-    tint: g('primary'),
-    icon: g('muted-foreground'),
-    iconActive: g('primary'),
+      tint: g('primary'),
+      icon: g('muted-foreground'),
+      iconActive: g('primary'),
 
-    success: g('success'),
-    successForeground: g('success-foreground'),
-    error: g('error'),
-    errorForeground: g('error-foreground'),
-    warning: g('warning'),
-    warningForeground: g('warning-foreground'),
-    info: g('info'),
-    infoForeground: g('info-foreground'),
+      success: g('success'),
+      successForeground: g('success-foreground'),
+      error: g('error'),
+      errorForeground: g('error-foreground'),
+      warning: g('warning'),
+      warningForeground: g('warning-foreground'),
+      info: g('info'),
+      infoForeground: g('info-foreground'),
 
-    successSubtle: g('success-subtle'),
-    successSubtleForeground: g('success-text'),
-    errorSubtle: g('error-subtle'),
-    errorSubtleForeground: g('error-text'),
-    warningSubtle: g('warning-subtle'),
-    warningSubtleForeground: g('warning-text'),
-    infoSubtle: g('info-subtle'),
-    infoSubtleForeground: g('info-text'),
+      successSubtle: g('success-subtle'),
+      successSubtleForeground: g('success-text'),
+      errorSubtle: g('error-subtle'),
+      errorSubtleForeground: g('error-text'),
+      warningSubtle: g('warning-subtle'),
+      warningSubtleForeground: g('warning-text'),
+      infoSubtle: g('info-subtle'),
+      infoSubtleForeground: g('info-text'),
 
-    primarySubtle: g('primary-subtle'),
-    // The `-text` member, for the reason spelled out in `build-theme.ts`: the
-    // policy's translucent `--primary-subtle` and M3's `onPrimaryContainer` are
-    // not a pair, and pairing them made `mono` illegible.
-    primarySubtleForeground: g('primary-text'),
-    negative: r.error,
-    negativeForeground: r.onError,
-    negativeSubtle: g('error-subtle'),
-    negativeSubtleForeground: g('error-text'),
-    contrast50: g('muted'),
+      primarySubtle: g('primary-subtle'),
+      // The `-text` member, for the reason spelled out in `build-theme.ts`: the
+      // policy's translucent `--primary-subtle` and M3's `onPrimaryContainer` are
+      // not a pair, and pairing them made `mono` illegible.
+      primarySubtleForeground: g('primary-text'),
+      negative: r.error,
+      negativeForeground: r.onError,
+      negativeSubtle: g('error-subtle'),
+      negativeSubtleForeground: g('error-text'),
+      contrast50: g('muted'),
 
-    card: g('card'),
-    shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
-    overlay: 'rgba(0, 0, 0, 0.5)',
-  } };
+      card: g('card'),
+      shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
+      overlay: 'rgba(0, 0, 0, 0.5)',
+    },
+  };
 }
 
 /** Resolve only the color roles for consumers that do not need the full theme. */

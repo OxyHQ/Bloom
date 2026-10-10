@@ -85,12 +85,17 @@ export function resolveImageUri(
   variant: string,
 ): string | undefined {
   if (!source) return undefined;
-  return isImageUrl(source) ? source : resolver?.(source, variant) ?? undefined;
+  return isImageUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
 }
 
 /** Joins the non-empty parts of an accessible name. */
-export function joinName(parts: ReadonlyArray<string | false | null | undefined>, separator = ', '): string {
-  return parts.filter((part): part is string => typeof part === 'string' && part !== '').join(separator);
+export function joinName(
+  parts: ReadonlyArray<string | false | null | undefined>,
+  separator = ', ',
+): string {
+  return parts
+    .filter((part): part is string => typeof part === 'string' && part !== '')
+    .join(separator);
 }
 
 // ---------------------------------------------------------------------------

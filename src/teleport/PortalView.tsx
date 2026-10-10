@@ -6,19 +6,14 @@
  */
 /// <reference lib="dom" />
 
-import { useRef, useLayoutEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { usePortalRegistryContext } from "./portal-registry";
-import type { PortalProps } from "./types";
+import { useRef, useLayoutEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { usePortalRegistryContext } from './portal-registry';
+import type { PortalProps } from './types';
 
-const supportsMoveBefore =
-  typeof Element !== "undefined" && "moveBefore" in Element.prototype;
+const supportsMoveBefore = typeof Element !== 'undefined' && 'moveBefore' in Element.prototype;
 
-function moveElementTo(
-  parent: Element,
-  child: Element,
-  before: Element | null = null,
-) {
+function moveElementTo(parent: Element, child: Element, before: Element | null = null) {
   if (supportsMoveBefore && child.parentNode) {
     parent.moveBefore(child, before);
     return;
@@ -32,11 +27,10 @@ function moveElementTo(
 }
 
 export default function Portal({ hostName, children, style }: PortalProps) {
-  const { getHost, registerPendingPortal, unregisterPendingPortal } =
-    usePortalRegistryContext();
+  const { getHost, registerPendingPortal, unregisterPendingPortal } = usePortalRegistryContext();
   const elRef = useRef<HTMLDivElement | null>(null);
   if (!elRef.current) {
-    elRef.current = document.createElement("div");
+    elRef.current = document.createElement('div');
   }
 
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -71,12 +65,7 @@ export default function Portal({ hostName, children, style }: PortalProps) {
     return () => {
       unregisterPendingPortal(hostName, teleportToHost);
     };
-  }, [
-    hostName,
-    registerPendingPortal,
-    unregisterPendingPortal,
-    teleportToHost,
-  ]);
+  }, [hostName, registerPendingPortal, unregisterPendingPortal, teleportToHost]);
 
   return (
     <>
@@ -89,6 +78,6 @@ export default function Portal({ hostName, children, style }: PortalProps) {
 
 const styles = {
   anchor: {
-    display: "contents",
+    display: 'contents',
   },
 };

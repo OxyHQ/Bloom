@@ -74,8 +74,18 @@ describe('a group’s rule is derived from min and max', () => {
   });
 
   it('clamps a nonsense rule rather than drawing it', () => {
-    expect(optionGroupRule({ min: 5, max: 2 })).toEqual({ min: 2, max: 2, multiple: true, required: true });
-    expect(optionGroupRule({ min: -3, max: 0 })).toEqual({ min: 0, max: 1, multiple: false, required: false });
+    expect(optionGroupRule({ min: 5, max: 2 })).toEqual({
+      min: 2,
+      max: 2,
+      multiple: true,
+      required: true,
+    });
+    expect(optionGroupRule({ min: -3, max: 0 })).toEqual({
+      min: 0,
+      max: 1,
+      multiple: false,
+      required: false,
+    });
   });
 });
 
@@ -110,7 +120,9 @@ describe('one press on an option', () => {
 
 describe('an option’s price shares its one text column', () => {
   it('joins the description and the price, and survives either being absent', () => {
-    expect(optionSubtitle({ description: 'Serves two', price: '+€4.00' })).toBe('Serves two · +€4.00');
+    expect(optionSubtitle({ description: 'Serves two', price: '+€4.00' })).toBe(
+      'Serves two · +€4.00',
+    );
     expect(optionSubtitle({ price: '+€4.00' })).toBe('+€4.00');
     expect(optionSubtitle({ description: 'Serves two' })).toBe('Serves two');
     expect(optionSubtitle({})).toBeUndefined();
@@ -205,7 +217,13 @@ describe('the running price', () => {
 
   it('is a plain row when there is no action to put it on', () => {
     mount(
-      <MenuItemOptions groups={[SIZE]} value={{}} onValueChange={() => undefined} total="€16.40" testID="o" />,
+      <MenuItemOptions
+        groups={[SIZE]}
+        value={{}}
+        onValueChange={() => undefined}
+        total="€16.40"
+        testID="o"
+      />,
     );
     expect(queryTestId('o-submit')).toBeNull();
     expect(byTestId('o-total-amount').textContent).toBe('€16.40');
@@ -270,7 +288,15 @@ describe('a pressable row and its control are siblings', () => {
 
 describe('the name owns its line', () => {
   it('is not a flex sibling of the marks', () => {
-    mount(<MenuItemRow name="Kestrel chilli noodles" price="€13.80" spice={3} diets={['vegan']} testID="r" />);
+    mount(
+      <MenuItemRow
+        name="Kestrel chilli noodles"
+        price="€13.80"
+        spice={3}
+        diets={['vegan']}
+        testID="r"
+      />,
+    );
     // Sharing a row with the flames drew three flames and NO name at 390: a
     // one-line `Text` is `nowrap` on web, so the fixed glyph run took what it
     // needed and the name collapsed to zero instead of truncating. jsdom has no
@@ -349,6 +375,8 @@ describe('the row’s name is the row, minus the description', () => {
   });
 
   it('adds the sold-out word at the end', () => {
-    expect(composeMenuItemName({ name: 'X', price: '€1', unavailable: true })).toBe('X, €1, Sold out');
+    expect(composeMenuItemName({ name: 'X', price: '€1', unavailable: true })).toBe(
+      'X, €1, Sold out',
+    );
   });
 });

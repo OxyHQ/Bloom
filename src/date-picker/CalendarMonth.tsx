@@ -73,7 +73,11 @@ ${NAV_SELECTOR} { transition: background-color 150ms ease; }`;
  * in step with the fade. Web only.
  */
 const LAYER_TRANSITION: WebCssStyle | null = IS_WEB
-  ? { transitionProperty: 'opacity, border-radius', transitionDuration: '100ms', transitionTimingFunction: 'ease-out' }
+  ? {
+      transitionProperty: 'opacity, border-radius',
+      transitionDuration: '100ms',
+      transitionTimingFunction: 'ease-out',
+    }
   : null;
 
 /** `text-body-medium`, in Inter (the typography `Text`). */
@@ -137,7 +141,10 @@ function NavButton({
       hitSlop={8}
       style={style}
     >
-      <Chevron direction={direction} color={disabled ? palette.disabledText : palette.secondaryText} />
+      <Chevron
+        direction={direction}
+        color={disabled ? palette.disabledText : palette.secondaryText}
+      />
     </Pressable>
   );
 }
@@ -204,19 +211,22 @@ const DayCell = memo(function DayCell({
     >
       <View
         pointerEvents="none"
-        style={[LAYER_TRANSITION, {
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: paint.band.left,
-          right: paint.band.right,
-          backgroundColor: palette.rangeBand,
-          opacity: paint.band.visible ? 1 : 0,
-          borderTopLeftRadius: paint.band.roundLeft ? DAY_RADIUS : 0,
-          borderBottomLeftRadius: paint.band.roundLeft ? DAY_RADIUS : 0,
-          borderTopRightRadius: paint.band.roundRight ? DAY_RADIUS : 0,
-          borderBottomRightRadius: paint.band.roundRight ? DAY_RADIUS : 0,
-        }]}
+        style={[
+          LAYER_TRANSITION,
+          {
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: paint.band.left,
+            right: paint.band.right,
+            backgroundColor: palette.rangeBand,
+            opacity: paint.band.visible ? 1 : 0,
+            borderTopLeftRadius: paint.band.roundLeft ? DAY_RADIUS : 0,
+            borderBottomLeftRadius: paint.band.roundLeft ? DAY_RADIUS : 0,
+            borderTopRightRadius: paint.band.roundRight ? DAY_RADIUS : 0,
+            borderBottomRightRadius: paint.band.roundRight ? DAY_RADIUS : 0,
+          },
+        ]}
       />
       <Pressable
         {...hook}
@@ -241,19 +251,22 @@ const DayCell = memo(function DayCell({
       >
         <View
           pointerEvents="none"
-          style={[LAYER_TRANSITION, {
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: palette.rangeEdge,
-            opacity: paint.edge.visible ? 1 : 0,
-            borderTopLeftRadius: paint.edge.roundLeft ? DAY_RADIUS : 0,
-            borderBottomLeftRadius: paint.edge.roundLeft ? DAY_RADIUS : 0,
-            borderTopRightRadius: paint.edge.roundRight ? DAY_RADIUS : 0,
-            borderBottomRightRadius: paint.edge.roundRight ? DAY_RADIUS : 0,
-          }]}
+          style={[
+            LAYER_TRANSITION,
+            {
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: palette.rangeEdge,
+              opacity: paint.edge.visible ? 1 : 0,
+              borderTopLeftRadius: paint.edge.roundLeft ? DAY_RADIUS : 0,
+              borderBottomLeftRadius: paint.edge.roundLeft ? DAY_RADIUS : 0,
+              borderTopRightRadius: paint.edge.roundRight ? DAY_RADIUS : 0,
+              borderBottomRightRadius: paint.edge.roundRight ? DAY_RADIUS : 0,
+            },
+          ]}
         />
         <Text style={textStyle}>{date.getDate()}</Text>
       </Pressable>
@@ -391,7 +404,11 @@ export function CalendarMonth({
           ))}
         </View>
         {weeks.map((week) => (
-          <View key={dayKey(week[0]!.date)} role="row" style={{ flexDirection: 'row', gap: CELL_GAP }}>
+          <View
+            key={dayKey(week[0]!.date)}
+            role="row"
+            style={{ flexDirection: 'row', gap: CELL_GAP }}
+          >
             {week.map(({ date, inMonth }, column) => {
               const key = dayKey(date);
               return inMonth ? (
@@ -412,7 +429,11 @@ export function CalendarMonth({
                   testID={testID ? `${testID}-day-${date.getDate()}` : undefined}
                 />
               ) : (
-                <View key={key} role={GRIDCELL_ROLE} style={{ width: DAY_SIZE, height: DAY_SIZE }} />
+                <View
+                  key={key}
+                  role={GRIDCELL_ROLE}
+                  style={{ width: DAY_SIZE, height: DAY_SIZE }}
+                />
               );
             })}
           </View>

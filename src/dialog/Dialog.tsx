@@ -13,7 +13,13 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Animated, {
   type AnimatedStyle,
   cancelAnimation,
@@ -57,7 +63,6 @@ import type { DialogControlProps, DialogInset, DialogProps } from './types';
 import { useMessages } from '../locale/messages';
 import { DIALOG_MESSAGES } from './messages';
 
-
 /**
  * The panel node carries `className`, the caller's `style`, the surface chrome
  * AND the enter/exit transform, so all four are ONE element type — built once at
@@ -87,10 +92,7 @@ const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
  *   2. Custom children — caller passes JSX, bloom renders the chrome.
  *   3. Pure children — no `title`/`description`/`actions`.
  */
-export function Dialog({
-  placement,
-  ...rest
-}: DialogProps) {
+export function Dialog({ placement, ...rest }: DialogProps) {
   const resolvedPlacement = useResolvedPlacement(placement);
 
   // `bottom` routes to the shared cross-platform `BottomSheet` surface — one
@@ -102,7 +104,12 @@ export function Dialog({
   if (resolvedPlacement === 'bottom') {
     return <DialogBottomSheet {...rest} />;
   }
-  return <CenteredOrSideDialog {...rest} placement={rest.presentation === 'custom' ? 'end' : resolvedPlacement} />;
+  return (
+    <CenteredOrSideDialog
+      {...rest}
+      placement={rest.presentation === 'custom' ? 'end' : resolvedPlacement}
+    />
+  );
 }
 
 /**
@@ -241,11 +248,7 @@ function CenteredOrSideDialog({
     }
   }, [isControlled, controlledOpen]);
 
-  useImperativeHandle(
-    control?.ref,
-    () => ({ open, close }),
-    [open, close],
-  );
+  useImperativeHandle(control?.ref, () => ({ open, close }), [open, close]);
 
   const context = useMemo(
     () => ({ close, isWithinDialog: true, isClosing: !sideOpen }),
@@ -347,7 +350,13 @@ function CenteredOrSideDialog({
       backdrop={backdrop}
       transition={transition}
       material={surfaceMaterial}
-      backgroundFill={surfaceMaterial === 'flat' ? String(StyleSheet.flatten([style, panelStyle])?.backgroundColor ?? theme.colors.background) : undefined}
+      backgroundFill={
+        surfaceMaterial === 'flat'
+          ? String(
+              StyleSheet.flatten([style, panelStyle])?.backgroundColor ?? theme.colors.background,
+            )
+          : undefined
+      }
       ref={ref}
       onDismiss={handleDismiss}
       enablePanDownToClose
@@ -398,7 +407,10 @@ function CenteredOrSideDialog({
           {/* The morph layer is its own node INSIDE the class-name'd container:
               a className'd component's `onLayout` never fires on web, and this
               one has to measure the incoming frame. */}
-          <DialogMorphContent morph={morphState} style={scrollableResolved ? undefined : { flex: 1, minHeight: 0 }}>
+          <DialogMorphContent
+            morph={morphState}
+            style={scrollableResolved ? undefined : { flex: 1, minHeight: 0 }}
+          >
             {header ? headerBody : bodyNode}
           </DialogMorphContent>
         </StyledView>
@@ -495,7 +507,8 @@ function SideSheet({
   // The POSITION of a logical placement is a logical key, resolved by Yoga
   // against `I18nManager` — a physical `left`/`right` here would be swapped by
   // React Native's default `swapLeftAndRightInRTL` and land on the wrong edge.
-  const anchorKey = side === 'start' ? 'insetInlineStart' : side === 'end' ? 'insetInlineEnd' : side;
+  const anchorKey =
+    side === 'start' ? 'insetInlineStart' : side === 'end' ? 'insetInlineEnd' : side;
   const anchorInset = edge === 'left' ? insetLeft : insetRight;
   const oppositeInset = edge === 'left' ? insetRight : insetLeft;
 
@@ -517,7 +530,12 @@ function SideSheet({
 
   useEffect(() => {
     cancelAnimation(progress);
-    const timing = { ...MOTION_RECIPES[open ? 'present' : 'dismiss'], duration: presentation === 'custom' ? exitDuration ?? 0 : motion.duration ?? ANIMATION_DURATION, easing: transition ? motion.easing : Easing.out(Easing.cubic) };
+    const timing = {
+      ...MOTION_RECIPES[open ? 'present' : 'dismiss'],
+      duration:
+        presentation === 'custom' ? (exitDuration ?? 0) : (motion.duration ?? ANIMATION_DURATION),
+      easing: transition ? motion.easing : Easing.out(Easing.cubic),
+    };
     if (open) {
       setMounted(true);
       progress.value = withTiming(1, timing);
@@ -527,7 +545,17 @@ function SideSheet({
     progress.value = withTiming(0, timing, (finished) => {
       if (finished) runOnJS(finishClose)();
     });
-  }, [open, mounted, progress, finishClose, presentation, exitDuration, motion.duration, motion.easing, !!transition]);
+  }, [
+    open,
+    mounted,
+    progress,
+    finishClose,
+    presentation,
+    exitDuration,
+    motion.duration,
+    motion.easing,
+    !!transition,
+  ]);
 
   const handleBackdropPress = useCallback(() => {
     if (dismissOnBackdrop) onHeaderDismiss();
@@ -538,7 +566,9 @@ function SideSheet({
     const hidden = 1 - progress.value;
     return {
       opacity: presentation === 'custom' ? 1 : progress.value,
-      transform: [{ translateX: presentation === 'custom' ? 0 : hidden * travel.value * hiddenSign }],
+      transform: [
+        { translateX: presentation === 'custom' ? 0 : hidden * travel.value * hiddenSign },
+      ],
     };
   }, [hiddenSign, progress, travel, presentation]);
 
@@ -551,19 +581,26 @@ function SideSheet({
   );
 
   const panelGeometry = useMemo<ViewStyle>(
-    () =>
-      ({
-        top: insetTop,
-        bottom: insetBottom,
-        [anchorKey]: anchorInset,
-        width: sideWidth,
-        ...surfaceStyle(SURFACE_SHAPES.panel),
-      }),
+    () => ({
+      top: insetTop,
+      bottom: insetBottom,
+      [anchorKey]: anchorInset,
+      width: sideWidth,
+      ...surfaceStyle(SURFACE_SHAPES.panel),
+    }),
     [insetTop, insetBottom, anchorKey, anchorInset, sideWidth],
   );
 
-  const panelRadius = StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius;
-  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0, paint: surfaceMaterial !== 'flat' });
+  const panelRadius =
+    StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius;
+  const material = resolveSurfaceMaterial({
+    fill: String(
+      StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background,
+    ),
+    parentFill: theme.colors.background,
+    level: 0,
+    paint: surfaceMaterial !== 'flat',
+  });
   const { paintFill, publishedFill: surfaceFill } = material;
   if (!mounted) return null;
 
@@ -571,9 +608,7 @@ function SideSheet({
   // content: anything inside it that has to be opaque in "the colour I am on"
   // gets the drawer's, not that of whatever surface it was opened from. The
   // sheet path is covered by `BottomSheetBase`, which publishes the same way.
-  const surfaceChildren = (
-<>{children}</>
-  );
+  const surfaceChildren = <>{children}</>;
 
   return (
     // `OverlayRoot` takes this drawer's place in the open-order overlay stack.
@@ -590,7 +625,9 @@ function SideSheet({
       <Backdrop
         {...backdrop}
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
-        accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
+        accessibilityLabel={
+          label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog
+        }
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
         progress={progress}
@@ -608,7 +645,7 @@ function SideSheet({
         onLayout={measurePanel}
         className={panelClassName}
         style={[
-          presentation === 'custom' ? {position: 'absolute'} : sideStyles.panel,
+          presentation === 'custom' ? { position: 'absolute' } : sideStyles.panel,
           // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
           // native variant); the web `shadow*` deprecation is handled in Dialog.web.tsx.
           { backgroundColor: 'transparent', pointerEvents: 'auto', ...material.vars },
@@ -619,26 +656,44 @@ function SideSheet({
           { backgroundColor: surfaceMaterial === 'flat' ? paintFill : 'transparent' },
         ]}
       >
-        {presentation !== 'custom' && surfaceMaterial !== 'flat' && <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={panelRadius} />}
-        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-        {header ? (
-          // Nav-header mode on a side drawer: a static titled bar (the drawer body
-          // has no Dialog scroll offset to drive a collapse) over content inset
-          // below the bar.
-          <View style={{ flex: 1, minHeight: 0, borderRadius: panelRadius, overflow: 'hidden' }}>
-            <DialogNavHeader
-              flatSurface={surfaceMaterial === 'flat'}
-              controller={headerController}
-              header={header}
-              onDismiss={onHeaderDismiss}
-              collapse={false}
-            />
-            <DialogNavBarSpacer controller={headerController} header={header} />
-            <DialogHeaderProvider controller={headerController}>{surfaceChildren}</DialogHeaderProvider>
-          </View>
-        ) : (
-          <View style={{ padding: contentPadding, flex: presentation === 'custom' || !scrollable ? 1 : undefined, minHeight: 0, borderRadius: panelRadius, overflow: presentation === 'custom' ? 'visible' : 'hidden' }}>{surfaceChildren}</View>
+        {presentation !== 'custom' && surfaceMaterial !== 'flat' && (
+          <SurfacePaint
+            fill={paintFill}
+            shape={{ curve: SURFACE_SHAPES.panel.curve }}
+            radius={panelRadius}
+          />
         )}
+        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
+          {header ? (
+            // Nav-header mode on a side drawer: a static titled bar (the drawer body
+            // has no Dialog scroll offset to drive a collapse) over content inset
+            // below the bar.
+            <View style={{ flex: 1, minHeight: 0, borderRadius: panelRadius, overflow: 'hidden' }}>
+              <DialogNavHeader
+                flatSurface={surfaceMaterial === 'flat'}
+                controller={headerController}
+                header={header}
+                onDismiss={onHeaderDismiss}
+                collapse={false}
+              />
+              <DialogNavBarSpacer controller={headerController} header={header} />
+              <DialogHeaderProvider controller={headerController}>
+                {surfaceChildren}
+              </DialogHeaderProvider>
+            </View>
+          ) : (
+            <View
+              style={{
+                padding: contentPadding,
+                flex: presentation === 'custom' || !scrollable ? 1 : undefined,
+                minHeight: 0,
+                borderRadius: panelRadius,
+                overflow: presentation === 'custom' ? 'visible' : 'hidden',
+              }}
+            >
+              {surfaceChildren}
+            </View>
+          )}
         </SurfaceLevelProvider>
       </AnimatedStyledView>
     </OverlayRoot>
@@ -663,4 +718,3 @@ const sideStyles = StyleSheet.create({
     ...bloomShadowStyle('m'),
   },
 });
-

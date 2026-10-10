@@ -37,15 +37,9 @@ describe('negativeSubtle is not an alias of errorSubtle', () => {
     // The two assertions that carry the fact. Flipping either constant makes
     // `tsc` fail, which is the point: this cannot be satisfied at runtime.
     const suppliesNegativeSubtle: Has<AdaptiveColors, 'negativeSubtle'> = true;
-    const suppliesNegativeSubtleForeground: Has<
-      AdaptiveColors,
-      'negativeSubtleForeground'
-    > = true;
+    const suppliesNegativeSubtleForeground: Has<AdaptiveColors, 'negativeSubtleForeground'> = true;
     const omitsErrorSubtle: Has<AdaptiveColors, 'errorSubtle'> = false;
-    const omitsErrorSubtleForeground: Has<
-      AdaptiveColors,
-      'errorSubtleForeground'
-    > = false;
+    const omitsErrorSubtleForeground: Has<AdaptiveColors, 'errorSubtleForeground'> = false;
 
     expect(suppliesNegativeSubtle).toBe(true);
     expect(suppliesNegativeSubtleForeground).toBe(true);

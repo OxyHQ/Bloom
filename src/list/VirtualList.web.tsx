@@ -40,11 +40,7 @@ import { type CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 
-import type {
-  VirtualListHandle,
-  VirtualListProps,
-  VirtualListSlot,
-} from './types';
+import type { VirtualListHandle, VirtualListProps, VirtualListSlot } from './types';
 
 // Rows in these lists (user rows, pack cards) are short and fairly uniform; a
 // small estimate + per-row measurement keeps the mounted node count bounded.
@@ -158,9 +154,7 @@ function VirtualListWebInner<T>(
   // every row on every render; the cached callback is reused for the same key so
   // the ref only fires on real mount/unmount.
   const measureElement = virtualizer.measureElement;
-  const rowRefCallbacks = React.useRef(
-    new Map<string, (node: HTMLDivElement | null) => void>(),
-  );
+  const rowRefCallbacks = React.useRef(new Map<string, (node: HTMLDivElement | null) => void>());
   const getRowRef = React.useCallback(
     (key: string) => {
       const cache = rowRefCallbacks.current;
@@ -175,9 +169,7 @@ function VirtualListWebInner<T>(
   );
 
   const flatStyle = StyleSheet.flatten(style);
-  const flatContentStyle = StyleSheet.flatten(contentContainerStyle) as
-    | CSSProperties
-    | undefined;
+  const flatContentStyle = StyleSheet.flatten(contentContainerStyle) as CSSProperties | undefined;
 
   const header = renderSlot(ListHeaderComponent);
   const footer = renderSlot(ListFooterComponent);
@@ -198,10 +190,7 @@ function VirtualListWebInner<T>(
   // The measured spacer MUST contain every absolutely-positioned row; size it to
   // the MAX of `totalSize` and the rows' real extent so the document always
   // grows to full content height even when `scrollMargin` is momentarily stale.
-  const lastItem =
-    virtualItems.length > 0
-      ? virtualItems[virtualItems.length - 1]
-      : undefined;
+  const lastItem = virtualItems.length > 0 ? virtualItems[virtualItems.length - 1] : undefined;
   const lastItemEnd = lastItem
     ? lastItem.start + lastItem.size - virtualizer.options.scrollMargin
     : 0;
@@ -211,10 +200,7 @@ function VirtualListWebInner<T>(
     <View style={[{ minHeight: 0 }, flatStyle]} testID={testID}>
       {header}
       <div style={flatContentStyle}>
-        <div
-          ref={wrapperRef}
-          style={{ height: spacerHeight, width: '100%', position: 'relative' }}
-        >
+        <div ref={wrapperRef} style={{ height: spacerHeight, width: '100%', position: 'relative' }}>
           {virtualItems.map((virtualRow) => {
             const item = items[virtualRow.index];
             if (item === undefined) return null;
@@ -228,14 +214,10 @@ function VirtualListWebInner<T>(
                   top: 0,
                   left: 0,
                   width: '100%',
-                  transform: `translateY(${
-                    virtualRow.start - virtualizer.options.scrollMargin
-                  }px)`,
+                  transform: `translateY(${virtualRow.start - virtualizer.options.scrollMargin}px)`,
                 }}
               >
-                {renderItem
-                  ? renderItem({ item, index: virtualRow.index })
-                  : null}
+                {renderItem ? renderItem({ item, index: virtualRow.index }) : null}
               </div>
             );
           })}
@@ -246,14 +228,43 @@ function VirtualListWebInner<T>(
   );
 }
 
-const PlainVirtualList = React.forwardRef(VirtualListWebInner) as <T>(props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> }) => React.ReactElement;
-function ScreenVirtualList<T>({ forwardedRef, ...props }: VirtualListProps<T> & { forwardedRef: React.ForwardedRef<VirtualListHandle> }) {
+const PlainVirtualList = React.forwardRef(VirtualListWebInner) as <T>(
+  props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> },
+) => React.ReactElement;
+function ScreenVirtualList<T>({
+  forwardedRef,
+  ...props
+}: VirtualListProps<T> & { forwardedRef: React.ForwardedRef<VirtualListHandle> }) {
   const binding = useScreenWindowScroll(props.screen);
   const padding = StyleSheet.flatten(props.contentContainerStyle);
-  return <PlainVirtualList {...props} ref={forwardedRef} style={[props.style, props.screen?.restoration?.restorePending ? { opacity: 0 } : null]} contentContainerStyle={[props.contentContainerStyle, { paddingTop: binding.contentInsets.top + Number(padding?.paddingTop ?? padding?.padding ?? 0), paddingBottom: binding.contentInsets.bottom + Number(padding?.paddingBottom ?? padding?.padding ?? 0) }]} />;
+  return (
+    <PlainVirtualList
+      {...props}
+      ref={forwardedRef}
+      style={[props.style, props.screen?.restoration?.restorePending ? { opacity: 0 } : null]}
+      contentContainerStyle={[
+        props.contentContainerStyle,
+        {
+          paddingTop:
+            binding.contentInsets.top + Number(padding?.paddingTop ?? padding?.padding ?? 0),
+          paddingBottom:
+            binding.contentInsets.bottom + Number(padding?.paddingBottom ?? padding?.padding ?? 0),
+        },
+      ]}
+    />
+  );
 }
-const VirtualList = React.forwardRef(function VirtualList<T>(props: VirtualListProps<T>, ref: React.ForwardedRef<VirtualListHandle>) {
-  return props.screen ? <ScreenVirtualList {...props} forwardedRef={ref} /> : <PlainVirtualList {...props} ref={ref} />;
-}) as <T>(props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> }) => React.ReactElement;
+const VirtualList = React.forwardRef(function VirtualList<T>(
+  props: VirtualListProps<T>,
+  ref: React.ForwardedRef<VirtualListHandle>,
+) {
+  return props.screen ? (
+    <ScreenVirtualList {...props} forwardedRef={ref} />
+  ) : (
+    <PlainVirtualList {...props} ref={ref} />
+  );
+}) as <T>(
+  props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> },
+) => React.ReactElement;
 export default VirtualList;
 export { VirtualList };

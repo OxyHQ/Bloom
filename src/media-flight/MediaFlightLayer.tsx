@@ -87,7 +87,8 @@ MediaFlightLayer.displayName = 'MediaFlightLayer';
  * work per frame is one absolutely-positioned node resizing.
  */
 function MediaFlightSurface({ flight }: { flight: MediaFlight }) {
-  const { id, from, to, progress, content, cornerRadius, contentFit, surfaceType, unbinding } = flight;
+  const { id, from, to, progress, content, cornerRadius, contentFit, surfaceType, unbinding } =
+    flight;
 
   // The COMMIT signal `flyTo`'s promise waits on, and the reason it is an effect
   // rather than anything derived: what the caller needs to know is that React

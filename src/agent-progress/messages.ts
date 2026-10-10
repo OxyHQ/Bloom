@@ -14,16 +14,17 @@ export interface AgentProgressMessages {
   defaultSteps: readonly string[];
 }
 
-export const AGENT_PROGRESS_MESSAGES: MessageCatalog<AgentProgressMessages> = defineMessages<AgentProgressMessages>('AGENT_PROGRESS_MESSAGES', {
-  stepsLeft: (n) => plural('en', n, { one: '{n} step left', other: '{n} steps left' }),
-  allCompleted: 'All steps completed',
-  minimize: 'Minimize steps',
-  expand: 'Expand steps',
-  defaultSteps: [
-    'Read project files',
-    'Update and install light mode tokens',
-    'Implement dark mode tokens',
-    'Add reusable registered theme toggle',
-    'Run registry, lint and production build',
-  ],
-});
+export const AGENT_PROGRESS_MESSAGES: MessageCatalog<AgentProgressMessages> =
+  defineMessages<AgentProgressMessages>('AGENT_PROGRESS_MESSAGES', {
+    stepsLeft: (n) => plural('en', n, { one: '{n} step left', other: '{n} steps left' }),
+    allCompleted: 'All steps completed',
+    minimize: 'Minimize steps',
+    expand: 'Expand steps',
+    defaultSteps: [
+      'Read project files',
+      'Update and install light mode tokens',
+      'Implement dark mode tokens',
+      'Add reusable registered theme toggle',
+      'Run registry, lint and production build',
+    ],
+  });

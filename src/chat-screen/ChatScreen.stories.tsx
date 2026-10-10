@@ -65,7 +65,14 @@ const PINS: ChatPinnedMessage[] = [
 ];
 
 const MEMBERS: ChatMember[] = [
-  { id: 'm1', name: 'Ana Restrepo', source: AVATAR_ANA, status: 'online', role: 'owner', subtitle: 'online' },
+  {
+    id: 'm1',
+    name: 'Ana Restrepo',
+    source: AVATAR_ANA,
+    status: 'online',
+    role: 'owner',
+    subtitle: 'online',
+  },
   { id: 'm2', name: 'Teodor Ilić', status: 'idle', role: 'admin', subtitle: 'last seen recently' },
   { id: 'm3', name: 'Mira Halvorsen', status: 'online', subtitle: 'online' },
   { id: 'm4', name: 'Kwabena Osei', status: 'offline', subtitle: 'last seen yesterday' },
@@ -149,7 +156,15 @@ function Caption({ children }: { children: string }) {
  * wallpaper, the pinned bar and the jump buttons can be looked at over something
  * the right shape and the right colour.
  */
-function Bubble({ text, time, outgoing = false }: { text: string; time: string; outgoing?: boolean }) {
+function Bubble({
+  text,
+  time,
+  outgoing = false,
+}: {
+  text: string;
+  time: string;
+  outgoing?: boolean;
+}) {
   const theme = useTheme();
   const paint = useChatScreenPaint();
   const { accent } = resolveButtonRamps(theme);
@@ -226,7 +241,11 @@ function ConversationListStub() {
             <Text variant="body-medium" numberOfLines={1} style={{ color: paint.text }}>
               {member.name}
             </Text>
-            <Text variant="caption-1-regular" numberOfLines={1} style={{ color: paint.textSecondary }}>
+            <Text
+              variant="caption-1-regular"
+              numberOfLines={1}
+              style={{ color: paint.textSecondary }}
+            >
               {member.subtitle}
             </Text>
           </View>
@@ -295,10 +314,28 @@ function SettingsBlock() {
 
 const SHARED_TABS = [
   { value: 'media', label: 'Media', icon: RiImageLine, count: 128, content: <MediaGridStub /> },
-  { value: 'files', label: 'Files', icon: RiFolderLine, count: 12, content: <MediaGridStub count={3} /> },
+  {
+    value: 'files',
+    label: 'Files',
+    icon: RiFolderLine,
+    count: 12,
+    content: <MediaGridStub count={3} />,
+  },
   { value: 'links', label: 'Links', icon: RiLink, count: 34, content: <MediaGridStub count={2} /> },
-  { value: 'voice', label: 'Voice', icon: RiMicLine, count: 4, content: <MediaGridStub count={2} /> },
-  { value: 'groups', label: 'Groups', icon: RiGroupLine, count: 3, content: <MediaGridStub count={3} /> },
+  {
+    value: 'voice',
+    label: 'Voice',
+    icon: RiMicLine,
+    count: 4,
+    content: <MediaGridStub count={2} />,
+  },
+  {
+    value: 'groups',
+    label: 'Groups',
+    icon: RiGroupLine,
+    count: 3,
+    content: <MediaGridStub count={3} />,
+  },
 ];
 
 function PersonPanel({ variant }: { variant: 'pane' | 'screen' }) {
@@ -373,8 +410,17 @@ function Conversation({
         onPressSearch={() => {}}
         onPressMore={() => {}}
       />
-      <PinnedMessageBar pins={PINS} index={1} onPressPin={() => {}} onPressList={() => {}} onDismiss={() => {}} />
-      <ChatBackground variant={variant} source="https://picsum.photos/seed/bloom-chat-wall/1200/900">
+      <PinnedMessageBar
+        pins={PINS}
+        index={1}
+        onPressPin={() => {}}
+        onPressList={() => {}}
+        onDismiss={() => {}}
+      />
+      <ChatBackground
+        variant={variant}
+        source="https://picsum.photos/seed/bloom-chat-wall/1200/900"
+      >
         <Transcript compact={compact} />
         <ChatDateHeader label="Today" />
         <View style={{ position: 'absolute', right: 16, bottom: 16, gap: 10 }}>
@@ -417,7 +463,14 @@ function ComposerStub() {
           Message
         </Text>
       </View>
-      <Button  size="md" iconOnly icon={RiChat3Line} accessibilityLabel="Send" tone="accent" appearance="solid" />
+      <Button
+        size="md"
+        iconOnly
+        icon={RiChat3Line}
+        accessibilityLabel="Send"
+        tone="accent"
+        appearance="solid"
+      />
     </View>
   );
 }
@@ -444,7 +497,16 @@ export const FullScreenNarrow: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', gap: 20, padding: 20, flexWrap: 'wrap' }}>
       {(['conversation', 'list', 'info'] as const).map((pane) => (
-        <View key={pane} style={{ width: '100%', maxWidth: 390, height: 780, overflow: 'hidden', borderRadius: 16 }}>
+        <View
+          key={pane}
+          style={{
+            width: '100%',
+            maxWidth: 390,
+            height: 780,
+            overflow: 'hidden',
+            borderRadius: 16,
+          }}
+        >
           <ChatSplitLayout
             pane={pane}
             compact
@@ -556,9 +618,20 @@ export const PinnedBar: Story = {
   render: () => (
     <BothModes>
       <Caption>three pins, the second one showing</Caption>
-      <PinnedMessageBar pins={PINS} index={1} onPressPin={() => {}} onPressList={() => {}} onDismiss={() => {}} />
+      <PinnedMessageBar
+        pins={PINS}
+        index={1}
+        onPressPin={() => {}}
+        onPressList={() => {}}
+        onDismiss={() => {}}
+      />
       <Caption>one pin, unpin instead of close</Caption>
-      <PinnedMessageBar pins={PINS.slice(0, 1)} onPressPin={() => {}} onDismiss={() => {}} dismissIcon="unpin" />
+      <PinnedMessageBar
+        pins={PINS.slice(0, 1)}
+        onPressPin={() => {}}
+        onDismiss={() => {}}
+        dismissIcon="unpin"
+      />
       <Caption>a media pin, with a thumbnail</Caption>
       <PinnedMessageBar pins={PINS.slice(1)} onPressPin={() => {}} onPressList={() => {}} />
       <Caption>eleven pins — past eight the rule stops being segmented</Caption>

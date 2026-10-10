@@ -45,9 +45,7 @@ export function ConnectionDotsBase({
   ];
 
   return (
-    <StyledView
-      className={className}
-      style={rowStyle}>
+    <StyledView className={className} style={rowStyle}>
       <View style={[a.align_center, a.justify_center]}>{left}</View>
 
       {/* The dots are decorative; the whole cluster carries ONE a11y label
@@ -57,7 +55,8 @@ export function ConnectionDotsBase({
         accessibilityRole="image"
         accessibilityLabel={accessibilityLabel}
         aria-label={accessibilityLabel}
-        style={[a.flex_row, a.align_center, { gap: tokens.space.xs }]}>
+        style={[a.flex_row, a.align_center, { gap: tokens.space.xs }]}
+      >
         {dots}
       </View>
 

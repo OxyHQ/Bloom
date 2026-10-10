@@ -97,9 +97,13 @@ describe('TextFieldInput revealable', () => {
     expect(getByLabelText('Hide password')).toBeTruthy();
   });
 
-  it("paints the eye in the error colour when only the INPUT is invalid", () => {
-    const { resolveIconColor, resolveTextFieldPalette } = jest.requireActual('../text-field/shared') as typeof import('../text-field/shared');
-    const { useTheme } = jest.requireActual('../theme/use-theme') as typeof import('../theme/use-theme');
+  it('paints the eye in the error colour when only the INPUT is invalid', () => {
+    const { resolveIconColor, resolveTextFieldPalette } = jest.requireActual(
+      '../text-field/shared',
+    ) as typeof import('../text-field/shared');
+    const { useTheme } = jest.requireActual(
+      '../theme/use-theme',
+    ) as typeof import('../theme/use-theme');
     let palette: ReturnType<typeof resolveTextFieldPalette> | undefined;
     function Probe() {
       palette = resolveTextFieldPalette(useTheme());
@@ -113,7 +117,9 @@ describe('TextFieldInput revealable', () => {
         </TextField>
       </>,
     );
-    const eye = UNSAFE_getAllByProps({ accessibilityLabel: 'Show password' }).find((n) => n.props.color !== undefined);
+    const eye = UNSAFE_getAllByProps({ accessibilityLabel: 'Show password' }).find(
+      (n) => n.props.color !== undefined,
+    );
     expect(eye?.props.color).toBe(resolveIconColor(palette!, { invalid: true, disabled: false }));
   });
 
@@ -124,7 +130,9 @@ describe('TextFieldInput revealable', () => {
   });
 
   it('names the required asterisk in the locale', () => {
-    const { TextFieldLabel } = jest.requireActual('../text-field') as typeof import('../text-field');
+    const { TextFieldLabel } = jest.requireActual(
+      '../text-field',
+    ) as typeof import('../text-field');
     const { getByLabelText } = renderWithTheme(
       <LocaleProvider locale="fr">
         <TextFieldLabel required>Mot de passe</TextFieldLabel>

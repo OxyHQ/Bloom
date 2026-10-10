@@ -9,22 +9,31 @@ export function useInView({ threshold: requestedThreshold, once = false }: InVie
   const [inView, setInView] = useState(false);
   const entered = useRef(false);
   const ref = useCallback((value: unknown) => {
-    if (value != null && !(value instanceof Element)) throw new Error('Bloom useInView ref must point to a web host element.');
+    if (value != null && !(value instanceof Element))
+      throw new Error('Bloom useInView ref must point to a web host element.');
     setNode(value as Element | null);
   }, []);
   useEffect(() => {
     if (!node || (once && entered.current)) return;
     // Unsupported environments remain unobserved, never pretend mount is visible.
     if (typeof IntersectionObserver === 'undefined') return;
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target !== node || (once && entered.current)) continue;
-        const visible = entry.boundingClientRect.width > 0 && entry.boundingClientRect.height > 0 && entry.isIntersecting && entry.intersectionRatio > 0 && entry.intersectionRatio >= threshold;
-        if (visible) entered.current = true;
-        setInView(visible);
-        if (visible && once) observer.disconnect();
-      }
-    }, { threshold });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.target !== node || (once && entered.current)) continue;
+          const visible =
+            entry.boundingClientRect.width > 0 &&
+            entry.boundingClientRect.height > 0 &&
+            entry.isIntersecting &&
+            entry.intersectionRatio > 0 &&
+            entry.intersectionRatio >= threshold;
+          if (visible) entered.current = true;
+          setInView(visible);
+          if (visible && once) observer.disconnect();
+        }
+      },
+      { threshold },
+    );
     observer.observe(node);
     return () => observer.disconnect();
   }, [node, threshold, once]);

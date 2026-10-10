@@ -20,12 +20,7 @@
  * The handlers are empty on native.
  */
 import * as React from 'react';
-import {
-  Platform,
-  StyleSheet,
-  useWindowDimensions,
-  type ViewStyle,
-} from 'react-native';
+import { Platform, StyleSheet, useWindowDimensions, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -63,9 +58,7 @@ type ToastSwipeHandlerProps = Pick<ToastProps, 'important'> & {
   onPress: (args: { x: number; y: number }) => void;
 };
 
-export const ToastSwipeHandler: React.FC<
-  React.PropsWithChildren<ToastSwipeHandlerProps>
-> = ({
+export const ToastSwipeHandler: React.FC<React.PropsWithChildren<ToastSwipeHandlerProps>> = ({
   children,
   onRemove,
   style,
@@ -208,12 +201,7 @@ export const ToastSwipeHandler: React.FC<
   return (
     <GestureDetector gesture={Gesture.Race(tap, pan)}>
       <Animated.View
-        style={[
-          animatedStyle,
-          unstyled ? undefined : styles.centered,
-          styles.rowBox,
-          style,
-        ]}
+        style={[animatedStyle, unstyled ? undefined : styles.centered, styles.rowBox, style]}
         {...hoverProps}
         // W9 — on web `LinearTransition`'s easing degrades to CSS `ease` because
         // a `bezierFn` result carries no easing-name symbol for the CSS mapper.
@@ -250,7 +238,5 @@ function elasticResistance(distance: number) {
   'worklet';
   const BASE_RESISTANCE = 0.4;
   const PROGRESSIVE_DAMPENING = 0.02;
-  return (
-    distance * BASE_RESISTANCE * (1 / (1 + distance * PROGRESSIVE_DAMPENING))
-  );
+  return distance * BASE_RESISTANCE * (1 / (1 + distance * PROGRESSIVE_DAMPENING));
 }

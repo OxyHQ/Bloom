@@ -7,74 +7,137 @@ import { compactDuration as calendar_compactDuration } from '../../calendar/mess
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
-import { words as navigationBanner_words, midSentence as navigationBanner_midSentence } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  words as navigationBanner_words,
+  midSentence as navigationBanner_midSentence,
+} from '../../navigation-banner/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
-const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'oben links', 'top-right': 'oben rechts', 'bottom-left': 'unten links', 'bottom-right': 'unten rechts' };
+const CALL_UI_MESSAGES__CORNERS = {
+  'top-left': 'oben links',
+  'top-right': 'oben rechts',
+  'bottom-left': 'unten links',
+  'bottom-right': 'unten rechts',
+};
 
-const MESSAGE_MEDIA_MESSAGES__items = (n: number) => plural('de', n, { one: '{n} Element', other: '{n} Elemente' });
+const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
+  plural('de', n, { one: '{n} Element', other: '{n} Elemente' });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "Reagieren",
-  working: "Arbeiten",
-  avatarStyle: "Avatar-Stil",
-  proceduralAvatar: "Aktueller Avatar",
-  betaPreset: "Charaktervorlage (Beta)",
-  betaEyes: "Augenstil",
-  eyewear: "Brille",
-  accessory: "Accessoire",
+  reaction: 'Reagieren',
+  working: 'Arbeiten',
+  avatarStyle: 'Avatar-Stil',
+  proceduralAvatar: 'Aktueller Avatar',
+  betaPreset: 'Charaktervorlage (Beta)',
+  betaEyes: 'Augenstil',
+  eyewear: 'Brille',
+  accessory: 'Accessoire',
   characterOption: (_category, _id, title) => String(title),
-  editor: "Agenten-Editor",
-  newBot: "Neuer Bot",
-  closeEditor: "Agenten-Editor schließen",
-  details: "Aussehen und Details des Agenten",
-  color: "Avatarfarbe",
-  customColor: "Eigene Avatarfarbe",
-  name: "Name",
-  label: "Bezeichnung",
-  description: "Beschreibung",
-  nameInput: "Agentenname",
-  labelInput: "Agentenbezeichnung",
-  descriptionInput: "Agentenbeschreibung",
-  labelPlaceholder: "Manager, Marketing, Maler",
-  descriptionPlaceholder: "Details zum Agenten",
-  language: "Sprache",
-  languageInput: "Agentensprache",
-  notifications: "Benachrichtigungen",
-  notificationsDescription: "Benachrichtigen, wenn eine Antwort bereit ist.",
-  notifyFinished: "Benachrichtigen, wenn dieser Agent fertig ist",
-  voice: "Stimme",
-  voiceInput: "Agentenstimme",
-  previewVoice: "Stimme anhören",
-  savedVoice: "Gespeicherte Stimme",
-  systemVoice: "Systemstimme",
-  off: "Aus",
-  playbackSpeed: "Wiedergabegeschwindigkeit",
-  emotion: "Emotion des Agenten",
-  shape: "Avatarform",
-  hexColor: "Hex-Farbe",
-  hue: "Farbton",
-  saturationBrightness: "Sättigung und Helligkeit",
-  increaseBrightness: "Helligkeit erhöhen",
-  decreaseBrightness: "Helligkeit verringern",
-  increaseHue: "Farbton erhöhen",
-  decreaseHue: "Farbton verringern",
-  nextShape: "Nächste Form",
-  previousShape: "Vorherige Form",
-  newAgent: "Neuer Agent",
-  emotions: { "neutral": "Neutral", "happy": "Fröhlich", "angry": "Wütend", "thinking": "Nachdenklich", "shook": "Überrascht", "curious": "Neugierig", "wink": "Zwinkernd", "sleepy": "Schläfrig", "sad": "Traurig", "worried": "Besorgt", "skeptical": "Skeptisch", "focused": "Konzentriert", "excited": "Aufgeregt", "calm": "Ruhig", "shy": "Schüchtern", "confused": "Verwirrt" },
-  shapes: { "slender": "Schlank", "pocket": "Tasche", "petal": "Blütenblatt", "flower": "Blume", "star": "Stern", "heart": "Herz", "cloud": "Wolke", "diamond": "Diamant", "shield": "Schild" },
-  colors: { "Blue": "Blau", "Teal": "Türkisgrün", "Violet": "Violett", "Pink": "Rosa", "Red": "Rot", "Orange": "Orange", "Cyan": "Cyan", "Lime": "Limettengrün", "Green": "Grün" },
-  languages: { "auto": "Automatisch erkennen", "en": "Englisch", "tr": "Türkisch", "es": "Spanisch", "fr": "Französisch", "de": "Deutsch", "ja": "Japanisch", "pt": "Portugiesisch" },
-  avatarColorLabel: (name) => "Avatar {name}".replace("{name}", name),
-  shapeLabel: (name) => "Form {name}".replace("{name}", name),
-  silhouetteLabel: (name) => "Silhouette {name}".replace("{name}", name),
-  livePreview: (name) => "{name}, Live-Avatarvorschau".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "Sättigung {s}%, Helligkeit {v}%".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "{speed}-fache Wiedergabegeschwindigkeit".replace("{speed}", String(speed)),
+  editor: 'Agenten-Editor',
+  newBot: 'Neuer Bot',
+  closeEditor: 'Agenten-Editor schließen',
+  details: 'Aussehen und Details des Agenten',
+  color: 'Avatarfarbe',
+  customColor: 'Eigene Avatarfarbe',
+  name: 'Name',
+  label: 'Bezeichnung',
+  description: 'Beschreibung',
+  nameInput: 'Agentenname',
+  labelInput: 'Agentenbezeichnung',
+  descriptionInput: 'Agentenbeschreibung',
+  labelPlaceholder: 'Manager, Marketing, Maler',
+  descriptionPlaceholder: 'Details zum Agenten',
+  language: 'Sprache',
+  languageInput: 'Agentensprache',
+  notifications: 'Benachrichtigungen',
+  notificationsDescription: 'Benachrichtigen, wenn eine Antwort bereit ist.',
+  notifyFinished: 'Benachrichtigen, wenn dieser Agent fertig ist',
+  voice: 'Stimme',
+  voiceInput: 'Agentenstimme',
+  previewVoice: 'Stimme anhören',
+  savedVoice: 'Gespeicherte Stimme',
+  systemVoice: 'Systemstimme',
+  off: 'Aus',
+  playbackSpeed: 'Wiedergabegeschwindigkeit',
+  emotion: 'Emotion des Agenten',
+  shape: 'Avatarform',
+  hexColor: 'Hex-Farbe',
+  hue: 'Farbton',
+  saturationBrightness: 'Sättigung und Helligkeit',
+  increaseBrightness: 'Helligkeit erhöhen',
+  decreaseBrightness: 'Helligkeit verringern',
+  increaseHue: 'Farbton erhöhen',
+  decreaseHue: 'Farbton verringern',
+  nextShape: 'Nächste Form',
+  previousShape: 'Vorherige Form',
+  newAgent: 'Neuer Agent',
+  emotions: {
+    neutral: 'Neutral',
+    happy: 'Fröhlich',
+    angry: 'Wütend',
+    thinking: 'Nachdenklich',
+    shook: 'Überrascht',
+    curious: 'Neugierig',
+    wink: 'Zwinkernd',
+    sleepy: 'Schläfrig',
+    sad: 'Traurig',
+    worried: 'Besorgt',
+    skeptical: 'Skeptisch',
+    focused: 'Konzentriert',
+    excited: 'Aufgeregt',
+    calm: 'Ruhig',
+    shy: 'Schüchtern',
+    confused: 'Verwirrt',
+  },
+  shapes: {
+    slender: 'Schlank',
+    pocket: 'Tasche',
+    petal: 'Blütenblatt',
+    flower: 'Blume',
+    star: 'Stern',
+    heart: 'Herz',
+    cloud: 'Wolke',
+    diamond: 'Diamant',
+    shield: 'Schild',
+  },
+  colors: {
+    Blue: 'Blau',
+    Teal: 'Türkisgrün',
+    Violet: 'Violett',
+    Pink: 'Rosa',
+    Red: 'Rot',
+    Orange: 'Orange',
+    Cyan: 'Cyan',
+    Lime: 'Limettengrün',
+    Green: 'Grün',
+  },
+  languages: {
+    auto: 'Automatisch erkennen',
+    en: 'Englisch',
+    tr: 'Türkisch',
+    es: 'Spanisch',
+    fr: 'Französisch',
+    de: 'Deutsch',
+    ja: 'Japanisch',
+    pt: 'Portugiesisch',
+  },
+  avatarColorLabel: (name) => 'Avatar {name}'.replace('{name}', name),
+  shapeLabel: (name) => 'Form {name}'.replace('{name}', name),
+  silhouetteLabel: (name) => 'Silhouette {name}'.replace('{name}', name),
+  livePreview: (name) => '{name}, Live-Avatarvorschau'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    'Sättigung {s}%, Helligkeit {v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) =>
+    '{speed}-fache Wiedergabegeschwindigkeit'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -128,7 +191,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: 'Entwurf:', pinned: 'Angeheftet', muted: 'Stummgeschaltet', verified: 'Verifiziert', channel: 'Kanal', bot: 'Bot', group: 'Gruppe' },
+  item: {
+    draft: 'Entwurf:',
+    pinned: 'Angeheftet',
+    muted: 'Stummgeschaltet',
+    verified: 'Verifiziert',
+    channel: 'Kanal',
+    bot: 'Bot',
+    group: 'Gruppe',
+  },
   search: { chat: 'Chats', message: 'Nachrichten', contact: 'Kontakte', empty: 'Keine Ergebnisse' },
   list: 'Chats',
   emptyTitle: 'Noch keine Unterhaltungen',
@@ -138,7 +209,8 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   clearSearch: 'Suche löschen',
   newChat: 'Neuer Chat',
   archived: 'Archiviert',
-  archivedName: (label, n) => `${label}, ${plural('de', n, { one: '{n} Chat', other: '{n} Chats' })}`,
+  archivedName: (label, n) =>
+    `${label}, ${plural('de', n, { one: '{n} Chat', other: '{n} Chats' })}`,
   folderName: (label, n) => `${label}, ${n} ungelesen`,
   stories: 'Storys',
   ownStory: 'Deine Story',
@@ -186,10 +258,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `Menü von ${team}`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'B',
+  kilobyte: 'KB',
+  megabyte: 'MB',
+  gigabyte: 'GB',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: 'Kartennummer', expiry: 'Ablaufdatum', securityCode: 'Sicherheitscode', name: 'Name auf der Karte', postcode: 'Postleitzahl', country: 'Land' },
+  labels: {
+    number: 'Kartennummer',
+    expiry: 'Ablaufdatum',
+    securityCode: 'Sicherheitscode',
+    name: 'Name auf der Karte',
+    postcode: 'Postleitzahl',
+    country: 'Land',
+  },
   selectCountry: 'Land auswählen',
 };
 
@@ -222,8 +306,20 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestions: { mention: 'Personen', command: 'Befehle', emoji: 'Emoji' },
   suggestionVerified: 'Verifiziert',
   searchingSuggestions: 'Suche läuft…',
-  noSuggestions: { mention: 'Keine Personen gefunden', command: 'Keine Befehle gefunden', emoji: 'Keine Emojis gefunden' },
-  attachmentItems: { gallery: 'Galerie', camera: 'Kamera', file: 'Datei', location: 'Standort', contact: 'Kontakt', poll: 'Umfrage', music: 'Musik' },
+  noSuggestions: {
+    mention: 'Keine Personen gefunden',
+    command: 'Keine Befehle gefunden',
+    emoji: 'Keine Emojis gefunden',
+  },
+  attachmentItems: {
+    gallery: 'Galerie',
+    camera: 'Kamera',
+    file: 'Datei',
+    location: 'Standort',
+    contact: 'Kontakt',
+    poll: 'Umfrage',
+    music: 'Musik',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -274,7 +370,10 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   showLyrics: 'Songtext anzeigen',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'Noch nichts vorhanden', addresses: 'Adressen' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: 'Noch nichts vorhanden',
+  addresses: 'Adressen',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: 'Single', ep: 'EP', album: 'Album' },
@@ -296,8 +395,10 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     'mastering-engineer': 'Mastering-Engineer',
   },
   periods: { '7d': '7 Tage', '28d': '28 Tage', '12m': '12 Monate', all: 'Gesamter Zeitraum' },
-  artworkNotSquare: (w, h) => `Das Cover muss quadratisch sein – dieses Bild ist ${w}×${h} px groß.`,
-  artworkTooSmall: (w, h, min) => `Das Cover ist zu klein (${w}×${h} px). Lade mindestens ${min}×${min} px hoch.`,
+  artworkNotSquare: (w, h) =>
+    `Das Cover muss quadratisch sein – dieses Bild ist ${w}×${h} px groß.`,
+  artworkTooSmall: (w, h, min) =>
+    `Das Cover ist zu klein (${w}×${h} px). Lade mindestens ${min}×${min} px hoch.`,
   audience: { title: 'Publikum', period: 'Zeitraum' },
   breakdown: {
     locations: 'Top-Standorte',
@@ -328,7 +429,12 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   tracks: (n) => plural('de', n, { one: '{n} Titel', other: '{n} Titel' }),
   timeline: {
-    states: { complete: 'abgeschlossen', current: 'läuft', upcoming: 'nicht begonnen', error: 'erfordert Aufmerksamkeit' },
+    states: {
+      complete: 'abgeschlossen',
+      current: 'läuft',
+      upcoming: 'nicht begonnen',
+      error: 'erfordert Aufmerksamkeit',
+    },
     label: 'Release-Fortschritt',
   },
   upload: {
@@ -368,7 +474,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     version: 'Fassung',
     versionPlaceholder: 'Remix, Live, Akustik…',
     explicit: 'Expliziter Text',
-    explicitDescription: 'Aktiviere dies, wenn der Titel derbe Sprache oder explizite Themen enthält.',
+    explicitDescription:
+      'Aktiviere dies, wenn der Titel derbe Sprache oder explizite Themen enthält.',
     genre: 'Genre',
     genrePlaceholder: 'Genre auswählen',
     primaryArtists: 'Hauptinterpreten',
@@ -394,14 +501,21 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     moods: 'Stimmung',
     genres: 'Genre',
     pitch: 'Dein Pitch',
-    pitchPlaceholder: 'Was macht dieses Release besonders? Für wen ist es, und welche Geschichte steckt dahinter?',
+    pitchPlaceholder:
+      'Was macht dieses Release besonders? Für wen ist es, und welche Geschichte steckt dahinter?',
     submit: 'Pitch senden',
     tagLimit: (max) => `Bis zu ${max} auswählen`,
-    statuses: { submitted: 'Pitch gesendet', accepted: 'Zur Prüfung ausgewählt', declined: 'Diesmal nicht ausgewählt' },
+    statuses: {
+      submitted: 'Pitch gesendet',
+      accepted: 'Zur Prüfung ausgewählt',
+      declined: 'Diesmal nicht ausgewählt',
+    },
     statusDescriptions: {
-      submitted: 'Die Redaktion liest jeden Pitch. Du erhältst vor dem Erscheinungsdatum eine Antwort.',
+      submitted:
+        'Die Redaktion liest jeden Pitch. Du erhältst vor dem Erscheinungsdatum eine Antwort.',
       accepted: 'Dein Release wird für redaktionelle Playlists in Betracht gezogen.',
-      declined: 'Dieses Release wurde nicht ausgewählt. Du kannst dein nächstes pitchen, sobald es geplant ist.',
+      declined:
+        'Dieses Release wurde nicht ausgewählt. Du kannst dein nächstes pitchen, sobald es geplant ist.',
     },
     edit: 'Pitch bearbeiten',
   },
@@ -423,7 +537,11 @@ const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   pricePerSquareMetre: 'Preis pro Quadratmeter',
   rentHistory: 'Mietverlauf',
   rentHistoryEmpty: 'Für dieses Zuhause gibt es noch keinen Verlauf',
-  confidence: { low: 'Geringe Zuverlässigkeit', medium: 'Mittlere Zuverlässigkeit', high: 'Hohe Zuverlässigkeit' },
+  confidence: {
+    low: 'Geringe Zuverlässigkeit',
+    medium: 'Mittlere Zuverlässigkeit',
+    high: 'Hohe Zuverlässigkeit',
+  },
   aboveEstimate: (p) => `${p} über der Schätzung`,
   belowEstimate: (p) => `${p} unter der Schätzung`,
   fairPrice: 'Fairer Preis',
@@ -454,7 +572,8 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   month: 'Monat',
   rentalStatus: { available: 'Verfügbar', reserved: 'Reserviert', rented: 'Vermietet' },
   rentalStatusMessage: {
-    reserved: 'Ein anderer Interessent schließt gerade einen Vertrag ab. Neue Besichtigungen sind pausiert.',
+    reserved:
+      'Ein anderer Interessent schließt gerade einen Vertrag ab. Neue Besichtigungen sind pausiert.',
     rented: 'Diese Wohnung ist vermietet und nimmt keine Anfragen mehr an.',
   },
   saleStatus: { available: 'Zu verkaufen', reserved: 'Reserviert', sold: 'Verkauft' },
@@ -487,7 +606,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: 'Deine Bewerbung',
   applicationProgress: 'Fortschritt der Bewerbung',
   progressReady: (done, total) => `${done} von ${total} bereit`,
-  applicationStatus: { missing: 'Fehlt', uploaded: 'In Prüfung', verified: 'Bestätigt', rejected: 'Abgelehnt' },
+  applicationStatus: {
+    missing: 'Fehlt',
+    uploaded: 'In Prüfung',
+    verified: 'Bestätigt',
+    rejected: 'Abgelehnt',
+  },
   applicationAction: { upload: 'Hochladen', view: 'Ansehen', replace: 'Ersetzen' },
   itemAction: (action, title) => `${title}: ${action}`,
   mortgage: {
@@ -552,8 +676,12 @@ const LISTING_DETAILS_MESSAGES: Translations['LISTING_DETAILS_MESSAGES'] = {
   overallRating: 'Gesamtbewertung',
   unavailable: 'Nicht verfügbar',
   showAllAmenities: (n) =>
-    plural('de', n, { one: '{n} Ausstattungsmerkmal anzeigen', other: 'Alle {n} Ausstattungsmerkmale anzeigen' }),
-  showAllFeatures: (n) => plural('de', n, { one: '{n} Merkmal anzeigen', other: 'Alle {n} Merkmale anzeigen' }),
+    plural('de', n, {
+      one: '{n} Ausstattungsmerkmal anzeigen',
+      other: 'Alle {n} Ausstattungsmerkmale anzeigen',
+    }),
+  showAllFeatures: (n) =>
+    plural('de', n, { one: '{n} Merkmal anzeigen', other: 'Alle {n} Merkmale anzeigen' }),
   propertyFeatures: 'Objektmerkmale',
   showAllPhotos: 'Alle Fotos anzeigen',
   listingPhotos: 'Fotos des Inserats',
@@ -563,7 +691,8 @@ const LISTING_DETAILS_MESSAGES: Translations['LISTING_DETAILS_MESSAGES'] = {
   landlord: 'Vermieter',
   agent: 'Makler',
   agency: 'Maklerbüro',
-  activeListings: (n) => plural('de', n, { one: '{n} aktives Inserat', other: '{n} aktive Inserate' }),
+  activeListings: (n) =>
+    plural('de', n, { one: '{n} aktives Inserat', other: '{n} aktive Inserate' }),
   verified: 'Verifiziert',
   showPhone: 'Telefonnummer anzeigen',
   call: 'Anrufen',
@@ -611,8 +740,14 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
 const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
   kinds: {
     envelope: { label: 'Umschlag', description: 'Dokumente, Schlüssel, alles Flache.' },
-    parcel: { label: 'Paket', description: 'Ein Karton oder eine Tasche, die eine Person tragen kann.' },
-    furniture: { label: 'Möbel', description: 'Ein Sofa, ein Tisch, eine Matratze – zwei Personen an beiden Enden.' },
+    parcel: {
+      label: 'Paket',
+      description: 'Ein Karton oder eine Tasche, die eine Person tragen kann.',
+    },
+    furniture: {
+      label: 'Möbel',
+      description: 'Ein Sofa, ein Tisch, eine Matratze – zwei Personen an beiden Enden.',
+    },
     pallet: { label: 'Palette', description: 'Verpackt und gestapelt, mit Ladebordwand bewegt.' },
     food: { label: 'Essen', description: 'Eine Restaurantlieferung, richtig temperiert.' },
   },
@@ -632,7 +767,11 @@ const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
     notes: 'Sollte der Fahrer noch etwas wissen?',
     notesPlaceholder: 'Zerbrechlich, ein Aufzugscode, wo es abgestellt werden soll…',
   },
-  options: { extras: 'Extras', access: 'Zugang an beiden Adressen', window: 'Wann soll es abgeholt werden?' },
+  options: {
+    extras: 'Extras',
+    access: 'Zugang an beiden Adressen',
+    window: 'Wann soll es abgeholt werden?',
+  },
   form: {
     route: 'Strecke',
     routeDescription: 'Zuerst die Abholung, zuletzt die Zustellung.',
@@ -664,11 +803,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: 'Für diese Ladung nicht verfügbar',
   vehicle: 'Fahrzeug',
   vehicles: {
-    bike: { label: 'Lastenrad', capacity: 'Bis 25 kg · 60 × 40 × 40 cm', fits: ['Dokumente', 'Eine Essensbestellung', 'Ein kleiner Karton'] },
-    car: { label: 'Auto', capacity: 'Bis 150 kg · 100 × 80 × 60 cm', fits: ['Zwei Koffer', 'Vier Kartons', 'Ein Fahrrad'] },
-    van: { label: 'Transporter', capacity: 'Bis 800 kg · 240 × 150 × 140 cm', fits: ['Ein Sofa', 'Ein Einzimmer-Umzug', 'Eine halbe Palette'] },
-    boxTruck: { label: 'Kofferaufbau-Lkw', capacity: 'Bis 3.500 kg · 420 × 200 × 210 cm', fits: ['Zwei Paletten', 'Ein Dreizimmer-Umzug', 'Eine Ladebordwand'] },
-    refrigerated: { label: 'Kühltransporter', capacity: 'Bis 700 kg · bei 2–8 °C', fits: ['Frische Lebensmittel', 'Gekühltes Catering', 'Blumen'] },
+    bike: {
+      label: 'Lastenrad',
+      capacity: 'Bis 25 kg · 60 × 40 × 40 cm',
+      fits: ['Dokumente', 'Eine Essensbestellung', 'Ein kleiner Karton'],
+    },
+    car: {
+      label: 'Auto',
+      capacity: 'Bis 150 kg · 100 × 80 × 60 cm',
+      fits: ['Zwei Koffer', 'Vier Kartons', 'Ein Fahrrad'],
+    },
+    van: {
+      label: 'Transporter',
+      capacity: 'Bis 800 kg · 240 × 150 × 140 cm',
+      fits: ['Ein Sofa', 'Ein Einzimmer-Umzug', 'Eine halbe Palette'],
+    },
+    boxTruck: {
+      label: 'Kofferaufbau-Lkw',
+      capacity: 'Bis 3.500 kg · 420 × 200 × 210 cm',
+      fits: ['Zwei Paletten', 'Ein Dreizimmer-Umzug', 'Eine Ladebordwand'],
+    },
+    refrigerated: {
+      label: 'Kühltransporter',
+      capacity: 'Bis 700 kg · bei 2–8 °C',
+      fits: ['Frische Lebensmittel', 'Gekühltes Catering', 'Blumen'],
+    },
   },
 };
 
@@ -745,7 +904,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: 'Wird autorisiert', paid: 'Bezahlt', failed: 'Zahlung fehlgeschlagen', refunded: 'Erstattet', pending: 'Zahlung ausstehend' },
+  states: {
+    authorising: 'Wird autorisiert',
+    paid: 'Bezahlt',
+    failed: 'Zahlung fehlgeschlagen',
+    refunded: 'Erstattet',
+    pending: 'Zahlung ausstehend',
+  },
   reference: 'Referenz',
 };
 
@@ -764,13 +929,26 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
   rated: (value, reviews) =>
     placeCard_withReviews(
       `Mit ${value} von 5 bewertet`,
-      reviews === undefined ? undefined : placeCard_countOf('de', reviews, { one: '{n} Bewertung', other: '{n} Bewertungen' }),
+      reviews === undefined
+        ? undefined
+        : placeCard_countOf('de', reviews, { one: '{n} Bewertung', other: '{n} Bewertungen' }),
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `Weiter mit ${b}`, signIn: (b) => `Mit ${b} anmelden`, signUp: (b) => `Mit ${b} registrieren` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `Weiter mit ${b}`,
+    signIn: (b) => `Mit ${b} anmelden`,
+    signUp: (b) => `Mit ${b} registrieren`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'Sonstiges', otherPlaceholder: 'Gib hier deine eigene Antwort ein', steps: 'Schritte', step: (n) => `Schritt ${n}` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: 'Sonstiges',
+  otherPlaceholder: 'Gib hier deine eigene Antwort ein',
+  steps: 'Schritte',
+  step: (n) => `Schritt ${n}`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'Kartensteuerung',
@@ -787,9 +965,18 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: 'Überlagerungen',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: 'Abgelaufen', declined: 'Abgelehnt' }, default: 'Standard', add: 'Zahlungsmethode hinzufügen', emptyTitle: 'Keine gespeicherten Zahlungsmethoden', paymentMethods: 'Zahlungsmethoden' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: 'Abgelaufen', declined: 'Abgelehnt' },
+  default: 'Standard',
+  add: 'Zahlungsmethode hinzufügen',
+  emptyTitle: 'Keine gespeicherten Zahlungsmethoden',
+  paymentMethods: 'Zahlungsmethoden',
+};
 
-const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => plural('de', n, { one: '{n} weitere Person', other: '{n} weitere Personen' }), profile: 'Profil' };
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
+  more: (n) => plural('de', n, { one: '{n} weitere Person', other: '{n} weitere Personen' }),
+  profile: 'Profil',
+};
 
 const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Menüleiste',
@@ -798,7 +985,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Denkt nach' };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
-  feedback: { like: 'Gute Antwort', dislike: 'Schlechte Antwort', copy: 'Antwort kopieren', copied: 'Kopiert!' },
+  feedback: {
+    like: 'Gute Antwort',
+    dislike: 'Schlechte Antwort',
+    copy: 'Antwort kopieren',
+    copied: 'Kopiert!',
+  },
   imageGeneration: {
     generated: 'Bild erstellt',
     generating: 'Bild wird erstellt',
@@ -811,7 +1003,10 @@ const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
     changes: 'Änderungen',
     browser: 'Browser',
     uncommitted: (n) =>
-      plural('de', n, { one: '{n} nicht committete Änderung', other: '{n} nicht committete Änderungen' }),
+      plural('de', n, {
+        one: '{n} nicht committete Änderung',
+        other: '{n} nicht committete Änderungen',
+      }),
     undo: 'Änderungen verwerfen',
     browserPreview: 'Browser-Vorschau',
   },
@@ -905,12 +1100,20 @@ const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
 };
 
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
-  statuses: { reserved: 'Reserviert', sold: 'Verkauft', rented: 'Vermietet', unavailable: 'Nicht verfügbar' },
+  statuses: {
+    reserved: 'Reserviert',
+    sold: 'Verkauft',
+    rented: 'Vermietet',
+    unavailable: 'Nicht verfügbar',
+  },
   originally: (p) => `ursprünglich ${p}`,
   approximateLocation: 'Ungefährer Standort',
   rated: (r) => `Bewertet mit ${r} von 5`,
   ratedWithReviews: (r, c) =>
-    plural('de', c, { one: `Bewertet mit ${r} von 5, ${c} Bewertung`, other: `Bewertet mit ${r} von 5, ${c} Bewertungen` }),
+    plural('de', c, {
+      one: `Bewertet mit ${r} von 5, ${c} Bewertung`,
+      other: `Bewertet mit ${r} von 5, ${c} Bewertungen`,
+    }),
   newListing: 'Neu',
   previousPhoto: 'Vorheriges Foto',
   nextPhoto: 'Nächstes Foto',
@@ -920,7 +1123,8 @@ const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
 
 const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
   states: { 'off-route': 'Route verlassen', rerouting: 'Neue Route wird gesucht' },
-  thenLine: (street, maneuver) => navigationBanner_words('dann', navigationBanner_midSentence(maneuver, 'de'), street),
+  thenLine: (street, maneuver) =>
+    navigationBanner_words('dann', navigationBanner_midSentence(maneuver, 'de'), street),
   laneGuidance: 'Spurassistent',
   laneCount: (n) => plural('de', n, { one: '{n} Fahrspur', other: '{n} Fahrspuren' }),
   laneNumber: (n) => `Spur ${n}`,
@@ -935,7 +1139,11 @@ const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
 };
 
 const LOCATION_PUCK_MESSAGES: Translations['LOCATION_PUCK_MESSAGES'] = {
-  states: { locating: 'Standort wird ermittelt', located: 'Dein Standort', stale: 'Dein letzter bekannter Standort' },
+  states: {
+    locating: 'Standort wird ermittelt',
+    located: 'Dein Standort',
+    stale: 'Dein letzter bekannter Standort',
+  },
   facing: (state, degrees) => `${state}, Blickrichtung ${degrees} Grad`,
 };
 
@@ -948,7 +1156,10 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: 'Folie',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: 'In Bearbeitung', upcoming: 'Ausstehend', failed: 'Fehlgeschlagen' }, status: 'Status' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: 'In Bearbeitung', upcoming: 'Ausstehend', failed: 'Fehlgeschlagen' },
+  status: 'Status',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: 'Neu',
@@ -997,11 +1208,13 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   addressPrecision: {
     exact: {
       title: 'Genaue Adresse',
-      description: 'Die Markierung sitzt auf dem Gebäude. Am besten für Zuhause, die ohnehin leicht zu finden sind.',
+      description:
+        'Die Markierung sitzt auf dem Gebäude. Am besten für Zuhause, die ohnehin leicht zu finden sind.',
     },
     street: {
       title: 'Nur die Straße',
-      description: 'Zeigt die Straße, nicht die Hausnummer. Die genaue Adresse wird nach Buchung oder Unterschrift geteilt.',
+      description:
+        'Zeigt die Straße, nicht die Hausnummer. Die genaue Adresse wird nach Buchung oder Unterschrift geteilt.',
     },
     approximate: {
       title: 'Ungefähre Gegend',
@@ -1023,7 +1236,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   card: 'Karte',
   page: 'Seite',
   previewAs: 'Vorschau als',
-  reviews: (n, shown) => plural('de', n, { one: '{s} Bewertung', other: '{s} Bewertungen' }).replace('{s}', shown),
+  reviews: (n, shown) =>
+    plural('de', n, { one: '{s} Bewertung', other: '{s} Bewertungen' }).replace('{s}', shown),
 };
 
 const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
@@ -1057,7 +1271,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: 'Vegetarisch', vegan: 'Vegan', 'gluten-free': 'Glutenfrei', 'dairy-free': 'Laktosefrei', halal: 'Halal', kosher: 'Koscher' },
+  diets: {
+    vegetarian: 'Vegetarisch',
+    vegan: 'Vegan',
+    'gluten-free': 'Glutenfrei',
+    'dairy-free': 'Laktosefrei',
+    halal: 'Halal',
+    kosher: 'Koscher',
+  },
   spicy: 'Scharf',
   spiceOf: (label, level, max) => `${label} ${level} von ${max}`,
   originally: (price, original) => `${price}, statt ${original}`,
@@ -1078,7 +1299,11 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `Zu Seite ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'Lead-Score', factors: 'Woraus er sich zusammensetzt', bands: { cold: 'Kalt', warm: 'Warm', hot: 'Heiß' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: 'Lead-Score',
+  factors: 'Woraus er sich zusammensetzt',
+  bands: { cold: 'Kalt', warm: 'Warm', hot: 'Heiß' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Auto', transit: 'ÖPNV', walk: 'Zu Fuß', cycle: 'Fahrrad' },
@@ -1176,7 +1401,8 @@ const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
     loading: 'Aufträge werden geladen',
   },
   emptyTitle: 'Gerade keine Aufträge',
-  emptyDescription: 'Nichts passt zu deiner Suche. Erweitere einen Filter oder aktualisiere in einer Minute erneut.',
+  emptyDescription:
+    'Nichts passt zu deiner Suche. Erweitere einen Filter oder aktualisiere in einer Minute erneut.',
   list: 'Aufträge',
   payDetailsFor: (load) => `Vergütung für ${load}`,
   route: (pickup, dropoff) => `${pickup} und ${dropoff}`,
@@ -1198,7 +1424,8 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   chat: {
     newChat: 'Neuer Chat',
     emptyTitle: 'Wobei kann ich helfen?',
-    emptyDescription: 'Dieser Chat läuft mit deinem eigenen API-Schlüssel. Der Verlauf bleibt in diesem Browser.',
+    emptyDescription:
+      'Dieser Chat läuft mit deinem eigenen API-Schlüssel. Der Verlauf bleibt in diesem Browser.',
     thinking: 'Denkt nach',
     error: 'Etwas ist schiefgelaufen. Prüfe die Serverprotokolle und versuche es dann erneut.',
     suggestions: [
@@ -1251,10 +1478,18 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     hours: (n) => plural('de', n, { one: 'vor {n} Stunde', other: 'vor {n} Stunden' }),
     days: (n) => plural('de', n, { one: 'vor {n} Tag', other: 'vor {n} Tagen' }),
   },
-  age: { now: 'jetzt', minutes: (n) => `${n} Min.`, hours: (n) => `${n} Std.`, days: (n) => `${n} T.` },
+  age: {
+    now: 'jetzt',
+    minutes: (n) => `${n} Min.`,
+    hours: (n) => `${n} Std.`,
+    days: (n) => `${n} T.`,
+  },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: 'Quellen', working: 'Arbeitet' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: 'Quellen',
+  working: 'Arbeitet',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: 'An',
@@ -1265,7 +1500,8 @@ const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   forward: 'Weiterleiten',
   more: COMMON_MESSAGES.more,
   moreAddresses: (n) => `${n} weitere`,
-  earlierMessages: (n) => plural('de', n, { one: '{n} frühere Nachricht', other: '{n} frühere Nachrichten' }),
+  earlierMessages: (n) =>
+    plural('de', n, { one: '{n} frühere Nachricht', other: '{n} frühere Nachrichten' }),
   showTrimmed: 'Gekürzten Inhalt anzeigen',
   hideTrimmed: 'Gekürzten Inhalt ausblenden',
   unread: 'Ungelesen',
@@ -1341,14 +1577,28 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   ringItem: (label, value, pct) => `${label} ${value}, ${pct} % des Ziels`,
   scoreOf: (score, max) => `${score} von ${max}`,
   activityFor: (name, day) => `Aktivität am ${day}. ${name}`,
-  contributions: (n, date) => { const on = date ? ` am ${date}` : ''; return n === 0 ? `Keine Beiträge${on}` : plural('de', n, { one: `{n} Beitrag${on}`, other: `{n} Beiträge${on}` }); },
+  contributions: (n, date) => {
+    const on = date ? ` am ${date}` : '';
+    return n === 0
+      ? `Keine Beiträge${on}`
+      : plural('de', n, { one: `{n} Beitrag${on}`, other: `{n} Beiträge${on}` });
+  },
 };
 
-const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'Code kopieren', copied: 'Code kopiert' };
+const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
+  copy: 'Code kopieren',
+  copied: 'Code kopiert',
+};
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'Auf dieser Seite', progress: (at, of) => `Überschrift ${at} von ${of}` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: 'Auf dieser Seite',
+  progress: (at, of) => `Überschrift ${at} von ${of}`,
+};
 
-const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'Verringern', increase: 'Erhöhen' };
+const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
+  decrease: 'Verringern',
+  increase: 'Erhöhen',
+};
 
 const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   status: {
@@ -1377,7 +1627,8 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
     minimise: 'Anruf minimieren',
     chat: 'Chat öffnen',
     participants: 'Teilnehmer',
-    movePip: (c) => `Eigenes Bild verschieben (jetzt ${callUi_corner(CALL_UI_MESSAGES__CORNERS, c)})`,
+    movePip: (c) =>
+      `Eigenes Bild verschieben (jetzt ${callUi_corner(CALL_UI_MESSAGES__CORNERS, c)})`,
   },
   pipCorners: CALL_UI_MESSAGES__CORNERS,
   history: {
@@ -1405,7 +1656,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, stummgeschaltet`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: 'Neueinstellungen' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: 'Neueinstellungen',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Entwurf:',
@@ -1426,9 +1679,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: 'E-Mail',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: 'Wichtige Hinweise', thisWeek: 'diese Woche' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: 'Wichtige Hinweise',
+  thisWeek: 'diese Woche',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `Über ${label}`, fromLastMonth: 'Gegenüber Vormonat' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `Über ${label}`,
+  fromLastMonth: 'Gegenüber Vormonat',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1467,8 +1726,18 @@ const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
 };
 
 const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
-  leasePaymentStatus: { upcoming: 'Anstehend', due: 'Bald fällig', overdue: 'Überfällig', paid: 'Bezahlt' },
-  rentPaymentStatus: { paid: 'Bezahlt', pending: 'Ausstehend', overdue: 'Überfällig', partial: 'Teilweise' },
+  leasePaymentStatus: {
+    upcoming: 'Anstehend',
+    due: 'Bald fällig',
+    overdue: 'Überfällig',
+    paid: 'Bezahlt',
+  },
+  rentPaymentStatus: {
+    paid: 'Bezahlt',
+    pending: 'Ausstehend',
+    overdue: 'Überfällig',
+    partial: 'Teilweise',
+  },
   maintenanceCategory: {
     plumbing: 'Sanitär',
     electrical: 'Elektrik',
@@ -1476,9 +1745,23 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     heating: 'Heizung',
     other: 'Sonstiges',
   },
-  maintenancePriority: { low: 'Niedrige Priorität', medium: 'Mittlere Priorität', high: 'Hohe Priorität', urgent: 'Dringend' },
-  maintenanceStage: { reported: 'Gemeldet', acknowledged: 'Bestätigt', scheduled: 'Terminiert', resolved: 'Erledigt' },
-  documentStatus: { signed: 'Unterschrieben', pending: 'Unterschrift ausstehend', expired: 'Abgelaufen' },
+  maintenancePriority: {
+    low: 'Niedrige Priorität',
+    medium: 'Mittlere Priorität',
+    high: 'Hohe Priorität',
+    urgent: 'Dringend',
+  },
+  maintenanceStage: {
+    reported: 'Gemeldet',
+    acknowledged: 'Bestätigt',
+    scheduled: 'Terminiert',
+    resolved: 'Erledigt',
+  },
+  documentStatus: {
+    signed: 'Unterschrieben',
+    pending: 'Unterschrift ausstehend',
+    expired: 'Abgelaufen',
+  },
   timelineState: { complete: 'Erledigt', current: 'In Bearbeitung', upcoming: 'Noch offen' },
   leasePeriod: 'Mietdauer',
   monthlyRent: 'Monatsmiete',
@@ -1487,7 +1770,13 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
   paidThisYear: 'Dieses Jahr bezahlt',
   outstanding: 'Offen',
   noPayments: 'Noch keine Zahlungen',
-  columns: { month: 'Monat', dueDate: 'Fälligkeit', method: 'Zahlungsart', amount: 'Betrag', status: 'Status' },
+  columns: {
+    month: 'Monat',
+    dueDate: 'Fälligkeit',
+    method: 'Zahlungsart',
+    amount: 'Betrag',
+    status: 'Status',
+  },
   downloadReceipt: (month) => `Beleg für ${month} herunterladen`,
   dueOn: (date) => `Fällig am ${date}`,
   comments: (n) => plural('de', n, { one: '{n} Kommentar', other: '{n} Kommentare' }),
@@ -1507,7 +1796,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Normal', sm: 'Kompakt' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: 'Etwas ist schiefgelaufen', message: 'Ein unerwarteter Fehler ist aufgetreten', retry: 'Erneut versuchen' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: 'Etwas ist schiefgelaufen',
+  message: 'Ein unerwarteter Fehler ist aufgetreten',
+  retry: 'Erneut versuchen',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: 'Beiträge in diesem Jahr',
@@ -1573,7 +1866,8 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
   selectOneOrMore: 'Eine oder mehrere wählen',
   correctAnswer: 'richtige Antwort',
   yourAnswer: 'deine Antwort',
-  votes: (n) => (n === 0 ? 'Keine Stimmen' : plural('de', n, { one: '{n} Stimme', other: '{n} Stimmen' })),
+  votes: (n) =>
+    n === 0 ? 'Keine Stimmen' : plural('de', n, { one: '{n} Stimme', other: '{n} Stimmen' }),
   sticker: 'Sticker',
 };
 
@@ -1582,7 +1876,8 @@ const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
   stalledFor: (duration) => `Stockt seit ${duration}`,
   move: (title) => `${title} verschieben`,
   stages: 'Pipeline-Phasen',
-  stageWithCount: (name, n) => `${name}, ${plural('de', n, { one: '{n} Deal', other: '{n} Deals' })}`,
+  stageWithCount: (name, n) =>
+    `${name}, ${plural('de', n, { one: '{n} Deal', other: '{n} Deals' })}`,
   empty: 'Keine Deals in dieser Phase',
   loadMore: 'Mehr laden',
 };
@@ -1635,7 +1930,8 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
       switchAction: 'Neuen Code senden',
     },
   },
-  codeSentTo: (email) => `Gib den Code ein, den wir an ${email} gesendet haben, um die Anmeldung abzuschließen.`,
+  codeSentTo: (email) =>
+    `Gib den Code ein, den wir an ${email} gesendet haben, um die Anmeldung abzuschließen.`,
   verificationCode: 'Bestätigungscode',
   fullName: 'Vollständiger Name',
   namePlaceholder: 'Erika Mustermann',
@@ -1649,7 +1945,8 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   confirmPasswordPlaceholder: 'Passwort wiederholen',
   rememberMe: 'Angemeldet bleiben',
   forgotPassword: 'Passwort vergessen?',
-  terms: 'Mit der Erstellung eines Kontos stimmst du unseren Nutzungsbedingungen und unserer Datenschutzerklärung zu.',
+  terms:
+    'Mit der Erstellung eines Kontos stimmst du unseren Nutzungsbedingungen und unserer Datenschutzerklärung zu.',
   orContinueWith: 'oder weiter mit',
 };
 
@@ -1686,7 +1983,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: 'Anruf', email: 'E-Mail', meeting: 'Meeting', note: 'Notiz', 'stage-change': 'Phasenwechsel', task: 'Aufgabe erledigt' },
+  kinds: {
+    call: 'Anruf',
+    email: 'E-Mail',
+    meeting: 'Meeting',
+    note: 'Notiz',
+    'stage-change': 'Phasenwechsel',
+    task: 'Aufgabe erledigt',
+  },
   empty: 'Noch keine Aktivitäten erfasst',
   loggedBy: (name) => `Erfasst von ${name}`,
   filterActivity: 'Aktivitäten filtern',
@@ -1721,7 +2025,8 @@ const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'Privat', shared: 'Geteilt', public: 'Öffentlich' },
   places: (n) => plural('de', n, { one: '{n} Ort', other: '{n} Orte' }),
-  sharedWith: (n) => plural('de', n, { one: 'Geteilt mit {n} Person', other: 'Geteilt mit {n} Personen' }),
+  sharedWith: (n) =>
+    plural('de', n, { one: 'Geteilt mit {n} Person', other: 'Geteilt mit {n} Personen' }),
   labels: {
     moveEarlier: (position) => `An Position ${position - 1} verschieben`,
     moveLater: (position) => `An Position ${position + 1} verschieben`,
@@ -1762,7 +2067,12 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
     asap: 'So bald wie möglich',
     contractLength: 'Vertragslaufzeit',
   },
-  contractLengths: { any: 'Beliebig', short: '1–6 Monate', medium: '6–12 Monate', long: 'Über 1 Jahr' },
+  contractLengths: {
+    any: 'Beliebig',
+    short: '1–6 Monate',
+    medium: '6–12 Monate',
+    long: 'Über 1 Jahr',
+  },
   saveSearch: 'Suche speichern',
   saved: 'Gespeichert',
   newCount: (n) => plural('de', n, { one: '{n} neues', other: '{n} neue' }),
@@ -1770,13 +2080,31 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
   actionOn: (action, subject) => `${action}: ${subject}`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: 'Zu vermieten', sale: 'Zu verkaufen', short_term_rent: 'Ferienwohnung', exchange: 'Tausch' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: 'Zu vermieten',
+    sale: 'Zu verkaufen',
+    short_term_rent: 'Ferienwohnung',
+    exchange: 'Tausch',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: 'Maßstab', mapData: 'Kartendaten' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: 'Maßstab',
+  mapData: 'Kartendaten',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: 'Minimalwert', maximum: 'Maximalwert', value: (n) => `Wert ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: 'Minimalwert',
+  maximum: 'Maximalwert',
+  value: (n) => `Wert ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'Option auswählen', scrollUp: 'Nach oben scrollen', scrollDown: 'Nach unten scrollen' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: 'Option auswählen',
+  scrollUp: 'Nach oben scrollen',
+  scrollDown: 'Nach unten scrollen',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: 'Medienansicht schließen',
@@ -1786,12 +2114,22 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
   share: 'Medien teilen',
 };
 
-const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: 'Benachrichtigung schließen' };
+const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = {
+  dismiss: 'Benachrichtigung schließen',
+};
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: 'Telefonnummer', countryCode: 'Ländervorwahl' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: 'Telefonnummer',
+  countryCode: 'Ländervorwahl',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: 'Lieferzeit', deliveryFee: 'Liefergebühr', distance: 'Entfernung', minimumOrder: 'Mindestbestellwert' },
+  facts: {
+    deliveryTime: 'Lieferzeit',
+    deliveryFee: 'Liefergebühr',
+    distance: 'Entfernung',
+    minimumOrder: 'Mindestbestellwert',
+  },
   availability: { paused: 'Pausiert', closed: 'Geschlossen' },
   new: 'Neu',
   rated: (value, reviews) =>
@@ -1800,9 +2138,16 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'Online', idle: 'Abwesend', offline: 'Offline', busy: 'Beschäftigt' },
-  status: { sending: 'Wird gesendet…', sent: 'Gesendet', delivered: 'Zugestellt', read: 'Gelesen', failed: 'Nicht gesendet' },
+  status: {
+    sending: 'Wird gesendet…',
+    sent: 'Gesendet',
+    delivered: 'Zugestellt',
+    read: 'Gelesen',
+    failed: 'Nicht gesendet',
+  },
   unread: 'Ungelesen',
-  unreadCount: (n) => plural('de', n, { one: '{n} ungelesene Nachricht', other: '{n} ungelesene Nachrichten' }),
+  unreadCount: (n) =>
+    plural('de', n, { one: '{n} ungelesene Nachricht', other: '{n} ungelesene Nachrichten' }),
 };
 
 const MEDIA_CONTROLS_MESSAGES: Translations['MEDIA_CONTROLS_MESSAGES'] = {
@@ -1881,7 +2226,11 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
 
 const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: 'Suchanfrage löschen' };
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `${t} entfernen`, full: (n) => `Maximal ${n}`, suggestions: 'Vorschläge' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `${t} entfernen`,
+  full: (n) => `Maximal ${n}`,
+  suggestions: 'Vorschläge',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -1907,7 +2256,12 @@ const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
     accessible: 'Barrierefrei',
     storage: 'Abstellraum',
   },
-  floors: { ground: 'Erdgeschoss', middle: 'Mittlere Etage', top: 'Oberste Etage', elevator: 'Mit Aufzug' },
+  floors: {
+    ground: 'Erdgeschoss',
+    middle: 'Mittlere Etage',
+    top: 'Oberste Etage',
+    elevator: 'Mit Aufzug',
+  },
   minimum: 'Mindestens',
   maximum: 'Höchstens',
   priceRange: 'Preisspanne',
@@ -1949,7 +2303,11 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     fileName: 'Dateiname',
     uploadedOn: 'Hochgeladen am',
     fileSize: 'Dateigröße',
-    sortBy: { name: 'Nach Dateiname sortieren', uploadedAt: 'Nach Upload-Datum sortieren', size: 'Nach Dateigröße sortieren' },
+    sortBy: {
+      name: 'Nach Dateiname sortieren',
+      uploadedAt: 'Nach Upload-Datum sortieren',
+      size: 'Nach Dateigröße sortieren',
+    },
     selectFile: (name) => `${name} auswählen`,
     deleteFile: 'Datei löschen',
     deleteNamed: (name) => `${name} löschen`,
@@ -1986,7 +2344,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     teamServersDescription: 'Im Dashboard konfiguriert',
     manage: 'Verwalten',
     noTeamServers: 'Keine Team-MCP-Server',
-    noTeamServersBody: 'Konfiguriere MCP-Server im Dashboard, um sie auf dem Desktop und in der Cloud verfügbar zu machen.',
+    noTeamServersBody:
+      'Konfiguriere MCP-Server im Dashboard, um sie auf dem Desktop und in der Cloud verfügbar zu machen.',
     configureTeam: 'Team-MCP-Server konfigurieren',
     pluginServers: 'Plugin-MCP-Server',
   },
@@ -2017,26 +2376,53 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   checkAvailability: 'Verfügbarkeit prüfen',
   notChargedYet: 'Noch wird dir nichts berechnet',
   total: 'Gesamt',
-  tripStatus: { confirmed: 'Bestätigt', pending: 'Ausstehend', cancelled: 'Storniert', completed: 'Abgeschlossen' },
-  priceName: booking_priceName((p, u) => `${p} pro ${u}`, (s, o) => `${s}, vorher ${o}`),
+  tripStatus: {
+    confirmed: 'Bestätigt',
+    pending: 'Ausstehend',
+    cancelled: 'Storniert',
+    completed: 'Abgeschlossen',
+  },
+  priceName: booking_priceName(
+    (p, u) => `${p} pro ${u}`,
+    (s, o) => `${s}, vorher ${o}`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'Kontextfenster', freeSpace: 'Freier Platz', planUsageLimits: 'Nutzungslimits des Tarifs', managePlan: 'Tarif verwalten' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: 'Kontextfenster',
+  freeSpace: 'Freier Platz',
+  planUsageLimits: 'Nutzungslimits des Tarifs',
+  managePlan: 'Tarif verwalten',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'Aktionen schließen',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'Profilfoto hinzufügen' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: 'Profilfoto hinzufügen',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'Design', darkMode: 'Dunkelmodus', lightMode: 'Hellmodus', useDarkMode: 'Dunkelmodus verwenden', useLightMode: 'Hellmodus verwenden' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: 'Design',
+  darkMode: 'Dunkelmodus',
+  lightMode: 'Hellmodus',
+  useDarkMode: 'Dunkelmodus verwenden',
+  useLightMode: 'Hellmodus verwenden',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: 'Verdient',
   period: 'Zeitraum der Einnahmen',
   breakdown: 'Woher es kommt',
   payout: 'Nächste Auszahlung',
-  payoutState: { scheduled: 'Geplant', processing: 'Unterwegs', paid: 'Ausgezahlt', held: 'Zurückgehalten', failed: 'Fehlgeschlagen' },
+  payoutState: {
+    scheduled: 'Geplant',
+    processing: 'Unterwegs',
+    paid: 'Ausgezahlt',
+    held: 'Zurückgehalten',
+    failed: 'Fehlgeschlagen',
+  },
   chart: (label) => `Einnahmen ${label}, nach Zeitraum`,
   empty: 'Noch nichts verdient',
   earnings: 'Einnahmen',
@@ -2062,7 +2448,8 @@ const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
     submit: 'Zustellung bestätigen',
     required: 'Erforderlich',
     missing: 'Das wird benötigt, bevor du bestätigen kannst.',
-    missingSummary: (n) => plural('de', n, { one: 'Eine Angabe fehlt noch', other: '{n} Angaben fehlen noch' }),
+    missingSummary: (n) =>
+      plural('de', n, { one: 'Eine Angabe fehlt noch', other: '{n} Angaben fehlen noch' }),
   },
   proofOfDelivery: 'Zustellnachweis',
 };
@@ -2121,9 +2508,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: 'Weitere Formatierung', moreMenu: 'Weitere Formatierung' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'Filter', showAll: 'Alle anzeigen' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: 'Filter',
+  showAll: 'Alle anzeigen',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: 'Vorherige Kategorien', next: 'Nächste Kategorien' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: 'Vorherige Kategorien',
+  next: 'Nächste Kategorien',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2145,12 +2538,17 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     loading: 'Angebote werden geladen',
   },
   emptyTitle: 'Noch keine Angebote',
-  emptyDescription: 'Spediteure sehen sich deinen Auftrag an. Die ersten Angebote kommen meist innerhalb weniger Minuten.',
+  emptyDescription:
+    'Spediteure sehen sich deinen Auftrag an. Die ersten Angebote kommen meist innerhalb weniger Minuten.',
   list: 'Angebote',
   priceDetailsFor: (name) => `Preisdetails für ${name}`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'Passwort anzeigen', hidePassword: 'Passwort verbergen', required: 'erforderlich' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: 'Passwort anzeigen',
+  hidePassword: 'Passwort verbergen',
+  required: 'erforderlich',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: 'Anrufen',
@@ -2248,252 +2646,272 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "Änderungen speichern" : "Chat starten" + (count ? ' · ' + plural('de', count, {"one": "{n} Agent", "other": "{n} Agenten"}) : ''),
-  you: "Du",
-  responseFailed: "{0} konnte nicht antworten. Bitte versuche es erneut.",
-  editAgentTitle: "Agent bearbeiten",
-  aLittleHelp: "Ein wenig Hilfe",
-  aFewMindsOneConversation: "Ein paar Köpfe. Ein Gespräch.",
-  aLittleRoomForSomethingNew: "Ein bisschen Platz für etwas Neues",
-  accountDetails: "Kontodetails",
-  add: "Hinzufügen",
-  add2: "{0} hinzufügen",
-  added: "Hinzugefügt",
-  addedToYourWorkspace: "Zu Ihrem Arbeitsbereich hinzugefügt",
-  agent: "Makler",
-  agentConversation: "Agentengespräch",
-  appearance: "Aussehen",
-  apps: "Apps · {0}",
-  availability: "Verfügbarkeit",
-  backToMarketplace: "Zurück zum Marktplatz",
-  billing: "Abrechnung",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "Bots",
-  bringYourAgentsIntoOneChat: "Bringen Sie Ihre Agenten in einen Chat.",
-  category: "Kategorie",
-  chatActions: "Chat-Aktionen",
-  chatList: "Chat-Liste",
-  chatName: "Chatname",
-  chatRemoved: "Chat entfernt",
-  chatWithYourAgents: "Chatten Sie mit Ihren Agenten",
-  chooseAnAgentOrCreateYourOwn: "Wählen Sie einen Agenten oder erstellen Sie Ihren eigenen, um ein Gespräch zu beginnen.",
-  chooseWhoSJoiningTheConversation: "Wählen Sie aus, wer an der Unterhaltung teilnimmt.",
-  chooseYourTeammates: "Wählen Sie Ihre Teamkollegen",
-  closeMarketplace: "Marktplatz schließen",
-  closeSearch: "Suche schließen",
-  company: "Unternehmen",
-  companyDetails: "Firmendetails",
-  completionSound: "Abschlussgeräusch",
-  connectedAccount: "Verbundenes Konto",
-  connector: "-Anschluss",
-  conversationIDCopied: "Konversations-ID kopiert",
-  conversationCopied: "Konversation kopiert",
-  conversationOptions: "Gesprächsoptionen",
-  conversations: "Gespräche",
-  copied: "Kopiert",
-  copyConversation: "Konversation kopieren",
-  copyConversationID: "Konversations-ID kopieren",
-  copyResponse: "Antwort kopieren",
-  couldnTCopyPleaseTryAgain: "Konnte nicht kopiert werden. Bitte versuchen Sie es erneut.",
-  create: "Erstellen",
-  createANewBot: "Erstellen Sie einen neuen Bot",
-  createBotOrChat: "Bot oder Chat erstellen",
-  criticalRequests: "Kritische Anfragen",
-  customize: "Anpassen",
-  customizeANewTeammate: "Passen Sie einen neuen Teamkollegen an.",
-  dateOfBirth: "Geburtsdatum",
-  demoIntegrationAddingSavesItToThis: "Demo-Integration. Durch das Hinzufügen wird es in diesem Browser gespeichert. Es ist kein externes Konto verbunden.",
-  desktopApp: "Desktop-App",
-  details: "Details",
-  developer: "Entwickler",
-  deviceID: "Geräte-ID",
-  discover: "Entdecken",
-  dispatchAlerts: "Versandwarnungen",
-  editConversationAgents: "Gesprächsagenten bearbeiten",
-  editBot: "Bot bearbeiten",
-  editGroup: "Gruppe bearbeiten",
-  editAgent: "Bearbeiten {0}",
-  email: "E-Mail",
-  everydayEssentials: "Das Wesentliche für den Alltag",
-  exploreMarketplace: "Entdecken Sie den Marktplatz",
-  explorePlugins: "Entdecken Sie Plugins",
-  explorePluginsAndBotsToBuildYour: "Entdecken Sie Plugins und Bots, um Ihr Team aufzubauen.",
-  findYourNextTeammate: "Finden Sie Ihren nächsten Teamkollegen",
-  findYourNextToolOrTeammate: "Finden Sie Ihr nächstes Werkzeug oder Ihren nächsten Teamkollegen",
-  firstName: "Vorname",
-  folders: "Ordner",
-  general: "Allgemein",
-  getNotifiedWhenTheModeNeedsTo: "Lassen Sie sich benachrichtigen, wenn der Modus eine kritische Entscheidung treffen muss",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "Hilfreiche Antwort",
-  inTheBrowser: "Im Browser",
-  inThisConversation: "In diesem Gespräch",
-  includes: "Beinhaltet",
-  insideTheApp: "In der App",
-  installed: "Installiert",
-  integrations: "Integrationen",
-  iLlApproachThisFromThePerspective: "Ich werde dies aus der Perspektive von {0} angehen.",
-  lastName: "Nachname",
-  limits: "Grenzen",
-  logOutFromAllDevices: "Melden Sie sich von allen Geräten ab",
-  logout: "Abmelden",
-  manage: "Verwalten",
-  manageLimits: "Limits verwalten",
-  marketplace: "Marktplatz",
-  marketplaceLinkCopied: "Marktplatz-Link kopiert",
-  marketplaceListings: "Marktplatzeinträge",
-  meetYourNextTeammate: "Treffen Sie Ihren nächsten Teamkollegen",
-  messages: "Nachrichten",
-  noConversationsFound: "Keine Gespräche gefunden.",
-  noMatchesYet: "Noch keine Treffer",
-  notifications: "Benachrichtigungen",
-  openConversations: "Offene Gespräche",
-  openPullRequestLinksInsideYourApp: "Öffnen Sie Pull-Request-Links in Ihrer App",
-  openTheMarketplaceToExplorePluginsAnd: "Öffnen Sie den Marktplatz, um Plugins und Bots zu erkunden. Verwenden Sie das Menü einer Konversation, um das Erscheinungsbild und die Details des Bots zu bearbeiten. Wählen Sie einen Ausdruck aus dem Emotionsrad. Scrollen oder ziehen Sie den Formbogen oder verwenden Sie die Pfeiltasten, um die Formen zu erkunden.",
-  prDestination: "PR-Ziel",
-  people: "Personen",
-  personal: "Persönlich",
-  pinChat: "Pin-Chat",
-  pinnedChat: "Angepinnter Chat",
-  plugins: "Plugins",
-  profile: "Profil",
-  public: "Öffentlich",
-  publicProfile: "Öffentliches Profil",
-  pullRequests: "Pull-Anfragen",
-  pushNotificationOnYourPhoneWhenThe: "Push-Benachrichtigung auf Ihrem Telefon, wenn die App Ihnen eine Nachricht sendet",
-  remove: "Entfernen",
-  removeChat: "Chat entfernen",
-  renameChat: "Chat umbenennen",
-  responseCopied: "Antwort kopiert",
-  reviewProvider: "Bewertungsanbieter",
-  rulesAndWorkflows: "Regeln und Arbeitsabläufe",
-  saveName: "Name speichern",
-  sayHelloTo: "Sag Hallo zu {0}",
-  searchConversations: "Gespräche durchsuchen",
-  searchConversations2: "Konversationen durchsuchen…",
-  searchMarketplace: "Marktplatz durchsuchen",
-  selectGithubOrOtherProvidersForReviews: "Wählen Sie Github oder andere Anbieter für Bewertungen aus",
-  selectedAgents: "Ausgewählte Agenten: {0}",
-  sendWithEnterUseShiftEnterFor: "Senden mit Enter. Verwenden Sie Umschalt + Eingabetaste für eine neue Zeile. Ihre Änderungen bleiben in diesem Browser erhalten.",
-  settings: "Einstellungen",
-  share: "Teilen",
-  showFundamentalNotificationsWhenAnAgentCompletes: "Grundlegende Benachrichtigungen anzeigen, wenn ein Agent eine Aufgabe abschließt",
-  signOut: "Abmelden",
-  skills: "Fähigkeiten",
-  skills2: "Fähigkeiten · {0}",
-  soundEffectATaskIsCompleted: "Soundeffekt eine Aufgabe ist abgeschlossen",
-  startAConversation: "Beginnen Sie ein Gespräch",
-  startAGroupChat: "Starten Sie einen Gruppenchat",
-  startChat: "Chat starten",
-  storage: "Lagerung",
-  support: "Unterstützung",
-  systemNotifications: "Systembenachrichtigungen",
-  thinkingTogether: "Gemeinsam denken…",
-  thinking: "Nachdenken…",
-  today: "Heute",
-  tools: "Werkzeuge",
-  toolsForYourWorkflow: "Tools für Ihren Workflow",
-  tryAnotherNameCategoryOrKeyword: "Versuchen Sie es mit einem anderen Namen, einer anderen Kategorie oder einem anderen Schlüsselwort.",
-  ultra149Mo: "Ultra 149 $/Monat",
-  unhelpfulResponse: "Nicht hilfreiche Antwort",
-  unpinChat: "Chat lösen",
-  upgradeToMax: "Auf Max upgraden",
-  useToCreateABotOrStart: "Verwenden Sie +, um einen Bot zu erstellen oder eine Konversation mit mehreren Agenten zu beginnen.",
-  viewAdded: "Ansicht hinzugefügt {0}",
-  viewAll: "Alle anzeigen",
-  viewTeamProfile: "Teamprofil anzeigen",
-  viewItem: "Anzeigen {0}",
-  website: "Website",
-  whenEnabledYourProfilePageWillBe: "Wenn diese Option aktiviert ist, ist Ihre Profilseite für jeden sichtbar",
-  youAreOn7xMoreUsageThan: "Sie nutzen 7x mehr als Premium",
-  youAreOn7xMoreUsageThan2: "Sie nutzen 7x mehr als normal.",
-  areHereSendAMessageToGet: "{0} sind hier. Senden Sie eine Nachricht, um die Meinung aller zu erfahren.",
-  itemDetails: "{0} Details",
-  agentThinking: "{0} denkt",
-  by: "{0} · von {1}",
-  results: (count: number) => plural('de', count, {"one": "{n} Ergebnis", "other": "{n} Ergebnisse"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('de', apps, {"one": "{n} App", "other": "{n} Apps"}) + ", " : '') + plural('de', skills, {"one": "{n} Fähigkeit", "other": "{n} Fähigkeiten"}),
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? 'Änderungen speichern'
+      : 'Chat starten' +
+        (count ? ' · ' + plural('de', count, { one: '{n} Agent', other: '{n} Agenten' }) : ''),
+  you: 'Du',
+  responseFailed: '{0} konnte nicht antworten. Bitte versuche es erneut.',
+  editAgentTitle: 'Agent bearbeiten',
+  aLittleHelp: 'Ein wenig Hilfe',
+  aFewMindsOneConversation: 'Ein paar Köpfe. Ein Gespräch.',
+  aLittleRoomForSomethingNew: 'Ein bisschen Platz für etwas Neues',
+  accountDetails: 'Kontodetails',
+  add: 'Hinzufügen',
+  add2: '{0} hinzufügen',
+  added: 'Hinzugefügt',
+  addedToYourWorkspace: 'Zu Ihrem Arbeitsbereich hinzugefügt',
+  agent: 'Makler',
+  agentConversation: 'Agentengespräch',
+  appearance: 'Aussehen',
+  apps: 'Apps · {0}',
+  availability: 'Verfügbarkeit',
+  backToMarketplace: 'Zurück zum Marktplatz',
+  billing: 'Abrechnung',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: 'Bots',
+  bringYourAgentsIntoOneChat: 'Bringen Sie Ihre Agenten in einen Chat.',
+  category: 'Kategorie',
+  chatActions: 'Chat-Aktionen',
+  chatList: 'Chat-Liste',
+  chatName: 'Chatname',
+  chatRemoved: 'Chat entfernt',
+  chatWithYourAgents: 'Chatten Sie mit Ihren Agenten',
+  chooseAnAgentOrCreateYourOwn:
+    'Wählen Sie einen Agenten oder erstellen Sie Ihren eigenen, um ein Gespräch zu beginnen.',
+  chooseWhoSJoiningTheConversation: 'Wählen Sie aus, wer an der Unterhaltung teilnimmt.',
+  chooseYourTeammates: 'Wählen Sie Ihre Teamkollegen',
+  closeMarketplace: 'Marktplatz schließen',
+  closeSearch: 'Suche schließen',
+  company: 'Unternehmen',
+  companyDetails: 'Firmendetails',
+  completionSound: 'Abschlussgeräusch',
+  connectedAccount: 'Verbundenes Konto',
+  connector: '-Anschluss',
+  conversationIDCopied: 'Konversations-ID kopiert',
+  conversationCopied: 'Konversation kopiert',
+  conversationOptions: 'Gesprächsoptionen',
+  conversations: 'Gespräche',
+  copied: 'Kopiert',
+  copyConversation: 'Konversation kopieren',
+  copyConversationID: 'Konversations-ID kopieren',
+  copyResponse: 'Antwort kopieren',
+  couldnTCopyPleaseTryAgain: 'Konnte nicht kopiert werden. Bitte versuchen Sie es erneut.',
+  create: 'Erstellen',
+  createANewBot: 'Erstellen Sie einen neuen Bot',
+  createBotOrChat: 'Bot oder Chat erstellen',
+  criticalRequests: 'Kritische Anfragen',
+  customize: 'Anpassen',
+  customizeANewTeammate: 'Passen Sie einen neuen Teamkollegen an.',
+  dateOfBirth: 'Geburtsdatum',
+  demoIntegrationAddingSavesItToThis:
+    'Demo-Integration. Durch das Hinzufügen wird es in diesem Browser gespeichert. Es ist kein externes Konto verbunden.',
+  desktopApp: 'Desktop-App',
+  details: 'Details',
+  developer: 'Entwickler',
+  deviceID: 'Geräte-ID',
+  discover: 'Entdecken',
+  dispatchAlerts: 'Versandwarnungen',
+  editConversationAgents: 'Gesprächsagenten bearbeiten',
+  editBot: 'Bot bearbeiten',
+  editGroup: 'Gruppe bearbeiten',
+  editAgent: 'Bearbeiten {0}',
+  email: 'E-Mail',
+  everydayEssentials: 'Das Wesentliche für den Alltag',
+  exploreMarketplace: 'Entdecken Sie den Marktplatz',
+  explorePlugins: 'Entdecken Sie Plugins',
+  explorePluginsAndBotsToBuildYour: 'Entdecken Sie Plugins und Bots, um Ihr Team aufzubauen.',
+  findYourNextTeammate: 'Finden Sie Ihren nächsten Teamkollegen',
+  findYourNextToolOrTeammate: 'Finden Sie Ihr nächstes Werkzeug oder Ihren nächsten Teamkollegen',
+  firstName: 'Vorname',
+  folders: 'Ordner',
+  general: 'Allgemein',
+  getNotifiedWhenTheModeNeedsTo:
+    'Lassen Sie sich benachrichtigen, wenn der Modus eine kritische Entscheidung treffen muss',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: 'Hilfreiche Antwort',
+  inTheBrowser: 'Im Browser',
+  inThisConversation: 'In diesem Gespräch',
+  includes: 'Beinhaltet',
+  insideTheApp: 'In der App',
+  installed: 'Installiert',
+  integrations: 'Integrationen',
+  iLlApproachThisFromThePerspective: 'Ich werde dies aus der Perspektive von {0} angehen.',
+  lastName: 'Nachname',
+  limits: 'Grenzen',
+  logOutFromAllDevices: 'Melden Sie sich von allen Geräten ab',
+  logout: 'Abmelden',
+  manage: 'Verwalten',
+  manageLimits: 'Limits verwalten',
+  marketplace: 'Marktplatz',
+  marketplaceLinkCopied: 'Marktplatz-Link kopiert',
+  marketplaceListings: 'Marktplatzeinträge',
+  meetYourNextTeammate: 'Treffen Sie Ihren nächsten Teamkollegen',
+  messages: 'Nachrichten',
+  noConversationsFound: 'Keine Gespräche gefunden.',
+  noMatchesYet: 'Noch keine Treffer',
+  notifications: 'Benachrichtigungen',
+  openConversations: 'Offene Gespräche',
+  openPullRequestLinksInsideYourApp: 'Öffnen Sie Pull-Request-Links in Ihrer App',
+  openTheMarketplaceToExplorePluginsAnd:
+    'Öffnen Sie den Marktplatz, um Plugins und Bots zu erkunden. Verwenden Sie das Menü einer Konversation, um das Erscheinungsbild und die Details des Bots zu bearbeiten. Wählen Sie einen Ausdruck aus dem Emotionsrad. Scrollen oder ziehen Sie den Formbogen oder verwenden Sie die Pfeiltasten, um die Formen zu erkunden.',
+  prDestination: 'PR-Ziel',
+  people: 'Personen',
+  personal: 'Persönlich',
+  pinChat: 'Pin-Chat',
+  pinnedChat: 'Angepinnter Chat',
+  plugins: 'Plugins',
+  profile: 'Profil',
+  public: 'Öffentlich',
+  publicProfile: 'Öffentliches Profil',
+  pullRequests: 'Pull-Anfragen',
+  pushNotificationOnYourPhoneWhenThe:
+    'Push-Benachrichtigung auf Ihrem Telefon, wenn die App Ihnen eine Nachricht sendet',
+  remove: 'Entfernen',
+  removeChat: 'Chat entfernen',
+  renameChat: 'Chat umbenennen',
+  responseCopied: 'Antwort kopiert',
+  reviewProvider: 'Bewertungsanbieter',
+  rulesAndWorkflows: 'Regeln und Arbeitsabläufe',
+  saveName: 'Name speichern',
+  sayHelloTo: 'Sag Hallo zu {0}',
+  searchConversations: 'Gespräche durchsuchen',
+  searchConversations2: 'Konversationen durchsuchen…',
+  searchMarketplace: 'Marktplatz durchsuchen',
+  selectGithubOrOtherProvidersForReviews:
+    'Wählen Sie Github oder andere Anbieter für Bewertungen aus',
+  selectedAgents: 'Ausgewählte Agenten: {0}',
+  sendWithEnterUseShiftEnterFor:
+    'Senden mit Enter. Verwenden Sie Umschalt + Eingabetaste für eine neue Zeile. Ihre Änderungen bleiben in diesem Browser erhalten.',
+  settings: 'Einstellungen',
+  share: 'Teilen',
+  showFundamentalNotificationsWhenAnAgentCompletes:
+    'Grundlegende Benachrichtigungen anzeigen, wenn ein Agent eine Aufgabe abschließt',
+  signOut: 'Abmelden',
+  skills: 'Fähigkeiten',
+  skills2: 'Fähigkeiten · {0}',
+  soundEffectATaskIsCompleted: 'Soundeffekt eine Aufgabe ist abgeschlossen',
+  startAConversation: 'Beginnen Sie ein Gespräch',
+  startAGroupChat: 'Starten Sie einen Gruppenchat',
+  startChat: 'Chat starten',
+  storage: 'Lagerung',
+  support: 'Unterstützung',
+  systemNotifications: 'Systembenachrichtigungen',
+  thinkingTogether: 'Gemeinsam denken…',
+  thinking: 'Nachdenken…',
+  today: 'Heute',
+  tools: 'Werkzeuge',
+  toolsForYourWorkflow: 'Tools für Ihren Workflow',
+  tryAnotherNameCategoryOrKeyword:
+    'Versuchen Sie es mit einem anderen Namen, einer anderen Kategorie oder einem anderen Schlüsselwort.',
+  ultra149Mo: 'Ultra 149 $/Monat',
+  unhelpfulResponse: 'Nicht hilfreiche Antwort',
+  unpinChat: 'Chat lösen',
+  upgradeToMax: 'Auf Max upgraden',
+  useToCreateABotOrStart:
+    'Verwenden Sie +, um einen Bot zu erstellen oder eine Konversation mit mehreren Agenten zu beginnen.',
+  viewAdded: 'Ansicht hinzugefügt {0}',
+  viewAll: 'Alle anzeigen',
+  viewTeamProfile: 'Teamprofil anzeigen',
+  viewItem: 'Anzeigen {0}',
+  website: 'Website',
+  whenEnabledYourProfilePageWillBe:
+    'Wenn diese Option aktiviert ist, ist Ihre Profilseite für jeden sichtbar',
+  youAreOn7xMoreUsageThan: 'Sie nutzen 7x mehr als Premium',
+  youAreOn7xMoreUsageThan2: 'Sie nutzen 7x mehr als normal.',
+  areHereSendAMessageToGet:
+    '{0} sind hier. Senden Sie eine Nachricht, um die Meinung aller zu erfahren.',
+  itemDetails: '{0} Details',
+  agentThinking: '{0} denkt',
+  by: '{0} · von {1}',
+  results: (count: number) => plural('de', count, { one: '{n} Ergebnis', other: '{n} Ergebnisse' }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps ? plural('de', apps, { one: '{n} App', other: '{n} Apps' }) + ', ' : '') +
+    plural('de', skills, { one: '{n} Fähigkeit', other: '{n} Fähigkeiten' }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "Bloom Designaufgaben", defaultTeam: "Bloom-Team",
+    defaultTitle: 'Bloom Designaufgaben',
+    defaultTeam: 'Bloom-Team',
     openTicket: (code, title) => `Öffnen ${code}: ${title}`,
-    addTicketTo: column => `Ticket hinzufügen zu ${column}`,
-    "board": "Projekttafel",
-    "controls": "Tafelsteuerung",
-    "navigation": "Navigation öffnen",
-    "inbox": "Projektposteingang öffnen",
-    "newTicket": "Neues Ticket",
-    "columns": "Spalten der Projekttafel",
-    "sortTickets": "Tickets sortieren",
-    "filterTickets": "Tickets filtern",
-    "displayOptions": "Anzeigeoptionen",
-    "sort": "Sortieren",
-    "filter": "Filtern",
-    "display": "Anzeige",
-    "manualOrder": "Manuelle Reihenfolge",
-    "priority": "Priorität",
-    "title": "Titel",
-    "project": "Projekt",
-    "allPriorities": "Alle Prioritäten",
-    "allProjects": "Alle Projekte",
-    "clearFilters": "Filter löschen",
-    "showDone": "Erledigte Spalte anzeigen",
-    "fillScreens": "Breite Bildschirme ausfüllen",
-    "createTicket": "Ticket erstellen",
-    "closeCreate": "Ticketerstellung schließen",
-    "ticketTitle": "Tickettitel",
-    "enterTitle": "Tickettitel eingeben",
-    "description": "Beschreibung",
-    "descriptionArea": "Beschreibungsbereich",
-    "status": "Status",
-    "urgency": "Dringlichkeit",
-    "assignee": "Zuständig",
-    "unassigned": "Nicht zugewiesen",
-    "keepCreating": "Weitere erstellen",
-    "cancel": "Abbrechen",
-    "addTicket": "Ticket hinzufügen",
-    "sortTitle": "Nach Titel sortieren",
-    "noTickets": "Keine Probleme hier",
-    "favoriteAdd": "Zu Favoriten hinzufügen",
-    "favoriteRemove": "Aus Favoriten entfernen",
-    "copyLink": "Ticketlink kopieren",
-    "actions": "Ticketaktionen",
-    "editDescription": "Beschreibung bearbeiten",
-    "copyId": "Ticket-ID kopieren",
-    "reopen": "Ticket wieder öffnen",
-    "markDone": "Als erledigt markieren",
-    "closeDetails": "Ticketdetails schließen",
-    "linkCopied": "Ticketlink kopiert",
-    "idCopied": "Ticket-ID kopiert",
-    "copyFailed": "Kopieren fehlgeschlagen. Bitte erneut versuchen.",
-    "createdBy": "Erstellt von",
-    "saveDescription": "Beschreibung speichern",
-    "ticketDescription": "Ticketbeschreibung",
-    "properties": "Eigenschaften",
-    "editAssignees": "Zuständige bearbeiten",
-    "resources": "Ressourcen",
-    "tokens": "Verbrauchte Token",
-    "comments": "Kommentare",
-    "you": "Sie",
-    "justNow": "Gerade eben",
-    "addComment": "Kommentar hinzufügen",
-    "enterComment": "Kommentar eingeben",
-    "postComment": "Kommentar veröffentlichen",
-    "moveUp": "Nach oben bewegen",
-    "moveDown": "Nach unten bewegen",
-    "nextColumn": "In nächste Spalte bewegen",
-    "previousColumn": "In vorherige Spalte bewegen",
-    "keyboardHint": "Eingabe öffnet. Leertaste nimmt auf, Pfeile bewegen, Leertaste legt ab und Escape bricht ab."
-},
+    addTicketTo: (column) => `Ticket hinzufügen zu ${column}`,
+    board: 'Projekttafel',
+    controls: 'Tafelsteuerung',
+    navigation: 'Navigation öffnen',
+    inbox: 'Projektposteingang öffnen',
+    newTicket: 'Neues Ticket',
+    columns: 'Spalten der Projekttafel',
+    sortTickets: 'Tickets sortieren',
+    filterTickets: 'Tickets filtern',
+    displayOptions: 'Anzeigeoptionen',
+    sort: 'Sortieren',
+    filter: 'Filtern',
+    display: 'Anzeige',
+    manualOrder: 'Manuelle Reihenfolge',
+    priority: 'Priorität',
+    title: 'Titel',
+    project: 'Projekt',
+    allPriorities: 'Alle Prioritäten',
+    allProjects: 'Alle Projekte',
+    clearFilters: 'Filter löschen',
+    showDone: 'Erledigte Spalte anzeigen',
+    fillScreens: 'Breite Bildschirme ausfüllen',
+    createTicket: 'Ticket erstellen',
+    closeCreate: 'Ticketerstellung schließen',
+    ticketTitle: 'Tickettitel',
+    enterTitle: 'Tickettitel eingeben',
+    description: 'Beschreibung',
+    descriptionArea: 'Beschreibungsbereich',
+    status: 'Status',
+    urgency: 'Dringlichkeit',
+    assignee: 'Zuständig',
+    unassigned: 'Nicht zugewiesen',
+    keepCreating: 'Weitere erstellen',
+    cancel: 'Abbrechen',
+    addTicket: 'Ticket hinzufügen',
+    sortTitle: 'Nach Titel sortieren',
+    noTickets: 'Keine Probleme hier',
+    favoriteAdd: 'Zu Favoriten hinzufügen',
+    favoriteRemove: 'Aus Favoriten entfernen',
+    copyLink: 'Ticketlink kopieren',
+    actions: 'Ticketaktionen',
+    editDescription: 'Beschreibung bearbeiten',
+    copyId: 'Ticket-ID kopieren',
+    reopen: 'Ticket wieder öffnen',
+    markDone: 'Als erledigt markieren',
+    closeDetails: 'Ticketdetails schließen',
+    linkCopied: 'Ticketlink kopiert',
+    idCopied: 'Ticket-ID kopiert',
+    copyFailed: 'Kopieren fehlgeschlagen. Bitte erneut versuchen.',
+    createdBy: 'Erstellt von',
+    saveDescription: 'Beschreibung speichern',
+    ticketDescription: 'Ticketbeschreibung',
+    properties: 'Eigenschaften',
+    editAssignees: 'Zuständige bearbeiten',
+    resources: 'Ressourcen',
+    tokens: 'Verbrauchte Token',
+    comments: 'Kommentare',
+    you: 'Sie',
+    justNow: 'Gerade eben',
+    addComment: 'Kommentar hinzufügen',
+    enterComment: 'Kommentar eingeben',
+    postComment: 'Kommentar veröffentlichen',
+    moveUp: 'Nach oben bewegen',
+    moveDown: 'Nach unten bewegen',
+    nextColumn: 'In nächste Spalte bewegen',
+    previousColumn: 'In vorherige Spalte bewegen',
+    keyboardHint:
+      'Eingabe öffnet. Leertaste nimmt auf, Pfeile bewegen, Leertaste legt ab und Escape bricht ab.',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "Agentenavatar", unavailable: "Avatar nicht verfügbar", },
+  AGENT_AVATAR_MESSAGES: { label: 'Agentenavatar', unavailable: 'Avatar nicht verfügbar' },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

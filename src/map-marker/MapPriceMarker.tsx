@@ -34,7 +34,14 @@ import type { MapPriceMarkerProps } from './types';
 
 const GEOMETRY = {
   default: { height: 28, padding: 10, heartPadding: 8, heart: 12, gap: 4, type: 'body-2-semibold' },
-  compact: { height: 22, padding: 8, heartPadding: 6, heart: 10, gap: 3, type: 'caption-1-semibold' },
+  compact: {
+    height: 22,
+    padding: 8,
+    heartPadding: 6,
+    heart: 10,
+    gap: 3,
+    type: 'caption-1-semibold',
+  },
 } as const;
 
 function MapPriceMarkerComponent({
@@ -93,13 +100,21 @@ function MapPriceMarkerComponent({
       onPress={onPress}
       onHoverIn={onIn}
       onHoverOut={onOut}
-      hitSlop={size === 'compact' ? { top: 11, bottom: 11, left: 4, right: 4 } : { top: 8, bottom: 8, left: 4, right: 4 }}
+      hitSlop={
+        size === 'compact'
+          ? { top: 11, bottom: 11, left: 4, right: 4 }
+          : { top: 8, bottom: 8, left: 4, right: 4 }
+      }
       testID={testID}
       style={[pillStyle, style]}
     >
       {saved ? (
         <View testID={testID ? `${testID}-saved` : undefined}>
-          <RiHeart3Fill width={geometry.heart} height={geometry.heart} fill={active ? paint.activeHeart : paint.heart} />
+          <RiHeart3Fill
+            width={geometry.heart}
+            height={geometry.heart}
+            fill={active ? paint.activeHeart : paint.heart}
+          />
         </View>
       ) : null}
       <Text

@@ -34,7 +34,8 @@ export function applyDocumentTheme(resolved: 'light' | 'dark', background: strin
   if (!head) return;
   let meta = head.querySelector<HTMLMetaElement>('meta[data-bloom-theme-color]');
   if (!meta) {
-    meta = head.querySelector<HTMLMetaElement>('meta[name="theme-color"]') ??
+    meta =
+      head.querySelector<HTMLMetaElement>('meta[name="theme-color"]') ??
       document.createElement('meta');
     meta.setAttribute('data-bloom-theme-color', '');
     meta.name = 'theme-color';

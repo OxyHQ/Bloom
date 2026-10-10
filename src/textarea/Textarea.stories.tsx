@@ -56,24 +56,77 @@ export const Matrix: Story = {
   parameters: { controls: { disable: true } },
   render: function MatrixStory() {
     return (
-    <View style={{ backgroundColor: useTheme().colors.background, width: 352, maxWidth: '100%', gap: 16, padding: 16 }}>
-      <Textarea label="Bio" hint="Markdown ok" placeholder="Tell us" />
-      <Textarea label="Small" size="sm" placeholder="Small" rows={2} />
-      <Textarea label="Count" placeholder="Count" showCount maxLength={280} defaultValue="Hello" />
-      <Textarea label="Invalid" placeholder="Invalid" invalid hint="Too short" showCount />
-      <Textarea label="Disabled" placeholder="Disabled" disabled />
-    </View>
+      <View
+        style={{
+          backgroundColor: useTheme().colors.background,
+          width: 352,
+          maxWidth: '100%',
+          gap: 16,
+          padding: 16,
+        }}
+      >
+        <Textarea label="Bio" hint="Markdown ok" placeholder="Tell us" />
+        <Textarea label="Small" size="sm" placeholder="Small" rows={2} />
+        <Textarea
+          label="Count"
+          placeholder="Count"
+          showCount
+          maxLength={280}
+          defaultValue="Hello"
+        />
+        <Textarea label="Invalid" placeholder="Invalid" invalid hint="Too short" showCount />
+        <Textarea label="Disabled" placeholder="Disabled" disabled />
+      </View>
     );
   },
 };
 
 /** A single instance whose controls are applied directly to the rendered component. */
 export const Playground: StoryObj<typeof Textarea> = {
-  args: { label: 'Bio', placeholder: 'Tell us about yourself', value: '', rows: 3, disabled: false, invalid: false, showCount: true, maxLength: 280, size: 'md' },
-  parameters: { controls: { disable: false, include: ['label', 'placeholder', 'value', 'rows', 'disabled', 'invalid', 'showCount', 'maxLength', 'size'] } },
-  argTypes: { label: { control: 'text' }, placeholder: { control: 'text' }, value: { control: 'text' }, rows: { control: 'number' }, disabled: { control: 'boolean' }, invalid: { control: 'boolean' }, showCount: { control: 'boolean' }, maxLength: { control: 'number' }, size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] } },
+  args: {
+    label: 'Bio',
+    placeholder: 'Tell us about yourself',
+    value: '',
+    rows: 3,
+    disabled: false,
+    invalid: false,
+    showCount: true,
+    maxLength: 280,
+    size: 'md',
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: [
+        'label',
+        'placeholder',
+        'value',
+        'rows',
+        'disabled',
+        'invalid',
+        'showCount',
+        'maxLength',
+        'size',
+      ],
+    },
+  },
+  argTypes: {
+    label: { control: 'text' },
+    placeholder: { control: 'text' },
+    value: { control: 'text' },
+    rows: { control: 'number' },
+    disabled: { control: 'boolean' },
+    invalid: { control: 'boolean' },
+    showCount: { control: 'boolean' },
+    maxLength: { control: 'number' },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 440, maxWidth: '100%' }}><Textarea {...args} onValueChange={next => updateArgs({ value: next })} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <Textarea {...args} onValueChange={(next) => updateArgs({ value: next })} />
+      </View>
+    );
   },
 };

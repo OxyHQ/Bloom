@@ -36,7 +36,13 @@ import { MONTHS, PHOTO_PEOPLE, makeRng } from '../shared/dashboard';
 
 export const HR_STATS: StatCardsItem[] = [
   { icon: RiTeamLine, label: 'Employees', value: '248', delta: '+4.2%', deltaColor: 'lime' },
-  { icon: RiUserSearchLine, label: 'Open roles', value: '12', delta: '+8.3%', deltaColor: 'neutral' },
+  {
+    icon: RiUserSearchLine,
+    label: 'Open roles',
+    value: '12',
+    delta: '+8.3%',
+    deltaColor: 'neutral',
+  },
   { icon: RiTimeLine, label: 'Time to hire', value: '24 days', delta: '-8.3%', deltaColor: 'lime' },
   { icon: RiUserMinusLine, label: 'Attrition', value: '3.8%', delta: '-0.6%', deltaColor: 'lime' },
 ];
@@ -54,9 +60,24 @@ const pipelineStages = (values: [number, number, number, number, number]): Stage
 ];
 
 export const PIPELINE_RANGES: StageBarsRange[] = [
-  { id: '30d', label: 'Last 30 days', stages: pipelineStages([412, 156, 68, 21, 12]), delta: 0.062 },
-  { id: '90d', label: 'Last 90 days', stages: pipelineStages([1_240, 462, 210, 64, 38]), delta: 0.048 },
-  { id: 'year', label: 'This year', stages: pipelineStages([4_680, 1_710, 790, 244, 141]), delta: -0.015 },
+  {
+    id: '30d',
+    label: 'Last 30 days',
+    stages: pipelineStages([412, 156, 68, 21, 12]),
+    delta: 0.062,
+  },
+  {
+    id: '90d',
+    label: 'Last 90 days',
+    stages: pipelineStages([1_240, 462, 210, 64, 38]),
+    delta: 0.048,
+  },
+  {
+    id: 'year',
+    label: 'This year',
+    stages: pipelineStages([4_680, 1_710, 790, 244, 141]),
+    delta: -0.015,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -204,7 +225,13 @@ export const DEPARTMENTS: Department[] = [
 ];
 
 const ROLES: Record<string, string[]> = {
-  Engineering: ['Backend Engineer', 'Frontend Engineer', 'DevOps Engineer', 'Engineering Manager', 'QA Engineer'],
+  Engineering: [
+    'Backend Engineer',
+    'Frontend Engineer',
+    'DevOps Engineer',
+    'Engineering Manager',
+    'QA Engineer',
+  ],
   Design: ['Product Designer', 'UI Designer', 'User Researcher', 'Design Lead'],
   Sales: ['Account Executive', 'Sales Engineer', 'SDR', 'Head of Sales'],
   Marketing: ['Growth Marketer', 'Content Lead', 'Performance Marketer', 'Brand Designer'],
@@ -226,8 +253,59 @@ export const WORK_STATUSES: (DataTableSelectOption & { value: WorkStatus })[] = 
   { value: 'contract', label: 'Contract', dot: 'info' },
 ];
 
-const FIRST_NAMES = ['Marcus', 'Cheyenne', 'Alfredo', 'Talan', 'Roger', 'Cristofer', 'Emery', 'Kadin', 'Nolan', 'Ruben', 'Skylar', 'Hanna', 'Corey', 'Miracle', 'Zaire', 'Cooper', 'Leilani', 'Alena', 'Terry', 'Jaxson', 'Kaiya', 'Omar', 'Phoenix', 'Adison', 'Gretchen', 'Nova', 'Ellis', 'Dulce', 'Wilson'];
-const LAST_NAMES = ['Culhane', 'Herwitz', 'Septimus', 'Bergson', 'Curtis', 'Vetrovs', 'Rhiel', 'Dokidis', 'Kenter', 'Stanton', 'Baptista', 'Workman', 'Torff', 'Calzoni', 'Rosser', 'Geidt', 'Bator', 'Vaccaro', 'Lipshutz', 'Botosh'];
+const FIRST_NAMES = [
+  'Marcus',
+  'Cheyenne',
+  'Alfredo',
+  'Talan',
+  'Roger',
+  'Cristofer',
+  'Emery',
+  'Kadin',
+  'Nolan',
+  'Ruben',
+  'Skylar',
+  'Hanna',
+  'Corey',
+  'Miracle',
+  'Zaire',
+  'Cooper',
+  'Leilani',
+  'Alena',
+  'Terry',
+  'Jaxson',
+  'Kaiya',
+  'Omar',
+  'Phoenix',
+  'Adison',
+  'Gretchen',
+  'Nova',
+  'Ellis',
+  'Dulce',
+  'Wilson',
+];
+const LAST_NAMES = [
+  'Culhane',
+  'Herwitz',
+  'Septimus',
+  'Bergson',
+  'Curtis',
+  'Vetrovs',
+  'Rhiel',
+  'Dokidis',
+  'Kenter',
+  'Stanton',
+  'Baptista',
+  'Workman',
+  'Torff',
+  'Calzoni',
+  'Rosser',
+  'Geidt',
+  'Bator',
+  'Vaccaro',
+  'Lipshutz',
+  'Botosh',
+];
 
 export function formatSalary(n: number) {
   return `$${Math.round(n / 1000)}K`;
@@ -235,7 +313,7 @@ export function formatSalary(n: number) {
 
 export const EMPLOYEES: Employee[] = (() => {
   const rng = makeRng(23);
-  const pick = <T,>(arr: T[]) => arr[Math.floor(rng() * arr.length)]!;
+  const pick = <T>(arr: T[]) => arr[Math.floor(rng() * arr.length)]!;
   return Array.from({ length: 248 }, (_, i) => {
     const department = pick(DEPARTMENTS);
     const role = pick(ROLES[department.label]!);
@@ -254,7 +332,13 @@ export const EMPLOYEES: Employee[] = (() => {
       startedTs: Date.UTC(year, monthIdx, day),
     };
     const person = PHOTO_PEOPLE[i];
-    if (person) return { ...base, name: person.name, avatar: person.avatar, initialsColor: 'neutral' as const };
+    if (person)
+      return {
+        ...base,
+        name: person.name,
+        avatar: person.avatar,
+        initialsColor: 'neutral' as const,
+      };
     const name = `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
     return { ...base, name, initialsColor: rng() > 0.5 ? ('blue' as const) : ('neutral' as const) };
   });

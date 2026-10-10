@@ -15,9 +15,7 @@ jest.mock('../../agent-avatar/CharacterAvatar', () => ({
 
 let container: HTMLDivElement, root: Root;
 beforeEach(() => {
-  (
-    globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
-  ).IS_REACT_ACT_ENVIRONMENT = true;
+  (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -55,41 +53,29 @@ it('announces selected avatar colors and profile fields through real react-nativ
       onChange={() => {}}
     />,
   );
-  expect(
-    container
-      .querySelector('[aria-label="Blue avatar"]')
-      ?.getAttribute('aria-pressed'),
-  ).toBe('true');
-  expect(
-    container
-      .querySelector('[aria-label="Teal avatar"]')
-      ?.getAttribute('aria-pressed'),
-  ).toBe('false');
+  expect(container.querySelector('[aria-label="Blue avatar"]')?.getAttribute('aria-pressed')).toBe(
+    'true',
+  );
+  expect(container.querySelector('[aria-label="Teal avatar"]')?.getAttribute('aria-pressed')).toBe(
+    'false',
+  );
   expect(
     container
       .querySelector('[aria-label="Notify when this agent finishes"]')
       ?.getAttribute('aria-checked'),
   ).toBe('true');
-  expect(
-    container.querySelector('[aria-label="Agent name"]')?.getAttribute('value'),
-  ).toBe('Designer');
+  expect(container.querySelector('[aria-label="Agent name"]')?.getAttribute('value')).toBe(
+    'Designer',
+  );
 });
 
 it('announces the custom saturation/brightness and hue values', () => {
   render(<CustomColorPicker value="#ff0000" onChange={() => {}} />);
-  const field = container.querySelector(
-    '[aria-label="Saturation and brightness"]',
-  );
+  const field = container.querySelector('[aria-label="Saturation and brightness"]');
   expect(field?.getAttribute('role')).toBe('slider');
   expect(field?.getAttribute('aria-valuenow')).toBe('100');
-  expect(field?.getAttribute('aria-valuetext')).toBe(
-    'saturation 100%, brightness 100%',
-  );
-  expect(
-    container
-      .querySelector('[aria-label="Hue"]')
-      ?.getAttribute('aria-valuenow'),
-  ).toBe('0');
+  expect(field?.getAttribute('aria-valuetext')).toBe('saturation 100%, brightness 100%');
+  expect(container.querySelector('[aria-label="Hue"]')?.getAttribute('aria-valuenow')).toBe('0');
   expect(container.querySelector('[aria-label="Hex color"]')).not.toBeNull();
 });
 
@@ -107,20 +93,15 @@ it('carries disabled field constraints to all three color inputs and associates 
     expect(slider.getAttribute('aria-invalid')).toBe('true');
     expect(slider.getAttribute('tabindex')).toBe('-1');
     act(() =>
-      slider.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
-      ),
+      slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })),
     );
   }
-  const input = container.querySelector<HTMLInputElement>(
-    '[aria-label="Brand color"]',
-  )!;
+  const input = container.querySelector<HTMLInputElement>('[aria-label="Brand color"]')!;
   expect(input.readOnly).toBe(true);
   expect(input.getAttribute('aria-invalid')).toBe('true');
-  expect(
-    document.getElementById(input.getAttribute('aria-describedby')!)
-      ?.textContent,
-  ).toBe('Choose another color');
+  expect(document.getElementById(input.getAttribute('aria-describedby')!)?.textContent).toBe(
+    'Choose another color',
+  );
   expect(onChange).not.toHaveBeenCalled();
 });
 
@@ -138,9 +119,7 @@ it('uses the requested locale for drawn and announced editor copy', () => {
       onChange={() => {}}
     />,
   );
-  expect(
-    container.querySelector('[aria-label="Nombre del agente"]'),
-  ).not.toBeNull();
+  expect(container.querySelector('[aria-label="Nombre del agente"]')).not.toBeNull();
   expect(container.querySelector('[aria-label="Agent name"]')).toBeNull();
   expect(container.textContent).toContain('Notificaciones');
 });

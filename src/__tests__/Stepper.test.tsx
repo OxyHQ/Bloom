@@ -51,7 +51,11 @@ function byTestId(id: string): HTMLElement {
 }
 
 /** A controlled harness, so presses round-trip through `value`. */
-function Controlled({ initial, onChange, ...rest }: Partial<StepperProps> & { initial: number; onChange?: (n: number) => void }) {
+function Controlled({
+  initial,
+  onChange,
+  ...rest
+}: Partial<StepperProps> & { initial: number; onChange?: (n: number) => void }) {
   const [value, setValue] = useState(initial);
   return (
     <Stepper
@@ -81,7 +85,16 @@ function key(id: string, k: string) {
 
 describe('Stepper accessibility', () => {
   it('is a named group whose value is a named slider carrying aria-value*', () => {
-    mount(<Stepper value={2} onValueChange={() => {}} min={1} max={16} accessibilityLabel="Adults" testID="st" />);
+    mount(
+      <Stepper
+        value={2}
+        onValueChange={() => {}}
+        min={1}
+        max={16}
+        accessibilityLabel="Adults"
+        testID="st"
+      />,
+    );
     const group = byTestId('st');
     expect(group.getAttribute('role')).toBe('group');
     expect(group.getAttribute('aria-label')).toBe('Adults');
@@ -115,7 +128,15 @@ describe('Stepper accessibility', () => {
   });
 
   it('omits aria-valuemax when unbounded, and announces a formatted value', () => {
-    mount(<Stepper value={8} onValueChange={() => {}} formatValue={(n) => `${n}+`} accessibilityLabel="Beds" testID="st" />);
+    mount(
+      <Stepper
+        value={8}
+        onValueChange={() => {}}
+        formatValue={(n) => `${n}+`}
+        accessibilityLabel="Beds"
+        testID="st"
+      />,
+    );
     const value = byTestId('st-value');
     expect(value.hasAttribute('aria-valuemax')).toBe(false);
     expect(value.getAttribute('aria-valuetext')).toBe('8+');
@@ -123,16 +144,28 @@ describe('Stepper accessibility', () => {
   });
 
   it('disables the decrement at min and the increment at max', () => {
-    mount(<Stepper value={0} onValueChange={() => {}} max={3} accessibilityLabel="Pets" testID="st" />);
+    mount(
+      <Stepper value={0} onValueChange={() => {}} max={3} accessibilityLabel="Pets" testID="st" />,
+    );
     expect(byTestId('st-decrement').getAttribute('aria-disabled')).toBe('true');
     expect(byTestId('st-increment').getAttribute('aria-disabled')).not.toBe('true');
-    mount(<Stepper value={3} onValueChange={() => {}} max={3} accessibilityLabel="Pets" testID="st" />);
+    mount(
+      <Stepper value={3} onValueChange={() => {}} max={3} accessibilityLabel="Pets" testID="st" />,
+    );
     expect(byTestId('st-decrement').getAttribute('aria-disabled')).not.toBe('true');
     expect(byTestId('st-increment').getAttribute('aria-disabled')).toBe('true');
   });
 
   it('disabled: both buttons, the value and the group say so, and the value leaves the tab order', () => {
-    mount(<Stepper value={2} onValueChange={() => {}} disabled accessibilityLabel="Rooms" testID="st" />);
+    mount(
+      <Stepper
+        value={2}
+        onValueChange={() => {}}
+        disabled
+        accessibilityLabel="Rooms"
+        testID="st"
+      />,
+    );
     expect(byTestId('st').getAttribute('aria-disabled')).toBe('true');
     expect(byTestId('st-value').getAttribute('aria-disabled')).toBe('true');
     expect(byTestId('st-value').getAttribute('tabindex')).toBe('-1');
@@ -189,7 +222,9 @@ describe('Stepper behaviour', () => {
   it('keeps the value box a fixed minimum width per size, so 9 → 10 does not shift the row', () => {
     mount(<Stepper value={9} onValueChange={() => {}} accessibilityLabel="A" testID="st" />);
     expect(getComputedStyle(byTestId('st-value')).minWidth).toBe('32px');
-    mount(<Stepper value={9} size="sm" onValueChange={() => {}} accessibilityLabel="A" testID="st" />);
+    mount(
+      <Stepper value={9} size="sm" onValueChange={() => {}} accessibilityLabel="A" testID="st" />,
+    );
     expect(getComputedStyle(byTestId('st-value')).minWidth).toBe('24px');
   });
 });
@@ -204,7 +239,15 @@ describe('Stepper remove at the floor (opt-in)', () => {
   it('with onRemove, the decrement at min is an enabled, named, focusable remove button', () => {
     const onRemove = jest.fn();
     const onChange = jest.fn();
-    mount(<Controlled initial={2} min={1} onRemove={onRemove} removeLabel="Remove Sorrel stew" onChange={onChange} />);
+    mount(
+      <Controlled
+        initial={2}
+        min={1}
+        onRemove={onRemove}
+        removeLabel="Remove Sorrel stew"
+        onChange={onChange}
+      />,
+    );
     // Above the floor it is still the arithmetic decrement.
     expect(byTestId('st-decrement').getAttribute('aria-label')).toBe('Decrease');
     press('st-decrement');
@@ -256,21 +299,46 @@ describe('StepperRow', () => {
   });
 
   it('an explicit accessibilityLabel wins over the title', () => {
-    mount(<StepperRow title="Adults" accessibilityLabel="Adult guests" value={2} onValueChange={() => {}} testID="s" />);
+    mount(
+      <StepperRow
+        title="Adults"
+        accessibilityLabel="Adult guests"
+        value={2}
+        onValueChange={() => {}}
+        testID="s"
+      />,
+    );
     expect(byTestId('s').getAttribute('aria-label')).toBe('Adult guests');
   });
 });
 
-
 it('inherits canonical scoped size and lets an explicit size override it', () => {
-  mount(<BloomScope size="sm"><Stepper value={1} onValueChange={() => {}} accessibilityLabel="Guests" testID="st" /></BloomScope>);
+  mount(
+    <BloomScope size="sm">
+      <Stepper value={1} onValueChange={() => {}} accessibilityLabel="Guests" testID="st" />
+    </BloomScope>,
+  );
   expect(byTestId('st-value').style.height).toBe('32px');
-  mount(<BloomScope size="sm"><Stepper size="md" value={1} onValueChange={() => {}} accessibilityLabel="Guests" testID="st" /></BloomScope>);
+  mount(
+    <BloomScope size="sm">
+      <Stepper
+        size="md"
+        value={1}
+        onValueChange={() => {}}
+        accessibilityLabel="Guests"
+        testID="st"
+      />
+    </BloomScope>,
+  );
   expect(byTestId('st-value').style.height).toBe('36px');
 });
 
 it('announces Field errors from the keyboard-focused value control', () => {
-  mount(<Field label="Guests" error="Choose fewer guests"><Stepper value={4} onValueChange={() => {}} testID="st" /></Field>);
+  mount(
+    <Field label="Guests" error="Choose fewer guests">
+      <Stepper value={4} onValueChange={() => {}} testID="st" />
+    </Field>,
+  );
   const value = byTestId('st-value');
   expect(value.getAttribute('aria-invalid')).toBe('true');
   const description = value.getAttribute('aria-describedby');
@@ -278,10 +346,19 @@ it('announces Field errors from the keyboard-focused value control', () => {
   expect(document.getElementById(description!)?.textContent).toContain('Choose fewer guests');
 });
 
-describe.each(['separate', 'outline'] as const)('Stepper %s appearance', appearance => {
+describe.each(['separate', 'outline'] as const)('Stepper %s appearance', (appearance) => {
   it('retains keyboard bounds and fractional arithmetic', () => {
     const change = jest.fn();
-    mount(<Controlled appearance={appearance} initial={1} min={1} max={2} step={.25} onChange={change} />);
+    mount(
+      <Controlled
+        appearance={appearance}
+        initial={1}
+        min={1}
+        max={2}
+        step={0.25}
+        onChange={change}
+      />,
+    );
     key('st-value', 'ArrowUp');
     expect(byTestId('st-value').getAttribute('aria-valuenow')).toBe('1.25');
     key('st-value', 'End');

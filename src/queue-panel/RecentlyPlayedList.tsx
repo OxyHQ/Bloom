@@ -32,7 +32,10 @@ function RecentlyPlayedListComponent({
 
   if (items.length === 0) {
     return (
-      <View style={[{ paddingTop: 24, paddingBottom: 24, alignItems: 'center' }, style]} testID={testID}>
+      <View
+        style={[{ paddingTop: 24, paddingBottom: 24, alignItems: 'center' }, style]}
+        testID={testID}
+      >
         <Text variant="body-regular" style={{ color: paint.textSecondary }}>
           {labels?.emptyRecent ?? messages.emptyRecent}
         </Text>

@@ -31,7 +31,16 @@ const STEPS: WizardStep[] = [
 function Frame({ width, children }: { width: number; children: React.ReactNode }) {
   const theme = useTheme();
   return (
-    <View style={{ width: '100%', maxWidth: width, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
+    <View
+      style={{
+        width: '100%',
+        maxWidth: width,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        overflow: 'hidden',
+      }}
+    >
       {children}
     </View>
   );
@@ -48,11 +57,22 @@ export const Playground: Story = {
       <View style={{ width: '100%', gap: 32 }}>
         {[720, 375].map((width) => (
           <Frame key={width} width={width}>
-            <View style={{ paddingTop: 24, paddingLeft: width < 480 ? 16 : 24, paddingRight: width < 480 ? 16 : 24, paddingBottom: 24 }}>
+            <View
+              style={{
+                paddingTop: 24,
+                paddingLeft: width < 480 ? 16 : 24,
+                paddingRight: width < 480 ? 16 : 24,
+                paddingBottom: 24,
+              }}
+            >
               <WizardProgress
                 steps={STEPS}
                 current={current}
-                action={<Button  size="sm" tone="neutral" appearance="outline">Save and exit</Button>}
+                action={
+                  <Button size="sm" tone="neutral" appearance="outline">
+                    Save and exit
+                  </Button>
+                }
                 testID={`progress-${width}`}
               />
               <View style={{ height: 160, justifyContent: 'center' }}>
@@ -102,10 +122,18 @@ export const FooterStates: Story = {
         { key: 'first', props: {} },
         { key: 'disabled', props: { onBack: () => undefined, nextDisabled: true } },
         { key: 'loading', props: { onBack: () => undefined, loading: true, nextLabel: 'Publish' } },
-        { key: 'last', props: { onBack: () => undefined, nextLabel: 'Publish', status: 'Everything looks good' } },
+        {
+          key: 'last',
+          props: { onBack: () => undefined, nextLabel: 'Publish', status: 'Everything looks good' },
+        },
       ].map(({ key, props }) => (
         <Frame key={key} width={560}>
-          <WizardFooter onNext={() => undefined} sticky={false} {...props} testID={`footer-${key}`} />
+          <WizardFooter
+            onNext={() => undefined}
+            sticky={false}
+            {...props}
+            testID={`footer-${key}`}
+          />
         </Frame>
       ))}
     </View>

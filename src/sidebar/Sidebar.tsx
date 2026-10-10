@@ -1,4 +1,9 @@
-import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { parseRgba } from '../theme/color-utils';
@@ -222,12 +227,28 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const parentLevel = useSurfaceLevelValue();
   const panelShape = usePanelShape();
   const customSurface = StyleSheet.flatten(style);
-  const surfaceFill = customSurface?.backgroundColor ?? (surface === 'plain' ? undefined : (palette.panel));
-  const hasFill = typeof surfaceFill === 'string' && surfaceFill !== 'transparent' && parseRgba(surfaceFill)?.a !== 0;
+  const surfaceFill =
+    customSurface?.backgroundColor ?? (surface === 'plain' ? undefined : palette.panel);
+  const hasFill =
+    typeof surfaceFill === 'string' &&
+    surfaceFill !== 'transparent' &&
+    parseRgba(surfaceFill)?.a !== 0;
   const paintsSurface = surface !== 'plain' && hasFill;
-  const publishedFill = hasFill ? resolveSurfaceMaterial({ fill: surfaceFill, parentFill, paint: paintsSurface }).publishedFill : undefined;
-  const canonicalSize = sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : sizeProp === 'large' ? 'lg' : sizeProp;
-  const {size: scopedSize} = useBloomAppearance({size: canonicalSize}, {size: 'md', tone: 'neutral'});
+  const publishedFill = hasFill
+    ? resolveSurfaceMaterial({ fill: surfaceFill, parentFill, paint: paintsSurface }).publishedFill
+    : undefined;
+  const canonicalSize =
+    sizeProp === 'small'
+      ? 'sm'
+      : sizeProp === 'medium'
+        ? 'md'
+        : sizeProp === 'large'
+          ? 'lg'
+          : sizeProp;
+  const { size: scopedSize } = useBloomAppearance(
+    { size: canonicalSize },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = scopedSize === 'xs' ? 'sm' : scopedSize;
   const metrics = SIDEBAR_METRICS[size];
   useSidebarWebCss();
@@ -248,11 +269,18 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   const [searchActive, setSearchActive] = useState(false);
   const [headerOverlap, setHeaderOverlap] = useState(10);
-  const [query, setQuery] = useControllableState<string>({ value: searchQuery, defaultValue: '', onChange: onSearchQueryChange });
+  const [query, setQuery] = useControllableState<string>({
+    value: searchQuery,
+    defaultValue: '',
+    onChange: onSearchQueryChange,
+  });
   const [suppressUserHover, setSuppressUserHover] = useState(false);
   const searchFieldRef = useRef<View>(null);
   const searchTriggerRef = useRef<View>(null);
-  const searchTooltipRef = useBrowserTitle<View>(collapsed ? searchLabel : undefined, searchTriggerRef);
+  const searchTooltipRef = useBrowserTitle<View>(
+    collapsed ? searchLabel : undefined,
+    searchTriggerRef,
+  );
   const searchInputRef = useRef<TextInput>(null);
   const normalized = query.trim().toLocaleLowerCase();
   const searchHover = useInteractionState();
@@ -261,14 +289,25 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const progress = useSharedValue(collapsed ? 1 : 0);
   useEffect(() => {
     const target = collapsed ? 1 : 0;
-    progress.value = reducedMotion ? target : withTiming(target, { duration: MORPH_MS, easing: EASE_IN_OUT });
+    progress.value = reducedMotion
+      ? target
+      : withTiming(target, { duration: MORPH_MS, easing: EASE_IN_OUT });
   }, [collapsed, reducedMotion, progress]);
 
   const searchGapStyle = useAnimatedStyle(() => ({ gap: 8 * (1 - progress.value) }), [progress]);
 
   // `fluid` fills its container while expanded; the morph needs a number, so
   // the last expanded width is measured. The collapsed end is the size's own.
-  const geometry = useMemo(() => resolveSidebarGeometry(metrics, surface, Boolean(primaryAction), Boolean(tree) || content != null), [metrics, surface, primaryAction, tree, content]);
+  const geometry = useMemo(
+    () =>
+      resolveSidebarGeometry(
+        metrics,
+        surface,
+        Boolean(primaryAction),
+        Boolean(tree) || content != null,
+      ),
+    [metrics, surface, primaryAction, tree, content],
+  );
   const { collapsedWidth, collapsedLane, expandedInset } = geometry;
   const expandedWidth = useSharedValue(metrics.expanded);
   useEffect(() => {
@@ -276,7 +315,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   }, [fluid, metrics.expanded, expandedWidth]);
   const onPanelLayout = useCallback(
     (event: LayoutChangeEvent) => {
-      if (fluid && !collapsed && progress.value === 0) expandedWidth.value = event.nativeEvent.layout.width;
+      if (fluid && !collapsed && progress.value === 0)
+        expandedWidth.value = event.nativeEvent.layout.width;
     },
     [fluid, collapsed, expandedWidth, progress],
   );
@@ -286,8 +326,12 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     const p = progress.value;
     const padding = expandedPadding + (collapsedPadding - expandedPadding) * p;
     return {
-      width: fluid && p === 0 ? '100%' : expandedWidth.value + (collapsedWidth - expandedWidth.value) * p,
-      paddingLeft: padding, paddingRight: padding,
+      width:
+        fluid && p === 0
+          ? '100%'
+          : expandedWidth.value + (collapsedWidth - expandedWidth.value) * p,
+      paddingLeft: padding,
+      paddingRight: padding,
     };
   }, [progress, expandedWidth, fluid, collapsedWidth, expandedPadding, collapsedPadding]);
   const [contentHeight, setContentHeight] = useState(0);
@@ -296,13 +340,20 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // copy. The mapper reads only whether there is one (`worklet-captures.test.ts`).
   const treeShown = Boolean(tree);
   const hasHeader = header != null;
-  const contentMorph = useAnimatedStyle(() => ({
-    height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : undefined,
-    opacity: 1 - progress.value,
-    marginTop: treeShown || hasHeader ? 0 : 24 * (1 - progress.value),
-  }), [contentHeight, collapsed, progress, treeShown, hasHeader]);
-  const contentBorder = contentPadding == null ? 0 : surface === 'card' ? 2 : surface === 'docked' ? 1 : 0;
-  const contentWidth = useAnimatedStyle(() => ({ width: expandedWidth.value - expandedPadding * 2 - contentBorder }), [expandedWidth, expandedPadding, contentBorder]);
+  const contentMorph = useAnimatedStyle(
+    () => ({
+      height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : undefined,
+      opacity: 1 - progress.value,
+      marginTop: treeShown || hasHeader ? 0 : 24 * (1 - progress.value),
+    }),
+    [contentHeight, collapsed, progress, treeShown, hasHeader],
+  );
+  const contentBorder =
+    contentPadding == null ? 0 : surface === 'card' ? 2 : surface === 'docked' ? 1 : 0;
+  const contentWidth = useAnimatedStyle(
+    () => ({ width: expandedWidth.value - expandedPadding * 2 - contentBorder }),
+    [expandedWidth, expandedPadding, contentBorder],
+  );
   const navInset = useAnimatedStyle(() => {
     const inset = expandedInset * (1 - progress.value);
     return { paddingLeft: inset, paddingRight: inset };
@@ -311,8 +362,20 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     const start = metrics.row.padding + expandedInset;
     const end = metrics.row.padding;
     const padding = start + (end - start) * progress.value;
-    return { paddingLeft: padding, paddingRight: padding, marginLeft: (collapsedLane - metrics.row.square) / 2 * progress.value, marginRight: (collapsedLane - metrics.row.square) / 2 * progress.value };
-  }, [progress, metrics.row.square, metrics.row.padding, metrics.row.icon, expandedInset, collapsedLane]);
+    return {
+      paddingLeft: padding,
+      paddingRight: padding,
+      marginLeft: ((collapsedLane - metrics.row.square) / 2) * progress.value,
+      marginRight: ((collapsedLane - metrics.row.square) / 2) * progress.value,
+    };
+  }, [
+    progress,
+    metrics.row.square,
+    metrics.row.padding,
+    metrics.row.icon,
+    expandedInset,
+    collapsedLane,
+  ]);
   const sideBarIconStyle = useAnimatedStyle(
     () => ({ transform: [{ scaleX: dir * (2 * progress.value - 1) }] }),
     [progress, dir],
@@ -320,13 +383,19 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   const hasLogo = !!logo;
   const hasAccount = !!account;
-  const headerGeometry = useAnimatedStyle(() => ({
-    height: hasLogo ? 36 + 30 * progress.value : hasAccount ? 32 + 30 * progress.value : 20,
-  }), [progress, hasLogo, hasAccount]);
-  const headerIdentityGeometry = useAnimatedStyle(() => ({
-    top: hasLogo ? 0 : 30 * progress.value,
-    insetInlineEnd: (hasLogo ? 28 : 20) * (1 - progress.value),
-  }), [progress, hasLogo]);
+  const headerGeometry = useAnimatedStyle(
+    () => ({
+      height: hasLogo ? 36 + 30 * progress.value : hasAccount ? 32 + 30 * progress.value : 20,
+    }),
+    [progress, hasLogo, hasAccount],
+  );
+  const headerIdentityGeometry = useAnimatedStyle(
+    () => ({
+      top: hasLogo ? 0 : 30 * progress.value,
+      insetInlineEnd: (hasLogo ? 28 : 20) * (1 - progress.value),
+    }),
+    [progress, hasLogo],
+  );
   const headerControlGeometry = useAnimatedStyle(() => {
     const p = progress.value;
     return {
@@ -350,7 +419,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     setQuery('');
     setSearchActive(false);
     if (restoreFocus && IS_WEB && typeof window !== 'undefined') {
-      window.requestAnimationFrame(() => (searchTriggerRef.current as unknown as HTMLElement | null)?.focus?.());
+      window.requestAnimationFrame(() =>
+        (searchTriggerRef.current as unknown as HTMLElement | null)?.focus?.(),
+      );
     }
   }, []);
 
@@ -393,7 +464,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     [onNavigate],
   );
 
-  const shownItems = useMemo(() => items.filter((item) => matchesQuery(item.label, normalized)), [items, normalized]);
+  const shownItems = useMemo(
+    () => items.filter((item) => matchesQuery(item.label, normalized)),
+    [items, normalized],
+  );
   const shownSecondary = useMemo(
     () => secondaryItems.filter((item) => matchesQuery(item.label, normalized)),
     [secondaryItems, normalized],
@@ -401,8 +475,12 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   const renderRow = (item: SidebarNavItem) => {
     const isSelected = selected === item.key;
-    const badgeStyle = { backgroundColor: isSelected ? palette.badgePrimary : palette.badgeNeutral };
-    const badgeTextStyle = { color: isSelected ? palette.badgePrimaryForeground : palette.textSecondary };
+    const badgeStyle = {
+      backgroundColor: isSelected ? palette.badgePrimary : palette.badgeNeutral,
+    };
+    const badgeTextStyle = {
+      color: isSelected ? palette.badgePrimaryForeground : palette.textSecondary,
+    };
     return (
       <SidebarItem
         key={item.key}
@@ -424,7 +502,13 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         collapsedBadge={
           // The collapsed square has no room for "152": cap it at "99+".
           item.badge !== undefined ? (
-            <Badge content={item.badge} max={99} size="small" style={badgeStyle} textStyle={badgeTextStyle} />
+            <Badge
+              content={item.badge}
+              max={99}
+              size="small"
+              style={badgeStyle}
+              textStyle={badgeTextStyle}
+            />
           ) : undefined
         }
       />
@@ -461,7 +545,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // `var(--bloom-sidebar-ring)`, which resolves to nothing — no ring at all —
   // on a node that does not set it.
   const iconButtonRing = { borderRadius: 6, '--bloom-sidebar-ring': palette.ring } as WebCssStyle;
-  const placeholder = searchPlaceholder ?? (flatMobile ? messages.searchPlaceholderCompact : messages.searchPlaceholder);
+  const placeholder =
+    searchPlaceholder ??
+    (flatMobile ? messages.searchPlaceholderCompact : messages.searchPlaceholder);
 
   const toggleCollapse = () => {
     const expanding = collapsedState;
@@ -470,34 +556,109 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     setSuppressUserHover(expanding);
   };
 
-  const headerControl = flatMobile && showSearch ? (
-    <View
-      ref={searchFieldRef}
-      style={{
-        height: 36,
-        flexDirection: 'row',
-        alignItems: 'center',
-        overflow: 'hidden',
-        borderRadius: borderRadius.full,
-        backgroundColor: palette.tertiary,
-        ...(searchActive
-          ? { flex: 1, gap: 8, paddingInlineStart: 8, paddingInlineEnd: 10, boxShadow: searchRing }
-          : { width: 36, gap: 0, paddingLeft: 8, paddingRight: 8 }),
-      }}
-    >
+  const headerControl =
+    flatMobile && showSearch ? (
+      <View
+        ref={searchFieldRef}
+        style={{
+          height: 36,
+          flexDirection: 'row',
+          alignItems: 'center',
+          overflow: 'hidden',
+          borderRadius: borderRadius.full,
+          backgroundColor: palette.tertiary,
+          ...(searchActive
+            ? {
+                flex: 1,
+                gap: 8,
+                paddingInlineStart: 8,
+                paddingInlineEnd: 10,
+                boxShadow: searchRing,
+              }
+            : { width: 36, gap: 0, paddingLeft: 8, paddingRight: 8 }),
+        }}
+      >
+        <Pressable
+          ref={searchTooltipRef}
+          {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
+          role="button"
+          accessibilityLabel={searchButtonLabel}
+          onPress={activateSearch}
+          style={[
+            {
+              width: 20,
+              height: 20,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            },
+            iconButtonRing,
+          ]}
+        >
+          <RiSearchLine width={20} height={20} fill={palette.textSecondary} />
+        </Pressable>
+        {searchActive ? (
+          <SearchField
+            compact
+            palette={palette}
+            inputRef={searchInputRef}
+            value={query}
+            onChangeText={setQuery}
+            onDismiss={deactivateSearch}
+            placeholder={placeholder}
+            label={filterLabel}
+            clearLabel={clearSearchLabel}
+          />
+        ) : null}
+      </View>
+    ) : mobile ? (
       <Pressable
-        ref={searchTooltipRef}
         {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
         role="button"
-        accessibilityLabel={searchButtonLabel}
-        onPress={activateSearch}
-        style={[{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, iconButtonRing]}
+        accessibilityLabel={closeLabel}
+        onPress={onClose}
+        style={iconButtonRing}
+        testID="sidebar-close"
+      >
+        <RiCloseLine width={20} height={20} fill={palette.textSecondary} />
+      </Pressable>
+    ) : (
+      <Pressable
+        {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
+        role="button"
+        accessibilityLabel={collapsed ? expandLabel : collapseLabel}
+        aria-expanded={!collapsed}
+        onPress={toggleCollapse}
+        style={[{ width: '100%', alignItems: 'center', justifyContent: 'center' }, iconButtonRing]}
+        testID="sidebar-collapse"
+      >
+        <Animated.View style={sideBarIconStyle}>
+          <RiSideBarFill width={20} height={20} fill={palette.textSecondary} />
+        </Animated.View>
+      </Pressable>
+    );
+
+  const searchButton =
+    searchActive && !collapsed ? (
+      <View
+        ref={searchFieldRef}
+        style={{
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          borderRadius: borderRadius.full,
+          backgroundColor: palette.tertiary,
+          paddingTop: 8,
+          paddingBottom: 8,
+          paddingInlineStart: 8,
+          paddingInlineEnd: 10,
+          boxShadow: searchRing,
+        }}
+        testID="sidebar-search-field"
       >
         <RiSearchLine width={20} height={20} fill={palette.textSecondary} />
-      </Pressable>
-      {searchActive ? (
         <SearchField
-          compact
           palette={palette}
           inputRef={searchInputRef}
           value={query}
@@ -507,106 +668,59 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           label={filterLabel}
           clearLabel={clearSearchLabel}
         />
-      ) : null}
-    </View>
-  ) : mobile ? (
-    <Pressable
-      {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
-      role="button"
-      accessibilityLabel={closeLabel}
-      onPress={onClose}
-      style={iconButtonRing}
-      testID="sidebar-close"
-    >
-      <RiCloseLine width={20} height={20} fill={palette.textSecondary} />
-    </Pressable>
-  ) : (
-    <Pressable
-      {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
-      role="button"
-      accessibilityLabel={collapsed ? expandLabel : collapseLabel}
-      aria-expanded={!collapsed}
-      onPress={toggleCollapse}
-      style={[{ width: '100%', alignItems: 'center', justifyContent: 'center' }, iconButtonRing]}
-      testID="sidebar-collapse"
-    >
-      <Animated.View style={sideBarIconStyle}>
-        <RiSideBarFill width={20} height={20} fill={palette.textSecondary} />
-      </Animated.View>
-    </Pressable>
-  );
-
-  const searchButton = searchActive && !collapsed ? (
-    <View
-      ref={searchFieldRef}
-      style={{
-        width: '100%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        borderRadius: borderRadius.full,
-        backgroundColor: palette.tertiary,
-        paddingTop: 8,
-        paddingBottom: 8,
-        paddingInlineStart: 8,
-        paddingInlineEnd: 10,
-        boxShadow: searchRing,
-      }}
-      testID="sidebar-search-field"
-    >
-      <RiSearchLine width={20} height={20} fill={palette.textSecondary} />
-      <SearchField
-        palette={palette}
-        inputRef={searchInputRef}
-        value={query}
-        onChangeText={setQuery}
-        onDismiss={deactivateSearch}
-        placeholder={placeholder}
-        label={filterLabel}
-        clearLabel={clearSearchLabel}
-      />
-    </View>
-  ) : (
-    <AnimatedPressable
-      ref={searchTooltipRef}
-      {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
-      role="button"
-      accessibilityLabel={searchLabel}
-      onPress={activateSearch}
-      onHoverIn={searchHover.onIn}
-      onHoverOut={searchHover.onOut}
-      style={[
-        {
-          flexDirection: 'row',
-          alignItems: 'center',
-          height: metrics.row.square,
-          paddingTop: metrics.row.padding,
-          paddingBottom: metrics.row.padding,
-          overflow: 'hidden',
-          borderRadius: borderRadius.full,
-          backgroundColor: searchHover.state ? palette.searchHover : palette.tertiary,
-          '--bloom-sidebar-ring': palette.ring,
-        } as WebCssStyle, searchGapStyle, searchInset,
-      ]}
-      testID="sidebar-search"
-    >
-      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flex: 1 }, searchGapStyle]}>
-        <View style={{ flexShrink: 0 }}>
-          <RiSearchLine width={metrics.row.icon} height={metrics.row.icon} fill={palette.textSecondary} />
-        </View>
-        <Collapsible collapsed={collapsed}>
-          <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
-            {searchLabel}
-          </Text>
-        </Collapsible>
-      </Animated.View>
-      {searchShortcutLabel ? (
-        <Collapsible collapsed={collapsed}>
-          <Kbd>{searchShortcutLabel}</Kbd>
-        </Collapsible>
-      ) : null}
-    </AnimatedPressable>
-  );
+      </View>
+    ) : (
+      <AnimatedPressable
+        ref={searchTooltipRef}
+        {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
+        role="button"
+        accessibilityLabel={searchLabel}
+        onPress={activateSearch}
+        onHoverIn={searchHover.onIn}
+        onHoverOut={searchHover.onOut}
+        style={[
+          {
+            flexDirection: 'row',
+            alignItems: 'center',
+            height: metrics.row.square,
+            paddingTop: metrics.row.padding,
+            paddingBottom: metrics.row.padding,
+            overflow: 'hidden',
+            borderRadius: borderRadius.full,
+            backgroundColor: searchHover.state ? palette.searchHover : palette.tertiary,
+            '--bloom-sidebar-ring': palette.ring,
+          } as WebCssStyle,
+          searchGapStyle,
+          searchInset,
+        ]}
+        testID="sidebar-search"
+      >
+        <Animated.View
+          style={[
+            { flexDirection: 'row', alignItems: 'center', minWidth: 0, flex: 1 },
+            searchGapStyle,
+          ]}
+        >
+          <View style={{ flexShrink: 0 }}>
+            <RiSearchLine
+              width={metrics.row.icon}
+              height={metrics.row.icon}
+              fill={palette.textSecondary}
+            />
+          </View>
+          <Collapsible collapsed={collapsed}>
+            <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
+              {searchLabel}
+            </Text>
+          </Collapsible>
+        </Animated.View>
+        {searchShortcutLabel ? (
+          <Collapsible collapsed={collapsed}>
+            <Kbd>{searchShortcutLabel}</Kbd>
+          </Collapsible>
+        ) : null}
+      </AnimatedPressable>
+    );
 
   // A folder matching the query keeps every row; otherwise only its matching rows.
   const shownFolders = useMemo(
@@ -619,7 +733,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     [tree, normalized],
   );
   const nothingMatches =
-    shownItems.length === 0 && shownSecondary.length === 0 && shownFolders.length === 0 && content == null && !collapsed;
+    shownItems.length === 0 &&
+    shownSecondary.length === 0 &&
+    shownFolders.length === 0 &&
+    content == null &&
+    !collapsed;
   const hasTree = !!tree || content != null;
 
   // A fresh closure here would re-render the memoised switcher on every
@@ -662,21 +780,56 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // column. Numeric positions share the panel clock, including reversals.
   const headerRow = mobile ? (
     <>
-      <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        {logo ? <View style={{ minWidth: 0, flexShrink: 1, display: flatMobile && searchActive ? 'none' : 'flex' }}>
-          <SidebarLogoView logo={logo} collapsed={false} testID="sidebar-logo" />
-        </View> : accountMenu ?? <View />}
+      <View
+        style={{
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
+        {logo ? (
+          <View
+            style={{
+              minWidth: 0,
+              flexShrink: 1,
+              display: flatMobile && searchActive ? 'none' : 'flex',
+            }}
+          >
+            <SidebarLogoView logo={logo} collapsed={false} testID="sidebar-logo" />
+          </View>
+        ) : (
+          (accountMenu ?? <View />)
+        )}
         {headerControl}
       </View>
       {logo ? accountMenu : null}
     </>
   ) : (
     <>
-      <Animated.View testID="sidebar-header" style={[{ width: '100%', position: 'relative' }, headerGeometry]}>
-        {logo || account ? <Animated.View style={[{ position: 'absolute', insetInlineStart: 0, minWidth: 0 }, headerIdentityGeometry]}>
-          {logo ? <SidebarLogoView logo={logo} collapsed={collapsed} testID="sidebar-logo" /> : accountMenu}
-        </Animated.View> : null}
-        <Animated.View testID="sidebar-header-control" style={[{ position: 'absolute', height: 20 }, headerControlGeometry]}>
+      <Animated.View
+        testID="sidebar-header"
+        style={[{ width: '100%', position: 'relative' }, headerGeometry]}
+      >
+        {logo || account ? (
+          <Animated.View
+            style={[
+              { position: 'absolute', insetInlineStart: 0, minWidth: 0 },
+              headerIdentityGeometry,
+            ]}
+          >
+            {logo ? (
+              <SidebarLogoView logo={logo} collapsed={collapsed} testID="sidebar-logo" />
+            ) : (
+              accountMenu
+            )}
+          </Animated.View>
+        ) : null}
+        <Animated.View
+          testID="sidebar-header-control"
+          style={[{ position: 'absolute', height: 20 }, headerControlGeometry]}
+        >
           {headerControl}
         </Animated.View>
       </Animated.View>
@@ -686,144 +839,263 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   const sidebar = (
     <SidebarSizeProvider value={size}>
-    <SidebarGeometryProvider value={geometry}>
-    <CollapseProvider value={progress}>
-      <AnimatedStyledView
-        {...dirProps}
-        className={className}
-        role="complementary"
-        accessibilityLabel={accessibilityLabel}
-        onLayout={onPanelLayout}
-        testID={testID}
-        style={[
-          {
-            height: '100%',
-            flexShrink: 0,
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            overflow: surface === 'plain' ? 'hidden' : 'visible',
-            paddingTop: expandedPadding,
-            paddingBottom: expandedPadding,
-          },
-          chrome,
-          panelStyle,
-          style,
-          paintsSurface ? { backgroundColor: 'transparent' } : undefined,
-          surfaceFillVars(publishedFill),
-        ]}
-      >
-        {paintsSurface ? <SurfacePaint fill={surfaceFill} shape={{ curve: panelShape.curve }} radius={customSurface?.borderRadius ?? (surface === 'card' ? panelShape.radius : 0)} /> : null}
-        <View testID={`${testID ?? 'sidebar'}-main-region`} style={{ width: '100%', minHeight: 0, flexShrink: 1, ...(contentAlignment === 'center' ? { flex: 1, justifyContent: 'center' as const } : {}) }}>
-        <View style={{ width: '100%', minHeight: 0, flexShrink: 1 }}>
-          {/* Fixed chrome shares the panel's morph, never the destination scroll.
+      <SidebarGeometryProvider value={geometry}>
+        <CollapseProvider value={progress}>
+          <AnimatedStyledView
+            {...dirProps}
+            className={className}
+            role="complementary"
+            accessibilityLabel={accessibilityLabel}
+            onLayout={onPanelLayout}
+            testID={testID}
+            style={[
+              {
+                height: '100%',
+                flexShrink: 0,
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                overflow: surface === 'plain' ? 'hidden' : 'visible',
+                paddingTop: expandedPadding,
+                paddingBottom: expandedPadding,
+              },
+              chrome,
+              panelStyle,
+              style,
+              paintsSurface ? { backgroundColor: 'transparent' } : undefined,
+              surfaceFillVars(publishedFill),
+            ]}
+          >
+            {paintsSurface ? (
+              <SurfacePaint
+                fill={surfaceFill}
+                shape={{ curve: panelShape.curve }}
+                radius={customSurface?.borderRadius ?? (surface === 'card' ? panelShape.radius : 0)}
+              />
+            ) : null}
+            <View
+              testID={`${testID ?? 'sidebar'}-main-region`}
+              style={{
+                width: '100%',
+                minHeight: 0,
+                flexShrink: 1,
+                ...(contentAlignment === 'center'
+                  ? { flex: 1, justifyContent: 'center' as const }
+                  : {}),
+              }}
+            >
+              <View style={{ width: '100%', minHeight: 0, flexShrink: 1 }}>
+                {/* Fixed chrome shares the panel's morph, never the destination scroll.
               The viewport reaches half a control behind it, so rows dissolve
               before reaching the controls while the first row retains its gap. */}
-          <View
-            testID={`${testID ?? 'sidebar'}-fixed-header`}
-            pointerEvents="box-none"
-            onLayout={(event) => setHeaderOverlap(Math.min(20, event.nativeEvent.layout.height / 2))}
-            style={{ width: '100%', flexShrink: 0, gap: 12, zIndex: Z_INDEX.floating }}
-          >
-            {header != null ? typeof header === 'function' ? header({ collapsed }) : header : headerRow}
-            {modeSwitcher}
-            {showSearch && !flatMobile ? searchButton : null}
-          </View>
-          <SidebarScrollArea
-            fadeColor={publishedFill ?? parentFill}
-            testID={`${testID ?? 'sidebar'}-scroll`}
-            {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
-            style={{ marginTop: -headerOverlap, marginBottom: -8, marginLeft: -8, marginRight: -8, flexGrow: 0, flexShrink: 1, minHeight: 0 }}
-            contentContainerStyle={{ paddingTop: headerOverlap + 12, paddingBottom: 8, paddingLeft: 8, paddingRight: 8, gap: tree ? 24 : 0 }}
-            showsVerticalScrollIndicator={false}
-            onScroll={onScroll}
-          >
-            {shownItems.length > 0 || !hasTree ? (
-              <Animated.View role="navigation" style={[{ width: '100%', gap: 4 }, !hasTree && navInset]}>
-                {nothingMatches && !hasTree ? (
-                  <Text variant="body-regular" style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 12, paddingBottom: 12, color: palette.textTertiary }}>
-                    {noResultsLabel}
-                  </Text>
-                ) : shownItems.map(renderRow)}
-              </Animated.View>
-            ) : null}
-            {tree && !collapsed && shownFolders.length > 0 ? (
-              <View style={{ width: '100%', gap: 10 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text variant="body-medium" style={{ color: palette.textSecondary }}>{tree.label}</Text>
-                  {tree.actions}
+                <View
+                  testID={`${testID ?? 'sidebar'}-fixed-header`}
+                  pointerEvents="box-none"
+                  onLayout={(event) =>
+                    setHeaderOverlap(Math.min(20, event.nativeEvent.layout.height / 2))
+                  }
+                  style={{ width: '100%', flexShrink: 0, gap: 12, zIndex: Z_INDEX.floating }}
+                >
+                  {header != null
+                    ? typeof header === 'function'
+                      ? header({ collapsed })
+                      : header
+                    : headerRow}
+                  {modeSwitcher}
+                  {showSearch && !flatMobile ? searchButton : null}
                 </View>
-                <View role="navigation" accessibilityLabel={tree.label} style={{ width: '100%', gap: 4 }}>
-                  {shownFolders.map((folder) => (
-                    <SidebarFolder key={folder.key} folder={folder} forceOpen={normalized.length > 0}
-                      selectedItem={selectedTreeItem} onItemPress={onTreeItemPress} testID={`sidebar-folder-${folder.key}`} />
-                  ))}
-                </View>
+                <SidebarScrollArea
+                  fadeColor={publishedFill ?? parentFill}
+                  testID={`${testID ?? 'sidebar'}-scroll`}
+                  {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
+                  style={{
+                    marginTop: -headerOverlap,
+                    marginBottom: -8,
+                    marginLeft: -8,
+                    marginRight: -8,
+                    flexGrow: 0,
+                    flexShrink: 1,
+                    minHeight: 0,
+                  }}
+                  contentContainerStyle={{
+                    paddingTop: headerOverlap + 12,
+                    paddingBottom: 8,
+                    paddingLeft: 8,
+                    paddingRight: 8,
+                    gap: tree ? 24 : 0,
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  onScroll={onScroll}
+                >
+                  {shownItems.length > 0 || !hasTree ? (
+                    <Animated.View
+                      role="navigation"
+                      style={[{ width: '100%', gap: 4 }, !hasTree && navInset]}
+                    >
+                      {nothingMatches && !hasTree ? (
+                        <Text
+                          variant="body-regular"
+                          style={{
+                            paddingLeft: 8,
+                            paddingRight: 8,
+                            paddingTop: 12,
+                            paddingBottom: 12,
+                            color: palette.textTertiary,
+                          }}
+                        >
+                          {noResultsLabel}
+                        </Text>
+                      ) : (
+                        shownItems.map(renderRow)
+                      )}
+                    </Animated.View>
+                  ) : null}
+                  {tree && !collapsed && shownFolders.length > 0 ? (
+                    <View style={{ width: '100%', gap: 10 }}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <Text variant="body-medium" style={{ color: palette.textSecondary }}>
+                          {tree.label}
+                        </Text>
+                        {tree.actions}
+                      </View>
+                      <View
+                        role="navigation"
+                        accessibilityLabel={tree.label}
+                        style={{ width: '100%', gap: 4 }}
+                      >
+                        {shownFolders.map((folder) => (
+                          <SidebarFolder
+                            key={folder.key}
+                            folder={folder}
+                            forceOpen={normalized.length > 0}
+                            selectedItem={selectedTreeItem}
+                            onItemPress={onTreeItemPress}
+                            testID={`sidebar-folder-${folder.key}`}
+                          />
+                        ))}
+                      </View>
+                    </View>
+                  ) : null}
+                  {content != null ? (
+                    <Animated.View
+                      testID={`${testID ?? 'sidebar'}-content`}
+                      pointerEvents={collapsed ? 'none' : 'auto'}
+                      aria-hidden={collapsed}
+                      accessibilityElementsHidden={collapsed}
+                      importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
+                      {...(IS_WEB && collapsed ? { inert: true } : {})}
+                      style={[{ overflow: 'hidden', flexShrink: 0 }, contentMorph]}
+                    >
+                      <Animated.View
+                        onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
+                        style={contentWidth}
+                      >
+                        {content}
+                      </Animated.View>
+                    </Animated.View>
+                  ) : null}
+                  {nothingMatches && hasTree ? (
+                    <Text
+                      variant="body-regular"
+                      style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}
+                    >
+                      {noResultsLabel}
+                    </Text>
+                  ) : null}
+                </SidebarScrollArea>
+                {primaryAction ? (
+                  <SidebarPrimaryAction
+                    action={primaryAction}
+                    collapsed={collapsed}
+                    testID={testID ? `${testID}-primary-action` : undefined}
+                  />
+                ) : null}
               </View>
-            ) : null}
-            {content != null ? (
-              <Animated.View testID={`${testID ?? 'sidebar'}-content`} pointerEvents={collapsed ? 'none' : 'auto'}
-                aria-hidden={collapsed} accessibilityElementsHidden={collapsed}
-                importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
-                {...(IS_WEB && collapsed ? { inert: true } : {})}
-                style={[{ overflow: 'hidden', flexShrink: 0 }, contentMorph]}>
-                <Animated.View onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)} style={contentWidth}>
-                  {content}
-                </Animated.View>
-              </Animated.View>
-            ) : null}
-            {nothingMatches && hasTree ? (
-              <Text variant="body-regular" style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}>{noResultsLabel}</Text>
-            ) : null}
-          </SidebarScrollArea>
-          {primaryAction ? <SidebarPrimaryAction action={primaryAction} collapsed={collapsed} testID={testID ? `${testID}-primary-action` : undefined} /> : null}
-        </View>
-        </View>
+            </View>
 
-        <View style={{ width: '100%', flexShrink: 0, gap: 12, paddingTop: hasTree ? 12 : 0 }}>
-          {showThemeToggle ? (
-            <Animated.View testID="sidebar-theme-morph" style={[{ position: 'relative', overflow: 'hidden' }, themeGeometry]}>
-              <Animated.View pointerEvents={collapsed ? 'none' : 'auto'} aria-hidden={collapsed} accessibilityElementsHidden={collapsed} importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
-                {...(IS_WEB && collapsed ? { inert: true } : {})}
-                style={[{ position: 'absolute', insetInlineStart: 0, top: 0 }, themeExpandedStyle]}>
-                <ThemeToggle variant="sidebar-segmented" style={plain ? { backgroundColor: palette.panel } : undefined} />
-              </Animated.View>
-              <Animated.View pointerEvents={collapsed ? 'auto' : 'none'} aria-hidden={!collapsed} accessibilityElementsHidden={!collapsed} importantForAccessibility={collapsed ? 'auto' : 'no-hide-descendants'}
-                {...(IS_WEB && !collapsed ? { inert: true } : {})}
-                style={[{ position: 'absolute', left: 0, right: 0, top: 0 }, themeCollapsedStyle]}>
-                <ThemeToggle collapsed style={{ alignSelf: 'center' }} />
-              </Animated.View>
-            </Animated.View>
-          ) : null}
-          {shownSecondary.length > 0 ? (
-            <Animated.View role="navigation" style={[{ width: '100%', gap: 4 }, navInset]}>
-              {shownSecondary.map(renderRow)}
-            </Animated.View>
-          ) : null}
-          {plan ? (
-            <SidebarPlanCard
-              plan={plan}
-              collapsed={collapsed}
-              style={plain ? { backgroundColor: palette.panel } : undefined}
-              testID="sidebar-plan"
-            />
-          ) : team ? (
-            <SidebarTeamMenu
-              team={team}
-              collapsed={collapsed}
-              style={plain ? { backgroundColor: palette.panel } : undefined}
-              testID="sidebar-team"
-            />
-          ) : null}
-          {footer != null ? <View testID={testID ? `${testID}-footer` : 'sidebar-footer'} style={{ width: '100%', flexShrink: 0 }}>
-            {typeof footer === 'function' ? footer({ collapsed }) : footer}
-          </View> : null}
-        </View>
-      </AnimatedStyledView>
-    </CollapseProvider>
-    </SidebarGeometryProvider>
+            <View style={{ width: '100%', flexShrink: 0, gap: 12, paddingTop: hasTree ? 12 : 0 }}>
+              {showThemeToggle ? (
+                <Animated.View
+                  testID="sidebar-theme-morph"
+                  style={[{ position: 'relative', overflow: 'hidden' }, themeGeometry]}
+                >
+                  <Animated.View
+                    pointerEvents={collapsed ? 'none' : 'auto'}
+                    aria-hidden={collapsed}
+                    accessibilityElementsHidden={collapsed}
+                    importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
+                    {...(IS_WEB && collapsed ? { inert: true } : {})}
+                    style={[
+                      { position: 'absolute', insetInlineStart: 0, top: 0 },
+                      themeExpandedStyle,
+                    ]}
+                  >
+                    <ThemeToggle
+                      variant="sidebar-segmented"
+                      style={plain ? { backgroundColor: palette.panel } : undefined}
+                    />
+                  </Animated.View>
+                  <Animated.View
+                    pointerEvents={collapsed ? 'auto' : 'none'}
+                    aria-hidden={!collapsed}
+                    accessibilityElementsHidden={!collapsed}
+                    importantForAccessibility={collapsed ? 'auto' : 'no-hide-descendants'}
+                    {...(IS_WEB && !collapsed ? { inert: true } : {})}
+                    style={[
+                      { position: 'absolute', left: 0, right: 0, top: 0 },
+                      themeCollapsedStyle,
+                    ]}
+                  >
+                    <ThemeToggle collapsed style={{ alignSelf: 'center' }} />
+                  </Animated.View>
+                </Animated.View>
+              ) : null}
+              {shownSecondary.length > 0 ? (
+                <Animated.View role="navigation" style={[{ width: '100%', gap: 4 }, navInset]}>
+                  {shownSecondary.map(renderRow)}
+                </Animated.View>
+              ) : null}
+              {plan ? (
+                <SidebarPlanCard
+                  plan={plan}
+                  collapsed={collapsed}
+                  style={plain ? { backgroundColor: palette.panel } : undefined}
+                  testID="sidebar-plan"
+                />
+              ) : team ? (
+                <SidebarTeamMenu
+                  team={team}
+                  collapsed={collapsed}
+                  style={plain ? { backgroundColor: palette.panel } : undefined}
+                  testID="sidebar-team"
+                />
+              ) : null}
+              {footer != null ? (
+                <View
+                  testID={testID ? `${testID}-footer` : 'sidebar-footer'}
+                  style={{ width: '100%', flexShrink: 0 }}
+                >
+                  {typeof footer === 'function' ? footer({ collapsed }) : footer}
+                </View>
+              ) : null}
+            </View>
+          </AnimatedStyledView>
+        </CollapseProvider>
+      </SidebarGeometryProvider>
     </SidebarSizeProvider>
   );
-  return publishedFill ? <SurfaceLevelProvider level={plain ? parentLevel : 1} fill={publishedFill}>{sidebar}</SurfaceLevelProvider> : sidebar;
+  return publishedFill ? (
+    <SurfaceLevelProvider level={plain ? parentLevel : 1} fill={publishedFill}>
+      {sidebar}
+    </SurfaceLevelProvider>
+  ) : (
+    sidebar
+  );
 };
 
 // Two component types, so switching `variant` remounts instead of changing the hook order.

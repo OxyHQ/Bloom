@@ -74,8 +74,14 @@ export function violetBase(theme: Theme): string {
 }
 
 /** `status-purple` over a known surface: light 100 / 600, dark 900 at 50% / 300. */
-export function purpleChip(theme: Theme, surface: string): { background: string; foreground: string } {
+export function purpleChip(
+  theme: Theme,
+  surface: string,
+): { background: string; foreground: string } {
   return theme.isDark
-    ? { background: mixColor(surface, purpleStop(theme, 900), 0.5), foreground: purpleStop(theme, 300) }
+    ? {
+        background: mixColor(surface, purpleStop(theme, 900), 0.5),
+        foreground: purpleStop(theme, 300),
+      }
     : { background: purpleStop(theme, 100), foreground: purpleStop(theme, 600) };
 }

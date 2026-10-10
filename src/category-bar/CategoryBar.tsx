@@ -97,8 +97,10 @@ export interface CategoryBarScroll {
  * (`chipRowOverflow`, in `chip/shared.ts`) and not two: the strip and the pill
  * row cannot disagree about when an edge fade is up.
  */
-export const categoryBarOverflow: (scroll: CategoryBarScroll) => { previous: boolean; next: boolean } =
-  chipRowOverflow;
+export const categoryBarOverflow: (scroll: CategoryBarScroll) => {
+  previous: boolean;
+  next: boolean;
+} = chipRowOverflow;
 
 function clampOffset(target: number, { viewport, content }: CategoryBarScroll): number {
   return Math.min(Math.max(0, target), Math.max(0, content - viewport));
@@ -479,28 +481,30 @@ function CategoryBarComponent({
         {IS_WEB && overflow.previous ? (
           <View pointerEvents="box-none" style={edgeStyle('left')}>
             <Button
-
               size="sm"
               iconOnly
               leadingIcon={RiArrowLeftSLine}
               accessibilityLabel={previousLabel}
               tabIndex={-1}
               onPress={() => page(-1)}
-              testID={testID ? `${testID}-previous` : undefined} tone="neutral" appearance="outline"
+              testID={testID ? `${testID}-previous` : undefined}
+              tone="neutral"
+              appearance="outline"
             />
           </View>
         ) : null}
         {IS_WEB && overflow.next ? (
           <View pointerEvents="box-none" style={edgeStyle('right')}>
             <Button
-
               size="sm"
               iconOnly
               leadingIcon={RiArrowRightSLine}
               accessibilityLabel={nextLabel}
               tabIndex={-1}
               onPress={() => page(1)}
-              testID={testID ? `${testID}-next` : undefined} tone="neutral" appearance="outline"
+              testID={testID ? `${testID}-next` : undefined}
+              tone="neutral"
+              appearance="outline"
             />
           </View>
         ) : null}

@@ -127,7 +127,9 @@ describe('the field contract', () => {
     // own suite is `FieldAssociation.test.tsx`.
     const consumers = READERS.filter((family) => family !== 'field');
     // An internal subject is still a real family reader; public exports stay intentional.
-    const exercised = new Set(Array.from(gate.matchAll(/['"]\.\.\/([^/'"]+)(?:\/[^'"]+)?['"]/g), match => match[1]));
+    const exercised = new Set(
+      Array.from(gate.matchAll(/['"]\.\.\/([^/'"]+)(?:\/[^'"]+)?['"]/g), (match) => match[1]),
+    );
     const missing = consumers.filter((family) => !exercised.has(family));
     expect(missing).toEqual([]);
   });

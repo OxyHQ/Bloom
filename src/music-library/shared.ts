@@ -54,7 +54,12 @@ export function libraryPanelLabels(
   messages: MusicLibraryMessages,
   common: { showMore: string; showLess: string },
 ): LibraryPanelLabels {
-  return { ...messages.library, expand: common.showMore, collapse: common.showLess, kind: messages.kinds };
+  return {
+    ...messages.library,
+    expand: common.showMore,
+    collapse: common.showLess,
+    kind: messages.kinds,
+  };
 }
 
 /** The English labels; `LibraryPanel` reads the localised ones. */
@@ -64,16 +69,16 @@ export const DEFAULT_LIBRARY_LABELS: LibraryPanelLabels = libraryPanelLabels(
 );
 
 /** "Playlist · Maya", or the entry's own `meta`. */
-export function libraryMeta(item: LibraryEntry, kindLabels: LibraryKindLabels = DEFAULT_KIND_LABELS): string {
+export function libraryMeta(
+  item: LibraryEntry,
+  kindLabels: LibraryKindLabels = DEFAULT_KIND_LABELS,
+): string {
   if (item.meta !== undefined) return item.meta;
   return [kindLabels[item.kind], item.subtitle].filter(Boolean).join(' · ');
 }
 
 function fold(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLocaleLowerCase();
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase();
 }
 
 export interface LibraryFilterState {
@@ -103,7 +108,9 @@ export function filterLibraryItems(
 }
 
 const collator =
-  typeof Intl !== 'undefined' ? new Intl.Collator(undefined, { sensitivity: 'base', numeric: true }) : null;
+  typeof Intl !== 'undefined'
+    ? new Intl.Collator(undefined, { sensitivity: 'base', numeric: true })
+    : null;
 
 function compareText(a: string, b: string): number {
   return collator ? collator.compare(a, b) : a.localeCompare(b);
@@ -122,7 +129,10 @@ function compareNewest(a: number | undefined, b: number | undefined): number {
  * themselves), then the rest by `sort`. Stable — ties keep their input order.
  * Pure; never mutates `items`.
  */
-export function sortLibraryItems(items: readonly LibraryEntry[], sort: LibrarySort): LibraryEntry[] {
+export function sortLibraryItems(
+  items: readonly LibraryEntry[],
+  sort: LibrarySort,
+): LibraryEntry[] {
   const compare = (a: LibraryEntry, b: LibraryEntry): number => {
     switch (sort) {
       case 'recents':
@@ -152,9 +162,6 @@ export function gridColumns(width: number, minTile: number, gap: number): number
   if (!(width > 0) || !(minTile > 0)) return 1;
   return Math.max(1, Math.floor((width + gap) / (minTile + gap)));
 }
-
-
-
 
 export const TILE_LIGHT_TEXT = '#ffffff';
 export const TILE_DARK_TEXT = '#141414';
@@ -237,7 +244,8 @@ export function resolveMusicLibraryPaint(theme: Theme, backing?: string): MusicL
   const dark = theme.isDark;
   const { text } = theme.colors;
   const background = backing ?? theme.colors.background;
-  const step = (light: number, darkAlpha: number) => mixColor(background, text, dark ? darkAlpha : light);
+  const step = (light: number, darkAlpha: number) =>
+    mixColor(background, text, dark ? darkAlpha : light);
   return {
     accent: accent[500],
     text,

@@ -41,7 +41,10 @@ export const SurfacePaint = memo(function SurfacePaint({
   shape?: SurfaceShape;
   direction?: 'ltr' | 'rtl';
 }) {
-  const geometry = { ...(radius === undefined ? {} : { borderRadius: radius }), ...surfaceStyle(shape ?? { curve: 'round' }, direction) };
+  const geometry = {
+    ...(radius === undefined ? {} : { borderRadius: radius }),
+    ...surfaceStyle(shape ?? { curve: 'round' }, direction),
+  };
   const theme = useTheme();
   const optics = resolveSurfaceOptics(theme.isDark);
   const resolvedFill = resolveSurfaceTint(fill ?? 'transparent');
@@ -51,8 +54,9 @@ export const SurfacePaint = memo(function SurfacePaint({
   const onNativeLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
     if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return;
-    setNativeSize(previous => previous?.width === width && previous.height === height
-      ? previous : { width, height });
+    setNativeSize((previous) =>
+      previous?.width === width && previous.height === height ? previous : { width, height },
+    );
   }, []);
   useSurfaceRefraction(isWeb);
   useEffect(() => {
@@ -61,14 +65,24 @@ export const SurfacePaint = memo(function SurfacePaint({
   if (isWeb) {
     const paintStyle: WebCssStyle = {
       position: 'absolute',
-      top: 0, right: 0, bottom: 0, left: 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
       ...geometry,
       backgroundColor: 'transparent',
       '--bloom-surface-paint-fill': resolvedFill,
       '--bloom-surface-rim': optics.rim,
       '--bloom-surface-sheen': optics.sheenCss,
     };
-    return <StyledView testID={testID} pointerEvents="none" className={`bloom-surface-paint${sheen ? '' : ' bloom-surface-paint--no-sheen'}`} style={paintStyle} />;
+    return (
+      <StyledView
+        testID={testID}
+        pointerEvents="none"
+        className={`bloom-surface-paint${sheen ? '' : ' bloom-surface-paint--no-sheen'}`}
+        style={paintStyle}
+      />
+    );
   }
   const base = surfaceSvgStop(resolvedFill);
   return (
@@ -82,14 +96,43 @@ export const SurfacePaint = memo(function SurfacePaint({
           Update the actual Rect geometry when this backing View changes size. */}
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
-          {sheen ? <LinearGradient id={`${id}-sheen`} x1="0" y1="0" x2="0" y2="1">
-            {optics.sheen.map(stop => <Stop key={stop.offset} offset={String(stop.offset)} stopColor={stop.color} stopOpacity={stop.opacity} />)}
-          </LinearGradient> : null}
+          {sheen ? (
+            <LinearGradient id={`${id}-sheen`} x1="0" y1="0" x2="0" y2="1">
+              {optics.sheen.map((stop) => (
+                <Stop
+                  key={stop.offset}
+                  offset={String(stop.offset)}
+                  stopColor={stop.color}
+                  stopOpacity={stop.opacity}
+                />
+              ))}
+            </LinearGradient>
+          ) : null}
         </Defs>
-        {fill !== undefined ? <Rect x="0" y="0" width={nativeSize?.width ?? '100%'} height={nativeSize?.height ?? '100%'} fill={base.color} fillOpacity={base.opacity} /> : null}
-        {sheen ? <Rect x="0" y="0" width={nativeSize?.width ?? '100%'} height={nativeSize?.height ?? '100%'} fill={`url(#${id}-sheen)`} /> : null}
+        {fill !== undefined ? (
+          <Rect
+            x="0"
+            y="0"
+            width={nativeSize?.width ?? '100%'}
+            height={nativeSize?.height ?? '100%'}
+            fill={base.color}
+            fillOpacity={base.opacity}
+          />
+        ) : null}
+        {sheen ? (
+          <Rect
+            x="0"
+            y="0"
+            width={nativeSize?.width ?? '100%'}
+            height={nativeSize?.height ?? '100%'}
+            fill={`url(#${id}-sheen)`}
+          />
+        ) : null}
       </Svg>
-      <View pointerEvents="none" style={[StyleSheet.absoluteFill, geometry, { boxShadow: optics.rim }]} />
+      <View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, geometry, { boxShadow: optics.rim }]}
+      />
     </View>
   );
 });

@@ -6,15 +6,13 @@ import { StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 
-const ScrollSurfaceBase: ComponentType<
-  Pick<ScrollViewProps, 'style' | 'contentContainerStyle'>
-> = ScrollView;
-const StyledScrollView: ComponentType<
-  ScrollViewProps & { contentContainerClassName?: string }
-> = styled(ScrollSurfaceBase, {
-  className: 'style',
-  contentContainerClassName: 'contentContainerStyle',
-});
+const ScrollSurfaceBase: ComponentType<Pick<ScrollViewProps, 'style' | 'contentContainerStyle'>> =
+  ScrollView;
+const StyledScrollView: ComponentType<ScrollViewProps & { contentContainerClassName?: string }> =
+  styled(ScrollSurfaceBase, {
+    className: 'style',
+    contentContainerClassName: 'contentContainerStyle',
+  });
 
 /** Source scroll surface: independent 24px edge fades; the header stays outside. */
 export function ScrollSurface({
@@ -105,21 +103,14 @@ export function ScrollSurface({
                 <Stop offset="1" stopColor={background} stopOpacity={0} />
               </LinearGradient>
             </Defs>
-            <Rect
-              width="100%"
-              height={24}
-              fill={`url(#${id}-${bottom ? 'bottom' : 'top'})`}
-            />
+            <Rect width="100%" height={24} fill={`url(#${id}-${bottom ? 'bottom' : 'top'})`} />
           </Svg>
         )}
       </StyledView>
     );
   };
   return (
-    <StyledView
-      className={`relative min-h-0 ${className ?? ''}`}
-      style={{ flex: 1, minHeight: 0 }}
-    >
+    <StyledView className={`relative min-h-0 ${className ?? ''}`} style={{ flex: 1, minHeight: 0 }}>
       <StyledScrollView
         className="h-full overflow-y-auto overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring [scrollbar-width:none]"
         contentContainerClassName={contentClassName}

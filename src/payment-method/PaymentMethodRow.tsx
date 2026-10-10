@@ -13,7 +13,11 @@ import { Text } from '../typography';
 import { PAYMENT_METHOD_MESSAGES } from './messages';
 import { PaymentMethodMark } from './PaymentMethodMark';
 import { PAYMENT_METHOD_GEOMETRY, PAYMENT_METHOD_STATE_TONE } from './constants';
-import { composePaymentMethodName, paymentMethodStateMessage, resolvePaymentMethodPaint } from './shared';
+import {
+  composePaymentMethodName,
+  paymentMethodStateMessage,
+  resolvePaymentMethodPaint,
+} from './shared';
 import type { PaymentMethodRowProps } from './types';
 
 /**
@@ -74,7 +78,9 @@ function PaymentMethodRowComponent({
   const stateWords = paymentMethodStateMessage(state, stateMessage, messages);
   // The state's words are read as TEXT on the row's own surface, so they take
   // the tone's `accent` member (`outlined` foreground) rather than the fill.
-  const stateColor = tone ? resolveAccentColors(theme.colors, tone, 'outlined').foreground : undefined;
+  const stateColor = tone
+    ? resolveAccentColors(theme.colors, tone, 'outlined').foreground
+    : undefined;
 
   const media =
     leading !== undefined ? (
@@ -107,7 +113,12 @@ function PaymentMethodRowComponent({
           variant="body-2-regular"
           numberOfLines={1}
           testID={testID ? `${testID}-masked` : undefined}
-          style={{ flexShrink: 1, minWidth: 0, color: paint.textSecondary, fontVariant: ['tabular-nums'] }}
+          style={{
+            flexShrink: 1,
+            minWidth: 0,
+            color: paint.textSecondary,
+            fontVariant: ['tabular-nums'],
+          }}
         >
           {masked}
         </Text>

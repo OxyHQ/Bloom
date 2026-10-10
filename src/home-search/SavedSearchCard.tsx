@@ -113,7 +113,11 @@ function SavedSearchCardComponent({
       >
         <Icon width={22} height={22} fill={palette.text} />
       </View>
-      <Text variant="body-semibold" numberOfLines={2} style={{ flex: 1, minWidth: 0, color: palette.text }}>
+      <Text
+        variant="body-semibold"
+        numberOfLines={2}
+        style={{ flex: 1, minWidth: 0, color: palette.text }}
+      >
         {title}
       </Text>
       {hasNew ? (
@@ -188,29 +192,35 @@ function SavedSearchCardComponent({
         ) : (
           <RiNotificationOffLine width={16} height={16} fill={palette.textSecondary} />
         )}
-        <Text variant="body-2-regular" numberOfLines={1} style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}>
+        <Text
+          variant="body-2-regular"
+          numberOfLines={1}
+          style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}
+        >
           {alertFrequency ?? alertsOffLabel}
         </Text>
         {onEdit ? (
           <Button
-
             size="sm"
             onPress={onEdit}
             accessibilityLabel={messages.actionOn(editLabel, title)}
-            testID={testID ? `${testID}-edit` : undefined} tone="neutral" appearance="outline"
+            testID={testID ? `${testID}-edit` : undefined}
+            tone="neutral"
+            appearance="outline"
           >
             {editLabel}
           </Button>
         ) : null}
         {onDelete ? (
           <Button
-
             size="sm"
             iconOnly
             icon={RiDeleteBinLine}
             onPress={onDelete}
             accessibilityLabel={messages.actionOn(deleteLabel, title)}
-            testID={testID ? `${testID}-delete` : undefined} tone="neutral" appearance="outline"
+            testID={testID ? `${testID}-delete` : undefined}
+            tone="neutral"
+            appearance="outline"
           />
         ) : null}
       </View>

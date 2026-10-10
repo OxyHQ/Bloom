@@ -28,7 +28,13 @@ const noop = () => undefined;
 
 const PARCEL: OrderStatusStep[] = [
   { id: 'a', label: 'Picked up', timestamp: 'Mon 09:12', state: 'done' },
-  { id: 'b', label: 'In transit', timestamp: 'Mon 14:40', state: 'done', note: 'Left the sorting hub' },
+  {
+    id: 'b',
+    label: 'In transit',
+    timestamp: 'Mon 14:40',
+    state: 'done',
+    note: 'Left the sorting hub',
+  },
   { id: 'c', label: 'Out for delivery', timestamp: 'Today 08:05', state: 'current' },
   { id: 'd', label: 'Delivered', state: 'upcoming' },
 ];
@@ -43,7 +49,13 @@ const KITCHEN: OrderStatusStep[] = [
 const STALLED: OrderStatusStep[] = [
   { id: 'a', label: 'Requested', timestamp: 'Tue 11:20', state: 'done' },
   { id: 'b', label: 'Carrier assigned', timestamp: 'Tue 11:44', state: 'done' },
-  { id: 'c', label: 'Collection attempted', timestamp: 'Wed 09:30', state: 'failed', note: 'Nobody at the address. We will try again tomorrow morning.' },
+  {
+    id: 'c',
+    label: 'Collection attempted',
+    timestamp: 'Wed 09:30',
+    state: 'failed',
+    note: 'Nobody at the address. We will try again tomorrow morning.',
+  },
   { id: 'd', label: 'Delivered', state: 'upcoming' },
 ];
 
@@ -79,7 +91,11 @@ export const Timeline: Story = {
         <OrderStatusTimeline steps={KITCHEN} accessibilityLabel="Order status" />
       </Section>
       <Section title="Vertical — a booking, compact">
-        <OrderStatusTimeline steps={BOOKING} density="compact" accessibilityLabel="Booking status" />
+        <OrderStatusTimeline
+          steps={BOOKING}
+          density="compact"
+          accessibilityLabel="Booking status"
+        />
       </Section>
     </Page>
   ),
@@ -89,10 +105,19 @@ export const Horizontal: Story = {
   render: () => (
     <Page>
       <Section title="Horizontal — the wide header rail">
-        <OrderStatusTimeline steps={PARCEL} orientation="horizontal" accessibilityLabel="Delivery status" />
+        <OrderStatusTimeline
+          steps={PARCEL}
+          orientation="horizontal"
+          accessibilityLabel="Delivery status"
+        />
       </Section>
       <Section title="Horizontal, compact">
-        <OrderStatusTimeline steps={KITCHEN} orientation="horizontal" density="compact" accessibilityLabel="Order status" />
+        <OrderStatusTimeline
+          steps={KITCHEN}
+          orientation="horizontal"
+          density="compact"
+          accessibilityLabel="Order status"
+        />
       </Section>
       <Section title="Horizontal, long labels">
         <OrderStatusTimeline
@@ -117,7 +142,11 @@ export const Failed: Story = {
         <OrderStatusTimeline steps={STALLED} accessibilityLabel="Collection status" />
       </Section>
       <Section title="The same, on the rail">
-        <OrderStatusTimeline steps={STALLED} orientation="horizontal" accessibilityLabel="Collection status" />
+        <OrderStatusTimeline
+          steps={STALLED}
+          orientation="horizontal"
+          accessibilityLabel="Collection status"
+        />
       </Section>
     </Page>
   ),
@@ -131,7 +160,13 @@ export const WithGlyphs: Story = {
           accessibilityLabel="Order status"
           steps={[
             { label: 'Order placed', timestamp: '18:55', state: 'done', icon: RiShoppingBag3Line },
-            { label: 'Courier on the way', timestamp: '19:20', state: 'current', icon: RiCarLine, tone: 'info' },
+            {
+              label: 'Courier on the way',
+              timestamp: '19:20',
+              state: 'current',
+              icon: RiCarLine,
+              tone: 'info',
+            },
             { label: 'Cancelled by the shop', state: 'failed', icon: RiCloseCircleLine },
           ]}
         />
@@ -149,13 +184,24 @@ export const Bar: Story = {
           eta="Arrives 14:35"
           detail="Four stops away"
           icon={RiCarLine}
-          progress={{ value: 3, max: 4, accessibilityLabel: 'Delivery progress', valueText: '3 of 4 stops' }}
-          action={<GlyphButton icon={RiPhoneLine} accessibilityLabel="Call the courier" onPress={noop} />}
+          progress={{
+            value: 3,
+            max: 4,
+            accessibilityLabel: 'Delivery progress',
+            valueText: '3 of 4 stops',
+          }}
+          action={
+            <GlyphButton icon={RiPhoneLine} accessibilityLabel="Call the courier" onPress={noop} />
+          }
           testID="bar"
         />
       </Section>
       <Section title="No progress, no ETA">
-        <OrderStatusBar status="Waiting for the kitchen to accept" icon={RiShoppingBag3Line} tone="warning" />
+        <OrderStatusBar
+          status="Waiting for the kitchen to accept"
+          icon={RiShoppingBag3Line}
+          tone="warning"
+        />
       </Section>
       <Section title="Stalled">
         <OrderStatusBar
@@ -163,7 +209,11 @@ export const Bar: Story = {
           detail="Nobody at the address. We will try again tomorrow."
           icon={RiCloseCircleLine}
           tone="error"
-          action={<Button  size="sm" onPress={noop} tone="neutral" appearance="outline">Reschedule</Button>}
+          action={
+            <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+              Reschedule
+            </Button>
+          }
         />
       </Section>
       <Section title="Plain, inside a card that already paints">
@@ -200,7 +250,10 @@ export const Empty: Story = {
         <OrderStatusTimeline steps={[]} accessibilityLabel="Status" />
       </Section>
       <Section title="One step">
-        <OrderStatusTimeline steps={[{ label: 'Requested', timestamp: 'Just now', state: 'current' }]} accessibilityLabel="Status" />
+        <OrderStatusTimeline
+          steps={[{ label: 'Requested', timestamp: 'Just now', state: 'current' }]}
+          accessibilityLabel="Status"
+        />
       </Section>
     </Page>
   ),

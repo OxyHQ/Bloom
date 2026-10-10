@@ -27,7 +27,15 @@ import {
   RiShoppingBag3Line,
   RiStockLine,
 } from '../../src/icons/remix';
-import { CellText, DELETE_EDIT_ACTIONS, IconTile, MONTHS, NameCell, dateValue, makeRng } from '../shared/dashboard';
+import {
+  CellText,
+  DELETE_EDIT_ACTIONS,
+  IconTile,
+  MONTHS,
+  NameCell,
+  dateValue,
+  makeRng,
+} from '../shared/dashboard';
 
 /**
  * The finance template's transactions table: the
@@ -168,7 +176,12 @@ const COLUMNS: DataTableColumn<Transaction>[] = [
     id: 'account',
     header: 'Account',
     cell: ({ row }) => (
-      <DataTableSelect label={`Account for ${row.payee}`} defaultValue={row.account} options={ACCOUNT_OPTIONS} width={136} />
+      <DataTableSelect
+        label={`Account for ${row.payee}`}
+        defaultValue={row.account}
+        options={ACCOUNT_OPTIONS}
+        width={136}
+      />
     ),
   },
   {
@@ -202,7 +215,9 @@ const COLUMNS: DataTableColumn<Transaction>[] = [
     id: 'actions',
     header: 'Actions',
     width: 140,
-    cell: ({ row }) => <DataTableRowActions name={row.payee} actions={DELETE_EDIT_ACTIONS} menu={MORE_MENU} />,
+    cell: ({ row }) => (
+      <DataTableRowActions name={row.payee} actions={DELETE_EDIT_ACTIONS} menu={MORE_MENU} />
+    ),
   },
 ];
 
@@ -247,7 +262,10 @@ export function TransactionsTable({ initialQuery = '' }: { initialQuery?: string
             label="Filter by account"
             value={accountFilter}
             onValueChange={filter(setAccountFilter)}
-            options={[{ value: 'all', label: 'All accounts' }, ...ACCOUNTS.map((a) => ({ value: a, label: a }))]}
+            options={[
+              { value: 'all', label: 'All accounts' },
+              ...ACCOUNTS.map((a) => ({ value: a, label: a })),
+            ]}
           />
           <DataTableFilter
             label="Filter by category"
@@ -264,7 +282,11 @@ export function TransactionsTable({ initialQuery = '' }: { initialQuery?: string
             onValueChange={filter(setAmountFilter)}
             options={AMOUNT_BUCKETS.map((b) => ({ value: b.id, label: b.label }))}
           />
-          <DataTableSearch label="Search transactions" value={query} onValueChange={filter(setQuery)} />
+          <DataTableSearch
+            label="Search transactions"
+            value={query}
+            onValueChange={filter(setQuery)}
+          />
         </>
       }
       selectable

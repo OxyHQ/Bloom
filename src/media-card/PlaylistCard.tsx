@@ -55,7 +55,15 @@ function PlaylistCardComponent({
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
   const row = layout === 'row';
-  const line = joinMeta([row ? typeLabel : undefined, owner ? (ownerPrefix !== undefined ? `${ownerPrefix} ${owner}` : messages.ownedBy(owner)) : undefined, trackCount]);
+  const line = joinMeta([
+    row ? typeLabel : undefined,
+    owner
+      ? ownerPrefix !== undefined
+        ? `${ownerPrefix} ${owner}`
+        : messages.ownedBy(owner)
+      : undefined,
+    trackCount,
+  ]);
   const kind = playlistCoverKind(artwork, mosaic);
   const variant = row ? 'body-2-regular' : SUBTITLE_VARIANT[size];
 
@@ -64,7 +72,11 @@ function PlaylistCardComponent({
       <View aria-hidden style={{ flexShrink: 0 }}>
         <RiTeamLine width={14} height={14} fill={paint.textSecondary} />
       </View>
-      <Text variant={variant} numberOfLines={1} style={{ flexShrink: 1, color: paint.textSecondary }}>
+      <Text
+        variant={variant}
+        numberOfLines={1}
+        style={{ flexShrink: 1, color: paint.textSecondary }}
+      >
         {line || collaborativeLabel}
       </Text>
     </View>
@@ -86,7 +98,9 @@ function PlaylistCardComponent({
       placeholderIcon={RiMusic2Fill}
       accessibilityLabel={
         rest.accessibilityLabel ??
-        [title, typeLabel, collaborative ? collaborativeLabel : null, line || null].filter(Boolean).join(', ')
+        [title, typeLabel, collaborative ? collaborativeLabel : null, line || null]
+          .filter(Boolean)
+          .join(', ')
       }
       renderArtwork={
         kind === 'mosaic'

@@ -47,16 +47,12 @@ export function ChatDialogFrame({
       easing: Easing.bezier(0.22, 1, 0.36, 1),
     });
   }, [isClosing, mode, progress, reduced]);
-  const fade = useAnimatedStyle(
-    () => ({ opacity: progress.value }),
-    [progress],
-  );
+  const fade = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
   const slide = useAnimatedStyle(
     () => ({
       transform: [
         {
-          translateX:
-            mode === 'editor' ? (rtl ? -32 : 32) * (1 - progress.value) : 0,
+          translateX: mode === 'editor' ? (rtl ? -32 : 32) * (1 - progress.value) : 0,
         },
       ],
     }),
@@ -112,10 +108,7 @@ export function ChatDialogFrame({
             style={{ maxHeight: height * 0.85, flexShrink: 1 }}
           >
             <StyledView className="mb-4 flex shrink-0 items-center justify-between flex-row">
-              <Text
-                accessibilityRole="header"
-                className="text-headline-medium text-text-primary"
-              >
+              <Text accessibilityRole="header" className="text-headline-medium text-text-primary">
                 {title}
               </Text>
               <CloseButton
@@ -133,27 +126,18 @@ export function ChatDialogFrame({
             >
               {children}
             </ScrollSurface>
-            {footer && (
-              <StyledView className="mt-4 shrink-0">{footer}</StyledView>
-            )}
+            {footer && <StyledView className="mt-4 shrink-0">{footer}</StyledView>}
           </StyledView>
         </AnimatedView>
       ) : mode === 'editor' ? (
         <AnimatedView
           className="h-full w-[356px] max-w-full bg-background-full p-2 outline-none"
-          style={[
-            { width: 356, maxWidth: '100%', height: '100%' },
-            slide,
-            fade,
-          ]}
+          style={[{ width: 356, maxWidth: '100%', height: '100%' }, slide, fade]}
         >
           <StyledView className="h-full outline-none">{children}</StyledView>
         </AnimatedView>
       ) : (
-        <StyledView
-          className="relative h-full outline-none"
-          style={{ height: '100%' }}
-        >
+        <StyledView className="relative h-full outline-none" style={{ height: '100%' }}>
           {children}
           <CloseButton
             accessibilityLabel={common.labelFor(common.close, title)}

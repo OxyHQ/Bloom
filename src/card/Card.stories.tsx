@@ -2,25 +2,34 @@ import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-} from './index';
+import { Card, CardHeader, CardBody, CardFooter, CardTitle, CardDescription } from './index';
 import { Button } from '../button';
 import type { CardRadius } from './types';
 
 const meta: Meta<typeof Card> = {
   argTypes: {
-    "appearance": { control: 'select', options: ["solid","subtle","outline","plain"] },
-    "tone": { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] },
-    "radius": { control: 'select', options: ["radius-2","radius-4","radius-8","radius-12","radius-16","radius-20","radius-24","radius-28","radius-max"] },
-    "elevation": { control: 'select', options: ["glass","none","s","m"] },
-    "border": { control: 'select', options: ["none","hairline","thin"] },
-    "disabled": { control: 'boolean' }
+    appearance: { control: 'select', options: ['solid', 'subtle', 'outline', 'plain'] },
+    tone: {
+      control: 'select',
+      options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'],
+    },
+    radius: {
+      control: 'select',
+      options: [
+        'radius-2',
+        'radius-4',
+        'radius-8',
+        'radius-12',
+        'radius-16',
+        'radius-20',
+        'radius-24',
+        'radius-28',
+        'radius-max',
+      ],
+    },
+    elevation: { control: 'select', options: ['glass', 'none', 's', 'm'] },
+    border: { control: 'select', options: ['none', 'hairline', 'thin'] },
+    disabled: { control: 'boolean' },
   },
   title: 'Base/Card',
   component: Card,
@@ -77,19 +86,19 @@ export const Rungs: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-      {(
-        ['radius-4', 'radius-12', 'radius-16', 'radius-20', 'radius-28'] as CardRadius[]
-      ).map((radius) => (
-        <Card
-          key={radius}
-          appearance="outline"
-          radius={radius}
-          style={{ width: 140, height: 80, alignItems: 'center', justifyContent: 'center' }}
-          testID={`card-${radius}`}
-        >
-          <CardTitle>{radius}</CardTitle>
-        </Card>
-      ))}
+      {(['radius-4', 'radius-12', 'radius-16', 'radius-20', 'radius-28'] as CardRadius[]).map(
+        (radius) => (
+          <Card
+            key={radius}
+            appearance="outline"
+            radius={radius}
+            style={{ width: 140, height: 80, alignItems: 'center', justifyContent: 'center' }}
+            testID={`card-${radius}`}
+          >
+            <CardTitle>{radius}</CardTitle>
+          </Card>
+        ),
+      )}
     </View>
   ),
 };
@@ -168,7 +177,19 @@ export const Default: Story = {
 /** Edit the props in Controls; interactive state stays in sync. */
 export const Playground: Story = {
   args: { appearance: 'solid', tone: 'neutral', radius: 'radius-12' },
-  render: (args) => <View style={{ width: 340, maxWidth: '100%' }}><Card {...args}><CardHeader><CardTitle>Project overview</CardTitle><CardDescription>Change the surface using Controls.</CardDescription></CardHeader><CardBody><CardDescription>Header, content and footer share one card.</CardDescription></CardBody></Card></View>,
+  render: (args) => (
+    <View style={{ width: 340, maxWidth: '100%' }}>
+      <Card {...args}>
+        <CardHeader>
+          <CardTitle>Project overview</CardTitle>
+          <CardDescription>Change the surface using Controls.</CardDescription>
+        </CardHeader>
+        <CardBody>
+          <CardDescription>Header, content and footer share one card.</CardDescription>
+        </CardBody>
+      </Card>
+    </View>
+  ),
 };
 
 /** Shared rounded defaults beside deliberate compact and smooth overrides. */
@@ -179,11 +200,19 @@ export const RoundedSurfaces: Story = {
         <CardTitle>Rounded by default</CardTitle>
         <CardDescription>20px circular corners</CardDescription>
       </Card>
-      <Card testID="rounded-compact" radius="radius-8" style={{ width: 220, height: 160, padding: 24 }}>
+      <Card
+        testID="rounded-compact"
+        radius="radius-8"
+        style={{ width: 220, height: 160, padding: 24 }}
+      >
         <CardTitle>Explicit compact radius</CardTitle>
         <CardDescription>8px circular corners</CardDescription>
       </Card>
-      <Card testID="rounded-smooth" cornerCurve="smooth" style={{ width: 220, height: 160, padding: 24 }}>
+      <Card
+        testID="rounded-smooth"
+        cornerCurve="smooth"
+        style={{ width: 220, height: 160, padding: 24 }}
+      >
         <CardTitle>Explicit smooth curve</CardTitle>
         <CardDescription>20px adaptive squircle</CardDescription>
       </Card>

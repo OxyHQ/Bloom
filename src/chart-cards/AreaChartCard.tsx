@@ -1,6 +1,16 @@
 import React, { useCallback, useId, useMemo } from 'react';
 import { View } from 'react-native';
-import Svg, { Circle, ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, {
+  Circle,
+  ClipPath,
+  Defs,
+  G,
+  Line,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+} from 'react-native-svg';
 
 import { areaBandPath, curvePath, niceTicks, stackSeries, type Point } from './geometry';
 import { CartesianPlot } from './primitives/CartesianPlot';
@@ -57,8 +67,17 @@ const valueOf = (row: AreaPoint | undefined, key: string) => {
   return Number.isFinite(v) ? v : 0;
 };
 
-function defaultAccessibilityLabel(title: string, variant: string, series: readonly AreaSeries[]): string {
-  const kind = variant === 'percent' ? '100% stacked area chart' : variant === 'overlap' ? 'area chart' : 'stacked area chart';
+function defaultAccessibilityLabel(
+  title: string,
+  variant: string,
+  series: readonly AreaSeries[],
+): string {
+  const kind =
+    variant === 'percent'
+      ? '100% stacked area chart'
+      : variant === 'overlap'
+        ? 'area chart'
+        : 'stacked area chart';
   return `${title} ${kind}: ${series.map((s) => s.label).join(', ')}`;
 }
 
@@ -99,7 +118,11 @@ export function AreaChartCard({
     [series, palettes],
   );
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const selectRange = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -111,7 +134,10 @@ export function AreaChartCard({
   const isPercent = variant === 'percent';
   const curve = shape === 'sharp' ? 'linear' : 'monotone';
 
-  const raw = useMemo(() => series.map((s) => data.map((row) => valueOf(row, s.key))), [series, data]);
+  const raw = useMemo(
+    () => series.map((s) => data.map((row) => valueOf(row, s.key))),
+    [series, data],
+  );
   const bands = useMemo(
     () =>
       variant === 'overlap'
@@ -137,7 +163,11 @@ export function AreaChartCard({
   const grandTotal = raw.reduce((sum, _, i) => sum + totalOf(i), 0);
   // In `overlap` the series are not parts of a whole, so the first one carries the headline.
   const restingValue = headline ?? (variant === 'overlap' ? totalOf(0) : grandTotal);
-  const headlineValue = hovering ? (variant === 'overlap' ? (raw[0]?.[activeIndex] ?? 0) : rowTotal(activeIndex)) : restingValue;
+  const headlineValue = hovering
+    ? variant === 'overlap'
+      ? (raw[0]?.[activeIndex] ?? 0)
+      : rowTotal(activeIndex)
+    : restingValue;
   const headerLabel = hovering ? String(data[activeIndex]?.label ?? title) : title;
   const valueFor = (i: number) => format(hovering ? (raw[i]?.[activeIndex] ?? 0) : totalOf(i));
 
@@ -164,30 +194,50 @@ export function AreaChartCard({
         testID={testID}
       />
 
-      <View style={tiles ? { width: '100%', height: TILES_PLOT_HEIGHT } : { width: '100%', flex: 1, minHeight: 0 }}>
+      <View
+        style={
+          tiles
+            ? { width: '100%', height: TILES_PLOT_HEIGHT }
+            : { width: '100%', flex: 1, minHeight: 0 }
+        }
+      >
         <CartesianPlot
           categories={categories}
           yAxisWidth={Y_AXIS_WIDTH}
           yDomain={yDomain}
           yTicks={yTicks}
-          formatYTick={formatAxisValue ?? ((value: number) => (isPercent ? percentTick(value, chartLocale) : compactNumber(value, chartLocale)))}
+          formatYTick={
+            formatAxisValue ??
+            ((value: number) =>
+              isPercent ? percentTick(value, chartLocale) : compactNumber(value, chartLocale))
+          }
           grid
           outside="clear"
           onActiveIndexChange={setActiveIndex}
           palette={palette}
-          accessibilityLabel={accessibilityLabel ?? defaultAccessibilityLabel(title, variant, series)}
-          testID={testID ? `${testID}-plot` : undefined}>
+          accessibilityLabel={
+            accessibilityLabel ?? defaultAccessibilityLabel(title, variant, series)
+          }
+          testID={testID ? `${testID}-plot` : undefined}
+        >
           {({ size, box, x, y }) => {
             const n = data.length;
             const at = (offset: number, i: number, target: number) =>
-              anim.from && anim.from.length === flat.length ? lerp(anim.from[offset + i]!, target, anim.progress) : target;
+              anim.from && anim.from.length === flat.length
+                ? lerp(anim.from[offset + i]!, target, anim.progress)
+                : target;
             const shapes = bands.map((band, s) => {
               const base = s * 2 * n;
               const top: Point[] = band.upper.map((v, i) => ({ x: x(i), y: y(at(base, i, v)) }));
-              const bottom: Point[] = band.lower.map((v, i) => ({ x: x(i), y: y(at(base + n, i, v)) }));
+              const bottom: Point[] = band.lower.map((v, i) => ({
+                x: x(i),
+                y: y(at(base + n, i, v)),
+              }));
               return { top, bottom };
             });
-            const revealWidth = anim.from ? size.width : box.left + (size.width - box.left) * anim.progress;
+            const revealWidth = anim.from
+              ? size.width
+              : box.left + (size.width - box.left) * anim.progress;
             return (
               <Svg width={size.width} height={size.height} pointerEvents="none">
                 <Defs>
@@ -210,7 +260,12 @@ export function AreaChartCard({
                         fillOpacity={AREA_FILL_OPACITY}
                         stroke="none"
                       />
-                      <Path d={curvePath(top, curve)} fill="none" stroke={tones[s]!.activeColor} strokeWidth={2} />
+                      <Path
+                        d={curvePath(top, curve)}
+                        fill="none"
+                        stroke={tones[s]!.activeColor}
+                        strokeWidth={2}
+                      />
                     </G>
                   ))}
                 </G>
@@ -261,7 +316,11 @@ export function AreaChartCard({
         <ChartLegend
           testID={testID ? `${testID}-legend` : undefined}
           style={{ paddingBottom: 4 }}
-          items={series.map((s, i) => ({ label: s.label, color: tones[i]!.color, value: valueFor(i) }))}
+          items={series.map((s, i) => ({
+            label: s.label,
+            color: tones[i]!.color,
+            value: valueFor(i),
+          }))}
         />
       )}
     </ChartCardSurface>

@@ -126,7 +126,13 @@ function ReviewSummaryComponent({
     categories && categories.length > 0 ? (
       <View
         style={[
-          { flexDirection: 'row', flexWrap: 'wrap', columnGap: COLUMN_GAP, rowGap: 12, alignContent: 'flex-start' },
+          {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            columnGap: COLUMN_GAP,
+            rowGap: 12,
+            alignContent: 'flex-start',
+          },
           wide ? { flex: 1, minWidth: 0 } : { width: '100%' },
         ]}
         testID={testID ? `${testID}-categories` : undefined}

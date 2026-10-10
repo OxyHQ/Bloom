@@ -4,7 +4,6 @@ import { Platform, type ViewStyle } from 'react-native';
 
 import type { WebCssStyle } from '../styles/web-view-style';
 
-
 import { surfaceFillOn, surfaceTextOn, useSurfaceFill } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -85,11 +84,9 @@ export const TEXT_FIELD_LABEL_TEXT = TYPE_SCALE['body-medium'];
 export const TEXT_FIELD_HINT_TEXT = TYPE_SCALE['caption-1-medium'];
 
 /** Bloom's sans family, as the typography primitives resolve it. */
-export const SANS_FONT_FAMILY =
-  Platform.OS === 'web' ? 'var(--bloom-font-sans)' : 'Inter';
+export const SANS_FONT_FAMILY = Platform.OS === 'web' ? 'var(--bloom-font-sans)' : 'Inter';
 /** Bloom's mono family (`font-mono`). */
-export const MONO_FONT_FAMILY =
-  Platform.OS === 'web' ? 'var(--bloom-font-mono)' : 'JetBrains Mono';
+export const MONO_FONT_FAMILY = Platform.OS === 'web' ? 'var(--bloom-font-mono)' : 'JetBrains Mono';
 
 /** Web-only colour transition on the shell; inert on native. */
 const TEXT_FIELD_TRANSITION_STYLE: WebCssStyle = {

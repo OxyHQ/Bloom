@@ -50,8 +50,21 @@ describe('VirtualList (native)', () => {
   });
 
   it('binds screen geometry without adding a ScrollView', () => {
-    const tree = render(<BloomThemeProvider fonts={false}><Screen header={<Text>Header</Text>} headerHeight={80}><VirtualList screen={{}} testID="list" data={[]} contentContainerStyle={{ paddingBottom: 12 }} /></Screen></BloomThemeProvider>);
-    expect(resolvedStyle(tree.UNSAFE_getByType(FlatList).props.contentContainerStyle)).toMatchObject({ paddingTop: 80, paddingBottom: 28 });
+    const tree = render(
+      <BloomThemeProvider fonts={false}>
+        <Screen header={<Text>Header</Text>} headerHeight={80}>
+          <VirtualList
+            screen={{}}
+            testID="list"
+            data={[]}
+            contentContainerStyle={{ paddingBottom: 12 }}
+          />
+        </Screen>
+      </BloomThemeProvider>,
+    );
+    expect(
+      resolvedStyle(tree.UNSAFE_getByType(FlatList).props.contentContainerStyle),
+    ).toMatchObject({ paddingTop: 80, paddingBottom: 28 });
   });
 
   it('exposes an imperative scroll handle via ref', () => {

@@ -10,7 +10,17 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { resolvedStyle } from './support/rendered-style';
 
-const HUES: ChipHue[] = ['lime', 'rose', 'yellow', 'cyan', 'blue', 'purple', 'neutral', 'gray', 'soft'];
+const HUES: ChipHue[] = [
+  'lime',
+  'rose',
+  'yellow',
+  'cyan',
+  'blue',
+  'purple',
+  'neutral',
+  'gray',
+  'soft',
+];
 
 function withTheme(mode: 'light' | 'dark', read: (theme: Theme) => void) {
   function Probe() {
@@ -28,11 +38,26 @@ describe('resolveChipHueColors', () => {
   it("maps light status pairs to the 200 fill and 800 text of each hue's theme ramp", () => {
     withTheme('light', (theme) => {
       const { accent } = resolveButtonRamps(theme);
-      expect(resolveChipHueColors(theme, 'lime')).toEqual({ background: toneColor(theme, 'lime', 200), foreground: toneColor(theme, 'lime', 800) });
-      expect(resolveChipHueColors(theme, 'rose')).toEqual({ background: toneColor(theme, 'rose', 200), foreground: toneColor(theme, 'rose', 800) });
-      expect(resolveChipHueColors(theme, 'yellow')).toEqual({ background: toneColor(theme, 'amber', 200), foreground: toneColor(theme, 'amber', 800) });
-      expect(resolveChipHueColors(theme, 'cyan')).toEqual({ background: toneColor(theme, 'sky', 200), foreground: toneColor(theme, 'sky', 800) });
-      expect(resolveChipHueColors(theme, 'blue')).toEqual({ background: accent[200], foreground: accent[800] });
+      expect(resolveChipHueColors(theme, 'lime')).toEqual({
+        background: toneColor(theme, 'lime', 200),
+        foreground: toneColor(theme, 'lime', 800),
+      });
+      expect(resolveChipHueColors(theme, 'rose')).toEqual({
+        background: toneColor(theme, 'rose', 200),
+        foreground: toneColor(theme, 'rose', 800),
+      });
+      expect(resolveChipHueColors(theme, 'yellow')).toEqual({
+        background: toneColor(theme, 'amber', 200),
+        foreground: toneColor(theme, 'amber', 800),
+      });
+      expect(resolveChipHueColors(theme, 'cyan')).toEqual({
+        background: toneColor(theme, 'sky', 200),
+        foreground: toneColor(theme, 'sky', 800),
+      });
+      expect(resolveChipHueColors(theme, 'blue')).toEqual({
+        background: accent[200],
+        foreground: accent[800],
+      });
     });
   });
 
@@ -59,9 +84,18 @@ describe('resolveChipHueColors', () => {
       withTheme(mode, (theme) => {
         const { neutral: n } = resolveButtonRamps(theme);
         const dark = mode === 'dark';
-        expect(resolveChipHueColors(theme, 'neutral')).toEqual({ background: theme.colors.backgroundTertiary, foreground: theme.colors.textSecondary });
-        expect(resolveChipHueColors(theme, 'gray')).toEqual({ background: theme.colors.backgroundSecondary, foreground: theme.colors.text });
-        expect(resolveChipHueColors(theme, 'soft')).toEqual({ background: theme.colors.backgroundSecondary, foreground: theme.colors.textSecondary });
+        expect(resolveChipHueColors(theme, 'neutral')).toEqual({
+          background: theme.colors.backgroundTertiary,
+          foreground: theme.colors.textSecondary,
+        });
+        expect(resolveChipHueColors(theme, 'gray')).toEqual({
+          background: theme.colors.backgroundSecondary,
+          foreground: theme.colors.text,
+        });
+        expect(resolveChipHueColors(theme, 'soft')).toEqual({
+          background: theme.colors.backgroundSecondary,
+          foreground: theme.colors.textSecondary,
+        });
       });
     }
   });
@@ -91,7 +125,12 @@ describe('Chip hue', () => {
   }
 
   it('paints the fill and the label from the hue, over `color` and `variant`, with no border', () => {
-    const { getByTestId, getByText, theme } = renderChip({ hue: 'purple', tone: 'danger', appearance: 'outline', children: 'Design' });
+    const { getByTestId, getByText, theme } = renderChip({
+      hue: 'purple',
+      tone: 'danger',
+      appearance: 'outline',
+      children: 'Design',
+    });
     const expected = resolveChipHueColors(theme, 'purple');
     const box = resolvedStyle(getByTestId('chip').props.style);
     expect(box.backgroundColor).toBe(expected.background);
@@ -100,7 +139,10 @@ describe('Chip hue', () => {
   });
 
   it('pre-mixes a dark fill over `surface`', () => {
-    const { getByTestId, theme } = renderChip({ hue: 'lime', surface: 'rgb(10, 20, 30)', children: 'Shipped' }, 'dark');
+    const { getByTestId, theme } = renderChip(
+      { hue: 'lime', surface: 'rgb(10, 20, 30)', children: 'Shipped' },
+      'dark',
+    );
     expect(resolvedStyle(getByTestId('chip').props.style).backgroundColor).toBe(
       resolveChipHueColors(theme, 'lime', 'rgb(10, 20, 30)').background,
     );
@@ -108,7 +150,12 @@ describe('Chip hue', () => {
 
   it('still lets `selected` promote a pressable chip to the brand tone', () => {
     const plain = renderChip({ hue: 'lime', children: 'Music', onPress: () => {} });
-    const selected = renderChip({ hue: 'lime', children: 'Music', onPress: () => {}, checked: true });
+    const selected = renderChip({
+      hue: 'lime',
+      children: 'Music',
+      onPress: () => {},
+      checked: true,
+    });
     const plainBg = resolvedStyle(plain.getByTestId('chip').props.style).backgroundColor;
     const selectedBg = resolvedStyle(selected.getByTestId('chip').props.style).backgroundColor;
     expect(plainBg).toBe(resolveChipHueColors(plain.theme, 'lime').background);
@@ -116,7 +163,13 @@ describe('Chip hue', () => {
   });
 
   it('leaves a chip without `hue` on the accent recipe', () => {
-    const { getByTestId, theme } = renderChip({ tone: 'success', appearance: 'subtle', children: 'Live' });
-    expect(resolvedStyle(getByTestId('chip').props.style).backgroundColor).not.toBe(resolveChipHueColors(theme, 'lime').background);
+    const { getByTestId, theme } = renderChip({
+      tone: 'success',
+      appearance: 'subtle',
+      children: 'Live',
+    });
+    expect(resolvedStyle(getByTestId('chip').props.style).backgroundColor).not.toBe(
+      resolveChipHueColors(theme, 'lime').background,
+    );
   });
 });

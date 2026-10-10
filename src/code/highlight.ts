@@ -30,16 +30,73 @@ export function isHighlightedLanguage(language: CodeLanguage | undefined): boole
 }
 
 const KEYWORDS = new Set([
-  'abstract', 'as', 'async', 'await', 'break', 'case', 'catch', 'class', 'const', 'continue',
-  'debugger', 'declare', 'default', 'delete', 'do', 'else', 'enum', 'export', 'extends', 'false',
-  'finally', 'for', 'from', 'function', 'get', 'if', 'implements', 'import', 'in', 'instanceof',
-  'interface', 'is', 'keyof', 'let', 'module', 'namespace', 'new', 'null', 'of', 'package',
-  'private', 'protected', 'public', 'readonly', 'require', 'return', 'satisfies', 'set', 'static',
-  'super', 'switch', 'this', 'throw', 'true', 'try', 'type', 'typeof', 'undefined', 'var', 'void',
-  'while', 'with', 'yield',
+  'abstract',
+  'as',
+  'async',
+  'await',
+  'break',
+  'case',
+  'catch',
+  'class',
+  'const',
+  'continue',
+  'debugger',
+  'declare',
+  'default',
+  'delete',
+  'do',
+  'else',
+  'enum',
+  'export',
+  'extends',
+  'false',
+  'finally',
+  'for',
+  'from',
+  'function',
+  'get',
+  'if',
+  'implements',
+  'import',
+  'in',
+  'instanceof',
+  'interface',
+  'is',
+  'keyof',
+  'let',
+  'module',
+  'namespace',
+  'new',
+  'null',
+  'of',
+  'package',
+  'private',
+  'protected',
+  'public',
+  'readonly',
+  'require',
+  'return',
+  'satisfies',
+  'set',
+  'static',
+  'super',
+  'switch',
+  'this',
+  'throw',
+  'true',
+  'try',
+  'type',
+  'typeof',
+  'undefined',
+  'var',
+  'void',
+  'while',
+  'with',
+  'yield',
 ]);
 
-const OPERATOR = /\.\.\.|\?\?=?|\?\.|=>|[!=]==?|&&=?|\|\|=?|\*\*=?|<<=?|>>>?=?|\+\+|--|[-+*/%&|^!<>]=?|[~?:=]/y;
+const OPERATOR =
+  /\.\.\.|\?\?=?|\?\.|=>|[!=]==?|&&=?|\|\|=?|\*\*=?|<<=?|>>>?=?|\+\+|--|[-+*/%&|^!<>]=?|[~?:=]/y;
 const IDENT = /[A-Za-z_$][\w$]*/y;
 const TAG_NAME = /[A-Za-z_$][\w$.-]*/y;
 const NUMBER = /0[xX][\da-fA-F_]+|\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?n?/y;
@@ -67,7 +124,8 @@ function tokenizeScript(source: string, marked: ReadonlySet<string>): CodeToken[
   const push = (kind: CodeTokenKind, text: string) => {
     if (!text) return;
     const last = tokens[tokens.length - 1];
-    if (last && last.kind === kind && (kind === 'plain' || kind === 'punctuation')) last.text += text;
+    if (last && last.kind === kind && (kind === 'plain' || kind === 'punctuation'))
+      last.text += text;
     else tokens.push({ kind, text });
   };
   /** The last significant token, to tell a JSX `<` from a less-than. */
@@ -142,7 +200,8 @@ function tokenizeScript(source: string, marked: ReadonlySet<string>): CodeToken[
           else if (source[j] === '}' && --depth === 0) break;
         }
         push('punctuation', '{');
-        for (const token of tokenizeScript(source.slice(i + 1, j), marked)) push(token.kind, token.text);
+        for (const token of tokenizeScript(source.slice(i + 1, j), marked))
+          push(token.kind, token.text);
         if (j < source.length) push('punctuation', '}');
         i = j + 1;
         continue;
@@ -187,7 +246,12 @@ function tokenizeScript(source: string, marked: ReadonlySet<string>): CodeToken[
       i += 1;
       continue;
     }
-    if (ch === '<' && next !== undefined && /[A-Za-z/]/.test(next) && (next !== '/' || /[A-Za-z]/.test(source[i + 2] ?? ''))) {
+    if (
+      ch === '<' &&
+      next !== undefined &&
+      /[A-Za-z/]/.test(next) &&
+      (next !== '/' || /[A-Za-z]/.test(source[i + 2] ?? ''))
+    ) {
       const prev = state.last;
       const afterValue =
         prev !== null &&

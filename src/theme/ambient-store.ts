@@ -124,7 +124,11 @@ function getSnapshot(): AmbientThemeState {
 }
 
 /** Internal setter used by the debounced hook API. */
-function setAmbientInternal(seed: string, accents: AmbientAccents | undefined, debounceMs: number): void {
+function setAmbientInternal(
+  seed: string,
+  accents: AmbientAccents | undefined,
+  debounceMs: number,
+): void {
   schedule(
     {
       seed,

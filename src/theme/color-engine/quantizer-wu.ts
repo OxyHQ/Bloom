@@ -66,7 +66,11 @@ export function quantizeWu(pixels: number[], maxColors: number): number[] {
     const red = redFromArgb(pixel);
     const green = greenFromArgb(pixel);
     const blue = blueFromArgb(pixel);
-    const index = getIndex((red >> bitsToRemove) + 1, (green >> bitsToRemove) + 1, (blue >> bitsToRemove) + 1);
+    const index = getIndex(
+      (red >> bitsToRemove) + 1,
+      (green >> bitsToRemove) + 1,
+      (blue >> bitsToRemove) + 1,
+    );
     weights[index] = cell(weights, index) + count;
     momentsR[index] = cell(momentsR, index) + count * red;
     momentsG[index] = cell(momentsG, index) + count * green;

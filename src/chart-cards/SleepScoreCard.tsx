@@ -73,7 +73,16 @@ const CHEVRON_RIGHT = 'M7 4L10.2929 7.29289C10.6834 7.68342 10.6834 8.31658 10.2
 
 function Chevron16({ d, color }: { d: string; color: string }) {
   return (
-    <View style={{ width: 16, height: 16, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }} aria-hidden>
+    <View
+      style={{
+        width: 16,
+        height: 16,
+        flexShrink: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      aria-hidden
+    >
       <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
         <Path d={d} stroke={color} strokeWidth={2} strokeLinecap="round" />
       </Svg>
@@ -132,12 +141,19 @@ export function SleepScoreCard({
     return theme.colors.contrast50;
   }, [theme, palette.inner]);
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(metrics.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    metrics.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const hovering = activeIndex !== null;
 
   const total = metrics.reduce((sum, m) => sum + m.score, 0);
   const totalMax = metrics.reduce((sum, m) => sum + m.max, 0);
-  const verdict = typeof scoreLabel === 'function' ? scoreLabel(total) : (scoreLabel ?? defaultSleepScoreLabel(total));
+  const verdict =
+    typeof scoreLabel === 'function'
+      ? scoreLabel(total)
+      : (scoreLabel ?? defaultSleepScoreLabel(total));
   const centerValue = hovering ? (metrics[activeIndex]?.score ?? total) : total;
 
   // Coloured arcs + a transparent filler for the unearned points.
@@ -166,10 +182,12 @@ export function SleepScoreCard({
     `${title}: ${chartText.scoreOf(String(total), String(totalMax))}, ${verdict}. ${metrics.map((m) => `${m.label} ${chartText.scoreOf(String(m.score), String(m.max))}`).join(', ')}`;
 
   return (
-    <ChartCardSurface radius="radius-20"
+    <ChartCardSurface
+      radius="radius-20"
       height={height}
       testID={testID}
-      style={[{ paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
+      style={[{ paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}
+    >
       <View
         style={{
           width: '100%',
@@ -180,7 +198,8 @@ export function SleepScoreCard({
           paddingLeft: 6,
           paddingRight: 6,
           paddingTop: 6,
-        }}>
+        }}
+      >
         <View style={{ minWidth: 0, flex: 1, flexDirection: 'column', gap: 2 }}>
           <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
             {title}
@@ -189,7 +208,8 @@ export function SleepScoreCard({
             variant="title-1-medium"
             numberOfLines={1}
             testID={testID ? `${testID}-verdict` : undefined}
-            style={{ color: palette.text }}>
+            style={{ color: palette.text }}
+          >
             {verdict}
           </Text>
         </View>
@@ -213,9 +233,14 @@ export function SleepScoreCard({
               paddingBottom: 4,
               paddingLeft: 4,
               boxShadow: palette.pill.shadow,
-            }}>
+            }}
+          >
             <Chevron16 d={CHEVRON_LEFT} color={palette.textSecondary} />
-            <Text variant="body-medium" numberOfLines={1} style={{ flex: 1, textAlign: 'center', color: palette.text }}>
+            <Text
+              variant="body-medium"
+              numberOfLines={1}
+              style={{ flex: 1, textAlign: 'center', color: palette.text }}
+            >
               {range}
             </Text>
             <Chevron16 d={CHEVRON_RIGHT} color={palette.textSecondary} />
@@ -233,7 +258,8 @@ export function SleepScoreCard({
             // The unearned filler is hoverable but focuses nothing.
             setActiveIndex(index !== null && index < metrics.length ? index : null);
           }}
-          onPointerLeave={() => setActiveIndex(null)}>
+          onPointerLeave={() => setActiveIndex(null)}
+        >
           {({ width }) => {
             const { cx, cy, arcs } = sectorsFor(width);
             const track = sectorPath({
@@ -245,7 +271,12 @@ export function SleepScoreCard({
               endAngle: 360,
             });
             return (
-              <Svg width={width} height={CHART_HEIGHT} style={StyleSheet.absoluteFill} pointerEvents="none">
+              <Svg
+                width={width}
+                height={CHART_HEIGHT}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              >
                 {track ? <Path d={track} fill={palette.track} stroke="none" /> : null}
                 {arcs.slice(0, metrics.length).map((arc, i) => {
                   const d = sectorPath({ cx, cy, ...arc, cornerRadius: ROUND });
@@ -267,12 +298,22 @@ export function SleepScoreCard({
         </PolarSurface>
         <View
           pointerEvents="none"
-          style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' }}>
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <FadeOnChange fadeKey={String(activeIndex)}>
             <Text
               variant="display-4-medium"
               testID={testID ? `${testID}-score` : undefined}
-              style={[{ color: palette.text }, TABULAR]}>
+              style={[{ color: palette.text }, TABULAR]}
+            >
               {centerValue}
             </Text>
           </FadeOnChange>
@@ -281,7 +322,15 @@ export function SleepScoreCard({
 
       <View
         testID={testID ? `${testID}-metrics` : undefined}
-        style={{ width: '100%', flex: 1, flexDirection: 'column', borderRadius: 10, backgroundColor: palette.inner, paddingLeft: 10 }}>
+        style={{
+          width: '100%',
+          flex: 1,
+          flexDirection: 'column',
+          borderRadius: 10,
+          backgroundColor: palette.inner,
+          paddingLeft: 10,
+        }}
+      >
         {metrics.map((metric, i) => (
           <View
             key={`${metric.label}-${i}`}
@@ -297,14 +346,39 @@ export function SleepScoreCard({
               paddingRight: 10,
               borderBottomWidth: i < metrics.length - 1 ? 1 : 0,
               borderBottomColor: separator,
-            }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1, minWidth: 0 }}>
-              <View style={{ width: 12, height: 12, flexShrink: 0, borderRadius: 4, backgroundColor: colors[i] }} />
-              <Text variant="body-regular" numberOfLines={1} style={{ flexShrink: 1, color: palette.textSecondary }}>
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                flexShrink: 1,
+                minWidth: 0,
+              }}
+            >
+              <View
+                style={{
+                  width: 12,
+                  height: 12,
+                  flexShrink: 0,
+                  borderRadius: 4,
+                  backgroundColor: colors[i],
+                }}
+              />
+              <Text
+                variant="body-regular"
+                numberOfLines={1}
+                style={{ flexShrink: 1, color: palette.textSecondary }}
+              >
                 {metric.label}: {metric.detail}
               </Text>
             </View>
-            <Text variant="body-medium" numberOfLines={1} style={[{ color: palette.text }, TABULAR]}>
+            <Text
+              variant="body-medium"
+              numberOfLines={1}
+              style={[{ color: palette.text }, TABULAR]}
+            >
               {metric.score}/{metric.max}
             </Text>
           </View>

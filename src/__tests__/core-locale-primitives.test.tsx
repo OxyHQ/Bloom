@@ -41,7 +41,10 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
 
   describe('carousel', () => {
     it('names its arrows, dots and slides in the provider locale', () => {
-      const { getByLabelText, getByTestId } = renderIn('es', <Carousel accessibilityLabel="Galería">{slides(3)}</Carousel>);
+      const { getByLabelText, getByTestId } = renderIn(
+        'es',
+        <Carousel accessibilityLabel="Galería">{slides(3)}</Carousel>,
+      );
       expect(getByLabelText('Diapositiva anterior')).toBeTruthy();
       expect(getByLabelText('Diapositiva siguiente')).toBeTruthy();
       expect(getByLabelText('Ir a la diapositiva 2')).toBeTruthy();
@@ -51,7 +54,11 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
     it('lets previousLabel / dotLabel win over the catalog', () => {
       const { getByLabelText } = renderIn(
         'es',
-        <Carousel accessibilityLabel="G" previousLabel="Atrás del todo" dotLabel={(n) => `Foto ${n}`}>
+        <Carousel
+          accessibilityLabel="G"
+          previousLabel="Atrás del todo"
+          dotLabel={(n) => `Foto ${n}`}
+        >
           {slides(2)}
         </Carousel>,
       );
@@ -62,7 +69,10 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
 
   describe('code', () => {
     it('names the copy button in the provider locale, and labels still win', () => {
-      const { getByLabelText, rerender } = renderIn('es', <CodeBlock code="x" filename="a.ts" onCopy={() => {}} />);
+      const { getByLabelText, rerender } = renderIn(
+        'es',
+        <CodeBlock code="x" filename="a.ts" onCopy={() => {}} />,
+      );
       expect(getByLabelText('Copiar código')).toBeTruthy();
       rerender(
         <BloomThemeProvider mode="light" colorPreset="teal">
@@ -88,7 +98,10 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
     });
 
     it('lets labels win', () => {
-      const { getByText } = renderIn('es', <OutlineNav headings={headings} activeId="a" labels={{ outline: 'Índice' }} />);
+      const { getByText } = renderIn(
+        'es',
+        <OutlineNav headings={headings} activeId="a" labels={{ outline: 'Índice' }} />,
+      );
       expect(getByText('Índice')).toBeTruthy();
     });
   });
@@ -99,7 +112,10 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
         'es',
         <ContactProfileCard
           name="Nora Vance"
-          channels={[{ kind: 'phone', onPress: () => {} }, { kind: 'website', onPress: () => {} }]}
+          channels={[
+            { kind: 'phone', onPress: () => {} },
+            { kind: 'website', onPress: () => {} },
+          ]}
           tags={['VIP']}
           owner={{ name: 'Marta' }}
         />,
@@ -111,7 +127,10 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
     });
 
     it("lets the owner's own label win", () => {
-      const { getByText } = renderIn('es', <ContactProfileCard name="Nora" owner={{ name: 'Marta', label: 'Gestora' }} />);
+      const { getByText } = renderIn(
+        'es',
+        <ContactProfileCard name="Nora" owner={{ name: 'Marta', label: 'Gestora' }} />,
+      );
       expect(getByText('Gestora · Marta')).toBeTruthy();
     });
   });
@@ -120,7 +139,10 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
     const items = Array.from({ length: 5 }, (_, i) => ({ id: String(i), name: `P${i}` }));
 
     it('names the overflow chip with a plural in the provider locale', () => {
-      const { getByLabelText } = renderIn('es', <AvatarGroup items={items} max={3} onPressItem={() => {}} />);
+      const { getByLabelText } = renderIn(
+        'es',
+        <AvatarGroup items={items} max={3} onPressItem={() => {}} />,
+      );
       expect(getByLabelText('2 personas más')).toBeTruthy();
     });
 
@@ -149,7 +171,12 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
     });
 
     it('lets children win', () => {
-      const { getByText } = renderIn('es', <SocialButton brand="google" onPress={() => {}}>Entrar</SocialButton>);
+      const { getByText } = renderIn(
+        'es',
+        <SocialButton brand="google" onPress={() => {}}>
+          Entrar
+        </SocialButton>,
+      );
       expect(getByText('Entrar')).toBeTruthy();
     });
   });

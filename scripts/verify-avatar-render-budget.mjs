@@ -7,9 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const recipes = JSON.parse(
   execFileSync(
     'bun',
@@ -36,8 +34,7 @@ try {
   page = await browser.newPage({ viewport: { width: 1100, height: 900 } });
   page.on('console', (message) => {
     // delete() deliberately loses its context. Only quota eviction is a failure.
-    if (/too many active webgl contexts/i.test(message.text()))
-      quotaWarnings.push(message.text());
+    if (/too many active webgl contexts/i.test(message.text())) quotaWarnings.push(message.text());
   });
   page.on('pageerror', (error) => pageErrors.push(error.message));
   await page.route('**/__bloom_render_budget.html', (route) =>
@@ -46,9 +43,7 @@ try {
       body: '<!doctype html><html><body></body></html>',
     }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__bloom_render_budget.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__bloom_render_budget.html`);
   await page.evaluate(async (recipes) => {
     window.gate = {
       contexts: new Set(),
@@ -63,8 +58,7 @@ try {
       started: performance.now(),
       longTasks: [],
     };
-    gate.contextCount = () =>
-      [...gate.contexts].filter((gl) => !gl.isContextLost()).length;
+    gate.contextCount = () => [...gate.contexts].filter((gl) => !gl.isContextLost()).length;
     const getContext = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (type, ...args) {
       const context = getContext.call(this, type, ...args);
@@ -81,8 +75,7 @@ try {
     ).observe({ type: 'longtask' });
     gate.runtime = await import('/bloom-character/runtime.mjs');
     gate.grid = document.createElement('div');
-    gate.grid.style.cssText =
-      'display:grid;grid-template-columns:repeat(8,92px);gap:10px';
+    gate.grid.style.cssText = 'display:grid;grid-template-columns:repeat(8,92px);gap:10px';
     document.body.append(gate.grid);
     const presets = [
       'blue_beret',
@@ -128,9 +121,7 @@ try {
       );
     }
     gate.painted = (canvas) => {
-      const data = canvas
-        .getContext('2d')
-        .getImageData(0, 0, canvas.width, canvas.height).data;
+      const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
       let count = 0;
       for (let i = 3; i < data.length; i += 4) if (data[i] > 24) count++;
       return count;
@@ -175,40 +166,24 @@ try {
   const coldReaction = await page.evaluate(() =>
     gate.controls.findIndex(
       (control, i) =>
-        i < 24 &&
-        control.diagnostics()?.suspended &&
-        control.diagnostics()?.lastReaction == null,
+        i < 24 && control.diagnostics()?.suspended && control.diagnostics()?.lastReaction == null,
     ),
   );
-  assert.ok(
-    coldReaction >= 0,
-    'The crowd must contain suspended original avatars',
-  );
+  assert.ok(coldReaction >= 0, 'The crowd must contain suspended original avatars');
   await page.locator(`#avatar-${coldReaction}`).click();
   await page.waitForFunction(
-    (i) =>
-      gate.controls[i].diagnostics()?.lastReaction === 0 || gate.errors.length,
+    (i) => gate.controls[i].diagnostics()?.lastReaction === 0 || gate.errors.length,
     coldReaction,
     { timeout: 60000 },
   );
   assert.deepEqual(await page.evaluate(() => gate.errors), []);
-  assert.ok(
-    await page.evaluate(
-      (i) => gate.painted(gate.canvases[i]) > 100,
-      coldReaction,
-    ),
-  );
+  assert.ok(await page.evaluate((i) => gate.painted(gate.canvases[i]) > 100, coldReaction));
 
   // A cold migrated avatar must retain an imperative work request while loading.
   const coldWork = await page.evaluate(() =>
-    gate.controls.findIndex(
-      (control, i) => i >= 24 && i < 40 && control.diagnostics()?.suspended,
-    ),
+    gate.controls.findIndex((control, i) => i >= 24 && i < 40 && control.diagnostics()?.suspended),
   );
-  assert.ok(
-    coldWork >= 24,
-    'The crowd must contain suspended migrated avatars',
-  );
+  assert.ok(coldWork >= 24, 'The crowd must contain suspended migrated avatars');
   await page.evaluate((i) => {
     gate.props[i] = { ...gate.props[i], workingKey: 1 };
     gate.controls[i].update(gate.props[i]);
@@ -217,10 +192,7 @@ try {
     (i) => {
       const d = gate.controls[i].diagnostics();
       return (
-        (d?.activityMode &&
-          d?.ready &&
-          !d?.pending &&
-          d?.lastActivityResult === 0) ||
+        (d?.activityMode && d?.ready && !d?.pending && d?.lastActivityResult === 0) ||
         gate.errors.length
       );
     },
@@ -228,9 +200,7 @@ try {
     { timeout: 60000 },
   );
   assert.deepEqual(await page.evaluate(() => gate.errors), []);
-  assert.ok(
-    await page.evaluate((i) => gate.painted(gate.canvases[i]) > 100, coldWork),
-  );
+  assert.ok(await page.evaluate((i) => gate.painted(gate.canvases[i]) > 100, coldWork));
   console.log(
     'reactivation',
     JSON.stringify(
@@ -252,25 +222,17 @@ try {
     scrollTo(0, 0);
   });
   await page.waitForFunction(
-    () =>
-      gate.runtime.runtimeStats().budget.resident === 0 &&
-      gate.contextCount() === 0,
+    () => gate.runtime.runtimeStats().budget.resident === 0 && gate.contextCount() === 0,
     {},
     { timeout: 30000 },
   );
   assert.ok(
-    (await page.evaluate(() => gate.canvases.map(gate.painted))).every(
-      (count) => count > 100,
-    ),
+    (await page.evaluate(() => gate.canvases.map(gate.painted))).every((count) => count > 100),
   );
   await page.evaluate(() => {
     gate.grid.style.marginTop = '0px';
   });
-  await page.waitForFunction(
-    () => gate.contextCount() > 0,
-    {},
-    { timeout: 30000 },
-  );
+  await page.waitForFunction(() => gate.contextCount() > 0, {}, { timeout: 30000 });
 
   // Headless Chromium does not reliably background pages. Drive its visibility
   // input explicitly while retaining real observers, renderers and contexts.
@@ -282,26 +244,18 @@ try {
     document.dispatchEvent(new Event('visibilitychange'));
   });
   await page.waitForFunction(
-    () =>
-      gate.runtime.runtimeStats().budget.resident === 0 &&
-      gate.contextCount() === 0,
+    () => gate.runtime.runtimeStats().budget.resident === 0 && gate.contextCount() === 0,
     {},
     { timeout: 30000 },
   );
   assert.ok(
-    (await page.evaluate(() => gate.canvases.map(gate.painted))).every(
-      (count) => count > 100,
-    ),
+    (await page.evaluate(() => gate.canvases.map(gate.painted))).every((count) => count > 100),
   );
   await page.evaluate(() => {
     delete document.hidden;
     document.dispatchEvent(new Event('visibilitychange'));
   });
-  await page.waitForFunction(
-    () => gate.contextCount() > 0,
-    {},
-    { timeout: 30000 },
-  );
+  await page.waitForFunction(() => gate.contextCount() > 0, {}, { timeout: 30000 });
   await page.evaluate(() => {
     gate.controls.forEach((control) => control.dispose());
     gate.grid.replaceChildren();
@@ -409,9 +363,7 @@ try {
   if (page && !page.isClosed()) {
     console.error(
       'failure-state',
-      JSON.stringify(
-        await page.evaluate(() => window.gate?.snapshot?.()).catch(() => null),
-      ),
+      JSON.stringify(await page.evaluate(() => window.gate?.snapshot?.()).catch(() => null)),
     );
   }
   console.error('quota-warnings', quotaWarnings, 'page-errors', pageErrors);

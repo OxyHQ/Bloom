@@ -142,7 +142,11 @@ const record = (name, ok, detail) => results.push({ name, ok, detail });
     let page = await open(browser, STORY);
     let box = await padBox(page, PAD);
     if (box === null || !box.onPad) {
-      record('draws', false, `UNPROVEN: ${box === null ? 'no pad, or no box' : 'the press coordinates are not on the pad'}`);
+      record(
+        'draws',
+        false,
+        `UNPROVEN: ${box === null ? 'no pad, or no box' : 'the press coordinates are not on the pad'}`,
+      );
       record('inside-the-pad', false, 'UNPROVEN: could not grab the pad');
     } else {
       const travel = Math.round(box.width * 0.5);

@@ -24,13 +24,21 @@ export interface CalendarPalette {
 export function resolveCalendarPalette(theme: Theme): CalendarPalette {
   const c = theme.colors;
   return {
-    popup: c.backgroundSecondary, panel: c.card, text: c.text,
-    secondaryText: c.textSecondary, disabledText: c.textTertiary,
-    hover: c.backgroundTertiary, rangeBand: c.primarySubtle,
-    rangeEdge: c.primarySubtle, ring: c.primary,
-    chipBorder: c.border, chipBorderFocused: c.primary, tertiary: c.backgroundTertiary,
+    popup: c.backgroundSecondary,
+    panel: c.card,
+    text: c.text,
+    secondaryText: c.textSecondary,
+    disabledText: c.textTertiary,
+    hover: c.backgroundTertiary,
+    rangeBand: c.primarySubtle,
+    rangeEdge: c.primarySubtle,
+    ring: c.primary,
+    chipBorder: c.border,
+    chipBorderFocused: c.primary,
+    tertiary: c.backgroundTertiary,
     shadowXs: theme.isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
-    shadowDropdown: theme.isDark ? '0 1px 1px 0 rgb(0 0 0 / 0.14), 0 4px 4px 0 rgb(0 0 0 / 0.10)' : '0 1px 1px 0 rgb(0 0 0 / 0.04), 0 4px 4px 0 rgb(0 0 0 / 0.02)',
+    shadowDropdown: theme.isDark
+      ? '0 1px 1px 0 rgb(0 0 0 / 0.14), 0 4px 4px 0 rgb(0 0 0 / 0.10)'
+      : '0 1px 1px 0 rgb(0 0 0 / 0.04), 0 4px 4px 0 rgb(0 0 0 / 0.02)',
   };
 }
-

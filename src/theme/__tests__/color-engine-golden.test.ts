@@ -69,9 +69,35 @@ function image(colors: Array<[string, number]>): number[] {
 
 describe('seed extraction from an image (deterministic)', () => {
   const cases: Array<[string, Array<[string, number]>, string]> = [
-    ['a purple-dominant photo', [['#C46EDE', 900], ['#1D9BF0', 80], ['#ffffff', 400], ['#101014', 300]], '#c46ede'],
-    ['a pink/green photo', [['#EC6094', 600], ['#10B981', 500], ['#F59E0B', 200], ['#000000', 700]], '#ec6094'],
-    ['a teal photo', [['#005c67', 1000], ['#14b8a6', 300], ['#eeeeee', 600]], '#005c67'],
+    [
+      'a purple-dominant photo',
+      [
+        ['#C46EDE', 900],
+        ['#1D9BF0', 80],
+        ['#ffffff', 400],
+        ['#101014', 300],
+      ],
+      '#c46ede',
+    ],
+    [
+      'a pink/green photo',
+      [
+        ['#EC6094', 600],
+        ['#10B981', 500],
+        ['#F59E0B', 200],
+        ['#000000', 700],
+      ],
+      '#ec6094',
+    ],
+    [
+      'a teal photo',
+      [
+        ['#005c67', 1000],
+        ['#14b8a6', 300],
+        ['#eeeeee', 600],
+      ],
+      '#005c67',
+    ],
   ];
   for (const [label, colors, expectedSeed] of cases) {
     it(`picks the dominant chromatic colour from ${label}`, () => {

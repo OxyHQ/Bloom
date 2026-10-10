@@ -33,7 +33,7 @@ import { Select, SelectTrigger, SelectValue } from '../select';
 import { Switch } from '../switch';
 import { TextField, TextFieldInput } from '../text-field';
 import { Textarea } from '../textarea';
-import { BloomScope } from "../appearance";
+import { BloomScope } from '../appearance';
 import { ScreenScope, TopEdgeProvider, useClaimTopEdge, useTopEdgeInset } from '../layout';
 import { Text } from '../typography';
 
@@ -116,7 +116,7 @@ describe('2. an interactive card with a secondary action', () => {
     return (
       <Card testID="row" onPress={onOpen} accessibilityLabel="Order 4821">
         <Text>Order 4821</Text>
-        <Button testID="archive" onPress={onArchive}  size="sm" tone="accent" appearance="subtle">
+        <Button testID="archive" onPress={onArchive} size="sm" tone="accent" appearance="subtle">
           Archive
         </Button>
       </Card>
@@ -167,7 +167,13 @@ describe('3. a chat composer', () => {
     const onSend = jest.fn();
     const onAttachPress = jest.fn();
     const view = screen(
-      <ChatComposer value="hello" onSend={onSend} onAttachPress={onAttachPress} disabled testID="composer" />,
+      <ChatComposer
+        value="hello"
+        onSend={onSend}
+        onAttachPress={onAttachPress}
+        disabled
+        testID="composer"
+      />,
     );
     fireEvent.press(view.getByLabelText('Send'));
     expect(onSend).not.toHaveBeenCalled();

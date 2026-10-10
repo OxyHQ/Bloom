@@ -21,13 +21,17 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { ScreenHeaderContext, useScreenContext } from '../screen/context';
 import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
-import { BloomScope } from "../appearance";
+import { BloomScope } from '../appearance';
 import { GlassIsland } from '../glass';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { useScrollMetricsValue } from '../layout/scroll-metrics';
 import { useClaimTopEdge, useScrollOffset } from '../layout';
 import { BREAKPOINTS } from '../styles/breakpoints';
-import { WEB_POSITION_STICKY, WEB_SURFACE_STICKY_TOP, type WebCssStyle } from '../styles/web-view-style';
+import {
+  WEB_POSITION_STICKY,
+  WEB_SURFACE_STICKY_TOP,
+  type WebCssStyle,
+} from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -173,7 +177,9 @@ function PageHeaderComponent({
     dock.headerHeight.value = height;
     dock.overlay.value = overlay || placement === 'overlap';
     dock.setOverlaps(overlay || placement === 'overlap');
-    return () => { dock.headerHeight.value = 0; };
+    return () => {
+      dock.headerHeight.value = 0;
+    };
   }, [dock, height, overlay, placement]);
 
   const paint = useMemo(() => {
@@ -197,7 +203,13 @@ function PageHeaderComponent({
   const contextScrollY = useScrollOffset();
   const metrics = useScrollMetricsValue();
   const internalScrollY = useSharedValue(0);
-  const scrollY = externalScrollY ?? dock?.scrollY ?? metrics?.scrollY ?? screen?.scrollY ?? contextScrollY ?? internalScrollY;
+  const scrollY =
+    externalScrollY ??
+    dock?.scrollY ??
+    metrics?.scrollY ??
+    screen?.scrollY ??
+    contextScrollY ??
+    internalScrollY;
   const followsWindow = !externalScrollY && !dock && !screen && !contextScrollY;
 
   useEffect(() => {
@@ -210,52 +222,88 @@ function PageHeaderComponent({
     return () => window.removeEventListener('scroll', onScroll);
   }, [isWeb, followsWindow, internalScrollY]);
 
-  const threshold = Math.max(1, Number.isFinite(scrollThreshold) ? scrollThreshold : DEFAULT_THRESHOLD);
+  const threshold = Math.max(
+    1,
+    Number.isFinite(scrollThreshold) ? scrollThreshold : DEFAULT_THRESHOLD,
+  );
   const revealOffset = Math.max(0, Number.isFinite(titleRevealOffset) ? titleRevealOffset : 0);
-  const [titleHidden, setTitleHidden] = useState(() => (titleReveal === 'onDock' ? (dockProgress?.value ?? 0) <= 0 : titleReveal === 'onScroll' && scrollY.value <= revealOffset));
-  useEffect(() => { setTitleHidden((titleReveal === 'onDock' ? (dockProgress?.value ?? 0) <= 0 : titleReveal === 'onScroll' && scrollY.value <= revealOffset)); }, [titleReveal, scrollY, revealOffset, dockProgress]);
+  const [titleHidden, setTitleHidden] = useState(() =>
+    titleReveal === 'onDock'
+      ? (dockProgress?.value ?? 0) <= 0
+      : titleReveal === 'onScroll' && scrollY.value <= revealOffset,
+  );
+  useEffect(() => {
+    setTitleHidden(
+      titleReveal === 'onDock'
+        ? (dockProgress?.value ?? 0) <= 0
+        : titleReveal === 'onScroll' && scrollY.value <= revealOffset,
+    );
+  }, [titleReveal, scrollY, revealOffset, dockProgress]);
   useAnimatedReaction(
-    () => (titleReveal === 'onDock' ? (dockProgress?.value ?? 0) <= 0 : titleReveal === 'onScroll' && scrollY.value <= revealOffset),
-    (hidden, previous) => { if (hidden !== previous) runOnJS(setTitleHidden)(hidden); },
+    () =>
+      titleReveal === 'onDock'
+        ? (dockProgress?.value ?? 0) <= 0
+        : titleReveal === 'onScroll' && scrollY.value <= revealOffset,
+    (hidden, previous) => {
+      if (hidden !== previous) runOnJS(setTitleHidden)(hidden);
+    },
     [titleReveal, scrollY, revealOffset, setTitleHidden, dockProgress],
   );
 
-  const shadowStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP),
-  }), [scrollY, threshold]);
+  const shadowStyle = useAnimatedStyle(
+    () => ({
+      opacity: interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP),
+    }),
+    [scrollY, threshold],
+  );
 
-  const backgroundStyle = useAnimatedStyle(() => ({
-    opacity: transparent
-      ? interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP)
-      : 1,
-  }), [scrollY, threshold, transparent]);
+  const backgroundStyle = useAnimatedStyle(
+    () => ({
+      opacity: transparent
+        ? interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP)
+        : 1,
+    }),
+    [scrollY, threshold, transparent],
+  );
 
-  const scrimStyle = useAnimatedStyle(() => ({
-    opacity: (1 - (dockProgress?.value ?? 0)) * (
-      scrim === 'always'
-        ? 1
-        : scrim === 'none'
-          ? 0
-          : interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP)),
-  }), [scrollY, threshold, scrim, dockProgress]);
+  const scrimStyle = useAnimatedStyle(
+    () => ({
+      opacity:
+        (1 - (dockProgress?.value ?? 0)) *
+        (scrim === 'always'
+          ? 1
+          : scrim === 'none'
+            ? 0
+            : interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP)),
+    }),
+    [scrollY, threshold, scrim, dockProgress],
+  );
 
   // Separate from the background's: a header can be transparent and still name
   // its screen, and one over a hero photo can do the opposite.
-  const titleStyle = useAnimatedStyle(() => ({
-    opacity:
-      titleReveal === 'always'
-        ? 1
-        : titleReveal === 'onDock' ? (dockProgress?.value ?? 0) : Math.min(1, Math.max(0, (scrollY.value - revealOffset) / threshold)),
-  }), [scrollY, threshold, titleReveal, revealOffset, dockProgress]);
+  const titleStyle = useAnimatedStyle(
+    () => ({
+      opacity:
+        titleReveal === 'always'
+          ? 1
+          : titleReveal === 'onDock'
+            ? (dockProgress?.value ?? 0)
+            : Math.min(1, Math.max(0, (scrollY.value - revealOffset) / threshold)),
+    }),
+    [scrollY, threshold, titleReveal, revealOffset, dockProgress],
+  );
 
-  const borderStyle = useAnimatedStyle(() => ({
-    opacity:
-      border === 'always'
-        ? 1
-        : border === 'none'
-          ? 0
-          : interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP),
-  }), [scrollY, threshold, border]);
+  const borderStyle = useAnimatedStyle(
+    () => ({
+      opacity:
+        border === 'always'
+          ? 1
+          : border === 'none'
+            ? 0
+            : interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP),
+    }),
+    [scrollY, threshold, border],
+  );
 
   // ── Centring ──────────────────────────────────────────────────────────────
   //
@@ -333,7 +381,15 @@ function PageHeaderComponent({
           size="md"
           iconOnly
           iconSize={16}
-          style={{ width: 34, minWidth: 34, height: 34, paddingLeft: 0, paddingRight: 0, borderWidth: 0, boxShadow: 'none' }}
+          style={{
+            width: 34,
+            minWidth: 34,
+            height: 34,
+            paddingLeft: 0,
+            paddingRight: 0,
+            borderWidth: 0,
+            boxShadow: 'none',
+          }}
           leadingIcon={RiArrowLeftLine}
           accessibilityLabel={backLabel}
           onPress={onBack}
@@ -356,11 +412,20 @@ function PageHeaderComponent({
 
   const containerWeb: WebCssStyle | null =
     isWeb && sticky && !overlay && !positionedByScreen
-      ? { position: WEB_POSITION_STICKY, top: WEB_SURFACE_STICKY_TOP, zIndex: Z_INDEX.floating,
-          transitionProperty: 'top', transitionDuration: 'var(--bloom-panel-inset-duration, 0ms)', transitionTimingFunction: 'ease-in-out' }
+      ? {
+          position: WEB_POSITION_STICKY,
+          top: WEB_SURFACE_STICKY_TOP,
+          zIndex: Z_INDEX.floating,
+          transitionProperty: 'top',
+          transitionDuration: 'var(--bloom-panel-inset-duration, 0ms)',
+          transitionTimingFunction: 'ease-in-out',
+        }
       : null;
 
-  const dockFillStyle = useAnimatedStyle(() => ({ opacity: dockProgress?.value ?? 0 }), [dockProgress]);
+  const dockFillStyle = useAnimatedStyle(
+    () => ({ opacity: dockProgress?.value ?? 0 }),
+    [dockProgress],
+  );
   const chrome = floating ? (
     <Animated.View
       // A PROP: react-native-web resolves `none` from the prop path only, and
@@ -424,20 +489,30 @@ function PageHeaderComponent({
       style={[
         styles.container,
         { paddingTop: padTop },
-        overlay ? [styles.overlay, {
-          zIndex: Z_INDEX.floating,
-          // Android's native scroll surfaces also participate in elevation.
-          // Keep this local chrome above its sibling list without a portal.
-          ...(!isWeb ? { elevation: Z_INDEX.floating } : {}),
-        }] : null,
+        overlay
+          ? [
+              styles.overlay,
+              {
+                zIndex: Z_INDEX.floating,
+                // Android's native scroll surfaces also participate in elevation.
+                // Keep this local chrome above its sibling list without a portal.
+                ...(!isWeb ? { elevation: Z_INDEX.floating } : {}),
+              },
+            ]
+          : null,
         containerWeb,
         placement === 'overlap' ? { marginBottom: -height, zIndex: Z_INDEX.floating } : null,
         style,
       ]}
     >
       {chrome}
-      {floating && dock ? <Animated.View pointerEvents="none" testID={testID ? `${testID}-docked-fill` : undefined}
-        style={[StyleSheet.absoluteFill, {backgroundColor: surfaceFill}, dockFillStyle]} /> : null}
+      {floating && dock ? (
+        <Animated.View
+          pointerEvents="none"
+          testID={testID ? `${testID}-docked-fill` : undefined}
+          style={[StyleSheet.absoluteFill, { backgroundColor: surfaceFill }, dockFillStyle]}
+        />
+      ) : null}
       <View
         style={[styles.bar, { paddingLeft: sideInset, paddingRight: sideInset }]}
         pointerEvents={floating ? 'box-none' : undefined}
@@ -450,11 +525,7 @@ function PageHeaderComponent({
           testID={testID ? `${testID}-start` : undefined}
         >
           {backButton}
-          {floating && leading ? (
-            <BloomScope>{leading}</BloomScope>
-          ) : (
-            leading
-          )}
+          {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
           {centered ? null : titleBlock}
         </View>
         {centered ? <View style={styles.spacer} pointerEvents="none" /> : null}

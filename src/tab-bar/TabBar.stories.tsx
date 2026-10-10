@@ -79,9 +79,7 @@ const ROWS = Array.from({ length: 18 }, (_, index) => index + 1);
 function Screen({ children }: PropsWithChildren) {
   const { colors } = useTheme();
   return (
-    <SafeAreaProvider
-      style={{ flex: 0, alignSelf: 'stretch', marginHorizontal: -PREVIEW_PADDING }}
-    >
+    <SafeAreaProvider style={{ flex: 0, alignSelf: 'stretch', marginHorizontal: -PREVIEW_PADDING }}>
       <GestureHandlerRootView
         style={{
           height: SCREEN_HEIGHT,
@@ -274,10 +272,28 @@ export const ThemeOverride: Story = {
 
 export const Playground: Story = {
   args: { activeIndex: 0, haptics: false, blur: false, maxWidth: 420 },
-  parameters: { controls: { disable: false, include: ['activeIndex', 'material', 'haptics', 'blur', 'maxWidth'] } },
-  argTypes: { activeIndex: { control: { type: 'number', min: -1, max: 3 } }, haptics: { control: 'boolean' }, blur: { control: 'boolean' }, maxWidth: { control: { type: 'range', min: 240, max: 640 } } },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['activeIndex', 'material', 'haptics', 'blur', 'maxWidth'],
+    },
+  },
+  argTypes: {
+    activeIndex: { control: { type: 'number', min: -1, max: 3 } },
+    haptics: { control: 'boolean' },
+    blur: { control: 'boolean' },
+    maxWidth: { control: { type: 'range', min: 240, max: 640 } },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <GestureHandlerRootView style={{ width: 640, maxWidth: '100%', height: 180 }}><TabBar {...args} onIndexChange={activeIndex => updateArgs({ activeIndex })}>{ITEMS.map((item, index) => <TabBarButton key={item.name} item={item} index={index} />)}</TabBar></GestureHandlerRootView>;
+    return (
+      <GestureHandlerRootView style={{ width: 640, maxWidth: '100%', height: 180 }}>
+        <TabBar {...args} onIndexChange={(activeIndex) => updateArgs({ activeIndex })}>
+          {ITEMS.map((item, index) => (
+            <TabBarButton key={item.name} item={item} index={index} />
+          ))}
+        </TabBar>
+      </GestureHandlerRootView>
+    );
   },
 };

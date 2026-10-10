@@ -126,7 +126,9 @@ describe('AiChatFeedbackRow copy confirmation', () => {
   // The check glyph's swap is the confirmation (the native tooltip needs a
   // measured anchor jest never gives it, so its "Copied!" never mounts here).
   const copied = (utils: ReturnType<typeof renderIn>) =>
-    utils.UNSAFE_getAllByType(SwapGlyph).some((glyph) => glyph.props.shown && glyph.findAllByType(RiCheckLine).length > 0);
+    utils
+      .UNSAFE_getAllByType(SwapGlyph)
+      .some((glyph) => glyph.props.shown && glyph.findAllByType(RiCheckLine).length > 0);
 
   afterEach(() => {
     jest.useRealTimers();
@@ -156,7 +158,11 @@ describe('AiChatFeedbackRow copy confirmation', () => {
 
   it('waits for an async copy, and confirms only when it resolves true or nothing', async () => {
     let settle: (ok: boolean | void) => void = () => {};
-    const utils = renderIn(<AiChatFeedbackRow onCopy={() => new Promise<boolean | void>((resolve) => (settle = resolve))} />);
+    const utils = renderIn(
+      <AiChatFeedbackRow
+        onCopy={() => new Promise<boolean | void>((resolve) => (settle = resolve))}
+      />,
+    );
     pressHost(utils.getByLabelText('Copy response'));
     expect(copied(utils)).toBe(false);
     await act(async () => {
@@ -167,7 +173,9 @@ describe('AiChatFeedbackRow copy confirmation', () => {
 
   it('never confirms an async copy that resolves false or rejects', async () => {
     let settle: (ok: boolean) => void = () => {};
-    const refused = renderIn(<AiChatFeedbackRow onCopy={() => new Promise<boolean>((resolve) => (settle = resolve))} />);
+    const refused = renderIn(
+      <AiChatFeedbackRow onCopy={() => new Promise<boolean>((resolve) => (settle = resolve))} />,
+    );
     pressHost(refused.getByLabelText('Copy response'));
     await act(async () => {
       settle(false);
@@ -175,7 +183,9 @@ describe('AiChatFeedbackRow copy confirmation', () => {
     expect(copied(refused)).toBe(false);
 
     let fail: (reason: unknown) => void = () => {};
-    const rejected = renderIn(<AiChatFeedbackRow onCopy={() => new Promise<void>((_, reject) => (fail = reject))} />);
+    const rejected = renderIn(
+      <AiChatFeedbackRow onCopy={() => new Promise<void>((_, reject) => (fail = reject))} />,
+    );
     pressHost(rejected.getByLabelText('Copy response'));
     await act(async () => {
       fail(new Error('clipboard blocked'));
@@ -193,10 +203,17 @@ describe('turn actions', () => {
         testID="reply"
         feedbackProps={{
           actions: [
-            { key: 'speak', label: 'Read aloud', icon: RiVolumeUpLine, onPress: onSpeak, active: true },
+            {
+              key: 'speak',
+              label: 'Read aloud',
+              icon: RiVolumeUpLine,
+              onPress: onSpeak,
+              active: true,
+            },
             { key: 'regenerate', label: 'Regenerate', icon: RiRefreshLine, onPress: onRegenerate },
           ],
-        }}>
+        }}
+      >
         Reply
       </AiChatAssistantMessage>,
     );
@@ -213,7 +230,9 @@ describe('turn actions', () => {
   it('a disabled action is announced disabled and ignores presses', () => {
     const onPress = jest.fn();
     const { getByLabelText } = renderIn(
-      <AiChatFeedbackRow actions={[{ key: 'r', label: 'Regenerate', icon: RiRefreshLine, onPress, disabled: true }]} />,
+      <AiChatFeedbackRow
+        actions={[{ key: 'r', label: 'Regenerate', icon: RiRefreshLine, onPress, disabled: true }]}
+      />,
     );
     const button = getByLabelText('Regenerate');
     expect(button.props.accessibilityState).toMatchObject({ disabled: true });
@@ -232,7 +251,8 @@ describe('turn actions', () => {
         actions={[
           { key: 'copy', label: 'Copy message', icon: RiFileCopyLine, onPress: onCopy },
           { key: 'edit', label: 'Edit message', icon: RiPencilLine, onPress: onEdit },
-        ]}>
+        ]}
+      >
         hello
       </AiChatUserMessage>,
     );
@@ -244,16 +264,34 @@ describe('turn actions', () => {
     expect(onEdit).toHaveBeenCalledTimes(1);
   });
 
-
   it('styles the actual user bubble and recalculates its width after column layout', () => {
-    const bubbleStyle = jest.fn((width: number) => ({ maxWidth: Math.max(0, width - 112), borderRadius: 24,
-      paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12, marginInlineEnd: 0 }));
-    const screen = renderIn(<AiChatUserMessage testID="ask" animate={false} bubbleStyle={bubbleStyle}>hello</AiChatUserMessage>);
-    fireEvent(screen.getByTestId('ask'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 600, height: 60 } } });
-    expect(resolvedStyle(screen.getByTestId('ask-bubble').props.style)).toMatchObject({
-      maxWidth: 488, borderRadius: 24, paddingLeft: 16, paddingTop: 12, marginInlineEnd: 0,
+    const bubbleStyle = jest.fn((width: number) => ({
+      maxWidth: Math.max(0, width - 112),
+      borderRadius: 24,
+      paddingLeft: 16,
+      paddingRight: 16,
+      paddingTop: 12,
+      paddingBottom: 12,
+      marginInlineEnd: 0,
+    }));
+    const screen = renderIn(
+      <AiChatUserMessage testID="ask" animate={false} bubbleStyle={bubbleStyle}>
+        hello
+      </AiChatUserMessage>,
+    );
+    fireEvent(screen.getByTestId('ask'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 600, height: 60 } },
     });
-    fireEvent(screen.getByTestId('ask'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 60 } } });
+    expect(resolvedStyle(screen.getByTestId('ask-bubble').props.style)).toMatchObject({
+      maxWidth: 488,
+      borderRadius: 24,
+      paddingLeft: 16,
+      paddingTop: 12,
+      marginInlineEnd: 0,
+    });
+    fireEvent(screen.getByTestId('ask'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 60 } },
+    });
     expect(resolvedStyle(screen.getByTestId('ask-bubble').props.style).maxWidth).toBe(278);
   });
 
@@ -264,8 +302,12 @@ describe('turn actions', () => {
 
   it('hides a user turn actions only behind a pointer, never from focus', () => {
     const css = AI_CHAT_WEB_CSS.replace(/\s+/g, ' ');
-    expect(css).toMatch(/@media \(hover: hover\) \{ \[data-bloom-ai-chat-turn\] \[data-bloom-ai-chat-turn-actions\] \{ opacity: 0;/);
-    expect(css).toContain('[data-bloom-ai-chat-turn]:focus-within [data-bloom-ai-chat-turn-actions]');
+    expect(css).toMatch(
+      /@media \(hover: hover\) \{ \[data-bloom-ai-chat-turn\] \[data-bloom-ai-chat-turn-actions\] \{ opacity: 0;/,
+    );
+    expect(css).toContain(
+      '[data-bloom-ai-chat-turn]:focus-within [data-bloom-ai-chat-turn-actions]',
+    );
   });
 });
 
@@ -274,7 +316,12 @@ describe('AiChatImageGeneration', () => {
     jest.useFakeTimers();
     const onGenerated = jest.fn();
     const { getAllByLabelText, getByLabelText, queryByText, getByText } = renderIn(
-      <AiChatImageGeneration source={{ uri: 'x.png' }} alt="A player" duration={2000} onGenerated={onGenerated} />,
+      <AiChatImageGeneration
+        source={{ uri: 'x.png' }}
+        alt="A player"
+        duration={2000}
+        onGenerated={onGenerated}
+      />,
     );
     expect(getAllByLabelText('Generating image').length).toBeGreaterThan(0);
     expect(queryByText('Image generated')).toBeNull();
@@ -289,7 +336,9 @@ describe('AiChatImageGeneration', () => {
 
   it('holds while controlled `ready` is false', () => {
     jest.useFakeTimers();
-    const { queryByText } = renderIn(<AiChatImageGeneration source={{ uri: 'x.png' }} alt="A player" ready={false} />);
+    const { queryByText } = renderIn(
+      <AiChatImageGeneration source={{ uri: 'x.png' }} alt="A player" ready={false} />,
+    );
     act(() => {
       jest.advanceTimersByTime(10000);
     });
@@ -302,7 +351,8 @@ describe('AiChatCodePanel', () => {
   it('gives the tab header a floor of 30, not a fixed height (large fonts)', () => {
     const { getByLabelText } = renderIn(<AiChatCodePanel code="x" changeCount={1} additions={1} />);
     let header = getByLabelText('Panel view').parent;
-    while (header && resolvedStyle(header.props.style).flexDirection !== 'row') header = header.parent;
+    while (header && resolvedStyle(header.props.style).flexDirection !== 'row')
+      header = header.parent;
     if (!header) throw new Error('no tab header row');
     expect(resolvedStyle(header.props.style)).toMatchObject({ minHeight: 30, width: '100%' });
     expect(resolvedStyle(header.props.style).height).toBeUndefined();
@@ -334,14 +384,22 @@ describe('AiChatCodePanel', () => {
     const without = renderIn(<AiChatCodePanel code="x" changeCount={1} additions={1} />);
     expect(without.queryByLabelText('Undo changes')).toBeNull();
     without.unmount();
-    const withUndo = renderIn(<AiChatCodePanel code="x" changeCount={1} additions={1} onUndo={onUndo} />);
+    const withUndo = renderIn(
+      <AiChatCodePanel code="x" changeCount={1} additions={1} onUndo={onUndo} />,
+    );
     fireEvent.press(withUndo.getByLabelText('Undo changes'));
     expect(onUndo).toHaveBeenCalledTimes(1);
   });
 
   it('drops the Browser tab for `browser={null}`, even when asked to show it', () => {
     const { getByText, queryByText } = renderIn(
-      <AiChatCodePanel code="const a = 1;" changeCount={1} tab="browser" browser={null} actions={[]} />,
+      <AiChatCodePanel
+        code="const a = 1;"
+        changeCount={1}
+        tab="browser"
+        browser={null}
+        actions={[]}
+      />,
     );
     expect(queryByText('Browser')).toBeNull();
     expect(queryByText('Browser preview')).toBeNull();
@@ -353,14 +411,20 @@ describe('AiChatCodePanel', () => {
 describe('AiChatGalleryPanel', () => {
   it('balances the wall into shortest-first columns with a top-left → bottom-right cascade', () => {
     const columns = distributeGenerations(WALL, 3);
-    expect(columns.map((c) => c.map((g) => g.id))).toEqual([['tall'], ['square'], ['wide', 'next']]);
+    expect(columns.map((c) => c.map((g) => g.id))).toEqual([
+      ['tall'],
+      ['square'],
+      ['wide', 'next'],
+    ]);
     const order = Object.fromEntries(columns.flat().map((g) => [g.id, g.order]));
     expect(order).toEqual({ tall: 0, square: 1, wide: 2, next: 3 });
   });
 
   it('pins a generated image first and lifts a pressed tile into the enlarged row', () => {
     const generated: AiChatGeneration[] = [{ id: 'fresh', prompt: 'Fresh', aspectRatio: 1 }];
-    const { getAllByLabelText, getByLabelText, queryByLabelText } = renderIn(<AiChatGalleryPanel generations={WALL} generated={generated} />);
+    const { getAllByLabelText, getByLabelText, queryByLabelText } = renderIn(
+      <AiChatGalleryPanel generations={WALL} generated={generated} />,
+    );
     expect(getByLabelText('Enlarge Fresh')).toBeTruthy();
     const tile = getByLabelText('Enlarge A wide one');
     expect(tile.props['aria-expanded']).toBe(false);
@@ -372,14 +436,16 @@ describe('AiChatGalleryPanel', () => {
     expect(minimize[0]!.props['aria-expanded']).toBe(true);
   });
 
-  it('draws a tile\'s download and more actions only with their handlers', () => {
+  it("draws a tile's download and more actions only with their handlers", () => {
     const without = renderIn(<AiChatGalleryPanel generations={WALL} />);
     expect(without.queryByLabelText('Download A wide one')).toBeNull();
     expect(without.queryByLabelText('More actions for A wide one')).toBeNull();
     without.unmount();
     const onDownload = jest.fn();
     const onMore = jest.fn();
-    const withActions = renderIn(<AiChatGalleryPanel generations={WALL} onDownload={onDownload} onMore={onMore} />);
+    const withActions = renderIn(
+      <AiChatGalleryPanel generations={WALL} onDownload={onDownload} onMore={onMore} />,
+    );
     fireEvent.press(withActions.getByLabelText('Download A wide one'));
     fireEvent.press(withActions.getByLabelText('More actions for A wide one'));
     expect(onDownload).toHaveBeenCalledWith(expect.objectContaining({ id: 'wide' }));
@@ -451,7 +517,9 @@ describe('AiChatContainer host slots', () => {
     );
     // The layer is a slot, not an escape hatch: the surface is still painted.
     expect(painted.getByText('wallpaper')).toBeTruthy();
-    expect(resolvedStyle(painted.getByTestId('chat').props.style).backgroundColor).toBe(surfaceColor);
+    expect(resolvedStyle(painted.getByTestId('chat').props.style).backgroundColor).toBe(
+      surfaceColor,
+    );
 
     const bare = renderIn(
       <AiChatContainer testID="chat" title="t" composer={null} surface={false}>
@@ -486,7 +554,8 @@ describe('AiChatShell', () => {
     expect(resolvedStyle(getByTestId('header').props.style).height).toBeUndefined();
     fireEvent.press(getByLabelText('Open code'));
     let drawerHeader = getByText('Code').parent;
-    while (drawerHeader && resolvedStyle(drawerHeader.props.style).flexDirection !== 'row') drawerHeader = drawerHeader.parent;
+    while (drawerHeader && resolvedStyle(drawerHeader.props.style).flexDirection !== 'row')
+      drawerHeader = drawerHeader.parent;
     if (!drawerHeader) throw new Error('no drawer header row');
     expect(resolvedStyle(drawerHeader.props.style)).toMatchObject({ minHeight: 40 });
     expect(resolvedStyle(drawerHeader.props.style).height).toBeUndefined();
@@ -559,10 +628,13 @@ describe('palette', () => {
   });
 });
 
-
 describe('AiChatContainer application header', () => {
   it('supports a header without a duplicate breadcrumb or dead actions', () => {
-    const screen = renderIn(<AiChatContainer header={<Text>Application header</Text>} composer={<Text>Compose</Text>}><Text>Thread</Text></AiChatContainer>);
+    const screen = renderIn(
+      <AiChatContainer header={<Text>Application header</Text>} composer={<Text>Compose</Text>}>
+        <Text>Thread</Text>
+      </AiChatContainer>,
+    );
     expect(screen.getByText('Application header')).toBeTruthy();
     expect(screen.queryByLabelText('Chat location')).toBeNull();
     expect(screen.queryByLabelText('Share chat')).toBeNull();
@@ -572,7 +644,11 @@ describe('AiChatContainer application header', () => {
   });
   it('keeps a supplied breadcrumb and renders only available actions', () => {
     const onMore = jest.fn();
-    const screen = renderIn(<AiChatContainer title="A conversation" onMore={onMore}><Text>Thread</Text></AiChatContainer>);
+    const screen = renderIn(
+      <AiChatContainer title="A conversation" onMore={onMore}>
+        <Text>Thread</Text>
+      </AiChatContainer>,
+    );
     expect(screen.getByText('A conversation')).toBeTruthy();
     expect(screen.queryByLabelText('Share chat')).toBeNull();
     pressHost(screen.getByLabelText('More options'));
@@ -581,23 +657,43 @@ describe('AiChatContainer application header', () => {
 });
 
 describe('AiChatShell sidebar width ownership', () => {
-  it.each([undefined, 72])('lets the sidebar own its collapsed width unless overridden (%s)', (width) => {
-    const dimensions = jest.spyOn(Native, 'useWindowDimensions').mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 });
-    try {
-      const { getByTestId } = renderIn(<AiChatShell sidebarCollapsed collapsedSidebarWidth={width} sidebar={<View testID="sized-sidebar" style={{ width: 66 }} />}><Text>Chat</Text></AiChatShell>);
-      let column = getByTestId('sized-sidebar').parent;
-      while (column && StyleSheet.flatten(column.props.style)?.zIndex !== 10) column = column.parent;
-      expect(column).not.toBeNull();
-      const style = StyleSheet.flatten(column!.props.style);
-      expect(style.width).toBe(width);
-      expect(style.overflow).not.toBe('hidden');
-    } finally { dimensions.mockRestore(); }
-  });
+  it.each([undefined, 72])(
+    'lets the sidebar own its collapsed width unless overridden (%s)',
+    (width) => {
+      const dimensions = jest
+        .spyOn(Native, 'useWindowDimensions')
+        .mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+      try {
+        const { getByTestId } = renderIn(
+          <AiChatShell
+            sidebarCollapsed
+            collapsedSidebarWidth={width}
+            sidebar={<View testID="sized-sidebar" style={{ width: 66 }} />}
+          >
+            <Text>Chat</Text>
+          </AiChatShell>,
+        );
+        let column = getByTestId('sized-sidebar').parent;
+        while (column && StyleSheet.flatten(column.props.style)?.zIndex !== 10)
+          column = column.parent;
+        expect(column).not.toBeNull();
+        const style = StyleSheet.flatten(column!.props.style);
+        expect(style.width).toBe(width);
+        expect(style.overflow).not.toBe('hidden');
+      } finally {
+        dimensions.mockRestore();
+      }
+    },
+  );
 });
 
 describe('AiChatContainer composed actions', () => {
   it('renders custom actions instead of default glyphs without requiring a title', () => {
-    const screen = renderIn(<AiChatContainer actions={<Text>Chat menu</Text>} onMore={jest.fn()} onShare={jest.fn()}><Text>Thread</Text></AiChatContainer>);
+    const screen = renderIn(
+      <AiChatContainer actions={<Text>Chat menu</Text>} onMore={jest.fn()} onShare={jest.fn()}>
+        <Text>Thread</Text>
+      </AiChatContainer>,
+    );
     expect(screen.getByText('Chat menu')).toBeTruthy();
     expect(screen.queryByLabelText('More options')).toBeNull();
     expect(screen.queryByLabelText('Share chat')).toBeNull();
@@ -605,51 +701,110 @@ describe('AiChatContainer composed actions', () => {
   });
 });
 
-
 describe('AiChatShell safe area ownership', () => {
   const insets = { top: 47, right: 24, bottom: 34, left: 16 };
   const originalOS = Native.Platform.OS;
-  afterEach(() => { Native.Platform.OS = originalOS; });
+  afterEach(() => {
+    Native.Platform.OS = originalOS;
+  });
   function Reader() {
     const original = useContext(SafeAreaInsetsContext);
     const bottom = useContext(BottomBarSlotContext);
     return <Text testID="inset-reader">{JSON.stringify({ original, bottom })}</Text>;
   }
-  it.each(['ios', 'android'] as const)('adds all native edges to the frame and drawers while preserving modal insets on %s', os => {
+  it.each(['ios', 'android'] as const)(
+    'adds all native edges to the frame and drawers while preserving modal insets on %s',
+    (os) => {
+      Native.Platform.OS = os;
+      const tree = renderIn(
+        <SafeAreaInsetsContext.Provider value={insets}>
+          <AiChatShell
+            sidebar={null}
+            safeArea
+            testID="safe-shell"
+            navOpen
+            mobileSidebar={<Text>Navigation</Text>}
+            panelOpen
+            panel={() => <Text>Panel</Text>}
+          >
+            <Reader />
+          </AiChatShell>
+        </SafeAreaInsetsContext.Provider>,
+      );
+      expect(resolvedStyle(tree.getByTestId('safe-shell').props.style)).toMatchObject({
+        paddingTop: 59,
+        paddingRight: 36,
+        paddingBottom: 46,
+        paddingLeft: 28,
+      });
+      expect(tree.getByTestId('inset-reader').props.children).toBe(
+        JSON.stringify({ original: insets, bottom: 34 }),
+      );
+      const styles = tree.UNSAFE_getAllByType(View).map((node) => resolvedStyle(node.props.style));
+      expect(styles).toContainEqual(
+        expect.objectContaining({ width: 272, left: 16, paddingTop: 59, paddingBottom: 46 }),
+      );
+      expect(resolvedStyle(tree.getByLabelText('Code').props.style)).toMatchObject({
+        right: 24,
+        paddingTop: 59,
+        paddingBottom: 46,
+        position: 'absolute',
+      });
+    },
+  );
+  it.each(['ios', 'web'] as const)('preserves default geometry and web behavior on %s', (os) => {
     Native.Platform.OS = os;
-    const tree = renderIn(<SafeAreaInsetsContext.Provider value={insets}>
-      <AiChatShell sidebar={null} safeArea testID="safe-shell" navOpen mobileSidebar={<Text>Navigation</Text>} panelOpen panel={() => <Text>Panel</Text>}>
-        <Reader />
-      </AiChatShell>
-    </SafeAreaInsetsContext.Provider>);
-    expect(resolvedStyle(tree.getByTestId('safe-shell').props.style)).toMatchObject({ paddingTop: 59, paddingRight: 36, paddingBottom: 46, paddingLeft: 28 });
-    expect(tree.getByTestId('inset-reader').props.children).toBe(JSON.stringify({ original: insets, bottom: 34 }));
-    const styles = tree.UNSAFE_getAllByType(View).map(node => resolvedStyle(node.props.style));
-    expect(styles).toContainEqual(expect.objectContaining({ width: 272, left: 16, paddingTop: 59, paddingBottom: 46 }));
-    expect(resolvedStyle(tree.getByLabelText('Code').props.style)).toMatchObject({ right: 24, paddingTop: 59, paddingBottom: 46, position: 'absolute' });
-  });
-  it.each(['ios', 'web'] as const)('preserves default geometry and web behavior on %s', os => {
-    Native.Platform.OS = os;
-    const tree = renderIn(<SafeAreaInsetsContext.Provider value={insets}><BottomBarSlotContext.Provider value={9}>
-      <AiChatShell sidebar={null} safeArea={os === 'web'} testID="safe-shell"><Reader /></AiChatShell>
-    </BottomBarSlotContext.Provider></SafeAreaInsetsContext.Provider>);
+    const tree = renderIn(
+      <SafeAreaInsetsContext.Provider value={insets}>
+        <BottomBarSlotContext.Provider value={9}>
+          <AiChatShell sidebar={null} safeArea={os === 'web'} testID="safe-shell">
+            <Reader />
+          </AiChatShell>
+        </BottomBarSlotContext.Provider>
+      </SafeAreaInsetsContext.Provider>,
+    );
     const style = resolvedStyle(tree.getByTestId('safe-shell').props.style);
     expect(style.padding).toBe(12);
     expect(style.paddingTop).toBeUndefined();
-    expect(tree.getByTestId('inset-reader').props.children).toBe(JSON.stringify({ original: insets, bottom: 9 }));
+    expect(tree.getByTestId('inset-reader').props.children).toBe(
+      JSON.stringify({ original: insets, bottom: 9 }),
+    );
   });
 });
 
 describe('AiChatContainer published surface', () => {
-  function FillReader() { return <Text testID="fill-reader">{useSurfaceFill()}</Text>; }
-  it.each([false, true])('publishes the painted container fill with floatingChrome=%s', floatingChrome => {
-    const tree = renderIn(<AiChatContainer floatingChrome={floatingChrome} testID="painted"><FillReader /></AiChatContainer>);
-    expect(tree.getByTestId('fill-reader').props.children).toBe(resolvedStyle(tree.getByTestId('painted').props.style).backgroundColor);
-  });
+  function FillReader() {
+    return <Text testID="fill-reader">{useSurfaceFill()}</Text>;
+  }
+  it.each([false, true])(
+    'publishes the painted container fill with floatingChrome=%s',
+    (floatingChrome) => {
+      const tree = renderIn(
+        <AiChatContainer floatingChrome={floatingChrome} testID="painted">
+          <FillReader />
+        </AiChatContainer>,
+      );
+      expect(tree.getByTestId('fill-reader').props.children).toBe(
+        resolvedStyle(tree.getByTestId('painted').props.style).backgroundColor,
+      );
+    },
+  );
   it('transparent containers inherit the ambient fill, while explicit fills are published', () => {
-    const tree = renderIn(<SurfaceLevelProvider level={1} fill="#123456"><AiChatContainer surface={false}><FillReader /></AiChatContainer></SurfaceLevelProvider>);
+    const tree = renderIn(
+      <SurfaceLevelProvider level={1} fill="#123456">
+        <AiChatContainer surface={false}>
+          <FillReader />
+        </AiChatContainer>
+      </SurfaceLevelProvider>,
+    );
     expect(tree.getByTestId('fill-reader').props.children).toBe('#123456');
-    tree.rerender(<BloomThemeProvider><AiChatContainer style={{ backgroundColor: '#654321' }}><FillReader /></AiChatContainer></BloomThemeProvider>);
+    tree.rerender(
+      <BloomThemeProvider>
+        <AiChatContainer style={{ backgroundColor: '#654321' }}>
+          <FillReader />
+        </AiChatContainer>
+      </BloomThemeProvider>,
+    );
     expect(tree.getByTestId('fill-reader').props.children).toBe('#654321');
   });
 });

@@ -23,7 +23,13 @@ function Frame({ children, width = 400 }: { children: React.ReactNode; width?: n
   return (
     <View
       testID="frame"
-      style={{ padding: 16, maxWidth: '100%', gap: 12, backgroundColor: theme.colors.background, alignItems: 'flex-start' }}
+      style={{
+        padding: 16,
+        maxWidth: '100%',
+        gap: 12,
+        backgroundColor: theme.colors.background,
+        alignItems: 'flex-start',
+      }}
     >
       <View style={{ width, maxWidth: '100%', gap: 12 }}>{children}</View>
     </View>
@@ -35,14 +41,26 @@ export const Matrix: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
-      <Notification title="New comment" description="Mia replied to your thread." timestamp="2m ago" />
+      <Notification
+        title="New comment"
+        description="Mia replied to your thread."
+        timestamp="2m ago"
+      />
       <Notification
         status="information"
         title="Update available"
         description="Version 2.4 ships with faster sync."
       />
-      <Notification status="success" title="Payment received" description="$1,240.00 from Acme Inc." />
-      <Notification status="warning" title="Storage almost full" description="You have used 92% of 10 GB." />
+      <Notification
+        status="success"
+        title="Payment received"
+        description="$1,240.00 from Acme Inc."
+      />
+      <Notification
+        status="warning"
+        title="Storage almost full"
+        description="You have used 92% of 10 GB."
+      />
       <Notification
         status="error"
         title="Deploy failed"
@@ -58,9 +76,22 @@ export const Matrix: Story = {
         timestamp="Just now"
         description="Can you review the Q3 report before 5pm?"
       />
-      <Notification avatar={{ name: 'Leo Park', presence: 'busy' }} title="Leo Park" timestamp="1h" />
-      <Notification avatar={{ name: 'Ana Ruiz', presence: 'offline' }} title="Ana Ruiz" dismissible={false} />
-      <Notification icon={RiMailFill} status="information" title="Custom icon" dismissible={false} />
+      <Notification
+        avatar={{ name: 'Leo Park', presence: 'busy' }}
+        title="Leo Park"
+        timestamp="1h"
+      />
+      <Notification
+        avatar={{ name: 'Ana Ruiz', presence: 'offline' }}
+        title="Ana Ruiz"
+        dismissible={false}
+      />
+      <Notification
+        icon={RiMailFill}
+        status="information"
+        title="Custom icon"
+        dismissible={false}
+      />
     </Frame>
   ),
 };
@@ -83,10 +114,15 @@ export const AutoDismiss: Story = {
     const [gone, setGone] = useState(false);
     return (
       <Frame>
-        <Button size="sm" onPress={() => {
+        <Button
+          size="sm"
+          onPress={() => {
             setGone(false);
             setKey((k) => k + 1);
-          }} appearance="outline" tone="neutral">
+          }}
+          appearance="outline"
+          tone="neutral"
+        >
           Replay
         </Button>
         {gone ? null : (
@@ -107,11 +143,34 @@ export const AutoDismiss: Story = {
 
 /** A single instance whose controls are applied directly to the rendered component. */
 export const Playground: StoryObj<typeof Notification> = {
-  args: { title: 'New comment', description: 'Mia replied to your thread.', timestamp: '2m ago', status: 'information', dismissible: true },
-  parameters: { controls: { disable: false, include: ['title', 'description', 'timestamp', 'status', 'dismissible'] } },
-  argTypes: { title: { control: 'text' }, description: { control: 'text' }, timestamp: { control: 'text' }, status: { control: 'select', options: ['neutral', 'information', 'success', 'warning', 'error'] }, dismissible: { control: 'boolean' } },
+  args: {
+    title: 'New comment',
+    description: 'Mia replied to your thread.',
+    timestamp: '2m ago',
+    status: 'information',
+    dismissible: true,
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['title', 'description', 'timestamp', 'status', 'dismissible'],
+    },
+  },
+  argTypes: {
+    title: { control: 'text' },
+    description: { control: 'text' },
+    timestamp: { control: 'text' },
+    status: {
+      control: 'select',
+      options: ['neutral', 'information', 'success', 'warning', 'error'],
+    },
+    dismissible: { control: 'boolean' },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 440, maxWidth: '100%' }}><Notification {...args} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <Notification {...args} />
+      </View>
+    );
   },
 };

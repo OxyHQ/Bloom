@@ -22,14 +22,14 @@ import { useAgentChatPalette } from './shared';
 
 const meta: Meta = {
   argTypes: {
-    "status": { control: 'select', options: ["error","ready","submitted","streaming"] },
-    "error": { control: 'boolean' },
-    "title": { control: 'text' },
-    "value": { control: 'text' },
-    "model": { control: 'text' },
-    "provider": { control: 'text' },
-    "activeThreadId": { control: 'text' },
-    "showHistory": { control: 'boolean' }
+    status: { control: 'select', options: ['error', 'ready', 'submitted', 'streaming'] },
+    error: { control: 'boolean' },
+    title: { control: 'text' },
+    value: { control: 'text' },
+    model: { control: 'text' },
+    provider: { control: 'text' },
+    activeThreadId: { control: 'text' },
+    showHistory: { control: 'boolean' },
   },
   component: AgentChat,
   parameters: { controls: { disable: true } },
@@ -61,7 +61,7 @@ const ANSWERS: { match: RegExp; reply: string }[] = [
   {
     match: /names?\b.*\b(app|product|scheduling|startup|company)|name ideas|suggest.*names/i,
     reply:
-      "Five names for a scheduling app: Slotwise, Tidemark, Cadence, Dayline, and Meridian.\nSlotwise says what it does, Cadence and Meridian carry a rhythm, Tidemark and Dayline feel like calendars without saying so.",
+      'Five names for a scheduling app: Slotwise, Tidemark, Cadence, Dayline, and Meridian.\nSlotwise says what it does, Cadence and Meridian carry a rhythm, Tidemark and Dayline feel like calendars without saying so.',
   },
 ];
 
@@ -80,10 +80,23 @@ const CONVERSATION: AgentChatMessageData[] = [
 
 const THREADS: AgentChatThread[] = [
   { id: 't1', title: 'Write a product update in three sentences', updatedAt: NOW - 2 * MIN },
-  { id: 't2', title: 'Give me five names for a scheduling app', updatedAt: NOW - 34 * MIN, unread: true },
+  {
+    id: 't2',
+    title: 'Give me five names for a scheduling app',
+    updatedAt: NOW - 34 * MIN,
+    unread: true,
+  },
   { id: 't3', title: 'Explain what this starter does', updatedAt: NOW - 5 * 60 * MIN },
-  { id: 't4', title: 'Draft a launch tweet for the dashboard release', updatedAt: NOW - 18 * 60 * MIN },
-  { id: 't5', title: 'Summarise the onboarding feedback from last week', updatedAt: NOW - 3 * 24 * 60 * MIN },
+  {
+    id: 't4',
+    title: 'Draft a launch tweet for the dashboard release',
+    updatedAt: NOW - 18 * 60 * MIN,
+  },
+  {
+    id: 't5',
+    title: 'Summarise the onboarding feedback from last week',
+    updatedAt: NOW - 3 * 24 * 60 * MIN,
+  },
 ];
 
 const ACCOUNT: Pick<
@@ -108,19 +121,43 @@ const ACCOUNT: Pick<
 // ---------------------------------------------------------------------------
 
 /** The page frame: background-full, p 12, and a viewport-tall workspace. */
-function Page({ children, height = 760, width = 1400, testID }: { children: React.ReactNode; height?: number; width?: number; testID?: string }) {
+function Page({
+  children,
+  height = 760,
+  width = 1400,
+  testID,
+}: {
+  children: React.ReactNode;
+  height?: number;
+  width?: number;
+  testID?: string;
+}) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ width, maxWidth: '100%', height, padding: 12, backgroundColor: colors.background }}>
+    <View
+      testID={testID}
+      style={{ width, maxWidth: '100%', height, padding: 12, backgroundColor: colors.background }}
+    >
       {children}
     </View>
   );
 }
 
-function Pad({ children, width = 480, testID }: { children: React.ReactNode; width?: number; testID?: string }) {
+function Pad({
+  children,
+  width = 480,
+  testID,
+}: {
+  children: React.ReactNode;
+  width?: number;
+  testID?: string;
+}) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ width, maxWidth: '100%', gap: 24, backgroundColor: colors.background }}>
+    <View
+      testID={testID}
+      style={{ width, maxWidth: '100%', gap: 24, backgroundColor: colors.background }}
+    >
       {children}
     </View>
   );
@@ -130,7 +167,10 @@ function Pad({ children, width = 480, testID }: { children: React.ReactNode; wid
 //  A story-local fake streamer (700ms think, 28ms a word)
 // ---------------------------------------------------------------------------
 
-function useDemoChat(initial: AgentChatMessageData[] = [], initialThreads: AgentChatThread[] = THREADS) {
+function useDemoChat(
+  initial: AgentChatMessageData[] = [],
+  initialThreads: AgentChatThread[] = THREADS,
+) {
   const [messages, setMessages] = useState<AgentChatMessageData[]>(initial);
   const [status, setStatus] = useState<AgentChatStatus>('ready');
   const [threads, setThreads] = useState<AgentChatThread[]>(initialThreads);
@@ -160,7 +200,14 @@ function useDemoChat(initial: AgentChatMessageData[] = [], initialThreads: Agent
     setThreads((prev) =>
       prev.some((thread) => thread.id === 'live')
         ? prev.map((thread) => (thread.id === 'live' ? { ...thread, updatedAt: at } : thread))
-        : [{ id: 'live', title: text.length > 48 ? `${text.slice(0, 48)}...` : text, updatedAt: at }, ...prev],
+        : [
+            {
+              id: 'live',
+              title: text.length > 48 ? `${text.slice(0, 48)}...` : text,
+              updatedAt: at,
+            },
+            ...prev,
+          ],
     );
     const words = pickAnswer(text).split(/(?<=\s)/);
     let elapsed = 700;
@@ -169,7 +216,9 @@ function useDemoChat(initial: AgentChatMessageData[] = [], initialThreads: Agent
         setTimeout(() => {
           setStatus('streaming');
           setMessages((prev) =>
-            prev.map((message) => (message.id === replyId ? { ...message, text: message.text + word } : message)),
+            prev.map((message) =>
+              message.id === replyId ? { ...message, text: message.text + word } : message,
+            ),
           );
           if (index === words.length - 1) setStatus('ready');
         }, elapsed),
@@ -192,12 +241,18 @@ function useDemoChat(initial: AgentChatMessageData[] = [], initialThreads: Agent
     },
     select: (id: string) => {
       setActiveId(id);
-      setThreads((prev) => prev.map((thread) => (thread.id === id ? { ...thread, unread: false } : thread)));
+      setThreads((prev) =>
+        prev.map((thread) => (thread.id === id ? { ...thread, unread: false } : thread)),
+      );
     },
     rename: (id: string, title: string) =>
-      setThreads((prev) => prev.map((thread) => (thread.id === id ? { ...thread, title } : thread))),
+      setThreads((prev) =>
+        prev.map((thread) => (thread.id === id ? { ...thread, title } : thread)),
+      ),
     toggleUnread: (id: string) =>
-      setThreads((prev) => prev.map((thread) => (thread.id === id ? { ...thread, unread: !thread.unread } : thread))),
+      setThreads((prev) =>
+        prev.map((thread) => (thread.id === id ? { ...thread, unread: !thread.unread } : thread)),
+      ),
     remove: (id: string) => setThreads((prev) => prev.filter((thread) => thread.id !== id)),
   };
 }
@@ -231,7 +286,10 @@ export const Demo: Story = {
           onExport={() => {}}
           showHistory
           historyProps={ACCOUNT}
-          labels={{ emptyDescription: 'Demo mode: the answers are scripted. Add AI_API_KEY for a real model.' }}
+          labels={{
+            emptyDescription:
+              'Demo mode: the answers are scripted. Add AI_API_KEY for a real model.',
+          }}
         />
       </Page>
     );
@@ -315,7 +373,9 @@ export const ErrorState: Story = {
       <AgentChat
         testID="chat"
         status="error"
-        messages={[{ id: 'u', role: 'user', text: 'Give me five names for a scheduling app', at: NOW }]}
+        messages={[
+          { id: 'u', role: 'user', text: 'Give me five names for a scheduling app', at: NOW },
+        ]}
         provider="OpenAI"
       />
     </Page>
@@ -342,10 +402,12 @@ export const SetupNotice: Story = {
                   padding: 24,
                   backgroundColor: isDark ? '#262626' : colors.card,
                   boxShadow: '0 1px 1px 0 rgba(0, 0, 0, 0.05)',
-                }}>
+                }}
+              >
                 <Text variant="headline-medium">Add an API key to start</Text>
                 <Text variant="body-regular" style={{ color: '#737373' }}>
-                  The chat is wired up and ready. It needs a model provider key before it can answer.
+                  The chat is wired up and ready. It needs a model provider key before it can
+                  answer.
                 </Text>
                 <Button size="md" onPress={() => {}} appearance="solid" tone="accent">
                   Skip, show me the demo
@@ -388,12 +450,24 @@ export const HistoryStates: Story = {
   parameters: { controls: { disable: true } },
   render: function HistoryStatesDemo() {
     const compact = useWindowDimensions().width < 620;
-    return <Page height={compact ? 840 : 420} width={580} testID="agent-chat-history-states">
-      <View style={{ flexDirection: compact ? 'column' : 'row', gap: 16, height: '100%' }}>
-        <View style={{ flex: 1, minHeight: 0 }}><AgentChatHistory threads={[]} onNewChat={() => {}} onExport={() => {}} {...ACCOUNT} /></View>
-        <View style={{ flex: 1, minHeight: 0 }}><AgentChatHistory threads={THREADS.slice(0, 3)} activeId="t1" disabled onExport={() => {}} {...ACCOUNT} /></View>
-      </View>
-    </Page>;
+    return (
+      <Page height={compact ? 840 : 420} width={580} testID="agent-chat-history-states">
+        <View style={{ flexDirection: compact ? 'column' : 'row', gap: 16, height: '100%' }}>
+          <View style={{ flex: 1, minHeight: 0 }}>
+            <AgentChatHistory threads={[]} onNewChat={() => {}} onExport={() => {}} {...ACCOUNT} />
+          </View>
+          <View style={{ flex: 1, minHeight: 0 }}>
+            <AgentChatHistory
+              threads={THREADS.slice(0, 3)}
+              activeId="t1"
+              disabled
+              onExport={() => {}}
+              {...ACCOUNT}
+            />
+          </View>
+        </View>
+      </Page>
+    );
   },
 };
 
@@ -405,9 +479,22 @@ export const Composer: Story = {
     const palette = useAgentChatPalette();
     return (
       <Pad width={720} testID="agent-chat-composer">
-        <View style={{ padding: 16, borderRadius: 24, gap: 24, backgroundColor: palette.chatSurface }}>
-          <AgentChatComposer testID="composer" value={text} onValueChange={setText} onSubmit={() => setText('')} messageCount={0} />
-          <AgentChatComposer defaultValue="Draft a launch tweet" provider="OpenAI" model="openai/gpt-5-nano" messageCount={4} />
+        <View
+          style={{ padding: 16, borderRadius: 24, gap: 24, backgroundColor: palette.chatSurface }}
+        >
+          <AgentChatComposer
+            testID="composer"
+            value={text}
+            onValueChange={setText}
+            onSubmit={() => setText('')}
+            messageCount={0}
+          />
+          <AgentChatComposer
+            defaultValue="Draft a launch tweet"
+            provider="OpenAI"
+            model="openai/gpt-5-nano"
+            messageCount={4}
+          />
           <AgentChatComposer busy provider="Demo mode" model="claude-sonnet-4.5" messageCount={5} />
         </View>
       </Pad>
@@ -440,7 +527,12 @@ export const Messages: Story = {
   render: () => (
     <Pad width={640} testID="agent-chat-messages">
       <AgentChatMessage role="user" text={'Write a product update\nin three sentences'} />
-      <AgentChatMessage testID="reply" role="assistant" text={ANSWERS[1]!.reply} at={NOW - 3 * MIN} />
+      <AgentChatMessage
+        testID="reply"
+        role="assistant"
+        text={ANSWERS[1]!.reply}
+        at={NOW - 3 * MIN}
+      />
       <AgentChatMessage role="assistant" text="Still streaming, so no actions yet…" streaming />
     </Pad>
   ),

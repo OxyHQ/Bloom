@@ -344,7 +344,10 @@ export interface EpisodeRowProps {
 }
 
 export interface EpisodeListProps
-  extends Omit<EpisodeRowProps, 'episode' | 'index' | 'current' | 'playing' | 'divider' | 'style' | 'testID'> {
+  extends Omit<
+    EpisodeRowProps,
+    'episode' | 'index' | 'current' | 'playing' | 'divider' | 'style' | 'testID'
+  > {
   episodes: Episode[];
   currentEpisodeId?: string | null;
   isPlaying?: boolean;

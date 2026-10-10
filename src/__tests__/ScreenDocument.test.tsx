@@ -9,7 +9,9 @@ import { ScreenScope } from '../layout/screen-scope';
 import { PageHeader } from '../page-header';
 import { resolvedStyle } from './support/rendered-style';
 
-function wrap(children: React.ReactNode) { return <BloomThemeProvider fonts={false}>{children}</BloomThemeProvider>; }
+function wrap(children: React.ReactNode) {
+  return <BloomThemeProvider fonts={false}>{children}</BloomThemeProvider>;
+}
 function scroll(y: number) {
   act(() => {
     Object.defineProperty(window, 'scrollY', { configurable: true, value: y });
@@ -17,14 +19,28 @@ function scroll(y: number) {
   });
 }
 const originalOS = Platform.OS;
-beforeAll(() => { Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' }); });
-afterAll(() => { Object.defineProperty(Platform, 'OS', { configurable: true, value: originalOS }); });
-beforeEach(() => { Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 }); });
+beforeAll(() => {
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
+});
+afterAll(() => {
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: originalOS });
+});
+beforeEach(() => {
+  Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
+});
 
 it('binds window by itself and disables retained or unmounted screen writers', () => {
   let state!: ScreenContextValue;
-  function Probe() { state = useScreen(); return null; }
-  const ui = (active: boolean) => wrap(<Screen documentScroll active={active}><Probe /></Screen>);
+  function Probe() {
+    state = useScreen();
+    return null;
+  }
+  const ui = (active: boolean) =>
+    wrap(
+      <Screen documentScroll active={active}>
+        <Probe />
+      </Screen>,
+    );
   const tree = render(ui(true));
   scroll(160);
   expect(state.scrollY.value).toBe(160);
@@ -44,12 +60,23 @@ it('binds window by itself and disables retained or unmounted screen writers', (
 it('gives a restoring document virtualizer sole ownership, then resumes the default binding', () => {
   let state!: ScreenContextValue;
   let insets!: { top: number; bottom: number };
-  function Probe() { state = useScreen(); return null; }
-  function Virtualizer({ pending }: { pending: boolean }) {
-    insets = useScreenWindowScroll({ restoration: { restorePending: pending, onScroll: jest.fn() } }).contentInsets;
+  function Probe() {
+    state = useScreen();
     return null;
   }
-  const ui = (bound: boolean, pending = true) => wrap(<Screen documentScroll header={<View />} bottomBar={<View />}><Probe />{bound && <Virtualizer pending={pending} />}</Screen>);
+  function Virtualizer({ pending }: { pending: boolean }) {
+    insets = useScreenWindowScroll({
+      restoration: { restorePending: pending, onScroll: jest.fn() },
+    }).contentInsets;
+    return null;
+  }
+  const ui = (bound: boolean, pending = true) =>
+    wrap(
+      <Screen documentScroll header={<View />} bottomBar={<View />}>
+        <Probe />
+        {bound && <Virtualizer pending={pending} />}
+      </Screen>,
+    );
   const tree = render(ui(true));
   expect(state.activeScrollerId.value).not.toBeNull();
   expect(insets).toEqual({ top: 0, bottom: 0 });
@@ -68,10 +95,27 @@ it('gives a restoring document virtualizer sole ownership, then resumes the defa
 
 it('does not adopt another window binding identity after a context update', () => {
   let state!: ScreenContextValue;
-  function Probe() { state = useScreen(); return null; }
-  function First() { useScreenWindowScroll(); return null; }
-  function RestoringOwner() { useScreenWindowScroll({ restoration: { restorePending: true, onScroll: jest.fn() } }); return null; }
-  const tree = render(wrap(<Screen documentScroll testID="page" header={<View />}><Probe /><First /><RestoringOwner /></Screen>));
+  function Probe() {
+    state = useScreen();
+    return null;
+  }
+  function First() {
+    useScreenWindowScroll();
+    return null;
+  }
+  function RestoringOwner() {
+    useScreenWindowScroll({ restoration: { restorePending: true, onScroll: jest.fn() } });
+    return null;
+  }
+  const tree = render(
+    wrap(
+      <Screen documentScroll testID="page" header={<View />}>
+        <Probe />
+        <First />
+        <RestoringOwner />
+      </Screen>,
+    ),
+  );
   // A measurement rerenders both bindings. The first must not capture the
   // last binding's ID and start driving motion during its restoration.
   fireEvent(tree.getByTestId('page-header'), 'layout', { nativeEvent: { layout: { height: 80 } } });
@@ -81,30 +125,93 @@ it('does not adopt another window binding identity after a context update', () =
 });
 
 it('keeps natural document height and reserves measured chrome exactly once', () => {
-  const tree = render(wrap(<Screen documentScroll testID="page" header={<View />} bottomBar={<View />} headerHeight={64} bottomBarHeight={80}><View style={{ height: 1600 }} /></Screen>));
+  const tree = render(
+    wrap(
+      <Screen
+        documentScroll
+        testID="page"
+        header={<View />}
+        bottomBar={<View />}
+        headerHeight={64}
+        bottomBarHeight={80}
+      >
+        <View style={{ height: 1600 }} />
+      </Screen>,
+    ),
+  );
   const root = resolvedStyle(tree.getByTestId('page').props.style);
   expect(root.flex).toBeUndefined();
   expect(root.height).toBeUndefined();
   expect(root.minHeight).toBe('100dvh');
-  expect(resolvedStyle(tree.getByTestId('page-content').props.style)).toMatchObject({ paddingTop: 64, paddingBottom: 96 });
+  expect(resolvedStyle(tree.getByTestId('page-content').props.style)).toMatchObject({
+    paddingTop: 64,
+    paddingBottom: 96,
+  });
   fireEvent(tree.getByTestId('page-header'), 'layout', { nativeEvent: { layout: { height: 72 } } });
   fireEvent(tree.getByTestId('page-bottom'), 'layout', { nativeEvent: { layout: { height: 90 } } });
-  expect(resolvedStyle(tree.getByTestId('page-content').props.style)).toMatchObject({ paddingTop: 72, paddingBottom: 106 });
-  expect(resolvedStyle(tree.getByTestId('page-header').props.style)).toMatchObject({ position: 'sticky', top: 'var(--bloom-panel-sticky-top, 0px)', marginBottom: -72 });
-  expect(resolvedStyle(tree.getByTestId('page-bottom').props.style)).toMatchObject({ position: 'sticky', bottom: 0, marginTop: -90 });
+  expect(resolvedStyle(tree.getByTestId('page-content').props.style)).toMatchObject({
+    paddingTop: 72,
+    paddingBottom: 106,
+  });
+  expect(resolvedStyle(tree.getByTestId('page-header').props.style)).toMatchObject({
+    position: 'sticky',
+    top: 'var(--bloom-panel-sticky-top, 0px)',
+    marginBottom: -72,
+  });
+  expect(resolvedStyle(tree.getByTestId('page-bottom').props.style)).toMatchObject({
+    position: 'sticky',
+    bottom: 0,
+    marginTop: -90,
+  });
 });
-
 
 it('positions only the header slot while content and standalone headers keep their own sticky behavior', () => {
-  const tree = render(wrap(<><Screen documentScroll testID="page" header={<PageHeader testID="managed" title="Managed" />}><PageHeader testID="content-header" title="Content" /></Screen><PageHeader testID="standalone" title="Standalone" /></>));
-  expect(resolvedStyle(tree.getByTestId('page-header').props.style)).toMatchObject({ position: 'sticky', top: 'var(--bloom-panel-sticky-top, 0px)' });
+  const tree = render(
+    wrap(
+      <>
+        <Screen
+          documentScroll
+          testID="page"
+          header={<PageHeader testID="managed" title="Managed" />}
+        >
+          <PageHeader testID="content-header" title="Content" />
+        </Screen>
+        <PageHeader testID="standalone" title="Standalone" />
+      </>,
+    ),
+  );
+  expect(resolvedStyle(tree.getByTestId('page-header').props.style)).toMatchObject({
+    position: 'sticky',
+    top: 'var(--bloom-panel-sticky-top, 0px)',
+  });
   expect(resolvedStyle(tree.getByTestId('managed').props.style).position).toBe('relative');
-  for (const id of ['content-header', 'standalone']) expect(resolvedStyle(tree.getByTestId(id).props.style)).toMatchObject({ position: 'sticky', top: 'var(--bloom-panel-sticky-top, 0px)' });
+  for (const id of ['content-header', 'standalone'])
+    expect(resolvedStyle(tree.getByTestId(id).props.style)).toMatchObject({
+      position: 'sticky',
+      top: 'var(--bloom-panel-sticky-top, 0px)',
+    });
 });
 
-
 it('does not carry a header slot position into an independent overlay or nested Screen', () => {
-  const tree = render(wrap(<Screen documentScroll header={<><PageHeader testID="managed" title="Managed" /><ScreenScope><PageHeader testID="overlay-header" title="Overlay" /></ScreenScope><Screen><PageHeader testID="nested-header" title="Nested" /></Screen></>} />));
+  const tree = render(
+    wrap(
+      <Screen
+        documentScroll
+        header={
+          <>
+            <PageHeader testID="managed" title="Managed" />
+            <ScreenScope>
+              <PageHeader testID="overlay-header" title="Overlay" />
+            </ScreenScope>
+            <Screen>
+              <PageHeader testID="nested-header" title="Nested" />
+            </Screen>
+          </>
+        }
+      />,
+    ),
+  );
   expect(resolvedStyle(tree.getByTestId('managed').props.style).position).toBe('relative');
-  for (const id of ['overlay-header', 'nested-header']) expect(resolvedStyle(tree.getByTestId(id).props.style).position).toBe('sticky');
+  for (const id of ['overlay-header', 'nested-header'])
+    expect(resolvedStyle(tree.getByTestId(id).props.style).position).toBe('sticky');
 });

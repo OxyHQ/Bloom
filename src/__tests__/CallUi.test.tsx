@@ -151,9 +151,7 @@ describe('resolveCallStatusLine', () => {
   });
 
   it('is what CallScreen renders', () => {
-    mount(
-      <CallScreen name="Ana Restrepo" status="ended" duration="00:42" testID="c" />,
-    );
+    mount(<CallScreen name="Ana Restrepo" status="ended" duration="00:42" testID="c" />);
     expect(text(byTestId('c-status'))).toBe('Call ended');
   });
 });
@@ -199,7 +197,9 @@ describe('CallControls', () => {
   });
 
   it('gives a one-shot action NO aria-pressed — it has no state to announce', () => {
-    mount(<CallControls onFlipCamera={() => undefined} onAddParticipant={() => undefined} testID="c" />);
+    mount(
+      <CallControls onFlipCamera={() => undefined} onAddParticipant={() => undefined} testID="c" />,
+    );
     expect(byTestId('c-flipCamera').getAttribute('aria-pressed')).toBeNull();
     expect(byTestId('c-addParticipant').getAttribute('aria-pressed')).toBeNull();
     expect(byTestId('c-flipCamera').getAttribute('aria-label')).toBe('Flip camera');
@@ -219,13 +219,7 @@ describe('CallControls', () => {
   });
 
   it('draws the end button last and only with a handler', () => {
-    mount(
-      <CallControls
-        onMutedChange={() => undefined}
-        onEndCall={() => undefined}
-        testID="c"
-      />,
-    );
+    mount(<CallControls onMutedChange={() => undefined} onEndCall={() => undefined} testID="c" />);
     const end = byTestId('c-end');
     expect(end.getAttribute('aria-label')).toBe('End call');
     expect(end.getAttribute('aria-pressed')).toBeNull();
@@ -233,7 +227,13 @@ describe('CallControls', () => {
 
   it('disables every button at once, and says so', () => {
     mount(
-      <CallControls disabled muted={false} onMutedChange={() => undefined} onEndCall={() => undefined} testID="c" />,
+      <CallControls
+        disabled
+        muted={false}
+        onMutedChange={() => undefined}
+        onEndCall={() => undefined}
+        testID="c"
+      />,
     );
     expect(byTestId('c-mute').getAttribute('aria-disabled')).toBe('true');
     expect(byTestId('c-end').getAttribute('aria-disabled')).toBe('true');
@@ -344,8 +344,17 @@ describe('CallScreen', () => {
 
 describe('CallMinimisedPill', () => {
   it('names the expand target with the person on the call', () => {
-    mount(<CallMinimisedPill name="Ana Restrepo" duration="01:02" onExpand={() => undefined} testID="p" />);
-    expect(byTestId('p-expand').getAttribute('aria-label')).toBe('Return to call with Ana Restrepo');
+    mount(
+      <CallMinimisedPill
+        name="Ana Restrepo"
+        duration="01:02"
+        onExpand={() => undefined}
+        testID="p"
+      />,
+    );
+    expect(byTestId('p-expand').getAttribute('aria-label')).toBe(
+      'Return to call with Ana Restrepo',
+    );
   });
 
   it('prefers a status line over the timer', () => {
@@ -546,9 +555,7 @@ describe('GroupCallGrid', () => {
   });
 
   it('names a muted tile, and pulses the speaking ring unless motion is reduced', () => {
-    const talking: GroupCallParticipant[] = [
-      { id: 'a', name: 'Ana', muted: true, speaking: true },
-    ];
+    const talking: GroupCallParticipant[] = [{ id: 'a', name: 'Ana', muted: true, speaking: true }];
     mount(
       <GroupCallGrid
         participants={talking}
@@ -578,12 +585,28 @@ describe('GroupCallBar', () => {
   });
 
   it('switches Join for Leave, and only offers mute once joined', () => {
-    mount(<GroupCallBar onJoin={() => undefined} onLeave={() => undefined} onMutedChange={() => undefined} testID="b" />);
+    mount(
+      <GroupCallBar
+        onJoin={() => undefined}
+        onLeave={() => undefined}
+        onMutedChange={() => undefined}
+        testID="b"
+      />,
+    );
     expect(maybe('b-join')).not.toBeNull();
     expect(maybe('b-leave')).toBeNull();
     expect(maybe('b-mute')).toBeNull();
 
-    mount(<GroupCallBar joined onJoin={() => undefined} onLeave={() => undefined} muted onMutedChange={() => undefined} testID="b" />);
+    mount(
+      <GroupCallBar
+        joined
+        onJoin={() => undefined}
+        onLeave={() => undefined}
+        muted
+        onMutedChange={() => undefined}
+        testID="b"
+      />,
+    );
     expect(maybe('b-join')).toBeNull();
     expect(maybe('b-leave')).not.toBeNull();
     expect(byTestId('b-mute').getAttribute('aria-pressed')).toBe('true');
@@ -651,7 +674,10 @@ describe('CallHistoryRow', () => {
 
 describe('CallHistoryList', () => {
   const sections = [
-    { title: 'Today', items: [{ id: '1', name: 'Ana', direction: 'missed' as const, meta: '09:14' }] },
+    {
+      title: 'Today',
+      items: [{ id: '1', name: 'Ana', direction: 'missed' as const, meta: '09:14' }],
+    },
     { title: 'Empty', items: [] },
     {
       title: 'Yesterday',

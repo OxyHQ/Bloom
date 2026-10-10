@@ -62,12 +62,7 @@ describe('TextFieldInput floatingLabel', () => {
   it('reflects a present value on the input', () => {
     const { getByLabelText } = renderWithTheme(
       <TextField>
-        <TextFieldInput
-          floatingLabel
-          label="Email"
-          value="nate@oxy.so"
-          onValueChange={() => {}}
-        />
+        <TextFieldInput floatingLabel label="Email" value="nate@oxy.so" onValueChange={() => {}} />
       </TextField>,
     );
     expect(getByLabelText('Email').props.value).toBe('nate@oxy.so');

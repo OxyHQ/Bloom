@@ -184,7 +184,13 @@ function HomeFeed({ width }: { width?: number }) {
     <Page width={width}>
       <FilterChips options={FILTERS} value={filter} onValueChange={setFilter} />
 
-      <Shelf title="Recently played" layout="grid" minItemWidth={narrow ? 150 : 240} rows={2} gap={8}>
+      <Shelf
+        title="Recently played"
+        layout="grid"
+        minItemWidth={narrow ? 150 : 240}
+        rows={2}
+        gap={8}
+      >
         {RECENT.map((title, index) => (
           <CompactTile key={title} seed={`recent-${index}`} title={title} />
         ))}
@@ -204,7 +210,14 @@ function HomeFeed({ width }: { width?: number }) {
 
       <Shelf title="Your favourite artists" onShowAll={noop}>
         {ARTISTS.map((artist) => (
-          <Tile key={artist.id} seed={artist.id} title={artist.title} meta="Artist" round width={tile} />
+          <Tile
+            key={artist.id}
+            seed={artist.id}
+            title={artist.title}
+            meta="Artist"
+            round
+            width={tile}
+          />
         ))}
       </Shelf>
 
@@ -215,9 +228,11 @@ function HomeFeed({ width }: { width?: number }) {
         minItemWidth={tile}
         onShowAll={noop}
       >
-        {MIXES.slice().reverse().map((mix) => (
-          <Tile key={mix.id} seed={`${mix.id}-b`} title={mix.title} meta={mix.meta} fill />
-        ))}
+        {MIXES.slice()
+          .reverse()
+          .map((mix) => (
+            <Tile key={mix.id} seed={`${mix.id}-b`} title={mix.title} meta={mix.meta} fill />
+          ))}
       </Shelf>
 
       <ShelfSkeleton count={8} itemWidth={tile} />

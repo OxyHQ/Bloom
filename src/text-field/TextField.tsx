@@ -18,14 +18,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useFieldControl } from '../field/context';
 import { mergeRefs } from '../hooks/merge-refs';
-import {
-  atoms as a,
-  web,
-  android,
-  platform,
-  tokens,
-  type TextStyleProp,
-} from '../styles';
+import { atoms as a, web, android, platform, tokens, type TextStyleProp } from '../styles';
 import { RiInformationFill } from '../icons/remix/RiInformationFill';
 import { RiEyeLine } from '../icons/remix/RiEyeLine';
 import { RiEyeOffLine } from '../icons/remix/RiEyeOffLine';
@@ -189,21 +182,16 @@ export function TextField({
   // the caller's own prop, then the container's density (`BloomScope`), then
   // `medium` — the precedence rule in `docs/composition.mdx`, with the group's
   // geometry first because it is a constraint rather than a default.
-  const { size: scopedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const { size: scopedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const inheritedSize = scopedSize;
   const size = group?.size ?? inheritedSize;
   const inputRef = useRef<TextInput>(null);
   const [inputDisabled, setInputDisabled] = useState(false);
-  const {
-    state: hovered,
-    onIn: onHoverIn,
-    onOut: onHoverOut,
-  } = useInteractionState();
-  const {
-    state: focused,
-    onIn: onFocus,
-    onOut: onBlur,
-  } = useInteractionState();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const [addonFocused, setAddonFocused] = useState(false);
   const hasAddon = leadingAddon !== undefined && leadingAddon !== null;
 
@@ -229,7 +217,23 @@ export function TextField({
       bare,
       chromeClassName,
     }),
-    [inputRef, hovered, onHoverIn, onHoverOut, focused, onFocus, onBlur, addonFocused, invalid, resolvedDisabled, size, palette, radius, bare, chromeClassName],
+    [
+      inputRef,
+      hovered,
+      onHoverIn,
+      onHoverOut,
+      focused,
+      onFocus,
+      onBlur,
+      addonFocused,
+      invalid,
+      resolvedDisabled,
+      size,
+      palette,
+      radius,
+      bare,
+      chromeClassName,
+    ],
   );
 
   return (
@@ -257,7 +261,8 @@ export function TextField({
               onMouseOver: onHoverIn,
               onMouseOut: onHoverOut,
             } as Record<string, unknown>)
-          : undefined)}>
+          : undefined)}
+      >
         {hasAddon ? (
           <LeadingAddon onFocusChange={setAddonFocused}>{leadingAddon}</LeadingAddon>
         ) : null}
@@ -301,7 +306,10 @@ function LeadingAddon({
           observer.current?.disconnect();
           if (typeof MutationObserver !== 'undefined') {
             observer.current = new MutationObserver(report);
-            observer.current.observe(target, { attributes: true, attributeFilter: ['aria-expanded'] });
+            observer.current.observe(target, {
+              attributes: true,
+              attributeFilter: ['aria-expanded'],
+            });
           }
           report();
         },
@@ -317,7 +325,8 @@ function LeadingAddon({
   return (
     <View
       style={[a.z_20, { flexShrink: 0, marginInlineEnd: TEXT_FIELD_LEADING_GAP }]}
-      {...(webHandlers as Record<string, unknown> | undefined)}>
+      {...(webHandlers as Record<string, unknown> | undefined)}
+    >
       {children}
     </View>
   );
@@ -337,7 +346,13 @@ function Chrome({ invalid }: { invalid: boolean }) {
     <FieldBox
       pointerEvents="none"
       className={ctx.chromeClassName}
-      stateStyle={ctx.disabled || invalid ? paint : ctx.focused || ctx.addonFocused ? { borderColor: paint.borderColor } : undefined}
+      stateStyle={
+        ctx.disabled || invalid
+          ? paint
+          : ctx.focused || ctx.addonFocused
+            ? { borderColor: paint.borderColor }
+            : undefined
+      }
       baseStyle={[
         a.z_10,
         a.absolute,
@@ -438,9 +453,7 @@ export function TextFieldInput({
   }
 
   const refs = mergeRefs(
-    [ctx.inputRef, inputRef].filter(
-      (ref): ref is NonNullable<typeof ref> => ref != null,
-    ),
+    [ctx.inputRef, inputRef].filter((ref): ref is NonNullable<typeof ref> => ref != null),
   );
 
   const invalid = ctx.invalid || invalidProp === true || field?.invalid === true;
@@ -466,7 +479,8 @@ export function TextFieldInput({
   const fieldProps = field
     ? {
         nativeID: rest.nativeID ?? field.controlId,
-        'aria-describedby': (rest as Record<string, unknown>)['aria-describedby'] ?? field.describedBy,
+        'aria-describedby':
+          (rest as Record<string, unknown>)['aria-describedby'] ?? field.describedBy,
         'aria-required': field.required || undefined,
       }
     : undefined;
@@ -475,7 +489,8 @@ export function TextFieldInput({
   // string rather than two spellings of it. On native there is no association
   // at all and this prop is the only name the control has.
   const accessibleName = rest.accessibilityLabel ?? field?.labelText ?? label;
-  const webDisabled = IS_WEB && fieldDisabled ? ({ disabled: true } as Record<string, unknown>) : undefined;
+  const webDisabled =
+    IS_WEB && fieldDisabled ? ({ disabled: true } as Record<string, unknown>) : undefined;
   const reveal = canReveal ? (
     <RevealButton
       revealed={revealed}
@@ -613,7 +628,10 @@ function revealGeometry(size: TextFieldSize): { box: number; glyph: number } {
  * (`TextFieldRevealWeb.test.tsx` pins it).
  */
 const KEEP_FOCUS_WHERE_IT_IS = IS_WEB
-  ? ({ onMouseDown: (event: { preventDefault: () => void }) => event.preventDefault() } as Record<string, unknown>)
+  ? ({ onMouseDown: (event: { preventDefault: () => void }) => event.preventDefault() } as Record<
+      string,
+      unknown
+    >)
   : undefined;
 
 /**
@@ -649,15 +667,21 @@ function RevealButton({
   const inputWasFocused = useRef(false);
   const { box: size, glyph } = revealGeometry(ctx.size);
   const inset = (size - glyph) / 2;
-  const label = revealed ? (labels?.hide ?? messages.hidePassword) : (labels?.show ?? messages.showPassword);
+  const label = revealed
+    ? (labels?.hide ?? messages.hidePassword)
+    : (labels?.show ?? messages.showPassword);
 
   return (
     <View
-      style={[a.z_20, { marginInlineStart: TEXT_FIELD_TRAILING_GAP - inset, marginInlineEnd: -inset }]}
+      style={[
+        a.z_20,
+        { marginInlineStart: TEXT_FIELD_TRAILING_GAP - inset, marginInlineEnd: -inset },
+      ]}
       onTouchStart={() => {
         inputWasFocused.current = ctx.inputRef.current?.isFocused() ?? false;
       }}
-      {...KEEP_FOCUS_WHERE_IT_IS}>
+      {...KEEP_FOCUS_WHERE_IT_IS}
+    >
       <GlyphButton
         size={size}
         glyphSize={glyph}
@@ -683,10 +707,7 @@ const FLOAT_TRAVEL = 11;
 const FLOAT_LABEL_REST_SIZE = TEXT_FIELD_TEXT.fontSize;
 const FLOAT_LABEL_FLOAT_SIZE = TEXT_FIELD_HINT_TEXT.fontSize;
 
-type FloatingLabelInputProps = Omit<
-  TextInputProps,
-  'value' | 'onChangeText' | 'placeholder'
-> & {
+type FloatingLabelInputProps = Omit<TextInputProps, 'value' | 'onChangeText' | 'placeholder'> & {
   label: string;
   value?: string;
   onValueChange?: (value: string) => void;
@@ -763,7 +784,10 @@ function FloatingLabelInput({
       : palette.placeholder;
   const labelColor = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [restColor, invalid ? palette.error : ctx.disabled ? palette.textDisabled : palette.hint],
+    outputRange: [
+      restColor,
+      invalid ? palette.error : ctx.disabled ? palette.textDisabled : palette.hint,
+    ],
   });
 
   const inputStyle: TextStyle = StyleSheet.flatten([
@@ -807,7 +831,8 @@ function FloatingLabelInput({
             fontSize: labelSize,
             color: labelColor,
           },
-        ]}>
+        ]}
+      >
         {label}
       </Animated.Text>
 
@@ -860,12 +885,17 @@ export function TextFieldLabel({
         a.align_center,
         { gap: TEXT_FIELD_LEADING_GAP, marginBottom: TEXT_FIELD_STACK_GAP },
         style,
-      ]}>
+      ]}
+    >
       <Text variant="body-medium" nativeID={nativeID} style={{ color: palette.text }}>
         {children}
       </Text>
       {required ? (
-        <Text variant="body-medium" accessibilityLabel={messages.required} style={{ color: palette.error }}>
+        <Text
+          variant="body-medium"
+          accessibilityLabel={messages.required}
+          style={{ color: palette.error }}
+        >
           *
         </Text>
       ) : null}
@@ -907,7 +937,8 @@ export function TextFieldHint({
           color: invalid ? palette.error : palette.hint,
         },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </Text>
   );
@@ -932,7 +963,8 @@ export function TextFieldIcon({ icon: Comp, position = 'leading', size = 20 }: T
         position === 'leading'
           ? { marginInlineEnd: TEXT_FIELD_LEADING_GAP }
           : { marginInlineStart: TEXT_FIELD_TRAILING_GAP },
-      ]}>
+      ]}
+    >
       <Comp
         width={size}
         height={size}
@@ -972,27 +1004,24 @@ export function TextFieldSuffix({
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
       numberOfLines={1}
-      style={StyleSheet.flatten([
-        a.z_20,
-        {
-          marginLeft: TEXT_FIELD_TRAILING_GAP,
-          color,
-        },
-        a.pointer_events_none,
-        style,
-      ]) as TextStyle}>
+      style={
+        StyleSheet.flatten([
+          a.z_20,
+          {
+            marginLeft: TEXT_FIELD_TRAILING_GAP,
+            color,
+          },
+          a.pointer_events_none,
+          style,
+        ]) as TextStyle
+      }
+    >
       {children}
     </Text>
   );
 }
 
-export function TextFieldGhost({
-  children,
-  value,
-}: {
-  children: string;
-  value: string;
-}) {
+export function TextFieldGhost({ children, value }: { children: string; value: string }) {
   const theme = useTheme();
   const palette = useTextFieldPalette();
   // Aligned with the typed text after a leading icon: icon + gap + input inset.
@@ -1017,11 +1046,9 @@ export function TextFieldGhost({
       ]}
       aria-hidden={true}
       accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants">
-      <Text
-        variant="body-regular"
-        style={[{ color: 'transparent' }, a.w_full]}
-        numberOfLines={1}>
+      importantForAccessibility="no-hide-descendants"
+    >
+      <Text variant="body-regular" style={[{ color: 'transparent' }, a.w_full]} numberOfLines={1}>
         {children}
         <Text variant="body-regular" style={{ color: palette.placeholder }}>
           {value}

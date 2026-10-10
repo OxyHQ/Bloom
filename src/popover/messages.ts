@@ -8,6 +8,9 @@ export interface PopoverMessages {
   popover: string;
 }
 
-export const POPOVER_MESSAGES: MessageCatalog<PopoverMessages> = defineMessages<PopoverMessages>('POPOVER_MESSAGES', {
-  popover: 'Popover',
-});
+export const POPOVER_MESSAGES: MessageCatalog<PopoverMessages> = defineMessages<PopoverMessages>(
+  'POPOVER_MESSAGES',
+  {
+    popover: 'Popover',
+  },
+);

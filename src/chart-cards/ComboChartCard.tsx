@@ -157,7 +157,11 @@ export function ComboChartCard({
   const barFormat = bar.format ?? ((value: number) => formatNumber(value, chartLocale));
   const lineFormat = line.format ?? formatPercent;
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const selectRange = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -182,7 +186,9 @@ export function ComboChartCard({
   const headerLabel = hovering ? String(data[activeIndex]?.label ?? title) : title;
   const fromLine = headlineFrom === 'line';
   const headlineValues = fromLine ? lineValues : barValues;
-  const headlineValue = hovering ? (headlineValues[activeIndex] ?? 0) : (headline ?? (fromLine ? lineTotal : barTotal));
+  const headlineValue = hovering
+    ? (headlineValues[activeIndex] ?? 0)
+    : (headline ?? (fromLine ? lineTotal : barTotal));
   // The other series' reading for the category rides along in the label.
   const otherSeries = fromLine ? bar : line;
   const otherFormat = fromLine ? barFormat : lineFormat;
@@ -216,37 +222,66 @@ export function ComboChartCard({
         testID={testID}
       />
 
-      <View style={tiles ? { width: '100%', height: TILES_PLOT_HEIGHT } : { width: '100%', flex: 1, minHeight: 0 }}>
+      <View
+        style={
+          tiles
+            ? { width: '100%', height: TILES_PLOT_HEIGHT }
+            : { width: '100%', flex: 1, minHeight: 0 }
+        }
+      >
         <MultiAxisPlot
           categories={categories}
           xScale="band"
-          axis={{ width: LEFT_AXIS_WIDTH, domain: barAxis.domain, ticks: barAxis.ticks, format: (value: number) => compactNumber(value, chartLocale) }}
-          rightAxis={{ width: RIGHT_AXIS_WIDTH, domain: lineAxis.domain, ticks: lineAxis.ticks, format: lineFormat }}
+          axis={{
+            width: LEFT_AXIS_WIDTH,
+            domain: barAxis.domain,
+            ticks: barAxis.ticks,
+            format: (value: number) => compactNumber(value, chartLocale),
+          }}
+          rightAxis={{
+            width: RIGHT_AXIS_WIDTH,
+            domain: lineAxis.domain,
+            ticks: lineAxis.ticks,
+            format: lineFormat,
+          }}
           margin={MARGIN}
           outside="clear"
           onActiveIndexChange={setActiveIndex}
           palette={palette}
-          accessibilityLabel={accessibilityLabel ?? chartText.comboChart(title, bar.label, line.label)}
-          testID={testID ? `${testID}-plot` : undefined}>
+          accessibilityLabel={
+            accessibilityLabel ?? chartText.comboChart(title, bar.label, line.label)
+          }
+          testID={testID ? `${testID}-plot` : undefined}
+        >
           {({ size, box, x, band, y, yRight }) => {
             const slot = singleBarSlot(band, BAR_CATEGORY_GAP, MAX_BAR_SIZE);
             const bars = barValues.map((v, i) => {
-              const from = barAnim.from && barAnim.from.length === barValues.length ? barAnim.from[i]! : null;
+              const from =
+                barAnim.from && barAnim.from.length === barValues.length ? barAnim.from[i]! : null;
               // Mount: grow from the base; data change: morph from the previous value.
               const value = from !== null ? lerp(from, v, barAnim.progress) : v;
               const top = y(value);
               const full = box.bottom - top;
               const height = from !== null ? full : full * barAnim.progress;
-              return { x: box.left + i * band + slot.offset, y: box.bottom - height, width: slot.size, height };
+              return {
+                x: box.left + i * band + slot.offset,
+                y: box.bottom - height,
+                width: slot.size,
+                height,
+              };
             });
             const points: Point[] = lineValues.map((v, i) => ({
               x: x(i),
               y: yRight(
-                lineAnim.from && lineAnim.from.length === lineValues.length ? lerp(lineAnim.from[i]!, v, lineAnim.progress) : v,
+                lineAnim.from && lineAnim.from.length === lineValues.length
+                  ? lerp(lineAnim.from[i]!, v, lineAnim.progress)
+                  : v,
               ),
             }));
             const d = monotoneXPath(points);
-            const revealWidth = lineAnim.from ? size.width : box.left + (size.width - box.left) * lineAnim.progress;
+            const revealWidth = lineAnim.from
+              ? size.width
+              : box.left + (size.width - box.left) * lineAnim.progress;
             const settled = lineAnim.progress >= 1;
             const active = activeIndex !== null ? points[activeIndex] : undefined;
             return (

@@ -53,7 +53,8 @@ export function SidebarRail({
 
   const renderItem = (item: SidebarNavItem) => {
     const isSelected = selected === item.key;
-    const onPress = item.onPress ?? (onNavigate && item.href != null ? () => onNavigate(item) : undefined);
+    const onPress =
+      item.onPress ?? (onNavigate && item.href != null ? () => onNavigate(item) : undefined);
     return (
       <SidebarRailItem
         key={item.key}
@@ -72,7 +73,9 @@ export function SidebarRail({
             <Badge
               content={item.badge}
               style={{ backgroundColor: isSelected ? palette.badgePrimary : palette.badgeNeutral }}
-              textStyle={{ color: isSelected ? palette.badgePrimaryForeground : palette.textSecondary }}
+              textStyle={{
+                color: isSelected ? palette.badgePrimaryForeground : palette.textSecondary,
+              }}
             />
           ) : undefined
         }
@@ -97,37 +100,60 @@ export function SidebarRail({
         style,
       ]}
     >
-      <View testID={`${testID ?? 'sidebar'}-main-region`} style={{ flex: 1, minHeight: 0, justifyContent: contentAlignment === 'center' ? 'center' : undefined }}>
-      <View style={{ minHeight: 0, flexShrink: 1, ...(contentAlignment === 'start' ? { flex: 1 } : {}) }}>
-      {logo ? (
-        <View style={{ flexShrink: 0, alignItems: 'center', paddingTop: 24 }}>
-          <SidebarLogoView logo={logo} showWordmark={false} testID="sidebar-logo" />
-        </View>
-      ) : null}
-      <SidebarScrollArea
-        fadeColor={palette.flat}
-        testID={testID ? `${testID}-scroll` : 'sidebar-rail-scroll'}
-        {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
-        style={contentAlignment === 'center' ? { flexGrow: 0, flexShrink: 1, minHeight: 0 } : { flex: 1 }}
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'center',
-          paddingLeft: 8,
-          paddingRight: 8,
-          paddingTop: 24,
-          paddingBottom: 24,
-          gap: 8,
+      <View
+        testID={`${testID ?? 'sidebar'}-main-region`}
+        style={{
+          flex: 1,
+          minHeight: 0,
+          justifyContent: contentAlignment === 'center' ? 'center' : undefined,
         }}
-        showsVerticalScrollIndicator={false}
       >
-        <View role="navigation" style={{ width: '100%', gap: 8 }}>
-          {items.map(renderItem)}
+        <View
+          style={{
+            minHeight: 0,
+            flexShrink: 1,
+            ...(contentAlignment === 'start' ? { flex: 1 } : {}),
+          }}
+        >
+          {logo ? (
+            <View style={{ flexShrink: 0, alignItems: 'center', paddingTop: 24 }}>
+              <SidebarLogoView logo={logo} showWordmark={false} testID="sidebar-logo" />
+            </View>
+          ) : null}
+          <SidebarScrollArea
+            fadeColor={palette.flat}
+            testID={testID ? `${testID}-scroll` : 'sidebar-rail-scroll'}
+            {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
+            style={
+              contentAlignment === 'center'
+                ? { flexGrow: 0, flexShrink: 1, minHeight: 0 }
+                : { flex: 1 }
+            }
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: 'center',
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingTop: 24,
+              paddingBottom: 24,
+              gap: 8,
+            }}
+            showsVerticalScrollIndicator={false}
+          >
+            <View role="navigation" style={{ width: '100%', gap: 8 }}>
+              {items.map(renderItem)}
+            </View>
+          </SidebarScrollArea>
+          {primaryAction ? (
+            <View style={{ flexShrink: 0, paddingLeft: 8, paddingRight: 8, paddingBottom: 24 }}>
+              <SidebarPrimaryAction
+                action={primaryAction}
+                rail
+                testID={testID ? `${testID}-primary-action` : undefined}
+              />
+            </View>
+          ) : null}
         </View>
-      </SidebarScrollArea>
-      {primaryAction ? <View style={{ flexShrink: 0, paddingLeft: 8, paddingRight: 8, paddingBottom: 24 }}>
-        <SidebarPrimaryAction action={primaryAction} rail testID={testID ? `${testID}-primary-action` : undefined} />
-      </View> : null}
-      </View>
       </View>
       {secondaryItems.length > 0 ? (
         <View
@@ -137,9 +163,20 @@ export function SidebarRail({
           {secondaryItems.map(renderItem)}
         </View>
       ) : null}
-      {footer != null ? <View testID={testID ? `${testID}-footer` : 'sidebar-footer'} style={{ flexShrink: 0, width: '100%', paddingLeft: 8, paddingRight: 8, paddingBottom: 24 }}>
-        {typeof footer === 'function' ? footer({ collapsed: true }) : footer}
-      </View> : null}
+      {footer != null ? (
+        <View
+          testID={testID ? `${testID}-footer` : 'sidebar-footer'}
+          style={{
+            flexShrink: 0,
+            width: '100%',
+            paddingLeft: 8,
+            paddingRight: 8,
+            paddingBottom: 24,
+          }}
+        >
+          {typeof footer === 'function' ? footer({ collapsed: true }) : footer}
+        </View>
+      ) : null}
     </View>
   );
 }

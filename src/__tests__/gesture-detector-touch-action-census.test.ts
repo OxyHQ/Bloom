@@ -137,15 +137,23 @@ describe('GestureDetector touchAction census', () => {
   });
 
   it('can tell a detector without touchAction from one with it (the gate is falsifiable)', () => {
-    expect(scan('a.tsx', 'const a = <GestureDetector gesture={g}><V /></GestureDetector>;')).toEqual([
-      'default',
-    ]);
     expect(
-      scan('b.tsx', 'const b = <GestureDetector gesture={g} touchAction="pan-y"><V /></GestureDetector>;'),
+      scan('a.tsx', 'const a = <GestureDetector gesture={g}><V /></GestureDetector>;'),
+    ).toEqual(['default']);
+    expect(
+      scan(
+        'b.tsx',
+        'const b = <GestureDetector gesture={g} touchAction="pan-y"><V /></GestureDetector>;',
+      ),
     ).toEqual(['pan-y']);
     expect(
-      scan('c.tsx', "const c = <GestureDetector gesture={g} touchAction={'pan-x'}><V /></GestureDetector>;"),
+      scan(
+        'c.tsx',
+        "const c = <GestureDetector gesture={g} touchAction={'pan-x'}><V /></GestureDetector>;",
+      ),
     ).toEqual(['pan-x']);
-    expect(scan('d.tsx', 'const d = <GestureDetector {...p}>{c}</GestureDetector>;')).toEqual(['spread']);
+    expect(scan('d.tsx', 'const d = <GestureDetector {...p}>{c}</GestureDetector>;')).toEqual([
+      'spread',
+    ]);
   });
 });

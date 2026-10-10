@@ -33,7 +33,10 @@ function update(language: TranslatedLanguage, table: Translations | undefined): 
   const failed = new Set(snapshot.failed);
   if (table) failed.delete(language);
   else failed.add(language);
-  snapshot = { tables: table ? { ...snapshot.tables, [language]: table } : snapshot.tables, failed };
+  snapshot = {
+    tables: table ? { ...snapshot.tables, [language]: table } : snapshot.tables,
+    failed,
+  };
   for (const listener of listeners) listener();
 }
 const pending = new Map<TranslatedLanguage, Promise<void>>();
@@ -108,8 +111,15 @@ export function loadBloomLocale(locale?: string): Promise<void> {
  * always; another language once its module loaded — or failed, in which case
  * English stands in rather than holding the screen.
  */
-export function isBloomLanguageSettled(translations: LoadedTranslations, language: BloomLanguage): boolean {
-  return language === 'en' || translations.tables[language] !== undefined || translations.failed.has(language);
+export function isBloomLanguageSettled(
+  translations: LoadedTranslations,
+  language: BloomLanguage,
+): boolean {
+  return (
+    language === 'en' ||
+    translations.tables[language] !== undefined ||
+    translations.failed.has(language)
+  );
 }
 
 export function subscribeBloomTranslations(listener: () => void): () => void {
@@ -127,7 +137,10 @@ export function getBloomTranslations(): LoadedTranslations {
  * Registers a language synchronously. For a test environment that cannot
  * await module loads; an app uses `loadBloomLocale`.
  */
-export function registerBloomTranslations(language: TranslatedLanguage, translations: Translations): void {
+export function registerBloomTranslations(
+  language: TranslatedLanguage,
+  translations: Translations,
+): void {
   update(language, translations);
 }
 

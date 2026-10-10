@@ -43,7 +43,8 @@ export function ComposerPopover({
       onDismiss={dismiss}
       surface="menu"
       style={style}
-      testID={testID}>
+      testID={testID}
+    >
       {children}
     </FloatingPanel>
   );

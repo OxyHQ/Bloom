@@ -7,13 +7,7 @@ import { useSvgId } from './use-svg-id';
 import type { ImageProps } from './types';
 
 /** Clips an image on every platform. SVG cannot clip arbitrary React Native views. */
-export function Image({
-  shape = 'circle',
-  source,
-  size,
-  alt,
-  onError,
-}: ImageProps) {
+export function Image({ shape = 'circle', source, size, alt, onError }: ImageProps) {
   const clipId = useSvgId('shape-image');
   assertSize(size);
   assertImageSource(source);

@@ -49,12 +49,7 @@ export class Cam16 {
     return Cam16.fromXyzInViewingConditions(x, y, z, vc);
   }
 
-  static fromXyzInViewingConditions(
-    x: number,
-    y: number,
-    z: number,
-    vc: ViewingConditions,
-  ): Cam16 {
+  static fromXyzInViewingConditions(x: number, y: number, z: number, vc: ViewingConditions): Cam16 {
     const rC = 0.401288 * x + 0.650173 * y - 0.051461 * z;
     const gC = -0.250268 * x + 1.204414 * y + 0.045854 * z;
     const bC = -0.002079 * x + 0.048952 * y + 0.953127 * z;
@@ -81,7 +76,7 @@ export class Cam16 {
     const Q = (4.0 / vc.c) * Math.sqrt(J / 100.0) * (vc.aw + 4.0) * vc.fLRoot;
     const huePrime = hue < 20.14 ? hue + 360 : hue;
     const eHue = (1.0 / 4.0) * (Math.cos((huePrime * Math.PI) / 180.0 + 2.0) + 3.8);
-    const p1 = ((50000.0 / 13.0) * eHue * vc.nc * vc.ncb);
+    const p1 = (50000.0 / 13.0) * eHue * vc.nc * vc.ncb;
     const t = (p1 * Math.sqrt(a * a + b * b)) / (u + 0.305);
     const alpha = Math.pow(t, 0.9) * Math.pow(1.64 - Math.pow(0.29, vc.n), 0.73);
     const C = alpha * Math.sqrt(J / 100.0);
@@ -98,12 +93,7 @@ export class Cam16 {
     return Cam16.fromJchInViewingConditions(j, c, h, ViewingConditions.DEFAULT);
   }
 
-  static fromJchInViewingConditions(
-    j: number,
-    c: number,
-    h: number,
-    vc: ViewingConditions,
-  ): Cam16 {
+  static fromJchInViewingConditions(j: number, c: number, h: number, vc: ViewingConditions): Cam16 {
     const q = (4.0 / vc.c) * Math.sqrt(j / 100.0) * (vc.aw + 4.0) * vc.fLRoot;
     const m = c * vc.fLRoot;
     const alpha = c / Math.sqrt(j / 100.0);
@@ -147,7 +137,8 @@ export class Cam16 {
   }
 
   xyzInViewingConditions(vc: ViewingConditions): [number, number, number] {
-    const alpha = this.chroma === 0.0 || this.j === 0.0 ? 0.0 : this.chroma / Math.sqrt(this.j / 100.0);
+    const alpha =
+      this.chroma === 0.0 || this.j === 0.0 ? 0.0 : this.chroma / Math.sqrt(this.j / 100.0);
     const t = Math.pow(alpha / Math.pow(1.64 - Math.pow(0.29, vc.n), 0.73), 1.0 / 0.9);
     const hRad = (this.hue * Math.PI) / 180.0;
     const eHue = 0.25 * (Math.cos(hRad + 2.0) + 3.8);

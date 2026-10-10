@@ -3,11 +3,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-  SegmentedControlItemText,
-} from './index';
+import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from './index';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 
@@ -31,9 +27,23 @@ export const Matrix: Story = {
     const theme = useTheme();
     const [value, setValue] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
     return (
-      <View style={{ gap: 16, padding: 16, alignItems: 'flex-start', backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          gap: 16,
+          padding: 16,
+          alignItems: 'flex-start',
+          backgroundColor: theme.colors.background,
+        }}
+      >
         {(['sm', 'md', 'lg'] as const).map((size) => (
-          <SegmentedControl key={size} label={`Period ${size}`} type="radio" size={size} value={value} onValueChange={setValue}>
+          <SegmentedControl
+            key={size}
+            label={`Period ${size}`}
+            type="radio"
+            size={size}
+            value={value}
+            onValueChange={setValue}
+          >
             <SegmentedControlItem value="weekly">
               <SegmentedControlItemText>Weekly</SegmentedControlItemText>
             </SegmentedControlItem>
@@ -45,7 +55,13 @@ export const Matrix: Story = {
             </SegmentedControlItem>
           </SegmentedControl>
         ))}
-        <SegmentedControl label="Period plain" type="radio" variant="plain" value={value} onValueChange={setValue}>
+        <SegmentedControl
+          label="Period plain"
+          type="radio"
+          variant="plain"
+          value={value}
+          onValueChange={setValue}
+        >
           <SegmentedControlItem value="weekly">
             <SegmentedControlItemText>Weekly</SegmentedControlItemText>
           </SegmentedControlItem>
@@ -57,7 +73,13 @@ export const Matrix: Story = {
           </SegmentedControlItem>
         </SegmentedControl>
         <View style={{ width: 380, maxWidth: '100%' }}>
-          <SegmentedControl label="Stretched" type="radio" value={value} onValueChange={setValue} style={{ alignSelf: 'stretch' }}>
+          <SegmentedControl
+            label="Stretched"
+            type="radio"
+            value={value}
+            onValueChange={setValue}
+            style={{ alignSelf: 'stretch' }}
+          >
             <SegmentedControlItem value="weekly">
               <SegmentedControlItemText>Weekly</SegmentedControlItemText>
             </SegmentedControlItem>
@@ -112,7 +134,12 @@ export const Tabs: Story = {
     const [value, setValue] = useState<'posts' | 'replies'>('posts');
     return (
       <View style={{ width: 380, maxWidth: '100%', gap: 16 }}>
-        <SegmentedControl label="Profile section" type="tabs" value={value} onValueChange={setValue}>
+        <SegmentedControl
+          label="Profile section"
+          type="tabs"
+          value={value}
+          onValueChange={setValue}
+        >
           <SegmentedControlItem value="posts">
             <SegmentedControlItemText>Posts</SegmentedControlItemText>
           </SegmentedControlItem>
@@ -158,9 +185,23 @@ export const Sizes: Story = {
 export const Playground: StoryObj<typeof SegmentedControl> = {
   args: { type: 'radio', label: 'Period', value: 'weekly', size: 'md', variant: 'solid' },
   parameters: { controls: { disable: false, include: ['value', 'size', 'variant'] } },
-  argTypes: { value: { control: 'select', options: ['weekly','monthly','yearly'] }, size: { control: 'select', options: ['sm','md','lg'] }, variant: { control: 'select', options: ['solid','plain'] } },
+  argTypes: {
+    value: { control: 'select', options: ['weekly', 'monthly', 'yearly'] },
+    size: { control: 'select', options: ['sm', 'md', 'lg'] },
+    variant: { control: 'select', options: ['solid', 'plain'] },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 520, maxWidth: '100%' }}><SegmentedControl {...args} onValueChange={value => updateArgs({ value })}>{['weekly','monthly','yearly'].map(value => <SegmentedControlItem key={value} value={value}><SegmentedControlItemText>{value}</SegmentedControlItemText></SegmentedControlItem>)}</SegmentedControl></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <SegmentedControl {...args} onValueChange={(value) => updateArgs({ value })}>
+          {['weekly', 'monthly', 'yearly'].map((value) => (
+            <SegmentedControlItem key={value} value={value}>
+              <SegmentedControlItemText>{value}</SegmentedControlItemText>
+            </SegmentedControlItem>
+          ))}
+        </SegmentedControl>
+      </View>
+    );
   },
 };

@@ -60,7 +60,9 @@ describe('AgentLimitsCard', () => {
   });
 
   it('reads out used / max, counting only non-deferred buckets', () => {
-    const { getByText, getByTestId } = renderCard(<AgentLimitsCard testID="card" context={CONTEXT} />);
+    const { getByText, getByTestId } = renderCard(
+      <AgentLimitsCard testID="card" context={CONTEXT} />,
+    );
     expect(getByText('(82%)')).toBeTruthy();
     const bar = getByTestId('card-context-bar');
     expect(bar.props.accessibilityRole).toBe('progressbar');
@@ -207,7 +209,13 @@ describe('AgentLimitsCard', () => {
   it('formats tokens in compact notation by default', () => {
     const { getByText } = renderCard(
       <AgentLimitsCard
-        context={{ max: 1_000_000, segments: [{ label: 'a', tokens: 482_800 }, { label: 'b', tokens: 314 }] }}
+        context={{
+          max: 1_000_000,
+          segments: [
+            { label: 'a', tokens: 482_800 },
+            { label: 'b', tokens: 314 },
+          ],
+        }}
       />,
     );
     expect(getByText(/483\.1k \/ 1M/)).toBeTruthy();
@@ -216,15 +224,11 @@ describe('AgentLimitsCard', () => {
   it('maps the surface onto the neutral ramp per mode', () => {
     const light = renderCard(<AgentLimitsCard testID="card" limits={LIMITS} />, 'light');
     const lightTheme = buildTheme('teal', 'light');
-    expect(cardFill(light.getByTestId('card'))).toBe(
-      resolveSurfaceTint(lightTheme.colors.card),
-    );
+    expect(cardFill(light.getByTestId('card'))).toBe(resolveSurfaceTint(lightTheme.colors.card));
     light.unmount();
 
     const dark = renderCard(<AgentLimitsCard testID="card" limits={LIMITS} />, 'dark');
     const darkTheme = buildTheme('teal', 'dark');
-    expect(cardFill(dark.getByTestId('card'))).toBe(
-      resolveSurfaceTint(darkTheme.colors.card),
-    );
+    expect(cardFill(dark.getByTestId('card'))).toBe(resolveSurfaceTint(darkTheme.colors.card));
   });
 });

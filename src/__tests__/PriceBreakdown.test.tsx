@@ -43,7 +43,9 @@ const LINES: PriceLine[] = [
 
 describe('it does no money maths, in either direction', () => {
   it('draws every amount byte for byte, hostile formatting included', () => {
-    mount(<PriceSummary lines={LINES} total={{ label: 'Total', amount: '1.268,56 €' }} testID="p" />);
+    mount(
+      <PriceSummary lines={LINES} total={{ label: 'Total', amount: '1.268,56 €' }} testID="p" />,
+    );
     expect(byTestId('p-line-0-amount').textContent).toBe('€34.00');
     // An UNSIGNED credit stays unsigned: `tone="discount"` colours a line, it
     // does not negate one. This is the assertion that fails the moment somebody
@@ -92,12 +94,16 @@ describe('a secondary amount (a second currency)', () => {
     expect(byTestId('p-total-secondary-amount').textContent).toBe('≈ 13,82 €');
     // De-emphasised: the secondary rung, not the amount's colour.
     const paint = resolvePricePaint(theme(), resolveSurfaceLevel(theme(), 0).background);
-    expect(getComputedStyle(byTestId('p-line-0-secondary-amount')).color).toBe(css(paint.textSecondary));
+    expect(getComputedStyle(byTestId('p-line-0-secondary-amount')).color).toBe(
+      css(paint.textSecondary),
+    );
     expect(getComputedStyle(byTestId('p-line-0-amount')).color).toBe(css(paint.text));
   });
 
   it('PriceSummaryLine takes it directly', () => {
-    mount(<PriceSummaryLine label="Subtotal" amount="$13.20" secondaryAmount="≈ 12,00 €" testID="l" />);
+    mount(
+      <PriceSummaryLine label="Subtotal" amount="$13.20" secondaryAmount="≈ 12,00 €" testID="l" />,
+    );
     expect(byTestId('l-secondary-amount').textContent).toBe('≈ 12,00 €');
   });
 });
@@ -130,7 +136,9 @@ describe('tone and state', () => {
     expect(byTestId('p-line-0-state').textContent).toBe('Could change');
     expect(byTestId('p-total-state').textContent).toBe('Could change');
     // The caveat is a SIBLING of the amount, so it travels with the number.
-    expect(byTestId('p-line-0-amount').parentElement).toBe(byTestId('p-line-0-state').parentElement);
+    expect(byTestId('p-line-0-amount').parentElement).toBe(
+      byTestId('p-line-0-state').parentElement,
+    );
     expect(byTestId('p-line-0-label').textContent).toBe('Delivery');
   });
 
@@ -197,7 +205,12 @@ describe('structure and naming', () => {
       <PriceSummary
         lines={[
           { label: 'Stairs', amount: '€8.00', info: 'Per floor above the second.' },
-          { label: 'Cover', amount: '€4.50', info: 'Per trip.', infoAccessibilityLabel: 'How cover works' },
+          {
+            label: 'Cover',
+            amount: '€4.50',
+            info: 'Per trip.',
+            infoAccessibilityLabel: 'How cover works',
+          },
         ]}
         testID="p"
       />,
@@ -235,10 +248,14 @@ describe('the paint is read off the surface, over every preset and mode', () => 
           const paint = resolvePricePaint(t, surface);
           const where = `${preset}/${mode}/L${level}`;
           if (contrastRatio(paint.discount, surface) < AA_TEXT) {
-            failures.push(`${where}: discount ${contrastRatio(paint.discount, surface).toFixed(2)}`);
+            failures.push(
+              `${where}: discount ${contrastRatio(paint.discount, surface).toFixed(2)}`,
+            );
           }
           if (contrastRatio(paint.textTertiary, surface) < AA_TEXT) {
-            failures.push(`${where}: caveat ${contrastRatio(paint.textTertiary, surface).toFixed(2)}`);
+            failures.push(
+              `${where}: caveat ${contrastRatio(paint.textTertiary, surface).toFixed(2)}`,
+            );
           }
           if (paint.rule === surface) failures.push(`${where}: the rule is the surface`);
         }

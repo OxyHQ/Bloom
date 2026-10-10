@@ -14,7 +14,15 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
-import { gradientStyle, MEDIA_HEADER_CSS, MEDIA_HEADER_STYLE_ID, MEDIA_HEADER_WIDE_MIN_WIDTH, resolveLikedGradient, resolveMediaHeaderPaint, type MediaHeaderPaint } from './shared';
+import {
+  gradientStyle,
+  MEDIA_HEADER_CSS,
+  MEDIA_HEADER_STYLE_ID,
+  MEDIA_HEADER_WIDE_MIN_WIDTH,
+  resolveLikedGradient,
+  resolveMediaHeaderPaint,
+  type MediaHeaderPaint,
+} from './shared';
 import { clamp01 } from '../styles/clamp';
 import { isImageUrl as isUrl } from '../image-resolver';
 import { webDataSet as webData } from '../styles/web-data';
@@ -29,7 +37,10 @@ export function useMediaHeaderPaint(artworkColor?: string | null): MediaHeaderPa
 }
 
 /** A URL passes through; an id goes through the ImageResolver. */
-export function useImageUri(source: MediaImageSource | undefined, variant?: string): string | undefined {
+export function useImageUri(
+  source: MediaImageSource | undefined,
+  variant?: string,
+): string | undefined {
   const resolver = useImageResolver();
   if (!source) return undefined;
   return isUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
@@ -171,7 +182,11 @@ export function MediaHeaderFrame({
   };
 
   return (
-    <View onLayout={onLayout} style={[{ backgroundColor: paint.background }, style]} testID={testID}>
+    <View
+      onLayout={onLayout}
+      style={[{ backgroundColor: paint.background }, style]}
+      testID={testID}
+    >
       <View style={[bandStyle, gradientStyle([paint.bandTop, paint.bandBottom])]}>
         {backdrop}
         {cover ? (
@@ -283,7 +298,6 @@ export function InlineLink({
   const style: WebCssStyle = { '--bloom-btn-ring': ring };
   return (
     <LinkButton
-
       underline="hover"
       size="sm"
       textVariant={variant}
@@ -322,7 +336,13 @@ export function MetaLine({
   const withAvatars = (people ?? []).filter((p) => p.avatar).slice(0, 3);
   return (
     <View
-      style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 4, rowGap: 2 }}
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        columnGap: 4,
+        rowGap: 2,
+      }}
       testID={testID}
     >
       {withAvatars.length > 0 ? (
@@ -346,7 +366,10 @@ export function MetaLine({
       ))}
       {parts.map((part, i) => (
         // The bullet travels with its segment, so a wrap never strands it at a line end.
-        <View key={`${part}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', columnGap: 4 }}>
+        <View
+          key={`${part}-${i}`}
+          style={{ flexDirection: 'row', alignItems: 'center', columnGap: 4 }}
+        >
           {i > 0 || (people?.length ?? 0) > 0 ? <Dot color={mutedColor} /> : null}
           <Text variant="body-medium" style={{ color: mutedColor }}>
             {part}
@@ -416,7 +439,11 @@ export function ClampedText({
   const { state: hovered, onIn, onOut } = useInteractionState();
   // Only offer the toggle when the text can plausibly overflow: ~ 60 characters a line.
   const canOverflow = children.length > lines * 60;
-  const toggleStyle: WebCssStyle = { alignSelf: 'flex-start', borderRadius: 4, '--bloom-media-header-ring': ring };
+  const toggleStyle: WebCssStyle = {
+    alignSelf: 'flex-start',
+    borderRadius: 4,
+    '--bloom-media-header-ring': ring,
+  };
   return (
     <View style={{ gap: 4 }} testID={testID}>
       <Text variant="body-regular" numberOfLines={expanded ? undefined : lines} style={{ color }}>

@@ -8,4 +8,7 @@ export interface SliderMessages {
   value: (position: number) => string;
 }
 
-export const SLIDER_MESSAGES: MessageCatalog<SliderMessages> = defineMessages<SliderMessages>('SLIDER_MESSAGES', { minimum: 'Minimum', maximum: 'Maximum', value: (n) => `Value ${n}` });
+export const SLIDER_MESSAGES: MessageCatalog<SliderMessages> = defineMessages<SliderMessages>(
+  'SLIDER_MESSAGES',
+  { minimum: 'Minimum', maximum: 'Maximum', value: (n) => `Value ${n}` },
+);

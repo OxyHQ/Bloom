@@ -13,4 +13,9 @@ export interface TagFieldMessages {
   suggestions: string;
 }
 
-export const TAG_FIELD_MESSAGES: MessageCatalog<TagFieldMessages> = defineMessages<TagFieldMessages>('TAG_FIELD_MESSAGES', { remove: (t) => `Remove ${t}`, full: (n) => `${n} maximum`, suggestions: 'Suggestions' });
+export const TAG_FIELD_MESSAGES: MessageCatalog<TagFieldMessages> =
+  defineMessages<TagFieldMessages>('TAG_FIELD_MESSAGES', {
+    remove: (t) => `Remove ${t}`,
+    full: (n) => `${n} maximum`,
+    suggestions: 'Suggestions',
+  });

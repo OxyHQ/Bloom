@@ -48,7 +48,6 @@ const THEME: TabBarTheme = {
   inactiveTint: 'rgb(120 120 120)',
   highlight: 'rgb(230 230 230)',
   glassTint: 'rgba(255, 255, 255, 0.55)',
-
 };
 
 const STYLE = { borderRadius: 29 };
@@ -84,7 +83,9 @@ function renderNativeSurface(glassEffect: GlassEffectModule, times = 1): ReactTe
   jest.isolateModules(() => {
     jest.doMock('expo-glass-effect', () => glassEffect);
     // Isolate capability detection without introducing a second React hook registry.
-    jest.doMock('../surface/SurfacePaint', () => ({ SurfacePaint: (props: object) => React.createElement('SurfacePaint', props) }));
+    jest.doMock('../surface/SurfacePaint', () => ({
+      SurfacePaint: (props: object) => React.createElement('SurfacePaint', props),
+    }));
 
     const { TabBarSurface } = require('../tab-bar/surface.native') as {
       TabBarSurface: React.ComponentType<TabBarSurfaceProps>;

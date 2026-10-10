@@ -18,15 +18,40 @@ const photo = (id: string) => `https://images.unsplash.com/${id}?w=96&h=96&fit=c
 
 /** Demo people. */
 const HIRES: RecentHire[] = [
-  { name: 'Livia Saris', joined: 'Joined today', role: 'Backend Engineer', avatar: photo('photo-1544005313-94ddf0286df2') },
-  { name: 'Jaydon Aminoff', joined: '2 days ago', role: 'UI Designer', avatar: photo('photo-1506794778202-cad84cf45f1d') },
-  { name: 'Maria Lubin', joined: '5 days ago', role: 'User Researcher', avatar: photo('photo-1534528741775-53994a69daeb') },
-  { name: 'Ann Press', joined: 'A week ago', role: 'DevOps Engineer', avatar: photo('photo-1517841905240-472988babdf9') },
+  {
+    name: 'Livia Saris',
+    joined: 'Joined today',
+    role: 'Backend Engineer',
+    avatar: photo('photo-1544005313-94ddf0286df2'),
+  },
+  {
+    name: 'Jaydon Aminoff',
+    joined: '2 days ago',
+    role: 'UI Designer',
+    avatar: photo('photo-1506794778202-cad84cf45f1d'),
+  },
+  {
+    name: 'Maria Lubin',
+    joined: '5 days ago',
+    role: 'User Researcher',
+    avatar: photo('photo-1534528741775-53994a69daeb'),
+  },
+  {
+    name: 'Ann Press',
+    joined: 'A week ago',
+    role: 'DevOps Engineer',
+    avatar: photo('photo-1517841905240-472988babdf9'),
+  },
 ];
 
 const MORE: RecentHire[] = [
   { name: 'Zaire Torff', joined: '2 weeks ago', role: 'Account Executive', avatarColor: 'blue' },
-  { name: 'Gretchen Septimus', joined: '2 weeks ago', role: 'Product Designer', avatarColor: 'neutral' },
+  {
+    name: 'Gretchen Septimus',
+    joined: '2 weeks ago',
+    role: 'Product Designer',
+    avatarColor: 'neutral',
+  },
   { name: 'Omar Vetrovs', joined: '3 weeks ago', role: 'Support Specialist', avatarColor: 'lime' },
   { name: 'Talan Calzoni', joined: 'A month ago', role: 'Growth Marketer', avatarColor: 'pink' },
 ];
@@ -84,10 +109,23 @@ export const Widths: Story = {
 /** A single instance whose controls are applied directly to the rendered component. */
 export const Playground: StoryObj<typeof RecentHiresCard> = {
   args: { hires: HIRES, count: 56, teamLabel: 'Design team' },
-  parameters: { controls: { disable: false, include: ['count', 'teamLabel', 'previousDisabled', 'nextDisabled'] } },
-  argTypes: { count: { control: 'number' }, teamLabel: { control: 'text' }, previousDisabled: { control: 'boolean' }, nextDisabled: { control: 'boolean' } },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['count', 'teamLabel', 'previousDisabled', 'nextDisabled'],
+    },
+  },
+  argTypes: {
+    count: { control: 'number' },
+    teamLabel: { control: 'text' },
+    previousDisabled: { control: 'boolean' },
+    nextDisabled: { control: 'boolean' },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 440, maxWidth: '100%' }}><RecentHiresCard {...args} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <RecentHiresCard {...args} />
+      </View>
+    );
   },
 };

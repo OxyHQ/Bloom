@@ -19,7 +19,11 @@ export function SpinnerRing({ size, color }: { size: number; color: string }) {
 
   useEffect(() => {
     rotation.value = 0;
-    rotation.value = withRepeat(withTiming(360, { duration: 800, easing: Easing.linear }), -1, false);
+    rotation.value = withRepeat(
+      withTiming(360, { duration: 800, easing: Easing.linear }),
+      -1,
+      false,
+    );
     return () => cancelAnimation(rotation);
   }, [rotation]);
 

@@ -84,7 +84,6 @@ function glassIsUsable(): boolean {
       (typeof isGlassEffectAPIAvailable !== 'function' || isGlassEffectAPIAvailable());
   } catch (error) {
     glassUsable = false;
-    // eslint-disable-next-line no-console
     console.warn(
       '[Bloom] TabBar: expo-glass-effect could not report liquid-glass availability, ' +
         'so the bar is painting its shared surface. Install expo-glass-effect and ' +

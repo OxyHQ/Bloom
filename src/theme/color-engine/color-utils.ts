@@ -7,11 +7,7 @@
  */
 import { clampInt, matrixMultiply } from './math-utils';
 
-type Matrix3 = [
-  [number, number, number],
-  [number, number, number],
-  [number, number, number],
-];
+type Matrix3 = [[number, number, number], [number, number, number], [number, number, number]];
 
 const SRGB_TO_XYZ: Matrix3 = [
   [0.41233895, 0.35762064, 0.18051042],
@@ -147,9 +143,7 @@ export function linearized(rgbComponent: number): number {
 export function delinearized(rgbComponent: number): number {
   const normalized = rgbComponent / 100.0;
   const delin =
-    normalized <= 0.0031308
-      ? normalized * 12.92
-      : 1.055 * Math.pow(normalized, 1.0 / 2.4) - 0.055;
+    normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * Math.pow(normalized, 1.0 / 2.4) - 0.055;
   return clampInt(0, 255, Math.round(delin * 255.0));
 }
 

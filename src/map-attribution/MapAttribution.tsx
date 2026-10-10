@@ -82,7 +82,6 @@ function MapAttributionComponent({
       >
         {onPressCredit ? (
           <LinkButton
-
             linkTone="secondary"
             textVariant="caption-2-regular"
             underline="hover"

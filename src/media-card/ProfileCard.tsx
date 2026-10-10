@@ -44,7 +44,13 @@ function ProfileCardComponent({
         [name, typeLabel, followsYou ? followsYouLabel : null, followers].filter(Boolean).join(', ')
       }
       trailing={row ? action : undefined}
-      footer={!row && action ? <View style={{ alignItems: 'flex-start' }} pointerEvents="box-none">{action}</View> : undefined}
+      footer={
+        !row && action ? (
+          <View style={{ alignItems: 'flex-start' }} pointerEvents="box-none">
+            {action}
+          </View>
+        ) : undefined
+      }
     />
   );
 }

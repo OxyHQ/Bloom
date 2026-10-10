@@ -32,7 +32,10 @@ export function parseColor(value: string): Rgba {
   }
   const fn = /^rgba?\(([^)]*)\)$/.exec(value.trim());
   if (!fn?.[1]) throw new Error(`unparseable colour: ${JSON.stringify(value)}`);
-  const parts = fn[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+  const parts = fn[1]
+    .split(/[\s,/]+/)
+    .filter(Boolean)
+    .map(Number);
   if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) {
     throw new Error(`unparseable colour: ${JSON.stringify(value)}`);
   }

@@ -64,7 +64,13 @@ describe('RangeSlider', () => {
 
   it('shows one value bubble per thumb, through formatValue', () => {
     const { getByText } = renderWithTheme(
-      <RangeSlider value={[1, 9]} min={0} max={10} onValueChange={() => {}} formatValue={(v, i) => `${i}:${v}`} />,
+      <RangeSlider
+        value={[1, 9]}
+        min={0}
+        max={10}
+        onValueChange={() => {}}
+        formatValue={(v, i) => `${i}:${v}`}
+      />,
     );
     expect(getByText('0:1')).toBeTruthy();
     expect(getByText('1:9')).toBeTruthy();

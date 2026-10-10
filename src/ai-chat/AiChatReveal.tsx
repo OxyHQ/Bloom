@@ -59,7 +59,10 @@ export function RevealSequence({
         const slot = { delay: delay + STAGGER_MS * index, animate };
         index += 1;
         return (
-          <RevealContext.Provider key={isValidElement(child) ? child.key ?? index : index} value={slot}>
+          <RevealContext.Provider
+            key={isValidElement(child) ? (child.key ?? index) : index}
+            value={slot}
+          >
             {child}
           </RevealContext.Provider>
         );
@@ -83,6 +86,7 @@ export function RevealLine({
   const animate = slot.animate && !reducedMotion;
   const delay = delayOverride ?? slot.delay;
   const progress = useSharedValue(animate ? 0 : 1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) {
       progress.value = 1;
@@ -90,13 +94,14 @@ export function RevealLine({
     }
     progress.value = withDelay(delay, withTiming(1, { duration: 500, easing: LINE_EASE }));
     // Mount-only: a block reveals once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const animated = useAnimatedStyle(
     () => ({
       opacity: progress.value,
       transform: [{ translateY: 6 * (1 - progress.value) }],
-      ...(IS_WEB ? { filter: progress.value >= 1 ? 'none' : `blur(${6 * (1 - progress.value)}px)` } : null),
+      ...(IS_WEB
+        ? { filter: progress.value >= 1 ? 'none' : `blur(${6 * (1 - progress.value)}px)` }
+        : null),
     }),
     [progress],
   );
@@ -120,13 +125,13 @@ export function RevealFade({
   const reducedMotion = useReducedMotion();
   const run = animate && !reducedMotion;
   const progress = useSharedValue(run ? 0 : 1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!run) {
       progress.value = 1;
       return;
     }
     progress.value = withDelay(delay, withTiming(1, { duration: 400, easing: FADE_EASE }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const animated = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
   return (

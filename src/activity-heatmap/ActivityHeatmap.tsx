@@ -17,8 +17,18 @@ const DEFAULT_NUM_DAYS = 364;
  */
 const DEFAULT_LEVELS = [3, 6, 10];
 const DEFAULT_MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 /**
  * Opacity steps (low→high) used to derive the default color scale from primary.
@@ -146,7 +156,7 @@ const ActivityHeatmapComponent: React.FC<ActivityHeatmapProps> = ({
         const key = formatUtcKey(ts);
         const count = countByKey.get(key) ?? 0;
         const level = Math.min(levelForCount(count, sortedLevels), maxColor);
-        const color = count <= 0 ? empty : scale[level] ?? empty;
+        const color = count <= 0 ? empty : (scale[level] ?? empty);
         column.push({ key, count, color });
       }
       columns.push(column);
@@ -159,7 +169,10 @@ const ActivityHeatmapComponent: React.FC<ActivityHeatmapProps> = ({
       const firstTs = gridStart + c * 7 * DAY_MS;
       const month = new Date(firstTs).getUTCMonth();
       if (month !== lastMonth) {
-        monthMarks.push({ x: c * (cellSize + gap), label: months[month] ?? DEFAULT_MONTHS[month] ?? '' });
+        monthMarks.push({
+          x: c * (cellSize + gap),
+          label: months[month] ?? DEFAULT_MONTHS[month] ?? '',
+        });
         lastMonth = month;
       }
     }
@@ -213,7 +226,10 @@ const ActivityHeatmapComponent: React.FC<ActivityHeatmapProps> = ({
                     justifyContent: 'center',
                   }}
                 >
-                  <Text numberOfLines={1} style={[styles.weekdayLabel, { color: colors.textTertiary }]}>
+                  <Text
+                    numberOfLines={1}
+                    style={[styles.weekdayLabel, { color: colors.textTertiary }]}
+                  >
                     {weekdayLabels[dow] ?? ''}
                   </Text>
                 </View>

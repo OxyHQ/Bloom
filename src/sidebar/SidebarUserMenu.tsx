@@ -110,7 +110,10 @@ export function SidebarAccountMenuContent({
     <View>
       {account.users?.length ? (
         <View style={{ width: '100%', gap: 6, paddingTop: 5 }}>
-          <Text variant="body-medium" style={{ paddingLeft: 8, paddingRight: 8, color: palette.textSecondary }}>
+          <Text
+            variant="body-medium"
+            style={{ paddingLeft: 8, paddingRight: 8, color: palette.textSecondary }}
+          >
             {account.usersLabel ?? messages.usersWithAccess}
           </Text>
           <View style={{ width: '100%', gap: 4 }}>
@@ -122,23 +125,47 @@ export function SidebarAccountMenuContent({
       ) : null}
       {account.users?.length && hasActions ? <MenuDivider palette={palette} spacing={14} /> : null}
       {hasActions ? (
-        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }}>
+        <View
+          style={{
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            paddingLeft: 8,
+            paddingRight: 8,
+            paddingBottom: 8,
+          }}
+        >
           {account.onAddUser ? (
             <View style={{ flex: 1 }}>
-              <Button size="sm" leadingIcon={RiAddFill} style={{ width: "100%" }} onPress={() => {
+              <Button
+                size="sm"
+                leadingIcon={RiAddFill}
+                style={{ width: '100%' }}
+                onPress={() => {
                   account.onAddUser?.();
                   onSelect();
-                }} appearance="subtle" tone="neutral">
+                }}
+                appearance="subtle"
+                tone="neutral"
+              >
                 {account.addUserLabel ?? messages.addUser}
               </Button>
             </View>
           ) : null}
           {account.onManage ? (
             <View style={{ flex: 1 }}>
-              <Button size="sm" leadingIcon={RiEqualizer3Line} style={{ width: "100%" }} onPress={() => {
+              <Button
+                size="sm"
+                leadingIcon={RiEqualizer3Line}
+                style={{ width: '100%' }}
+                onPress={() => {
                   account.onManage?.();
                   onSelect();
-                }} appearance="subtle" tone="neutral">
+                }}
+                appearance="subtle"
+                tone="neutral"
+              >
                 {account.manageLabel ?? messages.manage}
               </Button>
             </View>
@@ -170,8 +197,17 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
   const lane = useSidebarGeometry();
   const startPadding = lane ? Math.max(0, (lane.expandedLane - 32) / 2) : 0;
   const endPadding = lane ? Math.max(0, (lane.collapsedLane - 32) / 2) : 2;
-  const triggerGeometry = useAnimatedStyle(() => ({ paddingLeft: startPadding + (endPadding - startPadding) * progress.value, paddingRight: startPadding + (endPadding - startPadding) * progress.value }), [progress, startPadding, endPadding]);
-  const hoverGeometry = useAnimatedStyle(() => ({ left: -6 + 3 * progress.value, right: -6 + 3 * progress.value }), [progress]);
+  const triggerGeometry = useAnimatedStyle(
+    () => ({
+      paddingLeft: startPadding + (endPadding - startPadding) * progress.value,
+      paddingRight: startPadding + (endPadding - startPadding) * progress.value,
+    }),
+    [progress, startPadding, endPadding],
+  );
+  const hoverGeometry = useAnimatedStyle(
+    () => ({ left: -6 + 3 * progress.value, right: -6 + 3 * progress.value }),
+    [progress],
+  );
   const triggerStyle: WebCssStyle = {
     position: 'relative',
     flexDirection: 'row',
@@ -202,19 +238,29 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
           <Animated.View
             pointerEvents="none"
             testID={testID ? `${testID}-pill` : undefined}
-            style={[{
-              position: 'absolute',
-              top: -5,
-              bottom: -5,
+            style={[
+              {
+                position: 'absolute',
+                top: -5,
+                bottom: -5,
 
-              borderRadius: borderRadius.full,
-              borderWidth: 2,
-              borderColor: hovered && !suppressHover ? palette.profileHoverBorder : 'transparent',
-            }, hoverGeometry]}
+                borderRadius: borderRadius.full,
+                borderWidth: 2,
+                borderColor: hovered && !suppressHover ? palette.profileHoverBorder : 'transparent',
+              },
+              hoverGeometry,
+            ]}
           />
-          <SidebarAvatarView avatar={account.avatar} size="md" palette={palette} background={avatarBackground} />
+          <SidebarAvatarView
+            avatar={account.avatar}
+            size="md"
+            palette={palette}
+            background={avatarBackground}
+          />
           <Collapsible collapsed={collapsed}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, paddingInlineStart: 8 }}>
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 2, paddingInlineStart: 8 }}
+            >
               <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
                 {account.name}
               </Text>

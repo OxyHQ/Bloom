@@ -105,7 +105,15 @@ export function useSelectionCardCss() {
 }
 
 /** The 22px check circle. */
-export function CheckCircle({ selected, paint, size = 22 }: { selected: boolean; paint: SelectionPaint; size?: number }) {
+export function CheckCircle({
+  selected,
+  paint,
+  size = 22,
+}: {
+  selected: boolean;
+  paint: SelectionPaint;
+  size?: number;
+}) {
   return (
     <View
       aria-hidden
@@ -176,7 +184,9 @@ function SelectionCardComponent({
     borderWidth,
     borderColor: selected ? paint.borderSelected : highlighted ? paint.borderHover : paint.border,
     opacity: disabled ? DISABLED_OPACITY : 1,
-    ...(IS_WEB ? { transitionProperty: 'border-color, background-color', transitionDuration: '120ms' } : null),
+    ...(IS_WEB
+      ? { transitionProperty: 'border-color, background-color', transitionDuration: '120ms' }
+      : null),
     ...style,
   };
 
@@ -272,11 +282,21 @@ function SelectionCardComponent({
   return (
     <View testID={testID} style={cardStyle}>
       {selection === 'multiple' ? (
-        <Pressable role="checkbox" accessibilityLabel={accessibilityLabel ?? title} aria-checked={selected} {...headProps}>
+        <Pressable
+          role="checkbox"
+          accessibilityLabel={accessibilityLabel ?? title}
+          aria-checked={selected}
+          {...headProps}
+        >
           {headContent}
         </Pressable>
       ) : (
-        <Pressable role="radio" accessibilityLabel={accessibilityLabel ?? title} aria-checked={selected} {...headProps}>
+        <Pressable
+          role="radio"
+          accessibilityLabel={accessibilityLabel ?? title}
+          aria-checked={selected}
+          {...headProps}
+        >
           {headContent}
         </Pressable>
       )}

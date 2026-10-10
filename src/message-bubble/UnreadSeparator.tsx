@@ -17,11 +17,7 @@ import type { UnreadSeparatorProps } from './types';
  * list item), because a marker that chased the read state would vanish as soon
  * as it was seen, which is the one moment it is useful.
  */
-function UnreadSeparatorComponent({
-  label: labelProp,
-  style,
-  testID,
-}: UnreadSeparatorProps) {
+function UnreadSeparatorComponent({ label: labelProp, style, testID }: UnreadSeparatorProps) {
   const theme = useTheme();
   const { messages } = useMessages(MESSAGE_BUBBLE_MESSAGES);
   const label = labelProp ?? messages.unread;

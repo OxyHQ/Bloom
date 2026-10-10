@@ -16,9 +16,7 @@ describe('deriveScrollKey', () => {
     // expo-router RECYCLES one route object: `search?q=cats` -> `search?q=dogs`
     // keeps a single route key and swaps only params, so without the content id
     // the two searches would share an offset.
-    expect(deriveScrollKey('search?"q":"cats"')).not.toBe(
-      deriveScrollKey('search?"q":"dogs"'),
-    );
+    expect(deriveScrollKey('search?"q":"cats"')).not.toBe(deriveScrollKey('search?"q":"dogs"'));
   });
 
   it('separates scrollables that share one content', () => {

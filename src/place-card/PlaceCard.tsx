@@ -32,7 +32,12 @@ import { Text } from '../typography';
 import { TABULAR } from '../chart-cards/primitives/ChartHeader';
 import { PLACE_CARD_GEOMETRY, PLACE_OPEN_TONE } from './constants';
 import { PlaceActions } from './PlaceActions';
-import { composePlaceName, openLabelFor, resolvePlaceCardPaint, type PlaceCardPaint } from './shared';
+import {
+  composePlaceName,
+  openLabelFor,
+  resolvePlaceCardPaint,
+  type PlaceCardPaint,
+} from './shared';
 import type { PlaceCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
@@ -106,7 +111,13 @@ function OpenStateBadge({
   testID?: string;
 }) {
   return (
-    <Badge content={label} variant="subtle" color={PLACE_OPEN_TONE[state]} size={size} testID={testID} />
+    <Badge
+      content={label}
+      variant="subtle"
+      color={PLACE_OPEN_TONE[state]}
+      size={size}
+      testID={testID}
+    />
   );
 }
 
@@ -255,7 +266,12 @@ function PlaceCardSkeleton({
         <SkeletonBox width="55%" height={20} borderRadius={4} />
         <SkeletonBox width="35%" height={14} borderRadius={4} />
         <SkeletonBox width="45%" height={26} borderRadius={4} style={{ marginTop: 8 }} />
-        <SkeletonBox width="100%" height={34} borderRadius={G.tileRadius} style={{ marginTop: 8 }} />
+        <SkeletonBox
+          width="100%"
+          height={34}
+          borderRadius={G.tileRadius}
+          style={{ marginTop: 8 }}
+        />
       </View>
     </View>
   );
@@ -569,7 +585,10 @@ function PlaceDetail({ props, paint }: { props: PlaceCardProps; paint: PlaceCard
             {stats && stats.length > 0 ? (
               <View style={{ gap: 8 }} testID={testID ? `${testID}-stats` : undefined}>
                 {tileRows(stats.length, wide).map((row) => (
-                  <View key={row[0]} style={{ flexDirection: 'row', alignItems: 'stretch', gap: 8 }}>
+                  <View
+                    key={row[0]}
+                    style={{ flexDirection: 'row', alignItems: 'stretch', gap: 8 }}
+                  >
                     {row.map((index) => {
                       const stat = stats[index]!;
                       return (
@@ -578,7 +597,11 @@ function PlaceDetail({ props, paint }: { props: PlaceCardProps; paint: PlaceCard
                           testID={testID ? `${testID}-stat-${index}` : undefined}
                           style={[styles.tile, { backgroundColor: paint.tile }]}
                         >
-                          <Text variant="body-medium" numberOfLines={1} style={{ width: '100%', color: paint.text }}>
+                          <Text
+                            variant="body-medium"
+                            numberOfLines={1}
+                            style={{ width: '100%', color: paint.text }}
+                          >
                             {stat.value}
                           </Text>
                           <Text

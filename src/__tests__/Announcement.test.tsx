@@ -12,7 +12,8 @@ const renderAnnouncement = (props: Partial<AnnouncementProps> = {}) =>
     </BloomThemeProvider>,
   );
 
-const hostName = (node: { type: unknown }): string => (typeof node.type === 'string' ? node.type : '');
+const hostName = (node: { type: unknown }): string =>
+  typeof node.type === 'string' ? node.type : '';
 
 function flat(style: unknown): Record<string, unknown> {
   if (Array.isArray(style)) return Object.assign({}, ...style.map(flat));
@@ -23,14 +24,28 @@ describe('Announcement', () => {
   it('paints the card: radius 12, padding 12, gap 12, border, no shadow', () => {
     const { getByTestId } = renderAnnouncement();
     const style = flat(getByTestId('card').props.style);
-    expect(style).toMatchObject({ borderRadius: 12, padding: 12, gap: 12, borderWidth: 1, width: '100%' });
+    expect(style).toMatchObject({
+      borderRadius: 12,
+      padding: 12,
+      gap: 12,
+      borderWidth: 1,
+      width: '100%',
+    });
     expect(style.boxShadow).toBeUndefined();
   });
 
   it('renders title on body-medium and description on body-2-medium', () => {
     const { getByText } = renderAnnouncement({ description: 'Unlock more.' });
-    expect(flat(getByText('Upgrade to Pro').props.style)).toMatchObject({ fontSize: 14, lineHeight: 20, fontWeight: '500' });
-    expect(flat(getByText('Unlock more.').props.style)).toMatchObject({ fontSize: 13, lineHeight: 18, fontWeight: '500' });
+    expect(flat(getByText('Upgrade to Pro').props.style)).toMatchObject({
+      fontSize: 14,
+      lineHeight: 20,
+      fontWeight: '500',
+    });
+    expect(flat(getByText('Unlock more.').props.style)).toMatchObject({
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '500',
+    });
   });
 
   it('omits the description, CTA and close button unless asked', () => {

@@ -9,29 +9,49 @@ import { ERROR_BOUNDARY_MESSAGES } from './messages';
 import type { PanelErrorBoundaryProps } from './types';
 
 /** Local recovery inside a healthy Bloom shell. Catastrophic/provider errors belong to ErrorBoundary. */
-export function PanelErrorBoundary({ children, fallback, emptyState, bottomInset, ...props }: PanelErrorBoundaryProps) {
+export function PanelErrorBoundary({
+  children,
+  fallback,
+  emptyState,
+  bottomInset,
+  ...props
+}: PanelErrorBoundaryProps) {
   const { messages } = useMessages(ERROR_BOUNDARY_MESSAGES);
   const inheritedBottom = useBottomEdgeInset();
   return (
-    <ErrorBoundary {...props} fallback={fallback !== undefined ? fallback : (({ retry }) => (
-      <ScrollView
-        style={{ flex: 1, minHeight: 0 }}
-        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: space.md, paddingBottom: bottomInset ?? inheritedBottom }}
-      >
-        <EmptyState
-          variant="compact"
-          {...emptyState}
-          title={emptyState?.title ?? messages.title}
-          description={emptyState?.description ?? messages.message}
-          style={[{ flexGrow: 1 }, emptyState?.style]}
-          action={{
-            ...emptyState?.action,
-            label: emptyState?.action?.label ?? messages.retry,
-            onPress: () => { emptyState?.action?.onPress?.(); retry(); },
-          }}
-        />
-      </ScrollView>
-    ))}>
+    <ErrorBoundary
+      {...props}
+      fallback={
+        fallback !== undefined
+          ? fallback
+          : ({ retry }) => (
+              <ScrollView
+                style={{ flex: 1, minHeight: 0 }}
+                contentContainerStyle={{
+                  flexGrow: 1,
+                  paddingHorizontal: space.md,
+                  paddingBottom: bottomInset ?? inheritedBottom,
+                }}
+              >
+                <EmptyState
+                  variant="compact"
+                  {...emptyState}
+                  title={emptyState?.title ?? messages.title}
+                  description={emptyState?.description ?? messages.message}
+                  style={[{ flexGrow: 1 }, emptyState?.style]}
+                  action={{
+                    ...emptyState?.action,
+                    label: emptyState?.action?.label ?? messages.retry,
+                    onPress: () => {
+                      emptyState?.action?.onPress?.();
+                      retry();
+                    },
+                  }}
+                />
+              </ScrollView>
+            )
+      }
+    >
       {children}
     </ErrorBoundary>
   );

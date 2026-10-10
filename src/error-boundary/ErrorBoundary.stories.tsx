@@ -106,5 +106,13 @@ export const CustomFallback: Story = {
 
 /** Themed local recovery; toggling the route clears errors without remounting healthy content. */
 export const PanelRecovery: Story = {
-  render: () => <Harness>{armed => <PanelErrorBoundary resetKey={String(armed)}><Bomb armed={armed} /></PanelErrorBoundary>}</Harness>,
+  render: () => (
+    <Harness>
+      {(armed) => (
+        <PanelErrorBoundary resetKey={String(armed)}>
+          <Bomb armed={armed} />
+        </PanelErrorBoundary>
+      )}
+    </Harness>
+  ),
 };

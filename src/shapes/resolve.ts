@@ -8,9 +8,7 @@ export function resolve(shape: Shape = 'circle'): Required<Path> | null {
   if (typeof shape !== 'string') {
     const viewBox = shape.viewBox ?? 1;
     if (!Number.isFinite(viewBox) || viewBox <= 0 || !shape.d.trim()) {
-      throw new Error(
-        '[Bloom] Shapes: a path needs non-empty d and a positive finite viewBox.',
-      );
+      throw new Error('[Bloom] Shapes: a path needs non-empty d and a positive finite viewBox.');
     }
     return { d: shape.d, viewBox };
   }

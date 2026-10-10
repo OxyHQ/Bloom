@@ -41,4 +41,3 @@ export const Z_INDEX = {
    */
   portalRoot: 999999,
 } as const;
-

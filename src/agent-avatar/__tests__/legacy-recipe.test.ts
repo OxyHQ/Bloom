@@ -22,23 +22,16 @@ describe('legacy appearance migration', () => {
     ['fold', 'heart', 'heart'],
     ['fold', 'flower', 'six_lobed_flower'],
     ['fold', 'diamond', 'rounded_diamond'],
-  ] as const)(
-    'reuses the existing %s %s body as %s',
-    (family, shape, expected) => {
-      const config =
-        family === 'fold'
-          ? recipe({ family, foldShape: shape as AvatarConfig['foldShape'] })
-          : recipe({ family, shape: shape as AvatarConfig['shape'] });
-      expect(legacyRecipe(config)).toMatchObject({ shape: expected });
-      expect(legacyRecipe(config).points).toBeUndefined();
-    },
-  );
+  ] as const)('reuses the existing %s %s body as %s', (family, shape, expected) => {
+    const config =
+      family === 'fold'
+        ? recipe({ family, foldShape: shape as AvatarConfig['foldShape'] })
+        : recipe({ family, shape: shape as AvatarConfig['shape'] });
+    expect(legacyRecipe(config)).toMatchObject({ shape: expected });
+    expect(legacyRecipe(config).points).toBeUndefined();
+  });
 
-  it.each([
-    { family: 'alien' },
-    { family: 'mascot' },
-    { face: false },
-  ] as Partial<AvatarConfig>[])(
+  it.each([{ family: 'alien' }, { family: 'mascot' }, { face: false }] as Partial<AvatarConfig>[])(
     'keeps unsupported appearances on their existing renderer: %p',
     (patch) => {
       expect(legacyRecipeUnsupported(recipe(patch))).toBe(true);
@@ -76,20 +69,11 @@ describe('legacy appearance migration', () => {
   it('retains the historical default lightness and achromatic custom colors', () => {
     expect(avatarHex(recipe({ saturation: 0 }))).toBe('#c2c2c2');
     expect(avatarHex(recipe({ saturation: 0, lightness: 0 }))).toBe('#000000');
-    expect(avatarHex(recipe({ saturation: 0, lightness: 100 }))).toBe(
-      '#ffffff',
-    );
+    expect(avatarHex(recipe({ saturation: 0, lightness: 100 }))).toBe('#ffffff');
   });
 
   it('distinguishes all remaining paper contours with positive, counterclockwise geometry', () => {
-    const shapes = [
-      'slender',
-      'pocket',
-      'petal',
-      'star',
-      'cloud',
-      'shield',
-    ] as const;
+    const shapes = ['slender', 'pocket', 'petal', 'star', 'cloud', 'shield'] as const;
     const outlines = shapes.map((foldShape) => {
       const points = legacyRecipe({ ...FOLD_CONFIG, foldShape }).points!;
       expect(points.length).toBeGreaterThanOrEqual(16);
@@ -119,18 +103,14 @@ describe('legacy appearance migration', () => {
     }).points!;
     expect(left).toHaveLength(right.length);
     for (let i = 0; i < right.length; i++) {
-      const mirrored =
-        left[(right.length / 2 - i + right.length) % right.length]!;
+      const mirrored = left[(right.length / 2 - i + right.length) % right.length]!;
       expect(mirrored[0]).toBeCloseTo(-right[i]![0], 8);
       expect(mirrored[1]).toBeCloseTo(right[i]![1], 8);
     }
   });
 
   it('samples the circular contour from positive X without rotation or scaling', () => {
-    const sampled = radialContour(
-      legacyContours(recipe({ shape: 'circle' })),
-      180,
-    );
+    const sampled = radialContour(legacyContours(recipe({ shape: 'circle' })), 180);
     sampled.forEach(([x, y], i) => {
       const angle = (i * Math.PI * 2) / 180;
       expect(x).toBeCloseTo(Math.cos(angle), 10);
@@ -155,9 +135,7 @@ describe('legacy appearance migration', () => {
     expect(sampled[0]![0]).toBeCloseTo(2, 10);
     expect(sampled[64]![1]).toBeCloseTo(1, 10);
     expect(sampled[128]![0]).toBeCloseTo(-1, 10);
-    expect(
-      radialContour([back.slice().reverse(), front.slice().reverse()]),
-    ).toEqual(sampled);
+    expect(radialContour([back.slice().reverse(), front.slice().reverse()])).toEqual(sampled);
   });
 
   it('rejects invalid deformation resolutions and geometry missing its origin', () => {
@@ -173,23 +151,20 @@ describe('legacy appearance migration', () => {
     expect(Object.keys(legacyRecipe(config).patch)).toEqual(['bodyColor']);
   });
 
-  it.each(EYES)(
-    'retires the old %s expression in favour of original 3D eyes',
-    (eyes) => {
-      expect(
-        legacyRecipe(
-          recipe({
-            eyes,
-            expression: 100,
-            eyeTilt: 80,
-            eyeGap: 12,
-            eyeSize: 34,
-            lightEyes: true,
-          }),
-        ),
-      ).toEqual(legacyRecipe(recipe()));
-    },
-  );
+  it.each(EYES)('retires the old %s expression in favour of original 3D eyes', (eyes) => {
+    expect(
+      legacyRecipe(
+        recipe({
+          eyes,
+          expression: 100,
+          eyeTilt: 80,
+          eyeGap: 12,
+          eyeSize: 34,
+          lightEyes: true,
+        }),
+      ),
+    ).toEqual(legacyRecipe(recipe()));
+  });
 
   it('keeps the custom body color when selecting a new 3D eye style', () => {
     expect(

@@ -43,7 +43,17 @@ export const Tones: Story = {
   ),
 };
 
-const HUES: ChipHue[] = ['lime', 'rose', 'yellow', 'cyan', 'blue', 'purple', 'neutral', 'gray', 'soft'];
+const HUES: ChipHue[] = [
+  'lime',
+  'rose',
+  'yellow',
+  'cyan',
+  'blue',
+  'purple',
+  'neutral',
+  'gray',
+  'soft',
+];
 
 /**
  * Data hues — `hue` instead of `color` + `variant`. Rows are the
@@ -76,13 +86,22 @@ export const WithIcons: Story = {
     const theme = useTheme();
     return (
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-        <Chip size="small" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
+        <Chip
+          size="small"
+          startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}
+        >
           Small
         </Chip>
-        <Chip size="medium" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
+        <Chip
+          size="medium"
+          startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}
+        >
           Medium
         </Chip>
-        <Chip size="large" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
+        <Chip
+          size="large"
+          startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}
+        >
           Large
         </Chip>
       </View>
@@ -114,7 +133,8 @@ export const Selectable: Story = {
               testID={`chip-${id}`}
               variant="subtle"
               selected={selected.includes(id)}
-              onPress={() => toggle(id)}>
+              onPress={() => toggle(id)}
+            >
               {id}
             </Chip>
           ))}
@@ -138,7 +158,8 @@ export const Removable: Story = {
             key={tag}
             color="primary"
             variant="subtle"
-            onClose={() => setTags((t) => t.filter((x) => x !== tag))}>
+            onClose={() => setTags((t) => t.filter((x) => x !== tag))}
+          >
             {tag}
           </Chip>
         ))}
@@ -215,7 +236,13 @@ export const Inverted: Story = {
     return (
       <View style={{ gap: 16, alignItems: 'flex-start' }}>
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Chip size="2xl" variant="inverted" role="radio" selected={count == null} onPress={() => setCount(null)}>
+          <Chip
+            size="2xl"
+            variant="inverted"
+            role="radio"
+            selected={count == null}
+            onPress={() => setCount(null)}
+          >
             Any
           </Chip>
           {[1, 2, 3, 4].map((n) => (
@@ -258,7 +285,16 @@ export const Inverted: Story = {
 export const Row: Story = {
   render: function RowStory() {
     const [value, setValue] = useState('all');
-    const OPTIONS = ['All', 'Playlists', 'Artists', 'Albums', 'Podcasts', 'Audiobooks', 'Downloaded', 'Shared'];
+    const OPTIONS = [
+      'All',
+      'Playlists',
+      'Artists',
+      'Albums',
+      'Podcasts',
+      'Audiobooks',
+      'Downloaded',
+      'Shared',
+    ];
     return (
       <View style={{ width: 320 }}>
         <ChipRow accessibilityLabel="Library filters" testID="chip-row">

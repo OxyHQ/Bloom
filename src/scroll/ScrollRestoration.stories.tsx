@@ -111,7 +111,15 @@ function ScreenBody({ label }: { label: string }) {
   );
 }
 
-function Screen({ contentId, label, focused }: { contentId: string; label: string; focused: boolean }) {
+function Screen({
+  contentId,
+  label,
+  focused,
+}: {
+  contentId: string;
+  label: string;
+  focused: boolean;
+}) {
   const state = useMemo(() => ({ contentId, focused }), [contentId, focused]);
   return (
     <ScreenContext.Provider value={state}>
@@ -144,23 +152,39 @@ function Navigator() {
       </Card>
 
       <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-        <Button appearance={active === 'feed' ? 'solid' : 'outline'} tone={active === 'feed' ? 'accent' : 'neutral'} onPress={() => setActive('feed')}>
+        <Button
+          appearance={active === 'feed' ? 'solid' : 'outline'}
+          tone={active === 'feed' ? 'accent' : 'neutral'}
+          onPress={() => setActive('feed')}
+        >
           Feed
         </Button>
-        <Button appearance={active === 'profile' ? 'solid' : 'outline'} tone={active === 'profile' ? 'accent' : 'neutral'} onPress={() => setActive('profile')}>
+        <Button
+          appearance={active === 'profile' ? 'solid' : 'outline'}
+          tone={active === 'profile' ? 'accent' : 'neutral'}
+          onPress={() => setActive('profile')}
+        >
           Profile
         </Button>
-        <Button onPress={() => {
+        <Button
+          onPress={() => {
             setProfileVisit((visit) => visit + 1);
             setActive('profile');
-          }} appearance="outline" tone="neutral">
+          }}
+          appearance="outline"
+          tone="neutral"
+        >
           New profile
         </Button>
       </View>
 
       <View style={{ flexDirection: 'row', gap: 16 }}>
         <Screen contentId="feed" label="Feed" focused={active === 'feed'} />
-        <Screen contentId={profileId} label={`Profile #${profileVisit}`} focused={active === 'profile'} />
+        <Screen
+          contentId={profileId}
+          label={`Profile #${profileVisit}`}
+          focused={active === 'profile'}
+        />
       </View>
     </View>
   );

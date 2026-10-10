@@ -48,8 +48,8 @@ export const Inline: Story = {
   render: () => (
     <View style={{ maxWidth: '100%', width: 420, gap: 12 }}>
       <Text>
-        Pass <Code>variant="outlined"</Code> to draw the border, and{' '}
-        <Code>radius</Code> to pick the rung.
+        Pass <Code>variant="outlined"</Code> to draw the border, and <Code>radius</Code> to pick the
+        rung.
       </Text>
       <Text>
         The token is <Code>--primary</Code>; reference it as <Code>var(--primary)</Code>.
@@ -66,7 +66,14 @@ export const Block: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ maxWidth: '100%', width: 560 }}>
-      <CodeBlock code={TOGGLE} language="tsx" filename="theme-toggle.tsx" additions={156} deletions={23} highlight={['nextTheme']} />
+      <CodeBlock
+        code={TOGGLE}
+        language="tsx"
+        filename="theme-toggle.tsx"
+        additions={156}
+        deletions={23}
+        highlight={['nextTheme']}
+      />
     </View>
   ),
 };
@@ -87,8 +94,16 @@ export const Plain: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ maxWidth: '100%', width: 420, gap: 16 }}>
-      <CodeBlock code={`bun add @oxy.so/bloom\nbun run build`} copyable={false} lineNumbers={false} />
-      <CodeBlock code={`[package]\nname = "bloom"\nversion = "1.0.0"`} language="toml" filename="Cargo.toml" />
+      <CodeBlock
+        code={`bun add @oxy.so/bloom\nbun run build`}
+        copyable={false}
+        lineNumbers={false}
+      />
+      <CodeBlock
+        code={`[package]\nname = "bloom"\nversion = "1.0.0"`}
+        language="toml"
+        filename="Cargo.toml"
+      />
     </View>
   ),
 };

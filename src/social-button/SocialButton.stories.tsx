@@ -5,7 +5,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
-import { SocialButton, SOCIAL_PROVIDERS, type SocialButtonAppearance, type SocialProvider } from './index';
+import {
+  SocialButton,
+  SOCIAL_PROVIDERS,
+  type SocialButtonAppearance,
+  type SocialProvider,
+} from './index';
 
 const meta: Meta<typeof SocialButton> = {
   title: 'Base/Social Button',
@@ -22,7 +27,10 @@ const APPEARANCES: SocialButtonAppearance[] = ['colorful', 'black', 'white'];
 function Surface({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   return (
-    <View testID="social-surface" style={{ padding: 16, maxWidth: '100%', gap: 24, backgroundColor: theme.colors.background }}>
+    <View
+      testID="social-surface"
+      style={{ padding: 16, maxWidth: '100%', gap: 24, backgroundColor: theme.colors.background }}
+    >
       {children}
     </View>
   );
@@ -70,7 +78,12 @@ export const AllBrands: Story = {
           <View key={appearance} style={{ gap: 8 }}>
             <Text variant="body-medium">{appearance}</Text>
             {BRANDS.map((brand) => (
-              <SocialButton key={brand} testID={`${appearance}-${brand}`} brand={brand} appearance={appearance} />
+              <SocialButton
+                key={brand}
+                testID={`${appearance}-${brand}`}
+                brand={brand}
+                appearance={appearance}
+              />
             ))}
           </View>
         ))}
@@ -158,11 +171,34 @@ export const Custom: Story = {
 
 /** A single instance whose controls are applied directly to the rendered component. */
 export const Playground: StoryObj<typeof SocialButton> = {
-  args: { brand: 'google', appearance: 'white', action: 'continue', size: 'md', iconOnly: false, disabled: false, fullWidth: true },
-  parameters: { controls: { disable: false, include: ['brand', 'appearance', 'action', 'size', 'iconOnly', 'disabled'] } },
-  argTypes: { brand: { control: 'select', options: ['google', 'apple', 'github', 'oxy'] }, appearance: { control: 'select', options: ['colorful', 'black', 'white'] }, action: { control: 'select', options: ['continue', 'signIn', 'signUp'] }, size: { control: 'select', options: ['sm', 'md'] }, iconOnly: { control: 'boolean' }, disabled: { control: 'boolean' } },
+  args: {
+    brand: 'google',
+    appearance: 'white',
+    action: 'continue',
+    size: 'md',
+    iconOnly: false,
+    disabled: false,
+    fullWidth: true,
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['brand', 'appearance', 'action', 'size', 'iconOnly', 'disabled'],
+    },
+  },
+  argTypes: {
+    brand: { control: 'select', options: ['google', 'apple', 'github', 'oxy'] },
+    appearance: { control: 'select', options: ['colorful', 'black', 'white'] },
+    action: { control: 'select', options: ['continue', 'signIn', 'signUp'] },
+    size: { control: 'select', options: ['sm', 'md'] },
+    iconOnly: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 440, maxWidth: '100%' }}><SocialButton {...args} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <SocialButton {...args} />
+      </View>
+    );
   },
 };

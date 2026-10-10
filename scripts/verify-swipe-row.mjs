@@ -143,7 +143,6 @@ const DETECTOR_VIEW = `(row) => {
 async function touchScroll(page, forceNone) {
   const box = await page.evaluate(
     (row, forceNone, detectorViewSrc) => {
-      // eslint-disable-next-line no-new-func
       const view = new Function(`return (${detectorViewSrc})`)();
       if (forceNone) {
         for (const el of document.querySelectorAll('[data-bloom-mail-row]')) {
@@ -256,7 +255,6 @@ const record = (name, ok, detail) => results.push({ name, ok, detail });
     page = await open(browser);
     const touchAction = await page.evaluate(
       (row, detectorViewSrc) => {
-        // eslint-disable-next-line no-new-func
         const view = new Function(`return (${detectorViewSrc})`)()(row);
         return view === null ? null : getComputedStyle(view).touchAction;
       },

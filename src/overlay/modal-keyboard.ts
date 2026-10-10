@@ -62,10 +62,17 @@ export function tabbablesWithin(node: HTMLElement | null): HTMLElement[] {
 /** Initial focus must not scroll long content to an offscreen action. Tab still reaches every control. */
 export function initialFocusWithin(node: HTMLElement): HTMLElement {
   const panel = node.getBoundingClientRect();
-  return tabbablesWithin(node).find(element => {
-    const rect = element.getBoundingClientRect();
-    return rect.top >= panel.top && rect.bottom <= panel.bottom && rect.left >= panel.left && rect.right <= panel.right;
-  }) ?? node;
+  return (
+    tabbablesWithin(node).find((element) => {
+      const rect = element.getBoundingClientRect();
+      return (
+        rect.top >= panel.top &&
+        rect.bottom <= panel.bottom &&
+        rect.left >= panel.left &&
+        rect.right <= panel.right
+      );
+    }) ?? node
+  );
 }
 
 /**
@@ -101,7 +108,17 @@ function isTextEntry(target: EventTarget | null): boolean {
   if (element.tagName === 'TEXTAREA') return true;
   if (element.tagName !== 'INPUT') return false;
   const type = (element as HTMLInputElement).type;
-  return !['button', 'checkbox', 'radio', 'range', 'submit', 'reset', 'file', 'color', 'image'].includes(type);
+  return ![
+    'button',
+    'checkbox',
+    'radio',
+    'range',
+    'submit',
+    'reset',
+    'file',
+    'color',
+    'image',
+  ].includes(type);
 }
 
 /**
@@ -148,7 +165,10 @@ export function listenForEscape(claim: () => boolean, dismiss: () => void): () =
 }
 
 /** A modal may begin closing before its opener stops being inert. */
-export function restoreFocusWhenAvailable(target: HTMLElement, panel: HTMLElement | null): () => void {
+export function restoreFocusWhenAvailable(
+  target: HTMLElement,
+  panel: HTMLElement | null,
+): () => void {
   if (!hasDom()) return () => {};
   let observer: MutationObserver | undefined;
   let done = false;
@@ -159,11 +179,17 @@ export function restoreFocusWhenAvailable(target: HTMLElement, panel: HTMLElemen
   };
   function attempt() {
     if (done) return;
-    if (!target.isConnected) { cancel(); return; }
+    if (!target.isConnected) {
+      cancel();
+      return;
+    }
     const active = document.activeElement;
     // Closing must not steal a host's deliberate destination, or focus from a
     // subsequently opened modal. A removed focused panel leaves body active.
-    if (active && active !== document.body && !panel?.contains(active)) { cancel(); return; }
+    if (active && active !== document.body && !panel?.contains(active)) {
+      cancel();
+      return;
+    }
     if (target.closest('[inert]')) return;
     cancel();
     target.focus({ preventScroll: true });
@@ -171,7 +197,12 @@ export function restoreFocusWhenAvailable(target: HTMLElement, panel: HTMLElemen
   observer = new MutationObserver(attempt);
   // Watch the actual inert boundary lifecycle, never an assumed exit duration.
   // Child changes also terminate the observer when its opener is removed.
-  observer.observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['inert'] });
+  observer.observe(document.body, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ['inert'],
+  });
   document.addEventListener('focusin', attempt);
   attempt();
   return cancel;

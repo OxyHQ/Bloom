@@ -24,14 +24,25 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => {
   // Wide enough for the in-flow sidebar and the panel, before `Dimensions`
   // caches its first read.
-  Object.defineProperty(document.documentElement, 'clientWidth', { value: 1440, configurable: true });
-  Object.defineProperty(document.documentElement, 'clientHeight', { value: 900, configurable: true });
+  Object.defineProperty(document.documentElement, 'clientWidth', {
+    value: 1440,
+    configurable: true,
+  });
+  Object.defineProperty(document.documentElement, 'clientHeight', {
+    value: 900,
+    configurable: true,
+  });
   return jest.requireActual('react-native-web');
 });
 
 import { NativeScrollEvent, NativeSyntheticEvent, Text, View } from 'react-native';
 
-import { AiChatContainer, AiChatShell, AiChatThread, type AiChatThreadHandle } from '../ai-chat/index.web';
+import {
+  AiChatContainer,
+  AiChatShell,
+  AiChatThread,
+  type AiChatThreadHandle,
+} from '../ai-chat/index.web';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -47,7 +58,10 @@ beforeEach(() => {
   scrollTo.mockClear();
   window.scrollTo = scrollTo as unknown as typeof window.scrollTo;
   Object.defineProperty(window, 'scrollY', { value: 0, configurable: true, writable: true });
-  Object.defineProperty(document.documentElement, 'scrollHeight', { value: 2400, configurable: true });
+  Object.defineProperty(document.documentElement, 'scrollHeight', {
+    value: 2400,
+    configurable: true,
+  });
 });
 
 afterEach(() => {
@@ -71,8 +85,13 @@ function mount({
           scroll={scroll}
           sidebar={<Text testID="sidebar">nav</Text>}
           mobileSidebar={<Text>nav</Text>}
-          panel={() => <View testID="panel" />}>
-          <AiChatContainer testID="chat" title="Chat" composer={<Text testID="composer">compose</Text>}>
+          panel={() => <View testID="panel" />}
+        >
+          <AiChatContainer
+            testID="chat"
+            title="Chat"
+            composer={<Text testID="composer">compose</Text>}
+          >
             <AiChatThread ref={threadRef} testID="thread" onScroll={onScroll} autoFollow={false}>
               <Text>turn</Text>
             </AiChatThread>

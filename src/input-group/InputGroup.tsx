@@ -1,12 +1,5 @@
 import { useBloomAppearance, type BloomSize } from '../appearance';
-import React, {
-  Children,
-  createContext,
-  isValidElement,
-  memo,
-  useContext,
-  useMemo,
-} from 'react';
+import React, { Children, createContext, isValidElement, memo, useContext, useMemo } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -46,10 +39,21 @@ import { useFieldMembership } from '../field/membership';
  * A `TextFieldInput` (or a `Search`) inside renders BARE through
  * `TextFieldGroupContext`: the group paints the one shell, the field draws none.
  */
-const SIZE_CONFIG: Record<BloomSize, { height: number; paddingHorizontal: number; field: TextFieldSize }> = {
+const SIZE_CONFIG: Record<
+  BloomSize,
+  { height: number; paddingHorizontal: number; field: TextFieldSize }
+> = {
   xs: { ...TEXT_FIELD_GEOMETRY.xs, field: 'xs' },
-  sm: { height: TEXT_FIELD_GEOMETRY.sm.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.sm.paddingHorizontal, field: 'sm' },
-  md: { height: TEXT_FIELD_GEOMETRY.md.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.md.paddingHorizontal, field: 'md' },
+  sm: {
+    height: TEXT_FIELD_GEOMETRY.sm.height,
+    paddingHorizontal: TEXT_FIELD_GEOMETRY.sm.paddingHorizontal,
+    field: 'sm',
+  },
+  md: {
+    height: TEXT_FIELD_GEOMETRY.md.height,
+    paddingHorizontal: TEXT_FIELD_GEOMETRY.md.paddingHorizontal,
+    field: 'md',
+  },
   lg: { ...TEXT_FIELD_GEOMETRY.lg, field: 'lg' },
 };
 
@@ -91,7 +95,8 @@ const InputGroupAddonComponent = function InputGroupAddon({
       <Text
         variant="body-regular"
         numberOfLines={1}
-        style={{ color: group?.disabled ? palette.textDisabled : palette.hint }}>
+        style={{ color: group?.disabled ? palette.textDisabled : palette.hint }}
+      >
         {children}
       </Text>
     ) : (
@@ -165,14 +170,13 @@ const InputGroupComponent = function InputGroup({
   // neither the field nor the text-field group. The group publishes no name — it
   // does not know which of its children is the control the label points at, so
   // that stays the field's `nativeID` and the input's to apply.
-  const { size } = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
+  const { size } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
   const member = useFieldMembership({ disabled: disabledProp, invalid: invalidNew ?? isInvalid });
   const disabled = member.disabled;
   const invalid = member.invalid;
   const cfg = SIZE_CONFIG[size];
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } =
-    useInteractionState();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const palette = useTextFieldPalette();
   const { backgroundColor, borderColor } = resolveShellPaint(palette, {
@@ -200,7 +204,8 @@ const InputGroupComponent = function InputGroup({
     isValidElement(child) && child.type === InputGroupAddon ? (
       <AddonPositionContext.Provider
         key={child.key ?? index}
-        value={controlIndex === -1 || index < controlIndex ? 'leading' : 'trailing'}>
+        value={controlIndex === -1 || index < controlIndex ? 'leading' : 'trailing'}
+      >
         {child}
       </AddonPositionContext.Provider>
     ) : (
@@ -245,7 +250,8 @@ const InputGroupComponent = function InputGroup({
             },
             TEXT_FIELD_WEB_TRANSITION,
             style,
-          ]}>
+          ]}
+        >
           {positioned}
         </View>
       </TextFieldGroupContext.Provider>

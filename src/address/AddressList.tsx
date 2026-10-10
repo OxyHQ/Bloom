@@ -74,7 +74,13 @@ function AddressListComponent({
           <View
             key={index}
             testID={testID ? `${testID}-placeholder-${index}` : undefined}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10 }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+            }}
           >
             <Skeleton.Circle size={g.tile} />
             <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
@@ -101,7 +107,10 @@ function AddressListComponent({
               {emptyTitle}
             </Text>
             {emptyDescription ? (
-              <Text variant="body-2-regular" style={{ color: paint.textSecondary, textAlign: 'center' }}>
+              <Text
+                variant="body-2-regular"
+                style={{ color: paint.textSecondary, textAlign: 'center' }}
+              >
                 {emptyDescription}
               </Text>
             ) : null}

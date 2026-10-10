@@ -5,8 +5,10 @@ import type { PriceLineState } from './types';
  * The word drawn beside an amount that is not the answer yet, in English. The
  * components speak `PRICE_BREAKDOWN_MESSAGES` in the resolved locale.
  */
-export const PRICE_STATE_LABELS: Record<Exclude<PriceLineState, 'final'>, string> =
-  PRICE_BREAKDOWN_MESSAGES.en.states;
+export const PRICE_STATE_LABELS: Record<
+  Exclude<PriceLineState, 'final'>,
+  string
+> = PRICE_BREAKDOWN_MESSAGES.en.states;
 
 /** Drawn where the amount would be on a line that has none. */
 export const PRICE_PENDING_PLACEHOLDER = '—';

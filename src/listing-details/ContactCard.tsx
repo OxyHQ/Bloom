@@ -163,7 +163,11 @@ function ContactCardComponent({
       {label ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           {LabelIcon ? <LabelIcon width={14} height={14} fill={palette.text} /> : null}
-          <Text variant="body-2-semibold" style={{ color: palette.text }} testID={testID ? `${testID}-label` : undefined}>
+          <Text
+            variant="body-2-semibold"
+            style={{ color: palette.text }}
+            testID={testID ? `${testID}-label` : undefined}
+          >
             {label}
           </Text>
         </View>
@@ -187,7 +191,10 @@ function ContactCardComponent({
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text variant="title-3-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+              <Text
+                variant="title-3-semibold"
+                style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+              >
                 {stat.value}
               </Text>
               {stat.star ? <RiStarFill width={12} height={12} fill={palette.text} /> : null}
@@ -218,7 +225,13 @@ function ContactCardComponent({
     .join(', ');
 
   const card = (
-    <Card radius="radius-20" onPress={onPressProfile} accessibilityLabel={cardName} style={cardStyle} testID={testID ? `${testID}-card` : undefined}>
+    <Card
+      radius="radius-20"
+      onPress={onPressProfile}
+      accessibilityLabel={cardName}
+      style={cardStyle}
+      testID={testID ? `${testID}-card` : undefined}
+    >
       {identity}
       {statsColumn}
     </Card>
@@ -226,7 +239,9 @@ function ContactCardComponent({
 
   // The agency row: a role="agency" card already draws the logo as its avatar.
   const logoUri = resolveImageUri(logoSource, resolver, 'thumb');
-  const logoNode = isValidElement(logo) ? logo : logoUri ? (
+  const logoNode = isValidElement(logo) ? (
+    logo
+  ) : logoUri ? (
     <Image
       source={{ uri: logoUri }}
       resizeMode="contain"
@@ -261,7 +276,11 @@ function ContactCardComponent({
             {logoNode}
           </View>
         ) : null}
-        <Text variant="body-semibold" numberOfLines={1} style={{ flex: 1, minWidth: 0, color: palette.text }}>
+        <Text
+          variant="body-semibold"
+          numberOfLines={1}
+          style={{ flex: 1, minWidth: 0, color: palette.text }}
+        >
           {agency}
         </Text>
       </View>
@@ -271,11 +290,22 @@ function ContactCardComponent({
     ...(details ?? []).map((d, i) => ({ icon: d.icon, text: d.text, id: `detail-${i}` })),
     ...(responseTime ? [{ icon: RiTimeLine, text: responseTime, id: 'response-time' }] : []),
     ...(activeListings != null
-      ? [{ icon: RiHome4Line, text: activeListingsLabel(activeListings), onPress: onPressListings, id: 'listings' }]
+      ? [
+          {
+            icon: RiHome4Line,
+            text: activeListingsLabel(activeListings),
+            onPress: onPressListings,
+            id: 'listings',
+          },
+        ]
       : []),
   ];
 
-  const linkStyle: WebCssStyle = { alignSelf: 'flex-start', borderRadius: 4, '--bloom-listing-ring': palette.ring };
+  const linkStyle: WebCssStyle = {
+    alignSelf: 'flex-start',
+    borderRadius: 4,
+    '--bloom-listing-ring': palette.ring,
+  };
 
   const revealPhone = () => {
     if (!phoneRevealed) setPhoneRevealed(true);
@@ -284,10 +314,14 @@ function ContactCardComponent({
 
   const actions =
     onMessage || onCall || phone ? (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }} testID={testID ? `${testID}-actions` : undefined}>
+      <View
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
+        testID={testID ? `${testID}-actions` : undefined}
+      >
         {onMessage ? (
           <Button
-            appearance={role === 'host' ? 'outline' : 'solid'} tone={role === 'host' ? 'neutral' : 'accent'}
+            appearance={role === 'host' ? 'outline' : 'solid'}
+            tone={role === 'host' ? 'neutral' : 'accent'}
             onPress={onMessage}
             testID={testID ? `${testID}-message` : undefined}
           >
@@ -295,32 +329,54 @@ function ContactCardComponent({
           </Button>
         ) : null}
         {onCall ? (
-          <Button  leadingIcon={RiPhoneLine} onPress={onCall} testID={testID ? `${testID}-call` : undefined} tone="neutral" appearance="outline">
+          <Button
+            leadingIcon={RiPhoneLine}
+            onPress={onCall}
+            testID={testID ? `${testID}-call` : undefined}
+            tone="neutral"
+            appearance="outline"
+          >
             {callLabel}
           </Button>
         ) : null}
         {phone ? (
-          <View {...(IS_WEB ? { 'aria-live': 'polite' } : { accessibilityLiveRegion: 'polite' as const })}>
+          <View
+            {...(IS_WEB
+              ? { 'aria-live': 'polite' }
+              : { accessibilityLiveRegion: 'polite' as const })}
+          >
             {phoneRevealed && !onCall ? (
               // Revealed with nothing to call: the number is text, not a dead button.
               <View
-                style={{ height: 36, flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 8, paddingRight: 8 }}
+                style={{
+                  height: 36,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingLeft: 8,
+                  paddingRight: 8,
+                }}
                 testID={testID ? `${testID}-phone` : undefined}
               >
                 <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
                   <RiPhoneLine width={20} height={20} fill={palette.text} />
                 </View>
-                <Text variant="body-semibold" selectable style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+                <Text
+                  variant="body-semibold"
+                  selectable
+                  style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+                >
                   {phone}
                 </Text>
               </View>
             ) : (
               <Button
-
                 leadingIcon={RiPhoneLine}
                 onPress={revealPhone}
                 textStyle={phoneRevealed ? { fontVariant: ['tabular-nums'] } : undefined}
-                testID={testID ? `${testID}-phone` : undefined} tone="neutral" appearance="outline"
+                testID={testID ? `${testID}-phone` : undefined}
+                tone="neutral"
+                appearance="outline"
               >
                 {phoneRevealed ? phone : showPhoneLabel}
               </Button>
@@ -353,7 +409,11 @@ function ContactCardComponent({
                 </Text>
               </>
             );
-            const rowStyle = { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 12 };
+            const rowStyle = {
+              flexDirection: 'row' as const,
+              alignItems: 'center' as const,
+              gap: 12,
+            };
             return (
               <View key={id} role="listitem" testID={testID ? `${testID}-${id}` : undefined}>
                 {onPress ? (
@@ -377,7 +437,11 @@ function ContactCardComponent({
       {responseLines && responseLines.length > 0 ? (
         <View style={{ gap: 4 }}>
           {responseLines.map((line, index) => (
-            <Text key={`${line}-${index}`} variant="body-regular" style={{ color: palette.textSecondary }}>
+            <Text
+              key={`${line}-${index}`}
+              variant="body-regular"
+              style={{ color: palette.textSecondary }}
+            >
               {line}
             </Text>
           ))}

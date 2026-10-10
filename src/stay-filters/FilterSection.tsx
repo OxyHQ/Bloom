@@ -48,7 +48,12 @@ function FilterSectionComponent({
     >
       <View style={{ gap: 4 }}>
         {typeof title === 'string' ? (
-          <Text variant="headline-semibold" role="heading" aria-level={3} style={{ color: theme.colors.text }}>
+          <Text
+            variant="headline-semibold"
+            role="heading"
+            aria-level={3}
+            style={{ color: theme.colors.text }}
+          >
             {title}
           </Text>
         ) : (

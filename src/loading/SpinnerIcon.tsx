@@ -45,6 +45,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
 }) => {
   const rotation = useSharedValue(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     rotation.value = withRepeat(
       withTiming(360, { duration: 400, easing: Easing.linear }),
@@ -53,15 +54,17 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
     );
     // rotation is a stable shared value reference; withRepeat/withTiming/Easing
     // are module-level constants from a static import and are stable too.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // `rotation` MUST be in the deps array: on web without the worklets Babel
   // plugin, useAnimatedStyle does not auto-track shared-value reads and would
   // freeze at frame 1. Native (plugin present) auto-tracks and ignores the dep.
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
-  }), [rotation]);
+  const animatedStyle = useAnimatedStyle(
+    () => ({
+      transform: [{ rotate: `${rotation.value}deg` }],
+    }),
+    [rotation],
+  );
 
   return (
     <AnimatedStyledView
@@ -78,14 +81,94 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
       ]}
     >
       <Svg viewBox="0 0 100 100" width={size} height={size}>
-        <Rect fill={color} height="10" opacity="0" rx="5" ry="5" transform="rotate(-90 50 50)" width="28" x="67" y="45" />
-        <Rect fill={color} height="10" opacity="0.125" rx="5" ry="5" transform="rotate(-45 50 50)" width="28" x="67" y="45" />
-        <Rect fill={color} height="10" opacity="0.25" rx="5" ry="5" transform="rotate(0 50 50)" width="28" x="67" y="45" />
-        <Rect fill={color} height="10" opacity="0.375" rx="5" ry="5" transform="rotate(45 50 50)" width="28" x="67" y="45" />
-        <Rect fill={color} height="10" opacity="0.5" rx="5" ry="5" transform="rotate(90 50 50)" width="28" x="67" y="45" />
-        <Rect fill={color} height="10" opacity="0.625" rx="5" ry="5" transform="rotate(135 50 50)" width="28" x="67" y="45" />
-        <Rect fill={color} height="10" opacity="0.75" rx="5" ry="5" transform="rotate(180 50 50)" width="28" x="67" y="45" />
-        <Rect fill={color} height="10" opacity="0.875" rx="5" ry="5" transform="rotate(225 50 50)" width="28" x="67" y="45" />
+        <Rect
+          fill={color}
+          height="10"
+          opacity="0"
+          rx="5"
+          ry="5"
+          transform="rotate(-90 50 50)"
+          width="28"
+          x="67"
+          y="45"
+        />
+        <Rect
+          fill={color}
+          height="10"
+          opacity="0.125"
+          rx="5"
+          ry="5"
+          transform="rotate(-45 50 50)"
+          width="28"
+          x="67"
+          y="45"
+        />
+        <Rect
+          fill={color}
+          height="10"
+          opacity="0.25"
+          rx="5"
+          ry="5"
+          transform="rotate(0 50 50)"
+          width="28"
+          x="67"
+          y="45"
+        />
+        <Rect
+          fill={color}
+          height="10"
+          opacity="0.375"
+          rx="5"
+          ry="5"
+          transform="rotate(45 50 50)"
+          width="28"
+          x="67"
+          y="45"
+        />
+        <Rect
+          fill={color}
+          height="10"
+          opacity="0.5"
+          rx="5"
+          ry="5"
+          transform="rotate(90 50 50)"
+          width="28"
+          x="67"
+          y="45"
+        />
+        <Rect
+          fill={color}
+          height="10"
+          opacity="0.625"
+          rx="5"
+          ry="5"
+          transform="rotate(135 50 50)"
+          width="28"
+          x="67"
+          y="45"
+        />
+        <Rect
+          fill={color}
+          height="10"
+          opacity="0.75"
+          rx="5"
+          ry="5"
+          transform="rotate(180 50 50)"
+          width="28"
+          x="67"
+          y="45"
+        />
+        <Rect
+          fill={color}
+          height="10"
+          opacity="0.875"
+          rx="5"
+          ry="5"
+          transform="rotate(225 50 50)"
+          width="28"
+          x="67"
+          y="45"
+        />
       </Svg>
     </AnimatedStyledView>
   );

@@ -140,7 +140,8 @@ export const Filtered: Story = {
       for (const entry of ENTRIES) out[entry.kind] = (out[entry.kind] ?? 0) + 1;
       return out;
     }, []);
-    const shown = selected.length === 0 ? ENTRIES : ENTRIES.filter((e) => selected.includes(e.kind));
+    const shown =
+      selected.length === 0 ? ENTRIES : ENTRIES.filter((e) => selected.includes(e.kind));
     return (
       <Page>
         <ActivityFeedFilters
@@ -174,7 +175,12 @@ export const NarrowAndLong: Story = {
   render: () => (
     <View style={{ width: 340 }}>
       <Page>
-        <ActivityFeed entries={ENTRIES} bodyLines={2} accessibilityLabel="Activity" testID="feed-narrow" />
+        <ActivityFeed
+          entries={ENTRIES}
+          bodyLines={2}
+          accessibilityLabel="Activity"
+          testID="feed-narrow"
+        />
       </Page>
     </View>
   ),

@@ -39,7 +39,8 @@ export function budgetPresetLabel(
   if (preset.label) return preset.label;
   if (preset.min == null && preset.max != null) return messages.upTo(format(preset.max));
   if (preset.max == null && preset.min != null) return `${format(preset.min)}+`;
-  if (preset.min != null && preset.max != null) return `${format(preset.min)} – ${format(preset.max)}`;
+  if (preset.min != null && preset.max != null)
+    return `${format(preset.min)} – ${format(preset.max)}`;
   return messages.any;
 }
 
@@ -66,7 +67,11 @@ function BudgetPickerComponent({
   const items = presets ?? DEFAULT_BUDGET_PRESETS[period];
   const heading = title ?? (period === 'month' ? messages.monthlyBudget : messages.price);
   const sub =
-    description === undefined ? (period === 'month' ? messages.monthlyBudgetDescription : messages.totalPriceDescription) : description;
+    description === undefined
+      ? period === 'month'
+        ? messages.monthlyBudgetDescription
+        : messages.totalPriceDescription
+      : description;
 
   const onCommit = useCallback(
     (next: [number | null, number | null]) => {
@@ -98,7 +103,11 @@ function BudgetPickerComponent({
         testID={testID}
       />
       {items.length > 0 ? (
-        <View role="group" accessibilityLabel={presetsLabel} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View
+          role="group"
+          accessibilityLabel={presetsLabel}
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
+        >
           {items.map((preset, index) => {
             const selected = preset.min === value[0] && preset.max === value[1];
             return (

@@ -39,7 +39,10 @@ function ListingCardGridComponent({
   // a fraction and wrap one per row. Keep a pixel back whenever a row holds
   // more than one cell (a lone cell cannot wrap).
   const usable = columns > 1 ? width - 1 : width;
-  const cell = Math.max(0, Math.floor(((usable - columnGap * (columns - 1)) / columns) * 100) / 100);
+  const cell = Math.max(
+    0,
+    Math.floor(((usable - columnGap * (columns - 1)) / columns) * 100) / 100,
+  );
 
   const items = Children.toArray(children).filter(isValidElement);
 
@@ -47,19 +50,12 @@ function ListingCardGridComponent({
     <View
       role="list"
       onLayout={(event: LayoutChangeEvent) => setMeasured(event.nativeEvent.layout.width)}
-      style={[
-        { width: '100%', flexDirection: 'row', flexWrap: 'wrap', columnGap, rowGap },
-        style,
-      ]}
+      style={[{ width: '100%', flexDirection: 'row', flexWrap: 'wrap', columnGap, rowGap }, style]}
       testID={testID}
       {...(IS_WEB ? { dataSet: { bloomListingCardGrid: String(columns) } } : null)}
     >
       {items.map((child, index) => (
-        <View
-          key={child.key ?? index}
-          role="listitem"
-          style={{ width: cell }}
-        >
+        <View key={child.key ?? index} role="listitem" style={{ width: cell }}>
           {child}
         </View>
       ))}

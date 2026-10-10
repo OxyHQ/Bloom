@@ -10,22 +10,25 @@ import { OverlayInertBoundary } from '../overlay';
 
 const meta: Meta<typeof Dialog> = {
   argTypes: {
-    placement: { control: 'select', options: ['center', 'start', 'end', 'left', 'right', 'bottom'] },
-    "open": { control: 'boolean' },
-    "title": { control: 'text' },
-    "description": { control: 'text' },
-    "width": { control: 'number' },
-    "maxWidth": { control: 'number' },
-    "maxHeightRatio": { control: 'number' },
-    "showHandle": { control: 'boolean' },
-    "startOpen": { control: 'boolean' },
-    "scrollable": { control: 'boolean' },
-    "contentPadding": { control: 'number' },
-    "dismissOnBackdrop": { control: 'boolean' },
-    "morph": { control: 'boolean' },
-    "panelClassName": { control: 'text' },
-    "containerClassName": { control: 'text' },
-    "label": { control: 'text' }
+    placement: {
+      control: 'select',
+      options: ['center', 'start', 'end', 'left', 'right', 'bottom'],
+    },
+    open: { control: 'boolean' },
+    title: { control: 'text' },
+    description: { control: 'text' },
+    width: { control: 'number' },
+    maxWidth: { control: 'number' },
+    maxHeightRatio: { control: 'number' },
+    showHandle: { control: 'boolean' },
+    startOpen: { control: 'boolean' },
+    scrollable: { control: 'boolean' },
+    contentPadding: { control: 'number' },
+    dismissOnBackdrop: { control: 'boolean' },
+    morph: { control: 'boolean' },
+    panelClassName: { control: 'text' },
+    containerClassName: { control: 'text' },
+    label: { control: 'text' },
   },
   title: 'Base/Dialog',
   component: Dialog,
@@ -72,12 +75,14 @@ function CustomChildrenDemo() {
 
 function AlertDemo() {
   return (
-    <Button onPress={() =>
+    <Button
+      onPress={() =>
         alert('Delete project?', 'This action cannot be undone.', [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Delete', style: 'destructive' },
         ])
-      }>
+      }
+    >
       Trigger alert()
     </Button>
   );
@@ -174,11 +179,34 @@ export const Composition: Story = {
 
 /** Controls configure the next presentation; dismissal stays imperative. */
 export const Playground: Story = {
-  args: { title: 'Review changes', description: 'Everything is ready to save.', width: 440, showHandle: true, dismissOnBackdrop: true, scrollable: true },
-  parameters: { controls: { include: ['title', 'description', 'width', 'showHandle', 'dismissOnBackdrop', 'scrollable'] } },
+  args: {
+    title: 'Review changes',
+    description: 'Everything is ready to save.',
+    width: 440,
+    showHandle: true,
+    dismissOnBackdrop: true,
+    scrollable: true,
+  },
+  parameters: {
+    controls: {
+      include: ['title', 'description', 'width', 'showHandle', 'dismissOnBackdrop', 'scrollable'],
+    },
+  },
   render: function PlaygroundDialog(args) {
     const control = useDialogControl();
-    return <><Button onPress={() => control.open()}>Open dialog</Button><Dialog {...args} control={control} actions={[{ label: 'Done', color: 'default' }, { label: 'Cancel', color: 'cancel' }]} /></>;
+    return (
+      <>
+        <Button onPress={() => control.open()}>Open dialog</Button>
+        <Dialog
+          {...args}
+          control={control}
+          actions={[
+            { label: 'Done', color: 'default' },
+            { label: 'Cancel', color: 'cancel' },
+          ]}
+        />
+      </>
+    );
   },
 };
 
@@ -190,7 +218,12 @@ export const ResponsiveAccessibility: Story = {
     return (
       <OverlayInertBoundary>
         <Button onPress={() => setOpen(true)}>Open account settings</Button>
-        <Dialog {...args} open={open} onClose={() => setOpen(false)} placement={{ base: 'bottom', md: 'center' }}>
+        <Dialog
+          {...args}
+          open={open}
+          onClose={() => setOpen(false)}
+          placement={{ base: 'bottom', md: 'center' }}
+        >
           <Button onPress={() => setOpen(false)}>Save preferences</Button>
         </Dialog>
       </OverlayInertBoundary>
@@ -212,91 +245,184 @@ export const HeaderAccessibility: Story = {
   },
 };
 
-
-function OwnedScrollerDemo({ placement = 'end', header = true }: { placement?: 'center' | 'bottom' | 'end'; header?: boolean }) {
+function OwnedScrollerDemo({
+  placement = 'end',
+  header = true,
+}: {
+  placement?: 'center' | 'bottom' | 'end';
+  header?: boolean;
+}) {
   const control = useDialogControl();
   const scroll = useRef<ScrollView>(null);
-  return <>
-    <Button onPress={() => control.open()}>Open owned scroller</Button>
-    <Dialog control={control} placement={placement} width={560} scrollable={false} contentPadding={0}
-      label="Owned scroller" testID="owned-dialog" header={header ? { title: 'Owned scroller', largeTitle: false } : undefined}>
-      <View style={{ flex: 1, minHeight: 0 }}>
-        <Button onPress={() => scroll.current?.scrollTo({ y: 900, animated: false })}>Jump to row</Button>
-        <ScrollView ref={scroll} style={{ flex: 1, minHeight: 0 }} testID="owned-scroll">
-          {Array.from({ length: 60 }, (_, index) => <View key={index} style={{ height: 44 }}><Text>Row {index + 1}</Text></View>)}
-        </ScrollView>
-        <View style={{ height: 48 }} testID="owned-footer"><Button onPress={() => control.close()}>Done</Button></View>
-      </View>
-    </Dialog>
-  </>;
+  return (
+    <>
+      <Button onPress={() => control.open()}>Open owned scroller</Button>
+      <Dialog
+        control={control}
+        placement={placement}
+        width={560}
+        scrollable={false}
+        contentPadding={0}
+        label="Owned scroller"
+        testID="owned-dialog"
+        header={header ? { title: 'Owned scroller', largeTitle: false } : undefined}
+      >
+        <View style={{ flex: 1, minHeight: 0 }}>
+          <Button onPress={() => scroll.current?.scrollTo({ y: 900, animated: false })}>
+            Jump to row
+          </Button>
+          <ScrollView ref={scroll} style={{ flex: 1, minHeight: 0 }} testID="owned-scroll">
+            {Array.from({ length: 60 }, (_, index) => (
+              <View key={index} style={{ height: 44 }}>
+                <Text>Row {index + 1}</Text>
+              </View>
+            ))}
+          </ScrollView>
+          <View style={{ height: 48 }} testID="owned-footer">
+            <Button onPress={() => control.close()}>Done</Button>
+          </View>
+        </View>
+      </Dialog>
+    </>
+  );
 }
-export const OwnedScroller: Story = { args: { placement: 'end' }, render: args => <OwnedScrollerDemo placement={args.placement as 'center' | 'bottom' | 'end'} /> };
-export const OwnedScrollerWithoutHeader: Story = { args: { placement: 'end' }, render: args => <OwnedScrollerDemo placement={args.placement as 'center' | 'bottom' | 'end'} header={false} /> };
-
+export const OwnedScroller: Story = {
+  args: { placement: 'end' },
+  render: (args) => <OwnedScrollerDemo placement={args.placement as 'center' | 'bottom' | 'end'} />,
+};
+export const OwnedScrollerWithoutHeader: Story = {
+  args: { placement: 'end' },
+  render: (args) => (
+    <OwnedScrollerDemo placement={args.placement as 'center' | 'bottom' | 'end'} header={false} />
+  ),
+};
 
 export const OwnedScrollerPagination: Story = {
   args: { placement: 'bottom' },
   render: function Pagination(args) {
     const control = useDialogControl();
-    return <>
-      <Button onPress={() => control.open()}>Open paginated content</Button>
-      <Dialog control={control} placement={args.placement} label="Paginated content" header={{ title: 'Paginated content', largeTitle: false }} scrollable={false} contentPadding={0}>
-        <ScrollView style={{ flex: 1, minHeight: 0 }} testID="pagination-scroll">
-          {Array.from({ length: 60 }, (_, index) => <View key={index} style={{ height: 44 }}><Text>Row {index + 1}</Text></View>)}
-          <Button>Next page</Button>
-        </ScrollView>
-      </Dialog>
-    </>;
+    return (
+      <>
+        <Button onPress={() => control.open()}>Open paginated content</Button>
+        <Dialog
+          control={control}
+          placement={args.placement}
+          label="Paginated content"
+          header={{ title: 'Paginated content', largeTitle: false }}
+          scrollable={false}
+          contentPadding={0}
+        >
+          <ScrollView style={{ flex: 1, minHeight: 0 }} testID="pagination-scroll">
+            {Array.from({ length: 60 }, (_, index) => (
+              <View key={index} style={{ height: 44 }}>
+                <Text>Row {index + 1}</Text>
+              </View>
+            ))}
+            <Button>Next page</Button>
+          </ScrollView>
+        </Dialog>
+      </>
+    );
   },
 };
 
-function MountedFocusDialog({ placement, onClose }: { placement: 'center' | 'end' | 'bottom'; onClose: () => void }) {
+function MountedFocusDialog({
+  placement,
+  onClose,
+}: {
+  placement: 'center' | 'end' | 'bottom';
+  onClose: () => void;
+}) {
   const control = useDialogControl();
-  React.useEffect(() => { control.open(); }, [control]);
-  return <Dialog control={control} placement={placement} label="Focus restoration" header={{ title: 'Focus restoration', largeTitle:false }} onClose={onClose}>
-    <Button onPress={() => control.close()}>Finish</Button>
-  </Dialog>;
+  React.useEffect(() => {
+    control.open();
+  }, [control]);
+  return (
+    <Dialog
+      control={control}
+      placement={placement}
+      label="Focus restoration"
+      header={{ title: 'Focus restoration', largeTitle: false }}
+      onClose={onClose}
+    >
+      <Button onPress={() => control.close()}>Finish</Button>
+    </Dialog>
+  );
 }
 /** The opener is inert during exit; the host removes the dialog after closing. */
 export const FocusRestoration: Story = {
-  args:{ placement:'end' },
-  render:function FocusRestorationDemo(args) {
-    const [mounted,setMounted]=React.useState(false);
-    return <>
-      <OverlayInertBoundary testID="focus-boundary"><Button onPress={()=>setMounted(true)}>Open focus dialog</Button></OverlayInertBoundary>
-      {mounted?<MountedFocusDialog placement={args.placement as 'center'|'end'|'bottom'} onClose={()=>setMounted(false)} />:null}
-    </>;
+  args: { placement: 'end' },
+  render: function FocusRestorationDemo(args) {
+    const [mounted, setMounted] = React.useState(false);
+    return (
+      <>
+        <OverlayInertBoundary testID="focus-boundary">
+          <Button onPress={() => setMounted(true)}>Open focus dialog</Button>
+        </OverlayInertBoundary>
+        {mounted ? (
+          <MountedFocusDialog
+            placement={args.placement as 'center' | 'end' | 'bottom'}
+            onClose={() => setMounted(false)}
+          />
+        ) : null}
+      </>
+    );
   },
 };
 
 export const FlatMaterial: Story = {
   render: function FlatMaterialStory(args) {
     const control = useDialogControl();
-    return <>
-      <Button onPress={control.open}>Open flat panel</Button>
-      <Dialog control={control} placement={args.placement ?? 'center'} material={args.material ?? 'flat'}
-        label="Material panel" panelStyle={{ backgroundColor: '#f3d7b6' }} header={{ title: 'Panel title' }} testID="material-panel">
-        <View style={{ height: 240, padding: 20 }}><Text>Opaque content surface</Text></View>
-      </Dialog>
-    </>;
+    return (
+      <>
+        <Button onPress={control.open}>Open flat panel</Button>
+        <Dialog
+          control={control}
+          placement={args.placement ?? 'center'}
+          material={args.material ?? 'flat'}
+          label="Material panel"
+          panelStyle={{ backgroundColor: '#f3d7b6' }}
+          header={{ title: 'Panel title' }}
+          testID="material-panel"
+        >
+          <View style={{ height: 240, padding: 20 }}>
+            <Text>Opaque content surface</Text>
+          </View>
+        </Dialog>
+      </>
+    );
   },
 };
-
 
 export const SideGutter: Story = {
   render: function SideGutter() {
     const full = useDialogControl();
     const inset = useDialogControl();
-    return <>
-      <Button onPress={() => full.open()}>Open full side sheet</Button>
-      <Button onPress={() => inset.open()}>Open default side sheet</Button>
-      <Dialog control={full} placement="end" width={10000} minSideGutter={0} title="Full side sheet" testID="full-side-panel">
-        <Button onPress={() => full.close()}>Close full sheet</Button>
-      </Dialog>
-      <Dialog control={inset} placement="end" width={10000} title="Default side sheet" testID="default-side-panel">
-        <Button onPress={() => inset.close()}>Close default sheet</Button>
-      </Dialog>
-    </>;
+    return (
+      <>
+        <Button onPress={() => full.open()}>Open full side sheet</Button>
+        <Button onPress={() => inset.open()}>Open default side sheet</Button>
+        <Dialog
+          control={full}
+          placement="end"
+          width={10000}
+          minSideGutter={0}
+          title="Full side sheet"
+          testID="full-side-panel"
+        >
+          <Button onPress={() => full.close()}>Close full sheet</Button>
+        </Dialog>
+        <Dialog
+          control={inset}
+          placement="end"
+          width={10000}
+          title="Default side sheet"
+          testID="default-side-panel"
+        >
+          <Button onPress={() => inset.close()}>Close default sheet</Button>
+        </Dialog>
+      </>
+    );
   },
 };
 
@@ -304,48 +430,100 @@ export const BackdropTransition: Story = {
   args: { placement: 'end' },
   render: function BackdropTransitionStory(args) {
     const control = useDialogControl();
-    return <>
-      <OverlayInertBoundary><Button onPress={() => control.open()}>Open timed surface</Button></OverlayInertBoundary>
-      <Dialog control={control} placement={args.placement} label="Timed surface" title="Timed surface" testID="timed-panel"
-        backdrop={{ blurIntensity: 0, dimOpacity: 1, dimGradient: { direction: 'start-to-end', stops: [
-          { offset: 0, color: 'rgba(0,0,0,0)' }, { offset: .6975, color: 'rgba(0,0,0,.36)' }, { offset: 1, color: 'rgba(0,0,0,.36)' },
-        ] } }} transition={{ duration: 300, easing: [0, 0, .58, 1] }}>
-        <Text>The paint and transition share the surface lifecycle.</Text>
-        <Button onPress={() => control.close()}>Close timed surface</Button>
-      </Dialog>
-    </>;
+    return (
+      <>
+        <OverlayInertBoundary>
+          <Button onPress={() => control.open()}>Open timed surface</Button>
+        </OverlayInertBoundary>
+        <Dialog
+          control={control}
+          placement={args.placement}
+          label="Timed surface"
+          title="Timed surface"
+          testID="timed-panel"
+          backdrop={{
+            blurIntensity: 0,
+            dimOpacity: 1,
+            dimGradient: {
+              direction: 'start-to-end',
+              stops: [
+                { offset: 0, color: 'rgba(0,0,0,0)' },
+                { offset: 0.6975, color: 'rgba(0,0,0,.36)' },
+                { offset: 1, color: 'rgba(0,0,0,.36)' },
+              ],
+            },
+          }}
+          transition={{ duration: 300, easing: [0, 0, 0.58, 1] }}
+        >
+          <Text>The paint and transition share the surface lifecycle.</Text>
+          <Button onPress={() => control.close()}>Close timed surface</Button>
+        </Dialog>
+      </>
+    );
   },
 };
-export const BackdropTransitionCenter: Story = { ...BackdropTransition, args: { placement: 'center' } };
-export const BackdropTransitionBottom: Story = { ...BackdropTransition, args: { placement: 'bottom' } };
+export const BackdropTransitionCenter: Story = {
+  ...BackdropTransition,
+  args: { placement: 'center' },
+};
+export const BackdropTransitionBottom: Story = {
+  ...BackdropTransition,
+  args: { placement: 'bottom' },
+};
 
 export const LoadingButtonNames: Story = {
   render: function LoadingButtonNamesStory() {
     const [open, setOpen] = React.useState(false);
     const [pending, setPending] = React.useState(false);
-    return <>
-      <Button onPress={() => setOpen(true)}>Open pending dialog</Button>
-      <Dialog open={open} onClose={() => { if (!pending) setOpen(false); }} title="Pending action" dismissOnBackdrop={!pending}>
-        <View style={{ gap: 12 }}>
-          <Button disabled={pending} onPress={() => setOpen(false)}>Cancel action</Button>
-          <Button loading={pending} disabled={false} onPress={() => setPending(true)}>Remove variant</Button>
-          <Button loading={pending} disabled={false}><ComposedActionName /></Button>
-          <Button loading={pending} disabled={false}>حذف المتغيّر</Button>
-          <Button loading={pending} accessibilityLabel="Save item" iconOnly><Text>+</Text></Button>
-          <Button loading={pending} href="#destination">Open destination</Button>
-          <Button loading={pending} asChild><a href="#supplied">Supplied link</a></Button>
-          <Button onPress={() => setPending(false)}>Finish request</Button>
-        </View>
-      </Dialog>
-    </>;
+    return (
+      <>
+        <Button onPress={() => setOpen(true)}>Open pending dialog</Button>
+        <Dialog
+          open={open}
+          onClose={() => {
+            if (!pending) setOpen(false);
+          }}
+          title="Pending action"
+          dismissOnBackdrop={!pending}
+        >
+          <View style={{ gap: 12 }}>
+            <Button disabled={pending} onPress={() => setOpen(false)}>
+              Cancel action
+            </Button>
+            <Button loading={pending} disabled={false} onPress={() => setPending(true)}>
+              Remove variant
+            </Button>
+            <Button loading={pending} disabled={false}>
+              <ComposedActionName />
+            </Button>
+            <Button loading={pending} disabled={false}>
+              حذف المتغيّر
+            </Button>
+            <Button loading={pending} accessibilityLabel="Save item" iconOnly>
+              <Text>+</Text>
+            </Button>
+            <Button loading={pending} href="#destination">
+              Open destination
+            </Button>
+            <Button loading={pending} asChild>
+              <a href="#supplied">Supplied link</a>
+            </Button>
+            <Button onPress={() => setPending(false)}>Finish request</Button>
+          </View>
+        </Dialog>
+      </>
+    );
   },
 };
 
 function ComposedActionName() {
   const [identity] = React.useState(() => Math.random().toString(36));
-  return <span data-testid="composed-action-name" data-identity={identity}>
-    Publish <strong>draft</strong><span aria-hidden="true"> decorative</span>
-  </span>;
+  return (
+    <span data-testid="composed-action-name" data-identity={identity}>
+      Publish <strong>draft</strong>
+      <span aria-hidden="true"> decorative</span>
+    </span>
+  );
 }
 
 /** All actions temporarily unavailable while a request is in flight. */
@@ -359,20 +537,35 @@ export const PendingFocus: Story = {
       const timer = setTimeout(() => setPending(false), 4000);
       return () => clearTimeout(timer);
     }, [pending]);
-    return <>
-      <OverlayInertBoundary testID="pending-boundary"><Button onPress={() => control.open()}>Open pending focus</Button></OverlayInertBoundary>
-      <Dialog control={control} placement={args.placement} label="Pending focus" dismissOnBackdrop={!pending}>
-        <View style={{ gap: 12 }}>
-          <Button disabled={pending} onPress={() => control.close()}>Cancel request</Button>
-          <Button loading={pending} onPress={() => setPending(true)}>Start request</Button>
-        </View>
-      </Dialog>
-    </>;
+    return (
+      <>
+        <OverlayInertBoundary testID="pending-boundary">
+          <Button onPress={() => control.open()}>Open pending focus</Button>
+        </OverlayInertBoundary>
+        <Dialog
+          control={control}
+          placement={args.placement}
+          label="Pending focus"
+          dismissOnBackdrop={!pending}
+        >
+          <View style={{ gap: 12 }}>
+            <Button disabled={pending} onPress={() => control.close()}>
+              Cancel request
+            </Button>
+            <Button loading={pending} onPress={() => setPending(true)}>
+              Start request
+            </Button>
+          </View>
+        </Dialog>
+      </>
+    );
   },
 };
 
 function CloseOnLayout({ close }: { close: () => void }) {
-  React.useLayoutEffect(() => { close(); }, [close]);
+  React.useLayoutEffect(() => {
+    close();
+  }, [close]);
   return <Button>Transient action</Button>;
 }
 
@@ -384,16 +577,39 @@ export const RapidNestedClose: Story = {
     const child = useDialogControl();
     const [closed, setClosed] = React.useState(0);
     const [immediate, setImmediate] = React.useState(true);
-    return <>
-      <OverlayInertBoundary><Button onPress={() => parent.open()}>Open parent surface</Button></OverlayInertBoundary>
-      <Dialog control={parent} placement={args.placement} label="Parent surface">
-        <Button onPress={() => { setImmediate(true); child.open(); }}>Open transient child</Button>
-        <Button onPress={() => { setImmediate(false); child.open(); }}>Open keyboard child</Button>
-        <Text testID="transient-close-count">{closed}</Text>
-        <Dialog control={child} placement="end" label="Transient child" onClose={() => setClosed(value => value + 1)}>
-          {immediate ? <CloseOnLayout close={child.close} /> : <Button>Child action</Button>}
+    return (
+      <>
+        <OverlayInertBoundary>
+          <Button onPress={() => parent.open()}>Open parent surface</Button>
+        </OverlayInertBoundary>
+        <Dialog control={parent} placement={args.placement} label="Parent surface">
+          <Button
+            onPress={() => {
+              setImmediate(true);
+              child.open();
+            }}
+          >
+            Open transient child
+          </Button>
+          <Button
+            onPress={() => {
+              setImmediate(false);
+              child.open();
+            }}
+          >
+            Open keyboard child
+          </Button>
+          <Text testID="transient-close-count">{closed}</Text>
+          <Dialog
+            control={child}
+            placement="end"
+            label="Transient child"
+            onClose={() => setClosed((value) => value + 1)}
+          >
+            {immediate ? <CloseOnLayout close={child.close} /> : <Button>Child action</Button>}
+          </Dialog>
         </Dialog>
-      </Dialog>
-    </>;
+      </>
+    );
   },
 };

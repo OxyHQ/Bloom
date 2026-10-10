@@ -121,7 +121,10 @@ function TransportControlsComponent({
   style,
   testID,
 }: TransportControlsProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
   const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
   const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
@@ -133,7 +136,12 @@ function TransportControlsComponent({
   );
   const g = TRANSPORT_GEOMETRY[size];
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
-  const slot = { width: g.box, height: g.box, alignItems: 'center', justifyContent: 'center' } as const;
+  const slot = {
+    width: g.box,
+    height: g.box,
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as const;
 
   const play = (
     <PlayButton
@@ -154,7 +162,9 @@ function TransportControlsComponent({
   if (variant === 'podcast') {
     children = (
       <>
-        <View style={{ minWidth: g.box, height: g.box, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{ minWidth: g.box, height: g.box, alignItems: 'center', justifyContent: 'center' }}
+        >
           {onPlaybackRateChange ? (
             <PlaybackSpeedMenu
               rate={playbackRate}
@@ -186,7 +196,9 @@ function TransportControlsComponent({
           disabled={disabled || !onSkipForward}
           testID={id('skip-forward')}
         />
-        <View style={{ minWidth: g.box, height: g.box, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{ minWidth: g.box, height: g.box, alignItems: 'center', justifyContent: 'center' }}
+        >
           {trailing}
         </View>
       </>
@@ -250,7 +262,10 @@ function TransportControlsComponent({
 
   return (
     <View
-      style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: g.gap }, style]}
+      style={[
+        { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: g.gap },
+        style,
+      ]}
       testID={testID}
     >
       {children}

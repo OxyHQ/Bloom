@@ -93,11 +93,11 @@ function CardFormComponent({
   // report a change that did not happen.
   const schemeId = scheme?.id;
   const lastSchemeId = useRef(schemeId);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (lastSchemeId.current === schemeId) return;
     lastSchemeId.current = schemeId;
     onSchemeChange?.(scheme);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schemeId]);
 
   const word = (key: CardFormFieldName): string => labels?.[key] ?? messages.labels[key];

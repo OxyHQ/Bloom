@@ -10,7 +10,7 @@ import { SocialButton, SOCIAL_PROVIDERS, type SocialProvider } from '../social-b
 import { SOCIAL_COLOR_LOGOS } from '../social-button/color-logos';
 import { parseRgba } from '../theme/color-utils';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: test helper reads arbitrary style shapes (carried over from the former eslint-disable)
 function flat(style: any): Record<string, any> {
   if (Array.isArray(style)) return Object.assign({}, ...style.map(flat));
   return style ?? {};
@@ -71,7 +71,8 @@ describe('SocialButton — shared material', () => {
   });
   it('keeps surface paint and the supplied foreground for branded enabled states', () => {
     const palette = resolveButtonPalette('solid', themeFor('light'), 'accent', {
-      background: '#F24E1E', foreground: '#FFFFFF',
+      background: '#F24E1E',
+      foreground: '#FFFFFF',
     });
     expect(palette.rest.background).toBe('rgba(242, 78, 30, 0.9)');
     for (const state of [palette.rest, palette.hover, palette.active]) {
@@ -103,13 +104,19 @@ describe('SocialButton — render', () => {
 
   it('small is 250 × 32 with 10px padding; fullWidth fills', () => {
     const small = renderWithTheme(<SocialButton testID="b" brand="slack" size="sm" />);
-    expect(flat(small.getByTestId('b').props.style)).toMatchObject({ height: 32, width: 250, paddingLeft: 10 });
+    expect(flat(small.getByTestId('b').props.style)).toMatchObject({
+      height: 32,
+      width: 250,
+      paddingLeft: 10,
+    });
     const full = renderWithTheme(<SocialButton testID="b" brand="slack" fullWidth />);
     expect(flat(full.getByTestId('b').props.style).width).toBe('100%');
   });
 
   it('icon-only is square, hides the label and names itself', () => {
-    const { getByTestId, queryByText } = renderWithTheme(<SocialButton testID="b" brand="apple" iconOnly />);
+    const { getByTestId, queryByText } = renderWithTheme(
+      <SocialButton testID="b" brand="apple" iconOnly />,
+    );
     const button = getByTestId('b');
     expect(flat(button.props.style)).toMatchObject({ width: 36, height: 36, paddingLeft: 0 });
     expect(queryByText('Continue with Apple')).toBeNull();
@@ -134,7 +141,9 @@ describe('SocialButton — render', () => {
   it('uses primary for Oxy and Google, secondary for white', () => {
     for (const brand of ['oxy', 'google'] as const) {
       const primary = renderWithTheme(<SocialButton brand={brand} />);
-      const fill = parseRgba(resolveButtonPalette('solid', themeFor('light'), 'accent').rest.background)!;
+      const fill = parseRgba(
+        resolveButtonPalette('solid', themeFor('light'), 'accent').rest.background,
+      )!;
       expect(JSON.stringify(primary.toJSON())).toContain(`rgb(${fill.r}, ${fill.g}, ${fill.b})`);
       expect(JSON.stringify(primary.toJSON())).toContain('\"fillOpacity\":0.9');
       primary.unmount();

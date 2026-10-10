@@ -11,7 +11,12 @@ export const MOTION_RECIPES = {
 export type MotionIntent = keyof typeof MOTION_RECIPES;
 
 /** Retarget the existing value: no reset, timer, or second animation owner. */
-export function animateMotion(value: SharedValue<number>, target: number, intent: MotionIntent, reducedMotion = false): void {
+export function animateMotion(
+  value: SharedValue<number>,
+  target: number,
+  intent: MotionIntent,
+  reducedMotion = false,
+): void {
   'worklet';
   if (reducedMotion) {
     value.value = target;

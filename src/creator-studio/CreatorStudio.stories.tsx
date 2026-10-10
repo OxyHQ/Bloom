@@ -64,21 +64,56 @@ const COVERS = {
 };
 
 const spark = (base: number, drift: number, n = 14) =>
-  Array.from({ length: n }, (_, i) => Math.round(base + drift * i + Math.sin(i * 1.3) * base * 0.08));
+  Array.from({ length: n }, (_, i) =>
+    Math.round(base + drift * i + Math.sin(i * 1.3) * base * 0.08),
+  );
 
 const METRICS: AudienceMetric[] = [
-  { kind: 'listeners', label: 'Listeners', value: '48,210', delta: '+12.4%', trend: 'up', series: spark(3000, 90) },
-  { kind: 'streams', label: 'Streams', value: '312,904', delta: '+8.1%', trend: 'up', series: spark(20000, 400) },
-  { kind: 'followers', label: 'Followers', value: '9,846', delta: '0.0%', trend: 'flat', series: spark(700, 0) },
-  { kind: 'saves', label: 'Saves', value: '6,120', delta: '-3.2%', trend: 'down', series: spark(520, -9) },
+  {
+    kind: 'listeners',
+    label: 'Listeners',
+    value: '48,210',
+    delta: '+12.4%',
+    trend: 'up',
+    series: spark(3000, 90),
+  },
+  {
+    kind: 'streams',
+    label: 'Streams',
+    value: '312,904',
+    delta: '+8.1%',
+    trend: 'up',
+    series: spark(20000, 400),
+  },
+  {
+    kind: 'followers',
+    label: 'Followers',
+    value: '9,846',
+    delta: '0.0%',
+    trend: 'flat',
+    series: spark(700, 0),
+  },
+  {
+    kind: 'saves',
+    label: 'Saves',
+    value: '6,120',
+    delta: '-3.2%',
+    trend: 'down',
+    series: spark(520, -9),
+  },
 ];
 
 const DAYS = Array.from({ length: 28 }, (_, i) => `${i + 1} Mar`);
 const streamsSeries = DAYS.map((label, i) => ({
   label,
-  value: Math.round(8200 + i * 180 + Math.sin(i / 2) * 900 + (i >= 14 ? 5200 * Math.exp(-(i - 14) / 6) : 0)),
+  value: Math.round(
+    8200 + i * 180 + Math.sin(i / 2) * 900 + (i >= 14 ? 5200 * Math.exp(-(i - 14) / 6) : 0),
+  ),
 }));
-const listenersSeries = streamsSeries.map((p) => ({ label: p.label, value: Math.round(p.value * 0.16) }));
+const listenersSeries = streamsSeries.map((p) => ({
+  label: p.label,
+  value: Math.round(p.value * 0.16),
+}));
 
 const STREAMS: StreamsMetric[] = [
   { id: 'streams', label: 'Streams', data: streamsSeries, delta: 0.081 },
@@ -86,12 +121,65 @@ const STREAMS: StreamsMetric[] = [
 ];
 
 const TRACKS: TopTrack[] = [
-  { id: 't1', title: 'Low Tide', subtitle: 'Low Tide · Single', artwork: COVERS.lowTide, streams: 118_402, listeners: 21_930, saves: 2_810, trend: 'up' },
-  { id: 't2', title: 'Glass Orchard', subtitle: 'Glass Orchard · EP', artwork: COVERS.orchard, streams: 74_118, listeners: 14_002, saves: 1_402, trend: 'flat' },
-  { id: 't3', title: 'Paper Satellites', subtitle: 'Paper Satellites · Album', artwork: COVERS.satellites, streams: 51_260, listeners: 9_844, saves: 980, trend: 'down' },
-  { id: 't4', title: 'Northbound (Live at Harrow Hall)', subtitle: 'Northbound · Live', artwork: COVERS.northbound, streams: 33_907, listeners: 7_120, saves: 612, trend: 'new' },
-  { id: 't5', title: 'Salt & Ember', subtitle: 'Paper Satellites · Album', artwork: COVERS.ember, streams: 21_444, listeners: 5_016, saves: 318, trend: 'up' },
-  { id: 't6', title: 'Velvet Static', subtitle: 'Glass Orchard · EP', streams: 12_035, listeners: 2_911, saves: 140, trend: 'down' },
+  {
+    id: 't1',
+    title: 'Low Tide',
+    subtitle: 'Low Tide · Single',
+    artwork: COVERS.lowTide,
+    streams: 118_402,
+    listeners: 21_930,
+    saves: 2_810,
+    trend: 'up',
+  },
+  {
+    id: 't2',
+    title: 'Glass Orchard',
+    subtitle: 'Glass Orchard · EP',
+    artwork: COVERS.orchard,
+    streams: 74_118,
+    listeners: 14_002,
+    saves: 1_402,
+    trend: 'flat',
+  },
+  {
+    id: 't3',
+    title: 'Paper Satellites',
+    subtitle: 'Paper Satellites · Album',
+    artwork: COVERS.satellites,
+    streams: 51_260,
+    listeners: 9_844,
+    saves: 980,
+    trend: 'down',
+  },
+  {
+    id: 't4',
+    title: 'Northbound (Live at Harrow Hall)',
+    subtitle: 'Northbound · Live',
+    artwork: COVERS.northbound,
+    streams: 33_907,
+    listeners: 7_120,
+    saves: 612,
+    trend: 'new',
+  },
+  {
+    id: 't5',
+    title: 'Salt & Ember',
+    subtitle: 'Paper Satellites · Album',
+    artwork: COVERS.ember,
+    streams: 21_444,
+    listeners: 5_016,
+    saves: 318,
+    trend: 'up',
+  },
+  {
+    id: 't6',
+    title: 'Velvet Static',
+    subtitle: 'Glass Orchard · EP',
+    streams: 12_035,
+    listeners: 2_911,
+    saves: 140,
+    trend: 'down',
+  },
 ];
 
 const BREAKDOWN = {
@@ -137,10 +225,45 @@ const MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'].map((label, i) => ({
 }));
 
 const RELEASES: CreatorRelease[] = [
-  { id: 'r1', title: 'Low Tide', artist: 'Juno Varga', type: 'single', releaseDate: '14 Mar 2026', status: 'live', trackCount: 1, artwork: COVERS.lowTide },
-  { id: 'r2', title: 'Glass Orchard', artist: 'Juno Varga', type: 'ep', releaseDate: '2 May 2026', status: 'scheduled', trackCount: 5, artwork: COVERS.orchard },
-  { id: 'r3', title: 'Paper Satellites', artist: 'Juno Varga', type: 'album', releaseDate: '20 Jun 2026', status: 'in-review', trackCount: 12, artwork: COVERS.satellites },
-  { id: 'r4', title: 'Untitled demo', artist: 'Juno Varga', type: 'single', releaseDate: 'No date yet', status: 'draft', trackCount: 1 },
+  {
+    id: 'r1',
+    title: 'Low Tide',
+    artist: 'Juno Varga',
+    type: 'single',
+    releaseDate: '14 Mar 2026',
+    status: 'live',
+    trackCount: 1,
+    artwork: COVERS.lowTide,
+  },
+  {
+    id: 'r2',
+    title: 'Glass Orchard',
+    artist: 'Juno Varga',
+    type: 'ep',
+    releaseDate: '2 May 2026',
+    status: 'scheduled',
+    trackCount: 5,
+    artwork: COVERS.orchard,
+  },
+  {
+    id: 'r3',
+    title: 'Paper Satellites',
+    artist: 'Juno Varga',
+    type: 'album',
+    releaseDate: '20 Jun 2026',
+    status: 'in-review',
+    trackCount: 12,
+    artwork: COVERS.satellites,
+  },
+  {
+    id: 'r4',
+    title: 'Untitled demo',
+    artist: 'Juno Varga',
+    type: 'single',
+    releaseDate: 'No date yet',
+    status: 'draft',
+    trackCount: 1,
+  },
   {
     id: 'r5',
     title: 'Northbound',
@@ -148,7 +271,8 @@ const RELEASES: CreatorRelease[] = [
     type: 'single',
     releaseDate: '9 Jul 2026',
     status: 'rejected',
-    statusReason: 'The artwork contains a web address. Remove text that is not the artist or release name and resubmit.',
+    statusReason:
+      'The artwork contains a web address. Remove text that is not the artist or release name and resubmit.',
     trackCount: 2,
     artwork: COVERS.northbound,
   },
@@ -176,7 +300,13 @@ const STEPS: ReleaseStep[] = [
   { id: 'uploaded', label: 'Uploaded', state: 'complete', date: '2 Mar' },
   { id: 'metadata', label: 'Metadata', state: 'complete', date: '3 Mar' },
   { id: 'artwork', label: 'Artwork', state: 'complete', date: '3 Mar' },
-  { id: 'review', label: 'Review', state: 'current', date: 'In progress', description: 'Usually takes 2–3 days.' },
+  {
+    id: 'review',
+    label: 'Review',
+    state: 'current',
+    date: 'In progress',
+    description: 'Usually takes 2–3 days.',
+  },
   { id: 'scheduled', label: 'Scheduled', state: 'upcoming' },
   { id: 'live', label: 'Live', state: 'upcoming', date: '14 Mar' },
 ];
@@ -184,20 +314,38 @@ const STEPS: ReleaseStep[] = [
 const STEPS_REJECTED: ReleaseStep[] = [
   { id: 'uploaded', label: 'Uploaded', state: 'complete', date: '1 Jul' },
   { id: 'metadata', label: 'Metadata', state: 'complete', date: '1 Jul' },
-  { id: 'artwork', label: 'Artwork', state: 'error', date: '4 Jul', description: 'The artwork contains a web address.' },
+  {
+    id: 'artwork',
+    label: 'Artwork',
+    state: 'error',
+    date: '4 Jul',
+    description: 'The artwork contains a web address.',
+  },
   { id: 'review', label: 'Review', state: 'upcoming' },
   { id: 'scheduled', label: 'Scheduled', state: 'upcoming' },
   { id: 'live', label: 'Live', state: 'upcoming' },
 ];
 
-const GENRES = ['Alternative', 'Ambient', 'Electronic', 'Folk', 'Hip-hop', 'Indie pop', 'Jazz', 'R&B', 'Rock'].map((l) => ({
+const GENRES = [
+  'Alternative',
+  'Ambient',
+  'Electronic',
+  'Folk',
+  'Hip-hop',
+  'Indie pop',
+  'Jazz',
+  'R&B',
+  'Rock',
+].map((l) => ({
   value: l.toLowerCase(),
   label: l,
 }));
-const LANGUAGES = ['English', 'Spanish', 'French', 'Portuguese', 'Catalan', 'Instrumental'].map((l) => ({
-  value: l.toLowerCase(),
-  label: l,
-}));
+const LANGUAGES = ['English', 'Spanish', 'French', 'Portuguese', 'Catalan', 'Instrumental'].map(
+  (l) => ({
+    value: l.toLowerCase(),
+    label: l,
+  }),
+);
 
 // ---------------------------------------------------------------------------
 //  Frames
@@ -207,7 +355,18 @@ function Page({ children, maxWidth = 1280 }: { children: React.ReactNode; maxWid
   const theme = useTheme();
   return (
     <ScrollView style={{ width: '100%', backgroundColor: theme.colors.background }}>
-      <View style={{ width: '100%', maxWidth, alignSelf: 'center', paddingTop: 24, paddingBottom: 48, paddingLeft: 16, paddingRight: 16, gap: 24 }}>
+      <View
+        style={{
+          width: '100%',
+          maxWidth,
+          alignSelf: 'center',
+          paddingTop: 24,
+          paddingBottom: 48,
+          paddingLeft: 16,
+          paddingRight: 16,
+          gap: 24,
+        }}
+      >
         {children}
       </View>
     </ScrollView>
@@ -227,13 +386,25 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 /** Two columns from `from` px of window, stacked below. */
-function Columns({ children, from = 1024, ratio = [2, 1] }: { children: [React.ReactNode, React.ReactNode]; from?: number; ratio?: [number, number] }) {
+function Columns({
+  children,
+  from = 1024,
+  ratio = [2, 1],
+}: {
+  children: [React.ReactNode, React.ReactNode];
+  from?: number;
+  ratio?: [number, number];
+}) {
   const { width } = useWindowDimensions();
   if (width < from) return <View style={{ gap: 16 }}>{children}</View>;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
-      <View style={{ flexGrow: ratio[0], flexShrink: 1, flexBasis: 0, minWidth: 0 }}>{children[0]}</View>
-      <View style={{ flexGrow: ratio[1], flexShrink: 1, flexBasis: 0, minWidth: 0 }}>{children[1]}</View>
+      <View style={{ flexGrow: ratio[0], flexShrink: 1, flexBasis: 0, minWidth: 0 }}>
+        {children[0]}
+      </View>
+      <View style={{ flexGrow: ratio[1], flexShrink: 1, flexBasis: 0, minWidth: 0 }}>
+        {children[1]}
+      </View>
     </View>
   );
 }
@@ -259,7 +430,11 @@ function Dashboard() {
         testID="overview"
       />
       <Columns>
-        <StreamsChart metrics={STREAMS} events={[{ index: 14, label: 'Low Tide · Single' }]} testID="streams" />
+        <StreamsChart
+          metrics={STREAMS}
+          events={[{ index: 14, label: 'Low Tide · Single' }]}
+          testID="streams"
+        />
         <PayoutSummaryCard
           estimated="$1,284.50"
           delta={0.147}
@@ -339,8 +514,16 @@ function Catalog() {
           {rows.map((row, r) => (
             <View key={r} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
               {row.map((release) => (
-                <View key={release.id} style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 }}>
-                  <ReleaseCard release={release} onPress={() => {}} actions={ACTIONS} testID={`release-${release.id}`} />
+                <View
+                  key={release.id}
+                  style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 }}
+                >
+                  <ReleaseCard
+                    release={release}
+                    onPress={() => {}}
+                    actions={ACTIONS}
+                    testID={`release-${release.id}`}
+                  />
                 </View>
               ))}
               {Array.from({ length: columns - row.length }, (_, i) => (
@@ -353,7 +536,13 @@ function Catalog() {
       <Section title="As a list">
         <View style={{ gap: 8, maxWidth: 760 }}>
           {RELEASES.map((release) => (
-            <ReleaseCard key={release.id} release={release} layout="row" onPress={() => {}} actions={ACTIONS} />
+            <ReleaseCard
+              key={release.id}
+              release={release}
+              layout="row"
+              onPress={() => {}}
+              actions={ACTIONS}
+            />
           ))}
         </View>
       </Section>
@@ -400,12 +589,27 @@ function NewRelease() {
   const theme = useTheme();
   const progress = useSimulatedUpload(38);
   const [metadata, setMetadata] = useState<TrackMetadata>(EMPTY_METADATA);
-  const [rows, setRows] = useState<TrackUploadStatus[]>(['queued', 'uploading', 'processing', 'ready', 'failed']);
+  const [rows, setRows] = useState<TrackUploadStatus[]>([
+    'queued',
+    'uploading',
+    'processing',
+    'ready',
+    'failed',
+  ]);
   const [artwork, setArtwork] = useState<string | null>(COVERS.orchard);
   return (
     <Page maxWidth={1080}>
       <Section title="New release">
-        <View style={{ backgroundColor: theme.colors.backgroundSecondary, borderRadius: 16, paddingTop: 20, paddingBottom: 16, paddingLeft: 12, paddingRight: 12 }}>
+        <View
+          style={{
+            backgroundColor: theme.colors.backgroundSecondary,
+            borderRadius: 16,
+            paddingTop: 20,
+            paddingBottom: 16,
+            paddingLeft: 12,
+            paddingRight: 12,
+          }}
+        >
           <ReleaseTimeline steps={STEPS} orientation="horizontal" testID="timeline-h" />
         </View>
       </Section>
@@ -433,7 +637,15 @@ function NewRelease() {
                       failed: '04 Northbound (Live).aiff',
                     }[status]
                   }
-                  size={{ queued: 51_200_000, uploading: 88_400_000, processing: 41_900_000, ready: 46_300_000, failed: 120_000_000 }[status]}
+                  size={
+                    {
+                      queued: 51_200_000,
+                      uploading: 88_400_000,
+                      processing: 41_900_000,
+                      ready: 46_300_000,
+                      failed: 120_000_000,
+                    }[status]
+                  }
                   status={status}
                   progress={progress}
                   remaining={`About ${Math.max(1, Math.round((100 - progress) / 4))} s left`}
@@ -446,12 +658,23 @@ function NewRelease() {
             </View>
           </Section>
           <Section title="Track details">
-            <TrackMetadataForm value={metadata} onChange={setMetadata} genres={GENRES} languages={LANGUAGES} testID="metadata" />
+            <TrackMetadataForm
+              value={metadata}
+              onChange={setMetadata}
+              genres={GENRES}
+              languages={LANGUAGES}
+              testID="metadata"
+            />
           </Section>
         </View>
         <View style={{ gap: 24 }}>
           <Section title="Cover">
-            <ArtworkUploader artwork={artwork} onRemove={() => setArtwork(null)} onFileSelected={() => {}} testID="artwork" />
+            <ArtworkUploader
+              artwork={artwork}
+              onRemove={() => setArtwork(null)}
+              onFileSelected={() => {}}
+              testID="artwork"
+            />
           </Section>
           <Section title="Progress">
             <ReleaseTimeline steps={STEPS} testID="timeline-v" />

@@ -61,7 +61,15 @@ function hooked(): HTMLElement[] {
 
 describe('Sidebar focus ring (web)', () => {
   it('retains the accessible name, tooltip and current-page state without a caption', () => {
-    render(<Sidebar variant="rail" railLabels="hidden" railSelection="icon" selected="home" items={ITEMS} />);
+    render(
+      <Sidebar
+        variant="rail"
+        railLabels="hidden"
+        railSelection="icon"
+        selected="home"
+        items={ITEMS}
+      />,
+    );
     const item = container.querySelector('[data-testid="sidebar-item-home"]');
     expect(item?.getAttribute('aria-label')).toBe('Home');
     expect(item?.getAttribute('title')).toBe('Home');
@@ -82,8 +90,17 @@ describe('Sidebar focus ring (web)', () => {
 
   it('gives collapsed search and mode controls working browser tooltips', () => {
     render(<Sidebar items={ITEMS} collapsed showSearch />);
-    expect(container.querySelector('[data-testid="sidebar-search"]')?.getAttribute('title')).toBe('Quick Search');
-    render(<SidebarModeSwitcher collapsed modes={[{ key: 'home', label: 'Home', icon: RiHomeLine }]} value="home" onValueChange={() => {}} />);
+    expect(container.querySelector('[data-testid="sidebar-search"]')?.getAttribute('title')).toBe(
+      'Quick Search',
+    );
+    render(
+      <SidebarModeSwitcher
+        collapsed
+        modes={[{ key: 'home', label: 'Home', icon: RiHomeLine }]}
+        value="home"
+        onValueChange={() => {}}
+      />,
+    );
     expect(container.querySelector('[role="radio"]')?.getAttribute('title')).toBe('Home');
   });
 
@@ -104,12 +121,17 @@ describe('Sidebar focus ring (web)', () => {
   it.each([
     ['panel', {}],
     ['mobile', { mobile: true, onClose: (): void => undefined }],
-    ['flat mobile with search', { mobile: true, surface: 'plain' as const, showSearch: true, onClose: (): void => undefined }],
+    [
+      'flat mobile with search',
+      { mobile: true, surface: 'plain' as const, showSearch: true, onClose: (): void => undefined },
+    ],
   ])('leaves no hooked control without a ring colour (%s)', (_name, props) => {
     render(<Sidebar items={ITEMS} {...props} />);
     const controls = hooked();
     expect(controls.length).toBeGreaterThan(1);
     const bare = controls.filter((element) => ringOf(element) === '');
-    expect(bare.map((element) => element.getAttribute('aria-label') ?? element.textContent)).toEqual([]);
+    expect(
+      bare.map((element) => element.getAttribute('aria-label') ?? element.textContent),
+    ).toEqual([]);
   });
 });

@@ -210,9 +210,7 @@ describe('MailMessage', () => {
 
     click(byTestId('m-toggle'));
     expect(maybe('m-preview')).toBeNull();
-    expect(byTestId('m-to-names').textContent).toBe(
-      'Mireia Solans, Pere Aguiló, Nuria Palau',
-    );
+    expect(byTestId('m-to-names').textContent).toBe('Mireia Solans, Pere Aguiló, Nuria Palau');
   });
 
   it('draws the time collapsed and the full date open', () => {
@@ -229,7 +227,7 @@ describe('MailMessage', () => {
     expect(maybe('m-forward')).toBeNull();
   });
 
-  it('draws its attachments on the library\'s own tile, named with the size, and marks the collapsed row', () => {
+  it("draws its attachments on the library's own tile, named with the size, and marks the collapsed row", () => {
     mount(
       <MailMessage
         {...message('m1')}
@@ -321,9 +319,7 @@ describe('MailThread', () => {
     mount(<MailThread messages={SIX} testID="t" />);
     expect(maybe('t-message-m3')).toBeNull();
     const earlier = byTestId('t-earlier');
-    expect(earlier.getAttribute('aria-label')).toBe(
-      DEFAULT_MAIL_THREAD_STRINGS.earlierMessages(3),
-    );
+    expect(earlier.getAttribute('aria-label')).toBe(DEFAULT_MAIL_THREAD_STRINGS.earlierMessages(3));
 
     click(earlier);
     expect(maybe('t-earlier')).toBeNull();
@@ -370,7 +366,12 @@ describe('message cards retain their surface and separation', () => {
     const toggle = byTestId('card-toggle');
     const paint = () => {
       const computed = getComputedStyle(shell);
-      return [computed.backgroundColor, computed.borderTopLeftRadius, computed.borderTopWidth, computed.boxShadow];
+      return [
+        computed.backgroundColor,
+        computed.borderTopLeftRadius,
+        computed.borderTopWidth,
+        computed.boxShadow,
+      ];
     };
     const collapsedPaint = paint();
     expect(collapsedPaint[1]).toBe('28px');
@@ -400,15 +401,22 @@ describe('message cards retain their surface and separation', () => {
   });
 });
 
-it.each([undefined, 0, 12.5, 40])('shares panel shape across opened/closed message and reply card at radius %s', panelRadius => {
-  mount(<BloomScope panelRadius={panelRadius}>
-    <MailMessage {...message('m1')} testID="closed" />
-    <MailMessage {...message('m2')} defaultExpanded testID="opened" />
-    <Card radius="panel" border="none" clipContent testID="reply">Reply</Card>
-  </BloomScope>);
-  for (const id of ['closed', 'opened', 'reply', 'reply-clip']) {
-    const style = getComputedStyle(byTestId(id));
-    expect(style.borderTopLeftRadius).toBe(`${panelRadius ?? 28}px`);
-    // jsdom drops corner-shape; PanelRadius pins the shape passed to native paint.
-  }
-});
+it.each([undefined, 0, 12.5, 40])(
+  'shares panel shape across opened/closed message and reply card at radius %s',
+  (panelRadius) => {
+    mount(
+      <BloomScope panelRadius={panelRadius}>
+        <MailMessage {...message('m1')} testID="closed" />
+        <MailMessage {...message('m2')} defaultExpanded testID="opened" />
+        <Card radius="panel" border="none" clipContent testID="reply">
+          Reply
+        </Card>
+      </BloomScope>,
+    );
+    for (const id of ['closed', 'opened', 'reply', 'reply-clip']) {
+      const style = getComputedStyle(byTestId(id));
+      expect(style.borderTopLeftRadius).toBe(`${panelRadius ?? 28}px`);
+      // jsdom drops corner-shape; PanelRadius pins the shape passed to native paint.
+    }
+  },
+);

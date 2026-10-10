@@ -59,7 +59,12 @@ const EMPTY: ShipmentLoad = { kind: null, size: null, weight: '', quantity: 1 };
 const SOFA: ShipmentLoad = { kind: 'furniture', size: 'large', weight: '60', quantity: 1 };
 
 const EXTRAS: ShipmentExtra[] = [
-  { key: 'loading', title: 'Help loading', description: 'Two people at both ends.', price: '+€9.00' },
+  {
+    key: 'loading',
+    title: 'Help loading',
+    description: 'Two people at both ends.',
+    price: '+€9.00',
+  },
   { key: 'insurance', title: 'Insurance', price: '+€4.50' },
   { key: 'assembly', title: 'Disassembly', disabled: true },
 ];
@@ -200,10 +205,7 @@ describe('the weight field', () => {
     const seen: ShipmentLoad[] = [];
     mount(<LoadHarness onChange={(load) => seen.push(load)} />);
     const input = byTestId('load-weight') as HTMLInputElement;
-    const setter = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
-      'value',
-    )?.set;
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
     setter?.call(input, '18,5 kg');
     input.dispatchEvent(new Event('input', { bubbles: true }));
     expect(seen[seen.length - 1]?.weight).toBe('18.5');
@@ -216,11 +218,7 @@ describe('the weight field', () => {
   });
 
   it('draws each message under its OWN control', () => {
-    mount(
-      <LoadHarness
-        errors={{ kind: 'Tell us what we are moving.', size: 'Pick a size.' }}
-      />,
-    );
+    mount(<LoadHarness errors={{ kind: 'Tell us what we are moving.', size: 'Pick a size.' }} />);
     expect(root$().textContent).toContain('Tell us what we are moving.');
     expect(root$().textContent).toContain('Pick a size.');
   });
@@ -242,7 +240,12 @@ describe('the notes field is opt-in', () => {
 describe('an extra is a SWITCH, and a switch draws no text', () => {
   it('names every switch with its title, its description and its price', () => {
     mount(
-      <ShipmentOptionsList extras={EXTRAS} selectedExtras={['loading']} onExtrasChange={noop} testID="o" />,
+      <ShipmentOptionsList
+        extras={EXTRAS}
+        selectedExtras={['loading']}
+        onExtrasChange={noop}
+        testID="o"
+      />,
     );
     expect(byTestId('o-extra-loading').getAttribute('aria-label')).toBe(
       'Help loading, Two people at both ends., +€9.00',
@@ -252,7 +255,12 @@ describe('an extra is a SWITCH, and a switch draws no text', () => {
 
   it('spells the state the way web reads it', () => {
     mount(
-      <ShipmentOptionsList extras={EXTRAS} selectedExtras={['loading']} onExtrasChange={noop} testID="o" />,
+      <ShipmentOptionsList
+        extras={EXTRAS}
+        selectedExtras={['loading']}
+        onExtrasChange={noop}
+        testID="o"
+      />,
     );
     expect(byTestId('o-extra-loading').getAttribute('role')).toBe('switch');
     expect(byTestId('o-extra-loading').getAttribute('aria-checked')).toBe('true');
@@ -309,7 +317,9 @@ describe('access and the collection window are single choices', () => {
   });
 
   it('draws only the groups it was given props for', () => {
-    mount(<ShipmentOptionsList extras={EXTRAS} selectedExtras={[]} onExtrasChange={noop} testID="o" />);
+    mount(
+      <ShipmentOptionsList extras={EXTRAS} selectedExtras={[]} onExtrasChange={noop} testID="o" />,
+    );
     expect(queryTestId('o-access')).toBeNull();
     expect(queryTestId('o-window')).toBeNull();
     expect(queryTestId('o-extras')).not.toBeNull();

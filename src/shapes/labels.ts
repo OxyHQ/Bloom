@@ -46,9 +46,7 @@ export const ORDER: readonly NamedShapeName[] = [
  * {@link ORDER}. So a consumer re-derives neither the order nor
  * the words.
  */
-export function labels(
-  locale?: string,
-): { name: NamedShapeName; label: string }[] {
+export function labels(locale?: string): { name: NamedShapeName; label: string }[] {
   const { shapes } = pickMessages(SHAPE_MESSAGES, locale);
   return ORDER.map((name) => ({ name, label: shapes[name] }));
 }

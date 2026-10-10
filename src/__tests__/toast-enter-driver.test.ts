@@ -126,22 +126,19 @@ describe('resolveToastEnterAnimation', () => {
     },
   );
 
-  it.each(DRIVERS)(
-    "treats 'default' as no override at all (%s)",
-    (driver) => {
-      expect(
-        resolveToastEnterAnimation({
-          position: 'bottom-center',
-          enterOverride: 'default',
-          driver,
-        }),
-      ).toEqual(
-        resolveToastEnterAnimation({
-          position: 'bottom-center',
-          enterOverride: undefined,
-          driver,
-        }),
-      );
-    },
-  );
+  it.each(DRIVERS)("treats 'default' as no override at all (%s)", (driver) => {
+    expect(
+      resolveToastEnterAnimation({
+        position: 'bottom-center',
+        enterOverride: 'default',
+        driver,
+      }),
+    ).toEqual(
+      resolveToastEnterAnimation({
+        position: 'bottom-center',
+        enterOverride: undefined,
+        driver,
+      }),
+    );
+  });
 });

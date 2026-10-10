@@ -7,72 +7,134 @@ import { compactDuration as calendar_compactDuration } from '../../calendar/mess
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
-import { words as navigationBanner_words, midSentence as navigationBanner_midSentence } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  words as navigationBanner_words,
+  midSentence as navigationBanner_midSentence,
+} from '../../navigation-banner/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
-const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'kiri atas', 'top-right': 'kanan atas', 'bottom-left': 'kiri bawah', 'bottom-right': 'kanan bawah' };
+const CALL_UI_MESSAGES__CORNERS = {
+  'top-left': 'kiri atas',
+  'top-right': 'kanan atas',
+  'bottom-left': 'kiri bawah',
+  'bottom-right': 'kanan bawah',
+};
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "Bereaksi",
-  working: "Bekerja",
-  avatarStyle: "Gaya avatar",
-  proceduralAvatar: "Avatar saat ini",
-  betaPreset: "Karakter bawaan (beta)",
-  betaEyes: "Gaya mata",
-  eyewear: "Kacamata",
-  accessory: "Aksesori",
+  reaction: 'Bereaksi',
+  working: 'Bekerja',
+  avatarStyle: 'Gaya avatar',
+  proceduralAvatar: 'Avatar saat ini',
+  betaPreset: 'Karakter bawaan (beta)',
+  betaEyes: 'Gaya mata',
+  eyewear: 'Kacamata',
+  accessory: 'Aksesori',
   characterOption: (_category, _id, title) => String(title),
-  editor: "Editor agen",
-  newBot: "Bot baru",
-  closeEditor: "Tutup editor agen",
-  details: "Tampilan dan detail agen",
-  color: "Warna avatar",
-  customColor: "Warna avatar khusus",
-  name: "Nama",
-  label: "Label",
-  description: "Deskripsi",
-  nameInput: "Nama agen",
-  labelInput: "Label agen",
-  descriptionInput: "Deskripsi agen",
-  labelPlaceholder: "Manajer, pemasaran, pelukis",
-  descriptionPlaceholder: "Detail agen",
-  language: "Bahasa",
-  languageInput: "Bahasa agen",
-  notifications: "Notifikasi",
-  notificationsDescription: "Tampilkan pemberitahuan saat balasan siap.",
-  notifyFinished: "Beri tahu saat agen ini selesai",
-  voice: "Suara",
-  voiceInput: "Suara agen",
-  previewVoice: "Pratinjau suara",
-  savedVoice: "Suara tersimpan",
-  systemVoice: "Suara sistem",
-  off: "Nonaktif",
-  playbackSpeed: "Kecepatan pemutaran",
-  emotion: "Emosi agen",
-  shape: "Bentuk avatar",
-  hexColor: "Warna heksadesimal",
-  hue: "Rona",
-  saturationBrightness: "Saturasi dan kecerahan",
-  increaseBrightness: "Tingkatkan kecerahan",
-  decreaseBrightness: "Kurangi kecerahan",
-  increaseHue: "Tingkatkan rona",
-  decreaseHue: "Kurangi rona",
-  nextShape: "Bentuk berikutnya",
-  previousShape: "Bentuk sebelumnya",
-  newAgent: "Agen baru",
-  emotions: { "neutral": "Netral", "happy": "Bahagia", "angry": "Marah", "thinking": "Berpikir", "shook": "Terkejut", "curious": "Penasaran", "wink": "Mengedip", "sleepy": "Mengantuk", "sad": "Sedih", "worried": "Khawatir", "skeptical": "Skeptis", "focused": "Fokus", "excited": "Bersemangat", "calm": "Tenang", "shy": "Malu", "confused": "Bingung" },
-  shapes: { "slender": "Ramping", "pocket": "Saku", "petal": "Kelopak", "flower": "Bunga", "star": "Bintang", "heart": "Hati", "cloud": "Awan", "diamond": "Berlian", "shield": "Perisai" },
-  colors: { "Blue": "Biru", "Teal": "Hijau kebiruan", "Violet": "Ungu", "Pink": "Merah muda", "Red": "Merah", "Orange": "Oranye", "Cyan": "Sian", "Lime": "Hijau limau", "Green": "Hijau" },
-  languages: { "auto": "Deteksi otomatis", "en": "Inggris", "tr": "Turki", "es": "Spanyol", "fr": "Prancis", "de": "Jerman", "ja": "Jepang", "pt": "Portugis" },
-  avatarColorLabel: (name) => "Avatar {name}".replace("{name}", name),
-  shapeLabel: (name) => "Bentuk {name}".replace("{name}", name),
-  silhouetteLabel: (name) => "Siluet {name}".replace("{name}", name),
-  livePreview: (name) => "{name}, pratinjau avatar langsung".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "saturasi {s}%, kecerahan {v}%".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "Kecepatan pemutaran {speed} kali".replace("{speed}", String(speed)),
+  editor: 'Editor agen',
+  newBot: 'Bot baru',
+  closeEditor: 'Tutup editor agen',
+  details: 'Tampilan dan detail agen',
+  color: 'Warna avatar',
+  customColor: 'Warna avatar khusus',
+  name: 'Nama',
+  label: 'Label',
+  description: 'Deskripsi',
+  nameInput: 'Nama agen',
+  labelInput: 'Label agen',
+  descriptionInput: 'Deskripsi agen',
+  labelPlaceholder: 'Manajer, pemasaran, pelukis',
+  descriptionPlaceholder: 'Detail agen',
+  language: 'Bahasa',
+  languageInput: 'Bahasa agen',
+  notifications: 'Notifikasi',
+  notificationsDescription: 'Tampilkan pemberitahuan saat balasan siap.',
+  notifyFinished: 'Beri tahu saat agen ini selesai',
+  voice: 'Suara',
+  voiceInput: 'Suara agen',
+  previewVoice: 'Pratinjau suara',
+  savedVoice: 'Suara tersimpan',
+  systemVoice: 'Suara sistem',
+  off: 'Nonaktif',
+  playbackSpeed: 'Kecepatan pemutaran',
+  emotion: 'Emosi agen',
+  shape: 'Bentuk avatar',
+  hexColor: 'Warna heksadesimal',
+  hue: 'Rona',
+  saturationBrightness: 'Saturasi dan kecerahan',
+  increaseBrightness: 'Tingkatkan kecerahan',
+  decreaseBrightness: 'Kurangi kecerahan',
+  increaseHue: 'Tingkatkan rona',
+  decreaseHue: 'Kurangi rona',
+  nextShape: 'Bentuk berikutnya',
+  previousShape: 'Bentuk sebelumnya',
+  newAgent: 'Agen baru',
+  emotions: {
+    neutral: 'Netral',
+    happy: 'Bahagia',
+    angry: 'Marah',
+    thinking: 'Berpikir',
+    shook: 'Terkejut',
+    curious: 'Penasaran',
+    wink: 'Mengedip',
+    sleepy: 'Mengantuk',
+    sad: 'Sedih',
+    worried: 'Khawatir',
+    skeptical: 'Skeptis',
+    focused: 'Fokus',
+    excited: 'Bersemangat',
+    calm: 'Tenang',
+    shy: 'Malu',
+    confused: 'Bingung',
+  },
+  shapes: {
+    slender: 'Ramping',
+    pocket: 'Saku',
+    petal: 'Kelopak',
+    flower: 'Bunga',
+    star: 'Bintang',
+    heart: 'Hati',
+    cloud: 'Awan',
+    diamond: 'Berlian',
+    shield: 'Perisai',
+  },
+  colors: {
+    Blue: 'Biru',
+    Teal: 'Hijau kebiruan',
+    Violet: 'Ungu',
+    Pink: 'Merah muda',
+    Red: 'Merah',
+    Orange: 'Oranye',
+    Cyan: 'Sian',
+    Lime: 'Hijau limau',
+    Green: 'Hijau',
+  },
+  languages: {
+    auto: 'Deteksi otomatis',
+    en: 'Inggris',
+    tr: 'Turki',
+    es: 'Spanyol',
+    fr: 'Prancis',
+    de: 'Jerman',
+    ja: 'Jepang',
+    pt: 'Portugis',
+  },
+  avatarColorLabel: (name) => 'Avatar {name}'.replace('{name}', name),
+  shapeLabel: (name) => 'Bentuk {name}'.replace('{name}', name),
+  silhouetteLabel: (name) => 'Siluet {name}'.replace('{name}', name),
+  livePreview: (name) => '{name}, pratinjau avatar langsung'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    'saturasi {s}%, kecerahan {v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) =>
+    'Kecepatan pemutaran {speed} kali'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -126,7 +188,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: 'Draf:', pinned: 'Disematkan', muted: 'Dibisukan', verified: 'Terverifikasi', channel: 'Saluran', bot: 'Bot', group: 'Grup' },
+  item: {
+    draft: 'Draf:',
+    pinned: 'Disematkan',
+    muted: 'Dibisukan',
+    verified: 'Terverifikasi',
+    channel: 'Saluran',
+    bot: 'Bot',
+    group: 'Grup',
+  },
   search: { chat: 'Obrolan', message: 'Pesan', contact: 'Kontak', empty: 'Tidak ada hasil' },
   list: 'Obrolan',
   emptyTitle: 'Belum ada percakapan',
@@ -184,10 +254,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `Menu ${team}`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'B',
+  kilobyte: 'KB',
+  megabyte: 'MB',
+  gigabyte: 'GB',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: 'Nomor kartu', expiry: 'Tanggal kedaluwarsa', securityCode: 'Kode keamanan', name: 'Nama di kartu', postcode: 'Kode pos', country: 'Negara' },
+  labels: {
+    number: 'Nomor kartu',
+    expiry: 'Tanggal kedaluwarsa',
+    securityCode: 'Kode keamanan',
+    name: 'Nama di kartu',
+    postcode: 'Kode pos',
+    country: 'Negara',
+  },
   selectCountry: 'Pilih negara',
 };
 
@@ -220,8 +302,20 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestions: { mention: 'Orang', command: 'Perintah', emoji: 'Emoji' },
   suggestionVerified: 'Terverifikasi',
   searchingSuggestions: 'Mencari…',
-  noSuggestions: { mention: 'Orang tidak ditemukan', command: 'Perintah tidak ditemukan', emoji: 'Emoji tidak ditemukan' },
-  attachmentItems: { gallery: 'Galeri', camera: 'Kamera', file: 'File', location: 'Lokasi', contact: 'Kontak', poll: 'Polling', music: 'Musik' },
+  noSuggestions: {
+    mention: 'Orang tidak ditemukan',
+    command: 'Perintah tidak ditemukan',
+    emoji: 'Emoji tidak ditemukan',
+  },
+  attachmentItems: {
+    gallery: 'Galeri',
+    camera: 'Kamera',
+    file: 'File',
+    location: 'Lokasi',
+    contact: 'Kontak',
+    poll: 'Polling',
+    music: 'Musik',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -272,7 +366,10 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   showLyrics: 'Tampilkan lirik',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'Belum ada apa pun di sini', addresses: 'Alamat' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: 'Belum ada apa pun di sini',
+  addresses: 'Alamat',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: 'Singel', ep: 'EP', album: 'Album' },
@@ -295,7 +392,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   periods: { '7d': '7 hari', '28d': '28 hari', '12m': '12 bulan', all: 'Sepanjang waktu' },
   artworkNotSquare: (w, h) => `Sampul harus persegi — gambar ini berukuran ${w}×${h} px.`,
-  artworkTooSmall: (w, h, min) => `Sampul terlalu kecil (${w}×${h} px). Unggah minimal ${min}×${min} px.`,
+  artworkTooSmall: (w, h, min) =>
+    `Sampul terlalu kecil (${w}×${h} px). Unggah minimal ${min}×${min} px.`,
   audience: { title: 'Audiens', period: 'Periode' },
   breakdown: {
     locations: 'Lokasi teratas',
@@ -309,7 +407,9 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   streams: {
     metrics: 'Metrik grafik',
     summary: (metric, releases) =>
-      releases ? `${metric} dari waktu ke waktu; rilisan: ${releases}` : `${metric} dari waktu ke waktu`,
+      releases
+        ? `${metric} dari waktu ke waktu; rilisan: ${releases}`
+        : `${metric} dari waktu ke waktu`,
   },
   topTracks: {
     title: 'Lagu teratas',
@@ -326,7 +426,12 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   tracks: (n) => plural('id', n, { other: '{n} lagu' }),
   timeline: {
-    states: { complete: 'selesai', current: 'sedang berjalan', upcoming: 'belum dimulai', error: 'perlu perhatian' },
+    states: {
+      complete: 'selesai',
+      current: 'sedang berjalan',
+      upcoming: 'belum dimulai',
+      error: 'perlu perhatian',
+    },
     label: 'Progres rilisan',
   },
   upload: {
@@ -350,7 +455,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     role: 'Peran',
     name: 'Nama',
     add: 'Tambah kredit',
-    remove: (index, name) => (name ? `Keluarkan kredit ${index + 1}, ${name}` : `Keluarkan kredit ${index + 1}`),
+    remove: (index, name) =>
+      name ? `Keluarkan kredit ${index + 1}, ${name}` : `Keluarkan kredit ${index + 1}`,
     empty: 'Cantumkan penulis lagu, produser, dan penampil di lagu ini.',
     field: (field, n) => `${field}, kredit ${n}`,
   },
@@ -391,14 +497,20 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     moods: 'Suasana',
     genres: 'Genre',
     pitch: 'Pengajuan Anda',
-    pitchPlaceholder: 'Apa yang membuat rilisan ini menonjol? Untuk siapa, dan apa kisah di baliknya?',
+    pitchPlaceholder:
+      'Apa yang membuat rilisan ini menonjol? Untuk siapa, dan apa kisah di baliknya?',
     submit: 'Kirim pengajuan',
     tagLimit: (max) => `Pilih hingga ${max}`,
-    statuses: { submitted: 'Pengajuan terkirim', accepted: 'Dipilih untuk ditinjau', declined: 'Belum terpilih kali ini' },
+    statuses: {
+      submitted: 'Pengajuan terkirim',
+      accepted: 'Dipilih untuk ditinjau',
+      declined: 'Belum terpilih kali ini',
+    },
     statusDescriptions: {
       submitted: 'Editor membaca setiap pengajuan. Anda akan mendapat kabar sebelum tanggal rilis.',
       accepted: 'Rilisan Anda sedang dipertimbangkan untuk playlist editorial.',
-      declined: 'Rilisan ini tidak terpilih. Anda bisa mengajukan rilisan berikutnya begitu dijadwalkan.',
+      declined:
+        'Rilisan ini tidak terpilih. Anda bisa mengajukan rilisan berikutnya begitu dijadwalkan.',
     },
     edit: 'Edit pengajuan',
   },
@@ -480,7 +592,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: 'Permohonan Anda',
   applicationProgress: 'Kemajuan permohonan',
   progressReady: (done, total) => `${done} dari ${total} siap`,
-  applicationStatus: { missing: 'Belum ada', uploaded: 'Sedang ditinjau', verified: 'Terverifikasi', rejected: 'Ditolak' },
+  applicationStatus: {
+    missing: 'Belum ada',
+    uploaded: 'Sedang ditinjau',
+    verified: 'Terverifikasi',
+    rejected: 'Ditolak',
+  },
   applicationAction: { upload: 'Unggah', view: 'Lihat', replace: 'Ganti' },
   itemAction: (action, title) => `${action} ${title}`,
   mortgage: {
@@ -605,7 +722,10 @@ const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
     envelope: { label: 'Amplop', description: 'Dokumen, kunci, apa pun yang pipih.' },
     parcel: { label: 'Paket', description: 'Kotak atau tas yang bisa dibawa satu orang.' },
     furniture: { label: 'Furnitur', description: 'Sofa, meja, kasur — dua orang di tiap ujung.' },
-    pallet: { label: 'Palet', description: 'Dibungkus dan ditumpuk, dipindahkan dengan tail lift.' },
+    pallet: {
+      label: 'Palet',
+      description: 'Dibungkus dan ditumpuk, dipindahkan dengan tail lift.',
+    },
     food: { label: 'Makanan', description: 'Antaran restoran, dijaga suhunya.' },
   },
   sizes: {
@@ -630,7 +750,8 @@ const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
     routeDescription: 'Penjemputan dulu, pengantaran terakhir.',
     load: 'Muatan',
     photos: 'Foto',
-    photosDescription: 'Foto muatan adalah hal terpenting agar penawaran yang kamu terima lebih tepat.',
+    photosDescription:
+      'Foto muatan adalah hal terpenting agar penawaran yang kamu terima lebih tepat.',
     options: 'Opsi',
     optionsDescription: 'Masing-masing mengubah harga.',
     price: 'Harga',
@@ -656,11 +777,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: 'Tidak tersedia untuk muatan ini',
   vehicle: 'Kendaraan',
   vehicles: {
-    bike: { label: 'Sepeda kargo', capacity: 'Hingga 25 kg · 60 × 40 × 40 cm', fits: ['Dokumen', 'Pesanan makanan', 'Kotak kecil'] },
-    car: { label: 'Mobil', capacity: 'Hingga 150 kg · 100 × 80 × 60 cm', fits: ['Dua koper', 'Empat kardus', 'Sepeda'] },
-    van: { label: 'Van', capacity: 'Hingga 800 kg · 240 × 150 × 140 cm', fits: ['Sofa', 'Pindahan studio', 'Setengah palet'] },
-    boxTruck: { label: 'Truk boks', capacity: 'Hingga 3.500 kg · 420 × 200 × 210 cm', fits: ['Dua palet', 'Pindahan rumah dua kamar', 'Tail lift'] },
-    refrigerated: { label: 'Van berpendingin', capacity: 'Hingga 700 kg · suhu 2–8 °C', fits: ['Produk segar', 'Katering dingin', 'Bunga'] },
+    bike: {
+      label: 'Sepeda kargo',
+      capacity: 'Hingga 25 kg · 60 × 40 × 40 cm',
+      fits: ['Dokumen', 'Pesanan makanan', 'Kotak kecil'],
+    },
+    car: {
+      label: 'Mobil',
+      capacity: 'Hingga 150 kg · 100 × 80 × 60 cm',
+      fits: ['Dua koper', 'Empat kardus', 'Sepeda'],
+    },
+    van: {
+      label: 'Van',
+      capacity: 'Hingga 800 kg · 240 × 150 × 140 cm',
+      fits: ['Sofa', 'Pindahan studio', 'Setengah palet'],
+    },
+    boxTruck: {
+      label: 'Truk boks',
+      capacity: 'Hingga 3.500 kg · 420 × 200 × 210 cm',
+      fits: ['Dua palet', 'Pindahan rumah dua kamar', 'Tail lift'],
+    },
+    refrigerated: {
+      label: 'Van berpendingin',
+      capacity: 'Hingga 700 kg · suhu 2–8 °C',
+      fits: ['Produk segar', 'Katering dingin', 'Bunga'],
+    },
   },
 };
 
@@ -737,7 +878,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: 'Mengotorisasi', paid: 'Lunas', failed: 'Pembayaran gagal', refunded: 'Dikembalikan', pending: 'Pembayaran tertunda' },
+  states: {
+    authorising: 'Mengotorisasi',
+    paid: 'Lunas',
+    failed: 'Pembayaran gagal',
+    refunded: 'Dikembalikan',
+    pending: 'Pembayaran tertunda',
+  },
   reference: 'Referensi',
 };
 
@@ -760,9 +907,20 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `Lanjutkan dengan ${b}`, signIn: (b) => `Masuk dengan ${b}`, signUp: (b) => `Daftar dengan ${b}` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `Lanjutkan dengan ${b}`,
+    signIn: (b) => `Masuk dengan ${b}`,
+    signUp: (b) => `Daftar dengan ${b}`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'Lainnya', otherPlaceholder: 'Tulis jawabanmu di sini', steps: 'Langkah', step: (n) => `Langkah ${n}` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: 'Lainnya',
+  otherPlaceholder: 'Tulis jawabanmu di sini',
+  steps: 'Langkah',
+  step: (n) => `Langkah ${n}`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'Kontrol peta',
@@ -779,9 +937,18 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: 'Overlay',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: 'Kedaluwarsa', declined: 'Ditolak' }, default: 'Utama', add: 'Tambah metode pembayaran', emptyTitle: 'Belum ada metode pembayaran tersimpan', paymentMethods: 'Metode pembayaran' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: 'Kedaluwarsa', declined: 'Ditolak' },
+  default: 'Utama',
+  add: 'Tambah metode pembayaran',
+  emptyTitle: 'Belum ada metode pembayaran tersimpan',
+  paymentMethods: 'Metode pembayaran',
+};
 
-const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => `${n} orang lainnya`, profile: 'Profil' };
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
+  more: (n) => `${n} orang lainnya`,
+  profile: 'Profil',
+};
 
 const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Bilah menu',
@@ -790,7 +957,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Berpikir' };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
-  feedback: { like: 'Respons bagus', dislike: 'Respons buruk', copy: 'Salin respons', copied: 'Disalin!' },
+  feedback: {
+    like: 'Respons bagus',
+    dislike: 'Respons buruk',
+    copy: 'Salin respons',
+    copied: 'Disalin!',
+  },
   imageGeneration: {
     generated: 'Gambar dibuat',
     generating: 'Membuat gambar',
@@ -896,12 +1068,16 @@ const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
 };
 
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
-  statuses: { reserved: 'Dipesan', sold: 'Terjual', rented: 'Tersewa', unavailable: 'Tidak tersedia' },
+  statuses: {
+    reserved: 'Dipesan',
+    sold: 'Terjual',
+    rented: 'Tersewa',
+    unavailable: 'Tidak tersedia',
+  },
   originally: (p) => `semula ${p}`,
   approximateLocation: 'Perkiraan lokasi',
   rated: (r) => `Rating ${r} dari 5`,
-  ratedWithReviews: (r, c) =>
-    plural('id', c, { other: `Rating ${r} dari 5, ${c} ulasan` }),
+  ratedWithReviews: (r, c) => plural('id', c, { other: `Rating ${r} dari 5, ${c} ulasan` }),
   newListing: 'Baru',
   previousPhoto: 'Foto sebelumnya',
   nextPhoto: 'Foto berikutnya',
@@ -911,7 +1087,8 @@ const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
 
 const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
   states: { 'off-route': 'Keluar dari rute', rerouting: 'Mencari rute baru' },
-  thenLine: (street, maneuver) => navigationBanner_words('lalu', navigationBanner_midSentence(maneuver, 'id'), street),
+  thenLine: (street, maneuver) =>
+    navigationBanner_words('lalu', navigationBanner_midSentence(maneuver, 'id'), street),
   laneGuidance: 'Panduan lajur',
   laneCount: (n) => plural('id', n, { other: '{n} lajur' }),
   laneNumber: (n) => `lajur ${n}`,
@@ -926,7 +1103,11 @@ const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
 };
 
 const LOCATION_PUCK_MESSAGES: Translations['LOCATION_PUCK_MESSAGES'] = {
-  states: { locating: 'Mencari lokasi Anda', located: 'Lokasi Anda', stale: 'Lokasi terakhir Anda yang diketahui' },
+  states: {
+    locating: 'Mencari lokasi Anda',
+    located: 'Lokasi Anda',
+    stale: 'Lokasi terakhir Anda yang diketahui',
+  },
   facing: (state, degrees) => `${state}, menghadap ${degrees} derajat`,
 };
 
@@ -939,7 +1120,10 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: 'slide',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: 'Sedang berlangsung', upcoming: 'Belum', failed: 'Gagal' }, status: 'Status' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: 'Sedang berlangsung', upcoming: 'Belum', failed: 'Gagal' },
+  status: 'Status',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: 'Baru',
@@ -957,7 +1141,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     swap: { title: 'Tukar rumah', description: 'Bertukar rumah dengan anggota lain.' },
     monthlyRent: 'Sewa bulanan',
     deposit: 'Deposit',
-    depositOption: (months) => (months === 0 ? 'Tidak ada' : plural('id', months, { other: '{n} bulan' })),
+    depositOption: (months) =>
+      months === 0 ? 'Tidak ada' : plural('id', months, { other: '{n} bulan' }),
     availableFrom: 'Tersedia mulai',
     minimumStay: 'Masa sewa minimum',
     months: (months) => plural('id', months, { other: '{n} bulan' }),
@@ -987,11 +1172,13 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   addressPrecision: {
     exact: {
       title: 'Alamat persis',
-      description: 'Penanda berada di gedung. Paling cocok untuk rumah yang memang mudah ditemukan.',
+      description:
+        'Penanda berada di gedung. Paling cocok untuk rumah yang memang mudah ditemukan.',
     },
     street: {
       title: 'Hanya jalan',
-      description: 'Menampilkan jalan, bukan nomornya. Alamat persis dibagikan setelah pemesanan atau penandatanganan.',
+      description:
+        'Menampilkan jalan, bukan nomornya. Alamat persis dibagikan setelah pemesanan atau penandatanganan.',
     },
     approximate: {
       title: 'Area perkiraan',
@@ -1047,7 +1234,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: 'Vegetarian', vegan: 'Vegan', 'gluten-free': 'Bebas gluten', 'dairy-free': 'Bebas susu', halal: 'Halal', kosher: 'Kosher' },
+  diets: {
+    vegetarian: 'Vegetarian',
+    vegan: 'Vegan',
+    'gluten-free': 'Bebas gluten',
+    'dairy-free': 'Bebas susu',
+    halal: 'Halal',
+    kosher: 'Kosher',
+  },
   spicy: 'Pedas',
   spiceOf: (label, level, max) => `${label} ${level} dari ${max}`,
   originally: (price, original) => `${price}, sebelumnya ${original}`,
@@ -1068,11 +1262,19 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `Buka halaman ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'Skor prospek', factors: 'Komponen skornya', bands: { cold: 'Dingin', warm: 'Hangat', hot: 'Panas' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: 'Skor prospek',
+  factors: 'Komponen skornya',
+  bands: { cold: 'Dingin', warm: 'Hangat', hot: 'Panas' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Mobil', transit: 'Transportasi umum', walk: 'Jalan kaki', cycle: 'Sepeda' },
-  traffic: { light: 'Lalu lintas lancar', moderate: 'Lalu lintas sedang', heavy: 'Lalu lintas padat' },
+  traffic: {
+    light: 'Lalu lintas lancar',
+    moderate: 'Lalu lintas sedang',
+    heavy: 'Lalu lintas padat',
+  },
   maneuvers: {
     depart: 'Berangkat',
     straight: 'Lurus terus',
@@ -1166,7 +1368,8 @@ const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
     loading: 'Memuat pekerjaan',
   },
   emptyTitle: 'Belum ada pekerjaan saat ini',
-  emptyDescription: 'Tidak ada yang cocok dengan pencarian Anda. Perluas filter, atau muat ulang daftar dalam satu menit.',
+  emptyDescription:
+    'Tidak ada yang cocok dengan pencarian Anda. Perluas filter, atau muat ulang daftar dalam satu menit.',
   list: 'Pekerjaan',
   payDetailsFor: (load) => `Bayaran untuk ${load}`,
   route: (pickup, dropoff) => `${pickup} dan ${dropoff}`,
@@ -1188,7 +1391,8 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   chat: {
     newChat: 'Obrolan baru',
     emptyTitle: 'Ada yang bisa saya bantu?',
-    emptyDescription: 'Obrolan ini berjalan dengan kunci API Anda sendiri. Riwayat tetap tersimpan di browser ini.',
+    emptyDescription:
+      'Obrolan ini berjalan dengan kunci API Anda sendiri. Riwayat tetap tersimpan di browser ini.',
     thinking: 'Berpikir',
     error: 'Terjadi kesalahan. Periksa log server, lalu coba lagi.',
     suggestions: [
@@ -1216,7 +1420,10 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     renameField: 'Ganti nama obrolan',
     markUnread: 'Tandai belum dibaca',
     unread: 'Belum dibaca',
-    exportCount: (n) => (n === 0 ? 'Tidak ada obrolan untuk diekspor' : plural('id', n, { other: 'Ekspor {n} obrolan' })),
+    exportCount: (n) =>
+      n === 0
+        ? 'Tidak ada obrolan untuk diekspor'
+        : plural('id', n, { other: 'Ekspor {n} obrolan' }),
     accountMenu: (name) => `Menu akun ${name}`,
     usageLeft: 'Sisa penggunaan',
     upgrade: 'Tingkatkan ke Max',
@@ -1238,10 +1445,18 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     hours: (n) => plural('id', n, { other: '{n} jam lalu' }),
     days: (n) => plural('id', n, { other: '{n} hari lalu' }),
   },
-  age: { now: 'sekarang', minutes: (n) => `${n} mnt`, hours: (n) => `${n} j`, days: (n) => `${n} h` },
+  age: {
+    now: 'sekarang',
+    minutes: (n) => `${n} mnt`,
+    hours: (n) => `${n} j`,
+    days: (n) => `${n} h`,
+  },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: 'Sumber', working: 'Sedang bekerja' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: 'Sumber',
+  working: 'Sedang bekerja',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: 'Kepada',
@@ -1319,23 +1534,34 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   radialChart: (title, items) => `Grafik radial ${title.toLowerCase()}: ${items}`,
   percentOfGoal: (pct) => `${pct}% dari target`,
   periodOf: (label) => `Periode ${label.toLowerCase()}`,
-  chartVs: (title, current, previous) => `Grafik ${title.toLowerCase()}: ${current.toLowerCase()} dibanding ${previous.toLowerCase()}`,
+  chartVs: (title, current, previous) =>
+    `Grafik ${title.toLowerCase()}: ${current.toLowerCase()} dibanding ${previous.toLowerCase()}`,
   lineChart: (title) => `Grafik garis ${title.toLowerCase()}`,
   barChart: (title, items) => `Grafik batang ${title.toLowerCase()}: ${items}`,
-  comboChart: (title, bar, line) => `Grafik ${title.toLowerCase()}: batang ${bar} dibanding garis ${line}`,
+  comboChart: (title, bar, line) =>
+    `Grafik ${title.toLowerCase()}: batang ${bar} dibanding garis ${line}`,
   scatterChart: (title, series) => `Grafik sebar ${title.toLowerCase()}: ${series}`,
   bubbleChart: (title, series) => `Grafik gelembung ${title.toLowerCase()}: ${series}`,
   ringItem: (label, value, pct) => `${label} ${value}, ${pct}% dari target`,
   scoreOf: (score, max) => `${score} dari ${max}`,
   activityFor: (name, day) => `Aktivitas ${day} ${name}`,
-  contributions: (n, date) => { const on = date ? ` pada ${date}` : ''; return n === 0 ? `Tidak ada kontribusi${on}` : `${n} kontribusi${on}`; },
+  contributions: (n, date) => {
+    const on = date ? ` pada ${date}` : '';
+    return n === 0 ? `Tidak ada kontribusi${on}` : `${n} kontribusi${on}`;
+  },
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'Salin kode', copied: 'Kode disalin' };
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'Di halaman ini', progress: (at, of) => `Judul ${at} dari ${of}` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: 'Di halaman ini',
+  progress: (at, of) => `Judul ${at} dari ${of}`,
+};
 
-const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'Kurangi', increase: 'Tambah' };
+const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
+  decrease: 'Kurangi',
+  increase: 'Tambah',
+};
 
 const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   status: {
@@ -1364,7 +1590,8 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
     minimise: 'Perkecil panggilan',
     chat: 'Buka chat',
     participants: 'Peserta',
-    movePip: (c) => `Pindahkan tampilan Anda (sekarang ${callUi_corner(CALL_UI_MESSAGES__CORNERS, c)})`,
+    movePip: (c) =>
+      `Pindahkan tampilan Anda (sekarang ${callUi_corner(CALL_UI_MESSAGES__CORNERS, c)})`,
   },
   pipCorners: CALL_UI_MESSAGES__CORNERS,
   history: {
@@ -1392,7 +1619,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, dibisukan`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: 'Karyawan baru' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: 'Karyawan baru',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Draf:',
@@ -1413,9 +1642,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: 'Email',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: 'Peringatan penting', thisWeek: 'minggu ini' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: 'Peringatan penting',
+  thisWeek: 'minggu ini',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `Tentang ${label}`, fromLastMonth: 'Dari bulan lalu' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `Tentang ${label}`,
+  fromLastMonth: 'Dari bulan lalu',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1454,8 +1689,18 @@ const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
 };
 
 const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
-  leasePaymentStatus: { upcoming: 'Mendatang', due: 'Segera jatuh tempo', overdue: 'Terlambat', paid: 'Lunas' },
-  rentPaymentStatus: { paid: 'Lunas', pending: 'Menunggu', overdue: 'Terlambat', partial: 'Sebagian' },
+  leasePaymentStatus: {
+    upcoming: 'Mendatang',
+    due: 'Segera jatuh tempo',
+    overdue: 'Terlambat',
+    paid: 'Lunas',
+  },
+  rentPaymentStatus: {
+    paid: 'Lunas',
+    pending: 'Menunggu',
+    overdue: 'Terlambat',
+    partial: 'Sebagian',
+  },
   maintenanceCategory: {
     plumbing: 'Pipa air',
     electrical: 'Listrik',
@@ -1463,9 +1708,23 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     heating: 'Pemanas',
     other: 'Lainnya',
   },
-  maintenancePriority: { low: 'Prioritas rendah', medium: 'Prioritas sedang', high: 'Prioritas tinggi', urgent: 'Mendesak' },
-  maintenanceStage: { reported: 'Dilaporkan', acknowledged: 'Diterima', scheduled: 'Dijadwalkan', resolved: 'Selesai' },
-  documentStatus: { signed: 'Ditandatangani', pending: 'Menunggu tanda tangan', expired: 'Kedaluwarsa' },
+  maintenancePriority: {
+    low: 'Prioritas rendah',
+    medium: 'Prioritas sedang',
+    high: 'Prioritas tinggi',
+    urgent: 'Mendesak',
+  },
+  maintenanceStage: {
+    reported: 'Dilaporkan',
+    acknowledged: 'Diterima',
+    scheduled: 'Dijadwalkan',
+    resolved: 'Selesai',
+  },
+  documentStatus: {
+    signed: 'Ditandatangani',
+    pending: 'Menunggu tanda tangan',
+    expired: 'Kedaluwarsa',
+  },
   timelineState: { complete: 'Selesai', current: 'Sedang berlangsung', upcoming: 'Belum' },
   leasePeriod: 'Masa sewa',
   monthlyRent: 'Sewa bulanan',
@@ -1474,7 +1733,13 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
   paidThisYear: 'Dibayar tahun ini',
   outstanding: 'Sisa tagihan',
   noPayments: 'Belum ada pembayaran',
-  columns: { month: 'Bulan', dueDate: 'Jatuh tempo', method: 'Metode', amount: 'Jumlah', status: 'Status' },
+  columns: {
+    month: 'Bulan',
+    dueDate: 'Jatuh tempo',
+    method: 'Metode',
+    amount: 'Jumlah',
+    status: 'Status',
+  },
   downloadReceipt: (month) => `Unduh kuitansi ${month}`,
   dueOn: (date) => `Jatuh tempo ${date}`,
   comments: (n) => plural('id', n, { other: '{n} komentar' }),
@@ -1494,7 +1759,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Normal', sm: 'Ringkas' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: 'Terjadi kesalahan', message: 'Terjadi kesalahan yang tidak terduga', retry: 'Coba lagi' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: 'Terjadi kesalahan',
+  message: 'Terjadi kesalahan yang tidak terduga',
+  retry: 'Coba lagi',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: 'Kontribusi tahun ini',
@@ -1622,7 +1891,8 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
       switchAction: 'Kirim kode baru',
     },
   },
-  codeSentTo: (email) => `Masukkan kode yang kami kirim ke ${email} untuk menyelesaikan proses masuk.`,
+  codeSentTo: (email) =>
+    `Masukkan kode yang kami kirim ke ${email} untuk menyelesaikan proses masuk.`,
   verificationCode: 'Kode verifikasi',
   fullName: 'Nama lengkap',
   namePlaceholder: 'Siti Rahayu',
@@ -1673,7 +1943,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: 'Panggilan', email: 'Email', meeting: 'Rapat', note: 'Catatan', 'stage-change': 'Perubahan tahap', task: 'Tugas selesai' },
+  kinds: {
+    call: 'Panggilan',
+    email: 'Email',
+    meeting: 'Rapat',
+    note: 'Catatan',
+    'stage-change': 'Perubahan tahap',
+    task: 'Tugas selesai',
+  },
   empty: 'Belum ada aktivitas tercatat',
   loggedBy: (name) => `Dicatat oleh ${name}`,
   filterActivity: 'Filter aktivitas',
@@ -1687,8 +1964,7 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   helpful: 'Membantu',
   report: 'Laporkan',
   promptTitle: 'Pernah tinggal di sini?',
-  promptDescription: (building) =>
-    `Bantu calon penyewa ${building}. Ulasan bersifat anonim.`,
+  promptDescription: (building) => `Bantu calon penyewa ${building}. Ulasan bersifat anonim.`,
   writeReview: 'Tulis ulasan',
   reviewCount: (n) => plural('id', n, { other: '{n} ulasan' }),
   depositRate: (percent) => `Deposit dikembalikan pada ${percent}% masa sewa`,
@@ -1749,7 +2025,12 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
     asap: 'Secepatnya',
     contractLength: 'Lama kontrak',
   },
-  contractLengths: { any: 'Bebas', short: '1–6 bulan', medium: '6–12 bulan', long: 'Lebih dari 1 tahun' },
+  contractLengths: {
+    any: 'Bebas',
+    short: '1–6 bulan',
+    medium: '6–12 bulan',
+    long: 'Lebih dari 1 tahun',
+  },
   saveSearch: 'Simpan pencarian',
   saved: 'Tersimpan',
   newCount: (n) => `${n} baru`,
@@ -1757,13 +2038,31 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
   actionOn: (action, subject) => `${action} ${subject}`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: 'Disewakan', sale: 'Dijual', short_term_rent: 'Sewa liburan', exchange: 'Tukar' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: 'Disewakan',
+    sale: 'Dijual',
+    short_term_rent: 'Sewa liburan',
+    exchange: 'Tukar',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: 'Skala', mapData: 'Data peta' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: 'Skala',
+  mapData: 'Data peta',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: 'Nilai minimum', maximum: 'Nilai maksimum', value: (n) => `Nilai ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: 'Nilai minimum',
+  maximum: 'Nilai maksimum',
+  value: (n) => `Nilai ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'Pilih opsi', scrollUp: 'Gulir ke atas', scrollDown: 'Gulir ke bawah' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: 'Pilih opsi',
+  scrollUp: 'Gulir ke atas',
+  scrollDown: 'Gulir ke bawah',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: 'Tutup penampil media',
@@ -1773,12 +2072,22 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
   share: 'Bagikan media',
 };
 
-const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: 'Tutup notifikasi' };
+const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = {
+  dismiss: 'Tutup notifikasi',
+};
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: 'Nomor telepon', countryCode: 'Kode negara' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: 'Nomor telepon',
+  countryCode: 'Kode negara',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: 'Waktu pengantaran', deliveryFee: 'Ongkos kirim', distance: 'Jarak', minimumOrder: 'Pesanan minimum' },
+  facts: {
+    deliveryTime: 'Waktu pengantaran',
+    deliveryFee: 'Ongkos kirim',
+    distance: 'Jarak',
+    minimumOrder: 'Pesanan minimum',
+  },
   availability: { paused: 'Dijeda', closed: 'Tutup' },
   new: 'Baru',
   rated: (value, reviews) =>
@@ -1787,7 +2096,13 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'Online', idle: 'Pergi', offline: 'Offline', busy: 'Sibuk' },
-  status: { sending: 'Mengirim…', sent: 'Terkirim', delivered: 'Diterima', read: 'Dibaca', failed: 'Tidak terkirim' },
+  status: {
+    sending: 'Mengirim…',
+    sent: 'Terkirim',
+    delivered: 'Diterima',
+    read: 'Dibaca',
+    failed: 'Tidak terkirim',
+  },
   unread: 'Belum dibaca',
   unreadCount: (n) => `${n} pesan belum dibaca`,
 };
@@ -1868,7 +2183,11 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
 
 const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: 'Hapus kueri pencarian' };
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `Hapus ${t}`, full: (n) => `Maksimum ${n}`, suggestions: 'Saran' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `Hapus ${t}`,
+  full: (n) => `Maksimum ${n}`,
+  suggestions: 'Saran',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -1894,7 +2213,12 @@ const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
     accessible: 'Ramah difabel',
     storage: 'Gudang',
   },
-  floors: { ground: 'Lantai dasar', middle: 'Lantai tengah', top: 'Lantai teratas', elevator: 'Dengan lift' },
+  floors: {
+    ground: 'Lantai dasar',
+    middle: 'Lantai tengah',
+    top: 'Lantai teratas',
+    elevator: 'Dengan lift',
+  },
   minimum: 'Minimal',
   maximum: 'Maksimal',
   priceRange: 'Rentang harga',
@@ -1936,7 +2260,11 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     fileName: 'Nama file',
     uploadedOn: 'Diunggah pada',
     fileSize: 'Ukuran file',
-    sortBy: { name: 'Urutkan menurut nama file', uploadedAt: 'Urutkan menurut tanggal unggah', size: 'Urutkan menurut ukuran file' },
+    sortBy: {
+      name: 'Urutkan menurut nama file',
+      uploadedAt: 'Urutkan menurut tanggal unggah',
+      size: 'Urutkan menurut ukuran file',
+    },
     selectFile: (name) => `Pilih ${name}`,
     deleteFile: 'Hapus file',
     deleteNamed: (name) => `Hapus ${name}`,
@@ -2004,26 +2332,53 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   checkAvailability: 'Periksa ketersediaan',
   notChargedYet: 'Anda belum akan dikenai biaya',
   total: 'Total',
-  tripStatus: { confirmed: 'Dikonfirmasi', pending: 'Menunggu', cancelled: 'Dibatalkan', completed: 'Selesai' },
-  priceName: booking_priceName((p, u) => `${p} per ${u}`, (s, o) => `${s}, sebelumnya ${o}`),
+  tripStatus: {
+    confirmed: 'Dikonfirmasi',
+    pending: 'Menunggu',
+    cancelled: 'Dibatalkan',
+    completed: 'Selesai',
+  },
+  priceName: booking_priceName(
+    (p, u) => `${p} per ${u}`,
+    (s, o) => `${s}, sebelumnya ${o}`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'Jendela konteks', freeSpace: 'Ruang kosong', planUsageLimits: 'Batas penggunaan paket', managePlan: 'Kelola paket' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: 'Jendela konteks',
+  freeSpace: 'Ruang kosong',
+  planUsageLimits: 'Batas penggunaan paket',
+  managePlan: 'Kelola paket',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'Tutup tindakan',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'Tambahkan foto profil' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: 'Tambahkan foto profil',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'Tema', darkMode: 'Mode gelap', lightMode: 'Mode terang', useDarkMode: 'Gunakan mode gelap', useLightMode: 'Gunakan mode terang' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: 'Tema',
+  darkMode: 'Mode gelap',
+  lightMode: 'Mode terang',
+  useDarkMode: 'Gunakan mode gelap',
+  useLightMode: 'Gunakan mode terang',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: 'Diperoleh',
   period: 'Periode pendapatan',
   breakdown: 'Sumbernya',
   payout: 'Pencairan berikutnya',
-  payoutState: { scheduled: 'Terjadwal', processing: 'Dalam proses', paid: 'Dibayar', held: 'Ditahan', failed: 'Gagal' },
+  payoutState: {
+    scheduled: 'Terjadwal',
+    processing: 'Dalam proses',
+    paid: 'Dibayar',
+    held: 'Ditahan',
+    failed: 'Gagal',
+  },
   chart: (label) => `Pendapatan ${label}, per periode`,
   empty: 'Belum ada pendapatan',
   earnings: 'Pendapatan',
@@ -2108,9 +2463,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: 'Format lainnya', moreMenu: 'Format lainnya' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'Filter', showAll: 'Tampilkan semua' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: 'Filter',
+  showAll: 'Tampilkan semua',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: 'Kategori sebelumnya', next: 'Kategori berikutnya' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: 'Kategori sebelumnya',
+  next: 'Kategori berikutnya',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2132,12 +2493,17 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     loading: 'Memuat penawaran',
   },
   emptyTitle: 'Belum ada penawaran',
-  emptyDescription: 'Para pengangkut sedang melihat pekerjaan Anda. Penawaran pertama biasanya tiba dalam beberapa menit.',
+  emptyDescription:
+    'Para pengangkut sedang melihat pekerjaan Anda. Penawaran pertama biasanya tiba dalam beberapa menit.',
   list: 'Penawaran',
   priceDetailsFor: (name) => `Rincian harga untuk ${name}`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'Tampilkan kata sandi', hidePassword: 'Sembunyikan kata sandi', required: 'wajib diisi' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: 'Tampilkan kata sandi',
+  hidePassword: 'Sembunyikan kata sandi',
+  required: 'wajib diisi',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: 'Panggilan suara',
@@ -2235,252 +2601,268 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "Simpan perubahan" : "Mulai chat" + (count ? ' · ' + plural('id', count, {"one": "{n} agen", "other": "{n} agen"}) : ''),
-  you: "Anda",
-  responseFailed: "{0} tidak dapat merespons. Silakan coba lagi.",
-  editAgentTitle: "Edit agen",
-  aLittleHelp: "Sedikit bantuan",
-  aFewMindsOneConversation: "Beberapa pemikiran. Satu percakapan.",
-  aLittleRoomForSomethingNew: "Sedikit ruang untuk sesuatu yang baru",
-  accountDetails: "Detail Akun",
-  add: "Tambah",
-  add2: "Tambahkan {0}",
-  added: "Ditambahkan",
-  addedToYourWorkspace: "Ditambahkan ke ruang kerja Anda",
-  agent: "Agen",
-  agentConversation: "Percakapan agen",
-  appearance: "Penampilan",
-  apps: "Aplikasi · {0}",
-  availability: "Ketersediaan",
-  backToMarketplace: "Kembali ke pasar",
-  billing: "Penagihan",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "Bot",
-  bringYourAgentsIntoOneChat: "Ajak agen Anda ke dalam satu obrolan.",
-  category: "Kategori",
-  chatActions: "Tindakan obrolan",
-  chatList: "Daftar obrolan",
-  chatName: "Nama obrolan",
-  chatRemoved: "Obrolan dihapus",
-  chatWithYourAgents: "Ngobrol dengan agen Anda",
-  chooseAnAgentOrCreateYourOwn: "Pilih agen atau buat agen Anda sendiri untuk memulai percakapan.",
-  chooseWhoSJoiningTheConversation: "Pilih siapa yang bergabung dalam percakapan.",
-  chooseYourTeammates: "Pilih rekan satu tim Anda",
-  closeMarketplace: "Tutup pasar",
-  closeSearch: "Tutup pencarian",
-  company: "Perusahaan",
-  companyDetails: "Detail Perusahaan",
-  completionSound: "Suara penyelesaian",
-  connectedAccount: "Akun terhubung",
-  connector: "Konektor",
-  conversationIDCopied: "ID Percakapan disalin",
-  conversationCopied: "Percakapan disalin",
-  conversationOptions: "Opsi percakapan",
-  conversations: "Percakapan",
-  copied: "Disalin",
-  copyConversation: "Salin percakapan",
-  copyConversationID: "Salin ID percakapan",
-  copyResponse: "Salin respons",
-  couldnTCopyPleaseTryAgain: "Tidak dapat menyalin. Silakan coba lagi.",
-  create: "Buat",
-  createANewBot: "Buat bot baru",
-  createBotOrChat: "Membuat bot atau obrolan",
-  criticalRequests: "Permintaan penting",
-  customize: "Sesuaikan",
-  customizeANewTeammate: "Sesuaikan rekan satu tim baru.",
-  dateOfBirth: "Tanggal lahir",
-  demoIntegrationAddingSavesItToThis: "Integrasi demo. Menambahkan akan menyimpannya ke browser ini; tidak ada akun eksternal yang terhubung.",
-  desktopApp: "Aplikasi desktop",
-  details: "Detail",
-  developer: "Pengembang",
-  deviceID: "ID Perangkat",
-  discover: "Temukan",
-  dispatchAlerts: "Peringatan pengiriman",
-  editConversationAgents: "Edit agen percakapan",
-  editBot: "Edit bot",
-  editGroup: "Sunting grup",
-  editAgent: "Sunting {0}",
-  email: "Email",
-  everydayEssentials: "Kebutuhan sehari-hari",
-  exploreMarketplace: "Jelajahi pasar",
-  explorePlugins: "Jelajahi plugin",
-  explorePluginsAndBotsToBuildYour: "Jelajahi plugin dan bot untuk membangun tim Anda.",
-  findYourNextTeammate: "Temukan rekan setim Anda berikutnya",
-  findYourNextToolOrTeammate: "Temukan alat atau rekan satu tim Anda berikutnya",
-  firstName: "Nama depan",
-  folders: "Folder",
-  general: "Umum",
-  getNotifiedWhenTheModeNeedsTo: "Dapatkan pemberitahuan saat mode perlu membuat keputusan penting",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "Tanggapan yang bermanfaat",
-  inTheBrowser: "Di peramban",
-  inThisConversation: "Dalam percakapan ini",
-  includes: "Termasuk",
-  insideTheApp: "Di dalam aplikasi",
-  installed: "Terpasang",
-  integrations: "Integrasi",
-  iLlApproachThisFromThePerspective: "Saya akan melakukan pendekatan ini dari sudut pandang {0}.",
-  lastName: "Nama belakang",
-  limits: "Batasan",
-  logOutFromAllDevices: "Keluar dari semua perangkat",
-  logout: "Keluar",
-  manage: "Kelola",
-  manageLimits: "Kelola batasan",
-  marketplace: "Pasar",
-  marketplaceLinkCopied: "Tautan pasar disalin",
-  marketplaceListings: "Daftar pasar",
-  meetYourNextTeammate: "Temui rekan satu tim Anda berikutnya",
-  messages: "Pesan",
-  noConversationsFound: "Tidak ada percakapan yang ditemukan.",
-  noMatchesYet: "Belum ada kecocokan",
-  notifications: "Notifikasi",
-  openConversations: "Percakapan terbuka",
-  openPullRequestLinksInsideYourApp: "Buka tautan permintaan tarik di dalam aplikasi Anda",
-  openTheMarketplaceToExplorePluginsAnd: "Buka Marketplace untuk menjelajahi plugin dan bot. Gunakan menu percakapan untuk mengedit tampilan dan detail botnya. Pilih ekspresi dari roda emosi. Gulir atau seret busur bentuk, atau gunakan tombol panahnya, untuk menjelajahi bentuk.",
-  prDestination: "tujuan PR",
-  people: "Orang",
-  personal: "Pribadi",
-  pinChat: "Sematkan obrolan",
-  pinnedChat: "Obrolan yang disematkan",
-  plugins: "Plugin",
-  profile: "Profil",
-  public: "Publik",
-  publicProfile: "Profil publik",
-  pullRequests: "Permintaan Tarik",
-  pushNotificationOnYourPhoneWhenThe: "Pemberitahuan push di ponsel Anda ketika aplikasi mengirim pesan kepada Anda",
-  remove: "Keluarkan",
-  removeChat: "Hapus obrolan",
-  renameChat: "Ganti nama obrolan",
-  responseCopied: "Respons disalin",
-  reviewProvider: "Penyedia ulasan",
-  rulesAndWorkflows: "Aturan dan Alur Kerja",
-  saveName: "Simpan nama",
-  sayHelloTo: "Sampaikan salam kepada {0}",
-  searchConversations: "Cari percakapan",
-  searchConversations2: "Telusuri percakapan…",
-  searchMarketplace: "Cari pasar",
-  selectGithubOrOtherProvidersForReviews: "Pilih Github atau penyedia lain untuk ditinjau",
-  selectedAgents: "Agen terpilih: {0}",
-  sendWithEnterUseShiftEnterFor: "Kirim dengan Enter. Gunakan Shift + Enter untuk baris baru. Perubahan Anda tetap ada di browser ini.",
-  settings: "Pengaturan",
-  share: "Bagikan",
-  showFundamentalNotificationsWhenAnAgentCompletes: "Menampilkan pemberitahuan mendasar ketika agen menyelesaikan tugas",
-  signOut: "Keluar",
-  skills: "Keterampilan",
-  skills2: "Keterampilan · {0}",
-  soundEffectATaskIsCompleted: "Efek suara tugas selesai",
-  startAConversation: "Memulai percakapan",
-  startAGroupChat: "Memulai obrolan grup",
-  startChat: "Mulai obrolan",
-  storage: "Penyimpanan",
-  support: "Dukungan",
-  systemNotifications: "Pemberitahuan sistem",
-  thinkingTogether: "Berpikir bersama…",
-  thinking: "Berpikir…",
-  today: "Hari ini",
-  tools: "Alat",
-  toolsForYourWorkflow: "Alat untuk alur kerja Anda",
-  tryAnotherNameCategoryOrKeyword: "Coba nama, kategori, atau kata kunci lain.",
-  ultra149Mo: "Sangat $149/bln",
-  unhelpfulResponse: "Tanggapan tidak membantu",
-  unpinChat: "Lepas sematan obrolan",
-  upgradeToMax: "Tingkatkan ke Max",
-  useToCreateABotOrStart: "Gunakan + untuk membuat bot atau memulai percakapan dengan beberapa agen.",
-  viewAdded: "Lihat ditambahkan {0}",
-  viewAll: "Lihat semua",
-  viewTeamProfile: "Lihat profil tim",
-  viewItem: "Lihat {0}",
-  website: "Situs web",
-  whenEnabledYourProfilePageWillBe: "Jika diaktifkan, halaman profil Anda akan terlihat oleh siapa pun",
-  youAreOn7xMoreUsageThan: "Penggunaan Anda 7x lebih banyak dibandingkan Premium",
-  youAreOn7xMoreUsageThan2: "Penggunaan Anda 7x lebih banyak dibandingkan Reguler.",
-  areHereSendAMessageToGet: "{0} ada di sini. Kirim pesan untuk mendapatkan perspektif semua orang.",
-  itemDetails: "{0} detailnya",
-  agentThinking: "{0} sedang berpikir",
-  by: "{0} · oleh {1}",
-  results: (count: number) => plural('id', count, {"other": "{n} hasil"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('id', apps, {"one": "{n} aplikasi", "other": "{n} aplikasi"}) + ", " : '') + plural('id', skills, {"one": "{n} keterampilan", "other": "{n} keterampilan"}),
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? 'Simpan perubahan'
+      : 'Mulai chat' +
+        (count ? ' · ' + plural('id', count, { one: '{n} agen', other: '{n} agen' }) : ''),
+  you: 'Anda',
+  responseFailed: '{0} tidak dapat merespons. Silakan coba lagi.',
+  editAgentTitle: 'Edit agen',
+  aLittleHelp: 'Sedikit bantuan',
+  aFewMindsOneConversation: 'Beberapa pemikiran. Satu percakapan.',
+  aLittleRoomForSomethingNew: 'Sedikit ruang untuk sesuatu yang baru',
+  accountDetails: 'Detail Akun',
+  add: 'Tambah',
+  add2: 'Tambahkan {0}',
+  added: 'Ditambahkan',
+  addedToYourWorkspace: 'Ditambahkan ke ruang kerja Anda',
+  agent: 'Agen',
+  agentConversation: 'Percakapan agen',
+  appearance: 'Penampilan',
+  apps: 'Aplikasi · {0}',
+  availability: 'Ketersediaan',
+  backToMarketplace: 'Kembali ke pasar',
+  billing: 'Penagihan',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: 'Bot',
+  bringYourAgentsIntoOneChat: 'Ajak agen Anda ke dalam satu obrolan.',
+  category: 'Kategori',
+  chatActions: 'Tindakan obrolan',
+  chatList: 'Daftar obrolan',
+  chatName: 'Nama obrolan',
+  chatRemoved: 'Obrolan dihapus',
+  chatWithYourAgents: 'Ngobrol dengan agen Anda',
+  chooseAnAgentOrCreateYourOwn: 'Pilih agen atau buat agen Anda sendiri untuk memulai percakapan.',
+  chooseWhoSJoiningTheConversation: 'Pilih siapa yang bergabung dalam percakapan.',
+  chooseYourTeammates: 'Pilih rekan satu tim Anda',
+  closeMarketplace: 'Tutup pasar',
+  closeSearch: 'Tutup pencarian',
+  company: 'Perusahaan',
+  companyDetails: 'Detail Perusahaan',
+  completionSound: 'Suara penyelesaian',
+  connectedAccount: 'Akun terhubung',
+  connector: 'Konektor',
+  conversationIDCopied: 'ID Percakapan disalin',
+  conversationCopied: 'Percakapan disalin',
+  conversationOptions: 'Opsi percakapan',
+  conversations: 'Percakapan',
+  copied: 'Disalin',
+  copyConversation: 'Salin percakapan',
+  copyConversationID: 'Salin ID percakapan',
+  copyResponse: 'Salin respons',
+  couldnTCopyPleaseTryAgain: 'Tidak dapat menyalin. Silakan coba lagi.',
+  create: 'Buat',
+  createANewBot: 'Buat bot baru',
+  createBotOrChat: 'Membuat bot atau obrolan',
+  criticalRequests: 'Permintaan penting',
+  customize: 'Sesuaikan',
+  customizeANewTeammate: 'Sesuaikan rekan satu tim baru.',
+  dateOfBirth: 'Tanggal lahir',
+  demoIntegrationAddingSavesItToThis:
+    'Integrasi demo. Menambahkan akan menyimpannya ke browser ini; tidak ada akun eksternal yang terhubung.',
+  desktopApp: 'Aplikasi desktop',
+  details: 'Detail',
+  developer: 'Pengembang',
+  deviceID: 'ID Perangkat',
+  discover: 'Temukan',
+  dispatchAlerts: 'Peringatan pengiriman',
+  editConversationAgents: 'Edit agen percakapan',
+  editBot: 'Edit bot',
+  editGroup: 'Sunting grup',
+  editAgent: 'Sunting {0}',
+  email: 'Email',
+  everydayEssentials: 'Kebutuhan sehari-hari',
+  exploreMarketplace: 'Jelajahi pasar',
+  explorePlugins: 'Jelajahi plugin',
+  explorePluginsAndBotsToBuildYour: 'Jelajahi plugin dan bot untuk membangun tim Anda.',
+  findYourNextTeammate: 'Temukan rekan setim Anda berikutnya',
+  findYourNextToolOrTeammate: 'Temukan alat atau rekan satu tim Anda berikutnya',
+  firstName: 'Nama depan',
+  folders: 'Folder',
+  general: 'Umum',
+  getNotifiedWhenTheModeNeedsTo: 'Dapatkan pemberitahuan saat mode perlu membuat keputusan penting',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: 'Tanggapan yang bermanfaat',
+  inTheBrowser: 'Di peramban',
+  inThisConversation: 'Dalam percakapan ini',
+  includes: 'Termasuk',
+  insideTheApp: 'Di dalam aplikasi',
+  installed: 'Terpasang',
+  integrations: 'Integrasi',
+  iLlApproachThisFromThePerspective: 'Saya akan melakukan pendekatan ini dari sudut pandang {0}.',
+  lastName: 'Nama belakang',
+  limits: 'Batasan',
+  logOutFromAllDevices: 'Keluar dari semua perangkat',
+  logout: 'Keluar',
+  manage: 'Kelola',
+  manageLimits: 'Kelola batasan',
+  marketplace: 'Pasar',
+  marketplaceLinkCopied: 'Tautan pasar disalin',
+  marketplaceListings: 'Daftar pasar',
+  meetYourNextTeammate: 'Temui rekan satu tim Anda berikutnya',
+  messages: 'Pesan',
+  noConversationsFound: 'Tidak ada percakapan yang ditemukan.',
+  noMatchesYet: 'Belum ada kecocokan',
+  notifications: 'Notifikasi',
+  openConversations: 'Percakapan terbuka',
+  openPullRequestLinksInsideYourApp: 'Buka tautan permintaan tarik di dalam aplikasi Anda',
+  openTheMarketplaceToExplorePluginsAnd:
+    'Buka Marketplace untuk menjelajahi plugin dan bot. Gunakan menu percakapan untuk mengedit tampilan dan detail botnya. Pilih ekspresi dari roda emosi. Gulir atau seret busur bentuk, atau gunakan tombol panahnya, untuk menjelajahi bentuk.',
+  prDestination: 'tujuan PR',
+  people: 'Orang',
+  personal: 'Pribadi',
+  pinChat: 'Sematkan obrolan',
+  pinnedChat: 'Obrolan yang disematkan',
+  plugins: 'Plugin',
+  profile: 'Profil',
+  public: 'Publik',
+  publicProfile: 'Profil publik',
+  pullRequests: 'Permintaan Tarik',
+  pushNotificationOnYourPhoneWhenThe:
+    'Pemberitahuan push di ponsel Anda ketika aplikasi mengirim pesan kepada Anda',
+  remove: 'Keluarkan',
+  removeChat: 'Hapus obrolan',
+  renameChat: 'Ganti nama obrolan',
+  responseCopied: 'Respons disalin',
+  reviewProvider: 'Penyedia ulasan',
+  rulesAndWorkflows: 'Aturan dan Alur Kerja',
+  saveName: 'Simpan nama',
+  sayHelloTo: 'Sampaikan salam kepada {0}',
+  searchConversations: 'Cari percakapan',
+  searchConversations2: 'Telusuri percakapan…',
+  searchMarketplace: 'Cari pasar',
+  selectGithubOrOtherProvidersForReviews: 'Pilih Github atau penyedia lain untuk ditinjau',
+  selectedAgents: 'Agen terpilih: {0}',
+  sendWithEnterUseShiftEnterFor:
+    'Kirim dengan Enter. Gunakan Shift + Enter untuk baris baru. Perubahan Anda tetap ada di browser ini.',
+  settings: 'Pengaturan',
+  share: 'Bagikan',
+  showFundamentalNotificationsWhenAnAgentCompletes:
+    'Menampilkan pemberitahuan mendasar ketika agen menyelesaikan tugas',
+  signOut: 'Keluar',
+  skills: 'Keterampilan',
+  skills2: 'Keterampilan · {0}',
+  soundEffectATaskIsCompleted: 'Efek suara tugas selesai',
+  startAConversation: 'Memulai percakapan',
+  startAGroupChat: 'Memulai obrolan grup',
+  startChat: 'Mulai obrolan',
+  storage: 'Penyimpanan',
+  support: 'Dukungan',
+  systemNotifications: 'Pemberitahuan sistem',
+  thinkingTogether: 'Berpikir bersama…',
+  thinking: 'Berpikir…',
+  today: 'Hari ini',
+  tools: 'Alat',
+  toolsForYourWorkflow: 'Alat untuk alur kerja Anda',
+  tryAnotherNameCategoryOrKeyword: 'Coba nama, kategori, atau kata kunci lain.',
+  ultra149Mo: 'Sangat $149/bln',
+  unhelpfulResponse: 'Tanggapan tidak membantu',
+  unpinChat: 'Lepas sematan obrolan',
+  upgradeToMax: 'Tingkatkan ke Max',
+  useToCreateABotOrStart:
+    'Gunakan + untuk membuat bot atau memulai percakapan dengan beberapa agen.',
+  viewAdded: 'Lihat ditambahkan {0}',
+  viewAll: 'Lihat semua',
+  viewTeamProfile: 'Lihat profil tim',
+  viewItem: 'Lihat {0}',
+  website: 'Situs web',
+  whenEnabledYourProfilePageWillBe:
+    'Jika diaktifkan, halaman profil Anda akan terlihat oleh siapa pun',
+  youAreOn7xMoreUsageThan: 'Penggunaan Anda 7x lebih banyak dibandingkan Premium',
+  youAreOn7xMoreUsageThan2: 'Penggunaan Anda 7x lebih banyak dibandingkan Reguler.',
+  areHereSendAMessageToGet:
+    '{0} ada di sini. Kirim pesan untuk mendapatkan perspektif semua orang.',
+  itemDetails: '{0} detailnya',
+  agentThinking: '{0} sedang berpikir',
+  by: '{0} · oleh {1}',
+  results: (count: number) => plural('id', count, { other: '{n} hasil' }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps ? plural('id', apps, { one: '{n} aplikasi', other: '{n} aplikasi' }) + ', ' : '') +
+    plural('id', skills, { one: '{n} keterampilan', other: '{n} keterampilan' }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "Tugas Desain Bloom", defaultTeam: "Tim Bloom",
+    defaultTitle: 'Tugas Desain Bloom',
+    defaultTeam: 'Tim Bloom',
     openTicket: (code, title) => `Buka ${code}: ${title}`,
-    addTicketTo: column => `Tambah tugas ke ${column}`,
-    "board": "Papan proyek",
-    "controls": "Kontrol papan",
-    "navigation": "Buka navigasi",
-    "inbox": "Buka kotak masuk proyek",
-    "newTicket": "Tugas baru",
-    "columns": "Kolom papan proyek",
-    "sortTickets": "Urutkan tugas",
-    "filterTickets": "Filter tugas",
-    "displayOptions": "Opsi tampilan",
-    "sort": "Urutkan",
-    "filter": "Filter",
-    "display": "Tampilan",
-    "manualOrder": "Urutan manual",
-    "priority": "Prioritas",
-    "title": "Judul",
-    "project": "Proyek",
-    "allPriorities": "Semua prioritas",
-    "allProjects": "Semua proyek",
-    "clearFilters": "Hapus filter",
-    "showDone": "Tampilkan kolom selesai",
-    "fillScreens": "Isi layar lebar",
-    "createTicket": "Buat tugas",
-    "closeCreate": "Tutup pembuatan tugas",
-    "ticketTitle": "Judul tugas",
-    "enterTitle": "Masukkan judul tugas",
-    "description": "Deskripsi",
-    "descriptionArea": "Area deskripsi",
-    "status": "Status",
-    "urgency": "Urgensi",
-    "assignee": "Penanggung jawab",
-    "unassigned": "Belum ditugaskan",
-    "keepCreating": "Terus membuat",
-    "cancel": "Batal",
-    "addTicket": "Tambah tugas",
-    "sortTitle": "Urutkan menurut judul",
-    "noTickets": "Tidak ada masalah di sini",
-    "favoriteAdd": "Tambah ke favorit",
-    "favoriteRemove": "Hapus dari favorit",
-    "copyLink": "Salin tautan tugas",
-    "actions": "Tindakan tugas",
-    "editDescription": "Edit deskripsi",
-    "copyId": "Salin ID tugas",
-    "reopen": "Buka kembali tugas",
-    "markDone": "Tandai selesai",
-    "closeDetails": "Tutup detail tugas",
-    "linkCopied": "Tautan tugas disalin",
-    "idCopied": "ID tugas disalin",
-    "copyFailed": "Tidak dapat menyalin. Coba lagi.",
-    "createdBy": "Dibuat oleh",
-    "saveDescription": "Simpan deskripsi",
-    "ticketDescription": "Deskripsi tugas",
-    "properties": "Properti",
-    "editAssignees": "Edit penanggung jawab",
-    "resources": "Sumber daya",
-    "tokens": "Token terpakai",
-    "comments": "Komentar",
-    "you": "Anda",
-    "justNow": "Baru saja",
-    "addComment": "Tambah komentar",
-    "enterComment": "Masukkan komentar Anda",
-    "postComment": "Kirim komentar",
-    "moveUp": "Pindah ke atas",
-    "moveDown": "Pindah ke bawah",
-    "nextColumn": "Pindah ke kolom berikutnya",
-    "previousColumn": "Pindah ke kolom sebelumnya",
-    "keyboardHint": "Enter membuka. Spasi mengambil, panah memindahkan, spasi meletakkan, dan Escape membatalkan."
-},
+    addTicketTo: (column) => `Tambah tugas ke ${column}`,
+    board: 'Papan proyek',
+    controls: 'Kontrol papan',
+    navigation: 'Buka navigasi',
+    inbox: 'Buka kotak masuk proyek',
+    newTicket: 'Tugas baru',
+    columns: 'Kolom papan proyek',
+    sortTickets: 'Urutkan tugas',
+    filterTickets: 'Filter tugas',
+    displayOptions: 'Opsi tampilan',
+    sort: 'Urutkan',
+    filter: 'Filter',
+    display: 'Tampilan',
+    manualOrder: 'Urutan manual',
+    priority: 'Prioritas',
+    title: 'Judul',
+    project: 'Proyek',
+    allPriorities: 'Semua prioritas',
+    allProjects: 'Semua proyek',
+    clearFilters: 'Hapus filter',
+    showDone: 'Tampilkan kolom selesai',
+    fillScreens: 'Isi layar lebar',
+    createTicket: 'Buat tugas',
+    closeCreate: 'Tutup pembuatan tugas',
+    ticketTitle: 'Judul tugas',
+    enterTitle: 'Masukkan judul tugas',
+    description: 'Deskripsi',
+    descriptionArea: 'Area deskripsi',
+    status: 'Status',
+    urgency: 'Urgensi',
+    assignee: 'Penanggung jawab',
+    unassigned: 'Belum ditugaskan',
+    keepCreating: 'Terus membuat',
+    cancel: 'Batal',
+    addTicket: 'Tambah tugas',
+    sortTitle: 'Urutkan menurut judul',
+    noTickets: 'Tidak ada masalah di sini',
+    favoriteAdd: 'Tambah ke favorit',
+    favoriteRemove: 'Hapus dari favorit',
+    copyLink: 'Salin tautan tugas',
+    actions: 'Tindakan tugas',
+    editDescription: 'Edit deskripsi',
+    copyId: 'Salin ID tugas',
+    reopen: 'Buka kembali tugas',
+    markDone: 'Tandai selesai',
+    closeDetails: 'Tutup detail tugas',
+    linkCopied: 'Tautan tugas disalin',
+    idCopied: 'ID tugas disalin',
+    copyFailed: 'Tidak dapat menyalin. Coba lagi.',
+    createdBy: 'Dibuat oleh',
+    saveDescription: 'Simpan deskripsi',
+    ticketDescription: 'Deskripsi tugas',
+    properties: 'Properti',
+    editAssignees: 'Edit penanggung jawab',
+    resources: 'Sumber daya',
+    tokens: 'Token terpakai',
+    comments: 'Komentar',
+    you: 'Anda',
+    justNow: 'Baru saja',
+    addComment: 'Tambah komentar',
+    enterComment: 'Masukkan komentar Anda',
+    postComment: 'Kirim komentar',
+    moveUp: 'Pindah ke atas',
+    moveDown: 'Pindah ke bawah',
+    nextColumn: 'Pindah ke kolom berikutnya',
+    previousColumn: 'Pindah ke kolom sebelumnya',
+    keyboardHint:
+      'Enter membuka. Spasi mengambil, panah memindahkan, spasi meletakkan, dan Escape membatalkan.',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "Avatar agen", unavailable: "Avatar tidak tersedia", },
+  AGENT_AVATAR_MESSAGES: { label: 'Avatar agen', unavailable: 'Avatar tidak tersedia' },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

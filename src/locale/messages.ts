@@ -26,7 +26,11 @@ export function defineMessages<M>(id: keyof Translations, en: M): MessageCatalog
   return { id, en };
 }
 
-function pickFrom<M>(translations: LoadedTranslations, catalog: MessageCatalog<M>, locale: string | undefined): M {
+function pickFrom<M>(
+  translations: LoadedTranslations,
+  catalog: MessageCatalog<M>,
+  locale: string | undefined,
+): M {
   const language = resolveBloomLanguage(locale ?? runtimeLocale());
   if (language === 'en') return catalog.en;
   const table = translations.tables[language];
@@ -56,6 +60,9 @@ export function useMessages<M>(
   const scope = useContext(LocaleContext);
   const locale = localeProp ?? scope?.locale;
   const translations = scope ? scope.translations : getBloomTranslations();
-  const messages = useMemo(() => pickFrom(translations, catalog, locale), [translations, catalog, locale]);
+  const messages = useMemo(
+    () => pickFrom(translations, catalog, locale),
+    [translations, catalog, locale],
+  );
   return { locale, messages };
 }

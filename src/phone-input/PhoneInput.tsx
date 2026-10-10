@@ -89,7 +89,8 @@ export function PhoneInput({
             label={countrySelectLabel}
             disabled={field.disabled}
           />
-        }>
+        }
+      >
         <TextFieldInput
           label={field.accessibilityLabel ?? messages.phoneNumber}
           placeholder={placeholder ?? null}

@@ -10,7 +10,9 @@ import type { PropertyTypePickerProps } from './types';
  * 12 inset, radius 12, as many per row as fit (4 in a 460-wide panel). An
  * empty selection means any type. A `group` of `aria-pressed` toggles.
  */
-export function PropertyTypePicker<T extends string = PropertyType>(props: PropertyTypePickerProps<T>) {
+export function PropertyTypePicker<T extends string = PropertyType>(
+  props: PropertyTypePickerProps<T>,
+) {
   return <PropertyTypeTiles<T> {...props} size="medium" />;
 }
 

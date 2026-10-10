@@ -79,7 +79,6 @@ export function AiProfileTemplate({ initialMonth = 11 }: { initialMonth?: number
                 </>
               }
             />
-
           </View>
           <AgentsChartCard
             testID="ai-profile-agents"

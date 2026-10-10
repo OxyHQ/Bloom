@@ -1,6 +1,16 @@
 import React, { useCallback, useId, useMemo, useState } from 'react';
 import { View } from 'react-native';
-import Svg, { Circle, ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, {
+  Circle,
+  ClipPath,
+  Defs,
+  G,
+  Line,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+} from 'react-native-svg';
 
 import { closedAreaPath } from '../chart-cards/LineChartCard';
 import { curvePath, niceTicks, type Point } from '../chart-cards/geometry';
@@ -11,7 +21,10 @@ import { compactNumber, describeDeltaRatio, formatNumber } from '../chart-cards/
 import { PeriodChartHeader } from '../chart-cards/primitives/PeriodChartHeader';
 import { PulsingDot } from '../chart-cards/primitives/PulsingDot';
 import { useActiveIndex } from '../chart-cards/primitives/use-active-index';
-import { useChartCardSurfacePalette, useChartTones } from '../chart-cards/primitives/use-chart-palette';
+import {
+  useChartCardSurfacePalette,
+  useChartTones,
+} from '../chart-cards/primitives/use-chart-palette';
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
 import { RiAlbumLine } from '../icons/remix/RiAlbumLine';
 import { Text } from '../typography';
@@ -139,16 +152,23 @@ export function StreamsChart({
           onActiveIndexChange={setActiveIndex}
           palette={palette}
           accessibilityLabel={
-            accessibilityLabel ?? messages.streams.summary(title, describeEvents(visibleEvents, categories))
+            accessibilityLabel ??
+            messages.streams.summary(title, describeEvents(visibleEvents, categories))
           }
           testID={testID ? `${testID}-plot` : undefined}
         >
           {({ size, box, x, y }) => {
             const points: Point[] = values.map((v, i) => ({
               x: x(i),
-              y: y(anim.from && anim.from.length === values.length ? lerp(anim.from[i]!, v, anim.progress) : v),
+              y: y(
+                anim.from && anim.from.length === values.length
+                  ? lerp(anim.from[i]!, v, anim.progress)
+                  : v,
+              ),
             }));
-            const revealWidth = anim.from ? size.width : box.left + (size.width - box.left) * anim.progress;
+            const revealWidth = anim.from
+              ? size.width
+              : box.left + (size.width - box.left) * anim.progress;
             const active = activeIndex !== null ? points[activeIndex] : undefined;
             return (
               <>
@@ -180,8 +200,17 @@ export function StreamsChart({
                     );
                   })}
                   <G clipPath={`url(#${id}-reveal)`}>
-                    <Path d={closedAreaPath(points, box.bottom, 'monotone')} fill={`url(#${id}-fill)`} stroke="none" />
-                    <Path d={curvePath(points, 'monotone')} fill="none" stroke={tone.activeColor} strokeWidth={2.5} />
+                    <Path
+                      d={closedAreaPath(points, box.bottom, 'monotone')}
+                      fill={`url(#${id}-fill)`}
+                      stroke="none"
+                    />
+                    <Path
+                      d={curvePath(points, 'monotone')}
+                      fill="none"
+                      stroke={tone.activeColor}
+                      strokeWidth={2.5}
+                    />
                     {visibleEvents.map((event) => {
                       const p = points[event.index];
                       return p ? (
@@ -208,7 +237,12 @@ export function StreamsChart({
                         strokeWidth={1}
                         strokeDasharray="4 4"
                       />
-                      <PulsingDot cx={active.x} cy={active.y} color={tone.activeColor} ring={palette.surface} />
+                      <PulsingDot
+                        cx={active.x}
+                        cy={active.y}
+                        color={tone.activeColor}
+                        ring={palette.surface}
+                      />
                     </>
                   ) : null}
                 </Svg>
@@ -239,7 +273,11 @@ export function StreamsChart({
                       }}
                     >
                       <RiAlbumLine width={12} height={12} fill={palette.textSecondary} />
-                      <Text variant="caption-1-medium" numberOfLines={1} style={{ color: palette.text, flexShrink: 1 }}>
+                      <Text
+                        variant="caption-1-medium"
+                        numberOfLines={1}
+                        style={{ color: palette.text, flexShrink: 1 }}
+                      >
                         {event.label}
                       </Text>
                     </View>

@@ -19,11 +19,7 @@ import { Pressable, Text } from 'react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '../hover-card/HoverCard.web';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '../hover-card/HoverCard.web';
 import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_OPEN_DELAY } from '../hover-card/constants';
 import { UserHoverCard } from '../user-hover-card';
 
@@ -59,7 +55,12 @@ function mount(ui: React.ReactElement) {
 }
 
 /** React synthesises `onPointerEnter`/`Leave` from the bubbling over/out pair. */
-function pointer(type: 'pointerover' | 'pointerout', target: Element, related: Element, pointerType = 'mouse') {
+function pointer(
+  type: 'pointerover' | 'pointerout',
+  target: Element,
+  related: Element,
+  pointerType = 'mouse',
+) {
   const event = new MouseEvent(type, { bubbles: true, view: window, relatedTarget: related });
   Object.defineProperty(event, 'pointerType', { value: pointerType });
   act(() => {

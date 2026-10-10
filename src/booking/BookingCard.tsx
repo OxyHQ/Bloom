@@ -15,7 +15,12 @@ import { ActionCardHeader, ActionCardNote, ActionCardShell } from './ActionCard'
 import { BookingFieldCell } from './BookingFieldCell';
 import { BOOKING_MESSAGES } from './messages';
 import { PriceBreakdown } from './PriceBreakdown';
-import { BOOKING_FIELD_RADIUS, BOOKING_STYLE_ID, BOOKING_WEB_CSS, resolveBookingPalette } from './shared';
+import {
+  BOOKING_FIELD_RADIUS,
+  BOOKING_STYLE_ID,
+  BOOKING_WEB_CSS,
+  resolveBookingPalette,
+} from './shared';
 import type { BookingCardProps, BookingFieldKey } from './types';
 
 /**
@@ -188,23 +193,30 @@ function BookingCardComponent({
       </View>
 
       <Button
-
         size="lg"
         fullWidth
         onPress={onReserve}
         disabled={reserveDisabled}
         loading={loading}
         style={{ marginTop: 16, alignSelf: 'stretch' }}
-        testID={id('reserve')} tone="accent" appearance="solid"
+        testID={id('reserve')}
+        tone="accent"
+        appearance="solid"
       >
         {buttonLabel}
       </Button>
 
-      {shownNote != null ? <ActionCardNote style={{ marginTop: 12 }}>{shownNote}</ActionCardNote> : null}
+      {shownNote != null ? (
+        <ActionCardNote style={{ marginTop: 12 }}>{shownNote}</ActionCardNote>
+      ) : null}
 
-      {breakdown ? <PriceBreakdown {...breakdown} style={[{ marginTop: 24 }, breakdown.style]} /> : null}
+      {breakdown ? (
+        <PriceBreakdown {...breakdown} style={[{ marginTop: 24 }, breakdown.style]} />
+      ) : null}
 
-      {footer != null ? <View style={{ marginTop: 24, alignItems: 'center' }}>{footer}</View> : null}
+      {footer != null ? (
+        <View style={{ marginTop: 24, alignItems: 'center' }}>{footer}</View>
+      ) : null}
     </ActionCardShell>
   );
 }

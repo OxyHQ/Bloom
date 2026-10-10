@@ -248,7 +248,14 @@ export type ListingPreviewMode = 'card' | 'page';
 /** The listing as the preview draws it: `ListingCard`'s data, without its handlers. */
 export type ListingPreviewData = Omit<
   ListingCardProps,
-  'onPress' | 'href' | 'onFavoriteChange' | 'favorite' | 'onPhotoIndexChange' | 'style' | 'testID' | 'layout'
+  | 'onPress'
+  | 'href'
+  | 'onFavoriteChange'
+  | 'favorite'
+  | 'onPhotoIndexChange'
+  | 'style'
+  | 'testID'
+  | 'layout'
 > & {
   /** The page preview's description paragraph. */
   description?: string;

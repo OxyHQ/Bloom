@@ -46,7 +46,6 @@ export const PAYOUT_SUMMARY_LABELS: PayoutSummaryCardLabels = CREATOR_STUDIO_MES
 const PLOT_HEIGHT = 112;
 const BAR_RADIUS = 6;
 
-
 function PayoutSummaryCardComponent({
   estimated,
   delta,
@@ -61,7 +60,8 @@ function PayoutSummaryCardComponent({
   testID,
 }: PayoutSummaryCardProps) {
   const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
-  const format = formatProp ?? ((value: number) => formatCurrency(Math.round(value), 'USD', locale));
+  const format =
+    formatProp ?? ((value: number) => formatCurrency(Math.round(value), 'USD', locale));
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const labels = { ...messages.payout, ...labelOverrides };
@@ -140,7 +140,10 @@ function PayoutSummaryCardComponent({
               return (
                 <Svg width={size.width} height={size.height} pointerEvents="none">
                   {values.map((v, i) => {
-                    const shown = anim.from && anim.from.length === values.length ? lerp(anim.from[i]!, v, anim.progress) : v * anim.progress;
+                    const shown =
+                      anim.from && anim.from.length === values.length
+                        ? lerp(anim.from[i]!, v, anim.progress)
+                        : v * anim.progress;
                     const top = y(shown);
                     const current = i === months.length - 1;
                     const fill =
@@ -149,7 +152,13 @@ function PayoutSummaryCardComponent({
                       <Path
                         key={`bar-${i}`}
                         testID={testID ? `${testID}-bar-${i}` : undefined}
-                        d={roundedBarPath(box.left + i * band + slot.offset, top, slot.size, Math.max(0, box.bottom - top), BAR_RADIUS)}
+                        d={roundedBarPath(
+                          box.left + i * band + slot.offset,
+                          top,
+                          slot.size,
+                          Math.max(0, box.bottom - top),
+                          BAR_RADIUS,
+                        )}
                         fill={fill}
                       />
                     );
@@ -169,7 +178,11 @@ function PayoutSummaryCardComponent({
             <Text variant="body-2-regular" style={{ color: palette.textSecondary }}>
               {labels.lastPayout}
             </Text>
-            <Text variant="body-2-medium" numberOfLines={1} style={[styles.factValue, { color: palette.text }, TABULAR]}>
+            <Text
+              variant="body-2-medium"
+              numberOfLines={1}
+              style={[styles.factValue, { color: palette.text }, TABULAR]}
+            >
               {`${lastPayout.amount} · ${lastPayout.date}`}
             </Text>
           </View>
@@ -179,7 +192,11 @@ function PayoutSummaryCardComponent({
             <Text variant="body-2-regular" style={{ color: palette.textSecondary }}>
               {labels.nextPayout}
             </Text>
-            <Text variant="body-2-medium" numberOfLines={1} style={[styles.factValue, { color: palette.text }, TABULAR]}>
+            <Text
+              variant="body-2-medium"
+              numberOfLines={1}
+              style={[styles.factValue, { color: palette.text }, TABULAR]}
+            >
               {nextPayoutDate}
             </Text>
           </View>
@@ -188,7 +205,6 @@ function PayoutSummaryCardComponent({
 
       {onViewStatements || statementsHref ? (
         <LinkButton
-
           size="sm"
           trailingIcon={RiArrowRightSLine}
           onPress={onViewStatements}

@@ -55,7 +55,10 @@ function EnergyBadgeComponent({
     <View
       accessible
       accessibilityRole="image"
-      accessibilityLabel={accessibilityLabel ?? (pending ? messages.energyRatingStatus(pendingLabel) : messages.energyRatingClass(rating!))}
+      accessibilityLabel={
+        accessibilityLabel ??
+        (pending ? messages.energyRatingStatus(pendingLabel) : messages.energyRatingClass(rating!))
+      }
       testID={testID}
       style={[
         {

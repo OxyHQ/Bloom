@@ -70,11 +70,7 @@ export function quietText(surface: string, text: string, minRatio: number): stri
  * light and dark for exactly these pairs. Falls back to `text` if no rung clears
  * every surface, which is the honest answer: there is no quiet colour there.
  */
-export function quietTextOver(
-  surfaces: readonly string[],
-  text: string,
-  minRatio: number,
-): string {
+export function quietTextOver(surfaces: readonly string[], text: string, minRatio: number): string {
   let best = text;
   let bestWorstCase = -1;
   for (const surface of surfaces) {
@@ -123,7 +119,10 @@ export const AAA_TEXT_CONTRAST = 7;
  * Returns the first candidate when none is better than another, so the caller's
  * order is its preference order.
  */
-export function readableOn(over: string | readonly string[], candidates: readonly string[]): string {
+export function readableOn(
+  over: string | readonly string[],
+  candidates: readonly string[],
+): string {
   const surfaces = typeof over === 'string' ? [over] : over;
   let best = candidates[0]!;
   let bestScore = -1;

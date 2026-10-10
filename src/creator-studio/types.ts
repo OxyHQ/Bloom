@@ -486,7 +486,12 @@ export interface TrackMetadataFormProps {
   /** Hide the embedded credits editor (render your own). Default `true`. */
   showCredits?: boolean;
   /** Per-field messages; a field with one paints invalid. */
-  errors?: Partial<Record<'title' | 'version' | 'genre' | 'primaryArtists' | 'isrc' | 'language' | 'lyrics', string>>;
+  errors?: Partial<
+    Record<
+      'title' | 'version' | 'genre' | 'primaryArtists' | 'isrc' | 'language' | 'lyrics',
+      string
+    >
+  >;
   disabled?: boolean;
   labels?: Partial<TrackMetadataFormLabels>;
   style?: StyleProp<ViewStyle>;

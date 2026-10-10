@@ -1,5 +1,12 @@
 import React, { useCallback, useId, useMemo } from 'react';
-import { Platform, StyleSheet, View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Svg, { Circle, Defs, G, Line, Path, Text as SvgText, TextPath } from 'react-native-svg';
 
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -124,7 +131,6 @@ const pctFormat = (n: number) => `${n}%`;
 /** `dominantBaseline` is not on react-native-svg's `TextProps`; its web build forwards it to the DOM. */
 const WEB_CENTRAL_BASELINE: object = Platform.OS === 'web' ? { dominantBaseline: 'central' } : {};
 
-
 interface Arc extends RingBand, SectorAngles {}
 
 /**
@@ -185,14 +191,22 @@ export function RadialChartCard({
   const data = selected?.data ?? dataProp ?? [];
   const headline = selected?.headline ?? headlineProp;
   const delta = selected?.delta ?? deltaProp;
-  const tones = useMemo(() => data.map((d, i) => resolveTone(palettes, i, d.color, d.activeColor)), [data, palettes]);
+  const tones = useMemo(
+    () => data.map((d, i) => resolveTone(palettes, i, d.color, d.activeColor)),
+    [data, palettes],
+  );
 
   const values = useMemo(() => data.map((d) => d.value), [data]);
   const total = values.reduce((sum, v) => sum + v, 0);
   const largest = Math.max(1, ...values);
-  const max = selected?.max ?? maxProp ?? (isRingFamily ? Math.ceil(largest * 1.1) : Math.max(1, total));
+  const max =
+    selected?.max ?? maxProp ?? (isRingFamily ? Math.ceil(largest * 1.1) : Math.max(1, total));
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const selectRange = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -211,7 +225,10 @@ export function RadialChartCard({
     center = { value: pct(data[0]?.value ?? 0), caption: centerCaption ?? chartText.ofGoal };
   } else if (isStacked) {
     const focus = hovering ? activeIndex : 0;
-    center = { value: pct(data[focus]?.value ?? 0), caption: centerCaption ?? data[focus]?.label ?? '' };
+    center = {
+      value: pct(data[focus]?.value ?? 0),
+      caption: centerCaption ?? data[focus]?.label ?? '',
+    };
   }
 
   // The stacked half gauge: the items plus an unclaimed remainder, so the arcs stay proportional to `max`.
@@ -219,7 +236,9 @@ export function RadialChartCard({
     const remainder = Math.max(0, max - total);
     return remainder > 0 ? [...values, remainder] : values;
   }, [values, max, total]);
-  const anim = useChartProgress(useMemo(() => (isStacked ? pieValues : [...values, max]), [isStacked, pieValues, values, max]));
+  const anim = useChartProgress(
+    useMemo(() => (isStacked ? pieValues : [...values, max]), [isStacked, pieValues, values, max]),
+  );
   const animating = anim.progress < 1;
 
   const fade = useWebTransition('opacity', 200);
@@ -239,7 +258,13 @@ export function RadialChartCard({
       const cy = height * HALF_CY;
       const target = pieSectorAngles(pieValues, 180, 0, HALF_PADDING_ANGLE);
       const prev = anim.from ? pieSectorAngles(anim.from, 180, 0, HALF_PADDING_ANGLE) : null;
-      const arcs: Arc[] = animatedPieAngles(pieValues, target, prev, anim.progress, HALF_PADDING_ANGLE).map((a) => ({
+      const arcs: Arc[] = animatedPieAngles(
+        pieValues,
+        target,
+        prev,
+        anim.progress,
+        HALF_PADDING_ANGLE,
+      ).map((a) => ({
         ...a,
         innerRadius: inner,
         outerRadius: outer,
@@ -255,7 +280,11 @@ export function RadialChartCard({
     const arcs: Arc[] = bands.map((band, i) => {
       const end = valueAngle(data[i]!.value, max);
       if (anim.from && prevMax !== null) {
-        return { ...band, startAngle: 90, endAngle: lerp(valueAngle(anim.from[i]!, prevMax), end, anim.progress) };
+        return {
+          ...band,
+          startAngle: 90,
+          endAngle: lerp(valueAngle(anim.from[i]!, prevMax), end, anim.progress),
+        };
       }
       return { ...band, startAngle: 90, endAngle: lerp(90, end, anim.progress) };
     });
@@ -266,7 +295,12 @@ export function RadialChartCard({
     const { cx, cy, arcs } = layout(size.width, size.height);
     // recharts hands a RadialBar's background track the bar's own mouse handlers,
     // so a ring with a track is hoverable all the way round.
-    const targets = isRingFamily || isGauge ? (variant === 'grid' ? arcs : arcs.map((a) => ({ ...a, startAngle: 90, endAngle: -270 }))) : arcs;
+    const targets =
+      isRingFamily || isGauge
+        ? variant === 'grid'
+          ? arcs
+          : arcs.map((a) => ({ ...a, startAngle: 90, endAngle: -270 }))
+        : arcs;
     const index = sectorIndexAt(x, y, cx, cy, targets);
     setActiveIndex(index !== null && index < data.length ? index : null);
   };
@@ -277,7 +311,9 @@ export function RadialChartCard({
     (isGauge
       ? chartText.gaugeChart(
           title,
-          centerCaption !== undefined ? `${reading}% ${centerCaption}` : chartText.percentOfGoal(reading),
+          centerCaption !== undefined
+            ? `${reading}% ${centerCaption}`
+            : chartText.percentOfGoal(reading),
         )
       : (isStacked ? chartText.halfGaugeChart : chartText.radialChart)(
           title,
@@ -289,12 +325,21 @@ export function RadialChartCard({
       accessibilityLabel={a11y}
       testID={testID ? `${testID}-plot` : undefined}
       onPointerAt={onPointerAt}
-      onPointerLeave={() => setActiveIndex(null)}>
+      onPointerLeave={() => setActiveIndex(null)}
+    >
       {({ width, height }) => {
         const geo = layout(width, height);
         const { cx, cy, inner, outer, arcs } = geo;
         if (isStacked) {
-          const track = sectorPath({ cx, cy, innerRadius: inner, outerRadius: outer, startAngle: 180, endAngle: 0, cornerRadius: ROUND });
+          const track = sectorPath({
+            cx,
+            cy,
+            innerRadius: inner,
+            outerRadius: outer,
+            startAngle: 180,
+            endAngle: 0,
+            cornerRadius: ROUND,
+          });
           return (
             <Svg width={width} height={height} style={StyleSheet.absoluteFill} pointerEvents="none">
               {track ? <Path d={track} fill={palette.track} stroke="none" /> : null}
@@ -322,22 +367,42 @@ export function RadialChartCard({
             {variant === 'grid' ? (
               <G>
                 {radialBarBandCentres(data.length, inner, outer).map((r, i) => (
-                  <Circle key={`grid-${i}`} cx={cx} cy={cy} r={r} fill="none" stroke={palette.cursor} strokeWidth={1} />
+                  <Circle
+                    key={`grid-${i}`}
+                    cx={cx}
+                    cy={cy}
+                    r={r}
+                    fill="none"
+                    stroke={palette.cursor}
+                    strokeWidth={1}
+                  />
                 ))}
                 {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
                   const a = polarToCartesian(cx, cy, inner, angle);
                   const b = polarToCartesian(cx, cy, outer, angle);
                   return (
-                    <Line key={`spoke-${angle}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={palette.cursor} strokeWidth={1} />
+                    <Line
+                      key={`spoke-${angle}`}
+                      x1={a.x}
+                      y1={a.y}
+                      x2={b.x}
+                      y2={b.y}
+                      stroke={palette.cursor}
+                      strokeWidth={1}
+                    />
                   );
                 })}
               </G>
             ) : null}
-            {variant === 'solid' ? <Circle cx={cx} cy={cy} r={inner - 8} fill={palette.inner} stroke="none" /> : null}
+            {variant === 'solid' ? (
+              <Circle cx={cx} cy={cy} r={inner - 8} fill={palette.inner} stroke="none" />
+            ) : null}
             {variant !== 'grid'
               ? bands.map((band, i) => {
                   const d = sectorPath({ cx, cy, ...band, startAngle: 90, endAngle: -270 });
-                  return d ? <Path key={`track-${i}`} d={d} fill={palette.track} stroke="none" /> : null;
+                  return d ? (
+                    <Path key={`track-${i}`} d={d} fill={palette.track} stroke="none" />
+                  ) : null;
                 })
               : null}
             {arcs.map((arc, i) => {
@@ -360,7 +425,11 @@ export function RadialChartCard({
               <>
                 <Defs>
                   {arcs.map((arc, i) => (
-                    <Path key={`label-path-${i}`} id={`${id}-${i}`} d={radialLabelArc(cx, cy, arc, arc.startAngle, arc.endAngle, LABEL_OFFSET)} />
+                    <Path
+                      key={`label-path-${i}`}
+                      id={`${id}-${i}`}
+                      d={radialLabelArc(cx, cy, arc, arc.startAngle, arc.endAngle, LABEL_OFFSET)}
+                    />
                   ))}
                 </Defs>
                 {arcs.map((_, i) => (
@@ -372,7 +441,8 @@ export function RadialChartCard({
                     fontFamily={Platform.OS === 'web' ? 'var(--bloom-font-sans)' : 'Inter'}
                     alignmentBaseline="central"
                     // Chrome ignores `alignment-baseline` on <text>; recharts sets `dominant-baseline`.
-                    {...WEB_CENTRAL_BASELINE}>
+                    {...WEB_CENTRAL_BASELINE}
+                  >
                     <TextPath href={`#${id}-${i}`}>{data[i]!.label}</TextPath>
                   </SvgText>
                 ))}
@@ -384,10 +454,16 @@ export function RadialChartCard({
     </PolarSurface>
   );
 
-  const stackedHeightStyle: ViewStyle | null = halfFit ? { height: 'auto', minHeight: CHART_CARD_HEIGHT } : null;
+  const stackedHeightStyle: ViewStyle | null = halfFit
+    ? { height: 'auto', minHeight: CHART_CARD_HEIGHT }
+    : null;
 
   return (
-    <ChartCardSurface height={tiles ? 'auto' : undefined} style={[stackedHeightStyle, style]} testID={testID}>
+    <ChartCardSurface
+      height={tiles ? 'auto' : undefined}
+      style={[stackedHeightStyle, style]}
+      testID={testID}
+    >
       <ChartHeader
         label={headerLabel}
         value={headlineValue}
@@ -404,9 +480,12 @@ export function RadialChartCard({
 
       <View
         style={[
-          tiles ? { width: '100%', height: TILES_PLOT_HEIGHT } : { width: '100%', flex: 1, minHeight: 0 },
+          tiles
+            ? { width: '100%', height: TILES_PLOT_HEIGHT }
+            : { width: '100%', flex: 1, minHeight: 0 },
           halfFit ? { minHeight: HALF_MIN_HEIGHT } : null,
-        ]}>
+        ]}
+      >
         {chart}
         {center ? (
           <View
@@ -415,7 +494,8 @@ export function RadialChartCard({
               isStacked
                 ? { position: 'absolute', left: 0, right: 0, top: 0, height: `${HALF_CY * 100}%` }
                 : { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }
-            }>
+            }
+          >
             <ChartCenterReadout
               value={center.value}
               format={pctFormat}
@@ -431,7 +511,11 @@ export function RadialChartCard({
       {isStacked && !tiles ? (
         <ChartLegend
           testID={testID ? `${testID}-legend` : undefined}
-          items={data.map((d, i) => ({ label: d.label, color: tones[i]!.color, value: format(d.value) }))}
+          items={data.map((d, i) => ({
+            label: d.label,
+            color: tones[i]!.color,
+            value: format(d.value),
+          }))}
           activeIndex={activeIndex}
           onActiveChange={setActiveIndex}
           style={{ paddingBottom: 4 }}

@@ -10,7 +10,7 @@ import { BloomScope } from './index';
 
 const meta: Meta<typeof BloomScope> = {
   argTypes: {
-    "size": { control: 'select', options: ["sm","md"] }
+    size: { control: 'select', options: ['sm', 'md'] },
   },
   title: 'Foundations/Control Size',
   component: BloomScope,
@@ -102,7 +102,7 @@ export const Density: Story = {
  */
 export const OverContent: Story = {
   args: {},
-  parameters: { controls: { include: ["size"] } },
+  parameters: { controls: { include: ['size'] } },
   render: (args) => (
     <View
       style={{
@@ -113,12 +113,12 @@ export const OverContent: Story = {
         backgroundColor: '#2b4a63',
       }}
     >
-      <BloomScope {...args} >
+      <BloomScope {...args}>
         <Actions />
       </BloomScope>
       <Text variant="body-medium" style={{ color: 'rgba(255,255,255,0.86)' }}>
-        The island takes its fill from the surface ladder and its alpha from the chrome
-        role, so it reads on a colour Bloom did not choose.
+        The island takes its fill from the surface ladder and its alpha from the chrome role, so it
+        reads on a colour Bloom did not choose.
       </Text>
     </View>
   ),

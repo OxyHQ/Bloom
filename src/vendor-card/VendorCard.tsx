@@ -1,5 +1,12 @@
 import React, { memo, useMemo } from 'react';
-import { Image, Linking, Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
+import {
+  Image,
+  Linking,
+  Pressable,
+  View,
+  type GestureResponderEvent,
+  type ViewStyle,
+} from 'react-native';
 
 import { Badge } from '../badge';
 import { Chip } from '../chip';
@@ -455,7 +462,13 @@ function VendorCardComponent(props: VendorCardProps) {
       {compact ? null : (
         <View
           pointerEvents="box-none"
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, aspectRatio: VENDOR_PHOTO_ASPECT_RATIO }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            aspectRatio: VENDOR_PHOTO_ASPECT_RATIO,
+          }}
         >
           <View style={{ position: 'absolute', top: 12, left: 12, right: 56 }}>
             <Marks

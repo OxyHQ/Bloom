@@ -18,7 +18,10 @@ import { buildTheme } from '../theme/build-theme';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { resolvedStyle } from './support/rendered-style';
 
-jest.mock('../styles/adopt-style-sheet', () => ({ adoptStyleSheet: jest.fn(), dropStyleSheet: jest.fn() }));
+jest.mock('../styles/adopt-style-sheet', () => ({
+  adoptStyleSheet: jest.fn(),
+  dropStyleSheet: jest.fn(),
+}));
 
 function renderLog(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   return render(
@@ -56,7 +59,10 @@ describe('AgentLog', () => {
     expect(resolvedStyle(row.props.style).overflow).toBe('hidden');
     expect(getByText('Step')).toBeTruthy();
     const content = row.children[0] as ReactTestInstance;
-    expect(resolvedStyle(content.props.style)).toMatchObject({ position: 'relative', paddingLeft: 16 });
+    expect(resolvedStyle(content.props.style)).toMatchObject({
+      position: 'relative',
+      paddingLeft: 16,
+    });
   });
 
   it('a caller overrides the inset by longhand (Web Search uses 14)', () => {
@@ -65,7 +71,8 @@ describe('AgentLog', () => {
         <Text>Step</Text>
       </AgentLogRow>,
     );
-    const content = getByTestId('row', { includeHiddenElements: true }).children[0] as ReactTestInstance;
+    const content = getByTestId('row', { includeHiddenElements: true })
+      .children[0] as ReactTestInstance;
     expect(resolvedStyle(content.props.style).paddingLeft).toBe(14);
   });
 
@@ -76,7 +83,9 @@ describe('AgentLog', () => {
         <Text>a</Text>
       </AgentLogRow>,
     );
-    const trunk = resolvedStyle(getByTestId('agent-log-row-trunk', { includeHiddenElements: true }).props.style);
+    const trunk = resolvedStyle(
+      getByTestId('agent-log-row-trunk', { includeHiddenElements: true }).props.style,
+    );
     expect(trunk).toMatchObject({ width: 1, top: 8, bottom: 0, left: 0, transformOrigin: 'top' });
     expect(trunk.backgroundColor).toBe(theme.colors.border);
     unmount();
@@ -93,7 +102,9 @@ describe('AgentLog', () => {
   it('uses neutral-700 for the guide in dark mode', () => {
     const theme = buildTheme('teal', 'dark');
     const { getByTestId } = renderLog(<AgentLogGuideBridge height={6} offset={7} reduce />, 'dark');
-    const bridge = resolvedStyle(getByTestId('agent-log-guide-bridge', { includeHiddenElements: true }).props.style);
+    const bridge = resolvedStyle(
+      getByTestId('agent-log-guide-bridge', { includeHiddenElements: true }).props.style,
+    );
     expect(bridge).toMatchObject({ top: -6, height: 6, left: 7, width: 1 });
     expect(bridge.backgroundColor).toBe(theme.colors.border);
   });
@@ -107,7 +118,9 @@ describe('AgentLog', () => {
     );
     // The jest reanimated mock completes timings synchronously.
     expect(onRevealed).toHaveBeenCalledTimes(1);
-    expect(resolvedStyle(getByTestId('unit', { includeHiddenElements: true }).props.style)).toMatchObject({ opacity: 1, height: 'auto' });
+    expect(
+      resolvedStyle(getByTestId('unit', { includeHiddenElements: true }).props.style),
+    ).toMatchObject({ opacity: 1, height: 'auto' });
   });
 
   it('a working row is the stars thinking state, 4px above and below', () => {
@@ -204,7 +217,9 @@ describe('AgentLog', () => {
         'bloom-agent-log-web-css',
         expect.stringContaining('animation: bloom-agent-log-shimmer 3.4s linear infinite'),
       );
-      const css = jest.mocked(adoptStyleSheet).mock.calls.find(([id]) => id === 'bloom-agent-log-web-css')![1];
+      const css = jest
+        .mocked(adoptStyleSheet)
+        .mock.calls.find(([id]) => id === 'bloom-agent-log-web-css')![1];
       expect(css).toContain('color: transparent !important');
       expect(css).toContain('prefers-reduced-motion: reduce');
     } finally {

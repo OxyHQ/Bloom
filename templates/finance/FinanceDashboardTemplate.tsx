@@ -27,7 +27,12 @@ import { TransactionsTable } from './TransactionsTable';
  */
 export function FinanceDashboardTemplate() {
   return (
-    <DashboardShell selected="finance" title="Finance" crumbIcon={RiBankLine} primaryAction="Add transaction">
+    <DashboardShell
+      selected="finance"
+      title="Finance"
+      crumbIcon={RiBankLine}
+      primaryAction="Add transaction"
+    >
       <StatCards stats={FINANCE_STATS} />
       {/* Hero card: where the money comes from and where it goes. */}
       <SankeyChartCard

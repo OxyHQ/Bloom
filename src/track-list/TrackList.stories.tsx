@@ -45,22 +45,143 @@ const COVERS = [
 const ALBUM_COVER = COVERS[0]!;
 
 const ALBUM: Track[] = [
-  { id: 'al1', number: 1, title: 'Lanterns Over Kessel Bay', artists: [{ name: 'Mira Vale' }], album: 'Low Tide Hymns', cover: ALBUM_COVER, duration: 214, plays: '4,812,330' },
-  { id: 'al2', number: 2, title: 'Paper Moons', artists: [{ name: 'Mira Vale' }, { name: 'Oren Reed' }], album: 'Low Tide Hymns', cover: ALBUM_COVER, duration: 187, explicit: true, liked: true, plays: '2,904,118' },
-  { id: 'al3', number: 3, title: 'Slow Orbit', artists: [{ name: 'Mira Vale' }], album: 'Low Tide Hymns', cover: ALBUM_COVER, duration: 243, plays: '1,377,052' },
-  { id: 'al4', number: 4, title: 'The Salt Road', artists: [{ name: 'Mira Vale' }], album: 'Low Tide Hymns', cover: ALBUM_COVER, duration: 305, plays: '988,410' },
-  { id: 'al5', number: 1, title: 'Harbour Lights (Night Version)', artists: [{ name: 'Mira Vale' }], album: 'Low Tide Hymns', cover: ALBUM_COVER, duration: 262, plays: '640,221' },
-  { id: 'al6', number: 2, title: 'Undertow', artists: [{ name: 'Mira Vale' }, { name: 'Tessa Grove' }], album: 'Low Tide Hymns', cover: ALBUM_COVER, duration: 199, explicit: true, plays: '512,904' },
-  { id: 'al7', number: 3, title: 'Lost Signal (Demo)', artists: [{ name: 'Mira Vale' }], album: 'Low Tide Hymns', cover: ALBUM_COVER, duration: 176, unavailable: true, plays: '—' },
+  {
+    id: 'al1',
+    number: 1,
+    title: 'Lanterns Over Kessel Bay',
+    artists: [{ name: 'Mira Vale' }],
+    album: 'Low Tide Hymns',
+    cover: ALBUM_COVER,
+    duration: 214,
+    plays: '4,812,330',
+  },
+  {
+    id: 'al2',
+    number: 2,
+    title: 'Paper Moons',
+    artists: [{ name: 'Mira Vale' }, { name: 'Oren Reed' }],
+    album: 'Low Tide Hymns',
+    cover: ALBUM_COVER,
+    duration: 187,
+    explicit: true,
+    liked: true,
+    plays: '2,904,118',
+  },
+  {
+    id: 'al3',
+    number: 3,
+    title: 'Slow Orbit',
+    artists: [{ name: 'Mira Vale' }],
+    album: 'Low Tide Hymns',
+    cover: ALBUM_COVER,
+    duration: 243,
+    plays: '1,377,052',
+  },
+  {
+    id: 'al4',
+    number: 4,
+    title: 'The Salt Road',
+    artists: [{ name: 'Mira Vale' }],
+    album: 'Low Tide Hymns',
+    cover: ALBUM_COVER,
+    duration: 305,
+    plays: '988,410',
+  },
+  {
+    id: 'al5',
+    number: 1,
+    title: 'Harbour Lights (Night Version)',
+    artists: [{ name: 'Mira Vale' }],
+    album: 'Low Tide Hymns',
+    cover: ALBUM_COVER,
+    duration: 262,
+    plays: '640,221',
+  },
+  {
+    id: 'al6',
+    number: 2,
+    title: 'Undertow',
+    artists: [{ name: 'Mira Vale' }, { name: 'Tessa Grove' }],
+    album: 'Low Tide Hymns',
+    cover: ALBUM_COVER,
+    duration: 199,
+    explicit: true,
+    plays: '512,904',
+  },
+  {
+    id: 'al7',
+    number: 3,
+    title: 'Lost Signal (Demo)',
+    artists: [{ name: 'Mira Vale' }],
+    album: 'Low Tide Hymns',
+    cover: ALBUM_COVER,
+    duration: 176,
+    unavailable: true,
+    plays: '—',
+  },
 ];
 
 const PLAYLIST: Track[] = [
-  { id: 'p1', title: 'Glass Harbour', artists: [{ name: 'Northbound Choir' }], album: 'Wide Open Weather', cover: COVERS[1], duration: 221, dateAdded: '2 days ago', liked: true, downloaded: true },
-  { id: 'p2', title: 'Copper Skies', artists: [{ name: 'Juno Park' }], album: 'Copper Skies', cover: COVERS[2], duration: 198, dateAdded: '3 days ago', explicit: true, downloaded: true },
-  { id: 'p3', title: 'Field Recording No. 4', artists: [{ name: 'Alder & Finch' }], album: 'Quiet Machines', cover: COVERS[3], duration: 264, dateAdded: '1 week ago' },
-  { id: 'p4', title: 'Afterglow Avenue', artists: [{ name: 'Sunday Static' }, { name: 'Lio Marsh' }], album: 'City of Small Hours', cover: COVERS[4], duration: 232, dateAdded: '12 Mar 2026', downloaded: true },
-  { id: 'p5', title: 'Soft Machinery', artists: [{ name: 'Alder & Finch' }], album: 'Quiet Machines', cover: COVERS[3], duration: 187, dateAdded: '9 Mar 2026' },
-  { id: 'p6', title: 'Ferris Wheel in Winter', artists: [{ name: 'Juno Park' }], album: 'Copper Skies', cover: COVERS[2], duration: 276, dateAdded: '2 Mar 2026', liked: true },
+  {
+    id: 'p1',
+    title: 'Glass Harbour',
+    artists: [{ name: 'Northbound Choir' }],
+    album: 'Wide Open Weather',
+    cover: COVERS[1],
+    duration: 221,
+    dateAdded: '2 days ago',
+    liked: true,
+    downloaded: true,
+  },
+  {
+    id: 'p2',
+    title: 'Copper Skies',
+    artists: [{ name: 'Juno Park' }],
+    album: 'Copper Skies',
+    cover: COVERS[2],
+    duration: 198,
+    dateAdded: '3 days ago',
+    explicit: true,
+    downloaded: true,
+  },
+  {
+    id: 'p3',
+    title: 'Field Recording No. 4',
+    artists: [{ name: 'Alder & Finch' }],
+    album: 'Quiet Machines',
+    cover: COVERS[3],
+    duration: 264,
+    dateAdded: '1 week ago',
+  },
+  {
+    id: 'p4',
+    title: 'Afterglow Avenue',
+    artists: [{ name: 'Sunday Static' }, { name: 'Lio Marsh' }],
+    album: 'City of Small Hours',
+    cover: COVERS[4],
+    duration: 232,
+    dateAdded: '12 Mar 2026',
+    downloaded: true,
+  },
+  {
+    id: 'p5',
+    title: 'Soft Machinery',
+    artists: [{ name: 'Alder & Finch' }],
+    album: 'Quiet Machines',
+    cover: COVERS[3],
+    duration: 187,
+    dateAdded: '9 Mar 2026',
+  },
+  {
+    id: 'p6',
+    title: 'Ferris Wheel in Winter',
+    artists: [{ name: 'Juno Park' }],
+    album: 'Copper Skies',
+    cover: COVERS[2],
+    duration: 276,
+    dateAdded: '2 Mar 2026',
+    liked: true,
+  },
 ];
 
 function Page({ children, maxWidth }: { children: React.ReactNode; maxWidth?: number }) {
@@ -94,9 +215,24 @@ function Heading({ children }: { children: string }) {
 
 function menuFor(extra: TrackMenuItem[] = []) {
   return (track: Track): TrackMenuItem[] => [
-    { key: 'queue', label: 'Add to queue', icon: RiPlayListAddLine, onPress: () => console.log('queue', track.id) },
-    { key: 'playlist', label: 'Add to playlist', icon: RiAddLine, onPress: () => console.log('playlist', track.id) },
-    { key: 'share', label: 'Share', icon: RiShareLine, onPress: () => console.log('share', track.id) },
+    {
+      key: 'queue',
+      label: 'Add to queue',
+      icon: RiPlayListAddLine,
+      onPress: () => console.log('queue', track.id),
+    },
+    {
+      key: 'playlist',
+      label: 'Add to playlist',
+      icon: RiAddLine,
+      onPress: () => console.log('playlist', track.id),
+    },
+    {
+      key: 'share',
+      label: 'Share',
+      icon: RiShareLine,
+      onPress: () => console.log('share', track.id),
+    },
     ...extra,
   ];
 }
@@ -197,7 +333,9 @@ export const PlaylistOwner: Story = {
 /** Liked songs: click, Shift-click and Cmd/Ctrl-click select; the selection bar floats at the bottom. */
 export const LikedSongsWithSelection: Story = {
   render: function LikedStory() {
-    const [tracks, setTracks, onLikedChange] = useLikes(PLAYLIST.map((t) => ({ ...t, liked: true })));
+    const [tracks, setTracks, onLikedChange] = useLikes(
+      PLAYLIST.map((t) => ({ ...t, liked: true })),
+    );
     const [selected, setSelected] = useState<string[]>(['p2', 'p3', 'p4']);
     const player = usePlayer('p1');
     return (
@@ -275,7 +413,13 @@ export const Narrow390: Story = {
       <View style={{ width: '100%', maxWidth: 390 }}>
         <Page>
           <Heading>Late Night Drive</Heading>
-          <TrackList tracks={tracks} {...player} menuItems={menuFor()} showDownloaded testID="narrow" />
+          <TrackList
+            tracks={tracks}
+            {...player}
+            menuItems={menuFor()}
+            showDownloaded
+            testID="narrow"
+          />
         </Page>
       </View>
     );
@@ -337,7 +481,8 @@ export const Episodes: Story = {
       onPause: () => setPlaying(false),
       onPress: (episode: Episode) => console.log('open', episode.id),
       onSavedChange: (episode: Episode, saved: boolean) => update(episode.id, { saved }),
-      onDownloadedChange: (episode: Episode, downloaded: boolean) => update(episode.id, { downloaded }),
+      onDownloadedChange: (episode: Episode, downloaded: boolean) =>
+        update(episode.id, { downloaded }),
       menuItems: () => [
         { key: 'queue', label: 'Add to queue', icon: RiPlayListAddLine, onPress: () => {} },
         { key: 'share', label: 'Share episode', icon: RiShareLine, onPress: () => {} },

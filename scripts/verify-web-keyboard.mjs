@@ -118,7 +118,11 @@ async function selectCases(page) {
 
   await key(page, 'Enter');
   let f = await focused(page);
-  record('select: Enter opens the list with focus on the chosen option', f.name === 'Banana' && (await triggerState(page, 'select-open')).expanded === 'true', show(f));
+  record(
+    'select: Enter opens the list with focus on the chosen option',
+    f.name === 'Banana' && (await triggerState(page, 'select-open')).expanded === 'true',
+    show(f),
+  );
 
   await key(page, 'ArrowDown');
   f = await focused(page);
@@ -146,38 +150,68 @@ async function selectCases(page) {
 
   await key(page, 'ArrowDown', 400);
   f = await focused(page);
-  record('select: ArrowDown on the closed trigger opens into the chosen option', f.name === 'Apple', show(f));
+  record(
+    'select: ArrowDown on the closed trigger opens into the chosen option',
+    f.name === 'Apple',
+    show(f),
+  );
 
   await key(page, 'ArrowDown');
   await key(page, 'Enter', 400);
   t = await triggerState(page, 'select-open');
-  record('select: Enter chooses the focused option', t.expanded === 'false' && t.focused && t.text.includes('Banana'), JSON.stringify(t));
+  record(
+    'select: Enter chooses the focused option',
+    t.expanded === 'false' && t.focused && t.text.includes('Banana'),
+    JSON.stringify(t),
+  );
 
   await key(page, 'Space', 400);
   f = await focused(page);
-  record('select: Space opens the list with focus on the chosen option', f.name === 'Banana', show(f));
+  record(
+    'select: Space opens the list with focus on the chosen option',
+    f.name === 'Banana',
+    show(f),
+  );
 
   await key(page, 'Escape', 400);
   t = await triggerState(page, 'select-open');
-  record('select: Escape closes and returns focus to the trigger', t.expanded === 'false' && t.focused && t.text.includes('Banana'), JSON.stringify(t));
+  record(
+    'select: Escape closes and returns focus to the trigger',
+    t.expanded === 'false' && t.focused && t.text.includes('Banana'),
+    JSON.stringify(t),
+  );
 
   await key(page, 'Enter');
   await key(page, 'Tab', 400);
   t = await triggerState(page, 'select-open');
-  record('select: Tab closes the list and returns focus to the trigger', t.expanded === 'false' && t.focused, JSON.stringify(t));
+  record(
+    'select: Tab closes the list and returns focus to the trigger',
+    t.expanded === 'false' && t.focused,
+    JSON.stringify(t),
+  );
 
   // A pointer open leaves focus on the trigger; an arrow then moves it in.
   const box = await page.evaluate(() => {
-    const r = document.querySelector('[data-testid="select-open"] [aria-haspopup]').getBoundingClientRect();
+    const r = document
+      .querySelector('[data-testid="select-open"] [aria-haspopup]')
+      .getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   });
   await page.mouse.click(box.x, box.y);
   await sleep(400);
   t = await triggerState(page, 'select-open');
-  record('select: a pointer open leaves focus on the trigger', t.expanded === 'true' && t.focused, JSON.stringify(t));
+  record(
+    'select: a pointer open leaves focus on the trigger',
+    t.expanded === 'true' && t.focused,
+    JSON.stringify(t),
+  );
   await key(page, 'ArrowDown');
   f = await focused(page);
-  record('select: ArrowDown moves focus from the trigger into the open list', f.name === 'Banana', show(f));
+  record(
+    'select: ArrowDown moves focus from the trigger into the open list',
+    f.name === 'Banana',
+    show(f),
+  );
   await key(page, 'Escape', 400);
 
   // Inside a Dialog: Escape closes the list, not the dialog.
@@ -188,24 +222,38 @@ async function selectCases(page) {
   record('select in dialog: Enter opens the list into focus', f.name === 'Banana', show(f));
   await key(page, 'Escape', 500);
   t = await triggerState(page, 'dialog-select');
-  const dialogAfterOne = await page.evaluate(() => document.querySelector('[data-testid="dialog-state"]')?.textContent);
+  const dialogAfterOne = await page.evaluate(
+    () => document.querySelector('[data-testid="dialog-state"]')?.textContent,
+  );
   record(
     'select in dialog: Escape closes the list and NOT the dialog',
     t.expanded === 'false' && t.focused && dialogAfterOne === 'Dialog open',
     `${JSON.stringify(t)} ${dialogAfterOne}`,
   );
   await key(page, 'Escape', 600);
-  const dialogAfterTwo = await page.evaluate(() => document.querySelector('[data-testid="dialog-state"]')?.textContent);
-  record('select in dialog: a second Escape closes the dialog (control)', dialogAfterTwo === 'Dialog closed', dialogAfterTwo);
+  const dialogAfterTwo = await page.evaluate(
+    () => document.querySelector('[data-testid="dialog-state"]')?.textContent,
+  );
+  record(
+    'select in dialog: a second Escape closes the dialog (control)',
+    dialogAfterTwo === 'Dialog closed',
+    dialogAfterTwo,
+  );
 }
 
 async function tabsCases(page) {
   await story(page, 'base-tabs--basic');
   const list = await page.evaluate(() => {
     const l = document.querySelector('[role="tablist"]');
-    return l ? { name: l.getAttribute('aria-label'), tabs: l.querySelectorAll('[role="tab"]').length } : null;
+    return l
+      ? { name: l.getAttribute('aria-label'), tabs: l.querySelectorAll('[role="tab"]').length }
+      : null;
   });
-  record('tabs: a named tablist owns the tabs', list?.name === 'Profile sections' && list.tabs === 3, JSON.stringify(list));
+  record(
+    'tabs: a named tablist owns the tabs',
+    list?.name === 'Profile sections' && list.tabs === 3,
+    JSON.stringify(list),
+  );
 
   await key(page, 'Tab');
   let f = await focused(page);
@@ -213,8 +261,14 @@ async function tabsCases(page) {
 
   await key(page, 'ArrowRight');
   f = await focused(page);
-  const panel = await page.evaluate(() => document.querySelector('[data-testid="tabs-panel"]')?.textContent);
-  record('tabs: ArrowRight moves focus and selects', f.name === 'Replies' && f.selected === 'true' && /replied/.test(panel ?? ''), `${show(f)} / ${panel}`);
+  const panel = await page.evaluate(
+    () => document.querySelector('[data-testid="tabs-panel"]')?.textContent,
+  );
+  record(
+    'tabs: ArrowRight moves focus and selects',
+    f.name === 'Replies' && f.selected === 'true' && /replied/.test(panel ?? ''),
+    `${show(f)} / ${panel}`,
+  );
 
   await key(page, 'End');
   f = await focused(page);
@@ -232,42 +286,72 @@ async function tabsCases(page) {
   await key(page, 'Tab');
   await page.keyboard.up('Shift');
   f = await focused(page);
-  record('tabs: Shift+Tab returns to the selected tab', f.role === 'tab' && f.name === 'Posts', show(f));
+  record(
+    'tabs: Shift+Tab returns to the selected tab',
+    f.role === 'tab' && f.name === 'Posts',
+    show(f),
+  );
 }
 
 async function segmentedCases(page) {
   await story(page, 'base-segmented-control--radio');
   await key(page, 'Tab');
   let f = await focused(page);
-  record('segmented radio: Tab lands on the checked segment', f.role === 'radio' && f.name === 'System' && f.selected === 'true', show(f));
+  record(
+    'segmented radio: Tab lands on the checked segment',
+    f.role === 'radio' && f.name === 'System' && f.selected === 'true',
+    show(f),
+  );
 
   await key(page, 'ArrowLeft');
   f = await focused(page);
-  record('segmented radio: ArrowLeft moves and checks', f.name === 'Dark' && f.selected === 'true', show(f));
+  record(
+    'segmented radio: ArrowLeft moves and checks',
+    f.name === 'Dark' && f.selected === 'true',
+    show(f),
+  );
 
   await key(page, 'ArrowDown');
   await key(page, 'ArrowDown');
   f = await focused(page);
-  record('segmented radio: ArrowDown moves and wraps', f.name === 'Light' && f.selected === 'true', show(f));
+  record(
+    'segmented radio: ArrowDown moves and wraps',
+    f.name === 'Light' && f.selected === 'true',
+    show(f),
+  );
 
   await key(page, 'Tab');
   f = await focused(page);
-  record('segmented radio: the next Tab LEAVES the group (one tab stop)', f.role !== 'radio', show(f));
+  record(
+    'segmented radio: the next Tab LEAVES the group (one tab stop)',
+    f.role !== 'radio',
+    show(f),
+  );
 
   // Space on a segment that is focused but not chosen.
   await page.evaluate(() => {
-    const dark = Array.from(document.querySelectorAll('[role="radio"]')).find((el) => el.textContent.trim() === 'Dark');
+    const dark = Array.from(document.querySelectorAll('[role="radio"]')).find(
+      (el) => el.textContent.trim() === 'Dark',
+    );
     dark.focus();
   });
   await key(page, 'Space');
   f = await focused(page);
-  record('segmented radio: Space checks the focused segment', f.name === 'Dark' && f.selected === 'true', show(f));
+  record(
+    'segmented radio: Space checks the focused segment',
+    f.name === 'Dark' && f.selected === 'true',
+    show(f),
+  );
 
   await story(page, 'base-segmented-control--tabs');
   await key(page, 'Tab');
   await key(page, 'ArrowRight');
   f = await focused(page);
-  record('segmented tabs: ArrowRight moves and selects', f.role === 'tab' && f.name === 'Replies' && f.selected === 'true', show(f));
+  record(
+    'segmented tabs: ArrowRight moves and selects',
+    f.role === 'tab' && f.name === 'Replies' && f.selected === 'true',
+    show(f),
+  );
 }
 
 /** Is focus on a menu trigger (the element carrying `aria-haspopup="menu"`), and is its menu shut? */
@@ -290,7 +374,11 @@ async function menuCases(page) {
 
   await key(page, 'Enter');
   let f = await focused(page);
-  record('menu: Enter opens with focus on the first row', f.role === 'menuitem' && f.name === 'Profile', show(f));
+  record(
+    'menu: Enter opens with focus on the first row',
+    f.role === 'menuitem' && f.name === 'Profile',
+    show(f),
+  );
 
   await key(page, 'ArrowDown');
   await key(page, 'ArrowDown');
@@ -306,19 +394,35 @@ async function menuCases(page) {
   const endName = f.name;
   await key(page, 'Home');
   f = await focused(page);
-  record('menu: End and Home jump to the ends', endName === 'Sign out' && f.name === 'Profile', `${endName} / ${show(f)}`);
+  record(
+    'menu: End and Home jump to the ends',
+    endName === 'Sign out' && f.name === 'Profile',
+    `${endName} / ${show(f)}`,
+  );
 
   await key(page, 'Escape', 400);
   t = await onMenuTrigger(page);
-  record('menu: Escape closes and returns focus to the trigger', t.trigger && t.expanded === 'false', JSON.stringify(t));
+  record(
+    'menu: Escape closes and returns focus to the trigger',
+    t.trigger && t.expanded === 'false',
+    JSON.stringify(t),
+  );
 
   await key(page, 'ArrowUp', 400);
   f = await focused(page);
-  record('menu: ArrowUp on the trigger opens with focus on the last row', f.name === 'Sign out', show(f));
+  record(
+    'menu: ArrowUp on the trigger opens with focus on the last row',
+    f.name === 'Sign out',
+    show(f),
+  );
 
   await key(page, 'Tab', 400);
   t = await onMenuTrigger(page);
-  record('menu: Tab closes and returns focus to the trigger', t.trigger && t.expanded === 'false', JSON.stringify(t));
+  record(
+    'menu: Tab closes and returns focus to the trigger',
+    t.trigger && t.expanded === 'false',
+    JSON.stringify(t),
+  );
 
   await key(page, 'Space', 400);
   f = await focused(page);
@@ -326,27 +430,53 @@ async function menuCases(page) {
 
   await key(page, 'Enter', 400);
   t = await onMenuTrigger(page);
-  record('menu: Enter activates a row, closes, and returns focus', t.trigger && t.expanded === 'false', JSON.stringify(t));
+  record(
+    'menu: Enter activates a row, closes, and returns focus',
+    t.trigger && t.expanded === 'false',
+    JSON.stringify(t),
+  );
 
   // Checkbox and radio rows.
   await story(page, 'base-dropdown--selection');
-  const status = () => page.evaluate(() => document.querySelector('#storybook-root').textContent.match(/grid: \w+ · ruler: \w+ · sort: \w+/)?.[0]);
+  const status = () =>
+    page.evaluate(
+      () =>
+        document
+          .querySelector('#storybook-root')
+          .textContent.match(/grid: \w+ · ruler: \w+ · sort: \w+/)?.[0],
+    );
   await key(page, 'Tab');
   await key(page, 'Enter');
   f = await focused(page);
-  record('menu selection: Enter opens onto the first checkbox row', f.role === 'checkbox' && f.name === 'Grid', show(f));
+  record(
+    'menu selection: Enter opens onto the first checkbox row',
+    f.role === 'checkbox' && f.name === 'Grid',
+    show(f),
+  );
   await key(page, 'Space');
   f = await focused(page);
-  record('menu selection: Space toggles a keepOpen checkbox row and keeps the menu open', f.name === 'Grid' && f.selected === 'false' && /grid: false/.test(await status()), `${show(f)} / ${await status()}`);
+  record(
+    'menu selection: Space toggles a keepOpen checkbox row and keeps the menu open',
+    f.name === 'Grid' && f.selected === 'false' && /grid: false/.test(await status()),
+    `${show(f)} / ${await status()}`,
+  );
   await key(page, 'ArrowDown');
   await key(page, 'Enter');
   f = await focused(page);
-  record('menu selection: Enter toggles too', f.name === 'Ruler' && f.selected === 'true' && /ruler: true/.test(await status()), `${show(f)} / ${await status()}`);
+  record(
+    'menu selection: Enter toggles too',
+    f.name === 'Ruler' && f.selected === 'true' && /ruler: true/.test(await status()),
+    `${show(f)} / ${await status()}`,
+  );
   await key(page, 'End');
   await key(page, 'Space', 400);
   t = await onMenuTrigger(page);
   const after = await status();
-  record('menu selection: Space selects a radio row, closes, and returns focus', t.trigger && t.expanded === 'false' && /sort: name/.test(after), `${JSON.stringify(t)} / ${after}`);
+  record(
+    'menu selection: Space selects a radio row, closes, and returns focus',
+    t.trigger && t.expanded === 'false' && /sort: name/.test(after),
+    `${JSON.stringify(t)} / ${after}`,
+  );
 
   // Sub-menu keys still work with the menu keys around them.
   await story(page, 'base-dropdown--submenu');
@@ -364,14 +494,26 @@ async function menuCases(page) {
   record('submenu: arrows move and wrap inside the flyout', f.name === 'Email', show(f));
   await key(page, 'ArrowLeft', 400);
   f = await focused(page);
-  record('submenu: ArrowLeft leaves the flyout onto its trigger', f.name === 'Send to…' && f.expanded === 'false', `${show(f)} expanded=${f.expanded}`);
+  record(
+    'submenu: ArrowLeft leaves the flyout onto its trigger',
+    f.name === 'Send to…' && f.expanded === 'false',
+    `${show(f)} expanded=${f.expanded}`,
+  );
   await key(page, 'ArrowRight', 400);
   await key(page, 'Escape', 400);
   f = await focused(page);
-  record('submenu: Escape closes only the flyout', f.name === 'Send to…' && f.expanded === 'false', `${show(f)} expanded=${f.expanded}`);
+  record(
+    'submenu: Escape closes only the flyout',
+    f.name === 'Send to…' && f.expanded === 'false',
+    `${show(f)} expanded=${f.expanded}`,
+  );
   await key(page, 'Escape', 400);
   t = await onMenuTrigger(page);
-  record('submenu: a second Escape closes the menu onto its trigger', t.trigger && t.expanded === 'false', JSON.stringify(t));
+  record(
+    'submenu: a second Escape closes the menu onto its trigger',
+    t.trigger && t.expanded === 'false',
+    JSON.stringify(t),
+  );
 }
 
 async function main() {
@@ -394,7 +536,9 @@ async function main() {
   }
 
   const failed = results.filter((r) => !r.pass);
-  console.log(`\n${results.length - failed.length}/${results.length} passed (expected ${EXPECTED_CASES} cases)`);
+  console.log(
+    `\n${results.length - failed.length}/${results.length} passed (expected ${EXPECTED_CASES} cases)`,
+  );
   if (failed.length > 0 || results.length !== EXPECTED_CASES) process.exit(1);
 }
 

@@ -55,15 +55,19 @@ const PRESETS = APP_COLOR_NAMES as readonly AppColorName[];
  * worker down with a SIGSEGV (the known crash `AGENTS.md` records against
  * `glass-colors`). One derivation per preset x mode keeps the suite inside it.
  */
-const THEMES: { theme: Theme; preset: AppColorName; mode: (typeof MODES)[number]; label: string }[] =
-  PRESETS.flatMap((preset) =>
-    MODES.map((mode) => ({
-      preset,
-      mode,
-      theme: buildTheme(preset, mode),
-      label: `${preset}/${mode}`,
-    })),
-  );
+const THEMES: {
+  theme: Theme;
+  preset: AppColorName;
+  mode: (typeof MODES)[number];
+  label: string;
+}[] = PRESETS.flatMap((preset) =>
+  MODES.map((mode) => ({
+    preset,
+    mode,
+    theme: buildTheme(preset, mode),
+    label: `${preset}/${mode}`,
+  })),
+);
 
 function themesIn(mode: (typeof MODES)[number]) {
   return THEMES.filter((t) => t.mode === mode);
@@ -96,8 +100,14 @@ describe('the surface ladder', () => {
         if (fill >= FILL_JND) byFill.push(where);
         else byHairlineOnly.push(`${where} ${fill.toFixed(3)}`);
         // Whatever the fills do, the hairline must read on both sides.
-        expect([where, contrastRatio(here.border, here.background) >= HAIRLINE_MIN]).toEqual([where, true]);
-        expect([where, contrastRatio(here.border, below.background) >= HAIRLINE_MIN]).toEqual([where, true]);
+        expect([where, contrastRatio(here.border, here.background) >= HAIRLINE_MIN]).toEqual([
+          where,
+          true,
+        ]);
+        expect([where, contrastRatio(here.border, below.background) >= HAIRLINE_MIN]).toEqual([
+          where,
+          true,
+        ]);
       }
     }
     // An EQUALITY, not a floor: every pair separates by fill today. If a tuning
@@ -112,10 +122,22 @@ describe('the surface ladder', () => {
       for (const level of SURFACE_LEVELS) {
         const p = resolveSurfaceLevel(theme, level);
         const where = `${preset} L${level}`;
-        expect([where, contrastRatio(p.text, p.background) >= AA_TEXT_STRONG]).toEqual([where, true]);
-        expect([where, contrastRatio(p.textSecondary, p.background) >= AA_TEXT_STRONG]).toEqual([where, true]);
-        expect([where, contrastRatio(p.textTertiary, p.background) >= AA_TEXT]).toEqual([where, true]);
-        expect([where, contrastRatio(p.textGraphical, p.background) >= AA_GRAPHICAL]).toEqual([where, true]);
+        expect([where, contrastRatio(p.text, p.background) >= AA_TEXT_STRONG]).toEqual([
+          where,
+          true,
+        ]);
+        expect([where, contrastRatio(p.textSecondary, p.background) >= AA_TEXT_STRONG]).toEqual([
+          where,
+          true,
+        ]);
+        expect([where, contrastRatio(p.textTertiary, p.background) >= AA_TEXT]).toEqual([
+          where,
+          true,
+        ]);
+        expect([where, contrastRatio(p.textGraphical, p.background) >= AA_GRAPHICAL]).toEqual([
+          where,
+          true,
+        ]);
         // Ordered: a "fix" that promotes tertiary to secondary is not a fix.
         expect([where, contrastRatio(p.textSecondary, p.background)]).toEqual([
           where,
@@ -139,7 +161,10 @@ describe('the surface ladder', () => {
       for (const level of SURFACE_LEVELS) {
         const p = resolveSurfaceLevel(theme, level);
         const where = `${label} L${level}`;
-        expect([where, contrastRatio(p.textTertiary, p.background) < AA_TEXT + 0.2]).toEqual([where, true]);
+        expect([where, contrastRatio(p.textTertiary, p.background) < AA_TEXT + 0.2]).toEqual([
+          where,
+          true,
+        ]);
         expect([where, contrastRatio(p.textGraphical, p.background) < AA_GRAPHICAL + 0.2]).toEqual([
           where,
           true,
@@ -157,10 +182,10 @@ describe('one quiet-text role, one colour', () => {
     // as a JS token, in light mode, where 4.04 is below AA.
     for (const { theme, label } of themes()) {
       expect([label, theme.colors.textTertiary]).toEqual([label, theme.colors.textSecondary]);
-      expect([label, contrastRatio(theme.colors.textTertiary, theme.colors.background) >= AA_TEXT]).toEqual([
+      expect([
         label,
-        true,
-      ]);
+        contrastRatio(theme.colors.textTertiary, theme.colors.background) >= AA_TEXT,
+      ]).toEqual([label, true]);
     }
   });
 });
@@ -190,11 +215,17 @@ describe('avatar fallback tints', () => {
 describe('the ladder is anchored on what Bloom already painted', () => {
   it('level 1 lands on the menu surface, and level 0 IS the page', () => {
     for (const { theme, label } of themes()) {
-      expect([label, resolveSurfaceLevel(theme, 0).background]).toEqual([label, theme.colors.background]);
+      expect([label, resolveSurfaceLevel(theme, 0).background]).toEqual([
+        label,
+        theme.colors.background,
+      ]);
       // Not byte-for-byte in dark (the menu surface is a ramp stop, the rung is
       // a step off the page) — but closer than the JND, so adopting the API is
       // not a repaint.
-      const drift = contrastRatio(resolveSurfaceLevel(theme, 1).background, resolveMenuPalette(theme).surface);
+      const drift = contrastRatio(
+        resolveSurfaceLevel(theme, 1).background,
+        resolveMenuPalette(theme).surface,
+      );
       expect([label, drift < FILL_JND]).toEqual([label, true]);
     }
   });

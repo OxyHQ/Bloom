@@ -220,7 +220,12 @@ function BlobsSvg({ size, blobs }: { size: number; blobs: Blobs }) {
   );
 }
 
-export function SettingsPlanArt({ source, animated = true, size = 277, style }: SettingsPlanArtProps) {
+export function SettingsPlanArt({
+  source,
+  animated = true,
+  size = 277,
+  style,
+}: SettingsPlanArtProps) {
   const blobs = useBlobs();
   const reducedMotion = useReducedMotion();
   const hostRef = useRef<View>(null);
@@ -391,7 +396,13 @@ export function RadialFade({ color, size }: { color: string; size: number }) {
 export function VerticalFade({ color }: { color: string }) {
   const id = useSvgId('bloom-settings-top-fade');
   return (
-    <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 1 1" style={StyleSheet.absoluteFill}>
+    <Svg
+      width="100%"
+      height="100%"
+      preserveAspectRatio="none"
+      viewBox="0 0 1 1"
+      style={StyleSheet.absoluteFill}
+    >
       <Defs>
         <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor={color} stopOpacity={1} />

@@ -43,13 +43,7 @@ export default meta;
 
 type Story = StoryObj;
 
-function Demo({
-  children,
-  outlet,
-}: {
-  children: React.ReactNode;
-  outlet?: ToasterProps;
-}) {
+function Demo({ children, outlet }: { children: React.ReactNode; outlet?: ToasterProps }) {
   return (
     <View style={{ gap: 12, alignItems: 'flex-start' }}>
       {children}
@@ -101,11 +95,13 @@ export const WithDescription: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Demo>
-      <Button onPress={() =>
+      <Button
+        onPress={() =>
           toast.success('Profile updated', {
             description: 'Your changes are visible to everyone.',
           })
-        }>
+        }
+      >
         Title + description
       </Button>
     </Demo>
@@ -116,19 +112,23 @@ export const WithAction: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Demo>
-      <Button onPress={() =>
+      <Button
+        onPress={() =>
           toast('Item moved to trash', {
             action: { label: 'Undo', onClick: () => toast.success('Restored') },
           })
-        }>
+        }
+      >
         Action
       </Button>
-      <Button onPress={() =>
+      <Button
+        onPress={() =>
           toast('Discard draft?', {
             action: { label: 'Discard', onClick: () => toast.error('Discarded') },
             cancel: { label: 'Keep', onClick: () => {} },
           })
-        }>
+        }
+      >
         Action + cancel
       </Button>
     </Demo>
@@ -155,8 +155,11 @@ export const CloseButton: Story = {
 export const NotificationLook: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <Demo outlet={{ closeButton: true, enableStacking: false, visibleToasts: 6, duration: Infinity }}>
-      <Button onPress={() => {
+    <Demo
+      outlet={{ closeButton: true, enableStacking: false, visibleToasts: 6, duration: Infinity }}
+    >
+      <Button
+        onPress={() => {
           toast('Saved');
           toast.info('Update available', { description: 'Version 2.4 ships with faster sync.' });
           toast.success('Payment received', { description: '$1,240.00 from Acme Inc.' });
@@ -167,7 +170,8 @@ export const NotificationLook: Story = {
             cancel: { label: 'View logs', onClick: () => {} },
           });
           toast.loading('Uploading…');
-        }}>
+        }}
+      >
         All
       </Button>
     </Demo>
@@ -179,7 +183,8 @@ export const PromiseToast: Story = {
   name: 'Promise',
   render: () => (
     <Demo>
-      <Button onPress={() =>
+      <Button
+        onPress={() =>
           toast.promise(
             new Promise<{ name: string }>((resolve) =>
               setTimeout(() => resolve({ name: 'Nate' }), 1500),
@@ -190,10 +195,12 @@ export const PromiseToast: Story = {
               error: 'Could not save',
             },
           )
-        }>
+        }
+      >
         Resolves
       </Button>
-      <Button onPress={() =>
+      <Button
+        onPress={() =>
           toast.promise(
             new Promise<void>((_resolve, reject) =>
               setTimeout(() => reject(new Error('offline')), 1500),
@@ -201,11 +208,11 @@ export const PromiseToast: Story = {
             {
               loading: 'Saving…',
               success: () => 'Saved',
-              error: (err) =>
-                `Failed: ${err instanceof Error ? err.message : 'unknown'}`,
+              error: (err) => `Failed: ${err instanceof Error ? err.message : 'unknown'}`,
             },
           )
-        }>
+        }
+      >
         Rejects
       </Button>
     </Demo>
@@ -216,10 +223,12 @@ export const UpdateInPlace: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Demo>
-      <Button onPress={() => {
+      <Button
+        onPress={() => {
           toast.loading('Uploading…', { id: 'upload' });
           setTimeout(() => toast.success('Uploaded', { id: 'upload' }), 1500);
-        }}>
+        }}
+      >
         Same id, updated row
       </Button>
     </Demo>
@@ -230,7 +239,8 @@ export const Custom: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Demo>
-      <Button onPress={() =>
+      <Button
+        onPress={() =>
           toast.custom(
             <View
               style={{
@@ -240,12 +250,11 @@ export const Custom: Story = {
                 backgroundColor: '#111',
               }}
             >
-              <Text style={{ color: '#fff', fontWeight: '600' }}>
-                A completely custom row
-              </Text>
+              <Text style={{ color: '#fff', fontWeight: '600' }}>A completely custom row</Text>
             </View>,
           )
-        }>
+        }
+      >
         toast.custom
       </Button>
     </Demo>
@@ -256,12 +265,14 @@ export const Stacking: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Demo outlet={{ enableStacking: true, visibleToasts: 3 }}>
-      <Button onPress={() => {
+      <Button
+        onPress={() => {
           toast('First');
           toast('Second');
           toast('Third');
           toast('Fourth — the first should be culled');
-        }}>
+        }}
+      >
         Queue four
       </Button>
     </Demo>
@@ -315,14 +326,10 @@ export const MixedPositions: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Demo outlet={{ visibleToasts: 5 }}>
-      <Button onPress={() =>
-          toast('Top row', { position: 'top-center', duration: Infinity })
-        }>
+      <Button onPress={() => toast('Top row', { position: 'top-center', duration: Infinity })}>
         Top
       </Button>
-      <Button onPress={() => toast('Plain row', { duration: Infinity })}>
-        Plain
-      </Button>
+      <Button onPress={() => toast('Plain row', { duration: Infinity })}>Plain</Button>
     </Demo>
   ),
 };
@@ -372,19 +379,45 @@ export const CustomEnterAnimation: Story = {
   ),
 };
 
-
 /** Compare the collapsed short front with tall intrinsic rows behind it. */
 export const MixedHeightStack: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <Demo outlet={{ enableStacking: true, visibleToasts: 4, duration: Infinity, closeButton: true }}>
-      <Button onPress={() => {
-        toast.dismiss();
-        toast('Long message', { description: 'A longer notification with several lines of detail. This text must remain readable at its natural size when the stack expands, and must not protrude below the compact front notification.', duration: Infinity });
-        toast('Action required', { description: 'Review the pending changes before continuing.', action: { label: 'Review', onClick: () => {} }, duration: Infinity });
-        toast('Saved', { duration: Infinity });
-      }}>Mixed heights</Button>
-      <Button onPress={() => toast.custom(<View style={{ height: 220, backgroundColor: '#dcecff', borderRadius: 16, padding: 20 }}><Text>Custom tall notification</Text></View>, { duration: Infinity })}>Add tall custom</Button>
+    <Demo
+      outlet={{ enableStacking: true, visibleToasts: 4, duration: Infinity, closeButton: true }}
+    >
+      <Button
+        onPress={() => {
+          toast.dismiss();
+          toast('Long message', {
+            description:
+              'A longer notification with several lines of detail. This text must remain readable at its natural size when the stack expands, and must not protrude below the compact front notification.',
+            duration: Infinity,
+          });
+          toast('Action required', {
+            description: 'Review the pending changes before continuing.',
+            action: { label: 'Review', onClick: () => {} },
+            duration: Infinity,
+          });
+          toast('Saved', { duration: Infinity });
+        }}
+      >
+        Mixed heights
+      </Button>
+      <Button
+        onPress={() =>
+          toast.custom(
+            <View
+              style={{ height: 220, backgroundColor: '#dcecff', borderRadius: 16, padding: 20 }}
+            >
+              <Text>Custom tall notification</Text>
+            </View>,
+            { duration: Infinity },
+          )
+        }
+      >
+        Add tall custom
+      </Button>
       <Button onPress={() => toast('Saved again', { duration: Infinity })}>Add short front</Button>
     </Demo>
   ),
@@ -398,14 +431,18 @@ export const BackgroundInteraction: Story = {
       <View style={{ minHeight: 2200, justifyContent: 'flex-end', gap: 120, paddingBottom: 96 }}>
         <Button onPress={() => setCount((value) => value + 1)}>Apply change</Button>
         <Text testID="background-count">{count}</Text>
-        <Button onPress={() => {
-          toast.info('Pending changes', { duration: Infinity });
-          toast.error('Update failed', {
-            duration: Infinity,
-            closeButton: true,
-            action: { label: 'Retry update', onClick: () => setCount((value) => value + 1) },
-          });
-        }}>Show error</Button>
+        <Button
+          onPress={() => {
+            toast.info('Pending changes', { duration: Infinity });
+            toast.error('Update failed', {
+              duration: Infinity,
+              closeButton: true,
+              action: { label: 'Retry update', onClick: () => setCount((value) => value + 1) },
+            });
+          }}
+        >
+          Show error
+        </Button>
         <ToastOutlet />
       </View>
     );

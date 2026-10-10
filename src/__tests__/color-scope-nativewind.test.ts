@@ -42,7 +42,6 @@ function loadStyleBuilder(factory?: () => unknown): StyleBuilder {
     // case sets would land on an object the module under test never reads.
     jest.doMock('react-native', () => ReactNative);
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     mod = require('../theme/color-scope/style-builder') as StyleBuilder;
   });
 

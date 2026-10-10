@@ -29,7 +29,13 @@ import { PriceRangeFilter } from './PriceRangeFilter';
 import { PropertyTypeFilter } from './PropertyTypeFilter';
 import { SegmentedFilter } from './SegmentedFilter';
 import { SwitchFilterRow } from './SwitchFilterRow';
-import type { EnergyRating, FloorOption, HousingFeature, PropertyType, ToggleChipOption } from './types';
+import type {
+  EnergyRating,
+  FloorOption,
+  HousingFeature,
+  PropertyType,
+  ToggleChipOption,
+} from './types';
 
 const meta: Meta = {
   title: 'Blocks/Stays/Stay Filters',
@@ -118,10 +124,19 @@ function resultsLabel(s: FilterState): string {
 //  The composed surface
 // ---------------------------------------------------------------------------
 
-function FilterSections({ state, set }: { state: FilterState; set: (patch: Partial<FilterState>) => void }) {
+function FilterSections({
+  state,
+  set,
+}: {
+  state: FilterState;
+  set: (patch: Partial<FilterState>) => void;
+}) {
   return (
     <>
-      <FilterSection title="Type of place" description="Search rooms, entire homes, or any type of place.">
+      <FilterSection
+        title="Type of place"
+        description="Search rooms, entire homes, or any type of place."
+      >
         <SegmentedFilter
           options={PLACE_TYPES}
           value={state.type}
@@ -144,9 +159,24 @@ function FilterSections({ state, set }: { state: FilterState; set: (patch: Parti
       </FilterSection>
       <FilterSection title="Rooms and beds">
         <View style={{ gap: 24 }}>
-          <CountFilter title="Bedrooms" value={state.bedrooms} onValueChange={(bedrooms) => set({ bedrooms })} testID="bedrooms" />
-          <CountFilter title="Beds" value={state.beds} onValueChange={(beds) => set({ beds })} testID="beds" />
-          <CountFilter title="Bathrooms" value={state.bathrooms} onValueChange={(bathrooms) => set({ bathrooms })} testID="bathrooms" />
+          <CountFilter
+            title="Bedrooms"
+            value={state.bedrooms}
+            onValueChange={(bedrooms) => set({ bedrooms })}
+            testID="bedrooms"
+          />
+          <CountFilter
+            title="Beds"
+            value={state.beds}
+            onValueChange={(beds) => set({ beds })}
+            testID="beds"
+          />
+          <CountFilter
+            title="Bathrooms"
+            value={state.bathrooms}
+            onValueChange={(bathrooms) => set({ bathrooms })}
+            testID="bathrooms"
+          />
         </View>
       </FilterSection>
       <FilterSection title="Amenities">
@@ -193,9 +223,9 @@ function FiltersDialogDemo({ openOnMount = false }: { openOnMount?: boolean }) {
     return () => clearTimeout(t);
   }, [key]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (openOnMount) control.open();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -211,7 +241,10 @@ function FiltersDialogDemo({ openOnMount = false }: { openOnMount?: boolean }) {
         contentPadding={0}
         testID="filters-dialog"
       >
-        <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}>
+        <ScrollView
+          style={{ flexShrink: 1 }}
+          contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}
+        >
           <FilterSections state={state} set={set} />
         </ScrollView>
         <FilterFooter
@@ -249,7 +282,12 @@ export const FiltersDialogOpen: Story = {
 function Panel({ width }: { width: number }) {
   width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
-  const { state, set, reset } = useFilterState({ ...INITIAL, price: [95, 380], bedrooms: 2, amenities: ['wifi', 'kitchen'] });
+  const { state, set, reset } = useFilterState({
+    ...INITIAL,
+    price: [95, 380],
+    bedrooms: 2,
+    amenities: ['wifi', 'kitchen'],
+  });
   return (
     <View
       style={{
@@ -291,10 +329,17 @@ export const Section: Story = {
     return (
       <View style={{ width: 560, maxWidth: '100%' }}>
         <FilterSection title="Heading only">
-          <View style={{ height: 40, borderRadius: 12, backgroundColor: theme.colors.contrast50 }} />
+          <View
+            style={{ height: 40, borderRadius: 12, backgroundColor: theme.colors.contrast50 }}
+          />
         </FilterSection>
-        <FilterSection title="With a description" description="A secondary line that explains the section.">
-          <View style={{ height: 40, borderRadius: 12, backgroundColor: theme.colors.contrast50 }} />
+        <FilterSection
+          title="With a description"
+          description="A secondary line that explains the section."
+        >
+          <View
+            style={{ height: 40, borderRadius: 12, backgroundColor: theme.colors.contrast50 }}
+          />
         </FilterSection>
         <FilterSection title="Last section" divider={false}>
           <SwitchFilterRow title="Self check-in" value={on} onValueChange={setOn} />
@@ -329,9 +374,20 @@ export const PriceRange: Story = {
 export const Histogram: Story = {
   render: () => (
     <View style={{ width: 480, maxWidth: '100%', gap: 24 }}>
-      <PriceHistogram buckets={BUCKETS} min={PRICE_MIN} max={PRICE_MAX} value={[PRICE_MIN, PRICE_MAX]} />
+      <PriceHistogram
+        buckets={BUCKETS}
+        min={PRICE_MIN}
+        max={PRICE_MAX}
+        value={[PRICE_MIN, PRICE_MAX]}
+      />
       <PriceHistogram buckets={BUCKETS} min={PRICE_MIN} max={PRICE_MAX} value={[120, 300]} />
-      <PriceHistogram buckets={BUCKETS} min={PRICE_MIN} max={PRICE_MAX} value={[PRICE_MIN, PRICE_MIN]} height={40} />
+      <PriceHistogram
+        buckets={BUCKETS}
+        min={PRICE_MIN}
+        max={PRICE_MAX}
+        value={[PRICE_MIN, PRICE_MIN]}
+        height={40}
+      />
     </View>
   ),
 };
@@ -342,7 +398,12 @@ export const Segmented: Story = {
     const [value, setValue] = useState<PlaceType>('any');
     return (
       <View style={{ width: 560, maxWidth: '100%' }}>
-        <SegmentedFilter options={PLACE_TYPES} value={value} onValueChange={setValue} accessibilityLabel="Type of place" />
+        <SegmentedFilter
+          options={PLACE_TYPES}
+          value={value}
+          onValueChange={setValue}
+          accessibilityLabel="Type of place"
+        />
       </View>
     );
   },
@@ -359,10 +420,22 @@ export const Counts: Story = {
     const [guests, setGuests] = useState(2);
     return (
       <View style={{ width: 560, maxWidth: '100%', gap: 24 }}>
-        <CountFilter title="Bedrooms" value={bedrooms} onValueChange={setBedrooms} testID="bedrooms" />
+        <CountFilter
+          title="Bedrooms"
+          value={bedrooms}
+          onValueChange={setBedrooms}
+          testID="bedrooms"
+        />
         <CountFilter title="Beds" value={beds} onValueChange={setBeds} testID="beds" />
         <CountFilter title="Bathrooms" value={1} onValueChange={() => {}} disabled />
-        <StepperRow title="Guests" description="The alternative: an exact count" value={guests} onValueChange={setGuests} min={1} max={16} />
+        <StepperRow
+          title="Guests"
+          description="The alternative: an exact count"
+          value={guests}
+          onValueChange={setGuests}
+          min={1}
+          max={16}
+        />
       </View>
     );
   },
@@ -374,7 +447,13 @@ export const Amenities: Story = {
     const [value, setValue] = useState<Amenity[]>(['wifi', 'fireplace']);
     return (
       <View style={{ width: 560, maxWidth: '100%' }}>
-        <AmenityFilter options={AMENITIES} value={value} onValueChange={setValue} accessibilityLabel="Amenities" testID="amenities" />
+        <AmenityFilter
+          options={AMENITIES}
+          value={value}
+          onValueChange={setValue}
+          accessibilityLabel="Amenities"
+          testID="amenities"
+        />
       </View>
     );
   },
@@ -387,8 +466,18 @@ export const Switches: Story = {
     const [b, setB] = useState(false);
     return (
       <View style={{ width: 560, maxWidth: '100%', gap: 24 }}>
-        <SwitchFilterRow title="Instant Book" description="Listings you can book without waiting for host approval" value={a} onValueChange={setA} />
-        <SwitchFilterRow title="Self check-in" description="Easy access to the property once you arrive" value={b} onValueChange={setB} />
+        <SwitchFilterRow
+          title="Instant Book"
+          description="Listings you can book without waiting for host approval"
+          value={a}
+          onValueChange={setA}
+        />
+        <SwitchFilterRow
+          title="Self check-in"
+          description="Easy access to the property once you arrive"
+          value={b}
+          onValueChange={setB}
+        />
         <SwitchFilterRow title="Allows pets" value={false} onValueChange={() => {}} disabled />
       </View>
     );
@@ -401,7 +490,12 @@ export const Footer: Story = {
     <View style={{ width: 560, maxWidth: '100%', gap: 16 }}>
       <FilterFooter resultsLabel="Show 1,000+ places" onApply={() => {}} onClear={() => {}} />
       <FilterFooter resultsLabel="Show 214 places" loading onApply={() => {}} onClear={() => {}} />
-      <FilterFooter resultsLabel="Show 1,000+ places" clearDisabled onApply={() => {}} onClear={() => {}} />
+      <FilterFooter
+        resultsLabel="Show 1,000+ places"
+        clearDisabled
+        onApply={() => {}}
+        onClear={() => {}}
+      />
     </View>
   ),
 };
@@ -413,7 +507,10 @@ export const Trigger: Story = {
     return (
       <View style={{ gap: 16 }}>
         {sizes.map((size) => (
-          <View key={size} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
+          <View
+            key={size}
+            style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}
+          >
             <FilterTriggerButton size={size} />
             <FilterTriggerButton size={size} count={3} />
             <FilterTriggerButton size={size} count={12} />
@@ -455,7 +552,8 @@ const formatSale = (n: number) =>
     : n >= 1_000_000
       ? `€${(n / 1_000_000).toFixed(2).replace(/\.?0+$/, '')}M`
       : `€${Math.round(n / 1000)}K`;
-const formatRent = (n: number) => (n >= RENT_MAX ? `€${n.toLocaleString('en-US')}+` : `€${n.toLocaleString('en-US')}`);
+const formatRent = (n: number) =>
+  n >= RENT_MAX ? `€${n.toLocaleString('en-US')}+` : `€${n.toLocaleString('en-US')}`;
 
 interface HousingFilterState {
   price: [number, number];
@@ -516,11 +614,19 @@ function HousingSections({
   return (
     <>
       <FilterSection title="Property type" description="Pick any number; none means every type.">
-        <PropertyTypeFilter value={state.types} onValueChange={(types) => set({ types })} testID="types" />
+        <PropertyTypeFilter
+          value={state.types}
+          onValueChange={(types) => set({ types })}
+          testID="types"
+        />
       </FilterSection>
       <FilterSection
         title={buy ? 'Price' : 'Monthly rent'}
-        description={buy ? 'Total asking price. The scale widens as prices grow.' : 'Rent per month, before bills'}
+        description={
+          buy
+            ? 'Total asking price. The scale widens as prices grow.'
+            : 'Rent per month, before bills'
+        }
       >
         {buy ? (
           <PriceRangeFilter
@@ -549,12 +655,28 @@ function HousingSections({
       </FilterSection>
       <FilterSection title="Rooms">
         <View style={{ gap: 24 }}>
-          <CountFilter title="Bedrooms" value={state.bedrooms} onValueChange={(bedrooms) => set({ bedrooms })} max={5} />
-          <CountFilter title="Bathrooms" value={state.bathrooms} onValueChange={(bathrooms) => set({ bathrooms })} max={4} />
+          <CountFilter
+            title="Bedrooms"
+            value={state.bedrooms}
+            onValueChange={(bedrooms) => set({ bedrooms })}
+            max={5}
+          />
+          <CountFilter
+            title="Bathrooms"
+            value={state.bathrooms}
+            onValueChange={(bathrooms) => set({ bathrooms })}
+            max={4}
+          />
         </View>
       </FilterSection>
       <FilterSection title="Area" description="Usable floor area">
-        <AreaRangeFilter value={state.area} onValueChange={(area) => set({ area })} slider={buy} max={buy ? 500 : 250} testID="area" />
+        <AreaRangeFilter
+          value={state.area}
+          onValueChange={(area) => set({ area })}
+          slider={buy}
+          max={buy ? 500 : 250}
+          testID="area"
+        />
       </FilterSection>
       {buy ? null : (
         <FilterSection title="Availability">
@@ -576,10 +698,18 @@ function HousingSections({
         />
       </FilterSection>
       <FilterSection title="Energy rating" description="The worst rating you would accept">
-        <EnergyRatingFilter value={state.energy} onValueChange={(energy) => set({ energy })} testID="energy" />
+        <EnergyRatingFilter
+          value={state.energy}
+          onValueChange={(energy) => set({ energy })}
+          testID="energy"
+        />
       </FilterSection>
       <FilterSection title="Floor" divider={!buy ? false : true}>
-        <FloorFilter value={state.floors} onValueChange={(floors) => set({ floors })} testID="floors" />
+        <FloorFilter
+          value={state.floors}
+          onValueChange={(floors) => set({ floors })}
+          testID="floors"
+        />
       </FilterSection>
       {buy ? (
         <FilterSection title="Condition" divider={false}>
@@ -595,21 +725,31 @@ function HousingSections({
   );
 }
 
-function HousingFiltersDialogDemo({ kind, openOnMount = false }: { kind: 'buy' | 'rent'; openOnMount?: boolean }) {
+function HousingFiltersDialogDemo({
+  kind,
+  openOnMount = false,
+}: {
+  kind: 'buy' | 'rent';
+  openOnMount?: boolean;
+}) {
   const control = useDialogControl();
   const [state, setState] = useState(() => housingInitial(kind));
   const [applied, setApplied] = useState(() => housingInitial(kind));
   const set = (patch: Partial<HousingFilterState>) => setState((s) => ({ ...s, ...patch }));
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (openOnMount) control.open();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const n = Math.max(0, 2400 - housingCount(kind, state) * 310);
   return (
     <>
-      <FilterTriggerButton count={housingCount(kind, applied)} onPress={() => control.open()} testID="filters-trigger" />
+      <FilterTriggerButton
+        count={housingCount(kind, applied)}
+        onPress={() => control.open()}
+        testID="filters-trigger"
+      />
       <Dialog
         control={control}
         label="Filters"
@@ -620,7 +760,10 @@ function HousingFiltersDialogDemo({ kind, openOnMount = false }: { kind: 'buy' |
         contentPadding={0}
         testID="filters-dialog"
       >
-        <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}>
+        <ScrollView
+          style={{ flexShrink: 1 }}
+          contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}
+        >
           <HousingSections kind={kind} state={state} set={set} />
         </ScrollView>
         <FilterFooter
@@ -675,7 +818,11 @@ function HousingPanel({ kind, width }: { kind: 'buy' | 'rent'; width: number }) 
       <View style={{ paddingLeft: 24, paddingRight: 24 }}>
         <HousingSections kind={kind} state={state} set={set} />
       </View>
-      <FilterFooter resultsLabel="Show 214 homes" onApply={() => {}} onClear={() => setState(housingInitial(kind))} />
+      <FilterFooter
+        resultsLabel="Show 214 homes"
+        onApply={() => {}}
+        onClear={() => setState(housingInitial(kind))}
+      />
     </View>
   );
 }
@@ -701,11 +848,29 @@ export const SalePriceScale: Story = {
         <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
           scale="log", step 5,000
         </Text>
-        <PriceRangeFilter buckets={SALE_BUCKETS} min={SALE_MIN} max={SALE_MAX} scale="log" step={5000} value={log} onValueChange={setLog} formatPrice={formatSale} testID="log" />
+        <PriceRangeFilter
+          buckets={SALE_BUCKETS}
+          min={SALE_MIN}
+          max={SALE_MAX}
+          scale="log"
+          step={5000}
+          value={log}
+          onValueChange={setLog}
+          formatPrice={formatSale}
+          testID="log"
+        />
         <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
           scale="linear", step 5,000 — most of the width sits above the market
         </Text>
-        <PriceRangeFilter min={SALE_MIN} max={SALE_MAX} step={5000} value={linear} onValueChange={setLinear} formatPrice={formatSale} testID="linear" />
+        <PriceRangeFilter
+          min={SALE_MIN}
+          max={SALE_MAX}
+          step={5000}
+          value={linear}
+          onValueChange={setLinear}
+          formatPrice={formatSale}
+          testID="linear"
+        />
       </View>
     );
   },
@@ -773,7 +938,13 @@ export const AreaAvailabilityFloor: Story = {
           </View>
         </FilterSection>
         <FilterSection title="Availability">
-          <AvailabilityFilter availableNow={now} onAvailableNowChange={setNow} date={date} onDateChange={setDate} testID="availability" />
+          <AvailabilityFilter
+            availableNow={now}
+            onAvailableNowChange={setNow}
+            date={date}
+            onDateChange={setDate}
+            testID="availability"
+          />
         </FilterSection>
         <FilterSection title="Floor" divider={false}>
           <FloorFilter value={floors} onValueChange={setFloors} testID="floors" />

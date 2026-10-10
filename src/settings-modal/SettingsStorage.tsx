@@ -14,7 +14,12 @@ import { Button } from '../button';
 import { Checkbox } from '../checkbox';
 import { Chip } from '../chip';
 import { FileUpload, formatFileSize } from '../file-upload';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../dropdown-menu';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiDeleteBin6Line } from '../icons/remix/RiDeleteBin6Line';
 import { RiDownload2Line } from '../icons/remix/RiDownload2Line';
@@ -28,7 +33,16 @@ import { RiVideoLine } from '../icons/remix/RiVideoLine';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { Pagination } from '../pagination';
-import { Select, SelectContent, SelectIcon, SelectItem, SelectItemIndicator, SelectItemText, SelectTrigger, SelectValue } from '../select';
+import {
+  Select,
+  SelectContent,
+  SelectIcon,
+  SelectItem,
+  SelectItemIndicator,
+  SelectItemText,
+  SelectTrigger,
+  SelectValue,
+} from '../select';
 import { borderRadius } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
@@ -117,10 +131,17 @@ function SortableHeader({
       onPress={() => onSort(sortKey)}
       style={styles.sortable}
     >
-      <Text variant="body-medium" numberOfLines={1} style={{ color: active ? palette.text : palette.textTertiary }}>
+      <Text
+        variant="body-medium"
+        numberOfLines={1}
+        style={{ color: active ? palette.text : palette.textTertiary }}
+      >
         {label}
       </Text>
-      <SortCaret color={active ? palette.textSecondary : palette.textTertiary} up={active && sort?.dir === 'asc'} />
+      <SortCaret
+        color={active ? palette.textSecondary : palette.textTertiary}
+        up={active && sort?.dir === 'asc'}
+      />
     </Pressable>
   );
 }
@@ -192,8 +213,16 @@ function RowMoreMenu({
             style={[
               styles.moreTrigger,
               {
-                borderColor: open ? palette.borderButtonActive : hovered ? palette.borderButtonHover : palette.borderButton,
-                backgroundColor: open ? palette.primaryActive : hovered ? palette.primaryHover : palette.primary,
+                borderColor: open
+                  ? palette.borderButtonActive
+                  : hovered
+                    ? palette.borderButtonHover
+                    : palette.borderButton,
+                backgroundColor: open
+                  ? palette.primaryActive
+                  : hovered
+                    ? palette.primaryHover
+                    : palette.primary,
                 boxShadow: palette.shadowXs,
               },
             ]}
@@ -206,7 +235,11 @@ function RowMoreMenu({
         {actions.map((action) => (
           <DropdownMenuItem
             key={action.id}
-            leading={action.icon ? <action.icon width={18} height={18} fill={palette.iconSecondary} /> : undefined}
+            leading={
+              action.icon ? (
+                <action.icon width={18} height={18} fill={palette.iconSecondary} />
+              ) : undefined
+            }
             onPress={() => onAction?.(file.id, action.id)}
           >
             {action.label}
@@ -224,7 +257,15 @@ type RowPhase = 'idle' | 'entering' | 'exiting';
  * content slides down from −100% (400ms ease-out, fade 240ms); the exit is the
  * structural reverse (225ms ease-in, fade 160ms).
  */
-function AnimatedRow({ phase, onExited, children }: { phase: RowPhase; onExited: () => void; children: ReactNode }) {
+function AnimatedRow({
+  phase,
+  onExited,
+  children,
+}: {
+  phase: RowPhase;
+  onExited: () => void;
+  children: ReactNode;
+}) {
   const reducedMotion = useReducedMotion();
   const measured = useSharedValue(0);
   const progress = useSharedValue(phase === 'entering' ? 0 : 1);
@@ -257,7 +298,8 @@ function AnimatedRow({ phase, onExited, children }: { phase: RowPhase; onExited:
 
   const outer = useAnimatedStyle(
     () => ({
-      height: progress.value >= 1 || measured.value === 0 ? 'auto' : progress.value * measured.value,
+      height:
+        progress.value >= 1 || measured.value === 0 ? 'auto' : progress.value * measured.value,
       overflow: 'hidden',
     }),
     [progress, measured],
@@ -274,7 +316,8 @@ function AnimatedRow({ phase, onExited, children }: { phase: RowPhase; onExited:
       <Animated.View
         style={inner}
         onLayout={(event) => {
-          if (measured.value === 0 || progress.value >= 1) measured.value = event.nativeEvent.layout.height;
+          if (measured.value === 0 || progress.value >= 1)
+            measured.value = event.nativeEvent.layout.height;
         }}
       >
         {children}
@@ -284,7 +327,8 @@ function AnimatedRow({ phase, onExited, children }: { phase: RowPhase; onExited:
 }
 
 function defaultStoredIcon(kind: string, palette: SettingsPalette): ReactNode {
-  const Icon = kind === 'spreadsheet' ? RiFileExcel2Line : kind === 'video' ? RiVideoLine : RiFileTextLine;
+  const Icon =
+    kind === 'spreadsheet' ? RiFileExcel2Line : kind === 'video' ? RiVideoLine : RiFileTextLine;
   return <Icon width={24} height={24} fill={palette.iconSecondary} />;
 }
 
@@ -301,7 +345,8 @@ function ToolbarSelect({
 }) {
   // The select hands over either the stored item or its raw value, by platform.
   const labelFor = (v: unknown) => {
-    const key = typeof v === 'object' && v !== null && 'value' in v ? (v as SettingsFileKind).value : v;
+    const key =
+      typeof v === 'object' && v !== null && 'value' in v ? (v as SettingsFileKind).value : v;
     return items.find((item) => item.value === key)?.label ?? String(key);
   };
   return (
@@ -358,7 +403,10 @@ export function SettingsStoragePage({
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const kinds = useMemo(() => kindsProp ?? defaultKinds(messages), [kindsProp, messages]);
-  const fileActions = useMemo(() => fileActionsProp ?? defaultFileActions(messages), [fileActionsProp, messages]);
+  const fileActions = useMemo(
+    () => fileActionsProp ?? defaultFileActions(messages),
+    [fileActionsProp, messages],
+  );
   const orderItems = useMemo<SettingsFileKind[]>(
     () => [
       { value: 'newest', label: copy.modified },
@@ -405,16 +453,25 @@ export function SettingsStoragePage({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     const rows = files.filter(
-      (f) => (kindFilter === 'all' || f.kind === kindFilter) && (q === '' || f.name.toLowerCase().includes(q)),
+      (f) =>
+        (kindFilter === 'all' || f.kind === kindFilter) &&
+        (q === '' || f.name.toLowerCase().includes(q)),
     );
     if (sort) {
       const { key, dir } = sort;
       rows.sort((a, b) => {
-        const cmp = key === 'name' ? a.name.localeCompare(b.name) : key === 'size' ? a.size - b.size : a.uploadedAt - b.uploadedAt;
+        const cmp =
+          key === 'name'
+            ? a.name.localeCompare(b.name)
+            : key === 'size'
+              ? a.size - b.size
+              : a.uploadedAt - b.uploadedAt;
         return dir === 'asc' ? cmp : -cmp;
       });
     } else {
-      rows.sort((a, b) => (recency === 'newest' ? b.uploadedAt - a.uploadedAt : a.uploadedAt - b.uploadedAt));
+      rows.sort((a, b) =>
+        recency === 'newest' ? b.uploadedAt - a.uploadedAt : a.uploadedAt - b.uploadedAt,
+      );
     }
     return rows;
   }, [files, kindFilter, query, sort, recency]);
@@ -458,18 +515,21 @@ export function SettingsStoragePage({
   // toolbar wraps and the search takes the remaining width.
   const compact = useSettingsLayout() === 'compact';
 
-  const typeItems = useMemo(() => [{ value: 'all', label: copy.fileType }, ...kinds], [copy, kinds]);
+  const typeItems = useMemo(
+    () => [{ value: 'all', label: copy.fileType }, ...kinds],
+    [copy, kinds],
+  );
 
   return (
     <View testID={testID} style={[styles.page, settingsRingVars(palette), style]}>
       {upload === false ? null : (
-        <FileUpload
-          {...upload}
-          testID={testID ? `${testID}-dropzone` : undefined}
-        />
+        <FileUpload {...upload} testID={testID ? `${testID}-dropzone` : undefined} />
       )}
 
-      <View style={[styles.table, { borderColor: palette.separator }]} testID={testID ? `${testID}-table` : undefined}>
+      <View
+        style={[styles.table, { borderColor: palette.separator }]}
+        testID={testID ? `${testID}-table` : undefined}
+      >
         <View style={styles.toolbar}>
           <View>
             <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
@@ -534,7 +594,12 @@ export function SettingsStoragePage({
           {compact ? null : (
             <>
               <View style={[styles.cell, styles.dateCol]}>
-                <SortableHeader label={copy.uploadedOn} sortKey="uploadedAt" sort={sort} onSort={onSort} />
+                <SortableHeader
+                  label={copy.uploadedOn}
+                  sortKey="uploadedAt"
+                  sort={sort}
+                  onSort={onSort}
+                />
               </View>
               <View style={[styles.cell, styles.sizeCol]}>
                 <SortableHeader label={copy.fileSize} sortKey="size" sort={sort} onSort={onSort} />
@@ -553,7 +618,9 @@ export function SettingsStoragePage({
             rows.map((file) => (
               <AnimatedRow
                 key={file.id}
-                phase={exiting.has(file.id) ? 'exiting' : entering.has(file.id) ? 'entering' : 'idle'}
+                phase={
+                  exiting.has(file.id) ? 'exiting' : entering.has(file.id) ? 'entering' : 'idle'
+                }
                 onExited={() => finishDelete(file.id)}
               >
                 <View
@@ -568,8 +635,14 @@ export function SettingsStoragePage({
                       accessibilityLabel={copy.selectFile(file.name)}
                     />
                     <View style={styles.fileName2}>
-                      {renderFileIcon ? renderFileIcon(file) : defaultStoredIcon(file.kind, palette)}
-                      <Text variant="body-medium" numberOfLines={1} style={[styles.shrink, { color: palette.text }]}>
+                      {renderFileIcon
+                        ? renderFileIcon(file)
+                        : defaultStoredIcon(file.kind, palette)}
+                      <Text
+                        variant="body-medium"
+                        numberOfLines={1}
+                        style={[styles.shrink, { color: palette.text }]}
+                      >
                         {file.name}
                       </Text>
                     </View>
@@ -577,12 +650,20 @@ export function SettingsStoragePage({
                   {compact ? null : (
                     <>
                       <View style={[styles.cell, styles.dateCol]}>
-                        <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
+                        <Text
+                          variant="body-medium"
+                          numberOfLines={1}
+                          style={{ color: palette.text }}
+                        >
                           {file.uploadedOn}
                         </Text>
                       </View>
                       <View style={[styles.cell, styles.sizeCol]}>
-                        <Chip size="lg" style={{ backgroundColor: palette.secondary }} textStyle={{ color: palette.text }}>
+                        <Chip
+                          size="lg"
+                          style={{ backgroundColor: palette.secondary }}
+                          textStyle={{ color: palette.text }}
+                        >
                           {file.sizeLabel ?? formatFileSize(file.size, locale)}
                         </Chip>
                       </View>
@@ -590,7 +671,14 @@ export function SettingsStoragePage({
                   )}
                   <View style={[styles.cell, compact ? null : styles.actionsCol, styles.actions]}>
                     <HoverTooltip label={copy.deleteFile}>
-                      <Button size="sm" icon={RiDeleteBin6Line} accessibilityLabel={copy.deleteNamed(file.name)} onPress={() => deleteFile(file.id)} appearance="plain" tone="neutral" />
+                      <Button
+                        size="sm"
+                        icon={RiDeleteBin6Line}
+                        accessibilityLabel={copy.deleteNamed(file.name)}
+                        onPress={() => deleteFile(file.id)}
+                        appearance="plain"
+                        tone="neutral"
+                      />
                     </HoverTooltip>
                     <RowMoreMenu file={file} actions={fileActions} onAction={onFileAction} />
                   </View>

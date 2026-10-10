@@ -16,16 +16,12 @@ describe('isImageUrl', () => {
     expect(isImageUrl(value)).toBe(true);
   });
 
-  it.each([
-    'abc123',
-    'file_68f0a1c2',
-    'cover',
-    '',
-    'cdn.example/a.jpg',
-    'C:\\images\\a.jpg',
-  ])('treats %p as a resolver id', (value) => {
-    expect(isImageUrl(value)).toBe(false);
-  });
+  it.each(['abc123', 'file_68f0a1c2', 'cover', '', 'cdn.example/a.jpg', 'C:\\images\\a.jpg'])(
+    'treats %p as a resolver id',
+    (value) => {
+      expect(isImageUrl(value)).toBe(false);
+    },
+  );
 
   /**
    * The one divergence between the eleven copies: `listing-card` accepted a

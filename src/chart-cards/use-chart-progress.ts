@@ -30,6 +30,7 @@ export function useChartProgress(values: readonly number[]): {
   const shownRef = useRef<readonly number[] | null>(null);
   const [from, setFrom] = useState<readonly number[] | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the serialised values
   useEffect(() => {
     const previous = shownRef.current;
     shownRef.current = values;
@@ -50,7 +51,6 @@ export function useChartProgress(values: readonly number[]): {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the serialised values
   }, [key, reducedMotion]);
 
   return reducedMotion ? { progress: 1, from: null } : { progress, from };

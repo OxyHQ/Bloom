@@ -27,11 +27,24 @@ import {
   interactiveWebCss,
   useInteractiveWebCss,
 } from '../styles/interactive-web-css';
-import { BUTTON_RADIUS, BUTTON_SHADOW, BUTTON_TRANSITION_MS, ICON_BUTTON_ICON_SIZE, LINK_BUTTON_GAP, LINK_BUTTON_UNDERLINE_OFFSET, isIconComponent, resolveButtonGeometry, resolveLinkButtonPalette, resolveButtonPalette, resolveButtonUnderline } from './shared';
+import {
+  BUTTON_RADIUS,
+  BUTTON_SHADOW,
+  BUTTON_TRANSITION_MS,
+  ICON_BUTTON_ICON_SIZE,
+  LINK_BUTTON_GAP,
+  LINK_BUTTON_UNDERLINE_OFFSET,
+  isIconComponent,
+  resolveButtonGeometry,
+  resolveLinkButtonPalette,
+  resolveButtonPalette,
+  resolveButtonUnderline,
+} from './shared';
 import type { ButtonIconComponent, ButtonProps } from './types';
 
 export type {
-  ButtonProps, LinkButtonProps,
+  ButtonProps,
+  LinkButtonProps,
   ButtonSize,
   ButtonFocusEvent,
   ButtonHoverEvent,
@@ -57,7 +70,8 @@ export type {
 const STYLE_ID = 'bloom-button-web-css';
 
 const T = `${BUTTON_TRANSITION_MS}ms`;
-const DISABLED = '.bloom-btn:disabled:not([aria-busy="true"]),\n.bloom-btn[aria-disabled="true"]:not([aria-busy="true"])';
+const DISABLED =
+  '.bloom-btn:disabled:not([aria-busy="true"]),\n.bloom-btn[aria-disabled="true"]:not([aria-busy="true"])';
 
 /**
  * The adopted stylesheet. Exported so a suite can assert the RULES: jsdom
@@ -150,71 +164,81 @@ ${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-bg)', `background-c
 //  Component
 // ---------------------------------------------------------------------------
 
-const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebComponent({
-  onPress,
-  onFocus,
-  onBlur,
-  onHoverIn,
-  onHoverOut,
-  onKeyDown,
-  onKeyUp,
-  onLayout,
-  'aria-hidden': ariaHidden,
-  accessibilityElementsHidden,
-  importantForAccessibility,
-  onLongPress,
-  onPressIn,
-  onPressOut,
-  colors,
-  material = 'surface',
-  children,
-  disabled = false,
-  pressed: togglePressed,
-  stopPropagation = false,
-  appearance: appearanceProp,
-  tone: toneProp,
-  size: sizeProp,
-  style,
-  textStyle,
-  icon,
-  iconSize: iconSizeProp,
-  leading,
-  trailing,
-  leadingIcon: LeadingIcon,
-  trailingIcon: TrailingIcon,
-  renderLeadingIcon,
-  renderTrailingIcon,
-  iconOnly = false,
-  linkTone,
-  underline,
-  textVariant,
-  numberOfLines,
-  href,
-  target,
-  rel,
-  loading = false,
-  loadingColor,
-  accessibilityLabel,
-  'aria-current': ariaCurrent,
-  'aria-expanded': ariaExpanded,
-  'aria-haspopup': ariaHasPopup,
-  accessibilityHint,
-  accessibilityRole,
-  testID,
-  className,
-  type = 'button',
-  asChild = false,
-  id,
-  name,
-  value,
-  title,
-  autoFocus,
-  tabIndex,
-}, ref) {
+const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebComponent(
+  {
+    onPress,
+    onFocus,
+    onBlur,
+    onHoverIn,
+    onHoverOut,
+    onKeyDown,
+    onKeyUp,
+    onLayout,
+    'aria-hidden': ariaHidden,
+    accessibilityElementsHidden,
+    importantForAccessibility,
+    onLongPress,
+    onPressIn,
+    onPressOut,
+    colors,
+    material = 'surface',
+    children,
+    disabled = false,
+    pressed: togglePressed,
+    stopPropagation = false,
+    appearance: appearanceProp,
+    tone: toneProp,
+    size: sizeProp,
+    style,
+    textStyle,
+    icon,
+    iconSize: iconSizeProp,
+    leading,
+    trailing,
+    leadingIcon: LeadingIcon,
+    trailingIcon: TrailingIcon,
+    renderLeadingIcon,
+    renderTrailingIcon,
+    iconOnly = false,
+    linkTone,
+    underline,
+    textVariant,
+    numberOfLines,
+    href,
+    target,
+    rel,
+    loading = false,
+    loadingColor,
+    accessibilityLabel,
+    'aria-current': ariaCurrent,
+    'aria-expanded': ariaExpanded,
+    'aria-haspopup': ariaHasPopup,
+    accessibilityHint,
+    accessibilityRole,
+    testID,
+    className,
+    type = 'button',
+    asChild = false,
+    id,
+    name,
+    value,
+    title,
+    autoFocus,
+    tabIndex,
+  },
+  ref,
+) {
   useInteractiveWebCss(STYLE_ID, BLOOM_BUTTON_CSS);
-  const childRef = asChild && React.isValidElement(children) ? (children.props as {ref?: React.Ref<HTMLElement>}).ref : undefined;
+  const childRef =
+    asChild && React.isValidElement(children)
+      ? (children.props as { ref?: React.Ref<HTMLElement> }).ref
+      : undefined;
   const setRoot = useButtonLayout(ref, onLayout, childRef);
-  const hidden = ariaHidden ?? (accessibilityElementsHidden || importantForAccessibility === 'no-hide-descendants' ? true : undefined);
+  const hidden =
+    ariaHidden ??
+    (accessibilityElementsHidden || importantForAccessibility === 'no-hide-descendants'
+      ? true
+      : undefined);
   const theme = useTheme();
   const layer = useSurfaceLayer();
   const reactId = useId();
@@ -222,37 +246,48 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
 
   const appearance = appearanceProp ?? 'solid';
   useSurfaceRefraction(material === 'surface' && appearance !== 'plain');
-  const { size, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
+  const { size, tone } = useBloomAppearance(
+    { size: sizeProp, tone: toneProp },
+    { size: 'md', tone: 'accent' },
+  );
   const geometry = resolveButtonGeometry(size, textVariant);
   const isSquare = iconOnly || (icon != null && children == null);
   const isIconVariant = isSquare;
   const isLink = appearance === 'plain' && (href != null || linkTone != null);
   const isInteractionBlocked = disabled || loading;
   const longPress = useLongPress(onLongPress, isInteractionBlocked, onPressIn, onPressOut);
-  const handleBlur: React.FocusEventHandler<HTMLElement> = event => {
+  const handleBlur: React.FocusEventHandler<HTMLElement> = (event) => {
     onBlur?.(event);
     longPress.onBlur();
   };
-  const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = event => {
+  const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
     onKeyDown?.(event);
     longPress.onKeyDown(event);
   };
-  const handleKeyUp: React.KeyboardEventHandler<HTMLElement> = event => {
+  const handleKeyUp: React.KeyboardEventHandler<HTMLElement> = (event) => {
     onKeyUp?.(event);
     // Cleanup remains unconditional even when a caller cancels default behavior.
     longPress.onKeyUp(event);
   };
-  const handlePointerEnter: React.PointerEventHandler<HTMLElement> = event => {
+  const handlePointerEnter: React.PointerEventHandler<HTMLElement> = (event) => {
     if (!isInteractionBlocked && event.pointerType !== 'touch') onHoverIn?.(event);
   };
-  const handlePointerLeave: React.PointerEventHandler<HTMLElement> = event => {
+  const handlePointerLeave: React.PointerEventHandler<HTMLElement> = (event) => {
     if (event.pointerType !== 'touch') onHoverOut?.(event);
     longPress.onPointerLeave();
   };
-  const iconSize = typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0 ? iconSizeProp : isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
+  const iconSize =
+    typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0
+      ? iconSizeProp
+      : isIconVariant
+        ? ICON_BUTTON_ICON_SIZE[size]
+        : geometry.iconSize;
 
   const palette = useMemo(
-    () => isLink && linkTone != null && toneProp == null ? resolveLinkButtonPalette(theme, linkTone) : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
+    () =>
+      isLink && linkTone != null && toneProp == null
+        ? resolveLinkButtonPalette(theme, linkTone)
+        : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
     [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill, material],
   );
   const underlineMode = resolveButtonUnderline(isLink, underline);
@@ -266,7 +301,9 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       ['--bloom-btn-font-size' as string]: `${geometry.fontSize}px`,
       ['--bloom-btn-line-height' as string]: `${geometry.lineHeight}px`,
       ['--bloom-btn-font-weight' as string]: geometry.fontWeight,
-      ['--bloom-btn-letter-spacing' as string]: geometry.letterSpacing ? `${geometry.letterSpacing}px` : 'normal',
+      ['--bloom-btn-letter-spacing' as string]: geometry.letterSpacing
+        ? `${geometry.letterSpacing}px`
+        : 'normal',
       // CSS custom props consumed by the static stylesheet — see its header.
       ['--bloom-surface-rim' as string]: resolveSurfaceOptics(theme.isDark).rim,
       ['--bloom-surface-sheen' as string]: resolveSurfaceOptics(theme.isDark).sheenCss,
@@ -276,12 +313,14 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       ['--bloom-btn-press-scale' as string]: 1,
       ['--bloom-btn-shadow' as string]: shadow,
       ['--bloom-btn-border-width' as string]: `${palette.borderWidth}px`,
-      ['--bloom-btn-fg' as string]: (togglePressed && !loading ? palette.active : palette.rest).foreground,
+      ['--bloom-btn-fg' as string]: (togglePressed && !loading ? palette.active : palette.rest)
+        .foreground,
       ['--bloom-btn-fg-hover' as string]: palette.hover.foreground,
       ['--bloom-btn-fg-active' as string]: palette.active.foreground,
       ['--bloom-btn-fg-disabled' as string]: palette.disabled.foreground,
       ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
-      ['--bloom-btn-bg' as string]: (togglePressed && !loading ? palette.active : palette.rest).background,
+      ['--bloom-btn-bg' as string]: (togglePressed && !loading ? palette.active : palette.rest)
+        .background,
       ['--bloom-btn-bg-hover' as string]: palette.hover.background,
       ['--bloom-btn-bg-active' as string]: palette.active.background,
       ['--bloom-btn-bg-disabled' as string]: palette.disabled.background,
@@ -292,28 +331,50 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
     };
     // Keep the existing inline defaults for callers without utilities. When
     // classes are present, the same defaults come from the base layer.
-    if (!className) Object.assign(base, {
-      height: geometry.height, paddingLeft: geometry.paddingHorizontal,
-      paddingRight: geometry.paddingHorizontal, borderRadius: BUTTON_RADIUS,
-      fontSize: geometry.fontSize, lineHeight: `${geometry.lineHeight}px`,
-      fontWeight: Number(geometry.fontWeight), letterSpacing: geometry.letterSpacing || undefined,
-    });
+    if (!className)
+      Object.assign(base, {
+        height: geometry.height,
+        paddingLeft: geometry.paddingHorizontal,
+        paddingRight: geometry.paddingHorizontal,
+        borderRadius: BUTTON_RADIUS,
+        fontSize: geometry.fontSize,
+        lineHeight: `${geometry.lineHeight}px`,
+        fontWeight: Number(geometry.fontWeight),
+        letterSpacing: geometry.letterSpacing || undefined,
+      });
     if (isSquare) {
-      if (!className) Object.assign(base, { width: geometry.height, paddingLeft: 0, paddingRight: 0 });
+      if (!className)
+        Object.assign(base, { width: geometry.height, paddingLeft: 0, paddingRight: 0 });
       (base as Record<string, unknown>)['--bloom-btn-width'] = `${geometry.height}px`;
       (base as Record<string, unknown>)['--bloom-btn-padding'] = '0px';
     }
     if (isLink && !isSquare) {
       // LinkButton: no container at all — the label's own line box,
       // a 4px gap, and a 4px corner that only the focus ring shows.
-      if (!className) Object.assign(base, { height: undefined, paddingLeft: 0, paddingRight: 0, borderRadius: 4 });
+      if (!className)
+        Object.assign(base, {
+          height: undefined,
+          paddingLeft: 0,
+          paddingRight: 0,
+          borderRadius: 4,
+        });
       (base as Record<string, unknown>)['--bloom-btn-height'] = 'auto';
       (base as Record<string, unknown>)['--bloom-btn-padding'] = '0px';
       (base as Record<string, unknown>)['--bloom-btn-radius'] = '4px';
       (base as Record<string, unknown>)['--bloom-btn-gap'] = `${LINK_BUTTON_GAP}px`;
     }
     return base;
-  }, [geometry, palette, theme.isDark, isSquare, isIconVariant, isLink, togglePressed, loading, className]);
+  }, [
+    geometry,
+    palette,
+    theme.isDark,
+    isSquare,
+    isIconVariant,
+    isLink,
+    togglePressed,
+    loading,
+    className,
+  ]);
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
@@ -336,8 +397,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
     .concat(className ? [className] : [])
     .join(' ');
 
-  const spinnerColor =
-    loadingColor ?? 'currentColor';
+  const spinnerColor = loadingColor ?? 'currentColor';
 
   // Normalize the caller's `style` (single object, StyleProp array, or falsy)
   // into ONE flat plain object here, once, so neither raw-DOM merge site below
@@ -430,10 +490,19 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
     <>
       <span
         style={{
-          display: 'inline-flex', flexDirection: 'inherit', flexWrap: 'inherit',
-          alignItems: 'inherit', justifyContent: 'inherit', alignContent: 'inherit',
-          gap: 'inherit', alignSelf: 'stretch', flexGrow: 1, flexShrink: 1, minWidth: 0,
-          opacity: loading ? 0 : undefined, pointerEvents: loading ? 'none' : undefined,
+          display: 'inline-flex',
+          flexDirection: 'inherit',
+          flexWrap: 'inherit',
+          alignItems: 'inherit',
+          justifyContent: 'inherit',
+          alignContent: 'inherit',
+          gap: 'inherit',
+          alignSelf: 'stretch',
+          flexGrow: 1,
+          flexShrink: 1,
+          minWidth: 0,
+          opacity: loading ? 0 : undefined,
+          pointerEvents: loading ? 'none' : undefined,
         }}
       >
         {content}
@@ -442,8 +511,12 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
         <span
           aria-hidden="true"
           style={{
-            position: 'absolute', inset: 0, display: 'inline-flex',
-            alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
+            position: 'absolute',
+            inset: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
           }}
         >
           <SpinnerIcon size={iconSize} color={spinnerColor} />
@@ -484,17 +557,41 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       'aria-hidden': hidden,
       className: [composedClassName, childProps.className].filter(Boolean).join(' '),
       style: { ...containerStyle, ...resolvedStyle, ...childProps.style },
-      onPointerDown: event => { childProps.onPointerDown?.(event); longPress.onPointerDown(event); },
-      onPointerEnter: event => { childProps.onPointerEnter?.(event); handlePointerEnter(event); },
-      onPointerLeave: event => { childProps.onPointerLeave?.(event); handlePointerLeave(event); },
-      onFocus: event => { childProps.onFocus?.(event); onFocus?.(event); },
-      onBlur: event => { childProps.onBlur?.(event); handleBlur(event); },
-      onKeyDown: event => { childProps.onKeyDown?.(event); handleKeyDown(event); },
-      onKeyUp: event => { childProps.onKeyUp?.(event); handleKeyUp(event); },
-      onContextMenu: event => { childProps.onContextMenu?.(event); longPress.onContextMenu(event); },
+      onPointerDown: (event) => {
+        childProps.onPointerDown?.(event);
+        longPress.onPointerDown(event);
+      },
+      onPointerEnter: (event) => {
+        childProps.onPointerEnter?.(event);
+        handlePointerEnter(event);
+      },
+      onPointerLeave: (event) => {
+        childProps.onPointerLeave?.(event);
+        handlePointerLeave(event);
+      },
+      onFocus: (event) => {
+        childProps.onFocus?.(event);
+        onFocus?.(event);
+      },
+      onBlur: (event) => {
+        childProps.onBlur?.(event);
+        handleBlur(event);
+      },
+      onKeyDown: (event) => {
+        childProps.onKeyDown?.(event);
+        handleKeyDown(event);
+      },
+      onKeyUp: (event) => {
+        childProps.onKeyUp?.(event);
+        handleKeyUp(event);
+      },
+      onContextMenu: (event) => {
+        childProps.onContextMenu?.(event);
+        longPress.onContextMenu(event);
+      },
       onClick: (event: MouseEvent<HTMLElement>) => {
         if (longPress.suppressClick(event)) return;
-      if (stopPropagation) event.stopPropagation();
+        if (stopPropagation) event.stopPropagation();
         if (isInteractionBlocked) {
           event.preventDefault();
           return;
@@ -615,7 +712,18 @@ GhostButton.displayName = 'GhostButton';
 
 export const InverseButton = memo((props: ButtonProps) => {
   const theme = useTheme();
-  return <Button appearance="solid" tone="neutral" colors={props.appearance == null && props.tone == null ? { background: theme.colors.text, foreground: theme.colors.background } : undefined} {...props} />;
+  return (
+    <Button
+      appearance="solid"
+      tone="neutral"
+      colors={
+        props.appearance == null && props.tone == null
+          ? { background: theme.colors.text, foreground: theme.colors.background }
+          : undefined
+      }
+      {...props}
+    />
+  );
 });
 InverseButton.displayName = 'InverseButton';
 

@@ -5,7 +5,15 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
-import { AppShell, AppShellSplitPanes, AppShellHeader, AppShellMenuButton, NotificationBell, ProOfferCard, useAppShell } from '../app-shell';
+import {
+  AppShell,
+  AppShellSplitPanes,
+  AppShellHeader,
+  AppShellMenuButton,
+  NotificationBell,
+  ProOfferCard,
+  useAppShell,
+} from '../app-shell';
 import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
 import { ContentPanel } from '../content-panel';
@@ -15,8 +23,24 @@ import { resolveScrollMode } from '../app-shell/layout';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 const ITEMS: NotificationCenterItem[] = [
-  { id: 'a', category: 'system', group: 'Today', title: 'A', description: 'a', timestamp: '1m', unread: true },
-  { id: 'b', category: 'system', group: 'Today', title: 'B', description: 'b', timestamp: '2m', unread: true },
+  {
+    id: 'a',
+    category: 'system',
+    group: 'Today',
+    title: 'A',
+    description: 'a',
+    timestamp: '1m',
+    unread: true,
+  },
+  {
+    id: 'b',
+    category: 'system',
+    group: 'Today',
+    title: 'B',
+    description: 'b',
+    timestamp: '2m',
+    unread: true,
+  },
   { id: 'c', category: 'system', group: 'Today', title: 'C', description: 'c', timestamp: '3m' },
 ];
 
@@ -32,7 +56,9 @@ function renderIn(ui: React.ReactElement) {
 }
 
 function setWidth(width: number) {
-  jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  jest
+    .spyOn(ReactNative, 'useWindowDimensions')
+    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
 afterEach(() => jest.restoreAllMocks());
@@ -43,7 +69,12 @@ describe('AppShellHeader', () => {
     const screen = renderIn(<AppShellHeader title="Welcome" onMenuPress={() => {}} />);
     const title = screen.getByText('Welcome');
     expect(title.props.role).toBe('heading');
-    expect(resolvedStyle(title.props.style)).toMatchObject({ fontSize: 20, lineHeight: 26, paddingLeft: 4, paddingRight: 4 });
+    expect(resolvedStyle(title.props.style)).toMatchObject({
+      fontSize: 20,
+      lineHeight: 26,
+      paddingLeft: 4,
+      paddingRight: 4,
+    });
   });
 });
 
@@ -53,23 +84,34 @@ describe('AppShell', () => {
     const screen = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);
     expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
     expect(screen.queryByTestId('shell-header-menu')).toBeNull();
-    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ padding: 12, gap: 16 });
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({
+      padding: 12,
+      gap: 16,
+    });
   });
 
   it('rail variant: in flow from sm, and below it the drawer opens the panel', () => {
     setWidth(700);
-    const wide = renderIn(<AppShell testID="shell" title="Home" sidebar={{ variant: 'rail', items: NAV }} />);
-    expect(resolvedStyle(wide.getByTestId('sidebar-item-home').props.style)).toMatchObject({ minHeight: 64 });
+    const wide = renderIn(
+      <AppShell testID="shell" title="Home" sidebar={{ variant: 'rail', items: NAV }} />,
+    );
+    expect(resolvedStyle(wide.getByTestId('sidebar-item-home').props.style)).toMatchObject({
+      minHeight: 64,
+    });
     expect(wide.queryByTestId('shell-header-menu')).toBeNull();
     wide.unmount();
 
     setWidth(500);
-    const narrow = renderIn(<AppShell testID="shell" title="Home" sidebar={{ variant: 'rail', items: NAV }} />);
+    const narrow = renderIn(
+      <AppShell testID="shell" title="Home" sidebar={{ variant: 'rail', items: NAV }} />,
+    );
     expect(narrow.queryByTestId('sidebar-item-home')).toBeNull();
     fireEvent.press(narrow.getByTestId('shell-header-menu'));
     expect(narrow.getByTestId('sidebar-close')).toBeTruthy();
     // The panel's row, not the rail's 64-tall item (a panel row's floor is its square).
-    expect(resolvedStyle(narrow.getByTestId('sidebar-item-home').props.style).minHeight).not.toBe(64);
+    expect(resolvedStyle(narrow.getByTestId('sidebar-item-home').props.style).minHeight).not.toBe(
+      64,
+    );
   });
 
   it('narrow overlay: the menu button opens the drawer, the close button shuts it', () => {
@@ -86,8 +128,16 @@ describe('AppShell', () => {
     setWidth(390);
     const onDrawerOpenChange = jest.fn();
     const screen = renderIn(
-      <AppShell testID="feed" variant="feed" drawer="reveal" scroll="document"
-        navFrom={700} sidebar={{ items: NAV }} drawerOpen onDrawerOpenChange={onDrawerOpenChange}>
+      <AppShell
+        testID="feed"
+        variant="feed"
+        drawer="reveal"
+        scroll="document"
+        navFrom={700}
+        sidebar={{ items: NAV }}
+        drawerOpen
+        onDrawerOpenChange={onDrawerOpenChange}
+      >
         <ReactNative.Text>Feed content</ReactNative.Text>
       </AppShell>,
     );
@@ -98,18 +148,33 @@ describe('AppShell', () => {
     expect(onDrawerOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it.each(['fixed', 'document'] as const)('dashboard %s reveal moves its bottom slot with the page', (scroll) => {
-    setWidth(390);
-    const screen = renderIn(
-      <AppShell testID="shell" drawer="reveal" scroll={scroll} drawerOpen sidebar={{ items: NAV }}
-        bottomBar={<ReactNative.Text>Navigation</ReactNative.Text>} />,
-    );
-    const host = screen.getByTestId('shell-reveal-bars');
-    expect(resolvedStyle(host.props.style)).toMatchObject({ transform: [{ translateX: 272 }], top: 0, bottom: 0 });
-    expect(host.props.pointerEvents).toBe('none');
-    expect(resolvedStyle(screen.getByTestId('shell-bottom-bar').props.style).position).toBe('absolute');
-    fireEvent.press(screen.getByTestId('shell-veil'));
-  });
+  it.each(['fixed', 'document'] as const)(
+    'dashboard %s reveal moves its bottom slot with the page',
+    (scroll) => {
+      setWidth(390);
+      const screen = renderIn(
+        <AppShell
+          testID="shell"
+          drawer="reveal"
+          scroll={scroll}
+          drawerOpen
+          sidebar={{ items: NAV }}
+          bottomBar={<ReactNative.Text>Navigation</ReactNative.Text>}
+        />,
+      );
+      const host = screen.getByTestId('shell-reveal-bars');
+      expect(resolvedStyle(host.props.style)).toMatchObject({
+        transform: [{ translateX: 272 }],
+        top: 0,
+        bottom: 0,
+      });
+      expect(host.props.pointerEvents).toBe('none');
+      expect(resolvedStyle(screen.getByTestId('shell-bottom-bar').props.style).position).toBe(
+        'absolute',
+      );
+      fireEvent.press(screen.getByTestId('shell-veil'));
+    },
+  );
 
   it('narrow reveal: the rail is mounted flat beneath and the veil closes it', () => {
     setWidth(700);
@@ -147,17 +212,27 @@ describe('AppShell scroll on web', () => {
     });
   }
   beforeEach(() => {
-    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'web', configurable: true, writable: true });
+    Object.defineProperty(ReactNative.Platform, 'OS', {
+      value: 'web',
+      configurable: true,
+      writable: true,
+    });
   });
   afterEach(() => {
-    Object.defineProperty(ReactNative.Platform, 'OS', { value: original, configurable: true, writable: true });
+    Object.defineProperty(ReactNative.Platform, 'OS', {
+      value: original,
+      configurable: true,
+      writable: true,
+    });
   });
 
   it('document (default): no ScrollView, a viewport-tall frame and a sticky rail', () => {
     setWidth(1440);
     const screen = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);
     expect(pageScrollViews(screen)).toHaveLength(0);
-    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ minHeight: '100dvh' });
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({
+      minHeight: '100dvh',
+    });
     expect(resolvedStyle(screen.getByTestId('shell').props.style).overflow).toBeUndefined();
     // The shell's first child is the wrapper holding the in-flow rail.
     const wrapper = screen.getByTestId('shell').children[0];
@@ -170,12 +245,16 @@ describe('AppShell scroll on web', () => {
 
   it('document asides use the page scroll and reveal their bottom when taller than the viewport', () => {
     setWidth(1440);
-    const screen = renderIn(<AppShell testID="shell" aside={<ReactNative.Text>Long context</ReactNative.Text>} />);
+    const screen = renderIn(
+      <AppShell testID="shell" aside={<ReactNative.Text>Long context</ReactNative.Text>} />,
+    );
     const aside = screen.getByTestId('shell-aside');
     expect(screen.UNSAFE_queryAllByType(ReactNative.ScrollView)).toHaveLength(0);
     expect(resolvedStyle(aside.props.style)).toMatchObject({ position: 'sticky', top: 12 });
     expect(resolvedStyle(aside.props.style).height).toBeUndefined();
-    fireEvent(aside, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 320, height: 1200 } } });
+    fireEvent(aside, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 320, height: 1200 } },
+    });
     expect(resolvedStyle(aside.props.style).top).toBe(-312);
   });
 
@@ -190,12 +269,19 @@ describe('AppShell scroll on web', () => {
     let node = hostParent(screen.getByTestId('page'));
     node = node && hostParent(node);
     node = node && hostParent(node);
-    expect(resolvedStyle(node?.props.style)).toMatchObject({ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 });
+    expect(resolvedStyle(node?.props.style)).toMatchObject({
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 0,
+      minWidth: 0,
+    });
   });
 
   it('container: the page scrolls its own ScrollView', () => {
     setWidth(1440);
-    const screen = renderIn(<AppShell testID="shell" scroll="container" title="Home" sidebar={{ items: NAV }} />);
+    const screen = renderIn(
+      <AppShell testID="shell" scroll="container" title="Home" sidebar={{ items: NAV }} />,
+    );
     expect(pageScrollViews(screen)).toHaveLength(1);
   });
 });
@@ -231,7 +317,15 @@ describe('AppShell without a title', () => {
       );
     }
     const screen = renderIn(
-      <AppShell sidebar={{ items: NAV }} header={<><AppShellMenuButton testID="menu" /><Opener /></>} />,
+      <AppShell
+        sidebar={{ items: NAV }}
+        header={
+          <>
+            <AppShellMenuButton testID="menu" />
+            <Opener />
+          </>
+        }
+      />,
     );
     expect(screen.getByText('drawer')).toBeTruthy();
     fireEvent.press(screen.getByTestId('menu'));
@@ -244,7 +338,9 @@ describe('AppShell without a title', () => {
 
   it('header={null} draws NO header, menu button included — the page owns that corner', () => {
     setWidth(700);
-    const screen = renderIn(<AppShell testID="shell" sidebar={{ items: NAV }} header={null} title="Ignored" />);
+    const screen = renderIn(
+      <AppShell testID="shell" sidebar={{ items: NAV }} header={null} title="Ignored" />,
+    );
     expect(screen.queryByTestId('shell-header')).toBeNull();
     expect(screen.queryByTestId('shell-header-menu')).toBeNull();
     // The drawer is still THERE — the page opens it itself.
@@ -253,7 +349,9 @@ describe('AppShell without a title', () => {
 
   it('AppShellMenuButton renders nothing while the sidebar is in flow', () => {
     setWidth(1440);
-    const screen = renderIn(<AppShell sidebar={{ items: NAV }} header={<AppShellMenuButton testID="menu" />} />);
+    const screen = renderIn(
+      <AppShell sidebar={{ items: NAV }} header={<AppShellMenuButton testID="menu" />} />,
+    );
     expect(screen.queryByTestId('menu')).toBeNull();
   });
 });
@@ -265,21 +363,45 @@ describe('AppShell breakpoints as numbers', () => {
     // A feed whose side column earns its place at 990, between lg and xl.
     setWidth(1000);
     const beside = renderIn(
-      <AppShell testID="shell" variant="feed" title="Home" aside={<Aside />} asideFrom={990} asideWidth={350} />,
+      <AppShell
+        testID="shell"
+        variant="feed"
+        title="Home"
+        aside={<Aside />}
+        asideFrom={990}
+        asideWidth={350}
+      />,
     );
-    expect(resolvedStyle(beside.getByTestId('shell-aside').props.style)).toMatchObject({ width: 350 });
+    expect(resolvedStyle(beside.getByTestId('shell-aside').props.style)).toMatchObject({
+      width: 350,
+    });
     beside.unmount();
 
     setWidth(980);
     const stacked = renderIn(
-      <AppShell testID="shell" variant="feed" title="Home" aside={<Aside />} asideFrom={990} asideWidth={350} />,
+      <AppShell
+        testID="shell"
+        variant="feed"
+        title="Home"
+        aside={<Aside />}
+        asideFrom={990}
+        asideWidth={350}
+      />,
     );
     expect(resolvedStyle(stacked.getByTestId('shell-aside').props.style).width).toBeUndefined();
     stacked.unmount();
 
     // …and the rail goes in flow at 500, where the named tiers say `sm` is 640.
     setWidth(520);
-    const rail = renderIn(<AppShell testID="shell" variant="feed" title="Home" sidebar={{ items: NAV }} navFrom={500} />);
+    const rail = renderIn(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        title="Home"
+        sidebar={{ items: NAV }}
+        navFrom={500}
+      />,
+    );
     expect(rail.getByTestId('sidebar-item-home')).toBeTruthy();
     expect(rail.queryByTestId('shell-header-menu')).toBeNull();
   });
@@ -290,8 +412,12 @@ describe('AppShell aside', () => {
 
   it('sits beside the content from asideFrom, at asideWidth', () => {
     setWidth(1440);
-    const screen = renderIn(<AppShell testID="shell" title="Home" aside={<Aside />} asideWidth={280} />);
-    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({ width: 280 });
+    const screen = renderIn(
+      <AppShell testID="shell" title="Home" aside={<Aside />} asideWidth={280} />,
+    );
+    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({
+      width: 280,
+    });
     // Beside: a child of the frame itself, not inside the content column.
     expect(hostParent(screen.getByTestId('shell-aside'))?.props.testID).toBe('shell');
   });
@@ -302,7 +428,9 @@ describe('AppShell aside', () => {
     expect(stacked.getByText('Details')).toBeTruthy();
     expect(resolvedStyle(stacked.getByTestId('shell-aside').props.style).width).toBeUndefined();
     stacked.unmount();
-    const hidden = renderIn(<AppShell testID="shell" title="Home" aside={<Aside />} asideCollapse="hidden" />);
+    const hidden = renderIn(
+      <AppShell testID="shell" title="Home" aside={<Aside />} asideCollapse="hidden" />,
+    );
     expect(hidden.queryByText('Details')).toBeNull();
     hidden.unmount();
     const lg = renderIn(<AppShell testID="shell" title="Home" aside={<Aside />} asideFrom="lg" />);
@@ -323,8 +451,13 @@ describe('AppShell scroll="fixed"', () => {
       return true;
     });
     expect(pageScrollers).toHaveLength(0);
-    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ overflow: 'hidden' });
-    expect(resolvedStyle(hostParent(screen.getByTestId('page'))?.props.style)).toMatchObject({ flex: 1, minHeight: 0 });
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({
+      overflow: 'hidden',
+    });
+    expect(resolvedStyle(hostParent(screen.getByTestId('page'))?.props.style)).toMatchObject({
+      flex: 1,
+      minHeight: 0,
+    });
   });
 });
 
@@ -339,7 +472,9 @@ describe('AppShell variant="canvas"', () => {
       </AppShell>,
     );
     // The frame is the viewport and nothing scrolls it.
-    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ overflow: 'hidden' });
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({
+      overflow: 'hidden',
+    });
     // Nothing between the canvas and the frame scrolls (the rail's own row
     // scroller is not the page's).
     for (let n = screen.getByTestId('canvas').parent; n; n = n.parent) {
@@ -356,18 +491,34 @@ describe('AppShell variant="canvas"', () => {
   it('keeps the row edge to edge and moves the inset onto the regions, so only the canvas reaches the window', () => {
     setWidth(1440);
     const screen = renderIn(
-      <AppShell testID="shell" variant="canvas" sidebar={{ items: NAV }} aside={<ReactNative.Text>In view</ReactNative.Text>}>
+      <AppShell
+        testID="shell"
+        variant="canvas"
+        sidebar={{ items: NAV }}
+        aside={<ReactNative.Text>In view</ReactNative.Text>}
+      >
         <Canvas />
       </AppShell>,
     );
-    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ padding: 0, gap: 0 });
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({
+      padding: 0,
+      gap: 0,
+    });
     // The nav is still a card with a gutter around it…
-    expect(resolvedStyle(hostParent(screen.getByTestId('sidebar-item-home'))?.props.style)).toBeTruthy();
+    expect(
+      resolvedStyle(hostParent(screen.getByTestId('sidebar-item-home'))?.props.style),
+    ).toBeTruthy();
     const nav = screen.getByTestId('shell').props.children;
     expect(nav).toBeTruthy();
     // …and the aside keeps its own inset rather than touching the edge.
-    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({ paddingTop: 16, paddingBottom: 16, paddingInlineEnd: 16 });
-    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style).paddingInlineStart).toBeUndefined();
+    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({
+      paddingTop: 16,
+      paddingBottom: 16,
+      paddingInlineEnd: 16,
+    });
+    expect(
+      resolvedStyle(screen.getByTestId('shell-aside').props.style).paddingInlineStart,
+    ).toBeUndefined();
   });
 });
 
@@ -380,58 +531,102 @@ describe('AppShell panel fill', () => {
     return false;
   }
 
-  it.each(['document', 'fixed'] as const)('%s panel leaves content spacing to its screen', (scroll) => {
-    setWidth(1440);
-    const screen = renderIn(<AppShell testID="shell" variant="feed" panel scroll={scroll} gutter={24}
-      header={<ReactNative.View testID="full-header" />}>
-      <ReactNative.Text testID="body">Body</ReactNative.Text>
-    </AppShell>);
-    const parentStyle = resolvedStyle(hostParent(screen.getByTestId('full-header'))?.props.style);
-    expect(parentStyle.padding ?? 0).toBe(0);
-    expect(parentStyle.paddingLeft ?? parentStyle.paddingHorizontal ?? 0).toBe(0);
-    expect(parentStyle.paddingRight ?? parentStyle.paddingHorizontal ?? 0).toBe(0);
-    const bodyStyle = scroll === 'fixed'
-      ? resolvedStyle(screen.getByTestId('shell-page').props.style)
-      : resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style);
-    expect(bodyStyle.paddingLeft ?? 0).toBe(0);
-    expect(bodyStyle.paddingRight ?? 0).toBe(0);
-    expect(bodyStyle.paddingTop ?? 0).toBe(0);
-    expect(bodyStyle.paddingBottom ?? 0).toBe(0);
-  });
+  it.each(['document', 'fixed'] as const)(
+    '%s panel leaves content spacing to its screen',
+    (scroll) => {
+      setWidth(1440);
+      const screen = renderIn(
+        <AppShell
+          testID="shell"
+          variant="feed"
+          panel
+          scroll={scroll}
+          gutter={24}
+          header={<ReactNative.View testID="full-header" />}
+        >
+          <ReactNative.Text testID="body">Body</ReactNative.Text>
+        </AppShell>,
+      );
+      const parentStyle = resolvedStyle(hostParent(screen.getByTestId('full-header'))?.props.style);
+      expect(parentStyle.padding ?? 0).toBe(0);
+      expect(parentStyle.paddingLeft ?? parentStyle.paddingHorizontal ?? 0).toBe(0);
+      expect(parentStyle.paddingRight ?? parentStyle.paddingHorizontal ?? 0).toBe(0);
+      const bodyStyle =
+        scroll === 'fixed'
+          ? resolvedStyle(screen.getByTestId('shell-page').props.style)
+          : resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style);
+      expect(bodyStyle.paddingLeft ?? 0).toBe(0);
+      expect(bodyStyle.paddingRight ?? 0).toBe(0);
+      expect(bodyStyle.paddingTop ?? 0).toBe(0);
+      expect(bodyStyle.paddingBottom ?? 0).toBe(0);
+    },
+  );
 
-  it.each([true, false])('document panel reserves bar space only when requested (%s)', (reserve) => {
-    setWidth(390);
-    const screen = renderIn(<AppShell testID="shell" variant="feed" panel scroll="document"
-      reserveBottomBarSpace={reserve} bottomBar={<ReactNative.Text>Navigation</ReactNative.Text>}>
-      <ReactNative.Text testID="body">Body</ReactNative.Text>
-    </AppShell>);
-    fireEvent(screen.getByTestId('shell-bottom-bar'), 'layout', {
-      nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 80 } },
-    });
-    expect(resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style).paddingBottom)
-      .toBe(reserve ? 80 : 0);
-  });
+  it.each([true, false])(
+    'document panel reserves bar space only when requested (%s)',
+    (reserve) => {
+      setWidth(390);
+      const screen = renderIn(
+        <AppShell
+          testID="shell"
+          variant="feed"
+          panel
+          scroll="document"
+          reserveBottomBarSpace={reserve}
+          bottomBar={<ReactNative.Text>Navigation</ReactNative.Text>}
+        >
+          <ReactNative.Text testID="body">Body</ReactNative.Text>
+        </AppShell>,
+      );
+      fireEvent(screen.getByTestId('shell-bottom-bar'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 80 } },
+      });
+      expect(resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style).paddingBottom).toBe(
+        reserve ? 80 : 0,
+      );
+    },
+  );
 
   it.each(['fixed', 'container'] as const)('%s panel preserves the scroll owner', (scroll) => {
     setWidth(1440);
     const screen = renderIn(
-      <AppShell testID="shell" variant="feed" panel scroll={scroll} title="Home" sidebar={{ items: NAV }}>
-        <ReactNative.View testID="native-navigator"><ReactNative.Text testID="post">post</ReactNative.Text></ReactNative.View>
+      <AppShell
+        testID="shell"
+        variant="feed"
+        panel
+        scroll={scroll}
+        title="Home"
+        sidebar={{ items: NAV }}
+      >
+        <ReactNative.View testID="native-navigator">
+          <ReactNative.Text testID="post">post</ReactNative.Text>
+        </ReactNative.View>
       </AppShell>,
     );
     expect(insidePage(screen, 'post')).toBe(true);
     expect(insidePage(screen, 'shell-header')).toBe(false);
-    const pageScrollers = screen.UNSAFE_queryAllByType(ReactNative.ScrollView)
-      .filter(node => node.props.testID === 'shell-page');
+    const pageScrollers = screen
+      .UNSAFE_queryAllByType(ReactNative.ScrollView)
+      .filter((node) => node.props.testID === 'shell-page');
     expect(pageScrollers).toHaveLength(scroll === 'container' ? 1 : 0);
-    if (scroll === 'fixed') expect(resolvedStyle(screen.getByTestId('shell-page').props.style))
-      .toMatchObject({ flex: 1, minHeight: 0 });
+    if (scroll === 'fixed')
+      expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({
+        flex: 1,
+        minHeight: 0,
+      });
   });
 
   it('a panel in a DOCUMENT-scrolled shell keeps growing with the page, header and all', () => {
     setWidth(1440);
     const screen = renderIn(
-      <AppShell testID="shell" variant="feed" panel scroll="document" title="Home" sidebar={{ items: NAV }}>
+      <AppShell
+        testID="shell"
+        variant="feed"
+        panel
+        scroll="document"
+        title="Home"
+        sidebar={{ items: NAV }}
+      >
         <ReactNative.Text testID="post">post</ReactNative.Text>
       </AppShell>,
     );
@@ -447,9 +642,16 @@ describe('NotificationBell', () => {
     setWidth(1440);
     const screen = renderIn(<NotificationBell testID="bell" notifications={ITEMS} />);
     const count = screen.getByTestId('bell-count');
-    expect(resolvedStyle(count.props.style)).toMatchObject({ width: 16, height: 16, top: 2, insetInlineStart: 18 });
+    expect(resolvedStyle(count.props.style)).toMatchObject({
+      width: 16,
+      height: 16,
+      top: 2,
+      insetInlineStart: 18,
+    });
     expect(screen.getByText('2')).toBeTruthy();
-    const override = renderIn(<NotificationBell testID="bell2" notifications={ITEMS} unreadCount={5} />);
+    const override = renderIn(
+      <NotificationBell testID="bell2" notifications={ITEMS} unreadCount={5} />,
+    );
     expect(override.getByText('5')).toBeTruthy();
     const none = renderIn(<NotificationBell testID="bell3" notifications={ITEMS.slice(2, 3)} />);
     expect(none.queryByTestId('bell3-count')).toBeNull();
@@ -461,7 +663,13 @@ describe('ProOfferCard', () => {
     setWidth(1440);
     const onDismiss = jest.fn();
     const screen = renderIn(
-      <ProOfferCard testID="offer" title="Pro" description="d" ctaLabel="Get Pro" onDismiss={onDismiss} />,
+      <ProOfferCard
+        testID="offer"
+        title="Pro"
+        description="d"
+        ctaLabel="Get Pro"
+        onDismiss={onDismiss}
+      />,
     );
     expect(resolvedStyle(screen.getByTestId('offer').props.style)).toMatchObject({
       width: 280,
@@ -528,7 +736,9 @@ describe('AppShell variant="feed"', () => {
     wide.unmount();
 
     setWidth(360);
-    const phone = renderIn(<AppShell testID="shell" variant="feed" contentWidth={520} title="Home" />);
+    const phone = renderIn(
+      <AppShell testID="shell" variant="feed" contentWidth={520} title="Home" />,
+    );
     expect(resolvedStyle(phone.getByTestId('shell-content').props.style)).toMatchObject({
       flexShrink: 1,
       flexBasis: 520,
@@ -539,29 +749,66 @@ describe('AppShell variant="feed"', () => {
   it('centres the content and the aside as a PAIR in what the nav leaves', () => {
     setWidth(1440);
     const screen = renderIn(
-      <AppShell testID="shell" variant="feed" title="Home" sidebar={{ items: NAV }} aside={<ReactNative.Text>Side</ReactNative.Text>} />,
+      <AppShell
+        testID="shell"
+        variant="feed"
+        title="Home"
+        sidebar={{ items: NAV }}
+        aside={<ReactNative.Text>Side</ReactNative.Text>}
+      />,
     );
     const content = screen.getByTestId('shell-content');
     const aside = screen.getByTestId('shell-aside');
     const row = hostParent(content);
     expect(hostParent(aside)).toBe(row);
-    expect(resolvedStyle(row?.props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'center' });
+    expect(resolvedStyle(row?.props.style)).toMatchObject({
+      flexDirection: 'row',
+      justifyContent: 'center',
+    });
     expect(resolvedStyle(aside.props.style)).toMatchObject({ width: 320 });
   });
 
   it('can center navigation together with the reading column and contextual column', () => {
     setWidth(1440);
-    const screen = renderIn(<AppShell testID="shell" variant="feed" navigationAlign="content" contentWidth={600} asideWidth={280} gutter={16} sidebar={{ items: NAV }} aside={<ReactNative.Text>Context</ReactNative.Text>} />);
+    const screen = renderIn(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        navigationAlign="content"
+        contentWidth={600}
+        asideWidth={280}
+        gutter={16}
+        sidebar={{ items: NAV }}
+        aside={<ReactNative.Text>Context</ReactNative.Text>}
+      />,
+    );
     expect(resolvedStyle(screen.getByTestId('shell').props.style).justifyContent).toBe('center');
     const group = hostParent(screen.getByTestId('shell-content'));
-    expect(resolvedStyle(group?.props.style)).toMatchObject({ flexGrow: 0, flexBasis: 896, maxWidth: 896 });
+    expect(resolvedStyle(group?.props.style)).toMatchObject({
+      flexGrow: 0,
+      flexBasis: 896,
+      maxWidth: 896,
+    });
   });
 
   it('can close the navigation gap without changing panel and aside insets', () => {
     setWidth(1440);
-    const screen = renderIn(<AppShell testID="shell" variant="feed" navigationGap={0} gutter={16}
-      contentWidth={600} asideWidth={280} sidebar={{ items: NAV }} aside={<ReactNative.Text>Context</ReactNative.Text>} />);
-    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ padding: 16, gap: 0 });
+    const screen = renderIn(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        navigationGap={0}
+        gutter={16}
+        contentWidth={600}
+        asideWidth={280}
+        sidebar={{ items: NAV }}
+        aside={<ReactNative.Text>Context</ReactNative.Text>}
+      />,
+    );
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({
+      padding: 16,
+      gap: 0,
+    });
     const group = hostParent(screen.getByTestId('shell-content'));
     expect(resolvedStyle(group?.props.style).gap).toBe(16);
   });
@@ -569,8 +816,19 @@ describe('AppShell variant="feed"', () => {
   it('keeps a plain centered document shell flush while insetting only its reading group', () => {
     jest.replaceProperty(ReactNative.Platform, 'OS', 'web');
     setWidth(1440);
-    const screen = renderIn(<AppShell testID="shell" variant="feed" scroll="document" navigationAlign="content"
-      sidebar={{ items: NAV, surface: 'plain' }} gutter={8} panel><ReactNative.Text>Body</ReactNative.Text></AppShell>);
+    const screen = renderIn(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        scroll="document"
+        navigationAlign="content"
+        sidebar={{ items: NAV, surface: 'plain' }}
+        gutter={8}
+        panel
+      >
+        <ReactNative.Text>Body</ReactNative.Text>
+      </AppShell>,
+    );
     expect(resolvedStyle(screen.getByTestId('shell').props.style).padding).toBe(0);
     expect(resolvedStyle(screen.getByTestId('shell-navigation').props.style).top).toBe(0);
     const group = hostParent(screen.getByTestId('shell-content'));
@@ -586,11 +844,24 @@ describe('AppShell variant="feed"', () => {
   it('keeps the same plain feed shell flush on a native phone, as on the web', () => {
     jest.replaceProperty(ReactNative.Platform, 'OS', 'android');
     setWidth(411);
-    const screen = renderIn(<AppShell testID="shell" variant="feed" scroll="fixed" navigationAlign="content"
-      drawer="reveal" sidebar={{ items: NAV, surface: 'plain' }} gutter={8} panel>
-      <ReactNative.Text>Body</ReactNative.Text></AppShell>);
+    const screen = renderIn(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        scroll="fixed"
+        navigationAlign="content"
+        drawer="reveal"
+        sidebar={{ items: NAV, surface: 'plain' }}
+        gutter={8}
+        panel
+      >
+        <ReactNative.Text>Body</ReactNative.Text>
+      </AppShell>,
+    );
     const row = hostParent(hostParent(screen.getByTestId('shell-content')) as never);
-    const paddings = [row, hostParent(screen.getByTestId('shell-content'))].map((node) => resolvedStyle(node?.props.style));
+    const paddings = [row, hostParent(screen.getByTestId('shell-content'))].map((node) =>
+      resolvedStyle(node?.props.style),
+    );
     for (const style of paddings) {
       expect(style.padding ?? 0).toBe(0);
       expect(style.paddingTop ?? 0).toBe(0);
@@ -602,19 +873,38 @@ describe('AppShell variant="feed"', () => {
     { width: 700, framedFrom: undefined, expected: true },
     { width: 767, framedFrom: undefined, expected: true },
     { width: 699, framedFrom: 640 as const, expected: undefined },
-  ])('coordinates panel framing with navigation, respecting overrides: %j', ({ width, framedFrom, expected }) => {
-    jest.replaceProperty(ReactNative.Platform, 'OS', 'web');
-    setWidth(width);
-    const screen = renderIn(<AppShell variant="feed" panel navFrom={700} framedFrom={framedFrom}
-      sidebar={{ items: NAV, variant: 'rail' }}><ReactNative.Text>Body</ReactNative.Text></AppShell>);
-    const panel = screen.UNSAFE_root.findByType((ContentPanel as unknown as { type: React.ComponentType }).type);
-    expect(panel.props.framed).toBe(expected);
-  });
+  ])(
+    'coordinates panel framing with navigation, respecting overrides: %j',
+    ({ width, framedFrom, expected }) => {
+      jest.replaceProperty(ReactNative.Platform, 'OS', 'web');
+      setWidth(width);
+      const screen = renderIn(
+        <AppShell
+          variant="feed"
+          panel
+          navFrom={700}
+          framedFrom={framedFrom}
+          sidebar={{ items: NAV, variant: 'rail' }}
+        >
+          <ReactNative.Text>Body</ReactNative.Text>
+        </AppShell>,
+      );
+      const panel = screen.UNSAFE_root.findByType(
+        (ContentPanel as unknown as { type: React.ComponentType }).type,
+      );
+      expect(panel.props.framed).toBe(expected);
+    },
+  );
 
   it('below asideFrom the side column stacks under the content instead', () => {
     setWidth(1100);
     const screen = renderIn(
-      <AppShell testID="shell" variant="feed" title="Home" aside={<ReactNative.Text>Side</ReactNative.Text>} />,
+      <AppShell
+        testID="shell"
+        variant="feed"
+        title="Home"
+        aside={<ReactNative.Text>Side</ReactNative.Text>}
+      />,
     );
     expect(screen.getByText('Side')).toBeTruthy();
     expect(resolvedStyle(screen.getByTestId('shell-aside').props.style).width).toBeUndefined();
@@ -623,36 +913,59 @@ describe('AppShell variant="feed"', () => {
   it('uses one gutter for padding and gap, where dashboard keeps its 12/16 pair', () => {
     setWidth(1440);
     const feed = renderIn(<AppShell testID="shell" variant="feed" title="Home" />);
-    expect(resolvedStyle(feed.getByTestId('shell').props.style)).toMatchObject({ padding: 16, gap: 16 });
+    expect(resolvedStyle(feed.getByTestId('shell').props.style)).toMatchObject({
+      padding: 16,
+      gap: 16,
+    });
     feed.unmount();
     const dash = renderIn(<AppShell testID="shell" title="Home" />);
-    expect(resolvedStyle(dash.getByTestId('shell').props.style)).toMatchObject({ padding: 12, gap: 16 });
+    expect(resolvedStyle(dash.getByTestId('shell').props.style)).toMatchObject({
+      padding: 12,
+      gap: 16,
+    });
     dash.unmount();
     const wide = renderIn(<AppShell testID="shell" variant="feed" gutter={24} title="Home" />);
-    expect(resolvedStyle(wide.getByTestId('shell').props.style)).toMatchObject({ padding: 24, gap: 24 });
+    expect(resolvedStyle(wide.getByTestId('shell').props.style)).toMatchObject({
+      padding: 24,
+      gap: 24,
+    });
   });
 });
 
 describe('AppShell variant="focus"', () => {
   it('draws no navigation at all, sidebar or not', () => {
     setWidth(1440);
-    const screen = renderIn(<AppShell testID="shell" variant="focus" title="Sign in" sidebar={{ items: NAV }} />);
+    const screen = renderIn(
+      <AppShell testID="shell" variant="focus" title="Sign in" sidebar={{ items: NAV }} />,
+    );
     expect(screen.queryByTestId('sidebar-item-home')).toBeNull();
     expect(screen.queryByTestId('shell-header-menu')).toBeNull();
-    expect(resolvedStyle(screen.getByTestId('shell-content').props.style)).toMatchObject({ flexBasis: 600 });
+    expect(resolvedStyle(screen.getByTestId('shell-content').props.style)).toMatchObject({
+      flexBasis: 600,
+    });
   });
 
   it('takes no aside in either position — it is a single column by definition', () => {
     setWidth(1440);
     const wide = renderIn(
-      <AppShell testID="shell" variant="focus" title="Sign in" aside={<ReactNative.Text>Side</ReactNative.Text>} />,
+      <AppShell
+        testID="shell"
+        variant="focus"
+        title="Sign in"
+        aside={<ReactNative.Text>Side</ReactNative.Text>}
+      />,
     );
     expect(wide.queryByText('Side')).toBeNull();
     wide.unmount();
     // Below `asideFrom` an aside STACKS under the content — also not here.
     setWidth(500);
     const narrow = renderIn(
-      <AppShell testID="shell" variant="focus" title="Sign in" aside={<ReactNative.Text>Side</ReactNative.Text>} />,
+      <AppShell
+        testID="shell"
+        variant="focus"
+        title="Sign in"
+        aside={<ReactNative.Text>Side</ReactNative.Text>}
+      />,
     );
     expect(narrow.queryByText('Side')).toBeNull();
   });
@@ -688,8 +1001,12 @@ describe('AppShell variant="split"', () => {
     expect(three.getByTestId('shell-pane-list')).toBeTruthy();
     expect(three.getByTestId('shell-pane-detail')).toBeTruthy();
     expect(three.getByTestId('shell-pane-info')).toBeTruthy();
-    expect(resolvedStyle(three.getByTestId('shell-pane-list').props.style)).toMatchObject({ width: 360 });
-    expect(resolvedStyle(three.getByTestId('shell-pane-info').props.style)).toMatchObject({ width: 320 });
+    expect(resolvedStyle(three.getByTestId('shell-pane-list').props.style)).toMatchObject({
+      width: 360,
+    });
+    expect(resolvedStyle(three.getByTestId('shell-pane-info').props.style)).toMatchObject({
+      width: 320,
+    });
     three.unmount();
 
     setWidth(1100);
@@ -758,7 +1075,8 @@ describe('AppShell variant="split"', () => {
     );
     expect(
       none.UNSAFE_queryAllByType(ReactNative.ScrollView).filter((node) => {
-        for (let n = node.parent; n; n = n.parent) if (n.props.role === 'complementary') return false;
+        for (let n = node.parent; n; n = n.parent)
+          if (n.props.role === 'complementary') return false;
         return true;
       }).length,
     ).toBe(0);
@@ -768,7 +1086,12 @@ describe('AppShell variant="split"', () => {
     setWidth(1440);
     const onListWidthChange = jest.fn();
     const screen = renderIn(
-      <AppShell testID="shell" variant="split" list={PANES.list} onListWidthChange={onListWidthChange}>
+      <AppShell
+        testID="shell"
+        variant="split"
+        list={PANES.list}
+        onListWidthChange={onListWidthChange}
+      >
         <ReactNative.Text>Detail</ReactNative.Text>
       </AppShell>,
     );
@@ -794,7 +1117,9 @@ describe('AppShell variant="split"', () => {
         <ReactNative.Text>Detail</ReactNative.Text>
       </AppShell>,
     );
-    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ overflow: 'hidden' });
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({
+      overflow: 'hidden',
+    });
   });
 });
 
@@ -802,20 +1127,35 @@ describe('AppShell pinned slots', () => {
   const original = ReactNative.Platform.OS;
   const INSETS = { top: 44, bottom: 34, left: 0, right: 0 };
   beforeEach(() => {
-    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'web', configurable: true, writable: true });
+    Object.defineProperty(ReactNative.Platform, 'OS', {
+      value: 'web',
+      configurable: true,
+      writable: true,
+    });
   });
   afterEach(() => {
-    Object.defineProperty(ReactNative.Platform, 'OS', { value: original, configurable: true, writable: true });
+    Object.defineProperty(ReactNative.Platform, 'OS', {
+      value: original,
+      configurable: true,
+      writable: true,
+    });
   });
 
   function renderWithInsets(ui: React.ReactElement) {
-    return renderIn(<SafeAreaInsetsContext.Provider value={INSETS}>{ui}</SafeAreaInsetsContext.Provider>);
+    return renderIn(
+      <SafeAreaInsetsContext.Provider value={INSETS}>{ui}</SafeAreaInsetsContext.Provider>,
+    );
   }
 
   it('pins the bottom bar to the viewport with the safe-area inset as its own padding', () => {
     setWidth(500);
     const screen = renderWithInsets(
-      <AppShell testID="shell" variant="feed" sidebar={{ items: NAV }} bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>} />,
+      <AppShell
+        testID="shell"
+        variant="feed"
+        sidebar={{ items: NAV }}
+        bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}
+      />,
     );
     const bar = screen.getByTestId('shell-bottom-bar');
     expect(resolvedStyle(bar.props.style)).toMatchObject({
@@ -847,7 +1187,9 @@ describe('AppShell pinned slots', () => {
       nativeEvent: { layout: { width: 500, height: 56, x: 0, y: 0 } },
     });
     // The action sits ABOVE the bar, a gutter clear of it…
-    expect(resolvedStyle(screen.getByTestId('shell-floating-action').props.style)).toMatchObject({ bottom: 72 + 16 });
+    expect(resolvedStyle(screen.getByTestId('shell-floating-action').props.style)).toMatchObject({
+      bottom: 72 + 16,
+    });
     // …and the page reserves both, so the last row is never behind either.
     expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({
       paddingBottom: 72 + 56 + 16,
@@ -856,14 +1198,23 @@ describe('AppShell pinned slots', () => {
 
   it('reserves nothing when there is no bar and no action', () => {
     setWidth(500);
-    const screen = renderWithInsets(<AppShell testID="shell" variant="feed" sidebar={{ items: NAV }} />);
-    expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({ paddingBottom: 0 });
+    const screen = renderWithInsets(
+      <AppShell testID="shell" variant="feed" sidebar={{ items: NAV }} />,
+    );
+    expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({
+      paddingBottom: 0,
+    });
   });
 
   it('draws the bars while the nav is a drawer, or always', () => {
     setWidth(1440);
     const flow = renderWithInsets(
-      <AppShell testID="shell" variant="feed" sidebar={{ items: NAV }} bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>} />,
+      <AppShell
+        testID="shell"
+        variant="feed"
+        sidebar={{ items: NAV }}
+        bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}
+      />,
     );
     expect(flow.queryByTestId('shell-bottom-bar')).toBeNull();
     flow.unmount();
@@ -892,7 +1243,11 @@ describe('AppShell pinned slots', () => {
       />,
     );
     const bar = screen.getByTestId('shell-top-bar');
-    expect(resolvedStyle(bar.props.style)).toMatchObject({ position: 'sticky', top: 0, paddingTop: 44 });
+    expect(resolvedStyle(bar.props.style)).toMatchObject({
+      position: 'sticky',
+      top: 0,
+      paddingTop: 44,
+    });
     // It is a sibling ABOVE the row, not a child of the content column.
     expect(hostParent(bar)?.props.testID).toBe('shell');
     // ONE hamburger: the bar's. The header does not add a second under it.
@@ -904,7 +1259,9 @@ describe('AppShell pinned slots', () => {
 describe('AppShell nav sizing', () => {
   it('navFrom moves the tier the rail sits in flow from', () => {
     setWidth(800);
-    const md = renderIn(<AppShell testID="shell" title="Home" navFrom="md" sidebar={{ items: NAV }} />);
+    const md = renderIn(
+      <AppShell testID="shell" title="Home" navFrom="md" sidebar={{ items: NAV }} />,
+    );
     expect(md.getByTestId('sidebar-item-home')).toBeTruthy();
     expect(md.queryByTestId('shell-header-menu')).toBeNull();
     md.unmount();
@@ -916,49 +1273,72 @@ describe('AppShell nav sizing', () => {
 
   it('navExpandedFrom swaps icons for labels, and lets the rail sit in flow from sm', () => {
     setWidth(700);
-    const rail = renderIn(<AppShell testID="shell" title="Home" navExpandedFrom="lg" sidebar={{ items: NAV }} />);
+    const rail = renderIn(
+      <AppShell testID="shell" title="Home" navExpandedFrom="lg" sidebar={{ items: NAV }} />,
+    );
     // The rail's own item geometry (64 tall) is what says it is the rail.
-    expect(resolvedStyle(rail.getByTestId('sidebar-item-home').props.style)).toMatchObject({ minHeight: 64 });
+    expect(resolvedStyle(rail.getByTestId('sidebar-item-home').props.style)).toMatchObject({
+      minHeight: 64,
+    });
     rail.unmount();
 
     setWidth(1440);
-    const panel = renderIn(<AppShell testID="shell" title="Home" navExpandedFrom="lg" sidebar={{ items: NAV }} />);
-    expect(resolvedStyle(panel.getByTestId('sidebar-item-home').props.style).minHeight).not.toBe(64);
+    const panel = renderIn(
+      <AppShell testID="shell" title="Home" navExpandedFrom="lg" sidebar={{ items: NAV }} />,
+    );
+    expect(resolvedStyle(panel.getByTestId('sidebar-item-home').props.style).minHeight).not.toBe(
+      64,
+    );
   });
 });
-
 
 describe('AppShell panel theme', () => {
-  it.each([390, 1440])('at %ipx scopes only the reading column without remounting content', (width) => {
-    setWidth(width);
-    const mounted = jest.fn();
-    function Probe({ id }: { id: string }) {
-      const { colors } = useTheme();
-      React.useEffect(() => { mounted(id); }, []);
-      return <ReactNative.Text testID={id}>{colors.primary}</ReactNative.Text>;
-    }
-    function Frame({ preset }: { preset?: 'rose' | 'teal' }) {
-      return <BloomThemeProvider mode="light" colorPreset="teal">
-        <AppShell variant="feed" panel panelColorPreset={preset} aside={<Probe id="aside-color" />}>
-          <Probe id="panel-color" />
-        </AppShell>
-      </BloomThemeProvider>;
-    }
-    const screen = render(<Frame />);
-    const original = screen.getByTestId('aside-color').props.children;
-    expect(screen.getByTestId('panel-color').props.children).toBe(original);
-    screen.rerender(<Frame preset="rose" />);
-    expect(screen.getByTestId('aside-color').props.children).toBe(original);
-    expect(screen.getByTestId('panel-color').props.children).not.toBe(original);
-    expect(mounted.mock.calls.filter(([id]) => id === 'panel-color')).toHaveLength(1);
-  });
+  it.each([390, 1440])(
+    'at %ipx scopes only the reading column without remounting content',
+    (width) => {
+      setWidth(width);
+      const mounted = jest.fn();
+      function Probe({ id }: { id: string }) {
+        const { colors } = useTheme();
+        React.useEffect(() => {
+          mounted(id);
+        }, []);
+        return <ReactNative.Text testID={id}>{colors.primary}</ReactNative.Text>;
+      }
+      function Frame({ preset }: { preset?: 'rose' | 'teal' }) {
+        return (
+          <BloomThemeProvider mode="light" colorPreset="teal">
+            <AppShell
+              variant="feed"
+              panel
+              panelColorPreset={preset}
+              aside={<Probe id="aside-color" />}
+            >
+              <Probe id="panel-color" />
+            </AppShell>
+          </BloomThemeProvider>
+        );
+      }
+      const screen = render(<Frame />);
+      const original = screen.getByTestId('aside-color').props.children;
+      expect(screen.getByTestId('panel-color').props.children).toBe(original);
+      screen.rerender(<Frame preset="rose" />);
+      expect(screen.getByTestId('aside-color').props.children).toBe(original);
+      expect(screen.getByTestId('panel-color').props.children).not.toBe(original);
+      expect(mounted.mock.calls.filter(([id]) => id === 'panel-color')).toHaveLength(1);
+    },
+  );
 });
-
 
 describe('standalone AppShellSplitPanes', () => {
   it('uses split defaults without introducing another shell or surface', () => {
-    const screen = renderIn(<AppShellSplitPanes testID="panes" list={<ReactNative.Text>List</ReactNative.Text>}
-      detail={<ReactNative.Text>Detail</ReactNative.Text>} />);
+    const screen = renderIn(
+      <AppShellSplitPanes
+        testID="panes"
+        list={<ReactNative.Text>List</ReactNative.Text>}
+        detail={<ReactNative.Text>Detail</ReactNative.Text>}
+      />,
+    );
     expect(resolvedStyle(screen.getByTestId('panes-pane-list').props.style).width).toBe(360);
     expect(screen.getByTestId('panes-divider').props.accessibilityLabel).toBe('Resize panes');
     expect(screen.getByTestId('panes-pane-detail')).toBeTruthy();
@@ -970,13 +1350,27 @@ describe('standalone AppShellSplitPanes', () => {
     const unmounted = jest.fn();
     function Detail() {
       const [draft, setDraft] = React.useState('');
-      React.useEffect(() => { mounted(); return unmounted; }, []);
+      React.useEffect(() => {
+        mounted();
+        return unmounted;
+      }, []);
       return <ReactNative.TextInput testID="draft" value={draft} onChangeText={setDraft} />;
     }
     function Frame({ desktop }: { desktop: boolean }) {
-      return <BloomThemeProvider mode="light"><AppShellSplitPanes variant="separated" testID="panes" showList={desktop} showInfo={desktop}
-        paneScroll={false} list={<ReactNative.Text>List</ReactNative.Text>} info={<ReactNative.Text>Info</ReactNative.Text>}
-        detail={<Detail />} /></BloomThemeProvider>;
+      return (
+        <BloomThemeProvider mode="light">
+          <AppShellSplitPanes
+            variant="separated"
+            testID="panes"
+            showList={desktop}
+            showInfo={desktop}
+            paneScroll={false}
+            list={<ReactNative.Text>List</ReactNative.Text>}
+            info={<ReactNative.Text>Info</ReactNative.Text>}
+            detail={<Detail />}
+          />
+        </BloomThemeProvider>
+      );
     }
     const screen = render(<Frame desktop={false} />);
     fireEvent.changeText(screen.getByTestId('draft'), 'Preserved draft');
@@ -991,21 +1385,37 @@ describe('standalone AppShellSplitPanes', () => {
   });
 });
 
-
 describe('separated split panels', () => {
   it.each(['joined', 'separated'] as const)('uses Bloom geometry for %s panes', (variant) => {
-    const screen = renderIn(<AppShellSplitPanes variant={variant} testID="panes" paneScroll={false}
-      list={<ReactNative.Text>List</ReactNative.Text>} detail={<ReactNative.Text>Detail</ReactNative.Text>}
-      info={<ReactNative.Text>Info</ReactNative.Text>} />);
+    const screen = renderIn(
+      <AppShellSplitPanes
+        variant={variant}
+        testID="panes"
+        paneScroll={false}
+        list={<ReactNative.Text>List</ReactNative.Text>}
+        detail={<ReactNative.Text>Detail</ReactNative.Text>}
+        info={<ReactNative.Text>Info</ReactNative.Text>}
+      />,
+    );
     const gap = resolvedStyle(screen.getByTestId('panes-list-gap').props.style);
     expect(gap.width).toBe(variant === 'separated' ? 12 : 1);
     expect(gap.flexShrink).toBe(0);
     if (variant === 'separated') expect(gap.backgroundColor).toBe('transparent');
     expect(resolvedStyle(screen.getByTestId('panes-info-gap').props.style).width).toBe(gap.width);
-    if (variant === 'separated') expect(resolvedStyle(screen.getByTestId('panes-resize-anchor').props.style)).toMatchObject({ left: '50%', width: 0 });
+    if (variant === 'separated')
+      expect(resolvedStyle(screen.getByTestId('panes-resize-anchor').props.style)).toMatchObject({
+        left: '50%',
+        width: 0,
+      });
   });
   it('draws no gutter when only detail is visible', () => {
-    const screen = renderIn(<AppShellSplitPanes variant="separated" testID="panes" detail={<ReactNative.Text>Detail</ReactNative.Text>} />);
+    const screen = renderIn(
+      <AppShellSplitPanes
+        variant="separated"
+        testID="panes"
+        detail={<ReactNative.Text>Detail</ReactNative.Text>}
+      />,
+    );
     expect(screen.queryByTestId('panes-list-gap')).toBeNull();
     expect(screen.queryByTestId('panes-info-gap')).toBeNull();
     expect(screen.queryByTestId('panes-divider')).toBeNull();
@@ -1016,48 +1426,102 @@ describe('AppShell native safe-area frame', () => {
   const originalOS = ReactNative.Platform.OS;
   const insets = { top: 47, right: 7, bottom: 34, left: 20 };
   beforeEach(() => {
-    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'ios', configurable: true, writable: true });
+    Object.defineProperty(ReactNative.Platform, 'OS', {
+      value: 'ios',
+      configurable: true,
+      writable: true,
+    });
     setWidth(390);
   });
   afterEach(() => {
-    Object.defineProperty(ReactNative.Platform, 'OS', { value: originalOS, configurable: true, writable: true });
+    Object.defineProperty(ReactNative.Platform, 'OS', {
+      value: originalOS,
+      configurable: true,
+      writable: true,
+    });
   });
   function withInsets(ui: React.ReactElement) {
-    return renderIn(<SafeAreaInsetsContext.Provider value={insets}>{ui}</SafeAreaInsetsContext.Provider>);
+    return renderIn(
+      <SafeAreaInsetsContext.Provider value={insets}>{ui}</SafeAreaInsetsContext.Provider>,
+    );
   }
   function ReadInsets() {
     const value = React.useContext(SafeAreaInsetsContext);
     return <ReactNative.Text testID="device-insets">{JSON.stringify(value)}</ReactNative.Text>;
   }
 
-  it.each(['dashboard', 'feed'] as const)('%s reveal keeps pages and navigation safe without charging the bar twice', variant => {
-    const view = withInsets(<AppShell variant={variant} safeArea scroll="fixed" drawer="reveal" drawerOpen
-      sidebar={{ items: NAV }} header={null} bottomBar={<ReadInsets />} testID="safe"><ReactNative.Text>Page</ReactNative.Text></AppShell>);
-    expect(resolvedStyle(view.getByTestId('safe-safe-area').props.style)).toMatchObject({
-      paddingTop: 47, paddingInlineStart: 20, paddingInlineEnd: 7, paddingBottom: 0,
-    });
-    expect(resolvedStyle(view.getByTestId('safe-bottom-bar').props.style).paddingBottom).toBe(34);
-    expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({ paddingTop: 12, paddingBottom: 46 });
-    expect(view.getByTestId('device-insets').props.children).toBe(JSON.stringify(insets));
-    if (variant === 'dashboard') {
-      fireEvent(view.getByTestId('safe-bottom-bar'), 'layout', { nativeEvent: { layout: { height: 100 } } });
-      expect(resolvedStyle(view.getByTestId('safe-page').props.style).paddingBottom).toBe(112);
-    }
-  });
+  it.each(['dashboard', 'feed'] as const)(
+    '%s reveal keeps pages and navigation safe without charging the bar twice',
+    (variant) => {
+      const view = withInsets(
+        <AppShell
+          variant={variant}
+          safeArea
+          scroll="fixed"
+          drawer="reveal"
+          drawerOpen
+          sidebar={{ items: NAV }}
+          header={null}
+          bottomBar={<ReadInsets />}
+          testID="safe"
+        >
+          <ReactNative.Text>Page</ReactNative.Text>
+        </AppShell>,
+      );
+      expect(resolvedStyle(view.getByTestId('safe-safe-area').props.style)).toMatchObject({
+        paddingTop: 47,
+        paddingInlineStart: 20,
+        paddingInlineEnd: 7,
+        paddingBottom: 0,
+      });
+      expect(resolvedStyle(view.getByTestId('safe-bottom-bar').props.style).paddingBottom).toBe(34);
+      expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({
+        paddingTop: 12,
+        paddingBottom: 46,
+      });
+      expect(view.getByTestId('device-insets').props.children).toBe(JSON.stringify(insets));
+      if (variant === 'dashboard') {
+        fireEvent(view.getByTestId('safe-bottom-bar'), 'layout', {
+          nativeEvent: { layout: { height: 100 } },
+        });
+        expect(resolvedStyle(view.getByTestId('safe-page').props.style).paddingBottom).toBe(112);
+      }
+    },
+  );
 
   it('without bottom chrome the frame owns bottom, and topBar does not charge top again', () => {
-    const view = withInsets(<AppShell safeArea scroll="fixed" topBar={<ReactNative.Text>Header</ReactNative.Text>}
-      topBarVisibility="always" testID="safe"><ReadInsets /></AppShell>);
+    const view = withInsets(
+      <AppShell
+        safeArea
+        scroll="fixed"
+        topBar={<ReactNative.Text>Header</ReactNative.Text>}
+        topBarVisibility="always"
+        testID="safe"
+      >
+        <ReadInsets />
+      </AppShell>,
+    );
     expect(resolvedStyle(view.getByTestId('safe-safe-area').props.style).paddingBottom).toBe(34);
     expect(resolvedStyle(view.getByTestId('safe-top-bar').props.style).paddingTop).toBe(0);
     expect(view.getByTestId('device-insets').props.children).toBe(JSON.stringify(insets));
   });
 
   it('portaled overlay navigation uses original top, bottom and landscape insets', () => {
-    const view = withInsets(<AppShell safeArea scroll="fixed" drawer="overlay" drawerOpen
-      sidebar={{ items: NAV }} testID="safe" />);
+    const view = withInsets(
+      <AppShell
+        safeArea
+        scroll="fixed"
+        drawer="overlay"
+        drawerOpen
+        sidebar={{ items: NAV }}
+        testID="safe"
+      />,
+    );
     expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({
-      paddingTop: 59, paddingBottom: 46, paddingInlineStart: 32, paddingInlineEnd: 19,
+      paddingTop: 59,
+      paddingBottom: 46,
+      paddingInlineStart: 32,
+      paddingInlineEnd: 19,
     });
   });
 
@@ -1065,7 +1529,11 @@ describe('AppShell native safe-area frame', () => {
     const off = withInsets(<AppShell scroll="fixed" testID="safe" />);
     expect(off.queryByTestId('safe-safe-area')).toBeNull();
     off.unmount();
-    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'web', configurable: true, writable: true });
+    Object.defineProperty(ReactNative.Platform, 'OS', {
+      value: 'web',
+      configurable: true,
+      writable: true,
+    });
     const web = withInsets(<AppShell safeArea scroll="fixed" testID="safe" />);
     expect(web.queryByTestId('safe-safe-area')).toBeNull();
   });
@@ -1077,47 +1545,97 @@ describe('AppShell native safe-area frame', () => {
 });
 
 describe('AppShell full-width and explicit reveal gutters', () => {
-  it.each([false, true])('1920px: contentMaxWidth none removes the cap (adaptive=%s)', adaptive => {
-    setWidth(1920);
-    const view = renderIn(<AppShell testID="fluid" contentMaxWidth="none"
-      {...(adaptive ? { scroll: 'auto' as const, navigation: [] } : { scroll: 'fixed' as const })}>
-      <ReactNative.Text>Wide content</ReactNative.Text>
-    </AppShell>);
-    const content = resolvedStyle(view.getByTestId('fluid-content').props.style);
-    expect(content.width).toBe('100%');
-    expect(content.maxWidth).toBeUndefined();
-  });
+  it.each([false, true])(
+    '1920px: contentMaxWidth none removes the cap (adaptive=%s)',
+    (adaptive) => {
+      setWidth(1920);
+      const view = renderIn(
+        <AppShell
+          testID="fluid"
+          contentMaxWidth="none"
+          {...(adaptive
+            ? { scroll: 'auto' as const, navigation: [] }
+            : { scroll: 'fixed' as const })}
+        >
+          <ReactNative.Text>Wide content</ReactNative.Text>
+        </AppShell>,
+      );
+      const content = resolvedStyle(view.getByTestId('fluid-content').props.style);
+      expect(content.width).toBe('100%');
+      expect(content.maxWidth).toBeUndefined();
+    },
+  );
 
-  it.each([390, 1024, 1920])('explicit zero gutter removes every dashboard reveal frame edge at %spx', width => {
-    setWidth(width);
-    const view = renderIn(<AppShell testID="flush" drawer="reveal" scroll="fixed" gutter={0}
-      sidebar={{ items: NAV }} header={null} bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}>
-      <ReactNative.Text>Page</ReactNative.Text>
-    </AppShell>);
-    expect(resolvedStyle(view.getByTestId('flush-page').props.style)).toMatchObject({ padding: 0, paddingTop: 0 });
-    if (width < 1024) {
-      fireEvent(view.getByTestId('flush-bottom-bar'), 'layout', { nativeEvent: { layout: { height: 80 } } });
+  it.each([390, 1024, 1920])(
+    'explicit zero gutter removes every dashboard reveal frame edge at %spx',
+    (width) => {
+      setWidth(width);
+      const view = renderIn(
+        <AppShell
+          testID="flush"
+          drawer="reveal"
+          scroll="fixed"
+          gutter={0}
+          sidebar={{ items: NAV }}
+          header={null}
+          bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}
+        >
+          <ReactNative.Text>Page</ReactNative.Text>
+        </AppShell>,
+      );
       expect(resolvedStyle(view.getByTestId('flush-page').props.style)).toMatchObject({
-        paddingLeft: 0, paddingRight: 0, paddingTop: 0, paddingBottom: 80,
+        padding: 0,
+        paddingTop: 0,
       });
-      expect(resolvedStyle(view.getByTestId('flush-navigation-drawer', { includeHiddenElements: true }).props.style)).toMatchObject({
-        paddingTop: 0, paddingBottom: 0, paddingInlineStart: 0,
-      });
-    }
-  });
+      if (width < 1024) {
+        fireEvent(view.getByTestId('flush-bottom-bar'), 'layout', {
+          nativeEvent: { layout: { height: 80 } },
+        });
+        expect(resolvedStyle(view.getByTestId('flush-page').props.style)).toMatchObject({
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingTop: 0,
+          paddingBottom: 80,
+        });
+        expect(
+          resolvedStyle(
+            view.getByTestId('flush-navigation-drawer', { includeHiddenElements: true }).props
+              .style,
+          ),
+        ).toMatchObject({
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingInlineStart: 0,
+        });
+      }
+    },
+  );
 });
-
 
 it('overlay bottom navigation leaves a zero-gutter mobile page at full height', () => {
   setWidth(390);
-  const view = renderIn(<AppShell testID="overlay-frame" drawer="reveal" scroll="fixed" gutter={0}
-    header={null} sidebar={{ items: NAV }} reserveBottomBarSpace={false}
-    bottomBar={<ReactNative.Text>Overlay navigation</ReactNative.Text>}>
-    <ReactNative.Text>Full height page</ReactNative.Text>
-  </AppShell>);
-  fireEvent(view.getByTestId('overlay-frame-bottom-bar'), 'layout', { nativeEvent: { layout: { height: 140 } } });
+  const view = renderIn(
+    <AppShell
+      testID="overlay-frame"
+      drawer="reveal"
+      scroll="fixed"
+      gutter={0}
+      header={null}
+      sidebar={{ items: NAV }}
+      reserveBottomBarSpace={false}
+      bottomBar={<ReactNative.Text>Overlay navigation</ReactNative.Text>}
+    >
+      <ReactNative.Text>Full height page</ReactNative.Text>
+    </AppShell>,
+  );
+  fireEvent(view.getByTestId('overlay-frame-bottom-bar'), 'layout', {
+    nativeEvent: { layout: { height: 140 } },
+  });
   const page = resolvedStyle(view.getByTestId('overlay-frame-page').props.style);
   expect(page.padding).toBe(0);
   expect(page.paddingBottom ?? 0).toBe(0);
-  expect(resolvedStyle(view.getByTestId('overlay-frame-bottom-bar').props.style)).toMatchObject({ position: 'absolute', bottom: 0 });
+  expect(resolvedStyle(view.getByTestId('overlay-frame-bottom-bar').props.style)).toMatchObject({
+    position: 'absolute',
+    bottom: 0,
+  });
 });

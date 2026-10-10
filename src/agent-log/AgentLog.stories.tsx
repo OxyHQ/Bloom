@@ -28,7 +28,10 @@ type Story = StoryObj;
 function Frame({ children, testID }: { children: React.ReactNode; testID?: string }) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ maxWidth: '100%', padding: 40, width: 480, backgroundColor: colors.background }}>
+    <View
+      testID={testID}
+      style={{ maxWidth: '100%', padding: 40, width: 480, backgroundColor: colors.background }}
+    >
       {children}
     </View>
   );
@@ -109,7 +112,12 @@ export const Streaming: Story = {
     return (
       <Frame>
         <View style={{ marginBottom: 16, alignItems: 'flex-start' }}>
-          <Button size="sm" onPress={() => setRun((n) => n + 1)} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setRun((n) => n + 1)}
+            appearance="outline"
+            tone="neutral"
+          >
             Replay
           </Button>
         </View>
@@ -137,7 +145,12 @@ export const Pieces: Story = {
     return (
       <Frame>
         <View style={{ gap: 12, alignItems: 'flex-start' }}>
-          <Button size="sm" onPress={() => setRun((n) => n + 1)} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setRun((n) => n + 1)}
+            appearance="outline"
+            tone="neutral"
+          >
             Replay reveal
           </Button>
           <AgentLogReveal key={run}>

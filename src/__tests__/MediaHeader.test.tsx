@@ -120,8 +120,21 @@ for (let h = 0; h < 360; h += 30) {
     const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
     const m = l / 100 - c / 2;
     const [r, g, b] =
-      h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
-    const hex = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+      h < 60
+        ? [c, x, 0]
+        : h < 120
+          ? [x, c, 0]
+          : h < 180
+            ? [0, c, x]
+            : h < 240
+              ? [0, x, c]
+              : h < 300
+                ? [x, 0, c]
+                : [c, 0, x];
+    const hex = (v: number) =>
+      Math.round((v + m) * 255)
+        .toString(16)
+        .padStart(2, '0');
     ARTWORK.push(`#${hex(r)}${hex(g)}${hex(b)}`);
   }
 }
@@ -140,15 +153,20 @@ describe('resolveMediaHeaderPaint', () => {
         const t = buildTheme(preset, mode);
         for (const color of [...ARTWORK, undefined]) {
           const p = resolveMediaHeaderPaint(t, color);
-          for (const [name, fg] of [['onBand', p.onBand], ['onBandMuted', p.onBandMuted]] as const) {
+          for (const [name, fg] of [
+            ['onBand', p.onBand],
+            ['onBandMuted', p.onBandMuted],
+          ] as const) {
             for (const surface of [p.bandTop, p.bandBottom]) {
               checked++;
               const ratio = contrastRatio(fg, surface);
-              if (ratio < AA_TEXT_CONTRAST) failures.push(`${preset}/${mode}/${color}/${name}: ${ratio.toFixed(2)}`);
+              if (ratio < AA_TEXT_CONTRAST)
+                failures.push(`${preset}/${mode}/${color}/${name}: ${ratio.toFixed(2)}`);
             }
           }
           checked++;
-          if (contrastRatio(p.onBar, p.bar) < AA_TEXT_CONTRAST) failures.push(`${preset}/${mode}/${color}/bar`);
+          if (contrastRatio(p.onBar, p.bar) < AA_TEXT_CONTRAST)
+            failures.push(`${preset}/${mode}/${color}/bar`);
         }
       }
     }
@@ -236,7 +254,9 @@ describe('selectTitleVariant', () => {
 
   it('never goes above display-4 on a phone-width line', () => {
     expect(selectTitleVariant('Moss', 358)).toBe('display-4-bold');
-    expect(selectTitleVariant('Road trip to the northern lakes, summer edition, part two', 358)).toBe('title-1-bold');
+    expect(
+      selectTitleVariant('Road trip to the northern lakes, summer edition, part two', 358),
+    ).toBe('title-1-bold');
   });
 });
 
@@ -254,7 +274,9 @@ describe('mediaHeaderScrollProgress', () => {
 // ---------------------------------------------------------------------------
 
 describe('CollectionHeader', () => {
-  const owners = [{ name: 'Velvet Harbour', avatar: 'https://example.test/a.jpg', onPress: jest.fn() }];
+  const owners = [
+    { name: 'Velvet Harbour', avatar: 'https://example.test/a.jpg', onPress: jest.fn() },
+  ];
 
   it('renders the title as a level-1 heading on the band colour, with the chosen step', () => {
     mount(
@@ -274,7 +296,9 @@ describe('CollectionHeader', () => {
     const paint = resolveMediaHeaderPaint(theme, '#1f3b73');
     expect(title.style.color).toBe(normalise(paint.onBand));
     // jsdom lays nothing out; the frame assumes a desktop width before layout.
-    expect(title.getAttribute('data-bloom-media-header-title')).toBe(selectTitleVariant('Moss', 1024 - 48 - 232 - 24));
+    expect(title.getAttribute('data-bloom-media-header-title')).toBe(
+      selectTitleVariant('Moss', 1024 - 48 - 232 - 24),
+    );
     expect(title.style.fontSize).toBe('64px');
     expect(container.textContent).toContain('Album');
     expect(container.textContent).toContain('2025');
@@ -283,14 +307,23 @@ describe('CollectionHeader', () => {
 
   it('makes owner names links and presses them', () => {
     mount(<CollectionHeader typeLabel="Album" title="Moss" owners={owners} testID="h" />);
-    const link = container.querySelector('[role="link"][aria-label="Velvet Harbour"]') as HTMLElement;
+    const link = container.querySelector(
+      '[role="link"][aria-label="Velvet Harbour"]',
+    ) as HTMLElement;
     expect(link).not.toBeNull();
     act(() => link.click());
     expect(owners[0]!.onPress).toHaveBeenCalledTimes(1);
   });
 
   it('draws the cover at 232 with a radius of 6', () => {
-    mount(<CollectionHeader typeLabel="Album" title="Moss" cover="https://example.test/c.jpg" testID="h" />);
+    mount(
+      <CollectionHeader
+        typeLabel="Album"
+        title="Moss"
+        cover="https://example.test/c.jpg"
+        testID="h"
+      />,
+    );
     const cover = byTestId('h-cover');
     expect(cover.style.width).toBe('232px');
     expect(cover.style.height).toBe('232px');
@@ -302,7 +335,9 @@ describe('CollectionHeader', () => {
     mount(<CollectionHeader typeLabel="Playlist" title="Mix" onEdit={onEdit} testID="h" />);
     expect(queryTestId('h-edit')).toBeNull();
 
-    mount(<CollectionHeader typeLabel="Playlist" title="Mix" editable onEdit={onEdit} testID="h" />);
+    mount(
+      <CollectionHeader typeLabel="Playlist" title="Mix" editable onEdit={onEdit} testID="h" />,
+    );
     const edit = byTestId('h-edit');
     expect(edit.getAttribute('role')).toBe('button');
     expect(edit.getAttribute('aria-label')).toBe('Edit details');
@@ -314,7 +349,15 @@ describe('CollectionHeader', () => {
   });
 
   it('tints the liked-songs band from the accent, not the artwork colour', () => {
-    mount(<CollectionHeader variant="liked" typeLabel="Playlist" title="Liked Songs" artworkColor="#00ff00" testID="h" />);
+    mount(
+      <CollectionHeader
+        variant="liked"
+        typeLabel="Playlist"
+        title="Liked Songs"
+        artworkColor="#00ff00"
+        testID="h"
+      />,
+    );
     const green = resolveMediaHeaderPaint(theme, '#00ff00');
     const title = byTestId('h-title');
     // Not green-derived, and the cover draws the heart, not an image.
@@ -424,7 +467,16 @@ describe('DownloadButton', () => {
 describe('FollowButton', () => {
   it('preserves toggle state and blocks interaction while loading', () => {
     const onFollowChange = jest.fn();
-    mount(<FollowButton following loading size="lg" textStyle={{ fontSize: 18 }} onFollowChange={onFollowChange} testID="f" />);
+    mount(
+      <FollowButton
+        following
+        loading
+        size="lg"
+        textStyle={{ fontSize: 18 }}
+        onFollowChange={onFollowChange}
+        testID="f"
+      />,
+    );
     const el = byTestId('f');
     expect(el.getAttribute('aria-busy')).toBe('true');
     expect(el.getAttribute('aria-pressed')).toBe('true');
@@ -438,7 +490,11 @@ describe('FollowButton', () => {
   it('keeps its name and toggle semantics in icon-only mode without activating a parent', () => {
     const parent = jest.fn();
     const onFollowChange = jest.fn();
-    mount(<div onClick={parent}><FollowButton following iconOnly tone="action" onFollowChange={onFollowChange} testID="f" /></div>);
+    mount(
+      <div onClick={parent}>
+        <FollowButton following iconOnly tone="action" onFollowChange={onFollowChange} testID="f" />
+      </div>,
+    );
     const el = byTestId('f');
     expect(el.getAttribute('aria-label')).toBe('Follow');
     expect(el.getAttribute('aria-pressed')).toBe('true');
@@ -460,7 +516,15 @@ describe('FollowButton', () => {
     act(() => el.click());
     expect(onFollowChange).toHaveBeenCalledWith(true);
 
-    mount(<FollowButton following onFollowChange={onFollowChange} label="Save" followingLabel="Saved" testID="f" />);
+    mount(
+      <FollowButton
+        following
+        onFollowChange={onFollowChange}
+        label="Save"
+        followingLabel="Saved"
+        testID="f"
+      />,
+    );
     expect(byTestId('f').textContent).toContain('Saved');
     expect(byTestId('f').getAttribute('aria-label')).toBe('Save');
     expect(byTestId('f').getAttribute('aria-pressed')).toBe('true');
@@ -468,8 +532,15 @@ describe('FollowButton', () => {
 
   it('takes a caller-supplied name and hint that follow the state', () => {
     const onFollowChange = jest.fn();
-    mount(<FollowButton following onFollowChange={onFollowChange}
-      accessibilityLabel="Following @nate" accessibilityHint="Unfollows @nate" testID="f" />);
+    mount(
+      <FollowButton
+        following
+        onFollowChange={onFollowChange}
+        accessibilityLabel="Following @nate"
+        accessibilityHint="Unfollows @nate"
+        testID="f"
+      />,
+    );
     const el = byTestId('f');
     expect(el.getAttribute('aria-label')).toBe('Following @nate');
     expect(el.getAttribute('aria-pressed')).toBe('true');
@@ -485,7 +556,9 @@ describe('FollowButton', () => {
 
 describe('StickyMediaTopBar', () => {
   it('fills with the band colour and names its play button by the title', () => {
-    mount(<StickyMediaTopBar title="Moss" playing={false} artworkColor="#1f3b73" visible testID="t" />);
+    mount(
+      <StickyMediaTopBar title="Moss" playing={false} artworkColor="#1f3b73" visible testID="t" />,
+    );
     const paint = resolveMediaHeaderPaint(theme, '#1f3b73');
     expect(byTestId('t').style.height).toBe('64px');
     expect(byTestId('t-play').getAttribute('aria-label')).toBe('Play Moss');
@@ -496,7 +569,9 @@ describe('StickyMediaTopBar', () => {
   it('hides itself from assistive tech and the pointer below half progress', () => {
     mount(<StickyMediaTopBar title="Moss" playing={false} progress={0.3} testID="t" />);
     expect(byTestId('t').getAttribute('aria-hidden')).toBe('true');
-    expect(byTestId('t').style.pointerEvents || getComputedStyle(byTestId('t')).pointerEvents).toBe('none');
+    expect(byTestId('t').style.pointerEvents || getComputedStyle(byTestId('t')).pointerEvents).toBe(
+      'none',
+    );
     mount(<StickyMediaTopBar title="Moss" playing={false} progress={0.8} testID="t" />);
     expect(byTestId('t').getAttribute('aria-hidden')).not.toBe('true');
     mount(<StickyMediaTopBar title="Moss" playing={false} visible={false} testID="t" />);
@@ -510,7 +585,15 @@ describe('StickyMediaTopBar', () => {
 
 describe('ArtistHero', () => {
   it('draws the verified line, the name heading and the listeners', () => {
-    mount(<ArtistHero name="Velvet Harbour" verified listeners="1,234,567 monthly listeners" artworkColor="#a0522d" testID="a" />);
+    mount(
+      <ArtistHero
+        name="Velvet Harbour"
+        verified
+        listeners="1,234,567 monthly listeners"
+        artworkColor="#a0522d"
+        testID="a"
+      />,
+    );
     expect(byTestId('a-verified').textContent).toBe('Verified artist');
     expect(byTestId('a-name').getAttribute('role')).toBe('heading');
     expect(byTestId('a-name').textContent).toBe('Velvet Harbour');
@@ -518,11 +601,16 @@ describe('ArtistHero', () => {
     // No banner: a round avatar and band-coloured text.
     const avatar = byTestId('a-avatar');
     expect(avatar.style.width).toBe('232px');
-    expect(byTestId('a-name').style.color).toBe(normalise(resolveMediaHeaderPaint(theme, '#a0522d').onBand));
+    expect(byTestId('a-name').style.color).toBe(
+      normalise(resolveMediaHeaderPaint(theme, '#a0522d').onBand),
+    );
   });
 
   it('puts white text over a banner photo and omits the avatar', () => {
-    mount(<ArtistHero name="Velvet Harbour" banner="https://example.test/b.jpg" testID="a" />, 'light');
+    mount(
+      <ArtistHero name="Velvet Harbour" banner="https://example.test/b.jpg" testID="a" />,
+      'light',
+    );
     expect(queryTestId('a-banner')).not.toBeNull();
     expect(queryTestId('a-avatar')).toBeNull();
     expect(byTestId('a-name').style.color).toBe(normalise('#ffffff'));
@@ -556,8 +644,14 @@ describe('ArtistStats and ArtistAbout', () => {
     const toggle = byTestId('ab-bio').querySelector('[role="button"]') as HTMLElement;
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     act(() => toggle.click());
-    expect((byTestId('ab-bio').querySelector('[role="button"]') as HTMLElement).getAttribute('aria-expanded')).toBe('true');
-    expect(byTestId('ab-cities').querySelector('[aria-label="Kessel, 84,120 listeners"]')).not.toBeNull();
+    expect(
+      (byTestId('ab-bio').querySelector('[role="button"]') as HTMLElement).getAttribute(
+        'aria-expanded',
+      ),
+    ).toBe('true');
+    expect(
+      byTestId('ab-cities').querySelector('[aria-label="Kessel, 84,120 listeners"]'),
+    ).not.toBeNull();
   });
 });
 
@@ -584,7 +678,9 @@ describe('PopularTracks', () => {
 
   it('marks the current track and presses a row', () => {
     const onTrackPress = jest.fn();
-    mount(<PopularTracks tracks={tracks} activeTrackId="1" onTrackPress={onTrackPress} testID="p" />);
+    mount(
+      <PopularTracks tracks={tracks} activeTrackId="1" onTrackPress={onTrackPress} testID="p" />,
+    );
     const row = byTestId('p-row-1').querySelector('[role="button"]') as HTMLElement;
     expect(row.getAttribute('aria-label')).toBe('Track 2');
     expect(row.getAttribute('aria-current')).toBe('true');

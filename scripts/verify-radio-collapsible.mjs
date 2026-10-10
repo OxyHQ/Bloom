@@ -2,9 +2,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium, expect } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium, expect } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 const base = process.argv[2] || 'http://localhost:6006';
 try {
@@ -18,16 +16,12 @@ try {
         const errors = [];
         page.on('pageerror', (error) => errors.push(error.message));
         page.on('console', (message) => {
-          if (
-            message.type() === 'error' &&
-            /collapsable|non-boolean/.test(message.text())
-          )
+          if (message.type() === 'error' && /collapsable|non-boolean/.test(message.text()))
             errors.push(message.text());
         });
         await page.addInitScript((rtl) => {
           const setDirection = () => {
-            if (document.documentElement)
-              document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+            if (document.documentElement) document.documentElement.dir = rtl ? 'rtl' : 'ltr';
           };
           setDirection();
           document.addEventListener('DOMContentLoaded', setDirection, {
@@ -48,9 +42,7 @@ try {
         const panel = page.getByTestId('plan-body');
         await once.waitFor({ timeout: 120000 });
         await expect(panel).toHaveAttribute('inert', '');
-        await expect(
-          page.getByRole('textbox', { name: 'Delivery note' }),
-        ).toHaveCount(0);
+        await expect(page.getByRole('textbox', { name: 'Delivery note' })).toHaveCount(0);
         await once.focus();
         await page.keyboard.press('Tab');
         await expect(page.getByTestId('close-plan')).toBeFocused();
@@ -94,21 +86,14 @@ try {
           );
         assert.equal(await panel.getAttribute('role'), null);
         assert.equal(await panel.getAttribute('aria-labelledby'), null);
-        await expect(panel.locator('.bloom-collapsible-content')).toHaveCSS(
-          'padding',
-          '12px',
-        );
+        await expect(panel.locator('.bloom-collapsible-content')).toHaveCSS('padding', '12px');
         const input = page.getByRole('textbox', { name: 'Delivery note' });
         await input.fill('Retained note');
         await input.press('ArrowDown');
         await expect(page.getByTestId('selected-plan')).toHaveText('repeat');
-        await page
-          .getByRole('button', { name: 'Resize content', exact: true })
-          .click();
+        await page.getByRole('button', { name: 'Resize content', exact: true }).click();
         await expect
-          .poll(() =>
-            panel.evaluate((node) => node.getBoundingClientRect().height),
-          )
+          .poll(() => panel.evaluate((node) => node.getBoundingClientRect().height))
           .toBeGreaterThan(1200);
         await page.setViewportSize({ width: rtl ? 600 : 390, height: 900 });
         await expect
@@ -135,18 +120,14 @@ try {
         await select.press('ArrowDown');
         const menu = page.getByRole('menu', { name: 'Delivery frequency' });
         await expect(menu).toBeVisible();
-        await page
-          .getByRole('radio', { name: 'Every week', exact: true })
-          .click();
+        await page.getByRole('radio', { name: 'Every week', exact: true }).click();
         await expect(select).toHaveText('Every week');
         await expect(menu).toHaveCount(0);
         await select.focus();
         await select.press('ArrowDown');
         await expect(menu).toBeVisible();
         await expect
-          .poll(() =>
-            menu.evaluate((node) => node.contains(document.activeElement)),
-          )
+          .poll(() => menu.evaluate((node) => node.contains(document.activeElement)))
           .toBe(true);
         await page.getByTestId('close-plan').evaluate((node) => node.click());
         await expect(menu).toHaveCount(0);
@@ -161,15 +142,9 @@ try {
         await page.emulateMedia({ reducedMotion: 'reduce' });
         await page.getByTestId('close-plan').evaluate((node) => node.click());
         await expect(panel).toHaveCSS('max-height', '0px');
-        assert.ok(
-          !(await page.locator('body').ariaSnapshot()).includes(
-            'Delivery note',
-          ),
-        );
+        assert.ok(!(await page.locator('body').ariaSnapshot()).includes('Delivery note'));
         assert.deepEqual(errors, []);
-        console.log(
-          `PASS ${mode} ${rtl ? 'RTL narrow' : 'LTR wide'} ${reducedMotion}`,
-        );
+        console.log(`PASS ${mode} ${rtl ? 'RTL narrow' : 'LTR wide'} ${reducedMotion}`);
         await page.close();
       }
 } finally {

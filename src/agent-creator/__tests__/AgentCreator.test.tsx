@@ -2,10 +2,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { useState } from 'react';
 import { CharacterRuntimeFixture } from './support/character-runtime-fixture';
 import { CharacterAvatar } from '../../agent-avatar/CharacterAvatar';
-import {
-  legacyCharacterRecipe,
-  legacyRecipe,
-} from '../../agent-avatar/legacy-recipe';
+import { legacyCharacterRecipe, legacyRecipe } from '../../agent-avatar/legacy-recipe';
 import { Select } from '../../select';
 import { ShapeArc } from '../ShapeArc';
 import { CustomColorPicker } from '../CustomColorPicker';
@@ -53,10 +50,7 @@ describe('controlled agent creator', () => {
       ...agent,
       label: 'Architecture',
     });
-    fireEvent.changeText(
-      view.getByLabelText('Agent description'),
-      'Builds better systems',
-    );
+    fireEvent.changeText(view.getByLabelText('Agent description'), 'Builds better systems');
     expect(onChange).toHaveBeenLastCalledWith({
       ...agent,
       description: 'Builds better systems',
@@ -99,10 +93,7 @@ describe('controlled agent creator', () => {
       onPreviewVoice,
     });
     fireEvent.press(view.getByLabelText('Preview voice'));
-    expect(onPreviewVoice).toHaveBeenCalledWith(
-      'Hello! Ready when you are.',
-      agent.preferences,
-    );
+    expect(onPreviewVoice).toHaveBeenCalledWith('Hello! Ready when you are.', agent.preferences);
   });
   it('closes the host panel without committing a change', () => {
     const onClose = jest.fn(),
@@ -210,12 +201,8 @@ it('edits custom beta body RGB through the existing picker and retains the entir
     </CharacterRuntimeFixture>,
   );
   expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(false);
-  expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(
-    true,
-  );
-  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
-    '#123456',
-  );
+  expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(true);
+  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#123456');
   expect(
     view
       .UNSAFE_getAllByType(GlossArt)
@@ -248,13 +235,9 @@ it('edits custom beta body RGB through the existing picker and retains the entir
 
 describe('shared original-engine editor catalog', () => {
   function withRuntime(configured: AgentCreatorAgent, onChange = jest.fn()) {
-    const beta =
-      configured.avatar.character &&
-      configured.avatar.character.preset !== 'bloom';
+    const beta = configured.avatar.character && configured.avatar.character.preset !== 'bloom';
     const key = JSON.stringify(
-      beta
-        ? configured.avatar.character
-        : legacyCharacterRecipe(configured.avatar),
+      beta ? configured.avatar.character : legacyCharacterRecipe(configured.avatar),
     );
     const caps = {
       key,
@@ -290,9 +273,7 @@ describe('shared original-engine editor catalog', () => {
       const view = withRuntime(configured);
       const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
       expect(choices).toHaveLength(19);
-      expect(
-        new Set(choices.map((choice: { id: string }) => choice.id)).size,
-      ).toBe(19);
+      expect(new Set(choices.map((choice: { id: string }) => choice.id)).size).toBe(19);
       expect(choices.map((choice: { id: string }) => choice.id)).toEqual(
         expect.arrayContaining([
           'circle',
@@ -309,9 +290,7 @@ describe('shared original-engine editor catalog', () => {
         ]),
       );
       expect(view.queryByLabelText('Happy')).toBeNull();
-      expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toHaveLength(
-        9,
-      );
+      expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toHaveLength(9);
       view.unmount();
     }
   });
@@ -409,9 +388,7 @@ describe('shared original-engine editor catalog', () => {
     const onChange = jest.fn();
     const view = withRuntime(agent, onChange);
     const hero = () =>
-      view
-        .UNSAFE_getAllByType(CharacterAvatar)
-        .find((node) => node.props.size === 162)!;
+      view.UNSAFE_getAllByType(CharacterAvatar).find((node) => node.props.size === 162)!;
     expect(hero().props.workingKey).toBe(0);
     fireEvent.press(view.getByText('Work'));
     expect(hero().props.workingKey).toBe(1);

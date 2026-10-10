@@ -10,11 +10,16 @@ export function useRequiredDescription(required: boolean, describedBy?: string) 
   return {
     describedBy: [describedBy, required ? id : undefined].filter(Boolean).join(' ') || undefined,
     hint: required ? messages.required : undefined,
-    description: required && Platform.OS === 'web' ? (
-      <Text nativeID={id} aria-hidden pointerEvents="none"
-        style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0 }}>
-        {messages.required}
-      </Text>
-    ) : null,
+    description:
+      required && Platform.OS === 'web' ? (
+        <Text
+          nativeID={id}
+          aria-hidden
+          pointerEvents="none"
+          style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0 }}
+        >
+          {messages.required}
+        </Text>
+      ) : null,
   };
 }

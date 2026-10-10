@@ -23,11 +23,7 @@ import Animated, {
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
-import {
-  GestureHandlerRootView,
-  Gesture,
-  GestureDetector,
-} from 'react-native-gesture-handler';
+import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borderRadius } from '../styles/tokens';
 import { Backdrop, OverlayRoot } from '../overlay';
@@ -130,1078 +126,1242 @@ const webUserSelectNoneStyle = Platform.select({
 });
 
 export function createZoomableMediaGallery(Button: React.ComponentType<ButtonProps>) {
-function NavArrow({ direction, onPress, label, pageColors }: { direction: 'left' | 'right'; onPress: () => void; label: string; pageColors?: { background: string; foreground: string } }) {
-  const isLeft = direction === 'left';
-  return <Button onPress={onPress} appearance="outline" tone="neutral" size="lg" iconOnly hitSlop={8}
-    accessibilityLabel={label} material={pageColors ? 'flat' : 'surface'} colors={pageColors}
-    icon={isLeft ? <RiArrowLeftLine fill={pageColors?.foreground ?? "#fff"} size="lg" /> : <RiArrowRightLine fill={pageColors?.foreground ?? "#fff"} size="lg" />}
-    style={[styles.navArrow, isLeft ? styles.navArrowLeft : styles.navArrowRight]} />;
-}
-
-interface FittedSize {
-  width: number;
-  height: number;
-}
-
-/**
- * Resolve `cornerRadius` against the size an item is actually rendered at, so
- * `'circle'` stays a circle at every fitted size (and through the open/close
- * animation, which scales this same box).
- */
-function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): number {
-  return cornerRadius === 'circle' ? Math.min(fit.width, fit.height) / 2 : cornerRadius;
-}
-
-/**
- * Fullscreen, swipeable MEDIA viewer — images and consumer-owned videos in one
- * pager — replicating the profile avatar's measured-origin zoom transition
- * (`ZoomableAvatar`) for rectangular post media:
- *
- * - Open/close feel is identical to the avatar (same spring configs, web
- *   timing/easing, blur backdrop, and the measure-origin technique). The viewer
- *   renders through the Bloom `Portal` on BOTH platforms (RN's `Modal` is not
- *   used on native — on the New Architecture / Fabric Android its host views
- *   mount full-screen but never composite, leaving the viewer invisible).
- * - The OPENING (tapped) item animates from its measured rect to a centered,
- *   aspect-ratio-preserving fit within {@link FIT_FRACTION} of the screen. Once
- *   the open animation settles, a horizontal paging `ScrollView` mounts seeded at
- *   the tapped index so the user can swipe between every item in the post.
- * - Gesture disambiguation: the pager owns horizontal swipes; a vertical-only
- *   `Gesture.Pan` (`activeOffsetY` + `failOffsetX`) owns drag-to-dismiss, so the
- *   two never fight.
- *
- * ## Video, and why it does not restart
- *
- * A video page is fed by a `VideoPlayer` the CONSUMER created and owns. Bloom
- * never creates or destroys one: expo-video keeps the player OBJECT separate
- * from the `VideoView` that shows it, and one player may feed several views, so
- * handing the same player to this gallery moves a playing video into fullscreen
- * without re-opening the stream. Exactly ONE view is mounted per opening — the
- * active page's — while every other page and every strip tile renders the still
- * (`MediaPoster`). The single unavoidable swap is the pre-pager open surface
- * handing over to the pager's active page once the open animation settles.
- *
- * `expo-video` is an OPTIONAL peer loaded through `media-flight/expo-video-module`.
- * Without it a video page degrades to its poster, once, with a dev warning.
- */
-const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ appearance = 'overlay', onIndexChange, onOpenChange, renderVideoOverlay, measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false, labels: labelsProp }, ref) => {
-  const { messages } = useMessages(ZOOMABLE_MEDIA_GALLERY_MESSAGES);
-  const themeContext = React.useContext(BloomThemeContext);
-  if (appearance === 'page' && !themeContext) {
-    throw new Error('ZoomableMediaGallery appearance="page" requires a <BloomThemeProvider>');
+  function NavArrow({
+    direction,
+    onPress,
+    label,
+    pageColors,
+  }: {
+    direction: 'left' | 'right';
+    onPress: () => void;
+    label: string;
+    pageColors?: { background: string; foreground: string };
+  }) {
+    const isLeft = direction === 'left';
+    return (
+      <Button
+        onPress={onPress}
+        appearance="outline"
+        tone="neutral"
+        size="lg"
+        iconOnly
+        hitSlop={8}
+        accessibilityLabel={label}
+        material={pageColors ? 'flat' : 'surface'}
+        colors={pageColors}
+        icon={
+          isLeft ? (
+            <RiArrowLeftLine fill={pageColors?.foreground ?? '#fff'} size="lg" />
+          ) : (
+            <RiArrowRightLine fill={pageColors?.foreground ?? '#fff'} size="lg" />
+          )
+        }
+        style={[styles.navArrow, isLeft ? styles.navArrowLeft : styles.navArrowRight]}
+      />
+    );
   }
-  // The default overlay can mount closed without a theme provider. Only the
-  // opt-in page reads its palette; the default pager's controls keep their own
-  // existing provider requirements.
-  const pagePalette = appearance === 'page' ? themeContext?.theme.colors : undefined;
-  const page = pagePalette != null;
-  const pageColors = pagePalette ? { background: pagePalette.backgroundSecondary, foreground: pagePalette.text } : undefined;
-  const onIndexChangeRef = useRef(onIndexChange);
-  onIndexChangeRef.current = onIndexChange;
-  const onOpenChangeRef = useRef(onOpenChange);
-  onOpenChangeRef.current = onOpenChange;
-  const openRef = useRef(false);
-  const reportOpen = useCallback((next: boolean) => {
-    if (openRef.current === next) return;
-    openRef.current = next;
-    onOpenChangeRef.current?.(next);
-  }, []);
-  const labels = useMemo(() => ({ ...messages, ...labelsProp }), [messages, labelsProp]);
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
-  // The viewer is full-bleed, so its chrome must clear the status bar, the
-  // cutout and the home indicator itself — nothing above it applies them.
-  const insets = useSafeAreaInsets();
 
-  const radiusFor = useCallback(
-    (fit: FittedSize) => resolveCornerRadius(cornerRadius, fit),
-    [cornerRadius],
-  );
+  interface FittedSize {
+    width: number;
+    height: number;
+  }
 
-  const [isOpen, setIsOpen] = useState(false);
-  // Once true, the swipeable pager is mounted and the single open-surface hidden.
-  const [pagerReady, setPagerReady] = useState(false);
-  const [items, setItems] = useState<GalleryMedia[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  // Whether the active media is currently pinched/double-tapped past its base
-  // size. Drives the pan-while-zoomed gesture, disables the pager's horizontal
-  // paging + the dismiss drag so a pan moves the zoomed media instead.
-  const [isZoomed, setIsZoomed] = useState(false);
-  // Aspect ratio of the OPENING item (drives the open-animation fit box).
-  const [openRatio, setOpenRatio] = useState<number>(DEFAULT_ASPECT_RATIO);
-  // Per-item aspect ratios for the pager pages (index-aligned with `items`).
-  const [pageRatios, setPageRatios] = useState<Record<number, number>>({});
+  /**
+   * Resolve `cornerRadius` against the size an item is actually rendered at, so
+   * `'circle'` stays a circle at every fitted size (and through the open/close
+   * animation, which scales this same box).
+   */
+  function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): number {
+    return cornerRadius === 'circle' ? Math.min(fit.width, fit.height) / 2 : cornerRadius;
+  }
 
-  // Native `Share` is always available; web exposes a share button only when the
-  // browser implements `navigator.share`. Computed once (capability is static).
-  const [canShare] = useState(() => {
-    if (Platform.OS !== 'web') return true;
-    return typeof navigator !== 'undefined' && typeof navigator.share === 'function';
-  });
+  /**
+   * Fullscreen, swipeable MEDIA viewer — images and consumer-owned videos in one
+   * pager — replicating the profile avatar's measured-origin zoom transition
+   * (`ZoomableAvatar`) for rectangular post media:
+   *
+   * - Open/close feel is identical to the avatar (same spring configs, web
+   *   timing/easing, blur backdrop, and the measure-origin technique). The viewer
+   *   renders through the Bloom `Portal` on BOTH platforms (RN's `Modal` is not
+   *   used on native — on the New Architecture / Fabric Android its host views
+   *   mount full-screen but never composite, leaving the viewer invisible).
+   * - The OPENING (tapped) item animates from its measured rect to a centered,
+   *   aspect-ratio-preserving fit within {@link FIT_FRACTION} of the screen. Once
+   *   the open animation settles, a horizontal paging `ScrollView` mounts seeded at
+   *   the tapped index so the user can swipe between every item in the post.
+   * - Gesture disambiguation: the pager owns horizontal swipes; a vertical-only
+   *   `Gesture.Pan` (`activeOffsetY` + `failOffsetX`) owns drag-to-dismiss, so the
+   *   two never fight.
+   *
+   * ## Video, and why it does not restart
+   *
+   * A video page is fed by a `VideoPlayer` the CONSUMER created and owns. Bloom
+   * never creates or destroys one: expo-video keeps the player OBJECT separate
+   * from the `VideoView` that shows it, and one player may feed several views, so
+   * handing the same player to this gallery moves a playing video into fullscreen
+   * without re-opening the stream. Exactly ONE view is mounted per opening — the
+   * active page's — while every other page and every strip tile renders the still
+   * (`MediaPoster`). The single unavoidable swap is the pre-pager open surface
+   * handing over to the pager's active page once the open animation settles.
+   *
+   * `expo-video` is an OPTIONAL peer loaded through `media-flight/expo-video-module`.
+   * Without it a video page degrades to its poster, once, with a dev warning.
+   */
+  const ZoomableMediaGalleryInner = React.forwardRef<
+    ZoomableMediaGalleryHandle,
+    ZoomableMediaGalleryProps
+  >(
+    (
+      {
+        appearance = 'overlay',
+        onIndexChange,
+        onOpenChange,
+        renderVideoOverlay,
+        measureThumb,
+        cornerRadius = DEFAULT_CORNER_RADIUS,
+        indicatorVariant = 'dots',
+        videoControls = false,
+        labels: labelsProp,
+      },
+      ref,
+    ) => {
+      const { messages } = useMessages(ZOOMABLE_MEDIA_GALLERY_MESSAGES);
+      const themeContext = React.useContext(BloomThemeContext);
+      if (appearance === 'page' && !themeContext) {
+        throw new Error('ZoomableMediaGallery appearance="page" requires a <BloomThemeProvider>');
+      }
+      // The default overlay can mount closed without a theme provider. Only the
+      // opt-in page reads its palette; the default pager's controls keep their own
+      // existing provider requirements.
+      const pagePalette = appearance === 'page' ? themeContext?.theme.colors : undefined;
+      const page = pagePalette != null;
+      const pageColors = pagePalette
+        ? { background: pagePalette.backgroundSecondary, foreground: pagePalette.text }
+        : undefined;
+      const onIndexChangeRef = useRef(onIndexChange);
+      onIndexChangeRef.current = onIndexChange;
+      const onOpenChangeRef = useRef(onOpenChange);
+      onOpenChangeRef.current = onOpenChange;
+      const openRef = useRef(false);
+      const reportOpen = useCallback((next: boolean) => {
+        if (openRef.current === next) return;
+        openRef.current = next;
+        onOpenChangeRef.current?.(next);
+      }, []);
+      const labels = useMemo(() => ({ ...messages, ...labelsProp }), [messages, labelsProp]);
+      const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
+      // The viewer is full-bleed, so its chrome must clear the status bar, the
+      // cutout and the home indicator itself — nothing above it applies them.
+      const insets = useSafeAreaInsets();
 
-  const scale = useSharedValue(1);
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const opacity = useSharedValue(0);
+      const radiusFor = useCallback(
+        (fit: FittedSize) => resolveCornerRadius(cornerRadius, fit),
+        [cornerRadius],
+      );
 
-  // Zoom transform of the active media, kept SEPARATE from the open/close +
-  // dismiss-drag transform above (reusing those would collide two meanings).
-  // `zoom*` are the live/persisted values; `baseZoomScale` is captured at pinch
-  // start and `savedZoomTranslate*` at pan start for incremental bookkeeping.
-  const zoomScale = useSharedValue(1);
-  const zoomTranslateX = useSharedValue(0);
-  const zoomTranslateY = useSharedValue(0);
-  const baseZoomScale = useSharedValue(1);
-  const savedZoomTranslateX = useSharedValue(0);
-  const savedZoomTranslateY = useSharedValue(0);
+      const [isOpen, setIsOpen] = useState(false);
+      // Once true, the swipeable pager is mounted and the single open-surface hidden.
+      const [pagerReady, setPagerReady] = useState(false);
+      const [items, setItems] = useState<GalleryMedia[]>([]);
+      const [activeIndex, setActiveIndex] = useState(0);
+      // Whether the active media is currently pinched/double-tapped past its base
+      // size. Drives the pan-while-zoomed gesture, disables the pager's horizontal
+      // paging + the dismiss drag so a pan moves the zoomed media instead.
+      const [isZoomed, setIsZoomed] = useState(false);
+      // Aspect ratio of the OPENING item (drives the open-animation fit box).
+      const [openRatio, setOpenRatio] = useState<number>(DEFAULT_ASPECT_RATIO);
+      // Per-item aspect ratios for the pager pages (index-aligned with `items`).
+      const [pageRatios, setPageRatios] = useState<Record<number, number>>({});
 
-  // Origin (offset from screen center) of the tapped item.
-  const originX = useSharedValue(0);
-  const originY = useSharedValue(0);
+      // Native `Share` is always available; web exposes a share button only when the
+      // browser implements `navigator.share`. Computed once (capability is static).
+      const [canShare] = useState(() => {
+        if (Platform.OS !== 'web') return true;
+        return typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+      });
 
-  const startX = useSharedValue(0);
-  const startY = useSharedValue(0);
-  // Per-drag baseline captured at pan start (transient).
-  const startScale = useSharedValue(1);
-  // Persistent scale of the open-surface at its thumbnail origin (thumbWidth /
-  // fittedWidth). The open animation grows from this to 1; the close animation
-  // shrinks back to it. Never overwritten by the drag gesture.
-  const originScale = useSharedValue(1);
+      const scale = useSharedValue(1);
+      const translateX = useSharedValue(0);
+      const translateY = useSharedValue(0);
+      const opacity = useSharedValue(0);
 
-  const pagerRef = useRef<ScrollView>(null);
-  // Mirror of `activeIndex` readable synchronously from callbacks/worklets
-  // (`handleDismiss` runs via `runOnJS` and from `Pressable.onPress`, where the
-  // state closure can be stale). Kept in lockstep by `setActiveIndexBoth`.
-  const activeIndexRef = useRef(0);
-  // True from the first dismiss request until the viewer is actually unmounted.
-  const dismissingRef = useRef(false);
+      // Zoom transform of the active media, kept SEPARATE from the open/close +
+      // dismiss-drag transform above (reusing those would collide two meanings).
+      // `zoom*` are the live/persisted values; `baseZoomScale` is captured at pinch
+      // start and `savedZoomTranslate*` at pan start for incremental bookkeeping.
+      const zoomScale = useSharedValue(1);
+      const zoomTranslateX = useSharedValue(0);
+      const zoomTranslateY = useSharedValue(0);
+      const baseZoomScale = useSharedValue(1);
+      const savedZoomTranslateX = useSharedValue(0);
+      const savedZoomTranslateY = useSharedValue(0);
 
-  // Every deferred step of the open / dismiss choreography, so unmount can cancel
-  // the ones still owing.
-  //
-  // Each one ends in a `setState` on THIS instance, and each is scheduled from a
-  // gesture or an imperative `open()` — never from an effect — so React's own
-  // teardown reaches none of them. A screen left within the ~300 ms of the open
-  // transition therefore leaves a live timer holding the whole subtree, and the
-  // state it eventually writes lands on a tree nobody is rendering. React makes
-  // that a silent no-op rather than an error, which is exactly why it survived:
-  // measured under jest, the gallery's `revealPager` timer outlives the file
-  // that mounted it and fires inside the NEXT test file in the same worker
-  // process, sometimes re-scheduling itself two files further on.
-  const pendingRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
-  const frameRef = useRef<number | null>(null);
-  const unmountedRef = useRef(false);
-  const schedule = useCallback((step: () => void, delay: number) => {
-    // The open transition's own frame callback schedules the step after it, so
-    // this can be reached once the component is already gone — starting a timer
-    // there would put one back after the cleanup has run.
-    if (unmountedRef.current) return;
-    const handle = setTimeout(() => {
-      pendingRef.current.delete(handle);
-      step();
-    }, delay);
-    pendingRef.current.add(handle);
-  }, []);
-  useEffect(
-    () => {
-      unmountedRef.current = false;
-      return () => {
-        unmountedRef.current = true;
+      // Origin (offset from screen center) of the tapped item.
+      const originX = useSharedValue(0);
+      const originY = useSharedValue(0);
+
+      const startX = useSharedValue(0);
+      const startY = useSharedValue(0);
+      // Per-drag baseline captured at pan start (transient).
+      const startScale = useSharedValue(1);
+      // Persistent scale of the open-surface at its thumbnail origin (thumbWidth /
+      // fittedWidth). The open animation grows from this to 1; the close animation
+      // shrinks back to it. Never overwritten by the drag gesture.
+      const originScale = useSharedValue(1);
+
+      const pagerRef = useRef<ScrollView>(null);
+      // Mirror of `activeIndex` readable synchronously from callbacks/worklets
+      // (`handleDismiss` runs via `runOnJS` and from `Pressable.onPress`, where the
+      // state closure can be stale). Kept in lockstep by `setActiveIndexBoth`.
+      const activeIndexRef = useRef(0);
+      // True from the first dismiss request until the viewer is actually unmounted.
+      const dismissingRef = useRef(false);
+
+      // Every deferred step of the open / dismiss choreography, so unmount can cancel
+      // the ones still owing.
+      //
+      // Each one ends in a `setState` on THIS instance, and each is scheduled from a
+      // gesture or an imperative `open()` — never from an effect — so React's own
+      // teardown reaches none of them. A screen left within the ~300 ms of the open
+      // transition therefore leaves a live timer holding the whole subtree, and the
+      // state it eventually writes lands on a tree nobody is rendering. React makes
+      // that a silent no-op rather than an error, which is exactly why it survived:
+      // measured under jest, the gallery's `revealPager` timer outlives the file
+      // that mounted it and fires inside the NEXT test file in the same worker
+      // process, sometimes re-scheduling itself two files further on.
+      const pendingRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+      const frameRef = useRef<number | null>(null);
+      const unmountedRef = useRef(false);
+      const schedule = useCallback((step: () => void, delay: number) => {
+        // The open transition's own frame callback schedules the step after it, so
+        // this can be reached once the component is already gone — starting a timer
+        // there would put one back after the cleanup has run.
+        if (unmountedRef.current) return;
+        const handle = setTimeout(() => {
+          pendingRef.current.delete(handle);
+          step();
+        }, delay);
+        pendingRef.current.add(handle);
+      }, []);
+      useEffect(() => {
+        unmountedRef.current = false;
+        return () => {
+          unmountedRef.current = true;
+          reportOpen(false);
+          for (const handle of pendingRef.current) clearTimeout(handle);
+          pendingRef.current.clear();
+          if (frameRef.current !== null) {
+            cancelAnimationFrame(frameRef.current);
+            frameRef.current = null;
+          }
+        };
+      }, [reportOpen]);
+
+      // Single writer for the current index: updates state (drives indicator + open
+      // image) and the synchronous mirror together, and only when it changes.
+      const setActiveIndexBoth = useCallback((next: number, opening = false) => {
+        const changed = activeIndexRef.current !== next;
+        activeIndexRef.current = next;
+        setActiveIndex((prev) => (prev === next ? prev : next));
+        if (changed || opening) onIndexChangeRef.current?.(next);
+      }, []);
+
+      // Snap the active media back to its un-zoomed baseline (no animation) and
+      // clear all zoom bookkeeping. Called on every path that changes the active
+      // page so a freshly-viewed item always starts un-zoomed.
+      const resetZoom = useCallback(() => {
+        zoomScale.value = 1;
+        zoomTranslateX.value = 0;
+        zoomTranslateY.value = 0;
+        savedZoomTranslateX.value = 0;
+        savedZoomTranslateY.value = 0;
+        baseZoomScale.value = 1;
+        setIsZoomed(false);
+      }, [
+        baseZoomScale,
+        savedZoomTranslateX,
+        savedZoomTranslateY,
+        zoomScale,
+        zoomTranslateX,
+        zoomTranslateY,
+      ]);
+
+      // Box the fitted image must fit inside.
+      const fitBox = useMemo<FittedSize>(
+        () => ({ width: SCREEN_WIDTH * FIT_FRACTION, height: SCREEN_HEIGHT * FIT_FRACTION }),
+        [SCREEN_WIDTH, SCREEN_HEIGHT],
+      );
+
+      // Largest width/height for `ratio` that fits inside `fitBox` without cropping
+      // (contain), never exceeding the media's own resolution: filling the viewport
+      // with a 512px avatar or a small thumbnail just renders it soft. `uri` is what
+      // lets us look the intrinsic size up; without it (not measured yet) the fit
+      // box wins and the clamp applies on the next frame.
+      const fitForRatio = useCallback(
+        (ratio: number, uri?: string): FittedSize => {
+          const safeRatio = ratio > 0 && Number.isFinite(ratio) ? ratio : DEFAULT_ASPECT_RATIO;
+          let width = fitBox.width;
+          let height = width / safeRatio;
+          if (height > fitBox.height) {
+            height = fitBox.height;
+            width = height * safeRatio;
+          }
+          const intrinsic = uri ? getIntrinsicSize(uri) : undefined;
+          if (intrinsic && intrinsic.width > 0 && width > intrinsic.width) {
+            width = intrinsic.width;
+            height = width / safeRatio;
+          }
+          return { width, height };
+        },
+        [fitBox],
+      );
+
+      // Fitted size of the single open-surface for the CURRENT page. On open this is
+      // the opened item's fit (active index == opened index, ratio == `openRatio`);
+      // after swiping it tracks the viewed item so the collapse-on-dismiss renders
+      // and flies back the media actually on screen.
+      const activeItem = items[activeIndex];
+      const activeRatio = pageRatios[activeIndex] ?? openRatio;
+      const activeUri = activeItem === undefined ? undefined : posterUri(activeItem);
+      const activeFit = useMemo(
+        () => fitForRatio(activeRatio, activeUri),
+        [fitForRatio, activeRatio, activeUri],
+      );
+
+      // Alt text (accessibility description) of the item currently on screen, shown
+      // as a caption at the bottom of the viewer (Bluesky-style lightbox footer).
+      const activeAlt = activeItem?.alt?.trim() || undefined;
+      const videoOverlay =
+        isOpen && activeItem?.kind === 'video' ? renderVideoOverlay?.(activeItem) : null;
+
+      // Probe and cache the ratio of the page at `index`. A video with no poster has
+      // nothing to probe — it keeps whatever ratio the consumer declared, or the
+      // gallery default — so this is a no-op rather than a guess.
+      const ensureRatio = useCallback((index: number, uri: string | undefined) => {
+        if (uri === undefined) return;
+        const cached = getAspectRatio(uri);
+        if (cached !== undefined) {
+          setPageRatios((prev) => (prev[index] === cached ? prev : { ...prev, [index]: cached }));
+          return;
+        }
+        void fetchAspectRatio(uri).then((ratio) => {
+          setPageRatios((prev) => (prev[index] === ratio ? prev : { ...prev, [index]: ratio }));
+        });
+      }, []);
+
+      // Unmount + reset all animation values to their neutral baseline. Shared by
+      // every dismiss path (fly-back and fade-out fallback).
+      const finalizeDismiss = useCallback(() => {
+        setIsOpen(false);
+        // Keep the dismissal latch until the next open. Throttled web scroll
+        // events can arrive after the pager unmounts and must not reset selection.
+        scale.value = 1;
+        translateX.value = 0;
+        translateY.value = 0;
+        opacity.value = 0;
         reportOpen(false);
-        for (const handle of pendingRef.current) clearTimeout(handle);
-        pendingRef.current.clear();
-        if (frameRef.current !== null) {
-          cancelAnimationFrame(frameRef.current);
-          frameRef.current = null;
-        }
-      };
-    },
-    [reportOpen],
-  );
+      }, [opacity, reportOpen, scale, translateX, translateY]);
 
-  // Single writer for the current index: updates state (drives indicator + open
-  // image) and the synchronous mirror together, and only when it changes.
-  const setActiveIndexBoth = useCallback((next: number, opening = false) => {
-    const changed = activeIndexRef.current !== next;
-    activeIndexRef.current = next;
-    setActiveIndex((prev) => (prev === next ? prev : next));
-    if (changed || opening) onIndexChangeRef.current?.(next);
-  }, []);
+      // Fly the (possibly dragged) media back toward `target` — the rect of the
+      // thumbnail currently being viewed — shrinking to its footprint. Uses the
+      // EXACT same close spring (native) / timing (web) as the avatar transition.
+      const flyBackTo = useCallback(
+        (target: { x: number; y: number; scale: number }) => {
+          if (Platform.OS === 'web') {
+            const duration = CLOSE_DURATION_WEB;
+            const easing = Easing.in(Easing.cubic);
+            scale.value = withTiming(target.scale, { duration, easing });
+            translateX.value = withTiming(target.x, { duration, easing });
+            translateY.value = withTiming(target.y, { duration, easing });
+            opacity.value = withTiming(0, { duration, easing });
+            schedule(finalizeDismiss, duration + 20);
+          } else {
+            scale.value = withSpring(target.scale, CLOSE_SPRING);
+            translateX.value = withSpring(target.x, CLOSE_SPRING);
+            translateY.value = withSpring(target.y, CLOSE_SPRING);
+            opacity.value = withTiming(0, { duration: OPACITY_DURATION });
+            schedule(finalizeDismiss, CLOSE_DURATION_WEB);
+          }
+        },
+        [finalizeDismiss, opacity, scale, schedule, translateX, translateY],
+      );
 
-  // Snap the active media back to its un-zoomed baseline (no animation) and
-  // clear all zoom bookkeeping. Called on every path that changes the active
-  // page so a freshly-viewed item always starts un-zoomed.
-  const resetZoom = useCallback(() => {
-    zoomScale.value = 1;
-    zoomTranslateX.value = 0;
-    zoomTranslateY.value = 0;
-    savedZoomTranslateX.value = 0;
-    savedZoomTranslateY.value = 0;
-    baseZoomScale.value = 1;
-    setIsZoomed(false);
-  }, [baseZoomScale, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]);
-
-  // Box the fitted image must fit inside.
-  const fitBox = useMemo<FittedSize>(
-    () => ({ width: SCREEN_WIDTH * FIT_FRACTION, height: SCREEN_HEIGHT * FIT_FRACTION }),
-    [SCREEN_WIDTH, SCREEN_HEIGHT]
-  );
-
-  // Largest width/height for `ratio` that fits inside `fitBox` without cropping
-  // (contain), never exceeding the media's own resolution: filling the viewport
-  // with a 512px avatar or a small thumbnail just renders it soft. `uri` is what
-  // lets us look the intrinsic size up; without it (not measured yet) the fit
-  // box wins and the clamp applies on the next frame.
-  const fitForRatio = useCallback((ratio: number, uri?: string): FittedSize => {
-    const safeRatio = ratio > 0 && Number.isFinite(ratio) ? ratio : DEFAULT_ASPECT_RATIO;
-    let width = fitBox.width;
-    let height = width / safeRatio;
-    if (height > fitBox.height) {
-      height = fitBox.height;
-      width = height * safeRatio;
-    }
-    const intrinsic = uri ? getIntrinsicSize(uri) : undefined;
-    if (intrinsic && intrinsic.width > 0 && width > intrinsic.width) {
-      width = intrinsic.width;
-      height = width / safeRatio;
-    }
-    return { width, height };
-  }, [fitBox]);
-
-  // Fitted size of the single open-surface for the CURRENT page. On open this is
-  // the opened item's fit (active index == opened index, ratio == `openRatio`);
-  // after swiping it tracks the viewed item so the collapse-on-dismiss renders
-  // and flies back the media actually on screen.
-  const activeItem = items[activeIndex];
-  const activeRatio = pageRatios[activeIndex] ?? openRatio;
-  const activeUri = activeItem === undefined ? undefined : posterUri(activeItem);
-  const activeFit = useMemo(
-    () => fitForRatio(activeRatio, activeUri),
-    [fitForRatio, activeRatio, activeUri],
-  );
-
-  // Alt text (accessibility description) of the item currently on screen, shown
-  // as a caption at the bottom of the viewer (Bluesky-style lightbox footer).
-  const activeAlt = activeItem?.alt?.trim() || undefined;
-  const videoOverlay = isOpen && activeItem?.kind === 'video'
-    ? renderVideoOverlay?.(activeItem)
-    : null;
-
-  // Probe and cache the ratio of the page at `index`. A video with no poster has
-  // nothing to probe — it keeps whatever ratio the consumer declared, or the
-  // gallery default — so this is a no-op rather than a guess.
-  const ensureRatio = useCallback((index: number, uri: string | undefined) => {
-    if (uri === undefined) return;
-    const cached = getAspectRatio(uri);
-    if (cached !== undefined) {
-      setPageRatios((prev) => (prev[index] === cached ? prev : { ...prev, [index]: cached }));
-      return;
-    }
-    void fetchAspectRatio(uri).then((ratio) => {
-      setPageRatios((prev) => (prev[index] === ratio ? prev : { ...prev, [index]: ratio }));
-    });
-  }, []);
-
-  // Unmount + reset all animation values to their neutral baseline. Shared by
-  // every dismiss path (fly-back and fade-out fallback).
-  const finalizeDismiss = useCallback(() => {
-    setIsOpen(false);
-    // Keep the dismissal latch until the next open. Throttled web scroll
-    // events can arrive after the pager unmounts and must not reset selection.
-    scale.value = 1;
-    translateX.value = 0;
-    translateY.value = 0;
-    opacity.value = 0;
-    reportOpen(false);
-  }, [opacity, reportOpen, scale, translateX, translateY]);
-
-  // Fly the (possibly dragged) media back toward `target` — the rect of the
-  // thumbnail currently being viewed — shrinking to its footprint. Uses the
-  // EXACT same close spring (native) / timing (web) as the avatar transition.
-  const flyBackTo = useCallback(
-    (target: { x: number; y: number; scale: number }) => {
-      if (Platform.OS === 'web') {
-        const duration = CLOSE_DURATION_WEB;
-        const easing = Easing.in(Easing.cubic);
-        scale.value = withTiming(target.scale, { duration, easing });
-        translateX.value = withTiming(target.x, { duration, easing });
-        translateY.value = withTiming(target.y, { duration, easing });
-        opacity.value = withTiming(0, { duration, easing });
-        schedule(finalizeDismiss, duration + 20);
-      } else {
-        scale.value = withSpring(target.scale, CLOSE_SPRING);
-        translateX.value = withSpring(target.x, CLOSE_SPRING);
-        translateY.value = withSpring(target.y, CLOSE_SPRING);
-        opacity.value = withTiming(0, { duration: OPACITY_DURATION });
-        schedule(finalizeDismiss, CLOSE_DURATION_WEB);
-      }
-    },
-    [finalizeDismiss, opacity, scale, schedule, translateX, translateY]
-  );
-
-  // Fallback when the current thumbnail cannot be measured (ref missing /
-  // unmounted / virtualized): a plain center fade-out with a slight scale-down,
-  // then unmount. Keeps the same web timing / native spring feel.
-  const fadeOutCenter = useCallback(() => {
-    if (Platform.OS === 'web') {
-      const duration = CLOSE_DURATION_WEB;
-      const easing = Easing.in(Easing.cubic);
-      scale.value = withTiming(MIN_DRAG_SCALE, { duration, easing });
-      opacity.value = withTiming(0, { duration, easing });
-      schedule(finalizeDismiss, duration + 20);
-    } else {
-      scale.value = withSpring(MIN_DRAG_SCALE, CLOSE_SPRING);
-      opacity.value = withTiming(0, { duration: OPACITY_DURATION });
-      schedule(finalizeDismiss, CLOSE_DURATION_WEB);
-    }
-  }, [finalizeDismiss, opacity, scale, schedule]);
-
-  const handleDismiss = useCallback(() => {
-    // A press on the image reaches BOTH its tap gesture and the page beneath it
-    // (which owns the dismiss for the empty area around the image), so this can
-    // fire twice for one click. Latch it: a second call would start a second
-    // fly-back from an already-moving image.
-    if (dismissingRef.current) return;
-    dismissingRef.current = true;
-    // Collapse the pager back to the single open-surface so the fly-back
-    // animates one item (the current one) rather than the whole scrolled strip.
-    setPagerReady(false);
-
-    const index = activeIndexRef.current;
-    const current = items[index];
-    // Recompute the fly-back target from the CURRENT item: the live rect of its
-    // thumbnail + the same fitted box (`activeFit`) the open-surface is rendered
-    // at, using the same screen-center math as `open`. Falls back to a center
-    // fade-out when the thumbnail can't be measured.
-    if (measureThumb && current) {
-      const centerX = SCREEN_WIDTH / 2;
-      const centerY = SCREEN_HEIGHT / 2;
-      void measureThumb(index).then((rect) => {
-        if (rect && rect.width > 0 && activeFit.width > 0) {
-          flyBackTo({
-            x: rect.x + rect.width / 2 - centerX,
-            y: rect.y + rect.height / 2 - centerY,
-            scale: rect.width / activeFit.width,
-          });
+      // Fallback when the current thumbnail cannot be measured (ref missing /
+      // unmounted / virtualized): a plain center fade-out with a slight scale-down,
+      // then unmount. Keeps the same web timing / native spring feel.
+      const fadeOutCenter = useCallback(() => {
+        if (Platform.OS === 'web') {
+          const duration = CLOSE_DURATION_WEB;
+          const easing = Easing.in(Easing.cubic);
+          scale.value = withTiming(MIN_DRAG_SCALE, { duration, easing });
+          opacity.value = withTiming(0, { duration, easing });
+          schedule(finalizeDismiss, duration + 20);
         } else {
-          fadeOutCenter();
+          scale.value = withSpring(MIN_DRAG_SCALE, CLOSE_SPRING);
+          opacity.value = withTiming(0, { duration: OPACITY_DURATION });
+          schedule(finalizeDismiss, CLOSE_DURATION_WEB);
         }
-      });
-      return;
-    }
+      }, [finalizeDismiss, opacity, scale, schedule]);
 
-    fadeOutCenter();
-  }, [
-    activeFit,
-    fadeOutCenter,
-    flyBackTo,
-    items,
-    measureThumb,
-    SCREEN_HEIGHT,
-    SCREEN_WIDTH,
-  ]);
+      const handleDismiss = useCallback(() => {
+        // A press on the image reaches BOTH its tap gesture and the page beneath it
+        // (which owns the dismiss for the empty area around the image), so this can
+        // fire twice for one click. Latch it: a second call would start a second
+        // fly-back from an already-moving image.
+        if (dismissingRef.current) return;
+        dismissingRef.current = true;
+        // Collapse the pager back to the single open-surface so the fly-back
+        // animates one item (the current one) rather than the whole scrolled strip.
+        setPagerReady(false);
 
-  // Reveal the swipeable pager once the open animation has settled. The index it
-  // lands on is `activeIndexRef` (set synchronously in `open`), seated by the
-  // layout effect below.
-  const revealPager = useCallback(() => {
-    setPagerReady(true);
-  }, []);
-
-  const open = useCallback(
-    (nextItems: GalleryMedia[], index: number, rect?: MeasuredRect) => {
-      if (openRef.current || unmountedRef.current || nextItems.length === 0) return;
-      dismissingRef.current = false;
-      const safeIndex = Math.min(Math.max(index, 0), nextItems.length - 1);
-      const target = nextItems[safeIndex];
-      if (!target) return;
-      const targetUri = posterUri(target);
-      const knownRatio = target.aspectRatio ?? cachedRatio(target);
-      const ratio = knownRatio ?? DEFAULT_ASPECT_RATIO;
-
-      setItems(nextItems);
-      setActiveIndexBoth(safeIndex, true);
-      setOpenRatio(ratio);
-      // Seed every page whose ratio is already known (consumer-provided metadata
-      // or a previously-cached probe) so swiping never hits the same snap — only
-      // a genuinely-unknown item falls through to `ensureRatio`'s async probe.
-      const initialRatios: Record<number, number> = {};
-      nextItems.forEach((item, i) => {
-        const r = item.aspectRatio ?? cachedRatio(item);
-        if (r !== undefined) initialRatios[i] = r;
-      });
-      setPageRatios(initialRatios);
-
-      // Resolve the opening ratio if it was not yet known, then re-fit. A video
-      // with no poster has nothing to probe and keeps the default.
-      if (knownRatio === undefined && targetUri !== undefined) {
-        void fetchAspectRatio(targetUri).then((resolved) => {
-          setOpenRatio(resolved);
-          setPageRatios((prev) => ({ ...prev, [safeIndex]: resolved }));
-        });
-      }
-
-      // The open-surface box is rendered at its FINAL fitted size; the open
-      // animation grows it from the thumbnail's footprint (scale < 1) up to 1,
-      // mirroring the avatar's small→big scale. The initial scale is the ratio
-      // of the thumbnail width to the fitted width.
-      const fitted = fitForRatio(ratio, targetUri);
-      const centerX = SCREEN_WIDTH / 2;
-      const centerY = SCREEN_HEIGHT / 2;
-      if (rect && rect.width > 0) {
-        originX.value = rect.x + rect.width / 2 - centerX;
-        originY.value = rect.y + rect.height / 2 - centerY;
-        originScale.value = rect.width / fitted.width;
-      } else {
-        originX.value = 0;
-        originY.value = 0;
-        originScale.value = 1;
-      }
-
-      setIsOpen(true);
-      reportOpen(true);
-      translateX.value = originX.value;
-      translateY.value = originY.value;
-      scale.value = originScale.value;
-      opacity.value = 0;
-
-      if (Platform.OS === 'web') {
-        frameRef.current = requestAnimationFrame(() => {
-          frameRef.current = null;
-          const duration = OPEN_DURATION_WEB;
-          const easing = Easing.out(Easing.cubic);
-          scale.value = withTiming(1, { duration, easing });
-          translateX.value = withTiming(0, { duration, easing });
-          translateY.value = withTiming(0, { duration, easing });
-          opacity.value = withTiming(1, { duration, easing });
-          schedule(revealPager, duration);
-        });
-      } else {
-        schedule(() => {
-          scale.value = withSpring(1, OPEN_SPRING);
-          translateX.value = withSpring(0, OPEN_SPRING);
-          translateY.value = withSpring(0, OPEN_SPRING);
-          opacity.value = withTiming(1, { duration: OPACITY_DURATION });
-          schedule(revealPager, OPEN_DURATION_WEB);
-        }, 0);
-      }
-    },
-    [
-      SCREEN_WIDTH,
-      SCREEN_HEIGHT,
-      fitForRatio,
-      opacity,
-      originScale,
-      originX,
-      originY,
-      revealPager,
-      reportOpen,
-      scale,
-      schedule,
-      setActiveIndexBoth,
-      translateX,
-      translateY,
-    ]
-  );
-
-  React.useImperativeHandle(ref, () => ({ open }), [open]);
-
-  const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        // Disabled while zoomed so a drag pans the zoomed image (via the
-        // per-page pan gesture) instead of trying to dismiss the whole viewer.
-        .enabled(isOpen && !isZoomed)
-        // Only claim drags that are decided to be vertical; horizontal drags
-        // fall through to the pager's ScrollView so swiping changes pages.
-        .activeOffsetY([-AXIS_DECISION_OFFSET, AXIS_DECISION_OFFSET])
-        .failOffsetX([-AXIS_DECISION_OFFSET, AXIS_DECISION_OFFSET])
-        .onStart(() => {
-          startX.value = translateX.value;
-          startY.value = translateY.value;
-          startScale.value = scale.value;
-        })
-        .onUpdate((event) => {
-          translateX.value = startX.value + event.translationX;
-          translateY.value = startY.value + event.translationY;
-          const dragDistance = Math.sqrt(event.translationX ** 2 + event.translationY ** 2);
-          const maxDrag = SCREEN_HEIGHT * MAX_DRAG_FRACTION;
-          opacity.value = Math.max(0, 1 - dragDistance / maxDrag);
-          const scaleReduction = Math.max(
-            MIN_DRAG_SCALE,
-            1 - dragDistance / (SCREEN_HEIGHT * SCALE_DRAG_FRACTION)
-          );
-          scale.value = startScale.value * scaleReduction;
-        })
-        .onEnd((event) => {
-          const dragDistance = Math.sqrt(event.translationX ** 2 + event.translationY ** 2);
-          if (dragDistance > SCREEN_HEIGHT * DISMISS_FRACTION) {
-            runOnJS(handleDismiss)();
-          } else {
-            scale.value = withSpring(1, SNAP_BACK_SPRING);
-            translateX.value = withSpring(0, SNAP_BACK_SPRING);
-            translateY.value = withSpring(0, SNAP_BACK_SPRING);
-            opacity.value = withTiming(1, { duration: OPACITY_DURATION });
-          }
-        }),
-    [handleDismiss, isOpen, isZoomed, SCREEN_HEIGHT, opacity, scale, startScale, startX, startY, translateX, translateY]
-  );
-
-  // CRITICAL — every shared value a mapper READS must be listed in its dependency
-  // array. On web WITHOUT the react-native-worklets babel plugin (what every Oxy
-  // RN-Web app ships), reanimated cannot auto-detect the reads, so it drives the
-  // mapper off the deps array instead: with none, each mapper runs ONCE and
-  // freezes at the opening frame while the shared values animate underneath it.
-  // That froze the open animation, the drag-to-dismiss follow and the pinch/
-  // double-tap zoom on web. Native (plugin present) auto-tracks and ignores the
-  // extra deps, so listing them is correct on both platforms. Same rule as
-  // `bottom-sheet/BottomSheetBase.tsx`. Do NOT strip these.
-  const backdropStyle = useAnimatedStyle(
-    () => ({ opacity: opacity.value }),
-    [opacity],
-  );
-
-  // The single open-surface animates from origin → fitted center.
-  const openImageStyle = useAnimatedStyle(
-    () => ({
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { scale: scale.value },
-      ],
-    }),
-    [translateX, translateY, scale],
-  );
-
-  // While dragging to dismiss, the whole pager follows the finger + fades.
-  const pagerContainerStyle = useAnimatedStyle(
-    () => ({
-      opacity: opacity.value,
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { scale: scale.value },
-      ],
-    }),
-    [opacity, translateX, translateY, scale],
-  );
-
-  // Pinch/double-tap zoom transform, layered on TOP of the active page image's
-  // `fit`-based sizing (composed, never replacing it).
-  const zoomImageStyle = useAnimatedStyle(
-    () => ({
-      transform: [
-        { scale: zoomScale.value },
-        { translateX: zoomTranslateX.value },
-        { translateY: zoomTranslateY.value },
-      ],
-    }),
-    [zoomScale, zoomTranslateX, zoomTranslateY],
-  );
-
-  // Derive the current page from the scroll offset, clamp into range, and update
-  // `activeIndex` only when it actually changes (drives the live indicator + the
-  // close fly-back target). Shared by `onMomentumScrollEnd` (native) and `onScroll`
-  // (web, where paging may not fire a reliable momentum-end).
-  const updateIndexFromOffset = useCallback(
-    (offsetX: number) => {
-      if (dismissingRef.current || !pagerReady) return;
-      const lastIndex = items.length - 1;
-      if (lastIndex < 0) return;
-      const next = Math.min(Math.max(Math.round(offsetX / SCREEN_WIDTH), 0), lastIndex);
-      if (next === activeIndexRef.current) return;
-      // Swiping to a new page always starts it un-zoomed (and clears the zoom on
-      // the page scrolling away).
-      resetZoom();
-      setActiveIndexBoth(next);
-      const item = items[next];
-      if (item) ensureRatio(next, posterUri(item));
-    },
-    [ensureRatio, items, pagerReady, resetZoom, setActiveIndexBoth, SCREEN_WIDTH]
-  );
-
-  // Programmatically page to `index` (arrow buttons, keyboard, thumbnail taps).
-  // Clamps into range and lets the existing scroll handlers own the index/ratio
-  // state-sync — this only triggers the scroll. No-op until the pager is mounted.
-  const pageTo = useCallback(
-    (index: number) => {
-      if (!pagerReady) return;
-      const lastIndex = items.length - 1;
-      if (lastIndex < 0) return;
-      const clamped = Math.min(Math.max(index, 0), lastIndex);
-      resetZoom();
-      pagerRef.current?.scrollTo({ x: clamped * SCREEN_WIDTH, y: 0, animated: true });
-    },
-    [items.length, pagerReady, resetZoom, SCREEN_WIDTH]
-  );
-
-  const onPagerScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      updateIndexFromOffset(event.nativeEvent.contentOffset.x);
-    },
-    [updateIndexFromOffset]
-  );
-
-  // Re-seat the pager on the CURRENT page, without animation, whenever it mounts
-  // or the page width changes.
-  //
-  // Rotation is the case that needs this: the pager's retained scroll offset is
-  // in PIXELS, so when `SCREEN_WIDTH` changes the page widths change underneath
-  // a stale offset and the pager lands between two pages — showing the wrong
-  // image while the counter and dots still point at the right one. Nothing else
-  // corrects it: `contentOffset` below is only an initial value, and `pageTo`
-  // runs only on an explicit page change. Reading the index from
-  // `activeIndexRef` (rather than the index the viewer was opened at) is what
-  // makes it land on the page the user is actually looking at.
-  //
-  // This is a layout EFFECT rather than the pager's `onLayout` on purpose. The
-  // pages are sized from `SCREEN_WIDTH`, so the scroll offset is only meaningful
-  // once React has committed a render carrying the new width. `onLayout` fires
-  // from a different signal (the pager's own frame) than the one that resizes
-  // the pages (`useWindowDimensions`), and the two are not ordered against each
-  // other — so an `onLayout` handler can run holding the previous `SCREEN_WIDTH`
-  // and re-seat the pager to the offset it already had. Keying the effect on
-  // `SCREEN_WIDTH` makes the two agree by construction, and running it before
-  // paint keeps the corrected offset from being visible as a jump.
-  useLayoutEffect(() => {
-    if (!pagerReady) return;
-    pagerRef.current?.scrollTo({ x: activeIndexRef.current * SCREEN_WIDTH, y: 0, animated: false });
-  }, [pagerReady, SCREEN_WIDTH]);
-
-  // Double-tap toggles zoom: reset when already zoomed, else zoom to the tapped
-  // point (biased toward it, clamped near the image center). `x`/`y` are local
-  // to the active image, so its own fitted box gives the center + clamp bounds.
-  const zoomToPoint = useCallback(
-    (x: number, y: number) => {
-      if (zoomScale.value > 1) {
-        resetZoom();
-        return;
-      }
-      const centerX = activeFit.width / 2;
-      const centerY = activeFit.height / 2;
-      const maxOffset = Math.max(activeFit.width, activeFit.height) * 0.2;
-      const offsetX = Math.max(-maxOffset, Math.min(maxOffset, (centerX - x) * 0.5));
-      const offsetY = Math.max(-maxOffset, Math.min(maxOffset, (centerY - y) * 0.5));
-      zoomScale.value = withSpring(DOUBLE_TAP_ZOOM_SCALE);
-      zoomTranslateX.value = withSpring(offsetX);
-      zoomTranslateY.value = withSpring(offsetY);
-      savedZoomTranslateX.value = offsetX;
-      savedZoomTranslateY.value = offsetY;
-      baseZoomScale.value = DOUBLE_TAP_ZOOM_SCALE;
-      setIsZoomed(true);
-    },
-    [activeFit, baseZoomScale, resetZoom, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]
-  );
-
-  // Double-tap-to-zoom is a touch convention — disabled on web, where neither
-  // Twitter's nor Instagram's lightbox gates its dismiss click behind tap-count
-  // discrimination. Kept native-only.
-  const doubleTapGesture = useMemo(
-    () =>
-      Gesture.Tap()
-        .numberOfTaps(2)
-        .enabled(Platform.OS !== 'web')
-        .onEnd((event) => {
-          runOnJS(zoomToPoint)(event.x, event.y);
-        }),
-    [zoomToPoint]
-  );
-
-  // Single tap dismisses — but only when un-zoomed (a tap while zoomed is inert;
-  // double-tap/pinch own un-zooming). On native this is made exclusive with the
-  // double-tap above so the first tap of a double-tap never dismisses; on web
-  // (see `tapGesture` below) it fires immediately, matching standard web
-  // lightbox click-to-close.
-  const singleTapDismissGesture = useMemo(
-    () =>
-      Gesture.Tap()
-        .numberOfTaps(1)
-        .onEnd(() => {
-          if (zoomScale.value > 1) return;
-          runOnJS(handleDismiss)();
-        }),
-    [handleDismiss, zoomScale]
-  );
-
-  // On web, don't gate the dismiss tap behind double-tap-failure at all — that
-  // coupling requires react-native-gesture-handler's web tap-exclusivity timing
-  // (a ~500ms wait for the double-tap to time out) to resolve correctly for
-  // every single click, which is both slower than every standard web lightbox
-  // and the newest, least-exercised gesture code path here. Native keeps the
-  // Exclusive composition since double-tap-to-zoom is the expected touch
-  // convention there.
-  const tapGesture = useMemo(
-    () =>
-      Platform.OS === 'web'
-        ? singleTapDismissGesture
-        : Gesture.Exclusive(doubleTapGesture, singleTapDismissGesture),
-    [doubleTapGesture, singleTapDismissGesture]
-  );
-
-  const pinchGesture = useMemo(
-    () =>
-      Gesture.Pinch()
-        .onStart(() => {
-          baseZoomScale.value = zoomScale.value;
-          runOnJS(setIsZoomed)(true);
-        })
-        .onUpdate((event) => {
-          zoomScale.value = Math.max(
-            MIN_ZOOM_SCALE,
-            Math.min(MAX_ZOOM_SCALE, baseZoomScale.value * (event.scale || 1))
-          );
-        })
-        .onEnd(() => {
-          if (zoomScale.value < ZOOM_SNAP_THRESHOLD) {
-            zoomScale.value = withSpring(1);
-            zoomTranslateX.value = withSpring(0);
-            zoomTranslateY.value = withSpring(0);
-            savedZoomTranslateX.value = 0;
-            savedZoomTranslateY.value = 0;
-            baseZoomScale.value = 1;
-            runOnJS(setIsZoomed)(false);
-          } else {
-            runOnJS(setIsZoomed)(true);
-          }
-        }),
-    [baseZoomScale, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]
-  );
-
-  const panWhileZoomedGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .enabled(isZoomed)
-        .minPointers(1)
-        .maxPointers(1)
-        .onStart(() => {
-          if (zoomScale.value <= 1) return;
-          savedZoomTranslateX.value = zoomTranslateX.value;
-          savedZoomTranslateY.value = zoomTranslateY.value;
-        })
-        .onUpdate((event) => {
-          if (zoomScale.value <= 1) return;
-          const nextX = savedZoomTranslateX.value + event.translationX * ZOOM_PAN_DAMPING;
-          const nextY = savedZoomTranslateY.value + event.translationY * ZOOM_PAN_DAMPING;
-          const maxTranslation = ZOOM_PAN_MAX_BASE * zoomScale.value;
-          zoomTranslateX.value = Math.max(-maxTranslation, Math.min(maxTranslation, nextX));
-          zoomTranslateY.value = Math.max(-maxTranslation, Math.min(maxTranslation, nextY));
-        })
-        .onEnd(() => {
-          if (zoomScale.value <= 1) return;
-          savedZoomTranslateX.value = zoomTranslateX.value;
-          savedZoomTranslateY.value = zoomTranslateY.value;
-        }),
-    [isZoomed, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]
-  );
-
-  // Active page gesture: the tap gesture (see above) runs simultaneously with
-  // pinch + pan-while-zoomed.
-  const activePageGesture = useMemo(
-    () => Gesture.Simultaneous(tapGesture, pinchGesture, panWhileZoomedGesture),
-    [tapGesture, pinchGesture, panWhileZoomedGesture]
-  );
-
-  // Share the active item's URI: the OS share sheet on native; the Web Share API
-  // on supporting browsers (the button is only rendered where it exists). A
-  // video shares its own `shareUrl`; its poster is not what "share this" means.
-  const handleShare = useCallback(async () => {
-    const item = items[activeIndexRef.current];
-    const uri = item === undefined ? undefined : shareUri(item);
-    if (!uri) return;
-    try {
-      if (Platform.OS === 'web') {
-        if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-          await navigator.share({ url: uri });
+        const index = activeIndexRef.current;
+        const current = items[index];
+        // Recompute the fly-back target from the CURRENT item: the live rect of its
+        // thumbnail + the same fitted box (`activeFit`) the open-surface is rendered
+        // at, using the same screen-center math as `open`. Falls back to a center
+        // fade-out when the thumbnail can't be measured.
+        if (measureThumb && current) {
+          const centerX = SCREEN_WIDTH / 2;
+          const centerY = SCREEN_HEIGHT / 2;
+          void measureThumb(index).then((rect) => {
+            if (rect && rect.width > 0 && activeFit.width > 0) {
+              flyBackTo({
+                x: rect.x + rect.width / 2 - centerX,
+                y: rect.y + rect.height / 2 - centerY,
+                scale: rect.width / activeFit.width,
+              });
+            } else {
+              fadeOutCenter();
+            }
+          });
+          return;
         }
-        return;
-      }
-      await Share.share({ url: uri });
-    } catch (err) {
-      // A user-cancelled share sheet rejects (AbortError on web) — that's
-      // expected, not a failure. Anything else is a real error worth surfacing.
-      if (err instanceof Error && err.name === 'AbortError') return;
-      if (typeof console !== 'undefined' && console.error) console.error('Media share failed:', err);
-    }
-  }, [items]);
 
-  // Keyboard navigation (web only), scoped to the open lifetime like Dialog.web's
-  // Escape handler. Reads the live index from the ref so it need not re-subscribe
-  // on every page change. Escape flies back via `handleDismiss` (not a raw close).
-  useEffect(() => {
-    if (!isOpen || Platform.OS !== 'web' || typeof document === 'undefined') return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        handleDismiss();
-      } else if (e.key === 'ArrowLeft') {
-        e.stopPropagation();
-        pageTo(activeIndexRef.current - 1);
-      } else if (e.key === 'ArrowRight') {
-        e.stopPropagation();
-        pageTo(activeIndexRef.current + 1);
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [handleDismiss, isOpen, pageTo]);
+        fadeOutCenter();
+      }, [activeFit, fadeOutCenter, flyBackTo, items, measureThumb, SCREEN_HEIGHT, SCREEN_WIDTH]);
 
-  const renderContent = () => (
-    // `onRequestClose`: Android back flies the media home like every other
-    // dismiss. The viewer is a Portal, not an RN `Modal`, so without it nothing
-    // consumed the press and back finished the whole app.
-    <OverlayRoot style={styles.modalContainer} onRequestClose={handleDismiss} modal>
-      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-        {/* Shared `Backdrop` (a Pressable) rather than a `Gesture.Tap()`: the
+      // Reveal the swipeable pager once the open animation has settled. The index it
+      // lands on is `activeIndexRef` (set synchronously in `open`), seated by the
+      // layout effect below.
+      const revealPager = useCallback(() => {
+        setPagerReady(true);
+      }, []);
+
+      const open = useCallback(
+        (nextItems: GalleryMedia[], index: number, rect?: MeasuredRect) => {
+          if (openRef.current || unmountedRef.current || nextItems.length === 0) return;
+          dismissingRef.current = false;
+          const safeIndex = Math.min(Math.max(index, 0), nextItems.length - 1);
+          const target = nextItems[safeIndex];
+          if (!target) return;
+          const targetUri = posterUri(target);
+          const knownRatio = target.aspectRatio ?? cachedRatio(target);
+          const ratio = knownRatio ?? DEFAULT_ASPECT_RATIO;
+
+          setItems(nextItems);
+          setActiveIndexBoth(safeIndex, true);
+          setOpenRatio(ratio);
+          // Seed every page whose ratio is already known (consumer-provided metadata
+          // or a previously-cached probe) so swiping never hits the same snap — only
+          // a genuinely-unknown item falls through to `ensureRatio`'s async probe.
+          const initialRatios: Record<number, number> = {};
+          nextItems.forEach((item, i) => {
+            const r = item.aspectRatio ?? cachedRatio(item);
+            if (r !== undefined) initialRatios[i] = r;
+          });
+          setPageRatios(initialRatios);
+
+          // Resolve the opening ratio if it was not yet known, then re-fit. A video
+          // with no poster has nothing to probe and keeps the default.
+          if (knownRatio === undefined && targetUri !== undefined) {
+            void fetchAspectRatio(targetUri).then((resolved) => {
+              setOpenRatio(resolved);
+              setPageRatios((prev) => ({ ...prev, [safeIndex]: resolved }));
+            });
+          }
+
+          // The open-surface box is rendered at its FINAL fitted size; the open
+          // animation grows it from the thumbnail's footprint (scale < 1) up to 1,
+          // mirroring the avatar's small→big scale. The initial scale is the ratio
+          // of the thumbnail width to the fitted width.
+          const fitted = fitForRatio(ratio, targetUri);
+          const centerX = SCREEN_WIDTH / 2;
+          const centerY = SCREEN_HEIGHT / 2;
+          if (rect && rect.width > 0) {
+            originX.value = rect.x + rect.width / 2 - centerX;
+            originY.value = rect.y + rect.height / 2 - centerY;
+            originScale.value = rect.width / fitted.width;
+          } else {
+            originX.value = 0;
+            originY.value = 0;
+            originScale.value = 1;
+          }
+
+          setIsOpen(true);
+          reportOpen(true);
+          translateX.value = originX.value;
+          translateY.value = originY.value;
+          scale.value = originScale.value;
+          opacity.value = 0;
+
+          if (Platform.OS === 'web') {
+            frameRef.current = requestAnimationFrame(() => {
+              frameRef.current = null;
+              const duration = OPEN_DURATION_WEB;
+              const easing = Easing.out(Easing.cubic);
+              scale.value = withTiming(1, { duration, easing });
+              translateX.value = withTiming(0, { duration, easing });
+              translateY.value = withTiming(0, { duration, easing });
+              opacity.value = withTiming(1, { duration, easing });
+              schedule(revealPager, duration);
+            });
+          } else {
+            schedule(() => {
+              scale.value = withSpring(1, OPEN_SPRING);
+              translateX.value = withSpring(0, OPEN_SPRING);
+              translateY.value = withSpring(0, OPEN_SPRING);
+              opacity.value = withTiming(1, { duration: OPACITY_DURATION });
+              schedule(revealPager, OPEN_DURATION_WEB);
+            }, 0);
+          }
+        },
+        [
+          SCREEN_WIDTH,
+          SCREEN_HEIGHT,
+          fitForRatio,
+          opacity,
+          originScale,
+          originX,
+          originY,
+          revealPager,
+          reportOpen,
+          scale,
+          schedule,
+          setActiveIndexBoth,
+          translateX,
+          translateY,
+        ],
+      );
+
+      React.useImperativeHandle(ref, () => ({ open }), [open]);
+
+      const panGesture = useMemo(
+        () =>
+          Gesture.Pan()
+            // Disabled while zoomed so a drag pans the zoomed image (via the
+            // per-page pan gesture) instead of trying to dismiss the whole viewer.
+            .enabled(isOpen && !isZoomed)
+            // Only claim drags that are decided to be vertical; horizontal drags
+            // fall through to the pager's ScrollView so swiping changes pages.
+            .activeOffsetY([-AXIS_DECISION_OFFSET, AXIS_DECISION_OFFSET])
+            .failOffsetX([-AXIS_DECISION_OFFSET, AXIS_DECISION_OFFSET])
+            .onStart(() => {
+              startX.value = translateX.value;
+              startY.value = translateY.value;
+              startScale.value = scale.value;
+            })
+            .onUpdate((event) => {
+              translateX.value = startX.value + event.translationX;
+              translateY.value = startY.value + event.translationY;
+              const dragDistance = Math.sqrt(event.translationX ** 2 + event.translationY ** 2);
+              const maxDrag = SCREEN_HEIGHT * MAX_DRAG_FRACTION;
+              opacity.value = Math.max(0, 1 - dragDistance / maxDrag);
+              const scaleReduction = Math.max(
+                MIN_DRAG_SCALE,
+                1 - dragDistance / (SCREEN_HEIGHT * SCALE_DRAG_FRACTION),
+              );
+              scale.value = startScale.value * scaleReduction;
+            })
+            .onEnd((event) => {
+              const dragDistance = Math.sqrt(event.translationX ** 2 + event.translationY ** 2);
+              if (dragDistance > SCREEN_HEIGHT * DISMISS_FRACTION) {
+                runOnJS(handleDismiss)();
+              } else {
+                scale.value = withSpring(1, SNAP_BACK_SPRING);
+                translateX.value = withSpring(0, SNAP_BACK_SPRING);
+                translateY.value = withSpring(0, SNAP_BACK_SPRING);
+                opacity.value = withTiming(1, { duration: OPACITY_DURATION });
+              }
+            }),
+        [
+          handleDismiss,
+          isOpen,
+          isZoomed,
+          SCREEN_HEIGHT,
+          opacity,
+          scale,
+          startScale,
+          startX,
+          startY,
+          translateX,
+          translateY,
+        ],
+      );
+
+      // CRITICAL — every shared value a mapper READS must be listed in its dependency
+      // array. On web WITHOUT the react-native-worklets babel plugin (what every Oxy
+      // RN-Web app ships), reanimated cannot auto-detect the reads, so it drives the
+      // mapper off the deps array instead: with none, each mapper runs ONCE and
+      // freezes at the opening frame while the shared values animate underneath it.
+      // That froze the open animation, the drag-to-dismiss follow and the pinch/
+      // double-tap zoom on web. Native (plugin present) auto-tracks and ignores the
+      // extra deps, so listing them is correct on both platforms. Same rule as
+      // `bottom-sheet/BottomSheetBase.tsx`. Do NOT strip these.
+      const backdropStyle = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
+
+      // The single open-surface animates from origin → fitted center.
+      const openImageStyle = useAnimatedStyle(
+        () => ({
+          transform: [
+            { translateX: translateX.value },
+            { translateY: translateY.value },
+            { scale: scale.value },
+          ],
+        }),
+        [translateX, translateY, scale],
+      );
+
+      // While dragging to dismiss, the whole pager follows the finger + fades.
+      const pagerContainerStyle = useAnimatedStyle(
+        () => ({
+          opacity: opacity.value,
+          transform: [
+            { translateX: translateX.value },
+            { translateY: translateY.value },
+            { scale: scale.value },
+          ],
+        }),
+        [opacity, translateX, translateY, scale],
+      );
+
+      // Pinch/double-tap zoom transform, layered on TOP of the active page image's
+      // `fit`-based sizing (composed, never replacing it).
+      const zoomImageStyle = useAnimatedStyle(
+        () => ({
+          transform: [
+            { scale: zoomScale.value },
+            { translateX: zoomTranslateX.value },
+            { translateY: zoomTranslateY.value },
+          ],
+        }),
+        [zoomScale, zoomTranslateX, zoomTranslateY],
+      );
+
+      // Derive the current page from the scroll offset, clamp into range, and update
+      // `activeIndex` only when it actually changes (drives the live indicator + the
+      // close fly-back target). Shared by `onMomentumScrollEnd` (native) and `onScroll`
+      // (web, where paging may not fire a reliable momentum-end).
+      const updateIndexFromOffset = useCallback(
+        (offsetX: number) => {
+          if (dismissingRef.current || !pagerReady) return;
+          const lastIndex = items.length - 1;
+          if (lastIndex < 0) return;
+          const next = Math.min(Math.max(Math.round(offsetX / SCREEN_WIDTH), 0), lastIndex);
+          if (next === activeIndexRef.current) return;
+          // Swiping to a new page always starts it un-zoomed (and clears the zoom on
+          // the page scrolling away).
+          resetZoom();
+          setActiveIndexBoth(next);
+          const item = items[next];
+          if (item) ensureRatio(next, posterUri(item));
+        },
+        [ensureRatio, items, pagerReady, resetZoom, setActiveIndexBoth, SCREEN_WIDTH],
+      );
+
+      // Programmatically page to `index` (arrow buttons, keyboard, thumbnail taps).
+      // Clamps into range and lets the existing scroll handlers own the index/ratio
+      // state-sync — this only triggers the scroll. No-op until the pager is mounted.
+      const pageTo = useCallback(
+        (index: number) => {
+          if (!pagerReady) return;
+          const lastIndex = items.length - 1;
+          if (lastIndex < 0) return;
+          const clamped = Math.min(Math.max(index, 0), lastIndex);
+          resetZoom();
+          pagerRef.current?.scrollTo({ x: clamped * SCREEN_WIDTH, y: 0, animated: true });
+        },
+        [items.length, pagerReady, resetZoom, SCREEN_WIDTH],
+      );
+
+      const onPagerScroll = useCallback(
+        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+          updateIndexFromOffset(event.nativeEvent.contentOffset.x);
+        },
+        [updateIndexFromOffset],
+      );
+
+      // Re-seat the pager on the CURRENT page, without animation, whenever it mounts
+      // or the page width changes.
+      //
+      // Rotation is the case that needs this: the pager's retained scroll offset is
+      // in PIXELS, so when `SCREEN_WIDTH` changes the page widths change underneath
+      // a stale offset and the pager lands between two pages — showing the wrong
+      // image while the counter and dots still point at the right one. Nothing else
+      // corrects it: `contentOffset` below is only an initial value, and `pageTo`
+      // runs only on an explicit page change. Reading the index from
+      // `activeIndexRef` (rather than the index the viewer was opened at) is what
+      // makes it land on the page the user is actually looking at.
+      //
+      // This is a layout EFFECT rather than the pager's `onLayout` on purpose. The
+      // pages are sized from `SCREEN_WIDTH`, so the scroll offset is only meaningful
+      // once React has committed a render carrying the new width. `onLayout` fires
+      // from a different signal (the pager's own frame) than the one that resizes
+      // the pages (`useWindowDimensions`), and the two are not ordered against each
+      // other — so an `onLayout` handler can run holding the previous `SCREEN_WIDTH`
+      // and re-seat the pager to the offset it already had. Keying the effect on
+      // `SCREEN_WIDTH` makes the two agree by construction, and running it before
+      // paint keeps the corrected offset from being visible as a jump.
+      useLayoutEffect(() => {
+        if (!pagerReady) return;
+        pagerRef.current?.scrollTo({
+          x: activeIndexRef.current * SCREEN_WIDTH,
+          y: 0,
+          animated: false,
+        });
+      }, [pagerReady, SCREEN_WIDTH]);
+
+      // Double-tap toggles zoom: reset when already zoomed, else zoom to the tapped
+      // point (biased toward it, clamped near the image center). `x`/`y` are local
+      // to the active image, so its own fitted box gives the center + clamp bounds.
+      const zoomToPoint = useCallback(
+        (x: number, y: number) => {
+          if (zoomScale.value > 1) {
+            resetZoom();
+            return;
+          }
+          const centerX = activeFit.width / 2;
+          const centerY = activeFit.height / 2;
+          const maxOffset = Math.max(activeFit.width, activeFit.height) * 0.2;
+          const offsetX = Math.max(-maxOffset, Math.min(maxOffset, (centerX - x) * 0.5));
+          const offsetY = Math.max(-maxOffset, Math.min(maxOffset, (centerY - y) * 0.5));
+          zoomScale.value = withSpring(DOUBLE_TAP_ZOOM_SCALE);
+          zoomTranslateX.value = withSpring(offsetX);
+          zoomTranslateY.value = withSpring(offsetY);
+          savedZoomTranslateX.value = offsetX;
+          savedZoomTranslateY.value = offsetY;
+          baseZoomScale.value = DOUBLE_TAP_ZOOM_SCALE;
+          setIsZoomed(true);
+        },
+        [
+          activeFit,
+          baseZoomScale,
+          resetZoom,
+          savedZoomTranslateX,
+          savedZoomTranslateY,
+          zoomScale,
+          zoomTranslateX,
+          zoomTranslateY,
+        ],
+      );
+
+      // Double-tap-to-zoom is a touch convention — disabled on web, where neither
+      // Twitter's nor Instagram's lightbox gates its dismiss click behind tap-count
+      // discrimination. Kept native-only.
+      const doubleTapGesture = useMemo(
+        () =>
+          Gesture.Tap()
+            .numberOfTaps(2)
+            .enabled(Platform.OS !== 'web')
+            .onEnd((event) => {
+              runOnJS(zoomToPoint)(event.x, event.y);
+            }),
+        [zoomToPoint],
+      );
+
+      // Single tap dismisses — but only when un-zoomed (a tap while zoomed is inert;
+      // double-tap/pinch own un-zooming). On native this is made exclusive with the
+      // double-tap above so the first tap of a double-tap never dismisses; on web
+      // (see `tapGesture` below) it fires immediately, matching standard web
+      // lightbox click-to-close.
+      const singleTapDismissGesture = useMemo(
+        () =>
+          Gesture.Tap()
+            .numberOfTaps(1)
+            .onEnd(() => {
+              if (zoomScale.value > 1) return;
+              runOnJS(handleDismiss)();
+            }),
+        [handleDismiss, zoomScale],
+      );
+
+      // On web, don't gate the dismiss tap behind double-tap-failure at all — that
+      // coupling requires react-native-gesture-handler's web tap-exclusivity timing
+      // (a ~500ms wait for the double-tap to time out) to resolve correctly for
+      // every single click, which is both slower than every standard web lightbox
+      // and the newest, least-exercised gesture code path here. Native keeps the
+      // Exclusive composition since double-tap-to-zoom is the expected touch
+      // convention there.
+      const tapGesture = useMemo(
+        () =>
+          Platform.OS === 'web'
+            ? singleTapDismissGesture
+            : Gesture.Exclusive(doubleTapGesture, singleTapDismissGesture),
+        [doubleTapGesture, singleTapDismissGesture],
+      );
+
+      const pinchGesture = useMemo(
+        () =>
+          Gesture.Pinch()
+            .onStart(() => {
+              baseZoomScale.value = zoomScale.value;
+              runOnJS(setIsZoomed)(true);
+            })
+            .onUpdate((event) => {
+              zoomScale.value = Math.max(
+                MIN_ZOOM_SCALE,
+                Math.min(MAX_ZOOM_SCALE, baseZoomScale.value * (event.scale || 1)),
+              );
+            })
+            .onEnd(() => {
+              if (zoomScale.value < ZOOM_SNAP_THRESHOLD) {
+                zoomScale.value = withSpring(1);
+                zoomTranslateX.value = withSpring(0);
+                zoomTranslateY.value = withSpring(0);
+                savedZoomTranslateX.value = 0;
+                savedZoomTranslateY.value = 0;
+                baseZoomScale.value = 1;
+                runOnJS(setIsZoomed)(false);
+              } else {
+                runOnJS(setIsZoomed)(true);
+              }
+            }),
+        [
+          baseZoomScale,
+          savedZoomTranslateX,
+          savedZoomTranslateY,
+          zoomScale,
+          zoomTranslateX,
+          zoomTranslateY,
+        ],
+      );
+
+      const panWhileZoomedGesture = useMemo(
+        () =>
+          Gesture.Pan()
+            .enabled(isZoomed)
+            .minPointers(1)
+            .maxPointers(1)
+            .onStart(() => {
+              if (zoomScale.value <= 1) return;
+              savedZoomTranslateX.value = zoomTranslateX.value;
+              savedZoomTranslateY.value = zoomTranslateY.value;
+            })
+            .onUpdate((event) => {
+              if (zoomScale.value <= 1) return;
+              const nextX = savedZoomTranslateX.value + event.translationX * ZOOM_PAN_DAMPING;
+              const nextY = savedZoomTranslateY.value + event.translationY * ZOOM_PAN_DAMPING;
+              const maxTranslation = ZOOM_PAN_MAX_BASE * zoomScale.value;
+              zoomTranslateX.value = Math.max(-maxTranslation, Math.min(maxTranslation, nextX));
+              zoomTranslateY.value = Math.max(-maxTranslation, Math.min(maxTranslation, nextY));
+            })
+            .onEnd(() => {
+              if (zoomScale.value <= 1) return;
+              savedZoomTranslateX.value = zoomTranslateX.value;
+              savedZoomTranslateY.value = zoomTranslateY.value;
+            }),
+        [
+          isZoomed,
+          savedZoomTranslateX,
+          savedZoomTranslateY,
+          zoomScale,
+          zoomTranslateX,
+          zoomTranslateY,
+        ],
+      );
+
+      // Active page gesture: the tap gesture (see above) runs simultaneously with
+      // pinch + pan-while-zoomed.
+      const activePageGesture = useMemo(
+        () => Gesture.Simultaneous(tapGesture, pinchGesture, panWhileZoomedGesture),
+        [tapGesture, pinchGesture, panWhileZoomedGesture],
+      );
+
+      // Share the active item's URI: the OS share sheet on native; the Web Share API
+      // on supporting browsers (the button is only rendered where it exists). A
+      // video shares its own `shareUrl`; its poster is not what "share this" means.
+      const handleShare = useCallback(async () => {
+        const item = items[activeIndexRef.current];
+        const uri = item === undefined ? undefined : shareUri(item);
+        if (!uri) return;
+        try {
+          if (Platform.OS === 'web') {
+            if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+              await navigator.share({ url: uri });
+            }
+            return;
+          }
+          await Share.share({ url: uri });
+        } catch (err) {
+          // A user-cancelled share sheet rejects (AbortError on web) — that's
+          // expected, not a failure. Anything else is a real error worth surfacing.
+          if (err instanceof Error && err.name === 'AbortError') return;
+          if (typeof console !== 'undefined' && console.error)
+            console.error('Media share failed:', err);
+        }
+      }, [items]);
+
+      // Keyboard navigation (web only), scoped to the open lifetime like Dialog.web's
+      // Escape handler. Reads the live index from the ref so it need not re-subscribe
+      // on every page change. Escape flies back via `handleDismiss` (not a raw close).
+      useEffect(() => {
+        if (!isOpen || Platform.OS !== 'web' || typeof document === 'undefined') return;
+        const handler = (e: KeyboardEvent) => {
+          if (e.key === 'Escape') {
+            e.stopPropagation();
+            handleDismiss();
+          } else if (e.key === 'ArrowLeft') {
+            e.stopPropagation();
+            pageTo(activeIndexRef.current - 1);
+          } else if (e.key === 'ArrowRight') {
+            e.stopPropagation();
+            pageTo(activeIndexRef.current + 1);
+          }
+        };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+      }, [handleDismiss, isOpen, pageTo]);
+
+      const renderContent = () => (
+        // `onRequestClose`: Android back flies the media home like every other
+        // dismiss. The viewer is a Portal, not an RN `Modal`, so without it nothing
+        // consumed the press and back finished the whole app.
+        <OverlayRoot style={styles.modalContainer} onRequestClose={handleDismiss} modal>
+          <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+            {/* Shared `Backdrop` (a Pressable) rather than a `Gesture.Tap()`: the
             viewer renders through the web Portal, whose root is
             `pointer-events: none`, and a gesture handler on a node that never
             receives pointer events simply never fires — tapping the backdrop
             did nothing on web while Escape still closed. `Backdrop` opts back
             in via the `pointerEvents` PROP, the only form that reaches the DOM
             (see `src/overlay`). */}
-        {/* `progress` rather than an animated style: an opacity on the
+            {/* `progress` rather than an animated style: an opacity on the
             backdrop's root would sit ABOVE the blur layer and neutralise it —
             `backdrop-filter` samples nothing under an ancestor that composites
             in isolation. */}
-        <Backdrop
-          onPress={handleDismiss}
-          accessibilityLabel={labels.close}
-          progress={opacity}
-          blurIntensity={page ? 0 : undefined}
-          dimColor={pagePalette?.background}
-          dimOpacity={page ? 1 : undefined}
-        />
+            <Backdrop
+              onPress={handleDismiss}
+              accessibilityLabel={labels.close}
+              progress={opacity}
+              blurIntensity={page ? 0 : undefined}
+              dimColor={pagePalette?.background}
+              dimOpacity={page ? 1 : undefined}
+            />
 
-      <GestureDetector gesture={panGesture}>
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            styles.zoomContainer,
-            { width: SCREEN_WIDTH, height: SCREEN_HEIGHT },
-            webUserSelectNoneStyle,
-          ]}
-          pointerEvents="box-none"
-        >
-          {!pagerReady && activeItem !== undefined && (
-            <Pressable onPress={handleDismiss} style={webPointerStyle}>
-              {/* The animated transform rides the BOX, not the media, so the
-                  image and video arms move identically — and so the box's
-                  radius clips a video the same way it rounds an image. */}
+            <GestureDetector gesture={panGesture}>
               <Animated.View
                 style={[
-                  styles.mediaBox,
-                  { width: activeFit.width, height: activeFit.height, borderRadius: radiusFor(activeFit) },
-                  openImageStyle,
+                  StyleSheet.absoluteFill,
+                  styles.zoomContainer,
+                  { width: SCREEN_WIDTH, height: SCREEN_HEIGHT },
+                  webUserSelectNoneStyle,
                 ]}
+                pointerEvents="box-none"
               >
-                <MediaSurface
-                  content={activeItem}
-                  contentFit="contain"
-                  nativeControls={videoControls}
-                  accessibilityLabel={activeItem.alt}
-                  style={StyleSheet.absoluteFill}
-                />
-              </Animated.View>
-            </Pressable>
-          )}
-
-          {pagerReady && (
-            <Animated.View style={[StyleSheet.absoluteFill, pagerContainerStyle]}>
-              <ScrollView
-                ref={pagerRef}
-                horizontal
-                pagingEnabled
-                // Frozen while zoomed so a horizontal drag pans the zoomed image
-                // instead of paging away from it.
-                scrollEnabled={!isZoomed}
-                showsHorizontalScrollIndicator={false}
-                contentOffset={{ x: activeIndexRef.current * SCREEN_WIDTH, y: 0 }}
-                onMomentumScrollEnd={onPagerScroll}
-                {...(Platform.OS === 'web' ? { onScroll: onPagerScroll } : {})}
-                scrollEventThrottle={16}
-                style={StyleSheet.absoluteFill}
-              >
-                {items.map((item, idx) => {
-                  const uri = posterUri(item);
-                  const ratio =
-                    pageRatios[idx] ?? cachedRatio(item) ?? item.aspectRatio ?? DEFAULT_ASPECT_RATIO;
-                  const fit = fitForRatio(ratio, uri);
-                  // Only the active page is zoomable + gesture-wrapped (double-tap
-                  // / single-tap dismiss / pinch / pan). It is also the ONLY page
-                  // that mounts a real media surface: an off-screen page renders
-                  // the still, because a second `VideoView` on the same player is
-                  // exactly the duplicate surface this package exists to avoid.
-                  // The active media handles its own tap-to-dismiss through the
-                  // gesture, so it isn't wrapped in a Pressable.
-                  if (idx === activeIndex) {
-                    return (
-                      <Pressable
-                        key={mediaKey(item, idx)}
-                        // The page fills the screen ON TOP of the backdrop (the
-                        // pager below it needs pointer events to swipe), so a
-                        // press on the empty area around the media can never
-                        // reach the backdrop — the page dismisses it itself.
-                        // Same outcome as tapping the media, which already
-                        // dismisses through `singleTapDismissGesture`.
-                        onPress={handleDismiss}
-                        accessibilityLabel={labels.close}
-                        style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }, webPointerStyle]}
-                      >
-                        <GestureDetector gesture={activePageGesture}>
-                          <Animated.View
-                            style={[
-                              styles.mediaBox,
-                              { width: fit.width, height: fit.height, borderRadius: radiusFor(fit) },
-                              zoomImageStyle,
-                            ]}
-                          >
-                            <MediaSurface
-                              content={item}
-                              contentFit="contain"
-                              nativeControls={videoControls}
-                              accessibilityLabel={item.alt}
-                              style={StyleSheet.absoluteFill}
-                            />
-                          </Animated.View>
-                        </GestureDetector>
-                      </Pressable>
-                    );
-                  }
-                  return (
-                    <Pressable
-                      key={mediaKey(item, idx)}
-                      onPress={handleDismiss}
-                      accessibilityLabel={labels.close}
-                      style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
-                    >
-                      <MediaPoster
-                        content={item}
-                        contentFit="contain"
-                        accessibilityLabel={item.alt}
-                        style={{ width: fit.width, height: fit.height, borderRadius: radiusFor(fit) }}
-                      />
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </Animated.View>
-          )}
-
-          {pagerReady && items.length > 1 && (
-            <Animated.View
-              style={[styles.indicatorWrap, { bottom: INDICATOR_BOTTOM + insets.bottom }, backdropStyle]}
-              pointerEvents="box-none"
-            >
-              <View style={[styles.counterPill, pagePalette && { backgroundColor: pagePalette.backgroundSecondary }]} pointerEvents="none">
-                <Text style={[styles.counterText, pagePalette && { color: pagePalette.text }]}>{`${activeIndex + 1} / ${items.length}`}</Text>
-              </View>
-              {indicatorVariant === 'thumbnails' ? (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.thumbStripScroll}
-                  contentContainerStyle={styles.thumbStripContent}
-                >
-                  {items.map((item, idx) => (
-                    <Pressable
-                      key={`thumb-${mediaKey(item, idx)}`}
-                      onPress={() => pageTo(idx)}
-                      accessibilityRole="button"
-                      accessibilityLabel={labels.goTo(idx + 1, items.length)}
+                {!pagerReady && activeItem !== undefined && (
+                  <Pressable onPress={handleDismiss} style={webPointerStyle}>
+                    {/* The animated transform rides the BOX, not the media, so the
+                  image and video arms move identically — and so the box's
+                  radius clips a video the same way it rounds an image. */}
+                    <Animated.View
                       style={[
-                        styles.thumbTile,
-                        idx === activeIndex ? styles.thumbTileActive : styles.thumbTileInactive,
-                        pagePalette && { borderColor: idx === activeIndex ? pagePalette.text : pagePalette.border },
-                        webPointerStyle,
+                        styles.mediaBox,
+                        {
+                          width: activeFit.width,
+                          height: activeFit.height,
+                          borderRadius: radiusFor(activeFit),
+                        },
+                        openImageStyle,
                       ]}
                     >
-                      {/* A STILL, never a surface: one decoder per strip tile is
+                      <MediaSurface
+                        content={activeItem}
+                        contentFit="contain"
+                        nativeControls={videoControls}
+                        accessibilityLabel={activeItem.alt}
+                        style={StyleSheet.absoluteFill}
+                      />
+                    </Animated.View>
+                  </Pressable>
+                )}
+
+                {pagerReady && (
+                  <Animated.View style={[StyleSheet.absoluteFill, pagerContainerStyle]}>
+                    <ScrollView
+                      ref={pagerRef}
+                      horizontal
+                      pagingEnabled
+                      // Frozen while zoomed so a horizontal drag pans the zoomed image
+                      // instead of paging away from it.
+                      scrollEnabled={!isZoomed}
+                      showsHorizontalScrollIndicator={false}
+                      contentOffset={{ x: activeIndexRef.current * SCREEN_WIDTH, y: 0 }}
+                      onMomentumScrollEnd={onPagerScroll}
+                      {...(Platform.OS === 'web' ? { onScroll: onPagerScroll } : {})}
+                      scrollEventThrottle={16}
+                      style={StyleSheet.absoluteFill}
+                    >
+                      {items.map((item, idx) => {
+                        const uri = posterUri(item);
+                        const ratio =
+                          pageRatios[idx] ??
+                          cachedRatio(item) ??
+                          item.aspectRatio ??
+                          DEFAULT_ASPECT_RATIO;
+                        const fit = fitForRatio(ratio, uri);
+                        // Only the active page is zoomable + gesture-wrapped (double-tap
+                        // / single-tap dismiss / pinch / pan). It is also the ONLY page
+                        // that mounts a real media surface: an off-screen page renders
+                        // the still, because a second `VideoView` on the same player is
+                        // exactly the duplicate surface this package exists to avoid.
+                        // The active media handles its own tap-to-dismiss through the
+                        // gesture, so it isn't wrapped in a Pressable.
+                        if (idx === activeIndex) {
+                          return (
+                            <Pressable
+                              key={mediaKey(item, idx)}
+                              // The page fills the screen ON TOP of the backdrop (the
+                              // pager below it needs pointer events to swipe), so a
+                              // press on the empty area around the media can never
+                              // reach the backdrop — the page dismisses it itself.
+                              // Same outcome as tapping the media, which already
+                              // dismisses through `singleTapDismissGesture`.
+                              onPress={handleDismiss}
+                              accessibilityLabel={labels.close}
+                              style={[
+                                styles.page,
+                                { width: SCREEN_WIDTH, height: SCREEN_HEIGHT },
+                                webPointerStyle,
+                              ]}
+                            >
+                              <GestureDetector gesture={activePageGesture}>
+                                <Animated.View
+                                  style={[
+                                    styles.mediaBox,
+                                    {
+                                      width: fit.width,
+                                      height: fit.height,
+                                      borderRadius: radiusFor(fit),
+                                    },
+                                    zoomImageStyle,
+                                  ]}
+                                >
+                                  <MediaSurface
+                                    content={item}
+                                    contentFit="contain"
+                                    nativeControls={videoControls}
+                                    accessibilityLabel={item.alt}
+                                    style={StyleSheet.absoluteFill}
+                                  />
+                                </Animated.View>
+                              </GestureDetector>
+                            </Pressable>
+                          );
+                        }
+                        return (
+                          <Pressable
+                            key={mediaKey(item, idx)}
+                            onPress={handleDismiss}
+                            accessibilityLabel={labels.close}
+                            style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
+                          >
+                            <MediaPoster
+                              content={item}
+                              contentFit="contain"
+                              accessibilityLabel={item.alt}
+                              style={{
+                                width: fit.width,
+                                height: fit.height,
+                                borderRadius: radiusFor(fit),
+                              }}
+                            />
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
+                  </Animated.View>
+                )}
+
+                {pagerReady && items.length > 1 && (
+                  <Animated.View
+                    style={[
+                      styles.indicatorWrap,
+                      { bottom: INDICATOR_BOTTOM + insets.bottom },
+                      backdropStyle,
+                    ]}
+                    pointerEvents="box-none"
+                  >
+                    <View
+                      style={[
+                        styles.counterPill,
+                        pagePalette && { backgroundColor: pagePalette.backgroundSecondary },
+                      ]}
+                      pointerEvents="none"
+                    >
+                      <Text
+                        style={[styles.counterText, pagePalette && { color: pagePalette.text }]}
+                      >{`${activeIndex + 1} / ${items.length}`}</Text>
+                    </View>
+                    {indicatorVariant === 'thumbnails' ? (
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.thumbStripScroll}
+                        contentContainerStyle={styles.thumbStripContent}
+                      >
+                        {items.map((item, idx) => (
+                          <Pressable
+                            key={`thumb-${mediaKey(item, idx)}`}
+                            onPress={() => pageTo(idx)}
+                            accessibilityRole="button"
+                            accessibilityLabel={labels.goTo(idx + 1, items.length)}
+                            style={[
+                              styles.thumbTile,
+                              idx === activeIndex
+                                ? styles.thumbTileActive
+                                : styles.thumbTileInactive,
+                              pagePalette && {
+                                borderColor:
+                                  idx === activeIndex ? pagePalette.text : pagePalette.border,
+                              },
+                              webPointerStyle,
+                            ]}
+                          >
+                            {/* A STILL, never a surface: one decoder per strip tile is
                           what mounting the real media here would cost, and for a
                           video it would be a second view on the live player. */}
-                      <MediaPoster content={item} contentFit="cover" style={styles.thumbTileImage} />
-                    </Pressable>
-                  ))}
-                </ScrollView>
-              ) : (
-                <View style={styles.dotsRow} pointerEvents="none">
-                  {items.map((item, idx) => (
-                    <View
-                      key={`dot-${mediaKey(item, idx)}`}
-                      style={[styles.dot, idx === activeIndex ? styles.dotActive : styles.dotInactive, pagePalette && { backgroundColor: idx === activeIndex ? pagePalette.text : pagePalette.textSecondary }]}
+                            <MediaPoster
+                              content={item}
+                              contentFit="cover"
+                              style={styles.thumbTileImage}
+                            />
+                          </Pressable>
+                        ))}
+                      </ScrollView>
+                    ) : (
+                      <View style={styles.dotsRow} pointerEvents="none">
+                        {items.map((item, idx) => (
+                          <View
+                            key={`dot-${mediaKey(item, idx)}`}
+                            style={[
+                              styles.dot,
+                              idx === activeIndex ? styles.dotActive : styles.dotInactive,
+                              pagePalette && {
+                                backgroundColor:
+                                  idx === activeIndex
+                                    ? pagePalette.text
+                                    : pagePalette.textSecondary,
+                              },
+                            ]}
+                          />
+                        ))}
+                      </View>
+                    )}
+                  </Animated.View>
+                )}
+
+                {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex > 0 && (
+                  <NavArrow
+                    pageColors={pageColors}
+                    direction="left"
+                    label={labels.previous}
+                    onPress={() => pageTo(activeIndex - 1)}
+                  />
+                )}
+
+                {Platform.OS === 'web' &&
+                  pagerReady &&
+                  items.length > 1 &&
+                  activeIndex < items.length - 1 && (
+                    <NavArrow
+                      pageColors={pageColors}
+                      direction="right"
+                      label={labels.next}
+                      onPress={() => pageTo(activeIndex + 1)}
                     />
-                  ))}
+                  )}
+
+                {canShare && pagerReady && (
+                  <Button
+                    onPress={handleShare}
+                    appearance="outline"
+                    tone="neutral"
+                    iconOnly
+                    accessibilityLabel={labels.share}
+                    material={page ? 'flat' : 'surface'}
+                    colors={pageColors}
+                    icon={<RiUpload2Line fill={pageColors?.foreground ?? '#fff'} size="md" />}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    style={[
+                      styles.shareButton,
+                      { top: CHROME_EDGE + insets.top, right: CHROME_EDGE + insets.right },
+                    ]}
+                  />
+                )}
+
+                {activeAlt ? (
+                  <Animated.View
+                    style={[
+                      styles.altCaptionWrap,
+                      {
+                        bottom:
+                          (items.length > 1 ? CAPTION_BOTTOM_WITH_INDICATOR : INDICATOR_BOTTOM) +
+                          insets.bottom,
+                      },
+                      backdropStyle,
+                    ]}
+                    pointerEvents="none"
+                  >
+                    <View
+                      style={[
+                        styles.altCaptionPill,
+                        pagePalette && { backgroundColor: pagePalette.backgroundSecondary },
+                      ]}
+                    >
+                      <Text
+                        style={[styles.altCaptionText, pagePalette && { color: pagePalette.text }]}
+                        numberOfLines={4}
+                      >
+                        {activeAlt}
+                      </Text>
+                    </View>
+                  </Animated.View>
+                ) : null}
+              </Animated.View>
+            </GestureDetector>
+            {videoOverlay != null && (
+              // A sibling of the gesture/dismiss tree: retry controls must neither
+              // bubble a press into the closing page nor compete with its tap/pan.
+              <Animated.View
+                pointerEvents="box-none"
+                style={[StyleSheet.absoluteFill, styles.zoomContainer, backdropStyle]}
+              >
+                <View
+                  pointerEvents="box-none"
+                  style={{ width: activeFit.width, height: activeFit.height }}
+                >
+                  {videoOverlay}
                 </View>
-              )}
-            </Animated.View>
-          )}
+              </Animated.View>
+            )}
+          </GestureHandlerRootView>
+        </OverlayRoot>
+      );
 
-          {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex > 0 && (
-            <NavArrow pageColors={pageColors} direction="left" label={labels.previous} onPress={() => pageTo(activeIndex - 1)} />
-          )}
+      if (!isOpen) return null;
 
-          {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex < items.length - 1 && (
-            <NavArrow pageColors={pageColors} direction="right" label={labels.next} onPress={() => pageTo(activeIndex + 1)} />
-          )}
-
-          {canShare && pagerReady && (
-            <Button
-              onPress={handleShare}
-              appearance="outline"
-              tone="neutral"
-              iconOnly
-              accessibilityLabel={labels.share}
-              material={page ? 'flat' : 'surface'} colors={pageColors}
-              icon={<RiUpload2Line fill={pageColors?.foreground ?? "#fff"} size="md" />}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              style={[styles.shareButton, { top: CHROME_EDGE + insets.top, right: CHROME_EDGE + insets.right }]}
-            />
-          )}
-
-          {activeAlt ? (
-            <Animated.View
-              style={[
-                styles.altCaptionWrap,
-                {
-                  bottom:
-                    (items.length > 1 ? CAPTION_BOTTOM_WITH_INDICATOR : INDICATOR_BOTTOM) +
-                    insets.bottom,
-                },
-                backdropStyle,
-              ]}
-              pointerEvents="none"
-            >
-              <View style={[styles.altCaptionPill, pagePalette && { backgroundColor: pagePalette.backgroundSecondary }]}>
-                <Text style={[styles.altCaptionText, pagePalette && { color: pagePalette.text }]} numberOfLines={4}>{activeAlt}</Text>
-              </View>
-            </Animated.View>
-          ) : null}
-        </Animated.View>
-        </GestureDetector>
-        {videoOverlay != null && (
-          // A sibling of the gesture/dismiss tree: retry controls must neither
-          // bubble a press into the closing page nor compete with its tap/pan.
-          <Animated.View pointerEvents="box-none" style={[StyleSheet.absoluteFill, styles.zoomContainer, backdropStyle]}>
-            <View pointerEvents="box-none" style={{ width: activeFit.width, height: activeFit.height }}>
-              {videoOverlay}
-            </View>
-          </Animated.View>
-        )}
-      </GestureHandlerRootView>
-    </OverlayRoot>
+      // Both platforms render through the Bloom `Portal` so the viewer overlays the
+      // whole app from the root `Outlet`. RN's `Modal` is intentionally NOT used on
+      // native: on the New Architecture (Fabric) Android its host views mount
+      // full-screen in the tree but never composite to the screen, leaving the
+      // entire viewer (blur backdrop + zoomed image) invisible — tapping appeared to
+      // "do nothing". The Portal path is the same one the working web build uses.
+      return <Portal>{renderContent()}</Portal>;
+    },
   );
 
-  if (!isOpen) return null;
+  ZoomableMediaGalleryInner.displayName = 'ZoomableMediaGallery';
 
-  // Both platforms render through the Bloom `Portal` so the viewer overlays the
-  // whole app from the root `Outlet`. RN's `Modal` is intentionally NOT used on
-  // native: on the New Architecture (Fabric) Android its host views mount
-  // full-screen in the tree but never composite to the screen, leaving the
-  // entire viewer (blur backdrop + zoomed image) invisible — tapping appeared to
-  // "do nothing". The Portal path is the same one the working web build uses.
-  return <Portal>{renderContent()}</Portal>;
-});
-
-ZoomableMediaGalleryInner.displayName = 'ZoomableMediaGallery';
-
-return ZoomableMediaGalleryInner;
+  return ZoomableMediaGalleryInner;
 }
 
 const styles = StyleSheet.create({
@@ -1360,4 +1520,3 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
-

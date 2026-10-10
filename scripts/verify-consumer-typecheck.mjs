@@ -102,7 +102,9 @@ if (controlHit.length === 0) {
       `check cannot see the class of defect it exists to catch — a clean real run below would\n` +
       `mean nothing. Fix the probe (module resolution, include list, lib settings) before\n` +
       `trusting any result from it.`,
-    controlErrors.length > 0 ? controlErrors.join('\n') : '(the control run reported no errors at all)',
+    controlErrors.length > 0
+      ? controlErrors.join('\n')
+      : '(the control run reported no errors at all)',
   );
 }
 

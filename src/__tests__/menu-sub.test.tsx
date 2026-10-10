@@ -106,7 +106,8 @@ describe('the native sub-menu is an inline disclosure', () => {
           sideOffset={12}
           alignOffset={4}
           className="min-w-[150px]"
-          testID="submenu-content">
+          testID="submenu-content"
+        >
           <DropdownMenuItem>Email</DropdownMenuItem>
         </DropdownMenuSubContent>
       </DropdownMenuSub>,

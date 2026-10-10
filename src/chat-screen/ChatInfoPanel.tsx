@@ -2,7 +2,11 @@ import { SurfacePaint } from '../surface/SurfacePaint';
 import { StyleSheet } from 'react-native';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import { SurfaceLevelProvider, surfaceFillVars, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
 import React, { memo, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 
@@ -164,8 +168,16 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
 
   const layer = useSurfaceLayer();
   const parentLevel = useSurfaceLevelValue();
-  const rawFill = String(StyleSheet.flatten(style)?.backgroundColor ?? (variant === 'pane' ? layer.fill : layer.parentFill));
-  const fill = resolveSurfaceMaterial({ fill: rawFill, parentFill: layer.parentFill, parentLevel: layer.parentLevel, paint: variant === 'pane' }).publishedFill;
+  const rawFill = String(
+    StyleSheet.flatten(style)?.backgroundColor ??
+      (variant === 'pane' ? layer.fill : layer.parentFill),
+  );
+  const fill = resolveSurfaceMaterial({
+    fill: rawFill,
+    parentFill: layer.parentFill,
+    parentLevel: layer.parentLevel,
+    paint: variant === 'pane',
+  }).publishedFill;
 
   const coverImage = useResolvedImageSource(coverSource, 'large');
   const hasCover = Boolean(cover ?? coverImage);
@@ -182,8 +194,7 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
   const [ownQuery, setOwnQuery] = useState('');
   const controlledQuery = memberQuery !== undefined;
   const query = controlledQuery ? memberQuery : ownQuery;
-  const showMemberSearch =
-    memberSearch ?? ((members?.length ?? 0) >= MEMBER_SEARCH_THRESHOLD);
+  const showMemberSearch = memberSearch ?? (members?.length ?? 0) >= MEMBER_SEARCH_THRESHOLD;
 
   const visibleMembers = useMemo<ChatMember[]>(() => {
     if (!members) return [];
@@ -197,7 +208,13 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
       {/* Identity */}
       <View>
         {hasCover ? (
-          <View style={{ height: coverHeight, overflow: 'hidden', backgroundColor: paint.surfaceSubtle }}>
+          <View
+            style={{
+              height: coverHeight,
+              overflow: 'hidden',
+              backgroundColor: paint.surfaceSubtle,
+            }}
+          >
             {cover ??
               (coverImage ? (
                 <Image
@@ -242,7 +259,10 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
             </Text>
           ) : null}
           {handle ? (
-            <Text variant="body-regular" style={{ color: paint.textSecondary, textAlign: 'center' }}>
+            <Text
+              variant="body-regular"
+              style={{ color: paint.textSecondary, textAlign: 'center' }}
+            >
               {handle}
             </Text>
           ) : null}
@@ -426,56 +446,70 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
   return (
     <View
       testID={testID}
-      style={[{ minHeight: 0 }, frame, style, { backgroundColor: variant === 'pane' || StyleSheet.flatten(style)?.backgroundColor == null ? 'transparent' : fill, ...surfaceFillVars(fill) }]}
+      style={[
+        { minHeight: 0 },
+        frame,
+        style,
+        {
+          backgroundColor:
+            variant === 'pane' || StyleSheet.flatten(style)?.backgroundColor == null
+              ? 'transparent'
+              : fill,
+          ...surfaceFillVars(fill),
+        },
+      ]}
     >
-      {variant === 'pane' ? <SurfacePaint fill={rawFill} radius={StyleSheet.flatten(style)?.borderRadius ?? 0} /> : null}
+      {variant === 'pane' ? (
+        <SurfacePaint fill={rawFill} radius={StyleSheet.flatten(style)?.borderRadius ?? 0} />
+      ) : null}
       <SurfaceLevelProvider level={variant === 'pane' ? layer.level : parentLevel} fill={fill}>
-      <View
-        style={{
-          minHeight: 52,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          paddingLeft: 16,
-          paddingRight: 8,
-          paddingTop: 8,
-          paddingBottom: 8,
-          borderBottomWidth: 1,
-          borderBottomColor: paint.border,
-        }}
-      >
-        <Text
-          variant="headline-semibold"
-          numberOfLines={1}
-          accessibilityRole="header"
-          style={{ flexGrow: 1, flexShrink: 1, color: paint.text }}
+        <View
+          style={{
+            minHeight: 52,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingLeft: 16,
+            paddingRight: 8,
+            paddingTop: 8,
+            paddingBottom: 8,
+            borderBottomWidth: 1,
+            borderBottomColor: paint.border,
+          }}
         >
-          {title}
-        </Text>
-        {headerActions}
-        {onClose ? (
-          <Button
-
-            size="sm"
-            iconOnly
-            icon={<RiCloseLine width={18} height={18} fill={paint.textSecondary} />}
-            accessibilityLabel={closeLabel}
-            onPress={onClose}
-            testID={testID ? `${testID}-close` : undefined} tone="accent" appearance="plain"
-          />
-        ) : null}
-      </View>
-      {scrollable ? (
-        <ScrollView
-          style={{ flexGrow: 1, flexShrink: 1 }}
-          contentContainerStyle={{ flexGrow: 1 }}
-          testID={testID ? `${testID}-scroll` : undefined}
-        >
-          {body}
-        </ScrollView>
-      ) : (
-        body
-      )}
+          <Text
+            variant="headline-semibold"
+            numberOfLines={1}
+            accessibilityRole="header"
+            style={{ flexGrow: 1, flexShrink: 1, color: paint.text }}
+          >
+            {title}
+          </Text>
+          {headerActions}
+          {onClose ? (
+            <Button
+              size="sm"
+              iconOnly
+              icon={<RiCloseLine width={18} height={18} fill={paint.textSecondary} />}
+              accessibilityLabel={closeLabel}
+              onPress={onClose}
+              testID={testID ? `${testID}-close` : undefined}
+              tone="accent"
+              appearance="plain"
+            />
+          ) : null}
+        </View>
+        {scrollable ? (
+          <ScrollView
+            style={{ flexGrow: 1, flexShrink: 1 }}
+            contentContainerStyle={{ flexGrow: 1 }}
+            testID={testID ? `${testID}-scroll` : undefined}
+          >
+            {body}
+          </ScrollView>
+        ) : (
+          body
+        )}
       </SurfaceLevelProvider>
     </View>
   );

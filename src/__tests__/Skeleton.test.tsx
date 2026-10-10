@@ -19,16 +19,12 @@ describe('Skeleton.Box', () => {
   });
 
   it('renders without crashing with numeric width/height', () => {
-    const { UNSAFE_root } = renderWithTheme(
-      <Skeleton.Box width={100} height={48} />,
-    );
+    const { UNSAFE_root } = renderWithTheme(<Skeleton.Box width={100} height={48} />);
     expect(UNSAFE_root).toBeTruthy();
   });
 
   it('renders without crashing with percentage width', () => {
-    const { UNSAFE_root } = renderWithTheme(
-      <Skeleton.Box width="100%" height={200} />,
-    );
+    const { UNSAFE_root } = renderWithTheme(<Skeleton.Box width="100%" height={200} />);
     expect(UNSAFE_root).toBeTruthy();
   });
 
@@ -47,9 +43,7 @@ describe('Skeleton.Box', () => {
   });
 
   it('renders when blend prop is set', () => {
-    const { UNSAFE_root } = renderWithTheme(
-      <Skeleton.Box width={50} height={50} blend />,
-    );
+    const { UNSAFE_root } = renderWithTheme(<Skeleton.Box width={50} height={50} blend />);
     expect(UNSAFE_root).toBeTruthy();
   });
 

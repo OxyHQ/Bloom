@@ -228,7 +228,10 @@ const GROUP: MessageListItem[] = [
     avatarSource: NOUR,
     text: 'I can take the keys and the stand. Anyone got a spare sustain pedal?',
     time: '11:09',
-    replyTo: { senderName: 'Marcel Dubé', preview: 'I will bring the cymbal bag and the spare snare.' },
+    replyTo: {
+      senderName: 'Marcel Dubé',
+      preview: 'I will bring the cymbal bag and the spare snare.',
+    },
   },
   {
     id: 'g6',
@@ -308,10 +311,22 @@ export const States: Story = {
 
             <Caption>tail</Caption>
             <MessageBubble direction="incoming" tail text="With the notch." time="12:43" />
-            <MessageBubble direction="outgoing" tail text="With the notch." time="12:43" status="delivered" />
+            <MessageBubble
+              direction="outgoing"
+              tail
+              text="With the notch."
+              time="12:43"
+              status="delivered"
+            />
 
             <Caption>pending · failed · deleted · selected · highlighted</Caption>
-            <MessageBubble direction="outgoing" text="Queued." time="12:44" status="sending" pending />
+            <MessageBubble
+              direction="outgoing"
+              text="Queued."
+              time="12:44"
+              status="sending"
+              pending
+            />
             <MessageBubble
               direction="outgoing"
               text="Did not send."
@@ -365,10 +380,31 @@ export const Separators: Story = {
           <DateSeparator label="Today" />
           <UnreadSeparator />
           <SystemMessage text="Ana Restrepo joined the group" />
-          <SystemMessage text="You pinned a message" icon={<RiPushpinLine width={12} height={12} fill="#888" />} />
-          <CallSummaryRow direction="incoming" outcome="incoming" title="Incoming call" duration="12:04" time="09:30" />
-          <CallSummaryRow direction="incoming" outcome="missed" title="Missed video call" video time="09:41" />
-          <CallSummaryRow direction="outgoing" outcome="outgoing" title="Outgoing call" duration="4 min" time="10:02" />
+          <SystemMessage
+            text="You pinned a message"
+            icon={<RiPushpinLine width={12} height={12} fill="#888" />}
+          />
+          <CallSummaryRow
+            direction="incoming"
+            outcome="incoming"
+            title="Incoming call"
+            duration="12:04"
+            time="09:30"
+          />
+          <CallSummaryRow
+            direction="incoming"
+            outcome="missed"
+            title="Missed video call"
+            video
+            time="09:41"
+          />
+          <CallSummaryRow
+            direction="outgoing"
+            outcome="outgoing"
+            title="Outgoing call"
+            duration="4 min"
+            time="10:02"
+          />
           <TypingBubble senderName="Nour Haddad" avatarSource={NOUR} label="Nour is typing…" />
         </Surface>
       </BothModes>

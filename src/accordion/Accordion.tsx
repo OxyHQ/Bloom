@@ -1,18 +1,7 @@
 import { CollapsibleFrame } from '../collapsible/CollapsibleFrame';
 import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
-import React, {
-  memo,
-  useCallback,
-  useContext,
-} from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  Animated,
-  StyleSheet,
-  type TextStyle,
-} from 'react-native';
+import React, { memo, useCallback, useContext } from 'react';
+import { View, Text, Pressable, Animated, StyleSheet, type TextStyle } from 'react-native';
 
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
 import { useTheme } from '../theme/use-theme';
@@ -96,14 +85,20 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
   const rotateAnim = useAccordionMotion(isExpanded, 'trigger', SUPPORTS_NATIVE_DRIVER);
   const resolved = StyleSheet.flatten(style) as TextStyle | undefined;
   const callerText: TextStyle = {};
-  for (const key of ['color', 'fontSize', 'fontWeight', 'fontFamily', 'lineHeight', 'letterSpacing'] as const) {
+  for (const key of [
+    'color',
+    'fontSize',
+    'fontWeight',
+    'fontFamily',
+    'lineHeight',
+    'letterSpacing',
+  ] as const) {
     if (resolved?.[key] !== undefined) Object.assign(callerText, { [key]: resolved[key] });
   }
   // Drive press-opacity via state, not Pressable's function-form `style`,
   // which NativeWind v4's css-interop swallows (dropping the trigger's base
   // layout: flexDirection, padding, gap).
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
-    useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   const handlePress = useCallback(() => {
     if (!disabled) {
@@ -176,12 +171,28 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
 
 // ---- Accordion Content ----
 
-const AccordionContentComponent: React.FC<AccordionContentProps & { contentStyle?: AccordionContentProps['style'] }> = ({children,style,contentStyle}) => {
+const AccordionContentComponent: React.FC<
+  AccordionContentProps & { contentStyle?: AccordionContentProps['style'] }
+> = ({ children, style, contentStyle }) => {
   const { isExpanded, contentId, triggerId } = useContext(AccordionItemContext);
   const { transition } = useContext(AccordionContext);
   const motion = useCollapsibleMotion(isExpanded, transition);
-  return <CollapsibleFrame open={isExpanded} {...motion} nativeID={contentId} labelledBy={triggerId} returnFocusId={triggerId}
-    style={style} contentStyle={[{paddingBottom:space.md,paddingLeft:space.xs,paddingRight:space.xs},contentStyle]}>{children}</CollapsibleFrame>;
+  return (
+    <CollapsibleFrame
+      open={isExpanded}
+      {...motion}
+      nativeID={contentId}
+      labelledBy={triggerId}
+      returnFocusId={triggerId}
+      style={style}
+      contentStyle={[
+        { paddingBottom: space.md, paddingLeft: space.xs, paddingRight: space.xs },
+        contentStyle,
+      ]}
+    >
+      {children}
+    </CollapsibleFrame>
+  );
 };
 
 export const Accordion = memo(styled(AccordionComponent, { className: 'style' }));
@@ -193,5 +204,7 @@ AccordionItem.displayName = 'AccordionItem';
 export const AccordionTrigger = memo(styled(AccordionTriggerComponent, { className: 'style' }));
 AccordionTrigger.displayName = 'AccordionTrigger';
 
-export const AccordionContent = memo(styled(AccordionContentComponent, { className: 'style', contentClassName: 'contentStyle' }));
+export const AccordionContent = memo(
+  styled(AccordionContentComponent, { className: 'style', contentClassName: 'contentStyle' }),
+);
 AccordionContent.displayName = 'AccordionContent';

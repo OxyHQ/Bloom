@@ -298,8 +298,7 @@ export function useScrollRestoration(
           echoOffset = landed;
           // Stop once the write took effect (content grew tall enough) or we
           // exhaust the frame budget.
-          const reached =
-            Math.abs(landed - targetOffset) <= RESTORE_STICK_TOLERANCE_PX;
+          const reached = Math.abs(landed - targetOffset) <= RESTORE_STICK_TOLERANCE_PX;
           if (!reached && framesLeft > 0) {
             rafId = requestAnimationFrame(applyOffset);
           } else {
@@ -335,10 +334,7 @@ export function useScrollRestoration(
     }, [store, scrollKey, enabled, target]),
   );
 
-  return useMemo(
-    () => ({ onScroll: WEB_ON_SCROLL, restorePending }),
-    [restorePending],
-  );
+  return useMemo(() => ({ onScroll: WEB_ON_SCROLL, restorePending }), [restorePending]);
 }
 
 /**

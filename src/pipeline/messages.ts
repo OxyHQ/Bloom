@@ -23,12 +23,16 @@ export interface PipelineMessages {
   loadMore: string;
 }
 
-export const PIPELINE_MESSAGES: MessageCatalog<PipelineMessages> = defineMessages<PipelineMessages>('PIPELINE_MESSAGES', {
-  health: { 'on-track': 'On track', 'at-risk': 'At risk', stalled: 'Stalled' },
-  stalledFor: (duration) => `Stalled for ${duration}`,
-  move: (title) => `Move ${title}`,
-  stages: 'Pipeline stages',
-  stageWithCount: (name, n) => `${name}, ${plural('en', n, { one: '{n} deal', other: '{n} deals' })}`,
-  empty: 'No deals in this stage',
-  loadMore: 'Load more',
-});
+export const PIPELINE_MESSAGES: MessageCatalog<PipelineMessages> = defineMessages<PipelineMessages>(
+  'PIPELINE_MESSAGES',
+  {
+    health: { 'on-track': 'On track', 'at-risk': 'At risk', stalled: 'Stalled' },
+    stalledFor: (duration) => `Stalled for ${duration}`,
+    move: (title) => `Move ${title}`,
+    stages: 'Pipeline stages',
+    stageWithCount: (name, n) =>
+      `${name}, ${plural('en', n, { one: '{n} deal', other: '{n} deals' })}`,
+    empty: 'No deals in this stage',
+    loadMore: 'Load more',
+  },
+);

@@ -9,6 +9,9 @@ export interface MenubarMessages {
   menuBar: string;
 }
 
-export const MENUBAR_MESSAGES: MessageCatalog<MenubarMessages> = defineMessages<MenubarMessages>('MENUBAR_MESSAGES', {
-  menuBar: 'Menu bar',
-});
+export const MENUBAR_MESSAGES: MessageCatalog<MenubarMessages> = defineMessages<MenubarMessages>(
+  'MENUBAR_MESSAGES',
+  {
+    menuBar: 'Menu bar',
+  },
+);

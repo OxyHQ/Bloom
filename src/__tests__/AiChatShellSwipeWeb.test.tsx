@@ -70,7 +70,8 @@ function mount(onNavOpenChange: (open: boolean) => void, navSwipeEnabled?: boole
           sidebar={null}
           mobileSidebar={<Text>nav</Text>}
           navSwipeEnabled={navSwipeEnabled}
-          onNavOpenChange={onNavOpenChange}>
+          onNavOpenChange={onNavOpenChange}
+        >
           <View />
         </AiChatShell>
       </BloomThemeProvider>,
@@ -129,14 +130,9 @@ function mouse(target: HTMLElement, type: string, { x, y }: Point) {
 }
 
 /** Drag from `from` to `to` in steps, so the responder sees a moving finger. */
-function drag(
-  target: HTMLElement,
-  kind: 'touch' | 'mouse',
-  from: Point,
-  to: Point,
-  steps = 4,
-) {
-  const send = kind === 'touch' ? touch : (t: HTMLElement, type: string, p: Point) => mouse(t, type, p);
+function drag(target: HTMLElement, kind: 'touch' | 'mouse', from: Point, to: Point, steps = 4) {
+  const send =
+    kind === 'touch' ? touch : (t: HTMLElement, type: string, p: Point) => mouse(t, type, p);
   send(target, kind === 'touch' ? 'touchstart' : 'mousedown', from);
   for (let step = 1; step <= steps; step += 1) {
     send(target, kind === 'touch' ? 'touchmove' : 'mousemove', {

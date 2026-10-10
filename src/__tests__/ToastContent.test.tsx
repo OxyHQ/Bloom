@@ -10,9 +10,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ToastContent } from '../toast/ToastContent';
 import type { ToastVariant } from '../toast/types';
 
-const renderContent = (
-  props: Partial<React.ComponentProps<typeof ToastContent>> = {},
-) => {
+const renderContent = (props: Partial<React.ComponentProps<typeof ToastContent>> = {}) => {
   const onDismiss = jest.fn();
   const utils = render(
     <BloomThemeProvider mode="light" colorPreset="teal">
@@ -54,10 +52,15 @@ const spinnersOf = ({ UNSAFE_root }: ReturnType<typeof renderContent>) =>
 
 describe('ToastContent', () => {
   it('uses one shared material for the default frame, none for unstyled or custom backgrounds', () => {
-    const paints = (screen: ReturnType<typeof renderContent>) => screen.UNSAFE_root.findAll(node => typeof node.props.fill === 'string' && node.props.radius === 16);
+    const paints = (screen: ReturnType<typeof renderContent>) =>
+      screen.UNSAFE_root.findAll(
+        (node) => typeof node.props.fill === 'string' && node.props.radius === 16,
+      );
     expect(paints(renderContent()).length).toBeGreaterThan(0);
     expect(paints(renderContent({ unstyled: true }))).toHaveLength(0);
-    expect(paints(renderContent({ backgroundComponent: <Text>Custom backing</Text> }))).toHaveLength(0);
+    expect(
+      paints(renderContent({ backgroundComponent: <Text>Custom backing</Text> })),
+    ).toHaveLength(0);
   });
 
   it('renders the title', () => {
@@ -67,9 +70,7 @@ describe('ToastContent', () => {
 
   it('renders a description only when one is given', () => {
     expect(renderContent().queryByText('Details')).toBeNull();
-    expect(
-      renderContent({ description: 'Details' }).getByText('Details'),
-    ).toBeTruthy();
+    expect(renderContent({ description: 'Details' }).getByText('Details')).toBeTruthy();
   });
 
   it('renders an action button and calls onClick', () => {
@@ -117,9 +118,7 @@ describe('ToastContent', () => {
   });
 
   it('never renders a close button on a non-dismissible toast', () => {
-    expect(
-      pressablesOf(renderContent({ dismissible: false, closeButton: true })),
-    ).toHaveLength(0);
+    expect(pressablesOf(renderContent({ dismissible: false, closeButton: true }))).toHaveLength(0);
   });
 
   it('prefers a caller-supplied close node over the default button', () => {
@@ -186,9 +185,7 @@ describe('ToastContent', () => {
     const { getByText } = renderContent({
       styles: { title: { fontSize: 99 } },
     });
-    expect(getByText('Saved').props.style).toEqual(
-      expect.arrayContaining([{ fontSize: 99 }]),
-    );
+    expect(getByText('Saved').props.style).toEqual(expect.arrayContaining([{ fontSize: 99 }]));
   });
 
   describe('the notification card', () => {
@@ -200,19 +197,33 @@ describe('ToastContent', () => {
           : {};
 
     const discsOf = ({ UNSAFE_root }: ReturnType<typeof renderContent>) =>
-      UNSAFE_root.findAll((n) => hostName(n) === 'View' && [28, 40].includes(flat(n.props.style).width as number));
+      UNSAFE_root.findAll(
+        (n) => hostName(n) === 'View' && [28, 40].includes(flat(n.props.style).width as number),
+      );
 
     it('puts a variant glyph in a status disc, and a plain toast has none', () => {
       expect(discsOf(renderContent({ variant: 'success' }))).toHaveLength(1);
       expect(discsOf(renderContent())).toHaveLength(0);
     });
 
-    it.each([{}, { description: 'More detail' }, { action: { label: 'Undo', onClick: jest.fn() } }])('adapts density to the content: %p', (content) => {
+    it.each([
+      {},
+      { description: 'More detail' },
+      { action: { label: 'Undo', onClick: jest.fn() } },
+    ])('adapts density to the content: %p', (content) => {
       const rendered = renderContent({ variant: 'success', ...content });
       const detailed = 'description' in content || 'action' in content;
-      expect(flat(discsOf(rendered)[0]?.props.style)).toMatchObject({ width: detailed ? 40 : 28, height: detailed ? 40 : 28 });
-      const surface = rendered.UNSAFE_root.findAll((n) => hostName(n) === 'View' && flat(n.props.style).borderRadius === 16)[0];
-      expect(flat(surface?.props.style)).toMatchObject({ paddingTop: detailed ? 16 : 12, paddingBottom: detailed ? 16 : 12 });
+      expect(flat(discsOf(rendered)[0]?.props.style)).toMatchObject({
+        width: detailed ? 40 : 28,
+        height: detailed ? 40 : 28,
+      });
+      const surface = rendered.UNSAFE_root.findAll(
+        (n) => hostName(n) === 'View' && flat(n.props.style).borderRadius === 16,
+      )[0];
+      expect(flat(surface?.props.style)).toMatchObject({
+        paddingTop: detailed ? 16 : 12,
+        paddingBottom: detailed ? 16 : 12,
+      });
     });
 
     it('keeps the disc for the spinner and for a caller icon', () => {
@@ -223,11 +234,18 @@ describe('ToastContent', () => {
     it('opens the 44px close lane only when the close button renders', () => {
       const surface = (r: ReturnType<typeof renderContent>) =>
         flat(
-          r.UNSAFE_root.findAll((n) => hostName(n) === 'View' && flat(n.props.style).borderRadius === 16)[0]
-            ?.props.style,
+          r.UNSAFE_root.findAll(
+            (n) => hostName(n) === 'View' && flat(n.props.style).borderRadius === 16,
+          )[0]?.props.style,
         );
-      expect(surface(renderContent())).toMatchObject({ paddingLeft: 16, paddingRight: 16, borderWidth: 1 });
-      expect(surface(renderContent({ dismissible: true, closeButton: true }))).toMatchObject({ paddingRight: 44 });
+      expect(surface(renderContent())).toMatchObject({
+        paddingLeft: 16,
+        paddingRight: 16,
+        borderWidth: 1,
+      });
+      expect(surface(renderContent({ dismissible: true, closeButton: true }))).toMatchObject({
+        paddingRight: 44,
+      });
     });
 
     it('places the close button at top 12 / right 12 of the card', () => {
@@ -235,7 +253,12 @@ describe('ToastContent', () => {
         renderContent({ dismissible: true, closeButton: true, description: 'More detail' }),
       );
       // Offsets are from the row, which sits inside the card's 16 / 44 padding.
-      expect(flat(close?.props.style)).toMatchObject({ position: 'absolute', top: -4, right: -32, width: 20 });
+      expect(flat(close?.props.style)).toMatchObject({
+        position: 'absolute',
+        top: -4,
+        right: -32,
+        width: 20,
+      });
     });
 
     it('centres a title-only toast: no empty band under the title, ✕ on the row centre', () => {
@@ -253,11 +276,7 @@ describe('ToastContent', () => {
   it('drops its own surface and text styling when unstyled', () => {
     const { getByText } = renderContent({ unstyled: true });
     // Only the (absent) override slot remains, so nothing carries a colour.
-    expect(getByText('Saved').props.style).toEqual([
-      undefined,
-      undefined,
-      undefined,
-    ]);
+    expect(getByText('Saved').props.style).toEqual([undefined, undefined, undefined]);
   });
 });
 
@@ -266,10 +285,34 @@ function ToastSurfaceProbe() {
 }
 it('publishes the default toast base while custom background renderers keep parent context', () => {
   for (const custom of [false, true]) {
-    const screen = render(<BloomThemeProvider mode="light" colorPreset="teal"><SurfaceLevelProvider level={2} fill="#123456"><ToastContent id={1} title="Probe" action={<ToastSurfaceProbe />} unstyled={false} icons={{}} onDismiss={() => {}} backgroundComponent={custom ? <Text>Background</Text> : undefined} /></SurfaceLevelProvider></BloomThemeProvider>);
+    const screen = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <SurfaceLevelProvider level={2} fill="#123456">
+          <ToastContent
+            id={1}
+            title="Probe"
+            action={<ToastSurfaceProbe />}
+            unstyled={false}
+            icons={{}}
+            onDismiss={() => {}}
+            backgroundComponent={custom ? <Text>Background</Text> : undefined}
+          />
+        </SurfaceLevelProvider>
+      </BloomThemeProvider>,
+    );
     const actual = screen.getByTestId('toast-surface-probe').props.children;
     if (custom) expect(actual).toBe('#123456');
-    else expect(actual).toBe(resolveSurfaceMaterial({ fill: resolveToastColors({ theme: buildTheme('teal', 'light'), variant: undefined, richColors: false }).surface, parentFill: '#123456' }).publishedFill);
+    else
+      expect(actual).toBe(
+        resolveSurfaceMaterial({
+          fill: resolveToastColors({
+            theme: buildTheme('teal', 'light'),
+            variant: undefined,
+            richColors: false,
+          }).surface,
+          parentFill: '#123456',
+        }).publishedFill,
+      );
     screen.unmount();
   }
 });

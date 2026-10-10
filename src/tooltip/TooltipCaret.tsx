@@ -46,7 +46,8 @@ export function TooltipCaret({
         { overflow: 'visible' },
         Platform.OS === 'web' ? { filter: caret.shadow } : null,
         style,
-      ]}>
+      ]}
+    >
       <Path d={caret.path} fill={fill} stroke={stroke} strokeWidth={1} />
     </Svg>
   );

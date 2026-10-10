@@ -46,7 +46,10 @@ function ArtistAboutComponent({
             <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
             <View
               pointerEvents="none"
-              style={[StyleSheet.absoluteFill, gradientStyle(['rgba(0, 0, 0, 0) 60%', 'rgba(0, 0, 0, 0.35) 100%'])]}
+              style={[
+                StyleSheet.absoluteFill,
+                gradientStyle(['rgba(0, 0, 0, 0) 60%', 'rgba(0, 0, 0, 0.35) 100%']),
+              ]}
             />
           </View>
         ) : null}

@@ -184,7 +184,9 @@ export const Empty: Story = {
       <PlaceList
         places={[]}
         empty={
-          <Text variant="body-regular">Nothing saved here yet. Search for a place and save it.</Text>
+          <Text variant="body-regular">
+            Nothing saved here yet. Search for a place and save it.
+          </Text>
         }
         testID="empty"
       />

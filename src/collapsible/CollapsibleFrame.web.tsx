@@ -2,10 +2,7 @@ import React, { forwardRef, useLayoutEffect, useRef, useState } from 'react';
 import { Animated, type StyleProp, type ViewStyle } from 'react-native';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
-import {
-  CollapsibleVisibilityContext,
-  useCollapsibleVisibility,
-} from './context';
+import { CollapsibleVisibilityContext, useCollapsibleVisibility } from './context';
 import type { CollapsibleFrameProps } from './frame-types';
 
 const CSS = `@layer base {
@@ -50,8 +47,7 @@ export function CollapsibleFrame({
     if (!node) return;
     const measure = () => {
       const next = node.getBoundingClientRect().height;
-      if (next > 0)
-        setHeight((old) => (Math.abs(old - next) > 0.5 ? next : old));
+      if (next > 0) setHeight((old) => (Math.abs(old - next) > 0.5 ? next : old));
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -71,18 +67,12 @@ export function CollapsibleFrame({
       returnFocusRef?.current ??
       (returnFocusId ? document.getElementById(returnFocusId) : null) ??
       previousOutside.current;
-    if (
-      target instanceof HTMLElement &&
-      (!target.isConnected || target.closest('[inert]'))
-    ) {
+    if (target instanceof HTMLElement && (!target.isConnected || target.closest('[inert]'))) {
       if (active instanceof HTMLElement) active.blur();
       return;
     }
     target?.focus({ preventScroll: true });
-    if (
-      panel.current?.contains(document.activeElement) &&
-      active instanceof HTMLElement
-    )
+    if (panel.current?.contains(document.activeElement) && active instanceof HTMLElement)
       active.blur();
   }, [visible, returnFocusRef, returnFocusId]);
   const maxHeight = progress.interpolate({
@@ -105,9 +95,7 @@ export function CollapsibleFrame({
         onBlurCapture={() => {
           focusWithin.current = false;
         }}
-        className={['bloom-collapsible-panel', className]
-          .filter(Boolean)
-          .join(' ')}
+        className={['bloom-collapsible-panel', className].filter(Boolean).join(' ')}
         style={[
           {
             opacity: progress,
@@ -118,9 +106,7 @@ export function CollapsibleFrame({
       >
         <div
           ref={body}
-          className={['bloom-collapsible-content', contentClassName]
-            .filter(Boolean)
-            .join(' ')}
+          className={['bloom-collapsible-content', contentClassName].filter(Boolean).join(' ')}
           style={resolveNativeWebStyle(contentStyle)}
         >
           {children}

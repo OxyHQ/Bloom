@@ -147,7 +147,10 @@ export function SettingsModal({
   useSettingsWebCss();
   const parentFill = useSurfaceFill();
   const palette = useSettingsPalette();
-  const publishedFill = resolveSurfaceMaterial({ fill: palette.full, parentFill: parentFill }).publishedFill;
+  const publishedFill = resolveSurfaceMaterial({
+    fill: palette.full,
+    parentFill: parentFill,
+  }).publishedFill;
   const reducedMotion = useReducedMotion();
   const isControlled = controlledOpen !== undefined;
 
@@ -177,8 +180,10 @@ export function SettingsModal({
 
   const beforeLeaveRef = useRef(onBeforeLeave);
   beforeLeaveRef.current = onBeforeLeave;
-  const mayLeave = useCallback((reason: 'close' | 'navigation' | 'page') =>
-    beforeLeaveRef.current?.(reason) !== false, []);
+  const mayLeave = useCallback(
+    (reason: 'close' | 'navigation' | 'page') => beforeLeaveRef.current?.(reason) !== false,
+    [],
+  );
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -350,9 +355,15 @@ export function SettingsModal({
 
   const pageConfig = currentPage ? pages[currentPage] : undefined;
   const closeLabel = labels?.close ?? messages.close;
-  const pageContent = typeof pageConfig?.content === 'function'
-    ? pageConfig.content({ onBack: isCompact ? requestNavigation : undefined, backLabel: labels?.back ?? common.back, onClose: requestClose, closeLabel })
-    : pageConfig?.content;
+  const pageContent =
+    typeof pageConfig?.content === 'function'
+      ? pageConfig.content({
+          onBack: isCompact ? requestNavigation : undefined,
+          backLabel: labels?.back ?? common.back,
+          onClose: requestClose,
+          closeLabel,
+        })
+      : pageConfig?.content;
 
   return (
     <ModalPortal>
@@ -422,73 +433,94 @@ export function SettingsModal({
                 >
                   <SurfacePaint fill={palette.full} radius={layout === 'compact' ? 0 : 24} />
                   <SurfaceLevelProvider level={1} fill={publishedFill}>
-                  {layout === 'compact' ? (
-                    compactPageOpen && pageConfig ? (
-                      <View style={styles.content}>
-                        {pageConfig.fullBleed ? typeof pageConfig.content === 'function' ? pageContent : <><PageHeader title={pageConfig.title} onBack={requestNavigation} backLabel={labels?.back ?? common.back} safeArea={false} placement="inline" />{pageContent}</> : <PageScroller
-                          header={{
-                            title: pageConfig.title,
-                            onBack: requestNavigation,
-                            backLabel: labels?.back ?? common.back,
-                            closeLabel,
-                            onClose: requestClose,
-                          }}
-                          key={currentPage}
-                          palette={palette}
-                          inset={CONTENT_INSET.compact}
-                          insetTop={CONTENT_INSET.compact}
-                          testID={testID}
-                        >
-                          {pageContent}
-                        </PageScroller>}
-                      </View>
+                    {layout === 'compact' ? (
+                      compactPageOpen && pageConfig ? (
+                        <View style={styles.content}>
+                          {pageConfig.fullBleed ? (
+                            typeof pageConfig.content === 'function' ? (
+                              pageContent
+                            ) : (
+                              <>
+                                <PageHeader
+                                  title={pageConfig.title}
+                                  onBack={requestNavigation}
+                                  backLabel={labels?.back ?? common.back}
+                                  safeArea={false}
+                                  placement="inline"
+                                />
+                                {pageContent}
+                              </>
+                            )
+                          ) : (
+                            <PageScroller
+                              header={{
+                                title: pageConfig.title,
+                                onBack: requestNavigation,
+                                backLabel: labels?.back ?? common.back,
+                                closeLabel,
+                                onClose: requestClose,
+                              }}
+                              key={currentPage}
+                              palette={palette}
+                              inset={CONTENT_INSET.compact}
+                              insetTop={CONTENT_INSET.compact}
+                              testID={testID}
+                            >
+                              {pageContent}
+                            </PageScroller>
+                          )}
+                        </View>
+                      ) : (
+                        <View style={styles.content}>
+                          <SettingsRail
+                            header={{
+                              title: labels?.dialog ?? messages.dialog,
+                              closeLabel,
+                              onClose: requestClose,
+                            }}
+                            groups={groups}
+                            page={currentPage}
+                            onSelect={selectPage}
+                            palette={palette}
+                            label={labels?.nav ?? messages.nav}
+                            layout="compact"
+                            testID={testID}
+                          />
+                        </View>
+                      )
                     ) : (
-                      <View style={styles.content}>
+                      <>
                         <SettingsRail
-                          header={{
-                            title: labels?.dialog ?? messages.dialog,
-                            closeLabel,
-                            onClose: requestClose,
-                          }}
                           groups={groups}
                           page={currentPage}
                           onSelect={selectPage}
                           palette={palette}
                           label={labels?.nav ?? messages.nav}
-                          layout="compact"
+                          layout={layout}
                           testID={testID}
                         />
-                      </View>
-                    )
-                  ) : (
-                    <>
-                      <SettingsRail
-                        groups={groups}
-                        page={currentPage}
-                        onSelect={selectPage}
-                        palette={palette}
-                        label={labels?.nav ?? messages.nav}
-                        layout={layout}
-                        testID={testID}
-                      />
-                      <View style={styles.content}>
-                        {pageConfig?.fullBleed ? pageContent : <PageScroller
-                          header={{
-                            title: pageConfig?.title ?? '',
-                            closeLabel,
-                            onClose: requestClose,
-                          }}
-                          key={currentPage}
-                          palette={palette}
-                          inset={CONTENT_INSET[layout]}
-                          insetTop={pageConfig?.compactTitle ? 6 : 12}
-                          testID={testID}
-                        >
-                          {pageContent}
-                        </PageScroller>}
-                      </View>
-                    </>
-                  )}
+                        <View style={styles.content}>
+                          {pageConfig?.fullBleed ? (
+                            pageContent
+                          ) : (
+                            <PageScroller
+                              header={{
+                                title: pageConfig?.title ?? '',
+                                closeLabel,
+                                onClose: requestClose,
+                              }}
+                              key={currentPage}
+                              palette={palette}
+                              inset={CONTENT_INSET[layout]}
+                              insetTop={pageConfig?.compactTitle ? 6 : 12}
+                              testID={testID}
+                            >
+                              {pageContent}
+                            </PageScroller>
+                          )}
+                        </View>
+                      </>
+                    )}
                   </SurfaceLevelProvider>
                 </View>
                 <SavedToast
@@ -541,69 +573,72 @@ function SettingsRail({
 }) {
   const compact = layout === 'compact';
   const scrollY = useSharedValue(0);
-  const onScroll = useAnimatedScrollHandler((event) => {
-    scrollY.value = Math.max(0, event.contentOffset.y);
-  }, [scrollY]);
+  const onScroll = useAnimatedScrollHandler(
+    (event) => {
+      scrollY.value = Math.max(0, event.contentOffset.y);
+    },
+    [scrollY],
+  );
   return (
     <SurfaceLevelProvider level={1} fill={palette.secondary}>
-    <Animated.ScrollView
-      role="navigation"
-      aria-label={label}
-      style={[
-        compact
-          ? styles.railCompact
-          : [styles.rail, { width: layout === 'medium' ? RAIL_WIDTH_MEDIUM : RAIL_WIDTH }],
-        {
-          backgroundColor: palette.secondary,
-          ...surfaceFillVars(palette.secondary),
-          borderRightColor: palette.separator,
-        },
-      ]}
-      contentContainerStyle={header ? undefined : styles.railContent}
-      stickyHeaderIndices={header && !IS_WEB ? [0] : undefined}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
-      contentInsetAdjustmentBehavior="never"
-      automaticallyAdjustContentInsets={false}
-      showsVerticalScrollIndicator={false}
-      testID={testID ? `${testID}-rail` : undefined}
-    >
-      {header ? (
-        <SettingsHeader
-          {...header}
-          palette={palette}
-          scrimColor={palette.secondary}
-          scrollY={scrollY}
-          testID={testID}
-        />
-      ) : null}
-      <View style={header ? [styles.railContent, styles.railContentCompact] : { gap: 20 }}>
-        {groups.map((group) => (
-          <View key={group.key ?? group.label} style={styles.group}>
-            <Text
-              variant="body-medium"
-              style={[styles.groupLabel, { color: palette.textSecondary }]}
-            >
-              {group.label}
-            </Text>
-            <View style={styles.groupRows}>
-              {group.items.map((item) => (
-                <RailRow
-                  key={item.key}
-                  item={item}
-                  // A list, not a selection, when the rows ARE the navigation.
-                  selected={!compact && item.page !== undefined && item.page === page}
-                  showChevron={compact && item.page !== undefined}
-                  onSelect={onSelect}
-                  palette={palette}
-                  testID={testID ? `${testID}-nav-${item.key}` : undefined}
-                />
-              ))}
+      <Animated.ScrollView
+        role="navigation"
+        aria-label={label}
+        style={[
+          compact
+            ? styles.railCompact
+            : [styles.rail, { width: layout === 'medium' ? RAIL_WIDTH_MEDIUM : RAIL_WIDTH }],
+          {
+            backgroundColor: palette.secondary,
+            ...surfaceFillVars(palette.secondary),
+            borderRightColor: palette.separator,
+          },
+        ]}
+        contentContainerStyle={header ? undefined : styles.railContent}
+        stickyHeaderIndices={header && !IS_WEB ? [0] : undefined}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
+        showsVerticalScrollIndicator={false}
+        testID={testID ? `${testID}-rail` : undefined}
+      >
+        {header ? (
+          <SettingsHeader
+            {...header}
+            palette={palette}
+            scrimColor={palette.secondary}
+            scrollY={scrollY}
+            testID={testID}
+          />
+        ) : null}
+        <View style={header ? [styles.railContent, styles.railContentCompact] : { gap: 20 }}>
+          {groups.map((group) => (
+            <View key={group.key ?? group.label} style={styles.group}>
+              <Text
+                variant="body-medium"
+                style={[styles.groupLabel, { color: palette.textSecondary }]}
+              >
+                {group.label}
+              </Text>
+              <View style={styles.groupRows}>
+                {group.items.map((item) => (
+                  <RailRow
+                    key={item.key}
+                    item={item}
+                    // A list, not a selection, when the rows ARE the navigation.
+                    selected={!compact && item.page !== undefined && item.page === page}
+                    showChevron={compact && item.page !== undefined}
+                    onSelect={onSelect}
+                    palette={palette}
+                    testID={testID ? `${testID}-nav-${item.key}` : undefined}
+                  />
+                ))}
+              </View>
             </View>
-          </View>
-        ))}
-      </View>
-    </Animated.ScrollView>
+          ))}
+        </View>
+      </Animated.ScrollView>
     </SurfaceLevelProvider>
   );
 }
@@ -747,9 +782,12 @@ function PageScroller({
   testID?: string;
 }) {
   const scrollY = useSharedValue(0);
-  const onScroll = useAnimatedScrollHandler((event) => {
-    scrollY.value = Math.max(0, event.contentOffset.y);
-  }, [scrollY]);
+  const onScroll = useAnimatedScrollHandler(
+    (event) => {
+      scrollY.value = Math.max(0, event.contentOffset.y);
+    },
+    [scrollY],
+  );
   const scrollRef = useRef<ScrollView>(null);
   // The keyboard slides over an edge-to-edge modal: pad by it, and bring the
   // focused field up above it.

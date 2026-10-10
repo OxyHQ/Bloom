@@ -19,8 +19,14 @@ interface Conversation {
 export function useWorkletCaptureFixture(history: Conversation[] | undefined, slot: ReactNode) {
   const progress = useSharedValue(0);
   const hasHistory = Boolean(history);
-  const whole = useAnimatedStyle(() => ({ opacity: history ? progress.value : 1 }), [progress, history]);
-  const derived = useAnimatedStyle(() => ({ opacity: hasHistory ? progress.value : 1 }), [progress, hasHistory]);
+  const whole = useAnimatedStyle(
+    () => ({ opacity: history ? progress.value : 1 }),
+    [progress, history],
+  );
+  const derived = useAnimatedStyle(
+    () => ({ opacity: hasHistory ? progress.value : 1 }),
+    [progress, hasHistory],
+  );
   const pan = Gesture.Pan().onUpdate(() => {
     progress.value = slot ? 1 : 0;
   });

@@ -107,10 +107,14 @@ function OfferingEditorComponent({
   const sale = value.sale ?? {};
   const stay = value.stay ?? {};
   const swap = value.swap ?? {};
-  const setRent = (patch: Partial<RentOffering>) => onValueChange({ ...value, rent: { ...rent, ...patch } });
-  const setSale = (patch: Partial<SaleOffering>) => onValueChange({ ...value, sale: { ...sale, ...patch } });
-  const setStay = (patch: Partial<StayOffering>) => onValueChange({ ...value, stay: { ...stay, ...patch } });
-  const setSwap = (patch: Partial<SwapOffering>) => onValueChange({ ...value, swap: { ...swap, ...patch } });
+  const setRent = (patch: Partial<RentOffering>) =>
+    onValueChange({ ...value, rent: { ...rent, ...patch } });
+  const setSale = (patch: Partial<SaleOffering>) =>
+    onValueChange({ ...value, sale: { ...sale, ...patch } });
+  const setStay = (patch: Partial<StayOffering>) =>
+    onValueChange({ ...value, stay: { ...stay, ...patch } });
+  const setSwap = (patch: Partial<SwapOffering>) =>
+    onValueChange({ ...value, swap: { ...swap, ...patch } });
 
   const perArea = pricePerArea(sale.price, area);
   const perAreaText =
@@ -134,7 +138,10 @@ function OfferingEditorComponent({
         />
         <ChoiceRow
           label={labels.deposit}
-          options={depositOptions.map((months) => ({ value: months, label: labels.depositOption(months) }))}
+          options={depositOptions.map((months) => ({
+            value: months,
+            label: labels.depositOption(months),
+          }))}
           value={rent.depositMonths ?? null}
           onChange={(depositMonths) => setRent({ depositMonths })}
           error={errors['rent.depositMonths']}
@@ -197,7 +204,10 @@ function OfferingEditorComponent({
           </Text>
           <Text
             variant="body-semibold"
-            style={{ color: perArea == null ? paint.textSecondary : paint.text, fontVariant: ['tabular-nums'] }}
+            style={{
+              color: perArea == null ? paint.textSecondary : paint.text,
+              fontVariant: ['tabular-nums'],
+            }}
           >
             {perAreaText}
           </Text>
@@ -298,7 +308,15 @@ function OfferingEditorComponent({
 //  Field parts
 // ---------------------------------------------------------------------------
 
-function FieldShell({ label, error, children }: { label?: string; error?: string; children: React.ReactNode }) {
+function FieldShell({
+  label,
+  error,
+  children,
+}: {
+  label?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
   return (
     <View style={{ gap: 6 }}>
       {label ? <TextFieldLabel>{label}</TextFieldLabel> : null}
@@ -336,7 +354,11 @@ function MoneyField({
           variant="body-regular"
           aria-hidden
           // Above the field's chrome, which the input paints behind its siblings.
-          style={{ zIndex: 20, color: disabled ? theme.colors.textTertiary : theme.colors.textSecondary, marginRight: 2 }}
+          style={{
+            zIndex: 20,
+            color: disabled ? theme.colors.textTertiary : theme.colors.textSecondary,
+            marginRight: 2,
+          }}
         >
           {currencySymbol}
         </Text>
@@ -352,9 +374,7 @@ function MoneyField({
           testID={testID}
         />
       </TextField>
-      {error ? (
-        <TextFieldHint isInvalid>{error}</TextFieldHint>
-      ) : null}
+      {error ? <TextFieldHint isInvalid>{error}</TextFieldHint> : null}
     </View>
   );
 }

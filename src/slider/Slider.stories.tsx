@@ -29,10 +29,29 @@ export const Matrix: Story = {
     const [b, setB] = useState(60);
     const [r, setR] = useState<[number, number]>([20, 70]);
     return (
-      <View style={{ width: 352, maxWidth: '100%', gap: 16, padding: 16, backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          width: 352,
+          maxWidth: '100%',
+          gap: 16,
+          padding: 16,
+          backgroundColor: theme.colors.background,
+        }}
+      >
         <Slider label="Volume" value={a} onValueChange={setA} />
-        <Slider value={b} onValueChange={setB} showTooltip={false} accessibilityLabel="Brightness" />
-        <Slider value={30} onValueChange={() => {}} disabled showTooltip={false} accessibilityLabel="Locked" />
+        <Slider
+          value={b}
+          onValueChange={setB}
+          showTooltip={false}
+          accessibilityLabel="Brightness"
+        />
+        <Slider
+          value={30}
+          onValueChange={() => {}}
+          disabled
+          showTooltip={false}
+          accessibilityLabel="Locked"
+        />
         <Slider
           value={a}
           onValueChange={setA}
@@ -88,7 +107,12 @@ export const Disabled: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 320, maxWidth: '100%' }}>
-      <Slider value={60} onValueChange={() => {}} disabled accessibilityLabel="Volume, unavailable" />
+      <Slider
+        value={60}
+        onValueChange={() => {}}
+        disabled
+        accessibilityLabel="Volume, unavailable"
+      />
     </View>
   ),
 };
@@ -116,11 +140,43 @@ export const Range: Story = {
 
 /** A single instance whose controls are applied directly to the rendered component. */
 export const Playground: StoryObj<typeof Slider> = {
-  args: { label: 'Volume', value: 40, min: 0, max: 100, step: 1, disabled: false, showTooltip: true, size: 'md', tone: 'accent' },
-  parameters: { controls: { disable: false, include: ['label', 'value', 'min', 'max', 'step', 'disabled', 'showTooltip', 'size', 'tone'] } },
-  argTypes: { label: { control: 'text' }, value: { control: 'number' }, min: { control: 'number' }, max: { control: 'number' }, step: { control: 'number' }, disabled: { control: 'boolean' }, showTooltip: { control: 'boolean' }, size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] }, tone: { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] } },
+  args: {
+    label: 'Volume',
+    value: 40,
+    min: 0,
+    max: 100,
+    step: 1,
+    disabled: false,
+    showTooltip: true,
+    size: 'md',
+    tone: 'accent',
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['label', 'value', 'min', 'max', 'step', 'disabled', 'showTooltip', 'size', 'tone'],
+    },
+  },
+  argTypes: {
+    label: { control: 'text' },
+    value: { control: 'number' },
+    min: { control: 'number' },
+    max: { control: 'number' },
+    step: { control: 'number' },
+    disabled: { control: 'boolean' },
+    showTooltip: { control: 'boolean' },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
+    tone: {
+      control: 'select',
+      options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'],
+    },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 440, maxWidth: '100%' }}><Slider {...args} onValueChange={next => updateArgs({ value: next })} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <Slider {...args} onValueChange={(next) => updateArgs({ value: next })} />
+      </View>
+    );
   },
 };

@@ -1,5 +1,10 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
-import { PanResponder, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
+import {
+  PanResponder,
+  View,
+  type GestureResponderEvent,
+  type LayoutChangeEvent,
+} from 'react-native';
 import Svg, { Line, Path } from 'react-native-svg';
 
 import { Button } from '../button';
@@ -91,7 +96,10 @@ function SignaturePadComponent({
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveProofPaint(theme, surface), [theme, surface]);
   const { messages } = useMessages(PROOF_OF_DELIVERY_MESSAGES);
-  const labels = useMemo(() => ({ ...messages.labels, ...labelOverrides }), [messages, labelOverrides]);
+  const labels = useMemo(
+    () => ({ ...messages.labels, ...labelOverrides }),
+    [messages, labelOverrides],
+  );
 
   const [value, setValue] = useControllableState({
     value: valueProp,
@@ -151,9 +159,7 @@ function SignaturePadComponent({
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height: measured } = event.nativeEvent.layout;
     setSize((prev) =>
-      prev && prev.width === width && prev.height === measured
-        ? prev
-        : { width, height: measured },
+      prev && prev.width === width && prev.height === measured ? prev : { width, height: measured },
     );
   }, []);
 
@@ -170,7 +176,10 @@ function SignaturePadComponent({
   const padName = accessibilityLabel ?? labels.signaturePad;
 
   return (
-    <View style={[{ gap: PROOF_GEOMETRY.blockGap, opacity: disabled ? DISABLED_OPACITY : 1 }, style]} testID={testID}>
+    <View
+      style={[{ gap: PROOF_GEOMETRY.blockGap, opacity: disabled ? DISABLED_OPACITY : 1 }, style]}
+      testID={testID}
+    >
       <SurfaceLevelProvider level={1} fill={paint.pad}>
         <View
           onLayout={onLayout}
@@ -199,7 +208,10 @@ function SignaturePadComponent({
             <Svg width={size.width} height={size.height} pointerEvents="none">
               <Line
                 x1={PROOF_GEOMETRY.baselineInset}
-                x2={Math.max(PROOF_GEOMETRY.baselineInset, size.width - PROOF_GEOMETRY.baselineInset)}
+                x2={Math.max(
+                  PROOF_GEOMETRY.baselineInset,
+                  size.width - PROOF_GEOMETRY.baselineInset,
+                )}
                 y1={size.height * PROOF_GEOMETRY.baseline}
                 y2={size.height * PROOF_GEOMETRY.baseline}
                 stroke={paint.hairline}
@@ -252,13 +264,14 @@ function SignaturePadComponent({
         </Text>
         {hasInk ? (
           <Button
-
             size="sm"
             leadingIcon={RiDeleteBinLine}
             onPress={clear}
             disabled={disabled}
             accessibilityLabel={labels.clear}
-            testID={id('clear')} tone="accent" appearance="plain"
+            testID={id('clear')}
+            tone="accent"
+            appearance="plain"
           >
             {labels.clear}
           </Button>

@@ -2,7 +2,11 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import * as ts from 'typescript';
 
-import { WEB_POSITION_FIXED, WEB_POSITION_STICKY, WEB_SURFACE_STICKY_TOP } from '../styles/web-view-style';
+import {
+  WEB_POSITION_FIXED,
+  WEB_POSITION_STICKY,
+  WEB_SURFACE_STICKY_TOP,
+} from '../styles/web-view-style';
 
 /**
  * `position: fixed` is web-only CSS that React Native's `ViewStyle` does not
@@ -62,33 +66,52 @@ describe('web position: fixed', () => {
   });
 
   it('keeps only the documented casts inside styles/web-view-style.ts', () => {
-    const source = ts.createSourceFile('web-view-style.ts',
-      readFileSync(join(SRC, 'styles/web-view-style.ts'), 'utf8'), ts.ScriptTarget.Latest, true);
+    const source = ts.createSourceFile(
+      'web-view-style.ts',
+      readFileSync(join(SRC, 'styles/web-view-style.ts'), 'utf8'),
+      ts.ScriptTarget.Latest,
+      true,
+    );
     const crossings: { owner: string; type: string }[] = [];
     function visit(node: ts.Node) {
       if (ts.isAsExpression(node)) {
         let owner: ts.Node | undefined = node.parent;
-        while (owner && !ts.isVariableDeclaration(owner) && !ts.isFunctionDeclaration(owner)) owner = owner.parent;
+        while (owner && !ts.isVariableDeclaration(owner) && !ts.isFunctionDeclaration(owner))
+          owner = owner.parent;
         crossings.push({
-          owner: owner && (ts.isVariableDeclaration(owner) || ts.isFunctionDeclaration(owner))
-            ? owner.name?.getText(source) ?? '<anonymous>' : '<unknown>',
+          owner:
+            owner && (ts.isVariableDeclaration(owner) || ts.isFunctionDeclaration(owner))
+              ? (owner.name?.getText(source) ?? '<anonymous>')
+              : '<unknown>',
           type: node.type.getText(source),
         });
       }
       ts.forEachChild(node, visit);
     }
     visit(source);
-    const runtimeExports = source.statements.flatMap(statement => {
-      const exported = ts.canHaveModifiers(statement)
-        && ts.getModifiers(statement)?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword);
-      if (!exported || ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement)) return [];
-      if (ts.isVariableStatement(statement)) return statement.declarationList.declarations.map(declaration => declaration.name.getText(source));
-      if (ts.isFunctionDeclaration(statement)) return [statement.name?.getText(source) ?? '<anonymous>'];
+    const runtimeExports = source.statements.flatMap((statement) => {
+      const exported =
+        ts.canHaveModifiers(statement) &&
+        ts
+          .getModifiers(statement)
+          ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
+      if (!exported || ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement))
+        return [];
+      if (ts.isVariableStatement(statement))
+        return statement.declarationList.declarations.map((declaration) =>
+          declaration.name.getText(source),
+        );
+      if (ts.isFunctionDeclaration(statement))
+        return [statement.name?.getText(source) ?? '<anonymous>'];
       return [statement.getText(source)];
     });
     expect(runtimeExports).toEqual([
-      'WEB_POSITION_FIXED', 'WEB_POSITION_STICKY', 'WEB_SURFACE_STICKY_TOP',
-      'WEB_VIEWPORT_HEIGHT', 'webViewportHeightMinus', 'WEB_OVERFLOW_CLIP',
+      'WEB_POSITION_FIXED',
+      'WEB_POSITION_STICKY',
+      'WEB_SURFACE_STICKY_TOP',
+      'WEB_VIEWPORT_HEIGHT',
+      'webViewportHeightMinus',
+      'WEB_OVERFLOW_CLIP',
       'webSurfaceStickyTopPlus',
     ]);
     expect(crossings).toEqual([
@@ -115,8 +138,6 @@ describe('web position: fixed', () => {
     // decrement comes with the assertion below rather than on its own. A floor
     // that only ever ratchets down is a gate switching itself off.
     expect(importers.length).toBeGreaterThanOrEqual(10);
-    expect(importers.map((f) => f.replace(`${SRC}/`, ''))).toContain(
-      'floating/FloatingPanel.tsx',
-    );
+    expect(importers.map((f) => f.replace(`${SRC}/`, ''))).toContain('floating/FloatingPanel.tsx');
   });
 });

@@ -1,7 +1,12 @@
 import { COMPONENT_COLOR_ROLES } from '../../design-tokens/component-roles';
 import { generateRoleColors, type RoleColors, type SchemeVariant } from '../color-engine';
 import { buildPolicyTokens, isColourlessSeed } from '../color-policy';
-import { ACCENT_TEXT_ROLES, BORDER_ROLES, FILL_ROLES, TEXT_ROLES } from '../../design-tokens/color-roles';
+import {
+  ACCENT_TEXT_ROLES,
+  BORDER_ROLES,
+  FILL_ROLES,
+  TEXT_ROLES,
+} from '../../design-tokens/color-roles';
 
 /**
  * Every alias `theme.css` declares at `:root` as a reference to a canonical

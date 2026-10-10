@@ -80,11 +80,16 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
   testID,
 }: RadioCardProps<Value>) {
   const checked = checkedProp ?? false;
-  const field = useFieldMembership({ disabled: disabledProp, accessibilityLabel, label: title, labelPlacement: 'adjacent' });
+  const field = useFieldMembership({
+    disabled: disabledProp,
+    accessibilityLabel,
+    label: title,
+    labelPlacement: 'adjacent',
+  });
   const disabled = field.disabled;
   const theme = useTheme();
   const ringOffset = useRingOffsetStyle();
-  const { tone } = useBloomAppearance({ tone: toneProp }, {size: 'md', tone: 'accent'});
+  const { tone } = useBloomAppearance({ tone: toneProp }, { size: 'md', tone: 'accent' });
   const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
   useInteractiveWebCss(STYLE_ID, CARD_CSS);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
@@ -96,7 +101,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
     return {
       border: theme.colors.borderLight,
       background: theme.colors.card,
-        backgroundHover: theme.colors.backgroundSecondary,
+      backgroundHover: theme.colors.backgroundSecondary,
       title: theme.colors.text,
       description: theme.colors.textSecondary,
       ring: color ?? accent[500],
@@ -160,21 +165,47 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
       testID={testID}
     >
       <View style={{ flexDirection: 'column', gap: 2, minWidth: 0, flexShrink: 1 }}>
-        {labelContent != null ? <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{labelContent}</View> : <RadioLabel className={labelClassName} variant="body-medium" numberOfLines={1} style={[!labelClassName && { color: paint.title }, labelStyle]}>
-          {title}
-        </RadioLabel>}
+        {labelContent != null ? (
+          <View
+            pointerEvents="none"
+            aria-hidden
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            {labelContent}
+          </View>
+        ) : (
+          <RadioLabel
+            className={labelClassName}
+            variant="body-medium"
+            numberOfLines={1}
+            style={[!labelClassName && { color: paint.title }, labelStyle]}
+          >
+            {title}
+          </RadioLabel>
+        )}
         {description != null && (
           <Text variant="body-regular" numberOfLines={1} style={{ color: paint.description }}>
             {description}
           </Text>
         )}
       </View>
-      <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', paddingTop: 4, paddingBottom: 4 }}>
-        <View
-          {...webDataSet({ bloomRadioCardDot: '' })}
-          style={{ borderRadius: DOT_SIZE / 2 }}
-        >
-          <RadioIndicator selected={checked} size={DOT_SIZE} selectedColor={color} selectedForeground={foreground} />
+      <View
+        style={{
+          flexShrink: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingTop: 4,
+          paddingBottom: 4,
+        }}
+      >
+        <View {...webDataSet({ bloomRadioCardDot: '' })} style={{ borderRadius: DOT_SIZE / 2 }}>
+          <RadioIndicator
+            selected={checked}
+            size={DOT_SIZE}
+            selectedColor={color}
+            selectedForeground={foreground}
+          />
         </View>
       </View>
     </RadioHost>

@@ -23,9 +23,7 @@ export interface MeasuredRect {
  * without Bloom naming `View` in its public API.
  */
 export interface MediaFlightAnchorNode {
-  measureInWindow(
-    callback: (x: number, y: number, width: number, height: number) => void,
-  ): void;
+  measureInWindow(callback: (x: number, y: number, width: number, height: number) => void): void;
 }
 
 /** A still image painted into a media surface. */

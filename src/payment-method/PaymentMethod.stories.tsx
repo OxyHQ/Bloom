@@ -77,7 +77,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Page({ children }: { children: React.ReactNode }) {
-  return <View style={{ width: '100%', paddingVertical: 16, gap: 32, maxWidth: 560 }}>{children}</View>;
+  return (
+    <View style={{ width: '100%', paddingVertical: 16, gap: 32, maxWidth: 560 }}>{children}</View>
+  );
 }
 
 export const Rows: Story = {
@@ -85,16 +87,50 @@ export const Rows: Story = {
     <Page>
       <Section title="The four kinds">
         <View>
-          <PaymentMethodRow scheme="Aurora" masked="•••• 4417" expiry="Expires 09/29" onPress={noop} testID="row" />
-          <PaymentMethodRow kind="account" scheme="Direct debit" masked="•••• •••• 8842" expiry="Set up 12 March" onPress={noop} />
-          <PaymentMethodRow kind="wallet" scheme="Store balance" masked="€18.40 left" onPress={noop} />
-          <PaymentMethodRow kind="cash" scheme="Cash on delivery" masked="Pay the driver" onPress={noop} />
+          <PaymentMethodRow
+            scheme="Aurora"
+            masked="•••• 4417"
+            expiry="Expires 09/29"
+            onPress={noop}
+            testID="row"
+          />
+          <PaymentMethodRow
+            kind="account"
+            scheme="Direct debit"
+            masked="•••• •••• 8842"
+            expiry="Set up 12 March"
+            onPress={noop}
+          />
+          <PaymentMethodRow
+            kind="wallet"
+            scheme="Store balance"
+            masked="€18.40 left"
+            onPress={noop}
+          />
+          <PaymentMethodRow
+            kind="cash"
+            scheme="Cash on delivery"
+            masked="Pay the driver"
+            onPress={noop}
+          />
         </View>
       </Section>
       <Section title="Default, expired, declined, disabled">
         <View>
-          <PaymentMethodRow scheme="Aurora" masked="•••• 4417" expiry="Expires 09/29" isDefault onPress={noop} />
-          <PaymentMethodRow scheme="Northwind" masked="•••• 1190" expiry="Expired 06/24" state="expired" onPress={noop} />
+          <PaymentMethodRow
+            scheme="Aurora"
+            masked="•••• 4417"
+            expiry="Expires 09/29"
+            isDefault
+            onPress={noop}
+          />
+          <PaymentMethodRow
+            scheme="Northwind"
+            masked="•••• 1190"
+            expiry="Expired 06/24"
+            state="expired"
+            onPress={noop}
+          />
           <PaymentMethodRow
             scheme="Solstice"
             masked="•••• 7734"
@@ -102,7 +138,13 @@ export const Rows: Story = {
             stateMessage="Your bank turned this one down."
             onPress={noop}
           />
-          <PaymentMethodRow scheme="Meridian" masked="•••• 0082" expiry="Expires 03/27" disabled onPress={noop} />
+          <PaymentMethodRow
+            scheme="Meridian"
+            masked="•••• 0082"
+            expiry="Expires 03/27"
+            disabled
+            onPress={noop}
+          />
         </View>
       </Section>
       <Section title="With an action, as a radio, and compact">
@@ -112,10 +154,30 @@ export const Rows: Story = {
             masked="•••• 4417"
             expiry="Expires 09/29"
             onPress={noop}
-            action={<GlyphButton size={32} glyphSize={16} icon={RiMore2Line} accessibilityLabel="More for Aurora" onPress={noop} />}
+            action={
+              <GlyphButton
+                size={32}
+                glyphSize={16}
+                icon={RiMore2Line}
+                accessibilityLabel="More for Aurora"
+                onPress={noop}
+              />
+            }
           />
-          <PaymentMethodRow scheme="Meridian" masked="•••• 0082" role="radio" selectable selected onPress={noop} />
-          <PaymentMethodRow scheme="Northwind" masked="•••• 1190" density="compact" onPress={noop} />
+          <PaymentMethodRow
+            scheme="Meridian"
+            masked="•••• 0082"
+            role="radio"
+            selectable
+            selected
+            onPress={noop}
+          />
+          <PaymentMethodRow
+            scheme="Northwind"
+            masked="•••• 1190"
+            density="compact"
+            onPress={noop}
+          />
         </View>
       </Section>
       <Section title="Long text, and the mark on its own">
@@ -130,7 +192,9 @@ export const Rows: Story = {
               onPress={noop}
             />
           </View>
-          <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center', paddingHorizontal: 16 }}>
+          <View
+            style={{ flexDirection: 'row', gap: 16, alignItems: 'center', paddingHorizontal: 16 }}
+          >
             <PaymentMethodMark scheme="Aurora" />
             <PaymentMethodMark kind="account" scheme="Meridian" density="compact" />
             <PaymentMethodMark kind="wallet" />
@@ -160,7 +224,12 @@ function FieldDemo() {
   const [selected, setSelected] = useState<string | undefined>(undefined);
   return (
     <Field label="Pay with" description="We charge this when the order is dispatched." multiple>
-      <PaymentMethodList methods={METHODS.slice(0, 2)} variant="picker" selectedId={selected} onSelect={setSelected} />
+      <PaymentMethodList
+        methods={METHODS.slice(0, 2)}
+        variant="picker"
+        selectedId={selected}
+        onSelect={setSelected}
+      />
     </Field>
   );
 }
@@ -196,7 +265,12 @@ export const LoadingAndEmpty: Story = {
   render: () => (
     <Page>
       <Section title="Loading">
-        <PaymentMethodList methods={[]} loading accessibilityLabel="Saved payment methods" testID="loading" />
+        <PaymentMethodList
+          methods={[]}
+          loading
+          accessibilityLabel="Saved payment methods"
+          testID="loading"
+        />
       </Section>
       <Section title="Empty, with the add row">
         <PaymentMethodList

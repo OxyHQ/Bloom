@@ -6,16 +6,19 @@ import { RadialChartCard, type RadialDatum, type RadialRange } from './RadialCha
 
 const meta: Meta<typeof RadialChartCard> = {
   argTypes: {
-    "variant": { control: 'select', options: ["labels","solid","stacked","grid","rings","gauge"] },
-    "title": { control: 'text' },
-    "max": { control: 'number' },
-    "headline": { control: 'number' },
-    "delta": { control: 'number' },
-    "range": { control: 'text' },
-    "defaultRange": { control: 'text' },
-    "centerCaption": { control: 'text' },
-    "tiles": { control: 'boolean' },
-    "activeIndex": { control: 'number' }
+    variant: {
+      control: 'select',
+      options: ['labels', 'solid', 'stacked', 'grid', 'rings', 'gauge'],
+    },
+    title: { control: 'text' },
+    max: { control: 'number' },
+    headline: { control: 'number' },
+    delta: { control: 'number' },
+    range: { control: 'text' },
+    defaultRange: { control: 'text' },
+    centerCaption: { control: 'text' },
+    tiles: { control: 'boolean' },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Radial Chart',
   component: RadialChartCard,
@@ -27,7 +30,8 @@ type Story = StoryObj<typeof RadialChartCard>;
 
 // Demo data.
 const BROWSERS = ['Other', 'Edge', 'Firefox', 'Safari', 'Chrome'];
-const rings = (values: number[]): RadialDatum[] => BROWSERS.map((label, i) => ({ label, value: values[i]! }));
+const rings = (values: number[]): RadialDatum[] =>
+  BROWSERS.map((label, i) => ({ label, value: values[i]! }));
 
 const RING_RANGES: RadialRange[] = [
   { id: '7d', label: 'Last 7 days', data: rings([90, 173, 187, 200, 275]), delta: 0.052 },
@@ -36,15 +40,57 @@ const RING_RANGES: RadialRange[] = [
 ];
 
 const GAUGE_RANGES: RadialRange[] = [
-  { id: '7d', label: 'Last 7 days', data: [{ label: 'Visitors', value: 1260 }], max: 2000, delta: 0.052 },
-  { id: '30d', label: 'Last 30 days', data: [{ label: 'Visitors', value: 4820 }], max: 6000, delta: 0.081 },
-  { id: '90d', label: 'Last 90 days', data: [{ label: 'Visitors', value: 12400 }], max: 15000, delta: -0.024 },
+  {
+    id: '7d',
+    label: 'Last 7 days',
+    data: [{ label: 'Visitors', value: 1260 }],
+    max: 2000,
+    delta: 0.052,
+  },
+  {
+    id: '30d',
+    label: 'Last 30 days',
+    data: [{ label: 'Visitors', value: 4820 }],
+    max: 6000,
+    delta: 0.081,
+  },
+  {
+    id: '90d',
+    label: 'Last 90 days',
+    data: [{ label: 'Visitors', value: 12400 }],
+    max: 15000,
+    delta: -0.024,
+  },
 ];
 
 const STACKED_RANGES: RadialRange[] = [
-  { id: '7d', label: 'Last 7 days', data: [{ label: 'Desktop', value: 1260 }, { label: 'Mobile', value: 570 }], delta: 0.052 },
-  { id: '30d', label: 'Last 30 days', data: [{ label: 'Desktop', value: 4820 }, { label: 'Mobile', value: 2410 }], delta: 0.081 },
-  { id: '90d', label: 'Last 90 days', data: [{ label: 'Desktop', value: 12400 }, { label: 'Mobile', value: 7900 }], delta: -0.024 },
+  {
+    id: '7d',
+    label: 'Last 7 days',
+    data: [
+      { label: 'Desktop', value: 1260 },
+      { label: 'Mobile', value: 570 },
+    ],
+    delta: 0.052,
+  },
+  {
+    id: '30d',
+    label: 'Last 30 days',
+    data: [
+      { label: 'Desktop', value: 4820 },
+      { label: 'Mobile', value: 2410 },
+    ],
+    delta: 0.081,
+  },
+  {
+    id: '90d',
+    label: 'Last 90 days',
+    data: [
+      { label: 'Desktop', value: 12400 },
+      { label: 'Mobile', value: 7900 },
+    ],
+    delta: -0.024,
+  },
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
@@ -63,55 +109,130 @@ export const Rings: Story = {
 
 /** Each ring's name set along the start of its arc. */
 export const Labels: Story = {
-  args: { variant: "labels" },
-  parameters: { controls: { include: ["variant","title","max","headline","delta","range","defaultRange","centerCaption","tiles","activeIndex"] } },
+  args: { variant: 'labels' },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'centerCaption',
+        'tiles',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadialChartCard {...args} testID="radial"  ranges={RING_RANGES} />
+      <RadialChartCard {...args} testID="radial" ranges={RING_RANGES} />
     </Frame>
   ),
 };
 
 /** No tracks: rings over a circular grid. */
 export const Grid: Story = {
-  args: { variant: "grid" },
-  parameters: { controls: { include: ["variant","title","max","headline","delta","range","defaultRange","centerCaption","tiles","activeIndex"] } },
+  args: { variant: 'grid' },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'centerCaption',
+        'tiles',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadialChartCard {...args} testID="radial"  ranges={RING_RANGES} />
+      <RadialChartCard {...args} testID="radial" ranges={RING_RANGES} />
     </Frame>
   ),
 };
 
 /** A single thin ring against a goal, percent in the centre. */
 export const Gauge: Story = {
-  args: { variant: "gauge" },
-  parameters: { controls: { include: ["variant","title","max","headline","delta","range","defaultRange","centerCaption","tiles","activeIndex"] } },
+  args: { variant: 'gauge' },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'centerCaption',
+        'tiles',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadialChartCard {...args} testID="radial"  ranges={GAUGE_RANGES} />
+      <RadialChartCard {...args} testID="radial" ranges={GAUGE_RANGES} />
     </Frame>
   ),
 };
 
 /** The gauge, thicker, on a raised inner disc. */
 export const Solid: Story = {
-  args: { variant: "solid" },
-  parameters: { controls: { include: ["variant","title","max","headline","delta","range","defaultRange","centerCaption","tiles","activeIndex"] } },
+  args: { variant: 'solid' },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'centerCaption',
+        'tiles',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadialChartCard {...args} testID="radial"  ranges={GAUGE_RANGES} />
+      <RadialChartCard {...args} testID="radial" ranges={GAUGE_RANGES} />
     </Frame>
   ),
 };
 
 /** A half gauge of stacked segments; the centre follows the hovered one. */
 export const Stacked: Story = {
-  args: { variant: "stacked" },
-  parameters: { controls: { include: ["variant","title","max","headline","delta","range","defaultRange","centerCaption","tiles","activeIndex"] } },
+  args: { variant: 'stacked' },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'centerCaption',
+        'tiles',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadialChartCard {...args} testID="radial"  ranges={STACKED_RANGES} />
+      <RadialChartCard {...args} testID="radial" ranges={STACKED_RANGES} />
     </Frame>
   ),
 };
@@ -119,10 +240,25 @@ export const Stacked: Story = {
 /** Stat tiles instead of a legend; the card grows to fit (5 items → 3 + 2). */
 export const Tiles: Story = {
   args: { tiles: true },
-  parameters: { controls: { include: ["tiles","variant","title","max","headline","delta","range","defaultRange","centerCaption","activeIndex"] } },
+  parameters: {
+    controls: {
+      include: [
+        'tiles',
+        'variant',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'centerCaption',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadialChartCard {...args} testID="radial" ranges={RING_RANGES}  />
+      <RadialChartCard {...args} testID="radial" ranges={RING_RANGES} />
     </Frame>
   ),
 };
@@ -134,7 +270,13 @@ export const Hovered: Story = {
     <Frame>
       <RadialChartCard ranges={RING_RANGES} activeIndex={3} />
       <RadialChartCard variant="labels" ranges={RING_RANGES} activeIndex={3} tiles />
-      <RadialChartCard variant="stacked" range="Last 7 days" data={STACKED_RANGES[0]!.data} max={2400} activeIndex={1} />
+      <RadialChartCard
+        variant="stacked"
+        range="Last 7 days"
+        data={STACKED_RANGES[0]!.data}
+        max={2400}
+        activeIndex={1}
+      />
     </Frame>
   ),
 };

@@ -9,4 +9,7 @@ export interface SearchMessages {
   clearQuery: string;
 }
 
-export const SEARCH_MESSAGES: MessageCatalog<SearchMessages> = defineMessages<SearchMessages>('SEARCH_MESSAGES', { clearQuery: 'Clear search query' });
+export const SEARCH_MESSAGES: MessageCatalog<SearchMessages> = defineMessages<SearchMessages>(
+  'SEARCH_MESSAGES',
+  { clearQuery: 'Clear search query' },
+);

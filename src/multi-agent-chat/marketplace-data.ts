@@ -236,8 +236,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     [
       {
         name: 'Code feedback',
-        description:
-          'Review implementation choices and spot overlooked edge cases.',
+        description: 'Review implementation choices and spot overlooked edge cases.',
       },
     ],
   ),
@@ -251,8 +250,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     [
       {
         name: 'Interface feedback',
-        description:
-          'Refine layouts, interaction patterns, and visual hierarchy.',
+        description: 'Refine layouts, interaction patterns, and visual hierarchy.',
       },
     ],
   ),
@@ -272,8 +270,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     [
       {
         name: 'Research synthesis',
-        description:
-          'Connect findings, surface themes, and flag gaps in the evidence.',
+        description: 'Connect findings, surface themes, and flag gaps in the evidence.',
       },
     ],
   ),
@@ -293,8 +290,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     [
       {
         name: 'Data interpretation',
-        description:
-          'Explain trends, compare metrics, and suggest useful visualizations.',
+        description: 'Explain trends, compare metrics, and suggest useful visualizations.',
       },
     ],
   ),
@@ -308,8 +304,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     [
       {
         name: 'Customer replies',
-        description:
-          'Prepare thoughtful responses and easy-to-follow troubleshooting steps.',
+        description: 'Prepare thoughtful responses and easy-to-follow troubleshooting steps.',
       },
     ],
   ),
@@ -317,10 +312,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
 
 export const DEFAULT_PLUGINS = ['gmail', 'calendar', 'drive', 'slack'];
 export const marketplaceAgentId = (id: string) => `marketplace-${id}`;
-export function filterMarketplace(
-  query: string,
-  kind: 'all' | 'plugin' | 'bot' = 'all',
-) {
+export function filterMarketplace(query: string, kind: 'all' | 'plugin' | 'bot' = 'all') {
   const terms = query.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
   return MARKETPLACE_ITEMS.filter(
     (item) =>
@@ -332,16 +324,9 @@ export function filterMarketplace(
       ),
   );
 }
-export function addMarketplaceBot(
-  workspace: Workspace,
-  item: MarketplaceItem,
-): Workspace {
+export function addMarketplaceBot(workspace: Workspace, item: MarketplaceItem): Workspace {
   const id = marketplaceAgentId(item.id);
-  if (
-    item.kind !== 'bot' ||
-    !item.avatar ||
-    workspace.agents.some((agent) => agent.id === id)
-  )
+  if (item.kind !== 'bot' || !item.avatar || workspace.agents.some((agent) => agent.id === id))
     return workspace;
   const agent = {
     id,

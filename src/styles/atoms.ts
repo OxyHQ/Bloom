@@ -189,9 +189,7 @@ export const atoms = StyleSheet.create({
 /**
  * Flatten a style prop into a single object.
  */
-export function flatten(
-  style: AtomStyle | AtomStyle[] | undefined | null | false,
-): AtomStyle {
+export function flatten(style: AtomStyle | AtomStyle[] | undefined | null | false): AtomStyle {
   return StyleSheet.flatten(style) as AtomStyle;
 }
 

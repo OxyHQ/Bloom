@@ -73,7 +73,9 @@ function GuestPickerComponent({
     <View style={style} testID={testID}>
       {kinds.map((kind, index) => {
         const description =
-          descriptions && kind in descriptions ? descriptions[kind] : messages.guestDescriptions[kind];
+          descriptions && kind in descriptions
+            ? descriptions[kind]
+            : messages.guestDescriptions[kind];
         return (
           <StepperRow
             key={kind}
@@ -93,7 +95,10 @@ function GuestPickerComponent({
       })}
       {note != null ? (
         typeof note === 'string' ? (
-          <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary, paddingTop: 8 }}>
+          <Text
+            variant="body-2-regular"
+            style={{ color: theme.colors.textSecondary, paddingTop: 8 }}
+          >
             {note}
           </Text>
         ) : (
@@ -102,7 +107,7 @@ function GuestPickerComponent({
       ) : null}
       {close ? (
         <View style={{ alignItems: 'flex-end', paddingTop: 12 }}>
-          <LinkButton  size="sm" onPress={close} testID={testID ? `${testID}-close` : undefined}>
+          <LinkButton size="sm" onPress={close} testID={testID ? `${testID}-close` : undefined}>
             {closeLabel}
           </LinkButton>
         </View>

@@ -76,9 +76,7 @@ describe('Tabs', () => {
 
   it('calls onValueChange when a trigger is pressed', () => {
     const onValueChange = jest.fn();
-    const { getByText } = renderWithTheme(
-      <Bar value="a" onValueChange={onValueChange} />,
-    );
+    const { getByText } = renderWithTheme(<Bar value="a" onValueChange={onValueChange} />);
     fireEvent.press(getByText('Second'));
     expect(onValueChange).toHaveBeenCalledWith('b');
   });
@@ -94,7 +92,7 @@ describe('Tabs', () => {
     }
   });
 
-  it('draws the pill variants\' indicator as a full-height pill thumb, not an underline', () => {
+  it("draws the pill variants' indicator as a full-height pill thumb, not an underline", () => {
     for (const variant of ['pill', 'filled'] as const) {
       const { getByTestId, unmount } = renderWithTheme(<Bar value="a" variant={variant} />);
       const thumb = flattenStyle(getByTestId('tabs-indicator').props.style);
@@ -116,9 +114,7 @@ describe('Tabs', () => {
   it('keeps triggers content-sized (no flex) by default', () => {
     const { getByText } = renderWithTheme(<Bar value="a" />);
     for (const label of ['First', 'Second']) {
-      expect(
-        flattenStyle(triggerFor(getByText(label)).props.style).flex,
-      ).toBeUndefined();
+      expect(flattenStyle(triggerFor(getByText(label)).props.style).flex).toBeUndefined();
     }
   });
 
@@ -309,8 +305,7 @@ describe('Tabs', () => {
           if (!node) throw new Error('no onLayout ancestor found for the trigger');
           fireEvent(node, 'layout', { nativeEvent: { layout: { x: 0, width: 80 } } });
         },
-        opacity: () =>
-          flattenStyle(utils.getByTestId('tabs-indicator').props.style).opacity,
+        opacity: () => flattenStyle(utils.getByTestId('tabs-indicator').props.style).opacity,
       };
     }
 
@@ -341,9 +336,9 @@ describe('Tabs', () => {
     // nothing — a strip that renders but never moves. Failing loudly is the
     // point; the message has to name the component to be actionable.
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    expect(() =>
-      renderWithTheme(<TabsTrigger value="a" label="First" />),
-    ).toThrow(/TabsTrigger must be used within a Tabs/);
+    expect(() => renderWithTheme(<TabsTrigger value="a" label="First" />)).toThrow(
+      /TabsTrigger must be used within a Tabs/,
+    );
     spy.mockRestore();
   });
 
@@ -390,9 +385,7 @@ describe('Tabs', () => {
       }
       const child = props.children;
       if (
-        !React.isValidElement<{ accessibilityRole?: string; accessibilityLabel?: string }>(
-          child,
-        )
+        !React.isValidElement<{ accessibilityRole?: string; accessibilityLabel?: string }>(child)
       ) {
         return undefined;
       }
@@ -415,9 +408,7 @@ describe('Tabs', () => {
         const label = tabLabelOf(element);
         if (label === undefined) return {};
         return {
-          measure: (
-            report: (x: number, y: number, width: number, height: number) => void,
-          ) => {
+          measure: (report: (x: number, y: number, width: number, height: number) => void) => {
             const box = geometry.get(label);
             if (box) report(box.x, 0, box.width, 40);
           },
@@ -431,12 +422,7 @@ describe('Tabs', () => {
         <BloomThemeProvider mode="light" colorPreset="teal">
           <Tabs testID="tabs" ref={dragRef} hasSelection>
             {next.tabs.map((tab) => (
-              <TabsTrigger
-                key={tab}
-                value={tab}
-                label={tab}
-                isFocused={tab === next.focused}
-              />
+              <TabsTrigger key={tab} value={tab} label={tab} isFocused={tab === next.focused} />
             ))}
           </Tabs>
         </BloomThemeProvider>
@@ -630,7 +616,9 @@ describe('Tabs', () => {
       expect(flattenStyle(withBaseline.getByTestId('tabs-indicator').props.style).bottom).toBe(-1);
       withBaseline.unmount();
       const without = renderWithTheme(<Bar value="a" style={{ borderBottomWidth: 0 }} />);
-      expect(flattenStyle(without.getByTestId('tabs-indicator').props.style).bottom === 0).toBe(true);
+      expect(flattenStyle(without.getByTestId('tabs-indicator').props.style).bottom === 0).toBe(
+        true,
+      );
     });
 
     it('has no press scale — a trigger carries no transform', () => {
@@ -728,26 +716,38 @@ describe('Tabs', () => {
         const pill = resolveTabsPaint(theme, 'pill');
         expect(pill.selectedLabel).toBe(c.primarySubtleForeground);
         expect(pill.idleLabel).toBe(c.textSecondary);
-        expect(pill.hover).toBe(surfaceFillOn(theme, surfaceFillOn(theme, theme.colors.background)));
+        expect(pill.hover).toBe(
+          surfaceFillOn(theme, surfaceFillOn(theme, theme.colors.background)),
+        );
         if (!isDark) expect(pill.thumb).toBe(c.primarySubtle);
 
         const filled = resolveTabsPaint(theme, 'filled');
         expect(filled.thumb).toBe(surfaceFillOn(theme, theme.colors.background));
         expect(filled.selectedLabel).toBe(theme.colors.text);
-
-
       });
     });
   });
 });
 
 it('keeps the native horizontal viewport intrinsic while retaining caller strip geometry', () => {
-  const tree = renderWithTheme(<Tabs testID="intrinsic-tabs" value="a" variant="underline" style={{ height: 38, paddingLeft: 12, borderBottomWidth: 2 }}>
-    <TabsTrigger value="a" label="First" />
-    <TabsTrigger value="b" label="Second" />
-  </Tabs>);
+  const tree = renderWithTheme(
+    <Tabs
+      testID="intrinsic-tabs"
+      value="a"
+      variant="underline"
+      style={{ height: 38, paddingLeft: 12, borderBottomWidth: 2 }}
+    >
+      <TabsTrigger value="a" label="First" />
+      <TabsTrigger value="b" label="Second" />
+    </Tabs>,
+  );
   const viewport = tree.getByTestId('intrinsic-tabs');
   expect(viewport.props.horizontal).toBe(true);
   expect(flattenStyle(viewport.props.style)).toMatchObject({ flexGrow: 0, flexShrink: 0 });
-  expect(flattenStyle(viewport.props.contentContainerStyle)).toMatchObject({ height: 38, paddingLeft: 12, borderBottomWidth: 2, flexGrow: 1 });
+  expect(flattenStyle(viewport.props.contentContainerStyle)).toMatchObject({
+    height: 38,
+    paddingLeft: 12,
+    borderBottomWidth: 2,
+    flexGrow: 1,
+  });
 });

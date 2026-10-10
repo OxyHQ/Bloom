@@ -76,8 +76,7 @@ export const OVERLAY_STACK_MAX_RANK = 500;
  * The toast layer, pinned above every overlay rank (see the note above on why
  * toasts are not part of the stack).
  */
-export const TOAST_LAYER_Z =
-  OVERLAY_STACK_BASE + OVERLAY_STACK_BAND * (OVERLAY_STACK_MAX_RANK + 1);
+export const TOAST_LAYER_Z = OVERLAY_STACK_BASE + OVERLAY_STACK_BAND * (OVERLAY_STACK_MAX_RANK + 1);
 
 /** The z-indices one overlay surface may use, all within its own band. */
 export interface OverlayLayer {
@@ -102,7 +101,6 @@ interface Registry {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __oxy_so_bloom_overlay_stack__: Registry | undefined;
 }
 

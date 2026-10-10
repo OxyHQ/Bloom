@@ -108,12 +108,17 @@ describe('Rating', () => {
     expect(byTestId('r').getAttribute('aria-label')).toBe('Note 4,5 sur 5');
   });
 
-  it.each(['light', 'dark'] as const)('value is text-primary and count text-secondary (%s)', (mode) => {
-    mount(<Rating value={4.92} count={128} testID="r" />, mode);
-    const [value, count] = Array.from(byTestId('r').querySelectorAll('[dir="auto"]')) as HTMLElement[];
-    expect(getComputedStyle(value as HTMLElement).color).toBe(normalise(colors.text));
-    expect(getComputedStyle(count as HTMLElement).color).toBe(normalise(colors.textSecondary));
-  });
+  it.each(['light', 'dark'] as const)(
+    'value is text-primary and count text-secondary (%s)',
+    (mode) => {
+      mount(<Rating value={4.92} count={128} testID="r" />, mode);
+      const [value, count] = Array.from(
+        byTestId('r').querySelectorAll('[dir="auto"]'),
+      ) as HTMLElement[];
+      expect(getComputedStyle(value as HTMLElement).color).toBe(normalise(colors.text));
+      expect(getComputedStyle(count as HTMLElement).color).toBe(normalise(colors.textSecondary));
+    },
+  );
 
   it('sizes the star 16 at medium and 14 at small', () => {
     mount(<Rating value={4.9} testID="r" />);
@@ -126,7 +131,9 @@ describe('Rating', () => {
 describe('Rating colour override', () => {
   it('color paints the star, the value AND the count, for a brand-coloured hero', () => {
     mount(<Rating value={4.92} count={128} color="#ffffff" testID="r" />);
-    const [value, count] = Array.from(byTestId('r').querySelectorAll('[dir="auto"]')) as HTMLElement[];
+    const [value, count] = Array.from(
+      byTestId('r').querySelectorAll('[dir="auto"]'),
+    ) as HTMLElement[];
     expect(getComputedStyle(value as HTMLElement).color).toBe(normalise('#ffffff'));
     expect(getComputedStyle(count as HTMLElement).color).toBe(normalise('#ffffff'));
     expect(byTestId('r').querySelector('path')?.getAttribute('fill')).toBe('#ffffff');
@@ -134,7 +141,9 @@ describe('Rating colour override', () => {
 
   it('starColor and countColor override their own part only', () => {
     mount(<Rating value={4.92} count={128} starColor="#f5a623" countColor="#eeeeee" testID="r" />);
-    const [value, count] = Array.from(byTestId('r').querySelectorAll('[dir="auto"]')) as HTMLElement[];
+    const [value, count] = Array.from(
+      byTestId('r').querySelectorAll('[dir="auto"]'),
+    ) as HTMLElement[];
     expect(getComputedStyle(value as HTMLElement).color).toBe(normalise(colors.text));
     expect(getComputedStyle(count as HTMLElement).color).toBe(normalise('#eeeeee'));
     expect(byTestId('r').querySelector('path')?.getAttribute('fill')).toBe('#f5a623');
@@ -143,7 +152,13 @@ describe('Rating colour override', () => {
 
 describe('Rating variant="stars"', () => {
   it('fills each star by its share of the value', () => {
-    expect([0, 1, 2, 3, 4].map((i) => starFill(4.3, i).toFixed(2))).toEqual(['1.00', '1.00', '1.00', '1.00', '0.30']);
+    expect([0, 1, 2, 3, 4].map((i) => starFill(4.3, i).toFixed(2))).toEqual([
+      '1.00',
+      '1.00',
+      '1.00',
+      '1.00',
+      '0.30',
+    ]);
     expect([0, 1, 2, 3, 4].map((i) => starFill(0.5, i))).toEqual([0.5, 0, 0, 0, 0]);
     expect(starFill(Number.NaN, 0)).toBe(0);
   });
@@ -265,7 +280,9 @@ describe('RatingBar', () => {
 
   it('fills value / max of the track, clamped', () => {
     mount(<RatingBar label="5" value={0.86} max={1} testID="b" />);
-    expect(byTestId('b-fill').style.width || getComputedStyle(byTestId('b-fill')).width).toBe('86%');
+    expect(byTestId('b-fill').style.width || getComputedStyle(byTestId('b-fill')).width).toBe(
+      '86%',
+    );
     mount(<RatingBar label="x" value={9} testID="b" />);
     expect(byTestId('b-bar').getAttribute('aria-valuenow')).toBe('5');
     expect(getComputedStyle(byTestId('b-fill')).width).toBe('100%');
@@ -333,7 +350,9 @@ function filledCount(): number {
 
 describe('RatingInput', () => {
   it('is a named radiogroup of named radios, one checked', () => {
-    mount(<RatingInput value={4} onChange={() => {}} accessibilityLabel="Overall rating" testID="ri" />);
+    mount(
+      <RatingInput value={4} onChange={() => {}} accessibilityLabel="Overall rating" testID="ri" />,
+    );
     const group = byTestId('ri');
     expect(group.getAttribute('role')).toBe('radiogroup');
     expect(group.getAttribute('aria-label')).toBe('Overall rating');
@@ -356,7 +375,9 @@ describe('RatingInput', () => {
   });
 
   it('nothing chosen: no star is checked', () => {
-    mount(<RatingInput value={null} onChange={() => {}} accessibilityLabel="Cleanliness" testID="ri" />);
+    mount(
+      <RatingInput value={null} onChange={() => {}} accessibilityLabel="Cleanliness" testID="ri" />,
+    );
     expect(stars().map((o) => o.getAttribute('aria-checked'))).toEqual(Array(5).fill('false'));
   });
 
@@ -400,7 +421,9 @@ describe('RatingInput', () => {
 
   it('with nothing chosen, ArrowRight starts at one star', () => {
     const onChange = jest.fn();
-    mount(<RatingInput value={null} onChange={onChange} accessibilityLabel="Overall" testID="ri" />);
+    mount(
+      <RatingInput value={null} onChange={onChange} accessibilityLabel="Overall" testID="ri" />,
+    );
     keyDown(byTestId('ri-star-1'), 'ArrowRight');
     expect(onChange).toHaveBeenCalledWith(1);
   });
@@ -408,20 +431,32 @@ describe('RatingInput', () => {
   it('the tab stop roves onto the chosen star, and is the first one while nothing is chosen', () => {
     mount(<RatingInput value={4} onChange={() => {}} accessibilityLabel="Overall" testID="ri" />);
     expect(stars().map((o) => o.getAttribute('tabindex'))).toEqual(['-1', '-1', '-1', '0', '-1']);
-    mount(<RatingInput value={null} onChange={() => {}} accessibilityLabel="Overall" testID="ri" />);
+    mount(
+      <RatingInput value={null} onChange={() => {}} accessibilityLabel="Overall" testID="ri" />,
+    );
     expect(stars().map((o) => o.getAttribute('tabindex'))).toEqual(['0', '-1', '-1', '-1', '-1']);
   });
 
   it('draws one filled star per chosen star, and none while nothing is chosen', () => {
     mount(<RatingInput value={3} onChange={() => {}} accessibilityLabel="Overall" testID="ri" />);
     expect(filledCount()).toBe(3);
-    mount(<RatingInput value={null} onChange={() => {}} accessibilityLabel="Overall" testID="ri" />);
+    mount(
+      <RatingInput value={null} onChange={() => {}} accessibilityLabel="Overall" testID="ri" />,
+    );
     expect(filledCount()).toBe(0);
   });
 
   it('disabled: no tab stop, aria-disabled on the group, and a press changes nothing', () => {
     const onChange = jest.fn();
-    mount(<RatingInput value={2} onChange={onChange} disabled accessibilityLabel="Overall" testID="ri" />);
+    mount(
+      <RatingInput
+        value={2}
+        onChange={onChange}
+        disabled
+        accessibilityLabel="Overall"
+        testID="ri"
+      />,
+    );
     expect(byTestId('ri').getAttribute('aria-disabled')).toBe('true');
     expect(stars().map((o) => o.getAttribute('tabindex'))).toEqual(Array(5).fill('-1'));
     click(byTestId('ri-star-5'));
@@ -430,10 +465,14 @@ describe('RatingInput', () => {
   });
 
   it('max sets the number of stars, and the value is clamped into it', () => {
-    mount(<RatingInput max={10} value={7} onChange={() => {}} accessibilityLabel="Score" testID="ri" />);
+    mount(
+      <RatingInput max={10} value={7} onChange={() => {}} accessibilityLabel="Score" testID="ri" />,
+    );
     expect(stars()).toHaveLength(10);
     expect(filledCount()).toBe(7);
-    mount(<RatingInput max={5} value={99} onChange={() => {}} accessibilityLabel="Score" testID="ri" />);
+    mount(
+      <RatingInput max={5} value={99} onChange={() => {}} accessibilityLabel="Score" testID="ri" />,
+    );
     expect(filledCount()).toBe(5);
     expect(stars()[4]!.getAttribute('aria-checked')).toBe('true');
   });
@@ -458,28 +497,48 @@ describe('RatingInput', () => {
   });
 
   it('sizes the star 24 / 32 / 40', () => {
-    mount(<RatingInput size="sm" value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />);
+    mount(
+      <RatingInput size="sm" value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />,
+    );
     expect(byTestId('ri-star-1').querySelector('svg')?.getAttribute('width')).toBe('24');
     mount(<RatingInput value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />);
     expect(byTestId('ri-star-1').querySelector('svg')?.getAttribute('width')).toBe('32');
-    mount(<RatingInput size="lg" value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />);
+    mount(
+      <RatingInput size="lg" value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />,
+    );
     expect(byTestId('ri-star-1').querySelector('svg')?.getAttribute('width')).toBe('40');
   });
 });
 
-
 it('exposes required and invalid Field state on the rating radiogroup', () => {
-  mount(<Field label="Overall" required error="Choose a rating"><RatingInput value={null} onChange={() => {}} testID="ri" /></Field>);
+  mount(
+    <Field label="Overall" required error="Choose a rating">
+      <RatingInput value={null} onChange={() => {}} testID="ri" />
+    </Field>,
+  );
   const group = byTestId('ri');
   expect(group.getAttribute('aria-required')).toBe('true');
   expect(group.getAttribute('aria-invalid')).toBe('true');
-  expect(document.getElementById(group.getAttribute('aria-describedby')!)?.textContent).toContain('Choose a rating');
+  expect(document.getElementById(group.getAttribute('aria-describedby')!)?.textContent).toContain(
+    'Choose a rating',
+  );
 });
 
 it('can render only the five glyphs at a custom size while preserving the complete accessible name', () => {
-  mount(<Rating value={4.5} count={12} variant="stars" showValue={false} starSize={20} testID="rating" />);
+  mount(
+    <Rating
+      value={4.5}
+      count={12}
+      variant="stars"
+      showValue={false}
+      starSize={20}
+      testID="rating"
+    />,
+  );
   const rating = byTestId('rating');
   expect(rating.textContent).not.toContain('4.5');
   expect(rating.getAttribute('aria-label')).toContain('4.5');
-  expect(Array.from(rating.querySelectorAll('svg')).every(svg => svg.getAttribute('width') === '20')).toBe(true);
+  expect(
+    Array.from(rating.querySelectorAll('svg')).every((svg) => svg.getAttribute('width') === '20'),
+  ).toBe(true);
 });

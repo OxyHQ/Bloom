@@ -3,12 +3,16 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ButtonGroup, ButtonGroupItem } from './index';
-import { RiAddLine as Plus, RiArrowLeftLine as ArrowLeft, RiArrowRightLine as ArrowRight } from '../icons/remix';
+import {
+  RiAddLine as Plus,
+  RiArrowLeftLine as ArrowLeft,
+  RiArrowRightLine as ArrowRight,
+} from '../icons/remix';
 
 const meta: Meta<typeof ButtonGroup> = {
   argTypes: {
-    "size": { control: 'select', options: ["sm","md"] },
-    "dividers": { control: 'boolean' }
+    size: { control: 'select', options: ['sm', 'md'] },
+    dividers: { control: 'boolean' },
   },
   title: 'Base/Button Group',
   component: ButtonGroup,
@@ -34,7 +38,11 @@ function SelectableGroup({ size }: { size: 'md' | 'sm' }) {
   return (
     <ButtonGroup size={size} accessibilityLabel="Range">
       {['day', 'week', 'month'].map((value) => (
-        <ButtonGroupItem key={value} checked={selected === value} onPress={() => setSelected(value)}>
+        <ButtonGroupItem
+          key={value}
+          checked={selected === value}
+          onPress={() => setSelected(value)}
+        >
           {value[0]?.toUpperCase() + value.slice(1)}
         </ButtonGroupItem>
       ))}
@@ -73,10 +81,10 @@ export const Matrix: Story = {
 /** One pane with flush item hit targets; no nested item material. */
 export const Glass: Story = {
   args: {},
-  parameters: { controls: { include: ["size","dividers"] } },
+  parameters: { controls: { include: ['size', 'dividers'] } },
   render: (args) => (
     <View style={{ padding: 24, alignItems: 'flex-start', backgroundColor: '#dcece6' }}>
-      <ButtonGroup {...args}  accessibilityLabel="Floating actions">
+      <ButtonGroup {...args} accessibilityLabel="Floating actions">
         <ButtonGroupItem iconOnly leadingIcon={ArrowLeft} accessibilityLabel="Back" />
         <ButtonGroupItem leadingIcon={Plus}>Add</ButtonGroupItem>
         <ButtonGroupItem iconOnly leadingIcon={ArrowRight} accessibilityLabel="Next" />

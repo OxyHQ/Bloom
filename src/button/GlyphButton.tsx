@@ -165,8 +165,20 @@ function GlyphButtonComponent(
       aria-expanded={ariaExpanded}
       {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
       disabled={disabled}
-      onPress={onPress ? event => { if (!blocked) onPress(event); } : undefined}
-      onLongPress={onLongPress ? event => { if (!blocked) onLongPress(event); } : undefined}
+      onPress={
+        onPress
+          ? (event) => {
+              if (!blocked) onPress(event);
+            }
+          : undefined
+      }
+      onLongPress={
+        onLongPress
+          ? (event) => {
+              if (!blocked) onLongPress(event);
+            }
+          : undefined
+      }
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       onPressIn={onPressIn}

@@ -116,7 +116,9 @@ function DestinationSuggestionsComponent({
 
   // React Native's `Role` has no `listbox`, and `onKeyDown` is a DOM handler;
   // react-native-web passes both through, so they travel as web-only props.
-  const webListProps: Record<string, unknown> = IS_WEB ? { role: 'listbox', tabIndex: 0, onKeyDown } : {};
+  const webListProps: Record<string, unknown> = IS_WEB
+    ? { role: 'listbox', tabIndex: 0, onKeyDown }
+    : {};
   const listStyle: WebCssStyle = { gap: 2, '--bloom-destination-ring': accent[500] };
   const listName = accessibilityLabel ?? heading ?? messages.destinations;
 
@@ -141,7 +143,9 @@ function DestinationSuggestionsComponent({
           const Icon = item.icon ?? RiMapPinLine;
           const disabled = item.disabled === true;
           const selected = index === current && !disabled;
-          const secondLine = disabled ? (item.disabledReason ?? item.description) : item.description;
+          const secondLine = disabled
+            ? (item.disabledReason ?? item.description)
+            : item.description;
           return (
             <Pressable
               key={item.id}
@@ -186,7 +190,11 @@ function DestinationSuggestionsComponent({
                   {item.title}
                 </Text>
                 {secondLine ? (
-                  <Text variant="body-2-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+                  <Text
+                    variant="body-2-regular"
+                    numberOfLines={1}
+                    style={{ color: palette.textSecondary }}
+                  >
                     {secondLine}
                   </Text>
                 ) : null}

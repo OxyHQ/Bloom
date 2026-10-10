@@ -30,7 +30,16 @@ import { PEOPLE } from './data';
 //  Navigation between the template's pages
 // ---------------------------------------------------------------------------
 
-export type HousingPage = 'explore' | 'rent' | 'sale' | 'stay' | 'swap' | 'my-home' | 'evictions' | 'publish' | 'saved';
+export type HousingPage =
+  | 'explore'
+  | 'rent'
+  | 'sale'
+  | 'stay'
+  | 'swap'
+  | 'my-home'
+  | 'evictions'
+  | 'publish'
+  | 'saved';
 
 const NavContext = createContext<(page: HousingPage) => void>(() => {});
 const PageContext = createContext<HousingPage>('explore');
@@ -117,10 +126,20 @@ export function HousingFrame({
     { key: 'explore', label: 'Explore', icon: RiCompass3Line, onPress: () => go('explore') },
     { key: 'saved', label: 'Saved', icon: RiBookmarkLine, onPress: () => go('saved') },
     { key: 'my-home', label: 'My home', icon: RiHome4Line, onPress: () => go('my-home') },
-    { key: 'evictions', label: 'Evictions', icon: RiAlarmWarningLine, onPress: () => go('evictions') },
+    {
+      key: 'evictions',
+      label: 'Evictions',
+      icon: RiAlarmWarningLine,
+      onPress: () => go('evictions'),
+    },
   ];
   const secondaryItems: SidebarNavItem[] = [
-    { key: 'publish', label: 'List your home', icon: RiMegaphoneLine, onPress: () => go('publish') },
+    {
+      key: 'publish',
+      label: 'List your home',
+      icon: RiMegaphoneLine,
+      onPress: () => go('publish'),
+    },
   ];
 
   return (
@@ -131,7 +150,11 @@ export function HousingFrame({
         // shell's header slot stays empty rather than stacking a second one.
         header={null}
         sidebar={{
-          logo: { icon: <HousingMark size={28} />, wordmark: 'Homes', onPress: () => go('explore') },
+          logo: {
+            icon: <HousingMark size={28} />,
+            wordmark: 'Homes',
+            onPress: () => go('explore'),
+          },
           items,
           secondaryItems,
           selected: page,
@@ -167,7 +190,13 @@ export function PageColumn({
   return (
     <View
       style={[
-        { width: '100%', maxWidth: maxWidth + gutter * 2, alignSelf: 'center', paddingLeft: gutter, paddingRight: gutter },
+        {
+          width: '100%',
+          maxWidth: maxWidth + gutter * 2,
+          alignSelf: 'center',
+          paddingLeft: gutter,
+          paddingRight: gutter,
+        },
         style,
       ]}
     >
@@ -206,7 +235,11 @@ export function HousingMark({ size = 32 }: { size?: number }) {
         backgroundColor: theme.colors.primary,
       }}
     >
-      <RiHome4Line width={Math.round(size * 0.6)} height={Math.round(size * 0.6)} fill={theme.colors.primaryForeground} />
+      <RiHome4Line
+        width={Math.round(size * 0.6)}
+        height={Math.round(size * 0.6)}
+        fill={theme.colors.primaryForeground}
+      />
     </View>
   );
 }
@@ -273,11 +306,24 @@ function HeaderActions({ listHome = true }: { listHome?: boolean }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       {listHome ? (
-        <Button  size="md" onPress={() => go('publish')} testID="housing-list-home" tone="accent" appearance="subtle">
+        <Button
+          size="md"
+          onPress={() => go('publish')}
+          testID="housing-list-home"
+          tone="accent"
+          appearance="subtle"
+        >
           List your home
         </Button>
       ) : null}
-      <Button  size="md" iconOnly leadingIcon={RiGlobalLine} accessibilityLabel="Language and currency" tone="accent" appearance="subtle" />
+      <Button
+        size="md"
+        iconOnly
+        leadingIcon={RiGlobalLine}
+        accessibilityLabel="Language and currency"
+        tone="accent"
+        appearance="subtle"
+      />
     </View>
   );
 }
@@ -309,17 +355,33 @@ export interface HousingHeaderProps {
  * Below `lg`: the nav pill, `compact` in the middle, the page actions;
  * `compactBelow` under it. A hairline closes it.
  */
-export function HousingHeader({ tabs, search, compact, compactBelow, maxWidth = 1280 }: HousingHeaderProps) {
+export function HousingHeader({
+  tabs,
+  search,
+  compact,
+  compactBelow,
+  maxWidth = 1280,
+}: HousingHeaderProps) {
   const theme = useTheme();
   const { md, lg } = useHousingLayout();
 
   return (
     // Above the content that follows (a sticky category row), so an open
     // search panel paints over it.
-    <View style={{ zIndex: Z_INDEX.dropdown, backgroundColor: theme.colors.background }} testID="housing-header">
+    <View
+      style={{ zIndex: Z_INDEX.dropdown, backgroundColor: theme.colors.background }}
+      testID="housing-header"
+    >
       {lg ? (
         <PageColumn maxWidth={maxWidth} style={{ paddingBottom: search ? 20 : 0 }}>
-          <View style={{ height: 80, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View
+            style={{
+              height: 80,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <View style={{ flex: 1, alignItems: 'flex-start' }}>
               <NavToggle />
             </View>

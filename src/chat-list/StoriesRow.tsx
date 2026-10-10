@@ -8,12 +8,7 @@ import { RiAddFill } from '../icons/remix/RiAddFill';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import {
-  CHAT_LIST_CSS,
-  CHAT_LIST_STYLE_ID,
-  resolveChatListPaint,
-  sortStories,
-} from './shared';
+import { CHAT_LIST_CSS, CHAT_LIST_STYLE_ID, resolveChatListPaint, sortStories } from './shared';
 import type { StoriesRowProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CHAT_LIST_MESSAGES } from './messages';
@@ -134,10 +129,7 @@ function StoriesRowComponent({
           </View>
         ) : null}
         {ordered.map((story) => (
-          <View
-            key={story.id}
-            style={{ alignItems: 'center', gap: NAME_GAP, width: footprint }}
-          >
+          <View key={story.id} style={{ alignItems: 'center', gap: NAME_GAP, width: footprint }}>
             <StoryRing
               state={story.state ?? 'unseen'}
               size={size}

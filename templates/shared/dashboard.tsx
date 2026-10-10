@@ -116,7 +116,20 @@ export function makeRng(seed: number): () => number {
   };
 }
 
-export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 /** `Date.parse("Oct 28, 2026")` without relying on the engine's loose date parser. */
 export function dateValue(label: string): number {
@@ -145,7 +158,12 @@ export const NAV_ITEMS: SidebarNavItem[] = [
   { key: 'finance', label: 'Finance', icon: RiBankLine, href: '#finance' },
   { key: 'medical', label: 'Medical Report', icon: RiAsterisk, href: '#medical-profile' },
   { key: 'ai-chat', label: 'AI Chat', icon: RiChatAiLine, href: '#ai-chat' },
-  { key: 'ai-image', label: 'AI Image Generation', icon: RiImageAiLine, href: '#ai-image-generation' },
+  {
+    key: 'ai-image',
+    label: 'AI Image Generation',
+    icon: RiImageAiLine,
+    href: '#ai-image-generation',
+  },
   { key: 'profile', label: 'Profile', icon: RiUserSmileLine, href: '#ai-profile' },
 ];
 
@@ -346,10 +364,16 @@ export function DashboardShell({
             leading={<AppShellMenuButton />}
             subtitle={
               <Breadcrumb>
-                <BreadcrumbItem href="#dashboard" leading={<Avatar size="xs" color="blue" initials="B" />}>
+                <BreadcrumbItem
+                  href="#dashboard"
+                  leading={<Avatar size="xs" color="blue" initials="B" />}
+                >
                   Design team
                 </BreadcrumbItem>
-                <BreadcrumbItem href="#dashboard" leading={<Avatar size="xs" color="neutral" initials="M" />}>
+                <BreadcrumbItem
+                  href="#dashboard"
+                  leading={<Avatar size="xs" color="neutral" initials="M" />}
+                >
                   Maya
                 </BreadcrumbItem>
                 <BreadcrumbItem current icon={crumbIcon}>
@@ -394,14 +418,23 @@ export function useBreakpoints() {
 
 const GRID_GAP = 16;
 const TRACK: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 };
-const ROW: ViewStyle = { width: '100%', flexDirection: 'row', alignItems: 'stretch', gap: GRID_GAP };
+const ROW: ViewStyle = {
+  width: '100%',
+  flexDirection: 'row',
+  alignItems: 'stretch',
+  gap: GRID_GAP,
+};
 const STACK: ViewStyle = { width: '100%', gap: GRID_GAP };
 
 /**
  * `grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3`, the third card
  * `md:col-span-2 xl:col-span-1`. Cards on a row stretch to the tallest.
  */
-export function ThreeUpChartRow({ children }: { children: [React.ReactNode, React.ReactNode, React.ReactNode] }) {
+export function ThreeUpChartRow({
+  children,
+}: {
+  children: [React.ReactNode, React.ReactNode, React.ReactNode];
+}) {
   const bp = useBreakpoints();
   const [a, b, c] = children;
   if (bp.xl) {
@@ -464,9 +497,24 @@ export const DELETE_EDIT_ACTIONS: readonly DataTableRowActionItem[] = [
 ];
 
 /** `flex min-w-0 items-center gap-2` — a leading mark and the row's name. */
-export function NameCell({ leading, children }: { leading: React.ReactNode; children: React.ReactNode }) {
+export function NameCell({
+  leading,
+  children,
+}: {
+  leading: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0, flexShrink: 1, maxWidth: '100%' }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        minWidth: 0,
+        flexShrink: 1,
+        maxWidth: '100%',
+      }}
+    >
       {leading}
       {children}
     </View>
@@ -477,7 +525,11 @@ export function NameCell({ leading, children }: { leading: React.ReactNode; chil
 export function CellText({ children }: { children: string }) {
   const theme = useTheme();
   return (
-    <Text numberOfLines={1} variant="body-medium" style={{ flexShrink: 1, color: theme.colors.text }}>
+    <Text
+      numberOfLines={1}
+      variant="body-medium"
+      style={{ flexShrink: 1, color: theme.colors.text }}
+    >
       {children}
     </Text>
   );
@@ -492,7 +544,11 @@ export function NameLines({ name, detail }: { name: string; detail?: string }) {
         {name}
       </Text>
       {detail != null ? (
-        <Text numberOfLines={1} variant="body-2-medium" style={{ color: theme.colors.textSecondary }}>
+        <Text
+          numberOfLines={1}
+          variant="body-2-medium"
+          style={{ color: theme.colors.textSecondary }}
+        >
           {detail}
         </Text>
       ) : null}

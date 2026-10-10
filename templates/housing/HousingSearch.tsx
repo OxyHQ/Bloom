@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 
-import { Button , LinkButton } from '../../src/button';
+import { Button, LinkButton } from '../../src/button';
 import { RangeCalendar, type DateRange } from '../../src/date-picker';
 import { Dialog, useDialogControl } from '../../src/dialog';
 import { Divider } from '../../src/divider';
@@ -90,7 +90,8 @@ export function useHomeSearch(initialMode: HomeSearchMode = 'rent') {
 
 export type HomeSearchState = ReturnType<typeof useHomeSearch>;
 
-const suggestionsFor = (mode: HomeSearchMode) => (mode === 'rent' || mode === 'buy' ? AREAS : DESTINATIONS);
+const suggestionsFor = (mode: HomeSearchMode) =>
+  mode === 'rent' || mode === 'buy' ? AREAS : DESTINATIONS;
 
 function matching(items: DestinationSuggestion[], query: string) {
   return items.filter((item) => item.title.toLowerCase().includes(query.toLowerCase()));
@@ -115,11 +116,21 @@ export function searchSummary(search: HomeSearchState): string {
   const where = v.location ?? 'Anywhere';
   switch (mode) {
     case 'rent':
-      return [where, moveInSummary(v.moveIn) ?? 'Any time', rangeSummary(v.budget, euro) ?? 'Any budget'].join(' · ');
+      return [
+        where,
+        moveInSummary(v.moveIn) ?? 'Any time',
+        rangeSummary(v.budget, euro) ?? 'Any budget',
+      ].join(' · ');
     case 'buy':
-      return [where, rangeSummary(v.price, euroShort) ?? 'Any price', typesSummary(v.types) ?? 'Any type'].join(' · ');
+      return [
+        where,
+        rangeSummary(v.price, euroShort) ?? 'Any price',
+        typesSummary(v.types) ?? 'Any type',
+      ].join(' · ');
     case 'stays':
-      return [where, datesSummary(v) ?? 'Any week', guestSummary(v.guests) ?? 'Add guests'].join(' · ');
+      return [where, datesSummary(v) ?? 'Any week', guestSummary(v.guests) ?? 'Add guests'].join(
+        ' · ',
+      );
     case 'swap':
       return [where, formatRange(v.range) ?? 'Any dates', sizeSummary(v) ?? 'Any size'].join(' · ');
   }
@@ -130,7 +141,9 @@ export function searchSummary(search: HomeSearchState): string {
 // ---------------------------------------------------------------------------
 
 export function DesktopModeTabs({ search }: { search: HomeSearchState }) {
-  return <SearchModeTabs value={search.mode} onValueChange={search.setMode} testID="housing-modes" />;
+  return (
+    <SearchModeTabs value={search.mode} onValueChange={search.setMode} testID="housing-modes" />
+  );
 }
 
 function DatesPanel({ search, onDone }: { search: HomeSearchState; onDone?: () => void }) {
@@ -146,7 +159,10 @@ function DatesPanel({ search, onDone }: { search: HomeSearchState; onDone?: () =
           visibleMonths={2}
           defaultMonth={START_MONTH}
         />
-        <DateFlexibilityChips value={search.values.flex} onChange={(flex) => search.set({ flex })} />
+        <DateFlexibilityChips
+          value={search.values.flex}
+          onChange={(flex) => search.set({ flex })}
+        />
       </View>
     </StaySearchPanel>
   );
@@ -173,40 +189,95 @@ function HomeSizeRows({ search }: { search: HomeSearchState }) {
   const { values, set } = search;
   return (
     <>
-      <StepperRow title="Bedrooms" description="At least" value={values.bedrooms} onValueChange={(bedrooms) => set({ bedrooms })} max={8} divider />
-      <StepperRow title="Sleeps" description="People the home fits" value={values.sleeps} onValueChange={(sleeps) => set({ sleeps })} max={16} />
+      <StepperRow
+        title="Bedrooms"
+        description="At least"
+        value={values.bedrooms}
+        onValueChange={(bedrooms) => set({ bedrooms })}
+        max={8}
+        divider
+      />
+      <StepperRow
+        title="Sleeps"
+        description="People the home fits"
+        value={values.sleeps}
+        onValueChange={(sleeps) => set({ sleeps })}
+        max={16}
+      />
     </>
   );
 }
 
-function panelFor(search: HomeSearchState, segment: string | null, go: (segment: string | null) => void): React.ReactNode {
+function panelFor(
+  search: HomeSearchState,
+  segment: string | null,
+  go: (segment: string | null) => void,
+): React.ReactNode {
   const { mode, values, set } = search;
   if (segment === null) return null;
   switch (segment) {
     case 'location':
     case 'destination':
-      return <LocationPanel search={search} onDone={() => go({ rent: 'moveIn', buy: 'price', stays: 'checkIn', swap: 'dates' }[mode])} />;
+      return (
+        <LocationPanel
+          search={search}
+          onDone={() => go({ rent: 'moveIn', buy: 'price', stays: 'checkIn', swap: 'dates' }[mode])}
+        />
+      );
     case 'moveIn':
       return (
-        <StaySearchPanel width={380} padding={24} accessibilityLabel="Move-in" testID="housing-panel-move-in">
-          <MoveInPicker value={values.moveIn} onValueChange={(moveIn) => set({ moveIn })} defaultMonth={START_MONTH} />
+        <StaySearchPanel
+          width={380}
+          padding={24}
+          accessibilityLabel="Move-in"
+          testID="housing-panel-move-in"
+        >
+          <MoveInPicker
+            value={values.moveIn}
+            onValueChange={(moveIn) => set({ moveIn })}
+            defaultMonth={START_MONTH}
+          />
         </StaySearchPanel>
       );
     case 'budget':
       return (
-        <StaySearchPanel width={420} padding={24} accessibilityLabel="Budget" testID="housing-panel-budget">
-          <BudgetPicker value={values.budget} onValueChange={(budget) => set({ budget })} formatAmount={euro} />
+        <StaySearchPanel
+          width={420}
+          padding={24}
+          accessibilityLabel="Budget"
+          testID="housing-panel-budget"
+        >
+          <BudgetPicker
+            value={values.budget}
+            onValueChange={(budget) => set({ budget })}
+            formatAmount={euro}
+          />
         </StaySearchPanel>
       );
     case 'price':
       return (
-        <StaySearchPanel width={440} padding={24} accessibilityLabel="Price" testID="housing-panel-price">
-          <BudgetPicker period="total" value={values.price} onValueChange={(price) => set({ price })} formatAmount={euroShort} />
+        <StaySearchPanel
+          width={440}
+          padding={24}
+          accessibilityLabel="Price"
+          testID="housing-panel-price"
+        >
+          <BudgetPicker
+            period="total"
+            value={values.price}
+            onValueChange={(price) => set({ price })}
+            formatAmount={euroShort}
+          />
         </StaySearchPanel>
       );
     case 'propertyType':
       return (
-        <StaySearchPanel width={460} padding={20} accessibilityLabel="Property type" testID="housing-panel-type">
+        <StaySearchPanel
+          width={460}
+          padding={20}
+          accessibilityLabel="Property type"
+          testID="housing-panel-type"
+        >
           <PropertyTypePicker value={values.types} onValueChange={(types) => set({ types })} />
         </StaySearchPanel>
       );
@@ -217,15 +288,29 @@ function panelFor(search: HomeSearchState, segment: string | null, go: (segment:
       return <DatesPanel search={search} />;
     case 'guests':
       return (
-        <StaySearchPanel width={400} padding={8} accessibilityLabel="Guests" testID="housing-panel-guests">
+        <StaySearchPanel
+          width={400}
+          padding={8}
+          accessibilityLabel="Guests"
+          testID="housing-panel-guests"
+        >
           <View style={{ paddingLeft: 24, paddingRight: 24 }}>
-            <GuestPicker value={values.guests} onChange={(guests) => set({ guests })} max={{ adults: 16, children: 15, infants: 5, pets: 5 }} />
+            <GuestPicker
+              value={values.guests}
+              onChange={(guests) => set({ guests })}
+              max={{ adults: 16, children: 15, infants: 5, pets: 5 }}
+            />
           </View>
         </StaySearchPanel>
       );
     case 'homeSize':
       return (
-        <StaySearchPanel width={380} padding={8} accessibilityLabel="Home size" testID="housing-panel-size">
+        <StaySearchPanel
+          width={380}
+          padding={8}
+          accessibilityLabel="Home size"
+          testID="housing-panel-size"
+        >
           <View style={{ paddingLeft: 24, paddingRight: 24 }}>
             <HomeSizeRows search={search} />
           </View>
@@ -262,7 +347,10 @@ export function DesktopSearchBar({ search }: { search: HomeSearchState }) {
         onDestinationQueryChange={(query) => set({ query })}
         dates={
           values.range
-            ? { checkIn: `${formatDay(values.range.start)}${flex}`, checkOut: `${formatDay(values.range.end)}${flex}` }
+            ? {
+                checkIn: `${formatDay(values.range.start)}${flex}`,
+                checkOut: `${formatDay(values.range.end)}${flex}`,
+              }
             : undefined
         }
         guests={guestSummary(values.guests)}
@@ -332,7 +420,13 @@ interface MobileStep {
   content: React.ReactNode;
 }
 
-export function MobileSearch({ search, onFilterPress }: { search: HomeSearchState; onFilterPress?: () => void }) {
+export function MobileSearch({
+  search,
+  onFilterPress,
+}: {
+  search: HomeSearchState;
+  onFilterPress?: () => void;
+}) {
   const { height } = useWindowDimensions();
   const control = useDialogControl();
   const [open, setOpen] = useState('location');
@@ -366,7 +460,11 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
 
   const calendar = (
     <View style={{ marginLeft: -16, marginRight: -16, alignItems: 'center' }}>
-      <RangeCalendar value={values.range} onChange={(range) => set({ range })} defaultMonth={START_MONTH} />
+      <RangeCalendar
+        value={values.range}
+        onChange={(range) => set({ range })}
+        defaultMonth={START_MONTH}
+      />
     </View>
   );
 
@@ -378,14 +476,26 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
         label: 'Move-in',
         title: 'When do you move in?',
         summary: moveInSummary(values.moveIn) ?? 'Any time',
-        content: <MoveInPicker value={values.moveIn} onValueChange={(moveIn) => set({ moveIn })} defaultMonth={START_MONTH} />,
+        content: (
+          <MoveInPicker
+            value={values.moveIn}
+            onValueChange={(moveIn) => set({ moveIn })}
+            defaultMonth={START_MONTH}
+          />
+        ),
       },
       {
         key: 'budget',
         label: 'Budget',
         title: 'What’s your budget?',
         summary: rangeSummary(values.budget, euro) ?? 'Any',
-        content: <BudgetPicker value={values.budget} onValueChange={(budget) => set({ budget })} formatAmount={euro} />,
+        content: (
+          <BudgetPicker
+            value={values.budget}
+            onValueChange={(budget) => set({ budget })}
+            formatAmount={euro}
+          />
+        ),
       },
     ],
     buy: [
@@ -395,14 +505,23 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
         label: 'Price',
         title: 'Your price range',
         summary: rangeSummary(values.price, euroShort) ?? 'Any',
-        content: <BudgetPicker period="total" value={values.price} onValueChange={(price) => set({ price })} formatAmount={euroShort} />,
+        content: (
+          <BudgetPicker
+            period="total"
+            value={values.price}
+            onValueChange={(price) => set({ price })}
+            formatAmount={euroShort}
+          />
+        ),
       },
       {
         key: 'propertyType',
         label: 'Type',
         title: 'What kind of home?',
         summary: typesSummary(values.types) ?? 'Any type',
-        content: <PropertyTypePicker value={values.types} onValueChange={(types) => set({ types })} />,
+        content: (
+          <PropertyTypePicker value={values.types} onValueChange={(types) => set({ types })} />
+        ),
       },
     ],
     stays: [
@@ -424,12 +543,20 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
         label: 'Who',
         title: 'Who’s coming?',
         summary: guestSummary(values.guests) ?? 'Add guests',
-        content: <GuestPicker value={values.guests} onChange={(guests) => set({ guests })} max={16} />,
+        content: (
+          <GuestPicker value={values.guests} onChange={(guests) => set({ guests })} max={16} />
+        ),
       },
     ],
     swap: [
       where,
-      { key: 'dates', label: 'Dates', title: 'When do you swap?', summary: formatRange(values.range) ?? 'Any dates', content: calendar },
+      {
+        key: 'dates',
+        label: 'Dates',
+        title: 'When do you swap?',
+        summary: formatRange(values.range) ?? 'Any dates',
+        content: calendar,
+      },
       {
         key: 'homeSize',
         label: 'Home size',
@@ -467,7 +594,13 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
         <View style={{ height: Math.min(760, height * 0.88) }}>
           <ScrollView
             style={{ flex: 1 }}
-            contentContainerStyle={{ paddingTop: 16, paddingBottom: 16, paddingLeft: 12, paddingRight: 12, gap: 12 }}
+            contentContainerStyle={{
+              paddingTop: 16,
+              paddingBottom: 16,
+              paddingLeft: 12,
+              paddingRight: 12,
+              gap: 12,
+            }}
           >
             <MobileModeTabs search={search} />
             {steps[mode].map((step) => (
@@ -497,7 +630,6 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
             }}
           >
             <LinkButton
-
               onPress={() => {
                 search.clear();
                 setOpen('location');
@@ -505,7 +637,14 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
             >
               Clear all
             </LinkButton>
-            <Button  size="lg" leadingIcon={RiSearchLine} onPress={() => control.close()} testID="housing-mobile-search-submit" tone="accent" appearance="solid">
+            <Button
+              size="lg"
+              leadingIcon={RiSearchLine}
+              onPress={() => control.close()}
+              testID="housing-mobile-search-submit"
+              tone="accent"
+              appearance="solid"
+            >
               Search
             </Button>
           </View>

@@ -13,7 +13,11 @@ function CurrentPreset() {
 }
 
 function StyledChild({ style }: { style?: StyleProp<ViewStyle> }) {
-  return <View testID="styled-child" style={style}><CurrentPreset /></View>;
+  return (
+    <View testID="styled-child" style={style}>
+      <CurrentPreset />
+    </View>
+  );
 }
 
 describe('BloomColorScope', () => {
@@ -44,9 +48,7 @@ describe('BloomColorScope', () => {
     expect(getByTestId('preset').props.children).toBe('purple');
     const mergedStyle = getByTestId('styled-child').props.style;
     expect(Array.isArray(mergedStyle)).toBe(true);
-    expect(mergedStyle).toEqual(
-      expect.arrayContaining([expect.objectContaining({ padding: 8 })]),
-    );
+    expect(mergedStyle).toEqual(expect.arrayContaining([expect.objectContaining({ padding: 8 })]));
   });
 
   it('is a no-op when colorPreset is undefined (children inherit parent scope)', () => {
@@ -191,7 +193,9 @@ describe('BloomColorScope', () => {
       // The child's own array styles must be preserved (and win over scope vars).
       const flat = (Array.isArray(mergedStyle) ? mergedStyle : [mergedStyle])
         .flat(Infinity)
-        .filter((entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object');
+        .filter(
+          (entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object',
+        );
       expect(flat).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ padding: 8 }),
@@ -219,10 +223,10 @@ describe('BloomColorScope', () => {
       expect(mergedStyle).toEqual(expect.objectContaining({ padding: 8 }));
       const flat = (Array.isArray(mergedStyle) ? mergedStyle : [mergedStyle])
         .flat(Infinity)
-        .filter((entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object');
-      expect(flat).toEqual(
-        expect.arrayContaining([expect.objectContaining({ padding: 8 })]),
-      );
+        .filter(
+          (entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object',
+        );
+      expect(flat).toEqual(expect.arrayContaining([expect.objectContaining({ padding: 8 })]));
 
       // Web var contract: the scoped base tokens (`--background`, `--primary`)
       // must be full `rgb(...)` colors from the single canonical pipeline, and
@@ -232,10 +236,7 @@ describe('BloomColorScope', () => {
       const vars = Object.assign(
         {},
         ...flat.filter(
-          (entry) =>
-            '--background' in entry ||
-            '--primary' in entry ||
-            '--color-primary' in entry,
+          (entry) => '--background' in entry || '--primary' in entry || '--color-primary' in entry,
         ),
       ) as Record<string, unknown>;
       const background = String(vars['--background'] ?? '');

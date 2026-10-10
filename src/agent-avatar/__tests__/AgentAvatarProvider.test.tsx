@@ -26,10 +26,7 @@ describe('runtime-scoped avatar capabilities', () => {
       <Consumer />
     </AgentAvatarProvider>
   );
-  const capabilities = (
-    available: boolean,
-    selected = 'oval',
-  ): CharacterCapabilities => ({
+  const capabilities = (available: boolean, selected = 'oval'): CharacterCapabilities => ({
     key: 'same-saved-recipe',
     available: { 'eyes:dots': available },
     selected: { eyes: selected },
@@ -44,15 +41,9 @@ describe('runtime-scoped avatar capabilities', () => {
 
   it('replaces stale availability and actual selections for the same saved recipe', () => {
     act(() => context.reportCapabilities!(capabilities(false)));
-    expect(
-      context.capabilitiesByKey!.get('same-saved-recipe')!.available[
-        'eyes:dots'
-      ],
-    ).toBe(false);
+    expect(context.capabilitiesByKey!.get('same-saved-recipe')!.available['eyes:dots']).toBe(false);
     act(() => context.reportCapabilities!(capabilities(true, 'dots')));
-    expect(context.capabilitiesByKey!.get('same-saved-recipe')).toEqual(
-      capabilities(true, 'dots'),
-    );
+    expect(context.capabilitiesByKey!.get('same-saved-recipe')).toEqual(capabilities(true, 'dots'));
     const previousMap = context.capabilitiesByKey;
     act(() => context.reportCapabilities!(capabilities(true, 'dots')));
     expect(context.capabilitiesByKey).toBe(previousMap);
@@ -63,15 +54,11 @@ describe('runtime-scoped avatar capabilities', () => {
     act(() => reportFromOldModule(capabilities(false)));
     observations = [];
     act(() => renderer.update(render('/runtime.mjs?v=two')));
-    expect(
-      observations.every((value) => value.capabilitiesByKey!.size === 0),
-    ).toBe(true);
+    expect(observations.every((value) => value.capabilitiesByKey!.size === 0)).toBe(true);
     act(() => reportFromOldModule(capabilities(false)));
     expect(context.capabilitiesByKey!.size).toBe(0);
     act(() => context.reportCapabilities!(capabilities(true, 'dots')));
-    expect(context.capabilitiesByKey!.get('same-saved-recipe')).toEqual(
-      capabilities(true, 'dots'),
-    );
+    expect(context.capabilitiesByKey!.get('same-saved-recipe')).toEqual(capabilities(true, 'dots'));
   });
 
   it('discards the previous catalog when disabling and re-enabling the runtime', () => {

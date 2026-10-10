@@ -76,7 +76,9 @@ function customerColumns(): DataTableColumn<Customer>[] {
       header: 'Customer name',
       accessor: (c) => c.name,
       cell: ({ row }) => (
-        <NameCell leading={<PersonAvatar name={row.name} avatar={row.avatar} color={row.initialsColor} />}>
+        <NameCell
+          leading={<PersonAvatar name={row.name} avatar={row.avatar} color={row.initialsColor} />}
+        >
           <CellText>{row.name}</CellText>
         </NameCell>
       ),
@@ -125,7 +127,9 @@ function customerColumns(): DataTableColumn<Customer>[] {
       id: 'actions',
       header: 'Actions',
       width: 140,
-      cell: ({ row }) => <DataTableRowActions name={row.name} actions={DELETE_EDIT_ACTIONS} menu={CUSTOMER_MENU} />,
+      cell: ({ row }) => (
+        <DataTableRowActions name={row.name} actions={DELETE_EDIT_ACTIONS} menu={CUSTOMER_MENU} />
+      ),
     },
   ];
 }
@@ -176,15 +180,25 @@ export function CustomersTable() {
             label="Filter by product"
             value={productFilter}
             onValueChange={filter(setProductFilter)}
-            options={[{ value: 'all', label: 'All products' }, ...PRODUCTS.map((p) => ({ value: p, label: p }))]}
+            options={[
+              { value: 'all', label: 'All products' },
+              ...PRODUCTS.map((p) => ({ value: p, label: p })),
+            ]}
           />
           <DataTableFilter
             label="Filter by region"
             value={regionFilter}
             onValueChange={filter(setRegionFilter)}
-            options={[{ value: 'all', label: 'All regions' }, ...REGIONS.map((r) => ({ value: r, label: r }))]}
+            options={[
+              { value: 'all', label: 'All regions' },
+              ...REGIONS.map((r) => ({ value: r, label: r })),
+            ]}
           />
-          <DataTableSearch label="Search customers" value={query} onValueChange={filter(setQuery)} />
+          <DataTableSearch
+            label="Search customers"
+            value={query}
+            onValueChange={filter(setQuery)}
+          />
         </>
       }
       selectable
@@ -206,7 +220,13 @@ export function HomeDashboardTemplate() {
   const violet = useMemo(() => violetBase(theme), [theme]);
 
   return (
-    <DashboardShell selected="home" title="Welcome Maya" crumb="Home" crumbIcon={RiHomeLine} primaryAction="Create ticket">
+    <DashboardShell
+      selected="home"
+      title="Welcome Maya"
+      crumb="Home"
+      crumbIcon={RiHomeLine}
+      primaryAction="Create ticket"
+    >
       <View
         style={{
           width: '100%',
@@ -238,7 +258,13 @@ export function HomeDashboardTemplate() {
           gap: 16,
         }}
       >
-        <LineChartCard ranges={REVENUE_RANGES} style={[{ height: 337 }, bp.lg ? { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 } : null]} />
+        <LineChartCard
+          ranges={REVENUE_RANGES}
+          style={[
+            { height: 337 },
+            bp.lg ? { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 } : null,
+          ]}
+        />
         <ContributionsCard
           total={958}
           delta={0.148}

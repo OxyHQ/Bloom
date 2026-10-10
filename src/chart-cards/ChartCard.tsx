@@ -35,7 +35,6 @@ export const CARD_HEIGHT = 344;
 const CARD_GAP = 24;
 const LEGEND_DOT = 8;
 
-
 /**
  * A point labelled with an English month abbreviation (`"Jul"`) is titled with
  * that month's full name in `locale` (`"July"`, `"julio"`); any other label is
@@ -111,11 +110,15 @@ export function ChartCardFrame({
 
   const totalCurrent = data.reduce((sum, p) => sum + p.current, 0);
   const totalPrevious = data.reduce((sum, p) => sum + p.previous, 0);
-  const point = activeIndex !== null ? data[activeIndex] ?? null : null;
+  const point = activeIndex !== null ? (data[activeIndex] ?? null) : null;
   const headlineValue = point ? point.current : totalCurrent;
   const comparison = point ? point.previous : totalPrevious;
   const delta = describeDelta(headlineValue, comparison);
-  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex ?? 0) : defaultPointTitle(point, chartLocale)) : (title ?? defaultTitle);
+  const label = point
+    ? getPointTitle
+      ? getPointTitle(point, activeIndex ?? 0)
+      : defaultPointTitle(point, chartLocale)
+    : (title ?? defaultTitle);
 
   return (
     <ChartCardSurface height={CARD_HEIGHT} gap={CARD_GAP} style={style} testID={testID}>
@@ -123,9 +126,15 @@ export function ChartCardFrame({
         testID={testID ? `${testID}-header` : undefined}
         style={
           wide
-            ? { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }
+            ? {
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                gap: 12,
+              }
             : { flexDirection: 'column', gap: 12 }
-        }>
+        }
+      >
         <ChartHeadline
           label={label}
           value={Math.round(headlineValue)}
@@ -145,10 +154,25 @@ export function ChartCardFrame({
   );
 }
 
-function LegendDot({ color, label, palette }: { color: string; label: string; palette: ChartCardPalette }) {
+function LegendDot({
+  color,
+  label,
+  palette,
+}: {
+  color: string;
+  label: string;
+  palette: ChartCardPalette;
+}) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-      <View style={{ width: LEGEND_DOT, height: LEGEND_DOT, borderRadius: borderRadius.full, backgroundColor: color }} />
+      <View
+        style={{
+          width: LEGEND_DOT,
+          height: LEGEND_DOT,
+          borderRadius: borderRadius.full,
+          backgroundColor: color,
+        }}
+      />
       <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
         {label}
       </Text>
@@ -183,7 +207,10 @@ export interface ChartPlotProps {
 }
 
 export function ChartPlot({ data, children, ...plot }: ChartPlotProps) {
-  const domainMax = useMemo(() => Math.max(0, ...data.map((d) => Math.max(d.current, d.previous))) * 1.1, [data]);
+  const domainMax = useMemo(
+    () => Math.max(0, ...data.map((d) => Math.max(d.current, d.previous))) * 1.1,
+    [data],
+  );
   const ticks = useMemo(() => fixedDomainTicks(0, domainMax, 4), [domainMax]);
   const categories = useMemo(() => data.map((d) => d.label), [data]);
   return (
@@ -192,7 +219,8 @@ export function ChartPlot({ data, children, ...plot }: ChartPlotProps) {
       categories={categories}
       yDomain={[0, domainMax]}
       yTicks={ticks}
-      formatYTick={plot.formatAxisValue}>
+      formatYTick={plot.formatAxisValue}
+    >
       {({ size, box }) => children({ size, box, domainMax })}
     </CartesianPlot>
   );

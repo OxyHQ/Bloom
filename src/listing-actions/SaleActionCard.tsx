@@ -62,7 +62,8 @@ function SaleActionCardComponent({
   const palette = useActionPalette();
   const info = SALE_STATUS[status];
   const available = status === 'available';
-  const message = statusMessage ?? (status === 'available' ? info.message : messages.saleStatusMessage[status]);
+  const message =
+    statusMessage ?? (status === 'available' ? info.message : messages.saleStatusMessage[status]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
   return (
@@ -77,7 +78,13 @@ function SaleActionCardComponent({
         testID={id('price')}
         trailing={
           available ? null : (
-            <Badge variant="subtle" color={info.tone} size="large" content={statusLabel ?? messages.saleStatus[status]} testID={id('status')} />
+            <Badge
+              variant="subtle"
+              color={info.tone}
+              size="large"
+              content={statusLabel ?? messages.saleStatus[status]}
+              testID={id('status')}
+            />
           )
         }
       />
@@ -97,7 +104,9 @@ function SaleActionCardComponent({
         </View>
       ) : null}
 
-      {facts && facts.length > 0 ? <FactList facts={facts} style={{ marginTop: 20 }} testID={id('facts')} /> : null}
+      {facts && facts.length > 0 ? (
+        <FactList facts={facts} style={{ marginTop: 20 }} testID={id('facts')} />
+      ) : null}
 
       {!available && message ? (
         <StatusMessage style={{ marginTop: 16 }} testID={id('status-message')}>
@@ -107,24 +116,26 @@ function SaleActionCardComponent({
 
       <View style={{ marginTop: 16, gap: 8 }}>
         <Button
-
           size="lg"
           fullWidth
           onPress={onContact}
           disabled={!available}
           loading={loading}
-          testID={id('contact')} tone="accent" appearance="solid"
+          testID={id('contact')}
+          tone="accent"
+          appearance="solid"
         >
           {contactLabel}
         </Button>
         {onRequestVisit ? (
           <Button
-
             size="lg"
             fullWidth
             onPress={onRequestVisit}
             disabled={!available}
-            testID={id('request-visit')} tone="neutral" appearance="outline"
+            testID={id('request-visit')}
+            tone="neutral"
+            appearance="outline"
           >
             {requestVisitLabel}
           </Button>
@@ -133,7 +144,12 @@ function SaleActionCardComponent({
 
       {available && onMakeOffer ? (
         <View style={{ marginTop: 12, alignItems: 'center' }}>
-          <BookingLink variant="body-2-medium" onPress={onMakeOffer} style={{ alignSelf: 'center' }} testID={id('make-offer')}>
+          <BookingLink
+            variant="body-2-medium"
+            onPress={onMakeOffer}
+            style={{ alignSelf: 'center' }}
+            testID={id('make-offer')}
+          >
             {makeOfferLabel}
           </BookingLink>
         </View>
@@ -141,7 +157,9 @@ function SaleActionCardComponent({
 
       {note != null ? <ActionCardNote style={{ marginTop: 12 }}>{note}</ActionCardNote> : null}
 
-      {footer != null ? <View style={{ marginTop: 24, alignItems: 'center' }}>{footer}</View> : null}
+      {footer != null ? (
+        <View style={{ marginTop: 24, alignItems: 'center' }}>{footer}</View>
+      ) : null}
     </ActionCardShell>
   );
 }

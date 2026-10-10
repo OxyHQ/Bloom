@@ -270,10 +270,7 @@ export function MailMessage({
         >
           {children}
           {trimmed === undefined ? null : (
-            <MailQuoteToggle
-              strings={strings}
-              testID={testID ? `${testID}-trimmed` : undefined}
-            >
+            <MailQuoteToggle strings={strings} testID={testID ? `${testID}-trimmed` : undefined}>
               {trimmed}
             </MailQuoteToggle>
           )}

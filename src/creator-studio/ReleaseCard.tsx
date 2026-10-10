@@ -49,7 +49,12 @@ import type { ReleaseCardLabels, ReleaseCardProps, ReleaseStatusBadgeProps } fro
  * no `onPress` is a pill that merely looks like a control. This was a `Chip`
  * `small`/`medium`, both 24 tall; the label rungs are 20 and 24.
  */
-export function ReleaseStatusBadge({ status, label, size = 'small', testID }: ReleaseStatusBadgeProps) {
+export function ReleaseStatusBadge({
+  status,
+  label,
+  size = 'small',
+  testID,
+}: ReleaseStatusBadgeProps) {
   const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const { tone, fill } = RELEASE_STATUS_TONES[status];
   return (
@@ -101,7 +106,10 @@ function ReleaseCardComponent({
   const theme = useTheme();
   useInteractiveWebCss(CREATOR_STUDIO_STYLE_ID, CREATOR_STUDIO_CSS);
   const fill = useCardFill(style);
-  const paint = useMemo(() => ({ ...resolveCreatorStudioPaint(theme), surface: fill }), [theme, fill]);
+  const paint = useMemo(
+    () => ({ ...resolveCreatorStudioPaint(theme), surface: fill }),
+    [theme, fill],
+  );
   const hoverSurface = useMemo(() => {
     return surfaceFillOn(theme, paint.surface);
   }, [theme, paint.surface]);
@@ -121,7 +129,11 @@ function ReleaseCardComponent({
       : resolver?.(release.artwork, 'cover')
     : undefined;
   const row = layout === 'row';
-  const meta = [labels.types[release.type], release.releaseDate, labels.tracks(release.trackCount)].join(' · ');
+  const meta = [
+    labels.types[release.type],
+    release.releaseDate,
+    labels.tracks(release.trackCount),
+  ].join(' · ');
   const reason = releaseStatusNeedsReason(release.status) ? release.statusReason : undefined;
 
   const cover = (
@@ -147,7 +159,11 @@ function ReleaseCardComponent({
           {release.artist}
         </Text>
       ) : null}
-      <Text variant="caption-1-regular" numberOfLines={1} style={{ color: paint.textTertiary, marginTop: 2 }}>
+      <Text
+        variant="caption-1-regular"
+        numberOfLines={1}
+        style={{ color: paint.textTertiary, marginTop: 2 }}
+      >
         {meta}
       </Text>
     </View>
@@ -205,7 +221,15 @@ function ReleaseCardComponent({
                 onPress={action.onPress}
                 disabled={action.disabled}
                 variant={action.destructive ? 'destructive' : 'default'}
-                leading={Icon ? <Icon width={16} height={16} fill={action.destructive ? paint.error : paint.textSecondary} /> : undefined}
+                leading={
+                  Icon ? (
+                    <Icon
+                      width={16}
+                      height={16}
+                      fill={action.destructive ? paint.error : paint.textSecondary}
+                    />
+                  ) : undefined
+                }
               >
                 {action.label}
               </DropdownMenuItem>
@@ -224,13 +248,11 @@ function ReleaseCardComponent({
   );
 
   return (
-    <Card radius="radius-16" elevation="none"
+    <Card
+      radius="radius-16"
+      elevation="none"
       testID={testID}
-      style={[
-        styles.card,
-        hovered ? { backgroundColor: hoverSurface } : undefined,
-        style,
-      ]}
+      style={[styles.card, hovered ? { backgroundColor: hoverSurface } : undefined, style]}
     >
       {row ? (
         <View style={styles.rowLayout}>

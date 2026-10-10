@@ -2,7 +2,14 @@ import { useCardFill } from '../card/use-card-fill';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { Card } from '../card/Card';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Image, Platform, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+import {
+  Image,
+  Platform,
+  Pressable,
+  View,
+  type LayoutChangeEvent,
+  type ViewStyle,
+} from 'react-native';
 
 import { Badge } from '../badge';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -68,7 +75,15 @@ function TripCardComponent({
   const { messages } = useMessages(BOOKING_MESSAGES);
   const theme = useTheme();
   const fill = useCardFill(style);
-  const palette = useMemo(() => ({ ...resolveBookingPalette(theme), surface: fill, tile: surfaceFillOn(theme, fill), highlight: surfaceFillOn(theme, fill) }), [theme, fill]);
+  const palette = useMemo(
+    () => ({
+      ...resolveBookingPalette(theme),
+      surface: fill,
+      tile: surfaceFillOn(theme, fill),
+      highlight: surfaceFillOn(theme, fill),
+    }),
+    [theme, fill],
+  );
   const resolver = useImageResolver();
   useEffect(() => {
     adoptStyleSheet(BOOKING_STYLE_ID, BOOKING_WEB_CSS);
@@ -88,12 +103,12 @@ function TripCardComponent({
   const statusInfo = status ? TRIP_STATUS[status] : null;
   const shownStatus = statusLabel ?? (status ? messages.tripStatus[status] : undefined);
   const name =
-    accessibilityLabel ?? [title, dates, shownStatus].filter((part) => part != null && part !== '').join(', ');
+    accessibilityLabel ??
+    [title, dates, shownStatus].filter((part) => part != null && part !== '').join(', ');
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const hideContent = onPress != null;
 
-  const cardStyle: ViewStyle = {
-  };
+  const cardStyle: ViewStyle = {};
 
   const overlayStyle: WebCssStyle = {
     position: 'absolute',
@@ -110,11 +125,20 @@ function TripCardComponent({
   const hiddenProps = hideContent
     ? IS_WEB
       ? { 'aria-hidden': true as const }
-      : { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' as const }
+      : {
+          accessibilityElementsHidden: true,
+          importantForAccessibility: 'no-hide-descendants' as const,
+        }
     : null;
 
   return (
-    <Card radius="radius-16" elevation="none" testID={testID} onLayout={onLayout} style={[cardStyle, style]}>
+    <Card
+      radius="radius-16"
+      elevation="none"
+      testID={testID}
+      onLayout={onLayout}
+      style={[cardStyle, style]}
+    >
       {onPress ? (
         <Pressable
           {...webDataSet({ bloomBookingFocus: '' })}
@@ -154,14 +178,13 @@ function TripCardComponent({
           }}
         >
           {uri ? (
-            <Image
-              source={{ uri }}
-              resizeMode="cover"
-              style={{ width: '100%', height: '100%' }}
-            />
+            <Image source={{ uri }} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
           ) : null}
         </View>
-        <View pointerEvents="box-none" style={{ flex: horizontal ? 1 : undefined, minWidth: 0, gap: 12 }}>
+        <View
+          pointerEvents="box-none"
+          style={{ flex: horizontal ? 1 : undefined, minWidth: 0, gap: 12 }}
+        >
           <View pointerEvents="none" {...hiddenProps} style={{ gap: 4, alignItems: 'flex-start' }}>
             {statusInfo && shownStatus ? (
               <Badge
@@ -177,7 +200,11 @@ function TripCardComponent({
               {title}
             </Text>
             {subtitle ? (
-              <Text variant="body-2-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+              <Text
+                variant="body-2-regular"
+                numberOfLines={1}
+                style={{ color: palette.textSecondary }}
+              >
                 {subtitle}
               </Text>
             ) : null}

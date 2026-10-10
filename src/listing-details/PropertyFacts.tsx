@@ -4,7 +4,10 @@ import { View } from 'react-native';
 import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { PROPERTY_FACTS_FOUR_COLUMN_MIN_WIDTH, PROPERTY_FACTS_THREE_COLUMN_MIN_WIDTH } from './constants';
+import {
+  PROPERTY_FACTS_FOUR_COLUMN_MIN_WIDTH,
+  PROPERTY_FACTS_THREE_COLUMN_MIN_WIDTH,
+} from './constants';
 import { resolveListingPalette } from './shared';
 import { useMessages } from '../locale/messages';
 import { LISTING_DETAILS_MESSAGES } from './messages';
@@ -96,7 +99,12 @@ function PropertyFactsComponent({
       </View>
       {onShowAll && hasMore ? (
         <View style={{ flexDirection: 'row' }}>
-          <Button  onPress={onShowAll} testID={testID ? `${testID}-show-all` : undefined} tone="neutral" appearance="outline">
+          <Button
+            onPress={onShowAll}
+            testID={testID ? `${testID}-show-all` : undefined}
+            tone="neutral"
+            appearance="outline"
+          >
             {buttonLabel}
           </Button>
         </View>

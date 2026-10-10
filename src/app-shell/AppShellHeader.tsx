@@ -57,7 +57,16 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
       >
         <View style={{ minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           {showMenu ? (
-            <Button size="md" icon={menuOpen ? RiCloseLine : RiMenuLine} accessibilityLabel={menuLabel} aria-expanded={menuOpen} onPress={onMenuPress} testID={testID ? `${testID}-menu` : undefined} appearance="plain" tone="neutral" />
+            <Button
+              size="md"
+              icon={menuOpen ? RiCloseLine : RiMenuLine}
+              accessibilityLabel={menuLabel}
+              aria-expanded={menuOpen}
+              onPress={onMenuPress}
+              testID={testID ? `${testID}-menu` : undefined}
+              appearance="plain"
+              tone="neutral"
+            />
           ) : null}
           {title != null ? (
             <Text

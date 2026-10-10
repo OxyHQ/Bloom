@@ -10,11 +10,7 @@ import type { BloomIconComponent } from '../icons/icon-component';
 import { surfaceTextOn, type SurfaceTextPaint } from '../styles/surface-levels';
 import type { AccentTone } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
-import {
-  PAYMENT_STATUS_ADMONITION,
-  PAYMENT_STATUS_ICON,
-  PAYMENT_STATUS_TONE,
-} from './constants';
+import { PAYMENT_STATUS_ADMONITION, PAYMENT_STATUS_ICON, PAYMENT_STATUS_TONE } from './constants';
 import { PAYMENT_STATUS_MESSAGES, type PaymentStatusMessages } from './messages';
 import type { PaymentStatusLabels, PaymentStatusState } from './types';
 

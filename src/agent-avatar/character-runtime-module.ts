@@ -3,9 +3,7 @@ const registryKey = Symbol.for('bloom.character.runtimes');
 const pending = new Map<string, Promise<unknown>>();
 export function loadCharacterRuntime<T>(url: string): Promise<T> {
   const resolved = new URL(url, document.baseURI).href;
-  const registry = (
-    globalThis as unknown as Record<symbol, Map<string, unknown>>
-  )[registryKey];
+  const registry = (globalThis as unknown as Record<symbol, Map<string, unknown>>)[registryKey];
   const existing = registry?.get(resolved);
   if (existing) return Promise.resolve(existing as T);
   const request = pending.get(resolved);
@@ -16,9 +14,9 @@ export function loadCharacterRuntime<T>(url: string): Promise<T> {
     script.src = resolved;
     script.onload = () => {
       script.remove();
-      const loaded = (
-        globalThis as unknown as Record<symbol, Map<string, unknown>>
-      )[registryKey]?.get(resolved);
+      const loaded = (globalThis as unknown as Record<symbol, Map<string, unknown>>)[
+        registryKey
+      ]?.get(resolved);
       if (loaded) resolve(loaded);
       else {
         pending.delete(resolved);

@@ -37,7 +37,10 @@ import type { RatingProps, RatingSize } from './types';
  * text pair cannot sit on (a brand-coloured hero).
  */
 
-const SIZE_CONFIG: Record<RatingSize, { star: number; value: TypeScaleVariant; count: TypeScaleVariant }> = {
+const SIZE_CONFIG: Record<
+  RatingSize,
+  { star: number; value: TypeScaleVariant; count: TypeScaleVariant }
+> = {
   small: { star: 14, value: 'body-2-semibold', count: 'body-2-regular' },
   medium: { star: 16, value: 'body-semibold', count: 'body-regular' },
 };
@@ -164,7 +167,10 @@ function RatingComponent({
   const starPaint = starColor ?? textColor;
   const countPaint = countColor ?? color ?? theme.colors.textSecondary;
   const config = SIZE_CONFIG[size];
-  const glyphSize = typeof starSize === 'number' && Number.isFinite(starSize) && starSize > 0 ? starSize : config.star;
+  const glyphSize =
+    typeof starSize === 'number' && Number.isFinite(starSize) && starSize > 0
+      ? starSize
+      : config.star;
   const rated = value != null && value !== '';
   const shownValue = rated ? formatRatingValue(value) : newLabel;
   const hasCount = rated && count != null && count !== '';
@@ -207,9 +213,11 @@ function RatingComponent({
       ) : variant === 'stars' ? null : (
         <RiStarFill width={glyphSize} height={glyphSize} fill={starPaint} />
       )}
-      {(showValue || !rated) && <Text variant={config.value} style={{ color: textColor, fontVariant: ['tabular-nums'] }}>
-        {shownValue}
-      </Text>}
+      {(showValue || !rated) && (
+        <Text variant={config.value} style={{ color: textColor, fontVariant: ['tabular-nums'] }}>
+          {shownValue}
+        </Text>
+      )}
       {countText != null && (
         <Text variant={config.count} style={{ color: countPaint }}>
           {countText}

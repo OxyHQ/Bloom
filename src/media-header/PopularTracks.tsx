@@ -75,7 +75,10 @@ function TrackRow({
         {active ? (
           <NowPlayingIndicator playing={playing} size={14} />
         ) : (
-          <Text variant="body-medium" style={{ color: paint.textMuted, fontVariant: ['tabular-nums'] }}>
+          <Text
+            variant="body-medium"
+            style={{ color: paint.textMuted, fontVariant: ['tabular-nums'] }}
+          >
             {String(index + 1)}
           </Text>
         )}
@@ -108,14 +111,23 @@ function TrackRow({
         {track.explicit ? <ExplicitBadge size="small" /> : null}
       </View>
       {track.plays && !compact ? (
-        <Text variant="body-regular" numberOfLines={1} style={{ width: 120, textAlign: 'right', color: paint.textMuted }}>
+        <Text
+          variant="body-regular"
+          numberOfLines={1}
+          style={{ width: 120, textAlign: 'right', color: paint.textMuted }}
+        >
           {track.plays}
         </Text>
       ) : null}
       {track.duration ? (
         <Text
           variant="body-regular"
-          style={{ minWidth: 44, textAlign: 'right', color: paint.textMuted, fontVariant: ['tabular-nums'] }}
+          style={{
+            minWidth: 44,
+            textAlign: 'right',
+            color: paint.textMuted,
+            fontVariant: ['tabular-nums'],
+          }}
         >
           {track.duration}
         </Text>

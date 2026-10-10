@@ -56,7 +56,9 @@ const flagsDir = flagsArg ?? packed(FLAGS_PKG);
 const countriesDir = countriesArg ?? packed(COUNTRIES_PKG);
 
 const flagsVersion = JSON.parse(readFileSync(join(flagsDir, 'package.json'), 'utf8')).version;
-const countriesVersion = JSON.parse(readFileSync(join(countriesDir, 'package.json'), 'utf8')).version;
+const countriesVersion = JSON.parse(
+  readFileSync(join(countriesDir, 'package.json'), 'utf8'),
+).version;
 
 // ---------------------------------------------------------------------------
 // Countries
@@ -176,7 +178,9 @@ const HEADER = (what) =>
   `// Licences: ./LICENSES.md\n`;
 
 const countriesTs =
-  HEADER(`countries-list@${countriesVersion} (MIT) filtered to country-flag-icons@${flagsVersion}.`) +
+  HEADER(
+    `countries-list@${countriesVersion} (MIT) filtered to country-flag-icons@${flagsVersion}.`,
+  ) +
   `\nimport type { Country } from './types';\n\n` +
   `/**\n` +
   ` * Every ISO 3166-1 country that has both a flag and a dial code, sorted by\n` +
@@ -184,7 +188,10 @@ const countriesTs =
   ` */\n` +
   `export const COUNTRIES: readonly Country[] = [\n` +
   countries
-    .map((c) => `  { iso2: ${JSON.stringify(c.iso2)}, name: ${JSON.stringify(c.name)}, dial: ${JSON.stringify(c.dial)} },`)
+    .map(
+      (c) =>
+        `  { iso2: ${JSON.stringify(c.iso2)}, name: ${JSON.stringify(c.name)}, dial: ${JSON.stringify(c.dial)} },`,
+    )
     .join('\n') +
   `\n];\n`;
 

@@ -88,13 +88,7 @@ export const StandaloneItems: Story = {
     return (
       <View style={{ gap: 12, width: 380, maxWidth: '100%' }}>
         {['card', 'bank', 'balance'].map((v) => (
-          <Radio
-            key={v}
-            value={v}
-            checked={value === v}
-            onValueChange={setValue}
-            label={v}
-          />
+          <Radio key={v} value={v} checked={value === v} onValueChange={setValue} label={v} />
         ))}
       </View>
     );
@@ -112,15 +106,46 @@ export const Matrix: Story = {
   render: function RadioMatrix() {
     const theme = useTheme();
     return (
-      <View style={{ gap: 16, padding: 16, maxWidth: '100%', backgroundColor: theme.colors.background }}>
+      <View
+        style={{ gap: 16, padding: 16, maxWidth: '100%', backgroundColor: theme.colors.background }}
+      >
         {(['sm', 'md', 'lg'] as const).map((size) => (
-          <View key={size} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
-            <Radio size={size} value="a" checked={false} onValueChange={noop} accessibilityLabel="Unselected" />
-            <Radio size={size} value="b" checked onValueChange={noop} accessibilityLabel="Selected" />
+          <View
+            key={size}
+            style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}
+          >
+            <Radio
+              size={size}
+              value="a"
+              checked={false}
+              onValueChange={noop}
+              accessibilityLabel="Unselected"
+            />
+            <Radio
+              size={size}
+              value="b"
+              checked
+              onValueChange={noop}
+              accessibilityLabel="Selected"
+            />
             <Radio size={size} value="c" checked onValueChange={noop} label="Option A" />
             <Radio size={size} value="d" checked={false} onValueChange={noop} label="Option B" />
-            <Radio size={size} value="e" checked={false} disabled onValueChange={noop} label="Disabled" />
-            <Radio size={size} value="f" checked disabled onValueChange={noop} label="Disabled checked" />
+            <Radio
+              size={size}
+              value="e"
+              checked={false}
+              disabled
+              onValueChange={noop}
+              label="Disabled"
+            />
+            <Radio
+              size={size}
+              value="f"
+              checked
+              disabled
+              onValueChange={noop}
+              label="Disabled checked"
+            />
           </View>
         ))}
       </View>
@@ -161,7 +186,14 @@ export const Cards: Story = {
     const theme = useTheme();
     const [value, setValue] = useState('pro');
     return (
-      <View style={{ width: 400, maxWidth: '100%', padding: 16, backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          width: 400,
+          maxWidth: '100%',
+          padding: 16,
+          backgroundColor: theme.colors.background,
+        }}
+      >
         <RadioGroup
           label="Plan"
           variant="card"
@@ -171,7 +203,12 @@ export const Cards: Story = {
             { value: 'starter', label: 'Starter', description: 'Up to 3 projects.' },
             { value: 'pro', label: 'Pro', description: 'Unlimited projects and history.' },
             { value: 'team', label: 'Team' },
-            { value: 'enterprise', label: 'Enterprise', description: 'Contact sales.', disabled: true },
+            {
+              value: 'enterprise',
+              label: 'Enterprise',
+              description: 'Contact sales.',
+              disabled: true,
+            },
           ]}
         />
       </View>
@@ -185,7 +222,11 @@ export const StandaloneCard: Story = {
   render: function StandaloneCardStory() {
     const [value, setValue] = useState('a');
     return (
-      <View role="radiogroup" aria-label="Region" style={{ width: 400, maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <View
+        role="radiogroup"
+        aria-label="Region"
+        style={{ width: 400, maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
+      >
         {['a', 'b'].map((v) => (
           <RadioCard
             key={v}
@@ -204,18 +245,54 @@ export const StandaloneCard: Story = {
 
 /** A single instance whose controls are applied directly to the rendered component. */
 export const Playground: StoryObj<typeof RadioGroup> = {
-  args: { label: 'Who can reply', value: 'everyone', options: [{ value: 'everyone', label: 'Everyone' }, { value: 'following', label: 'People you follow' }], size: 'md', tone: 'accent', disabled: false },
-  parameters: { controls: { disable: false, include: ['label', 'value', 'size', 'tone', 'disabled'] } },
-  argTypes: { label: { control: 'text' }, value: { control: 'text' }, size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] }, tone: { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] }, disabled: { control: 'boolean' } },
+  args: {
+    label: 'Who can reply',
+    value: 'everyone',
+    options: [
+      { value: 'everyone', label: 'Everyone' },
+      { value: 'following', label: 'People you follow' },
+    ],
+    size: 'md',
+    tone: 'accent',
+    disabled: false,
+  },
+  parameters: {
+    controls: { disable: false, include: ['label', 'value', 'size', 'tone', 'disabled'] },
+  },
+  argTypes: {
+    label: { control: 'text' },
+    value: { control: 'text' },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
+    tone: {
+      control: 'select',
+      options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'],
+    },
+    disabled: { control: 'boolean' },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 440, maxWidth: '100%' }}><RadioGroup {...args} onValueChange={next => updateArgs({ value: next })} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <RadioGroup {...args} onValueChange={(next) => updateArgs({ value: next })} />
+      </View>
+    );
   },
 };
 
 export const KeyboardRows: Story = {
-  render: args => <RadioGroup label="Sort results" variant={args.variant} defaultValue="recent" optionStyle={{ minHeight: 44, paddingVertical: 12 }}
-    options={[{ value: 'recent', label: 'Most recent' }, { value: 'disabled', label: 'Unavailable', disabled: true }, { value: 'top', label: 'Top rated' }]} />,
+  render: (args) => (
+    <RadioGroup
+      label="Sort results"
+      variant={args.variant}
+      defaultValue="recent"
+      optionStyle={{ minHeight: 44, paddingVertical: 12 }}
+      options={[
+        { value: 'recent', label: 'Most recent' },
+        { value: 'disabled', label: 'Unavailable', disabled: true },
+        { value: 'top', label: 'Top rated' },
+      ]}
+    />
+  ),
 };
 
 /** Controlled pills retain their own host while the selection and order change. */
@@ -223,22 +300,65 @@ export const Chips: Story = {
   render: function RadioChipsStory() {
     const [value, setValue] = useState<string | undefined>();
     const [activations, setActivations] = useState(0);
-    return <View style={{ padding: 24, gap: 24, maxWidth: 460 }}>
-      <RadioGroup label="Size" variant="chip" size="md" tone="neutral" appearance="outline"
-        value={value} onValueChange={setValue}
-        options={[{ value: 'small', label: 'Small' }, { value: 'medium', label: 'Medium', disabled: true },
-          { value: 'large', label: 'Large' }, { value: 'extra', label: 'Extra large' }]} />
-      <RadioChip value="action" label="Activation example" onValueChange={() => setActivations(count => count + 1)} />
-      <Text testID="chip-activations">{activations}</Text>
-      <RadioGroup label="Disabled choices" variant="chip" disabled defaultValue="a"
-        options={[{ value: 'a', label: 'Disabled A' }, { value: 'b', label: 'Disabled B' }]} />
-      <RadioGroup label="Authored choices" variant="chip" defaultValue="a"
-        optionClassName={({ checked }) => `bloom-demo-radio-chip ${checked ? 'bloom-demo-radio-chip-selected' : ''}`}
-        optionLabelClassName="bloom-demo-radio-chip-label"
-        options={[{ value: 'a', label: 'Authored A' }, { value: 'b', label: 'Authored B' }]} />
-      <RadioGroup label="Decorative choices" variant="chip"
-        options={[{ value: 'a', accessibilityLabel: 'Decorative A', labelContent: <View style={{ width: 16, height: 16, backgroundColor: '#345678' }} /> },
-          { value: 'b', label: 'Decorative B' }]} />
-    </View>;
+    return (
+      <View style={{ padding: 24, gap: 24, maxWidth: 460 }}>
+        <RadioGroup
+          label="Size"
+          variant="chip"
+          size="md"
+          tone="neutral"
+          appearance="outline"
+          value={value}
+          onValueChange={setValue}
+          options={[
+            { value: 'small', label: 'Small' },
+            { value: 'medium', label: 'Medium', disabled: true },
+            { value: 'large', label: 'Large' },
+            { value: 'extra', label: 'Extra large' },
+          ]}
+        />
+        <RadioChip
+          value="action"
+          label="Activation example"
+          onValueChange={() => setActivations((count) => count + 1)}
+        />
+        <Text testID="chip-activations">{activations}</Text>
+        <RadioGroup
+          label="Disabled choices"
+          variant="chip"
+          disabled
+          defaultValue="a"
+          options={[
+            { value: 'a', label: 'Disabled A' },
+            { value: 'b', label: 'Disabled B' },
+          ]}
+        />
+        <RadioGroup
+          label="Authored choices"
+          variant="chip"
+          defaultValue="a"
+          optionClassName={({ checked }) =>
+            `bloom-demo-radio-chip ${checked ? 'bloom-demo-radio-chip-selected' : ''}`
+          }
+          optionLabelClassName="bloom-demo-radio-chip-label"
+          options={[
+            { value: 'a', label: 'Authored A' },
+            { value: 'b', label: 'Authored B' },
+          ]}
+        />
+        <RadioGroup
+          label="Decorative choices"
+          variant="chip"
+          options={[
+            {
+              value: 'a',
+              accessibilityLabel: 'Decorative A',
+              labelContent: <View style={{ width: 16, height: 16, backgroundColor: '#345678' }} />,
+            },
+            { value: 'b', label: 'Decorative B' },
+          ]}
+        />
+      </View>
+    );
   },
 };

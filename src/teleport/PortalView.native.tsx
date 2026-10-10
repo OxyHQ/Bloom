@@ -4,4 +4,4 @@
  *
  * Changed: import paths only, for this flat directory.
  */
-export { default } from "./specs/PortalViewNativeComponent";
+export { default } from './specs/PortalViewNativeComponent';

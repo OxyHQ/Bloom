@@ -54,11 +54,7 @@
  * web curve tracks the native `withTiming` segments closely rather than cutting
  * the corner.
  */
-import {
-  FadeIn,
-  Keyframe,
-  type EntryOrExitLayoutType,
-} from 'react-native-reanimated';
+import { FadeIn, Keyframe, type EntryOrExitLayoutType } from 'react-native-reanimated';
 
 /** `withTiming`'s default, which is what the native builders animate over. */
 const DEFAULT_DURATION = 300;

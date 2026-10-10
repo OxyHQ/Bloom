@@ -5,12 +5,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text, TYPE_SCALE } from '../typography';
-import {
-  daysInRange,
-  formatTriggerDate,
-  isSameRange,
-  quickSelectPresets,
-} from './calendar-grid';
+import { daysInRange, formatTriggerDate, isSameRange, quickSelectPresets } from './calendar-grid';
 import { RangeCalendar } from './Calendar';
 import { MONTH_PANEL_WIDTH } from './CalendarMonth';
 import { DateChipInput } from './DateChipInput';
@@ -42,9 +37,14 @@ const DUAL_MONTH_WIDTH = 16 + 118 + 12 + MONTH_PANEL_WIDTH * 2 + 8 + 8;
 const BODY: TextStyle = TYPE_SCALE['body-medium'];
 
 /** The preset row's `transition-colors duration-150 ease`. Web only. */
-const PRESET_TRANSITION: WebCssStyle | null = Platform.OS === 'web'
-  ? { transitionProperty: 'background-color', transitionDuration: '150ms', transitionTimingFunction: 'ease' }
-  : null;
+const PRESET_TRANSITION: WebCssStyle | null =
+  Platform.OS === 'web'
+    ? {
+        transitionProperty: 'background-color',
+        transitionDuration: '150ms',
+        transitionTimingFunction: 'ease',
+      }
+    : null;
 
 function PresetRow({
   label,
@@ -68,15 +68,18 @@ function PresetRow({
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={[PRESET_TRANSITION, {
-        width: '100%',
-        borderRadius: 10,
-        paddingTop: 6,
-        paddingBottom: 6,
-        paddingLeft: 8,
-        paddingRight: 8,
-        backgroundColor: active ? palette.tertiary : hovered ? palette.hover : 'transparent',
-      }]}
+      style={[
+        PRESET_TRANSITION,
+        {
+          width: '100%',
+          borderRadius: 10,
+          paddingTop: 6,
+          paddingBottom: 6,
+          paddingLeft: 8,
+          paddingRight: 8,
+          backgroundColor: active ? palette.tertiary : hovered ? palette.hover : 'transparent',
+        },
+      ]}
     >
       <Text style={{ ...BODY, color: palette.text }}>{label}</Text>
     </Pressable>
@@ -207,7 +210,8 @@ export function DateRangePicker({
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <SummaryPresence
                 show={pending != null}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+              >
                 {pending ? (
                   <>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>

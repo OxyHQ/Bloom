@@ -77,7 +77,18 @@ const FieldComponent = function Field({
       required,
       disabled,
     }),
-    [multiple, base, label, labelID, hasError, errorID, hasDescription, descriptionID, required, disabled],
+    [
+      multiple,
+      base,
+      label,
+      labelID,
+      hasError,
+      errorID,
+      hasDescription,
+      descriptionID,
+      required,
+      disabled,
+    ],
   );
 
   return (
@@ -95,7 +106,13 @@ const FieldComponent = function Field({
         }
       >
         {label != null ? (
-          <Label nativeID={labelID} htmlFor={multiple ? null : base} required={required} requiredLabel={requiredLabel} disabled={disabled}>
+          <Label
+            nativeID={labelID}
+            htmlFor={multiple ? null : base}
+            required={required}
+            requiredLabel={requiredLabel}
+            disabled={disabled}
+          >
             {label}
           </Label>
         ) : null}
@@ -107,14 +124,16 @@ const FieldComponent = function Field({
             variant="caption-1-medium"
             nativeID={errorID}
             accessibilityRole="alert"
-            style={[hintStyle, { color: palette.error }]}>
+            style={[hintStyle, { color: palette.error }]}
+          >
             {error}
           </Text>
         ) : description != null ? (
           <Text
             variant="caption-1-medium"
             nativeID={descriptionID}
-            style={[hintStyle, { color: disabled ? palette.placeholder : palette.hint }]}>
+            style={[hintStyle, { color: disabled ? palette.placeholder : palette.hint }]}
+          >
             {description}
           </Text>
         ) : null}

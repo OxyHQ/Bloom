@@ -93,7 +93,6 @@ function createPortalGroup() {
 type PortalGroup = ReturnType<typeof createPortalGroup>;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __oxy_so_bloom_portal_group__: PortalGroup | undefined;
 }
 

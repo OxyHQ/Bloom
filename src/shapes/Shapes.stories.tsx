@@ -34,23 +34,11 @@ export const Geometry: Story = {
         />
         <Avatar shape="heart" name="Ada" size={64} testID="shape-heart" />
       </View>
-      <Card
-        clipContent
-        radius="radius-24"
-        testID="shape-card"
-        style={{ width: 260 }}
-      >
+      <Card clipContent radius="radius-24" testID="shape-card" style={{ width: 260 }}>
         <View style={{ height: 96, backgroundColor: '#0055ff' }} />
       </Card>
-      <Card
-        clipContent
-        testID="shape-fixed-card"
-        style={{ width: 200, height: 120 }}
-      >
-        <View
-          testID="shape-fixed-child"
-          style={{ flex: 1, backgroundColor: '#0055ff' }}
-        />
+      <Card clipContent testID="shape-fixed-card" style={{ width: 200, height: 120 }}>
+        <View testID="shape-fixed-child" style={{ flex: 1, backgroundColor: '#0055ff' }} />
       </Card>
       <View
         testID="shape-rtl"

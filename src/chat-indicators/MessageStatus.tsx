@@ -73,10 +73,7 @@ function MessageStatusComponent({
       aria-hidden={hidden || undefined}
       role={hidden ? undefined : 'img'}
       accessibilityLabel={hidden ? undefined : name}
-      style={[
-        { width: size, height: size, alignItems: 'center', justifyContent: 'center' },
-        style,
-      ]}
+      style={[{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}
       testID={testID}
     >
       {glyph}

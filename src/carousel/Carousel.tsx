@@ -199,7 +199,9 @@ const CarouselItemComponent = function CarouselItem({
       {...webDataSet({ bloomCarouselItem: '' })}
       role="group"
       {...(IS_WEB ? { 'aria-roledescription': messages.slideRole } : {})}
-      accessibilityLabel={accessibilityLabel ?? (ctx ? messages.slideOf(index + 1, ctx.count) : undefined)}
+      accessibilityLabel={
+        accessibilityLabel ?? (ctx ? messages.slideOf(index + 1, ctx.count) : undefined)
+      }
       onLayout={onLayout}
       style={[{ flexShrink: 0 }, slideWidth != null ? { width: slideWidth } : null, style]}
       testID={testID}
@@ -365,10 +367,15 @@ const CarouselComponent = function Carousel({
   const count = slides.length;
   // React's child keys keep measurements attached to slides across insertions,
   // removals and reordering. Do not reuse a removed slide's numeric-index slot.
-  const keySignature = JSON.stringify(slides.map(child => child.key));
+  const keySignature = JSON.stringify(slides.map((child) => child.key));
   const slideKeys = useMemo(() => JSON.parse(keySignature) as string[], [keySignature]);
-  const controlledIndex = index === undefined ? undefined
-    : Math.min(Math.max(0, count - 1), Math.max(0, Math.trunc(Number.isFinite(index) ? index : 0)));
+  const controlledIndex =
+    index === undefined
+      ? undefined
+      : Math.min(
+          Math.max(0, count - 1),
+          Math.max(0, Math.trunc(Number.isFinite(index) ? index : 0)),
+        );
   const controlledIndexRef = useRef(controlledIndex);
   controlledIndexRef.current = controlledIndex;
 
@@ -391,7 +398,11 @@ const CarouselComponent = function Carousel({
   const dragging = useRef(false);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [settledRevision, setSettledRevision] = useState(0);
-  const lastAppliedSelection = useRef<{ index: number | undefined; keys: string; stops: Stop[] } | null>(null);
+  const lastAppliedSelection = useRef<{
+    index: number | undefined;
+    keys: string;
+    stops: Stop[];
+  } | null>(null);
   const clearSettleTimer = useCallback(() => {
     if (settleTimer.current !== null) clearTimeout(settleTimer.current);
     settleTimer.current = null;
@@ -406,7 +417,7 @@ const CarouselComponent = function Carousel({
       if (current === undefined || dragging.current) return;
       if (activeSlideRef.current !== current) onIndexChangeRef.current?.(activeSlideRef.current);
       // If the owner declined the request, restore its selected slide.
-      setSettledRevision(revision => revision + 1);
+      setSettledRevision((revision) => revision + 1);
     }, 150);
   }, [clearSettleTimer]);
   useEffect(() => {
@@ -429,12 +440,15 @@ const CarouselComponent = function Carousel({
    * been measured. Dots, snapping and the active slide use individual stops;
    * grouped controls filter the same measured offsets before deduplicating.
    */
-  const computeStops = useCallback((navigationGroupSize = 1): Stop[] | null => {
-    if (trackWidth <= 0 || scroll.current.contentWidth <= 0) return null;
-    const all = slideKeys.map(key => offsets.current.get(key));
-    if (all.some(item => !item || item.width <= 0)) return null;
-    return toStops((all as SlideOffset[]).map(targetFor), navigationGroupSize);
-  }, [slideKeys, targetFor, trackWidth]);
+  const computeStops = useCallback(
+    (navigationGroupSize = 1): Stop[] | null => {
+      if (trackWidth <= 0 || scroll.current.contentWidth <= 0) return null;
+      const all = slideKeys.map((key) => offsets.current.get(key));
+      if (all.some((item) => !item || item.width <= 0)) return null;
+      return toStops((all as SlideOffset[]).map(targetFor), navigationGroupSize);
+    },
+    [slideKeys, targetFor, trackWidth],
+  );
 
   const measure = useCallback(() => {
     const { x, contentWidth } = scroll.current;
@@ -476,8 +490,15 @@ const CarouselComponent = function Carousel({
 
   const recomputeStops = useCallback(() => {
     const next = computeStops();
-    if (next) setStops(previous => previous.length === next.length && previous.every((stop, i) =>
-      stop.offset === next[i]?.offset && stop.slide === next[i]?.slide) ? previous : next);
+    if (next)
+      setStops((previous) =>
+        previous.length === next.length &&
+        previous.every(
+          (stop, i) => stop.offset === next[i]?.offset && stop.slide === next[i]?.slide,
+        )
+          ? previous
+          : next,
+      );
   }, [computeStops]);
 
   const reportOffset = useCallback(
@@ -496,14 +517,22 @@ const CarouselComponent = function Carousel({
     measure();
   }, [recomputeStops, measure]);
 
-  const scrollToOffset = useCallback((offset: number, animated: boolean) => {
-    // Web exposes negative scrollLeft in RTL; Android uses physical x, while
-    // iOS's ScrollView command already converts a logical offset internally.
-    const max = Math.max(0, scroll.current.contentWidth - trackWidth);
-    const x = !rtl ? offset : IS_WEB ? -offset
-      : Platform.OS === 'android' ? max - offset : offset;
-    scrollRef.current?.scrollTo({ x, animated });
-  }, [rtl, trackWidth]);
+  const scrollToOffset = useCallback(
+    (offset: number, animated: boolean) => {
+      // Web exposes negative scrollLeft in RTL; Android uses physical x, while
+      // iOS's ScrollView command already converts a logical offset internally.
+      const max = Math.max(0, scroll.current.contentWidth - trackWidth);
+      const x = !rtl
+        ? offset
+        : IS_WEB
+          ? -offset
+          : Platform.OS === 'android'
+            ? max - offset
+            : offset;
+      scrollRef.current?.scrollTo({ x, animated });
+    },
+    [rtl, trackWidth],
+  );
 
   useLayoutEffect(() => {
     if (controlledIndex === undefined) {
@@ -530,8 +559,11 @@ const CarouselComponent = function Carousel({
     }
     appliedOffset.current = target;
     const previous = lastAppliedSelection.current;
-    const changedIndex = previous !== null && previous.keys === keySignature && previous.stops === stops
-      && !Object.is(previous.index, index);
+    const changedIndex =
+      previous !== null &&
+      previous.keys === keySignature &&
+      previous.stops === stops &&
+      !Object.is(previous.index, index);
     lastAppliedSelection.current = { index, keys: keySignature, stops };
     if (Math.abs(scroll.current.x - target) <= 1) {
       pendingTarget.current = null;
@@ -541,8 +573,21 @@ const CarouselComponent = function Carousel({
     // Initial positioning, resize and list changes are immediate. Only a new
     // selection animates; intermediate scroll events must not rewrite that selection.
     scrollToOffset(target, changedIndex && !reducedMotion);
-  }, [index, controlledIndex, keySignature, slideKeys, stops, trackWidth, computeStops, targetFor,
-    reducedMotion, scrollToOffset, settledRevision, clearSettleTimer, rtl]);
+  }, [
+    index,
+    controlledIndex,
+    keySignature,
+    slideKeys,
+    stops,
+    trackWidth,
+    computeStops,
+    targetFor,
+    reducedMotion,
+    scrollToOffset,
+    settledRevision,
+    clearSettleTimer,
+    rtl,
+  ]);
 
   const interruptControlledScroll = useCallback(() => {
     pendingTarget.current = null;
@@ -570,8 +615,15 @@ const CarouselComponent = function Carousel({
     const onKeyDown = (event: KeyboardEvent) => {
       // Owned grouped/loop navigation must retain its pending destination so rapid
       // key presses advance from the requested stop, not an animation frame.
-      if (ownsTrackKeys && event.target === node && !event.altKey && !event.ctrlKey && !event.metaKey
-        && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) return;
+      if (
+        ownsTrackKeys &&
+        event.target === node &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+      )
+        return;
       interruptControlledScroll();
     };
     node.addEventListener('wheel', interruptControlledScroll);
@@ -589,7 +641,7 @@ const CarouselComponent = function Carousel({
     if (!stop) return;
     if (controlledIndex !== undefined) {
       if (stop.slide !== controlledIndex) onIndexChangeRef.current?.(stop.slide);
-      setSettledRevision(revision => revision + 1);
+      setSettledRevision((revision) => revision + 1);
     } else {
       scrollToOffset(stop.offset, !reducedMotion);
     }
@@ -608,17 +660,25 @@ const CarouselComponent = function Carousel({
     // settles: browser snapping may round its physical position by a pixel.
     // Real drag/wheel input clears appliedOffset and resumes physical navigation.
     const x = pendingTarget.current ?? appliedOffset.current ?? scroll.current.x;
-    const target = direction === 1
-      ? all.find((stop) => stop.offset > x + 1)
-      : [...all].reverse().find((stop) => stop.offset < x - 1);
-    scrollToStop(target ?? (loop && all.length > 1 ? all[direction === 1 ? 0 : all.length - 1] : undefined));
+    const target =
+      direction === 1
+        ? all.find((stop) => stop.offset > x + 1)
+        : [...all].reverse().find((stop) => stop.offset < x - 1);
+    scrollToStop(
+      target ?? (loop && all.length > 1 ? all[direction === 1 ? 0 : all.length - 1] : undefined),
+    );
   };
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, contentSize } = event.nativeEvent;
     const max = Math.max(0, contentSize.width - trackWidth);
-    const x = !rtl ? contentOffset.x : IS_WEB ? -contentOffset.x
-      : Platform.OS === 'android' ? max - contentOffset.x : contentOffset.x;
+    const x = !rtl
+      ? contentOffset.x
+      : IS_WEB
+        ? -contentOffset.x
+        : Platform.OS === 'android'
+          ? max - contentOffset.x
+          : contentOffset.x;
     scroll.current = { x, contentWidth: contentSize.width };
     measure();
     if (controlledIndexRef.current === undefined || count === 0 || !computeStops()) return;
@@ -660,21 +720,35 @@ const CarouselComponent = function Carousel({
   const arrowsVisible = showArrows && count > 0;
   // Slots stay mounted at the same edges even when their controls are hidden.
   // Hover opacity belongs to the slot, leaving the button's recipe authoritative.
-  const arrow = (button: React.ReactElement, unavailable: boolean, ref: React.RefObject<View | null>) => {
+  const arrow = (
+    button: React.ReactElement,
+    unavailable: boolean,
+    ref: React.RefObject<View | null>,
+  ) => {
     const hidden = hideUnavailableArrows && unavailable;
-    return hideUnavailableArrows || (IS_WEB && arrowsVisibility === 'hover')
-      ? <View ref={ref} {...webDataSet({ bloomCarouselArrow: '' })}
-          aria-hidden={hidden || undefined}
-          accessibilityElementsHidden={hidden}
-          importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
-          pointerEvents={hidden ? 'none' : 'auto'}
-          style={{ flexShrink: 0, ...(hidden ? { opacity: 0 } : undefined) }}>{button}</View>
-      : button;
+    return hideUnavailableArrows || (IS_WEB && arrowsVisibility === 'hover') ? (
+      <View
+        ref={ref}
+        {...webDataSet({ bloomCarouselArrow: '' })}
+        aria-hidden={hidden || undefined}
+        accessibilityElementsHidden={hidden}
+        importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
+        pointerEvents={hidden ? 'none' : 'auto'}
+        style={{ flexShrink: 0, ...(hidden ? { opacity: 0 } : undefined) }}
+      >
+        {button}
+      </View>
+    ) : (
+      button
+    );
   };
   useLayoutEffect(() => {
     if (!IS_WEB || !hideUnavailableArrows || typeof HTMLElement === 'undefined') return;
     const activeElement = document.activeElement;
-    for (const [unavailable, ref] of [[previousUnavailable, previousArrowRef], [nextUnavailable, nextArrowRef]] as const) {
+    for (const [unavailable, ref] of [
+      [previousUnavailable, previousArrowRef],
+      [nextUnavailable, nextArrowRef],
+    ] as const) {
       const slot: unknown = ref.current;
       if (unavailable && slot instanceof HTMLElement && slot.contains(activeElement)) {
         const trackNode: unknown = scrollRef.current?.getScrollableNode();
@@ -683,21 +757,46 @@ const CarouselComponent = function Carousel({
       }
     }
   }, [previousUnavailable, nextUnavailable, hideUnavailableArrows]);
-  const arrowButtons = <>
-    {arrow(<Button size={overlay ? 'lg' : 'sm'} appearance="subtle" tone="neutral" {...arrowButtonProps}
-      icon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
-      accessibilityLabel={previousLabel} disabled={previousUnavailable} onPress={() => step(-1)} />,
-      previousUnavailable, previousArrowRef)}
-    {arrow(<Button size={overlay ? 'lg' : 'sm'} appearance="subtle" tone="neutral" {...arrowButtonProps}
-      icon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
-      accessibilityLabel={nextLabel} disabled={nextUnavailable} onPress={() => step(1)} />,
-      nextUnavailable, nextArrowRef)}
-  </>;
+  const arrowButtons = (
+    <>
+      {arrow(
+        <Button
+          size={overlay ? 'lg' : 'sm'}
+          appearance="subtle"
+          tone="neutral"
+          {...arrowButtonProps}
+          icon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
+          accessibilityLabel={previousLabel}
+          disabled={previousUnavailable}
+          onPress={() => step(-1)}
+        />,
+        previousUnavailable,
+        previousArrowRef,
+      )}
+      {arrow(
+        <Button
+          size={overlay ? 'lg' : 'sm'}
+          appearance="subtle"
+          tone="neutral"
+          {...arrowButtonProps}
+          icon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
+          accessibilityLabel={nextLabel}
+          disabled={nextUnavailable}
+          onPress={() => step(1)}
+        />,
+        nextUnavailable,
+        nextArrowRef,
+      )}
+    </>
+  );
   // iOS snapping reads physical offsets even though its imperative command and
   // scroll events use logical offsets. Android converts snap offsets internally.
-  const snapOffsets = rtl && Platform.OS === 'ios'
-    ? stops.map(stop => Math.max(0, scroll.current.contentWidth - trackWidth) - stop.offset).reverse()
-    : stops.map(stop => stop.offset);
+  const snapOffsets =
+    rtl && Platform.OS === 'ios'
+      ? stops
+          .map((stop) => Math.max(0, scroll.current.contentWidth - trackWidth) - stop.offset)
+          .reverse()
+      : stops.map((stop) => stop.offset);
 
   const track = (
     <CarouselContext.Provider value={contextValue}>
@@ -706,12 +805,25 @@ const CarouselComponent = function Carousel({
         {...webDataSet({ bloomCarouselTrack: align })}
         // The browser scrolls a focused track by default; groups/wrapping opt into
         // stop-based Left/Right navigation without intercepting slide controls.
-        {...(IS_WEB ? { tabIndex: 0, onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
-          if (!ownsTrackKeys || event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey) return;
-          if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-          event.preventDefault(); event.stopPropagation();
-          step((event.key === 'ArrowRight') !== rtl ? 1 : -1);
-        } } : {})}
+        {...(IS_WEB
+          ? {
+              tabIndex: 0,
+              onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
+                if (
+                  !ownsTrackKeys ||
+                  event.target !== event.currentTarget ||
+                  event.altKey ||
+                  event.ctrlKey ||
+                  event.metaKey
+                )
+                  return;
+                if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+                event.preventDefault();
+                event.stopPropagation();
+                step((event.key === 'ArrowRight') !== rtl ? 1 : -1);
+              },
+            }
+          : {})}
         horizontal
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
@@ -746,25 +858,55 @@ const CarouselComponent = function Carousel({
       testID={testID}
     >
       {header != null || (arrowsVisible && arrowsPlacement === 'header') ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: inset }}>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: inset }}
+        >
           <View style={{ flex: 1, minWidth: 0 }}>{header}</View>
           {arrowsVisible && arrowsPlacement === 'header' ? arrowButtons : null}
         </View>
       ) : null}
 
-      {overlay ? <View style={{ position: 'relative', width: '100%' }} testID={testID ? `${testID}-track-frame` : undefined}>
-        {track}
-        {arrowsVisible && overlay ? <View pointerEvents="box-none"
-          testID={testID ? `${testID}-overlay-arrows` : undefined}
-          style={{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: typeof arrowsInset === 'number' ? arrowsInset : arrowsInset.start ?? 8,
-            insetInlineEnd: typeof arrowsInset === 'number' ? arrowsInset : arrowsInset.end ?? 8,
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          {arrowButtons}
-        </View> : null}
-      </View> : track}
+      {overlay ? (
+        <View
+          style={{ position: 'relative', width: '100%' }}
+          testID={testID ? `${testID}-track-frame` : undefined}
+        >
+          {track}
+          {arrowsVisible && overlay ? (
+            <View
+              pointerEvents="box-none"
+              testID={testID ? `${testID}-overlay-arrows` : undefined}
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                insetInlineStart:
+                  typeof arrowsInset === 'number' ? arrowsInset : (arrowsInset.start ?? 8),
+                insetInlineEnd:
+                  typeof arrowsInset === 'number' ? arrowsInset : (arrowsInset.end ?? 8),
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              {arrowButtons}
+            </View>
+          ) : null}
+        </View>
+      ) : (
+        track
+      )}
 
       {showDots && dotCount > 1 ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: inset }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            paddingHorizontal: inset,
+          }}
+        >
           {Array.from({ length: dotCount }, (_, index) => {
             // One dot per STOP: slides that share a resting place share a dot,
             // so no dot scrolls nowhere. Until the slides are measured there is
@@ -784,8 +926,11 @@ const CarouselComponent = function Carousel({
         </View>
       ) : null}
       {footer != null || (arrowsVisible && arrowsPlacement === 'footer') ? (
-        <View testID={testID ? `${testID}-footer` : undefined} style={{ flexDirection:'row', alignItems:'center', gap:8, paddingHorizontal:inset }}>
-          <View style={{ flex:1, minWidth:0 }}>{footer}</View>
+        <View
+          testID={testID ? `${testID}-footer` : undefined}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: inset }}
+        >
+          <View style={{ flex: 1, minWidth: 0 }}>{footer}</View>
           {arrowsVisible && arrowsPlacement === 'footer' ? arrowButtons : null}
         </View>
       ) : null}

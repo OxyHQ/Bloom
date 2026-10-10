@@ -129,12 +129,22 @@ function PitchCardComponent({
   const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const theme = useTheme();
   const fill = useCardFill(style);
-  const paint = useMemo(() => ({ ...resolveCreatorStudioPaint(theme), surface: fill, inner: surfaceFillOn(theme, fill) }), [theme, fill]);
+  const paint = useMemo(
+    () => ({
+      ...resolveCreatorStudioPaint(theme),
+      surface: fill,
+      inner: surfaceFillOn(theme, fill),
+    }),
+    [theme, fill],
+  );
   const labels = {
     ...messages.pitch,
     ...labelOverrides,
     statuses: { ...messages.pitch.statuses, ...labelOverrides?.statuses },
-    statusDescriptions: { ...messages.pitch.statusDescriptions, ...labelOverrides?.statusDescriptions },
+    statusDescriptions: {
+      ...messages.pitch.statusDescriptions,
+      ...labelOverrides?.statusDescriptions,
+    },
   };
   const id = (suffix: string) => (testID ? `${testID}-${suffix}` : undefined);
   const sent = status === 'submitted' || status === 'accepted' || status === 'declined';
@@ -146,7 +156,11 @@ function PitchCardComponent({
     <View style={styles.heading}>
       <View style={styles.titleRow}>
         <RiMegaphoneLine width={20} height={20} fill={paint.textSecondary} />
-        <Text variant="headline-semibold" role="heading" style={[styles.flexText, { color: paint.text }]}>
+        <Text
+          variant="headline-semibold"
+          role="heading"
+          style={[styles.flexText, { color: paint.text }]}
+        >
           {labels.title}
         </Text>
       </View>
@@ -157,8 +171,18 @@ function PitchCardComponent({
   );
 
   if (sent) {
-    const Icon = status === 'accepted' ? RiCheckboxCircleFill : status === 'declined' ? RiCloseCircleLine : RiTimeLine;
-    const iconColor = status === 'accepted' ? paint.positive : status === 'declined' ? paint.negative : paint.accent;
+    const Icon =
+      status === 'accepted'
+        ? RiCheckboxCircleFill
+        : status === 'declined'
+          ? RiCloseCircleLine
+          : RiTimeLine;
+    const iconColor =
+      status === 'accepted'
+        ? paint.positive
+        : status === 'declined'
+          ? paint.negative
+          : paint.accent;
     return (
       <Card radius="radius-16" elevation="none" testID={testID} style={[styles.card, style]}>
         {heading}
@@ -183,7 +207,14 @@ function PitchCardComponent({
           </View>
         </View>
         {status === 'submitted' && onEdit ? (
-          <Button  size="md" onPress={onEdit} style={styles.submit} testID={id('edit')} tone="neutral" appearance="outline">
+          <Button
+            size="md"
+            onPress={onEdit}
+            style={styles.submit}
+            testID={id('edit')}
+            tone="neutral"
+            appearance="outline"
+          >
             {labels.edit}
           </Button>
         ) : null}
@@ -250,14 +281,15 @@ function PitchCardComponent({
       />
 
       <Button
-
         size="md"
         leadingIcon={RiSendPlaneLine}
         onPress={onSubmit}
         disabled={!canSubmit}
         loading={submitting}
         style={styles.submit}
-        testID={id('submit')} tone="accent" appearance="solid"
+        testID={id('submit')}
+        tone="accent"
+        appearance="solid"
       >
         {labels.submit}
       </Button>
@@ -281,7 +313,13 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   flexText: { flexShrink: 1 },
   group: { gap: 0, minWidth: 0 },
-  groupHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 6 },
+  groupHeading: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 6,
+  },
   noMargin: { marginBottom: 0 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   submit: { alignSelf: 'flex-start' },

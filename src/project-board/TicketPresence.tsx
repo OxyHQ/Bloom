@@ -48,7 +48,11 @@ export function TicketPresenceList({
 }: {
   tickets: ProjectTicket[];
   retainId?: string | null;
-  children: (entry: PresentTicket, paintStyle: AnimatedStyle<ViewStyle>, onHeight: (height: number) => void) => ReactNode;
+  children: (
+    entry: PresentTicket,
+    paintStyle: AnimatedStyle<ViewStyle>,
+    onHeight: (height: number) => void,
+  ) => ReactNode;
 }) {
   const [state, setState] = useState(() => ({
     tickets,
@@ -63,10 +67,14 @@ export function TicketPresenceList({
       present={entry.present}
       initial={entry.initial}
       retain={entry.ticket.id === retainId}
-      onExit={() => setState((current) => ({
-        ...current,
-        entries: current.entries.filter((item) => item.present || item.ticket.id !== entry.ticket.id),
-      }))}
+      onExit={() =>
+        setState((current) => ({
+          ...current,
+          entries: current.entries.filter(
+            (item) => item.present || item.ticket.id !== entry.ticket.id,
+          ),
+        }))
+      }
     >
       {(paintStyle, onHeight) => children(entry, paintStyle, onHeight)}
     </TicketPresence>
@@ -93,10 +101,12 @@ function TicketPresence({
   const exit = useRef(onExit);
   exit.current = onExit;
   useEffect(() => {
-    progress.value = reduced ? Number(present) : withTiming(Number(present), {
-      duration: DURATION,
-      easing: Easing.bezier(0.22, 1, 0.36, 1),
-    });
+    progress.value = reduced
+      ? Number(present)
+      : withTiming(Number(present), {
+          duration: DURATION,
+          easing: Easing.bezier(0.22, 1, 0.36, 1),
+        });
     return () => cancelAnimation(progress);
   }, [present, reduced, progress]);
   useEffect(() => {
@@ -131,7 +141,9 @@ function TicketPresence({
       importantForAccessibility={present ? 'auto' : 'no-hide-descendants'}
       {...(WEB && !present ? { inert: true } : {})}
     >
-      {children(paintStyle, (value) => { height.value = value; })}
+      {children(paintStyle, (value) => {
+        height.value = value;
+      })}
     </AnimatedView>
   );
 }

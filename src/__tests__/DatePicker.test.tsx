@@ -58,7 +58,15 @@ describe('calendar grid: month layout', () => {
     // September 1, 2026 is a Tuesday: 1 leading day Monday-first, 0 Tuesday-first.
     expect(buildMonthGrid(day(1), 1)[0]!.filter((d) => !d.inMonth)).toHaveLength(1);
     expect(buildMonthGrid(day(1), 2)[0]![0]!.inMonth).toBe(true);
-    expect(weekdayLabels(1, 'en-US').map((w) => w.short)).toEqual(['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']);
+    expect(weekdayLabels(1, 'en-US').map((w) => w.short)).toEqual([
+      'Mo',
+      'Tu',
+      'We',
+      'Th',
+      'Fr',
+      'Sa',
+      'Su',
+    ]);
   });
 
   it('needs 4 rows for a February that starts on the week start and 6 for a long spill', () => {
@@ -87,8 +95,15 @@ describe('calendar grid: selection and constraints', () => {
   it('marks a range inclusively, and normalizes reversed ends', () => {
     const range = normalizeRange(day(22), day(9));
     expect([iso(range.start), iso(range.end)]).toEqual(['2026-9-9', '2026-9-22']);
-    expect(rangeCellState(day(9), range)).toMatchObject({ isSelected: true, isSelectionStart: true, isSelectionEnd: false });
-    expect(rangeCellState(day(15), range)).toMatchObject({ isSelected: true, isSelectionStart: false });
+    expect(rangeCellState(day(9), range)).toMatchObject({
+      isSelected: true,
+      isSelectionStart: true,
+      isSelectionEnd: false,
+    });
+    expect(rangeCellState(day(15), range)).toMatchObject({
+      isSelected: true,
+      isSelectionStart: false,
+    });
     expect(rangeCellState(day(23), range).isSelected).toBe(false);
     expect(daysInRange(range)).toBe(14);
     expect(daysInRange({ start: day(9), end: day(9) })).toBe(1);
@@ -149,7 +164,14 @@ describe('calendar grid: selection and constraints', () => {
   it('builds the quick-select presets relative to today', () => {
     const presets = quickSelectPresets(day(16));
     expect(presets.map((p) => p.key)).toEqual([
-      'today', 'yesterday', 'lastWeek', 'thisMonth', 'lastMonth', 'thisYear', 'lastYear', 'allTime',
+      'today',
+      'yesterday',
+      'lastWeek',
+      'thisMonth',
+      'lastMonth',
+      'thisYear',
+      'lastYear',
+      'allTime',
     ]);
     const lastWeek = presets.find((p) => p.key === 'lastWeek')!.range;
     expect([iso(lastWeek.start), iso(lastWeek.end)]).toEqual(['2026-9-9', '2026-9-15']);
@@ -178,14 +200,15 @@ describe('Calendar', () => {
   });
 
   it('announces the selected day on its gridcell with both spellings, and keeps one tab stop', () => {
-    const { getByTestId, UNSAFE_root } = renderWithTheme(
-      <Calendar value={day(16)} testID="cal" />,
-    );
+    const { getByTestId, UNSAFE_root } = renderWithTheme(<Calendar value={day(16)} testID="cal" />);
     const button = getByTestId('cal-month-0-day-16');
     expect(button.props.tabIndex).toBe(0);
     expect(getByTestId('cal-month-0-day-17').props.tabIndex).toBe(-1);
     const selectedCells = UNSAFE_root.findAll(
-      (node) => node.props.role === 'gridcell' && node.props['aria-selected'] === true && typeof node.type === 'string',
+      (node) =>
+        node.props.role === 'gridcell' &&
+        node.props['aria-selected'] === true &&
+        typeof node.type === 'string',
     );
     expect(selectedCells).toHaveLength(1);
     expect(selectedCells[0]!.props.accessibilityState).toEqual({ selected: true });
@@ -201,7 +224,9 @@ describe('Calendar', () => {
   });
 
   it('disables the previous chevron when that month is wholly before minDate', () => {
-    const { getByLabelText } = renderWithTheme(<Calendar defaultValue={day(16)} minDate={day(3)} />);
+    const { getByLabelText } = renderWithTheme(
+      <Calendar defaultValue={day(16)} minDate={day(3)} />,
+    );
     expect(getByLabelText('Previous month').props.disabled).toBe(true);
     expect(getByLabelText('Next month').props.disabled).toBe(false);
   });
@@ -272,7 +297,7 @@ describe('DatePicker', () => {
   });
 });
 
-describe('locale: Bloom speaks the picker\'s own strings', () => {
+describe("locale: Bloom speaks the picker's own strings", () => {
   it('translates a DatePicker from its locale prop — trigger, footer and chevrons', () => {
     const { getByText, getByTestId, getByLabelText } = renderWithTheme(
       <DatePicker defaultOpen locale="es-ES" testID="dp" />,
@@ -308,7 +333,10 @@ describe('locale: Bloom speaks the picker\'s own strings', () => {
 describe('labels (localisation)', () => {
   it('renames the month chevrons of a calendar', () => {
     const { getByLabelText, queryByLabelText } = renderWithTheme(
-      <Calendar defaultValue={day(16)} labels={{ previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente' }} />,
+      <Calendar
+        defaultValue={day(16)}
+        labels={{ previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente' }}
+      />,
     );
     pressHost(getByLabelText('Mes siguiente'));
     expect(getByLabelText('Mes anterior')).toBeTruthy();
@@ -316,7 +344,9 @@ describe('labels (localisation)', () => {
   });
 
   it('keeps the English footer when DatePicker gets no labels', () => {
-    const { getByTestId } = renderWithTheme(<DatePicker defaultValue={day(16)} defaultOpen testID="dp" />);
+    const { getByTestId } = renderWithTheme(
+      <DatePicker defaultValue={day(16)} defaultOpen testID="dp" />,
+    );
     expect(getByTestId('dp-cancel')).toHaveTextContent('Cancel');
     expect(getByTestId('dp-apply')).toHaveTextContent('Apply');
   });

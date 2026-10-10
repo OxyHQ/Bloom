@@ -74,7 +74,13 @@ function CollectionHeaderComponent({
       cover={({ wide, width }) => {
         const size = wide ? 232 : Math.min(240, width - 64);
         const art = (
-          <Cover source={cover} size={size} liked={liked} paint={paint} testID={testID ? `${testID}-cover` : undefined}>
+          <Cover
+            source={cover}
+            size={size}
+            liked={liked}
+            paint={paint}
+            testID={testID ? `${testID}-cover` : undefined}
+          >
             {canEdit ? (
               <>
                 {IS_WEB && coverHovered ? (

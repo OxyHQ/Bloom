@@ -47,7 +47,9 @@ if (!root) {
 }
 const DRY = flag('--dry-run');
 const DIFF = flag('--diff');
-const mappingPath = path.resolve(option('--mapping') ?? path.join(here, '../src/icons/remix-mapping.json'));
+const mappingPath = path.resolve(
+  option('--mapping') ?? path.join(here, '../src/icons/remix-mapping.json'),
+);
 /** @type {Record<string, string>} */
 const MAP = JSON.parse(fs.readFileSync(mappingPath, 'utf8'));
 const ICONS_DIR = path.dirname(mappingPath);
@@ -80,7 +82,8 @@ function classifySpecifier(spec) {
   if (/^\.{1,2}\//.test(spec) || spec === '.') {
     if (/(?:^|\/)icons\/?$/.test(spec)) return { kind: 'barrel' };
     const m = spec.match(/^(.*(?:^|\/)icons)\/([A-Za-z0-9]+)$/);
-    if (m && m[2] !== 'remix' && m[2] !== 'shared' && m[2] !== 'TEMPLATE') return { kind: 'file', base: m[1] };
+    if (m && m[2] !== 'remix' && m[2] !== 'shared' && m[2] !== 'TEMPLATE')
+      return { kind: 'file', base: m[1] };
   }
   return null;
 }
@@ -97,7 +100,10 @@ function parseBindings(body) {
     });
 }
 
-const formatBinding = (b) => (b.unparsed ? b.raw : `${b.type ? 'type ' : ''}${b.name}${b.alias && b.alias !== b.name ? ` as ${b.alias}` : ''}`);
+const formatBinding = (b) =>
+  b.unparsed
+    ? b.raw
+    : `${b.type ? 'type ' : ''}${b.name}${b.alias && b.alias !== b.name ? ` as ${b.alias}` : ''}`;
 
 function migrate(file, source) {
   let text = source;
@@ -113,7 +119,8 @@ function migrate(file, source) {
     if (!cls) return whole;
     const bindings = parseBindings(body);
     if (cls.kind === 'root') {
-      for (const b of bindings) if (!b.unparsed && b.name === 'Icons') namespaces.add(b.alias ?? 'Icons');
+      for (const b of bindings)
+        if (!b.unparsed && b.name === 'Icons') namespaces.add(b.alias ?? 'Icons');
       return whole;
     }
     let touched = false;
@@ -121,7 +128,10 @@ function migrate(file, source) {
       if (b.unparsed || !(b.name in MAP)) return b;
       touched = true;
       replacements++;
-      if (MANUAL.has(b.name)) problems.push(`${b.name}: no prop-compatible Remix equivalent (mapped to ${MAP[b.name]}) — review usage`);
+      if (MANUAL.has(b.name))
+        problems.push(
+          `${b.name}: no prop-compatible Remix equivalent (mapped to ${MAP[b.name]}) — review usage`,
+        );
       if (!b.alias) renames.set(b.name, MAP[b.name]);
       return { ...b, name: MAP[b.name], alias: b.alias };
     });
@@ -145,14 +155,19 @@ function migrate(file, source) {
     const byFile = new Map();
     for (const b of unique) {
       if (b.unparsed || !b.name.startsWith('Ri')) {
-        problems.push(`unmapped binding "${b.raw}" imported from ${spec} — the old file is being deleted`);
+        problems.push(
+          `unmapped binding "${b.raw}" imported from ${spec} — the old file is being deleted`,
+        );
         continue;
       }
       if (!byFile.has(b.name)) byFile.set(b.name, []);
       byFile.get(b.name).push(b);
     }
     return [...byFile]
-      .map(([ri, bs]) => `${keyword}${typeKw} { ${bs.map(formatBinding).join(', ')} } from ${quote}${cls.base}/remix/${ri}${quote}${semi}`)
+      .map(
+        ([ri, bs]) =>
+          `${keyword}${typeKw} { ${bs.map(formatBinding).join(', ')} } from ${quote}${cls.base}/remix/${ri}${quote}${semi}`,
+      )
       .join('\n');
   });
 
@@ -166,7 +181,8 @@ function migrate(file, source) {
     text = text.replace(re, (whole, member) => {
       if (!(member in MAP)) return whole;
       replacements++;
-      if (MANUAL.has(member)) problems.push(`${ns}.${member}: no prop-compatible Remix equivalent — review usage`);
+      if (MANUAL.has(member))
+        problems.push(`${ns}.${member}: no prop-compatible Remix equivalent — review usage`);
       return `${ns}.${MAP[member]}`;
     });
   }
@@ -198,7 +214,8 @@ function migrate(file, source) {
     const count = (text.match(new RegExp(`\\b${name}\\b`, 'g')) ?? []).length;
     if (count) leftovers.set(name, count);
   }
-  for (const [name, count] of leftovers) problems.push(`${name} ×${count} left unrewritten (not an import binding or namespace member)`);
+  for (const [name, count] of leftovers)
+    problems.push(`${name} ×${count} left unrewritten (not an import binding or namespace member)`);
 
   return { text, replacements, problems };
 }
@@ -234,9 +251,12 @@ for (const file of files) {
   if (DIFF) console.log(lineDiff(source, text).replace(/^/gm, '    '));
   if (!DRY) fs.writeFileSync(file, text);
 }
-console.log(`\n${DRY ? 'Would change' : 'Changed'} ${changedFiles} file(s), ${total} replacement(s), scanned ${files.length} file(s).`);
+console.log(
+  `\n${DRY ? 'Would change' : 'Changed'} ${changedFiles} file(s), ${total} replacement(s), scanned ${files.length} file(s).`,
+);
 if (problemFiles.length) {
   console.log(`\nNeeds manual review (${problemFiles.length} file(s)):`);
-  for (const [rel, problems] of problemFiles) for (const p of problems) console.log(`  ${rel}: ${p}`);
+  for (const [rel, problems] of problemFiles)
+    for (const p of problems) console.log(`  ${rel}: ${p}`);
   process.exitCode = DRY ? 0 : 1;
 }

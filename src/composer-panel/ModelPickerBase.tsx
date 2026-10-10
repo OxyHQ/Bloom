@@ -39,7 +39,12 @@ import {
   withAlpha,
   type ComposerPalette,
 } from './shared';
-import type { ModelPickerLabels, ModelPickerModel, ModelPickerProps, ModelPickerProvider } from './types';
+import type {
+  ModelPickerLabels,
+  ModelPickerModel,
+  ModelPickerProps,
+  ModelPickerProvider,
+} from './types';
 import { dataHook, IS_WEB, useComposerWebCss } from './web-hooks';
 
 /** CSS `ease`, the chevrons' 200ms turn. */
@@ -74,7 +79,9 @@ function searchModels(providers: ReadonlyArray<ModelPickerProvider>, query: stri
     provider.models
       .filter(
         (model) =>
-          !needle || model.name.toLowerCase().includes(needle) || provider.name.toLowerCase().includes(needle),
+          !needle ||
+          model.name.toLowerCase().includes(needle) ||
+          provider.name.toLowerCase().includes(needle),
       )
       .map((model) => ({ provider, model })),
   );
@@ -87,7 +94,10 @@ function TurningChevron({ degrees, color }: { degrees: number; color: string }) 
   useEffect(() => {
     rotation.value = reducedMotion ? degrees : withTiming(degrees, { duration: 200, easing: EASE });
   }, [degrees, reducedMotion, rotation]);
-  const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.value}deg` }] }), [rotation]);
+  const style = useAnimatedStyle(
+    () => ({ transform: [{ rotate: `${rotation.value}deg` }] }),
+    [rotation],
+  );
   return (
     <Animated.View style={[{ width: 18, height: 18, flexShrink: 0 }, style]}>
       <RiArrowDownSLine width={18} height={18} fill={color} />
@@ -95,26 +105,46 @@ function TurningChevron({ degrees, color }: { degrees: number; color: string }) 
   );
 }
 
-function ProviderMark({ provider, size, palette }: { provider: ModelPickerProvider; size: number; palette: ComposerPalette }) {
+function ProviderMark({
+  provider,
+  size,
+  palette,
+}: {
+  provider: ModelPickerProvider;
+  size: number;
+  palette: ComposerPalette;
+}) {
   if (provider.logo) {
     return (
-      <View style={{ width: size, height: size, flexShrink: 0 }} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View
+        style={{ width: size, height: size, flexShrink: 0 }}
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+      >
         {provider.logo({ size, color: palette.logo })}
       </View>
     );
   }
   return (
     <View
-      style={{ width: size, height: size, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        width: size,
+        height: size,
+        flexShrink: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
       importantForAccessibility="no-hide-descendants"
-      accessibilityElementsHidden>
+      accessibilityElementsHidden
+    >
       <Text
         style={{
           fontSize: Math.round(size * 0.65),
           lineHeight: size,
           fontWeight: '600',
           color: palette.logo,
-        }}>
+        }}
+      >
         {provider.name.slice(0, 1)}
       </Text>
     </View>
@@ -139,7 +169,11 @@ function ScrollFade({ visible, palette }: { visible: boolean; palette: ComposerP
     zIndex: 10,
     opacity: visible ? 1 : 0,
     ...(IS_WEB
-      ? { transitionProperty: 'opacity', transitionDuration: '200ms', transitionTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)' }
+      ? {
+          transitionProperty: 'opacity',
+          transitionDuration: '200ms',
+          transitionTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
+        }
       : null),
   };
   if (IS_WEB) {
@@ -198,7 +232,9 @@ function BlurInLevel({ level, palette }: { level: string; palette: ComposerPalet
   const style = useAnimatedStyle(
     () => ({
       opacity: progress.value,
-      ...(IS_WEB ? { filter: progress.value >= 1 ? 'none' : `blur(${4 * (1 - progress.value)}px)` } : null),
+      ...(IS_WEB
+        ? { filter: progress.value >= 1 ? 'none' : `blur(${4 * (1 - progress.value)}px)` }
+        : null),
     }),
     [progress],
   );
@@ -261,15 +297,17 @@ function EffortMenu({
 
   return (
     <>
-      <Button appearance="plain" tone="neutral"
+      <Button
+        appearance="plain"
+        tone="neutral"
         ref={triggerRef}
         accessibilityRole="button"
         accessibilityLabel={`${labels.effort}: ${level}`}
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}
-
-        style={[COMPOSER_BUTTON_LAYOUT, chipStyle]}>
+        style={[COMPOSER_BUTTON_LAYOUT, chipStyle]}
+      >
         <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
           {level}
         </Text>
@@ -282,9 +320,12 @@ function EffortMenu({
         label={labels.effort}
         side="bottom"
         sideOffset={10}
-        style={panelStyle}>
+        style={panelStyle}
+      >
         <View style={{ flexDirection: 'column', paddingTop: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 8, marginBottom: -2 }}>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 8, marginBottom: -2 }}
+          >
             <Text variant="body-medium" style={{ color: palette.textSecondary }}>
               {`${labels.effort} `}
             </Text>
@@ -300,7 +341,8 @@ function EffortMenu({
                 paddingRight: 8,
                 paddingTop: 8,
                 paddingBottom: 3,
-              }}>
+              }}
+            >
               <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
                 {labels.faster}
               </Text>
@@ -367,7 +409,8 @@ function ModelRow({
         paddingRight: 8,
         backgroundColor: checked || hovered ? palette.hover : 'transparent',
       }}
-      {...dataHook('bloomComposerRow')}>
+      {...dataHook('bloomComposerRow')}
+    >
       {/* The whole row selects; the effort chip sits above it. */}
       <Pressable
         {...dataHook('bloomComposerControl', 'inset')}
@@ -380,15 +423,23 @@ function ModelRow({
         onHoverOut={() => setHovered(false)}
         style={hitStyle}
       />
-      <View pointerEvents="box-none" style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View pointerEvents="box-none" style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      <View
+        pointerEvents="box-none"
+        style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 }}
+      >
+        <View
+          pointerEvents="box-none"
+          style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+        >
           <View pointerEvents="none">
             <ProviderMark provider={provider} size={16} palette={palette} />
           </View>
           <View pointerEvents="none" style={{ flex: 1, minWidth: 0 }}>
             <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
               {model.name}
-              {searching ? <InlineAside color={palette.textTertiary}>{provider.name}</InlineAside> : null}
+              {searching ? (
+                <InlineAside color={palette.textTertiary}>{provider.name}</InlineAside>
+              ) : null}
             </Text>
           </View>
           {effort ? <View style={{ flexShrink: 0, flexDirection: 'row' }}>{effort}</View> : null}
@@ -482,7 +533,8 @@ export function ModelPickerBase({
 
   // The rail browses; it starts on the chosen model's provider each time.
   const [browsing, setBrowsing] = useState<string | null>(null);
-  const activeProvider = providers.find((provider) => provider.id === browsing) ?? selected?.provider ?? providers[0];
+  const activeProvider =
+    providers.find((provider) => provider.id === browsing) ?? selected?.provider ?? providers[0];
 
   // Quick Search: null while the header shows the hint.
   const [query, setQuery] = useState<string | null>(null);
@@ -501,7 +553,8 @@ export function ModelPickerBase({
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return;
-      const shortcut = event.key === '/' || ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k');
+      const shortcut =
+        event.key === '/' || ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k');
       if (!shortcut) return;
       event.preventDefault();
       setQuery('');
@@ -528,7 +581,10 @@ export function ModelPickerBase({
     if (!first && inView) return;
     const y = Math.max(0, top - (RAIL_HEIGHT - MARK_HEIGHT) / 2);
     // One frame so the panel's scroller exists.
-    const id = setTimeout(() => railRef.current?.scrollTo({ y, animated: !first && !reducedMotion }), 0);
+    const id = setTimeout(
+      () => railRef.current?.scrollTo({ y, animated: !first && !reducedMotion }),
+      0,
+    );
     return () => clearTimeout(id);
   }, [open, activeIndex, reducedMotion]);
 
@@ -550,7 +606,11 @@ export function ModelPickerBase({
     if (searching) searchRef.current?.focus();
   }, [searching]);
 
-  const rows: Match[] = results ?? (activeProvider ? activeProvider.models.map((model) => ({ provider: activeProvider, model })) : []);
+  const rows: Match[] =
+    results ??
+    (activeProvider
+      ? activeProvider.models.map((model) => ({ provider: activeProvider, model }))
+      : []);
 
   const triggerStyle: WebCssStyle = {
     // At least 32, never exactly: at the largest system font the name is taller
@@ -590,7 +650,9 @@ export function ModelPickerBase({
 
   return (
     <>
-      <Button appearance="plain" tone="neutral"
+      <Button
+        appearance="plain"
+        tone="neutral"
         ref={triggerRef}
         testID={testID}
         accessibilityRole="button"
@@ -598,9 +660,20 @@ export function ModelPickerBase({
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}
-
-        style={[COMPOSER_BUTTON_LAYOUT, [triggerStyle, style]]}>
-        <Text variant="body-medium" numberOfLines={1} ellipsizeMode="tail" style={{ flexShrink: 1, minWidth: 0, paddingLeft: 2, paddingRight: 2, color: palette.textSecondary }}>
+        style={[COMPOSER_BUTTON_LAYOUT, [triggerStyle, style]]}
+      >
+        <Text
+          variant="body-medium"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={{
+            flexShrink: 1,
+            minWidth: 0,
+            paddingLeft: 2,
+            paddingRight: 2,
+            color: palette.textSecondary,
+          }}
+        >
           {selected?.model.name ?? ''}
         </Text>
         <TurningChevron degrees={open ? 180 : 0} color={palette.iconSecondary} />
@@ -615,7 +688,8 @@ export function ModelPickerBase({
         sideOffset={8}
         modal
         testID={testID ? `${testID}-panel` : undefined}
-        style={panelStyle}>
+        style={panelStyle}
+      >
         {/* Provider rail. */}
         <ScrollView
           ref={railRef}
@@ -636,7 +710,8 @@ export function ModelPickerBase({
             borderRadius: 17,
             backgroundColor: palette.rail,
           }}
-          contentContainerStyle={{ padding: RAIL_PADDING, width: 42, gap: MARK_GAP }}>
+          contentContainerStyle={{ padding: RAIL_PADDING, width: 42, gap: MARK_GAP }}
+        >
           {providers.map((provider) => (
             <RailMark
               key={provider.id}
@@ -652,7 +727,16 @@ export function ModelPickerBase({
         </ScrollView>
 
         {/* Header and the active lineup. */}
-        <View style={{ position: 'absolute', top: 8, right: 8, bottom: 0, left: 52, flexDirection: 'column' }}>
+        <View
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            bottom: 0,
+            left: 52,
+            flexDirection: 'column',
+          }}
+        >
           <View
             style={{
               height: 20,
@@ -662,7 +746,8 @@ export function ModelPickerBase({
               gap: 5,
               paddingLeft: 2,
               paddingRight: 2,
-            }}>
+            }}
+          >
             {searching ? (
               <>
                 <TextInput
@@ -696,11 +781,23 @@ export function ModelPickerBase({
                     backgroundColor: 'transparent',
                   }}
                 />
-                <Button appearance="plain" tone="neutral"
+                <Button
+                  appearance="plain"
+                  tone="neutral"
                   accessibilityRole="button"
                   accessibilityLabel={labels.closeSearch}
                   onPress={() => setQuery(null)}
-                  style={[COMPOSER_BUTTON_LAYOUT, { flexShrink: 0, flexDirection: 'row', alignItems: 'center', borderRadius: 4, cursor: 'pointer' }]}>
+                  style={[
+                    COMPOSER_BUTTON_LAYOUT,
+                    {
+                      flexShrink: 0,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                    },
+                  ]}
+                >
                   <RiSearchLine width={16} height={16} fill={palette.iconSecondary} />
                 </Button>
               </>
@@ -709,23 +806,40 @@ export function ModelPickerBase({
                 <Text variant="body-medium" style={{ color: palette.textTertiary }}>
                   {labels.models}
                 </Text>
-                <QuickSearch label={labels.quickSearch} palette={palette} onPress={() => setQuery('')} />
+                <QuickSearch
+                  label={labels.quickSearch}
+                  palette={palette}
+                  onPress={() => setQuery('')}
+                />
               </>
             )}
           </View>
 
-          <View style={{ position: 'relative', marginTop: 4, flex: 1, minHeight: 0, flexDirection: 'column' }}>
+          <View
+            style={{
+              position: 'relative',
+              marginTop: 4,
+              flex: 1,
+              minHeight: 0,
+              flexDirection: 'column',
+            }}
+          >
             <ScrollFade visible={scrolled} palette={palette} />
             <ScrollView
               ref={listRef}
               {...dataHook('bloomComposerScroll')}
               accessibilityRole="radiogroup"
-              accessibilityLabel={searching ? messages.matchingModels : messages.providerModels(activeProvider?.name ?? '')}
+              accessibilityLabel={
+                searching
+                  ? messages.matchingModels
+                  : messages.providerModels(activeProvider?.name ?? '')
+              }
               showsVerticalScrollIndicator={false}
               scrollEventThrottle={16}
               onScroll={(event) => setScrolled(event.nativeEvent.contentOffset.y > 0)}
               style={{ flex: 1, minHeight: 0 }}
-              contentContainerStyle={{ flexDirection: 'column', gap: 4, paddingBottom: 4 }}>
+              contentContainerStyle={{ flexDirection: 'column', gap: 4, paddingBottom: 4 }}
+            >
               {results && results.length === 0 ? (
                 <Text variant="body-medium" style={{ padding: 8, color: palette.textTertiary }}>
                   {labels.noMatches}
@@ -789,7 +903,11 @@ function RailMark({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 50,
-    backgroundColor: active ? palette.tertiary : hovered ? withAlpha(palette.tertiary, 0.5) : 'transparent',
+    backgroundColor: active
+      ? palette.tertiary
+      : hovered
+        ? withAlpha(palette.tertiary, 0.5)
+        : 'transparent',
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
@@ -803,14 +921,23 @@ function RailMark({
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={markStyle}>
+      style={markStyle}
+    >
       <ProviderMark provider={provider} size={provider.logoSize ?? 20} palette={palette} />
     </Pressable>
   );
 }
 
 /** "Quick Search" + glyph at 50% opacity, full on hover or keyboard focus. */
-function QuickSearch({ label, palette, onPress }: { label: string; palette: ComposerPalette; onPress: () => void }) {
+function QuickSearch({
+  label,
+  palette,
+  onPress,
+}: {
+  label: string;
+  palette: ComposerPalette;
+  onPress: () => void;
+}) {
   const Button = useComposerButton();
 
   const quickStyle: WebCssStyle = {
@@ -822,12 +949,14 @@ function QuickSearch({ label, palette, onPress }: { label: string; palette: Comp
     '--bloom-composer-ring': palette.focusRing,
   };
   return (
-    <Button appearance="plain" tone="neutral"
+    <Button
+      appearance="plain"
+      tone="neutral"
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-
-      style={[COMPOSER_BUTTON_LAYOUT, quickStyle]}>
+      style={[COMPOSER_BUTTON_LAYOUT, quickStyle]}
+    >
       <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
         {label}
       </Text>

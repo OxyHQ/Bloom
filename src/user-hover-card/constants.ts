@@ -40,5 +40,4 @@ export const USER_HOVER_CARD_INSET = HOVER_CARD_INSET;
  * its own copy: two spellings of one number centre the card off its anchor the
  * first time either moves.
  */
-export const USER_HOVER_CARD_WIDTH =
-  USER_HOVER_CARD_CONTENT_WIDTH + USER_HOVER_CARD_INSET * 2;
+export const USER_HOVER_CARD_WIDTH = USER_HOVER_CARD_CONTENT_WIDTH + USER_HOVER_CARD_INSET * 2;

@@ -158,8 +158,7 @@ describe('toast()', () => {
       const id = toast.promise(Promise.reject(new Error('offline')), {
         loading: 'Saving…',
         success: () => 'Saved',
-        error: (error) =>
-          `Failed: ${error instanceof Error ? error.message : 'unknown'}`,
+        error: (error) => `Failed: ${error instanceof Error ? error.message : 'unknown'}`,
       });
 
       await flushMicrotasks();

@@ -27,7 +27,13 @@ export function FloorFilter<T extends string = FloorOption>({
     messages.floors as Partial<Record<T, string>>,
     labels,
   );
-  return <ToggleChipGroup {...group} options={items} accessibilityLabel={accessibilityLabelProp ?? messages.floor} />;
+  return (
+    <ToggleChipGroup
+      {...group}
+      options={items}
+      accessibilityLabel={accessibilityLabelProp ?? messages.floor}
+    />
+  );
 }
 
 FloorFilter.displayName = 'FloorFilter';

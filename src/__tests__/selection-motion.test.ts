@@ -33,11 +33,15 @@ it('retargets visible capsules, including interrupted fades, with the same sprin
   const position = value(2);
   const opacity = value(0.3);
   moveSelection(position, opacity, 5);
-  expect(withSpring).toHaveBeenCalledWith(5, { duration: 420, dampingRatio: 0.82, reduceMotion: 'system' });
+  expect(withSpring).toHaveBeenCalledWith(5, {
+    duration: 420,
+    dampingRatio: 0.82,
+    reduceMotion: 'system',
+  });
   expect(withTiming).toHaveBeenCalledWith(1, { duration: 160, reduceMotion: 'system' });
 });
 
-it.each([0, 0.5, 1])('never overwrites a pager or scrub driver at opacity %s', initial => {
+it.each([0, 0.5, 1])('never overwrites a pager or scrub driver at opacity %s', (initial) => {
   const position = value(1.4);
   const opacity = value(initial);
   moveSelection(position, opacity, 5, true);

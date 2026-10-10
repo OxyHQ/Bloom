@@ -66,10 +66,7 @@ function ContactAction({
       style={style}
       testID={testID}
     >
-      <Text
-        variant="body-2-medium"
-        style={{ color: emphasis ? paint.accent : paint.text }}
-      >
+      <Text variant="body-2-medium" style={{ color: emphasis ? paint.accent : paint.text }}>
         {label}
       </Text>
     </Pressable>

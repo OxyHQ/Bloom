@@ -94,7 +94,7 @@ const SALE_FACTS: KeyFact[] = [
 
 function ReportLink() {
   return (
-    <LinkButton  linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={() => undefined}>
+    <LinkButton linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={() => undefined}>
       Report this listing
     </LinkButton>
   );
@@ -189,7 +189,13 @@ export const SaleCard: Story = {
   ),
 };
 
-function ExchangeDemo({ layout, testID }: { layout?: 'auto' | 'horizontal' | 'vertical'; testID?: string }) {
+function ExchangeDemo({
+  layout,
+  testID,
+}: {
+  layout?: 'auto' | 'horizontal' | 'vertical';
+  testID?: string;
+}) {
   const [mode, setMode] = useState<ExchangeMode>('swap');
   return (
     <ExchangeProposalCard
@@ -212,7 +218,11 @@ function ExchangeDemo({ layout, testID }: { layout?: 'auto' | 'horizontal' | 've
       mode={mode}
       onModeChange={setMode}
       onPropose={noop}
-      note={mode === 'swap' ? 'You stay at theirs while they stay at yours.' : 'Guest points: 120 per night'}
+      note={
+        mode === 'swap'
+          ? 'You stay at theirs while they stay at yours.'
+          : 'Guest points: 120 per night'
+      }
       layout={layout}
       testID={testID}
     />
@@ -231,8 +241,16 @@ export const ExchangeCard: Story = {
       </View>
       <Column label="Unselected">
         <ExchangeProposalCard
-          yourHome={{ title: 'Loft near the old market', location: 'Brevona', details: '1 bed · 2 guests' }}
-          theirHome={{ title: 'Garden flat', location: 'Castel Aurio', details: '2 beds · 3 guests' }}
+          yourHome={{
+            title: 'Loft near the old market',
+            location: 'Brevona',
+            details: '1 bed · 2 guests',
+          }}
+          theirHome={{
+            title: 'Garden flat',
+            location: 'Castel Aurio',
+            details: '2 beds · 3 guests',
+          }}
           onPressDates={noop}
           onPressGuests={noop}
           proposeDisabled
@@ -279,7 +297,13 @@ export const ActionBars: Story = {
     <Page>
       <View style={{ width: '100%', maxWidth: 420, gap: 8 }}>
         <Caption>Stay</Caption>
-        <BookingBar price="$180" priceUnit="night" dates="Oct 12 – 17" onPressDates={noop} onReserve={noop} />
+        <BookingBar
+          price="$180"
+          priceUnit="night"
+          dates="Oct 12 – 17"
+          onPressDates={noop}
+          onReserve={noop}
+        />
         <Caption>Rent</Caption>
         <ActionBar
           price="€1,250"
@@ -316,7 +340,14 @@ export const ActionBars: Story = {
           onSecondary={noop}
         />
         <Caption>Unavailable</Caption>
-        <ActionBar price="€980" priceUnit="month" priceUnitPrefix="/" subtitle="Rented" primaryLabel="Apply" primaryDisabled />
+        <ActionBar
+          price="€980"
+          priceUnit="month"
+          priceUnitPrefix="/"
+          subtitle="Rented"
+          primaryLabel="Apply"
+          primaryDisabled
+        />
       </View>
     </Page>
   ),
@@ -352,7 +383,12 @@ export const Calculator: Story = {
       </View>
       <View style={{ width: 372, maxWidth: '100%' }}>
         <Caption>In a sheet (stacked)</Caption>
-        <MortgageCalculator defaultPrice={240000} defaultAnnualRate={4.1} defaultYears={30} formatCurrency={euro} />
+        <MortgageCalculator
+          defaultPrice={240000}
+          defaultAnnualRate={4.1}
+          defaultYears={30}
+          formatCurrency={euro}
+        />
       </View>
     </Page>
   ),
@@ -405,7 +441,13 @@ const SLOTS: ViewingSlot[] = [
   { value: '18:30', label: '18:30' },
 ];
 
-function SchedulerDemo({ initialDay = '2026-09-15', testID }: { initialDay?: string | null; testID?: string }) {
+function SchedulerDemo({
+  initialDay = '2026-09-15',
+  testID,
+}: {
+  initialDay?: string | null;
+  testID?: string;
+}) {
   const [day, setDay] = useState<string | null>(initialDay);
   const [slot, setSlot] = useState<string | null>(initialDay ? '11:30' : null);
   const [mode, setMode] = useState<ViewingMode>('in-person');
@@ -447,16 +489,36 @@ export const Scheduler: Story = {
 };
 
 const ITEMS: ApplicationItem[] = [
-  { key: 'id', title: 'Proof of identity', description: 'Passport or national ID, both sides', status: 'verified' },
-  { key: 'payslips', title: 'Last three payslips', description: 'June, July and August', status: 'uploaded' },
-  { key: 'contract', title: 'Employment contract', description: 'Signed, with your current salary', status: 'missing' },
+  {
+    key: 'id',
+    title: 'Proof of identity',
+    description: 'Passport or national ID, both sides',
+    status: 'verified',
+  },
+  {
+    key: 'payslips',
+    title: 'Last three payslips',
+    description: 'June, July and August',
+    status: 'uploaded',
+  },
+  {
+    key: 'contract',
+    title: 'Employment contract',
+    description: 'Signed, with your current salary',
+    status: 'missing',
+  },
   {
     key: 'bank',
     title: 'Bank statement',
     status: 'rejected',
     reason: 'The account holder name is cut off. Upload the full first page.',
   },
-  { key: 'references', title: 'Landlord reference', description: 'From your current or last landlord', status: 'missing' },
+  {
+    key: 'references',
+    title: 'Landlord reference',
+    description: 'From your current or last landlord',
+    status: 'missing',
+  },
 ];
 
 export const Checklist: Story = {

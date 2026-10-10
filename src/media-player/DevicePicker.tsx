@@ -34,7 +34,11 @@ function DeviceRow({
   const Glyph = DEVICE_GLYPHS[device.kind];
   const disabled = !!device.disabled;
   const accentText = theme.isDark ? accent[400] : accent[600];
-  const iconWell = current ? (theme.isDark ? accent[950] : accent[50]) : surfaceFillOn(theme, theme.colors.background);
+  const iconWell = current
+    ? theme.isDark
+      ? accent[950]
+      : accent[50]
+    : surfaceFillOn(theme, theme.colors.background);
 
   const secondary = current ? currentLabel : device.description;
   const content = (
@@ -56,7 +60,9 @@ function DeviceRow({
         <Text
           variant="body-medium"
           numberOfLines={1}
-          style={{ color: current ? accentText : disabled ? palette.textDisabled : theme.colors.text }}
+          style={{
+            color: current ? accentText : disabled ? palette.textDisabled : theme.colors.text,
+          }}
         >
           {device.name}
         </Text>
@@ -95,14 +101,19 @@ function DeviceRow({
   return (
     <Pressable
       role="button"
-      accessibilityLabel={device.description ? `${device.name}, ${device.description}` : device.name}
+      accessibilityLabel={
+        device.description ? `${device.name}, ${device.description}` : device.name
+      }
       aria-disabled={disabled || undefined}
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={[rowStyle, { backgroundColor: hovered && !disabled ? palette.rowHighlight : undefined }]}
+      style={[
+        rowStyle,
+        { backgroundColor: hovered && !disabled ? palette.rowHighlight : undefined },
+      ]}
       testID={testID}
     >
       {content}
@@ -164,10 +175,22 @@ function DevicePickerComponent({
         currentLabel={currentLabel}
         testID={testID ? `${testID}-current` : undefined}
       />
-      <View style={{ height: 1, backgroundColor: palette.border, marginTop: 6, marginBottom: 6, marginLeft: -10, marginRight: -10 }} />
+      <View
+        style={{
+          height: 1,
+          backgroundColor: palette.border,
+          marginTop: 6,
+          marginBottom: 6,
+          marginLeft: -10,
+          marginRight: -10,
+        }}
+      />
       {heading(devicesTitle)}
       {others.length === 0 ? (
-        <Text variant="body-regular" style={{ color: palette.textSecondary, paddingLeft: 8, paddingTop: 8, paddingBottom: 8 }}>
+        <Text
+          variant="body-regular"
+          style={{ color: palette.textSecondary, paddingLeft: 8, paddingTop: 8, paddingBottom: 8 }}
+        >
           {emptyLabel}
         </Text>
       ) : (
@@ -189,7 +212,14 @@ function DevicePickerComponent({
           onPress={onHelpPress}
           onHoverIn={() => setHelpHovered(true)}
           onHoverOut={() => setHelpHovered(false)}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 8, paddingTop: 8, paddingBottom: 4 }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingLeft: 8,
+            paddingTop: 8,
+            paddingBottom: 4,
+          }}
           testID={testID ? `${testID}-help` : undefined}
         >
           <View pointerEvents="none">

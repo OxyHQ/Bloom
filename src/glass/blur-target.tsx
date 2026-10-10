@@ -104,10 +104,7 @@ export const GlassBlurTargetProvider = memo(function GlassBlurTargetProvider({
   // ref, so the node cannot be captured through `setState` directly) and it
   // cannot run before the ref is attached.
   const [attached, setAttached] = useState(false);
-  const target = useMemo(
-    () => ({ current: attached ? ref.current : null }),
-    [attached],
-  );
+  const target = useMemo(() => ({ current: attached ? ref.current : null }), [attached]);
 
   // Off Android there is nothing to target and nothing to publish, so the
   // provider is a pass-through rather than an extra layout node at every app

@@ -1,11 +1,6 @@
 /** @jest-environment jsdom */
 import React from 'react';
-import {
-  act,
-  render,
-  cleanup,
-  fireEvent,
-} from '@testing-library/react-native/pure';
+import { act, render, cleanup, fireEvent } from '@testing-library/react-native/pure';
 jest.mock('react-native', () => {
   const base = jest.requireActual('../../__mocks__/react-native');
   const real = jest.requireActual('react-native-web');
@@ -46,9 +41,7 @@ it('uses the real native JS animation engine for natural height and settles live
   const body = () => ui.getByTestId('body', { includeHiddenElements: true });
   ui.rerender(draw(true));
   const measured = ui.UNSAFE_root.findAll(
-    (node) =>
-      node.props.collapsable === false &&
-      typeof node.props.onLayout === 'function',
+    (node) => node.props.collapsable === false && typeof node.props.onLayout === 'function',
   )[0]!;
   act(() =>
     measured.props.onLayout({
@@ -56,9 +49,7 @@ it('uses the real native JS animation engine for natural height and settles live
     }),
   );
   const height = () =>
-    (
-      resolvedStyle(body().props.style).maxHeight as { __getValue(): number }
-    ).__getValue();
+    (resolvedStyle(body().props.style).maxHeight as { __getValue(): number }).__getValue();
   expect(height()).toBe(0);
   act(() => jest.advanceTimersByTime(150));
   expect(height()).toBeGreaterThan(0);

@@ -51,7 +51,17 @@ function RentHistoryListComponent({
   if (items.length === 0) {
     return (
       <View
-        style={[{ width: '100%', flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 16, paddingBottom: 16 }, style]}
+        style={[
+          {
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingTop: 16,
+            paddingBottom: 16,
+          },
+          style,
+        ]}
         testID={testID ? `${testID}-empty` : testID}
       >
         <RiHistoryLine width={20} height={20} fill={palette.muted} />
@@ -63,13 +73,20 @@ function RentHistoryListComponent({
   }
 
   return (
-    <View role="list" accessibilityLabel={accessibilityLabel} style={[{ width: '100%' }, style]} testID={testID}>
+    <View
+      role="list"
+      accessibilityLabel={accessibilityLabel}
+      style={[{ width: '100%' }, style]}
+      testID={testID}
+    >
       {items.map((item, index) => (
         <View
           key={`${item.period}-${index}`}
           role="listitem"
           accessible
-          accessibilityLabel={[item.amount, item.period, item.delta, item.note].filter(Boolean).join(', ')}
+          accessibilityLabel={[item.amount, item.period, item.delta, item.note]
+            .filter(Boolean)
+            .join(', ')}
           testID={testID ? `${testID}-item-${index}` : undefined}
           style={{
             flexDirection: 'row',
@@ -82,7 +99,10 @@ function RentHistoryListComponent({
           }}
         >
           <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-            <Text variant="headline-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+            <Text
+              variant="headline-semibold"
+              style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+            >
               {item.amount}
             </Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 8 }}>

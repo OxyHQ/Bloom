@@ -33,7 +33,9 @@ function renderWithTheme(ui: React.ReactElement, mode: 'light' | 'dark' = 'light
 }
 
 /** Press the drop zone's own host node and flush the async picker. */
-async function pressZone(host: ReturnType<typeof render>['getByTestId'] extends (id: string) => infer R ? R : never) {
+async function pressZone(
+  host: ReturnType<typeof render>['getByTestId'] extends (id: string) => infer R ? R : never,
+) {
   expect(typeof host.props.onPress).toBe('function');
   await act(async () => {
     await host.props.onPress();
@@ -58,9 +60,19 @@ describe('FileUpload', () => {
 
   it('sizes the progress SVG from its container before measurement and updates its geometry after layout', () => {
     const screen = renderWithTheme(<FileUpload testID="zone" />);
-    expect(screen.getByTestId('zone-progress-ring').props).toMatchObject({ width: '100%', height: '100%', preserveAspectRatio: 'none' });
-    fireEvent(screen.getByTestId('zone'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 358, height: 164 } } });
-    expect(screen.getByTestId('zone-progress-ring').props).toMatchObject({ width: '100%', height: '100%', viewBox: '0 0 358 164' });
+    expect(screen.getByTestId('zone-progress-ring').props).toMatchObject({
+      width: '100%',
+      height: '100%',
+      preserveAspectRatio: 'none',
+    });
+    fireEvent(screen.getByTestId('zone'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 358, height: 164 } },
+    });
+    expect(screen.getByTestId('zone-progress-ring').props).toMatchObject({
+      width: '100%',
+      height: '100%',
+      viewBox: '0 0 358 164',
+    });
   });
 
   it('renders the idle zone as a named button with the allowed types and limit', () => {
@@ -143,8 +155,11 @@ describe('FileUpload', () => {
 
   it('exposes only the active status during upload, completion and reset', () => {
     jest.useFakeTimers();
-    const ui = (file: FileUploadFile | null, progress: number) =>
-      <BloomThemeProvider mode="light"><FileUpload file={file} progress={progress} /></BloomThemeProvider>;
+    const ui = (file: FileUploadFile | null, progress: number) => (
+      <BloomThemeProvider mode="light">
+        <FileUpload file={file} progress={progress} />
+      </BloomThemeProvider>
+    );
     const api = render(ui(REPORT, 0));
     expect(api.getByText('Uploading 2.4 MB...')).toBeTruthy();
     expect(api.queryByText('Uploaded successfully!')).toBeNull();
@@ -169,7 +184,12 @@ describe('FileUpload', () => {
 
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <FileUpload testID="zone" file={REPORT} progress={100} onUploadComplete={onUploadComplete} />
+        <FileUpload
+          testID="zone"
+          file={REPORT}
+          progress={100}
+          onUploadComplete={onUploadComplete}
+        />
       </BloomThemeProvider>,
     );
     expect(getByText('Uploaded successfully!')).toBeTruthy();
@@ -187,7 +207,9 @@ describe('FileUpload', () => {
     await pressZone(getByTestId('zone'));
     expect(onPickFiles).not.toHaveBeenCalled();
 
-    const disabled = renderWithTheme(<FileUpload testID="off" disabled onPickFiles={onPickFiles} />);
+    const disabled = renderWithTheme(
+      <FileUpload testID="off" disabled onPickFiles={onPickFiles} />,
+    );
     expect(disabled.getByTestId('off').props.disabled).toBe(true);
   });
 
@@ -206,7 +228,9 @@ describe('FileUpload', () => {
 describe('resolveFileUploadPaint', () => {
   function theme(isDark: boolean): Theme {
     let captured: Theme | null = null;
-    const { useTheme } = jest.requireActual('../theme/use-theme') as typeof import('../theme/use-theme');
+    const { useTheme } = jest.requireActual(
+      '../theme/use-theme',
+    ) as typeof import('../theme/use-theme');
     function Grab() {
       captured = useTheme();
       return null;

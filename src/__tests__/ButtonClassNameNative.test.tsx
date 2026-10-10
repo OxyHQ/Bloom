@@ -9,9 +9,14 @@ import { resolvedStyle } from './support/rendered-style';
 
 // Exercise the actual native CSS compiler and resolver, not the default web
 // $$css marker used by ordinary structural suites.
-jest.mock('react-native', () => ({ ...jest.requireActual('../../__mocks__/react-native'), PlatformColor: (...names: string[]) => ({ semantic: names }) }));
+jest.mock('react-native', () => ({
+  ...jest.requireActual('../../__mocks__/react-native'),
+  PlatformColor: (...names: string[]) => ({ semantic: names }),
+}));
 jest.mock('react-native-css', () => jest.requireActual('react-native-css/native'));
-jest.mock('react-native-css/native-internal', () => jest.requireActual('../../node_modules/react-native-css/dist/commonjs/native-internal/index.js'));
+jest.mock('react-native-css/native-internal', () =>
+  jest.requireActual('../../node_modules/react-native-css/dist/commonjs/native-internal/index.js'),
+);
 
 beforeEach(() => {
   StyleCollection.styles.clear();
@@ -28,14 +33,34 @@ beforeEach(() => {
 
 it('lets native classes own geometry, state paint, label, glyph and loading color', () => {
   const icon = ({ color }: { color: string }) => <View testID="icon" accessibilityLabel={color} />;
-  const ui = (props: { disabled?: boolean; loading?: boolean } = {}) => <BloomThemeProvider mode="light"><Button material="flat" className={`purchase purchase-type ${props.disabled ? "purchase-disabled" : props.loading ? "" : "purchase-interactive"}`} testID="button" renderLeadingIcon={icon} {...props}>Purchase</Button></BloomThemeProvider>;
+  const ui = (props: { disabled?: boolean; loading?: boolean } = {}) => (
+    <BloomThemeProvider mode="light">
+      <Button
+        material="flat"
+        className={`purchase purchase-type ${props.disabled ? 'purchase-disabled' : props.loading ? '' : 'purchase-interactive'}`}
+        testID="button"
+        renderLeadingIcon={icon}
+        {...props}
+      >
+        Purchase
+      </Button>
+    </BloomThemeProvider>
+  );
   const api = render(ui());
   const host = () => api.getByTestId('button');
-  expect(resolvedStyle(host().props.style)).toMatchObject({ height: 52, borderRadius: 24, backgroundColor: '#5433eb' });
-  expect(resolvedStyle(api.getByText('Purchase').props.style)).toMatchObject({ color: '#fff', fontSize: 16, fontWeight: 600 });
+  expect(resolvedStyle(host().props.style)).toMatchObject({
+    height: 52,
+    borderRadius: 24,
+    backgroundColor: '#5433eb',
+  });
+  expect(resolvedStyle(api.getByText('Purchase').props.style)).toMatchObject({
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 600,
+  });
   const shadows = resolvedStyle(host().props.style).boxShadow as Array<{ inset?: boolean }>;
   expect(shadows).toHaveLength(3);
-  expect(shadows.filter(shadow => shadow.inset)).toHaveLength(2);
+  expect(shadows.filter((shadow) => shadow.inset)).toHaveLength(2);
   expect(api.getByTestId('icon').props.accessibilityLabel).toBe('#fff');
   fireEvent(host(), 'hoverIn');
   expect(resolvedStyle(host().props.style).backgroundColor).toBe('#4524db');
@@ -43,7 +68,11 @@ it('lets native classes own geometry, state paint, label, glyph and loading colo
   fireEvent(host(), 'pressIn');
   expect(resolvedStyle(host().props.style).backgroundColor).toBe('#321abc');
   expect(api.getByTestId('icon').props.accessibilityLabel).toBe('#ddd');
-  expect((resolvedStyle(host().props.style).transform as Array<Record<string, number>>).flatMap(Object.values)).toContain(.99);
+  expect(
+    (resolvedStyle(host().props.style).transform as Array<Record<string, number>>).flatMap(
+      Object.values,
+    ),
+  ).toContain(0.99);
   act(() => api.rerender(ui({ loading: true })));
   expect(api.UNSAFE_getByType(ActivityIndicator).props.color).toBe('#fff');
   expect(resolvedStyle(host().props.style).backgroundColor).toBe('#5433eb');
@@ -52,27 +81,52 @@ it('lets native classes own geometry, state paint, label, glyph and loading colo
   expect(api.getByTestId('icon').props.accessibilityLabel).toBe('#888');
 });
 
-
-it.each(['light', 'dark'] as const)('keeps unclaimed defaults and explicit styles in %s mode', mode => {
-  const api = render(<BloomThemeProvider mode={mode}>
-    <Button material="flat" testID="normal">Default</Button>
-    <Button material="flat" className="offset-only" testID="offset">Offset</Button>
-    <Button material="flat" className="purchase" style={{ height: 64 }} testID="explicit">Explicit</Button>
-  </BloomThemeProvider>);
-  const baseline = resolvedStyle(api.getByTestId('normal').props.style);
-  const custom = resolvedStyle(api.getByTestId('offset').props.style);
-  for (const key of ['height', 'paddingHorizontal', 'borderRadius', 'backgroundColor', 'borderColor'] as const) expect(custom[key]).toEqual(baseline[key]);
-  expect(custom.marginLeft).toBe(12);
-  expect(resolvedStyle(api.getByTestId('explicit').props.style).height).toBe(64);
-});
+it.each(['light', 'dark'] as const)(
+  'keeps unclaimed defaults and explicit styles in %s mode',
+  (mode) => {
+    const api = render(
+      <BloomThemeProvider mode={mode}>
+        <Button material="flat" testID="normal">
+          Default
+        </Button>
+        <Button material="flat" className="offset-only" testID="offset">
+          Offset
+        </Button>
+        <Button material="flat" className="purchase" style={{ height: 64 }} testID="explicit">
+          Explicit
+        </Button>
+      </BloomThemeProvider>,
+    );
+    const baseline = resolvedStyle(api.getByTestId('normal').props.style);
+    const custom = resolvedStyle(api.getByTestId('offset').props.style);
+    for (const key of [
+      'height',
+      'paddingHorizontal',
+      'borderRadius',
+      'backgroundColor',
+      'borderColor',
+    ] as const)
+      expect(custom[key]).toEqual(baseline[key]);
+    expect(custom.marginLeft).toBe(12);
+    expect(resolvedStyle(api.getByTestId('explicit').props.style).height).toBe(64);
+  },
+);
 
 it('retains native stateful content while class-driven loading changes', () => {
   let mounts = 0;
   function Stateful() {
-    React.useEffect(() => { mounts++; }, []);
+    React.useEffect(() => {
+      mounts++;
+    }, []);
     return <View testID="stateful" />;
   }
-  const ui = (loading: boolean) => <BloomThemeProvider><Button material="flat" className="purchase" loading={loading}><Stateful /></Button></BloomThemeProvider>;
+  const ui = (loading: boolean) => (
+    <BloomThemeProvider>
+      <Button material="flat" className="purchase" loading={loading}>
+        <Stateful />
+      </Button>
+    </BloomThemeProvider>
+  );
   const api = render(ui(false));
   api.rerender(ui(true));
   api.rerender(ui(false));
@@ -80,13 +134,22 @@ it('retains native stateful content while class-driven loading changes', () => {
   expect(mounts).toBe(1);
 });
 
-
 it('does not consume typography styles shared with another native primitive', () => {
   const Label = styled(RNText, { className: 'style' });
   const classes = 'purchase purchase-type purchase-interactive';
-  const api = render(<BloomThemeProvider>
-    <Button material="flat" className={classes}>Button</Button>
-    <Label className={classes} testID="sibling">Sibling</Label>
-  </BloomThemeProvider>);
-  expect(resolvedStyle(api.getByTestId('sibling').props.style)).toMatchObject({ color: '#fff', fontSize: 16, fontWeight: 600 });
+  const api = render(
+    <BloomThemeProvider>
+      <Button material="flat" className={classes}>
+        Button
+      </Button>
+      <Label className={classes} testID="sibling">
+        Sibling
+      </Label>
+    </BloomThemeProvider>,
+  );
+  expect(resolvedStyle(api.getByTestId('sibling').props.style)).toMatchObject({
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 600,
+  });
 });

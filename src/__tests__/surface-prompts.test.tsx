@@ -5,10 +5,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import type { DialogProps } from '../dialog';
 import { alert, confirm, prompt, SurfaceHost } from '../surfaces';
 import { createSurfaceHost } from '../surfaces/SurfaceHost';
-import {
-  __resetSurfacesForTests,
-  getSnapshot,
-} from '../surfaces/surface-store';
+import { __resetSurfacesForTests, getSnapshot } from '../surfaces/surface-store';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 /**
@@ -191,7 +188,6 @@ describe('built-in surfaces', () => {
       expect(getByText('OK')).toBeTruthy();
       expect(queryByText('Cancel')).toBeNull();
     });
-
   });
 
   describe('prompt()', () => {

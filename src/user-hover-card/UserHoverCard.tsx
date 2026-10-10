@@ -1,4 +1,9 @@
-import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { parseRgba } from '../theme/color-utils';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -120,6 +125,7 @@ function useEntrance(enabled: boolean) {
   // not left on a `blur(0px)` filter layer (FloatingPanel rests on `none` too).
   const [settled, setSettled] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) return;
     const animation = Animated.timing(progress, {
@@ -135,7 +141,6 @@ function useEntrance(enabled: boolean) {
     });
     return () => animation.stop();
     // Mount-only, like the panel's own enter.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return useMemo(() => {
@@ -194,14 +199,19 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   const bare = useInsideHoverCardSurface();
   const parentFill = useSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
-  const background = StyleSheet.flatten(style)?.backgroundColor ?? (bare ? undefined : palette.surface);
-  const publishedFill = typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
-    ? resolveSurfaceMaterial({ fill: background, parentFill, paint: !bare }).publishedFill : undefined;
+  const background =
+    StyleSheet.flatten(style)?.backgroundColor ?? (bare ? undefined : palette.surface);
+  const publishedFill =
+    typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
+      ? resolveSurfaceMaterial({ fill: background, parentFill, paint: !bare }).publishedFill
+      : undefined;
   const entrance = useEntrance(animateIn && !bare);
 
   const hasCover = typeof cover === 'string' && cover.length > 0;
   const coverUri = hasCover
-    ? isImageUrl(cover) ? cover : resolver?.(cover, coverVariant)
+    ? isImageUrl(cover)
+      ? cover
+      : resolver?.(cover, coverVariant)
     : undefined;
 
   const cardStyle: WebCssStyle = bare
@@ -223,7 +233,13 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
         transformOrigin: 'top',
       };
 
-  const material = bare || !publishedFill ? null : <SurfacePaint fill={background as string} radius={StyleSheet.flatten(style)?.borderRadius ?? RADIUS} />;
+  const material =
+    bare || !publishedFill ? null : (
+      <SurfacePaint
+        fill={background as string}
+        radius={StyleSheet.flatten(style)?.borderRadius ?? RADIUS}
+      />
+    );
 
   // Where the avatar's visible band sits, so the action can centre on it.
   const avatarOuter = hasCover ? AVATAR_SIZE + AVATAR_RING * 2 : AVATAR_SIZE;
@@ -284,7 +300,13 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
         testID={testID}
         aria-busy
         accessibilityState={{ busy: true }}
-        style={[cardStyle, entrance, style, surfaceFillVars(publishedFill), !bare && publishedFill ? { backgroundColor: 'transparent' } : null]}
+        style={[
+          cardStyle,
+          entrance,
+          style,
+          surfaceFillVars(publishedFill),
+          !bare && publishedFill ? { backgroundColor: 'transparent' } : null,
+        ]}
       >
         {material}
         {coverView}
@@ -313,7 +335,13 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
         </View>
       </Animated.View>
     );
-    return publishedFill ? <SurfaceLevelProvider level={!bare ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
+    return publishedFill ? (
+      <SurfaceLevelProvider level={!bare ? 1 : parentLevel} fill={publishedFill}>
+        {content}
+      </SurfaceLevelProvider>
+    ) : (
+      content
+    );
   }
 
   const identity = (
@@ -360,7 +388,13 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   const content = (
     <Animated.View
       testID={testID}
-      style={[cardStyle, entrance, style, surfaceFillVars(publishedFill), !bare && publishedFill ? { backgroundColor: 'transparent' } : null]}
+      style={[
+        cardStyle,
+        entrance,
+        style,
+        surfaceFillVars(publishedFill),
+        !bare && publishedFill ? { backgroundColor: 'transparent' } : null,
+      ]}
     >
       {material}
       {coverView}
@@ -378,9 +412,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
 
       {/* After the identity in document order, so it paints above it; pinned
           top-right and centred on the avatar's visible band. */}
-      {action != null ? (
-        <View style={[styles.action, actionZone]}>{action}</View>
-      ) : null}
+      {action != null ? <View style={[styles.action, actionZone]}>{action}</View> : null}
 
       {bio ? (
         <Text
@@ -420,7 +452,13 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
       {footer != null ? <View style={styles.footer}>{footer}</View> : null}
     </Animated.View>
   );
-  return publishedFill ? <SurfaceLevelProvider level={!bare ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
+  return publishedFill ? (
+    <SurfaceLevelProvider level={!bare ? 1 : parentLevel} fill={publishedFill}>
+      {content}
+    </SurfaceLevelProvider>
+  ) : (
+    content
+  );
 };
 
 const styles = StyleSheet.create({

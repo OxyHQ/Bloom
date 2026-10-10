@@ -66,7 +66,8 @@ function UnreadBadgeComponent({
 
   const fill = muted ? paint.mutedFill : paint.accent;
   const on = muted ? paint.onMuted : paint.onAccent;
-  const label = accessibilityLabel ?? (formatLabel ? formatLabel(n) : defaultUnreadLabel(n, messages));
+  const label =
+    accessibilityLabel ?? (formatLabel ? formatLabel(n) : defaultUnreadLabel(n, messages));
 
   if (dot) {
     const d = UNREAD_DOT_SIZES[size];

@@ -23,7 +23,9 @@ function renderIn(ui: React.ReactElement) {
 
 describe('PatientInfoCard', () => {
   it('keeps the geometry: radius 20, padding 24/10/10, 15 apart; rows radius 10 padding 8/10', () => {
-    const { getByTestId } = renderIn(<PatientInfoCard testID="card" name="Maya" details={DETAILS} />);
+    const { getByTestId } = renderIn(
+      <PatientInfoCard testID="card" name="Maya" details={DETAILS} />,
+    );
     expect(cardLayout(getByTestId('card'))).toMatchObject({
       height: 330,
       borderRadius: 20,

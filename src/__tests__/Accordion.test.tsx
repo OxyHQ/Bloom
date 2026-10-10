@@ -3,12 +3,7 @@ import { Text, View } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from '../accordion';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
 import { resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -52,7 +47,9 @@ describe('Accordion content is sized by its content, not by a constant', () => {
   it('wires the content to report its own height', () => {
     const { UNSAFE_root } = renderWithTheme(openAccordion());
     const withLayout = UNSAFE_root.findAll(
-      (node) => typeof node.props.onLayout === 'function' && resolvedStyle(node.props.style).paddingBottom != null,
+      (node) =>
+        typeof node.props.onLayout === 'function' &&
+        resolvedStyle(node.props.style).paddingBottom != null,
     );
     expect(withLayout.length).toBeGreaterThan(0);
   });
@@ -69,7 +66,9 @@ describe('Accordion content is sized by its content, not by a constant', () => {
     expect(resolvedStyle(clipOf()?.props.style).maxHeight).toBeUndefined();
 
     const content = UNSAFE_root.findAll(
-      (node) => typeof node.props.onLayout === 'function' && resolvedStyle(node.props.style).paddingBottom != null,
+      (node) =>
+        typeof node.props.onLayout === 'function' &&
+        resolvedStyle(node.props.style).paddingBottom != null,
     )[0];
     if (!content) throw new Error('the accordion content node reports no layout');
     fireEvent(content, 'layout', { nativeEvent: { layout: { height: 900, width: 320 } } });

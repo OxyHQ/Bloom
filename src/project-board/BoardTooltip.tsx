@@ -2,13 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { StyledView } from '../styles/styled-primitives';
 import { useProjectBoardPlatform } from './context';
 /** Source's 200ms hover delay, composed on Bloom's existing tooltip surface. */
-export function BoardTooltip({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+export function BoardTooltip({ label, children }: { label: string; children: ReactNode }) {
   const { Tooltip, TooltipTrigger, TooltipContent } = useProjectBoardPlatform();
   const [visible, setVisible] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);

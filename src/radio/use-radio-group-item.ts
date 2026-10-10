@@ -11,7 +11,9 @@ export function useRadioGroupItem(value: string, disabled: boolean, activate: ()
   if (Platform.OS !== 'web') return { ref };
   return {
     ...space,
-    ...(group ? { ref, tabIndex: !disabled && group.tabValue === value ? 0 as const : -1 as const } : {}),
+    ...(group
+      ? { ref, tabIndex: !disabled && group.tabValue === value ? (0 as const) : (-1 as const) }
+      : {}),
     onKeyDown(event: KeyboardEvent<HTMLElement>) {
       space.onKeyDown?.(event);
       if (!disabled && !event.defaultPrevented) group?.onKeyDown(value, event);

@@ -81,7 +81,8 @@ export function CountryCodeSelect({
       <SelectTrigger label={label} fieldStyle={COUNTRY_CODE_TRIGGER_STYLE}>
         <SelectValue
           leading={selected ? <CountryFlag iso2={selected.iso2} /> : null}
-          style={{ color: secondary }}>
+          style={{ color: secondary }}
+        >
           {() => (selected ? `+${selected.dial}` : '')}
         </SelectValue>
         <SelectIcon />
@@ -96,7 +97,8 @@ export function CountryCodeSelect({
             value={country.iso2}
             label={country.name}
             leading={<CountryFlag iso2={country.iso2} />}
-            style={ROW_STYLE}>
+            style={ROW_STYLE}
+          >
             <SelectItemText>{country.name}</SelectItemText>
             <Text variant="body-medium" style={{ flexShrink: 0, color: tertiary }}>
               {`+${country.dial}`}

@@ -75,7 +75,9 @@ describe('PaymentMethodMark', () => {
   });
 
   it('lets an app that HAS the rights put its own artwork inside the plate', () => {
-    mount(<PaymentMethodMark scheme="Aurora" image={<span data-testid="art">A</span>} testID="mark" />);
+    mount(
+      <PaymentMethodMark scheme="Aurora" image={<span data-testid="art">A</span>} testID="mark" />,
+    );
     expect(queryTestId('art')).not.toBeNull();
     expect(byTestId('mark-plate').querySelector('svg')).toBeNull();
   });
@@ -134,7 +136,9 @@ describe('PaymentMethodRow', () => {
     expect(queryTestId('row-mark-plate')).not.toBeNull();
     mount(<PaymentMethodRow scheme="Aurora" leading={null} testID="row" />);
     expect(queryTestId('row-mark-plate')).toBeNull();
-    mount(<PaymentMethodRow scheme="Aurora" leading={<span data-testid="own">M</span>} testID="row" />);
+    mount(
+      <PaymentMethodRow scheme="Aurora" leading={<span data-testid="own">M</span>} testID="row" />,
+    );
     expect(queryTestId('row-mark-plate')).toBeNull();
     expect(queryTestId('own')).not.toBeNull();
   });
@@ -152,7 +156,14 @@ describe('PaymentMethodRow', () => {
     expect(byTestId('row-state').textContent).toBe('Declined');
     expect(byTestId('row-state').style.color).toBe(css(declined));
 
-    mount(<PaymentMethodRow scheme="Solstice" state="expired" stateMessage="Ran out in June" testID="row" />);
+    mount(
+      <PaymentMethodRow
+        scheme="Solstice"
+        state="expired"
+        stateMessage="Ran out in June"
+        testID="row"
+      />,
+    );
     const expired = resolveAccentColors(theme().colors, 'warning', 'outlined').foreground;
     expect(byTestId('row-state').textContent).toBe('Ran out in June');
     expect(byTestId('row-state').style.color).toBe(css(expired));
@@ -162,7 +173,16 @@ describe('PaymentMethodRow', () => {
   });
 
   it('announces `aria-checked` when it is a radio, and nothing when it is a plain row', () => {
-    mount(<PaymentMethodRow scheme="Aurora" role="radio" selectable selected onPress={() => undefined} testID="row" />);
+    mount(
+      <PaymentMethodRow
+        scheme="Aurora"
+        role="radio"
+        selectable
+        selected
+        onPress={() => undefined}
+        testID="row"
+      />,
+    );
     expect(allByRole('radio')[0]?.getAttribute('aria-checked')).toBe('true');
     // The dot is INSIDE the press target: it is not a control of its own.
     expect(allByRole('radio')[0]?.querySelector('[data-testid="row-dot"]')).not.toBeNull();
@@ -191,12 +211,23 @@ describe('PaymentMethodRow', () => {
     click(byTestId('menu'));
     expect(pressed).toEqual(['menu']);
 
-    mount(<PaymentMethodRow scheme="Aurora" action={<span data-testid="chip">chip</span>} testID="row" />);
+    mount(
+      <PaymentMethodRow
+        scheme="Aurora"
+        action={<span data-testid="chip">chip</span>}
+        testID="row"
+      />,
+    );
     expect(queryTestId('chip')).not.toBeNull();
   });
 
   it('keeps every kind pointed at a glyph', () => {
-    expect(Object.keys(PAYMENT_METHOD_KIND_ICON).sort()).toEqual(['account', 'card', 'cash', 'wallet']);
+    expect(Object.keys(PAYMENT_METHOD_KIND_ICON).sort()).toEqual([
+      'account',
+      'card',
+      'cash',
+      'wallet',
+    ]);
     for (const Glyph of Object.values(PAYMENT_METHOD_KIND_ICON)) {
       expect(typeof Glyph).not.toBe('undefined');
     }
@@ -266,7 +297,12 @@ describe('PaymentMethodList', () => {
       // of publishing ids, so this is the arrangement where the picker carries
       // the description itself.
       <Field label="Pay with" error="Choose one">
-        <PaymentMethodList methods={METHODS} variant="picker" onSelect={() => undefined} testID="list" />
+        <PaymentMethodList
+          methods={METHODS}
+          variant="picker"
+          onSelect={() => undefined}
+          testID="list"
+        />
       </Field>,
     );
     const group = allByRole('radiogroup')[0]!;
@@ -280,19 +316,32 @@ describe('PaymentMethodList', () => {
   it('is frozen by a disabled Field, and a row cannot re-enable itself', () => {
     mount(
       <Field label="Pay with" multiple disabled>
-        <PaymentMethodList methods={METHODS} variant="picker" disabled={false} onSelect={() => undefined} testID="list" />
+        <PaymentMethodList
+          methods={METHODS}
+          variant="picker"
+          disabled={false}
+          onSelect={() => undefined}
+          testID="list"
+        />
       </Field>,
     );
     expect(allByRole('radiogroup')[0]?.getAttribute('aria-disabled')).toBe('true');
     // The rows are `div`s carrying `role="radio"`, so react-native-web spells
-      // their inertness `aria-disabled` rather than the `disabled` attribute.
+    // their inertness `aria-disabled` rather than the `disabled` attribute.
     for (const radio of allByRole('radio')) {
       expect(radio.getAttribute('aria-disabled')).toBe('true');
     }
   });
 
   it('falls back to its own name only OUTSIDE a field', () => {
-    mount(<PaymentMethodList methods={METHODS} variant="picker" onSelect={() => undefined} testID="list" />);
+    mount(
+      <PaymentMethodList
+        methods={METHODS}
+        variant="picker"
+        onSelect={() => undefined}
+        testID="list"
+      />,
+    );
     expect(allByRole('radiogroup')[0]?.getAttribute('aria-label')).toBe('Payment methods');
   });
 
@@ -301,7 +350,14 @@ describe('PaymentMethodList', () => {
     expect(byTestId('list').getAttribute('aria-busy')).toBe('true');
     expect(queryTestId('list-placeholder-1')).not.toBeNull();
 
-    mount(<PaymentMethodList methods={[]} onAdd={() => undefined} emptyTitle="Nothing saved" testID="list" />);
+    mount(
+      <PaymentMethodList
+        methods={[]}
+        onAdd={() => undefined}
+        emptyTitle="Nothing saved"
+        testID="list"
+      />,
+    );
     expect(byTestId('list-empty').textContent).toContain('Nothing saved');
     expect(byLabel('Add a payment method')).not.toBeNull();
   });
@@ -310,13 +366,25 @@ describe('PaymentMethodList', () => {
     function Demo() {
       const [id, setId] = useState('a');
       return (
-        <PaymentMethodList methods={METHODS} variant="picker" selectedId={id} onSelect={setId} accessibilityLabel="Pay with" />
+        <PaymentMethodList
+          methods={METHODS}
+          variant="picker"
+          selectedId={id}
+          onSelect={setId}
+          accessibilityLabel="Pay with"
+        />
       );
     }
     mount(<Demo />);
-    expect(allByRole('radio').map((r) => r.getAttribute('aria-checked'))).toEqual(['true', 'false']);
+    expect(allByRole('radio').map((r) => r.getAttribute('aria-checked'))).toEqual([
+      'true',
+      'false',
+    ]);
     click(allByRole('radio')[1]!);
-    expect(allByRole('radio').map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'true']);
+    expect(allByRole('radio').map((r) => r.getAttribute('aria-checked'))).toEqual([
+      'false',
+      'true',
+    ]);
   });
 });
 

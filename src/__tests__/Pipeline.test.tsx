@@ -112,7 +112,9 @@ describe('a deal card', () => {
     expect(byTestId('d-health').textContent).toContain('On track');
     expect(byTestId('d-health').textContent).not.toContain('23 days');
     // The same rule, pure, at the boundary the card reads it from.
-    expect(dealHealthLabel({ health: 'stalled', stalledFor: '23 days' })).toBe('Stalled for 23 days');
+    expect(dealHealthLabel({ health: 'stalled', stalledFor: '23 days' })).toBe(
+      'Stalled for 23 days',
+    );
     expect(dealHealthLabel({ health: 'stalled' })).toBe('Stalled');
     expect(dealHealthLabel({ health: 'at-risk', stalledFor: '23 days' })).toBe('At risk');
     expect(dealHealthLabel({})).toBeNull();
@@ -121,7 +123,9 @@ describe('a deal card', () => {
   it('paints the health as the tone PAIR, never a colour of its own', () => {
     mount(<DealCard {...DEAL} health="at-risk" testID="d" />);
     const accent = resolveAccentColors(theme.colors, 'warning', 'subtle');
-    expect(getComputedStyle(byTestId('d-health')).backgroundColor).toBe(normalise(accent.background));
+    expect(getComputedStyle(byTestId('d-health')).backgroundColor).toBe(
+      normalise(accent.background),
+    );
     expect(dealHealthTone('at-risk')).toBe('warning');
     expect(dealHealthTone(undefined)).toBe('default');
   });
@@ -154,7 +158,9 @@ describe('a column', () => {
   });
 
   it('says it is empty rather than drawing nothing', () => {
-    mount(<PipelineColumn name="Closed won" count={0} emptyLabel="Nothing closed yet" testID="col" />);
+    mount(
+      <PipelineColumn name="Closed won" count={0} emptyLabel="Nothing closed yet" testID="col" />,
+    );
     expect(byTestId('col-empty').textContent).toBe('Nothing closed yet');
     expect(queryTestId('col-loading')).toBeNull();
   });
@@ -170,7 +176,13 @@ describe('a column', () => {
   it('offers more when there is more, and reports the count and the total', () => {
     const onLoadMore = jest.fn();
     mount(
-      <PipelineColumn name="Proposal" count={12} total="€1,304,900" onLoadMore={onLoadMore} testID="col">
+      <PipelineColumn
+        name="Proposal"
+        count={12}
+        total="€1,304,900"
+        onLoadMore={onLoadMore}
+        testID="col"
+      >
         <DealCard {...DEAL} testID="d" />
       </PipelineColumn>,
     );
@@ -189,7 +201,13 @@ describe('the board', () => {
 
   it('draws every column side by side in the board layout', () => {
     mount(
-      <PipelineBoard stages={STAGES} renderStage={renderStage} layout="board" accessibilityLabel="Pipeline" testID="b" />,
+      <PipelineBoard
+        stages={STAGES}
+        renderStage={renderStage}
+        layout="board"
+        accessibilityLabel="Pipeline"
+        testID="b"
+      />,
     );
     for (const stage of STAGES) expect(queryTestId(`b-column-${stage.id}`)).not.toBeNull();
     expect(queryTestId('b-tabs')).toBeNull();

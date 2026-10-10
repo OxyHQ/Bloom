@@ -62,9 +62,7 @@ test('an editor preview prepares before passive avatars mounted ahead of it', as
   // after a crowd of thumbnails without capabilities (its controls disabled)
   // until every one of them had painted. Even under reduced motion (still).
   const h = harness();
-  const crowd = Array.from({ length: 12 }, () =>
-    h.add({ deferred: true, still: true }),
-  );
+  const crowd = Array.from({ length: 12 }, () => h.add({ deferred: true, still: true }));
   await h.frame();
   assert.equal(crowd[0].starts, 1);
   const editor = h.add({ deferred: true, still: true, interactive: true });

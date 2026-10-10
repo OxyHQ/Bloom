@@ -59,11 +59,7 @@ export function AdmonitionContent({
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
-  return (
-    <View style={[styles.content, style]}>
-      {children}
-    </View>
-  );
+  return <View style={[styles.content, style]}>{children}</View>;
 }
 AdmonitionContent.displayName = 'AdmonitionContent';
 
@@ -74,18 +70,11 @@ export function AdmonitionText({
   children?: React.ReactNode;
   style?: TextStyle;
 }) {
-  return (
-    <BaseText style={style ? [styles.text, style] : styles.text}>
-      {children}
-    </BaseText>
-  );
+  return <BaseText style={style ? [styles.text, style] : styles.text}>{children}</BaseText>;
 }
 AdmonitionText.displayName = 'AdmonitionText';
 
-export function AdmonitionButton({
-  children,
-  ...props
-}: Omit<ButtonProps, 'size'>) {
+export function AdmonitionButton({ children, ...props }: Omit<ButtonProps, 'size'>) {
   return (
     <BaseButton size="sm" {...props}>
       {children}
@@ -101,11 +90,7 @@ export function AdmonitionRow({
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
-  return (
-    <View style={[styles.row, style]}>
-      {children}
-    </View>
-  );
+  return <View style={[styles.row, style]}>{children}</View>;
 }
 AdmonitionRow.displayName = 'AdmonitionRow';
 
@@ -137,11 +122,7 @@ export function AdmonitionRoot({
       >
         {/* Separate opacity preserves the token's native colour syntax and
             keeps the content fully opaque on both native and web. */}
-        <View
-          pointerEvents="none"
-          aria-hidden
-          style={[styles.border, { borderColor: border }]}
-        />
+        <View pointerEvents="none" aria-hidden style={[styles.border, { borderColor: border }]} />
         {children}
       </View>
     </AdmonitionContext.Provider>

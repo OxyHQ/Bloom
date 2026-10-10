@@ -291,9 +291,7 @@ describe('MailRow', () => {
 
   it('draws the compact row at its exact height and the comfortable one at its floor', () => {
     mount(<MailRow {...ROW} density="compact" testID="r" />);
-    expect(getComputedStyle(byTestId('r')).height).toBe(
-      `${MAIL_ROW_GEOMETRY.compact.height}px`,
-    );
+    expect(getComputedStyle(byTestId('r')).height).toBe(`${MAIL_ROW_GEOMETRY.compact.height}px`);
     act(() => root.render(<div />));
     mount(<MailRow {...ROW} testID="r" />);
     expect(getComputedStyle(byTestId('r')).minHeight).toBe(
@@ -323,21 +321,32 @@ describe('MailRow', () => {
   );
 
   it.each(['compact', 'comfortable', 'cozy'] as const)(
-    'hides avatars without hiding selection controls at %s', (density) => {
+    'hides avatars without hiding selection controls at %s',
+    (density) => {
       mount(<MailRow {...ROW} density={density} showAvatar={false} testID="r" />);
       expect(maybe('r-avatar')).toBeNull();
-      mount(<MailRow {...ROW} density={density} showAvatar={false} onCheckedChange={() => undefined} testID="r" />);
+      mount(
+        <MailRow
+          {...ROW}
+          density={density}
+          showAvatar={false}
+          onCheckedChange={() => undefined}
+          testID="r"
+        />,
+      );
       expect(maybe('r-avatar')).toBeNull();
       expect(byTestId('r-checkbox')).toBeTruthy();
     },
   );
 
   it('keeps cozy spacious and uses the same density for loading and selection', () => {
-    mount(<>
-      <MailRow {...ROW} density="cozy" labels={LABELS} testID="r" />
-      <MailListSkeleton density="cozy" testID="loading" />
-      <MailSelectionBar density="cozy" count={1} total={2} actions={ACTIONS} testID="bar" />
-    </>);
+    mount(
+      <>
+        <MailRow {...ROW} density="cozy" labels={LABELS} testID="r" />
+        <MailListSkeleton density="cozy" testID="loading" />
+        <MailSelectionBar density="cozy" count={1} total={2} actions={ACTIONS} testID="bar" />
+      </>,
+    );
     expect(getComputedStyle(byTestId('r')).minHeight).toBe('80px');
     expect(getComputedStyle(byTestId('r')).height).toBe('');
     expect(getComputedStyle(byTestId('r-link').nextElementSibling!).paddingTop).toBe('16px');
@@ -418,21 +427,14 @@ describe('MailRow', () => {
   });
 
   it('hides a closed pane from assistive technology, rather than leaving it invisible in the tab order', () => {
-    mount(
-      <MailRow {...ROW} swipeActions={{ right: [ACTIONS[1]!] }} swipeEnabled testID="r" />,
-    );
+    mount(<MailRow {...ROW} swipeActions={{ right: [ACTIONS[1]!] }} swipeEnabled testID="r" />);
     const pane = byTestId('r-swipe-action-delete').parentElement?.parentElement;
     expect(pane?.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('does not wrap the row at all when the drag is off, or when no side has actions', () => {
     mount(
-      <MailRow
-        {...ROW}
-        swipeActions={{ right: [ACTIONS[1]!] }}
-        swipeEnabled={false}
-        testID="r"
-      />,
+      <MailRow {...ROW} swipeActions={{ right: [ACTIONS[1]!] }} swipeEnabled={false} testID="r" />,
     );
     expect(maybe('r-swipe')).toBeNull();
 
@@ -526,9 +528,7 @@ describe('MailList', () => {
       />,
     );
     act(() => {
-      byTestId('l-selection-select-all').dispatchEvent(
-        new MouseEvent('click', { bubbles: true }),
-      );
+      byTestId('l-selection-select-all').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(seen[seen.length - 1]).toEqual(['roof', 'invoice']);
     act(() => {

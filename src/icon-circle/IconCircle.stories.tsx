@@ -10,7 +10,7 @@ import { RiShieldLine as ShieldIcon } from '../icons/remix/RiShieldLine';
 
 const meta: Meta<typeof IconCircle> = {
   argTypes: {
-    "size": { control: 'select', options: ["xs","sm","md","lg","2xs","xl","2xl","3xl"] }
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg', '2xs', 'xl', '2xl', '3xl'] },
   },
   title: 'Base/Icon Circle',
   component: IconCircle,

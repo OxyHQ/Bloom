@@ -16,10 +16,7 @@ type RenderedNode = {
 };
 
 /** Count host nodes of a given `type` in a rendered `toJSON()` tree. */
-function countNodesByType(
-  tree: RenderedNode | RenderedNode[] | null,
-  type: string,
-): number {
+function countNodesByType(tree: RenderedNode | RenderedNode[] | null, type: string): number {
   if (tree === null) return 0;
   const roots = Array.isArray(tree) ? tree : [tree];
   let count = 0;
@@ -66,19 +63,28 @@ function Harness({
 }
 
 describe('Dialog bottom placement delegates to BottomSheet', () => {
-  it.each(['light', 'dark'] as const)('paints the default bottom dialog body in %s mode', (mode) => {
-    const result = render(
-      <BloomThemeProvider mode={mode} colorPreset="teal">
-        <Dialog open placement="bottom"><Text>Body</Text></Dialog>
-      </BloomThemeProvider>,
-    );
-    const paint = result.UNSAFE_root.findAll(node => typeof node.type === 'function' && node.type.name === 'SurfacePaint')[0];
-    expect(paint).toBeDefined();
-    const fillRect = paint!.findAllByType(Rect).find(node => node.props.fillOpacity !== undefined);
-    expect(fillRect).toBeDefined();
-    expect(fillRect!.props.fill).not.toBe('transparent');
-    expect(fillRect!.props.fillOpacity).toBeGreaterThan(0);
-  });
+  it.each(['light', 'dark'] as const)(
+    'paints the default bottom dialog body in %s mode',
+    (mode) => {
+      const result = render(
+        <BloomThemeProvider mode={mode} colorPreset="teal">
+          <Dialog open placement="bottom">
+            <Text>Body</Text>
+          </Dialog>
+        </BloomThemeProvider>,
+      );
+      const paint = result.UNSAFE_root.findAll(
+        (node) => typeof node.type === 'function' && node.type.name === 'SurfacePaint',
+      )[0];
+      expect(paint).toBeDefined();
+      const fillRect = paint!
+        .findAllByType(Rect)
+        .find((node) => node.props.fillOpacity !== undefined);
+      expect(fillRect).toBeDefined();
+      expect(fillRect!.props.fill).not.toBe('transparent');
+      expect(fillRect!.props.fillOpacity).toBeGreaterThan(0);
+    },
+  );
 
   it('preserves an explicitly transparent bottom dialog panel', () => {
     const result = renderWithTheme(
@@ -86,9 +92,13 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
         <Text>Body</Text>
       </Dialog>,
     );
-    const paint = result.UNSAFE_root.findAll(node => typeof node.type === 'function' && node.type.name === 'SurfacePaint')[0];
+    const paint = result.UNSAFE_root.findAll(
+      (node) => typeof node.type === 'function' && node.type.name === 'SurfacePaint',
+    )[0];
     expect(paint).toBeDefined();
-    const fillRect = paint!.findAllByType(Rect).find(node => node.props.fillOpacity !== undefined);
+    const fillRect = paint!
+      .findAllByType(Rect)
+      .find((node) => node.props.fillOpacity !== undefined);
     expect(fillRect).toBeDefined();
     expect(fillRect!.props.fill).toBe('transparent');
   });
@@ -121,7 +131,10 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
               placement="bottom"
               title="Delete item?"
               description="This cannot be undone."
-              actions={[{ label: 'Delete', color: 'destructive' }, { label: 'Cancel', color: 'cancel' }]}
+              actions={[
+                { label: 'Delete', color: 'destructive' },
+                { label: 'Cancel', color: 'cancel' },
+              ]}
             />
           );
         }}
@@ -139,7 +152,13 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
   it('requests close via onClose exactly once on action press in controlled mode (no double-fire)', () => {
     const onClose = jest.fn();
     const { getByText } = renderWithTheme(
-      <Dialog open onClose={onClose} placement="bottom" title="Confirm" actions={[{ label: 'Done' }]} />,
+      <Dialog
+        open
+        onClose={onClose}
+        placement="bottom"
+        title="Confirm"
+        actions={[{ label: 'Done' }]}
+      />,
     );
     act(() => {
       fireEvent.press(getByText('Done'));
@@ -312,13 +331,21 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
   it('hands a scrollable={false} body a bounded height, so a nested scroller and a footer after it fit the sheet', () => {
     let control: ReturnType<typeof useDialogControl> | undefined;
     const flat = (style: unknown) =>
-      Array.isArray(style) ? Object.assign({}, ...style.flat(Infinity).filter(Boolean)) : (style as object);
+      Array.isArray(style)
+        ? Object.assign({}, ...style.flat(Infinity).filter(Boolean))
+        : (style as object);
     const { getByTestId } = renderWithTheme(
       <Harness>
         {(c) => {
           control = c;
           return (
-            <Dialog control={c} placement="bottom" scrollable={false} contentPadding={0} testID="bounded">
+            <Dialog
+              control={c}
+              placement="bottom"
+              scrollable={false}
+              contentPadding={0}
+              testID="bounded"
+            >
               <Text>Body</Text>
             </Dialog>
           );
@@ -332,7 +359,10 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
     expect(flat(content.props.style)).toMatchObject({ flex: 1, minHeight: 0 });
     // The morph layer between the content container and the body passes it on.
     const morph = content.children[0];
-    expect(typeof morph === 'string' ? null : flat(morph?.props.style)).toMatchObject({ flex: 1, minHeight: 0 });
+    expect(typeof morph === 'string' ? null : flat(morph?.props.style)).toMatchObject({
+      flex: 1,
+      minHeight: 0,
+    });
   });
 
   it('leaves a scrolling body sized by its content', () => {
@@ -358,15 +388,28 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
   });
 });
 
-
 it('the explicit close icon completes a protected native dialog once and allows reopening', () => {
   jest.useFakeTimers();
   let control: ReturnType<typeof useDialogControl> | undefined;
   const onClose = jest.fn();
-  const screen = renderWithTheme(<Harness>{(c) => {
-    control = c;
-    return <Dialog control={c} placement="bottom" header={{ title: 'Protected' }} dismissOnBackdrop={false} onClose={onClose}><Text>Protected body</Text></Dialog>;
-  }}</Harness>);
+  const screen = renderWithTheme(
+    <Harness>
+      {(c) => {
+        control = c;
+        return (
+          <Dialog
+            control={c}
+            placement="bottom"
+            header={{ title: 'Protected' }}
+            dismissOnBackdrop={false}
+            onClose={onClose}
+          >
+            <Text>Protected body</Text>
+          </Dialog>
+        );
+      }}
+    </Harness>,
+  );
   act(() => control?.open());
   fireEvent.press(screen.getByLabelText('Close'));
   act(() => jest.advanceTimersByTime(400));
@@ -380,11 +423,31 @@ it('the explicit close icon completes a protected native dialog once and allows 
 
 describe('native centered owned scrolling', () => {
   it('does not add its own ScrollView when scrollable is false', () => {
-    const normal = renderWithTheme(<Dialog open placement="center"><Text>Normal body</Text></Dialog>);
-    expect(countNodesByType(normal.toJSON() as RenderedNode | RenderedNode[] | null, 'Animated.ScrollView')).toBe(1);
+    const normal = renderWithTheme(
+      <Dialog open placement="center">
+        <Text>Normal body</Text>
+      </Dialog>,
+    );
+    expect(
+      countNodesByType(
+        normal.toJSON() as RenderedNode | RenderedNode[] | null,
+        'Animated.ScrollView',
+      ),
+    ).toBe(1);
     normal.unmount();
-    const result = renderWithTheme(<Dialog open placement="center" scrollable={false} testID="owned-center"><Text>Owned body</Text></Dialog>);
-    expect(countNodesByType(result.toJSON() as RenderedNode | RenderedNode[] | null, 'Animated.ScrollView')).toBe(0);
-    expect(result.getByTestId('owned-center').props.style).toEqual(expect.arrayContaining([expect.objectContaining({ flex: 1, minHeight: 0 })]));
+    const result = renderWithTheme(
+      <Dialog open placement="center" scrollable={false} testID="owned-center">
+        <Text>Owned body</Text>
+      </Dialog>,
+    );
+    expect(
+      countNodesByType(
+        result.toJSON() as RenderedNode | RenderedNode[] | null,
+        'Animated.ScrollView',
+      ),
+    ).toBe(0);
+    expect(result.getByTestId('owned-center').props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ flex: 1, minHeight: 0 })]),
+    );
   });
 });

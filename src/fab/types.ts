@@ -5,7 +5,11 @@ import type { BloomSize } from '../appearance';
 export type FabSize = BloomSize;
 
 /** A prominent action. Screen/BottomBar own placement and scroll behavior. */
-export interface FabProps extends Omit<ButtonProps, 'children' | 'icon' | 'leadingIcon' | 'trailingIcon' | 'leading' | 'trailing'> {
+export interface FabProps
+  extends Omit<
+    ButtonProps,
+    'children' | 'icon' | 'leadingIcon' | 'trailingIcon' | 'leading' | 'trailing'
+  > {
   icon?: ButtonIconComponent;
   label?: string;
   /** Glyph dimensions in points; defaults to the selected size's icon scale. */

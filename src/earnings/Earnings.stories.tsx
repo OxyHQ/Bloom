@@ -118,7 +118,12 @@ const MONTH: EarningsPeriod = {
     { label: 'Jobs', sublabel: '281 delivered', amount: '€2,061.40' },
     { label: 'Tips', sublabel: 'From 118 recipients', amount: '€228.90', tone: 'discount' },
     { label: 'Bonuses', sublabel: 'Referrals and top-ups', amount: '€176.00', tone: 'discount' },
-    { label: 'Adjustments', sublabel: 'Cancellations and one claim', amount: '−€48.00', tone: 'muted' },
+    {
+      label: 'Adjustments',
+      sublabel: 'Cancellations and one claim',
+      amount: '−€48.00',
+      tone: 'muted',
+    },
   ],
   payout: {
     amount: '€552.25',
@@ -226,7 +231,7 @@ export const PayoutStates: Story = {
           note: 'Confirm your tax number before the next payout run.',
         }}
         action={
-          <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
+          <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
             Confirm the number
           </Button>
         }
@@ -241,7 +246,7 @@ export const PayoutStates: Story = {
           note: 'The bank refused the transfer. Check the account and try again.',
         }}
         action={
-          <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
+          <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
             Try again
           </Button>
         }

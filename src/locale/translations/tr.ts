@@ -7,72 +7,133 @@ import { compactDuration as calendar_compactDuration } from '../../calendar/mess
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
-import { words as navigationBanner_words, midSentence as navigationBanner_midSentence } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  words as navigationBanner_words,
+  midSentence as navigationBanner_midSentence,
+} from '../../navigation-banner/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
-const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'sol üst', 'top-right': 'sağ üst', 'bottom-left': 'sol alt', 'bottom-right': 'sağ alt' };
+const CALL_UI_MESSAGES__CORNERS = {
+  'top-left': 'sol üst',
+  'top-right': 'sağ üst',
+  'bottom-left': 'sol alt',
+  'bottom-right': 'sağ alt',
+};
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "Tepki ver",
-  working: "Çalış",
-  avatarStyle: "Avatar stili",
-  proceduralAvatar: "Mevcut avatar",
-  betaPreset: "Hazır karakter (beta)",
-  betaEyes: "Göz stili",
-  eyewear: "Gözlük",
-  accessory: "Aksesuar",
+  reaction: 'Tepki ver',
+  working: 'Çalış',
+  avatarStyle: 'Avatar stili',
+  proceduralAvatar: 'Mevcut avatar',
+  betaPreset: 'Hazır karakter (beta)',
+  betaEyes: 'Göz stili',
+  eyewear: 'Gözlük',
+  accessory: 'Aksesuar',
   characterOption: (_category, _id, title) => String(title),
-  editor: "Ajan düzenleyici",
-  newBot: "Yeni bot",
-  closeEditor: "Ajan düzenleyiciyi kapat",
-  details: "Ajan görünümü ve ayrıntıları",
-  color: "Avatar rengi",
-  customColor: "Özel avatar rengi",
-  name: "Ad",
-  label: "Etiket",
-  description: "Açıklama",
-  nameInput: "Ajan adı",
-  labelInput: "Ajan etiketi",
-  descriptionInput: "Ajan açıklaması",
-  labelPlaceholder: "Yönetici, pazarlama, ressam",
-  descriptionPlaceholder: "Ajan ayrıntıları",
-  language: "Dil",
-  languageInput: "Ajan dili",
-  notifications: "Bildirimler",
-  notificationsDescription: "Yanıt hazır olduğunda bildirim göster.",
-  notifyFinished: "Bu ajan tamamladığında bildir",
-  voice: "Ses",
-  voiceInput: "Ajan sesi",
-  previewVoice: "Sesi dinle",
-  savedVoice: "Kayıtlı ses",
-  systemVoice: "Sistem sesi",
-  off: "Kapalı",
-  playbackSpeed: "Oynatma hızı",
-  emotion: "Ajan duygusu",
-  shape: "Avatar şekli",
-  hexColor: "Onaltılık renk",
-  hue: "Renk tonu",
-  saturationBrightness: "Doygunluk ve parlaklık",
-  increaseBrightness: "Parlaklığı artır",
-  decreaseBrightness: "Parlaklığı azalt",
-  increaseHue: "Renk tonunu artır",
-  decreaseHue: "Renk tonunu azalt",
-  nextShape: "Sonraki şekil",
-  previousShape: "Önceki şekil",
-  newAgent: "Yeni ajan",
-  emotions: { "neutral": "Nötr", "happy": "Mutlu", "angry": "Kızgın", "thinking": "Düşünceli", "shook": "Şaşkın", "curious": "Meraklı", "wink": "Göz kırpan", "sleepy": "Uykulu", "sad": "Üzgün", "worried": "Endişeli", "skeptical": "Şüpheci", "focused": "Odaklı", "excited": "Heyecanlı", "calm": "Sakin", "shy": "Utangaç", "confused": "Kafası karışık" },
-  shapes: { "slender": "İnce", "pocket": "Cep", "petal": "Taç yaprak", "flower": "Çiçek", "star": "Yıldız", "heart": "Kalp", "cloud": "Bulut", "diamond": "Elmas", "shield": "Kalkan" },
-  colors: { "Blue": "Mavi", "Teal": "Camgöbeği yeşili", "Violet": "Mor", "Pink": "Pembe", "Red": "Kırmızı", "Orange": "Turuncu", "Cyan": "Camgöbeği", "Lime": "Limon yeşili", "Green": "Yeşil" },
-  languages: { "auto": "Otomatik algıla", "en": "İngilizce", "tr": "Türkçe", "es": "İspanyolca", "fr": "Fransızca", "de": "Almanca", "ja": "Japonca", "pt": "Portekizce" },
-  avatarColorLabel: (name) => "{name} avatar".replace("{name}", name),
-  shapeLabel: (name) => "{name} şekli".replace("{name}", name),
-  silhouetteLabel: (name) => "{name} silüeti".replace("{name}", name),
-  livePreview: (name) => "{name}, canlı avatar önizlemesi".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "doygunluk %{s}, parlaklık %{v}".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "{speed} kat oynatma hızı".replace("{speed}", String(speed)),
+  editor: 'Ajan düzenleyici',
+  newBot: 'Yeni bot',
+  closeEditor: 'Ajan düzenleyiciyi kapat',
+  details: 'Ajan görünümü ve ayrıntıları',
+  color: 'Avatar rengi',
+  customColor: 'Özel avatar rengi',
+  name: 'Ad',
+  label: 'Etiket',
+  description: 'Açıklama',
+  nameInput: 'Ajan adı',
+  labelInput: 'Ajan etiketi',
+  descriptionInput: 'Ajan açıklaması',
+  labelPlaceholder: 'Yönetici, pazarlama, ressam',
+  descriptionPlaceholder: 'Ajan ayrıntıları',
+  language: 'Dil',
+  languageInput: 'Ajan dili',
+  notifications: 'Bildirimler',
+  notificationsDescription: 'Yanıt hazır olduğunda bildirim göster.',
+  notifyFinished: 'Bu ajan tamamladığında bildir',
+  voice: 'Ses',
+  voiceInput: 'Ajan sesi',
+  previewVoice: 'Sesi dinle',
+  savedVoice: 'Kayıtlı ses',
+  systemVoice: 'Sistem sesi',
+  off: 'Kapalı',
+  playbackSpeed: 'Oynatma hızı',
+  emotion: 'Ajan duygusu',
+  shape: 'Avatar şekli',
+  hexColor: 'Onaltılık renk',
+  hue: 'Renk tonu',
+  saturationBrightness: 'Doygunluk ve parlaklık',
+  increaseBrightness: 'Parlaklığı artır',
+  decreaseBrightness: 'Parlaklığı azalt',
+  increaseHue: 'Renk tonunu artır',
+  decreaseHue: 'Renk tonunu azalt',
+  nextShape: 'Sonraki şekil',
+  previousShape: 'Önceki şekil',
+  newAgent: 'Yeni ajan',
+  emotions: {
+    neutral: 'Nötr',
+    happy: 'Mutlu',
+    angry: 'Kızgın',
+    thinking: 'Düşünceli',
+    shook: 'Şaşkın',
+    curious: 'Meraklı',
+    wink: 'Göz kırpan',
+    sleepy: 'Uykulu',
+    sad: 'Üzgün',
+    worried: 'Endişeli',
+    skeptical: 'Şüpheci',
+    focused: 'Odaklı',
+    excited: 'Heyecanlı',
+    calm: 'Sakin',
+    shy: 'Utangaç',
+    confused: 'Kafası karışık',
+  },
+  shapes: {
+    slender: 'İnce',
+    pocket: 'Cep',
+    petal: 'Taç yaprak',
+    flower: 'Çiçek',
+    star: 'Yıldız',
+    heart: 'Kalp',
+    cloud: 'Bulut',
+    diamond: 'Elmas',
+    shield: 'Kalkan',
+  },
+  colors: {
+    Blue: 'Mavi',
+    Teal: 'Camgöbeği yeşili',
+    Violet: 'Mor',
+    Pink: 'Pembe',
+    Red: 'Kırmızı',
+    Orange: 'Turuncu',
+    Cyan: 'Camgöbeği',
+    Lime: 'Limon yeşili',
+    Green: 'Yeşil',
+  },
+  languages: {
+    auto: 'Otomatik algıla',
+    en: 'İngilizce',
+    tr: 'Türkçe',
+    es: 'İspanyolca',
+    fr: 'Fransızca',
+    de: 'Almanca',
+    ja: 'Japonca',
+    pt: 'Portekizce',
+  },
+  avatarColorLabel: (name) => '{name} avatar'.replace('{name}', name),
+  shapeLabel: (name) => '{name} şekli'.replace('{name}', name),
+  silhouetteLabel: (name) => '{name} silüeti'.replace('{name}', name),
+  livePreview: (name) => '{name}, canlı avatar önizlemesi'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    'doygunluk %{s}, parlaklık %{v}'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) => '{speed} kat oynatma hızı'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -127,7 +188,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: 'Taslak:', pinned: 'Sabitlendi', muted: 'Sessize alındı', verified: 'Doğrulanmış', channel: 'Kanal', bot: 'Bot', group: 'Grup' },
+  item: {
+    draft: 'Taslak:',
+    pinned: 'Sabitlendi',
+    muted: 'Sessize alındı',
+    verified: 'Doğrulanmış',
+    channel: 'Kanal',
+    bot: 'Bot',
+    group: 'Grup',
+  },
   search: { chat: 'Sohbetler', message: 'Mesajlar', contact: 'Kişiler', empty: 'Sonuç yok' },
   list: 'Sohbetler',
   emptyTitle: 'Henüz sohbet yok',
@@ -185,10 +254,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `${team} menüsü`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'B',
+  kilobyte: 'KB',
+  megabyte: 'MB',
+  gigabyte: 'GB',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: 'Kart numarası', expiry: 'Son kullanma tarihi', securityCode: 'Güvenlik kodu', name: 'Kart üzerindeki ad', postcode: 'Posta kodu', country: 'Ülke' },
+  labels: {
+    number: 'Kart numarası',
+    expiry: 'Son kullanma tarihi',
+    securityCode: 'Güvenlik kodu',
+    name: 'Kart üzerindeki ad',
+    postcode: 'Posta kodu',
+    country: 'Ülke',
+  },
   selectCountry: 'Ülke seçin',
 };
 
@@ -221,8 +302,20 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestions: { mention: 'Kişiler', command: 'Komutlar', emoji: 'Emoji' },
   suggestionVerified: 'Doğrulanmış',
   searchingSuggestions: 'Aranıyor…',
-  noSuggestions: { mention: 'Kişi bulunamadı', command: 'Komut bulunamadı', emoji: 'Emoji bulunamadı' },
-  attachmentItems: { gallery: 'Galeri', camera: 'Kamera', file: 'Dosya', location: 'Konum', contact: 'Kişi', poll: 'Anket', music: 'Müzik' },
+  noSuggestions: {
+    mention: 'Kişi bulunamadı',
+    command: 'Komut bulunamadı',
+    emoji: 'Emoji bulunamadı',
+  },
+  attachmentItems: {
+    gallery: 'Galeri',
+    camera: 'Kamera',
+    file: 'Dosya',
+    location: 'Konum',
+    contact: 'Kişi',
+    poll: 'Anket',
+    music: 'Müzik',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -273,7 +366,10 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   showLyrics: 'Şarkı sözlerini göster',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'Burada henüz bir şey yok', addresses: 'Adresler' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: 'Burada henüz bir şey yok',
+  addresses: 'Adresler',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: 'Tekli', ep: 'EP', album: 'Albüm' },
@@ -296,7 +392,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   periods: { '7d': '7 gün', '28d': '28 gün', '12m': '12 ay', all: 'Tüm zamanlar' },
   artworkNotSquare: (w, h) => `Kapak kare olmalı; bu görsel ${w}×${h} piksel.`,
-  artworkTooSmall: (w, h, min) => `Kapak çok küçük (${w}×${h} piksel). En az ${min}×${min} piksel yükleyin.`,
+  artworkTooSmall: (w, h, min) =>
+    `Kapak çok küçük (${w}×${h} piksel). En az ${min}×${min} piksel yükleyin.`,
   audience: { title: 'Kitle', period: 'Dönem' },
   breakdown: {
     locations: 'Öne çıkan konumlar',
@@ -327,7 +424,12 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   tracks: (n) => plural('tr', n, { one: '{n} parça', other: '{n} parça' }),
   timeline: {
-    states: { complete: 'tamamlandı', current: 'devam ediyor', upcoming: 'başlamadı', error: 'ilgilenilmesi gerekiyor' },
+    states: {
+      complete: 'tamamlandı',
+      current: 'devam ediyor',
+      upcoming: 'başlamadı',
+      error: 'ilgilenilmesi gerekiyor',
+    },
     label: 'Yayın ilerlemesi',
   },
   upload: {
@@ -351,7 +453,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     role: 'Rol',
     name: 'Ad',
     add: 'Katkı ekle',
-    remove: (index, name) => (name ? `${index + 1}. katkıyı kaldır, ${name}` : `${index + 1}. katkıyı kaldır`),
+    remove: (index, name) =>
+      name ? `${index + 1}. katkıyı kaldır, ${name}` : `${index + 1}. katkıyı kaldır`,
     empty: 'Bu parçanın söz yazarlarını, yapımcılarını ve yorumcularını belirtin.',
     field: (field, n) => `${field}, ${n}. katkı`,
   },
@@ -395,7 +498,11 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     pitchPlaceholder: 'Bu yayını öne çıkaran ne? Kimin için ve arkasındaki hikâye ne?',
     submit: 'Öneriyi gönder',
     tagLimit: (max) => `En fazla ${max} seçin`,
-    statuses: { submitted: 'Öneri gönderildi', accepted: 'İncelemeye alındı', declined: 'Bu sefer seçilmedi' },
+    statuses: {
+      submitted: 'Öneri gönderildi',
+      accepted: 'İncelemeye alındı',
+      declined: 'Bu sefer seçilmedi',
+    },
     statusDescriptions: {
       submitted: 'Editörler her öneriyi okur. Yayın tarihinden önce yanıt alacaksınız.',
       accepted: 'Yayınınız editoryal çalma listeleri için değerlendiriliyor.',
@@ -481,7 +588,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: 'Başvurunuz',
   applicationProgress: 'Başvuru ilerlemesi',
   progressReady: (done, total) => `${total} belgeden ${done} tanesi hazır`,
-  applicationStatus: { missing: 'Eksik', uploaded: 'İnceleniyor', verified: 'Doğrulandı', rejected: 'Reddedildi' },
+  applicationStatus: {
+    missing: 'Eksik',
+    uploaded: 'İnceleniyor',
+    verified: 'Doğrulandı',
+    rejected: 'Reddedildi',
+  },
   applicationAction: { upload: 'Yükle', view: 'Görüntüle', replace: 'Değiştir' },
   itemAction: (action, title) => `${title}: ${action}`,
   mortgage: {
@@ -657,11 +769,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: 'Bu yük için uygun değil',
   vehicle: 'Araç',
   vehicles: {
-    bike: { label: 'Kargo bisikleti', capacity: '25 kg’a kadar · 60 × 40 × 40 cm', fits: ['Evrak', 'Yemek siparişi', 'Küçük bir kutu'] },
-    car: { label: 'Otomobil', capacity: '150 kg’a kadar · 100 × 80 × 60 cm', fits: ['İki bavul', 'Dört koli', 'Bir bisiklet'] },
-    van: { label: 'Panelvan', capacity: '800 kg’a kadar · 240 × 150 × 140 cm', fits: ['Bir kanepe', 'Stüdyo daire taşıma', 'Yarım palet'] },
-    boxTruck: { label: 'Kapalı kasa kamyon', capacity: '3.500 kg’a kadar · 420 × 200 × 210 cm', fits: ['İki palet', '2+1 ev taşıma', 'Hidrolik kapak'] },
-    refrigerated: { label: 'Frigorifik panelvan', capacity: '700 kg’a kadar · 2–8 °C arası', fits: ['Taze ürünler', 'Soğuk ikram', 'Çiçekler'] },
+    bike: {
+      label: 'Kargo bisikleti',
+      capacity: '25 kg’a kadar · 60 × 40 × 40 cm',
+      fits: ['Evrak', 'Yemek siparişi', 'Küçük bir kutu'],
+    },
+    car: {
+      label: 'Otomobil',
+      capacity: '150 kg’a kadar · 100 × 80 × 60 cm',
+      fits: ['İki bavul', 'Dört koli', 'Bir bisiklet'],
+    },
+    van: {
+      label: 'Panelvan',
+      capacity: '800 kg’a kadar · 240 × 150 × 140 cm',
+      fits: ['Bir kanepe', 'Stüdyo daire taşıma', 'Yarım palet'],
+    },
+    boxTruck: {
+      label: 'Kapalı kasa kamyon',
+      capacity: '3.500 kg’a kadar · 420 × 200 × 210 cm',
+      fits: ['İki palet', '2+1 ev taşıma', 'Hidrolik kapak'],
+    },
+    refrigerated: {
+      label: 'Frigorifik panelvan',
+      capacity: '700 kg’a kadar · 2–8 °C arası',
+      fits: ['Taze ürünler', 'Soğuk ikram', 'Çiçekler'],
+    },
   },
 };
 
@@ -738,7 +870,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: 'Onaylanıyor', paid: 'Ödendi', failed: 'Ödeme başarısız', refunded: 'İade edildi', pending: 'Ödeme bekleniyor' },
+  states: {
+    authorising: 'Onaylanıyor',
+    paid: 'Ödendi',
+    failed: 'Ödeme başarısız',
+    refunded: 'İade edildi',
+    pending: 'Ödeme bekleniyor',
+  },
   reference: 'Referans',
 };
 
@@ -757,13 +895,26 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
   rated: (value, reviews) =>
     placeCard_withReviews(
       `5 üzerinden ${value} puan`,
-      reviews === undefined ? undefined : placeCard_countOf('tr', reviews, { other: '{n} değerlendirme' }),
+      reviews === undefined
+        ? undefined
+        : placeCard_countOf('tr', reviews, { other: '{n} değerlendirme' }),
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `${b} ile devam et`, signIn: (b) => `${b} ile giriş yap`, signUp: (b) => `${b} ile kaydol` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `${b} ile devam et`,
+    signIn: (b) => `${b} ile giriş yap`,
+    signUp: (b) => `${b} ile kaydol`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'Diğer', otherPlaceholder: 'Kendi yanıtınızı buraya yazın', steps: 'Adımlar', step: (n) => `Adım ${n}` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: 'Diğer',
+  otherPlaceholder: 'Kendi yanıtınızı buraya yazın',
+  steps: 'Adımlar',
+  step: (n) => `Adım ${n}`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'Harita kontrolleri',
@@ -780,9 +931,18 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: 'Katmanlar',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: 'Süresi doldu', declined: 'Reddedildi' }, default: 'Varsayılan', add: 'Ödeme yöntemi ekle', emptyTitle: 'Kayıtlı ödeme yöntemi yok', paymentMethods: 'Ödeme yöntemleri' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: 'Süresi doldu', declined: 'Reddedildi' },
+  default: 'Varsayılan',
+  add: 'Ödeme yöntemi ekle',
+  emptyTitle: 'Kayıtlı ödeme yöntemi yok',
+  paymentMethods: 'Ödeme yöntemleri',
+};
 
-const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => `${n} kişi daha`, profile: 'Profil' };
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
+  more: (n) => `${n} kişi daha`,
+  profile: 'Profil',
+};
 
 const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Menü çubuğu',
@@ -791,7 +951,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Düşünüyor' };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
-  feedback: { like: 'İyi yanıt', dislike: 'Kötü yanıt', copy: 'Yanıtı kopyala', copied: 'Kopyalandı!' },
+  feedback: {
+    like: 'İyi yanıt',
+    dislike: 'Kötü yanıt',
+    copy: 'Yanıtı kopyala',
+    copied: 'Kopyalandı!',
+  },
   imageGeneration: {
     generated: 'Görsel oluşturuldu',
     generating: 'Görsel oluşturuluyor',
@@ -897,7 +1062,12 @@ const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
 };
 
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
-  statuses: { reserved: 'Rezerve edildi', sold: 'Satıldı', rented: 'Kiralandı', unavailable: 'Mevcut değil' },
+  statuses: {
+    reserved: 'Rezerve edildi',
+    sold: 'Satıldı',
+    rented: 'Kiralandı',
+    unavailable: 'Mevcut değil',
+  },
   originally: (p) => `önceki fiyat ${p}`,
   approximateLocation: 'Yaklaşık konum',
   rated: (r) => `5 üzerinden ${r} puan`,
@@ -912,7 +1082,8 @@ const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
 
 const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
   states: { 'off-route': 'Rota dışı', rerouting: 'Yeni rota bulunuyor' },
-  thenLine: (street, maneuver) => navigationBanner_words('ardından', navigationBanner_midSentence(maneuver, 'tr'), street),
+  thenLine: (street, maneuver) =>
+    navigationBanner_words('ardından', navigationBanner_midSentence(maneuver, 'tr'), street),
   laneGuidance: 'Şerit rehberi',
   laneCount: (n) => plural('tr', n, { one: '{n} şerit', other: '{n} şerit' }),
   laneNumber: (n) => `${n}. şerit`,
@@ -940,7 +1111,10 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: 'slayt',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: 'Devam ediyor', upcoming: 'Henüz değil', failed: 'Başarısız' }, status: 'Durum' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: 'Devam ediyor', upcoming: 'Henüz değil', failed: 'Başarısız' },
+  status: 'Durum',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: 'Yeni',
@@ -958,7 +1132,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     swap: { title: 'Ev takası', description: 'Diğer üyelerle ev takası yapın.' },
     monthlyRent: 'Aylık kira',
     deposit: 'Depozito',
-    depositOption: (months) => (months === 0 ? 'Yok' : plural('tr', months, { one: '{n} ay', other: '{n} ay' })),
+    depositOption: (months) =>
+      months === 0 ? 'Yok' : plural('tr', months, { one: '{n} ay', other: '{n} ay' }),
     availableFrom: 'Müsait olduğu tarih',
     minimumStay: 'Asgari kiralama süresi',
     months: (months) => plural('tr', months, { one: '{n} ay', other: '{n} ay' }),
@@ -992,7 +1167,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     },
     street: {
       title: 'Yalnızca sokak',
-      description: 'Numarayı değil sokağı gösterir. Tam adres rezervasyon ya da imzadan sonra paylaşılır.',
+      description:
+        'Numarayı değil sokağı gösterir. Tam adres rezervasyon ya da imzadan sonra paylaşılır.',
     },
     approximate: {
       title: 'Yaklaşık bölge',
@@ -1014,7 +1190,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   card: 'Kart',
   page: 'Sayfa',
   previewAs: 'Önizleme türü',
-  reviews: (n, shown) => plural('tr', n, { one: '{s} değerlendirme', other: '{s} değerlendirme' }).replace('{s}', shown),
+  reviews: (n, shown) =>
+    plural('tr', n, { one: '{s} değerlendirme', other: '{s} değerlendirme' }).replace('{s}', shown),
 };
 
 const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
@@ -1048,7 +1225,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: 'Vejetaryen', vegan: 'Vegan', 'gluten-free': 'Glutensiz', 'dairy-free': 'Laktozsuz', halal: 'Helal', kosher: 'Koşer' },
+  diets: {
+    vegetarian: 'Vejetaryen',
+    vegan: 'Vegan',
+    'gluten-free': 'Glutensiz',
+    'dairy-free': 'Laktozsuz',
+    halal: 'Helal',
+    kosher: 'Koşer',
+  },
   spicy: 'Acılık',
   spiceOf: (label, level, max) => `${label} ${max} üzerinden ${level}`,
   originally: (price, original) => `${price}, önceki fiyat ${original}`,
@@ -1069,7 +1253,11 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `${page}. sayfaya git`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'Potansiyel müşteri puanı', factors: 'Nelerden oluşuyor', bands: { cold: 'Soğuk', warm: 'Ilık', hot: 'Sıcak' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: 'Potansiyel müşteri puanı',
+  factors: 'Nelerden oluşuyor',
+  bands: { cold: 'Soğuk', warm: 'Ilık', hot: 'Sıcak' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Araba', transit: 'Toplu taşıma', walk: 'Yürüyüş', cycle: 'Bisiklet' },
@@ -1167,7 +1355,8 @@ const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
     loading: 'İşler yükleniyor',
   },
   emptyTitle: 'Şu anda iş yok',
-  emptyDescription: 'Aradığınıza uyan bir şey yok. Bir filtreyi genişletin ya da bir dakika sonra yeniden yenileyin.',
+  emptyDescription:
+    'Aradığınıza uyan bir şey yok. Bir filtreyi genişletin ya da bir dakika sonra yeniden yenileyin.',
   list: 'İşler',
   payDetailsFor: (load) => `${load} için ödeme`,
   route: (pickup, dropoff) => `${pickup} ve ${dropoff}`,
@@ -1217,7 +1406,10 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     renameField: 'Sohbeti yeniden adlandır',
     markUnread: 'Okunmadı olarak işaretle',
     unread: 'Okunmadı',
-    exportCount: (n) => (n === 0 ? 'Dışa aktarılacak sohbet yok' : plural('tr', n, { other: '{n} sohbeti dışa aktar' })),
+    exportCount: (n) =>
+      n === 0
+        ? 'Dışa aktarılacak sohbet yok'
+        : plural('tr', n, { other: '{n} sohbeti dışa aktar' }),
     accountMenu: (name) => `${name} hesap menüsü`,
     usageLeft: 'Kalan kullanım',
     upgrade: 'Max’e yükselt',
@@ -1242,7 +1434,10 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   age: { now: 'şimdi', minutes: (n) => `${n} dk`, hours: (n) => `${n} sa`, days: (n) => `${n} g` },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: 'Kaynaklar', working: 'Çalışıyor' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: 'Kaynaklar',
+  working: 'Çalışıyor',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: 'Kime',
@@ -1320,7 +1515,8 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   radialChart: (title, items) => `${title} dairesel grafiği: ${items}`,
   percentOfGoal: (pct) => `hedefin %${pct} kadarı`,
   periodOf: (label) => `${label} dönemi`,
-  chartVs: (title, current, previous) => `${title} grafiği: ${current.toLowerCase()} ile ${previous.toLowerCase()} karşılaştırması`,
+  chartVs: (title, current, previous) =>
+    `${title} grafiği: ${current.toLowerCase()} ile ${previous.toLowerCase()} karşılaştırması`,
   lineChart: (title) => `${title} çizgi grafiği`,
   barChart: (title, items) => `${title} çubuk grafiği: ${items}`,
   comboChart: (title, bar, line) => `${title} grafiği: ${bar} çubukları ile ${line} çizgisi`,
@@ -1329,12 +1525,21 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   ringItem: (label, value, pct) => `${label} ${value}, hedefin %${pct} kadarı`,
   scoreOf: (score, max) => `${score}/${max}`,
   activityFor: (name, day) => `${day} ${name} etkinliği`,
-  contributions: (n, date) => { const on = date ? `${date} tarihinde ` : ''; return n === 0 ? `${on}katkı yok` : plural('tr', n, { other: `${on}{n} katkı` }); },
+  contributions: (n, date) => {
+    const on = date ? `${date} tarihinde ` : '';
+    return n === 0 ? `${on}katkı yok` : plural('tr', n, { other: `${on}{n} katkı` });
+  },
 };
 
-const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'Kodu kopyala', copied: 'Kod kopyalandı' };
+const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
+  copy: 'Kodu kopyala',
+  copied: 'Kod kopyalandı',
+};
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'Bu sayfada', progress: (at, of) => `Başlık ${at}/${of}` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: 'Bu sayfada',
+  progress: (at, of) => `Başlık ${at}/${of}`,
+};
 
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'Azalt', increase: 'Artır' };
 
@@ -1393,7 +1598,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, sesi kapalı`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: 'Son işe alımlar' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: 'Son işe alımlar',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Taslak:',
@@ -1414,9 +1621,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: 'Posta',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: 'Önemli uyarılar', thisWeek: 'bu hafta' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: 'Önemli uyarılar',
+  thisWeek: 'bu hafta',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `${label} hakkında`, fromLastMonth: 'Geçen aya göre' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `${label} hakkında`,
+  fromLastMonth: 'Geçen aya göre',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1455,7 +1668,12 @@ const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
 };
 
 const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
-  leasePaymentStatus: { upcoming: 'Yaklaşan', due: 'Vadesi yakın', overdue: 'Gecikmiş', paid: 'Ödendi' },
+  leasePaymentStatus: {
+    upcoming: 'Yaklaşan',
+    due: 'Vadesi yakın',
+    overdue: 'Gecikmiş',
+    paid: 'Ödendi',
+  },
   rentPaymentStatus: { paid: 'Ödendi', pending: 'Bekliyor', overdue: 'Gecikmiş', partial: 'Kısmi' },
   maintenanceCategory: {
     plumbing: 'Tesisat',
@@ -1464,8 +1682,18 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     heating: 'Isıtma',
     other: 'Diğer',
   },
-  maintenancePriority: { low: 'Düşük öncelik', medium: 'Orta öncelik', high: 'Yüksek öncelik', urgent: 'Acil' },
-  maintenanceStage: { reported: 'Bildirildi', acknowledged: 'Alındı', scheduled: 'Planlandı', resolved: 'Çözüldü' },
+  maintenancePriority: {
+    low: 'Düşük öncelik',
+    medium: 'Orta öncelik',
+    high: 'Yüksek öncelik',
+    urgent: 'Acil',
+  },
+  maintenanceStage: {
+    reported: 'Bildirildi',
+    acknowledged: 'Alındı',
+    scheduled: 'Planlandı',
+    resolved: 'Çözüldü',
+  },
   documentStatus: { signed: 'İmzalandı', pending: 'İmza bekleniyor', expired: 'Süresi doldu' },
   timelineState: { complete: 'Tamamlandı', current: 'Devam ediyor', upcoming: 'Henüz değil' },
   leasePeriod: 'Kira dönemi',
@@ -1475,7 +1703,13 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
   paidThisYear: 'Bu yıl ödenen',
   outstanding: 'Kalan borç',
   noPayments: 'Henüz ödeme yok',
-  columns: { month: 'Ay', dueDate: 'Son ödeme tarihi', method: 'Yöntem', amount: 'Tutar', status: 'Durum' },
+  columns: {
+    month: 'Ay',
+    dueDate: 'Son ödeme tarihi',
+    method: 'Yöntem',
+    amount: 'Tutar',
+    status: 'Durum',
+  },
   downloadReceipt: (month) => `${month} makbuzunu indir`,
   dueOn: (date) => `Son ödeme: ${date}`,
   comments: (n) => plural('tr', n, { one: '{n} yorum', other: '{n} yorum' }),
@@ -1495,7 +1729,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Normal', sm: 'Sıkı' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: 'Bir şeyler ters gitti', message: 'Beklenmeyen bir hata oluştu', retry: 'Tekrar dene' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: 'Bir şeyler ters gitti',
+  message: 'Beklenmeyen bir hata oluştu',
+  retry: 'Tekrar dene',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: 'Bu yılki katkılar',
@@ -1584,7 +1822,12 @@ const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
   destinationPlaceholder: 'Destinasyon ara',
   datesPlaceholder: 'Tarih ekle',
   guestsPlaceholder: 'Misafir ekle',
-  guests: { adults: 'Yetişkinler', children: 'Çocuklar', infants: 'Bebekler', pets: 'Evcil hayvanlar' },
+  guests: {
+    adults: 'Yetişkinler',
+    children: 'Çocuklar',
+    infants: 'Bebekler',
+    pets: 'Evcil hayvanlar',
+  },
   guestDescriptions: {
     adults: '13 yaş ve üzeri',
     children: '2 – 12 yaş',
@@ -1623,7 +1866,8 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
       switchAction: 'Yenisini gönder',
     },
   },
-  codeSentTo: (email) => `Oturum açmayı tamamlamak için ${email} adresine gönderdiğimiz kodu girin.`,
+  codeSentTo: (email) =>
+    `Oturum açmayı tamamlamak için ${email} adresine gönderdiğimiz kodu girin.`,
   verificationCode: 'Doğrulama kodu',
   fullName: 'Ad soyad',
   namePlaceholder: 'Ayşe Yılmaz',
@@ -1674,7 +1918,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: 'Arama', email: 'E-posta', meeting: 'Toplantı', note: 'Not', 'stage-change': 'Aşama değişikliği', task: 'Görev tamamlandı' },
+  kinds: {
+    call: 'Arama',
+    email: 'E-posta',
+    meeting: 'Toplantı',
+    note: 'Not',
+    'stage-change': 'Aşama değişikliği',
+    task: 'Görev tamamlandı',
+  },
   empty: 'Henüz kayıtlı etkinlik yok',
   loggedBy: (name) => `Kaydeden: ${name}`,
   filterActivity: 'Etkinliği filtrele',
@@ -1750,7 +2001,12 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
     asap: 'En kısa sürede',
     contractLength: 'Sözleşme süresi',
   },
-  contractLengths: { any: 'Fark etmez', short: '1–6 ay', medium: '6–12 ay', long: '1 yıldan fazla' },
+  contractLengths: {
+    any: 'Fark etmez',
+    short: '1–6 ay',
+    medium: '6–12 ay',
+    long: '1 yıldan fazla',
+  },
   saveSearch: 'Aramayı kaydet',
   saved: 'Kaydedildi',
   newCount: (n) => `${n} yeni`,
@@ -1758,13 +2014,31 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
   actionOn: (action, subject) => `${subject}: ${action}`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: 'Kiralık', sale: 'Satılık', short_term_rent: 'Tatil kiralık', exchange: 'Takas' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: 'Kiralık',
+    sale: 'Satılık',
+    short_term_rent: 'Tatil kiralık',
+    exchange: 'Takas',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: 'Ölçek', mapData: 'Harita verileri' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: 'Ölçek',
+  mapData: 'Harita verileri',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: 'En düşük', maximum: 'En yüksek', value: (n) => `Değer ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: 'En düşük',
+  maximum: 'En yüksek',
+  value: (n) => `Değer ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'Bir seçenek belirleyin', scrollUp: 'Yukarı kaydır', scrollDown: 'Aşağı kaydır' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: 'Bir seçenek belirleyin',
+  scrollUp: 'Yukarı kaydır',
+  scrollDown: 'Aşağı kaydır',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: 'Medya görüntüleyiciyi kapat',
@@ -1776,10 +2050,18 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
 
 const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: 'Bildirimi kapat' };
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: 'Telefon numarası', countryCode: 'Ülke kodu' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: 'Telefon numarası',
+  countryCode: 'Ülke kodu',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: 'Teslimat süresi', deliveryFee: 'Teslimat', distance: 'Mesafe', minimumOrder: 'Minimum sipariş' },
+  facts: {
+    deliveryTime: 'Teslimat süresi',
+    deliveryFee: 'Teslimat',
+    distance: 'Mesafe',
+    minimumOrder: 'Minimum sipariş',
+  },
   availability: { paused: 'Duraklatıldı', closed: 'Kapalı' },
   new: 'Yeni',
   rated: (value, reviews) =>
@@ -1788,7 +2070,13 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'Çevrimiçi', idle: 'Uzakta', offline: 'Çevrimdışı', busy: 'Meşgul' },
-  status: { sending: 'Gönderiliyor…', sent: 'Gönderildi', delivered: 'İletildi', read: 'Okundu', failed: 'Gönderilemedi' },
+  status: {
+    sending: 'Gönderiliyor…',
+    sent: 'Gönderildi',
+    delivered: 'İletildi',
+    read: 'Okundu',
+    failed: 'Gönderilemedi',
+  },
   unread: 'Okunmadı',
   unreadCount: (n) => plural('tr', n, { one: '{n} okunmamış mesaj', other: '{n} okunmamış mesaj' }),
 };
@@ -1869,7 +2157,11 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
 
 const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: 'Arama sorgusunu temizle' };
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `${t} etiketini kaldır`, full: (n) => `En fazla ${n}`, suggestions: 'Öneriler' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `${t} etiketini kaldır`,
+  full: (n) => `En fazla ${n}`,
+  suggestions: 'Öneriler',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -1937,7 +2229,11 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     fileName: 'Dosya adı',
     uploadedOn: 'Yüklenme tarihi',
     fileSize: 'Dosya boyutu',
-    sortBy: { name: 'Dosya adına göre sırala', uploadedAt: 'Yüklenme tarihine göre sırala', size: 'Dosya boyutuna göre sırala' },
+    sortBy: {
+      name: 'Dosya adına göre sırala',
+      uploadedAt: 'Yüklenme tarihine göre sırala',
+      size: 'Dosya boyutuna göre sırala',
+    },
     selectFile: (name) => `Seç: ${name}`,
     deleteFile: 'Dosyayı sil',
     deleteNamed: (name) => `Sil: ${name}`,
@@ -1974,7 +2270,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     teamServersDescription: 'Kontrol panelinde yapılandırılır',
     manage: 'Yönet',
     noTeamServers: 'Ekip MCP sunucusu yok',
-    noTeamServersBody: 'MCP sunucularını masaüstünde ve bulutta kullanılabilir kılmak için kontrol panelinde yapılandırın.',
+    noTeamServersBody:
+      'MCP sunucularını masaüstünde ve bulutta kullanılabilir kılmak için kontrol panelinde yapılandırın.',
     configureTeam: 'Ekip MCP sunucularını yapılandır',
     pluginServers: 'Eklenti MCP sunucuları',
   },
@@ -2005,26 +2302,53 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   checkAvailability: 'Müsaitliği kontrol et',
   notChargedYet: 'Henüz sizden ücret alınmayacak',
   total: 'Toplam',
-  tripStatus: { confirmed: 'Onaylandı', pending: 'Beklemede', cancelled: 'İptal edildi', completed: 'Tamamlandı' },
-  priceName: booking_priceName((p, u) => `${u} başına ${p}`, (s, o) => `${s}, önceki fiyat ${o}`),
+  tripStatus: {
+    confirmed: 'Onaylandı',
+    pending: 'Beklemede',
+    cancelled: 'İptal edildi',
+    completed: 'Tamamlandı',
+  },
+  priceName: booking_priceName(
+    (p, u) => `${u} başına ${p}`,
+    (s, o) => `${s}, önceki fiyat ${o}`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'Bağlam penceresi', freeSpace: 'Boş alan', planUsageLimits: 'Plan kullanım sınırları', managePlan: 'Planı yönet' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: 'Bağlam penceresi',
+  freeSpace: 'Boş alan',
+  planUsageLimits: 'Plan kullanım sınırları',
+  managePlan: 'Planı yönet',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'Eylemleri kapat',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'Profil fotoğrafı ekle' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: 'Profil fotoğrafı ekle',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'Tema', darkMode: 'Koyu mod', lightMode: 'Açık mod', useDarkMode: 'Koyu modu kullan', useLightMode: 'Açık modu kullan' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: 'Tema',
+  darkMode: 'Koyu mod',
+  lightMode: 'Açık mod',
+  useDarkMode: 'Koyu modu kullan',
+  useLightMode: 'Açık modu kullan',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: 'Kazanılan',
   period: 'Kazanç dönemi',
   breakdown: 'Nereden geldi',
   payout: 'Sonraki ödeme',
-  payoutState: { scheduled: 'Planlandı', processing: 'Yolda', paid: 'Ödendi', held: 'Bekletiliyor', failed: 'Başarısız' },
+  payoutState: {
+    scheduled: 'Planlandı',
+    processing: 'Yolda',
+    paid: 'Ödendi',
+    held: 'Bekletiliyor',
+    failed: 'Başarısız',
+  },
   chart: (label) => `${label} kazançları, döneme göre`,
   empty: 'Henüz kazanç yok',
   earnings: 'Kazançlar',
@@ -2109,9 +2433,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: 'Diğer biçimlendirme', moreMenu: 'Diğer biçimlendirme' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'Filtreler', showAll: 'Tümünü göster' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: 'Filtreler',
+  showAll: 'Tümünü göster',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: 'Önceki kategoriler', next: 'Sonraki kategoriler' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: 'Önceki kategoriler',
+  next: 'Sonraki kategoriler',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2133,12 +2463,17 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     loading: 'Teklifler yükleniyor',
   },
   emptyTitle: 'Henüz teklif yok',
-  emptyDescription: 'Taşıyıcılar işinizi inceliyor. İlk teklifler genellikle birkaç dakika içinde gelir.',
+  emptyDescription:
+    'Taşıyıcılar işinizi inceliyor. İlk teklifler genellikle birkaç dakika içinde gelir.',
   list: 'Teklifler',
   priceDetailsFor: (name) => `${name} için fiyat ayrıntıları`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'Şifreyi göster', hidePassword: 'Şifreyi gizle', required: 'zorunlu' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: 'Şifreyi göster',
+  hidePassword: 'Şifreyi gizle',
+  required: 'zorunlu',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: 'Sesli ara',
@@ -2236,252 +2571,269 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "Değişiklikleri kaydet" : "Sohbet başlat" + (count ? ' · ' + plural('tr', count, {"one": "{n} ajan", "other": "{n} ajan"}) : ''),
-  you: "Sen",
-  responseFailed: "{0} yanıt veremedi. Lütfen tekrar deneyin.",
-  editAgentTitle: "Ajanı düzenle",
-  aLittleHelp: "Biraz yardım",
-  aFewMindsOneConversation: "Birkaç akıl. Bir konuşma.",
-  aLittleRoomForSomethingNew: "Yeni bir şey için küçük bir yer",
-  accountDetails: "Hesap Detayları",
-  add: "Ekle",
-  add2: "{0} ekle",
-  added: "Eklendi",
-  addedToYourWorkspace: "Çalışma alanınıza eklendi",
-  agent: "Emlak danışmanı",
-  agentConversation: "Temsilci görüşmesi",
-  appearance: "Görünüm",
-  apps: "Uygulamalar · {0}",
-  availability: "Kullanılabilirlik",
-  backToMarketplace: "Pazara geri dön",
-  billing: "Faturalandırma",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "Botlar",
-  bringYourAgentsIntoOneChat: "Temsilcilerinizi tek bir sohbete getirin.",
-  category: "Kategori",
-  chatActions: "Sohbet işlemleri",
-  chatList: "Sohbet listesi",
-  chatName: "Sohbet adı",
-  chatRemoved: "Sohbet kaldırıldı",
-  chatWithYourAgents: "Temsilcilerinizle sohbet edin",
-  chooseAnAgentOrCreateYourOwn: "Bir görüşme başlatmak için bir temsilci seçin veya kendinizinkini oluşturun.",
-  chooseWhoSJoiningTheConversation: "Konuşmaya kimin katılacağını seçin.",
-  chooseYourTeammates: "Takım arkadaşlarınızı seçin",
-  closeMarketplace: "Pazar yerini kapat",
-  closeSearch: "Aramayı kapat",
-  company: "Şirket",
-  companyDetails: "Şirket Detayları",
-  completionSound: "Tamamlanma sesi",
-  connectedAccount: "Bağlı hesap",
-  connector: "Bağlayıcı",
-  conversationIDCopied: "Konuşma kimliği kopyalandı",
-  conversationCopied: "Görüşme kopyalandı",
-  conversationOptions: "Konuşma seçenekleri",
-  conversations: "Konuşmalar",
-  copied: "Kopyalandı",
-  copyConversation: "Konuşmayı kopyala",
-  copyConversationID: "Konuşma kimliğini kopyala",
-  copyResponse: "Yanıtı kopyala",
-  couldnTCopyPleaseTryAgain: "Kopyalanamadı. Lütfen tekrar deneyin.",
-  create: "Oluştur",
-  createANewBot: "Yeni bir bot oluştur",
-  createBotOrChat: "Bot oluştur veya sohbet et",
-  criticalRequests: "Kritik istekler",
-  customize: "Özelleştir",
-  customizeANewTeammate: "Yeni bir takım arkadaşını özelleştirin.",
-  dateOfBirth: "Doğum tarihi",
-  demoIntegrationAddingSavesItToThis: "Demo entegrasyonu. Eklemek onu bu tarayıcıya kaydeder; harici hesap bağlı değil.",
-  desktopApp: "Masaüstü uygulaması",
-  details: "Ayrıntılar",
-  developer: "Geliştirici",
-  deviceID: "Cihaz Kimliği",
-  discover: "Keşfet",
-  dispatchAlerts: "Gönderim uyarıları",
-  editConversationAgents: "Konuşma aracılarını düzenle",
-  editBot: "Botu düzenle",
-  editGroup: "Grubu düzenle",
-  editAgent: "Düzenle {0}",
-  email: "E-posta",
-  everydayEssentials: "Gündelik ihtiyaçlar",
-  exploreMarketplace: "Pazar yerini keşfedin",
-  explorePlugins: "Eklentileri keşfedin",
-  explorePluginsAndBotsToBuildYour: "Ekibinizi oluşturmak için eklentileri ve botları keşfedin.",
-  findYourNextTeammate: "Bir sonraki takım arkadaşınızı bulun",
-  findYourNextToolOrTeammate: "Bir sonraki aracınızı veya takım arkadaşınızı bulun",
-  firstName: "Ad",
-  folders: "Klasörler",
-  general: "Genel",
-  getNotifiedWhenTheModeNeedsTo: "Modun kritik bir karar vermesi gerektiğinde bildirim alın",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "Faydalı yanıt",
-  inTheBrowser: "Tarayıcıda",
-  inThisConversation: "Bu sohbette",
-  includes: "İçerir",
-  insideTheApp: "Uygulamanın içinde",
-  installed: "Yüklendi",
-  integrations: "Entegrasyonlar",
-  iLlApproachThisFromThePerspective: "Buna {0} perspektifinden yaklaşacağım.",
-  lastName: "Soyadı",
-  limits: "Sınırlar",
-  logOutFromAllDevices: "Tüm cihazlardan çıkış yapın",
-  logout: "Oturumu kapat",
-  manage: "Yönet",
-  manageLimits: "Sınırları yönet",
-  marketplace: "Pazaryeri",
-  marketplaceLinkCopied: "Pazar yeri bağlantısı kopyalandı",
-  marketplaceListings: "Pazar yeri listeleri",
-  meetYourNextTeammate: "Bir sonraki takım arkadaşınızla tanışın",
-  messages: "Mesajlar",
-  noConversationsFound: "Konuşma bulunamadı.",
-  noMatchesYet: "Henüz eşleşme yok",
-  notifications: "Bildirimler",
-  openConversations: "Açık konuşmalar",
-  openPullRequestLinksInsideYourApp: "Uygulamanızın içindeki çekme isteği bağlantılarını açın",
-  openTheMarketplaceToExplorePluginsAnd: "Eklentileri ve botları keşfetmek için Marketplace'i açın. Botun görünümünü ve ayrıntılarını düzenlemek için bir konuşmanın menüsünü kullanın. Duygu çarkından bir ifade seçin. Şekilleri keşfetmek için şekil yayını kaydırın veya sürükleyin ya da ok tuşlarını kullanın.",
-  prDestination: "PR hedefi",
-  people: "Kişiler",
-  personal: "Kişisel",
-  pinChat: "Sohbeti sabitle",
-  pinnedChat: "Sabitlenmiş sohbet",
-  plugins: "Eklentiler",
-  profile: "Profil",
-  public: "Herkese açık",
-  publicProfile: "Herkese açık profil",
-  pullRequests: "Çekme İstekleri",
-  pushNotificationOnYourPhoneWhenThe: "Uygulama size mesaj gönderdiğinde telefonunuza anlık bildirim",
-  remove: "Kaldır",
-  removeChat: "Sohbeti kaldır",
-  renameChat: "Sohbeti yeniden adlandır",
-  responseCopied: "Yanıt kopyalandı",
-  reviewProvider: "İnceleme sağlayıcısı",
-  rulesAndWorkflows: "Kurallar ve İş Akışları",
-  saveName: "Adı kaydet",
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? 'Değişiklikleri kaydet'
+      : 'Sohbet başlat' +
+        (count ? ' · ' + plural('tr', count, { one: '{n} ajan', other: '{n} ajan' }) : ''),
+  you: 'Sen',
+  responseFailed: '{0} yanıt veremedi. Lütfen tekrar deneyin.',
+  editAgentTitle: 'Ajanı düzenle',
+  aLittleHelp: 'Biraz yardım',
+  aFewMindsOneConversation: 'Birkaç akıl. Bir konuşma.',
+  aLittleRoomForSomethingNew: 'Yeni bir şey için küçük bir yer',
+  accountDetails: 'Hesap Detayları',
+  add: 'Ekle',
+  add2: '{0} ekle',
+  added: 'Eklendi',
+  addedToYourWorkspace: 'Çalışma alanınıza eklendi',
+  agent: 'Emlak danışmanı',
+  agentConversation: 'Temsilci görüşmesi',
+  appearance: 'Görünüm',
+  apps: 'Uygulamalar · {0}',
+  availability: 'Kullanılabilirlik',
+  backToMarketplace: 'Pazara geri dön',
+  billing: 'Faturalandırma',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: 'Botlar',
+  bringYourAgentsIntoOneChat: 'Temsilcilerinizi tek bir sohbete getirin.',
+  category: 'Kategori',
+  chatActions: 'Sohbet işlemleri',
+  chatList: 'Sohbet listesi',
+  chatName: 'Sohbet adı',
+  chatRemoved: 'Sohbet kaldırıldı',
+  chatWithYourAgents: 'Temsilcilerinizle sohbet edin',
+  chooseAnAgentOrCreateYourOwn:
+    'Bir görüşme başlatmak için bir temsilci seçin veya kendinizinkini oluşturun.',
+  chooseWhoSJoiningTheConversation: 'Konuşmaya kimin katılacağını seçin.',
+  chooseYourTeammates: 'Takım arkadaşlarınızı seçin',
+  closeMarketplace: 'Pazar yerini kapat',
+  closeSearch: 'Aramayı kapat',
+  company: 'Şirket',
+  companyDetails: 'Şirket Detayları',
+  completionSound: 'Tamamlanma sesi',
+  connectedAccount: 'Bağlı hesap',
+  connector: 'Bağlayıcı',
+  conversationIDCopied: 'Konuşma kimliği kopyalandı',
+  conversationCopied: 'Görüşme kopyalandı',
+  conversationOptions: 'Konuşma seçenekleri',
+  conversations: 'Konuşmalar',
+  copied: 'Kopyalandı',
+  copyConversation: 'Konuşmayı kopyala',
+  copyConversationID: 'Konuşma kimliğini kopyala',
+  copyResponse: 'Yanıtı kopyala',
+  couldnTCopyPleaseTryAgain: 'Kopyalanamadı. Lütfen tekrar deneyin.',
+  create: 'Oluştur',
+  createANewBot: 'Yeni bir bot oluştur',
+  createBotOrChat: 'Bot oluştur veya sohbet et',
+  criticalRequests: 'Kritik istekler',
+  customize: 'Özelleştir',
+  customizeANewTeammate: 'Yeni bir takım arkadaşını özelleştirin.',
+  dateOfBirth: 'Doğum tarihi',
+  demoIntegrationAddingSavesItToThis:
+    'Demo entegrasyonu. Eklemek onu bu tarayıcıya kaydeder; harici hesap bağlı değil.',
+  desktopApp: 'Masaüstü uygulaması',
+  details: 'Ayrıntılar',
+  developer: 'Geliştirici',
+  deviceID: 'Cihaz Kimliği',
+  discover: 'Keşfet',
+  dispatchAlerts: 'Gönderim uyarıları',
+  editConversationAgents: 'Konuşma aracılarını düzenle',
+  editBot: 'Botu düzenle',
+  editGroup: 'Grubu düzenle',
+  editAgent: 'Düzenle {0}',
+  email: 'E-posta',
+  everydayEssentials: 'Gündelik ihtiyaçlar',
+  exploreMarketplace: 'Pazar yerini keşfedin',
+  explorePlugins: 'Eklentileri keşfedin',
+  explorePluginsAndBotsToBuildYour: 'Ekibinizi oluşturmak için eklentileri ve botları keşfedin.',
+  findYourNextTeammate: 'Bir sonraki takım arkadaşınızı bulun',
+  findYourNextToolOrTeammate: 'Bir sonraki aracınızı veya takım arkadaşınızı bulun',
+  firstName: 'Ad',
+  folders: 'Klasörler',
+  general: 'Genel',
+  getNotifiedWhenTheModeNeedsTo: 'Modun kritik bir karar vermesi gerektiğinde bildirim alın',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: 'Faydalı yanıt',
+  inTheBrowser: 'Tarayıcıda',
+  inThisConversation: 'Bu sohbette',
+  includes: 'İçerir',
+  insideTheApp: 'Uygulamanın içinde',
+  installed: 'Yüklendi',
+  integrations: 'Entegrasyonlar',
+  iLlApproachThisFromThePerspective: 'Buna {0} perspektifinden yaklaşacağım.',
+  lastName: 'Soyadı',
+  limits: 'Sınırlar',
+  logOutFromAllDevices: 'Tüm cihazlardan çıkış yapın',
+  logout: 'Oturumu kapat',
+  manage: 'Yönet',
+  manageLimits: 'Sınırları yönet',
+  marketplace: 'Pazaryeri',
+  marketplaceLinkCopied: 'Pazar yeri bağlantısı kopyalandı',
+  marketplaceListings: 'Pazar yeri listeleri',
+  meetYourNextTeammate: 'Bir sonraki takım arkadaşınızla tanışın',
+  messages: 'Mesajlar',
+  noConversationsFound: 'Konuşma bulunamadı.',
+  noMatchesYet: 'Henüz eşleşme yok',
+  notifications: 'Bildirimler',
+  openConversations: 'Açık konuşmalar',
+  openPullRequestLinksInsideYourApp: 'Uygulamanızın içindeki çekme isteği bağlantılarını açın',
+  openTheMarketplaceToExplorePluginsAnd:
+    "Eklentileri ve botları keşfetmek için Marketplace'i açın. Botun görünümünü ve ayrıntılarını düzenlemek için bir konuşmanın menüsünü kullanın. Duygu çarkından bir ifade seçin. Şekilleri keşfetmek için şekil yayını kaydırın veya sürükleyin ya da ok tuşlarını kullanın.",
+  prDestination: 'PR hedefi',
+  people: 'Kişiler',
+  personal: 'Kişisel',
+  pinChat: 'Sohbeti sabitle',
+  pinnedChat: 'Sabitlenmiş sohbet',
+  plugins: 'Eklentiler',
+  profile: 'Profil',
+  public: 'Herkese açık',
+  publicProfile: 'Herkese açık profil',
+  pullRequests: 'Çekme İstekleri',
+  pushNotificationOnYourPhoneWhenThe:
+    'Uygulama size mesaj gönderdiğinde telefonunuza anlık bildirim',
+  remove: 'Kaldır',
+  removeChat: 'Sohbeti kaldır',
+  renameChat: 'Sohbeti yeniden adlandır',
+  responseCopied: 'Yanıt kopyalandı',
+  reviewProvider: 'İnceleme sağlayıcısı',
+  rulesAndWorkflows: 'Kurallar ve İş Akışları',
+  saveName: 'Adı kaydet',
   sayHelloTo: "{0}'a merhaba deyin",
-  searchConversations: "Konuşmaları arayın",
-  searchConversations2: "Konuşmaları arayın…",
-  searchMarketplace: "Pazar yerinde ara",
-  selectGithubOrOtherProvidersForReviews: "İncelemeler için Github'u veya diğer sağlayıcıları seçin",
-  selectedAgents: "Seçilen aracılar: {0}",
-  sendWithEnterUseShiftEnterFor: "Enter ile gönder. Yeni bir satır için Shift + Enter tuşlarını kullanın. Değişiklikleriniz bu tarayıcıda kalır.",
-  settings: "Ayarlar",
-  share: "Paylaş",
-  showFundamentalNotificationsWhenAnAgentCompletes: "Bir aracı bir görevi tamamladığında temel bildirimleri göster",
-  signOut: "Oturumu kapat",
-  skills: "Beceriler",
-  skills2: "Beceriler · {0}",
-  soundEffectATaskIsCompleted: "Ses efekti bir görev tamamlandı",
-  startAConversation: "Konuşma başlat",
-  startAGroupChat: "Grup sohbeti başlat",
-  startChat: "Sohbeti başlat",
-  storage: "Depolama",
-  support: "Destek",
-  systemNotifications: "Sistem bildirimleri",
-  thinkingTogether: "Birlikte düşünmek…",
-  thinking: "Düşünüyorum…",
-  today: "Bugün",
-  tools: "Araçlar",
-  toolsForYourWorkflow: "İş akışınız için araçlar",
-  tryAnotherNameCategoryOrKeyword: "Başka bir ad, kategori veya anahtar kelime deneyin.",
-  ultra149Mo: "Ultra 149$/ay",
-  unhelpfulResponse: "Faydasız yanıt",
-  unpinChat: "Sohbetin sabitlemesini kaldır",
-  upgradeToMax: "Max’e yükselt",
-  useToCreateABotOrStart: "Bir bot oluşturmak veya birkaç temsilciyle görüşme başlatmak için + tuşunu kullanın.",
-  viewAdded: "Görünüm eklendi {0}",
-  viewAll: "Tümünü görüntüle",
-  viewTeamProfile: "Ekip profilini görüntüle",
-  viewItem: "Görünüm {0}",
-  website: "Web sitesi",
-  whenEnabledYourProfilePageWillBe: "Etkinleştirildiğinde profil sayfanız herkes tarafından görülebilecek",
+  searchConversations: 'Konuşmaları arayın',
+  searchConversations2: 'Konuşmaları arayın…',
+  searchMarketplace: 'Pazar yerinde ara',
+  selectGithubOrOtherProvidersForReviews:
+    "İncelemeler için Github'u veya diğer sağlayıcıları seçin",
+  selectedAgents: 'Seçilen aracılar: {0}',
+  sendWithEnterUseShiftEnterFor:
+    'Enter ile gönder. Yeni bir satır için Shift + Enter tuşlarını kullanın. Değişiklikleriniz bu tarayıcıda kalır.',
+  settings: 'Ayarlar',
+  share: 'Paylaş',
+  showFundamentalNotificationsWhenAnAgentCompletes:
+    'Bir aracı bir görevi tamamladığında temel bildirimleri göster',
+  signOut: 'Oturumu kapat',
+  skills: 'Beceriler',
+  skills2: 'Beceriler · {0}',
+  soundEffectATaskIsCompleted: 'Ses efekti bir görev tamamlandı',
+  startAConversation: 'Konuşma başlat',
+  startAGroupChat: 'Grup sohbeti başlat',
+  startChat: 'Sohbeti başlat',
+  storage: 'Depolama',
+  support: 'Destek',
+  systemNotifications: 'Sistem bildirimleri',
+  thinkingTogether: 'Birlikte düşünmek…',
+  thinking: 'Düşünüyorum…',
+  today: 'Bugün',
+  tools: 'Araçlar',
+  toolsForYourWorkflow: 'İş akışınız için araçlar',
+  tryAnotherNameCategoryOrKeyword: 'Başka bir ad, kategori veya anahtar kelime deneyin.',
+  ultra149Mo: 'Ultra 149$/ay',
+  unhelpfulResponse: 'Faydasız yanıt',
+  unpinChat: 'Sohbetin sabitlemesini kaldır',
+  upgradeToMax: 'Max’e yükselt',
+  useToCreateABotOrStart:
+    'Bir bot oluşturmak veya birkaç temsilciyle görüşme başlatmak için + tuşunu kullanın.',
+  viewAdded: 'Görünüm eklendi {0}',
+  viewAll: 'Tümünü görüntüle',
+  viewTeamProfile: 'Ekip profilini görüntüle',
+  viewItem: 'Görünüm {0}',
+  website: 'Web sitesi',
+  whenEnabledYourProfilePageWillBe:
+    'Etkinleştirildiğinde profil sayfanız herkes tarafından görülebilecek',
   youAreOn7xMoreUsageThan: "Premium'a göre 7 kat daha fazla kullanım kullanıyorsunuz",
-  youAreOn7xMoreUsageThan2: "Normal kullanımdan 7 kat daha fazla kullanıyorsunuz.",
-  areHereSendAMessageToGet: "{0} buradalar. Herkesin bakış açısını öğrenmek için bir mesaj gönderin.",
-  itemDetails: "{0} ayrıntıları",
-  agentThinking: "{0} düşünüyor",
-  by: "{0} · yazan: {1}",
-  results: (count: number) => plural('tr', count, {"other": "{n} sonuç"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('tr', apps, {"one": "{n} uygulama", "other": "{n} uygulama"}) + ", " : '') + plural('tr', skills, {"one": "{n} beceri", "other": "{n} beceri"}),
+  youAreOn7xMoreUsageThan2: 'Normal kullanımdan 7 kat daha fazla kullanıyorsunuz.',
+  areHereSendAMessageToGet:
+    '{0} buradalar. Herkesin bakış açısını öğrenmek için bir mesaj gönderin.',
+  itemDetails: '{0} ayrıntıları',
+  agentThinking: '{0} düşünüyor',
+  by: '{0} · yazan: {1}',
+  results: (count: number) => plural('tr', count, { other: '{n} sonuç' }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps ? plural('tr', apps, { one: '{n} uygulama', other: '{n} uygulama' }) + ', ' : '') +
+    plural('tr', skills, { one: '{n} beceri', other: '{n} beceri' }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "Bloom Tasarım Görevleri", defaultTeam: "Bloom ekibi",
+    defaultTitle: 'Bloom Tasarım Görevleri',
+    defaultTeam: 'Bloom ekibi',
     openTicket: (code, title) => `Aç ${code}: ${title}`,
-    addTicketTo: column => `Görev ekle ${column}`,
-    "board": "Proje panosu",
-    "controls": "Pano kontrolleri",
-    "navigation": "Gezintiyi aç",
-    "inbox": "Proje gelen kutusunu aç",
-    "newTicket": "Yeni görev",
-    "columns": "Proje panosu sütunları",
-    "sortTickets": "Görevleri sırala",
-    "filterTickets": "Görevleri filtrele",
-    "displayOptions": "Görünüm seçenekleri",
-    "sort": "Sırala",
-    "filter": "Filtrele",
-    "display": "Görünüm",
-    "manualOrder": "Elle sıralama",
-    "priority": "Öncelik",
-    "title": "Başlık",
-    "project": "Proje",
-    "allPriorities": "Tüm öncelikler",
-    "allProjects": "Tüm projeler",
-    "clearFilters": "Filtreleri temizle",
-    "showDone": "Tamamlanan sütununu göster",
-    "fillScreens": "Geniş ekranları doldur",
-    "createTicket": "Görev oluştur",
-    "closeCreate": "Görev oluşturmayı kapat",
-    "ticketTitle": "Görev başlığı",
-    "enterTitle": "Görev başlığını girin",
-    "description": "Açıklama",
-    "descriptionArea": "Açıklama alanı",
-    "status": "Durum",
-    "urgency": "Aciliyet",
-    "assignee": "Atanan kişi",
-    "unassigned": "Atanmamış",
-    "keepCreating": "Oluşturmaya devam et",
-    "cancel": "İptal",
-    "addTicket": "Görev ekle",
-    "sortTitle": "Başlığa göre sırala",
-    "noTickets": "Burada sorun yok",
-    "favoriteAdd": "Favorilere ekle",
-    "favoriteRemove": "Favorilerden kaldır",
-    "copyLink": "Görev bağlantısını kopyala",
-    "actions": "Görev işlemleri",
-    "editDescription": "Açıklamayı düzenle",
-    "copyId": "Görev kimliğini kopyala",
-    "reopen": "Görevi yeniden aç",
-    "markDone": "Tamamlandı olarak işaretle",
-    "closeDetails": "Görev ayrıntılarını kapat",
-    "linkCopied": "Görev bağlantısı kopyalandı",
-    "idCopied": "Görev kimliği kopyalandı",
-    "copyFailed": "Kopyalanamadı. Tekrar deneyin.",
-    "createdBy": "Oluşturan",
-    "saveDescription": "Açıklamayı kaydet",
-    "ticketDescription": "Görev açıklaması",
-    "properties": "Özellikler",
-    "editAssignees": "Atanan kişileri düzenle",
-    "resources": "Kaynaklar",
-    "tokens": "Harcanan tokenlar",
-    "comments": "Yorumlar",
-    "you": "Siz",
-    "justNow": "Az önce",
-    "addComment": "Yorum ekle",
-    "enterComment": "Yorumunuzu girin",
-    "postComment": "Yorumu gönder",
-    "moveUp": "Yukarı taşı",
-    "moveDown": "Aşağı taşı",
-    "nextColumn": "Sonraki sütuna taşı",
-    "previousColumn": "Önceki sütuna taşı",
-    "keyboardHint": "Enter açar. Boşluk alır, oklar taşır, boşluk bırakır ve Escape iptal eder."
-},
+    addTicketTo: (column) => `Görev ekle ${column}`,
+    board: 'Proje panosu',
+    controls: 'Pano kontrolleri',
+    navigation: 'Gezintiyi aç',
+    inbox: 'Proje gelen kutusunu aç',
+    newTicket: 'Yeni görev',
+    columns: 'Proje panosu sütunları',
+    sortTickets: 'Görevleri sırala',
+    filterTickets: 'Görevleri filtrele',
+    displayOptions: 'Görünüm seçenekleri',
+    sort: 'Sırala',
+    filter: 'Filtrele',
+    display: 'Görünüm',
+    manualOrder: 'Elle sıralama',
+    priority: 'Öncelik',
+    title: 'Başlık',
+    project: 'Proje',
+    allPriorities: 'Tüm öncelikler',
+    allProjects: 'Tüm projeler',
+    clearFilters: 'Filtreleri temizle',
+    showDone: 'Tamamlanan sütununu göster',
+    fillScreens: 'Geniş ekranları doldur',
+    createTicket: 'Görev oluştur',
+    closeCreate: 'Görev oluşturmayı kapat',
+    ticketTitle: 'Görev başlığı',
+    enterTitle: 'Görev başlığını girin',
+    description: 'Açıklama',
+    descriptionArea: 'Açıklama alanı',
+    status: 'Durum',
+    urgency: 'Aciliyet',
+    assignee: 'Atanan kişi',
+    unassigned: 'Atanmamış',
+    keepCreating: 'Oluşturmaya devam et',
+    cancel: 'İptal',
+    addTicket: 'Görev ekle',
+    sortTitle: 'Başlığa göre sırala',
+    noTickets: 'Burada sorun yok',
+    favoriteAdd: 'Favorilere ekle',
+    favoriteRemove: 'Favorilerden kaldır',
+    copyLink: 'Görev bağlantısını kopyala',
+    actions: 'Görev işlemleri',
+    editDescription: 'Açıklamayı düzenle',
+    copyId: 'Görev kimliğini kopyala',
+    reopen: 'Görevi yeniden aç',
+    markDone: 'Tamamlandı olarak işaretle',
+    closeDetails: 'Görev ayrıntılarını kapat',
+    linkCopied: 'Görev bağlantısı kopyalandı',
+    idCopied: 'Görev kimliği kopyalandı',
+    copyFailed: 'Kopyalanamadı. Tekrar deneyin.',
+    createdBy: 'Oluşturan',
+    saveDescription: 'Açıklamayı kaydet',
+    ticketDescription: 'Görev açıklaması',
+    properties: 'Özellikler',
+    editAssignees: 'Atanan kişileri düzenle',
+    resources: 'Kaynaklar',
+    tokens: 'Harcanan tokenlar',
+    comments: 'Yorumlar',
+    you: 'Siz',
+    justNow: 'Az önce',
+    addComment: 'Yorum ekle',
+    enterComment: 'Yorumunuzu girin',
+    postComment: 'Yorumu gönder',
+    moveUp: 'Yukarı taşı',
+    moveDown: 'Aşağı taşı',
+    nextColumn: 'Sonraki sütuna taşı',
+    previousColumn: 'Önceki sütuna taşı',
+    keyboardHint: 'Enter açar. Boşluk alır, oklar taşır, boşluk bırakır ve Escape iptal eder.',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "Ajan avatarı", unavailable: "Avatar kullanılamıyor", },
+  AGENT_AVATAR_MESSAGES: { label: 'Ajan avatarı', unavailable: 'Avatar kullanılamıyor' },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

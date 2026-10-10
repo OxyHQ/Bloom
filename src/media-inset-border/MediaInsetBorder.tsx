@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  PixelRatio,
-  Platform,
-  StyleSheet,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { PixelRatio, Platform, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Fill } from '../fill';
 import { borderRadius } from '../styles/tokens';
@@ -30,12 +24,7 @@ export function MediaInsetBorder({ opaque, style, children }: MediaInsetBorderPr
 
   return (
     <Fill
-      style={[
-        styles.base,
-        { borderColor: theme.colors.border },
-        !opaque && styles.soft,
-        style,
-      ]}
+      style={[styles.base, { borderColor: theme.colors.border }, !opaque && styles.soft, style]}
     >
       {children}
     </Fill>

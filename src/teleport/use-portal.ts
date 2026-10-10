@@ -4,7 +4,7 @@
  *
  * Changed: import paths only, for this flat directory.
  */
-import { usePortalManagerContext } from "./portal-manager";
+import { usePortalManagerContext } from './portal-manager';
 
 /**
  * The `usePortal` hook allows you to manage portals in imperative way.
@@ -26,7 +26,7 @@ import { usePortalManagerContext } from "./portal-manager";
  * }
  * ```
  */
-export default function usePortal(hostName: string = "root") {
+export default function usePortal(hostName: string = 'root') {
   const { state, dispatch } = usePortalManagerContext();
 
   return {
@@ -41,7 +41,6 @@ export default function usePortal(hostName: string = "root") {
      *
      * @param name - `name` of `<Portal />` component.
      */
-    removePortal: (name: string) =>
-      dispatch({ type: "REMOVE_PORTAL", hostName, name }),
+    removePortal: (name: string) => dispatch({ type: 'REMOVE_PORTAL', hostName, name }),
   };
 }

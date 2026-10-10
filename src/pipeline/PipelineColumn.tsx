@@ -10,11 +10,7 @@ import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PIPELINE_MESSAGES } from './messages';
-import {
-  PIPELINE_CARD_GAP,
-  PIPELINE_COLUMN_PADDING,
-  PIPELINE_SKELETON_CARDS,
-} from './constants';
+import { PIPELINE_CARD_GAP, PIPELINE_COLUMN_PADDING, PIPELINE_SKELETON_CARDS } from './constants';
 import { pipelineColumnFill, resolvePipelinePaint } from './shared';
 import type { PipelineColumnProps } from './types';
 
@@ -100,7 +96,13 @@ function PipelineColumnComponent({
             {name}
           </Text>
           {count === undefined ? null : (
-            <Badge content={count} variant="subtle" color="default" size="medium" testID={id('count')} />
+            <Badge
+              content={count}
+              variant="subtle"
+              color="default"
+              size="medium"
+              testID={id('count')}
+            />
           )}
           <View style={{ flex: 1 }} />
           {total ? (
@@ -137,14 +139,23 @@ function PipelineColumnComponent({
             }}
             testID={id('empty')}
           >
-            <Text variant="body-2-regular" style={{ color: paint.textTertiary, textAlign: 'center' }}>
+            <Text
+              variant="body-2-regular"
+              style={{ color: paint.textTertiary, textAlign: 'center' }}
+            >
               {emptyLabel}
             </Text>
           </View>
         )}
 
         {onLoadMore && !loading ? (
-          <Button  size="sm" onPress={onLoadMore} testID={id('load-more')} tone="accent" appearance="plain">
+          <Button
+            size="sm"
+            onPress={onLoadMore}
+            testID={id('load-more')}
+            tone="accent"
+            appearance="plain"
+          >
             {loadMoreLabel}
           </Button>
         ) : null}

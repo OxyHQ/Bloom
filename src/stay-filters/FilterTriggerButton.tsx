@@ -27,7 +27,10 @@ function FilterTriggerButtonComponent({
   style,
   testID,
 }: FilterTriggerButtonProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = inheritedSize;
 
   const { messages } = useMessages(STAY_FILTERS_MESSAGES);
@@ -37,13 +40,14 @@ function FilterTriggerButtonComponent({
 
   const button = (
     <Button
-
       size={size}
       leadingIcon={RiEqualizerLine}
       onPress={onPress}
       disabled={disabled}
       accessibilityLabel={name}
-      testID={testID} tone="neutral" appearance="outline"
+      testID={testID}
+      tone="neutral"
+      appearance="outline"
     >
       {label}
     </Button>

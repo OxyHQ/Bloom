@@ -11,7 +11,6 @@ import { AI_CHAT_MESSAGES } from './messages';
 import { CONFIRM_MS, useAiChatPalette, useAiChatWebCss } from './shared';
 import type { AiChatCopyResult, AiChatFeedbackRowProps } from './types';
 
-
 /**
  * `FeedbackRow`: the actions under an assistant turn.
  *
@@ -27,7 +26,15 @@ import type { AiChatCopyResult, AiChatFeedbackRowProps } from './types';
  *            a throw or a rejection shows nothing
  *   actions  the caller's extra buttons after copy, on the same surface
  */
-export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, actions, labels, style, testID }: AiChatFeedbackRowProps) {
+export function AiChatFeedbackRowBase({
+  onLike,
+  onDislike,
+  onCopy,
+  actions,
+  labels,
+  style,
+  testID,
+}: AiChatFeedbackRowProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const { messages } = useMessages(AI_CHAT_MESSAGES);

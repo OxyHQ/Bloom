@@ -133,7 +133,10 @@ describe('MapScaleBar', () => {
       `${MAP_ATTRIBUTION_GEOMETRY.tick}px`,
       `${MAP_ATTRIBUTION_GEOMETRY.tick}px`,
     ]);
-    expect(ticks.map((t) => (t.style.left === '0px' ? 'left' : 'right'))).toEqual(['left', 'right']);
+    expect(ticks.map((t) => (t.style.left === '0px' ? 'left' : 'right'))).toEqual([
+      'left',
+      'right',
+    ]);
   });
 
   it('stacks two vocabularies of one measurement', () => {
@@ -202,7 +205,14 @@ describe('MapAttribution', () => {
   });
 
   it('names the link when the credit is not a sentence', () => {
-    mount(<MapAttribution credit="© OMP" creditLabel="About the map data" onPressCredit={() => {}} testID="a" />);
+    mount(
+      <MapAttribution
+        credit="© OMP"
+        creditLabel="About the map data"
+        onPressCredit={() => {}}
+        testID="a"
+      />,
+    );
     expect(byTestId('a-credit').getAttribute('aria-label')).toBe('About the map data');
   });
 

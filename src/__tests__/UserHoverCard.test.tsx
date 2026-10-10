@@ -10,7 +10,11 @@
  * 404s and every avatar in the ecosystem falls back to its initial. Nothing
  * throws; the card just shows a letter.
  */
-import { SurfaceLevelProvider, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  useSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
 import { HoverCardSurfaceProvider } from '../hover-card/context';
 import React from 'react';
 import { Pressable, Text } from 'react-native';
@@ -41,13 +45,29 @@ function SurfaceProbe() {
 describe('UserHoverCard', () => {
   it('publishes its custom paint while transparent and embedded cards inherit their parent', () => {
     for (const kind of ['painted', 'transparent', 'bare'] as const) {
-      const card = <UserHoverCard displayName="Nate" style={kind === 'bare' ? undefined : { backgroundColor: kind === 'painted' ? '#123456' : 'transparent' }} footer={<SurfaceProbe />} />;
+      const card = (
+        <UserHoverCard
+          displayName="Nate"
+          style={
+            kind === 'bare'
+              ? undefined
+              : { backgroundColor: kind === 'painted' ? '#123456' : 'transparent' }
+          }
+          footer={<SurfaceProbe />}
+        />
+      );
       const screen = renderWithTheme(
         <SurfaceLevelProvider level={2} fill="#abcdef">
-          {kind === 'bare' ? <HoverCardSurfaceProvider value>{card}</HoverCardSurfaceProvider> : card}
+          {kind === 'bare' ? (
+            <HoverCardSurfaceProvider value>{card}</HoverCardSurfaceProvider>
+          ) : (
+            card
+          )}
         </SurfaceLevelProvider>,
       );
-      expect(screen.getByTestId('surface-probe').props.children).toBe(kind === 'painted' ? '1:rgb(33, 67, 101)' : '2:#abcdef');
+      expect(screen.getByTestId('surface-probe').props.children).toBe(
+        kind === 'painted' ? '1:rgb(33, 67, 101)' : '2:#abcdef',
+      );
       screen.unmount();
     }
   });
@@ -176,9 +196,7 @@ describe('UserHoverCard', () => {
     // that makes guessing unnecessary, and the arithmetic between them is the
     // part worth pinning: the CONTENT width is decided, the card's width is
     // derived.
-    expect(USER_HOVER_CARD_WIDTH).toBe(
-      USER_HOVER_CARD_CONTENT_WIDTH + USER_HOVER_CARD_INSET * 2,
-    );
+    expect(USER_HOVER_CARD_WIDTH).toBe(USER_HOVER_CARD_CONTENT_WIDTH + USER_HOVER_CARD_INSET * 2);
     const { toJSON } = renderWithTheme(<UserHoverCard displayName="Nate" testID="card" />);
     const host = findHost(toJSON(), 'card');
     if (host === null) throw new Error('no host rendered for testID "card"');
@@ -241,7 +259,12 @@ describe('UserHoverCard', () => {
     const { getByTestId } = render(
       <BloomThemeProvider mode="light" colorPreset="oxy">
         <ImageResolverProvider value={resolve}>
-          <UserHoverCard displayName="Nate" cover="file-cover" coverVariant="medium" testID="card" />
+          <UserHoverCard
+            displayName="Nate"
+            cover="file-cover"
+            coverVariant="medium"
+            testID="card"
+          />
         </ImageResolverProvider>
       </BloomThemeProvider>,
     );

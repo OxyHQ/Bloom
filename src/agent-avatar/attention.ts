@@ -53,8 +53,7 @@ export function advanceAttention(
   base: FaceRig,
   config: AvatarConfig,
 ): FaceRig {
-  if (config.idle || config.eyes === 'sleepy' || config.motion === 0)
-    return base;
+  if (config.idle || config.eyes === 'sleepy' || config.motion === 0) return base;
   state.time = (state.time ?? 0) + Math.max(0, seconds);
   state.elapsed += Math.max(0, seconds);
   while (state.elapsed >= state.duration) {
@@ -72,24 +71,17 @@ export function advanceAttention(
     asymmetry = value('asymmetry');
   // Overlapping rhythms keep happy lids gently changing even between glances.
   // Each eye has its own timing; the expression blend eases this in and out.
-  const happy =
-    Math.max(0, (base.smile - 0.2) / 0.8) *
-    amount *
-    Math.min(1, state.time / 0.8);
+  const happy = Math.max(0, (base.smile - 0.2) / 0.8) * amount * Math.min(1, state.time / 0.8);
   const clock = state.time,
     offset = state.offset ?? 0;
-  const left =
-    Math.sin(clock * 1.65 + offset) * 0.7 +
-    Math.sin(clock * 1.13 + offset * 0.7) * 0.3;
+  const left = Math.sin(clock * 1.65 + offset) * 0.7 + Math.sin(clock * 1.13 + offset * 0.7) * 0.3;
   const right =
-    Math.sin(clock * 1.48 + offset + 0.9) * 0.7 +
-    Math.sin(clock * 2.05 + offset * 0.4) * 0.3;
+    Math.sin(clock * 1.48 + offset + 0.9) * 0.7 + Math.sin(clock * 2.05 + offset * 0.4) * 0.3;
   const soften = (1 + Math.sin(clock * 1.31 + offset + 0.4)) * 0.5;
   return {
     ...base,
     leftOpen: base.leftOpen * (1 + openness + asymmetry + left * happy * 0.13),
-    rightOpen:
-      base.rightOpen * (1 + openness - asymmetry + right * happy * 0.13),
+    rightOpen: base.rightOpen * (1 + openness - asymmetry + right * happy * 0.13),
     width: base.width * (1 + (left + right) * happy * 0.035),
     leftAngle: base.leftAngle + value('tilt') * 0.6 + left * happy * 0.045,
     rightAngle: base.rightAngle + value('tilt') * 0.6 - right * happy * 0.045,
@@ -100,9 +92,7 @@ export function advanceAttention(
         1,
         base.smile -
           soften * happy * 0.09 +
-          (config.eyes === 'neutral' || config.eyes === 'curious'
-            ? value('softness')
-            : 0),
+          (config.eyes === 'neutral' || config.eyes === 'curious' ? value('softness') : 0),
       ),
     ),
   };

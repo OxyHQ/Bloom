@@ -28,7 +28,12 @@ describe('resolveBloomLanguage', () => {
 
 describe('pluralCategory (CLDR cardinals, whole numbers)', () => {
   it('English, Spanish, German: one only at 1', () => {
-    expect([0, 1, 2, 21].map((n) => pluralCategory('en', n))).toEqual(['other', 'one', 'other', 'other']);
+    expect([0, 1, 2, 21].map((n) => pluralCategory('en', n))).toEqual([
+      'other',
+      'one',
+      'other',
+      'other',
+    ]);
   });
 
   it('French and Portuguese: 0 and 1 are both one', () => {
@@ -37,13 +42,29 @@ describe('pluralCategory (CLDR cardinals, whole numbers)', () => {
 
   it('Russian: one / few / many by the last digits', () => {
     expect([1, 2, 5, 11, 12, 21, 22, 25, 111].map((n) => pluralCategory('ru', n))).toEqual([
-      'one', 'few', 'many', 'many', 'many', 'one', 'few', 'many', 'many',
+      'one',
+      'few',
+      'many',
+      'many',
+      'many',
+      'one',
+      'few',
+      'many',
+      'many',
     ]);
   });
 
   it('Arabic: all six categories', () => {
     expect([0, 1, 2, 3, 10, 11, 99, 100, 102].map((n) => pluralCategory('ar', n))).toEqual([
-      'zero', 'one', 'two', 'few', 'few', 'many', 'many', 'other', 'other',
+      'zero',
+      'one',
+      'two',
+      'few',
+      'few',
+      'many',
+      'many',
+      'other',
+      'other',
     ]);
   });
 
@@ -63,9 +84,25 @@ describe('pluralCategory (CLDR cardinals, whole numbers)', () => {
     expect(countValue('—')).toBeNaN();
     expect(countValue('2.1K')).toBeNaN();
     expect(countValue('12,5 mil')).toBeNaN();
-    expect(plural('ru', '2.1K', { one: '{n} просмотр', few: '{n} просмотра', many: '{n} просмотров', other: '{n} просмотра' })).toBe('2.1K просмотров');
-    expect(plural('ru', '1,021', { one: '{n} отзыв', few: '{n} отзыва', many: '{n} отзывов', other: '{n} отзыва' })).toBe('1,021 отзыв');
-    expect(plural('en', '1,234', { one: '{n} review', other: '{n} reviews' })).toBe('1,234 reviews');
+    expect(
+      plural('ru', '2.1K', {
+        one: '{n} просмотр',
+        few: '{n} просмотра',
+        many: '{n} просмотров',
+        other: '{n} просмотра',
+      }),
+    ).toBe('2.1K просмотров');
+    expect(
+      plural('ru', '1,021', {
+        one: '{n} отзыв',
+        few: '{n} отзыва',
+        many: '{n} отзывов',
+        other: '{n} отзыва',
+      }),
+    ).toBe('1,021 отзыв');
+    expect(plural('en', '1,234', { one: '{n} review', other: '{n} reviews' })).toBe(
+      '1,234 reviews',
+    );
   });
 
   it('falls back to other for a category the forms leave out', () => {
@@ -90,7 +127,8 @@ describe('message catalogs', () => {
   });
 
   it('pluralises the day count per language', () => {
-    const days = (language: string, n: number) => pickMessages(DATE_PICKER_MESSAGES, language).daysSelected(n);
+    const days = (language: string, n: number) =>
+      pickMessages(DATE_PICKER_MESSAGES, language).daysSelected(n);
     expect(days('en', 1)).toBe('1 day selected');
     expect(days('en', 14)).toBe('14 days selected');
     expect(days('es', 1)).toBe('1 día seleccionado');
@@ -127,7 +165,7 @@ describe('useBloomLocale', () => {
 describe('formatGregorian', () => {
   const september = new Date(2026, 8, 16);
 
-  it('keeps a locale whose default calendar is not Gregorian on the grid\'s calendar', () => {
+  it("keeps a locale whose default calendar is not Gregorian on the grid's calendar", () => {
     // Unpinned, fa-IR titles this month 1405 (Persian) and th-TH 2569 (Buddhist),
     // while the grid under the title lays out, and returns, Gregorian days.
     expect(formatGregorian(september, 'fa-IR', { year: 'numeric' })).toBe('۲۰۲۶');
@@ -136,12 +174,16 @@ describe('formatGregorian', () => {
   });
 
   it('is what CalendarView formats with too — the same fix, not a second copy', () => {
-    expect(formatShortMonth(september, 'fa-IR')).toBe(formatGregorian(september, 'fa-IR', { month: 'short' }));
-    expect(formatShortMonth(september, 'fa-IR')).not.toBe(new Intl.DateTimeFormat('fa-IR', { month: 'short' }).format(september));
+    expect(formatShortMonth(september, 'fa-IR')).toBe(
+      formatGregorian(september, 'fa-IR', { month: 'short' }),
+    );
+    expect(formatShortMonth(september, 'fa-IR')).not.toBe(
+      new Intl.DateTimeFormat('fa-IR', { month: 'short' }).format(september),
+    );
     expect(formatEventDate(september, 'en-US')).toBe('Wed, Sep 16');
   });
 
-  it('keeps the locale\'s language', () => {
+  it("keeps the locale's language", () => {
     expect(formatGregorian(september, 'es-ES', { month: 'long' })).toBe('septiembre');
   });
 

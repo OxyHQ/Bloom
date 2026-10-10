@@ -35,27 +35,29 @@ export interface CarrierQuoteMessages {
   priceDetailsFor: (name: string) => string;
 }
 
-export const CARRIER_QUOTE_MESSAGES: MessageCatalog<CarrierQuoteMessages> = defineMessages<CarrierQuoteMessages>('CARRIER_QUOTE_MESSAGES', {
-  labels: {
-    accept: 'Accept',
-    message: 'Message',
-    decline: 'Decline',
-    pickup: 'Pick-up',
-    eta: 'Arrives',
-    vehicle: 'Vehicle',
-    jobs: (jobs) => `${jobs} jobs`,
-    verified: 'Verified carrier',
-    marks: { cheapest: 'Cheapest', fastest: 'Fastest' },
-    showPrice: 'Show price details',
-    hidePrice: 'Hide price details',
-    priceDetails: 'Price details for',
-    sort: 'Sort offers',
-    sortOptions: { price: 'Cheapest', eta: 'Fastest', rating: 'Best rated' },
-    count: (n) => plural('en', n, { one: '{n} offer', other: '{n} offers' }),
-    loading: 'Loading offers',
-  },
-  emptyTitle: 'No offers yet',
-  emptyDescription: 'Carriers are looking at your job. The first offers usually arrive within a few minutes.',
-  list: 'Offers',
-  priceDetailsFor: (name) => `Price details for ${name}`,
-});
+export const CARRIER_QUOTE_MESSAGES: MessageCatalog<CarrierQuoteMessages> =
+  defineMessages<CarrierQuoteMessages>('CARRIER_QUOTE_MESSAGES', {
+    labels: {
+      accept: 'Accept',
+      message: 'Message',
+      decline: 'Decline',
+      pickup: 'Pick-up',
+      eta: 'Arrives',
+      vehicle: 'Vehicle',
+      jobs: (jobs) => `${jobs} jobs`,
+      verified: 'Verified carrier',
+      marks: { cheapest: 'Cheapest', fastest: 'Fastest' },
+      showPrice: 'Show price details',
+      hidePrice: 'Hide price details',
+      priceDetails: 'Price details for',
+      sort: 'Sort offers',
+      sortOptions: { price: 'Cheapest', eta: 'Fastest', rating: 'Best rated' },
+      count: (n) => plural('en', n, { one: '{n} offer', other: '{n} offers' }),
+      loading: 'Loading offers',
+    },
+    emptyTitle: 'No offers yet',
+    emptyDescription:
+      'Carriers are looking at your job. The first offers usually arrive within a few minutes.',
+    list: 'Offers',
+    priceDetailsFor: (name) => `Price details for ${name}`,
+  });

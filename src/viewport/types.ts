@@ -11,7 +11,8 @@ export interface ViewportProviderProps extends PropsWithChildren {
   /** Start a separate clipping chain, e.g. in a portaled dialog. */
   root?: boolean;
 }
-export interface ViewportBindingOptions extends Pick<ScrollViewProps, 'onScroll' | 'onLayout' | 'onContentSizeChange'> {
+export interface ViewportBindingOptions
+  extends Pick<ScrollViewProps, 'onScroll' | 'onLayout' | 'onContentSizeChange'> {
   /** The actual scrolling/clipping host. Keep its ref on the ScrollView. */
   viewportRef: RefObject<ViewportHandle | null>;
 }

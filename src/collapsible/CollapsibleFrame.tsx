@@ -8,10 +8,7 @@ import {
   type LayoutChangeEvent,
 } from 'react-native';
 import { styled } from 'react-native-css';
-import {
-  CollapsibleVisibilityContext,
-  useCollapsibleVisibility,
-} from './context';
+import { CollapsibleVisibilityContext, useCollapsibleVisibility } from './context';
 import type { CollapsibleFrameProps } from './frame-types';
 
 function CollapsibleFrameComponent({
@@ -42,10 +39,10 @@ function CollapsibleFrameComponent({
     const root = panel.current;
     const inputInside = Boolean(
       root &&
-      input &&
-      'contains' in root &&
-      typeof root.contains === 'function' &&
-      root.contains(input),
+        input &&
+        'contains' in root &&
+        typeof root.contains === 'function' &&
+        root.contains(input),
     );
     if (!focusWithin.current && !inputInside) return;
     focusWithin.current = false;
@@ -58,9 +55,7 @@ function CollapsibleFrameComponent({
     if (target && 'focus' in target && typeof target.focus === 'function') {
       target.focus();
       const handle =
-        'measureInWindow' in target
-          ? findNodeHandle(target as unknown as React.Component)
-          : null;
+        'measureInWindow' in target ? findNodeHandle(target as unknown as React.Component) : null;
       if (handle != null) AccessibilityInfo.setAccessibilityFocus(handle);
     }
   }, [returnFocusRef, returnFocusId]);
@@ -93,8 +88,7 @@ function CollapsibleFrameComponent({
           {
             overflow: 'hidden',
             opacity: progress,
-            maxHeight:
-              height === 0 && open && initiallyOpen ? undefined : maxHeight,
+            maxHeight: height === 0 && open && initiallyOpen ? undefined : maxHeight,
           },
           style,
         ]}
@@ -102,11 +96,7 @@ function CollapsibleFrameComponent({
         <View
           collapsable={false}
           onLayout={measure}
-          style={[
-            { flexShrink: 0 },
-            contentStyle,
-            hidden ? { display: 'none' } : undefined,
-          ]}
+          style={[{ flexShrink: 0 }, contentStyle, hidden ? { display: 'none' } : undefined]}
         >
           {children}
         </View>

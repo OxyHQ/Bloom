@@ -19,7 +19,13 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Field } from '../field';
 import { TextFieldInput } from '../text-field';
 import { TagField } from '../tag-field';
-import { commitTag, filterSuggestions, isDuplicate, normalizeTag, toSuggestion } from '../tag-field/shared';
+import {
+  commitTag,
+  filterSuggestions,
+  isDuplicate,
+  normalizeTag,
+  toSuggestion,
+} from '../tag-field/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { buildTheme } from '../theme/build-theme';
@@ -132,7 +138,9 @@ function Harness({
   ...rest
 }: { initial?: string[] } & Omit<React.ComponentProps<typeof TagField>, 'value' | 'onChange'>) {
   const [value, setValue] = useState<string[]>(initial);
-  return <TagField value={value} onChange={(next) => setValue([...next])} testID="tags" {...rest} />;
+  return (
+    <TagField value={value} onChange={(next) => setValue([...next])} testID="tags" {...rest} />
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -455,7 +463,7 @@ describe('the suggestion list', () => {
 });
 
 describe('field membership', () => {
-  it('takes the field\'s label as its name, its id, and its description', () => {
+  it("takes the field's label as its name, its id, and its description", () => {
     mount(
       <Field label="Tags" description="Anything you will search for.">
         <Harness />
@@ -466,10 +474,12 @@ describe('field membership', () => {
     expect(el.id).not.toBe('');
     const describedBy = el.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    expect(document.getElementById(describedBy!)?.textContent).toBe('Anything you will search for.');
+    expect(document.getElementById(describedBy!)?.textContent).toBe(
+      'Anything you will search for.',
+    );
   });
 
-  it('takes the field\'s error, and points at the error rather than the description', () => {
+  it("takes the field's error, and points at the error rather than the description", () => {
     mount(
       <Field label="Tags" description="Hint." error="Pick at least two.">
         <Harness />
@@ -493,7 +503,7 @@ describe('field membership', () => {
     expect(closeButton('a')).toBeNull();
   });
 
-  it('keeps its OWN name outside a field, and a caller\'s always wins', () => {
+  it("keeps its OWN name outside a field, and a caller's always wins", () => {
     mount(<Harness label="Skills" />);
     expect(input().getAttribute('aria-label')).toBe('Skills');
     mount(
@@ -504,7 +514,7 @@ describe('field membership', () => {
     expect(input().getAttribute('aria-label')).toBe('Etiketten');
   });
 
-  it('joins the field\'s description to its OWN full hint rather than replacing it', () => {
+  it("joins the field's description to its OWN full hint rather than replacing it", () => {
     mount(
       <Field label="Tags" description="Hint.">
         <Harness initial={['a']} max={1} />

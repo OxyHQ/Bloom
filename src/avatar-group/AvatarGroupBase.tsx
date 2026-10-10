@@ -162,14 +162,10 @@ function AvatarGroupCell({
       <Pressable
         onPress={interactive ? () => onPressItem?.(item, index) : undefined}
         onHoverIn={
-          hoverHandlers?.onHoverIn
-            ? () => hoverHandlers.onHoverIn?.(item, index)
-            : undefined
+          hoverHandlers?.onHoverIn ? () => hoverHandlers.onHoverIn?.(item, index) : undefined
         }
         onHoverOut={
-          hoverHandlers?.onHoverOut
-            ? () => hoverHandlers.onHoverOut?.(item, index)
-            : undefined
+          hoverHandlers?.onHoverOut ? () => hoverHandlers.onHoverOut?.(item, index) : undefined
         }
         accessibilityRole={interactive ? 'button' : undefined}
         accessibilityLabel={accessibilityLabel}
@@ -210,8 +206,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   const ring = ringColor ?? theme.colors.background;
 
   const effectiveMax = max ?? DEFAULT_MAX;
-  const effectiveOverlap =
-    overlap ?? Math.round(size * DEFAULT_OVERLAP_RATIO);
+  const effectiveOverlap = overlap ?? Math.round(size * DEFAULT_OVERLAP_RATIO);
   // Each avatar after the first is pulled left by `overlap`. The cell carries a
   // 1px border on each side, so the negative margin absorbs both borders to
   // keep the visual overlap equal to `effectiveOverlap`.
@@ -221,10 +216,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   // Horizontal offset applied to every avatar after the first.
   const itemMargin = isRow ? rowGap : negativeMargin;
 
-  const shown = useMemo(
-    () => items.slice(0, Math.max(0, effectiveMax)),
-    [items, effectiveMax],
-  );
+  const shown = useMemo(() => items.slice(0, Math.max(0, effectiveMax)), [items, effectiveMax]);
 
   const realTotal = total ?? items.length;
   const overflow = Math.max(0, realTotal - shown.length);
@@ -270,9 +262,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   // consumers can route it to a full member list.
   const firstHidden = items[shown.length];
   const overflowOnPress =
-    interactive && firstHidden
-      ? () => onPressItem?.(firstHidden, shown.length)
-      : undefined;
+    interactive && firstHidden ? () => onPressItem?.(firstHidden, shown.length) : undefined;
 
   // The cluster is a compact 2D bubble pack with its own absolute-positioned
   // renderer; hooks above still run unconditionally so the branch is safe.
@@ -380,16 +370,10 @@ const ClusterAvatarGroup: React.FC<ClusterAvatarGroupProps> = ({
   // Reserve the last bubble for the "+N" chip when there are more members than
   // the cap; otherwise every capped member gets its own bubble.
   const avatarCap = hasOverflow ? Math.max(0, cap - 1) : cap;
-  const shown = useMemo(
-    () => items.slice(0, avatarCap),
-    [items, avatarCap],
-  );
+  const shown = useMemo(() => items.slice(0, avatarCap), [items, avatarCap]);
   const overflow = hasOverflow ? Math.max(0, realTotal - shown.length) : 0;
   const bubbleCount = shown.length + (overflow > 0 ? 1 : 0);
-  const bubbles = useMemo(
-    () => computeClusterLayout(bubbleCount),
-    [bubbleCount],
-  );
+  const bubbles = useMemo(() => computeClusterLayout(bubbleCount), [bubbleCount]);
 
   const ringWidth = Math.max(1, Math.round(size * CLUSTER_RING_RATIO));
   const interactive = typeof onPressItem === 'function';
@@ -397,9 +381,7 @@ const ClusterAvatarGroup: React.FC<ClusterAvatarGroupProps> = ({
   // Pressing "+N" surfaces the first hidden member (parity with the stack).
   const firstHidden = items[shown.length];
   const overflowOnPress =
-    interactive && firstHidden
-      ? () => onPressItem?.(firstHidden, shown.length)
-      : undefined;
+    interactive && firstHidden ? () => onPressItem?.(firstHidden, shown.length) : undefined;
 
   const overflowBubble = overflow > 0 ? bubbles[bubbleCount - 1] : undefined;
   let overflowElement: React.ReactNode = null;
@@ -503,9 +485,7 @@ function OverflowCircle({
   // (margin for the facepile, absolute coords for the cluster) is supplied by
   // the caller via `wrapperStyle`.
   const circle = (
-    <View
-      style={[cellStyle, { backgroundColor: theme.colors.textSecondary }]}
-    >
+    <View style={[cellStyle, { backgroundColor: theme.colors.textSecondary }]}>
       <Text allowFontScaling={false} style={textStyle}>
         +{count}
       </Text>

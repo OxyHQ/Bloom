@@ -32,7 +32,9 @@ function flat(style: unknown): Record<string, unknown> {
 
 const hidden = { includeHiddenElements: true } as const;
 
-const layout = (width: number, height = 100) => ({ nativeEvent: { layout: { x: 0, y: 0, width, height } } });
+const layout = (width: number, height = 100) => ({
+  nativeEvent: { layout: { x: 0, y: 0, width, height } },
+});
 
 const PHOTOS = Array.from({ length: 6 }, (_, i) => ({ source: `https://example.test/${i}.jpg` }));
 
@@ -53,7 +55,9 @@ describe('ListingPhotoGrid layout="auto"', () => {
   });
 
   it('darkens a photo to 10% on hover and clears it on hover out', () => {
-    const api = renderWithTheme(<ListingPhotoGrid photos={PHOTOS} layout="grid" onPressPhoto={() => {}} testID="g" />);
+    const api = renderWithTheme(
+      <ListingPhotoGrid photos={PHOTOS} layout="grid" onPressPhoto={() => {}} testID="g" />,
+    );
     const opacity = () => flat(api.getByTestId('g-photo-0-scrim').props.style).opacity;
     expect(opacity()).toBe(0);
     act(() => fireEvent(api.getByTestId('g-photo-0'), 'hoverIn'));
@@ -116,7 +120,10 @@ describe('ReviewCard "Show more"', () => {
   function textNodes(api: ReturnType<typeof render>) {
     const clamped = api.getByTestId('rv-text');
     const all = api.UNSAFE_root.findAll(
-      (node) => node.props.onLayout !== undefined && node.props.children === 'Long text' && node !== clamped,
+      (node) =>
+        node.props.onLayout !== undefined &&
+        node.props.children === 'Long text' &&
+        node !== clamped,
     );
     return { clamped, full: all[all.length - 1]! };
   }
@@ -124,7 +131,13 @@ describe('ReviewCard "Show more"', () => {
   it('appears only when the unclamped copy is taller, and toggles aria-expanded', () => {
     const onExpandedChange = jest.fn();
     const api = renderWithTheme(
-      <ReviewCard name="Inês" text="Long text" numberOfLines={3} onExpandedChange={onExpandedChange} testID="rv" />,
+      <ReviewCard
+        name="Inês"
+        text="Long text"
+        numberOfLines={3}
+        onExpandedChange={onExpandedChange}
+        testID="rv"
+      />,
     );
     const { clamped, full } = textNodes(api);
     expect(clamped.props.numberOfLines).toBe(3);
@@ -149,8 +162,14 @@ describe('ReviewCard "Show more"', () => {
   });
 
   it('numberOfLines={0} never clamps and renders no measuring copy', () => {
-    const api = renderWithTheme(<ReviewCard name="Inês" text="Long text" numberOfLines={0} testID="rv" />);
+    const api = renderWithTheme(
+      <ReviewCard name="Inês" text="Long text" numberOfLines={0} testID="rv" />,
+    );
     expect(api.getByTestId('rv-text').props.numberOfLines).toBeUndefined();
-    expect(api.UNSAFE_root.findAll((n) => n.props.children === 'Long text' && typeof n.type === 'string')).toHaveLength(1);
+    expect(
+      api.UNSAFE_root.findAll(
+        (n) => n.props.children === 'Long text' && typeof n.type === 'string',
+      ),
+    ).toHaveLength(1);
   });
 });

@@ -78,14 +78,22 @@ export function DataTableSelect({
           className={current?.icon ? 'pl-2' : undefined}
           style={[{ width }, SHRINK_TO_CONTENT]}
         >
-          <SelectValue leading={current ? <OptionMark option={current} color={theme.colors.textSecondary} /> : null} />
+          <SelectValue
+            leading={
+              current ? <OptionMark option={current} color={theme.colors.textSecondary} /> : null
+            }
+          />
           <SelectIcon />
         </SelectTrigger>
         <SelectContent<DataTableSelectOption>
           label={label}
           items={[...options]}
           renderItem={(item) => (
-            <SelectItem value={item.value} label={item.label} leading={<OptionMark option={item} color={theme.colors.textSecondary} />}>
+            <SelectItem
+              value={item.value}
+              label={item.label}
+              leading={<OptionMark option={item} color={theme.colors.textSecondary} />}
+            >
               <SelectItemText>{item.label}</SelectItemText>
             </SelectItem>
           )}

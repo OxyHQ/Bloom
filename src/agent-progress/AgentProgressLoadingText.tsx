@@ -79,7 +79,11 @@ export function shimmerStrength(x: number, phase: number): number {
   return Math.max(0, 1 - distance / 0.36);
 }
 
-function mix(a: { r: number; g: number; b: number }, b: { r: number; g: number; b: number }, t: number) {
+function mix(
+  a: { r: number; g: number; b: number },
+  b: { r: number; g: number; b: number },
+  t: number,
+) {
   const ch = (p: number, q: number) => Math.round(p + (q - p) * t);
   return `rgb(${ch(a.r, b.r)}, ${ch(a.g, b.g)}, ${ch(a.b, b.b)})`;
 }
@@ -99,7 +103,10 @@ function AgentProgressLoadingTextComponent({
 
   useEffect(() => {
     if (!IS_WEB) return;
-    adoptStyleSheet(`bloom-agent-progress-shimmer-${key}`, agentProgressShimmerCss(key, base, highlight));
+    adoptStyleSheet(
+      `bloom-agent-progress-shimmer-${key}`,
+      agentProgressShimmerCss(key, base, highlight),
+    );
   }, [key, base, highlight]);
 
   // Native: a phase clock, only while the shimmer runs.
@@ -138,7 +145,10 @@ function AgentProgressLoadingTextComponent({
       ? glyphs.map((glyph, index) => {
           const strength = shimmerStrength((index + 0.5) / glyphs.length, phase);
           return (
-            <RNText key={index} style={{ color: strength > 0 ? mix(baseRgb, highlightRgb, strength) : base }}>
+            <RNText
+              key={index}
+              style={{ color: strength > 0 ? mix(baseRgb, highlightRgb, strength) : base }}
+            >
               {glyph}
             </RNText>
           );

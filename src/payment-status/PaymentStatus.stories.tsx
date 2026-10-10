@@ -43,19 +43,42 @@ export const Bar: Story = {
             state="authorising"
             amount="€48.00"
             detail="Aurora •••• 4417"
-            progress={{ value: 0.6, accessibilityLabel: 'Authorisation progress', valueText: 'Contacting your bank' }}
+            progress={{
+              value: 0.6,
+              accessibilityLabel: 'Authorisation progress',
+              valueText: 'Contacting your bank',
+            }}
             testID="authorising"
           />
-          <PaymentStatusBar state="paid" amount="€48.00" detail="Charged to Aurora •••• 4417" testID="paid" />
+          <PaymentStatusBar
+            state="paid"
+            amount="€48.00"
+            detail="Charged to Aurora •••• 4417"
+            testID="paid"
+          />
           <PaymentStatusBar
             state="failed"
             amount="€48.00"
             detail="Your bank turned this one down."
-            action={<Button size="sm"  onPress={noop} tone="neutral" appearance="outline">Retry</Button>}
+            action={
+              <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+                Retry
+              </Button>
+            }
             testID="failed"
           />
-          <PaymentStatusBar state="refunded" amount="−€48.00" detail="Back within five working days" testID="refunded" />
-          <PaymentStatusBar state="pending" amount="€48.00" detail="No connection — we will send it when you are back." testID="pending" />
+          <PaymentStatusBar
+            state="refunded"
+            amount="−€48.00"
+            detail="Back within five working days"
+            testID="refunded"
+          />
+          <PaymentStatusBar
+            state="pending"
+            amount="€48.00"
+            detail="No connection — we will send it when you are back."
+            testID="pending"
+          />
         </View>
       </Section>
       <Section title="Plain, inside a card that already paints">
@@ -89,7 +112,11 @@ export const Block: Story = {
           amount="€48.00"
           detail="Aurora •••• 4417"
           reference="8F2K-41QD-7T"
-          actions={<Button  onPress={noop} tone="neutral" appearance="outline">View receipt</Button>}
+          actions={
+            <Button onPress={noop} tone="neutral" appearance="outline">
+              View receipt
+            </Button>
+          }
           testID="block-paid"
         />
       </Section>
@@ -103,7 +130,9 @@ export const Block: Story = {
           actions={
             <View style={{ gap: 8 }}>
               <Button onPress={noop}>Try again</Button>
-              <Button  onPress={noop} tone="neutral" appearance="outline">Use another method</Button>
+              <Button onPress={noop} tone="neutral" appearance="outline">
+                Use another method
+              </Button>
             </View>
           }
           testID="block-failed"
@@ -112,7 +141,12 @@ export const Block: Story = {
       <Section title="Authorising, refunded, and pending">
         <View style={{ gap: 16 }}>
           <PaymentStatusBlock state="authorising" amount="€48.00" detail="Talking to your bank" />
-          <PaymentStatusBlock state="refunded" amount="−€48.00" detail="Back within five working days" reference="8F2K-41QD-7T" />
+          <PaymentStatusBlock
+            state="refunded"
+            amount="−€48.00"
+            detail="Back within five working days"
+            reference="8F2K-41QD-7T"
+          />
           <PaymentStatusBlock
             state="pending"
             amount="€48.00"

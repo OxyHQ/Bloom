@@ -15,7 +15,12 @@ function unsafeEdges(entry: string, overrides = new Map<string, string>()): stri
     const file = pending.pop()!;
     if (visited.has(file)) continue;
     visited.add(file);
-    const source = ts.createSourceFile(file, overrides.get(file) ?? readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+    const source = ts.createSourceFile(
+      file,
+      overrides.get(file) ?? readFileSync(file, 'utf8'),
+      ts.ScriptTarget.Latest,
+      true,
+    );
     for (const statement of source.statements) {
       if (!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) continue;
       if (ts.isImportDeclaration(statement) && statement.importClause?.isTypeOnly) continue;
@@ -25,9 +30,14 @@ function unsafeEdges(entry: string, overrides = new Map<string, string>()): stri
       const base = resolve(dirname(file), spec.text);
       const target = [base + '.ts', base + '.tsx', join(base, 'index.ts')].find(existsSync);
       if (!target) continue;
-      if (targets.has(spec.text.split('/')[1] ?? '') && /^\.\.\/[^/]+(?:\/index)?$/.test(spec.text)) bad.push(`${file}: ${spec.text}`);
+      if (targets.has(spec.text.split('/')[1] ?? '') && /^\.\.\/[^/]+(?:\/index)?$/.test(spec.text))
+        bad.push(`${file}: ${spec.text}`);
       if (target.startsWith(family + '/')) {
-        if (!/\.web\.tsx?$/.test(target) && (existsSync(base + '.web.ts') || existsSync(base + '.web.tsx'))) bad.push(`${file}: ${spec.text}`);
+        if (
+          !/\.web\.tsx?$/.test(target) &&
+          (existsSync(base + '.web.ts') || existsSync(base + '.web.tsx'))
+        )
+          bad.push(`${file}: ${spec.text}`);
         pending.push(target);
       }
     }
@@ -41,6 +51,11 @@ test('every browser chat entry binds its transitive controls to web implementati
 
 test('detects a neutral child reached through an otherwise valid web entry', () => {
   const binding = join(family, 'ChatComposer.web.tsx');
-  const regressed = readFileSync(binding, 'utf8').replace("'./ComposerIconButton.web'", "'./ComposerIconButton'");
-  expect(unsafeEdges(binding, new Map([[binding, regressed]]))).toEqual(expect.arrayContaining([expect.stringContaining('./ComposerIconButton')]));
+  const regressed = readFileSync(binding, 'utf8').replace(
+    "'./ComposerIconButton.web'",
+    "'./ComposerIconButton'",
+  );
+  expect(unsafeEdges(binding, new Map([[binding, regressed]]))).toEqual(
+    expect.arrayContaining([expect.stringContaining('./ComposerIconButton')]),
+  );
 });

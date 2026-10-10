@@ -101,11 +101,7 @@ function PartShell({
             minWidth: 0,
           }}
         >
-          {label ? (
-            <TextFieldLabel required={member.required}>{label}</TextFieldLabel>
-          ) : (
-            <View />
-          )}
+          {label ? <TextFieldLabel required={member.required}>{label}</TextFieldLabel> : <View />}
           {mark}
         </View>
       ) : null}
@@ -177,13 +173,13 @@ function CardFormNumberComponent({
   // on the object would report a change that did not happen.
   const schemeId = detected?.id;
   const lastSchemeId = useRef(schemeId);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (lastSchemeId.current === schemeId) return;
     lastSchemeId.current = schemeId;
     onSchemeChange?.(detected);
     // `detected` is derived from `schemeId`, which is the dependency that can
     // actually change; listing it too would re-run this on every new array.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schemeId]);
 
   const handleChange = useCallback(
@@ -200,7 +196,14 @@ function CardFormNumberComponent({
   }, [onValueChange, value, groups, onBlur]);
 
   return (
-    <PartShell member={member} label={label} error={error} mark={mark} style={style} testID={testID}>
+    <PartShell
+      member={member}
+      label={label}
+      error={error}
+      mark={mark}
+      style={style}
+      testID={testID}
+    >
       <TextField invalid={member.invalid} disabled={member.disabled}>
         <TextFieldInput
           label={member.name}

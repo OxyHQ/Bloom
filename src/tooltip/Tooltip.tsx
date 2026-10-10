@@ -9,12 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { Easing, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -85,9 +80,9 @@ export function Tooltip({
    * actually being shown.
    */
   const [visible, setVisible] = useState<boolean>(false);
-  const [targetMeasurements, setTargetMeasurements] = useState<
-    TargetMeasurements | undefined
-  >(undefined);
+  const [targetMeasurements, setTargetMeasurements] = useState<TargetMeasurements | undefined>(
+    undefined,
+  );
 
   if (requestVisible && !visible && targetMeasurements) {
     setVisible(true);
@@ -111,9 +106,7 @@ export function Tooltip({
 
   return (
     <TooltipContext.Provider value={ctx}>
-      <TargetContext.Provider value={targetCtx}>
-        {children}
-      </TargetContext.Provider>
+      <TargetContext.Provider value={targetCtx}>{children}</TargetContext.Provider>
     </TooltipContext.Provider>
   );
 }
@@ -134,10 +127,7 @@ export function TooltipTrigger({ children }: { children: React.ReactNode }) {
   }, [shouldMeasure, setTargetMeasurements, hasLayedOut]);
 
   return (
-    <View
-      collapsable={false}
-      ref={targetRef}
-      onLayout={() => setHasLayedOut(true)}>
+    <View collapsable={false} ref={targetRef} onLayout={() => setHasLayedOut(true)}>
       {children}
     </View>
   );
@@ -173,7 +163,8 @@ export function TooltipContent({
           size={size}
           position={position}
           targetMeasurements={targetMeasurements}
-          requestClose={requestClose}>
+          requestClose={requestClose}
+        >
           {children}
         </Bubble>
       </OverlayRoot>
@@ -198,7 +189,10 @@ function Bubble({
 }) {
   const parentFill = useSurfaceFill();
   const palette = useMenuPalette();
-  const publishedFill = resolveSurfaceMaterial({ fill: palette.surface, parentFill: parentFill }).publishedFill;
+  const publishedFill = resolveSurfaceMaterial({
+    fill: palette.surface,
+    parentFill: parentFill,
+  }).publishedFill;
   const insets = useSafeAreaInsets();
   const dimensions = useWindowDimensions();
   const [bubbleMeasurements, setBubbleMeasurements] = useState<
@@ -208,7 +202,6 @@ function Bubble({
       }
     | undefined
   >(undefined);
-
 
   const coords = useMemo(() => {
     if (!bubbleMeasurements)
@@ -231,10 +224,7 @@ function Bubble({
 
     let computedPosition: 'top' | 'bottom' = position;
     let top = targetMeasurements.y + targetMeasurements.height;
-    let left = Math.max(
-      minLeft,
-      targetMeasurements.x + targetMeasurements.width / 2 - cw / 2,
-    );
+    let left = Math.max(minLeft, targetMeasurements.x + targetMeasurements.width / 2 - cw / 2);
     // The caret sits OUTSIDE the bubble and overlaps its 1px border, so its
     // fill covers the border where the two join.
     const tipTranslate = -(ARROW_DEPTH - 1);
@@ -244,11 +234,7 @@ function Bubble({
       left -= left + cw - maxLeft;
     }
 
-    const tipLeft =
-      targetMeasurements.x -
-      left +
-      targetMeasurements.width / 2 -
-      ARROW_HALF_SIZE;
+    const tipLeft = targetMeasurements.x - left + targetMeasurements.width / 2 - ARROW_HALF_SIZE;
 
     let bottom = top + ch;
 
@@ -326,10 +312,12 @@ function Bubble({
             top: coords.top,
             left: coords.left,
           },
-        ]}>
+        ]}
+      >
         <Animated.View
           entering={ZoomIn.easing(Easing.out(Easing.exp))}
-          style={{ transformOrigin: opposite(coords.computedPosition) }}>
+          style={{ transformOrigin: opposite(coords.computedPosition) }}
+        >
           {/* A light-surface tooltip: `bg-background-primary-default`,
               1px `border-button-default`, `shadow-dropdown`, `sm` 10/6 padding
               on an 8px corner or `md` 12/8 on 10px. */}
@@ -349,9 +337,12 @@ function Bubble({
                 width: e.nativeEvent.layout.width,
                 height: e.nativeEvent.layout.height,
               });
-            }}>
+            }}
+          >
             <SurfacePaint fill={palette.surface} radius={TOOLTIP_SIZES[size].borderRadius} />
-            <SurfaceLevelProvider level={1} fill={publishedFill}>{children}</SurfaceLevelProvider>
+            <SurfaceLevelProvider level={1} fill={publishedFill}>
+              {children}
+            </SurfaceLevelProvider>
           </View>
           {/* After the bubble, so it paints over the border it overlaps. */}
           <TooltipCaret

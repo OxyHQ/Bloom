@@ -44,7 +44,6 @@ interface EscapeRegistry {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __oxy_so_bloom_floating_escape__: EscapeRegistry | undefined;
 }
 

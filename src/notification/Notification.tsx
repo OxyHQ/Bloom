@@ -257,7 +257,13 @@ function NotificationComponent({
             }}
           >
             {actions.map((action, index) => (
-              <Button key={index} size="sm" appearance={action.appearance ?? (index === 0 ? 'subtle' : 'solid')} tone={action.tone ?? (index === 0 ? 'neutral' : 'accent')} onPress={action.onPress}>
+              <Button
+                key={index}
+                size="sm"
+                appearance={action.appearance ?? (index === 0 ? 'subtle' : 'solid')}
+                tone={action.tone ?? (index === 0 ? 'neutral' : 'accent')}
+                onPress={action.onPress}
+              >
                 {action.label}
               </Button>
             ))}
@@ -279,7 +285,11 @@ function NotificationComponent({
       ) : null}
 
       {hasCountdown ? (
-        <Countdown duration={autoDismissDuration ?? 0} delay={introDelayMs} color={paint.countdown} />
+        <Countdown
+          duration={autoDismissDuration ?? 0}
+          delay={introDelayMs}
+          color={paint.countdown}
+        />
       ) : null}
     </Animated.View>
   );

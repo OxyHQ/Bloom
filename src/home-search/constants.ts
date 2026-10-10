@@ -16,9 +16,12 @@ import type {
 export const HOME_SEARCH_MODES: readonly HomeSearchMode[] = ['rent', 'buy', 'stays', 'swap'];
 
 /** The modes' tab labels in English; `SearchModeTabs` reads the locale's catalog. */
-export const DEFAULT_HOME_SEARCH_MODE_LABELS: Record<HomeSearchMode, string> = HOME_SEARCH_MESSAGES.en.modes;
+export const DEFAULT_HOME_SEARCH_MODE_LABELS: Record<HomeSearchMode, string> =
+  HOME_SEARCH_MESSAGES.en.modes;
 
-type SegmentPresets = { readonly [M in HomeSearchMode]: readonly HomeSearchSegment<HomeSearchSegmentKeys[M]>[] };
+type SegmentPresets = {
+  readonly [M in HomeSearchMode]: readonly HomeSearchSegment<HomeSearchSegmentKeys[M]>[];
+};
 
 /**
  * Each mode's segments with their labels, placeholders and widths, and no
@@ -29,7 +32,10 @@ type SegmentPresets = { readonly [M in HomeSearchMode]: readonly HomeSearchSegme
  *   stays   Where · Check in · Check out · Who   (what `StaySearchBar` draws)
  *   swap    Where · Dates · Home size
  */
-export function homeSearchSegmentPresets(home: HomeSearchMessages, stay: StaySearchMessages): SegmentPresets {
+export function homeSearchSegmentPresets(
+  home: HomeSearchMessages,
+  stay: StaySearchMessages,
+): SegmentPresets {
   return {
     rent: [
       { key: 'location', label: home.location, placeholder: home.locationPlaceholder, flex: 1.6 },
@@ -39,16 +45,31 @@ export function homeSearchSegmentPresets(home: HomeSearchMessages, stay: StaySea
     buy: [
       { key: 'location', label: home.location, placeholder: home.locationPlaceholder, flex: 1.6 },
       { key: 'price', label: home.price, placeholder: home.pricePlaceholder, flex: 1.1 },
-      { key: 'propertyType', label: home.propertyType, placeholder: home.propertyTypePlaceholder, flex: 1.5 },
+      {
+        key: 'propertyType',
+        label: home.propertyType,
+        placeholder: home.propertyTypePlaceholder,
+        flex: 1.5,
+      },
     ],
     stays: [
-      { key: 'destination', label: stay.where, placeholder: stay.destinationPlaceholder, flex: 1.4 },
+      {
+        key: 'destination',
+        label: stay.where,
+        placeholder: stay.destinationPlaceholder,
+        flex: 1.4,
+      },
       { key: 'checkIn', label: stay.checkIn, placeholder: stay.datesPlaceholder, flex: 1 },
       { key: 'checkOut', label: stay.checkOut, placeholder: stay.datesPlaceholder, flex: 1 },
       { key: 'guests', label: stay.who, placeholder: stay.guestsPlaceholder, flex: 1.5 },
     ],
     swap: [
-      { key: 'destination', label: stay.where, placeholder: stay.destinationPlaceholder, flex: 1.5 },
+      {
+        key: 'destination',
+        label: stay.where,
+        placeholder: stay.destinationPlaceholder,
+        flex: 1.5,
+      },
       { key: 'dates', label: home.dates, placeholder: stay.datesPlaceholder, flex: 1.2 },
       { key: 'homeSize', label: home.homeSize, placeholder: home.homeSizePlaceholder, flex: 1.5 },
     ],
@@ -56,7 +77,10 @@ export function homeSearchSegmentPresets(home: HomeSearchMessages, stay: StaySea
 }
 
 /** The presets in English. `homeSearchSegments(mode, values, overrides, locale)` gives another language. */
-export const HOME_SEARCH_SEGMENTS: SegmentPresets = homeSearchSegmentPresets(HOME_SEARCH_MESSAGES.en, STAY_SEARCH_MESSAGES.en);
+export const HOME_SEARCH_SEGMENTS: SegmentPresets = homeSearchSegmentPresets(
+  HOME_SEARCH_MESSAGES.en,
+  STAY_SEARCH_MESSAGES.en,
+);
 
 /**
  * A mode's preset segments with `values` filled in and any per-key
@@ -114,7 +138,9 @@ export function contractLengthOptions(messages: HomeSearchMessages): MoveInOptio
 }
 
 /** English; `MoveInPicker` reads the locale's catalog. */
-export const DEFAULT_CONTRACT_LENGTHS: readonly MoveInOption[] = contractLengthOptions(HOME_SEARCH_MESSAGES.en);
+export const DEFAULT_CONTRACT_LENGTHS: readonly MoveInOption[] = contractLengthOptions(
+  HOME_SEARCH_MESSAGES.en,
+);
 
 /** English; `MoveInPicker` reads the locale's catalog. */
 export const DEFAULT_MOVE_IN_LABELS: MoveInPickerLabels = HOME_SEARCH_MESSAGES.en.moveInLabels;

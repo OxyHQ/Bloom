@@ -16,10 +16,7 @@ import { RiToolsFill } from '../icons/remix/RiToolsFill';
 import { useMessages } from '../locale/messages';
 import type { SettingsModalPage, SettingsNavGroup } from '../settings-modal';
 import { SettingsModal } from '../settings-modal';
-import {
-  MULTI_AGENT_CHAT_MESSAGES,
-  type MultiAgentChatMessages,
-} from './messages';
+import { MULTI_AGENT_CHAT_MESSAGES, type MultiAgentChatMessages } from './messages';
 import { useWorkspaceSettingsPages } from './WorkspaceSettingsPages';
 const groupsFor = (messages: MultiAgentChatMessages): SettingsNavGroup[] => [
   {

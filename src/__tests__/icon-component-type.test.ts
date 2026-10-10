@@ -207,9 +207,7 @@ for (const file of sourceFiles(SRC)) {
 describe('BloomIconComponent has one home', () => {
   it('is declared once, in icons/icon-component.ts', () => {
     const elsewhere = declarations.filter((d) => d.file !== CANONICAL);
-    expect(
-      elsewhere.map((d) => `${d.file}:${d.line}  ${d.text}`),
-    ).toEqual([]);
+    expect(elsewhere.map((d) => `${d.file}:${d.line}  ${d.text}`)).toEqual([]);
   });
 
   it('is declared at all — the scan matches the canonical declaration', () => {

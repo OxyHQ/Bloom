@@ -7,7 +7,7 @@ import { Text } from '../typography';
 
 const meta: Meta<typeof Kbd> = {
   argTypes: {
-    "size": { control: 'select', options: ["sm","md"] }
+    size: { control: 'select', options: ['sm', 'md'] },
   },
   title: 'Base/Kbd',
   component: Kbd,

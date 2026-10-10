@@ -80,7 +80,9 @@ describe('bottom-placement Dialog keeps its content off the system gesture bar',
     // first child) is still measured on its own.
     // (Compared by testID: a failing `toBe` on test instances pretty-prints a
     // circular tree and never returns.)
-    const ids = content.children.map((c) => (typeof c === 'string' ? null : (c.props.testID ?? null)));
+    const ids = content.children.map((c) =>
+      typeof c === 'string' ? null : (c.props.testID ?? null),
+    );
     expect(ids.length).toBeGreaterThan(1);
     expect(ids[ids.length - 1]).toBe(SPACER);
   });
@@ -155,7 +157,9 @@ describe('a large-title header whose nav row holds only the ✕', () => {
   });
 
   it('keeps the stacked layout when the bar has a back button', () => {
-    const { getByTestId } = openDialog({ header: { title: 'Create your account', onBack: () => {} } });
+    const { getByTestId } = openDialog({
+      header: { title: 'Create your account', onBack: () => {} },
+    });
     expect(resolvedStyle(getByTestId('dialog-large-title-inset').props.style).height).toBe(
       DIALOG_HEADER_CONTENT_TOP,
     );
@@ -172,7 +176,11 @@ describe('isInlineCloseHeader', () => {
     ['custom left', { title: 'T', left: <Text>L</Text> }, false],
     ['custom right', { title: 'T', right: <Text>R</Text> }, false],
     ['primary action', { title: 'T', primaryAction: { label: 'Save', onPress: () => {} } }, false],
-    ['icon actions', { title: 'T', actions: [{ icon: Icon, accessibilityLabel: 'A', onPress: () => {} }] }, false],
+    [
+      'icon actions',
+      { title: 'T', actions: [{ icon: Icon, accessibilityLabel: 'A', onPress: () => {} }] },
+      false,
+    ],
     ['branded titleContent', { title: 'T', titleContent: <Text>Logo</Text> }, false],
     ['no large title', { title: 'T', largeTitle: false }, false],
     ['no title', {}, false],
@@ -190,13 +198,19 @@ describe('isInlineCloseHeader', () => {
 // sat on top of the rows (OxyHQ/oxy#1375 item 12). The background is now an SVG
 // gradient Bloom paints itself: solid behind the nav row, fading only below it.
 describe('the nav bar paints its own background', () => {
-  type Node = { type: unknown; props: Record<string, unknown>; findAll: (p: (n: Node) => boolean) => Node[] };
+  type Node = {
+    type: unknown;
+    props: Record<string, unknown>;
+    findAll: (p: (n: Node) => boolean) => Node[];
+  };
   const stopsIn = (root: Node) =>
-    root.findAll((n) => n.type === 'Stop').map((n) => ({
-      offset: Number(n.props.offset),
-      color: n.props.stopColor,
-      opacity: n.props.stopOpacity,
-    }));
+    root
+      .findAll((n) => n.type === 'Stop')
+      .map((n) => ({
+        offset: Number(n.props.offset),
+        color: n.props.stopColor,
+        opacity: n.props.stopOpacity,
+      }));
 
   it('is solid in the surface colour across the nav row, then fades out', () => {
     const { getByTestId } = openDialog({ header: { title: 'Manage', onBack: () => {} } });

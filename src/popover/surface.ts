@@ -79,14 +79,21 @@ const BORDER_WIDTH = /^border(-[xytrblse])?(-\d+(\.\d+)?|-\[[^\]]+px\])?$/;
  */
 function sidesOf(letter: string | undefined, property: 'padding' | 'margin'): PopoverChromeKey[] {
   const sides =
-    letter === undefined ? ['Top', 'Bottom', 'Left', 'Right']
-    : letter === 'x' ? ['Left', 'Right']
-    : letter === 'y' ? ['Top', 'Bottom']
-    : letter === 't' ? ['Top']
-    : letter === 'b' ? ['Bottom']
-    : letter === 'l' || letter === 's' ? ['Left']
-    : letter === 'r' || letter === 'e' ? ['Right']
-    : [];
+    letter === undefined
+      ? ['Top', 'Bottom', 'Left', 'Right']
+      : letter === 'x'
+        ? ['Left', 'Right']
+        : letter === 'y'
+          ? ['Top', 'Bottom']
+          : letter === 't'
+            ? ['Top']
+            : letter === 'b'
+              ? ['Bottom']
+              : letter === 'l' || letter === 's'
+                ? ['Left']
+                : letter === 'r' || letter === 'e'
+                  ? ['Right']
+                  : [];
   return sides.map((side) => `${property}${side}` as PopoverChromeKey);
 }
 
@@ -112,14 +119,16 @@ export function classChromeOverrides(className?: string): ReadonlySet<PopoverChr
   let spacing: RegExpExecArray | null;
   for (const raw of className.split(/\s+/)) {
     if (!raw) continue;
-    const token = raw.slice(raw.lastIndexOf(':') + 1).replace(/^!/, '').replace(/^-/, '');
+    const token = raw
+      .slice(raw.lastIndexOf(':') + 1)
+      .replace(/^!/, '')
+      .replace(/^-/, '');
     if (/^(w|size)-/.test(token)) keys.add('width');
     else if (/^max-w-/.test(token)) keys.add('maxWidth');
     else if ((spacing = /^([pm])([xytrbles])?-/.exec(token))) {
       const property = spacing[1] === 'p' ? 'padding' : 'margin';
       for (const key of sidesOf(spacing[2], property)) keys.add(key);
-    }
-    else if (/^rounded(-|$)/.test(token)) keys.add('radius');
+    } else if (/^rounded(-|$)/.test(token)) keys.add('radius');
     else if (BORDER_WIDTH.test(token)) keys.add('borderWidth');
     else if (/^border-/.test(token)) keys.add('borderColor');
     else if (/^bg-/.test(token)) keys.add('background');

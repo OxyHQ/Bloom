@@ -250,7 +250,9 @@ export function HomeSearchBar<K extends string = string>({
                       width: 1,
                       height: STAY_SEARCH_SEPARATOR_HEIGHT,
                       backgroundColor:
-                        lit(segments[index - 1]?.key) || lit(key) ? 'transparent' : palette.separator,
+                        lit(segments[index - 1]?.key) || lit(key)
+                          ? 'transparent'
+                          : palette.separator,
                     }}
                   />
                 </View>
@@ -289,14 +291,15 @@ export function HomeSearchBar<K extends string = string>({
                 )}
                 {isLast ? (
                   <Button
-
                     size="lg"
                     icon={RiSearchLine}
                     iconOnly={!open || compact}
                     onPress={onSearch}
                     accessibilityLabel={searchLabel}
                     testID={testID ? `${testID}-search` : undefined}
-                    style={{ marginRight: STAY_SEARCH_BUTTON_INSET - 1, flexShrink: 0 }} tone="accent" appearance="solid"
+                    style={{ marginRight: STAY_SEARCH_BUTTON_INSET - 1, flexShrink: 0 }}
+                    tone="accent"
+                    appearance="solid"
                   >
                     {open && !compact ? searchLabel : undefined}
                   </Button>

@@ -18,7 +18,13 @@ import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
-export type EmotionChoice = { id: string; label: string; config: AvatarConfig; disabled?: boolean; thumbnail?: string };
+export type EmotionChoice = {
+  id: string;
+  label: string;
+  config: AvatarConfig;
+  disabled?: boolean;
+  thumbnail?: string;
+};
 function Emotion({
   config,
   choice,
@@ -71,21 +77,32 @@ function Emotion({
           pointerEvents="auto"
           className={`pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring ${active ? 'border-foreground-icon-secondary' : 'border-transparent'}`}
           style={{
-            backgroundColor: backgroundColor ?? `hsl(${config.hue}, ${config.saturation}%, ${config.lightness ?? 80}%)`,
+            backgroundColor:
+              backgroundColor ??
+              `hsl(${config.hue}, ${config.saturation}%, ${config.lightness ?? 80}%)`,
             borderColor: active ? colors.icon : 'transparent',
           }}
         >
-          {choice.thumbnail ? <StyledImage source={{ uri: choice.thumbnail }} resizeMode="contain" accessible={false} style={{ width: 27, height: 27, opacity: choice.disabled ? 0.35 : 1 }} /> : <AgentFace
-            config={{
-              ...choice.config,
-              eyeSize: 24,
-              eyeGap: 36,
-              lookAt: 'center',
-              motion: 0,
-              idle: false,
-            }}
-            size={34}
-          />}
+          {choice.thumbnail ? (
+            <StyledImage
+              source={{ uri: choice.thumbnail }}
+              resizeMode="contain"
+              accessible={false}
+              style={{ width: 27, height: 27, opacity: choice.disabled ? 0.35 : 1 }}
+            />
+          ) : (
+            <AgentFace
+              config={{
+                ...choice.config,
+                eyeSize: 24,
+                eyeGap: 36,
+                lookAt: 'center',
+                motion: 0,
+                idle: false,
+              }}
+              size={34}
+            />
+          )}
         </StyledPressable>
       </AnimatedView>
     </StyledView>
@@ -109,18 +126,17 @@ export function EmotionPicker({
   onChange: (eyes: AvatarConfig['eyes']) => void;
 }) {
   const messages = useAgentCreatorMessages();
-  const choices = choicesProp ?? EYES.map((eyes) => ({ id: eyes, label: messages.emotions[eyes], config: { ...config, eyes } }));
+  const choices =
+    choicesProp ??
+    EYES.map((eyes) => ({ id: eyes, label: messages.emotions[eyes], config: { ...config, eyes } }));
   const value = valueProp ?? config.eyes;
-  const emit = (id: string) => onSelect ? onSelect(id) : onChange(id as AvatarConfig['eyes']);
+  const emit = (id: string) => (onSelect ? onSelect(id) : onChange(id as AvatarConfig['eyes']));
   const ref = useRef<View>(null);
   const visible = useSharedValue(true);
   const target = useSharedValue(0);
   const reduced = useReducedMotion();
   const rotation = useDerivedValue(
-    () =>
-      reduced
-        ? target.value
-        : withSpring(target.value, { stiffness: 180, damping: 28 }),
+    () => (reduced ? target.value : withSpring(target.value, { stiffness: 180, damping: 28 })),
     [target, reduced],
   );
   const dragging = useSharedValue(false);
@@ -163,8 +179,7 @@ export function EmotionPicker({
     .onStart((event) => {
       target.value = rotation.value;
       dragging.value = true;
-      previousAngle.value =
-        (Math.atan2(event.y - 134, event.x - 134) * 180) / Math.PI;
+      previousAngle.value = (Math.atan2(event.y - 134, event.x - 134) * 180) / Math.PI;
     })
     .onUpdate((event) => {
       const angle = (Math.atan2(event.y - 134, event.x - 134) * 180) / Math.PI;
@@ -196,10 +211,7 @@ export function EmotionPicker({
         <AnimatedView
           pointerEvents="box-none"
           className="pointer-events-none absolute inset-0"
-          style={[
-            { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
-            orbit,
-          ]}
+          style={[{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }, orbit]}
         >
           {choices.map((choice, index) => (
             <Emotion

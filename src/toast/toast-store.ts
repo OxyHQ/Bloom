@@ -12,12 +12,7 @@ import * as React from 'react';
 import { ENTERING_ANIMATION_DURATION, toastDefaults } from './constants';
 import { areToastsEqual } from './toast-comparator';
 import { ToastTimerRegistry } from './toast-timers';
-import type {
-  ToastProps,
-  ToastRef,
-  ToastStoreConfig,
-  ToastStoreState,
-} from './types';
+import type { ToastProps, ToastRef, ToastStoreConfig, ToastStoreState } from './types';
 
 type Subscriber = () => void;
 
@@ -159,24 +154,18 @@ class ToastStore {
   };
 
   addToast = (
-    options: Omit<
-      ToastProps,
-      'id' | 'numberOfToasts' | 'index' | 'orderedToastIds'
-    > & {
+    options: Omit<ToastProps, 'id' | 'numberOfToasts' | 'index' | 'orderedToastIds'> & {
       id?: string | number;
     },
   ): string | number => {
     const providedId =
-      typeof options.id === 'number' ||
-      (typeof options.id === 'string' && options.id.length > 0)
+      typeof options.id === 'number' || (typeof options.id === 'string' && options.id.length > 0)
         ? options.id
         : undefined;
 
     const id: string | number = providedId ?? this.state.toastsCounter;
     const nextCounter =
-      providedId === undefined
-        ? this.state.toastsCounter + 1
-        : this.state.toastsCounter;
+      providedId === undefined ? this.state.toastsCounter + 1 : this.state.toastsCounter;
 
     const duration = this.resolveDuration(options.duration);
 
@@ -204,9 +193,7 @@ class ToastStore {
       }
 
       const updatedToasts = this.state.toasts.map((currentToast) =>
-        currentToast.id === providedId
-          ? { ...currentToast, ...newToast }
-          : currentToast,
+        currentToast.id === providedId ? { ...currentToast, ...newToast } : currentToast,
       );
 
       // The update may have changed the duration, so the timer restarts.
@@ -234,8 +221,7 @@ class ToastStore {
         newToastRefs[id] = React.createRef<ToastRef>();
       }
 
-      const visibleToasts =
-        this.config.visibleToasts ?? toastDefaults.visibleToasts;
+      const visibleToasts = this.config.visibleToasts ?? toastDefaults.visibleToasts;
       const newIndex = this.cloneIndex();
       newIndex.set(id, newToast);
       const updatedHeights = { ...this.state.toastHeights };
@@ -314,9 +300,7 @@ class ToastStore {
 
     const toastForCallback = this.state.toastsById.get(id);
 
-    const filteredToasts = this.state.toasts.filter(
-      (currentToast) => currentToast.id !== id,
-    );
+    const filteredToasts = this.state.toasts.filter((currentToast) => currentToast.id !== id);
 
     const updatedHeights = { ...this.state.toastHeights };
     delete updatedHeights[id];
@@ -343,8 +327,7 @@ class ToastStore {
      */
     const isEmpty = filteredToasts.length === 0;
     const heldOpen = !isEmpty && this.isHeldOpen();
-    const shouldAutoCollapse =
-      filteredToasts.length <= 1 && this.state.isExpanded && !heldOpen;
+    const shouldAutoCollapse = filteredToasts.length <= 1 && this.state.isExpanded && !heldOpen;
 
     const updatedIndex = this.cloneIndex();
     updatedIndex.delete(id);
@@ -407,9 +390,7 @@ class ToastStore {
     }
   };
 
-  getToastRef = (
-    id: string | number,
-  ): React.RefObject<ToastRef | null> | undefined => {
+  getToastRef = (id: string | number): React.RefObject<ToastRef | null> | undefined => {
     return this.state.toastRefs[id];
   };
 

@@ -34,7 +34,11 @@ export function useHoverTooltip({
   delay = 200,
   open: controlled,
   onOpenChange,
-}: { delay?: number; open?: boolean; onOpenChange?: (open: boolean) => void } = {}) {
+}: {
+  delay?: number;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+} = {}) {
   const [inner, setInner] = useState(false);
   const open = controlled ?? inner;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -126,7 +130,8 @@ export function GlyphAction({
       onHoverOut={() => setLit(false)}
       onFocus={() => setLit(true)}
       onBlur={() => setLit(false)}
-      style={style}>
+      style={style}
+    >
       <View style={flip ? { transform: [{ scaleX: -1 }] } : undefined}>
         <Icon width={size} height={size} fill={lit ? palette.iconHover : palette.iconSecondary} />
       </View>
@@ -135,18 +140,30 @@ export function GlyphAction({
 }
 
 /** Cross-fades between two glyphs: blur + scale 0.75 + fade, 200ms ease-out (the copy → check swap). */
-export function SwapGlyph({ shown, size, children }: { shown: boolean; size: number; children: React.ReactNode }) {
+export function SwapGlyph({
+  shown,
+  size,
+  children,
+}: {
+  shown: boolean;
+  size: number;
+  children: React.ReactNode;
+}) {
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(shown ? 1 : 0);
   useEffect(() => {
     const target = shown ? 1 : 0;
-    progress.value = reducedMotion ? target : withTiming(target, { duration: 200, easing: EASE_OUT });
+    progress.value = reducedMotion
+      ? target
+      : withTiming(target, { duration: 200, easing: EASE_OUT });
   }, [shown, reducedMotion, progress]);
   const style = useAnimatedStyle(
     () => ({
       opacity: progress.value,
       transform: [{ scale: 0.75 + 0.25 * progress.value }],
-      ...(IS_WEB ? { filter: progress.value >= 1 ? 'none' : `blur(${2 * (1 - progress.value)}px)` } : null),
+      ...(IS_WEB
+        ? { filter: progress.value >= 1 ? 'none' : `blur(${2 * (1 - progress.value)}px)` }
+        : null),
     }),
     [progress],
   );
@@ -154,9 +171,18 @@ export function SwapGlyph({ shown, size, children }: { shown: boolean; size: num
     <Animated.View
       pointerEvents="none"
       style={[
-        { position: 'absolute', top: 0, left: 0, width: size, height: size, alignItems: 'center', justifyContent: 'center' },
+        {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: size,
+          height: size,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </Animated.View>
   );
@@ -257,7 +283,8 @@ export function SurfaceAction({
           if (!pointerDown.current) tip.setOpen(true);
         }}
         onBlur={() => tip.setOpen(false)}
-        style={[surface, style]}>
+        style={[surface, style]}
+      >
         {glyph(lit ? palette.iconPrimary : palette.iconSecondary)}
       </Pressable>
     </WithTooltip>

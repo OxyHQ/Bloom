@@ -104,8 +104,15 @@ export function settingsGroupSurface(
   // resolved channels so an unchanged page backing stays on the page branch.
   const actual = parseRgba(ambientFill);
   const page = parseRgba(theme.colors.background);
-  if (ambientFill === theme.colors.background || (actual && page &&
-      actual.r === page.r && actual.g === page.g && actual.b === page.b && actual.a === page.a)) {
+  if (
+    ambientFill === theme.colors.background ||
+    (actual &&
+      page &&
+      actual.r === page.r &&
+      actual.g === page.g &&
+      actual.b === page.b &&
+      actual.a === page.a)
+  ) {
     return theme.colors.card;
   }
   return surfaceFillOn(theme, ambientFill);

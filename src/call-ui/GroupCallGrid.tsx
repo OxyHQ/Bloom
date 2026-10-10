@@ -60,7 +60,9 @@ function GroupCallGridComponent({
   const spotlightAt = layout === 'spotlight' ? callSpotlightIndex(participants, spotlightId) : -1;
   const spotlight = spotlightAt >= 0 ? participants[spotlightAt] : undefined;
   const strip =
-    layout === 'spotlight' ? participants.filter((_, i) => i !== spotlightAt).slice(0, STRIP_MAX) : [];
+    layout === 'spotlight'
+      ? participants.filter((_, i) => i !== spotlightAt).slice(0, STRIP_MAX)
+      : [];
   const grid =
     layout === 'spotlight'
       ? undefined

@@ -188,7 +188,9 @@ describe('QueuePanel structure', () => {
   });
 
   it('names every control: play rows, handles, menus, remove, close', () => {
-    mount(panel({ onReorder: jest.fn(), onRemove: jest.fn(), onClose: jest.fn(), onPlay: jest.fn() }));
+    mount(
+      panel({ onReorder: jest.fn(), onRemove: jest.fn(), onClose: jest.fn(), onPlay: jest.fn() }),
+    );
     expect(byTestId('qp-now-play').getAttribute('aria-label')).toBe('Play Harbour Lights');
     expect(byTestId('qp-queue-row-0-play').getAttribute('role')).toBe('button');
     expect(byTestId('qp-queue-row-0-play').getAttribute('aria-label')).toBe('Play Slow Tide');
@@ -196,8 +198,12 @@ describe('QueuePanel structure', () => {
     expect(handle.getAttribute('role')).toBe('button');
     expect(handle.getAttribute('aria-label')).toBe('Reorder Slow Tide');
     expect(handle.getAttribute('tabindex')).toBe('0');
-    expect(byTestId('qp-queue-row-0-more').getAttribute('aria-label')).toBe('More options for Slow Tide');
-    expect(byTestId('qp-queue-row-0-remove').getAttribute('aria-label')).toBe('Remove from queue: Slow Tide');
+    expect(byTestId('qp-queue-row-0-more').getAttribute('aria-label')).toBe(
+      'More options for Slow Tide',
+    );
+    expect(byTestId('qp-queue-row-0-remove').getAttribute('aria-label')).toBe(
+      'Remove from queue: Slow Tide',
+    );
     expect(byTestId('qp-close').getAttribute('aria-label')).toBe('Close queue');
   });
 
@@ -223,7 +229,11 @@ describe('QueuePanel structure', () => {
     expect(el.style.width).toBe('380px');
     expect(el.style.borderTopLeftRadius || el.style.borderRadius).toContain('8px');
     expect(normalise(el.style.backgroundColor)).toBe('rgba(0, 0, 0, 0)');
-    expect(el.querySelector<HTMLElement>('.bloom-surface-paint')?.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(resolveSurfaceTint(paint.surface));
+    expect(
+      el
+        .querySelector<HTMLElement>('.bloom-surface-paint')
+        ?.style.getPropertyValue('--bloom-surface-paint-fill'),
+    ).toBe(resolveSurfaceTint(paint.surface));
   });
 
   it('shows the empty state when there is nothing at all', () => {
@@ -292,7 +302,9 @@ describe('QueuePanel callbacks', () => {
     const handle = byTestId('qp-queue-row-0-handle');
     act(() => handle.focus());
     key(handle, 'ArrowDown');
-    const labels = [...container.querySelectorAll('[data-testid$="-play"]')].map((e) => e.getAttribute('aria-label'));
+    const labels = [...container.querySelectorAll('[data-testid$="-play"]')].map((e) =>
+      e.getAttribute('aria-label'),
+    );
     expect(labels).toEqual(['Play Paper Moons', 'Play Slow Tide', 'Play Signal Fires']);
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Reorder Slow Tide');
   });
@@ -365,10 +377,30 @@ describe('resolveQueuePanelPaint', () => {
 });
 
 it('publishes the actual panel fill to CSS, leaving unpainted sheet surfaces inherited', () => {
-  mount(<QueuePanel testID="surface-panel" variant="panel" style={{ backgroundColor: '#123456' }} />);
-  expect(container.querySelector<HTMLElement>('[data-testid="surface-panel"]')!.style.getPropertyValue('--bloom-surface')).toBe(resolveSurfaceFill(resolveSurfaceTint('#123456'), theme.colors.background));
+  mount(
+    <QueuePanel testID="surface-panel" variant="panel" style={{ backgroundColor: '#123456' }} />,
+  );
+  expect(
+    container
+      .querySelector<HTMLElement>('[data-testid="surface-panel"]')!
+      .style.getPropertyValue('--bloom-surface'),
+  ).toBe(resolveSurfaceFill(resolveSurfaceTint('#123456'), theme.colors.background));
   mount(<QueuePanel testID="surface-panel" variant="sheet" />);
-  expect(container.querySelector<HTMLElement>('[data-testid="surface-panel"]')!.style.getPropertyValue('--bloom-surface')).toBe('');
-  mount(<QueuePanel testID="surface-panel" variant="panel" style={{ backgroundColor: 'transparent' }} />);
-  expect(container.querySelector<HTMLElement>('[data-testid="surface-panel"]')!.style.getPropertyValue('--bloom-surface')).toBe('');
+  expect(
+    container
+      .querySelector<HTMLElement>('[data-testid="surface-panel"]')!
+      .style.getPropertyValue('--bloom-surface'),
+  ).toBe('');
+  mount(
+    <QueuePanel
+      testID="surface-panel"
+      variant="panel"
+      style={{ backgroundColor: 'transparent' }}
+    />,
+  );
+  expect(
+    container
+      .querySelector<HTMLElement>('[data-testid="surface-panel"]')!
+      .style.getPropertyValue('--bloom-surface'),
+  ).toBe('');
 });

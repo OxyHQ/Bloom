@@ -7,12 +7,12 @@ import { Text } from '../typography';
 
 const meta: Meta<typeof Divider> = {
   argTypes: {
-    "variant": { control: 'select', options: ["single","fill","double"] },
-    "align": { control: 'select', options: ["end","start","center"] },
-    "color": { control: 'text' },
-    "thickness": { control: 'number' },
-    "vertical": { control: 'boolean' },
-    "spacing": { control: 'number' }
+    variant: { control: 'select', options: ['single', 'fill', 'double'] },
+    align: { control: 'select', options: ['end', 'start', 'center'] },
+    color: { control: 'text' },
+    thickness: { control: 'number' },
+    vertical: { control: 'boolean' },
+    spacing: { control: 'number' },
   },
   title: 'Base/Divider',
   component: Divider,
@@ -29,11 +29,13 @@ type Story = StoryObj<typeof Divider>;
  */
 export const Horizontal: Story = {
   args: { spacing: 12 },
-  parameters: { controls: { include: ["spacing","variant","align","color","thickness","vertical"] } },
+  parameters: {
+    controls: { include: ['spacing', 'variant', 'align', 'color', 'thickness', 'vertical'] },
+  },
   render: (args) => (
     <View style={{ maxWidth: '100%', width: 360 }}>
       <Text>Above</Text>
-      <Divider {...args}  />
+      <Divider {...args} />
       <Text>Below</Text>
     </View>
   ),
@@ -53,9 +55,15 @@ export const Variants: Story = {
       <Divider align="start">Start</Divider>
       <Divider align="end">End</Divider>
       <Divider variant="double">Double</Divider>
-      <Divider variant="double" align="start">Double start</Divider>
-      <Divider variant="fill" align="start">Fill</Divider>
-      <Divider variant="fill" align="end">Fill end</Divider>
+      <Divider variant="double" align="start">
+        Double start
+      </Divider>
+      <Divider variant="fill" align="start">
+        Fill
+      </Divider>
+      <Divider variant="fill" align="end">
+        Fill end
+      </Divider>
     </View>
   ),
 };

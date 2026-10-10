@@ -16,10 +16,15 @@ export function ScrollMetricsProvider({ children }: PropsWithChildren) {
   const scrollY = useSharedValue(0);
   const contentHeight = useSharedValue(-1);
   const viewportHeight = useSharedValue(0);
-  const value = useMemo(() => ({ scrollY, contentHeight, viewportHeight }), [scrollY, contentHeight, viewportHeight]);
-  return <ScrollMetricsContext.Provider value={value}>
-    <ScrollOffsetProvider value={scrollY}>{children}</ScrollOffsetProvider>
-  </ScrollMetricsContext.Provider>;
+  const value = useMemo(
+    () => ({ scrollY, contentHeight, viewportHeight }),
+    [scrollY, contentHeight, viewportHeight],
+  );
+  return (
+    <ScrollMetricsContext.Provider value={value}>
+      <ScrollOffsetProvider value={scrollY}>{children}</ScrollOffsetProvider>
+    </ScrollMetricsContext.Provider>
+  );
 }
 
 export function useScrollMetricsValue(): ScrollMetrics | null {

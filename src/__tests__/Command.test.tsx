@@ -56,12 +56,7 @@ describe('Command (built on Dialog)', () => {
 
   it('filters items by a controlled query (label, description, keywords)', () => {
     const { getByText, queryByText, rerender } = renderWithTheme(
-      <Command
-        visible
-        onClose={() => {}}
-        items={makeItems(() => {})}
-        query="settings"
-      />,
+      <Command visible onClose={() => {}} items={makeItems(() => {})} query="settings" />,
     );
     expect(getByText('Open settings')).toBeTruthy();
     expect(queryByText('Go to profile')).toBeNull();
@@ -69,12 +64,7 @@ describe('Command (built on Dialog)', () => {
     // A keyword on a different item matches that item.
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <Command
-          visible
-          onClose={() => {}}
-          items={makeItems(() => {})}
-          query="oauth"
-        />
+        <Command visible onClose={() => {}} items={makeItems(() => {})} query="oauth" />
       </BloomThemeProvider>,
     );
     expect(getByText('Create application')).toBeTruthy();
@@ -125,9 +115,7 @@ describe('Command (built on Dialog)', () => {
     it('drives the underlying Dialog imperatively (control), never the controlled `open` prop', () => {
       const { captured, MockDialog } = captureDialogProps();
       const TestCommand = createCommand(MockDialog);
-      renderWithTheme(
-        <TestCommand visible onClose={() => {}} items={makeItems(() => {})} />,
-      );
+      renderWithTheme(<TestCommand visible onClose={() => {}} items={makeItems(() => {})} />);
       // The whole point of the migration: `Command` must take the Dialog's
       // imperative/uncontrolled branch (the one that plays the exit animation on
       // dismiss), so an imperative `control` handle is passed and the controlled
@@ -171,11 +159,7 @@ describe('Command (built on Dialog)', () => {
       act(() => {
         rerender(
           <BloomThemeProvider mode="light" colorPreset="teal">
-            <TestCommand
-              visible={false}
-              onClose={() => {}}
-              items={makeItems(() => {})}
-            />
+            <TestCommand visible={false} onClose={() => {}} items={makeItems(() => {})} />
           </BloomThemeProvider>,
         );
       });
@@ -190,9 +174,7 @@ describe('Command (built on Dialog)', () => {
       };
       const onClose = jest.fn();
       const TestCommand = createCommand(MockDialog);
-      renderWithTheme(
-        <TestCommand visible onClose={onClose} items={makeItems(() => {})} />,
-      );
+      renderWithTheme(<TestCommand visible onClose={onClose} items={makeItems(() => {})} />);
       // The real Dialog fires `onClose` once its exit animation settles after a
       // backdrop / Escape dismissal. `Command` must forward that to the consumer.
       act(() => {
@@ -210,11 +192,7 @@ describe('Command (built on Dialog)', () => {
       act(() => {
         rerender(
           <BloomThemeProvider mode="light" colorPreset="teal">
-            <TestCommand
-              visible={false}
-              onClose={onClose}
-              items={makeItems(() => {})}
-            />
+            <TestCommand visible={false} onClose={onClose} items={makeItems(() => {})} />
           </BloomThemeProvider>,
         );
       });

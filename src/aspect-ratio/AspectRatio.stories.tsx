@@ -8,7 +8,7 @@ import { AspectRatio } from './index';
 
 const meta: Meta<typeof AspectRatio> = {
   argTypes: {
-    "ratio": { control: 'number' }
+    ratio: { control: 'number' },
   },
   title: 'Base/Aspect Ratio',
   component: AspectRatio,
@@ -29,7 +29,8 @@ function Well({ ratio, label }: { ratio: number; label: string }) {
           borderRadius: 12,
           alignItems: 'center',
           justifyContent: 'center',
-        }}>
+        }}
+      >
         <Text>{label}</Text>
       </AspectRatio>
     </View>
@@ -66,7 +67,8 @@ export const FillsParentWidth: Story = {
                 borderRadius: 12,
                 alignItems: 'center',
                 justifyContent: 'center',
-              }}>
+              }}
+            >
               <Text>Up to {width}px wide</Text>
             </AspectRatio>
           </View>
@@ -79,5 +81,14 @@ export const FillsParentWidth: Story = {
 /** Edit the props in Controls; interactive state stays in sync. */
 export const Playground: Story = {
   args: { ratio: 1.7777777778 },
-  render: (args) => <View style={{ width: 360, maxWidth: '100%' }}><AspectRatio {...args} style={{ backgroundColor: 'steelblue', alignItems: 'center', justifyContent: 'center' }}><Text>Media placeholder</Text></AspectRatio></View>,
+  render: (args) => (
+    <View style={{ width: 360, maxWidth: '100%' }}>
+      <AspectRatio
+        {...args}
+        style={{ backgroundColor: 'steelblue', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Text>Media placeholder</Text>
+      </AspectRatio>
+    </View>
+  ),
 };

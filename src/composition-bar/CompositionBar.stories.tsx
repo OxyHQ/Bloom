@@ -27,8 +27,8 @@ function Demo() {
 
 const meta: Meta<typeof CompositionBar> = {
   argTypes: {
-    "selectedKey": { control: 'text' },
-    "hintLabel": { control: 'text' }
+    selectedKey: { control: 'text' },
+    hintLabel: { control: 'text' },
   },
   title: 'Charts/Composition Bar',
   component: CompositionBar,
@@ -61,17 +61,12 @@ export const Dark: Story = {
 };
 
 export const Empty: Story = {
-  args: { hintLabel: "No data yet" },
-  parameters: { controls: { include: ["hintLabel"] } },
+  args: { hintLabel: 'No data yet' },
+  parameters: { controls: { include: ['hintLabel'] } },
   render: (args) => (
     <BloomThemeProvider mode="light">
       <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
-        <CompositionBar {...args}
-          categories={[]}
-          selectedKey={null}
-          onSelect={() => {}}
-
-        />
+        <CompositionBar {...args} categories={[]} selectedKey={null} onSelect={() => {}} />
       </View>
     </BloomThemeProvider>
   ),

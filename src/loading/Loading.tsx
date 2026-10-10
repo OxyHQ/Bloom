@@ -34,7 +34,10 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+  const { size, tone } = useBloomAppearance(
+    { size: sizeProp, tone: toneProp },
+    { size: 'md', tone: 'accent' },
+  );
   const sizeConfig = SIZE_CONFIG[size];
   const effectiveIconSize = iconSize ?? sizeConfig.spinner;
   const targetHeight = Math.max(0, effectiveIconSize + sizeConfig.spinner + heightOffset);
@@ -44,6 +47,7 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   const opacity = useSharedValue(showLoading ? 1 : 0);
   const translateY = useSharedValue(showLoading ? 0 : -targetHeight);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     const timingConfig = { duration: animation.duration.slow, easing: Easing.out(Easing.cubic) };
     height.value = withTiming(showLoading ? targetHeight : 0, timingConfig);
@@ -51,24 +55,31 @@ const TopLoading: React.FC<TopLoadingProps> = ({
     translateY.value = withTiming(showLoading ? 0 : -targetHeight, timingConfig);
     // Easing, withTiming: module-level constants from a static import, stable.
     // height/opacity/translateY: shared value objects, stable references.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showLoading, targetHeight]);
 
   // Shared values MUST be in the deps arrays: on web without the worklets Babel
   // plugin, useAnimatedStyle does not auto-track shared-value reads and would
   // freeze at frame 1. Native (plugin present) auto-tracks and ignores the deps.
-  const containerAnimated = useAnimatedStyle(() => ({
-    height: height.value,
-  }), [height]);
+  const containerAnimated = useAnimatedStyle(
+    () => ({
+      height: height.value,
+    }),
+    [height],
+  );
 
-  const innerAnimated = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }), [opacity, translateY]);
+  const innerAnimated = useAnimatedStyle(
+    () => ({
+      opacity: opacity.value,
+      transform: [{ translateY: translateY.value }],
+    }),
+    [opacity, translateY],
+  );
 
   return (
     <Animated.View style={[styles.topContainer, containerAnimated]} testID={testID}>
-      <Animated.View style={[styles.topLoadingView, { height: targetHeight }, innerAnimated, style]}>
+      <Animated.View
+        style={[styles.topLoadingView, { height: targetHeight }, innerAnimated, style]}
+      >
         {/* Named only while it is showing: a collapsed bar is not a wait. */}
         <LoadingRoot accessibilityLabel={showLoading ? accessibilityLabel : undefined}>
           {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}

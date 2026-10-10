@@ -41,11 +41,7 @@ function PatternLayer({
     // The `testID` sits on a View, not on the `<Svg>`: an SVG host element is not
     // a react-native-web View, so `testID` reaches it as a lowercase DOM
     // attribute and never becomes `data-testid`.
-    <View
-      pointerEvents="none"
-      testID="chat-background-pattern"
-      style={StyleSheet.absoluteFill}
-    >
+    <View pointerEvents="none" testID="chat-background-pattern" style={StyleSheet.absoluteFill}>
       <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
         <Defs>
           <Pattern
@@ -80,11 +76,7 @@ function GradientLayer({ colors }: { colors: string[] }) {
   const id = `chat-gradient-${useId().replace(/[^A-Za-z0-9-]/g, '')}`;
   const last = colors.length - 1;
   return (
-    <View
-      pointerEvents="none"
-      testID="chat-background-gradient"
-      style={StyleSheet.absoluteFill}
-    >
+    <View pointerEvents="none" testID="chat-background-gradient" style={StyleSheet.absoluteFill}>
       <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="0.35" y2="1">
@@ -164,10 +156,7 @@ function ChatBackgroundComponent({
           <View
             pointerEvents="none"
             testID="chat-background-dim"
-            style={[
-              StyleSheet.absoluteFill,
-              { backgroundColor: paint.imageDim, opacity: dim },
-            ]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: paint.imageDim, opacity: dim }]}
           />
         </>
       ) : null}

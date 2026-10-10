@@ -23,7 +23,10 @@ import { MEDIA_CONTROLS_MESSAGES } from './messages';
  * hidden so the name is not announced as "E".
  */
 
-const SIZE_CONFIG: Record<ExplicitBadgeSize, { box: number; radius: number; type: TypeScaleVariant }> = {
+const SIZE_CONFIG: Record<
+  ExplicitBadgeSize,
+  { box: number; radius: number; type: TypeScaleVariant }
+> = {
   small: { box: 14, radius: 2, type: 'caption-2-bold' },
   medium: { box: 16, radius: 3, type: 'caption-2-bold' },
 };

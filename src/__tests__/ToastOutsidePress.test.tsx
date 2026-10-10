@@ -13,9 +13,7 @@ jest.mock('react-native-gesture-handler', () => ({
 import { ToastHost } from '../toast/ToastHost';
 import { toastStore } from '../toast/toast-store';
 
-(
-  globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
-).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe('web toast outside presses', () => {
   it('collapses without cancelling the original press, excludes rows, and removes its listener', () => {
@@ -37,17 +35,9 @@ describe('web toast outside presses', () => {
     const inside = document.querySelector('[data-bloom-toast-host] button')!;
     expect(inside).not.toBeNull();
     act(() => toastStore.expand());
-    act(() =>
-      inside.dispatchEvent(
-        new MouseEvent('pointerdown', { bubbles: true, button: 0 }),
-      ),
-    );
+    act(() => inside.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0 })));
     expect(toastStore.getSnapshot().isExpanded).toBe(true);
-    act(() =>
-      outside.dispatchEvent(
-        new MouseEvent('pointerdown', { bubbles: true, button: 2 }),
-      ),
-    );
+    act(() => outside.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 2 })));
     expect(toastStore.getSnapshot().isExpanded).toBe(true);
     const event = new MouseEvent('pointerdown', {
       bubbles: true,
@@ -60,9 +50,7 @@ describe('web toast outside presses', () => {
     expect(onOutside).toHaveBeenCalledTimes(2);
     act(() => root.unmount());
     act(() => toastStore.expand());
-    document.body.dispatchEvent(
-      new MouseEvent('pointerdown', { bubbles: true, button: 0 }),
-    );
+    document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0 }));
     expect(toastStore.getSnapshot().isExpanded).toBe(true);
     act(() => toastStore.collapse());
     container.remove();

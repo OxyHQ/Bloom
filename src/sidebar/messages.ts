@@ -36,22 +36,25 @@ export interface SidebarMessages {
   teamMenu: (team: string) => string;
 }
 
-export const SIDEBAR_MESSAGES: MessageCatalog<SidebarMessages> = defineMessages<SidebarMessages>('SIDEBAR_MESSAGES', {
-  sidebar: 'Sidebar',
-  collapse: 'Collapse sidebar',
-  expand: 'Expand sidebar',
-  close: 'Close sidebar',
-  quickSearch: 'Quick Search',
-  searchPlaceholder: 'Search navigation…',
-  searchPlaceholderCompact: 'Search...',
-  filter: 'Filter navigation',
-  clearSearch: 'Clear navigation search',
-  noResults: 'No results',
-  mode: 'Mode',
-  upgrade: 'Upgrade',
-  usersWithAccess: 'Users with access',
-  addUser: 'Add user',
-  manage: 'Manage',
-  accountMenu: 'Account menu',
-  teamMenu: (team) => `${team} menu`,
-});
+export const SIDEBAR_MESSAGES: MessageCatalog<SidebarMessages> = defineMessages<SidebarMessages>(
+  'SIDEBAR_MESSAGES',
+  {
+    sidebar: 'Sidebar',
+    collapse: 'Collapse sidebar',
+    expand: 'Expand sidebar',
+    close: 'Close sidebar',
+    quickSearch: 'Quick Search',
+    searchPlaceholder: 'Search navigation…',
+    searchPlaceholderCompact: 'Search...',
+    filter: 'Filter navigation',
+    clearSearch: 'Clear navigation search',
+    noResults: 'No results',
+    mode: 'Mode',
+    upgrade: 'Upgrade',
+    usersWithAccess: 'Users with access',
+    addUser: 'Add user',
+    manage: 'Manage',
+    accountMenu: 'Account menu',
+    teamMenu: (team) => `${team} menu`,
+  },
+);

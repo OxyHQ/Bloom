@@ -20,12 +20,7 @@ import type { SidebarToolbarProps } from './types';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
 /** Search and fixed action slots share one row; the sidebar owns its viewport. */
-export function SidebarToolbar({
-  actions = [],
-  search,
-  style,
-  testID,
-}: SidebarToolbarProps) {
+export function SidebarToolbar({ actions = [], search, style, testID }: SidebarToolbarProps) {
   const common = useCommonMessages();
   const palette = useSidebarPalette();
   const direction = useDirectionProps();
@@ -71,10 +66,7 @@ export function SidebarToolbar({
     const hidden = actionsProgress.value;
     return {
       opacity: 1 - hidden,
-      transform: [
-        { translateX: (rtl ? -8 : 8) * hidden },
-        { scale: 1 - 0.05 * hidden },
-      ],
+      transform: [{ translateX: (rtl ? -8 : 8) * hidden }, { scale: 1 - 0.05 * hidden }],
     };
   }, [actionsProgress, rtl]);
   const close = () => {
@@ -104,9 +96,7 @@ export function SidebarToolbar({
             pointerEvents={search.open ? 'none' : 'auto'}
             aria-hidden={search.open}
             accessibilityElementsHidden={search.open}
-            importantForAccessibility={
-              search.open ? 'no-hide-descendants' : 'auto'
-            }
+            importantForAccessibility={search.open ? 'no-hide-descendants' : 'auto'}
             {...(IS_WEB && search.open ? { inert: true } : {})}
           >
             {action}
@@ -124,9 +114,7 @@ export function SidebarToolbar({
             borderRadius: 999,
             backgroundColor: palette.tertiary,
           },
-          IS_WEB
-            ? { width: search.open ? '100%' : collapsedWidth }
-            : searchWidth,
+          IS_WEB ? { width: search.open ? '100%' : collapsedWidth } : searchWidth,
         ]}
       >
         {!search.open ? (

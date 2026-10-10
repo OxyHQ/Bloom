@@ -1,6 +1,12 @@
 import type { ReactNode, Ref } from 'react';
 import type { BloomIconComponent } from '../icons/icon-component';
-import type { StyleProp, ViewStyle, ScrollViewProps, GestureResponderEvent, View } from 'react-native';
+import type {
+  StyleProp,
+  ViewStyle,
+  ScrollViewProps,
+  GestureResponderEvent,
+  View,
+} from 'react-native';
 
 /** A Remix-style icon: `width` / `height` / `fill`. */
 /** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */

@@ -8,7 +8,13 @@ export type AvatarCharacterConfig = {
   bodyColor?: string;
 };
 
-const categories: readonly AvatarCharacterCategory[] = ['shape', 'color', 'eyes', 'eyewear', 'accessory'];
+const categories: readonly AvatarCharacterCategory[] = [
+  'shape',
+  'color',
+  'eyes',
+  'eyewear',
+  'accessory',
+];
 const validId = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0 && value.length <= 63;
 
@@ -20,12 +26,20 @@ export function parseCharacterConfig(value: unknown): AvatarCharacterConfig {
   if (!validId(candidate.preset)) throw new Error('Invalid character preset.');
   const result: AvatarCharacterConfig = { preset: candidate.preset };
   if (candidate.bodyColor !== undefined) {
-    if (typeof candidate.bodyColor !== 'string' || candidate.bodyColor.length !== 7 || !/^#[0-9a-f]{6}$/i.test(candidate.bodyColor))
+    if (
+      typeof candidate.bodyColor !== 'string' ||
+      candidate.bodyColor.length !== 7 ||
+      !/^#[0-9a-f]{6}$/i.test(candidate.bodyColor)
+    )
       throw new Error('Invalid character body color.');
     result.bodyColor = candidate.bodyColor.toLowerCase();
   }
   if (candidate.selections !== undefined) {
-    if (!candidate.selections || typeof candidate.selections !== 'object' || Array.isArray(candidate.selections))
+    if (
+      !candidate.selections ||
+      typeof candidate.selections !== 'object' ||
+      Array.isArray(candidate.selections)
+    )
       throw new Error('Invalid character selections.');
     const selections: NonNullable<AvatarCharacterConfig['selections']> = {};
     for (const [category, id] of Object.entries(candidate.selections)) {

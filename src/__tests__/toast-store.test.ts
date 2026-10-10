@@ -32,10 +32,7 @@ describe('toastStore', () => {
       const second = toastStore.addToast({ title: 'second' });
 
       expect([first, second]).toEqual([1, 2]);
-      expect(toastStore.getSnapshot().toasts.map((t) => t.title)).toEqual([
-        'first',
-        'second',
-      ]);
+      expect(toastStore.getSnapshot().toasts.map((t) => t.title)).toEqual(['first', 'second']);
     });
 
     it('returns the caller-supplied id instead of a counter value', () => {
@@ -58,9 +55,7 @@ describe('toastStore', () => {
 
       toastStore.setConfig({});
       toastStore.addToast({ title: 'default' });
-      expect(toastStore.getSnapshot().toasts[2]?.duration).toBe(
-        toastDefaults.duration,
-      );
+      expect(toastStore.getSnapshot().toasts[2]?.duration).toBe(toastDefaults.duration);
     });
 
     it('leaves the variant absent unless one was asked for', () => {
@@ -107,9 +102,7 @@ describe('toastStore', () => {
       for (let i = 0; i < toastDefaults.visibleToasts + 2; i++) {
         toastStore.addToast({ title: `t${i}` });
       }
-      expect(toastStore.getSnapshot().toasts).toHaveLength(
-        toastDefaults.visibleToasts,
-      );
+      expect(toastStore.getSnapshot().toasts).toHaveLength(toastDefaults.visibleToasts);
     });
 
     it('stops the evicted toast auto-closing a survivor', () => {
@@ -146,11 +139,7 @@ describe('toastStore', () => {
       toastStore.addToast({ title: 'done', id: 'job', variant: 'success' });
 
       const state = toastStore.getSnapshot();
-      expect(state.toasts.map((t) => t.title)).toEqual([
-        'first',
-        'done',
-        'last',
-      ]);
+      expect(state.toasts.map((t) => t.title)).toEqual(['first', 'done', 'last']);
       expect(state.toastsById.get('job')?.variant).toBe('success');
     });
 
@@ -436,9 +425,7 @@ describe('toastStore', () => {
 
       await flushMicrotasks();
 
-      expect(toastStore.getSnapshot().toastsById.get(id)?.title).toBe(
-        'Could not save',
-      );
+      expect(toastStore.getSnapshot().toastsById.get(id)?.title).toBe('Could not save');
     });
 
     it('does not auto-close while the promise is pending', () => {
@@ -507,14 +494,10 @@ describe('toastStore', () => {
         },
       });
 
-      expect(toastStore.getSnapshot().toastsById.get(id)?.styles).toBe(
-        loadingStyles,
-      );
+      expect(toastStore.getSnapshot().toastsById.get(id)?.styles).toBe(loadingStyles);
 
       await flushMicrotasks();
-      expect(toastStore.getSnapshot().toastsById.get(id)?.styles).toBe(
-        successStyles,
-      );
+      expect(toastStore.getSnapshot().toastsById.get(id)?.styles).toBe(successStyles);
     });
   });
 

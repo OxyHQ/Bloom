@@ -1,5 +1,11 @@
 import React, { memo } from 'react';
-import { Pressable, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Pressable,
+  View,
+  type LayoutChangeEvent,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
@@ -55,7 +61,9 @@ function LyricsLineRowComponent({
         ? palette.past
         : palette.upcoming;
 
-  const onLayout = onLineLayout ? (event: LayoutChangeEvent) => onLineLayout(index, event) : undefined;
+  const onLayout = onLineLayout
+    ? (event: LayoutChangeEvent) => onLineLayout(index, event)
+    : undefined;
 
   const rowStyle: StyleProp<ViewStyle> = {
     alignSelf: 'flex-start',

@@ -153,13 +153,20 @@ describe('the external design source is never named', () => {
       ' * <PopoverDescription>hi@boardui.com</PopoverDescription>',
     ].join('\n');
 
-    expect(findingsIn('probe', probe).map((f) => `${f.line}`)).toEqual(['1', '2', '2', '3', '4', '5']);
+    expect(findingsIn('probe', probe).map((f) => `${f.line}`)).toEqual([
+      '1',
+      '2',
+      '2',
+      '3',
+      '4',
+      '5',
+    ]);
   });
 
   it('does not fire on Bloom’s own adjacent vocabulary', () => {
     const compliant = [
       ' * the dashboard ui, and the keyboard UI beside it',
-      " * colours from `floating/menu-palette.ts`, geometry from `constants.ts`",
+      ' * colours from `floating/menu-palette.ts`, geometry from `constants.ts`',
       ' * `MENU_PANEL_CLASS` / `LISTBOX_PANEL_CLASS`',
       ' * `DropdownMenu`, `DropdownMenuContent`, `DropdownMenuItem`',
       ' * a menu row as the floating panels draw it',

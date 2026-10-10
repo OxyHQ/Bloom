@@ -95,7 +95,16 @@ describe('PropertyFacts', () => {
 
   it('limit + onShowAll draws "Show all N features" counting total', () => {
     const onShowAll = jest.fn();
-    mount(<PropertyFacts items={items} columns={2} limit={2} total={12} onShowAll={onShowAll} testID="pf" />);
+    mount(
+      <PropertyFacts
+        items={items}
+        columns={2}
+        limit={2}
+        total={12}
+        onShowAll={onShowAll}
+        testID="pf"
+      />,
+    );
     expect(queryTestId('pf-item-2')).toBeNull();
     const button = byTestId('pf-show-all');
     expect(button.textContent).toBe('Show all 12 features');
@@ -159,7 +168,15 @@ describe('ContactCard', () => {
   });
 
   it('an agency without an avatar uses its logo as the avatar and draws no separate agency row', () => {
-    mount(<ContactCard role="agency" name="Casa Ribeirinha" agency="Casa Ribeirinha" logo="https://example.test/l.png" testID="c" />);
+    mount(
+      <ContactCard
+        role="agency"
+        name="Casa Ribeirinha"
+        agency="Casa Ribeirinha"
+        logo="https://example.test/l.png"
+        testID="c"
+      />,
+    );
     expect(queryTestId('c-agency')).toBeNull();
     expect(byTestId('c-label').textContent).toBe('Agency');
   });
@@ -180,7 +197,10 @@ describe('ContactCard', () => {
       />,
     );
     expect(byTestId('c-message').textContent).toBe('Message');
-    expect(getComputedStyle(byTestId('c-message')).backgroundImage || getComputedStyle(byTestId('c-message')).backgroundColor).toBeTruthy();
+    expect(
+      getComputedStyle(byTestId('c-message')).backgroundImage ||
+        getComputedStyle(byTestId('c-message')).backgroundColor,
+    ).toBeTruthy();
     act(() => byTestId('c-call').click());
     expect(onCall).toHaveBeenCalledTimes(1);
 
@@ -196,7 +216,15 @@ describe('ContactCard', () => {
   });
 
   it('a revealed number with nothing to call is text, not a button', () => {
-    mount(<ContactCard role="landlord" name="Artur" phone="+351 934 118 502" phoneRevealed testID="c" />);
+    mount(
+      <ContactCard
+        role="landlord"
+        name="Artur"
+        phone="+351 934 118 502"
+        phoneRevealed
+        testID="c"
+      />,
+    );
     const phone = byTestId('c-phone');
     expect(phone.tagName).not.toBe('BUTTON');
     expect(phone.getAttribute('role')).toBeNull();
@@ -215,7 +243,11 @@ describe('ContactCard', () => {
 
 describe('FloorPlan', () => {
   const plans = [
-    { source: 'https://example.test/a.png', label: 'Main floor · 96 m²', description: '3 bedrooms' },
+    {
+      source: 'https://example.test/a.png',
+      label: 'Main floor · 96 m²',
+      description: '3 bedrooms',
+    },
     { source: 'https://example.test/b.png', label: 'Upper floor', alt: 'Upper floor plan' },
   ];
 
@@ -225,7 +257,9 @@ describe('FloorPlan', () => {
     const second = byTestId('fp-plan-1');
     expect(second.getAttribute('role')).toBe('button');
     expect(second.getAttribute('aria-label')).toBe('Upper floor plan, floor plan 2 of 2');
-    expect(byTestId('fp-plan-0').getAttribute('aria-label')).toBe('Main floor · 96 m², floor plan 1 of 2');
+    expect(byTestId('fp-plan-0').getAttribute('aria-label')).toBe(
+      'Main floor · 96 m², floor plan 1 of 2',
+    );
     act(() => second.click());
     expect(onPressPlan).toHaveBeenCalledWith(1);
     expect(queryTestId('fp-plan-0-expand')).not.toBeNull();

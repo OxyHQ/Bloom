@@ -24,8 +24,6 @@ describe('theme gradients', () => {
   });
 
   it('are identical across light and dark mode (theme-agnostic)', () => {
-    expect(buildTheme('teal', 'dark').gradients).toBe(
-      buildTheme('teal', 'light').gradients,
-    );
+    expect(buildTheme('teal', 'dark').gradients).toBe(buildTheme('teal', 'light').gradients);
   });
 });

@@ -17,11 +17,25 @@ import {
 } from '../../src/icons/remix';
 import { ApplicationChecklist } from '../../src/listing-actions';
 import type { SidebarNavItem } from '../../src/sidebar';
-import { DocumentList, LeaseSummaryCard, MaintenanceRequestCard, RentPaymentList, TenancyTimeline } from '../../src/tenancy';
+import {
+  DocumentList,
+  LeaseSummaryCard,
+  MaintenanceRequestCard,
+  RentPaymentList,
+  TenancyTimeline,
+} from '../../src/tenancy';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { TEMPLATE_FRAME } from '../shared/dashboard';
-import { APPLICATION, DOCUMENTS, LEASE, MAINTENANCE, PAYMENTS, PEOPLE, TENANCY_EVENTS } from './data';
+import {
+  APPLICATION,
+  DOCUMENTS,
+  LEASE,
+  MAINTENANCE,
+  PAYMENTS,
+  PEOPLE,
+  TENANCY_EVENTS,
+} from './data';
 import { HousingMark, useHousingLayout, useHousingNav } from './HousingHeader';
 
 const noop = () => undefined;
@@ -29,8 +43,21 @@ const noop = () => undefined;
 function SectionTitle({ children, action }: { children: string; action?: React.ReactNode }) {
   const theme = useTheme();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 16 }}>
-      <Text role="heading" aria-level={2} variant="title-3-semibold" style={{ color: theme.colors.text }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        marginTop: 16,
+      }}
+    >
+      <Text
+        role="heading"
+        aria-level={2}
+        variant="title-3-semibold"
+        style={{ color: theme.colors.text }}
+      >
         {children}
       </Text>
       {action}
@@ -61,8 +88,18 @@ export function MyHomePage() {
   const secondaryItems: SidebarNavItem[] = [
     { key: 'explore', label: 'Explore homes', icon: RiCompass3Line, onPress: () => go('explore') },
     { key: 'saved', label: 'Saved', icon: RiBookmarkLine, onPress: () => go('saved') },
-    { key: 'evictions', label: 'Evictions', icon: RiAlarmWarningLine, onPress: () => go('evictions') },
-    { key: 'publish', label: 'List your home', icon: RiMegaphoneLine, onPress: () => go('publish') },
+    {
+      key: 'evictions',
+      label: 'Evictions',
+      icon: RiAlarmWarningLine,
+      onPress: () => go('evictions'),
+    },
+    {
+      key: 'publish',
+      label: 'List your home',
+      icon: RiMegaphoneLine,
+      onPress: () => go('publish'),
+    },
   ];
 
   return (
@@ -73,7 +110,11 @@ export function MyHomePage() {
         drawerOpen={drawerOpen}
         onDrawerOpenChange={setDrawerOpen}
         sidebar={{
-          logo: { icon: <HousingMark size={28} />, wordmark: 'Homes', onPress: () => go('explore') },
+          logo: {
+            icon: <HousingMark size={28} />,
+            wordmark: 'Homes',
+            onPress: () => go('explore'),
+          },
           items,
           secondaryItems,
           selected,
@@ -82,28 +123,51 @@ export function MyHomePage() {
         }}
         title="My home"
         actions={
-          <Button  size="sm" leadingIcon={RiToolsLine} onPress={noop} tone="accent" appearance="solid">
+          <Button
+            size="sm"
+            leadingIcon={RiToolsLine}
+            onPress={noop}
+            tone="accent"
+            appearance="solid"
+          >
             Report a repair
           </Button>
         }
         aside={
           <View style={{ gap: 16, paddingTop: 8 }}>
             <SectionTitle>Tenancy</SectionTitle>
-            <TenancyTimeline events={TENANCY_EVENTS} density="compact" accessibilityLabel="Tenancy timeline" />
+            <TenancyTimeline
+              events={TENANCY_EVENTS}
+              density="compact"
+              accessibilityLabel="Tenancy timeline"
+            />
           </View>
         }
         asideCollapse="hidden"
         contentMaxWidth={960}
       >
-        <View style={{ gap: 16, paddingLeft: md ? 12 : 0, paddingRight: md ? 12 : 0, paddingBottom: 48 }}>
+        <View
+          style={{
+            gap: 16,
+            paddingLeft: md ? 12 : 0,
+            paddingRight: md ? 12 : 0,
+            paddingBottom: 48,
+          }}
+        >
           <LeaseSummaryCard
             {...LEASE}
             actions={
               <>
-                <Button  size="sm" onPress={noop} tone="accent" appearance="solid">
+                <Button size="sm" onPress={noop} tone="accent" appearance="solid">
                   Pay rent
                 </Button>
-                <Button  size="sm" leadingIcon={RiChat3Line} onPress={noop} tone="neutral" appearance="outline">
+                <Button
+                  size="sm"
+                  leadingIcon={RiChat3Line}
+                  onPress={noop}
+                  tone="neutral"
+                  appearance="outline"
+                >
                   Message landlord
                 </Button>
               </>
@@ -113,16 +177,31 @@ export function MyHomePage() {
 
           <SectionTitle>Rent payments</SectionTitle>
           <RentPaymentList
-            payments={PAYMENTS.map((p) => (p.status === 'paid' || p.status === 'partial' ? { ...p, onDownloadReceipt: noop } : p))}
+            payments={PAYMENTS.map((p) =>
+              p.status === 'paid' || p.status === 'partial' ? { ...p, onDownloadReceipt: noop } : p,
+            )}
             paidThisYear="€7,550"
             outstanding="€450"
             outstandingTone="error"
             testID="housing-payments"
           />
 
-          <SectionTitle action={<Button  size="sm" onPress={noop} tone="neutral" appearance="outline">New request</Button>}>Repairs</SectionTitle>
+          <SectionTitle
+            action={
+              <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+                New request
+              </Button>
+            }
+          >
+            Repairs
+          </SectionTitle>
           {MAINTENANCE.map((request) => (
-            <MaintenanceRequestCard key={request.reference} {...request} onPressComments={noop} onPressPhoto={noop} />
+            <MaintenanceRequestCard
+              key={request.reference}
+              {...request}
+              onPressComments={noop}
+              onPressPhoto={noop}
+            />
           ))}
 
           <SectionTitle>Documents</SectionTitle>
@@ -142,7 +221,13 @@ export function MyHomePage() {
             items={application.map((item) => ({
               ...item,
               onAction: () =>
-                setApplication((list) => list.map((i) => (i.key === item.key && i.status !== 'verified' ? { ...i, status: 'uploaded', reason: undefined } : i))),
+                setApplication((list) =>
+                  list.map((i) =>
+                    i.key === item.key && i.status !== 'verified'
+                      ? { ...i, status: 'uploaded', reason: undefined }
+                      : i,
+                  ),
+                ),
             }))}
             maxWidth={null}
             testID="housing-application"

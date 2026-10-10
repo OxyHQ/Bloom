@@ -5,60 +5,99 @@ const { chromium, expect } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || '@pl
 const browser = await chromium.launch();
 const base = process.argv[2] || 'http://127.0.0.1:6273';
 try {
-  for (const width of [320, 1440]) for (const rtl of [false, true]) for (const mode of ['light', 'dark']) {
-    const page = await browser.newPage({ viewport: { width, height: 1000 }, hasTouch: width === 320, reducedMotion: mode === 'dark' ? 'reduce' : 'no-preference' });
-    const errors = []; page.on('pageerror', error => errors.push(error.message));
-    await page.addInitScript(rtl => {
-      const apply = () => { if (document.documentElement) document.documentElement.dir = rtl ? 'rtl' : 'ltr'; };
-      apply(); document.addEventListener('DOMContentLoaded', apply, { once: true });
-    }, rtl);
-    await page.goto(`${base}/iframe.html?id=base-radio--chips&viewMode=story&globals=theme:${mode}`);
-    const group = page.getByRole('radiogroup', { name: 'Size', exact: true });
-    const small = group.getByRole('radio', { name: 'Small', exact: true });
-    const large = group.getByRole('radio', { name: 'Large', exact: true });
-    const last = group.getByRole('radio', { name: 'Extra large', exact: true });
-    await expect(small).toBeVisible();
-    await expect(group.locator('svg')).toHaveCount(0);
-    const box = await small.boundingBox(); assert(box); assert.equal(box.height, 40);
-    await expect(group.locator('[tabindex="0"]')).toHaveCount(1);
-    await small.evaluate(node => { window.__firstRadioHost = node; });
-    await small.focus();
-    await page.keyboard.down('Space'); await expect(small).not.toBeChecked();
-    await page.keyboard.up('Space'); await expect(small).toBeChecked();
-    await expect(small).toBeFocused();
-    await page.keyboard.press(rtl ? 'ArrowLeft' : 'ArrowRight');
-    await expect(large).toBeChecked(); await expect(large).toBeFocused();
-    await page.keyboard.press('End'); await expect(last).toBeChecked(); await expect(last).toBeFocused();
-    await page.keyboard.press(rtl ? 'ArrowLeft' : 'ArrowRight'); await expect(small).toBeChecked();
-    await page.keyboard.press('End'); await page.keyboard.press('Home'); await expect(small).toBeFocused();
-    assert(await small.evaluate(node => window.__firstRadioHost === node), 'selection remounted the radio');
-    const disabled = group.getByRole('radio', { name: 'Medium', exact: true });
-    await expect(disabled).toBeDisabled(); await expect(disabled).toHaveAttribute('tabindex', '-1');
-    await expect(page.getByRole('radiogroup', { name: 'Disabled choices' }).locator('[tabindex="0"]')).toHaveCount(0);
-    const lastBox = await last.boundingBox(); assert(lastBox);
-    if (width === 320) assert(lastBox.y > box.y, 'narrow chips must wrap');
-    if (width === 320) await last.tap(); else await last.click();
-    await expect(last).toBeChecked();
-    const activation = page.getByRole('radio', { name: 'Activation example', exact: true });
-    await activation.focus(); await page.keyboard.press('Enter');
-    await expect(page.getByTestId('chip-activations')).toHaveText('1');
-    await page.keyboard.press('Space');
-    await expect(page.getByTestId('chip-activations')).toHaveText('2');
-    const authored = page.getByRole('radiogroup', { name: 'Authored choices' });
-    const authoredA = authored.getByRole('radio', { name: 'Authored A' });
-    const authoredB = authored.getByRole('radio', { name: 'Authored B' });
-    await expect(authoredA).toHaveCSS('min-height', '48px');
-    await expect(authoredA).toHaveCSS('border-radius', '12px');
-    await expect(authoredA.getByText('Authored A')).toHaveCSS('font-size', '18px');
-    await expect(authoredA).toHaveCSS('background-color', 'rgb(227, 237, 246)');
-    await authoredB.click(); await expect(authoredB).toBeChecked();
-    await expect(authoredA).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-    await expect(authoredB).toHaveCSS('background-color', 'rgb(227, 237, 246)');
-    const decorative = page.getByRole('radio', { name: 'Decorative A', exact: true });
-    await decorative.click(); await expect(decorative).toBeChecked();
-    if (mode === 'dark') await expect(small).toHaveCSS('transition-duration', '0s');
-    assert.deepEqual(errors, []);
-    console.log(`PASS ${width}px ${rtl ? 'RTL' : 'LTR'} ${mode}: roving/Space/Home/End, disabled, stable focus, wrapping, nativewind recipes`);
-    await page.close();
-  }
-} finally { await browser.close(); }
+  for (const width of [320, 1440])
+    for (const rtl of [false, true])
+      for (const mode of ['light', 'dark']) {
+        const page = await browser.newPage({
+          viewport: { width, height: 1000 },
+          hasTouch: width === 320,
+          reducedMotion: mode === 'dark' ? 'reduce' : 'no-preference',
+        });
+        const errors = [];
+        page.on('pageerror', (error) => errors.push(error.message));
+        await page.addInitScript((rtl) => {
+          const apply = () => {
+            if (document.documentElement) document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+          };
+          apply();
+          document.addEventListener('DOMContentLoaded', apply, { once: true });
+        }, rtl);
+        await page.goto(
+          `${base}/iframe.html?id=base-radio--chips&viewMode=story&globals=theme:${mode}`,
+        );
+        const group = page.getByRole('radiogroup', { name: 'Size', exact: true });
+        const small = group.getByRole('radio', { name: 'Small', exact: true });
+        const large = group.getByRole('radio', { name: 'Large', exact: true });
+        const last = group.getByRole('radio', { name: 'Extra large', exact: true });
+        await expect(small).toBeVisible();
+        await expect(group.locator('svg')).toHaveCount(0);
+        const box = await small.boundingBox();
+        assert(box);
+        assert.equal(box.height, 40);
+        await expect(group.locator('[tabindex="0"]')).toHaveCount(1);
+        await small.evaluate((node) => {
+          window.__firstRadioHost = node;
+        });
+        await small.focus();
+        await page.keyboard.down('Space');
+        await expect(small).not.toBeChecked();
+        await page.keyboard.up('Space');
+        await expect(small).toBeChecked();
+        await expect(small).toBeFocused();
+        await page.keyboard.press(rtl ? 'ArrowLeft' : 'ArrowRight');
+        await expect(large).toBeChecked();
+        await expect(large).toBeFocused();
+        await page.keyboard.press('End');
+        await expect(last).toBeChecked();
+        await expect(last).toBeFocused();
+        await page.keyboard.press(rtl ? 'ArrowLeft' : 'ArrowRight');
+        await expect(small).toBeChecked();
+        await page.keyboard.press('End');
+        await page.keyboard.press('Home');
+        await expect(small).toBeFocused();
+        assert(
+          await small.evaluate((node) => window.__firstRadioHost === node),
+          'selection remounted the radio',
+        );
+        const disabled = group.getByRole('radio', { name: 'Medium', exact: true });
+        await expect(disabled).toBeDisabled();
+        await expect(disabled).toHaveAttribute('tabindex', '-1');
+        await expect(
+          page.getByRole('radiogroup', { name: 'Disabled choices' }).locator('[tabindex="0"]'),
+        ).toHaveCount(0);
+        const lastBox = await last.boundingBox();
+        assert(lastBox);
+        if (width === 320) assert(lastBox.y > box.y, 'narrow chips must wrap');
+        if (width === 320) await last.tap();
+        else await last.click();
+        await expect(last).toBeChecked();
+        const activation = page.getByRole('radio', { name: 'Activation example', exact: true });
+        await activation.focus();
+        await page.keyboard.press('Enter');
+        await expect(page.getByTestId('chip-activations')).toHaveText('1');
+        await page.keyboard.press('Space');
+        await expect(page.getByTestId('chip-activations')).toHaveText('2');
+        const authored = page.getByRole('radiogroup', { name: 'Authored choices' });
+        const authoredA = authored.getByRole('radio', { name: 'Authored A' });
+        const authoredB = authored.getByRole('radio', { name: 'Authored B' });
+        await expect(authoredA).toHaveCSS('min-height', '48px');
+        await expect(authoredA).toHaveCSS('border-radius', '12px');
+        await expect(authoredA.getByText('Authored A')).toHaveCSS('font-size', '18px');
+        await expect(authoredA).toHaveCSS('background-color', 'rgb(227, 237, 246)');
+        await authoredB.click();
+        await expect(authoredB).toBeChecked();
+        await expect(authoredA).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+        await expect(authoredB).toHaveCSS('background-color', 'rgb(227, 237, 246)');
+        const decorative = page.getByRole('radio', { name: 'Decorative A', exact: true });
+        await decorative.click();
+        await expect(decorative).toBeChecked();
+        if (mode === 'dark') await expect(small).toHaveCSS('transition-duration', '0s');
+        assert.deepEqual(errors, []);
+        console.log(
+          `PASS ${width}px ${rtl ? 'RTL' : 'LTR'} ${mode}: roving/Space/Home/End, disabled, stable focus, wrapping, nativewind recipes`,
+        );
+        await page.close();
+      }
+} finally {
+  await browser.close();
+}

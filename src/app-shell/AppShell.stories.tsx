@@ -17,18 +17,24 @@ import {
 } from '../sidebar/Sidebar.stories';
 import { useTheme } from '../theme/use-theme';
 import { AiChatContainer, AiChatUserMessage } from '../ai-chat';
-import { AppShell, AppShellSplitPanes, AppShellHeader, NotificationBell, ProOfferCard } from './index';
+import {
+  AppShell,
+  AppShellSplitPanes,
+  AppShellHeader,
+  NotificationBell,
+  ProOfferCard,
+} from './index';
 
 const meta: Meta<typeof AppShell> = {
   argTypes: {
-    "active": { control: 'boolean' },
-    "value": { control: 'text' },
-    "navigationPlacement": { control: 'select', options: ["auto","bottom","rail","sidebar"] },
-    "bottomActionBehavior": { control: 'select', options: ["visible","hide"] },
-    "scroll": { control: 'select', options: ["document","container","fixed","auto","external"] },
-    "title": { control: 'text' },
-    "navigationAlign": { control: 'select', options: ["edge", "content"] },
-    "contentMaxWidth": { control: 'number' }
+    active: { control: 'boolean' },
+    value: { control: 'text' },
+    navigationPlacement: { control: 'select', options: ['auto', 'bottom', 'rail', 'sidebar'] },
+    bottomActionBehavior: { control: 'select', options: ['visible', 'hide'] },
+    scroll: { control: 'select', options: ['document', 'container', 'fixed', 'auto', 'external'] },
+    title: { control: 'text' },
+    navigationAlign: { control: 'select', options: ['edge', 'content'] },
+    contentMaxWidth: { control: 'number' },
   },
   title: 'Blocks/App Shell',
   parameters: { layout: 'fullscreen' },
@@ -72,26 +78,47 @@ function Actions() {
   return (
     <>
       <NotificationBell notifications={DEMO_NOTIFICATIONS} testID="bell" />
-      <Button size="md" icon={compact ? RiFilter3Fill : undefined} leadingIcon={compact ? undefined : RiFilter3Fill} accessibilityLabel="Filters" appearance="outline" tone="neutral">
+      <Button
+        size="md"
+        icon={compact ? RiFilter3Fill : undefined}
+        leadingIcon={compact ? undefined : RiFilter3Fill}
+        accessibilityLabel="Filters"
+        appearance="outline"
+        tone="neutral"
+      >
         {compact ? undefined : 'Filters'}
       </Button>
-      <Button size="md" icon={compact ? RiAddFill : undefined} leadingIcon={compact ? undefined : RiAddFill} accessibilityLabel="Create ticket" appearance="solid" tone="accent">
+      <Button
+        size="md"
+        icon={compact ? RiAddFill : undefined}
+        leadingIcon={compact ? undefined : RiAddFill}
+        accessibilityLabel="Create ticket"
+        appearance="solid"
+        tone="accent"
+      >
         {compact ? undefined : 'Create ticket'}
       </Button>
     </>
   );
 }
 
-function Shell({ rail = false, args }: { rail?: boolean; args?: React.ComponentProps<typeof AppShell> }) {
+function Shell({
+  rail = false,
+  args,
+}: {
+  rail?: boolean;
+  args?: React.ComponentProps<typeof AppShell>;
+}) {
   const [selected, setSelected] = useState('home');
   const compact = useWindowDimensions().width < 600;
   const [collapsed, setCollapsed] = useState(true);
   const [offer, setOffer] = useState(true);
   return (
     <View style={{ width: '100%', height: 860 }}>
-      <AppShell {...args}
+      <AppShell
+        {...args}
         testID="shell"
-        navigationPlacement={rail ? 'rail' : args?.navigationPlacement ?? 'auto'}
+        navigationPlacement={rail ? 'rail' : (args?.navigationPlacement ?? 'auto')}
         sidebar={{
           variant: rail ? 'rail' : 'panel',
           collapsed: compact ? collapsed : undefined,
@@ -103,7 +130,7 @@ function Shell({ rail = false, args }: { rail?: boolean; args?: React.ComponentP
           account: DEMO_ACCOUNT,
           team: DEMO_TEAM,
         }}
-        title={args?.title ?? "Welcome Maya"}
+        title={args?.title ?? 'Welcome Maya'}
         breadcrumb={compact ? undefined : <Trail />}
         actions={<Actions />}
         overlay={
@@ -157,7 +184,12 @@ export const Header: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ maxWidth: '100%', width: 900 }}>
-      <AppShellHeader testID="header" title="Welcome Maya" breadcrumb={<Trail />} actions={<Actions />} />
+      <AppShellHeader
+        testID="header"
+        title="Welcome Maya"
+        breadcrumb={<Trail />}
+        actions={<Actions />}
+      />
     </View>
   ),
 };
@@ -186,32 +218,64 @@ export const ProOffer: Story = {
   ),
 };
 
-
 export const SeparatedPanes: Story = {
-  render: () => <View style={{ height: 600, padding: 12 }}>
-    <AppShellSplitPanes variant="separated" testID="separated" paneScroll={false}
-      list={<AiChatContainer><View style={{ flex: 1 }} /></AiChatContainer>}
-      detail={<AiChatContainer><View style={{ flex: 1 }} /></AiChatContainer>} />
-  </View>,
+  render: () => (
+    <View style={{ height: 600, padding: 12 }}>
+      <AppShellSplitPanes
+        variant="separated"
+        testID="separated"
+        paneScroll={false}
+        list={
+          <AiChatContainer>
+            <View style={{ flex: 1 }} />
+          </AiChatContainer>
+        }
+        detail={
+          <AiChatContainer>
+            <View style={{ flex: 1 }} />
+          </AiChatContainer>
+        }
+      />
+    </View>
+  ),
 };
-
 
 function AnimatedPanesExample() {
   const [selected, setSelected] = useState(false);
   const wide = useWindowDimensions().width >= 1024;
-  return <AppShell scroll="document" header={null} contentMaxWidth="none">
-    <AppShellSplitPanes variant="separated" transition="slide" paneScroll={false}
-      showList={wide || !selected} showDetail={selected} listWidth={380}
-      testID="animated-panes"
-      list={<ContentPanel framed chrome="none" contentStyle={{ padding: 16 }}>
-        <AppShellHeader title="Transactions" actions={<Button onPress={() => setSelected(true)}>Open transaction</Button>} />
-        <Placeholder height={1000} />
-      </ContentPanel>}
-      detail={selected ? <ContentPanel framed chrome="none" contentStyle={{ padding: 16 }}>
-        <AppShellHeader title="Transaction details" actions={<Button onPress={() => setSelected(false)}>Close</Button>} />
-        <Placeholder height={700} />
-      </ContentPanel> : undefined} />
-  </AppShell>;
+  return (
+    <AppShell scroll="document" header={null} contentMaxWidth="none">
+      <AppShellSplitPanes
+        variant="separated"
+        transition="slide"
+        paneScroll={false}
+        showList={wide || !selected}
+        showDetail={selected}
+        listWidth={380}
+        testID="animated-panes"
+        list={
+          <ContentPanel framed chrome="none" contentStyle={{ padding: 16 }}>
+            <AppShellHeader
+              title="Transactions"
+              actions={<Button onPress={() => setSelected(true)}>Open transaction</Button>}
+            />
+            <Placeholder height={1000} />
+          </ContentPanel>
+        }
+        detail={
+          selected ? (
+            <ContentPanel framed chrome="none" contentStyle={{ padding: 16 }}>
+              <AppShellHeader
+                title="Transaction details"
+                actions={<Button onPress={() => setSelected(false)}>Close</Button>}
+              />
+              <Placeholder height={700} />
+            </ContentPanel>
+          ) : undefined
+        }
+      />
+    </AppShell>
+  );
 }
 
 /** Open/close and resize the viewport: document scroll, native pane motion, no extra animation wrapper. */
@@ -222,16 +286,41 @@ export const AnimatedPanes: Story = {
 
 export const IconOnlyRail: Story = {
   parameters: { bloomScroll: 'document' },
-  render: () => <AppShell testID="icon-rail-shell" scroll="document" header={null}
-    gutter={8} navFrom={0} contentMaxWidth="none"
-    sidebar={{ variant: 'rail', railLabels: 'hidden', railSelection: 'icon', railWidth: 68,
-      surface: 'plain', items: DEMO_RAIL_NAV, selected: 'home' }}>
-    <AiChatUserMessage testID="wide-bubble" animate={false}
-      bubbleStyle={width => ({ maxWidth: width > 0 ? Math.max(0, width - 112) : '100%',
-        marginInlineEnd: 0, borderRadius: 24, paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 })}>
-      A longer message demonstrates how the bubble wraps while leaving space at the start of its column.
-      The navigation beside it owns its width and retains accessible destination names.
-    </AiChatUserMessage>
-    <Placeholder height={1200} />
-  </AppShell>,
+  render: () => (
+    <AppShell
+      testID="icon-rail-shell"
+      scroll="document"
+      header={null}
+      gutter={8}
+      navFrom={0}
+      contentMaxWidth="none"
+      sidebar={{
+        variant: 'rail',
+        railLabels: 'hidden',
+        railSelection: 'icon',
+        railWidth: 68,
+        surface: 'plain',
+        items: DEMO_RAIL_NAV,
+        selected: 'home',
+      }}
+    >
+      <AiChatUserMessage
+        testID="wide-bubble"
+        animate={false}
+        bubbleStyle={(width) => ({
+          maxWidth: width > 0 ? Math.max(0, width - 112) : '100%',
+          marginInlineEnd: 0,
+          borderRadius: 24,
+          paddingLeft: 16,
+          paddingRight: 16,
+          paddingTop: 12,
+          paddingBottom: 12,
+        })}
+      >
+        A longer message demonstrates how the bubble wraps while leaving space at the start of its
+        column. The navigation beside it owns its width and retains accessible destination names.
+      </AiChatUserMessage>
+      <Placeholder height={1200} />
+    </AppShell>
+  ),
 };

@@ -58,10 +58,17 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
         {...dirProps}
         style={{ position: 'relative', flexDirection: 'row' }}
         // Hover is read on the wrapper (the `group`).
-        {...({ onPointerEnter: onIn, onPointerLeave: onOut })}
+        {...{ onPointerEnter: onIn, onPointerLeave: onOut }}
       >
         <PopoverTrigger asChild label={accessibilityLabel}>
-          <Button size="md" icon={RiNotificationLine} accessibilityLabel={accessibilityLabel} testID={testID} appearance="plain" tone="neutral" />
+          <Button
+            size="md"
+            icon={RiNotificationLine}
+            accessibilityLabel={accessibilityLabel}
+            testID={testID}
+            appearance="plain"
+            tone="neutral"
+          />
         </PopoverTrigger>
         {unread > 0 ? (
           <View
@@ -81,7 +88,16 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
               backgroundColor: palette.badge,
             }}
           >
-            <Text style={{ width: 16, textAlign: 'center', fontSize: 10, lineHeight: 16, fontWeight: '700', color: palette.badgeForeground }}>
+            <Text
+              style={{
+                width: 16,
+                textAlign: 'center',
+                fontSize: 10,
+                lineHeight: 16,
+                fontWeight: '700',
+                color: palette.badgeForeground,
+              }}
+            >
               {unread}
             </Text>
           </View>

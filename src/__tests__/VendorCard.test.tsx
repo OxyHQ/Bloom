@@ -135,7 +135,13 @@ describe('the heart is a sibling of the link, not its child', () => {
   it('keeps the control outside the pressable, in both densities', () => {
     for (const density of ['comfortable', 'compact'] as const) {
       mount(
-        <VendorCard {...VENDOR} density={density} favorite onFavoriteChange={() => undefined} testID="v" />,
+        <VendorCard
+          {...VENDOR}
+          density={density}
+          favorite
+          onFavoriteChange={() => undefined}
+          testID="v"
+        />,
       );
       const link = byTestId('v-link');
       const heart = byTestId('v-favorite');
@@ -164,7 +170,11 @@ describe('the promo mark', () => {
 
 describe('the name is the whole card, in reading order', () => {
   it('says the status, the promo, the cuisines, the rating and the readings', () => {
-    const name = composeVendorName({ ...VENDOR, availability: 'closed', opensAt: 'Opens at 07:30' });
+    const name = composeVendorName({
+      ...VENDOR,
+      availability: 'closed',
+      opensAt: 'Opens at 07:30',
+    });
     expect(name.indexOf('Fig & Ember')).toBeLessThan(name.indexOf('Closed'));
     expect(name.indexOf('Closed')).toBeLessThan(name.indexOf('Opens at 07:30'));
     expect(name).toContain('Rated 4.8 out of 5, 214 reviews');
@@ -172,8 +182,12 @@ describe('the name is the whole card, in reading order', () => {
   });
 
   it('says "New" rather than a rating when there is none', () => {
-    expect(composeVendorName({ name: 'X', price: undefined, rating: null } as VendorCardProps)).toContain('New');
-    expect(composeVendorName({ name: 'X', rating: null, newLabel: 'Nuevo' } as VendorCardProps)).toContain('Nuevo');
+    expect(
+      composeVendorName({ name: 'X', price: undefined, rating: null } as VendorCardProps),
+    ).toContain('New');
+    expect(
+      composeVendorName({ name: 'X', rating: null, newLabel: 'Nuevo' } as VendorCardProps),
+    ).toContain('Nuevo');
   });
 
   it('is replaced whole by an explicit one', () => {

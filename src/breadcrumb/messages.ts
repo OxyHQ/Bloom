@@ -8,6 +8,7 @@ export interface BreadcrumbMessages {
   breadcrumb: string;
 }
 
-export const BREADCRUMB_MESSAGES: MessageCatalog<BreadcrumbMessages> = defineMessages<BreadcrumbMessages>('BREADCRUMB_MESSAGES', {
-  breadcrumb: 'Breadcrumb',
-});
+export const BREADCRUMB_MESSAGES: MessageCatalog<BreadcrumbMessages> =
+  defineMessages<BreadcrumbMessages>('BREADCRUMB_MESSAGES', {
+    breadcrumb: 'Breadcrumb',
+  });

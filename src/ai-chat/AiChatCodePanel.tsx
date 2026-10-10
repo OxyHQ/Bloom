@@ -12,7 +12,13 @@ import { CodeLines } from '../code';
 import { Tabs, TabsTrigger } from '../tabs';
 import { Text } from '../typography';
 import { GlyphAction } from './AiChatControls';
-import { dataHook, ROW_RADIUS, useAiChatPalette, useAiChatWebCss, type AiChatPalette } from './shared';
+import {
+  dataHook,
+  ROW_RADIUS,
+  useAiChatPalette,
+  useAiChatWebCss,
+  type AiChatPalette,
+} from './shared';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
 import type { AiChatCodePanelProps, AiChatPanelAction, AiChatPanelTab } from './types';
@@ -35,15 +41,38 @@ export function PanelHeader({
   children: React.ReactNode;
 }) {
   return (
-    <View style={{ width: '100%', minHeight: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+    <View
+      style={{
+        width: '100%',
+        minHeight: 30,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
       <View accessibilityLabel={label} style={{ flexShrink: 1, minWidth: 0 }}>
         <Tabs variant="pill" value={value} onValueChange={onValueChange}>
           {tabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} label={tab.label} leadingIcon={tab.icon} />
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              label={tab.label}
+              leadingIcon={tab.icon}
+            />
           ))}
         </Tabs>
       </View>
-      <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 1 }}>{children}</View>
+      <View
+        style={{
+          flexShrink: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          paddingRight: 1,
+        }}
+      >
+        {children}
+      </View>
     </View>
   );
 }
@@ -58,7 +87,9 @@ export function codePanelActions(messages: AiChatMessages): ReadonlyArray<AiChat
 }
 
 /** The English actions; the panel's own default follows the locale. */
-export const DEFAULT_CODE_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = codePanelActions(AI_CHAT_MESSAGES.en);
+export const DEFAULT_CODE_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = codePanelActions(
+  AI_CHAT_MESSAGES.en,
+);
 
 /** A panel-wide placeholder on the secondary surface (the Browser / Styles tabs). */
 export function PanelPlaceholder({ label, palette }: { label: string; palette: AiChatPalette }) {
@@ -71,7 +102,8 @@ export function PanelPlaceholder({ label, palette }: { label: string; palette: A
         justifyContent: 'center',
         borderRadius: ROW_RADIUS,
         backgroundColor: palette.secondary,
-      }}>
+      }}
+    >
       <Text variant="body-medium" style={{ color: palette.textTertiary }}>
         {label}
       </Text>
@@ -120,7 +152,10 @@ export function AiChatCodePanel({
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const { messages } = useMessages(AI_CHAT_MESSAGES);
-  const l = useMemo(() => ({ tabs: messages.panelView, ...messages.codePanel, ...labels }), [messages, labels]);
+  const l = useMemo(
+    () => ({ tabs: messages.panelView, ...messages.codePanel, ...labels }),
+    [messages, labels],
+  );
   const defaultActions = useMemo(() => codePanelActions(messages), [messages]);
   const actions = actionsProp ?? defaultActions;
   const [current, setCurrent] = useControllableState<'changes' | 'browser'>({
@@ -153,10 +188,22 @@ export function AiChatCodePanel({
           paddingTop: 8,
         },
         style,
-      ]}>
-      <PanelHeader tabs={tabs} value={shown} onValueChange={(next) => setCurrent(next as 'changes' | 'browser')} label={l.tabs}>
+      ]}
+    >
+      <PanelHeader
+        tabs={tabs}
+        value={shown}
+        onValueChange={(next) => setCurrent(next as 'changes' | 'browser')}
+        label={l.tabs}
+      >
         {actions.map((action) => (
-          <GlyphAction key={action.key} icon={action.icon} label={action.label} onPress={action.onPress} palette={palette} />
+          <GlyphAction
+            key={action.key}
+            icon={action.icon}
+            label={action.label}
+            onPress={action.onPress}
+            palette={palette}
+          />
         ))}
       </PanelHeader>
 
@@ -179,21 +226,48 @@ export function AiChatCodePanel({
                     paddingRight: 10,
                     paddingTop: 6,
                     paddingBottom: 14,
-                  }}>
-                  <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <View style={{ minWidth: 0, flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
+                  }}
+                >
+                  <View
+                    style={{ width: '100%', flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                  >
+                    <View
+                      style={{
+                        minWidth: 0,
+                        flex: 1,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      <Text
+                        variant="body-2-medium"
+                        numberOfLines={1}
+                        style={{ color: palette.textSecondary }}
+                      >
                         {l.uncommitted(changeCount)}
                       </Text>
                       {additions !== undefined ? (
-                        <Text variant="body-regular" style={{ color: palette.addition }}>{`+${additions}`}</Text>
+                        <Text
+                          variant="body-regular"
+                          style={{ color: palette.addition }}
+                        >{`+${additions}`}</Text>
                       ) : null}
                       {deletions !== undefined ? (
-                        <Text variant="body-regular" style={{ color: palette.deletion }}>{`-${deletions}`}</Text>
+                        <Text
+                          variant="body-regular"
+                          style={{ color: palette.deletion }}
+                        >{`-${deletions}`}</Text>
                       ) : null}
                     </View>
                     {onUndo ? (
-                      <GlyphAction icon={RiCornerUpLeftLine} label={l.undo} onPress={onUndo} palette={palette} hover={false} />
+                      <GlyphAction
+                        icon={RiCornerUpLeftLine}
+                        label={l.undo}
+                        onPress={onUndo}
+                        palette={palette}
+                        hover={false}
+                      />
                     ) : null}
                   </View>
                 </View>
@@ -214,10 +288,23 @@ export function AiChatCodePanel({
                     paddingBottom: 4,
                     paddingRight: 5,
                     paddingLeft: 6,
-                  }}>
-                  <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  }}
+                >
+                  <View
+                    style={{
+                      minWidth: 0,
+                      flexShrink: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
                     {file.icon ? <View style={{ flexShrink: 0 }}>{file.icon}</View> : null}
-                    <Text variant="body-regular" numberOfLines={1} style={{ flexShrink: 1, color: palette.text }}>
+                    <Text
+                      variant="body-regular"
+                      numberOfLines={1}
+                      style={{ flexShrink: 1, color: palette.text }}
+                    >
                       {file.path}
                       {file.additions !== undefined ? (
                         <Text style={{ color: palette.addition }}>{` +${file.additions}`}</Text>
@@ -236,8 +323,13 @@ export function AiChatCodePanel({
                         paddingRight: 4,
                         paddingTop: 1,
                         paddingBottom: 1,
-                      }}>
-                      <Text variant="caption-1-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
+                      }}
+                    >
+                      <Text
+                        variant="caption-1-medium"
+                        numberOfLines={1}
+                        style={{ color: palette.textSecondary }}
+                      >
                         {file.status}
                       </Text>
                     </View>
@@ -250,7 +342,8 @@ export function AiChatCodePanel({
           <ScrollView
             {...dataHook('bloomAiChatScroll', 'thin')}
             style={{ minHeight: 0, width: '100%', flex: 1 }}
-            contentContainerStyle={{ paddingLeft: 6 }}>
+            contentContainerStyle={{ paddingLeft: 6 }}
+          >
             <CodeLines code={code} language={language} size="md" wrap />
           </ScrollView>
         </>

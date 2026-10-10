@@ -28,9 +28,7 @@ export const getOrderedToastIds = (
     // Already in rendering order — the Toaster reverses top-center up front.
     return toasts.map((t) => t.id);
   }
-  return position === 'top-center'
-    ? toasts.map((t) => t.id).reverse()
-    : toasts.map((t) => t.id);
+  return position === 'top-center' ? toasts.map((t) => t.id).reverse() : toasts.map((t) => t.id);
 };
 
 /**
@@ -66,8 +64,7 @@ export const calculateStackScaleX = ({
     return 1;
   }
 
-  const distanceFromFront =
-    position === 'top-center' ? index : numberOfToasts - index - 1;
+  const distanceFromFront = position === 'top-center' ? index : numberOfToasts - index - 1;
   const narrowAmount = stackGap * distanceFromFront * 2;
   return Math.max(MIN_STACK_SCALE_X, 1 - narrowAmount / rowWidth);
 };
@@ -85,8 +82,13 @@ const heightOf = (
 
 /** Visual row height while stacked; measurements always remain intrinsic. */
 export const calculateToastVisibleHeight = ({
-  index, numberOfToasts, enableStacking, position, allToastHeights,
-  orderedToastIds, isExpanded,
+  index,
+  numberOfToasts,
+  enableStacking,
+  position,
+  allToastHeights,
+  orderedToastIds,
+  isExpanded,
 }: {
   index: number;
   numberOfToasts: number;
@@ -134,7 +136,13 @@ export const calculateToastPosition = ({
 
   if (effectiveEnableStacking) {
     const currentHeight = calculateToastVisibleHeight({
-      index, numberOfToasts, enableStacking, position, allToastHeights, orderedToastIds, isExpanded,
+      index,
+      numberOfToasts,
+      enableStacking,
+      position,
+      allToastHeights,
+      orderedToastIds,
+      isExpanded,
     });
 
     if (position === 'top-center') {
@@ -142,14 +150,9 @@ export const calculateToastPosition = ({
       return frontHeight + index * stackGap - currentHeight;
     }
     // bottom-center and center
-    const frontHeight = heightOf(
-      allToastHeights,
-      orderedToastIds[numberOfToasts - 1],
-    );
+    const frontHeight = heightOf(allToastHeights, orderedToastIds[numberOfToasts - 1]);
     const distFromFront = numberOfToasts - 1 - index;
-    return (
-      centerShift - (frontHeight + distFromFront * stackGap - currentHeight)
-    );
+    return centerShift - (frontHeight + distFromFront * stackGap - currentHeight);
   }
 
   const effectiveGap = isExpanded ? stackGap : gap;

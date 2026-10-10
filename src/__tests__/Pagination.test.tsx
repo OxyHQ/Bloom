@@ -59,7 +59,12 @@ describe('Pagination', () => {
     expect(current.props.accessibilityState).toMatchObject({ selected: true });
     expect(other.props.accessibilityState).toMatchObject({ selected: false });
     const style = resolvedStyle(current.props.style);
-    expect(style).toMatchObject({ width: 32, height: 32, borderWidth: 1, borderRadius: borderRadius.full });
+    expect(style).toMatchObject({
+      width: 32,
+      height: 32,
+      borderWidth: 1,
+      borderRadius: borderRadius.full,
+    });
     expect(style.boxShadow).toBeTruthy();
     expect(resolvedStyle(other.props.style).borderWidth).toBeUndefined();
     expect(resolvedStyle(other.props.style).backgroundColor).toBe('transparent');
@@ -72,11 +77,22 @@ describe('Pagination', () => {
       );
       // The outermost element `Pagination` rendered with Button's props.
       const find = (label: string) =>
-        UNSAFE_root.find((node) => node.props.appearance === 'plain' && node.props.tone === 'neutral' && node.props.children === label).props;
+        UNSAFE_root.find(
+          (node) =>
+            node.props.appearance === 'plain' &&
+            node.props.tone === 'neutral' &&
+            node.props.children === label,
+        ).props;
       return { previous: find('Previous'), next: find('Next'), onChange };
     };
     const first = buttons(1);
-    expect(first.previous).toMatchObject({ appearance: 'plain', tone: 'neutral', size: 'sm', disabled: true, children: 'Previous' });
+    expect(first.previous).toMatchObject({
+      appearance: 'plain',
+      tone: 'neutral',
+      size: 'sm',
+      disabled: true,
+      children: 'Previous',
+    });
     expect(first.next).toMatchObject({ disabled: false, children: 'Next' });
     expect(buttons(3).next.disabled).toBe(true);
 
@@ -92,7 +108,9 @@ describe('Pagination', () => {
     );
     expect(queryByLabelText('Go to page 4')).toBeTruthy();
     act(() => {
-      getByTestId('p').props.onLayout({ nativeEvent: { layout: { width: 360, height: 32, x: 0, y: 0 } } });
+      getByTestId('p').props.onLayout({
+        nativeEvent: { layout: { width: 360, height: 32, x: 0, y: 0 } },
+      });
     });
     expect(queryByText('Previous')).toBeNull();
     expect(getByLabelText('Previous')).toBeTruthy();

@@ -4,12 +4,7 @@ import Svg, { Path } from 'react-native-svg';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import type { Theme } from '../theme/types';
-import {
-  ACCENT_TABLE,
-  BUTTON_SHADOW,
-  colorRamp,
-  resolveButtonRamps,
-} from '../button/shared';
+import { ACCENT_TABLE, BUTTON_SHADOW, colorRamp, resolveButtonRamps } from '../button/shared';
 import type { TypeScaleVariant } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { focusRingShadow, RING_OFFSET_FALLBACK } from '../styles/interactive-web-css';
@@ -100,7 +95,11 @@ export interface CheckboxPaint {
  * A caller `color` replaces the accent ramp; the mark on it falls back to white
  * because Bloom cannot know the contrast of an arbitrary colour.
  */
-export function resolveCheckboxPaint(theme: Theme, color?: string, foreground?: string): CheckboxPaint {
+export function resolveCheckboxPaint(
+  theme: Theme,
+  color?: string,
+  foreground?: string,
+): CheckboxPaint {
   const { accent } = resolveButtonRamps(theme);
   const ramp = color ? colorRamp(color, ACCENT_TABLE) : accent;
   const dark = theme.isDark;
@@ -191,7 +190,9 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
  */
 function CheckMark({ size, color }: { size: number; color: string }) {
   const reducedMotion = useReducedMotion();
-  const offset = useRef(new Animated.Value(IS_WEB || reducedMotion ? 0 : CHECK_PATH_LENGTH)).current;
+  const offset = useRef(
+    new Animated.Value(IS_WEB || reducedMotion ? 0 : CHECK_PATH_LENGTH),
+  ).current;
 
   useEffect(() => {
     if (IS_WEB || reducedMotion) return;

@@ -19,9 +19,7 @@ function hasScrollToOffset(
   );
 }
 
-function hasScrollTo(
-  value: unknown,
-): value is Required<Pick<ScrollableHandle, 'scrollTo'>> {
+function hasScrollTo(value: unknown): value is Required<Pick<ScrollableHandle, 'scrollTo'>> {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -41,9 +39,7 @@ function hasScrollTo(
  * The handle is re-resolved on every write; it is never cached, because a ref
  * can be swapped or detached between the schedule and the write.
  */
-export function createScroller(
-  target: ScrollRestorationTarget,
-): NativeScroller {
+export function createScroller(target: ScrollRestorationTarget): NativeScroller {
   if (target === 'window') {
     return { setOffset: () => undefined };
   }

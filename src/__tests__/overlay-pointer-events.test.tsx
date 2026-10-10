@@ -28,8 +28,7 @@ import { View } from 'react-native';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { ToastHost } from '../toast/ToastHost';
 
-(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 /** Every injected rule that targets one of `className`'s classes. */
 function rulesFor(className: string): string[] {
@@ -84,20 +83,14 @@ describe('overlay pointer-events contract (web)', () => {
 
   it('Backdrop takes pointer events and dismisses on press', () => {
     const onPress = jest.fn();
-    const { root, container } = render(
-      createElement(Backdrop, { onPress, testID: 'backdrop' }),
-    );
+    const { root, container } = render(createElement(Backdrop, { onPress, testID: 'backdrop' }));
 
     const el = container.querySelector('[data-testid="backdrop"]') as HTMLElement | null;
     expect(el).not.toBeNull();
 
     // Without this the element inherits the portal root's `none` and the press
     // below can never happen in a real browser.
-    expect(
-      rulesFor(el?.className ?? '').some((r) =>
-        /pointer-events:\s*auto/.test(r),
-      ),
-    ).toBe(true);
+    expect(rulesFor(el?.className ?? '').some((r) => /pointer-events:\s*auto/.test(r))).toBe(true);
 
     act(() => {
       el?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -208,9 +201,7 @@ describe('overlay pointer-events contract (web)', () => {
       const inline = el.style.pointerEvents;
       const inert =
         inline === 'none' ||
-        rulesFor(el.className).some(
-          (r) => /pointer-events:\s*none/.test(r) && !/>\s*\*/.test(r),
-        );
+        rulesFor(el.className).some((r) => /pointer-events:\s*none/.test(r) && !/>\s*\*/.test(r));
       expect({ layer: el.className || el.id, inert }).toEqual({
         layer: el.className || el.id,
         inert: true,

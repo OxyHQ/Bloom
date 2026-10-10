@@ -8,17 +8,16 @@ import { characterHtml, scriptJson } from '../character-html';
 const root = resolve(__dirname, '../../..');
 describe('optional character runtime', () => {
   it('bounds GPU leases during crowd rendering, interaction and async disposal', () => {
-    execFileSync(
-      process.execPath,
-      ['--test', 'scripts/test-avatar-render-budget.mjs'],
-      { cwd: root },
-    );
+    execFileSync(process.execPath, ['--test', 'scripts/test-avatar-render-budget.mjs'], {
+      cwd: root,
+    });
   });
   it('preserves the recovered binary runtime against its independent integrity manifest', () => {
     const folder = resolve(root, 'assets/character-runtime');
-    const manifest = JSON.parse(
-      readFileSync(resolve(folder, 'integrity.json'), 'utf8'),
-    ) as Record<string, string>;
+    const manifest = JSON.parse(readFileSync(resolve(folder, 'integrity.json'), 'utf8')) as Record<
+      string,
+      string
+    >;
     expect(Object.keys(manifest)).toHaveLength(4);
     for (const [name, digest] of Object.entries(manifest))
       expect(
@@ -29,10 +28,7 @@ describe('optional character runtime', () => {
   });
   it('uses the beta’s original eye and shape thumbnails without redrawing them', () => {
     const folder = resolve(root, 'assets/character-runtime');
-    const module = readFileSync(
-      resolve(folder, 'orbit-characters.mjs'),
-      'utf8',
-    );
+    const module = readFileSync(resolve(folder, 'orbit-characters.mjs'), 'utf8');
     const data = readFileSync(resolve(folder, 'orbit-characters.data'));
     const files = [
       ...module.matchAll(
@@ -41,9 +37,9 @@ describe('optional character runtime', () => {
     ];
     expect(files).toHaveLength(20);
     for (const [, category, name, start, end] of files)
-      expect(
-        readFileSync(resolve(folder, 'thumbnails', category!, `${name}.png`)),
-      ).toEqual(data.subarray(Number(start), Number(end)));
+      expect(readFileSync(resolve(folder, 'thumbnails', category!, `${name}.png`))).toEqual(
+        data.subarray(Number(start), Number(end)),
+      );
   });
   it('keeps saved appearance strings from terminating the native module script', () => {
     const payload = {
@@ -54,10 +50,7 @@ describe('optional character runtime', () => {
     const escaped = scriptJson(payload);
     expect(JSON.parse(escaped)).toEqual(payload);
     expect(escaped).not.toContain('<');
-    const html = characterHtml(
-      'https://example.test/runtime.mjs?x=</script>',
-      payload,
-    );
+    const html = characterHtml('https://example.test/runtime.mjs?x=</script>', payload);
     expect(html.match(/<script\b/g)).toHaveLength(1);
     expect(html.match(/<\/script>/g)).toHaveLength(1);
   });

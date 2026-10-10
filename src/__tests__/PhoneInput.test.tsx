@@ -41,8 +41,7 @@ function triggerDrawsFlag(root: Root, iso2: string): boolean {
     .findAll((node) => (node.type as unknown) === 'Path')
     .map((node) => `${node.props.fill as string} ${node.props.d as string}`)
     .join('|');
-  const art = COUNTRY_FLAGS[iso2]![1]
-    .filter((shape) => shape[0] === 0)
+  const art = COUNTRY_FLAGS[iso2]![1].filter((shape) => shape[0] === 0)
     .map((shape) => `${shape[1]} ${shape[2] as string}`)
     .join('|');
   return drawn === art;
@@ -89,7 +88,9 @@ describe('country data', () => {
 describe('CountryFlag', () => {
   it('is 18 × 12 with a 2px clip, and decorative by default', () => {
     const root = renderLight(<CountryFlag iso2="FR" />);
-    const box = root.UNSAFE_getAllByType(View).find((v) => resolvedStyle(v.props.style).width === 18)!;
+    const box = root
+      .UNSAFE_getAllByType(View)
+      .find((v) => resolvedStyle(v.props.style).width === 18)!;
     expect(resolvedStyle(box.props.style)).toMatchObject({
       width: 18,
       height: 12,
@@ -118,30 +119,33 @@ describe('CountryFlag', () => {
 });
 
 describe('TextField leadingAddon', () => {
-  it.each(['md', 'sm'] as const)('%s: pl-1 and the size’s right padding, addon 2px before the input', (size) => {
-    const root = renderLight(
-      <TextField size={size} leadingAddon={<View testID="addon" />}>
-        <TextFieldInput label="Phone Number" value="" onValueChange={() => {}} />
-      </TextField>,
-    );
-    const shell = shellStyle(root);
-    expect(shell.paddingLeft).toBe(4);
-    expect(shell.paddingRight).toBe(size === 'md' ? 8 : 6);
-    expect(shell.paddingHorizontal).toBeUndefined();
-    expect(TEXT_FIELD_ADDON_PADDING).toEqual({
-      xs: { paddingLeft: 4, paddingRight: 4 },
-      lg: { paddingLeft: 4, paddingRight: 10 },
-      md: { paddingLeft: 4, paddingRight: 8 },
-      sm: { paddingLeft: 4, paddingRight: 6 },
-    });
-    let slot = root.getByTestId('addon').parent!;
-    while (resolvedStyle(slot.props.style).marginInlineEnd === undefined) slot = slot.parent!;
-    expect(resolvedStyle(slot.props.style)).toMatchObject({ flexShrink: 0, marginInlineEnd: 2 });
-    // The input keeps the shell height (h-9 / h-8).
-    expect(resolvedStyle(root.getByLabelText('Phone Number').props.style).height).toBe(
-      TEXT_FIELD_GEOMETRY[size].height,
-    );
-  });
+  it.each(['md', 'sm'] as const)(
+    '%s: pl-1 and the size’s right padding, addon 2px before the input',
+    (size) => {
+      const root = renderLight(
+        <TextField size={size} leadingAddon={<View testID="addon" />}>
+          <TextFieldInput label="Phone Number" value="" onValueChange={() => {}} />
+        </TextField>,
+      );
+      const shell = shellStyle(root);
+      expect(shell.paddingLeft).toBe(4);
+      expect(shell.paddingRight).toBe(size === 'md' ? 8 : 6);
+      expect(shell.paddingHorizontal).toBeUndefined();
+      expect(TEXT_FIELD_ADDON_PADDING).toEqual({
+        xs: { paddingLeft: 4, paddingRight: 4 },
+        lg: { paddingLeft: 4, paddingRight: 10 },
+        md: { paddingLeft: 4, paddingRight: 8 },
+        sm: { paddingLeft: 4, paddingRight: 6 },
+      });
+      let slot = root.getByTestId('addon').parent!;
+      while (resolvedStyle(slot.props.style).marginInlineEnd === undefined) slot = slot.parent!;
+      expect(resolvedStyle(slot.props.style)).toMatchObject({ flexShrink: 0, marginInlineEnd: 2 });
+      // The input keeps the shell height (h-9 / h-8).
+      expect(resolvedStyle(root.getByLabelText('Phone Number').props.style).height).toBe(
+        TEXT_FIELD_GEOMETRY[size].height,
+      );
+    },
+  );
 
   it('keeps the plain side padding without an addon', () => {
     const root = renderLight(
@@ -236,6 +240,10 @@ describe('PhoneInput', () => {
   it('disables the select with the field', () => {
     const root = renderLight(<PhoneInput label="Phone Number" disabled />);
     const trigger = root.getByLabelText('Country code');
-    expect(trigger.props.disabled ?? trigger.props['aria-disabled'] ?? trigger.props.accessibilityState?.disabled).toBeTruthy();
+    expect(
+      trigger.props.disabled ??
+        trigger.props['aria-disabled'] ??
+        trigger.props.accessibilityState?.disabled,
+    ).toBeTruthy();
   });
 });

@@ -51,12 +51,18 @@ export const AnimatedCheck = forwardRef<AnimatedCheckRef, AnimatedCheckProps>(
     // is absent and useAnimatedProps does not auto-track shared-value reads —
     // an empty deps array freezes the draw-on at frame 1. Native (plugin
     // present) auto-tracks and ignores the extra deps.
-    const circleAnimatedProps = useAnimatedProps(() => ({
-      strokeDashoffset: CIRCLE_LENGTH - circleProgress.value * CIRCLE_LENGTH,
-    }), [circleProgress]);
-    const checkAnimatedProps = useAnimatedProps(() => ({
-      strokeDashoffset: CHECK_LENGTH - CHECK_LENGTH * checkProgress.value,
-    }), [checkProgress]);
+    const circleAnimatedProps = useAnimatedProps(
+      () => ({
+        strokeDashoffset: CIRCLE_LENGTH - circleProgress.value * CIRCLE_LENGTH,
+      }),
+      [circleProgress],
+    );
+    const checkAnimatedProps = useAnimatedProps(
+      () => ({
+        strokeDashoffset: CHECK_LENGTH - CHECK_LENGTH * checkProgress.value,
+      }),
+      [checkProgress],
+    );
 
     const play = useCallback(() => {
       circleProgress.value = 0;

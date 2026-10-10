@@ -14,7 +14,17 @@ import React, {
 } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { MENU_WIDTH, SELECT_CHEVRON_SIZE, SELECT_ITEM_CLASS, SELECT_ITEM_SIZE_CLASS, SELECT_MAX_HEIGHT, SELECT_TRIGGER_CLASS, SELECT_TRIGGER_POPUP, SELECT_TRIGGER_SIZE_CLASS, SELECT_VALUE_CLASS } from '../floating/constants';
+import {
+  MENU_WIDTH,
+  SELECT_CHEVRON_SIZE,
+  SELECT_ITEM_CLASS,
+  SELECT_ITEM_SIZE_CLASS,
+  SELECT_MAX_HEIGHT,
+  SELECT_TRIGGER_CLASS,
+  SELECT_TRIGGER_POPUP,
+  SELECT_TRIGGER_SIZE_CLASS,
+  SELECT_VALUE_CLASS,
+} from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { useMenuPalette } from '../floating/menu-palette';
 import { menuType, menuTypeClass } from '../floating/menu-type';
@@ -22,11 +32,7 @@ import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import {
-  StyledPressable,
-  StyledText,
-  StyledView,
-} from '../styles/styled-primitives';
+import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
@@ -41,7 +47,15 @@ import {
   useSelectItemContext,
   VALUE_TYPE,
 } from './shared';
-import type { SelectContentProps, SelectIconProps, SelectItemProps, SelectProps, SelectItemContextValue, SelectTriggerProps, SelectValueProps } from './types';
+import type {
+  SelectContentProps,
+  SelectIconProps,
+  SelectItemProps,
+  SelectProps,
+  SelectItemContextValue,
+  SelectTriggerProps,
+  SelectValueProps,
+} from './types';
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
@@ -143,9 +157,10 @@ SelectContext.displayName = 'SelectContext';
  * to show the raw `value` string instead (`apple`, not `Apple`), because its
  * `SelectValue` had nothing but the value to read.
  */
-const ValueStoreContext = createContext<
-  [unknown, React.Dispatch<React.SetStateAction<unknown>>]
->([undefined, () => {}]);
+const ValueStoreContext = createContext<[unknown, React.Dispatch<React.SetStateAction<unknown>>]>([
+  undefined,
+  () => {},
+]);
 ValueStoreContext.displayName = 'SelectValueStoreContext';
 
 function useSelectContext(): SelectContextValue {
@@ -161,14 +176,33 @@ function useSelectContext(): SelectContextValue {
 // ---------------------------------------------------------------------------
 
 export function Select(props: SelectProps) {
-  const { children, value: valueProp, defaultValue, onValueChange: onValueChangeProp, disabled, size: sizeProp } = props;
-  const [value, onValueChange] = useControllableState<string | undefined>({ value: valueProp, defaultValue, controlled: Object.prototype.hasOwnProperty.call(props, 'value'), onChange: next => { if (next !== undefined) onValueChangeProp?.(next); } });
-  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
+  const {
+    children,
+    value: valueProp,
+    defaultValue,
+    onValueChange: onValueChangeProp,
+    disabled,
+    size: sizeProp,
+  } = props;
+  const [value, onValueChange] = useControllableState<string | undefined>({
+    value: valueProp,
+    defaultValue,
+    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
+    onChange: (next) => {
+      if (next !== undefined) onValueChangeProp?.(next);
+    },
+  });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const [requestedOpen, setIsOpen] = useState(false);
   const visible = useCollapsibleVisibility();
   const isOpen = visible && requestedOpen;
-  useLayoutEffect(() => { if (!visible) setIsOpen(false); }, [visible]);
+  useLayoutEffect(() => {
+    if (!visible) setIsOpen(false);
+  }, [visible]);
   const triggerRef = useRef<View | null>(null);
   const valueStoreState = useState<unknown>(undefined);
   const keyboardIntent = useRef(false);
@@ -181,7 +215,9 @@ export function Select(props: SelectProps) {
       disabled,
       size,
       isOpen,
-      open: () => { if (visible) setIsOpen(true); },
+      open: () => {
+        if (visible) setIsOpen(true);
+      },
       close: () => setIsOpen(false),
       triggerRef,
       keyboardIntent,
@@ -257,12 +293,11 @@ export function SelectTrigger({
   const field = (
     <StyledView
       {...({
-        dataSet: isDisabled
-          ? { bloomSelectField: '', disabled: '' }
-          : { bloomSelectField: '' },
+        dataSet: isDisabled ? { bloomSelectField: '', disabled: '' } : { bloomSelectField: '' },
       } as Record<string, unknown>)}
       className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[ctx.size], className)}
-      style={[fieldStyle, fieldStyleOverride]}>
+      style={[fieldStyle, fieldStyleOverride]}
+    >
       {children}
     </StyledView>
   );
@@ -350,7 +385,11 @@ export function SelectValue({
   // native fork reads it. Before any `SelectContent` has resolved an item the raw
   // value is the fallback, so a select with no content still shows something.
   const display =
-    value == null ? (placeholder ?? '') : storedItem !== undefined ? extractLabel(storedItem) : value;
+    value == null
+      ? (placeholder ?? '')
+      : storedItem !== undefined
+        ? extractLabel(storedItem)
+        : value;
   // `text-text-primary`, `text-placeholder` while nothing is chosen,
   // and `disabled:text-text-tertiary`. Inline only without a caller
   // `className` — an inline colour outranks a caller's `text-*` utility.
@@ -376,7 +415,10 @@ export function SelectValue({
   );
   if (leading === undefined) return text;
   return (
-    <SelectValueRow size={trigger.size} leading={typeof leading === 'function' ? leading(storedItem) : leading}>
+    <SelectValueRow
+      size={trigger.size}
+      leading={typeof leading === 'function' ? leading(storedItem) : leading}
+    >
       {text}
     </SelectValueRow>
   );
@@ -512,14 +554,16 @@ export function SelectContent<T>({
   useEffect(() => {
     if (!ctx.isOpen) return undefined;
     const frame = requestAnimationFrame(() => {
-      const node = (listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null })
-        ?.getScrollableNode?.();
+      const node = (
+        listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null }
+      )?.getScrollableNode?.();
       const selected = node?.querySelector<HTMLElement>('[aria-checked="true"]');
       if (!node || !selected) return;
       const top = selected.offsetTop;
       const bottom = top + selected.offsetHeight;
       if (top < node.scrollTop) node.scrollTop = top;
-      else if (bottom > node.scrollTop + node.clientHeight) node.scrollTop = bottom - node.clientHeight;
+      else if (bottom > node.scrollTop + node.clientHeight)
+        node.scrollTop = bottom - node.clientHeight;
     });
     return () => cancelAnimationFrame(frame);
   }, [ctx.isOpen]);
@@ -560,7 +604,8 @@ export function SelectContent<T>({
         style={{ maxHeight }}
         // `flex flex-col gap-1` — the rows sit 4px apart.
         contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator>
+        showsVerticalScrollIndicator
+      >
         {items.map((item, index) => (
           <React.Fragment key={valueExtractor(item)}>
             {renderItem(item, index, ctx.value)}
@@ -588,11 +633,7 @@ export function SelectItem({
   const ctx = useSelectContext();
   const { size } = ctx;
   const palette = useMenuPalette();
-  const {
-    state: hovered,
-    onIn: onMouseEnter,
-    onOut: onMouseLeave,
-  } = useInteractionState();
+  const { state: hovered, onIn: onMouseEnter, onOut: onMouseLeave } = useInteractionState();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
 
   const isSelected = ctx.value === value;

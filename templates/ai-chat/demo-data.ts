@@ -34,7 +34,11 @@ import generatedFootballer from './assets/generated-footballer.jpg';
 /** The three threads the template scripts. */
 export type AiChatScenario = 'landing-page-design' | 'image-generation' | 'coding-scenario';
 
-export const SCENARIOS: ReadonlyArray<AiChatScenario> = ['landing-page-design', 'image-generation', 'coding-scenario'];
+export const SCENARIOS: ReadonlyArray<AiChatScenario> = [
+  'landing-page-design',
+  'image-generation',
+  'coding-scenario',
+];
 
 export const NAV_ITEMS: SidebarNavItem[] = [
   { key: 'new-agent', label: 'New agent', icon: RiAddFill },
@@ -127,7 +131,8 @@ export const LOCAL_FOLDERS: ComposerStatusBarFolder[] = [
 ];
 
 /** The file open in the code panel. */
-export const PANEL_CODE: string = "import type { Metadata } from \"next\";\nimport { DashboardShell } from \"@/components/dashboard/dashboard-shell\";\n\nexport const metadata: Metadata = {\n  title: \"Home Dashboard Template\",\n  description:\n    \"An admin dashboard screen: sidebar navigation, KPI cards, a bar chart and a customers table.\",\n};\n\nconst PREVIEW_CODE = `<DashboardShell />`;\n\nexport default function HomeDashboardDetail() {\n  return (\n    <ComponentDetail\n      wide\n      title=\"Home Dashboard\"\n      description=\"Sidebar navigation, a header with search and notifications, KPI cards, an earnings chart and a customers table.\"\n      preview={\n        <div className=\"h-[760px] w-full overflow-hidden rounded-2xl border\">\n          <DashboardShell />\n        </div>\n      }\n      previewCode={PREVIEW_CODE}\n    />\n  );\n}";
+export const PANEL_CODE: string =
+  'import type { Metadata } from "next";\nimport { DashboardShell } from "@/components/dashboard/dashboard-shell";\n\nexport const metadata: Metadata = {\n  title: "Home Dashboard Template",\n  description:\n    "An admin dashboard screen: sidebar navigation, KPI cards, a bar chart and a customers table.",\n};\n\nconst PREVIEW_CODE = `<DashboardShell />`;\n\nexport default function HomeDashboardDetail() {\n  return (\n    <ComponentDetail\n      wide\n      title="Home Dashboard"\n      description="Sidebar navigation, a header with search and notifications, KPI cards, an earnings chart and a customers table."\n      preview={\n        <div className="h-[760px] w-full overflow-hidden rounded-2xl border">\n          <DashboardShell />\n        </div>\n      }\n      previewCode={PREVIEW_CODE}\n    />\n  );\n}';
 
 /** The snippet in the coding reply's code card. */
 export const CODING_RESPONSE_CODE = `const nextTheme = theme === "dark" ? "light" : "dark";
@@ -139,30 +144,131 @@ document.documentElement.classList.toggle(
 localStorage.setItem("bloom:theme", nextTheme);`;
 
 type Source = AiChatGeneration['source'];
-const image = (asset: unknown): Source => (typeof asset === 'string' ? { uri: asset } : (asset as Source));
+const image = (asset: unknown): Source =>
+  typeof asset === 'string' ? { uri: asset } : (asset as Source);
 
 /** The gallery, in authoring order (`width / height` of each file). */
 const GENERATIONS: AiChatGeneration[] = [
-  { id: 'goldfish-living-room', prompt: 'Goldfish living room, surreal collage', source: image(goldfishLivingRoom), aspectRatio: 1120 / 2000 },
-  { id: 'racing-suit', prompt: 'Racing suit editorial, metallic green', source: image(racingSuit), aspectRatio: 1120 / 2000 },
-  { id: 'hoopoes', prompt: 'Hoopoes in olive branches, gouache', source: image(hoopoes), aspectRatio: 1333 / 2000 },
-  { id: 'biker-rest', prompt: 'Biker resting, watercolour manga', source: image(bikerRest), aspectRatio: 1120 / 2000 },
-  { id: 'helmet-portraits', prompt: 'Helmet portraits, risograph grid', source: image(helmetPortraits), aspectRatio: 1497 / 2000 },
-  { id: 'cloud-crown', prompt: 'Cloud crown, editorial portrait', source: image(cloudCrown), aspectRatio: 1333 / 2000 },
-  { id: 'nairobi-vibes', prompt: 'Nairobi Vibes, blackletter poster', source: image(nairobiVibes), aspectRatio: 928 / 1232 },
-  { id: 'beach-kid', prompt: 'Beach kid, 35mm flash', source: image(beachKid), aspectRatio: 960 / 1200 },
-  { id: 'reader-pink', prompt: 'Reader on pink, crayon texture', source: image(readerPink), aspectRatio: 1 },
-  { id: 'cat-with-beer', prompt: 'Cat with a beer, bold linework', source: image(catWithBeer), aspectRatio: 928 / 1232 },
-  { id: 'perfume-still-life', prompt: 'Perfume still life, grainy neon', source: image(perfumeStillLife), aspectRatio: 1120 / 2000 },
-  { id: 'linen-campaign', prompt: 'Linen campaign, crimson backdrop', source: image(linenCampaign), aspectRatio: 1 },
-  { id: 'girls-and-blooms', prompt: 'Girls and blooms, painterly crop', source: image(girlsAndBlooms), aspectRatio: 896 / 1344 },
-  { id: 'ronin-red', prompt: 'Ronin in red, cel-shaded', source: image(roninRed), aspectRatio: 1120 / 2000 },
-  { id: 'yellow-cabs', prompt: 'Yellow cabs, palette-knife oil', source: image(yellowCabs), aspectRatio: 1497 / 2000 },
-  { id: 'green-ape', prompt: 'Green ape, screenprint halftone', source: image(greenApe), aspectRatio: 1 },
-  { id: 'hanok-bookshop', prompt: 'Hanok bookshop, pastel duotone', source: image(hanokBookshop), aspectRatio: 928 / 1232 },
-  { id: 'underwater-highway', prompt: 'Underwater highway, flat vector', source: image(underwaterHighway), aspectRatio: 1120 / 2000 },
-  { id: 'massive-box', prompt: 'MASSIV3 packaging, studio mockup', source: image(massiveBox), aspectRatio: 1120 / 2000 },
-  { id: 'bloom-swirl', prompt: 'Bloom swirl, impasto abstraction', source: image(bloomSwirl), aspectRatio: 1 },
+  {
+    id: 'goldfish-living-room',
+    prompt: 'Goldfish living room, surreal collage',
+    source: image(goldfishLivingRoom),
+    aspectRatio: 1120 / 2000,
+  },
+  {
+    id: 'racing-suit',
+    prompt: 'Racing suit editorial, metallic green',
+    source: image(racingSuit),
+    aspectRatio: 1120 / 2000,
+  },
+  {
+    id: 'hoopoes',
+    prompt: 'Hoopoes in olive branches, gouache',
+    source: image(hoopoes),
+    aspectRatio: 1333 / 2000,
+  },
+  {
+    id: 'biker-rest',
+    prompt: 'Biker resting, watercolour manga',
+    source: image(bikerRest),
+    aspectRatio: 1120 / 2000,
+  },
+  {
+    id: 'helmet-portraits',
+    prompt: 'Helmet portraits, risograph grid',
+    source: image(helmetPortraits),
+    aspectRatio: 1497 / 2000,
+  },
+  {
+    id: 'cloud-crown',
+    prompt: 'Cloud crown, editorial portrait',
+    source: image(cloudCrown),
+    aspectRatio: 1333 / 2000,
+  },
+  {
+    id: 'nairobi-vibes',
+    prompt: 'Nairobi Vibes, blackletter poster',
+    source: image(nairobiVibes),
+    aspectRatio: 928 / 1232,
+  },
+  {
+    id: 'beach-kid',
+    prompt: 'Beach kid, 35mm flash',
+    source: image(beachKid),
+    aspectRatio: 960 / 1200,
+  },
+  {
+    id: 'reader-pink',
+    prompt: 'Reader on pink, crayon texture',
+    source: image(readerPink),
+    aspectRatio: 1,
+  },
+  {
+    id: 'cat-with-beer',
+    prompt: 'Cat with a beer, bold linework',
+    source: image(catWithBeer),
+    aspectRatio: 928 / 1232,
+  },
+  {
+    id: 'perfume-still-life',
+    prompt: 'Perfume still life, grainy neon',
+    source: image(perfumeStillLife),
+    aspectRatio: 1120 / 2000,
+  },
+  {
+    id: 'linen-campaign',
+    prompt: 'Linen campaign, crimson backdrop',
+    source: image(linenCampaign),
+    aspectRatio: 1,
+  },
+  {
+    id: 'girls-and-blooms',
+    prompt: 'Girls and blooms, painterly crop',
+    source: image(girlsAndBlooms),
+    aspectRatio: 896 / 1344,
+  },
+  {
+    id: 'ronin-red',
+    prompt: 'Ronin in red, cel-shaded',
+    source: image(roninRed),
+    aspectRatio: 1120 / 2000,
+  },
+  {
+    id: 'yellow-cabs',
+    prompt: 'Yellow cabs, palette-knife oil',
+    source: image(yellowCabs),
+    aspectRatio: 1497 / 2000,
+  },
+  {
+    id: 'green-ape',
+    prompt: 'Green ape, screenprint halftone',
+    source: image(greenApe),
+    aspectRatio: 1,
+  },
+  {
+    id: 'hanok-bookshop',
+    prompt: 'Hanok bookshop, pastel duotone',
+    source: image(hanokBookshop),
+    aspectRatio: 928 / 1232,
+  },
+  {
+    id: 'underwater-highway',
+    prompt: 'Underwater highway, flat vector',
+    source: image(underwaterHighway),
+    aspectRatio: 1120 / 2000,
+  },
+  {
+    id: 'massive-box',
+    prompt: 'MASSIV3 packaging, studio mockup',
+    source: image(massiveBox),
+    aspectRatio: 1120 / 2000,
+  },
+  {
+    id: 'bloom-swirl',
+    prompt: 'Bloom swirl, impasto abstraction',
+    source: image(bloomSwirl),
+    aspectRatio: 1,
+  },
 ];
 
 /** A deterministic shuffle (mulberry32) so the wall looks scattered but stays stable. */
@@ -193,4 +299,5 @@ export const GENERATED_IMAGE: AiChatGeneration = {
   aspectRatio: 449 / 600,
 };
 
-export const GENERATED_IMAGE_ALT = "Vintage-style illustration of a football player in Argentina's striped kit";
+export const GENERATED_IMAGE_ALT =
+  "Vintage-style illustration of a football player in Argentina's striped kit";

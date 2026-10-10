@@ -139,9 +139,7 @@ function hostName(node: ReactTestInstance): string | null {
  * would double every tab.
  */
 function triggers(root: ReactTestInstance): ReactTestInstance[] {
-  return root.findAll(
-    (node) => hostName(node) !== null && node.props?.accessibilityRole === 'tab',
-  );
+  return root.findAll((node) => hostName(node) !== null && node.props?.accessibilityRole === 'tab');
 }
 
 /** The `Animated.Text` label node of the tab whose text is `label`. */
@@ -249,9 +247,7 @@ describe('TabBar', () => {
     // With `isFocused` supplied the router trigger's own onPress navigates;
     // reporting through the bar as well would navigate twice.
     const onIndexChange = jest.fn();
-    const { UNSAFE_root } = renderWithTheme(
-      <Bar focusedIndex={0} onIndexChange={onIndexChange} />,
-    );
+    const { UNSAFE_root } = renderWithTheme(<Bar focusedIndex={0} onIndexChange={onIndexChange} />);
     fireEvent.press(triggers(UNSAFE_root)[1] as ReactTestInstance);
     expect(onIndexChange).not.toHaveBeenCalled();
   });
@@ -271,7 +267,9 @@ describe('TabBar', () => {
     it('does not select again on a web pointer click', () => {
       jest.replaceProperty(Platform, 'OS', 'web');
       const onIndexChange = jest.fn();
-      const { UNSAFE_root } = renderWithTheme(<Bar activeIndex={0} onIndexChange={onIndexChange} />);
+      const { UNSAFE_root } = renderWithTheme(
+        <Bar activeIndex={0} onIndexChange={onIndexChange} />,
+      );
       fireEvent.press(triggers(UNSAFE_root)[2] as ReactTestInstance, click);
       expect(onIndexChange).not.toHaveBeenCalled();
     });
@@ -279,7 +277,9 @@ describe('TabBar', () => {
     it('selects on web keyboard activation, which the gesture never sees', () => {
       jest.replaceProperty(Platform, 'OS', 'web');
       const onIndexChange = jest.fn();
-      const { UNSAFE_root } = renderWithTheme(<Bar activeIndex={0} onIndexChange={onIndexChange} />);
+      const { UNSAFE_root } = renderWithTheme(
+        <Bar activeIndex={0} onIndexChange={onIndexChange} />,
+      );
       fireEvent.press(triggers(UNSAFE_root)[2] as ReactTestInstance, keyup);
       expect(onIndexChange).toHaveBeenCalledTimes(1);
       expect(onIndexChange).toHaveBeenCalledWith(2);
@@ -291,7 +291,13 @@ describe('TabBar', () => {
       const { UNSAFE_root } = renderWithTheme(
         <TabBar>
           {ITEMS.map((item, index) => (
-            <TabBarButton key={item.name} item={item} index={index} isFocused={index === 0} onPress={onPress} />
+            <TabBarButton
+              key={item.name}
+              item={item}
+              index={index}
+              isFocused={index === 0}
+              onPress={onPress}
+            />
           ))}
         </TabBar>,
       );
@@ -306,7 +312,9 @@ describe('TabBar', () => {
       const onIndexChange = jest.fn();
       const { UNSAFE_root } = renderWithTheme(
         <TabBar activeIndex={0} onIndexChange={onIndexChange} scrollable>
-          {ITEMS.map((item, index) => <TabBarButton key={item.name} item={item} index={index} />)}
+          {ITEMS.map((item, index) => (
+            <TabBarButton key={item.name} item={item} index={index} />
+          ))}
         </TabBar>,
       );
       fireEvent.press(triggers(UNSAFE_root)[1] as ReactTestInstance, click);
@@ -316,7 +324,9 @@ describe('TabBar', () => {
     it('stands down on Android, where every press may be a reported touch', () => {
       jest.replaceProperty(Platform, 'OS', 'android');
       const onIndexChange = jest.fn();
-      const { UNSAFE_root } = renderWithTheme(<Bar activeIndex={0} onIndexChange={onIndexChange} />);
+      const { UNSAFE_root } = renderWithTheme(
+        <Bar activeIndex={0} onIndexChange={onIndexChange} />,
+      );
       fireEvent.press(triggers(UNSAFE_root)[2] as ReactTestInstance, {});
       expect(onIndexChange).not.toHaveBeenCalled();
     });
@@ -471,7 +481,11 @@ describe('TabBar', () => {
         <NativeTabBarSurface theme={theme} style={{ borderRadius: 29 }} />,
       );
       expect(hosts(UNSAFE_root, 'GlassView')).toHaveLength(0);
-      expect(UNSAFE_root.findAll(node => node.props.fill === theme.glassTint && node.props.radius === 999).length).toBeGreaterThan(0);
+      expect(
+        UNSAFE_root.findAll(
+          (node) => node.props.fill === theme.glassTint && node.props.radius === 999,
+        ).length,
+      ).toBeGreaterThan(0);
     });
 
     it('renders an SF Symbol on iOS when the item carries one', () => {
@@ -489,7 +503,12 @@ describe('TabBar', () => {
     it('falls back to the item icon when no SF Symbol is given', () => {
       const theme = readTheme();
       const { queryByTestId, UNSAFE_root } = renderWithTheme(
-        <NativeTabBarGlyph item={ITEMS[0] as TabBarItem} tint={theme.activeTint} size={21} active />,
+        <NativeTabBarGlyph
+          item={ITEMS[0] as TabBarItem}
+          tint={theme.activeTint}
+          size={21}
+          active
+        />,
       );
       expect(hosts(UNSAFE_root, 'SymbolView')).toHaveLength(0);
       expect(queryByTestId('home-icon')).toBeTruthy();
@@ -497,20 +516,43 @@ describe('TabBar', () => {
   });
 });
 
-
 describe('TabBar shared surface hierarchy', () => {
-  it.each(['light', 'dark'] as const)('publishes nested and overridden solid fills in %s mode', mode => {
-    let actual = '', expected = '';
-    function Probe() { actual = useSurfaceFill(); return null; }
-    function Scene({ override }: { override?: string }) {
-      const theme = useTheme();
-      expected = resolveSurfaceFill(resolveSurfaceTint(override ?? resolveTabBarTheme(theme.colors).glassTint), '#445566');
-      return <SurfaceLevelProvider level={3} fill="#445566"><TabBar blur={false} theme={override ? { glassTint: override } : undefined}><Probe /></TabBar></SurfaceLevelProvider>;
-    }
-    const tree = render(<BloomThemeProvider mode={mode} colorPreset="teal"><Scene /></BloomThemeProvider>);
-    expect(actual).toBe(expected);
-    expect(actual).not.toBe('#445566');
-    tree.rerender(<BloomThemeProvider mode={mode} colorPreset="teal"><Scene override="#123456" /></BloomThemeProvider>);
-    expect(actual).toBe(expected);
-  });
+  it.each(['light', 'dark'] as const)(
+    'publishes nested and overridden solid fills in %s mode',
+    (mode) => {
+      let actual = '',
+        expected = '';
+      function Probe() {
+        actual = useSurfaceFill();
+        return null;
+      }
+      function Scene({ override }: { override?: string }) {
+        const theme = useTheme();
+        expected = resolveSurfaceFill(
+          resolveSurfaceTint(override ?? resolveTabBarTheme(theme.colors).glassTint),
+          '#445566',
+        );
+        return (
+          <SurfaceLevelProvider level={3} fill="#445566">
+            <TabBar blur={false} theme={override ? { glassTint: override } : undefined}>
+              <Probe />
+            </TabBar>
+          </SurfaceLevelProvider>
+        );
+      }
+      const tree = render(
+        <BloomThemeProvider mode={mode} colorPreset="teal">
+          <Scene />
+        </BloomThemeProvider>,
+      );
+      expect(actual).toBe(expected);
+      expect(actual).not.toBe('#445566');
+      tree.rerender(
+        <BloomThemeProvider mode={mode} colorPreset="teal">
+          <Scene override="#123456" />
+        </BloomThemeProvider>,
+      );
+      expect(actual).toBe(expected);
+    },
+  );
 });

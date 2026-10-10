@@ -4,7 +4,7 @@
  *
  * Changed: nothing — byte-for-byte, only its path.
  */
-import type { PortalProviderProps } from "./types";
+import type { PortalProviderProps } from './types';
 
 export default function PortalProvider({ children }: PortalProviderProps) {
   return children;

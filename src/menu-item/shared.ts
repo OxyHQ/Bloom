@@ -3,7 +3,12 @@
  * what one press does to a selection, and the sentence a screen reader hears
  * for a row. Pure, so `MenuItem.test.tsx` asserts each one directly.
  */
-import { surfaceFillOn, surfaceTextOn, hairlineOn, type SurfaceTextPaint } from '../styles/surface-levels';
+import {
+  surfaceFillOn,
+  surfaceTextOn,
+  hairlineOn,
+  type SurfaceTextPaint,
+} from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
 import { MENU_ITEM_SPICE_MAX } from './constants';
@@ -113,7 +118,9 @@ export interface MenuItemOptionRule {
 }
 
 /** A group's rule, with the defaults filled in: `max` 1, `min` 0. */
-export function optionGroupRule(group: Pick<MenuItemOptionGroup, 'min' | 'max'>): MenuItemOptionRule {
+export function optionGroupRule(
+  group: Pick<MenuItemOptionGroup, 'min' | 'max'>,
+): MenuItemOptionRule {
   const max = Math.max(1, group.max ?? 1);
   const min = Math.min(Math.max(0, group.min ?? 0), max);
   return { min, max, multiple: max > 1, required: min >= 1 };
@@ -179,7 +186,9 @@ export function optionDisabled(
  * a right-aligned price column would mean hand-rolling `role="radiogroup"` over
  * Bloom's own rows — the debt `docs/composition.mdx` names and keeps a list of.
  */
-export function optionSubtitle(option: Pick<MenuItemOption, 'description' | 'price'>): string | undefined {
+export function optionSubtitle(
+  option: Pick<MenuItemOption, 'description' | 'price'>,
+): string | undefined {
   if (option.description && option.price) return `${option.description} · ${option.price}`;
   return option.description ?? option.price ?? undefined;
 }

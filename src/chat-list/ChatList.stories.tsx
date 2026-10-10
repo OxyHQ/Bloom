@@ -132,7 +132,11 @@ const ALL: ChatSummary[] = [
     ],
     time: 'Yesterday',
     muted: true,
-    preview: { sender: 'Lia', attachment: { kind: 'poll', label: 'Poll' }, text: 'Who is cooking?' },
+    preview: {
+      sender: 'Lia',
+      attachment: { kind: 'poll', label: 'Poll' },
+      text: 'Who is cooking?',
+    },
     swipeActions: SWIPE,
   },
   {
@@ -307,7 +311,14 @@ function ConversationsScreen({ width = 390 }: { width?: number }) {
   const density = width < 380 ? 'compact' : 'comfortable';
 
   return (
-    <View style={{ width: '100%', maxWidth: width, height: 760, backgroundColor: theme.colors.background }}>
+    <View
+      style={{
+        width: '100%',
+        maxWidth: width,
+        height: 760,
+        backgroundColor: theme.colors.background,
+      }}
+    >
       <ScrollView>
         <ChatList
           sections={SECTIONS}
@@ -318,7 +329,11 @@ function ConversationsScreen({ width = 390 }: { width?: number }) {
           header={
             <View>
               <View style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12 }}>
-                <ChatSearchField value={query} onChangeText={setQuery} onClear={() => setQuery('')} />
+                <ChatSearchField
+                  value={query}
+                  onChangeText={setQuery}
+                  onClear={() => setQuery('')}
+                />
               </View>
               <StoriesRow
                 stories={STORIES}
@@ -376,15 +391,13 @@ function PaneAndDetail({
   onSelect: (id: string) => void;
 }) {
   const theme = useTheme();
-  const open = useMemo(
-    () => [...PINNED, ...ALL].find((chat) => chat.id === selected),
-    [selected],
-  );
+  const open = useMemo(() => [...PINNED, ...ALL].find((chat) => chat.id === selected), [selected]);
   return (
     <View
       style={{
         flexDirection: 'row',
-        width: '100%', maxWidth: 760,
+        width: '100%',
+        maxWidth: 760,
         height: 620,
         borderRadius: 20,
         overflow: 'hidden',
@@ -395,7 +408,8 @@ function PaneAndDetail({
     >
       <View
         style={{
-          width: '100%', maxWidth: 360,
+          width: '100%',
+          maxWidth: 360,
           borderRightWidth: 1,
           borderRightColor: theme.colors.border,
         }}
@@ -508,7 +522,11 @@ export const RowVariants: Story = {
           time="Yesterday"
           muted
           unreadDot
-          preview={{ sender: 'Lia', attachment: { kind: 'poll', label: 'Poll' }, text: 'Who is cooking?' }}
+          preview={{
+            sender: 'Lia',
+            attachment: { kind: 'poll', label: 'Poll' },
+            text: 'Who is cooking?',
+          }}
         />
       </View>
     </BothModes>

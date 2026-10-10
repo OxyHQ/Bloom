@@ -9,10 +9,7 @@ import { RiPlantLine } from '../icons/remix/RiPlantLine';
 import { useImageResolver } from '../image-resolver/context';
 import { resolvePhoto } from '../listing-card/shared';
 import { useMessages } from '../locale/messages';
-import {
-  MENU_ITEM_SPICE_MAX,
-  MENU_ITEM_WASH_OPACITY,
-} from './constants';
+import { MENU_ITEM_SPICE_MAX, MENU_ITEM_WASH_OPACITY } from './constants';
 import { MENU_ITEM_MESSAGES } from './messages';
 import { describeSpice, spiceLevel, uniqueDiets } from './shared';
 
@@ -60,7 +57,16 @@ export interface MenuItemDietsProps {
  * in full and in the same order, so announcing the pills too would say each
  * diet twice.
  */
-export function MenuItemDiets({ diets, labels, surface, glyphColor, glyph, leading, style, testID }: MenuItemDietsProps) {
+export function MenuItemDiets({
+  diets,
+  labels,
+  surface,
+  glyphColor,
+  glyph,
+  leading,
+  style,
+  testID,
+}: MenuItemDietsProps) {
   const { messages } = useMessages(MENU_ITEM_MESSAGES);
   const unique = uniqueDiets(diets);
   if (unique.length === 0 && leading == null) return null;

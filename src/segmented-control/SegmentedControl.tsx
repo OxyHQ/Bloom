@@ -18,7 +18,15 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
-import Animated, { Easing, ReduceMotion, runOnJS, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  ReduceMotion,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  type SharedValue,
+} from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { useTheme } from '../theme/use-theme';
@@ -27,7 +35,11 @@ import type { TypeScaleFamily } from '../typography';
 import type { Theme } from '../theme/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
-import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import {
+  NOT_DISABLED,
+  interactiveWebCss,
+  useInteractiveWebCss,
+} from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 
 import { useFieldMembership } from '../field/membership';
@@ -66,7 +78,10 @@ const GEOMETRY = {
   sm: { height: 24, paddingHorizontal: 8, type: 'body-2' },
   md: { height: 28, paddingHorizontal: 10, type: 'body' },
   lg: { height: 36, paddingHorizontal: 12, type: 'body' },
-} as const satisfies Record<BloomSize, { height: number; paddingHorizontal: number; type: TypeScaleFamily }>;
+} as const satisfies Record<
+  BloomSize,
+  { height: number; paddingHorizontal: number; type: TypeScaleFamily }
+>;
 
 /** Track padding. */
 const TRACK_PADDING = 4;
@@ -151,10 +166,7 @@ const InternalContext = createContext<{
   disabled: boolean;
   selectedValue: string;
   selectedPosition: { width: number; x: number } | null;
-  onSelectValue: (
-    value: string,
-    position: { width: number; x: number } | null,
-  ) => void;
+  onSelectValue: (value: string, position: { width: number; x: number } | null) => void;
   updatePosition: (position: { width: number; x: number }) => void;
 } | null>(null);
 
@@ -221,7 +233,7 @@ export function SegmentedControl<T extends string>({
 }) {
   const onValueChange = onValueChangeProp ?? onChange ?? (() => {});
   const theme = useTheme();
-  const {size} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
+  const { size } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
   useInteractiveWebCss(STYLE_ID, SEGMENTED_CSS);
   // The group is ONE control made of several segments, so a `Field` names the
   // group and disables all of it. `label` is the group's name rather than
@@ -253,71 +265,105 @@ export function SegmentedControl<T extends string>({
     isChosenSegment,
     GROUP,
   );
-  const register = useCallback((segment: SegmentPosition) => {
-    segments.value = [...segments.value.filter(item => item.value !== segment.value), segment].sort((a, b) => a.x - b.x);
-    return () => { segments.value = segments.value.filter(item => item.value !== segment.value); };
-  }, [segments]);
+  const register = useCallback(
+    (segment: SegmentPosition) => {
+      segments.value = [
+        ...segments.value.filter((item) => item.value !== segment.value),
+        segment,
+      ].sort((a, b) => a.x - b.x);
+      return () => {
+        segments.value = segments.value.filter((item) => item.value !== segment.value);
+      };
+    },
+    [segments],
+  );
   useLayoutEffect(() => {
     if (!selectedPosition || dragging.value) return;
-    const config = { duration: TRANSITION_MS, easing: Easing.bezier(0.25, 0.1, 0.25, 1), reduceMotion: ReduceMotion.System };
+    const config = {
+      duration: TRANSITION_MS,
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      reduceMotion: ReduceMotion.System,
+    };
     thumbX.value = withTiming(selectedPosition.x, config);
     thumbWidth.value = withTiming(selectedPosition.width, config);
   }, [selectedPosition, release, dragging, thumbX, thumbWidth]);
-  const markDrag = useCallback(() => { suppressUntil.current = Date.now() + 500; }, []);
-  const finishDrag = useCallback((next: string, commit: boolean) => {
-    suppressUntil.current = Date.now() + 250;
-    if (commit && next !== value && segments.value.some(item => item.value === next && !item.disabled)) onValueChange(next as T);
-    // Also settle when a controlled parent rejects the proposed value.
-    setRelease(count => count + 1);
-  }, [onValueChange, segments, value]);
-  const gesture = useMemo(() => Gesture.Pan()
-    .activeOffsetX([-6, 6])
-    .failOffsetY([-14, 14])
-    .onBegin(event => {
-      const origin = segments.value.find(item => event.x >= item.x && event.x <= item.x + item.width);
-      originEnabled.value = !!origin && !origin.disabled;
-    })
-    .onStart(() => {
-      if (!originEnabled.value) return;
-      dragging.value = true;
-      candidate.value = '';
-      runOnJS(markDrag)();
-    })
-    .onUpdate(event => {
-      if (!dragging.value) return;
-      const enabled = segments.value.filter(item => !item.disabled);
-      if (!enabled.length) return;
-      let left = enabled[0]!;
-      let right = enabled[enabled.length - 1]!;
-      for (let index = 0; index < enabled.length; index++) {
-        const item = enabled[index]!;
-        const center = item.x + item.width / 2;
-        if (center <= event.x) left = item;
-        if (center >= event.x) { right = item; break; }
-      }
-      const start = left.x + left.width / 2;
-      const end = right.x + right.width / 2;
-      const progress = end === start ? 0 : Math.max(0, Math.min(1, (event.x - start) / (end - start)));
-      thumbX.value = left.x + (right.x - left.x) * progress;
-      thumbWidth.value = left.width + (right.width - left.width) * progress;
-      candidate.value = progress < 0.5 ? left.value : right.value;
-    })
-    .onEnd((_event, success) => {
-      if (!dragging.value) return;
-      dragging.value = false;
-      runOnJS(finishDrag)(candidate.value, success);
-    })
-    .onFinalize(() => {
-      if (!dragging.value) return;
-      dragging.value = false;
-      runOnJS(finishDrag)('', false);
-    }), [segments, originEnabled, dragging, candidate, thumbX, thumbWidth, markDrag, finishDrag]);
+  const markDrag = useCallback(() => {
+    suppressUntil.current = Date.now() + 500;
+  }, []);
+  const finishDrag = useCallback(
+    (next: string, commit: boolean) => {
+      suppressUntil.current = Date.now() + 250;
+      if (
+        commit &&
+        next !== value &&
+        segments.value.some((item) => item.value === next && !item.disabled)
+      )
+        onValueChange(next as T);
+      // Also settle when a controlled parent rejects the proposed value.
+      setRelease((count) => count + 1);
+    },
+    [onValueChange, segments, value],
+  );
+  const gesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-6, 6])
+        .failOffsetY([-14, 14])
+        .onBegin((event) => {
+          const origin = segments.value.find(
+            (item) => event.x >= item.x && event.x <= item.x + item.width,
+          );
+          originEnabled.value = !!origin && !origin.disabled;
+        })
+        .onStart(() => {
+          if (!originEnabled.value) return;
+          dragging.value = true;
+          candidate.value = '';
+          runOnJS(markDrag)();
+        })
+        .onUpdate((event) => {
+          if (!dragging.value) return;
+          const enabled = segments.value.filter((item) => !item.disabled);
+          if (!enabled.length) return;
+          let left = enabled[0]!;
+          let right = enabled[enabled.length - 1]!;
+          for (let index = 0; index < enabled.length; index++) {
+            const item = enabled[index]!;
+            const center = item.x + item.width / 2;
+            if (center <= event.x) left = item;
+            if (center >= event.x) {
+              right = item;
+              break;
+            }
+          }
+          const start = left.x + left.width / 2;
+          const end = right.x + right.width / 2;
+          const progress =
+            end === start ? 0 : Math.max(0, Math.min(1, (event.x - start) / (end - start)));
+          thumbX.value = left.x + (right.x - left.x) * progress;
+          thumbWidth.value = left.width + (right.width - left.width) * progress;
+          candidate.value = progress < 0.5 ? left.value : right.value;
+        })
+        .onEnd((_event, success) => {
+          if (!dragging.value) return;
+          dragging.value = false;
+          runOnJS(finishDrag)(candidate.value, success);
+        })
+        .onFinalize(() => {
+          if (!dragging.value) return;
+          dragging.value = false;
+          runOnJS(finishDrag)('', false);
+        }),
+    [segments, originEnabled, dragging, candidate, thumbX, thumbWidth, markDrag, finishDrag],
+  );
 
   const contextValue = useMemo(() => {
     return {
       register,
       suppressPress: () => dragging.value || Date.now() < suppressUntil.current,
-      allowKeyboardPress: () => { suppressUntil.current = 0; },
+      allowKeyboardPress: () => {
+        suppressUntil.current = 0;
+      },
       type,
       size,
       variant,
@@ -325,27 +371,32 @@ export function SegmentedControl<T extends string>({
       disabled: isDisabled,
       selectedValue: value,
       selectedPosition,
-      onSelectValue: (
-        val: string,
-        position: { width: number; x: number } | null,
-      ) => {
+      onSelectValue: (val: string, position: { width: number; x: number } | null) => {
         onValueChange(val as T);
         // Selection geometry follows the controlled value's item layout effect.
       },
       updatePosition: (position: { width: number; x: number }) => {
-        setSelectedPosition(currPos => {
-          if (
-            currPos &&
-            currPos.width === position.width &&
-            currPos.x === position.x
-          ) {
+        setSelectedPosition((currPos) => {
+          if (currPos && currPos.width === position.width && currPos.x === position.x) {
             return currPos;
           }
           return position;
         });
       },
     };
-  }, [value, selectedPosition, setSelectedPosition, onValueChange, type, size, variant, palette, register, dragging, isDisabled]);
+  }, [
+    value,
+    selectedPosition,
+    setSelectedPosition,
+    onValueChange,
+    type,
+    size,
+    variant,
+    palette,
+    register,
+    dragging,
+    isDisabled,
+  ]);
 
   const solid = variant === 'solid';
   const padding = solid ? TRACK_PADDING : 0;
@@ -357,45 +408,40 @@ export function SegmentedControl<T extends string>({
 
   return (
     <GestureDetector gesture={gesture} touchAction="pan-y">
-    <StyledView
-      className={className}
-      ref={groupRef}
-      {...webDataSet({ bloomSegmentedGroup: '' })}
-      testID={testID}
-      nativeID={field.nativeID}
-      accessibilityLabel={field.accessibilityLabel}
-      accessibilityHint={accessibilityHint ?? ''}
-      aria-describedby={field.describedBy}
-      aria-invalid={field.invalid || undefined}
-      // A `View`, so `aria-disabled` is the only spelling that reaches web —
-      // there is no `disabled` prop for react-native-web to derive it from.
-      aria-disabled={isDisabled || undefined}
-      style={[
-        {
-          position: 'relative',
-          flexDirection: 'row',
-          alignItems: 'stretch',
-          alignSelf: 'flex-start',
-          gap: SEGMENT_GAP,
-          height,
-          padding,
-          borderRadius: borderRadius.full,
-          backgroundColor: solid ? palette.track : 'transparent',
-        },
-        style,
-      ]}
-      role={type === 'tabs' ? 'tablist' : 'radiogroup'}>
-      {solid && selectedPosition !== null && (
-        <SegmentedThumb
-          x={thumbX}
-          width={thumbWidth}
-          palette={palette}
-        />
-      )}
-      <InternalContext.Provider value={contextValue}>
-        {children}
-      </InternalContext.Provider>
-    </StyledView>
+      <StyledView
+        className={className}
+        ref={groupRef}
+        {...webDataSet({ bloomSegmentedGroup: '' })}
+        testID={testID}
+        nativeID={field.nativeID}
+        accessibilityLabel={field.accessibilityLabel}
+        accessibilityHint={accessibilityHint ?? ''}
+        aria-describedby={field.describedBy}
+        aria-invalid={field.invalid || undefined}
+        // A `View`, so `aria-disabled` is the only spelling that reaches web —
+        // there is no `disabled` prop for react-native-web to derive it from.
+        aria-disabled={isDisabled || undefined}
+        style={[
+          {
+            position: 'relative',
+            flexDirection: 'row',
+            alignItems: 'stretch',
+            alignSelf: 'flex-start',
+            gap: SEGMENT_GAP,
+            height,
+            padding,
+            borderRadius: borderRadius.full,
+            backgroundColor: solid ? palette.track : 'transparent',
+          },
+          style,
+        ]}
+        role={type === 'tabs' ? 'tablist' : 'radiogroup'}
+      >
+        {solid && selectedPosition !== null && (
+          <SegmentedThumb x={thumbX} width={thumbWidth} palette={palette} />
+        )}
+        <InternalContext.Provider value={contextValue}>{children}</InternalContext.Provider>
+      </StyledView>
     </GestureDetector>
   );
 }
@@ -426,17 +472,12 @@ export function SegmentedControlItem({
   testID?: string;
   disabled?: PressableProps['disabled'];
 }) {
-  const [position, setPosition] = useState<{ x: number; width: number } | null>(
-    null,
-  );
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } =
-    useInteractionState();
+  const [position, setPosition] = useState<{ x: number; width: number } | null>(null);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const ctx = useContext(InternalContext);
   if (!ctx) {
-    throw new Error(
-      'SegmentedControlItem must be used within a SegmentedControl',
-    );
+    throw new Error('SegmentedControlItem must be used within a SegmentedControl');
   }
 
   const active = ctx.selectedValue === value;
@@ -444,8 +485,7 @@ export function SegmentedControlItem({
   const needsUpdate =
     active &&
     position &&
-    (ctx.selectedPosition?.x !== position.x ||
-      ctx.selectedPosition?.width !== position.width);
+    (ctx.selectedPosition?.x !== position.x || ctx.selectedPosition?.width !== position.width);
 
   // Use a ref to avoid re-running the layout effect when updatePosition changes
   const updatePositionRef = useRef(ctx.updatePosition);
@@ -466,11 +506,19 @@ export function SegmentedControlItem({
     if (position) return ctx.register({ value, ...position, disabled: isDisabled });
   }, [ctx.register, value, position, isDisabled]);
 
-  const onPress = useCallback((event?: GestureResponderEvent) => {
-    if (isDisabled || ((event?.nativeEvent as { detail?: number } | undefined)?.detail !== 0 && ctx.suppressPress())) return;
-    ctx.onSelectValue(value, position);
-    onPressProp?.();
-  }, [ctx, value, position, onPressProp, isDisabled]);
+  const onPress = useCallback(
+    (event?: GestureResponderEvent) => {
+      if (
+        isDisabled ||
+        ((event?.nativeEvent as { detail?: number } | undefined)?.detail !== 0 &&
+          ctx.suppressPress())
+      )
+        return;
+      ctx.onSelectValue(value, position);
+      onPressProp?.();
+    },
+    [ctx, value, position, onPressProp, isDisabled],
+  );
 
   // We render the segment as a flat `Pressable` (not Bloom's `Button`)
   // for two reasons:
@@ -526,7 +574,7 @@ export function SegmentedControlItem({
   return (
     <StyledPressable
       className={className}
-      onLayout={evt => {
+      onLayout={(evt) => {
         const measuredPosition = {
           x: evt.nativeEvent.layout.x,
           width: evt.nativeEvent.layout.width,
@@ -536,27 +584,26 @@ export function SegmentedControlItem({
         }
         setPosition(measuredPosition);
       }}
-        {...(IS_WEB ? ({ dataSet: { bloomSegmentedItem: '' }, onKeyDown } as Record<string, unknown>) : {})}
-        onPress={onPress}
-        onHoverIn={onHoverIn}
-        onHoverOut={onHoverOut}
-        accessibilityLabel={accessibilityLabel}
-        accessibilityHint={accessibilityHint}
-        // The active state has to be spelled as an `aria-*` prop, because
-        // react-native-web never reads `accessibilityState` (React Native folds
-        // these back into it, so native is unaffected) — and WHICH prop depends
-        // on the role: ARIA gives `tab` a selected state and `radio` a checked
-        // one, so a single spelling would be invalid for one of the two modes.
-        {...(itemRole === 'tab'
-          ? { 'aria-selected': active }
-          : { 'aria-checked': active })}
-        role={itemRole}
-        disabled={isDisabled}
-        testID={testID}
-        style={[itemStyle, style]}>
-        <InternalItemContext.Provider value={itemContext}>
-          {children}
-        </InternalItemContext.Provider>
+      {...(IS_WEB
+        ? ({ dataSet: { bloomSegmentedItem: '' }, onKeyDown } as Record<string, unknown>)
+        : {})}
+      onPress={onPress}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      // The active state has to be spelled as an `aria-*` prop, because
+      // react-native-web never reads `accessibilityState` (React Native folds
+      // these back into it, so native is unaffected) — and WHICH prop depends
+      // on the role: ARIA gives `tab` a selected state and `radio` a checked
+      // one, so a single spelling would be invalid for one of the two modes.
+      {...(itemRole === 'tab' ? { 'aria-selected': active } : { 'aria-checked': active })}
+      role={itemRole}
+      disabled={isDisabled}
+      testID={testID}
+      style={[itemStyle, style]}
+    >
+      <InternalItemContext.Provider value={itemContext}>{children}</InternalItemContext.Provider>
     </StyledPressable>
   );
 }
@@ -572,9 +619,7 @@ export function SegmentedControlItemText({
   const ctx = useContext(InternalItemContext);
   const control = useContext(InternalContext);
   if (!ctx || !control) {
-    throw new Error(
-      'SegmentedControlItemText must be used within a SegmentedControlItem',
-    );
+    throw new Error('SegmentedControlItemText must be used within a SegmentedControlItem');
   }
   const geometry = GEOMETRY[control.size];
   const emphasised = ctx.active || ctx.hovered;
@@ -596,7 +641,8 @@ export function SegmentedControlItemText({
       variant={`${geometry.type}-${ctx.active ? 'medium' : 'regular'}`}
       numberOfLines={1}
       {...props}
-      style={[textStyle, style]}>
+      style={[textStyle, style]}
+    >
       {children}
     </Text>
   );
@@ -622,9 +668,12 @@ function SegmentedThumb({
     boxShadow: palette.thumbShadow,
   };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    width: width.value,
-    transform: [{ translateX: x.value }],
-  }), [x, width]);
+  const animatedStyle = useAnimatedStyle(
+    () => ({
+      width: width.value,
+      transform: [{ translateX: x.value }],
+    }),
+    [x, width],
+  );
   return <Animated.View pointerEvents="none" style={[base, animatedStyle]} />;
 }

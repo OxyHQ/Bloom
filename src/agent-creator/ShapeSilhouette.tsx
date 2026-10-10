@@ -18,10 +18,9 @@ function silhouette(config: AvatarConfig) {
   ]);
   const cached = silhouettes.get(key);
   if (cached) return cached;
-  const points = radialContour(
-    legacyContours({ ...config, grain: 0, material: 'solid' }),
-    128,
-  ).map(([x, y]) => [x, -y] as const);
+  const points = radialContour(legacyContours({ ...config, grain: 0, material: 'solid' }), 128).map(
+    ([x, y]) => [x, -y] as const,
+  );
   const xs = points.map(([x]) => x),
     ys = points.map(([, y]) => y);
   const left = Math.min(...xs),
@@ -32,23 +31,16 @@ function silhouette(config: AvatarConfig) {
   const padding = Math.max(width, height) * 0.025;
   const result = {
     path:
-      points
-        .map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(4)} ${y.toFixed(4)}`)
-        .join(' ') + 'Z',
+      points.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(4)} ${y.toFixed(4)}`).join(' ') + 'Z',
     viewBox: `${left - padding} ${top - padding} ${width + padding * 2} ${height + padding * 2}`,
   };
-  if (silhouettes.size >= 64)
-    silhouettes.delete(silhouettes.keys().next().value!);
+  if (silhouettes.size >= 64) silhouettes.delete(silhouettes.keys().next().value!);
   silhouettes.set(key, result);
   return result;
 }
 
 /** Shape-only selector artwork: no avatar, animation loop, or runtime request. */
-export const ShapeSilhouette = memo(function ShapeSilhouette({
-  config,
-}: {
-  config: AvatarConfig;
-}) {
+export const ShapeSilhouette = memo(function ShapeSilhouette({ config }: { config: AvatarConfig }) {
   const { path, viewBox } = silhouette(config);
   return (
     <Svg

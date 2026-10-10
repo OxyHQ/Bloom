@@ -21,20 +21,39 @@ function Activity({ name }: { name: string }) {
   return <Text testID={`${name}-active`}>{String(useAppShellPaneActive())}</Text>;
 }
 function Frame({ selected = false, mobile = false, transition = 'slide' as 'slide' | 'none' }) {
-  return <BloomThemeProvider mode="light"><AppShellSplitPanes transition={transition}
-    variant="separated" testID="split" paneScroll={false}
-    showList={!mobile || !selected} showDetail={selected}
-    list={<><TextInput testID="draft" /><Activity name="list" /></>}
-    detail={selected ? <Activity name="detail" /> : undefined} />
-  </BloomThemeProvider>;
+  return (
+    <BloomThemeProvider mode="light">
+      <AppShellSplitPanes
+        transition={transition}
+        variant="separated"
+        testID="split"
+        paneScroll={false}
+        showList={!mobile || !selected}
+        showDetail={selected}
+        list={
+          <>
+            <TextInput testID="draft" />
+            <Activity name="list" />
+          </>
+        }
+        detail={selected ? <Activity name="detail" /> : undefined}
+      />
+    </BloomThemeProvider>
+  );
 }
 
 it('retains exiting detail, marks it inactive immediately and releases it on completion', () => {
   const view = render(<Frame selected />);
   view.rerender(<Frame />);
-  expect(view.getByTestId('detail-active', { includeHiddenElements: true }).props.children).toBe('false');
-  expect(view.getByTestId('split-pane-detail', { includeHiddenElements: true }).props.pointerEvents).toBe('none');
-  expect(view.getByTestId('split-pane-detail', { includeHiddenElements: true }).props['aria-hidden']).toBe(true);
+  expect(view.getByTestId('detail-active', { includeHiddenElements: true }).props.children).toBe(
+    'false',
+  );
+  expect(
+    view.getByTestId('split-pane-detail', { includeHiddenElements: true }).props.pointerEvents,
+  ).toBe('none');
+  expect(
+    view.getByTestId('split-pane-detail', { includeHiddenElements: true }).props['aria-hidden'],
+  ).toBe(true);
   act(() => completed[completed.length - 1]!());
   expect(view.queryByTestId('detail-active', { includeHiddenElements: true })).toBeNull();
 });
@@ -42,13 +61,17 @@ it('retains exiting detail, marks it inactive immediately and releases it on com
 it('retains the mobile list only during its slide, while logical visibility changes immediately', () => {
   const view = render(<Frame mobile />);
   view.rerender(<Frame mobile selected />);
-  expect(view.getByTestId('list-active', { includeHiddenElements: true }).props.children).toBe('false');
+  expect(view.getByTestId('list-active', { includeHiddenElements: true }).props.children).toBe(
+    'false',
+  );
   expect(view.getByTestId('detail-active').props.children).toBe('true');
   act(() => completed[completed.length - 1]!());
   expect(view.queryByTestId('split-pane-list', { includeHiddenElements: true })).toBeNull();
   view.rerender(<Frame mobile />);
   expect(view.getByTestId('list-active').props.children).toBe('true');
-  expect(view.getByTestId('detail-active', { includeHiddenElements: true }).props.children).toBe('false');
+  expect(view.getByTestId('detail-active', { includeHiddenElements: true }).props.children).toBe(
+    'false',
+  );
   act(() => completed[completed.length - 1]!());
   expect(view.queryByTestId('split-pane-detail', { includeHiddenElements: true })).toBeNull();
 });
@@ -70,8 +93,17 @@ it('preserves the desktop list instance while entering and leaving detail', () =
     React.useEffect(mounted, []);
     return <TextInput testID="draft" value={value} onChangeText={setValue} />;
   }
-  const frame = (selected: boolean) => <BloomThemeProvider mode="light"><AppShellSplitPanes transition="slide"
-    list={<Draft />} detail={<Text>Detail</Text>} showDetail={selected} paneScroll={false} /></BloomThemeProvider>;
+  const frame = (selected: boolean) => (
+    <BloomThemeProvider mode="light">
+      <AppShellSplitPanes
+        transition="slide"
+        list={<Draft />}
+        detail={<Text>Detail</Text>}
+        showDetail={selected}
+        paneScroll={false}
+      />
+    </BloomThemeProvider>
+  );
   const view = render(frame(false));
   fireEvent.changeText(view.getByTestId('draft'), 'Kept draft');
   view.rerender(frame(true));
@@ -98,11 +130,15 @@ it('leaves the default immediate unmount behavior intact', () => {
   expect(Reanimated.withTiming).not.toHaveBeenCalled();
 });
 
-
 it('settles a retained exit when the native reduced-motion preference changes', () => {
   let preferenceChanged: ((enabled: boolean) => void) | undefined;
   const remove = jest.fn();
-  const accessibility: { addEventListener(event: 'reduceMotionChanged', listener: (enabled: boolean) => void): { remove(): void } } = AccessibilityInfo;
+  const accessibility: {
+    addEventListener(
+      event: 'reduceMotionChanged',
+      listener: (enabled: boolean) => void,
+    ): { remove(): void };
+  } = AccessibilityInfo;
   jest.spyOn(accessibility, 'addEventListener').mockImplementation((_name, listener) => {
     preferenceChanged = listener;
     return { remove };
@@ -121,14 +157,23 @@ it('settles a retained exit when the web media preference changes', () => {
   const originalMatchMedia = window.matchMedia;
   let changed: (() => void) | undefined;
   const remove = jest.fn();
-  const media = { matches: false, addEventListener: (_type: string, handler: () => void) => { changed = handler; }, removeEventListener: remove };
+  const media = {
+    matches: false,
+    addEventListener: (_type: string, handler: () => void) => {
+      changed = handler;
+    },
+    removeEventListener: remove,
+  };
   Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
   window.matchMedia = jest.fn(() => media as unknown as MediaQueryList);
   try {
     const view = render(<Frame selected />);
     view.rerender(<Frame />);
     expect(view.getByTestId('split-pane-detail', { includeHiddenElements: true })).toBeTruthy();
-    act(() => { media.matches = true; changed!(); });
+    act(() => {
+      media.matches = true;
+      changed!();
+    });
     expect(view.queryByTestId('split-pane-detail', { includeHiddenElements: true })).toBeNull();
     view.unmount();
     expect(remove).toHaveBeenCalledTimes(1);

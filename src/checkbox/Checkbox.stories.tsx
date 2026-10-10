@@ -11,13 +11,16 @@ import { Checkbox, CheckboxCard } from './index';
 
 const meta: Meta<typeof Checkbox> = {
   argTypes: {
-    "checked": { control: 'boolean' },
-    "label": { control: 'text' },
-    "description": { control: 'text' },
-    "size": { control: 'select', options: ["xs","sm","md","lg"] },
-    "disabled": { control: 'boolean' },
-    "indeterminate": { control: 'boolean' },
-    "tone": { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] }
+    checked: { control: 'boolean' },
+    label: { control: 'text' },
+    description: { control: 'text' },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
+    disabled: { control: 'boolean' },
+    indeterminate: { control: 'boolean' },
+    tone: {
+      control: 'select',
+      options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'],
+    },
   },
   title: 'Base/Checkbox',
   component: Checkbox,
@@ -39,37 +42,77 @@ export const Matrix: Story = {
   render: function CheckboxMatrix() {
     const theme = useTheme();
     return (
-    <View style={{ gap: 16, padding: 16, backgroundColor: theme.colors.background }}>
-      {(['sm', 'md', 'lg'] as const).map((size) => (
-        <View key={size} style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', alignItems: 'center', gap: 24 }}>
-          <Checkbox size={size} checked={false} onCheckedChange={noop} accessibilityLabel="Unchecked" />
-          <Checkbox size={size} checked onCheckedChange={noop} accessibilityLabel="Checked" />
-          <Checkbox size={size} checked={false} indeterminate onCheckedChange={noop} accessibilityLabel="Mixed" />
-          <Checkbox size={size} checked={false} disabled onCheckedChange={noop} accessibilityLabel="Disabled" />
-          <Checkbox size={size} checked disabled onCheckedChange={noop} accessibilityLabel="Disabled checked" />
-          <Checkbox size={size} checked onCheckedChange={noop} label="Label text" />
-          <Checkbox size={size} checked={false} disabled onCheckedChange={noop} label="Disabled" />
-        </View>
-      ))}
-    </View>
+      <View style={{ gap: 16, padding: 16, backgroundColor: theme.colors.background }}>
+        {(['sm', 'md', 'lg'] as const).map((size) => (
+          <View
+            key={size}
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              maxWidth: '100%',
+              alignItems: 'center',
+              gap: 24,
+            }}
+          >
+            <Checkbox
+              size={size}
+              checked={false}
+              onCheckedChange={noop}
+              accessibilityLabel="Unchecked"
+            />
+            <Checkbox size={size} checked onCheckedChange={noop} accessibilityLabel="Checked" />
+            <Checkbox
+              size={size}
+              checked={false}
+              indeterminate
+              onCheckedChange={noop}
+              accessibilityLabel="Mixed"
+            />
+            <Checkbox
+              size={size}
+              checked={false}
+              disabled
+              onCheckedChange={noop}
+              accessibilityLabel="Disabled"
+            />
+            <Checkbox
+              size={size}
+              checked
+              disabled
+              onCheckedChange={noop}
+              accessibilityLabel="Disabled checked"
+            />
+            <Checkbox size={size} checked onCheckedChange={noop} label="Label text" />
+            <Checkbox
+              size={size}
+              checked={false}
+              disabled
+              onCheckedChange={noop}
+              label="Disabled"
+            />
+          </View>
+        ))}
+      </View>
     );
   },
 };
 
 /** Controlled: `checked` + `onCheckedChange` are both required. */
 export const Basic: Story = {
-  args: { label: "Email me about new sign-ins" },
-  parameters: { controls: { include: ["label","description","size","disabled","indeterminate","tone"] } },
+  args: { label: 'Email me about new sign-ins' },
+  parameters: {
+    controls: { include: ['label', 'description', 'size', 'disabled', 'indeterminate', 'tone'] },
+  },
   render: function BasicCheckbox(args) {
     const [checked, setChecked] = useState(false);
     return (
       <View style={{ gap: 12 }}>
         <Text>checked: {String(checked)}</Text>
-        <Checkbox {...args}
+        <Checkbox
+          {...args}
           testID="checkbox-basic"
           checked={checked}
           onCheckedChange={setChecked}
-
         />
       </View>
     );
@@ -78,18 +121,18 @@ export const Basic: Story = {
 
 /** A description turns the row into a two-line control; the whole row is the hit target. */
 export const WithDescription: Story = {
-  args: { label: "Share usage data", description: "Crash reports and performance timings. Never message content." },
-  parameters: { controls: { include: ["label","description","size","disabled","indeterminate","tone"] } },
+  args: {
+    label: 'Share usage data',
+    description: 'Crash reports and performance timings. Never message content.',
+  },
+  parameters: {
+    controls: { include: ['label', 'description', 'size', 'disabled', 'indeterminate', 'tone'] },
+  },
   render: function DescribedCheckbox(args) {
     const [checked, setChecked] = useState(true);
     return (
       <View style={{ maxWidth: 360 }}>
-        <Checkbox {...args}
-          checked={checked}
-          onCheckedChange={setChecked}
-
-
-        />
+        <Checkbox {...args} checked={checked} onCheckedChange={setChecked} />
       </View>
     );
   },
@@ -195,7 +238,15 @@ export const Cards: Story = {
     const theme = useTheme();
     const [on, setOn] = useState({ digest: true, mentions: false, product: true });
     return (
-      <View style={{ maxWidth: '100%', width: 400, gap: 8, padding: 16, backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          maxWidth: '100%',
+          width: 400,
+          gap: 8,
+          padding: 16,
+          backgroundColor: theme.colors.background,
+        }}
+      >
         <CheckboxCard
           title="Weekly digest"
           description="A summary of activity every Monday."
@@ -227,8 +278,18 @@ export const Cards: Story = {
 
 /** Edit the props in Controls; interactive state stays in sync. */
 export const Playground: Story = {
-  args: { label: 'Send me updates', checked: false, disabled: false, indeterminate: false, size: 'md', tone: 'accent' },
-  render: function PlaygroundCheckbox(args) { const [, updateArgs] = useArgs(); return <Checkbox {...args} onCheckedChange={(checked) => updateArgs({ checked })} />; },
+  args: {
+    label: 'Send me updates',
+    checked: false,
+    disabled: false,
+    indeterminate: false,
+    size: 'md',
+    tone: 'accent',
+  },
+  render: function PlaygroundCheckbox(args) {
+    const [, updateArgs] = useArgs();
+    return <Checkbox {...args} onCheckedChange={(checked) => updateArgs({ checked })} />;
+  },
 };
 
 /** Custom layouts stay inside the control's full-row press target. */
@@ -237,18 +298,52 @@ export const LabelContent: Story = {
     const [checked, setChecked] = useState(false);
     const [value, setValue] = useState('recent');
     const theme = useTheme();
-    const stars = <View style={{ flexDirection:'row', alignItems:'center', gap:8 }}>
-      <RiStarFill width={20} height={20} fill={theme.colors.text} /><Text>4 and up</Text><Text>12</Text>
-    </View>;
-    return <View style={{ width:320, gap:20 }}>
-      <Checkbox label="Four stars and up" labelContent={stars} checked={checked} onCheckedChange={setChecked} style={{ minHeight:44, justifyContent:'center' }} />
-      <Checkbox label="Unavailable rating" labelContent={stars} disabled />
-      <View accessibilityRole="radiogroup" accessibilityLabel="Order">
-        <Radio value="recent" label="Newest first" labelContent={<View><Text>Recent</Text><Text>By date</Text></View>}
-          checked={value==='recent'} onValueChange={setValue} style={{ minHeight:44 }} />
-        <Radio value="helpful" accessibilityLabel="Most helpful" labelContent={<View><Text>Helpful</Text><Text>By votes</Text></View>}
-          checked={value==='helpful'} onValueChange={setValue} style={{ minHeight:44 }} />
+    const stars = (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <RiStarFill width={20} height={20} fill={theme.colors.text} />
+        <Text>4 and up</Text>
+        <Text>12</Text>
       </View>
-    </View>;
+    );
+    return (
+      <View style={{ width: 320, gap: 20 }}>
+        <Checkbox
+          label="Four stars and up"
+          labelContent={stars}
+          checked={checked}
+          onCheckedChange={setChecked}
+          style={{ minHeight: 44, justifyContent: 'center' }}
+        />
+        <Checkbox label="Unavailable rating" labelContent={stars} disabled />
+        <View accessibilityRole="radiogroup" accessibilityLabel="Order">
+          <Radio
+            value="recent"
+            label="Newest first"
+            labelContent={
+              <View>
+                <Text>Recent</Text>
+                <Text>By date</Text>
+              </View>
+            }
+            checked={value === 'recent'}
+            onValueChange={setValue}
+            style={{ minHeight: 44 }}
+          />
+          <Radio
+            value="helpful"
+            accessibilityLabel="Most helpful"
+            labelContent={
+              <View>
+                <Text>Helpful</Text>
+                <Text>By votes</Text>
+              </View>
+            }
+            checked={value === 'helpful'}
+            onValueChange={setValue}
+            style={{ minHeight: 44 }}
+          />
+        </View>
+      </View>
+    );
   },
 };

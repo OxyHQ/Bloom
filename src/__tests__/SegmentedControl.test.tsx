@@ -109,15 +109,28 @@ describe('SegmentedControl', () => {
 describe('SegmentedControl dragging', () => {
   function setup(disabled = false) {
     const onChange = jest.fn();
-    const ui = render(<BloomThemeProvider mode="light" colorPreset="oxy">
-      <SegmentedControl label="Drag" type="radio" value="a" onValueChange={onChange}>
-        {['a', 'b', 'c'].map(value => <SegmentedControlItem key={value} value={value} testID={value} disabled={disabled && value === 'b'}><SegmentedControlItemText>{value}</SegmentedControlItemText></SegmentedControlItem>)}
-      </SegmentedControl>
-    </BloomThemeProvider>);
+    const ui = render(
+      <BloomThemeProvider mode="light" colorPreset="oxy">
+        <SegmentedControl label="Drag" type="radio" value="a" onValueChange={onChange}>
+          {['a', 'b', 'c'].map((value) => (
+            <SegmentedControlItem
+              key={value}
+              value={value}
+              testID={value}
+              disabled={disabled && value === 'b'}
+            >
+              <SegmentedControlItemText>{value}</SegmentedControlItemText>
+            </SegmentedControlItem>
+          ))}
+        </SegmentedControl>
+      </BloomThemeProvider>,
+    );
     for (const [index] of ['a', 'b', 'c'].entries()) {
       const item = ui.UNSAFE_getAllByType(SegmentedControlItem)[index]!;
-      const wrapper = item.find(node => typeof node.props.onLayout === 'function');
-      fireEvent(wrapper, 'layout', { nativeEvent: { layout: { x: 4 + index * 102, width: 100, height: 28, y: 4 } } });
+      const wrapper = item.find((node) => typeof node.props.onLayout === 'function');
+      fireEvent(wrapper, 'layout', {
+        nativeEvent: { layout: { x: 4 + index * 102, width: 100, height: 28, y: 4 } },
+      });
     }
     const handlers = ui.UNSAFE_getByType(GestureDetector).props.gesture.__handlers;
     return { ...ui, handlers, onChange };
@@ -125,10 +138,17 @@ describe('SegmentedControl dragging', () => {
   it('measures without changing value and commits only on release', () => {
     const { handlers, onChange, getByTestId } = setup();
     expect(onChange).not.toHaveBeenCalled();
-    act(() => { handlers.onBegin({ x: 54 }); handlers.onStart({}); handlers.onUpdate({ x: 258 }); });
+    act(() => {
+      handlers.onBegin({ x: 54 });
+      handlers.onStart({});
+      handlers.onUpdate({ x: 258 });
+    });
     expect(onChange).not.toHaveBeenCalled();
     expect(getByTestId('a').props['aria-checked']).toBe(true);
-    act(() => { handlers.onEnd({}, true); handlers.onFinalize({}); });
+    act(() => {
+      handlers.onEnd({}, true);
+      handlers.onFinalize({});
+    });
     expect(onChange.mock.calls).toEqual([['c']]);
     fireEvent.press(getByTestId('c'));
     expect(onChange).toHaveBeenCalledTimes(1);
@@ -136,16 +156,37 @@ describe('SegmentedControl dragging', () => {
   });
   it('ignores disabled origins and cancellation', () => {
     const { handlers, onChange } = setup(true);
-    act(() => { handlers.onBegin({ x: 156 }); handlers.onStart({}); handlers.onUpdate({ x: 258 }); handlers.onEnd({}, true); handlers.onFinalize({}); });
+    act(() => {
+      handlers.onBegin({ x: 156 });
+      handlers.onStart({});
+      handlers.onUpdate({ x: 258 });
+      handlers.onEnd({}, true);
+      handlers.onFinalize({});
+    });
     expect(onChange).not.toHaveBeenCalled();
-    act(() => { handlers.onBegin({ x: 54 }); handlers.onStart({}); handlers.onUpdate({ x: 258 }); handlers.onFinalize({}); });
+    act(() => {
+      handlers.onBegin({ x: 54 });
+      handlers.onStart({});
+      handlers.onUpdate({ x: 258 });
+      handlers.onFinalize({});
+    });
     expect(onChange).not.toHaveBeenCalled();
   });
   it('skips disabled destinations and ignores releasing on the current value', () => {
     const { handlers, onChange } = setup(true);
-    act(() => { handlers.onBegin({ x: 54 }); handlers.onStart({}); handlers.onUpdate({ x: 160 }); handlers.onEnd({}, true); });
+    act(() => {
+      handlers.onBegin({ x: 54 });
+      handlers.onStart({});
+      handlers.onUpdate({ x: 160 });
+      handlers.onEnd({}, true);
+    });
     expect(onChange).toHaveBeenLastCalledWith('c');
-    act(() => { handlers.onBegin({ x: 258 }); handlers.onStart({}); handlers.onUpdate({ x: -100 }); handlers.onEnd({}, true); });
+    act(() => {
+      handlers.onBegin({ x: 258 });
+      handlers.onStart({});
+      handlers.onUpdate({ x: -100 });
+      handlers.onEnd({}, true);
+    });
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 });

@@ -31,12 +31,7 @@ import { TriggerSlot } from '../floating/TriggerSlot';
 import { useMenuFocusIntent, useMenuTriggerKeys } from '../floating/menu-keyboard';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { StyledText, StyledView } from '../styles/styled-primitives';
-import {
-  MenubarMenuProvider,
-  MenubarProvider,
-  useMenubar,
-  useMenubarMenu,
-} from './context';
+import { MenubarMenuProvider, MenubarProvider, useMenubar, useMenubarMenu } from './context';
 import type { MenubarMenuProps, MenubarProps, MenubarTriggerProps } from './types';
 import { useMessages } from '../locale/messages';
 import { MENUBAR_MESSAGES } from './messages';
@@ -80,7 +75,8 @@ export function Menubar({
         aria-label={label}
         testID={testID}
         className={cx(MENUBAR_CLASS, className)}
-        style={[barPaint, style]}>
+        style={[barPaint, style]}
+      >
         {children}
       </StyledView>
     </MenubarProvider>
@@ -135,17 +131,15 @@ export function MenubarTrigger({
   // still hands the whole thing to the caller.
   const trigger = (
     <StyledView
-      className={cx(
-        MENUBAR_TRIGGER_CLASS,
-        menu.open && MENUBAR_TRIGGER_OPEN_CLASS,
-        className,
-      )}
-      style={{ backgroundColor: menu.open ? palette.rowHighlight : 'transparent' }}>
+      className={cx(MENUBAR_TRIGGER_CLASS, menu.open && MENUBAR_TRIGGER_OPEN_CLASS, className)}
+      style={{ backgroundColor: menu.open ? palette.rowHighlight : 'transparent' }}
+    >
       {typeof children === 'string' ? (
         <StyledText
           className={MENUBAR_TRIGGER_TEXT_CLASS}
           // `text-body-medium text-text-primary`, in Inter.
-          style={[menuType('body-medium'), { color: palette.text }]}>
+          style={[menuType('body-medium'), { color: palette.text }]}
+        >
           {children}
         </StyledText>
       ) : (
@@ -167,7 +161,8 @@ export function MenubarTrigger({
         accessibilityRole: 'button',
         'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
-      }}>
+      }}
+    >
       {asChild ? children : trigger}
     </TriggerSlot>
   );

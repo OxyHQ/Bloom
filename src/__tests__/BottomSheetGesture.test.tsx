@@ -75,11 +75,20 @@ jest.mock('react-native-gesture-handler', () => {
   };
 });
 
-function renderSheet(onDismiss: () => void, onDismissAttempt?: () => boolean, transition?: React.ComponentProps<typeof BottomSheet>['transition']) {
+function renderSheet(
+  onDismiss: () => void,
+  onDismissAttempt?: () => boolean,
+  transition?: React.ComponentProps<typeof BottomSheet>['transition'],
+) {
   const ref = createRef<BottomSheetRef>();
   const utils = render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={onDismissAttempt} transition={transition}>
+      <BottomSheet
+        ref={ref}
+        onDismiss={onDismiss}
+        onDismissAttempt={onDismissAttempt}
+        transition={transition}
+      >
         <Text>Body</Text>
       </BottomSheet>
     </BloomThemeProvider>,
@@ -134,7 +143,6 @@ describe('BottomSheet pan-to-dismiss gesture', () => {
   });
 });
 
-
 it('keeps a vetoed drag mounted and does not announce completion', () => {
   mockPanGestures.length = 0;
   const onDismiss = jest.fn();
@@ -148,12 +156,11 @@ it('keeps a vetoed drag mounted and does not announce completion', () => {
   expect(screen.getByText('Body')).toBeTruthy();
 });
 
-
-it.each([false, true])('retains the timed close lifecycle and drag veto (veto=%s)', veto => {
+it.each([false, true])('retains the timed close lifecycle and drag veto (veto=%s)', (veto) => {
   mockPanGestures.length = 0;
   const onDismiss = jest.fn();
-  const screen = renderSheet(onDismiss, () => !veto, { duration: 300, easing: [0, 0, .58, 1] });
-  const gesture = mockPanGestures.find(g => typeof g.onEnd === 'function');
+  const screen = renderSheet(onDismiss, () => !veto, { duration: 300, easing: [0, 0, 0.58, 1] });
+  const gesture = mockPanGestures.find((g) => typeof g.onEnd === 'function');
   expect(gesture).toBeDefined();
   act(() => gesture?.onEnd?.({ velocityY: 1500, translationY: 500 }));
   expect(onDismiss).toHaveBeenCalledTimes(veto ? 0 : 1);

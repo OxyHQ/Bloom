@@ -34,9 +34,7 @@ it('closes the native Select owner when its logical body hides and prevents hidd
   expect(mockControl.open).toHaveBeenCalledTimes(1);
   ui.rerender(draw(false));
   expect(mockControl.close).toHaveBeenCalledTimes(1);
-  fireEvent.press(
-    ui.getByLabelText('Frequency', { includeHiddenElements: true }),
-  );
+  fireEvent.press(ui.getByLabelText('Frequency', { includeHiddenElements: true }));
   expect(mockControl.open).toHaveBeenCalledTimes(1);
   ui.rerender(draw(true));
   expect(mockControl.open).toHaveBeenCalledTimes(1);

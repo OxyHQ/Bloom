@@ -1,4 +1,10 @@
-import type { ApplicationItem, ExchangeHome, KeyFact, ViewingDay, ViewingSlot } from '../../src/listing-actions/types';
+import type {
+  ApplicationItem,
+  ExchangeHome,
+  KeyFact,
+  ViewingDay,
+  ViewingSlot,
+} from '../../src/listing-actions/types';
 import type { TripStatus } from '../../src/booking/types';
 import type { CategoryBarItem } from '../../src/category-bar/types';
 import type { DateRange } from '../../src/date-picker';
@@ -84,7 +90,13 @@ import type {
   PriceHistoryPeriod,
   RentHistoryEntry,
 } from '../../src/property-insights/types';
-import type { PropertyType, EnergyRating, FloorOption, HousingFeature, ToggleChipOption } from '../../src/stay-filters/types';
+import type {
+  PropertyType,
+  EnergyRating,
+  FloorOption,
+  HousingFeature,
+  ToggleChipOption,
+} from '../../src/stay-filters/types';
 import type { DestinationSuggestion, GuestCounts } from '../../src/stay-search';
 import type {
   LeaseSummaryCardProps,
@@ -104,9 +116,11 @@ import type { WizardStep } from '../../src/wizard';
 //  Images
 // ---------------------------------------------------------------------------
 
-export const picsum = (seed: string, w = 800, h = 760) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
+export const picsum = (seed: string, w = 800, h = 760) =>
+  `https://picsum.photos/seed/${seed}/${w}/${h}`;
 const unsplash = (id: string, w = 1400) => `https://images.unsplash.com/photo-${id}?w=${w}&q=80`;
-const photos = (seed: string, count: number) => Array.from({ length: count }, (_, i) => picsum(`${seed}-${i}`));
+const photos = (seed: string, count: number) =>
+  Array.from({ length: count }, (_, i) => picsum(`${seed}-${i}`));
 
 /** A floor plan drawn inline: rooms as outlined rectangles with labels. */
 function plan(rooms: { x: number; y: number; w: number; h: number; label: string }[]): string {
@@ -157,7 +171,10 @@ export function nightsIn(range: DateRange | null): number {
   return Math.max(0, Math.round((range.end.getTime() - range.start.getTime()) / 86_400_000));
 }
 
-export function rangeSummary([min, max]: [number | null, number | null], format: (n: number) => string): string | undefined {
+export function rangeSummary(
+  [min, max]: [number | null, number | null],
+  format: (n: number) => string,
+): string | undefined {
   if (min == null && max == null) return undefined;
   if (min == null) return `Up to ${format(max as number)}`;
   if (max == null) return `${format(min)}+`;
@@ -209,18 +226,48 @@ export const NO_MOVE_IN: MoveInValue = { timing: 'date', date: null, contractLen
 
 export const AREAS: DestinationSuggestion[] = [
   { id: 'nearby', title: 'Nearby', description: 'Search around your location', icon: RiMapPinLine },
-  { id: 'recent', title: 'Old Halden · 2+ bedrooms', description: 'Recent search', icon: RiTimeLine },
-  { id: 'halden', title: 'Old Halden', description: 'City centre, 1,240 homes', icon: RiBuilding2Line },
-  { id: 'marrow', title: 'Marrowfield', description: 'Lakeside town, 312 homes', icon: RiHome4Line },
+  {
+    id: 'recent',
+    title: 'Old Halden · 2+ bedrooms',
+    description: 'Recent search',
+    icon: RiTimeLine,
+  },
+  {
+    id: 'halden',
+    title: 'Old Halden',
+    description: 'City centre, 1,240 homes',
+    icon: RiBuilding2Line,
+  },
+  {
+    id: 'marrow',
+    title: 'Marrowfield',
+    description: 'Lakeside town, 312 homes',
+    icon: RiHome4Line,
+  },
   { id: 'solvia', title: 'Solvia Bay', description: 'Coast, 586 homes', icon: RiMapPinLine },
 ];
 
 export const DESTINATIONS: DestinationSuggestion[] = [
   { id: 'nearby', title: 'Nearby', description: 'Find what’s around you', icon: RiMapPinLine },
   { id: 'recent', title: 'Solvia Bay · 3 guests', description: 'Oct 12 – 16', icon: RiTimeLine },
-  { id: 'marrow', title: 'Marrowfield', description: 'For its lakeside cabins', icon: RiMapPinLine },
-  { id: 'halden', title: 'Old Halden', description: 'Great for a city weekend', icon: RiBuilding2Line },
-  { id: 'terrace', title: 'Terracina Coast', description: 'Popular beach destination', icon: RiMapPinLine },
+  {
+    id: 'marrow',
+    title: 'Marrowfield',
+    description: 'For its lakeside cabins',
+    icon: RiMapPinLine,
+  },
+  {
+    id: 'halden',
+    title: 'Old Halden',
+    description: 'Great for a city weekend',
+    icon: RiBuilding2Line,
+  },
+  {
+    id: 'terrace',
+    title: 'Terracina Coast',
+    description: 'Popular beach destination',
+    icon: RiMapPinLine,
+  },
 ];
 
 export const MODE_TITLES: Record<HomeSearchMode, string> = {
@@ -295,12 +342,18 @@ export const bathFact = (n: number): ListingFact => ({
   accessibilityLabel: `${n} ${n === 1 ? 'bathroom' : 'bathrooms'}`,
 });
 export const areaFact = (n: number): ListingFact => ({ icon: RiRulerLine, label: `${n} m²` });
-export const floorFact = (n: number): ListingFact => ({ icon: RiBuilding2Line, label: `Floor ${n}` });
+export const floorFact = (n: number): ListingFact => ({
+  icon: RiBuilding2Line,
+  label: `Floor ${n}`,
+});
 
 export type EnergyClassLetter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 
 export interface Home
-  extends Omit<ListingCardProps, 'favorite' | 'onFavoriteChange' | 'onPress' | 'href' | 'badge' | 'style' | 'testID'> {
+  extends Omit<
+    ListingCardProps,
+    'favorite' | 'onFavoriteChange' | 'onPress' | 'href' | 'badge' | 'style' | 'testID'
+  > {
   id: string;
   mode: HomeSearchMode;
   /** The short price on the map marker. */
@@ -429,18 +482,40 @@ function swap(
 }
 
 export const HOMES: Home[] = [
-  rent('orel', 'Bright flat near Plaza Orel', 'Calle Senra, Old Halden', 950, 3, 2, 110, [0.2, 0.22], {
-    facts: [bedFact(3), bathFact(2), areaFact(110), floorFact(4)],
-    rating: 4.6,
-    reviewCount: 18,
-    label: 'New today',
-  }),
-  rent('tilia', 'Garden flat with a lemon tree', 'Tilia Row, Marrowfield', 1180, 2, 1, 74, [0.44, 0.16], { saved: true }),
+  rent(
+    'orel',
+    'Bright flat near Plaza Orel',
+    'Calle Senra, Old Halden',
+    950,
+    3,
+    2,
+    110,
+    [0.2, 0.22],
+    {
+      facts: [bedFact(3), bathFact(2), areaFact(110), floorFact(4)],
+      rating: 4.6,
+      reviewCount: 18,
+      label: 'New today',
+    },
+  ),
+  rent(
+    'tilia',
+    'Garden flat with a lemon tree',
+    'Tilia Row, Marrowfield',
+    1180,
+    2,
+    1,
+    74,
+    [0.44, 0.16],
+    { saved: true },
+  ),
   rent('quarry', 'Room in a shared house', 'Quarry Lane, Eastwold', 420, 1, 1, 14, [0.66, 0.3], {
     subtitle: 'Private room · 4 housemates',
     facts: [bedFact(1), { icon: RiDropLine, label: 'Shared bath' }, areaFact(14)],
   }),
-  rent('saltmere', 'Dune house at Saltmere', 'Corvall coast', 1100, 3, 1, 92, [0.84, 0.18], { status: 'reserved' }),
+  rent('saltmere', 'Dune house at Saltmere', 'Corvall coast', 1100, 3, 1, 92, [0.84, 0.18], {
+    status: 'reserved',
+  }),
   rent('ondel', 'Loft above the Ondel market', 'Plaça Ferran, Ondel', 1250, 2, 2, 75, [0.3, 0.5], {
     offerings: ['long_term_rent', 'sale'],
     priceLines: [
@@ -449,11 +524,31 @@ export const HOMES: Home[] = [
     ],
     facts: [bedFact(2), bathFact(2), areaFact(75), floorFact(6)],
   }),
-  rent('verel', 'Top-floor studio on Verel Square', 'Verel Square, Old Halden', 780, 1, 1, 38, [0.56, 0.58], {
-    originalPrice: undefined,
-    priceLines: [{ price: '€780', unit: '/ month', originalPrice: '€840' }],
-  }),
-  rent('brenn', 'Family house by the woods', 'Brenn Forest, Marrowfield', 1640, 4, 2, 148, [0.16, 0.76], { rating: 4.9, reviewCount: 7 }),
+  rent(
+    'verel',
+    'Top-floor studio on Verel Square',
+    'Verel Square, Old Halden',
+    780,
+    1,
+    1,
+    38,
+    [0.56, 0.58],
+    {
+      originalPrice: undefined,
+      priceLines: [{ price: '€780', unit: '/ month', originalPrice: '€840' }],
+    },
+  ),
+  rent(
+    'brenn',
+    'Family house by the woods',
+    'Brenn Forest, Marrowfield',
+    1640,
+    4,
+    2,
+    148,
+    [0.16, 0.76],
+    { rating: 4.9, reviewCount: 7 },
+  ),
   rent('heron', 'Canal-side two-bed', 'Heron Quay, Varnholm', 1320, 2, 1, 81, [0.74, 0.72]),
 
   sale('talmar', 'Townhouse with a patio', 'Talmar Hill', 240000, 4, 2, 75, 'C', [0.24, 0.3], {
@@ -463,36 +558,212 @@ export const HOMES: Home[] = [
     approximateLocation: true,
     label: 'Price drop',
   }),
-  sale('aurelle', 'Villa above the bay', 'Aurelle Heights, Solvia Bay', 1200000, 5, 4, 200, 'A', [0.7, 0.2]),
+  sale(
+    'aurelle',
+    'Villa above the bay',
+    'Aurelle Heights, Solvia Bay',
+    1200000,
+    5,
+    4,
+    200,
+    'A',
+    [0.7, 0.2],
+  ),
   sale('pellin', 'Pellin Bay apartment', 'Marrow Coast', 189000, 2, 1, 70, 'D', [0.5, 0.44], {
     facts: [bedFact(2), bathFact(1), areaFact(70), floorFact(2)],
   }),
-  sale('lirio', 'Corner flat by the old harbour', 'Calle Lirio, Varnholm', 385000, 3, 2, 112, 'B', [0.34, 0.66]),
-  sale('mill', 'Converted watermill', 'Tamsin Mill, Hollow Brook', 540000, 4, 3, 230, 'E', [0.12, 0.52]),
-  sale('penthouse', 'Penthouse with a roof terrace', 'Verel Square, Old Halden', 725000, 3, 2, 128, 'A', [0.62, 0.7], {
-    facts: [bedFact(3), bathFact(2), areaFact(128), floorFact(7)],
-  }),
-  sale('dune', 'Dune cottage to renovate', 'Saltmere Dunes, Corvall', 142000, 2, 1, 64, 'G', [0.86, 0.46], { status: 'reserved' }),
-  sale('sold', 'Garden duplex in Eastwold', 'Quarry Lane, Eastwold', 298000, 3, 2, 96, 'C', [0.8, 0.82], { status: 'sold' }),
+  sale(
+    'lirio',
+    'Corner flat by the old harbour',
+    'Calle Lirio, Varnholm',
+    385000,
+    3,
+    2,
+    112,
+    'B',
+    [0.34, 0.66],
+  ),
+  sale(
+    'mill',
+    'Converted watermill',
+    'Tamsin Mill, Hollow Brook',
+    540000,
+    4,
+    3,
+    230,
+    'E',
+    [0.12, 0.52],
+  ),
+  sale(
+    'penthouse',
+    'Penthouse with a roof terrace',
+    'Verel Square, Old Halden',
+    725000,
+    3,
+    2,
+    128,
+    'A',
+    [0.62, 0.7],
+    {
+      facts: [bedFact(3), bathFact(2), areaFact(128), floorFact(7)],
+    },
+  ),
+  sale(
+    'dune',
+    'Dune cottage to renovate',
+    'Saltmere Dunes, Corvall',
+    142000,
+    2,
+    1,
+    64,
+    'G',
+    [0.86, 0.46],
+    { status: 'reserved' },
+  ),
+  sale(
+    'sold',
+    'Garden duplex in Eastwold',
+    'Quarry Lane, Eastwold',
+    298000,
+    3,
+    2,
+    96,
+    'C',
+    [0.8, 0.82],
+    { status: 'sold' },
+  ),
 
-  stay('alvora', 'Alvora, Coast of Merin', 'Hosted by Ilse', '12 – 17 Oct', 124, 4.92, 128, [0.18, 0.22], { label: 'Guest favourite' }),
-  stay('tessaly', 'Tessaly Hills, Varnholm', 'Cabin by the lake', '3 – 8 Nov', 88, null, undefined, [0.42, 0.14]),
-  stay('brova', 'Brova Harbour, Kestrel Isles', 'Sea view', '20 – 25 Oct', 168, 4.81, 64, [0.7, 0.2], {
-    saved: true,
-    priceLines: [{ price: '€168', unit: 'night', originalPrice: '€210' }],
-  }),
-  stay('ondel-loft', 'Ondel Old Town, Rasmark', 'Loft near the square', '1 – 4 Dec', 96, 4.7, 312, [0.86, 0.34]),
-  stay('saltmere-stay', 'Saltmere Dunes, Corvall', 'Hosted by Pim', '14 – 19 Jan', 204, 5, 18, [0.3, 0.42], { label: 'Guest favourite' }),
-  stay('weyr', 'Weyr Valley, Hollin', 'Farmhouse with a garden', '9 – 12 Feb', 142, 4.88, 1204, [0.55, 0.38]),
-  stay('lumen', 'Lumen Ridge, Aster Peaks', 'A-frame in the pines', '15 – 20 Oct', 156, null, undefined, [0.64, 0.62], { label: 'New' }),
-  stay('isola', 'Isola Faro, Terracina Coast', 'Lighthouse keeper’s cottage', '18 – 23 Nov', 265, 4.99, 312, [0.2, 0.74]),
+  stay(
+    'alvora',
+    'Alvora, Coast of Merin',
+    'Hosted by Ilse',
+    '12 – 17 Oct',
+    124,
+    4.92,
+    128,
+    [0.18, 0.22],
+    { label: 'Guest favourite' },
+  ),
+  stay(
+    'tessaly',
+    'Tessaly Hills, Varnholm',
+    'Cabin by the lake',
+    '3 – 8 Nov',
+    88,
+    null,
+    undefined,
+    [0.42, 0.14],
+  ),
+  stay(
+    'brova',
+    'Brova Harbour, Kestrel Isles',
+    'Sea view',
+    '20 – 25 Oct',
+    168,
+    4.81,
+    64,
+    [0.7, 0.2],
+    {
+      saved: true,
+      priceLines: [{ price: '€168', unit: 'night', originalPrice: '€210' }],
+    },
+  ),
+  stay(
+    'ondel-loft',
+    'Ondel Old Town, Rasmark',
+    'Loft near the square',
+    '1 – 4 Dec',
+    96,
+    4.7,
+    312,
+    [0.86, 0.34],
+  ),
+  stay(
+    'saltmere-stay',
+    'Saltmere Dunes, Corvall',
+    'Hosted by Pim',
+    '14 – 19 Jan',
+    204,
+    5,
+    18,
+    [0.3, 0.42],
+    { label: 'Guest favourite' },
+  ),
+  stay(
+    'weyr',
+    'Weyr Valley, Hollin',
+    'Farmhouse with a garden',
+    '9 – 12 Feb',
+    142,
+    4.88,
+    1204,
+    [0.55, 0.38],
+  ),
+  stay(
+    'lumen',
+    'Lumen Ridge, Aster Peaks',
+    'A-frame in the pines',
+    '15 – 20 Oct',
+    156,
+    null,
+    undefined,
+    [0.64, 0.62],
+    { label: 'New' },
+  ),
+  stay(
+    'isola',
+    'Isola Faro, Terracina Coast',
+    'Lighthouse keeper’s cottage',
+    '18 – 23 Nov',
+    265,
+    4.99,
+    312,
+    [0.2, 0.74],
+  ),
 
-  swap('weyr-cottage', 'Garden cottage for a summer swap', 'Weyr Valley, Hollin', 'July – August', 2, 1, 64, [0.22, 0.26], { saved: true }),
+  swap(
+    'weyr-cottage',
+    'Garden cottage for a summer swap',
+    'Weyr Valley, Hollin',
+    'July – August',
+    2,
+    1,
+    64,
+    [0.22, 0.26],
+    { saved: true },
+  ),
   swap('harbour', 'Stone house by the harbour', 'Porto Lindo', 'Any time', 3, 2, 120, [0.62, 0.2]),
   swap('loft', 'Loft near the old market', 'Brevona', 'Weekends', 1, 1, 48, [0.44, 0.5]),
-  swap('olive', 'Farmhouse with an olive grove', 'Valle Serra', 'Easter, summer', 4, 2, 180, [0.8, 0.44]),
-  swap('canal', 'Canal flat with bikes included', 'Heron Quay, Varnholm', 'August', 2, 1, 70, [0.3, 0.72]),
-  swap('chalet', 'Ski chalet above the village', 'Aster Peaks', 'December – March', 3, 2, 110, [0.7, 0.76]),
+  swap(
+    'olive',
+    'Farmhouse with an olive grove',
+    'Valle Serra',
+    'Easter, summer',
+    4,
+    2,
+    180,
+    [0.8, 0.44],
+  ),
+  swap(
+    'canal',
+    'Canal flat with bikes included',
+    'Heron Quay, Varnholm',
+    'August',
+    2,
+    1,
+    70,
+    [0.3, 0.72],
+  ),
+  swap(
+    'chalet',
+    'Ski chalet above the village',
+    'Aster Peaks',
+    'December – March',
+    3,
+    2,
+    110,
+    [0.7, 0.76],
+  ),
 ];
 
 /** The listing page each mode's card opens. */
@@ -525,7 +796,10 @@ export function priceBuckets(peak: number): number[] {
   });
 }
 
-export const PRICE_BOUNDS: Record<HomeSearchMode, { min: number; max: number; step: number; buckets: number[] }> = {
+export const PRICE_BOUNDS: Record<
+  HomeSearchMode,
+  { min: number; max: number; step: number; buckets: number[] }
+> = {
   rent: { min: 200, max: 4000, step: 50, buckets: priceBuckets(0.22) },
   buy: { min: 50000, max: 2000000, step: 5000, buckets: priceBuckets(0.4) },
   stays: { min: 20, max: 620, step: 5, buckets: priceBuckets(0.22) },
@@ -546,7 +820,15 @@ export const SWAP_KINDS: { value: SwapKind; label: string }[] = [
   { value: 'host', label: 'Guest points' },
 ];
 
-export type StayAmenity = 'wifi' | 'kitchen' | 'washer' | 'parking' | 'ac' | 'tv' | 'fireplace' | 'workspace';
+export type StayAmenity =
+  | 'wifi'
+  | 'kitchen'
+  | 'washer'
+  | 'parking'
+  | 'ac'
+  | 'tv'
+  | 'fireplace'
+  | 'workspace';
 export const STAY_AMENITIES: ToggleChipOption<StayAmenity>[] = [
   { value: 'wifi', label: 'Wifi', icon: RiWifiLine },
   { value: 'kitchen', label: 'Kitchen', icon: RiRestaurantLine },
@@ -625,7 +907,14 @@ export function appliedFilterCount(mode: HomeSearchMode, f: Filters): number {
         f.floors.length
       );
     case 'stays':
-      return price + shared + (f.placeType !== 'any' ? 1 : 0) + (f.beds != null ? 1 : 0) + f.amenities.length + (f.instant ? 1 : 0);
+      return (
+        price +
+        shared +
+        (f.placeType !== 'any' ? 1 : 0) +
+        (f.beds != null ? 1 : 0) +
+        f.amenities.length +
+        (f.instant ? 1 : 0)
+      );
     case 'swap':
       return shared + (f.swapKind !== 'any' ? 1 : 0) + f.features.length + (f.verifiedOnly ? 1 : 0);
   }
@@ -665,11 +954,26 @@ export const SALE_PHOTOS: ListingPhoto[] = [
 
 export const NEIGHBOURHOOD: NeighbourhoodScore[] = [
   { label: 'Transport', value: 9.1, description: 'Metro 4 min, 6 bus lines', icon: RiSubwayLine },
-  { label: 'Shops', value: 8.4, description: 'Market and two grocers nearby', icon: RiShoppingBasketLine },
-  { label: 'Schools', value: 7.6, description: '3 primary schools within 1 km', icon: RiSchoolLine },
+  {
+    label: 'Shops',
+    value: 8.4,
+    description: 'Market and two grocers nearby',
+    icon: RiShoppingBasketLine,
+  },
+  {
+    label: 'Schools',
+    value: 7.6,
+    description: '3 primary schools within 1 km',
+    icon: RiSchoolLine,
+  },
   { label: 'Quiet', value: 6.2, description: 'Busy on market days', icon: RiVolumeDownLine },
   { label: 'Green space', value: 7.9, description: 'Riverside park 6 min', icon: RiTreeLine },
-  { label: 'Health', value: 8.8, description: 'Clinic and pharmacy on the street', icon: RiHeartPulseLine },
+  {
+    label: 'Health',
+    value: 8.8,
+    description: 'Clinic and pharmacy on the street',
+    icon: RiHeartPulseLine,
+  },
 ];
 
 export const NEARBY: NearbyPlace[] = [
@@ -677,8 +981,20 @@ export const NEARBY: NearbyPlace[] = [
   { icon: RiSchoolLine, name: 'Senra Primary', category: 'Primary school', time: '7 min' },
   { icon: RiShoppingBasketLine, name: 'Orel covered market', category: 'Market', time: '5 min' },
   { icon: RiHospitalLine, name: 'Halden Health Centre', category: 'Clinic', time: '9 min' },
-  { icon: RiTrainLine, name: 'Halden Central', category: 'Train station', time: '12 min', modeIcon: RiBikeLine },
-  { icon: RiTreeLine, name: 'Riverside park', category: 'Park', time: '6 min', modeIcon: RiWalkLine },
+  {
+    icon: RiTrainLine,
+    name: 'Halden Central',
+    category: 'Train station',
+    time: '12 min',
+    modeIcon: RiBikeLine,
+  },
+  {
+    icon: RiTreeLine,
+    name: 'Riverside park',
+    category: 'Park',
+    time: '6 min',
+    modeIcon: RiWalkLine,
+  },
 ];
 
 export const VIEWING_DAYS: ViewingDay[] = [
@@ -734,9 +1050,21 @@ export const RENT_KEY_FACTS: KeyFact[] = [
 ];
 
 export const RENT_HIGHLIGHTS: ListingHighlight[] = [
-  { icon: RiKey2Line, title: 'Ready to move in', description: 'Available from 1 October, keys at signing.' },
-  { icon: RiBearSmileLine, title: 'Pets considered', description: 'Small pets with a reference from a past landlord.' },
-  { icon: RiShieldCheckLine, title: 'Verified landlord', description: 'Identity and ownership checked.' },
+  {
+    icon: RiKey2Line,
+    title: 'Ready to move in',
+    description: 'Available from 1 October, keys at signing.',
+  },
+  {
+    icon: RiBearSmileLine,
+    title: 'Pets considered',
+    description: 'Small pets with a reference from a past landlord.',
+  },
+  {
+    icon: RiShieldCheckLine,
+    title: 'Verified landlord',
+    description: 'Identity and ownership checked.',
+  },
 ];
 
 export const RENT_AMENITIES: Amenity[] = [
@@ -765,9 +1093,7 @@ export const RENT_PLANS: FloorPlanItem[] = [
     description: '3 bedrooms, 2 baths',
   },
   {
-    source: plan([
-      { x: 120, y: 120, w: 560, h: 360, label: 'Storage · 6 m²' },
-    ]),
+    source: plan([{ x: 120, y: 120, w: 560, h: 360, label: 'Storage · 6 m²' }]),
     label: 'Basement storage',
     description: 'Private, lockable',
   },
@@ -916,9 +1242,21 @@ export const STAY_LISTING = {
 };
 
 export const STAY_HIGHLIGHTS: ListingHighlight[] = [
-  { icon: RiDoorOpenLine, title: 'Self check-in', description: 'Check yourself in with the lockbox.' },
-  { icon: RiBriefcase4Line, title: 'Dedicated workspace', description: 'A room with wifi that’s well suited for working.' },
-  { icon: RiCalendarCloseLine, title: 'Free cancellation before Oct 5', description: 'Get a full refund if you change your mind.' },
+  {
+    icon: RiDoorOpenLine,
+    title: 'Self check-in',
+    description: 'Check yourself in with the lockbox.',
+  },
+  {
+    icon: RiBriefcase4Line,
+    title: 'Dedicated workspace',
+    description: 'A room with wifi that’s well suited for working.',
+  },
+  {
+    icon: RiCalendarCloseLine,
+    title: 'Free cancellation before Oct 5',
+    description: 'Get a full refund if you change your mind.',
+  },
 ];
 
 export const STAY_AMENITY_LIST: Amenity[] = [
@@ -957,9 +1295,19 @@ export const STAY_REVIEWS = [
     rating: 5,
     date: 'August 2026',
     text: 'The flat is even brighter than the photos. Marta left a handwritten list of bakeries and a map of the river walk, and the lockbox made a late arrival painless. The bedroom stays quiet even on a Saturday night.',
-    hostResponse: { title: 'Response from Marta', date: 'August 2026', text: 'Thank you, Inês — come back for the autumn festival!' },
+    hostResponse: {
+      title: 'Response from Marta',
+      date: 'August 2026',
+      text: 'Thank you, Inês — come back for the autumn festival!',
+    },
   },
-  { name: 'Tomás', subtitle: '3 years travelling', rating: 5, date: 'July 2026', text: 'Spotless, well located and exactly as described.' },
+  {
+    name: 'Tomás',
+    subtitle: '3 years travelling',
+    rating: 5,
+    date: 'July 2026',
+    text: 'Spotless, well located and exactly as described.',
+  },
   {
     name: 'Hanna',
     subtitle: 'Kestrel Isles',
@@ -1003,9 +1351,21 @@ export const SWAP_LISTING = {
 };
 
 export const SWAP_HIGHLIGHTS: ListingHighlight[] = [
-  { icon: RiShieldCheckLine, title: 'Verified members', description: 'Both homes and identities checked.' },
-  { icon: RiCalendarLine, title: 'Flexible dates', description: 'Any two weeks between June and September.' },
-  { icon: RiBearSmileLine, title: 'Family friendly', description: 'Cot, high chair and a garden with a gate.' },
+  {
+    icon: RiShieldCheckLine,
+    title: 'Verified members',
+    description: 'Both homes and identities checked.',
+  },
+  {
+    icon: RiCalendarLine,
+    title: 'Flexible dates',
+    description: 'Any two weeks between June and September.',
+  },
+  {
+    icon: RiBearSmileLine,
+    title: 'Family friendly',
+    description: 'Cot, high chair and a garden with a gate.',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1029,11 +1389,48 @@ export const LEASE: LeaseSummaryCardProps = {
 };
 
 export const PAYMENTS: RentPayment[] = [
-  { id: 'sep', month: 'September 2026', dueDate: '1 Sep 2026', amount: '€950', method: 'Bank transfer', status: 'paid' },
-  { id: 'aug', month: 'August 2026', dueDate: '1 Aug 2026', amount: '€950', method: 'Bank transfer', status: 'paid' },
-  { id: 'jul', month: 'July 2026', dueDate: '1 Jul 2026', amount: '€500 of €950', method: 'Card ending 4417', status: 'partial', statusLabel: 'Partial' },
-  { id: 'jun', month: 'June 2026', dueDate: '1 Jun 2026', amount: '€950', method: 'Bank transfer', status: 'paid', statusLabel: 'Paid 2 days late' },
-  { id: 'may', month: 'May 2026', dueDate: '1 May 2026', amount: '€950', method: 'Bank transfer', status: 'paid' },
+  {
+    id: 'sep',
+    month: 'September 2026',
+    dueDate: '1 Sep 2026',
+    amount: '€950',
+    method: 'Bank transfer',
+    status: 'paid',
+  },
+  {
+    id: 'aug',
+    month: 'August 2026',
+    dueDate: '1 Aug 2026',
+    amount: '€950',
+    method: 'Bank transfer',
+    status: 'paid',
+  },
+  {
+    id: 'jul',
+    month: 'July 2026',
+    dueDate: '1 Jul 2026',
+    amount: '€500 of €950',
+    method: 'Card ending 4417',
+    status: 'partial',
+    statusLabel: 'Partial',
+  },
+  {
+    id: 'jun',
+    month: 'June 2026',
+    dueDate: '1 Jun 2026',
+    amount: '€950',
+    method: 'Bank transfer',
+    status: 'paid',
+    statusLabel: 'Paid 2 days late',
+  },
+  {
+    id: 'may',
+    month: 'May 2026',
+    dueDate: '1 May 2026',
+    amount: '€950',
+    method: 'Bank transfer',
+    status: 'paid',
+  },
 ];
 
 /** An offline snapshot drawn as an SVG data URI. */
@@ -1078,32 +1475,100 @@ export const MAINTENANCE: Omit<MaintenanceRequestCardProps, 'onPressComments' | 
 ];
 
 export const DOCUMENTS: TenancyDocument[] = [
-  { id: 'lease', name: 'Tenancy agreement.pdf', type: 'pdf', size: '412 KB', date: 'Signed 28 Aug 2025', status: 'signed' },
-  { id: 'renewal', name: 'Rent review addendum 2026.pdf', type: 'pdf', size: '96 KB', date: 'Sent 10 Sep 2026', status: 'pending' },
-  { id: 'inventory', name: 'Move-in inventory photos', type: 'image', size: '38 photos', date: '1 Sep 2025' },
-  { id: 'energy', name: 'Energy certificate.docx', type: 'document', size: '1.2 MB', date: 'Valid until 3 Jun 2026', status: 'expired' },
+  {
+    id: 'lease',
+    name: 'Tenancy agreement.pdf',
+    type: 'pdf',
+    size: '412 KB',
+    date: 'Signed 28 Aug 2025',
+    status: 'signed',
+  },
+  {
+    id: 'renewal',
+    name: 'Rent review addendum 2026.pdf',
+    type: 'pdf',
+    size: '96 KB',
+    date: 'Sent 10 Sep 2026',
+    status: 'pending',
+  },
+  {
+    id: 'inventory',
+    name: 'Move-in inventory photos',
+    type: 'image',
+    size: '38 photos',
+    date: '1 Sep 2025',
+  },
+  {
+    id: 'energy',
+    name: 'Energy certificate.docx',
+    type: 'document',
+    size: '1.2 MB',
+    date: 'Valid until 3 Jun 2026',
+    status: 'expired',
+  },
 ];
 
 export const TENANCY_EVENTS: TenancyTimelineEvent[] = [
-  { title: 'Lease signed', date: '28 Aug 2025', actor: 'Ilse Marrow and Noor Halvik', icon: RiFileTextLine },
+  {
+    title: 'Lease signed',
+    date: '28 Aug 2025',
+    actor: 'Ilse Marrow and Noor Halvik',
+    icon: RiFileTextLine,
+  },
   { title: 'Moved in', date: '1 Sep 2025', actor: 'Keys handed over by Ilse', icon: RiKey2Line },
-  { title: 'Deposit registered', date: '15 Sep 2025', actor: 'Regional housing office', icon: RiBankCardLine, tone: 'success' },
-  { title: 'Rent review', date: '1 Sep 2026', description: 'The addendum is waiting for your signature.', icon: RiCalendarLine, state: 'current', tone: 'warning' },
+  {
+    title: 'Deposit registered',
+    date: '15 Sep 2025',
+    actor: 'Regional housing office',
+    icon: RiBankCardLine,
+    tone: 'success',
+  },
+  {
+    title: 'Rent review',
+    date: '1 Sep 2026',
+    description: 'The addendum is waiting for your signature.',
+    icon: RiCalendarLine,
+    state: 'current',
+    tone: 'warning',
+  },
   { title: 'Lease ends', date: '31 Aug 2027', icon: RiHome4Line, state: 'upcoming' },
 ];
 
 export const APPLICATION: Omit<ApplicationItem, 'onAction'>[] = [
-  { key: 'id', title: 'Proof of identity', description: 'Passport or national ID, both sides', status: 'verified' },
-  { key: 'income', title: 'Proof of income', description: 'Last three payslips or a tax return', status: 'uploaded' },
-  { key: 'reference', title: 'Landlord reference', status: 'rejected', reason: 'The letter is unsigned. Ask your previous landlord to sign it.' },
-  { key: 'guarantor', title: 'Guarantor details', description: 'Only if your income is under 3× the rent', status: 'missing' },
+  {
+    key: 'id',
+    title: 'Proof of identity',
+    description: 'Passport or national ID, both sides',
+    status: 'verified',
+  },
+  {
+    key: 'income',
+    title: 'Proof of income',
+    description: 'Last three payslips or a tax return',
+    status: 'uploaded',
+  },
+  {
+    key: 'reference',
+    title: 'Landlord reference',
+    status: 'rejected',
+    reason: 'The letter is unsigned. Ask your previous landlord to sign it.',
+  },
+  {
+    key: 'guarantor',
+    title: 'Guarantor details',
+    description: 'Only if your income is under 3× the rent',
+    status: 'missing',
+  },
 ];
 
 // ---------------------------------------------------------------------------
 //  Evictions
 // ---------------------------------------------------------------------------
 
-export type Report = Omit<EvictionReportCardProps, 'attending' | 'onAttendingChange' | 'onShare' | 'onContactSupport'> & {
+export type Report = Omit<
+  EvictionReportCardProps,
+  'attending' | 'onAttendingChange' | 'onShare' | 'onContactSupport'
+> & {
   id: string;
   past: boolean;
 };
@@ -1133,7 +1598,8 @@ export const REPORTS: Report[] = [
     status: 'postponed',
     area: 'North Quarter, Old Halden',
     household: ['Elderly person', 'Reduced mobility'],
-    description: 'An 81-year-old neighbour with reduced mobility. The first date was postponed after a medical report; a new date has been set.',
+    description:
+      'An 81-year-old neighbour with reduced mobility. The first date was postponed after a medical report; a new date has been set.',
     attendeesLabel: '17 people will attend',
     organisationsLabel: '1 organisation supporting',
     verified: true,
@@ -1147,7 +1613,8 @@ export const REPORTS: Report[] = [
     status: 'scheduled',
     area: 'Reed Hollow, Marrowfield',
     household: ['Single-parent family'],
-    description: 'Reported by a neighbour this morning. Waiting for the support group to confirm the details.',
+    description:
+      'Reported by a neighbour this morning. Waiting for the support group to confirm the details.',
     attendeesLabel: '5 people will attend',
   },
   {
@@ -1159,7 +1626,8 @@ export const REPORTS: Report[] = [
     status: 'suspended',
     area: 'Riverside, Varnholm',
     household: ['Family with minors'],
-    description: 'Suspended at the door after more than a hundred neighbours gathered and the court agreed to review the social services report.',
+    description:
+      'Suspended at the door after more than a hundred neighbours gathered and the court agreed to review the social services report.',
     attendeesLabel: '112 people attended',
     organisationsLabel: '4 organisations supporting',
     verified: true,
@@ -1173,7 +1641,8 @@ export const REPORTS: Report[] = [
     status: 'executed',
     area: 'Usk Park, Eastwold',
     household: ['Elderly couple'],
-    description: 'The eviction went ahead. The support group is helping the couple with temporary accommodation.',
+    description:
+      'The eviction went ahead. The support group is helping the couple with temporary accommodation.',
     attendeesLabel: '36 people attended',
     verified: true,
   },
@@ -1190,10 +1659,32 @@ export const REPORTS: Report[] = [
 ];
 
 export const CASE_HISTORY: EvictionEvent[] = [
-  { kind: 'published', title: 'Report published', date: '2 Sep 2026', source: 'Neighbourhood assembly' },
-  { kind: 'date-set', title: 'Eviction date set for 16 September', date: '4 Sep 2026', source: 'Court notice shared by the family' },
-  { kind: 'mobilisation', title: 'Support call shared', date: '5 Sep 2026', description: 'Three housing groups joined the call.', source: 'Tenants’ union' },
-  { kind: 'postponed', title: 'Postponed to 23 September', date: '15 Sep 2026', description: 'The court accepted a request to review the family’s situation.', source: 'Family’s lawyer' },
+  {
+    kind: 'published',
+    title: 'Report published',
+    date: '2 Sep 2026',
+    source: 'Neighbourhood assembly',
+  },
+  {
+    kind: 'date-set',
+    title: 'Eviction date set for 16 September',
+    date: '4 Sep 2026',
+    source: 'Court notice shared by the family',
+  },
+  {
+    kind: 'mobilisation',
+    title: 'Support call shared',
+    date: '5 Sep 2026',
+    description: 'Three housing groups joined the call.',
+    source: 'Tenants’ union',
+  },
+  {
+    kind: 'postponed',
+    title: 'Postponed to 23 September',
+    date: '15 Sep 2026',
+    description: 'The court accepted a request to review the family’s situation.',
+    source: 'Family’s lawyer',
+  },
   { kind: 'date-set', title: 'Eviction scheduled', date: '23 Sep 2026, 09:00', upcoming: true },
 ];
 
@@ -1202,11 +1693,27 @@ export const CASE_HISTORY: EvictionEvent[] = [
 // ---------------------------------------------------------------------------
 
 export const PUBLISH_STEPS: WizardStep[] = [
-  { key: 'type', title: 'What kind of home is it?', description: 'Pick the closest match. You can change it later.' },
-  { key: 'address', title: 'Where is it?', description: 'Choose how precisely the listing shows the location.' },
+  {
+    key: 'type',
+    title: 'What kind of home is it?',
+    description: 'Pick the closest match. You can change it later.',
+  },
+  {
+    key: 'address',
+    title: 'Where is it?',
+    description: 'Choose how precisely the listing shows the location.',
+  },
   { key: 'details', title: 'The basics', description: 'Rooms, beds and floor area.' },
-  { key: 'offerings', title: 'How is it offered?', description: 'Pick every way you would like to offer the home.' },
-  { key: 'photos', title: 'Add photos', description: 'Add at least five. The first one is the cover — drag to reorder.' },
+  {
+    key: 'offerings',
+    title: 'How is it offered?',
+    description: 'Pick every way you would like to offer the home.',
+  },
+  {
+    key: 'photos',
+    title: 'Add photos',
+    description: 'Add at least five. The first one is the cover — drag to reorder.',
+  },
   { key: 'description', title: 'Describe the home' },
   { key: 'quality', title: 'Quality check', description: 'Complete listings get more replies.' },
   { key: 'publish', title: 'Ready to publish' },
@@ -1240,14 +1747,57 @@ export const SAVED_SEARCHES = [
     alertFrequency: 'Daily alerts',
     icon: RiHome4Line,
   },
-  { id: 'solvia', title: 'Summer swap, Solvia Bay', criteria: ['Swap', 'Jul 4 – 25', 'Sleeps 4'], newCount: 0, icon: RiHomeHeartLine },
+  {
+    id: 'solvia',
+    title: 'Summer swap, Solvia Bay',
+    criteria: ['Swap', 'Jul 4 – 25', 'Sleeps 4'],
+    newCount: 0,
+    icon: RiHomeHeartLine,
+  },
 ];
 
 export const WISHLISTS = [
-  { id: 'coast', name: 'Coast weekends', description: '12 saved', icon: RiHeart3Line, color: '#E0516B', photos: [picsum('stay-isola-0', 600, 600), picsum('stay-brova-1', 600, 600), picsum('stay-alvora-2', 600, 600), picsum('stay-weyr-0', 600, 600)] },
-  { id: 'rent', name: 'Flats to see', description: '5 saved', icon: RiKey2Line, color: '#3E7BFA', photos: [picsum('rent-tilia-0', 600, 600), picsum('rent-orel-1', 600, 600), picsum('rent-heron-2', 600, 600)] },
-  { id: 'buy', name: 'Dream homes', description: '2 saved', icon: RiHome4Line, color: '#0EA47A', photos: [picsum('sale-aurelle-0', 600, 600), picsum('sale-talmar-1', 600, 600)] },
-  { id: 'someday', name: 'Someday', description: 'Nothing saved yet', icon: RiMapPinLine, color: '#7A5AF8', photos: [] },
+  {
+    id: 'coast',
+    name: 'Coast weekends',
+    description: '12 saved',
+    icon: RiHeart3Line,
+    color: '#E0516B',
+    photos: [
+      picsum('stay-isola-0', 600, 600),
+      picsum('stay-brova-1', 600, 600),
+      picsum('stay-alvora-2', 600, 600),
+      picsum('stay-weyr-0', 600, 600),
+    ],
+  },
+  {
+    id: 'rent',
+    name: 'Flats to see',
+    description: '5 saved',
+    icon: RiKey2Line,
+    color: '#3E7BFA',
+    photos: [
+      picsum('rent-tilia-0', 600, 600),
+      picsum('rent-orel-1', 600, 600),
+      picsum('rent-heron-2', 600, 600),
+    ],
+  },
+  {
+    id: 'buy',
+    name: 'Dream homes',
+    description: '2 saved',
+    icon: RiHome4Line,
+    color: '#0EA47A',
+    photos: [picsum('sale-aurelle-0', 600, 600), picsum('sale-talmar-1', 600, 600)],
+  },
+  {
+    id: 'someday',
+    name: 'Someday',
+    description: 'Nothing saved yet',
+    icon: RiMapPinLine,
+    color: '#7A5AF8',
+    photos: [],
+  },
 ];
 
 export interface Trip {
@@ -1260,7 +1810,28 @@ export interface Trip {
 }
 
 export const TRIPS: Trip[] = [
-  { id: 'porto', image: unsplash('1502672260266-1c1ef2d93688', 800), title: 'Sunlit flat above the river steps', subtitle: 'Porto Lume · Hosted by Marta', dates: 'Oct 12 – 17, 2026', status: 'confirmed' },
-  { id: 'swap', image: unsplash('1600585154340-be6161a56a0c', 800), title: 'Swap: stone house by the harbour', subtitle: 'Porto Lindo · with the Oriel family', dates: 'Nov 2 – 16, 2026', status: 'pending' },
-  { id: 'brenn', image: picsum('stay-isola-0', 800, 600), title: 'Lighthouse keeper’s cottage', subtitle: 'Isola Faro · Hosted by Idris', dates: 'Dec 8 – 13, 2026', status: 'confirmed' },
+  {
+    id: 'porto',
+    image: unsplash('1502672260266-1c1ef2d93688', 800),
+    title: 'Sunlit flat above the river steps',
+    subtitle: 'Porto Lume · Hosted by Marta',
+    dates: 'Oct 12 – 17, 2026',
+    status: 'confirmed',
+  },
+  {
+    id: 'swap',
+    image: unsplash('1600585154340-be6161a56a0c', 800),
+    title: 'Swap: stone house by the harbour',
+    subtitle: 'Porto Lindo · with the Oriel family',
+    dates: 'Nov 2 – 16, 2026',
+    status: 'pending',
+  },
+  {
+    id: 'brenn',
+    image: picsum('stay-isola-0', 800, 600),
+    title: 'Lighthouse keeper’s cottage',
+    subtitle: 'Isola Faro · Hosted by Idris',
+    dates: 'Dec 8 – 13, 2026',
+    status: 'confirmed',
+  },
 ];

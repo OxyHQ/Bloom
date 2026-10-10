@@ -40,8 +40,18 @@ import { PHOTO_PEOPLE, makeRng } from '../shared/dashboard';
 
 export const YEAR = 2026;
 export const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 /** Today — later days have no activity yet. */
@@ -92,7 +102,10 @@ const DEFAULT_RINGS: ActivityRing[] = [
 ];
 
 /** The Activity card's title and rings. */
-export function activityFor(selected: ActivityDay | null): { title: string; rings: ActivityRing[] } {
+export function activityFor(selected: ActivityDay | null): {
+  title: string;
+  rings: ActivityRing[];
+} {
   if (!selected) return { title: 'Activity', rings: DEFAULT_RINGS };
   const move = ringPct(selected.month, selected.day, 0);
   const exercise = ringPct(selected.month, selected.day, 1);
@@ -100,9 +113,21 @@ export function activityFor(selected: ActivityDay | null): { title: string; ring
   return {
     title: `Activity for ${MONTHS[selected.month]} ${selected.day}, ${YEAR}`,
     rings: [
-      { label: 'Move', value: `${Math.round(500 + move * 1500).toLocaleString('en-US')} kcal`, goalPct: Math.round(move * 100) },
-      { label: 'Exercise', value: formatDuration(Math.round(20 + exercise * 130)), goalPct: Math.round(exercise * 100) },
-      { label: 'Running', value: `${(1 + running * 5.5).toFixed(1)} km`, goalPct: Math.round(running * 100) },
+      {
+        label: 'Move',
+        value: `${Math.round(500 + move * 1500).toLocaleString('en-US')} kcal`,
+        goalPct: Math.round(move * 100),
+      },
+      {
+        label: 'Exercise',
+        value: formatDuration(Math.round(20 + exercise * 130)),
+        goalPct: Math.round(exercise * 100),
+      },
+      {
+        label: 'Running',
+        value: `${(1 + running * 5.5).toFixed(1)} km`,
+        goalPct: Math.round(running * 100),
+      },
     ],
   };
 }
@@ -179,7 +204,8 @@ export const ALERTS: ImportantAlertsCardAlert[] = [
     icon: RiLungsFill,
     tone: 'teal',
     title: 'Low blood oxygen',
-    description: 'Your blood oxygen dipped to 93% for a short period during sleep on the night of 4 June.',
+    description:
+      'Your blood oxygen dipped to 93% for a short period during sleep on the night of 4 June.',
     date: 'June, 5',
   },
 ];
@@ -202,10 +228,32 @@ export const STATUSES: PatientStatus[] = [
   { label: 'In treatment', hue: 'blue' },
 ];
 
-export const CONDITIONS = ['Diabetes', 'Hypertension', 'Asthma', 'Fracture', 'Post-op', 'Pregnancy', 'Allergy', 'Migraine'];
+export const CONDITIONS = [
+  'Diabetes',
+  'Hypertension',
+  'Asthma',
+  'Fracture',
+  'Post-op',
+  'Pregnancy',
+  'Allergy',
+  'Migraine',
+];
 
 const DOCTORS = ['Dr. Clarkson', 'Dr. Vaccaro', 'Dr. Rhiel', 'Dr. Bator', 'Dr. Torff'];
-const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 export type Admission = 'inpatient' | 'outpatient' | 'discharged' | 'emergency';
 
@@ -237,12 +285,63 @@ export interface Patient {
   appointmentTs: number;
 }
 
-const FIRST_NAMES = ['Marcus', 'Cheyenne', 'Alfredo', 'Talan', 'Roger', 'Cristofer', 'Emery', 'Kadin', 'Nolan', 'Ruben', 'Skylar', 'Hanna', 'Corey', 'Miracle', 'Zaire', 'Cooper', 'Leilani', 'Alena', 'Terry', 'Jaxson', 'Kaiya', 'Omar', 'Phoenix', 'Adison', 'Gretchen', 'Nova', 'Ellis', 'Dulce', 'Wilson'];
-const LAST_NAMES = ['Culhane', 'Herwitz', 'Septimus', 'Bergson', 'Curtis', 'Vetrovs', 'Rhiel', 'Dokidis', 'Kenter', 'Stanton', 'Baptista', 'Workman', 'Torff', 'Calzoni', 'Rosser', 'Geidt', 'Bator', 'Vaccaro', 'Lipshutz', 'Botosh'];
+const FIRST_NAMES = [
+  'Marcus',
+  'Cheyenne',
+  'Alfredo',
+  'Talan',
+  'Roger',
+  'Cristofer',
+  'Emery',
+  'Kadin',
+  'Nolan',
+  'Ruben',
+  'Skylar',
+  'Hanna',
+  'Corey',
+  'Miracle',
+  'Zaire',
+  'Cooper',
+  'Leilani',
+  'Alena',
+  'Terry',
+  'Jaxson',
+  'Kaiya',
+  'Omar',
+  'Phoenix',
+  'Adison',
+  'Gretchen',
+  'Nova',
+  'Ellis',
+  'Dulce',
+  'Wilson',
+];
+const LAST_NAMES = [
+  'Culhane',
+  'Herwitz',
+  'Septimus',
+  'Bergson',
+  'Curtis',
+  'Vetrovs',
+  'Rhiel',
+  'Dokidis',
+  'Kenter',
+  'Stanton',
+  'Baptista',
+  'Workman',
+  'Torff',
+  'Calzoni',
+  'Rosser',
+  'Geidt',
+  'Bator',
+  'Vaccaro',
+  'Lipshutz',
+  'Botosh',
+];
 
 export const PATIENTS: Patient[] = (() => {
   const rng = makeRng(7);
-  const pick = <T,>(arr: readonly T[]) => arr[Math.floor(rng() * arr.length)]!;
+  const pick = <T>(arr: readonly T[]) => arr[Math.floor(rng() * arr.length)]!;
   const rows = Array.from({ length: 540 }, (_, i): Patient => {
     const status = pick(STATUSES);
     const admission: Admission =

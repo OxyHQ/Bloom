@@ -131,7 +131,11 @@ describe('filterEmojiGroups', () => {
         { char: '🙂', name: 'slight smile' },
       ],
     },
-    { key: 'people', label: 'People', emojis: [{ char: '👍', name: 'thumbs up', keywords: ['ok'] }] },
+    {
+      key: 'people',
+      label: 'People',
+      emojis: [{ char: '👍', name: 'thumbs up', keywords: ['ok'] }],
+    },
     { key: 'bare', label: 'Bare', emojis: ['🎉', '🚀'] },
   ];
 
@@ -199,7 +203,9 @@ describe('ChatComposer', () => {
   it('uses the DOM Button for controls reached through the browser barrel', () => {
     const onSend = jest.fn();
     mount(<ChatComposer testID="web" value="Hello" onSend={onSend} />);
-    const send = container.querySelector<HTMLButtonElement>('button.bloom-btn[data-testid="web-send"]');
+    const send = container.querySelector<HTMLButtonElement>(
+      'button.bloom-btn[data-testid="web-send"]',
+    );
     expect(send).not.toBeNull();
     press(send!);
     expect(onSend).toHaveBeenCalledTimes(1);
@@ -207,9 +213,15 @@ describe('ChatComposer', () => {
 
   it('accepts a custom send glyph while retaining the shared accessible control', () => {
     const SendGlyph = () => <span data-testid="custom-send-glyph" />;
-    mount(<ChatComposer testID="styled" value="ready" sendIcon={SendGlyph}
-      barStyle={{ borderRadius: 32, minHeight: 64, paddingLeft: 16, paddingRight: 16 }}
-      inputStyle={{ fontSize: 16 }} />);
+    mount(
+      <ChatComposer
+        testID="styled"
+        value="ready"
+        sendIcon={SendGlyph}
+        barStyle={{ borderRadius: 32, minHeight: 64, paddingLeft: 16, paddingRight: 16 }}
+        inputStyle={{ fontSize: 16 }}
+      />,
+    );
     expect(byTestId('custom-send-glyph').closest('[data-testid="styled-send"]')).not.toBeNull();
     expect(byTestId('styled-send').getAttribute('aria-label')).toBe('Send');
     expect((byTestId('styled-send') as HTMLButtonElement).disabled).toBe(false);
@@ -240,13 +252,23 @@ describe('ChatComposer', () => {
 
   it('prevents mouse focus transfer before a suggestion click without cancelling touch', () => {
     const onSelect = jest.fn();
-    mount(<ChatComposer testID="c" suggestions={[{ id: 'one', label: 'One' }]} onSelectSuggestion={onSelect} />);
+    mount(
+      <ChatComposer
+        testID="c"
+        suggestions={[{ id: 'one', label: 'One' }]}
+        onSelectSuggestion={onSelect}
+      />,
+    );
     const row = byTestId('c-suggestions-row-one');
     const mouse = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
-    act(() => { row.dispatchEvent(mouse); });
+    act(() => {
+      row.dispatchEvent(mouse);
+    });
     expect(mouse.defaultPrevented).toBe(true);
     const touch = new Event('touchstart', { bubbles: true, cancelable: true });
-    act(() => { row.dispatchEvent(touch); });
+    act(() => {
+      row.dispatchEvent(touch);
+    });
     expect(touch.defaultPrevented).toBe(false);
     press(row);
     expect(onSelect).toHaveBeenCalledWith({ id: 'one', label: 'One' }, 0);
@@ -461,7 +483,15 @@ describe('ChatComposer', () => {
 
     it('sends on Enter when the list is open but nothing is highlighted', () => {
       const onSend = jest.fn();
-      mount(<ChatComposer testID="c" value="@ma" suggestions={people} activeIndex={-1} onSend={onSend} />);
+      mount(
+        <ChatComposer
+          testID="c"
+          value="@ma"
+          suggestions={people}
+          activeIndex={-1}
+          onSend={onSend}
+        />,
+      );
       keyDown(byTestId('c-input'), 'Enter');
       expect(onSend).toHaveBeenCalled();
     });
@@ -522,9 +552,7 @@ describe('ComposerBanner', () => {
   });
 
   it('paints the rail in a caller colour, for a per-sender quote', () => {
-    mount(
-      <ComposerBanner kind="reply" title="Ivo" accentColor="rgb(10, 20, 30)" testID="b" />,
-    );
+    mount(<ComposerBanner kind="reply" title="Ivo" accentColor="rgb(10, 20, 30)" testID="b" />);
     expect(byTestId('b-rail').style.backgroundColor).toBe('rgb(10, 20, 30)');
   });
 
@@ -603,7 +631,12 @@ describe('SuggestionList', () => {
   it('reports a selection with its index', () => {
     const onSelectSuggestion = jest.fn();
     mount(
-      <SuggestionList kind="command" suggestions={rows} onSelectSuggestion={onSelectSuggestion} testID="l" />,
+      <SuggestionList
+        kind="command"
+        suggestions={rows}
+        onSelectSuggestion={onSelectSuggestion}
+        testID="l"
+      />,
     );
     press(byTestId('l-row-2'));
     expect(onSelectSuggestion).toHaveBeenCalledWith(rows[1], 1);
@@ -662,7 +695,9 @@ describe('SuggestionList', () => {
     mount(<SuggestionList kind="mention" suggestions={[]} showEmpty testID="l" />);
     expect(byTestId('l-empty').textContent).toBe('No people found');
 
-    mount(<SuggestionList kind="mention" suggestions={[]} showEmpty emptyLabel="Nadie" testID="l" />);
+    mount(
+      <SuggestionList kind="mention" suggestions={[]} showEmpty emptyLabel="Nadie" testID="l" />,
+    );
     expect(byTestId('l-empty').textContent).toBe('Nadie');
   });
 });
@@ -679,7 +714,15 @@ describe('VoiceRecorder', () => {
 
   it('offers slide-to-cancel and a lock while recording, and no send', () => {
     mount(
-      <VoiceRecorder state="recording" seconds={3} slideToCancel onCancel={() => {}} onLock={() => {}} onSend={() => {}} testID="r" />,
+      <VoiceRecorder
+        state="recording"
+        seconds={3}
+        slideToCancel
+        onCancel={() => {}}
+        onLock={() => {}}
+        onSend={() => {}}
+        testID="r"
+      />,
     );
     expect(maybe('r-slide')).not.toBeNull();
     expect(maybe('r-lock')).not.toBeNull();
@@ -687,29 +730,63 @@ describe('VoiceRecorder', () => {
   });
 
   it('offers an explicit cancel button where there is no slide gesture', () => {
-    mount(<VoiceRecorder state="recording" seconds={3} slideToCancel={false} onCancel={() => {}} testID="r" />);
+    mount(
+      <VoiceRecorder
+        state="recording"
+        seconds={3}
+        slideToCancel={false}
+        onCancel={() => {}}
+        testID="r"
+      />,
+    );
     expect(maybe('r-slide')).toBeNull();
     expect(byTestId('r-cancel').getAttribute('aria-label')).toBe('Cancel recording');
   });
 
   it('turns hands-free once locked: cancel and send, no lock', () => {
     const onSend = jest.fn();
-    mount(<VoiceRecorder state="locked" seconds={30} onCancel={() => {}} onSend={onSend} testID="r" />);
+    mount(
+      <VoiceRecorder state="locked" seconds={30} onCancel={() => {}} onSend={onSend} testID="r" />,
+    );
     expect(maybe('r-lock')).toBeNull();
     press(byTestId('r-send'));
     expect(onSend).toHaveBeenCalledTimes(1);
   });
 
   it('names the transport by what pressing it DOES, not by what is happening', () => {
-    mount(<VoiceRecorder state="preview" seconds={4} duration={12} onPlayToggle={() => {}} testID="r" />);
+    mount(
+      <VoiceRecorder
+        state="preview"
+        seconds={4}
+        duration={12}
+        onPlayToggle={() => {}}
+        testID="r"
+      />,
+    );
     expect(byTestId('r-play').getAttribute('aria-label')).toBe('Play recording');
-    mount(<VoiceRecorder state="preview" seconds={4} duration={12} playing onPlayToggle={() => {}} testID="r" />);
+    mount(
+      <VoiceRecorder
+        state="preview"
+        seconds={4}
+        duration={12}
+        playing
+        onPlayToggle={() => {}}
+        testID="r"
+      />,
+    );
     expect(byTestId('r-play').getAttribute('aria-label')).toBe('Pause recording');
   });
 
   it('shows the playhead and the total in preview', () => {
     mount(
-      <VoiceRecorder state="preview" seconds={12} duration={41} onDelete={() => {}} onSend={() => {}} testID="r" />,
+      <VoiceRecorder
+        state="preview"
+        seconds={12}
+        duration={41}
+        onDelete={() => {}}
+        onSend={() => {}}
+        testID="r"
+      />,
     );
     expect(byTestId('r-time').textContent).toBe('0:12');
     expect(byTestId('r').textContent).toContain('0:41');
@@ -722,7 +799,7 @@ describe('VoiceRecorder', () => {
 // ---------------------------------------------------------------------------
 
 describe('ReactionPicker', () => {
-  it('marks the viewer\'s own reaction with aria-pressed, which RN has no concept of', () => {
+  it("marks the viewer's own reaction with aria-pressed, which RN has no concept of", () => {
     mount(<ReactionPicker selected="❤️" onSelectEmoji={() => {}} testID="p" />);
     expect(byTestId('p-👍').getAttribute('aria-pressed')).toBe('false');
     expect(byTestId('p-❤️').getAttribute('aria-pressed')).toBe('true');
@@ -796,7 +873,12 @@ describe('EmojiPicker', () => {
   });
 
   it('names each emoji by its NAME when the dataset has one, and by the glyph otherwise', () => {
-    mount(<EmojiPicker groups={[{ key: 'k', label: 'K', emojis: [{ char: '😂', name: 'tears of joy' }, '🚀'] }]} testID="e" />);
+    mount(
+      <EmojiPicker
+        groups={[{ key: 'k', label: 'K', emojis: [{ char: '😂', name: 'tears of joy' }, '🚀'] }]}
+        testID="e"
+      />,
+    );
     expect(byTestId('e-emoji-😂').getAttribute('aria-label')).toBe('tears of joy');
     expect(byTestId('e-emoji-🚀').getAttribute('aria-label')).toBe('🚀');
   });
@@ -850,7 +932,18 @@ describe('EmojiPicker', () => {
 describe('ComposerIconButton shared web Button', () => {
   it('keeps dimensions and menu ARIA on the actual button', () => {
     const ref = React.createRef<React.ElementRef<typeof WebComposerIconButton>>();
-    mount(<WebComposerIconButton ref={ref} icon={RiAddLine} size={28} iconSize={16} accessibilityLabel="Attach" aria-expanded aria-haspopup="menu" testID="control" />);
+    mount(
+      <WebComposerIconButton
+        ref={ref}
+        icon={RiAddLine}
+        size={28}
+        iconSize={16}
+        accessibilityLabel="Attach"
+        aria-expanded
+        aria-haspopup="menu"
+        testID="control"
+      />,
+    );
     const control = byTestId('control');
     expect(control.tagName).toBe('BUTTON');
     expect(ref.current).not.toBeNull();
@@ -868,23 +961,51 @@ describe('ComposerIconButton shared web Button', () => {
       const onPressIn = jest.fn();
       const onPressOut = jest.fn();
       const onLongPress = jest.fn();
-      mount(<WebComposerIconButton icon={RiAddLine} accessibilityLabel="Record" onPressIn={onPressIn} onPressOut={onPressOut} onLongPress={onLongPress} testID="control" />);
-      act(() => byTestId('control').dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0 })));
+      mount(
+        <WebComposerIconButton
+          icon={RiAddLine}
+          accessibilityLabel="Record"
+          onPressIn={onPressIn}
+          onPressOut={onPressOut}
+          onLongPress={onLongPress}
+          testID="control"
+        />,
+      );
+      act(() =>
+        byTestId('control').dispatchEvent(
+          new MouseEvent('pointerdown', { bubbles: true, button: 0 }),
+        ),
+      );
       expect(onPressIn).toHaveBeenCalledTimes(1);
       act(() => jest.advanceTimersByTime(500));
       expect(onLongPress).toHaveBeenCalledTimes(1);
       act(() => document.dispatchEvent(new MouseEvent('pointercancel', { bubbles: true })));
       expect(onPressOut).toHaveBeenCalledTimes(1);
-    } finally { jest.useRealTimers(); }
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('blocks disabled activation and recording preview', () => {
     const onPress = jest.fn();
     const onPressIn = jest.fn();
-    mount(<WebComposerIconButton icon={RiAddLine} accessibilityLabel="Record" disabled onPress={onPress} onPressIn={onPressIn} testID="control" />);
+    mount(
+      <WebComposerIconButton
+        icon={RiAddLine}
+        accessibilityLabel="Record"
+        disabled
+        onPress={onPress}
+        onPressIn={onPressIn}
+        testID="control"
+      />,
+    );
     expect((byTestId('control') as HTMLButtonElement).disabled).toBe(true);
     press(byTestId('control'));
-    act(() => byTestId('control').dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0 })));
+    act(() =>
+      byTestId('control').dispatchEvent(
+        new MouseEvent('pointerdown', { bubbles: true, button: 0 }),
+      ),
+    );
     expect(onPress).not.toHaveBeenCalled();
     expect(onPressIn).not.toHaveBeenCalled();
   });

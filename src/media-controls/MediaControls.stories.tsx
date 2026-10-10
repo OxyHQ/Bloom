@@ -107,7 +107,9 @@ export const Matrix: Story = {
         </View>
 
         <View style={{ gap: 8 }}>
-          <Caption>PlaybackProgress — bare, inline times, below times with remaining, disabled</Caption>
+          <Caption>
+            PlaybackProgress — bare, inline times, below times with remaining, disabled
+          </Caption>
           <PlaybackProgress value={83} duration={225} buffered={140} />
           <PlaybackProgress value={83} duration={225} buffered={140} showTimes />
           <PlaybackProgress
@@ -187,7 +189,11 @@ export const Scrubber: Story = {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text variant="headline-semibold" numberOfLines={1} style={{ color: theme.colors.text }}>
+                <Text
+                  variant="headline-semibold"
+                  numberOfLines={1}
+                  style={{ color: theme.colors.text }}
+                >
                   Night Drive
                 </Text>
                 <ExplicitBadge />
@@ -218,7 +224,9 @@ export const Scrubber: Story = {
             }}
             testID="scrubber"
           />
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
             <Caption>
               {preview != null ? `Previewing ${Math.round(preview)}s` : `At ${position}s`}
             </Caption>
@@ -281,7 +289,11 @@ export const TrackRows: Story = {
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   {track.explicit && <ExplicitBadge size="small" />}
-                  <Text variant="body-2-regular" numberOfLines={1} style={{ color: theme.colors.textSecondary }}>
+                  <Text
+                    variant="body-2-regular"
+                    numberOfLines={1}
+                    style={{ color: theme.colors.textSecondary }}
+                  >
                     {track.artist}
                   </Text>
                 </View>
@@ -291,7 +303,10 @@ export const TrackRows: Story = {
                 liked={!!liked[index]}
                 onLikedChange={(next) => setLiked((l) => ({ ...l, [index]: next }))}
               />
-              <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary, minWidth: 36, textAlign: 'right' }}>
+              <Text
+                variant="body-2-regular"
+                style={{ color: theme.colors.textSecondary, minWidth: 36, textAlign: 'right' }}
+              >
                 {track.length}
               </Text>
             </View>

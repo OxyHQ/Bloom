@@ -17,7 +17,10 @@ import { pickMessages } from './messages';
  * runtime's.
  */
 
-function numberFormat(locale: string | undefined, options: Intl.NumberFormatOptions): Intl.NumberFormat | null {
+function numberFormat(
+  locale: string | undefined,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat | null {
   try {
     return new Intl.NumberFormat(locale, options);
   } catch {
@@ -41,7 +44,11 @@ function plainNumber(value: number, maximumFractionDigits = 3): string {
 }
 
 /** `12500` → `12,500` (en), `12.500` (de), `12 500` (fr). Up to three fraction digits unless told otherwise. */
-export function formatNumber(value: number, locale?: string, options: Intl.NumberFormatOptions = {}): string {
+export function formatNumber(
+  value: number,
+  locale?: string,
+  options: Intl.NumberFormatOptions = {},
+): string {
   const format = numberFormat(locale, { maximumFractionDigits: 3, ...options });
   return format ? format.format(value) : plainNumber(value, options.maximumFractionDigits ?? 3);
 }
@@ -60,7 +67,9 @@ export function formatCompactNumber(value: number, locale?: string): string {
   if (Math.abs(value) < 1000) return formatInteger(value, locale);
   const format = numberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 });
   if (format) return format.format(value);
-  return value >= 1000 ? `${Math.round(value / 100) / 10}K`.replace('.0K', 'K') : String(Math.round(value));
+  return value >= 1000
+    ? `${Math.round(value / 100) / 10}K`.replace('.0K', 'K')
+    : String(Math.round(value));
 }
 
 /** A ratio as a percentage: `0.25` → `25%` (en), `25 %` (es, fr), `%25` (tr). */
@@ -83,7 +92,9 @@ export function formatSignedPercent(
   fractionDigits: number | { minimum: number; maximum: number } = 1,
 ): string {
   const [minimum, maximum] =
-    typeof fractionDigits === 'number' ? [fractionDigits, fractionDigits] : [fractionDigits.minimum, fractionDigits.maximum];
+    typeof fractionDigits === 'number'
+      ? [fractionDigits, fractionDigits]
+      : [fractionDigits.minimum, fractionDigits.maximum];
   const format = numberFormat(locale, {
     style: 'percent',
     signDisplay: 'exceptZero',
@@ -106,7 +117,10 @@ export function formatCurrency(
   locale?: string,
   fractionDigits: number | { minimum: number; maximum: number } = 0,
 ): string {
-  const [minimum, maximum] = typeof fractionDigits === 'number' ? [fractionDigits, fractionDigits] : [fractionDigits.minimum, fractionDigits.maximum];
+  const [minimum, maximum] =
+    typeof fractionDigits === 'number'
+      ? [fractionDigits, fractionDigits]
+      : [fractionDigits.minimum, fractionDigits.maximum];
   const format = numberFormat(locale, {
     style: 'currency',
     currency,
@@ -120,9 +134,19 @@ export function formatCurrency(
  * Money in the compact form an axis wants: `€385K`, `385 mil €`. Up to one
  * decimal by default (`$2.5K`); `0` rounds to whole units of the scale (`$6K`).
  */
-export function formatCompactCurrency(amount: number, currency: string, locale?: string, maximumFractionDigits = 1): string {
+export function formatCompactCurrency(
+  amount: number,
+  currency: string,
+  locale?: string,
+  maximumFractionDigits = 1,
+): string {
   if (Math.abs(amount) < 1000) return formatCurrency(amount, currency, locale);
-  const format = numberFormat(locale, { style: 'currency', currency, notation: 'compact', maximumFractionDigits });
+  const format = numberFormat(locale, {
+    style: 'currency',
+    currency,
+    notation: 'compact',
+    maximumFractionDigits,
+  });
   return format ? format.format(amount) : `${currency} ${formatCompactNumber(amount)}`;
 }
 
@@ -134,7 +158,10 @@ export interface SizeUnits {
 }
 
 /** Byte-size unit symbols: French writes `Ko`/`Mo`/`Go`, Russian `КБ`/`МБ`/`ГБ`. */
-export const FILE_SIZE_UNITS: MessageCatalog<SizeUnits> = defineMessages<SizeUnits>('FILE_SIZE_UNITS', { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' });
+export const FILE_SIZE_UNITS: MessageCatalog<SizeUnits> = defineMessages<SizeUnits>(
+  'FILE_SIZE_UNITS',
+  { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
+);
 
 /**
  * `2400000` → `2.4 MB` (en), `2,4 MB` (es), `2,4 Mo` (fr). One decimal under
@@ -142,7 +169,10 @@ export const FILE_SIZE_UNITS: MessageCatalog<SizeUnits> = defineMessages<SizeUni
  */
 export function formatFileSize(bytes: number, locale?: string): string {
   const units = pickMessages(FILE_SIZE_UNITS, locale);
-  const scaled = (value: number) => formatNumber(value >= 10 ? Math.round(value) : Math.round(value * 10) / 10, locale, { maximumFractionDigits: 1 });
+  const scaled = (value: number) =>
+    formatNumber(value >= 10 ? Math.round(value) : Math.round(value * 10) / 10, locale, {
+      maximumFractionDigits: 1,
+    });
   const gb = bytes / 1024 ** 3;
   if (gb >= 1) return `${scaled(gb)} ${units.gigabyte}`;
   const mb = bytes / 1024 ** 2;
@@ -160,7 +190,9 @@ export function formatClock(totalSeconds: number): string {
   const hours = Math.floor(safe / 3600);
   const minutes = Math.floor((safe % 3600) / 60);
   const seconds = String(safe % 60).padStart(2, '0');
-  return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${seconds}` : `${minutes}:${seconds}`;
+  return hours > 0
+    ? `${hours}:${String(minutes).padStart(2, '0')}:${seconds}`
+    : `${minutes}:${seconds}`;
 }
 
 /** A multiplier such as a playback speed: `1.5` → `1.5×` (en), `1,5×` (es); up to two decimals. */

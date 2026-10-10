@@ -1,7 +1,12 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import type { View } from 'react-native';
 
-import { initialFocusWithin, listenForEscape, restoreFocusWhenAvailable, wrapTab } from './modal-keyboard';
+import {
+  initialFocusWithin,
+  listenForEscape,
+  restoreFocusWhenAvailable,
+  wrapTab,
+} from './modal-keyboard';
 import { useOverlayLayerContext } from './Overlay';
 import { isTopmostOverlayLayer } from './stack';
 
@@ -34,7 +39,12 @@ export interface ModalKeyboardProps {
  * opened from this one takes them until it closes, so Escape closes one layer
  * at a time. Inert without a DOM, so native never runs any of it.
  */
-export function ModalKeyboard({ panelRef, closing = false, dismissible, dismiss }: ModalKeyboardProps) {
+export function ModalKeyboard({
+  panelRef,
+  closing = false,
+  dismissible,
+  dismiss,
+}: ModalKeyboardProps) {
   const layer = useOverlayLayerContext();
   const state = useRef({ closing, dismissible, dismiss });
   state.current = { closing, dismissible, dismiss };
@@ -60,7 +70,13 @@ export function ModalKeyboard({ panelRef, closing = false, dismissible, dismiss 
     const frame = requestAnimationFrame(() => {
       const node = panel();
       // A fast dismissal can restore the opener before this entry frame runs.
-      if (state.current.closing || !node || node.contains(document.activeElement) || !isTopmostOverlayLayer(layer)) return;
+      if (
+        state.current.closing ||
+        !node ||
+        node.contains(document.activeElement) ||
+        !isTopmostOverlayLayer(layer)
+      )
+        return;
       initialFocusWithin(node).focus({ preventScroll: true });
     });
     const onTab = (event: KeyboardEvent) => {

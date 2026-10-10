@@ -7,10 +7,7 @@ import { Z_INDEX } from '../styles/z-index';
 /** Avatar placement only. Shared Shapes.Border owns all outline geometry. */
 export function AvatarRing(props: BorderProps) {
   return (
-    <View
-      pointerEvents="none"
-      style={[StyleSheet.absoluteFill, { zIndex: Z_INDEX.raised }]}
-    >
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { zIndex: Z_INDEX.raised }]}>
       <Border {...props} />
     </View>
   );

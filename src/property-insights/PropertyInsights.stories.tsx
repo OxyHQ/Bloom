@@ -87,7 +87,10 @@ const PHOTOS: ListingPhoto[] = [
 /** Two invented plans drawn as SVG data URIs, so the stories need no plan image from the network. */
 function planSvg(rooms: { x: number; y: number; w: number; h: number; label: string }[]): string {
   const walls = rooms
-    .map((r) => `<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="none" stroke="#222" stroke-width="4"/>`)
+    .map(
+      (r) =>
+        `<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="none" stroke="#222" stroke-width="4"/>`,
+    )
     .join('');
   const labels = rooms
     .map(
@@ -122,7 +125,11 @@ const PLANS: FloorPlanItem[] = [
   },
 ];
 
-const PLAN_GALLERY: GalleryImage[] = PLANS.map((p) => ({ uri: p.source, alt: p.label, aspectRatio: 4 / 3 }));
+const PLAN_GALLERY: GalleryImage[] = PLANS.map((p) => ({
+  uri: p.source,
+  alt: p.label,
+  aspectRatio: 4 / 3,
+}));
 
 const SALE_FACTS: PropertyFact[] = [
   { icon: RiRulerLine, label: 'Built area', value: '138 m²' },
@@ -148,10 +155,34 @@ const RENTAL_FACTS: PropertyFact[] = [
   { icon: RiCalendarLine, label: 'Available', value: '1 Oct 2026' },
 ];
 
-const MONTHS = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
+const MONTHS = [
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+];
 const FULL: Record<string, string> = {
-  Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April', May: 'May', Jun: 'June',
-  Jul: 'July', Aug: 'August', Sep: 'September', Oct: 'October', Nov: 'November', Dec: 'December',
+  Jan: 'January',
+  Feb: 'February',
+  Mar: 'March',
+  Apr: 'April',
+  May: 'May',
+  Jun: 'June',
+  Jul: 'July',
+  Aug: 'August',
+  Sep: 'September',
+  Oct: 'October',
+  Nov: 'November',
+  Dec: 'December',
 };
 
 const ONE_YEAR: PriceHistoryPoint[] = MONTHS.map((m, i) => {
@@ -221,11 +252,26 @@ const COMPARISON: AreaPriceRow[] = [
 
 const SCORES: NeighbourhoodScore[] = [
   { icon: RiBusLine, label: 'Transport', value: 9.2, description: 'Metro 4 min, six bus lines' },
-  { icon: RiSchoolLine, label: 'Schools', value: 7.8, description: 'Two primary schools within 800 m' },
-  { icon: RiShoppingCartLine, label: 'Shops', value: 8.9, description: 'Market, bakery and pharmacy on the street' },
+  {
+    icon: RiSchoolLine,
+    label: 'Schools',
+    value: 7.8,
+    description: 'Two primary schools within 800 m',
+  },
+  {
+    icon: RiShoppingCartLine,
+    label: 'Shops',
+    value: 8.9,
+    description: 'Market, bakery and pharmacy on the street',
+  },
   { icon: RiTreeLine, label: 'Green areas', value: 6.1, description: 'A garden square 9 min away' },
   { icon: RiVolumeDownLine, label: 'Quiet', value: 5.4, description: 'Busy on weekend evenings' },
-  { icon: RiShieldCheckLine, label: 'Safety', value: 8.3, description: 'Well lit, lively until late' },
+  {
+    icon: RiShieldCheckLine,
+    label: 'Safety',
+    value: 8.3,
+    description: 'Well lit, lively until late',
+  },
 ];
 
 const NEARBY: NearbyPlace[] = [
@@ -256,7 +302,15 @@ const REASONS = [
 
 const BLEED = {};
 
-function Frame({ width, children, gap = 32 }: { width: number; children: React.ReactNode; gap?: number }) {
+function Frame({
+  width,
+  children,
+  gap = 32,
+}: {
+  width: number;
+  children: React.ReactNode;
+  gap?: number;
+}) {
   width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const gutter = width < 480 ? 16 : 24;
@@ -340,10 +394,19 @@ function SalePage({ width }: { width: number }) {
   const content = (
     <>
       <ListingSection title="Features" divider={false}>
-        <PropertyFacts items={SALE_FACTS} limit={narrow ? 6 : 8} onShowAll={noop} testID="sale-facts" />
+        <PropertyFacts
+          items={SALE_FACTS}
+          limit={narrow ? 6 : 8}
+          onShowAll={noop}
+          testID="sale-facts"
+        />
       </ListingSection>
       <ListingSection title="Floor plans">
-        <FloorPlan plans={PLANS} onPressPlan={(i) => gallery.current?.open(PLAN_GALLERY, i)} testID="sale-plans" />
+        <FloorPlan
+          plans={PLANS}
+          onPressPlan={(i) => gallery.current?.open(PLAN_GALLERY, i)}
+          testID="sale-plans"
+        />
       </ListingSection>
       <ListingSection title="Energy certificate">
         <EnergyLabel
@@ -387,7 +450,15 @@ function SalePage({ width }: { width: number }) {
   );
   return (
     <View style={[BLEED, { width, backgroundColor: theme.colors.background }]}>
-      <View style={{ paddingLeft: gutter, paddingRight: gutter, paddingTop: 32, paddingBottom: 48, gap: 24 }}>
+      <View
+        style={{
+          paddingLeft: gutter,
+          paddingRight: gutter,
+          paddingTop: 32,
+          paddingBottom: 48,
+          gap: 24,
+        }}
+      >
         <ListingHeader
           size={narrow ? 'medium' : 'large'}
           title="Renovated three-bedroom flat near the market"
@@ -440,7 +511,15 @@ function RentalPage({ width }: { width: number }) {
   );
   return (
     <View style={[BLEED, { width, backgroundColor: theme.colors.background }]}>
-      <View style={{ paddingLeft: gutter, paddingRight: gutter, paddingTop: 32, paddingBottom: 48, gap: 24 }}>
+      <View
+        style={{
+          paddingLeft: gutter,
+          paddingRight: gutter,
+          paddingTop: 32,
+          paddingBottom: 48,
+          gap: 24,
+        }}
+      >
         <ListingHeader
           size={narrow ? 'medium' : 'large'}
           title="Bright two-bedroom flat by the cathedral"
@@ -470,8 +549,14 @@ function RentalPage({ width }: { width: number }) {
 }
 
 /** A home for sale at 1280: facts, floor plans, energy, the explainable estimate, price history, €/m², neighbourhood, and the agent beside it. */
-export const SalePageWide: Story = { name: 'Sale page — 1280', render: () => <SalePage width={1280} /> };
-export const SalePageNarrow: Story = { name: 'Sale page — 390', render: () => <SalePage width={390} /> };
+export const SalePageWide: Story = {
+  name: 'Sale page — 1280',
+  render: () => <SalePage width={1280} />,
+};
+export const SalePageNarrow: Story = {
+  name: 'Sale page — 390',
+  render: () => <SalePage width={390} />,
+};
 export const SalePageWideDark: Story = {
   name: 'Sale page — 1280, dark',
   globals: { theme: 'dark' },
@@ -484,8 +569,14 @@ export const SalePageNarrowDark: Story = {
 };
 
 /** A rental at 1280: facts, a certificate still in progress, the place's rent history, neighbourhood rings, the landlord. */
-export const RentalPageWide: Story = { name: 'Rental page — 1280', render: () => <RentalPage width={1280} /> };
-export const RentalPageNarrow: Story = { name: 'Rental page — 390', render: () => <RentalPage width={390} /> };
+export const RentalPageWide: Story = {
+  name: 'Rental page — 1280',
+  render: () => <RentalPage width={1280} />,
+};
+export const RentalPageNarrow: Story = {
+  name: 'Rental page — 390',
+  render: () => <RentalPage width={390} />,
+};
 export const RentalPageNarrowDark: Story = {
   name: 'Rental page — 390, dark',
   globals: { theme: 'dark' },
@@ -704,7 +795,13 @@ export const Estimate: Story = {
           updated="Updated 2 Sep 2026"
           testID="estimate-above"
         />
-        <PriceEstimate low={180000} high={205000} asking={250000} confidence="high" testID="estimate-error" />
+        <PriceEstimate
+          low={180000}
+          high={205000}
+          asking={250000}
+          confidence="high"
+          testID="estimate-error"
+        />
       </Frame>
       <Frame width={390}>
         <PriceEstimate
@@ -714,7 +811,10 @@ export const Estimate: Story = {
           asking={495000}
           confidence="low"
           confidenceNote="Only three comparable sales"
-          reasons={['A detached house on a street of flats', 'The last sale nearby was 14 months ago']}
+          reasons={[
+            'A detached house on a street of flats',
+            'The last sale nearby was 14 months ago',
+          ]}
           comparables={3}
           method="Automated valuation"
           version="Model 3.2"

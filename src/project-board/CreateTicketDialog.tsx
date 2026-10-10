@@ -1,5 +1,11 @@
 import { useRef, useState, type ComponentType, type ReactNode } from 'react';
-import { Platform, ScrollView, useWindowDimensions, type ScrollViewProps, type TextInput } from 'react-native';
+import {
+  Platform,
+  ScrollView,
+  useWindowDimensions,
+  type ScrollViewProps,
+  type TextInput,
+} from 'react-native';
 import { styled } from 'react-native-css';
 import { useDialogControl } from '../dialog/context';
 import { useMessages } from '../locale/messages';
@@ -9,11 +15,7 @@ import { DEFAULT_PROJECT, PRIORITIES } from './constants';
 import { useProjectBoardPlatform } from './context';
 import { PROJECT_BOARD_MESSAGES } from './messages';
 import { PropertySelect } from './ProjectBoardControls';
-import {
-  TicketAssigneeIcon,
-  TicketStatusIcon,
-  TicketUrgencyIcon,
-} from './ProjectBoardIcons';
+import { TicketAssigneeIcon, TicketStatusIcon, TicketUrgencyIcon } from './ProjectBoardIcons';
 import {
   SourceAvatar as Avatar,
   SourceChip as Chip,
@@ -23,28 +25,27 @@ import {
   SourceText as Text,
   SourceView as View,
 } from './SourcePrimitives';
-import type {
-  NewProjectTicket,
-  ProjectColumn,
-  ProjectMember,
-  TicketPriority,
-} from './types';
+import type { NewProjectTicket, ProjectColumn, ProjectMember, TicketPriority } from './types';
 const PRIORITY_STYLES = {
   Low: 'bg-indigo-200 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300',
   Medium: 'bg-status-yellow-background text-status-yellow-text',
   High: 'bg-status-orange-background text-status-orange-text',
   Urgent: 'bg-status-rose-background text-status-rose-text',
 };
-const ScrollBodyBase: ComponentType<Pick<ScrollViewProps, 'style' | 'contentContainerStyle'>> = ScrollView;
-const StyledScrollView: ComponentType<ScrollViewProps> = styled(ScrollBodyBase, { className: 'style' });
+const ScrollBodyBase: ComponentType<Pick<ScrollViewProps, 'style' | 'contentContainerStyle'>> =
+  ScrollView;
+const StyledScrollView: ComponentType<ScrollViewProps> = styled(ScrollBodyBase, {
+  className: 'style',
+});
 
 function TicketFormBody({ children }: { children: ReactNode }) {
   const { height } = useWindowDimensions();
-  if (Platform.OS === 'web') return (
-    <View className="max-h-[calc(100dvh-56px)] overflow-y-auto rounded-3xl bg-background-primary-default p-4 outline-none">
-      {children}
-    </View>
-  );
+  if (Platform.OS === 'web')
+    return (
+      <View className="max-h-[calc(100dvh-56px)] overflow-y-auto rounded-3xl bg-background-primary-default p-4 outline-none">
+        {children}
+      </View>
+    );
   return (
     <StyledScrollView
       className="rounded-3xl bg-background-primary-default"
@@ -78,14 +79,11 @@ export function CreateTicketDialog({
   onCreate: (ticket: NewProjectTicket) => void;
 }) {
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
-  const { Button, CloseButton, Dialog, TicketGenieSurface } =
-    useProjectBoardPlatform();
+  const { Button, CloseButton, Dialog, TicketGenieSurface } = useProjectBoardPlatform();
   const control = useDialogControl();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [columnId, setColumnId] = useState<string | null>(
-    initialColumnId ?? null,
-  );
+  const [columnId, setColumnId] = useState<string | null>(initialColumnId ?? null);
   const [priority, setPriority] = useState<TicketPriority | null>(null);
   const [assignee, setAssignee] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(null);
@@ -94,9 +92,7 @@ export function CreateTicketDialog({
   const member = assignee ? members[assignee] : undefined;
   const selectedColumn = columns.find((column) => column.id === columnId);
   const priorityChip = (value: TicketPriority) => (
-    <Chip className={`px-[7px] py-[3px] ${PRIORITY_STYLES[value]}`}>
-      {value}
-    </Chip>
+    <Chip className={`px-[7px] py-[3px] ${PRIORITY_STYLES[value]}`}>{value}</Chip>
   );
   function submit() {
     if (!title.trim()) {
@@ -106,17 +102,10 @@ export function CreateTicketDialog({
     onCreate({
       title: title.trim(),
       description: description.trim(),
-      columnId:
-        columnId ??
-        columns.find((c) => c.id === 'todo')?.id ??
-        columns[0]?.id ??
-        'todo',
+      columnId: columnId ?? columns.find((c) => c.id === 'todo')?.id ?? columns[0]?.id ?? 'todo',
       priority: priority ?? PRIORITIES[0]!,
       project:
-        project ??
-        projects.find((p) => p === DEFAULT_PROJECT) ??
-        projects[0] ??
-        DEFAULT_PROJECT,
+        project ?? projects.find((p) => p === DEFAULT_PROJECT) ?? projects[0] ?? DEFAULT_PROJECT,
       assignees: member ? [member.id] : [],
     });
     if (keepCreating) {
@@ -159,10 +148,7 @@ export function CreateTicketDialog({
         backgroundColor: 'transparent',
       }}
     >
-      <View
-        className="w-[560px] max-w-full outline-none"
-        style={{ width: '100%' }}
-      >
+      <View className="w-[560px] max-w-full outline-none" style={{ width: '100%' }}>
         <TicketGenieSurface>
           <TicketFormBody>
             <View className="flex flex-col gap-12">
@@ -173,9 +159,7 @@ export function CreateTicketDialog({
                       {boardTitle}
                     </Text>
                     <RiArrowRightSLine className="size-[15px] shrink-0 text-foreground-icon-tertiary rtl:rotate-180" />
-                    <Text className="text-body-2-medium text-text-secondary">
-                      {code}
-                    </Text>
+                    <Text className="text-body-2-medium text-text-secondary">{code}</Text>
                     <RiArrowRightSLine className="size-[15px] shrink-0 text-foreground-icon-tertiary rtl:rotate-180" />
                     <Text className="whitespace-nowrap text-body-2-medium text-text-secondary">
                       {m.newTicket}
@@ -239,9 +223,7 @@ export function CreateTicketDialog({
                         ) : (
                           <>
                             <RiAddFill className="size-5 text-foreground-icon-tertiary" />
-                            <Text className="text-body-medium text-text-tertiary">
-                              {m.status}
-                            </Text>
+                            <Text className="text-body-medium text-text-tertiary">{m.status}</Text>
                           </>
                         )}
                       </View>
@@ -268,9 +250,7 @@ export function CreateTicketDialog({
                       ) : (
                         <View className="flex items-center gap-1.5">
                           <TicketUrgencyIcon className="size-[18px] text-foreground-icon-tertiary" />
-                          <Text className="text-body-medium text-text-tertiary">
-                            {m.urgency}
-                          </Text>
+                          <Text className="text-body-medium text-text-tertiary">{m.urgency}</Text>
                         </View>
                       )
                     }
@@ -296,8 +276,7 @@ export function CreateTicketDialog({
                               className="size-[18px]"
                             />
                             <Text className="text-body-medium text-text-secondary">
-                              {member.name.split(' ')[0]}{' '}
-                              {member.name.split(' ')[1]?.[0]}.
+                              {member.name.split(' ')[0]} {member.name.split(' ')[1]?.[0]}.
                             </Text>
                           </>
                         ) : (
@@ -321,13 +300,7 @@ export function CreateTicketDialog({
                       ...Object.values(members).map((p) => ({
                         id: p.id,
                         label: p.name,
-                        icon: (
-                          <Avatar
-                            size="xs"
-                            source={p.avatar}
-                            initials={p.initials}
-                          />
-                        ),
+                        icon: <Avatar size="xs" source={p.avatar} initials={p.initials} />,
                       })),
                     ]}
                   />
@@ -367,22 +340,13 @@ export function CreateTicketDialog({
                       onCheckedChange={setKeepCreating}
                       accessibilityLabel={m.keepCreating}
                     />
-                    <Text className="text-body-2-medium text-text-tertiary">
-                      {m.keepCreating}
-                    </Text>
+                    <Text className="text-body-2-medium text-text-tertiary">{m.keepCreating}</Text>
                   </View>
                   <View className="ms-auto flex gap-2.5">
-                    <Button
-                      appearance="outline"
-                      tone="neutral"
-                      onPress={() => control.close()}
-                    >
+                    <Button appearance="outline" tone="neutral" onPress={() => control.close()}>
                       {m.cancel}
                     </Button>
-                    <Button
-                      onPress={submit}
-                      testID="project-board-create-submit"
-                    >
+                    <Button onPress={submit} testID="project-board-create-submit">
                       {m.createTicket}
                     </Button>
                   </View>

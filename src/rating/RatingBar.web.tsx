@@ -14,16 +14,67 @@ const CSS = `@layer base {
 .bloom-rating-track-flex { flex:1; min-width:0; }
 .bloom-rating-display { min-width:28px; text-align:right; font-family:var(--bloom-font-sans); font-size:${semibold.fontSize}px; line-height:${semibold.lineHeight}px; font-weight:${semibold.fontWeight}; font-variant-numeric:tabular-nums; }
 }`;
-export const RatingBar = memo(function RatingBar({ label, value, reveal, max = 5, display, labelWidth, style, testID,
-  className, labelClassName, displayClassName, trackClassName, fillClassName }: RatingBarProps) {
+export const RatingBar = memo(function RatingBar({
+  label,
+  value,
+  reveal,
+  max = 5,
+  display,
+  labelWidth,
+  style,
+  testID,
+  className,
+  labelClassName,
+  displayClassName,
+  trackClassName,
+  fillClassName,
+}: RatingBarProps) {
   useInteractiveWebCss('bloom-rating-bar', CSS);
   const theme = useTheme();
-  const vars = { '--bloom-rating-text': theme.colors.text, '--bloom-rating-label-width': `${labelWidth ?? 0}px` } as React.CSSProperties;
-  return <div className={['bloom-rating-bar', className].filter(Boolean).join(' ')} style={{ ...vars, ...resolveNativeWebStyle(style) }} data-testid={testID}>
-    <span className={['bloom-rating-label', labelClassName].filter(Boolean).join(' ')} data-fixed={labelWidth !== undefined ? '' : undefined} aria-hidden>{label}</span>
-    <Meter reveal={reveal} value={value} max={max > 0 ? max : 1} height={4} width={labelWidth === undefined ? 96 : undefined} accessibilityLabel={label} valueText={display}
-      testID={testID ? `${testID}-bar` : undefined} fillTestID={testID ? `${testID}-fill` : undefined}
-      className={['bloom-rating-track', labelWidth !== undefined ? 'bloom-rating-track-flex' : '', trackClassName].filter(Boolean).join(' ')} fillClassName={fillClassName} />
-    {display != null && <span className={['bloom-rating-display', displayClassName].filter(Boolean).join(' ')} aria-hidden>{display}</span>}
-  </div>;
+  const vars = {
+    '--bloom-rating-text': theme.colors.text,
+    '--bloom-rating-label-width': `${labelWidth ?? 0}px`,
+  } as React.CSSProperties;
+  return (
+    <div
+      className={['bloom-rating-bar', className].filter(Boolean).join(' ')}
+      style={{ ...vars, ...resolveNativeWebStyle(style) }}
+      data-testid={testID}
+    >
+      <span
+        className={['bloom-rating-label', labelClassName].filter(Boolean).join(' ')}
+        data-fixed={labelWidth !== undefined ? '' : undefined}
+        aria-hidden
+      >
+        {label}
+      </span>
+      <Meter
+        reveal={reveal}
+        value={value}
+        max={max > 0 ? max : 1}
+        height={4}
+        width={labelWidth === undefined ? 96 : undefined}
+        accessibilityLabel={label}
+        valueText={display}
+        testID={testID ? `${testID}-bar` : undefined}
+        fillTestID={testID ? `${testID}-fill` : undefined}
+        className={[
+          'bloom-rating-track',
+          labelWidth !== undefined ? 'bloom-rating-track-flex' : '',
+          trackClassName,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        fillClassName={fillClassName}
+      />
+      {display != null && (
+        <span
+          className={['bloom-rating-display', displayClassName].filter(Boolean).join(' ')}
+          aria-hidden
+        >
+          {display}
+        </span>
+      )}
+    </div>
+  );
 });

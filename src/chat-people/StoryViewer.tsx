@@ -43,7 +43,6 @@ import { CHAT_PEOPLE_MESSAGES } from './messages';
  * whether that means the next story, the next person, or closing.
  */
 
-
 /**
  * A scrim pinned to one edge of the story, transparent at the far end.
  *
@@ -221,7 +220,9 @@ function StoryViewerComponent({
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Avatar source={avatar} variant={avatarVariant} name={name} size={32} />
-          <View style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View
+            style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+          >
             <Text
               variant="body-semibold"
               numberOfLines={1}

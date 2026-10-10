@@ -19,11 +19,16 @@ let focused: unknown;
 beforeEach(() => {
   listeners = {};
   focused = null;
-  jest.spyOn(ReactNative.Keyboard, 'addListener').mockImplementation(((name: string, listener: Listener) => {
+  jest.spyOn(ReactNative.Keyboard, 'addListener').mockImplementation(((
+    name: string,
+    listener: Listener,
+  ) => {
     listeners[name] = listener;
     return { remove: () => delete listeners[name] };
   }) as unknown as typeof ReactNative.Keyboard.addListener);
-  (ReactNative.TextInput as unknown as { State: unknown }).State = { currentlyFocusedInput: () => focused };
+  (ReactNative.TextInput as unknown as { State: unknown }).State = {
+    currentlyFocusedInput: () => focused,
+  };
 });
 afterEach(() => {
   jest.restoreAllMocks();
@@ -31,8 +36,12 @@ afterEach(() => {
 });
 
 /** A field whose box, in window coordinates, starts at `y` and is 40 tall. */
-const fieldAt = (y: number) => ({ measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) => cb(16, y, 300, 40) });
-const keyboard = (height: number, screenY: number) => ({ endCoordinates: { height, screenY, screenX: 0, width: 400 } });
+const fieldAt = (y: number) => ({
+  measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) => cb(16, y, 300, 40),
+});
+const keyboard = (height: number, screenY: number) => ({
+  endCoordinates: { height, screenY, screenX: 0, width: 400 },
+});
 
 function mount(enabled = true) {
   const scrollTo = jest.fn();
@@ -51,7 +60,10 @@ it('scrolls a field the keyboard covers up above it, and pads the page by the ke
   act(() => listeners[showName()]!(keyboard(300, 500)));
   expect(hook.result.current).toBe(300);
   // The field ends at 740; the keyboard begins at 500.
-  expect(scrollTo).toHaveBeenCalledWith({ y: 100 + (740 + KEYBOARD_REVEAL_MARGIN - 500), animated: true });
+  expect(scrollTo).toHaveBeenCalledWith({
+    y: 100 + (740 + KEYBOARD_REVEAL_MARGIN - 500),
+    animated: true,
+  });
 
   act(() => listeners[hideName()]!(keyboard(0, 800)));
   expect(hook.result.current).toBe(0);

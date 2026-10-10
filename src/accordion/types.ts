@@ -2,12 +2,14 @@ import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
 export type AccordionType = 'single' | 'multiple';
 /** Preserve the default springs, or opt into a shared timed reveal/chevron curve. */
-export type AccordionTransition = 'spring' | {
-  /** Non-negative duration in milliseconds. Zero settles immediately. */
-  duration: number;
-  /** CSS cubic-bezier control points; x coordinates must be in 0..1. Default ease. */
-  easing?: readonly [number, number, number, number];
-};
+export type AccordionTransition =
+  | 'spring'
+  | {
+      /** Non-negative duration in milliseconds. Zero settles immediately. */
+      duration: number;
+      /** CSS cubic-bezier control points; x coordinates must be in 0..1. Default ease. */
+      easing?: readonly [number, number, number, number];
+    };
 
 export interface AccordionProps {
   /** Controls which items are expanded. For 'single' type, pass a string or undefined.

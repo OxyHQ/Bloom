@@ -43,18 +43,96 @@ interface Home {
   areaRadius?: number;
 }
 
-const bed = (n: number): ListingFact => ({ icon: RiHotelBedLine, label: String(n), accessibilityLabel: `${n} ${n === 1 ? 'bedroom' : 'bedrooms'}` });
-const bath = (n: number): ListingFact => ({ icon: RiDropLine, label: String(n), accessibilityLabel: `${n} ${n === 1 ? 'bathroom' : 'bathrooms'}` });
+const bed = (n: number): ListingFact => ({
+  icon: RiHotelBedLine,
+  label: String(n),
+  accessibilityLabel: `${n} ${n === 1 ? 'bedroom' : 'bedrooms'}`,
+});
+const bath = (n: number): ListingFact => ({
+  icon: RiDropLine,
+  label: String(n),
+  accessibilityLabel: `${n} ${n === 1 ? 'bathroom' : 'bathrooms'}`,
+});
 const area = (n: number): ListingFact => ({ icon: RiRulerLine, label: `${n} m²` });
 const floor = (n: number): ListingFact => ({ icon: RiBuilding2Line, label: `Floor ${n}` });
 
 const HOMES: Home[] = [
-  { id: 'a', x: 170, y: 150, short: '€950/mo', title: 'Bright flat near Plaza Orel', place: 'Old Quarter', offerings: ['long_term_rent'], priceLines: [{ price: '€950', unit: '/ month' }], facts: [bed(3), bath(2), area(110), floor(4)], image: photo('#BFD9EA', '#F1E6D6', '#9E5B45') },
-  { id: 'b', x: 420, y: 250, short: '€240K', title: 'Townhouse with a patio', place: 'Talmar Hill', offerings: ['sale'], priceLines: [{ price: '€240,000', secondary: '€3,200/m²' }], facts: [bed(4), bath(2), area(75)], image: photo('#F2D7C4', '#E9DCC8', '#7A4E3A'), areaRadius: 70 },
-  { id: 'c', x: 650, y: 140, short: '€168', title: 'Harbour studio', place: 'Brova', offerings: ['short_term_rent'], priceLines: [{ price: '€168', unit: 'night' }], facts: [bed(1), bath(1), area(38)], image: photo('#CFE3D8', '#F4F0E6', '#5E7F9E') },
-  { id: 'd', x: 770, y: 400, short: '€1.2M', title: 'Villa above the bay', place: 'Aurelle', offerings: ['sale', 'long_term_rent'], priceLines: [{ price: '€4,800', unit: '/ month' }, { price: '€1,200,000', secondary: '€6,000/m²' }], facts: [bed(5), bath(4), area(200)], image: photo('#BCD6F0', '#FAF6EE', '#A0522D') },
-  { id: 'e', x: 260, y: 420, short: 'Swap', title: 'Garden cottage', place: 'Weyr Valley', offerings: ['exchange'], priceLines: [], facts: [bed(2), bath(1), area(64)], image: photo('#D6E8C8', '#EFE6D2', '#557A46') },
-  { id: 'f', x: 560, y: 520, short: '€720/mo', title: 'Room in a shared flat', place: 'Eastwold', offerings: ['long_term_rent'], priceLines: [{ price: '€720', unit: '/ month' }], facts: [bed(1), bath(1), area(16)], image: photo('#E4E8F0', '#F2EEE8', '#8C9AAE') },
+  {
+    id: 'a',
+    x: 170,
+    y: 150,
+    short: '€950/mo',
+    title: 'Bright flat near Plaza Orel',
+    place: 'Old Quarter',
+    offerings: ['long_term_rent'],
+    priceLines: [{ price: '€950', unit: '/ month' }],
+    facts: [bed(3), bath(2), area(110), floor(4)],
+    image: photo('#BFD9EA', '#F1E6D6', '#9E5B45'),
+  },
+  {
+    id: 'b',
+    x: 420,
+    y: 250,
+    short: '€240K',
+    title: 'Townhouse with a patio',
+    place: 'Talmar Hill',
+    offerings: ['sale'],
+    priceLines: [{ price: '€240,000', secondary: '€3,200/m²' }],
+    facts: [bed(4), bath(2), area(75)],
+    image: photo('#F2D7C4', '#E9DCC8', '#7A4E3A'),
+    areaRadius: 70,
+  },
+  {
+    id: 'c',
+    x: 650,
+    y: 140,
+    short: '€168',
+    title: 'Harbour studio',
+    place: 'Brova',
+    offerings: ['short_term_rent'],
+    priceLines: [{ price: '€168', unit: 'night' }],
+    facts: [bed(1), bath(1), area(38)],
+    image: photo('#CFE3D8', '#F4F0E6', '#5E7F9E'),
+  },
+  {
+    id: 'd',
+    x: 770,
+    y: 400,
+    short: '€1.2M',
+    title: 'Villa above the bay',
+    place: 'Aurelle',
+    offerings: ['sale', 'long_term_rent'],
+    priceLines: [
+      { price: '€4,800', unit: '/ month' },
+      { price: '€1,200,000', secondary: '€6,000/m²' },
+    ],
+    facts: [bed(5), bath(4), area(200)],
+    image: photo('#BCD6F0', '#FAF6EE', '#A0522D'),
+  },
+  {
+    id: 'e',
+    x: 260,
+    y: 420,
+    short: 'Swap',
+    title: 'Garden cottage',
+    place: 'Weyr Valley',
+    offerings: ['exchange'],
+    priceLines: [],
+    facts: [bed(2), bath(1), area(64)],
+    image: photo('#D6E8C8', '#EFE6D2', '#557A46'),
+  },
+  {
+    id: 'f',
+    x: 560,
+    y: 520,
+    short: '€720/mo',
+    title: 'Room in a shared flat',
+    place: 'Eastwold',
+    offerings: ['long_term_rent'],
+    priceLines: [{ price: '€720', unit: '/ month' }],
+    facts: [bed(1), bath(1), area(16)],
+    image: photo('#E4E8F0', '#F2EEE8', '#8C9AAE'),
+  },
 ];
 
 const MAP_HEIGHT = 620;
@@ -76,10 +154,16 @@ function MockMap({ children, width }: { children: React.ReactNode; width: number
       }}
     >
       {[100, 260, 380, 560].map((top) => (
-        <View key={`h${top}`} style={{ position: 'absolute', left: 0, right: 0, top, height: 6, backgroundColor: line }} />
+        <View
+          key={`h${top}`}
+          style={{ position: 'absolute', left: 0, right: 0, top, height: 6, backgroundColor: line }}
+        />
       ))}
       {[120, 340, 600, 860].map((left) => (
-        <View key={`v${left}`} style={{ position: 'absolute', top: 0, bottom: 0, left, width: 6, backgroundColor: line }} />
+        <View
+          key={`v${left}`}
+          style={{ position: 'absolute', top: 0, bottom: 0, left, width: 6, backgroundColor: line }}
+        />
       ))}
       {children}
     </View>
@@ -87,15 +171,22 @@ function MockMap({ children, width }: { children: React.ReactNode; width: number
 }
 
 const centred = (x: number, y: number) =>
-  ({ position: 'absolute', left: x, top: y, transform: [{ translateX: '-50%' }, { translateY: '-50%' }] }) as const;
+  ({
+    position: 'absolute',
+    left: x,
+    top: y,
+    transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+  }) as const;
 
 /** Beside the marker when the map has room (clear of an area circle), else along the bottom edge. */
 function previewPosition(home: Home, scale: number, width: number, previewWidth: number) {
   const x = home.x * scale;
   const clearance = (home.areaRadius ?? 0) * scale + 16;
   const top = Math.max(16, Math.min(home.y - 160, MAP_HEIGHT - 340));
-  if (x + clearance + previewWidth + 16 <= width) return { position: 'absolute', left: x + clearance, top } as const;
-  if (x - clearance - previewWidth >= 16) return { position: 'absolute', left: x - clearance - previewWidth, top } as const;
+  if (x + clearance + previewWidth + 16 <= width)
+    return { position: 'absolute', left: x + clearance, top } as const;
+  if (x - clearance - previewWidth >= 16)
+    return { position: 'absolute', left: x - clearance - previewWidth, top } as const;
   // A narrow map: a sheet-like card along the bottom edge.
   return { position: 'absolute', left: (width - previewWidth) / 2, bottom: 12 } as const;
 }
@@ -117,7 +208,9 @@ function HousingMapDemo({ compact = false }: { compact?: boolean }) {
   };
 
   return (
-    <View style={{ gap: 12, padding: 16, backgroundColor: theme.colors.background, minHeight: '100%' }}>
+    <View
+      style={{ gap: 12, padding: 16, backgroundColor: theme.colors.background, minHeight: '100%' }}
+    >
       <MockMap width={width}>
         {HOMES.filter((home) => home.areaRadius).map((home) => (
           <View key={`area-${home.id}`} style={centred(home.x * scale, home.y)}>
@@ -149,9 +242,7 @@ function HousingMapDemo({ compact = false }: { compact?: boolean }) {
         </View>
 
         {current ? (
-          <View
-            style={previewPosition(current, scale, width, previewWidth)}
-          >
+          <View style={previewPosition(current, scale, width, previewWidth)}>
             <MapListingPreview
               width={previewWidth}
               image={current.image}
@@ -180,8 +271,8 @@ function HousingMapDemo({ compact = false }: { compact?: boolean }) {
         ) : null}
       </MockMap>
       <Text variant="caption-1-regular" style={{ color: theme.colors.textSecondary }}>
-        Short prices on the markers; the townhouse's address is private, so an approximate-area circle sits under
-        its marker.
+        Short prices on the markers; the townhouse's address is private, so an approximate-area
+        circle sits under its marker.
       </Text>
     </View>
   );
@@ -214,10 +305,18 @@ function PiecesBody() {
     <View style={{ gap: 20, padding: 16, backgroundColor: theme.colors.background }}>
       {caption('Price marker sizes — default · compact, at rest · active · visited · saved')}
       {(['default', 'compact'] as const).map((size) => (
-        <View key={size} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+        <View
+          key={size}
+          style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}
+        >
           <MapPriceMarker size={size} price="€950/mo" accessibilityLabel="€950 a month" />
           <MapPriceMarker size={size} price="€240K" state="active" accessibilityLabel="€240,000" />
-          <MapPriceMarker size={size} price="€1.2M" state="visited" accessibilityLabel="€1,200,000" />
+          <MapPriceMarker
+            size={size}
+            price="€1.2M"
+            state="visited"
+            accessibilityLabel="€1,200,000"
+          />
           <MapPriceMarker size={size} price="€168" saved accessibilityLabel="€168 a night, saved" />
         </View>
       ))}

@@ -77,7 +77,17 @@ export const EscapingAClip: Story = {
                 {open ? (
                   <Portal>
                     <OverlayRoot>
-                      <View style={{ position: 'absolute', bottom: 24, left: 24, right: 24, alignItems: 'flex-start' }}>{panel}</View>
+                      <View
+                        style={{
+                          position: 'absolute',
+                          bottom: 24,
+                          left: 24,
+                          right: 24,
+                          alignItems: 'flex-start',
+                        }}
+                      >
+                        {panel}
+                      </View>
                     </OverlayRoot>
                   </Portal>
                 ) : null}
@@ -104,7 +114,11 @@ export const ManyAtOnce: Story = {
         <View style={{ gap: 12, width: 420, maxWidth: '100%' }}>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <Button onPress={() => setIds((v) => [...v, (v[v.length - 1] ?? 0) + 1])}>Add</Button>
-            <Button onPress={() => setIds((v) => v.slice(0, -1))} appearance="outline" tone="neutral">
+            <Button
+              onPress={() => setIds((v) => v.slice(0, -1))}
+              appearance="outline"
+              tone="neutral"
+            >
               Remove last
             </Button>
           </View>
@@ -135,9 +149,7 @@ export const WebPortsToTheDocument: Story = {
   render: () => (
     <PortalProvider>
       <View style={{ gap: 8, width: 420, maxWidth: '100%' }}>
-        <Text>
-          On web the content below is attached to `document.body`, not to the outlet.
-        </Text>
+        <Text>On web the content below is attached to `document.body`, not to the outlet.</Text>
         <Portal>
           <View style={{ position: 'absolute', top: 24, right: 24 }}>
             <Card appearance="solid" radius="radius-12" style={{ padding: 12 }}>

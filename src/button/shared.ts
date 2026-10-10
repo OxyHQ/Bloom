@@ -95,8 +95,12 @@ const CANONICAL_BUTTON_GEOMETRY: Record<ButtonResolvedSize, ButtonGeometry> = {
     ...typeFields('headline-medium'),
   },
 };
-export const BUTTON_GEOMETRY = { ...CANONICAL_BUTTON_GEOMETRY, small: CANONICAL_BUTTON_GEOMETRY.sm, medium: CANONICAL_BUTTON_GEOMETRY.md, large: CANONICAL_BUTTON_GEOMETRY.lg };
-
+export const BUTTON_GEOMETRY = {
+  ...CANONICAL_BUTTON_GEOMETRY,
+  small: CANONICAL_BUTTON_GEOMETRY.sm,
+  medium: CANONICAL_BUTTON_GEOMETRY.md,
+  large: CANONICAL_BUTTON_GEOMETRY.lg,
+};
 
 /**
  * The `icon` variant. It keeps a fixed square (`size-9` / `size-8`, border
@@ -116,7 +120,6 @@ export const ICON_BUTTON_ICON_SIZE: Record<ButtonResolvedSize, number> = {
 export const LINK_BUTTON_GAP = 4;
 export const LINK_BUTTON_UNDERLINE_OFFSET = 3;
 
-
 /**
  * A round background/tertiary disc with a hand-drawn two-stroke X in its own
  * viewBox, so the stroke is a true pixel value at every size.
@@ -133,7 +136,6 @@ export const CLOSE_BUTTON_GEOMETRY: Record<
   md: { box: 32, glyph: 16.2, stroke: 2.5, inset: 2 },
   lg: { box: 44, glyph: 20, stroke: 2.5, inset: 2 },
 };
-
 
 /** The button's transition duration. */
 export const BUTTON_TRANSITION_MS = 150;
@@ -203,16 +205,32 @@ export type RampTable = Record<Stop, readonly [l: number, c: number]>;
 
 /** Tailwind v4 `blue-*` — the default accent. */
 export const ACCENT_TABLE: RampTable = {
-  50: [0.97, 0.014], 100: [0.932, 0.032], 200: [0.882, 0.059], 300: [0.809, 0.105],
-  400: [0.707, 0.165], 500: [0.623, 0.214], 600: [0.546, 0.245], 700: [0.488, 0.243],
-  800: [0.424, 0.199], 900: [0.379, 0.146], 950: [0.282, 0.091],
+  50: [0.97, 0.014],
+  100: [0.932, 0.032],
+  200: [0.882, 0.059],
+  300: [0.809, 0.105],
+  400: [0.707, 0.165],
+  500: [0.623, 0.214],
+  600: [0.546, 0.245],
+  700: [0.488, 0.243],
+  800: [0.424, 0.199],
+  900: [0.379, 0.146],
+  950: [0.282, 0.091],
 };
 
 /** Tailwind v4 `red-*` — the danger colour. */
 export const DANGER_TABLE: RampTable = {
-  50: [0.971, 0.013], 100: [0.936, 0.032], 200: [0.885, 0.062], 300: [0.808, 0.114],
-  400: [0.704, 0.191], 500: [0.637, 0.237], 600: [0.577, 0.245], 700: [0.505, 0.213],
-  800: [0.444, 0.177], 900: [0.396, 0.141], 950: [0.258, 0.092],
+  50: [0.971, 0.013],
+  100: [0.936, 0.032],
+  200: [0.885, 0.062],
+  300: [0.808, 0.114],
+  400: [0.704, 0.191],
+  500: [0.637, 0.237],
+  600: [0.577, 0.245],
+  700: [0.505, 0.213],
+  800: [0.444, 0.177],
+  900: [0.396, 0.141],
+  950: [0.258, 0.092],
 };
 
 /**
@@ -221,8 +239,17 @@ export const DANGER_TABLE: RampTable = {
  * theme's own text colour, so they belong to the preset.
  */
 const NEUTRAL_LIGHTNESS: Record<Stop, number> = {
-  50: 0.985, 100: 0.975, 200: 0.943, 300: 0.87, 400: 0.708, 500: 0.556,
-  600: 0.439, 700: 0.371, 800: 0.269, 900: 0.205, 950: 0.145,
+  50: 0.985,
+  100: 0.975,
+  200: 0.943,
+  300: 0.87,
+  400: 0.708,
+  500: 0.556,
+  600: 0.439,
+  700: 0.371,
+  800: 0.269,
+  900: 0.205,
+  950: 0.145,
 };
 
 const RELATIVE_STOPS = new Set<Stop>([400, 600, 700]);
@@ -307,12 +334,30 @@ export const resolveButtonPalette = resolveCanonicalButtonPalette;
 
 /** Link actions retain their inline foreground and never add hover fill. */
 export function resolveLinkButtonPalette(theme: Theme, tone: ButtonLinkTone): ButtonPalette {
-  const palette = resolveCanonicalButtonPalette('plain', theme, tone === 'primary' ? 'accent' : 'neutral');
-  const foreground = tone === 'primary' ? theme.colors.primary : tone === 'text' ? theme.colors.text : theme.colors.textSecondary;
-  return { ...palette,
+  const palette = resolveCanonicalButtonPalette(
+    'plain',
+    theme,
+    tone === 'primary' ? 'accent' : 'neutral',
+  );
+  const foreground =
+    tone === 'primary'
+      ? theme.colors.primary
+      : tone === 'text'
+        ? theme.colors.text
+        : theme.colors.textSecondary;
+  return {
+    ...palette,
     rest: { ...palette.rest, foreground },
-    hover: { ...palette.hover, foreground: tone === 'text' ? theme.colors.textSecondary : foreground, background: 'transparent' },
-    active: { ...palette.active, foreground: tone === 'text' ? theme.colors.textSecondary : foreground, background: 'transparent' },
+    hover: {
+      ...palette.hover,
+      foreground: tone === 'text' ? theme.colors.textSecondary : foreground,
+      background: 'transparent',
+    },
+    active: {
+      ...palette.active,
+      foreground: tone === 'text' ? theme.colors.textSecondary : foreground,
+      background: 'transparent',
+    },
   };
 }
 
@@ -331,44 +376,84 @@ export function resolveCanonicalButtonPalette(
     const semantic = resolveBloomColors(c, tone, appearance);
     const alpha = parseRgba(pair.background)?.a ?? 1;
     const state = (amount: number): ButtonStatePaint => ({
-      background: amount === 0 || pair.background === 'transparent' ? pair.background
-        : withAlpha(mixColor(pair.background, '#000000', amount), alpha),
+      background:
+        amount === 0 || pair.background === 'transparent'
+          ? pair.background
+          : withAlpha(mixColor(pair.background, '#000000', amount), alpha),
       foreground: pair.foreground,
       border: appearance === 'outline' ? semantic.border : TRANSPARENT,
-      gradient: null, surface: false,
+      gradient: null,
+      surface: false,
     });
     return {
-      rest: state(0), hover: state(0.04), active: state(0.08),
-      disabled: { background: appearance === 'outline' ? TRANSPARENT : c.backgroundSecondary,
-        foreground: c.textTertiary, border: appearance === 'outline' ? c.border : TRANSPARENT,
-        gradient: null, surface: false },
-      disabledOpacity: 1, borderWidth: appearance === 'outline' ? 1 : 0,
-      shadow: false, ring: tone === 'support' ? c.secondary : tone === 'action' ? c.tertiary : c.primary,
+      rest: state(0),
+      hover: state(0.04),
+      active: state(0.08),
+      disabled: {
+        background: appearance === 'outline' ? TRANSPARENT : c.backgroundSecondary,
+        foreground: c.textTertiary,
+        border: appearance === 'outline' ? c.border : TRANSPARENT,
+        gradient: null,
+        surface: false,
+      },
+      disabledOpacity: 1,
+      borderWidth: appearance === 'outline' ? 1 : 0,
+      shadow: false,
+      ring: tone === 'support' ? c.secondary : tone === 'action' ? c.tertiary : c.primary,
     };
   }
   const surface = appearance !== 'plain';
   const neutral = tone === 'neutral' && !colors;
-  const tint = appearance === 'outline' && !colors
-    ? resolveBloomColors(c, tone, 'subtle').background : pair.background;
+  const tint =
+    appearance === 'outline' && !colors
+      ? resolveBloomColors(c, tone, 'subtle').background
+      : pair.background;
   const fill = resolveSurfaceFill(tint, c.card);
   const neutralBase = neutralFill ?? c.card;
   const neutralHover = neutralFill ? surfaceFillOn(theme, neutralBase) : c.backgroundSecondary;
   const neutralActive = neutralFill ? surfaceFillOn(theme, neutralHover) : c.backgroundTertiary;
-  const semanticAlpha = colors ? parseRgba(tint)?.a ?? 1 : 1;
+  const semanticAlpha = colors ? (parseRgba(tint)?.a ?? 1) : 1;
   const paint = (state: 0 | 1 | 2): ButtonStatePaint => ({
-    background: !surface ? (state ? resolveBloomColors(c, tone, 'subtle').background : 'transparent')
-      : resolveSurfaceTint(neutral ? [neutralBase, neutralHover, neutralActive][state]!
-        : state === 0 ? (colors ? tint : fill)
-        : withAlpha(mixColor(fill, state === 1 ? '#ffffff' : '#000000', state === 1 ? 0.06 : 0.08), semanticAlpha)),
-    foreground: neutral ? (appearance === 'plain' && state === 0 ? c.textSecondary : c.text) : pair.foreground,
-    border: TRANSPARENT, gradient: null, surface,
+    background: !surface
+      ? state
+        ? resolveBloomColors(c, tone, 'subtle').background
+        : 'transparent'
+      : resolveSurfaceTint(
+          neutral
+            ? [neutralBase, neutralHover, neutralActive][state]!
+            : state === 0
+              ? colors
+                ? tint
+                : fill
+              : withAlpha(
+                  mixColor(fill, state === 1 ? '#ffffff' : '#000000', state === 1 ? 0.06 : 0.08),
+                  semanticAlpha,
+                ),
+        ),
+    foreground: neutral
+      ? appearance === 'plain' && state === 0
+        ? c.textSecondary
+        : c.text
+      : pair.foreground,
+    border: TRANSPARENT,
+    gradient: null,
+    surface,
   });
   return {
-    rest: paint(0), hover: paint(1), active: paint(2),
-    disabled: { background: surface ? resolveSurfaceTint(neutralHover) : TRANSPARENT,
-      foreground: c.textTertiary, border: TRANSPARENT, gradient: null, surface },
-    disabledOpacity: 1, borderWidth: appearance === 'outline' ? 1 : 0,
-    shadow: surface, ring: tone === 'support' ? c.secondary : tone === 'action' ? c.tertiary : c.primary,
+    rest: paint(0),
+    hover: paint(1),
+    active: paint(2),
+    disabled: {
+      background: surface ? resolveSurfaceTint(neutralHover) : TRANSPARENT,
+      foreground: c.textTertiary,
+      border: TRANSPARENT,
+      gradient: null,
+      surface,
+    },
+    disabledOpacity: 1,
+    borderWidth: appearance === 'outline' ? 1 : 0,
+    shadow: surface,
+    ring: tone === 'support' ? c.secondary : tone === 'action' ? c.tertiary : c.primary,
   };
 }
 

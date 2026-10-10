@@ -1,6 +1,12 @@
 import React from 'react';
 import { contrastRatio } from '../styles/color-contrast';
-import { AA_TEXT, hairlineOn, resolveSurfaceLevel, surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
+import {
+  AA_TEXT,
+  hairlineOn,
+  resolveSurfaceLevel,
+  surfaceFillOn,
+  surfaceTextOn,
+} from '../styles/surface-levels';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { View } from 'react-native';
 import { act, render } from '@testing-library/react-native';
@@ -60,20 +66,33 @@ function findChrome(root: ReturnType<typeof render>) {
 }
 
 describe('TextField palette (input tokens)', () => {
-  it.each(['light', 'dark'] as const)('uses paired semantic paint on the parent surface (%s)', mode => {
-    const theme = captureTheme(mode);
-    const c = theme.colors;
-    const surface = c.background;
-    const background = surfaceFillOn(theme, surface);
-    expect(resolveTextFieldPalette(theme)).toEqual({
-      background, backgroundDisabled: background, backgroundInvalid: c.errorSubtle,
-      ringHover: c.border, ringFocus: c.primary, text: c.text, textDisabled: c.textTertiary,
-      placeholder: surfaceTextOn(theme, background).textTertiary, placeholderInvalid: c.errorSubtleForeground,
-      icon: c.textSecondary, iconDisabled: c.textTertiary, iconInvalid: c.errorSubtleForeground,
-      hint: surfaceTextOn(theme, surface).textTertiary, error: c.errorSubtleForeground,
-      infoIcon: c.textSecondary, count: surfaceTextOn(theme, background).textTertiary,
-    });
-  });
+  it.each(['light', 'dark'] as const)(
+    'uses paired semantic paint on the parent surface (%s)',
+    (mode) => {
+      const theme = captureTheme(mode);
+      const c = theme.colors;
+      const surface = c.background;
+      const background = surfaceFillOn(theme, surface);
+      expect(resolveTextFieldPalette(theme)).toEqual({
+        background,
+        backgroundDisabled: background,
+        backgroundInvalid: c.errorSubtle,
+        ringHover: c.border,
+        ringFocus: c.primary,
+        text: c.text,
+        textDisabled: c.textTertiary,
+        placeholder: surfaceTextOn(theme, background).textTertiary,
+        placeholderInvalid: c.errorSubtleForeground,
+        icon: c.textSecondary,
+        iconDisabled: c.textTertiary,
+        iconInvalid: c.errorSubtleForeground,
+        hint: surfaceTextOn(theme, surface).textTertiary,
+        error: c.errorSubtleForeground,
+        infoIcon: c.textSecondary,
+        count: surfaceTextOn(theme, background).textTertiary,
+      });
+    },
+  );
 
   it.each(['light', 'dark'] as const)(
     'gives the field a shell on every surface it can land on (%s)',
@@ -101,12 +120,30 @@ describe('TextField palette (input tokens)', () => {
   it('follows the precedence for the shell: focus over hover, no ring when invalid or disabled', () => {
     const p = resolveTextFieldPalette(captureTheme('light'));
     const s = (o: Partial<Record<'hovered' | 'focused' | 'invalid' | 'disabled', boolean>>) =>
-      resolveShellPaint(p, { hovered: false, focused: false, invalid: false, disabled: false, ...o });
+      resolveShellPaint(p, {
+        hovered: false,
+        focused: false,
+        invalid: false,
+        disabled: false,
+        ...o,
+      });
     expect(s({})).toEqual({ backgroundColor: p.background, borderColor: TRANSPARENT });
-    expect(s({ hovered: true })).toEqual({ backgroundColor: p.background, borderColor: p.ringHover });
-    expect(s({ hovered: true, focused: true })).toEqual({ backgroundColor: p.background, borderColor: p.ringFocus });
-    expect(s({ focused: true, invalid: true })).toEqual({ backgroundColor: p.backgroundInvalid, borderColor: TRANSPARENT });
-    expect(s({ hovered: true, disabled: true })).toEqual({ backgroundColor: p.backgroundDisabled, borderColor: TRANSPARENT });
+    expect(s({ hovered: true })).toEqual({
+      backgroundColor: p.background,
+      borderColor: p.ringHover,
+    });
+    expect(s({ hovered: true, focused: true })).toEqual({
+      backgroundColor: p.background,
+      borderColor: p.ringFocus,
+    });
+    expect(s({ focused: true, invalid: true })).toEqual({
+      backgroundColor: p.backgroundInvalid,
+      borderColor: TRANSPARENT,
+    });
+    expect(s({ hovered: true, disabled: true })).toEqual({
+      backgroundColor: p.backgroundDisabled,
+      borderColor: TRANSPARENT,
+    });
     // Invalid's fill is declared after disabled's.
     expect(s({ invalid: true, disabled: true }).backgroundColor).toBe(p.backgroundInvalid);
   });
@@ -114,7 +151,13 @@ describe('TextField palette (input tokens)', () => {
   it('follows the precedence for the placeholder: invalid > disabled > focus > rest', () => {
     const p = resolveTextFieldPalette(captureTheme('light'));
     const c = (o: Partial<Record<'focused' | 'invalid' | 'disabled', boolean>>) =>
-      resolvePlaceholderColor(p, { hovered: false, focused: false, invalid: false, disabled: false, ...o });
+      resolvePlaceholderColor(p, {
+        hovered: false,
+        focused: false,
+        invalid: false,
+        disabled: false,
+        ...o,
+      });
     expect(c({})).toBe(p.placeholder);
     expect(c({ focused: true })).toBe(p.text);
     expect(c({ focused: true, disabled: true })).toBe(p.textDisabled);
@@ -150,7 +193,12 @@ describe('TextField geometry', () => {
 
   it('keeps a caller paddingRight over the base (longhand, not paddingHorizontal)', () => {
     const root = renderWithTheme(
-      <TextFieldInput label="Search" value="" onValueChange={() => {}} style={{ paddingRight: 24 }} />,
+      <TextFieldInput
+        label="Search"
+        value=""
+        onValueChange={() => {}}
+        style={{ paddingRight: 24 }}
+      />,
     );
     const input = flat(root.getByLabelText('Search').props.style);
     expect(input.paddingRight).toBe(24);
@@ -162,14 +210,21 @@ describe('TextField states', () => {
   it('paints the rest shell and placeholder', () => {
     const theme = captureTheme('light');
     const p = resolveTextFieldPalette(theme);
-    const root = renderWithTheme(<TextFieldInput label="Email" value="" onValueChange={() => {}} />);
-    expect(findChrome(root)).toMatchObject({ backgroundColor: p.background, borderColor: TRANSPARENT });
+    const root = renderWithTheme(
+      <TextFieldInput label="Email" value="" onValueChange={() => {}} />,
+    );
+    expect(findChrome(root)).toMatchObject({
+      backgroundColor: p.background,
+      borderColor: TRANSPARENT,
+    });
     expect(root.getByLabelText('Email').props.placeholderTextColor).toBe(p.placeholder);
   });
 
   it('focus rings the shell and darkens the placeholder', () => {
     const p = resolveTextFieldPalette(captureTheme('light'));
-    const root = renderWithTheme(<TextFieldInput label="Email" value="" onValueChange={() => {}} />);
+    const root = renderWithTheme(
+      <TextFieldInput label="Email" value="" onValueChange={() => {}} />,
+    );
     act(() => {
       root.getByLabelText('Email').props.onFocus({});
     });

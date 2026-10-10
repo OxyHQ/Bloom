@@ -5,12 +5,7 @@ import { Avatar } from '../avatar';
 import { TypingDots } from '../chat-indicators';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
-import {
-  BUBBLE_PADDING_X,
-  bubbleRadii,
-  resolveMessageBubblePaint,
-  sidePaint,
-} from './shared';
+import { BUBBLE_PADDING_X, bubbleRadii, resolveMessageBubblePaint, sidePaint } from './shared';
 import { MESSAGE_BUBBLE_MESSAGES } from './messages';
 import type { TypingBubbleProps } from './types';
 

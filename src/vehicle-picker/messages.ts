@@ -25,16 +25,37 @@ export interface VehiclePickerMessages {
   vehicles: Record<VehicleKind, VehicleWords>;
 }
 
-export const VEHICLE_PICKER_MESSAGES: MessageCatalog<VehiclePickerMessages> = defineMessages<VehiclePickerMessages>('VEHICLE_PICKER_MESSAGES', {
-  from: 'From',
-  fits: (label) => `What fits in a ${label}`,
-  unavailable: 'Not available for this load',
-  vehicle: 'Vehicle',
-  vehicles: {
-    bike: { label: 'Cargo bike', capacity: 'Up to 25 kg · 60 × 40 × 40 cm', fits: ['Documents', 'A food order', 'A small box'] },
-    car: { label: 'Car', capacity: 'Up to 150 kg · 100 × 80 × 60 cm', fits: ['Two suitcases', 'Four boxes', 'A bicycle'] },
-    van: { label: 'Van', capacity: 'Up to 800 kg · 240 × 150 × 140 cm', fits: ['A sofa', 'A studio move', 'Half a pallet'] },
-    boxTruck: { label: 'Box truck', capacity: 'Up to 3,500 kg · 420 × 200 × 210 cm', fits: ['Two pallets', 'A two-bedroom move', 'A tail lift'] },
-    refrigerated: { label: 'Refrigerated van', capacity: 'Up to 700 kg · held at 2–8 °C', fits: ['Fresh produce', 'Chilled catering', 'Flowers'] },
-  },
-});
+export const VEHICLE_PICKER_MESSAGES: MessageCatalog<VehiclePickerMessages> =
+  defineMessages<VehiclePickerMessages>('VEHICLE_PICKER_MESSAGES', {
+    from: 'From',
+    fits: (label) => `What fits in a ${label}`,
+    unavailable: 'Not available for this load',
+    vehicle: 'Vehicle',
+    vehicles: {
+      bike: {
+        label: 'Cargo bike',
+        capacity: 'Up to 25 kg · 60 × 40 × 40 cm',
+        fits: ['Documents', 'A food order', 'A small box'],
+      },
+      car: {
+        label: 'Car',
+        capacity: 'Up to 150 kg · 100 × 80 × 60 cm',
+        fits: ['Two suitcases', 'Four boxes', 'A bicycle'],
+      },
+      van: {
+        label: 'Van',
+        capacity: 'Up to 800 kg · 240 × 150 × 140 cm',
+        fits: ['A sofa', 'A studio move', 'Half a pallet'],
+      },
+      boxTruck: {
+        label: 'Box truck',
+        capacity: 'Up to 3,500 kg · 420 × 200 × 210 cm',
+        fits: ['Two pallets', 'A two-bedroom move', 'A tail lift'],
+      },
+      refrigerated: {
+        label: 'Refrigerated van',
+        capacity: 'Up to 700 kg · held at 2–8 °C',
+        fits: ['Fresh produce', 'Chilled catering', 'Flowers'],
+      },
+    },
+  });

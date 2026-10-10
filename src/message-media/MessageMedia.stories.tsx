@@ -66,7 +66,12 @@ const SAMPLES = Array.from({ length: 64 }, (_, i) => {
 });
 
 const DOCS = [
-  { id: 'd1', name: 'Tenancy agreement.pdf', sizeBytes: 2.44 * 1024 * 1024, metaLabel: 'Yesterday' },
+  {
+    id: 'd1',
+    name: 'Tenancy agreement.pdf',
+    sizeBytes: 2.44 * 1024 * 1024,
+    metaLabel: 'Yesterday',
+  },
   { id: 'd2', name: 'Quarterly rents.xlsx', sizeBytes: 812 * 1024, metaLabel: 'Monday' },
   { id: 'd3', name: 'Handover photos.zip', sizeBytes: 148.6 * 1024 * 1024, metaLabel: '12 Aug' },
   { id: 'd4', name: 'Doorbell chime.m4a', sizeBytes: 640 * 1024, metaLabel: '9 Aug' },
@@ -358,11 +363,7 @@ export const SendingAndFailed: Story = {
             />
           </Bubble>
           <Bubble tone="incoming">
-            <FileMessage
-              name="Move-in checklist.docx"
-              sizeBytes={96 * 1024}
-              transfer="done"
-            />
+            <FileMessage name="Move-in checklist.docx" sizeBytes={96 * 1024} transfer="done" />
           </Bubble>
         </View>
       </BothModes>

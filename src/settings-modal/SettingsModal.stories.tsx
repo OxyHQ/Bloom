@@ -105,7 +105,13 @@ const SERVERS: Record<string, SettingsMcpServer> = {
     tone: 'secondary',
     status: 'connected',
     summary: '26 tools, 1 prompts, 104 resources enabled',
-    tools: ['get_design_context', 'get_metadata', 'get_screenshot', 'get_variable_defs', 'create_new_file'],
+    tools: [
+      'get_design_context',
+      'get_metadata',
+      'get_screenshot',
+      'get_variable_defs',
+      'create_new_file',
+    ],
   },
   paper: { id: 'paper', name: 'paper', tone: 'primary', status: 'error' },
   posthog: {
@@ -114,7 +120,13 @@ const SERVERS: Record<string, SettingsMcpServer> = {
     tone: 'warning',
     status: 'connected',
     summary: '521 tools, 173 resources enabled',
-    tools: ['query_insights', 'list_dashboards', 'capture_event', 'feature_flags', 'session_recordings'],
+    tools: [
+      'query_insights',
+      'list_dashboards',
+      'capture_event',
+      'feature_flags',
+      'session_recordings',
+    ],
   },
   vercel: {
     id: 'vercel',
@@ -149,7 +161,18 @@ function makeRng(seed: number) {
 }
 
 const MB = 1024 * 1024;
-const NAMES = ['Invoice', 'Contract', 'Payroll Sheet', 'Quarterly report', 'Pitch deck', 'Budget plan', 'Onboarding video', 'Team photo', 'Meeting notes', 'Roadmap'];
+const NAMES = [
+  'Invoice',
+  'Contract',
+  'Payroll Sheet',
+  'Quarterly report',
+  'Pitch deck',
+  'Budget plan',
+  'Onboarding video',
+  'Team photo',
+  'Meeting notes',
+  'Roadmap',
+];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
 
 /** A 1,262-file inventory: five pinned rows, the rest generated. */
@@ -184,9 +207,25 @@ const FILES: SettingsStoredFile[] = (() => {
 //  Pages, wired with local state
 // ---------------------------------------------------------------------------
 
-const COMPACT_SELECT_FIELD = { gap: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 5, paddingBottom: 5 };
+const COMPACT_SELECT_FIELD = {
+  gap: 4,
+  paddingLeft: 8,
+  paddingRight: 8,
+  paddingTop: 5,
+  paddingBottom: 5,
+};
 
-function CompactSelect({ label, value, onChange, items }: { label: string; value: string; onChange: (v: string) => void; items: { value: string; label: string }[] }) {
+function CompactSelect({
+  label,
+  value,
+  onChange,
+  items,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  items: { value: string; label: string }[];
+}) {
   return (
     // A compact row trigger: 32px on the md select, from padding alone — 5 + 20
     // + 5 inside the 1px border. Never a fixed `h-8`: the text then cannot grow
@@ -195,7 +234,10 @@ function CompactSelect({ label, value, onChange, items }: { label: string; value
       <SelectTrigger label={label} fieldStyle={COMPACT_SELECT_FIELD}>
         <SelectValue>
           {(v) => {
-            const key = typeof v === 'object' && v !== null && 'value' in v ? (v as { value: string }).value : v;
+            const key =
+              typeof v === 'object' && v !== null && 'value' in v
+                ? (v as { value: string }).value
+                : v;
             return items.find((i) => i.value === key)?.label ?? String(key);
           }}
         </SelectValue>
@@ -217,11 +259,20 @@ function CompactSelect({ label, value, onChange, items }: { label: string; value
 }
 
 function GeneralDemo() {
-  const [toggles, setToggles] = useState({ critical: true, system: false, sound: false, dispatch: false });
+  const [toggles, setToggles] = useState({
+    critical: true,
+    system: false,
+    sound: false,
+    dispatch: false,
+  });
   const [provider, setProvider] = useState('github');
   const [destination, setDestination] = useState('inside');
   const toggle = (key: keyof typeof toggles, label: string) => (
-    <Switch checked={toggles[key]} onCheckedChange={(v) => setToggles((t) => ({ ...t, [key]: v }))} accessibilityLabel={label} />
+    <Switch
+      checked={toggles[key]}
+      onCheckedChange={(v) => setToggles((t) => ({ ...t, [key]: v }))}
+      accessibilityLabel={label}
+    />
   );
   return (
     <SettingsGeneralPage
@@ -293,10 +344,30 @@ function GeneralDemo() {
           key: 'notifications',
           label: 'Notifications',
           rows: [
-            { key: 'critical', label: 'Critical requests', description: 'Get notified when the mode needs to make a critical decision', control: toggle('critical', 'Critical requests') },
-            { key: 'system', label: 'System notifications', description: 'Show fundamental notifications when an agent completes a task', control: toggle('system', 'System notifications') },
-            { key: 'sound', label: 'Completion sound', description: 'Sound effect a task is completed', control: toggle('sound', 'Completion sound') },
-            { key: 'dispatch', label: 'Dispatch alerts', description: 'Push notification on your phone when the app messages you', control: toggle('dispatch', 'Dispatch alerts') },
+            {
+              key: 'critical',
+              label: 'Critical requests',
+              description: 'Get notified when the mode needs to make a critical decision',
+              control: toggle('critical', 'Critical requests'),
+            },
+            {
+              key: 'system',
+              label: 'System notifications',
+              description: 'Show fundamental notifications when an agent completes a task',
+              control: toggle('system', 'System notifications'),
+            },
+            {
+              key: 'sound',
+              label: 'Completion sound',
+              description: 'Sound effect a task is completed',
+              control: toggle('sound', 'Completion sound'),
+            },
+            {
+              key: 'dispatch',
+              label: 'Dispatch alerts',
+              description: 'Push notification on your phone when the app messages you',
+              control: toggle('dispatch', 'Dispatch alerts'),
+            },
           ],
         },
       ]}
@@ -305,7 +376,11 @@ function GeneralDemo() {
 }
 
 function ProfileDemo() {
-  const [profile, setProfile] = useState({ email: 'hi@example.com', first: 'Maya', last: 'Collins' });
+  const [profile, setProfile] = useState({
+    email: 'hi@example.com',
+    first: 'Maya',
+    last: 'Collins',
+  });
   const [birth, setBirth] = useState(new Date(1997, 6, 28));
   const [publicProfile, setPublicProfile] = useState(true);
   return (
@@ -314,19 +389,100 @@ function ProfileDemo() {
         {
           key: 'identity',
           rows: [
-            { key: 'email', label: 'Email', control: <SettingsTextField label="Email" icon={RiMailLine} keyboardType="email-address" value={profile.email} onCommit={(email) => setProfile((p) => ({ ...p, email }))} /> },
-            { key: 'first', label: 'First name', control: <SettingsTextField label="First name" value={profile.first} onCommit={(first) => setProfile((p) => ({ ...p, first }))} /> },
-            { key: 'last', label: 'Last name', control: <SettingsTextField label="Last name" value={profile.last} onCommit={(last) => setProfile((p) => ({ ...p, last }))} /> },
-            { key: 'birth', label: 'Date of birth', control: <SettingsDateField label="Date of birth" value={birth} onChange={setBirth} /> },
+            {
+              key: 'email',
+              label: 'Email',
+              control: (
+                <SettingsTextField
+                  label="Email"
+                  icon={RiMailLine}
+                  keyboardType="email-address"
+                  value={profile.email}
+                  onCommit={(email) => setProfile((p) => ({ ...p, email }))}
+                />
+              ),
+            },
+            {
+              key: 'first',
+              label: 'First name',
+              control: (
+                <SettingsTextField
+                  label="First name"
+                  value={profile.first}
+                  onCommit={(first) => setProfile((p) => ({ ...p, first }))}
+                />
+              ),
+            },
+            {
+              key: 'last',
+              label: 'Last name',
+              control: (
+                <SettingsTextField
+                  label="Last name"
+                  value={profile.last}
+                  onCommit={(last) => setProfile((p) => ({ ...p, last }))}
+                />
+              ),
+            },
+            {
+              key: 'birth',
+              label: 'Date of birth',
+              control: (
+                <SettingsDateField label="Date of birth" value={birth} onChange={setBirth} />
+              ),
+            },
           ],
         },
         {
           key: 'account',
           rows: [
-            { key: 'account', label: 'Connected account', control: <Button size="sm" leadingIcon={RiExternalLinkLine} appearance="outline" tone="neutral">Manage</Button> },
-            { key: 'public', label: 'Public profile', description: 'When enabled your profile page will be visible to anyone', control: <Switch checked={publicProfile} onCheckedChange={setPublicProfile} accessibilityLabel="Public profile" /> },
-            { key: 'device', label: 'Device ID', control: <SettingsValueField muted>593e2611-b9e3-44e2-1289-ab3f9d21</SettingsValueField> },
-            { key: 'logout', label: 'Log out from all devices', control: <Button size="sm" leadingIcon={RiLogoutCircleLine} appearance="outline" tone="neutral">Logout</Button> },
+            {
+              key: 'account',
+              label: 'Connected account',
+              control: (
+                <Button
+                  size="sm"
+                  leadingIcon={RiExternalLinkLine}
+                  appearance="outline"
+                  tone="neutral"
+                >
+                  Manage
+                </Button>
+              ),
+            },
+            {
+              key: 'public',
+              label: 'Public profile',
+              description: 'When enabled your profile page will be visible to anyone',
+              control: (
+                <Switch
+                  checked={publicProfile}
+                  onCheckedChange={setPublicProfile}
+                  accessibilityLabel="Public profile"
+                />
+              ),
+            },
+            {
+              key: 'device',
+              label: 'Device ID',
+              control: (
+                <SettingsValueField muted>593e2611-b9e3-44e2-1289-ab3f9d21</SettingsValueField>
+              ),
+            },
+            {
+              key: 'logout',
+              label: 'Log out from all devices',
+              control: (
+                <Button
+                  size="sm"
+                  leadingIcon={RiLogoutCircleLine}
+                  appearance="outline"
+                  tone="neutral"
+                >
+                  Logout
+                </Button>
+              ),
+            },
           ],
         },
       ]}
@@ -363,7 +519,11 @@ function StorageDemo() {
               id: `upload-${now}`,
               name: file.name.replace(/\.[^.]+$/, ''),
               kind: ext === 'xlsx' ? 'spreadsheet' : 'document',
-              uploadedOn: new Date(now).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              uploadedOn: new Date(now).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              }),
               uploadedAt: 10_000 + now / 1000,
               size: file.size,
             },
@@ -396,14 +556,22 @@ function usePages(): Record<string, SettingsModalPage> {
 export const Playground: Story = {
   args: { defaultPage: 'general' },
   parameters: { controls: { disable: false, include: ['defaultPage'] } },
-  argTypes: { defaultPage: { control: 'select', options: ['general', 'profile', 'tools', 'storage'] } },
+  argTypes: {
+    defaultPage: { control: 'select', options: ['general', 'profile', 'tools', 'storage'] },
+  },
   render: function PlaygroundStory(args) {
     const control = useDialogControl();
     const pages = usePages();
     return (
       <View style={{ padding: 24 }}>
         <Button onPress={() => control.open()}>Open settings</Button>
-        <SettingsModal {...args} control={control} groups={GROUPS} pages={pages} testID="settings" />
+        <SettingsModal
+          {...args}
+          control={control}
+          groups={GROUPS}
+          pages={pages}
+          testID="settings"
+        />
       </View>
     );
   },
@@ -412,23 +580,39 @@ export const Playground: Story = {
 function OpenOn({ page }: { page: string }) {
   const pages = usePages();
   const control = useDialogControl();
-  useEffect(() => { control.open(); }, [control.open]);
+  useEffect(() => {
+    control.open();
+  }, [control.open]);
   return (
     <View style={{ padding: 24 }}>
       <Button onPress={() => control.open()}>Open settings</Button>
-      <SettingsModal control={control} groups={GROUPS} pages={pages} defaultPage={page} testID="settings" />
+      <SettingsModal
+        control={control}
+        groups={GROUPS}
+        pages={pages}
+        defaultPage={page}
+        testID="settings"
+      />
     </View>
   );
 }
 
 export const General: Story = {
-  parameters: { controls: { disable: true } }, render: () => <OpenOn page="general" /> };
+  parameters: { controls: { disable: true } },
+  render: () => <OpenOn page="general" />,
+};
 export const Profile: Story = {
-  parameters: { controls: { disable: true } }, render: () => <OpenOn page="profile" /> };
+  parameters: { controls: { disable: true } },
+  render: () => <OpenOn page="profile" />,
+};
 export const Tools: Story = {
-  parameters: { controls: { disable: true } }, render: () => <OpenOn page="tools" /> };
+  parameters: { controls: { disable: true } },
+  render: () => <OpenOn page="tools" />,
+};
 export const Storage: Story = {
-  parameters: { controls: { disable: true } }, render: () => <OpenOn page="storage" /> };
+  parameters: { controls: { disable: true } },
+  render: () => <OpenOn page="storage" />,
+};
 
 /** The pages outside the shell, at the modal's 533px content width. */
 export const Pages: Story = {
@@ -436,15 +620,24 @@ export const Pages: Story = {
   render: function PagesStory() {
     const { width } = useWindowDimensions();
     // Isolated pages need the same responsive layout context as the modal shell.
-    return <SettingsModalContext.Provider value={{ layout: settingsLayoutFor(width), showSaved: () => {}, close: () => {} }}>
-      <View style={{ padding: 16, maxWidth: '100%', gap: 40 }}>
-        {[<GeneralDemo key="g" />, <ProfileDemo key="p" />, <ToolsDemo key="t" />, <StorageDemo key="s" />].map((page, i) => (
-          <View key={i} style={{ width: 533, maxWidth: '100%' }} testID={`page-${i}`}>
-            {page}
-          </View>
-        ))}
-      </View>
-    </SettingsModalContext.Provider>;
+    return (
+      <SettingsModalContext.Provider
+        value={{ layout: settingsLayoutFor(width), showSaved: () => {}, close: () => {} }}
+      >
+        <View style={{ padding: 16, maxWidth: '100%', gap: 40 }}>
+          {[
+            <GeneralDemo key="g" />,
+            <ProfileDemo key="p" />,
+            <ToolsDemo key="t" />,
+            <StorageDemo key="s" />,
+          ].map((page, i) => (
+            <View key={i} style={{ width: 533, maxWidth: '100%' }} testID={`page-${i}`}>
+              {page}
+            </View>
+          ))}
+        </View>
+      </SettingsModalContext.Provider>
+    );
   },
 };
 

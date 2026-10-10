@@ -3,8 +3,23 @@ import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import type React from 'react';
-import { forwardRef, useImperativeHandle, useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, Dimensions, Platform, type ViewStyle, type StyleProp } from 'react-native';
+import {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  Platform,
+  type ViewStyle,
+  type StyleProp,
+} from 'react-native';
 import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
 import { adoptStyleSheet, dropStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -13,7 +28,17 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { ScreenScope } from '../layout';
 import { Z_INDEX } from '../styles/z-index';
-import Animated, { interpolate, runOnJS, useAnimatedScrollHandler, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, {
+  interpolate,
+  runOnJS,
+  useAnimatedScrollHandler,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
@@ -24,60 +49,68 @@ import type { BottomSheetRef, BottomSheetBaseProps } from './types';
 
 /** Hook that returns current screen dimensions and updates on rotation/resize. */
 function useScreenDimensions() {
-    const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
+  const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
 
-    useEffect(() => {
-        const subscription = Dimensions.addEventListener('change', ({ window }) => {
-            setDimensions(window);
-        });
-        return () => subscription.remove();
-    }, []);
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setDimensions(window);
+    });
+    return () => subscription.remove();
+  }, []);
 
-    return dimensions;
+  return dimensions;
 }
 
 const SPRING_CONFIG = {
-    reduceMotion: MOTION_RECIPES.expand.reduceMotion,
-    damping: 25,
-    stiffness: 300,
-    mass: 0.8,
+  reduceMotion: MOTION_RECIPES.expand.reduceMotion,
+  damping: 25,
+  stiffness: 300,
+  mass: 0.8,
 };
 
-export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: React.ForwardedRef<BottomSheetRef>) => {
+export const BottomSheetBase = forwardRef(
+  (props: BottomSheetBaseProps, ref: React.ForwardedRef<BottomSheetRef>) => {
     const {
-        Shell,
-        children,
-        accessibilityLabel,
-        'aria-labelledby': labelledBy,
-        'aria-describedby': describedBy,
-        open,
-        onDismiss,
-        enablePanDownToClose = true,
-        material: surfaceMaterial = 'surface',
-        backgroundComponent,
-        backgroundFill,
-        backdropComponent,
-        backdrop,
-        transition,
-        style,
-        enableHandlePanningGesture = true,
-        onDismissAttempt,
-        detached = false,
-        showHandle = true,
-        backdropOpacity = BACKDROP_DIM_OPACITY,
-        scrollable = true,
-        manualActivation = false,
-        dynamicBackdrop = false,
-        animatedProgress,
-        handleComponent,
-        scrollY: externalScrollY,
-        headerOverlay,
-        onLayout,
+      Shell,
+      children,
+      accessibilityLabel,
+      'aria-labelledby': labelledBy,
+      'aria-describedby': describedBy,
+      open,
+      onDismiss,
+      enablePanDownToClose = true,
+      material: surfaceMaterial = 'surface',
+      backgroundComponent,
+      backgroundFill,
+      backdropComponent,
+      backdrop,
+      transition,
+      style,
+      enableHandlePanningGesture = true,
+      onDismissAttempt,
+      detached = false,
+      showHandle = true,
+      backdropOpacity = BACKDROP_DIM_OPACITY,
+      scrollable = true,
+      manualActivation = false,
+      dynamicBackdrop = false,
+      animatedProgress,
+      handleComponent,
+      scrollY: externalScrollY,
+      headerOverlay,
+      onLayout,
     } = props;
 
     const motion = useSurfaceTransition(transition);
     const timed = transition !== undefined;
-    const timedConfig = useMemo(() => ({ ...MOTION_RECIPES.present, duration: motion.duration ?? 250, easing: motion.easing }), [motion.duration, motion.easing]);
+    const timedConfig = useMemo(
+      () => ({
+        ...MOTION_RECIPES.present,
+        duration: motion.duration ?? 250,
+        easing: motion.easing,
+      }),
+      [motion.duration, motion.easing],
+    );
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const { colors } = theme;
@@ -105,7 +138,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     const screenHeightSV = useSharedValue(screenHeight);
     // Keep shared value in sync when screen dimensions change (rotation/resize)
     useEffect(() => {
-        screenHeightSV.value = screenHeight;
+      screenHeightSV.value = screenHeight;
     }, [screenHeight, screenHeightSV]);
 
     const translateY = useSharedValue(screenHeight);
@@ -146,7 +179,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // Completion is not a user request: once closed, every owner must hear it.
     // Vetoes are checked before a user-triggered close starts, never after it.
     const safeClose = useCallback(() => {
-        onDismiss?.();
+      onDismiss?.();
     }, [onDismiss]);
 
     // Mirror `safeClose` and `rendered` into refs so the unmount cleanup can
@@ -154,17 +187,17 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // cleanup effect on every render.
     const safeCloseRef = useRef(safeClose);
     useEffect(() => {
-        safeCloseRef.current = safeClose;
+      safeCloseRef.current = safeClose;
     }, [safeClose]);
     const renderedRef = useRef(rendered);
     useEffect(() => {
-        renderedRef.current = rendered;
+      renderedRef.current = rendered;
     }, [rendered]);
     // Mirror `visible` so the unmount cleanup can tell "closing" (visible=false,
     // animating out) from "fully open" (visible=true) at teardown time.
     const visibleRef = useRef(visible);
     useEffect(() => {
-        visibleRef.current = visible;
+      visibleRef.current = visible;
     }, [visible]);
 
     /**
@@ -178,51 +211,84 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
      *      callback is from a cycle that the user has implicitly cancelled
      *      by reopening — silently drop it.
      */
-    const finishClose = useCallback((generation: number) => {
+    const finishClose = useCallback(
+      (generation: number) => {
         if (closeGenerationRef.current !== generation) return;
         if (hasClosedRef.current) return;
         hasClosedRef.current = true;
         safeClose();
         setRendered(false);
-    }, [safeClose]);
+      },
+      [safeClose],
+    );
 
     useEffect(() => {
-        if (visible) {
-            if (closeTimeoutRef.current) {
-                clearTimeout(closeTimeoutRef.current);
-                closeTimeoutRef.current = null;
-            }
-            hasClosedRef.current = false;
-            // Bump generation: any pending close-completion callback from a
-            // prior cycle (animation or fallback timer) will now no-op when
-            // it eventually fires, because its captured generation is stale.
-            closeGenerationRef.current += 1;
-            closeGeneration.value = closeGenerationRef.current;
-            opacity.value = withTiming(1, timed ? timedConfig : { ...MOTION_RECIPES.present, duration: motion.duration ?? 250 });
-            translateY.value = motion.reducedMotion ? 0 : timed ? withTiming(0, timedConfig) : withSpring(0, SPRING_CONFIG);
-        } else if (rendered) {
-            // Capture the generation for THIS close cycle so the animation
-            // callback (running on the UI thread, scheduled back to JS) and
-            // the fallback timer agree on which cycle they belong to.
-            const generation = closeGenerationRef.current;
-            opacity.value = withTiming(0, timed ? timedConfig : { ...MOTION_RECIPES.dismiss, duration: motion.duration ?? 250 }, (finished) => {
-                if (finished) {
-                    runOnJS(finishClose)(generation);
-                }
-            });
-            translateY.value = motion.reducedMotion ? screenHeight : timed ? withTiming(screenHeight, timedConfig) : withSpring(screenHeight, { ...SPRING_CONFIG, stiffness: 250 });
-
-            // Fallback timer to ensure close completes (especially on web
-            // where reanimated callbacks occasionally drop on tab blur).
-            if (closeTimeoutRef.current) {
-                clearTimeout(closeTimeoutRef.current);
-            }
-            closeTimeoutRef.current = setTimeout(() => {
-                finishClose(generation);
-                closeTimeoutRef.current = null;
-            }, motion.reducedMotion ? 0 : timed ? timedConfig.duration + 50 : 300);
+      if (visible) {
+        if (closeTimeoutRef.current) {
+          clearTimeout(closeTimeoutRef.current);
+          closeTimeoutRef.current = null;
         }
-    }, [visible, rendered, finishClose, screenHeight, closeGeneration, opacity, translateY, timed, timedConfig, motion.duration, motion.reducedMotion]);
+        hasClosedRef.current = false;
+        // Bump generation: any pending close-completion callback from a
+        // prior cycle (animation or fallback timer) will now no-op when
+        // it eventually fires, because its captured generation is stale.
+        closeGenerationRef.current += 1;
+        closeGeneration.value = closeGenerationRef.current;
+        opacity.value = withTiming(
+          1,
+          timed ? timedConfig : { ...MOTION_RECIPES.present, duration: motion.duration ?? 250 },
+        );
+        translateY.value = motion.reducedMotion
+          ? 0
+          : timed
+            ? withTiming(0, timedConfig)
+            : withSpring(0, SPRING_CONFIG);
+      } else if (rendered) {
+        // Capture the generation for THIS close cycle so the animation
+        // callback (running on the UI thread, scheduled back to JS) and
+        // the fallback timer agree on which cycle they belong to.
+        const generation = closeGenerationRef.current;
+        opacity.value = withTiming(
+          0,
+          timed ? timedConfig : { ...MOTION_RECIPES.dismiss, duration: motion.duration ?? 250 },
+          (finished) => {
+            if (finished) {
+              runOnJS(finishClose)(generation);
+            }
+          },
+        );
+        translateY.value = motion.reducedMotion
+          ? screenHeight
+          : timed
+            ? withTiming(screenHeight, timedConfig)
+            : withSpring(screenHeight, { ...SPRING_CONFIG, stiffness: 250 });
+
+        // Fallback timer to ensure close completes (especially on web
+        // where reanimated callbacks occasionally drop on tab blur).
+        if (closeTimeoutRef.current) {
+          clearTimeout(closeTimeoutRef.current);
+        }
+        closeTimeoutRef.current = setTimeout(
+          () => {
+            finishClose(generation);
+            closeTimeoutRef.current = null;
+          },
+          motion.reducedMotion ? 0 : timed ? timedConfig.duration + 50 : 300,
+        );
+      }
+    }, [
+      visible,
+      rendered,
+      finishClose,
+      screenHeight,
+      closeGeneration,
+      opacity,
+      translateY,
+      timed,
+      timedConfig,
+      motion.duration,
+      motion.reducedMotion,
+    ]);
 
     // On unmount: ensure pending close callbacks (e.g. consumer's `onDismiss`)
     // still fire if the BS is yanked mid-animation by a parent re-render while a
@@ -237,64 +303,87 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // wrongly dismiss the surface mid-swap (there are no pending close callbacks
     // to flush anyway), so the new branch can take over still-open. Refs are read
     // inside the cleanup, so the latest values are captured.
-    useEffect(() => () => {
+    useEffect(
+      () => () => {
         if (closeTimeoutRef.current) {
-            clearTimeout(closeTimeoutRef.current);
-            closeTimeoutRef.current = null;
+          clearTimeout(closeTimeoutRef.current);
+          closeTimeoutRef.current = null;
         }
         if (renderedRef.current && !hasClosedRef.current && !visibleRef.current) {
-            hasClosedRef.current = true;
-            safeCloseRef.current();
+          hasClosedRef.current = true;
+          safeCloseRef.current();
         }
-    }, []);
+      },
+      [],
+    );
 
     // Apply web scrollbar styles when colors change; clean up on unmount
     useEffect(() => {
-        if (Platform.OS === 'web') {
-            createWebScrollbarStyle(colors.border);
-        }
-        return () => {
-            removeWebScrollbarStyle();
-        };
+      if (Platform.OS === 'web') {
+        createWebScrollbarStyle(colors.border);
+      }
+      return () => {
+        removeWebScrollbarStyle();
+      };
     }, [colors.border]);
 
     // Gesture callbacks cross to JS before consulting the consumer's veto.
     // A refused drag springs back; it never hides the Modal or strands its owner.
-    const requestPanDismiss = useCallback((generation: number, velocity: number) => {
+    const requestPanDismiss = useCallback(
+      (generation: number, velocity: number) => {
         if (closeGenerationRef.current !== generation || hasClosedRef.current) return;
         if (onDismissAttempt && !onDismissAttempt()) {
-            translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
-            return;
+          translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
+          return;
         }
         // The timed presentation shares the imperative close lifecycle, so a live
         // reduced-motion change can also settle a gesture-initiated dismissal.
-        if (timed || motion.reducedMotion) { setVisible(false); return; }
+        if (timed || motion.reducedMotion) {
+          setVisible(false);
+          return;
+        }
         translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
         opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
-            if (finished) runOnJS(finishClose)(generation);
+          if (finished) runOnJS(finishClose)(generation);
         });
-    }, [onDismissAttempt, translateY, screenHeightSV, opacity, finishClose, timed, timedConfig, motion.duration, motion.reducedMotion]);
+      },
+      [
+        onDismissAttempt,
+        translateY,
+        screenHeightSV,
+        opacity,
+        finishClose,
+        timed,
+        timedConfig,
+        motion.duration,
+        motion.reducedMotion,
+      ],
+    );
 
     const present = useCallback(() => {
-        setRendered(true);
-        setVisible(true);
+      setRendered(true);
+      setVisible(true);
     }, []);
     const dismiss = useCallback(() => {
-        setVisible(false);
+      setVisible(false);
     }, []);
 
     const scrollTo = useCallback((y: number, animated = true) => {
-        scrollViewRef.current?.scrollTo({ y, animated });
+      scrollViewRef.current?.scrollTo({ y, animated });
     }, []);
 
-    useImperativeHandle(ref, () => ({
+    useImperativeHandle(
+      ref,
+      () => ({
         present,
         dismiss,
         close: dismiss,
         expand: present,
         collapse: dismiss,
         scrollTo,
-    }), [present, dismiss, scrollTo]);
+      }),
+      [present, dismiss, scrollTo],
+    );
 
     const nativeGesture = useMemo(() => Gesture.Native(), []);
 
@@ -313,163 +402,166 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     //     RNGH 2.x pattern that does not steal vertical events from the
     //     inner scroller on Android. Required for FileManagement /
     //     PhotoPicker style sheets.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
     const panGesture = useMemo(() => {
-        if (manualActivation) {
-            return Gesture.Pan()
-                .enabled(enablePanDownToClose)
-                .withRef(bodyPanRef)
-                .manualActivation(true)
-                .simultaneousWithExternalGesture(scrollViewRef, handlePanRef)
-                .onTouchesDown((e) => {
-                    'worklet';
-                    const t = e.changedTouches[0];
-                    if (t) touchStartY.value = t.absoluteY;
-                    contextY.value = translateY.value;
-                })
-                .onTouchesMove((e, state) => {
-                    'worklet';
-                    const t = e.changedTouches[0];
-                    if (!t) return;
-                    const dy = t.absoluteY - touchStartY.value;
-                    const atTop = scrollOffsetY.value <= 4;
-                    // Activate only when (at scroll top) AND (finger has moved
-                    // downward by > 8dp). Any other motion: fail so the
-                    // ScrollView claims the gesture.
-                    if (atTop && dy > 8) {
-                        state.activate();
-                    } else if (dy < -4 || !atTop) {
-                        state.fail();
-                    }
-                })
-                .onUpdate((event) => {
-                    'worklet';
-                    if (event.translationY < 0) return;
-                    const newTranslateY = contextY.value + event.translationY;
-                    if (newTranslateY >= 0) {
-                        translateY.value = newTranslateY;
-                    }
-                })
-                .onEnd((event) => {
-                    'worklet';
-                    const velocity = event.velocityY;
-                    const distance = translateY.value;
-                    const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
-                    const fastSwipeThreshold = 900;
-                    const shouldClose =
-                        velocity > fastSwipeThreshold ||
-                        (distance > closeThreshold && velocity > -300);
-
-                    if (shouldClose) {
-                        runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
-                    } else {
-                        translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
-                    }
-                });
-        }
-
-        // Legacy always-active pan (bloom 0.3.x behaviour).
+      if (manualActivation) {
         return Gesture.Pan()
-            .enabled(enablePanDownToClose)
-            .simultaneousWithExternalGesture(nativeGesture)
-            .onStart(() => {
-                'worklet';
-                contextY.value = translateY.value;
-                allowPanClose.value = scrollOffsetY.value <= 8;
-            })
-            .onUpdate((event) => {
-                'worklet';
-                if (!allowPanClose.value) {
-                    return;
-                }
-                const newTranslateY = contextY.value + event.translationY;
-                // If user is scrolling down while content isn't at (or near) the top, let ScrollView handle it
-                const atTopOrNearTop = scrollOffsetY.value <= 8; // slightly larger tolerance for smoother handoff
-                if (event.translationY > 0 && !atTopOrNearTop) {
-                    return;
-                }
-                if (newTranslateY >= 0) {
-                    translateY.value = newTranslateY;
-                } else if (detached) {
-                    // Only allow overdrag (pulling up beyond top) when detached
-                    translateY.value = newTranslateY * 0.3;
-                } else {
-                    // In normal mode, prevent overdrag - clamp to 0
-                    translateY.value = 0;
-                }
-            })
-            .onEnd((event) => {
-                'worklet';
-                if (!allowPanClose.value) {
-                    return;
-                }
-                const velocity = event.velocityY;
-                const distance = translateY.value;
-                // Require a deeper pull to close (more like native bottom sheets)
-                const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
-                const fastSwipeThreshold = 900;
-                const shouldClose =
-                    velocity > fastSwipeThreshold ||
-                    (distance > closeThreshold && velocity > -300);
+          .enabled(enablePanDownToClose)
+          .withRef(bodyPanRef)
+          .manualActivation(true)
+          .simultaneousWithExternalGesture(scrollViewRef, handlePanRef)
+          .onTouchesDown((e) => {
+            'worklet';
+            const t = e.changedTouches[0];
+            if (t) touchStartY.value = t.absoluteY;
+            contextY.value = translateY.value;
+          })
+          .onTouchesMove((e, state) => {
+            'worklet';
+            const t = e.changedTouches[0];
+            if (!t) return;
+            const dy = t.absoluteY - touchStartY.value;
+            const atTop = scrollOffsetY.value <= 4;
+            // Activate only when (at scroll top) AND (finger has moved
+            // downward by > 8dp). Any other motion: fail so the
+            // ScrollView claims the gesture.
+            if (atTop && dy > 8) {
+              state.activate();
+            } else if (dy < -4 || !atTop) {
+              state.fail();
+            }
+          })
+          .onUpdate((event) => {
+            'worklet';
+            if (event.translationY < 0) return;
+            const newTranslateY = contextY.value + event.translationY;
+            if (newTranslateY >= 0) {
+              translateY.value = newTranslateY;
+            }
+          })
+          .onEnd((event) => {
+            'worklet';
+            const velocity = event.velocityY;
+            const distance = translateY.value;
+            const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
+            const fastSwipeThreshold = 900;
+            const shouldClose =
+              velocity > fastSwipeThreshold || (distance > closeThreshold && velocity > -300);
 
-                if (shouldClose) {
-                    runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
-                } else {
-                    translateY.value = withSpring(0, {
-                        ...SPRING_CONFIG,
-                        velocity: velocity,
-                    });
-                }
+            if (shouldClose) {
+              runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
+            } else {
+              translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
+            }
+          });
+      }
+
+      // Legacy always-active pan (bloom 0.3.x behaviour).
+      return Gesture.Pan()
+        .enabled(enablePanDownToClose)
+        .simultaneousWithExternalGesture(nativeGesture)
+        .onStart(() => {
+          'worklet';
+          contextY.value = translateY.value;
+          allowPanClose.value = scrollOffsetY.value <= 8;
+        })
+        .onUpdate((event) => {
+          'worklet';
+          if (!allowPanClose.value) {
+            return;
+          }
+          const newTranslateY = contextY.value + event.translationY;
+          // If user is scrolling down while content isn't at (or near) the top, let ScrollView handle it
+          const atTopOrNearTop = scrollOffsetY.value <= 8; // slightly larger tolerance for smoother handoff
+          if (event.translationY > 0 && !atTopOrNearTop) {
+            return;
+          }
+          if (newTranslateY >= 0) {
+            translateY.value = newTranslateY;
+          } else if (detached) {
+            // Only allow overdrag (pulling up beyond top) when detached
+            translateY.value = newTranslateY * 0.3;
+          } else {
+            // In normal mode, prevent overdrag - clamp to 0
+            translateY.value = 0;
+          }
+        })
+        .onEnd((event) => {
+          'worklet';
+          if (!allowPanClose.value) {
+            return;
+          }
+          const velocity = event.velocityY;
+          const distance = translateY.value;
+          // Require a deeper pull to close (more like native bottom sheets)
+          const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
+          const fastSwipeThreshold = 900;
+          const shouldClose =
+            velocity > fastSwipeThreshold || (distance > closeThreshold && velocity > -300);
+
+          if (shouldClose) {
+            runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
+          } else {
+            translateY.value = withSpring(0, {
+              ...SPRING_CONFIG,
+              velocity: velocity,
             });
-        // Shared values are stable refs; the listed deps are the only JS-side
-        // values that change the gesture's behavior. `finishClose` is stable
-        // (useCallback with stable deps).
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+          }
+        });
+      // Shared values are stable refs; the listed deps are the only JS-side
+      // values that change the gesture's behavior. `finishClose` is stable
+      // (useCallback with stable deps).
     }, [enablePanDownToClose, detached, manualActivation, nativeGesture, requestPanDismiss]);
 
     // Dedicated handle pan — only built in `manualActivation` mode. Always
     // active so users can drag the handle even while content is mid-scroll.
     // In legacy mode the body pan already wraps the whole sheet (handle
     // included), so no separate gesture is needed.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
     const handlePanGesture = useMemo(() => {
-        if (!manualActivation) return undefined;
-        return Gesture.Pan()
-            .enabled(enablePanDownToClose && enableHandlePanningGesture)
-            .withRef(handlePanRef)
-            .simultaneousWithExternalGesture(bodyPanRef)
-            .activeOffsetY([-8, 8])
-            .onStart(() => {
-                'worklet';
-                contextY.value = translateY.value;
-            })
-            .onUpdate((event) => {
-                'worklet';
-                const newTranslateY = contextY.value + event.translationY;
-                if (newTranslateY >= 0) {
-                    translateY.value = newTranslateY;
-                } else if (detached) {
-                    translateY.value = newTranslateY * 0.3;
-                } else {
-                    translateY.value = 0;
-                }
-            })
-            .onEnd((event) => {
-                'worklet';
-                const velocity = event.velocityY;
-                const distance = translateY.value;
-                const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
-                const fastSwipeThreshold = 900;
-                const shouldClose =
-                    velocity > fastSwipeThreshold ||
-                    (distance > closeThreshold && velocity > -300);
+      if (!manualActivation) return undefined;
+      return Gesture.Pan()
+        .enabled(enablePanDownToClose && enableHandlePanningGesture)
+        .withRef(handlePanRef)
+        .simultaneousWithExternalGesture(bodyPanRef)
+        .activeOffsetY([-8, 8])
+        .onStart(() => {
+          'worklet';
+          contextY.value = translateY.value;
+        })
+        .onUpdate((event) => {
+          'worklet';
+          const newTranslateY = contextY.value + event.translationY;
+          if (newTranslateY >= 0) {
+            translateY.value = newTranslateY;
+          } else if (detached) {
+            translateY.value = newTranslateY * 0.3;
+          } else {
+            translateY.value = 0;
+          }
+        })
+        .onEnd((event) => {
+          'worklet';
+          const velocity = event.velocityY;
+          const distance = translateY.value;
+          const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
+          const fastSwipeThreshold = 900;
+          const shouldClose =
+            velocity > fastSwipeThreshold || (distance > closeThreshold && velocity > -300);
 
-                if (shouldClose) {
-                    runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
-                } else {
-                    translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
-                }
-            });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [manualActivation, enablePanDownToClose, enableHandlePanningGesture, detached, requestPanDismiss]);
+          if (shouldClose) {
+            runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
+          } else {
+            translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
+          }
+        });
+    }, [
+      manualActivation,
+      enablePanDownToClose,
+      enableHandlePanningGesture,
+      detached,
+      requestPanDismiss,
+    ]);
 
     // CRITICAL — the shared values each `useAnimatedStyle` READS (translateY,
     // opacity, screenHeightSV, keyboardHeight) MUST be listed in its dependency
@@ -494,44 +586,37 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // layers' shared ancestor, which composites the group in isolation and
     // leaves `backdrop-filter` with nothing behind it to blur.
     const backdropProgress = useDerivedValue(() => {
-        const dragFactor = dynamicBackdrop
-            ? interpolate(
-                translateY.value,
-                [0, screenHeightSV.value * 0.4],
-                [1, 0.3],
-                'clamp',
-            )
-            : 1;
-        return opacity.value * dragFactor;
+      const dragFactor = dynamicBackdrop
+        ? interpolate(translateY.value, [0, screenHeightSV.value * 0.4], [1, 0.3], 'clamp')
+        : 1;
+      return opacity.value * dragFactor;
     }, [dynamicBackdrop, opacity, translateY, screenHeightSV]);
 
     useAnimatedReaction(
-        () => Math.min(
-            opacity.value,
-            interpolate(translateY.value, [0, screenHeightSV.value], [1, 0], 'clamp'),
+      () =>
+        Math.min(
+          opacity.value,
+          interpolate(translateY.value, [0, screenHeightSV.value], [1, 0], 'clamp'),
         ),
-        (progress) => {
-            if (animatedProgress) animatedProgress.value = progress;
-        },
-        [animatedProgress, opacity, translateY, screenHeightSV],
+      (progress) => {
+        if (animatedProgress) animatedProgress.value = progress;
+      },
+      [animatedProgress, opacity, translateY, screenHeightSV],
     );
 
     // Only the consumer-supplied `backdropComponent` needs the progress as a
     // style — it owns its own visuals, blur included, so the ancestor-opacity
     // hazard is its call to make.
     const customBackdropStyle = useAnimatedStyle(
-        () => ({ opacity: backdropProgress.value }),
-        [backdropProgress],
+      () => ({ opacity: backdropProgress.value }),
+      [backdropProgress],
     );
 
     const sheetStyle = useAnimatedStyle(() => {
-        const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
-        return {
-            transform: [
-                { translateY: translateY.value - keyboardHeight.value },
-                { scale },
-            ],
-        };
+      const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
+      return {
+        transform: [{ translateY: translateY.value - keyboardHeight.value }, { scale }],
+      };
     }, [translateY, screenHeightSV, keyboardHeight]);
 
     // The shared window-edge rule, resolved on the JS thread: `windowEdgeGap` is
@@ -543,72 +628,88 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // would float it off the bottom of the screen for nothing.
     const detachedGap = detached ? windowEdgeGap(insets.bottom, EDGE_GAP) : 0;
 
-    const sheetHeightStyle = useAnimatedStyle(() => ({
+    const sheetHeightStyle = useAnimatedStyle(
+      () => ({
         maxHeight: screenHeightSV.value - keyboardHeight.value - insets.top - detachedGap,
-    }), [insets.top, detachedGap, screenHeightSV, keyboardHeight]);
+      }),
+      [insets.top, detachedGap, screenHeightSV, keyboardHeight],
+    );
 
     const sheetMarginStyle = useAnimatedStyle(() => {
-        // Only add margin when detached, otherwise extend behind safe area
-        if (detached) {
-            return {
-                marginBottom: keyboardHeight.value > 0 ? EDGE_GAP : detachedGap,
-            };
-        }
+      // Only add margin when detached, otherwise extend behind safe area
+      if (detached) {
         return {
-            marginBottom: 0,
+          marginBottom: keyboardHeight.value > 0 ? EDGE_GAP : detachedGap,
         };
+      }
+      return {
+        marginBottom: 0,
+      };
     }, [detachedGap, detached, keyboardHeight]);
 
     const handleBackdropPress = useCallback(() => {
-        // Always animate close on backdrop press
-        if (onDismissAttempt && !onDismissAttempt()) {
-            return;
-        }
-        dismiss();
+      // Always animate close on backdrop press
+      if (onDismissAttempt && !onDismissAttempt()) {
+        return;
+      }
+      dismiss();
     }, [onDismissAttempt, dismiss]);
 
-    const scrollHandler = useAnimatedScrollHandler({
+    const scrollHandler = useAnimatedScrollHandler(
+      {
         onScroll: (event) => {
-            scrollOffsetY.value = event.contentOffset.y;
-            isScrollAtTop.value = event.contentOffset.y <= 0;
-            // Mirror into the host's collapse offset (a Dialog nav header) when
-            // provided. Listed in deps so the RN-Web (no worklets plugin) handler
-            // re-binds if the shared value identity changes.
-            if (externalScrollY) externalScrollY.value = event.contentOffset.y;
+          scrollOffsetY.value = event.contentOffset.y;
+          isScrollAtTop.value = event.contentOffset.y <= 0;
+          // Mirror into the host's collapse offset (a Dialog nav header) when
+          // provided. Listed in deps so the RN-Web (no worklets plugin) handler
+          // re-binds if the shared value identity changes.
+          if (externalScrollY) externalScrollY.value = event.contentOffset.y;
         },
-    }, [externalScrollY, scrollOffsetY, isScrollAtTop]);
+      },
+      [externalScrollY, scrollOffsetY, isScrollAtTop],
+    );
 
     const dynamicStyles = useMemo(() => {
-        return StyleSheet.create({
-            handle: {
-                ...styles.handle,
-                backgroundColor: theme.isDark ? '#444' : '#C7C7CC',
-            },
-            sheet: {
-                ...styles.sheet,
-                backgroundColor: 'transparent',
-                ...(detached ? styles.sheetDetached : styles.sheetNormal),
-            },
-            scrollContent: {
-                ...styles.scrollContent,
-                // In normal mode, don't add padding here - screens handle their own padding
-                // The sheet extends behind safe area, and screens add padding as needed
-            },
-        });
+      return StyleSheet.create({
+        handle: {
+          ...styles.handle,
+          backgroundColor: theme.isDark ? '#444' : '#C7C7CC',
+        },
+        sheet: {
+          ...styles.sheet,
+          backgroundColor: 'transparent',
+          ...(detached ? styles.sheetDetached : styles.sheetNormal),
+        },
+        scrollContent: {
+          ...styles.scrollContent,
+          // In normal mode, don't add padding here - screens handle their own padding
+          // The sheet extends behind safe area, and screens add padding as needed
+        },
+      });
     }, [colors.background, theme.isDark, detached]);
 
     // The paint is absolute: gestures, measurements and layout stay on the existing sheet.
     const flatSurfaceStyle = StyleSheet.flatten(style as StyleProp<ViewStyle>);
-    const backingFill = String(backgroundFill ?? flatSurfaceStyle?.backgroundColor ?? colors.background);
-    const material = resolveSurfaceMaterial({ fill: backingFill, parentFill: colors.background, paint: !backgroundComponent && surfaceMaterial !== 'flat', level: 0 });
+    const backingFill = String(
+      backgroundFill ?? flatSurfaceStyle?.backgroundColor ?? colors.background,
+    );
+    const material = resolveSurfaceMaterial({
+      fill: backingFill,
+      parentFill: colors.background,
+      paint: !backgroundComponent && surfaceMaterial !== 'flat',
+      level: 0,
+    });
     const { paintFill, publishedFill: surfaceFill } = material;
-    const surfaceRadius = flatSurfaceStyle?.borderRadius ?? flatSurfaceStyle?.borderTopLeftRadius ?? 24;
+    const surfaceRadius =
+      flatSurfaceStyle?.borderRadius ?? flatSurfaceStyle?.borderTopLeftRadius ?? 24;
     const surfaceCorners: ViewStyle = {
-        ...surfaceStyle({ curve: SURFACE_SHAPES.panel.curve }),
-        borderTopLeftRadius: flatSurfaceStyle?.borderTopLeftRadius ?? surfaceRadius,
-        borderTopRightRadius: flatSurfaceStyle?.borderTopRightRadius ?? surfaceRadius,
-        borderBottomLeftRadius: flatSurfaceStyle?.borderBottomLeftRadius ?? (detached ? surfaceRadius : 0),
-        borderBottomRightRadius: flatSurfaceStyle?.borderBottomRightRadius ?? (detached ? surfaceRadius : 0),
+      ...surfaceStyle({ curve: SURFACE_SHAPES.panel.curve }),
+      borderTopLeftRadius: flatSurfaceStyle?.borderTopLeftRadius ?? surfaceRadius,
+      borderTopRightRadius: flatSurfaceStyle?.borderTopRightRadius ?? surfaceRadius,
+      borderBottomLeftRadius:
+        flatSurfaceStyle?.borderBottomLeftRadius ?? (detached ? surfaceRadius : 0),
+      borderBottomRightRadius:
+        flatSurfaceStyle?.borderBottomRightRadius ?? (detached ? surfaceRadius : 0),
     };
 
     // Publish the sheet's keyboard shared value to the shell so the native
@@ -618,15 +719,20 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
 
     // Default handle render — used when `handleComponent` is not provided.
     const renderDefaultHandle = () => <View style={dynamicStyles.handle} />;
-    const handleNode = showHandle ? (handleComponent ? handleComponent() : renderDefaultHandle()) : null;
+    const handleNode = showHandle
+      ? handleComponent
+        ? handleComponent()
+        : renderDefaultHandle()
+      : null;
 
     // In `manualActivation` mode the handle gets its own gesture detector
     // sitting in a dedicated absolutely-positioned hit area at the top of the
     // sheet. In legacy mode the handle is rendered inline as a decorative
     // overlay (the body pan covers the entire sheet, handle included).
-    const handleSlot = handleNode && manualActivation && handlePanGesture ? (
+    const handleSlot =
+      handleNode && manualActivation && handlePanGesture ? (
         <GestureDetector gesture={handlePanGesture}>
-            {/*
+          {/*
               The hit area is a POINTER affordance and is deliberately not an
               accessibility element. It used to carry `accessible
               accessibilityRole="adjustable"`, which react-native-web maps to
@@ -637,20 +743,20 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
               advertises do nothing. Screen-reader users dismiss the sheet through
               the backdrop, the close control or Escape.
             */}
-            <View style={styles.handleHitArea}>
-                {handleNode}
-            </View>
+          <View style={styles.handleHitArea}>{handleNode}</View>
         </GestureDetector>
-    ) : handleNode;
+      ) : (
+        handleNode
+      );
 
     // `scrollbar-width` / `scrollbar-color` are web-only CSS RN does not model.
     const webScrollbarStyle: WebCssStyle | undefined =
-        Platform.OS === 'web'
-            ? {
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: `${colors.border} transparent`,
-              }
-            : undefined;
+      Platform.OS === 'web'
+        ? {
+            scrollbarWidth: 'thin',
+            scrollbarColor: `${colors.border} transparent`,
+          }
+        : undefined;
 
     // The sheet uses the PAGE token as its tint and nominal surface, resetting
     // everything inside it. Without this a sheet rendered inside a `ContentPanel`
@@ -662,216 +768,252 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // it must follow the sheet's scroller rather than `window.scrollY`
     // (`layout/screen-scope.tsx`).
     const surfaceChildren = (
-        <SheetKeyboardProvider value={keyboardHeight}>
-                <ScreenScope>{children}</ScreenScope>
-        </SheetKeyboardProvider>
+      <SheetKeyboardProvider value={keyboardHeight}>
+        <ScreenScope>{children}</ScreenScope>
+      </SheetKeyboardProvider>
     );
 
     // Inner content: scrollable wraps in Animated.ScrollView, non-scrollable
     // renders children directly. In legacy mode the scrollview is also
     // wrapped in the `nativeGesture` detector for scroll/pan coordination.
     const scrollViewNode = (
-        <Animated.ScrollView
-            ref={scrollViewRef}
-            style={[styles.scrollView, surfaceCorners, webScrollbarStyle]}
-            contentContainerStyle={dynamicStyles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            onScroll={scrollHandler}
-            scrollEventThrottle={16}
-            {...(Platform.OS === 'web' ? { className: 'bottom-sheet-scrollview' } : undefined)}
-            onLayout={() => {
-                if (Platform.OS === 'web') {
-                    createWebScrollbarStyle(colors.border);
-                }
-            }}
-        >
-            {surfaceChildren}
-        </Animated.ScrollView>
+      <Animated.ScrollView
+        ref={scrollViewRef}
+        style={[styles.scrollView, surfaceCorners, webScrollbarStyle]}
+        contentContainerStyle={dynamicStyles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        {...(Platform.OS === 'web' ? { className: 'bottom-sheet-scrollview' } : undefined)}
+        onLayout={() => {
+          if (Platform.OS === 'web') {
+            createWebScrollbarStyle(colors.border);
+          }
+        }}
+      >
+        {surfaceChildren}
+      </Animated.ScrollView>
     );
 
-    const bodyContent = scrollable
-        ? (manualActivation
-            // In manualActivation mode the scroll view is referenced by the
-            // pan's simultaneous list directly; no wrapping native gesture.
-            ? scrollViewNode
-            // Legacy mode: native gesture wraps the scroll view to coordinate
-            // with the always-active body pan.
-            : <GestureDetector gesture={nativeGesture}>{scrollViewNode}</GestureDetector>)
-        : <View style={[styles.nonScrollableContent, surfaceCorners, { overflow: 'hidden' }]}>{surfaceChildren}</View>;
+    const bodyContent = scrollable ? (
+      manualActivation ? (
+        // In manualActivation mode the scroll view is referenced by the
+        // pan's simultaneous list directly; no wrapping native gesture.
+        scrollViewNode
+      ) : (
+        // Legacy mode: native gesture wraps the scroll view to coordinate
+        // with the always-active body pan.
+        <GestureDetector gesture={nativeGesture}>{scrollViewNode}</GestureDetector>
+      )
+    ) : (
+      <View style={[styles.nonScrollableContent, surfaceCorners, { overflow: 'hidden' }]}>
+        {surfaceChildren}
+      </View>
+    );
 
     return (
-        <Shell visible={rendered} onRequestClose={handleBackdropPress} keyboardHeight={keyboardHeight}>
-            {/* Web keyboard and focus: in on open, back on close, Tab kept in
+      <Shell
+        visible={rendered}
+        onRequestClose={handleBackdropPress}
+        keyboardHeight={keyboardHeight}
+      >
+        {/* Web keyboard and focus: in on open, back on close, Tab kept in
                 the sheet, Escape a USER dismissal — through `onDismissAttempt`,
                 exactly like the backdrop. The sheet had no keyboard path at
                 all. Inside the shell's `OverlayRoot`; inert on native. */}
-            <ModalKeyboard panelRef={sheetRef} dismissible dismiss={handleBackdropPress} />
-            <View style={StyleSheet.absoluteFill}>
-                {backdropComponent ? (
-                    <Animated.View style={[StyleSheet.absoluteFill, customBackdropStyle]}>
-                        {backdropComponent({ onPress: handleBackdropPress })}
-                    </Animated.View>
-                ) : (
-                    // The ONE Bloom backdrop (blur + dim + press-to-dismiss).
-                    // `backdropStyle` drives the fade; the dim level rides on
-                    // `backdropOpacity`, so the shared component's own dim is
-                    // switched off here to keep a single source of dimming.
-                    <Backdrop
-                        {...backdrop}
-                        onPress={handleBackdropPress}
-                        // `progress` is the FADE (0 → 1, folding the drag);
-                        // how dark the backdrop gets is `backdropOpacity`,
-                        // which defaults to the library-wide dim so a sheet
-                        // matches every other surface. It goes through
-                        // `progress` rather than an animated style because an
-                        // opacity on the root would sit above the blur layer
-                        // and neutralise it.
-                        dimOpacity={backdrop?.dimOpacity ?? backdropOpacity}
-                        progress={backdropProgress}
-                        style={styles.backdrop}
+        <ModalKeyboard panelRef={sheetRef} dismissible dismiss={handleBackdropPress} />
+        <View style={StyleSheet.absoluteFill}>
+          {backdropComponent ? (
+            <Animated.View style={[StyleSheet.absoluteFill, customBackdropStyle]}>
+              {backdropComponent({ onPress: handleBackdropPress })}
+            </Animated.View>
+          ) : (
+            // The ONE Bloom backdrop (blur + dim + press-to-dismiss).
+            // `backdropStyle` drives the fade; the dim level rides on
+            // `backdropOpacity`, so the shared component's own dim is
+            // switched off here to keep a single source of dimming.
+            <Backdrop
+              {...backdrop}
+              onPress={handleBackdropPress}
+              // `progress` is the FADE (0 → 1, folding the drag);
+              // how dark the backdrop gets is `backdropOpacity`,
+              // which defaults to the library-wide dim so a sheet
+              // matches every other surface. It goes through
+              // `progress` rather than an animated style because an
+              // opacity on the root would sit above the blur layer
+              // and neutralise it.
+              dimOpacity={backdrop?.dimOpacity ?? backdropOpacity}
+              progress={backdropProgress}
+              style={styles.backdrop}
+            />
+          )}
+
+          <GestureDetector gesture={panGesture}>
+            <Animated.View
+              ref={sheetRef}
+              // The semantic modal and keyboard boundary must include
+              // the sticky header as well as the scrolling body.
+              role={Platform.OS === 'web' ? 'dialog' : undefined}
+              aria-modal={Platform.OS === 'web' ? true : undefined}
+              aria-label={Platform.OS === 'web' ? accessibilityLabel : undefined}
+              aria-labelledby={Platform.OS === 'web' ? labelledBy : undefined}
+              aria-describedby={Platform.OS === 'web' ? describedBy : undefined}
+              tabIndex={Platform.OS === 'web' ? -1 : undefined}
+              onLayout={onLayout}
+              style={[
+                dynamicStyles.sheet,
+                // `--bloom-surface` on the element that carries the
+                // fill — web CSS under the sheet reads the sheet's
+                // colour, not the colour of whatever it opened over.
+                surfaceFillVars(surfaceFill),
+                sheetMarginStyle,
+                sheetStyle,
+                sheetHeightStyle,
+                style,
+                {
+                  backgroundColor: backgroundComponent
+                    ? surfaceFill
+                    : surfaceMaterial === 'flat'
+                      ? paintFill
+                      : 'transparent',
+                },
+              ]}
+            >
+              {backgroundComponent ? (
+                backgroundComponent({ style: styles.background })
+              ) : surfaceMaterial === 'flat' ? null : (
+                <View
+                  pointerEvents="none"
+                  style={[StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }]}
+                >
+                  <View
+                    pointerEvents="none"
+                    style={[
+                      StyleSheet.absoluteFill,
+                      {
+                        bottom: detached
+                          ? 0
+                          : -(typeof surfaceRadius === 'number' ? surfaceRadius : 24),
+                      },
+                    ]}
+                  >
+                    <SurfacePaint
+                      fill={paintFill}
+                      shape={{ curve: SURFACE_SHAPES.panel.curve }}
+                      radius={surfaceRadius}
                     />
-                )}
+                  </View>
+                </View>
+              )}
 
-                <GestureDetector gesture={panGesture}>
-                    <Animated.View
-                        ref={sheetRef}
-                        // The semantic modal and keyboard boundary must include
-                        // the sticky header as well as the scrolling body.
-                        role={Platform.OS === 'web' ? 'dialog' : undefined}
-                        aria-modal={Platform.OS === 'web' ? true : undefined}
-                        aria-label={Platform.OS === 'web' ? accessibilityLabel : undefined}
-                        aria-labelledby={Platform.OS === 'web' ? labelledBy : undefined}
-                        aria-describedby={Platform.OS === 'web' ? describedBy : undefined}
-                        tabIndex={Platform.OS === 'web' ? -1 : undefined}
-                        onLayout={onLayout}
-                        style={[
-                            dynamicStyles.sheet,
-                            // `--bloom-surface` on the element that carries the
-                            // fill — web CSS under the sheet reads the sheet's
-                            // colour, not the colour of whatever it opened over.
-                            surfaceFillVars(surfaceFill),
-                            sheetMarginStyle,
-                            sheetStyle,
-                            sheetHeightStyle,
-                            style,
-                            { backgroundColor: backgroundComponent ? surfaceFill : surfaceMaterial === 'flat' ? paintFill : 'transparent' },
-                        ]}
-                    >
-                        {backgroundComponent ? backgroundComponent({ style: styles.background }) : surfaceMaterial === 'flat' ? null : (
-                            <View pointerEvents="none" style={[StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }]}>
-                                <View pointerEvents="none" style={[StyleSheet.absoluteFill, { bottom: detached ? 0 : -(typeof surfaceRadius === 'number' ? surfaceRadius : 24) }]}>
-                                    <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={surfaceRadius} />
-                                </View>
-                            </View>
-                        )}
+              <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
+                {handleSlot}
 
-                        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-                        {handleSlot}
+                {bodyContent}
 
-                        {bodyContent}
-
-                        {/* Sticky nav-header overlay (Dialog nav-header mode): floats
+                {/* Sticky nav-header overlay (Dialog nav-header mode): floats
                             above the scroll body, clipped to the sheet's rounded top. */}
-                        {headerOverlay}
-                        </SurfaceLevelProvider>
-                    </Animated.View>
-                </GestureDetector>
-            </View>
-        </Shell>
+                {headerOverlay}
+              </SurfaceLevelProvider>
+            </Animated.View>
+          </GestureDetector>
+        </View>
+      </Shell>
     );
-});
+  },
+);
 
 BottomSheetBase.displayName = 'BottomSheetBase';
 
 const styles = StyleSheet.create({
-    backdrop: {
-        // Geometry only: the colour and the dim level belong to `Backdrop`.
-        flex: 1,
-    },
-    backdropTouchable: {
-        flex: 1,
-    },
-    sheet: {
-        position: 'absolute',
-        bottom: 0,
-        maxWidth: 800,
-        alignSelf: 'center',
-        marginHorizontal: 'auto',
-    },
-    sheetDetached: {
-        left: 16,
-        right: 16,
-        ...surfaceStyle({ ...SURFACE_SHAPES.panel, radius: 24 }),
-    },
-    sheetNormal: {
-        left: 0,
-        right: 0,
-        ...surfaceStyle(SURFACE_SHAPES.sheet),
-    },
-    /** Legacy (non-manualActivation) handle: decorative overlay only. */
-    handle: {
-        position: 'absolute',
-        top: 10,
-        left: '50%',
-        marginLeft: -18,
-        width: 36,
-        height: 5,
-        borderRadius: 3,
-        zIndex: Z_INDEX.sheetHandle,
-    },
-    /**
-     * Hit area for the drag handle in `manualActivation` mode. Absolutely
-     * positioned at the top of the sheet so the area visually "floats" above
-     * the content — content scrolls up underneath it (no layout offset)
-     * while the thumb can still grab the full-width 28dp strip to drag.
-     */
-    handleHitArea: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 28,
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        paddingTop: 6,
-        zIndex: Z_INDEX.sheetHandle,
-    },
-    background: {
-        ...StyleSheet.absoluteFill,
-    },
-    scrollView: {
-        flex: 1,
-    },
-    scrollContent: {
-        flexGrow: 1,
-    },
-    nonScrollableContent: {
-        flex: 1,
-        // A `scrollable={false}` sheet hands its own scrolling to a child
-        // VirtualizedList, which needs a BOUNDED height to scroll. The sheet is
-        // clamped by `maxHeight`, but on web a flex child defaults to
-        // `min-height: auto` and grows to its content instead of shrinking into
-        // that clamp — so the list overflows and is clipped (no scroll). Yoga
-        // already defaults min to 0 on native; making it explicit here fixes the
-        // web output so the bounded height propagates down to the list.
-        minHeight: 0,
-    },
+  backdrop: {
+    // Geometry only: the colour and the dim level belong to `Backdrop`.
+    flex: 1,
+  },
+  backdropTouchable: {
+    flex: 1,
+  },
+  sheet: {
+    position: 'absolute',
+    bottom: 0,
+    maxWidth: 800,
+    alignSelf: 'center',
+    marginHorizontal: 'auto',
+  },
+  sheetDetached: {
+    left: 16,
+    right: 16,
+    ...surfaceStyle({ ...SURFACE_SHAPES.panel, radius: 24 }),
+  },
+  sheetNormal: {
+    left: 0,
+    right: 0,
+    ...surfaceStyle(SURFACE_SHAPES.sheet),
+  },
+  /** Legacy (non-manualActivation) handle: decorative overlay only. */
+  handle: {
+    position: 'absolute',
+    top: 10,
+    left: '50%',
+    marginLeft: -18,
+    width: 36,
+    height: 5,
+    borderRadius: 3,
+    zIndex: Z_INDEX.sheetHandle,
+  },
+  /**
+   * Hit area for the drag handle in `manualActivation` mode. Absolutely
+   * positioned at the top of the sheet so the area visually "floats" above
+   * the content — content scrolls up underneath it (no layout offset)
+   * while the thumb can still grab the full-width 28dp strip to drag.
+   */
+  handleHitArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 6,
+    zIndex: Z_INDEX.sheetHandle,
+  },
+  background: {
+    ...StyleSheet.absoluteFill,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  nonScrollableContent: {
+    flex: 1,
+    // A `scrollable={false}` sheet hands its own scrolling to a child
+    // VirtualizedList, which needs a BOUNDED height to scroll. The sheet is
+    // clamped by `maxHeight`, but on web a flex child defaults to
+    // `min-height: auto` and grows to its content instead of shrinking into
+    // that clamp — so the list overflows and is clipped (no scroll). Yoga
+    // already defaults min to 0 on native; making it explicit here fixes the
+    // web output so the bounded height propagates down to the list.
+    minHeight: 0,
+  },
 });
 
 // Create web scrollbar styles dynamically based on theme
 const createWebScrollbarStyle = (borderColor: string) => {
-    if (Platform.OS !== 'web') return;
+  if (Platform.OS !== 'web') return;
 
-    // Derive a slightly darker scrollbar hover color from the border color
-    const scrollbarColor = borderColor;
-    const scrollbarHoverColor = borderColor.startsWith('hsl')
-        ? borderColor.replace(/\)$/, ' / 0.7)')  // add alpha for hover
-        : '#888';
+  // Derive a slightly darker scrollbar hover color from the border color
+  const scrollbarColor = borderColor;
+  const scrollbarHoverColor = borderColor.startsWith('hsl')
+    ? borderColor.replace(/\)$/, ' / 0.7)') // add alpha for hover
+    : '#888';
 
-    adoptStyleSheet(
-        SCROLLBAR_STYLE_ID,
-        `
+  adoptStyleSheet(
+    SCROLLBAR_STYLE_ID,
+    `
         .bottom-sheet-scrollview::-webkit-scrollbar {
             width: 6px;
         }
@@ -887,13 +1029,13 @@ const createWebScrollbarStyle = (borderColor: string) => {
             background: ${scrollbarHoverColor};
         }
     `,
-    );
+  );
 };
 
 const SCROLLBAR_STYLE_ID = 'bottom-sheet-scrollbar-style';
 
 /** Detach the scrollbar rules on unmount. */
 const removeWebScrollbarStyle = () => {
-    if (Platform.OS !== 'web') return;
-    dropStyleSheet(SCROLLBAR_STYLE_ID);
+  if (Platform.OS !== 'web') return;
+  dropStyleSheet(SCROLLBAR_STYLE_ID);
 };

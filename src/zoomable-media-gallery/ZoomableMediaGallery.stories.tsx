@@ -86,10 +86,7 @@ const THUMB = 96;
  * Mirrors how a consumer wires this up: thumbnails measure themselves so the
  * open/close transition can fly to and from the tapped tile.
  */
-function GalleryDemo({
-  items,
-  ...props
-}: ZoomableMediaGalleryProps & { items: GalleryMedia[] }) {
+function GalleryDemo({ items, ...props }: ZoomableMediaGalleryProps & { items: GalleryMedia[] }) {
   const galleryRef = React.useRef<ZoomableMediaGalleryHandle>(null);
   const thumbRefs = React.useRef<Array<View | null>>([]);
 
@@ -140,11 +137,7 @@ function GalleryDemo({
           );
         })}
       </View>
-      <ZoomableMediaGallery
-        ref={galleryRef}
-        measureThumb={measureRect}
-        {...props}
-      />
+      <ZoomableMediaGallery ref={galleryRef} measureThumb={measureRect} {...props} />
     </View>
   );
 }
@@ -182,21 +175,37 @@ export const MixedMedia: Story = {
 export const Playground: StoryObj<typeof ZoomableMediaGallery> = {
   args: { cornerRadius: 12, indicatorVariant: 'dots' },
   parameters: { controls: { disable: false, include: ['cornerRadius', 'indicatorVariant'] } },
-  argTypes: { cornerRadius: { control: { type: 'range', min: 0, max: 40 } }, indicatorVariant: { control: 'select', options: ['dots','thumbnails'] } },
+  argTypes: {
+    cornerRadius: { control: { type: 'range', min: 0, max: 40 } },
+    indicatorVariant: { control: 'select', options: ['dots', 'thumbnails'] },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 520, maxWidth: '100%' }}><GalleryDemo {...args} items={IMAGES} /></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <GalleryDemo {...args} items={IMAGES} />
+      </View>
+    );
   },
 };
 
 function PageGalleryDemo({ mode }: { mode: 'light' | 'dark' }) {
   const [index, setIndex] = React.useState(-1);
   const [events, setEvents] = React.useState<number[]>([]);
-  return <BloomThemeProvider mode={mode} colorPreset="oxy">
-    <Text testID="gallery-index">{index}</Text>
-    <Text testID="gallery-events">{JSON.stringify(events)}</Text>
-    <GalleryDemo items={IMAGES} appearance="page" indicatorVariant="thumbnails" onIndexChange={next => { setIndex(next); setEvents(old => [...old, next]); }} />
-  </BloomThemeProvider>;
+  return (
+    <BloomThemeProvider mode={mode} colorPreset="oxy">
+      <Text testID="gallery-index">{index}</Text>
+      <Text testID="gallery-events">{JSON.stringify(events)}</Text>
+      <GalleryDemo
+        items={IMAGES}
+        appearance="page"
+        indicatorVariant="thumbnails"
+        onIndexChange={(next) => {
+          setIndex(next);
+          setEvents((old) => [...old, next]);
+        }}
+      />
+    </BloomThemeProvider>
+  );
 }
 export const PageLight: Story = { render: () => <PageGalleryDemo mode="light" /> };
 export const PageDark: Story = { render: () => <PageGalleryDemo mode="dark" /> };
@@ -206,21 +215,33 @@ function LifecycleDemo({ unmountOnOpen = false }: { unmountOnOpen?: boolean }) {
   const [callback, setCallback] = React.useState(0);
   const [events, setEvents] = React.useState<Array<{ open: boolean; callback: number }>>([]);
   const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  React.useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current); }, []);
-  return <View>
-    <Text testID="gallery-lifecycle-events">{JSON.stringify(events)}</Text>
-    {mounted && <GalleryDemo items={IMAGES} appearance="page" onOpenChange={open => {
-      setEvents(previous => [...previous, { open, callback }]);
-      if (open) {
-        setCallback(value => value + 1);
-        if (unmountOnOpen) timer.current = setTimeout(() => setMounted(false), 30);
-      }
-    }} />}
-  </View>;
+  React.useEffect(
+    () => () => {
+      if (timer.current !== null) clearTimeout(timer.current);
+    },
+    [],
+  );
+  return (
+    <View>
+      <Text testID="gallery-lifecycle-events">{JSON.stringify(events)}</Text>
+      {mounted && (
+        <GalleryDemo
+          items={IMAGES}
+          appearance="page"
+          onOpenChange={(open) => {
+            setEvents((previous) => [...previous, { open, callback }]);
+            if (open) {
+              setCallback((value) => value + 1);
+              if (unmountOnOpen) timer.current = setTimeout(() => setMounted(false), 30);
+            }
+          }}
+        />
+      )}
+    </View>
+  );
 }
 export const Lifecycle: Story = { render: () => <LifecycleDemo /> };
 export const UnmountDuringOpening: Story = { render: () => <LifecycleDemo unmountOnOpen /> };
-
 
 function VideoStatusDemo() {
   const [status, setStatus] = React.useState('loading');
@@ -232,18 +253,39 @@ function VideoStatusDemo() {
     const timer = setTimeout(() => setStatus('error'), 1500);
     return () => clearTimeout(timer);
   }, [open]);
-  return <View>
-    <Text testID="video-viewer-open">{String(open)}</Text>
-    <Text testID="video-retry-count">{attempts}</Text>
-    {mounted && <GalleryDemo items={MIXED} onOpenChange={setOpen} renderVideoOverlay={media => (
-      <View testID="video-status-overlay" style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} pointerEvents="box-none">
-        <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, gap: 12 }}>
-          <Text>{media.id}: {status}</Text>
-          <Button onPress={() => { setAttempts(count => count + 1); setStatus('retrying'); }}>Retry video</Button>
-          <Button onPress={() => setMounted(false)}>Return to inline video</Button>
-        </View>
-      </View>
-    )} />}
-  </View>;
+  return (
+    <View>
+      <Text testID="video-viewer-open">{String(open)}</Text>
+      <Text testID="video-retry-count">{attempts}</Text>
+      {mounted && (
+        <GalleryDemo
+          items={MIXED}
+          onOpenChange={setOpen}
+          renderVideoOverlay={(media) => (
+            <View
+              testID="video-status-overlay"
+              style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+              pointerEvents="box-none"
+            >
+              <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, gap: 12 }}>
+                <Text>
+                  {media.id}: {status}
+                </Text>
+                <Button
+                  onPress={() => {
+                    setAttempts((count) => count + 1);
+                    setStatus('retrying');
+                  }}
+                >
+                  Retry video
+                </Button>
+                <Button onPress={() => setMounted(false)}>Return to inline video</Button>
+              </View>
+            </View>
+          )}
+        />
+      )}
+    </View>
+  );
 }
 export const VideoStatus: Story = { render: () => <VideoStatusDemo /> };

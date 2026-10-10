@@ -55,14 +55,23 @@ const Reanimated = {
   },
   useAnimatedProps: (fn: () => Record<string, unknown>) => fn(),
   useAnimatedScrollHandler: () => jest.fn(),
-  useComposedEventHandler: (handlers: (((...args: unknown[]) => unknown) | null)[]) =>
+  useComposedEventHandler:
+    (handlers: (((...args: unknown[]) => unknown) | null)[]) =>
     (...args: unknown[]) => {
       handlers.forEach((handler) => handler?.(...args));
     },
   // Keeps frame subscription state, without claiming to simulate the UI clock.
   useFrameCallback: (_callback: unknown, autostart = true) => {
-    const ref = useRef<{isActive:boolean;setActive:(active:boolean)=>void}|null>(null);
-    if (!ref.current) { const state = {isActive:autostart,setActive(active:boolean){state.isActive=active;}}; ref.current=state; }
+    const ref = useRef<{ isActive: boolean; setActive: (active: boolean) => void } | null>(null);
+    if (!ref.current) {
+      const state = {
+        isActive: autostart,
+        setActive(active: boolean) {
+          state.isActive = active;
+        },
+      };
+      ref.current = state;
+    }
     return ref.current;
   },
   // Reduced motion defaults to off in tests; suites that need it on can override.
@@ -133,7 +142,10 @@ type LayoutBuilder = {
   delay: (ms: number) => LayoutBuilder;
   easing: (fn: unknown) => LayoutBuilder;
   springify: () => LayoutBuilder;
-  build: () => () => { initialValues: Record<string, unknown>; animations: Record<string, unknown> };
+  build: () => () => {
+    initialValues: Record<string, unknown>;
+    animations: Record<string, unknown>;
+  };
 };
 
 const makeLayoutBuilder = (): LayoutBuilder => {

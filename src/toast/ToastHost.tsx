@@ -41,19 +41,14 @@ export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
       if (event.button !== 0 || !toastStore.getSnapshot().isExpanded) return;
       const insideToast = event
         .composedPath()
-        .some(
-          (node) =>
-            node instanceof Element &&
-            node.hasAttribute('data-bloom-toast-host'),
-        );
+        .some((node) => node instanceof Element && node.hasAttribute('data-bloom-toast-host'));
       if (!insideToast) toastStore.collapse();
     };
     document.addEventListener('pointerdown', onPointerDown, {
       capture: true,
       passive: true,
     });
-    return () =>
-      document.removeEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
   }, []);
 
   const content = (
@@ -76,11 +71,7 @@ export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
 
   return (
     <Portal>
-      {ToasterOverlayWrapper ? (
-        <ToasterOverlayWrapper>{content}</ToasterOverlayWrapper>
-      ) : (
-        content
-      )}
+      {ToasterOverlayWrapper ? <ToasterOverlayWrapper>{content}</ToasterOverlayWrapper> : content}
     </Portal>
   );
 }

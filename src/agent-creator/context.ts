@@ -15,9 +15,7 @@ export type AgentCreatorBindings = Pick<
   | 'SelectItemText'
 > &
   Pick<typeof PopoverParts, 'Popover' | 'PopoverTrigger' | 'PopoverContent'>;
-export const AgentCreatorContext = createContext<AgentCreatorBindings | null>(
-  null,
-);
+export const AgentCreatorContext = createContext<AgentCreatorBindings | null>(null);
 export const AgentCreatorCopyContext = createContext<{
   locale?: string;
   labels?: Partial<AgentCreatorMessages>;

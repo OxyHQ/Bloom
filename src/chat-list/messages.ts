@@ -39,21 +39,31 @@ export interface ChatListMessages {
   storyOf: (name: string) => string;
 }
 
-export const CHAT_LIST_MESSAGES: MessageCatalog<ChatListMessages> = defineMessages<ChatListMessages>('CHAT_LIST_MESSAGES', {
-  item: { draft: 'Draft:', pinned: 'Pinned', muted: 'Muted', verified: 'Verified', channel: 'Channel', bot: 'Bot', group: 'Group' },
-  search: { chat: 'Chats', message: 'Messages', contact: 'Contacts', empty: 'No results' },
-  list: 'Chats',
-  emptyTitle: 'No conversations yet',
-  emptyDescription: 'Start a chat and it will show up here.',
-  searchResults: 'Search results',
-  searchChats: 'Search chats',
-  clearSearch: 'Clear search',
-  newChat: 'New chat',
-  archived: 'Archived',
-  archivedName: (label, n) => `${label}, ${plural('en', n, { one: '{n} chat', other: '{n} chats' })}`,
-  folderName: (label, n) => `${label}, ${n} unread`,
-  stories: 'Stories',
-  ownStory: 'Your story',
-  addStory: 'Add to your story',
-  storyOf: (name) => `${name}'s story`,
-});
+export const CHAT_LIST_MESSAGES: MessageCatalog<ChatListMessages> =
+  defineMessages<ChatListMessages>('CHAT_LIST_MESSAGES', {
+    item: {
+      draft: 'Draft:',
+      pinned: 'Pinned',
+      muted: 'Muted',
+      verified: 'Verified',
+      channel: 'Channel',
+      bot: 'Bot',
+      group: 'Group',
+    },
+    search: { chat: 'Chats', message: 'Messages', contact: 'Contacts', empty: 'No results' },
+    list: 'Chats',
+    emptyTitle: 'No conversations yet',
+    emptyDescription: 'Start a chat and it will show up here.',
+    searchResults: 'Search results',
+    searchChats: 'Search chats',
+    clearSearch: 'Clear search',
+    newChat: 'New chat',
+    archived: 'Archived',
+    archivedName: (label, n) =>
+      `${label}, ${plural('en', n, { one: '{n} chat', other: '{n} chats' })}`,
+    folderName: (label, n) => `${label}, ${n} unread`,
+    stories: 'Stories',
+    ownStory: 'Your story',
+    addStory: 'Add to your story',
+    storyOf: (name) => `${name}'s story`,
+  });

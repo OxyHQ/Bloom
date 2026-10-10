@@ -187,7 +187,12 @@ export {
   useHeaderDockInset,
   StickySection,
 } from './layout';
-export type { StickySectionProps, ScrollMetricsBindingOptions, AnimatedScrollMetricsBindingOptions, ScrollAreaProps } from './layout';
+export type {
+  StickySectionProps,
+  ScrollMetricsBindingOptions,
+  AnimatedScrollMetricsBindingOptions,
+  ScrollAreaProps,
+} from './layout';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabSize } from './fab/index.web';
 export { FrostedIconButton } from './frosted-icon-button/index.web';
@@ -201,7 +206,14 @@ export type { CarouselProps, CarouselItemProps } from './carousel';
 export { FileUpload, formatFileSize } from './file-upload';
 export type { FileUploadFile, FileUploadLabels, FileUploadProps } from './file-upload';
 export { SocialButton, SOCIAL_PROVIDERS } from './social-button/index.web';
-export type { SocialBrand, SocialBrandConfig, SocialButtonAppearance, SocialButtonProps, SocialButtonSize, SocialProvider } from './social-button/index.web';
+export type {
+  SocialBrand,
+  SocialBrandConfig,
+  SocialButtonAppearance,
+  SocialButtonProps,
+  SocialButtonSize,
+  SocialProvider,
+} from './social-button/index.web';
 export * from './notification';
 export * from './announcement';
 export * from './data-table';
@@ -267,7 +279,12 @@ export { IconCircle } from './icon-circle';
 // up to two actions. A base family — twelve components had each drawn their own
 // version of this block, at five paddings and under six different prop names.
 export { EmptyState } from './empty-state';
-export { EMPTY_STATE_ACTION_GAP, EMPTY_STATE_GEOMETRY, joinEmptyStateName, resolveEmptyStatePaint } from './empty-state';
+export {
+  EMPTY_STATE_ACTION_GAP,
+  EMPTY_STATE_GEOMETRY,
+  joinEmptyStateName,
+  resolveEmptyStatePaint,
+} from './empty-state';
 export type {
   EmptyStateAction,
   EmptyStateGeometry,
@@ -305,7 +322,14 @@ export { SubtleHover } from './subtle-hover';
 export type { SubtleHoverProps } from './subtle-hover';
 
 // Motion presets (Reanimated enter/exit + directional screen transition)
-export { ScaleAndFadeIn, ScaleAndFadeOut, ShrinkAndPop, ScreenTransition, MOTION_RECIPES, animateMotion } from './motion/index.web';
+export {
+  ScaleAndFadeIn,
+  ScaleAndFadeOut,
+  ShrinkAndPop,
+  ScreenTransition,
+  MOTION_RECIPES,
+  animateMotion,
+} from './motion/index.web';
 export type { ScreenTransitionProps, ScreenTransitionDirection, MotionIntent } from './motion/index.web';
 export { AnimatedCheck } from './animated-check';
 export type { AnimatedCheckProps, AnimatedCheckRef } from './animated-check';
@@ -1429,7 +1453,11 @@ export type {
 // thing is, what it costs, where it is going, and the stops on the way. Shared
 // on purpose: a parcel, a food order and a booking are the same four questions.
 export { OrderStatusBar, OrderStatusTimeline } from './order-status';
-export { ORDER_STATUS_GEOMETRY, ORDER_STATUS_STATE_LABELS, resolveOrderStatusPaint } from './order-status';
+export {
+  ORDER_STATUS_GEOMETRY,
+  ORDER_STATUS_STATE_LABELS,
+  resolveOrderStatusPaint,
+} from './order-status';
 export type {
   OrderStatusBarProps,
   OrderStatusBarVariant,
@@ -1443,7 +1471,11 @@ export type {
   OrderStatusTimelineProps,
 } from './order-status';
 export { PriceSummary, PriceSummaryLine } from './price-breakdown';
-export { PRICE_PENDING_PLACEHOLDER, PRICE_STATE_LABELS, resolvePricePaint } from './price-breakdown';
+export {
+  PRICE_PENDING_PLACEHOLDER,
+  PRICE_STATE_LABELS,
+  resolvePricePaint,
+} from './price-breakdown';
 export type {
   PriceLine,
   PriceLineState,
@@ -1984,7 +2016,14 @@ export type { LinkPreviewCardProps } from './link-preview';
 // Stat / profile widgets
 export { CompositionBar } from './composition-bar';
 export type { CompositionBarProps, CompositionCategory } from './composition-bar';
-export { Meter, MeterRing, StatBar, meterFraction, meterValue, resolveMeterColors } from './stat-bar/index.web';
+export {
+  Meter,
+  MeterRing,
+  StatBar,
+  meterFraction,
+  meterValue,
+  resolveMeterColors,
+} from './stat-bar/index.web';
 export type {
   AnyMeterProps,
   MeterColors,

@@ -16,12 +16,10 @@ import React from 'react';
  * in jest.
  */
 const createSvgComponent = (name: string) => {
-  const Component = React.forwardRef(
-    (props: Record<string, unknown>, ref: unknown) => {
-      const { children, ...rest } = props;
-      return React.createElement(name, { ref, ...rest }, children as React.ReactNode);
-    },
-  );
+  const Component = React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
+    const { children, ...rest } = props;
+    return React.createElement(name, { ref, ...rest }, children as React.ReactNode);
+  });
   Component.displayName = name;
   return Component;
 };

@@ -46,7 +46,11 @@ export function ScreenTransition({
     : FadeOut.duration(WEB_FADE_DURATION);
 
   return (
-    <Animated.View entering={reducedMotion ? undefined : entering} exiting={reducedMotion ? undefined : exiting} style={style}>
+    <Animated.View
+      entering={reducedMotion ? undefined : entering}
+      exiting={reducedMotion ? undefined : exiting}
+      style={style}
+    >
       {children}
     </Animated.View>
   );

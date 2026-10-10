@@ -82,7 +82,9 @@ function Sections({ sections }: { sections: SettingsPageSection[] }) {
       {sections.map((section) => {
         const card = (
           <SettingsCard>
-            {section.rows.length === 0 && section.emptyState ? <EmptyState variant="compact" {...section.emptyState} /> : null}
+            {section.rows.length === 0 && section.emptyState ? (
+              <EmptyState variant="compact" {...section.emptyState} />
+            ) : null}
             {section.rows.map((row) => (
               <SettingsRow key={row.key} label={row.label} description={row.description}>
                 {row.control}

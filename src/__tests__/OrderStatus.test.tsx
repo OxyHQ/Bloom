@@ -105,7 +105,9 @@ describe('the rail measures how far it got', () => {
   it('fills the connector INTO a travelled step and leaves the rest neutral', () => {
     mount(<OrderStatusTimeline steps={STEPS} testID="t" />);
     const accent = css(resolveAccentColors(theme().colors, 'primary', 'solid').background);
-    const neutral = css(resolveOrderStatusPaint(theme(), resolveSurfaceLevel(theme(), 0).background).connector);
+    const neutral = css(
+      resolveOrderStatusPaint(theme(), resolveSurfaceLevel(theme(), 0).background).connector,
+    );
     // 0→1 leads into a `done` step, 2→3 leads into an `upcoming` one.
     expect(getComputedStyle(byTestId('t-0-connector')).backgroundColor).toBe(accent);
     expect(getComputedStyle(byTestId('t-2-connector')).backgroundColor).toBe(neutral);
@@ -125,7 +127,12 @@ describe('the two orientations are ONE component', () => {
       name: byTestId('t').getAttribute('aria-label'),
     };
     mount(
-      <OrderStatusTimeline steps={STEPS} orientation="horizontal" accessibilityLabel="Status" testID="t" />,
+      <OrderStatusTimeline
+        steps={STEPS}
+        orientation="horizontal"
+        accessibilityLabel="Status"
+        testID="t"
+      />,
     );
     expect({
       states: markerStates('t', 4),
@@ -171,7 +178,12 @@ describe('OrderStatusBar', () => {
         eta="Arrives 14:35"
         detail="Four stops away"
         icon={RiCarLine}
-        progress={{ value: 3, max: 4, accessibilityLabel: 'Delivery progress', valueText: '3 of 4 stops' }}
+        progress={{
+          value: 3,
+          max: 4,
+          accessibilityLabel: 'Delivery progress',
+          valueText: '3 of 4 stops',
+        }}
         testID="bar"
       />,
     );
@@ -244,10 +256,14 @@ describe('the paint is read off the surface, over every preset and mode', () => 
           const paint = resolveOrderStatusPaint(t, surface);
           const where = `${preset}/${mode}/L${level}`;
           if (contrastRatio(paint.upcomingRing, surface) < AA_GRAPHICAL) {
-            failures.push(`${where}: ring ${contrastRatio(paint.upcomingRing, surface).toFixed(2)}`);
+            failures.push(
+              `${where}: ring ${contrastRatio(paint.upcomingRing, surface).toFixed(2)}`,
+            );
           }
           if (contrastRatio(paint.textTertiary, surface) < AA_TEXT) {
-            failures.push(`${where}: timestamp ${contrastRatio(paint.textTertiary, surface).toFixed(2)}`);
+            failures.push(
+              `${where}: timestamp ${contrastRatio(paint.textTertiary, surface).toFixed(2)}`,
+            );
           }
           if (paint.connector === surface) failures.push(`${where}: connector is the surface`);
         }

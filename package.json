@@ -3545,6 +3545,9 @@
     "verify:consumer-types": "node scripts/verify-consumer-typecheck.mjs",
     "test": "jest",
     "typescript": "tsc --noEmit && node scripts/verify-consumer-typecheck.mjs",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
     "clean": "rm -rf lib",
     "prepack": "bun run clean && bun run build",
     "prepare": "[ -n \"$BLOOM_VERIFY_PACKAGE_RUNNING\" ] || bun run build || true",
@@ -3567,6 +3570,7 @@
     }
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "@react-native-community/netinfo": "^12.0.1",
     "@storybook/addon-docs": "^10",
     "@storybook/react-vite": "^10",

@@ -169,14 +169,22 @@ function LibraryItemComponent({
         </View>
         <View style={{ gap: 2 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text variant="body-medium" numberOfLines={1} style={{ color: titleColor, flexShrink: 1 }}>
+            <Text
+              variant="body-medium"
+              numberOfLines={1}
+              style={{ color: titleColor, flexShrink: 1 }}
+            >
               {item.title}
             </Text>
             {indicator}
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             {flags}
-            <Text variant="caption-1-regular" numberOfLines={1} style={{ color: paint.textMuted, flexShrink: 1 }}>
+            <Text
+              variant="caption-1-regular"
+              numberOfLines={1}
+              style={{ color: paint.textMuted, flexShrink: 1 }}
+            >
               {meta}
             </Text>
           </View>
@@ -199,7 +207,11 @@ function LibraryItemComponent({
         <Text variant="body-medium" numberOfLines={1} style={{ color: titleColor, flexShrink: 1 }}>
           {item.title}
         </Text>
-        <Text variant="caption-1-regular" numberOfLines={1} style={{ color: paint.textMuted, flexShrink: 100 }}>
+        <Text
+          variant="caption-1-regular"
+          numberOfLines={1}
+          style={{ color: paint.textMuted, flexShrink: 100 }}
+        >
           {`· ${meta}`}
         </Text>
         <View style={{ flexGrow: 1 }} />
@@ -222,7 +234,11 @@ function LibraryItemComponent({
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             {flags}
-            <Text variant="caption-1-regular" numberOfLines={1} style={{ color: paint.textMuted, flexShrink: 1 }}>
+            <Text
+              variant="caption-1-regular"
+              numberOfLines={1}
+              style={{ color: paint.textMuted, flexShrink: 1 }}
+            >
               {meta}
             </Text>
           </View>
@@ -254,7 +270,10 @@ function LibraryItemComponent({
   if (contextMenu) {
     node = (
       <ContextMenu>
-        <ContextMenuTrigger asChild style={{ alignSelf: variant === 'rail' ? 'flex-start' : 'stretch' }}>
+        <ContextMenuTrigger
+          asChild
+          style={{ alignSelf: variant === 'rail' ? 'flex-start' : 'stretch' }}
+        >
           {node}
         </ContextMenuTrigger>
         <ContextMenuContent label={item.title}>{contextMenu}</ContextMenuContent>

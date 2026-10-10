@@ -6,14 +6,14 @@ import { StepsCard, type StepsPoint } from './StepsCard';
 
 const meta: Meta<typeof StepsCard> = {
   argTypes: {
-    "title": { control: 'text' },
-    "headline": { control: 'number' },
-    "totalSuffix": { control: 'text' },
-    "pointSuffix": { control: 'text' },
-    "range": { control: 'text' },
-    "color": { control: 'text' },
-    "activeColor": { control: 'text' },
-    "activeIndex": { control: 'number' }
+    title: { control: 'text' },
+    headline: { control: 'number' },
+    totalSuffix: { control: 'text' },
+    pointSuffix: { control: 'text' },
+    range: { control: 'text' },
+    color: { control: 'text' },
+    activeColor: { control: 'text' },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Steps',
   component: StepsCard,
@@ -83,10 +83,22 @@ export const Default: Story = {
 /** Thursday hovered (controlled): the header rolls to the day, its bar darkens inside an outline. */
 export const Hovered: Story = {
   args: { activeIndex: 3 },
-  parameters: { controls: { include: ["activeIndex","title","headline","totalSuffix","pointSuffix","color","activeColor"] } },
+  parameters: {
+    controls: {
+      include: [
+        'activeIndex',
+        'title',
+        'headline',
+        'totalSuffix',
+        'pointSuffix',
+        'color',
+        'activeColor',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <StepsCard {...args} data={weekData(0)} range={weekLabel(0)}  />
+      <StepsCard {...args} data={weekData(0)} range={weekLabel(0)} />
     </Frame>
   ),
 };
@@ -97,7 +109,13 @@ export const Wide: Story = {
   render: () => (
     <Frame width={440}>
       <StepsCard data={weekData(2)} range="This week" />
-      <StepsCard title="Floors" data={weekData(3).map((d) => ({ ...d, value: Math.round(d.value / 400) }))} totalSuffix="total floors" pointSuffix="floors" color="#f97316" />
+      <StepsCard
+        title="Floors"
+        data={weekData(3).map((d) => ({ ...d, value: Math.round(d.value / 400) }))}
+        totalSuffix="total floors"
+        pointSuffix="floors"
+        color="#f97316"
+      />
     </Frame>
   ),
 };

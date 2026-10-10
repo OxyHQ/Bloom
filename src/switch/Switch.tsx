@@ -13,18 +13,42 @@ import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { useFieldMembership } from '../field/membership';
 import type { SwitchProps } from './types';
 
-const TRACK = { xs: { w: 30, h: 18 }, sm: { w: 36, h: 22 }, md: { w: 44, h: 26 }, lg: { w: 52, h: 30 } } as const;
+const TRACK = {
+  xs: { w: 30, h: 18 },
+  sm: { w: 36, h: 22 },
+  md: { w: 44, h: 26 },
+  lg: { w: 52, h: 30 },
+} as const;
 const THUMB = { xs: 14, sm: 18, md: 22, lg: 26 } as const;
 const PADDING = 2;
 const SQUEEZE_RATIO = 0.75; // thumb height shrinks to 75% when pressed
 
 const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, SwitchProps>(
   (props, ref) => {
-    const { checked: checkedProp, defaultChecked = false, onCheckedChange, disabled, style, size: sizeProp, tone: toneProp, accessibilityLabel, nativeID, testID } = props;
-    const [checked, setChecked] = useControllableState({ value: checkedProp ?? false, controlled: Object.prototype.hasOwnProperty.call(props, 'checked'), defaultValue: defaultChecked, onChange: onCheckedChange });
+    const {
+      checked: checkedProp,
+      defaultChecked = false,
+      onCheckedChange,
+      disabled,
+      style,
+      size: sizeProp,
+      tone: toneProp,
+      accessibilityLabel,
+      nativeID,
+      testID,
+    } = props;
+    const [checked, setChecked] = useControllableState({
+      value: checkedProp ?? false,
+      controlled: Object.prototype.hasOwnProperty.call(props, 'checked'),
+      defaultValue: defaultChecked,
+      onChange: onCheckedChange,
+    });
     const theme = useTheme();
     const reducedMotion = useReducedMotion();
-    const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+    const { size, tone } = useBloomAppearance(
+      { size: sizeProp, tone: toneProp },
+      { size: 'md', tone: 'accent' },
+    );
     const paint = resolveBloomColors(theme.colors, tone, 'solid');
     const field = useFieldMembership({ accessibilityLabel, disabled, nativeID });
     const isDisabled = field.disabled;
@@ -40,11 +64,12 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
       if (reducedMotion) {
         anim.stopAnimation();
         anim.setValue(checked ? 1 : 0);
-      } else Animated.spring(anim, {
-        toValue: checked ? 1 : 0,
-        useNativeDriver: false,
-        ...animation.spring.gentle,
-      }).start();
+      } else
+        Animated.spring(anim, {
+          toValue: checked ? 1 : 0,
+          useNativeDriver: false,
+          ...animation.spring.gentle,
+        }).start();
     }
 
     const handlePress = useCallback(() => {
@@ -139,7 +164,10 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
             style={[
               styles.thumb,
               {
-                backgroundColor: anim.interpolate({ inputRange: [0, 1], outputRange: [theme.colors.text, paint.foreground] }),
+                backgroundColor: anim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [theme.colors.text, paint.foreground],
+                }),
                 width: thumb,
                 height: thumbHeight,
                 borderRadius: thumbRadius,
@@ -150,7 +178,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
         </Animated.View>
       </Pressable>
     );
-  }
+  },
 );
 
 SwitchComponent.displayName = 'Switch';

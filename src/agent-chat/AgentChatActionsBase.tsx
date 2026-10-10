@@ -92,7 +92,8 @@ export function AgentChatActionsBase({
   return (
     <View
       testID={testID}
-      style={[{ flexDirection: 'row', alignItems: 'center', gap: 2, flexShrink: 0 }, style]}>
+      style={[{ flexDirection: 'row', alignItems: 'center', gap: 2, flexShrink: 0 }, style]}
+    >
       <IconAction
         {...buttonProps}
         testID={testID ? `${testID}-share` : undefined}

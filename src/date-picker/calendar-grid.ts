@@ -117,7 +117,15 @@ export function buildMonthGrid(month: Date, weekStartsOn: WeekStart = 0): Calend
   return weeks;
 }
 
-const FALLBACK_WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const FALLBACK_WEEKDAYS = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
 
 /**
  * Column headers in grid order: a two-letter `short` weekday
@@ -131,7 +139,8 @@ export function weekdayLabels(
   const sunday = new Date(2023, 0, 1);
   return Array.from({ length: 7 }, (_, column) => {
     const date = addDays(sunday, (weekStartsOn + column) % 7);
-    const long = formatGregorian(date, locale, { weekday: 'long' }) ?? FALLBACK_WEEKDAYS[date.getDay()]!;
+    const long =
+      formatGregorian(date, locale, { weekday: 'long' }) ?? FALLBACK_WEEKDAYS[date.getDay()]!;
     const short = formatGregorian(date, locale, { weekday: 'short' }) ?? long;
     return { short: short.slice(0, 2), long };
   });
@@ -147,14 +156,21 @@ export function formatMonthTitle(month: Date, locale?: string): string {
 
 /** `Sep 16, 2026` — the trigger's label. */
 export function formatTriggerDate(date: Date, locale?: string): string {
-  return formatGregorian(date, locale, { month: 'short', day: 'numeric', year: 'numeric' }) ?? formatChipDate(date);
+  return (
+    formatGregorian(date, locale, { month: 'short', day: 'numeric', year: 'numeric' }) ??
+    formatChipDate(date)
+  );
 }
 
 /** `Wednesday, September 16, 2026` — a day button's accessible name. */
 export function formatAccessibleDate(date: Date, locale?: string): string {
   return (
-    formatGregorian(date, locale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) ??
-    formatChipDate(date)
+    formatGregorian(date, locale, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }) ?? formatChipDate(date)
   );
 }
 
@@ -185,7 +201,10 @@ export interface DateConstraints {
 }
 
 /** Before `minDate`, after `maxDate`, or rejected by `isDateUnavailable`. */
-export function isDateDisabled(date: Date, { minDate, maxDate, isDateUnavailable }: DateConstraints): boolean {
+export function isDateDisabled(
+  date: Date,
+  { minDate, maxDate, isDateUnavailable }: DateConstraints,
+): boolean {
   if (minDate && compareDays(date, minDate) < 0) return true;
   if (maxDate && compareDays(date, maxDate) > 0) return true;
   return isDateUnavailable?.(date) ?? false;
@@ -201,7 +220,10 @@ export function normalizeRange(a: Date, b: Date): DateRange {
 /** Inclusive day count: a one-day range is 1. */
 export function daysInRange(range: DateRange): number {
   // Rounded, so a DST shift inside the range cannot drop or add a day.
-  return Math.round((startOfDay(range.end).getTime() - startOfDay(range.start).getTime()) / MS_PER_DAY) + 1;
+  return (
+    Math.round((startOfDay(range.end).getTime() - startOfDay(range.start).getTime()) / MS_PER_DAY) +
+    1
+  );
 }
 
 /** What a day cell paints from — a subset of react-aria's `CalendarCellRenderProps`. */
@@ -346,6 +368,9 @@ export function quickSelectPresets(
   ];
 }
 
-export function isSameRange(a: DateRange | null | undefined, b: DateRange | null | undefined): boolean {
+export function isSameRange(
+  a: DateRange | null | undefined,
+  b: DateRange | null | undefined,
+): boolean {
   return a != null && b != null && isSameDay(a.start, b.start) && isSameDay(a.end, b.end);
 }

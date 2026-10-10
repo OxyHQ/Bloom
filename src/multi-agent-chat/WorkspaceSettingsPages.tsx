@@ -63,12 +63,7 @@ const SERVERS: Record<string, SettingsMcpServer> = {
     tone: 'inverse',
     status: 'connected',
     summary: '30 tools, 13 prompts enabled',
-    tools: [
-      'list_deployments',
-      'get_build_logs',
-      'promote_deployment',
-      'env_variables',
-    ],
+    tools: ['list_deployments', 'get_build_logs', 'promote_deployment', 'env_variables'],
   },
 };
 
@@ -141,9 +136,7 @@ const FILES: SettingsStoredFile[] = (() => {
         ...p,
       };
     const kind = pick(['document', 'document', 'spreadsheet', 'video']);
-    const size = Math.floor(
-      kind === 'video' ? (4 + rng() * 60) * MB : 40 * 1024 + rng() * 7 * MB,
-    );
+    const size = Math.floor(kind === 'video' ? (4 + rng() * 60) * MB : 40 * 1024 + rng() * 7 * MB);
     return {
       id: `file-${i}`,
       name: `${pick(NAMES)} ${1 + Math.floor(rng() * 40)}`,
@@ -308,8 +301,7 @@ function GeneralDemo() {
             {
               key: 'system',
               label: messages.systemNotifications,
-              description:
-                messages.showFundamentalNotificationsWhenAnAgentCompletes,
+              description: messages.showFundamentalNotificationsWhenAnAgentCompletes,
               control: toggle('system', messages.systemNotifications),
             },
             {
@@ -385,11 +377,7 @@ function ProfileDemo() {
               key: 'birth',
               label: messages.dateOfBirth,
               control: (
-                <SettingsDateField
-                  label={messages.dateOfBirth}
-                  value={birth}
-                  onChange={setBirth}
-                />
+                <SettingsDateField label={messages.dateOfBirth} value={birth} onChange={setBirth} />
               ),
             },
           ],
@@ -426,9 +414,7 @@ function ProfileDemo() {
             {
               key: 'device',
               label: messages.deviceID,
-              control: (
-                <SettingsValueField muted>{DEMO_DEVICE_ID}</SettingsValueField>
-              ),
+              control: <SettingsValueField muted>{DEMO_DEVICE_ID}</SettingsValueField>,
             },
             {
               key: 'logout',

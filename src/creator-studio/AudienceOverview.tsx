@@ -6,7 +6,11 @@ import { RiBookmarkLine } from '../icons/remix/RiBookmarkLine';
 import { RiHeadphoneLine } from '../icons/remix/RiHeadphoneLine';
 import { RiPlayLine } from '../icons/remix/RiPlayLine';
 import { RiUserFollowLine } from '../icons/remix/RiUserFollowLine';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { StatCards } from '../stat-cards/StatCards';
 import type { StatCardsDeltaColor, StatCardsItem } from '../stat-cards/types';
 import { useTheme } from '../theme/use-theme';
@@ -14,7 +18,13 @@ import { Text } from '../typography';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES, type CreatorStudioMessages } from './messages';
 import { resolveCreatorStudioPaint } from './shared';
-import type { AudienceMetricKind, AudienceOverviewProps, AudiencePeriod, CreatorOption, CreatorTrend } from './types';
+import type {
+  AudienceMetricKind,
+  AudienceOverviewProps,
+  AudiencePeriod,
+  CreatorOption,
+  CreatorTrend,
+} from './types';
 
 /**
  * `AudienceOverview`: the dashboard's opening row — a heading with a period
@@ -104,7 +114,12 @@ function AudienceOverviewComponent({
     <View testID={testID} onLayout={onLayout} style={[styles.root, style]}>
       <View style={stacked ? styles.headerStacked : styles.header}>
         <View style={styles.heading}>
-          <Text variant="headline-semibold" role="heading" numberOfLines={1} style={{ color: paint.text }}>
+          <Text
+            variant="headline-semibold"
+            role="heading"
+            numberOfLines={1}
+            style={{ color: paint.text }}
+          >
             {title}
           </Text>
           {caption ? (
@@ -113,8 +128,17 @@ function AudienceOverviewComponent({
             </Text>
           ) : null}
         </View>
-        <View testID={testID ? `${testID}-period` : undefined} style={stacked ? styles.periodStacked : null}>
-          <SegmentedControl label={periodLabel} type="radio" size="sm" value={period} onChange={onPeriodChange}>
+        <View
+          testID={testID ? `${testID}-period` : undefined}
+          style={stacked ? styles.periodStacked : null}
+        >
+          <SegmentedControl
+            label={periodLabel}
+            type="radio"
+            size="sm"
+            value={period}
+            onChange={onPeriodChange}
+          >
             {periods.map((option) => (
               <SegmentedControlItem
                 key={option.value}
@@ -137,7 +161,12 @@ AudienceOverview.displayName = 'AudienceOverview';
 
 const styles = StyleSheet.create({
   root: { width: '100%', gap: 16 },
-  header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
   headerStacked: { flexDirection: 'column', alignItems: 'stretch', gap: 12 },
   heading: { flexShrink: 1, minWidth: 0, gap: 2 },
   periodStacked: { alignSelf: 'flex-start', maxWidth: '100%' },

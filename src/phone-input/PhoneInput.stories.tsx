@@ -133,7 +133,10 @@ export const Flags: Story = {
       <Page width={720}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {COUNTRIES.map((c) => (
-            <View key={c.iso2} style={{ width: 64, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View
+              key={c.iso2}
+              style={{ width: 64, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+            >
               <CountryFlag iso2={c.iso2} accessibilityLabel={c.name} />
               <Text variant="caption-1-medium" style={{ color }}>
                 {c.iso2}
@@ -148,11 +151,40 @@ export const Flags: Story = {
 
 /** A single instance whose controls are applied directly to the rendered component. */
 export const Playground: StoryObj<typeof PhoneInput> = {
-  args: { label: 'Phone number', placeholder: '555 0100', value: '', country: 'US', size: 'md', disabled: false, invalid: false },
-  parameters: { controls: { disable: false, include: ['label', 'placeholder', 'value', 'country', 'size', 'disabled', 'invalid'] } },
-  argTypes: { label: { control: 'text' }, placeholder: { control: 'text' }, value: { control: 'text' }, country: { control: 'select', options: ['US', 'GB', 'ES', 'RO'] }, size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] }, disabled: { control: 'boolean' }, invalid: { control: 'boolean' } },
+  args: {
+    label: 'Phone number',
+    placeholder: '555 0100',
+    value: '',
+    country: 'US',
+    size: 'md',
+    disabled: false,
+    invalid: false,
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['label', 'placeholder', 'value', 'country', 'size', 'disabled', 'invalid'],
+    },
+  },
+  argTypes: {
+    label: { control: 'text' },
+    placeholder: { control: 'text' },
+    value: { control: 'text' },
+    country: { control: 'select', options: ['US', 'GB', 'ES', 'RO'] },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
+    disabled: { control: 'boolean' },
+    invalid: { control: 'boolean' },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 440, maxWidth: '100%' }}><PhoneInput {...args} onValueChange={next => updateArgs({ value: next })} onCountryChange={country => updateArgs({ country })} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <PhoneInput
+          {...args}
+          onValueChange={(next) => updateArgs({ value: next })}
+          onCountryChange={(country) => updateArgs({ country })}
+        />
+      </View>
+    );
   },
 };

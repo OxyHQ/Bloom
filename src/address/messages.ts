@@ -11,4 +11,7 @@ export interface AddressMessages {
   addresses: string;
 }
 
-export const ADDRESS_MESSAGES: MessageCatalog<AddressMessages> = defineMessages<AddressMessages>('ADDRESS_MESSAGES', { emptyTitle: 'Nothing here yet', addresses: 'Addresses' });
+export const ADDRESS_MESSAGES: MessageCatalog<AddressMessages> = defineMessages<AddressMessages>(
+  'ADDRESS_MESSAGES',
+  { emptyTitle: 'Nothing here yet', addresses: 'Addresses' },
+);

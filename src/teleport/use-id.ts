@@ -4,12 +4,12 @@
  *
  * Changed: nothing — byte-for-byte, only its path.
  */
-import { useRef } from "react";
+import { useRef } from 'react';
 
 let __idCounter = 0;
 
-export default function useId(prefix = "uid"): string {
-  const idRef = useRef<string>("");
+export default function useId(prefix = 'uid'): string {
+  const idRef = useRef<string>('');
   if (!idRef.current) {
     const n = ++__idCounter;
     idRef.current = `${prefix}-${n}`;

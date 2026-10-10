@@ -37,7 +37,8 @@ import { isPureInsertion, measureTextarea } from '../hooks/use-textarea-autosize
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const LINE = 20;
-const lines = (count: number) => Array.from({ length: count }, (_, i) => `line ${i + 1}`).join('\n');
+const lines = (count: number) =>
+  Array.from({ length: count }, (_, i) => `line ${i + 1}`).join('\n');
 
 let container: HTMLDivElement;
 let root: Root;
@@ -74,7 +75,11 @@ afterEach(() => {
 
 function mount(ui: React.ReactElement) {
   act(() => {
-    root.render(<BloomThemeProvider mode="light" colorPreset="teal">{ui}</BloomThemeProvider>);
+    root.render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {ui}
+      </BloomThemeProvider>,
+    );
   });
 }
 
@@ -211,7 +216,13 @@ describe('ChatComposer autosize (web)', () => {
   });
 
   it('uses a custom input line height for both the floor and the line cap', () => {
-    mount(<ChatComposer minLines={2} maxLines={4} inputStyle={[{ fontSize: 16 }, { lineHeight: 24 }]} />);
+    mount(
+      <ChatComposer
+        minLines={2}
+        maxLines={4}
+        inputStyle={[{ fontSize: 16 }, { lineHeight: 24 }]}
+      />,
+    );
     const el = field();
     expect(height(el)).toBe(48);
     type(el, lines(20));
@@ -242,41 +253,47 @@ describe('composer width changes (web)', () => {
     disconnect = jest.fn();
     globalThis.ResizeObserver = class {
       constructor(callback: ResizeObserverCallback) {
-        notify = width => act(() => callback([{ contentRect: { width } } as ResizeObserverEntry], this));
+        notify = (width) =>
+          act(() => callback([{ contentRect: { width } } as ResizeObserverEntry], this));
       }
       observe() {}
       unobserve() {}
       disconnect = disconnect;
     } as typeof ResizeObserver;
   });
-  afterEach(() => { globalThis.ResizeObserver = originalObserver; });
+  afterEach(() => {
+    globalThis.ResizeObserver = originalObserver;
+  });
 
   it.each([
     ['chat', <ChatComposer key="chat" />],
     ['panel', <ComposerPanel key="panel" />],
     ['pill', <ComposerPill key="pill" />],
-  ])('%s remeasures when width changes, ignores height-only deliveries and disconnects', (_name, composer) => {
-    mount(composer);
-    const el = field();
-    let wrappedHeight = 80;
-    Object.defineProperty(el, 'scrollHeight', {
-      configurable: true,
-      get: () => Math.max(parseFloat(el.style.height) || 0, wrappedHeight),
-    });
-    notify(48);
-    expect(height(el)).toBe(80);
-    const collapses = countCollapses(el);
-    notify(48);
-    expect(collapses.count).toBe(0);
-    wrappedHeight = LINE;
-    notify(800);
-    expect(height(el)).toBe(LINE);
-    expect(collapses.count).toBe(1);
-    notify(800);
-    expect(collapses.count).toBe(1);
-    act(() => root.render(null));
-    expect(disconnect).toHaveBeenCalledTimes(1);
-  });
+  ])(
+    '%s remeasures when width changes, ignores height-only deliveries and disconnects',
+    (_name, composer) => {
+      mount(composer);
+      const el = field();
+      let wrappedHeight = 80;
+      Object.defineProperty(el, 'scrollHeight', {
+        configurable: true,
+        get: () => Math.max(parseFloat(el.style.height) || 0, wrappedHeight),
+      });
+      notify(48);
+      expect(height(el)).toBe(80);
+      const collapses = countCollapses(el);
+      notify(48);
+      expect(collapses.count).toBe(0);
+      wrappedHeight = LINE;
+      notify(800);
+      expect(height(el)).toBe(LINE);
+      expect(collapses.count).toBe(1);
+      notify(800);
+      expect(collapses.count).toBe(1);
+      act(() => root.render(null));
+      expect(disconnect).toHaveBeenCalledTimes(1);
+    },
+  );
 });
 
 describe('ComposerPanel autosize (web)', () => {

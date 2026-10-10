@@ -15,4 +15,10 @@ export interface QuestionnaireMessages {
   step: (n: number) => string;
 }
 
-export const QUESTIONNAIRE_MESSAGES: MessageCatalog<QuestionnaireMessages> = defineMessages<QuestionnaireMessages>('QUESTIONNAIRE_MESSAGES', { other: 'Other', otherPlaceholder: 'Enter your custom answer here', steps: 'Steps', step: (n) => `Step ${n}` });
+export const QUESTIONNAIRE_MESSAGES: MessageCatalog<QuestionnaireMessages> =
+  defineMessages<QuestionnaireMessages>('QUESTIONNAIRE_MESSAGES', {
+    other: 'Other',
+    otherPlaceholder: 'Enter your custom answer here',
+    steps: 'Steps',
+    step: (n) => `Step ${n}`,
+  });

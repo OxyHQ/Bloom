@@ -8,12 +8,21 @@ export function useMeterReveal(fraction: number, reveal?: MeterReveal) {
   const [painted, setPainted] = useState(reveal && policy.animate ? 0 : policy.fraction);
   const staged = useRef(false);
   useLayoutEffect(() => {
-    if (!policy.animate || staged.current) { setPainted(policy.fraction); return; }
+    if (!policy.animate || staged.current) {
+      setPainted(policy.fraction);
+      return;
+    }
     let next = 0;
     const frame = requestAnimationFrame(() => {
-      next = requestAnimationFrame(() => { staged.current = true; setPainted(policy.fraction); });
+      next = requestAnimationFrame(() => {
+        staged.current = true;
+        setPainted(policy.fraction);
+      });
     });
-    return () => { cancelAnimationFrame(frame); if (next) cancelAnimationFrame(next); };
+    return () => {
+      cancelAnimationFrame(frame);
+      if (next) cancelAnimationFrame(next);
+    };
   }, [policy.fraction, policy.animate]);
   return {
     fraction: policy.animate ? painted : policy.fraction,

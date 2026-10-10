@@ -61,13 +61,22 @@ function MixCardComponent({
       typeLabel={typeLabel}
       subtitle={row ? joinMeta([typeLabel, description]) : description}
       subtitleLines={row ? 1 : 2}
-      accessibilityLabel={rest.accessibilityLabel ?? [title, typeLabel, description].filter(Boolean).join(', ')}
+      accessibilityLabel={
+        rest.accessibilityLabel ?? [title, typeLabel, description].filter(Boolean).join(', ')
+      }
       renderArtwork={() => (
-        <View style={{ width: '100%', height: '100%' }} testID={testID ? `${testID}-cover` : undefined}>
+        <View
+          style={{ width: '100%', height: '100%' }}
+          testID={testID ? `${testID}-cover` : undefined}
+        >
           <CoverGradient top={tint.top} bottom={tint.bottom} />
           {!row ? (
             <View style={{ position: 'absolute', top: pad, left: pad, right: pad, gap: 2 }}>
-              <Text variant="caption-1-semibold" numberOfLines={1} style={{ color: tint.textMuted }}>
+              <Text
+                variant="caption-1-semibold"
+                numberOfLines={1}
+                style={{ color: tint.textMuted }}
+              >
                 {typeLabel}
               </Text>
               <Text variant={COVER_TITLE[size]} numberOfLines={3} style={{ color: tint.text }}>

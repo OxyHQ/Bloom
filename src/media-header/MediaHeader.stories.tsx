@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../dropdown-menu';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ArtistAbout } from './ArtistAbout';
@@ -12,7 +17,13 @@ import { AudiobookHeader } from './AudiobookHeader';
 import { CollectionHeader } from './CollectionHeader';
 import { DiscographyFilter } from './DiscographyFilter';
 import { EpisodeHeader } from './EpisodeHeader';
-import { DownloadButton, FollowButton, MediaActionBar, MediaMoreButton, ShuffleButton } from './MediaActionBar';
+import {
+  DownloadButton,
+  FollowButton,
+  MediaActionBar,
+  MediaMoreButton,
+  ShuffleButton,
+} from './MediaActionBar';
 import { PodcastShowHeader } from './PodcastShowHeader';
 import { PopularTracks } from './PopularTracks';
 import { ProfileHeader } from './ProfileHeader';
@@ -64,13 +75,39 @@ const AVATARS = {
 const BANNER = 'https://picsum.photos/seed/velvet-harbour-stage/1600/700';
 
 const TRACKS: PopularTrack[] = [
-  { id: '1', title: 'Lanterns Over Kessel Bay', plays: '48,203,114', duration: '3:42', image: COVERS.harbour },
-  { id: '2', title: 'Paper Satellites', plays: '31,977,020', duration: '4:05', image: COVERS.neon, explicit: true },
+  {
+    id: '1',
+    title: 'Lanterns Over Kessel Bay',
+    plays: '48,203,114',
+    duration: '3:42',
+    image: COVERS.harbour,
+  },
+  {
+    id: '2',
+    title: 'Paper Satellites',
+    plays: '31,977,020',
+    duration: '4:05',
+    image: COVERS.neon,
+    explicit: true,
+  },
   { id: '3', title: 'Slow Current', plays: '22,410,338', duration: '2:58', image: COVERS.tide },
   { id: '4', title: 'Amber Signal', plays: '18,006,951', duration: '3:31', image: COVERS.dune },
-  { id: '5', title: 'The Long Way to Orrin', plays: '12,884,203', duration: '5:12', image: COVERS.harbour },
+  {
+    id: '5',
+    title: 'The Long Way to Orrin',
+    plays: '12,884,203',
+    duration: '5:12',
+    image: COVERS.harbour,
+  },
   { id: '6', title: 'Glasshouse', plays: '9,120,448', duration: '3:17', image: COVERS.moss },
-  { id: '7', title: 'Northbound Static', plays: '7,771,002', duration: '3:49', image: COVERS.ink, explicit: true },
+  {
+    id: '7',
+    title: 'Northbound Static',
+    plays: '7,771,002',
+    duration: '3:49',
+    image: COVERS.ink,
+    explicit: true,
+  },
   { id: '8', title: 'Weathervane', plays: '6,404,119', duration: '4:21', image: COVERS.tide },
   { id: '9', title: 'Salt and Copper', plays: '5,219,870', duration: '3:03', image: COVERS.dune },
   { id: '10', title: 'Low Tide Choir', plays: '4,006,332', duration: '6:40', image: COVERS.neon },
@@ -83,7 +120,14 @@ const TRACKS: PopularTrack[] = [
 function Page({ children, width = 1280 }: { children: React.ReactNode; width?: number }) {
   const theme = useTheme();
   return (
-    <View style={{ backgroundColor: theme.colors.background, width: '100%', maxWidth: width, minHeight: '100%' }}>
+    <View
+      style={{
+        backgroundColor: theme.colors.background,
+        width: '100%',
+        maxWidth: width,
+        minHeight: '100%',
+      }}
+    >
       {children}
     </View>
   );
@@ -92,7 +136,10 @@ function Page({ children, width = 1280 }: { children: React.ReactNode; width?: n
 function Caption({ children }: { children: string }) {
   const theme = useTheme();
   return (
-    <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary, paddingLeft: 16, paddingTop: 16 }}>
+    <Text
+      variant="caption-1-medium"
+      style={{ color: theme.colors.textSecondary, paddingLeft: 16, paddingTop: 16 }}
+    >
       {children}
     </Text>
   );
@@ -134,7 +181,12 @@ function Actions({
       download={dl}
       downloadProgress={0.4}
       onDownloadPress={
-        download ? () => setDl((d) => (d === 'idle' ? 'downloading' : d === 'downloading' ? 'downloaded' : 'idle')) : undefined
+        download
+          ? () =>
+              setDl((d) =>
+                d === 'idle' ? 'downloading' : d === 'downloading' ? 'downloaded' : 'idle',
+              )
+          : undefined
       }
       more={
         <DropdownMenu>
@@ -319,7 +371,11 @@ export const ArtistWithBanner: Story = {
               style={{ flex: 1, minWidth: 280, alignSelf: 'flex-start' }}
             />
           </View>
-          <DiscographyFilter value={discography} onValueChange={setDiscography} onShowAll={() => {}} />
+          <DiscographyFilter
+            value={discography}
+            onValueChange={setDiscography}
+            onShowAll={() => {}}
+          />
           <ArtistAbout
             image="https://picsum.photos/seed/velvet-harbour-about/1200/700"
             bio="Velvet Harbour is a four-piece from the coastal town of Kessel, writing slow, bright songs about night ferries, lighthouses and the people who keep them running. Their second record was tracked in a disused boathouse over a single winter, with the tide audible under every take. They tour the northern coast every autumn and close each show with the whole room singing the last chorus."
@@ -391,7 +447,8 @@ export const PodcastShow: Story = {
             title: 'Episode 112: The fog bell at Orrin Point',
             date: 'Sep 15',
             duration: '48 min',
-            description: 'A retired keeper remembers the winter the bell rang for eleven days straight.',
+            description:
+              'A retired keeper remembers the winter the bell rang for eleven days straight.',
             onPress: () => {},
             playing,
             onPlayPress: () => setPlaying((p) => !p),
@@ -466,7 +523,11 @@ export const OwnProfile: Story = {
       <ProfileHeader
         name="Mara Lind"
         avatar={AVATARS.mara}
-        stats={[{ label: '7 public playlists', onPress: () => {} }, { label: '212 followers' }, { label: '96 following', onPress: () => {} }]}
+        stats={[
+          { label: '7 public playlists', onPress: () => {} },
+          { label: '212 followers' },
+          { label: '96 following', onPress: () => {} },
+        ]}
         onEditPress={() => {}}
         onMorePress={() => {}}
       />
@@ -504,7 +565,14 @@ export const StickyTopBarOnScroll: Story = {
     const { progress, onScroll } = useMediaHeaderScroll({ start: 260, end: 340 });
     const theme = useTheme();
     return (
-      <View style={{ height: 720, width: '100%', maxWidth: 1280, backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          height: 720,
+          width: '100%',
+          maxWidth: 1280,
+          backgroundColor: theme.colors.background,
+        }}
+      >
         <ScrollView onScroll={onScroll} scrollEventThrottle={16} testID="sticky-scroll">
           <CollectionHeader
             typeLabel="Album"
@@ -541,7 +609,13 @@ export const StickyTopBarVisible: Story = {
     return (
       <Page>
         <View style={{ padding: 16, gap: 12 }}>
-          <FollowButton following={visible} onFollowChange={setVisible} label="Show bar" followingLabel="Hide bar" style={{ alignSelf: 'flex-start' }} />
+          <FollowButton
+            following={visible}
+            onFollowChange={setVisible}
+            label="Show bar"
+            followingLabel="Hide bar"
+            style={{ alignSelf: 'flex-start' }}
+          />
           {(['#1f3b73', '#c8d96f', '#ff5fa2', null] as const).map((color) => (
             <StickyMediaTopBar
               key={String(color)}
@@ -576,7 +650,11 @@ export const ActionControls: Story = {
             <FollowButton following onFollowChange={() => {}} label="Save" followingLabel="Saved" />
             <MediaMoreButton onPress={() => {}} />
           </View>
-          <Actions subject="Night drive" follow={{ label: 'Save', followingLabel: 'Saved' }} like={false} />
+          <Actions
+            subject="Night drive"
+            follow={{ label: 'Save', followingLabel: 'Saved' }}
+            like={false}
+          />
         </View>
       </Page>
     );
@@ -603,7 +681,14 @@ export const Narrow: Story = {
           banner={BANNER}
           verified
           listeners="1,234,567 monthly listeners"
-          actions={<Actions subject="Velvet Harbour" follow={{ label: 'Follow', followingLabel: 'Following' }} view={false} download={false} />}
+          actions={
+            <Actions
+              subject="Velvet Harbour"
+              follow={{ label: 'Follow', followingLabel: 'Following' }}
+              view={false}
+              download={false}
+            />
+          }
         />
         <View style={{ paddingLeft: 8, paddingRight: 8, gap: 24 }}>
           <PopularTracks tracks={TRACKS} activeTrackId="1" playing />
@@ -615,7 +700,11 @@ export const Narrow: Story = {
           name="Jun Okafor"
           avatar={AVATARS.jun}
           artworkColor="#2f5d3a"
-          stats={[{ label: '12 public playlists', onPress: () => {} }, { label: '48 followers' }, { label: '30 following' }]}
+          stats={[
+            { label: '12 public playlists', onPress: () => {} },
+            { label: '48 followers' },
+            { label: '30 following' },
+          ]}
           following={false}
           onFollowChange={() => {}}
         />

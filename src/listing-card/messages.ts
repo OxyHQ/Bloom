@@ -25,16 +25,20 @@ export interface ListingCardMessages {
   removeFromWishlist: string;
 }
 
-export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = defineMessages<ListingCardMessages>('LISTING_CARD_MESSAGES', {
-  statuses: { reserved: 'Reserved', sold: 'Sold', rented: 'Rented', unavailable: 'Unavailable' },
-  originally: (p) => `originally ${p}`,
-  approximateLocation: 'Approximate location',
-  rated: (r) => `Rated ${r} out of 5`,
-  ratedWithReviews: (r, c) =>
-    plural('en', c, { one: `Rated ${r} out of 5, ${c} review`, other: `Rated ${r} out of 5, ${c} reviews` }),
-  newListing: 'New',
-  previousPhoto: 'Previous photo',
-  nextPhoto: 'Next photo',
-  saveToWishlist: 'Save to wishlist',
-  removeFromWishlist: 'Remove from wishlist',
-});
+export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> =
+  defineMessages<ListingCardMessages>('LISTING_CARD_MESSAGES', {
+    statuses: { reserved: 'Reserved', sold: 'Sold', rented: 'Rented', unavailable: 'Unavailable' },
+    originally: (p) => `originally ${p}`,
+    approximateLocation: 'Approximate location',
+    rated: (r) => `Rated ${r} out of 5`,
+    ratedWithReviews: (r, c) =>
+      plural('en', c, {
+        one: `Rated ${r} out of 5, ${c} review`,
+        other: `Rated ${r} out of 5, ${c} reviews`,
+      }),
+    newListing: 'New',
+    previousPhoto: 'Previous photo',
+    nextPhoto: 'Next photo',
+    saveToWishlist: 'Save to wishlist',
+    removeFromWishlist: 'Remove from wishlist',
+  });

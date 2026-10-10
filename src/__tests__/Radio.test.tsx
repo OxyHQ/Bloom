@@ -94,12 +94,7 @@ describe('Radio', () => {
 describe('RadioGroup', () => {
   it('marks exactly one option as chosen', () => {
     const { UNSAFE_root } = renderWithTheme(
-      <RadioGroup
-        label="Digest"
-        value="weekly"
-        onValueChange={() => {}}
-        options={[...OPTIONS]}
-      />,
+      <RadioGroup label="Digest" value="weekly" onValueChange={() => {}} options={[...OPTIONS]} />,
     );
     const radios = radioNodes(UNSAFE_root);
     expect(radios).toHaveLength(3);
@@ -181,7 +176,13 @@ describe('RadioCard', () => {
   it('selects its value when pressed, and re-choosing is a no-op', () => {
     const onSelect = jest.fn();
     const { getByLabelText, rerender } = renderWithTheme(
-      <RadioCard value="pro" title="Pro" description="Unlimited." checked={false} onValueChange={onSelect} />,
+      <RadioCard
+        value="pro"
+        title="Pro"
+        description="Unlimited."
+        checked={false}
+        onValueChange={onSelect}
+      />,
     );
     const card = getByLabelText('Pro');
     expect(card.props.accessibilityRole).toBe('radio');
@@ -220,10 +221,19 @@ describe('RadioCard', () => {
   });
 });
 
-
 it('supports uncontrolled group selection and does not clear the chosen option', () => {
   const onChange = jest.fn();
-  const screen = renderWithTheme(<RadioGroup defaultValue="daily" onValueChange={onChange} label="Frequency" options={[{value:'daily',label:'Daily'}, {value:'weekly',label:'Weekly'}]} />);
+  const screen = renderWithTheme(
+    <RadioGroup
+      defaultValue="daily"
+      onValueChange={onChange}
+      label="Frequency"
+      options={[
+        { value: 'daily', label: 'Daily' },
+        { value: 'weekly', label: 'Weekly' },
+      ]}
+    />,
+  );
   fireEvent.press(screen.getByLabelText('Weekly'));
   expect(screen.getByLabelText('Weekly').props['aria-checked']).toBe(true);
   expect(screen.getByLabelText('Daily').props['aria-checked']).toBe(false);
@@ -232,11 +242,17 @@ it('supports uncontrolled group selection and does not clear the chosen option',
   expect(onChange).toHaveBeenCalledTimes(1);
 });
 
-
 it('keeps an explicitly undefined selection controlled until the parent updates it', () => {
   const change = jest.fn();
-  const options = [{value:'daily',label:'Daily'}, {value:'weekly',label:'Weekly'}];
-  const ui = (value: string | undefined) => <BloomThemeProvider><RadioGroup value={value} onValueChange={change} label="Frequency" options={options} /></BloomThemeProvider>;
+  const options = [
+    { value: 'daily', label: 'Daily' },
+    { value: 'weekly', label: 'Weekly' },
+  ];
+  const ui = (value: string | undefined) => (
+    <BloomThemeProvider>
+      <RadioGroup value={value} onValueChange={change} label="Frequency" options={options} />
+    </BloomThemeProvider>
+  );
   const screen = render(ui(undefined));
   fireEvent.press(screen.getByLabelText('Weekly'));
   expect(change).toHaveBeenCalledWith('weekly');
@@ -250,26 +266,50 @@ it('publishes each actual native radio host to renderOption without moving selec
   const refs = new Map<string, import('../radio').RadioOptionState['controlRef']>();
   const hosts = new Map<string, { focus: jest.Mock }>();
   const change = jest.fn();
-  const api = render(<BloomThemeProvider><RadioGroup label="Delivery" options={OPTIONS} defaultValue="daily" onValueChange={change}
-    renderOption={(option, control, state) => { refs.set(option.value,state.controlRef); return control; }} /></BloomThemeProvider>, {
-    createNodeMock: element => {
-      const props = element.props as { accessibilityRole?: string; accessibilityLabel?: string };
-      if (props.accessibilityRole !== 'radio') return null;
-      const label=props.accessibilityLabel as string;
-      const host=hosts.get(label) ?? {focus:jest.fn()}; hosts.set(label,host); return host;
+  const api = render(
+    <BloomThemeProvider>
+      <RadioGroup
+        label="Delivery"
+        options={OPTIONS}
+        defaultValue="daily"
+        onValueChange={change}
+        renderOption={(option, control, state) => {
+          refs.set(option.value, state.controlRef);
+          return control;
+        }}
+      />
+    </BloomThemeProvider>,
+    {
+      createNodeMock: (element) => {
+        const props = element.props as { accessibilityRole?: string; accessibilityLabel?: string };
+        if (props.accessibilityRole !== 'radio') return null;
+        const label = props.accessibilityLabel as string;
+        const host = hosts.get(label) ?? { focus: jest.fn() };
+        hosts.set(label, host);
+        return host;
+      },
     },
-  });
+  );
   expect(refs.get('daily')?.current).toBe(hosts.get('Daily'));
   expect(refs.get('weekly')?.current).toBe(hosts.get('Weekly'));
-  fireEvent.press(api.getByLabelText('Weekly'));expect(change).toHaveBeenCalledWith('weekly');
-  fireEvent.press(api.getByLabelText('Never'));expect(change).toHaveBeenCalledTimes(1);
+  fireEvent.press(api.getByLabelText('Weekly'));
+  expect(change).toHaveBeenCalledWith('weekly');
+  fireEvent.press(api.getByLabelText('Never'));
+  expect(change).toHaveBeenCalledTimes(1);
 });
-
 
 describe('RadioChip', () => {
   it('owns native presses with no indicator, retains checked state and blocks disabled changes', () => {
     const onChange = jest.fn();
-    const api = renderWithTheme(<RadioGroup label="Size" variant="chip" options={OPTIONS} defaultValue="daily" onValueChange={onChange} />);
+    const api = renderWithTheme(
+      <RadioGroup
+        label="Size"
+        variant="chip"
+        options={OPTIONS}
+        defaultValue="daily"
+        onValueChange={onChange}
+      />,
+    );
     expect(api.UNSAFE_queryAllByType(require('../radio-indicator').RadioIndicator)).toHaveLength(0);
     fireEvent.press(api.getByLabelText('Weekly'));
     expect(onChange).toHaveBeenCalledWith('weekly');
@@ -281,7 +321,14 @@ describe('RadioChip', () => {
 
   it('uses the explicit name for decorative content and preserves standalone ownership', () => {
     const onChange = jest.fn();
-    const api = renderWithTheme(<RadioChip value="blue" labelContent={<></>} accessibilityLabel="Blue" onValueChange={onChange} />);
+    const api = renderWithTheme(
+      <RadioChip
+        value="blue"
+        labelContent={<></>}
+        accessibilityLabel="Blue"
+        onValueChange={onChange}
+      />,
+    );
     fireEvent.press(api.getByLabelText('Blue'));
     expect(onChange).toHaveBeenCalledWith('blue');
     expect(api.getByLabelText('Blue').props['aria-checked']).toBe(false);

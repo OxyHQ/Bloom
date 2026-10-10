@@ -56,7 +56,9 @@ function CallMinimisedPillComponent({
   const paint = useMemo(() => resolveCallPaint(theme, accentColor), [theme, accentColor]);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const l = { ...messages.controls, ...labels };
-  const expandLabel = labels?.expand ?? (name === undefined ? messages.returnToCall : messages.returnToCallWith(name));
+  const expandLabel =
+    labels?.expand ??
+    (name === undefined ? messages.returnToCall : messages.returnToCallWith(name));
   const ModeGlyph = mode === 'video' ? RiVideoOnLine : RiPhoneFill;
   const line = statusText !== undefined && statusText !== '' ? statusText : duration;
 

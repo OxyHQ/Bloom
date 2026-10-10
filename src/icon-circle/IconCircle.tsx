@@ -30,7 +30,8 @@ const IconCircleComponent = function IconCircle({
           backgroundColor: colors.primarySubtle,
         },
         style,
-      ]}>
+      ]}
+    >
       <Icon size={size} style={[{ color: colors.primary }, iconStyle]} />
     </View>
   );

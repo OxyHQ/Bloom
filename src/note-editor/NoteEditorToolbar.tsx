@@ -55,7 +55,10 @@ export function NoteEditorToolbar({
   style,
   testID,
 }: NoteEditorToolbarProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const { messages } = useMessages(NOTE_EDITOR_MESSAGES);
   const { width, onLayout } = useContainerWidth();
@@ -71,7 +74,10 @@ export function NoteEditorToolbar({
       // The row is as wide as it is given and clips rather than pushing the
       // page during the one un-measured frame. `ButtonGroup` clips its own
       // items already, so this adds no new clipping to a settled layout.
-      style={[{ width: '100%', flexDirection: 'row', alignItems: 'center', overflow: 'hidden' }, style]}
+      style={[
+        { width: '100%', flexDirection: 'row', alignItems: 'center', overflow: 'hidden' },
+        style,
+      ]}
       testID={testID}
     >
       <ButtonGroup

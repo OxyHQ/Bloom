@@ -1,9 +1,5 @@
 import type { ReactNode } from 'react';
-import type {
-  MeasuredRect,
-  MediaSurfaceImage,
-  MediaSurfaceVideo,
-} from '../media-flight/types';
+import type { MeasuredRect, MediaSurfaceImage, MediaSurfaceVideo } from '../media-flight/types';
 
 /**
  * A still image page.

@@ -77,9 +77,16 @@ export const Blend: Story = {
 export const Playground: StoryObj<typeof Skeleton.Box> = {
   args: { width: 280, height: 80, blend: false },
   parameters: { controls: { disable: false, include: ['width', 'height', 'blend'] } },
-  argTypes: { width: { control: { type: 'range', min: 20, max: 400 } }, height: { control: { type: 'range', min: 8, max: 200 } }, blend: { control: 'boolean' } },
+  argTypes: {
+    width: { control: { type: 'range', min: 20, max: 400 } },
+    height: { control: { type: 'range', min: 8, max: 200 } },
+    blend: { control: 'boolean' },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 520, maxWidth: '100%' }}><Skeleton.Box {...args} /></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <Skeleton.Box {...args} />
+      </View>
+    );
   },
 };

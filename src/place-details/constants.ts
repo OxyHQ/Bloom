@@ -49,7 +49,8 @@ export const PLACE_INFO_ACTION_LABELS: Readonly<Record<PlaceInfoAction, string>>
 };
 
 /** The English trend sentences for the current hour; the chart speaks `PLACE_DETAILS_MESSAGES`. */
-export const PLACE_BUSY_LABELS: Readonly<Record<PlaceBusyTrend, string>> = PLACE_DETAILS_MESSAGES.en.busy;
+export const PLACE_BUSY_LABELS: Readonly<Record<PlaceBusyTrend, string>> =
+  PLACE_DETAILS_MESSAGES.en.busy;
 
 /** The glyph each kind of stop draws. */
 export const PLACE_TRANSIT_MODE_ICON: Readonly<Record<PlaceTransitMode, BloomIconComponent>> = {

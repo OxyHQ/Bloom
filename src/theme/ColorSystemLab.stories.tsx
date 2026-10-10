@@ -102,7 +102,13 @@ function FilterButton({
   );
 }
 
-function ColorSystemLab({ globals, updateGlobals }: { globals: Record<string, unknown>; updateGlobals: (globals: Record<string, unknown>) => void }) {
+function ColorSystemLab({
+  globals,
+  updateGlobals,
+}: {
+  globals: Record<string, unknown>;
+  updateGlobals: (globals: Record<string, unknown>) => void;
+}) {
   const [authenticated, setAuthenticated] = useState(true);
   const [familyFilter, setFamilyFilter] = useState<RecipeFamilyFilter>('all');
   const [pairingFilter, setPairingFilter] = useState<RecipePairingFilter>('curated');
@@ -111,204 +117,240 @@ function ColorSystemLab({ globals, updateGlobals }: { globals: Record<string, un
       (familyFilter === 'all' || recipe.family === familyFilter) &&
       (pairingFilter === 'all' || recipe.pairing === pairingFilter),
   );
-  const activeRecipe = COLOR_RECIPES.find(recipe => recipe.name === globals.colorPreset) ?? COLOR_RECIPES[0];
+  const activeRecipe =
+    COLOR_RECIPES.find((recipe) => recipe.name === globals.colorPreset) ?? COLOR_RECIPES[0];
   if (activeRecipe === undefined) return null;
   const activeLight = resolveLabPalette(activeRecipe, 'light');
   const activeDark = resolveLabPalette(activeRecipe, 'dark');
 
   return (
     <>
+      <View style={styles.page}>
+        <View style={styles.labHeader}>
+          <View style={styles.labHeading}>
+            <Text style={styles.labEyebrow}>BLOOM COLOR LAB · MENTION INTERFACE</Text>
+            <Text style={styles.labTitle}>More energy, less pastel</Text>
+            <Text style={styles.labDescription}>
+              The same Mention structure applied to {COLOR_RECIPES.length} dynamic recipes. Large
+              surfaces stay neutral while identity and action carry the saturated colour.
+            </Text>
+            <Button
+              href="./?path=/story/foundations-color-roles-in-context--first-direction"
+              target="_top"
+              appearance="outline"
+              tone="neutral"
+              style={{ alignSelf: 'flex-start' }}
+            >
+              Open colour roles in context
+            </Button>
+          </View>
+          <View style={styles.legend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#75805D' }]} />
+              <Text style={styles.legendText}>Identity: selection, navigation and brand</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#E9B522' }]} />
+              <Text style={styles.legendText}>Action: one dominant CTA in each context</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#BDB6AC' }]} />
+              <Text style={styles.legendText}>
+                Hierarchy: flow, spacing and radius without decorative boxes
+              </Text>
+            </View>
+          </View>
+        </View>
 
-    <View style={styles.page}>
-      <View style={styles.labHeader}>
-        <View style={styles.labHeading}>
-          <Text style={styles.labEyebrow}>BLOOM COLOR LAB · MENTION INTERFACE</Text>
-          <Text style={styles.labTitle}>More energy, less pastel</Text>
-          <Text style={styles.labDescription}>
-            The same Mention structure applied to {COLOR_RECIPES.length} dynamic recipes. Large
-            surfaces stay neutral while identity and action carry the saturated colour.
+        <View style={styles.paletteMapHeader}>
+          <Text style={styles.paletteMapTitle}>{COLOR_RECIPES.length} directions to compare</Text>
+          <Text style={styles.paletteMapDescription}>
+            Filter by family or curated/derived pairing. Every card shows light and dark.
           </Text>
-          <Button href="./?path=/story/foundations-color-roles-in-context--first-direction" target="_top" appearance="outline" tone="neutral" style={{ alignSelf: 'flex-start' }}>
-            Open colour roles in context
+        </View>
+
+        <View style={styles.filterStack}>
+          <View style={styles.filterRow}>
+            <Text style={styles.filterLabel}>Family</Text>
+            <FilterButton
+              label="All"
+              selected={familyFilter === 'all'}
+              onPress={() => {
+                setFamilyFilter('all');
+              }}
+            />
+            {COLOR_PRESET_FAMILY_REGISTRY.map((family) => (
+              <FilterButton
+                key={family.name}
+                label={family.displayName}
+                selected={familyFilter === family.name}
+                onPress={() => {
+                  setFamilyFilter(family.name);
+                }}
+              />
+            ))}
+          </View>
+          <View style={styles.filterRow}>
+            <Text style={styles.filterLabel}>Pairing</Text>
+            <FilterButton
+              label="All"
+              selected={pairingFilter === 'all'}
+              onPress={() => {
+                setPairingFilter('all');
+              }}
+            />
+            <FilterButton
+              label="Curated combinations"
+              selected={pairingFilter === 'curated'}
+              onPress={() => {
+                setPairingFilter('curated');
+              }}
+            />
+            <FilterButton
+              label="Derived"
+              selected={pairingFilter === 'derived'}
+              onPress={() => {
+                setPairingFilter('derived');
+              }}
+            />
+            <Text style={styles.filterCount}>{visibleRecipes.length} visible</Text>
+          </View>
+        </View>
+
+        <View style={styles.recipeGrid}>
+          {visibleRecipes.map((recipe) => {
+            const selected = recipe.name === activeRecipe.name;
+            const light = resolveLabPalette(recipe, 'light');
+            const dark = resolveLabPalette(recipe, 'dark');
+            return (
+              <Pressable
+                key={recipe.name}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                aria-pressed={selected}
+                onPress={() => updateGlobals({ colorPreset: recipe.name })}
+                style={[
+                  styles.recipeButton,
+                  selected ? styles.recipeButtonSelected : styles.recipeButtonIdle,
+                ]}
+              >
+                <View style={styles.recipeModes}>
+                  <View style={styles.recipeSwatches}>
+                    <View style={[styles.recipeSwatch, { backgroundColor: light.canvas }]} />
+                    <View style={[styles.recipeSwatch, { backgroundColor: light.identity }]} />
+                    <View style={[styles.recipeSwatch, { backgroundColor: light.action }]} />
+                  </View>
+                  <View style={styles.recipeSwatches}>
+                    <View style={[styles.recipeSwatch, { backgroundColor: dark.canvas }]} />
+                    <View style={[styles.recipeSwatch, { backgroundColor: dark.identity }]} />
+                    <View style={[styles.recipeSwatch, { backgroundColor: dark.action }]} />
+                  </View>
+                </View>
+                <Text style={styles.recipeName}>{recipe.displayName}</Text>
+                <Text style={styles.recipeSource}>
+                  {recipe.family} · {recipe.pairing}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.recipeIntro}>
+          <View style={styles.recipeIntroCopy}>
+            <Text style={styles.recipeTitle}>{activeRecipe.displayName}</Text>
+            <Text style={styles.recipeIdea}>{activeRecipe.description}</Text>
+          </View>
+          <View style={styles.rulePill}>
+            <Text style={styles.rulePillText}>
+              The palette changes by mode; the relationship stays intact
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.viewerModeRow}>
+          <Text style={styles.viewerModeLabel}>Mention state</Text>
+          <View style={styles.viewerModeControl}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: authenticated }}
+              aria-pressed={authenticated}
+              onPress={() => setAuthenticated(true)}
+              style={[styles.viewerModeButton, authenticated && styles.viewerModeButtonSelected]}
+            >
+              <Text
+                style={[
+                  styles.viewerModeButtonText,
+                  authenticated && styles.viewerModeButtonTextSelected,
+                ]}
+              >
+                Signed in
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: !authenticated }}
+              aria-pressed={!authenticated}
+              onPress={() => setAuthenticated(false)}
+              style={[styles.viewerModeButton, !authenticated && styles.viewerModeButtonSelected]}
+            >
+              <Text
+                style={[
+                  styles.viewerModeButtonText,
+                  !authenticated && styles.viewerModeButtonTextSelected,
+                ]}
+              >
+                Public view
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.viewerModeRow}>
+          <Text style={styles.viewerModeLabel}>Appearance</Text>
+          <Button
+            size="sm"
+            tone="neutral"
+            appearance={globals.theme === 'dark' ? 'subtle' : 'solid'}
+            onPress={() => updateGlobals({ theme: 'light' })}
+          >
+            Light mode
+          </Button>
+          <Button
+            size="sm"
+            tone="neutral"
+            appearance={globals.theme === 'dark' ? 'solid' : 'subtle'}
+            onPress={() => updateGlobals({ theme: 'dark' })}
+          >
+            Dark mode
           </Button>
         </View>
-        <View style={styles.legend}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#75805D' }]} />
-            <Text style={styles.legendText}>Identity: selection, navigation and brand</Text>
+
+        <View style={styles.swatchSection}>
+          <View style={styles.swatchMode}>
+            <Text style={styles.swatchModeTitle}>Light · neutral layers, concentrated colour</Text>
+            <View style={styles.swatchRow}>
+              <Swatch label="Canvas" color={activeLight.canvas} text="#18202A" />
+              <Swatch label="Shell" color={activeLight.shell} text="#18202A" />
+              <Swatch label="Surface" color={activeLight.surface} text="#18202A" />
+              <Swatch label="Raised" color={activeLight.raised} text="#18202A" />
+              <Swatch label="Identity" color={activeLight.identity} text="#18202A" />
+              <Swatch label="Action" color={activeLight.action} text="#18202A" />
+            </View>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#E9B522' }]} />
-            <Text style={styles.legendText}>Action: one dominant CTA in each context</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#BDB6AC' }]} />
-            <Text style={styles.legendText}>Hierarchy: flow, spacing and radius without decorative boxes</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.paletteMapHeader}>
-        <Text style={styles.paletteMapTitle}>{COLOR_RECIPES.length} directions to compare</Text>
-        <Text style={styles.paletteMapDescription}>
-          Filter by family or curated/derived pairing. Every card shows light and dark.
-        </Text>
-      </View>
-
-      <View style={styles.filterStack}>
-        <View style={styles.filterRow}>
-          <Text style={styles.filterLabel}>Family</Text>
-          <FilterButton
-            label="All"
-            selected={familyFilter === 'all'}
-            onPress={() => {
-              setFamilyFilter('all');
-            }}
-          />
-          {COLOR_PRESET_FAMILY_REGISTRY.map((family) => (
-            <FilterButton
-              key={family.name}
-              label={family.displayName}
-              selected={familyFilter === family.name}
-              onPress={() => {
-                setFamilyFilter(family.name);
-                }}
-            />
-          ))}
-        </View>
-        <View style={styles.filterRow}>
-          <Text style={styles.filterLabel}>Pairing</Text>
-          <FilterButton
-            label="All"
-            selected={pairingFilter === 'all'}
-            onPress={() => {
-              setPairingFilter('all');
-            }}
-          />
-          <FilterButton
-            label="Curated combinations"
-            selected={pairingFilter === 'curated'}
-            onPress={() => {
-              setPairingFilter('curated');
-            }}
-          />
-          <FilterButton
-            label="Derived"
-            selected={pairingFilter === 'derived'}
-            onPress={() => {
-              setPairingFilter('derived');
-            }}
-          />
-          <Text style={styles.filterCount}>{visibleRecipes.length} visible</Text>
-        </View>
-      </View>
-
-      <View style={styles.recipeGrid}>
-        {visibleRecipes.map((recipe) => {
-          const selected = recipe.name === activeRecipe.name;
-          const light = resolveLabPalette(recipe, 'light');
-          const dark = resolveLabPalette(recipe, 'dark');
-          return (
-            <Pressable
-              key={recipe.name}
-              accessibilityRole="button"
-              accessibilityState={{ selected }}
-              aria-pressed={selected}
-              onPress={() => updateGlobals({ colorPreset: recipe.name })}
-              style={[
-                styles.recipeButton,
-                selected ? styles.recipeButtonSelected : styles.recipeButtonIdle,
-              ]}
-            >
-              <View style={styles.recipeModes}>
-                <View style={styles.recipeSwatches}>
-                  <View style={[styles.recipeSwatch, { backgroundColor: light.canvas }]} />
-                  <View style={[styles.recipeSwatch, { backgroundColor: light.identity }]} />
-                  <View style={[styles.recipeSwatch, { backgroundColor: light.action }]} />
-                </View>
-                <View style={styles.recipeSwatches}>
-                  <View style={[styles.recipeSwatch, { backgroundColor: dark.canvas }]} />
-                  <View style={[styles.recipeSwatch, { backgroundColor: dark.identity }]} />
-                  <View style={[styles.recipeSwatch, { backgroundColor: dark.action }]} />
-                </View>
-              </View>
-              <Text style={styles.recipeName}>{recipe.displayName}</Text>
-              <Text style={styles.recipeSource}>{recipe.family} · {recipe.pairing}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      <View style={styles.recipeIntro}>
-        <View style={styles.recipeIntroCopy}>
-          <Text style={styles.recipeTitle}>{activeRecipe.displayName}</Text>
-          <Text style={styles.recipeIdea}>{activeRecipe.description}</Text>
-        </View>
-        <View style={styles.rulePill}>
-          <Text style={styles.rulePillText}>The palette changes by mode; the relationship stays intact</Text>
-        </View>
-      </View>
-
-      <View style={styles.viewerModeRow}>
-        <Text style={styles.viewerModeLabel}>Mention state</Text>
-        <View style={styles.viewerModeControl}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: authenticated }}
-            aria-pressed={authenticated}
-            onPress={() => setAuthenticated(true)}
-            style={[styles.viewerModeButton, authenticated && styles.viewerModeButtonSelected]}
-          >
-            <Text style={[styles.viewerModeButtonText, authenticated && styles.viewerModeButtonTextSelected]}>
-              Signed in
-            </Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: !authenticated }}
-            aria-pressed={!authenticated}
-            onPress={() => setAuthenticated(false)}
-            style={[styles.viewerModeButton, !authenticated && styles.viewerModeButtonSelected]}
-          >
-            <Text style={[styles.viewerModeButtonText, !authenticated && styles.viewerModeButtonTextSelected]}>
-              Public view
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-
-      <View style={styles.viewerModeRow}>
-        <Text style={styles.viewerModeLabel}>Appearance</Text>
-        <Button size="sm" tone="neutral" appearance={globals.theme === 'dark' ? 'subtle' : 'solid'} onPress={() => updateGlobals({ theme: 'light' })}>Light mode</Button>
-        <Button size="sm" tone="neutral" appearance={globals.theme === 'dark' ? 'solid' : 'subtle'} onPress={() => updateGlobals({ theme: 'dark' })}>Dark mode</Button>
-      </View>
-
-      <View style={styles.swatchSection}>
-        <View style={styles.swatchMode}>
-          <Text style={styles.swatchModeTitle}>Light · neutral layers, concentrated colour</Text>
-          <View style={styles.swatchRow}>
-            <Swatch label="Canvas" color={activeLight.canvas} text="#18202A" />
-            <Swatch label="Shell" color={activeLight.shell} text="#18202A" />
-            <Swatch label="Surface" color={activeLight.surface} text="#18202A" />
-            <Swatch label="Raised" color={activeLight.raised} text="#18202A" />
-            <Swatch label="Identity" color={activeLight.identity} text="#18202A" />
-            <Swatch label="Action" color={activeLight.action} text="#18202A" />
-          </View>
-        </View>
-        <View style={styles.swatchMode}>
-          <Text style={styles.swatchModeTitle}>Dark · deep layers, not inverted</Text>
-          <View style={styles.swatchRow}>
-            <Swatch label="Canvas" color={activeDark.canvas} text="#18202A" />
-            <Swatch label="Shell" color={activeDark.shell} text="#18202A" />
-            <Swatch label="Surface" color={activeDark.surface} text="#18202A" />
-            <Swatch label="Raised" color={activeDark.raised} text="#18202A" />
-            <Swatch label="Identity" color={activeDark.identity} text="#18202A" />
-            <Swatch label="Action" color={activeDark.action} text="#18202A" />
+          <View style={styles.swatchMode}>
+            <Text style={styles.swatchModeTitle}>Dark · deep layers, not inverted</Text>
+            <View style={styles.swatchRow}>
+              <Swatch label="Canvas" color={activeDark.canvas} text="#18202A" />
+              <Swatch label="Shell" color={activeDark.shell} text="#18202A" />
+              <Swatch label="Surface" color={activeDark.surface} text="#18202A" />
+              <Swatch label="Raised" color={activeDark.raised} text="#18202A" />
+              <Swatch label="Identity" color={activeDark.identity} text="#18202A" />
+              <Swatch label="Action" color={activeDark.action} text="#18202A" />
+            </View>
           </View>
         </View>
       </View>
-    </View>
-    <SocialTemplate authenticated={authenticated} />
+      <SocialTemplate authenticated={authenticated} />
     </>
   );
 }

@@ -37,7 +37,11 @@ function FadeIn({ focused, children }: PropsWithChildren<{ focused: boolean }>) 
       progress.value = focused ? 1 : 0;
     } else if (focused) {
       progress.value = 0;
-      progress.value = withTiming(1, { ...MOTION_RECIPES.present, duration: ENTER_DURATION, easing: EASE_OUT });
+      progress.value = withTiming(1, {
+        ...MOTION_RECIPES.present,
+        duration: ENTER_DURATION,
+        easing: EASE_OUT,
+      });
     } else {
       // Outgoing screen hides instantly (display: none) — only entries animate.
       progress.value = 0;

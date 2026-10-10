@@ -54,7 +54,13 @@ describe('Textarea', () => {
   it('matches the geometry: rows × 20, px-1, p-2 shell with the ring inside it', () => {
     const root = renderWithTheme(<Textarea label="Bio" />);
     const input = resolvedStyle(root.UNSAFE_getByType(TextInput).props.style);
-    expect(input).toMatchObject({ height: 60, fontSize: 14, lineHeight: 20, paddingLeft: 4, paddingRight: 4 });
+    expect(input).toMatchObject({
+      height: 60,
+      fontSize: 14,
+      lineHeight: 20,
+      paddingLeft: 4,
+      paddingRight: 4,
+    });
     // 2px ring + 6px padding = the 8px `p-2`.
     expect(shellStyle(root)).toMatchObject({ paddingHorizontal: 6, paddingVertical: 6 });
   });
@@ -75,7 +81,10 @@ describe('Textarea', () => {
   it('paints focus, invalid and disabled from the shared input palette', () => {
     const p = resolveTextFieldPalette(captureTheme());
     const rest = renderWithTheme(<Textarea label="Bio" />);
-    expect(shellStyle(rest)).toMatchObject({ backgroundColor: p.background, borderColor: 'rgba(0, 0, 0, 0)' });
+    expect(shellStyle(rest)).toMatchObject({
+      backgroundColor: p.background,
+      borderColor: 'rgba(0, 0, 0, 0)',
+    });
     act(() => {
       rest.UNSAFE_getByType(TextInput).props.onFocus({});
     });
@@ -94,14 +103,18 @@ describe('Textarea', () => {
   });
 
   it('counts uncontrolled typing against maxLength', () => {
-    const root = renderWithTheme(<Textarea label="Bio" showCount maxLength={280} defaultValue="Hello" />);
+    const root = renderWithTheme(
+      <Textarea label="Bio" showCount maxLength={280} defaultValue="Hello" />,
+    );
     expect(root.getByText('5/280')).toBeTruthy();
     fireEvent.changeText(root.getByLabelText('Bio'), 'Hello there');
     expect(root.getByText('11/280')).toBeTruthy();
   });
 
   it('counts a controlled value without maxLength', () => {
-    const root = renderWithTheme(<Textarea label="Bio" showCount value="abc" onValueChange={() => {}} />);
+    const root = renderWithTheme(
+      <Textarea label="Bio" showCount value="abc" onValueChange={() => {}} />,
+    );
     expect(root.getByText('3')).toBeTruthy();
   });
 });

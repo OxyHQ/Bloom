@@ -16,13 +16,11 @@ jest.mock('../../agent-avatar/AgentAvatar', () => ({
 
 it('shows all migrated contours without rendering avatars and preserves catalog PNGs and selection', () => {
   const choices: ShapeArcChoice[] = [
-    ...(['slender', 'pocket', 'petal', 'star', 'cloud', 'shield'] as const).map(
-      (foldShape) => ({
-        id: foldShape,
-        label: foldShape,
-        config: { ...FOLD_CONFIG, foldShape },
-      }),
-    ),
+    ...(['slender', 'pocket', 'petal', 'star', 'cloud', 'shield'] as const).map((foldShape) => ({
+      id: foldShape,
+      label: foldShape,
+      config: { ...FOLD_CONFIG, foldShape },
+    })),
     ...(['pebble', 'squircle'] as const).map((shape) => ({
       id: shape,
       label: shape,
@@ -51,9 +49,7 @@ it('shows all migrated contours without rendering avatars and preserves catalog 
   );
   expect(AgentAvatar).not.toHaveBeenCalled();
   expect(
-    view
-      .UNSAFE_getAllByType(Path)
-      .filter((path) => path.props.fill === CHARACTER_COLORS.pink),
+    view.UNSAFE_getAllByType(Path).filter((path) => path.props.fill === CHARACTER_COLORS.pink),
   ).toHaveLength(8);
   expect(view.UNSAFE_getByType(StyledImage).props.source).toEqual({
     uri: '/thumbnails/shapes/circle.png',

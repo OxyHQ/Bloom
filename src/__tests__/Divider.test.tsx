@@ -39,9 +39,13 @@ function neutral(mode: 'light' | 'dark') {
 describe('Divider', () => {
   it('takes its colour from the canonical separator in both modes', () => {
     const light = renderWithTheme(<Divider testID="d" />);
-    expect(resolvedStyle(light.getByTestId('d').props.style).backgroundColor).toBe(neutral('light').borderLight);
+    expect(resolvedStyle(light.getByTestId('d').props.style).backgroundColor).toBe(
+      neutral('light').borderLight,
+    );
     const dark = renderWithTheme(<Divider testID="d" />, 'dark');
-    expect(resolvedStyle(dark.getByTestId('d').props.style).backgroundColor).toBe(neutral('dark').borderLight);
+    expect(resolvedStyle(dark.getByTestId('d').props.style).backgroundColor).toBe(
+      neutral('dark').borderLight,
+    );
   });
 
   it('lays out horizontally by default: full width, 1px, thickness as height', () => {
@@ -77,27 +81,78 @@ describe('Divider', () => {
 
   it('draws the empty double (8px, top + bottom hairline) and fill (8px pill) strips', () => {
     const n = neutral('light');
-    const double = resolvedStyle(renderWithTheme(<Divider variant="double" testID="d" />).getByTestId('d').props.style);
-    expect(double).toMatchObject({ height: 8, borderTopWidth: 1, borderBottomWidth: 1, borderTopColor: n.borderLight });
-    const fill = resolvedStyle(renderWithTheme(<Divider variant="fill" testID="d" />).getByTestId('d').props.style);
-    expect(fill).toMatchObject({ height: 8, borderRadius: borderRadius.full, backgroundColor: n.backgroundSecondary });
+    const double = resolvedStyle(
+      renderWithTheme(<Divider variant="double" testID="d" />).getByTestId('d').props.style,
+    );
+    expect(double).toMatchObject({
+      height: 8,
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderTopColor: n.borderLight,
+    });
+    const fill = resolvedStyle(
+      renderWithTheme(<Divider variant="fill" testID="d" />).getByTestId('d').props.style,
+    );
+    expect(fill).toMatchObject({
+      height: 8,
+      borderRadius: borderRadius.full,
+      backgroundColor: n.backgroundSecondary,
+    });
   });
 
   it('places content between two flexible lines, dropping the line on the aligned side', () => {
-    const count = (ui: React.ReactElement) => renderedChildren(renderWithTheme(ui).toJSON(), 'd').length;
+    const count = (ui: React.ReactElement) =>
+      renderedChildren(renderWithTheme(ui).toJSON(), 'd').length;
     expect(count(<Divider testID="d">Today</Divider>)).toBe(3);
-    expect(count(<Divider align="start" testID="d">Today</Divider>)).toBe(2);
-    expect(count(<Divider align="end" testID="d">Today</Divider>)).toBe(2);
+    expect(
+      count(
+        <Divider align="start" testID="d">
+          Today
+        </Divider>,
+      ),
+    ).toBe(2);
+    expect(
+      count(
+        <Divider align="end" testID="d">
+          Today
+        </Divider>,
+      ),
+    ).toBe(2);
     // `double` and `fill` frame the content instead of running lines beside it.
-    expect(count(<Divider variant="double" testID="d">Today</Divider>)).toBe(1);
-    expect(count(<Divider variant="fill" testID="d">Today</Divider>)).toBe(1);
+    expect(
+      count(
+        <Divider variant="double" testID="d">
+          Today
+        </Divider>,
+      ),
+    ).toBe(1);
+    expect(
+      count(
+        <Divider variant="fill" testID="d">
+          Today
+        </Divider>,
+      ),
+    ).toBe(1);
   });
 
   it('frames content: gap 12 single, py 10 double, radius 10 / px 16 / py 10 fill', () => {
-    const style = (ui: React.ReactElement) => resolvedStyle(renderWithTheme(ui).getByTestId('d').props.style);
+    const style = (ui: React.ReactElement) =>
+      resolvedStyle(renderWithTheme(ui).getByTestId('d').props.style);
     expect(style(<Divider testID="d">x</Divider>).gap).toBe(12);
-    expect(style(<Divider variant="double" testID="d">x</Divider>)).toMatchObject({ paddingTop: 10, paddingBottom: 10 });
-    expect(style(<Divider variant="fill" align="end" testID="d">x</Divider>)).toMatchObject({
+    expect(
+      style(
+        <Divider variant="double" testID="d">
+          x
+        </Divider>,
+      ),
+    ).toMatchObject({ paddingTop: 10, paddingBottom: 10 });
+    expect(
+      style(
+        <Divider variant="fill" align="end" testID="d">
+          x
+        </Divider>,
+      ),
+    ).toMatchObject({
       borderRadius: 10,
       paddingLeft: 16,
       paddingTop: 10,

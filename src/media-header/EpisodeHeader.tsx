@@ -7,7 +7,15 @@ import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { PlayButton } from '../media-controls/PlayButton';
 import { Text } from '../typography';
 import { DownloadButton, MediaIconButton, MediaMoreButton } from './MediaActionBar';
-import { Cover, HeaderTitle, InlineLink, MediaHeaderFrame, MetaLine, ProgressBar, useMediaHeaderPaint } from './parts';
+import {
+  Cover,
+  HeaderTitle,
+  InlineLink,
+  MediaHeaderFrame,
+  MetaLine,
+  ProgressBar,
+  useMediaHeaderPaint,
+} from './parts';
 import { selectTitleVariant } from './shared';
 import type { EpisodeHeaderProps } from './types';
 import { useMessages } from '../locale/messages';
@@ -60,7 +68,15 @@ function EpisodeHeaderComponent({
 
   const row = (
     <View style={{ gap: 16 }}>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 16, rowGap: 8 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          columnGap: 16,
+          rowGap: 8,
+        }}
+      >
         <PlayButton
           playing={playing}
           onPress={onPlayPress}
@@ -68,7 +84,12 @@ function EpisodeHeaderComponent({
           subject={title}
           testID={testID ? `${testID}-play` : undefined}
         />
-        <MetaLine segments={[date, duration]} color={paint.text} mutedColor={paint.textMuted} ring={paint.ring} />
+        <MetaLine
+          segments={[date, duration]}
+          color={paint.text}
+          mutedColor={paint.textMuted}
+          ring={paint.ring}
+        />
         {progress !== undefined ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <ProgressBar
@@ -114,7 +135,9 @@ function EpisodeHeaderComponent({
               testID={testID ? `${testID}-download` : undefined}
             />
           ) : null}
-          {onMorePress ? <MediaMoreButton onPress={onMorePress} testID={testID ? `${testID}-more` : undefined} /> : null}
+          {onMorePress ? (
+            <MediaMoreButton onPress={onMorePress} testID={testID ? `${testID}-more` : undefined} />
+          ) : null}
         </View>
       </View>
       {actions}
@@ -130,14 +153,22 @@ function EpisodeHeaderComponent({
       centerCoverOnNarrow={false}
       coverWidth={(wide) => (wide ? 160 : 120)}
       cover={({ wide }) => (
-        <Cover source={cover} size={wide ? 160 : 120} radius={8} paint={paint} testID={testID ? `${testID}-cover` : undefined} />
+        <Cover
+          source={cover}
+          size={wide ? 160 : 120}
+          radius={8}
+          paint={paint}
+          testID={testID ? `${testID}-cover` : undefined}
+        />
       )}
     >
       {({ textWidth }) => {
         // An episode title is a sentence — start two steps down.
         const variant = selectTitleVariant(title, textWidth);
         const capped =
-          variant === 'large-title-bold' || variant === 'display-1-bold' || variant === 'display-2-bold'
+          variant === 'large-title-bold' ||
+          variant === 'display-1-bold' ||
+          variant === 'display-2-bold'
             ? 'display-3-bold'
             : variant;
         return (

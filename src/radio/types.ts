@@ -90,7 +90,11 @@ export interface RadioGroupProps<Value extends string = string> {
   options: ReadonlyArray<RadioOption<Value>>;
   /** Wrap the owned control with sibling content. Render it once, unchanged;
    * selection, accessible radio semantics and roving focus stay group-owned. */
-  renderOption?: (option: Readonly<RadioOption<Value>>, ownedControl: ReactElement, state: Readonly<RadioOptionState>) => ReactNode;
+  renderOption?: (
+    option: Readonly<RadioOption<Value>>,
+    ownedControl: ReactElement,
+    state: Readonly<RadioOptionState>,
+  ) => ReactNode;
   /** Size preset, applied to every option. */
   size?: RadioSize;
   /** Disables every option. An option may also disable itself. */

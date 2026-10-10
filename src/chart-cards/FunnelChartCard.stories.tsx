@@ -6,14 +6,14 @@ import { FunnelChartCard, type FunnelRange, type FunnelStage } from './FunnelCha
 
 const meta: Meta<typeof FunnelChartCard> = {
   argTypes: {
-    "shape": { control: 'select', options: ["curved","sharp"] },
-    "mono": { control: 'boolean' },
-    "title": { control: 'text' },
-    "headline": { control: 'number' },
-    "delta": { control: 'number' },
-    "range": { control: 'text' },
-    "defaultRange": { control: 'text' },
-    "activeIndex": { control: 'number' }
+    shape: { control: 'select', options: ['curved', 'sharp'] },
+    mono: { control: 'boolean' },
+    title: { control: 'text' },
+    headline: { control: 'number' },
+    delta: { control: 'number' },
+    range: { control: 'text' },
+    defaultRange: { control: 'text' },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Funnel Chart',
   component: FunnelChartCard,
@@ -31,7 +31,8 @@ const STAGES: FunnelStage[] = [
   { label: 'Converted', value: 38 },
 ];
 
-const stagesOf = (values: number[]): FunnelStage[] => STAGES.map((s, i) => ({ label: s.label, value: values[i]! }));
+const stagesOf = (values: number[]): FunnelStage[] =>
+  STAGES.map((s, i) => ({ label: s.label, value: values[i]! }));
 
 const RANGES: FunnelRange[] = [
   { id: '7d', label: 'Last 7 days', stages: STAGES, delta: 0.052 },
@@ -55,11 +56,24 @@ export const Curved: Story = {
 
 /** Straight trapezoids over a faint backing band. */
 export const Sharp: Story = {
-  args: { shape: "sharp" },
-  parameters: { controls: { include: ["shape","mono","title","headline","delta","range","defaultRange","activeIndex"] } },
+  args: { shape: 'sharp' },
+  parameters: {
+    controls: {
+      include: [
+        'shape',
+        'mono',
+        'title',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <FunnelChartCard {...args} testID="funnel"  ranges={RANGES} />
+      <FunnelChartCard {...args} testID="funnel" ranges={RANGES} />
     </Frame>
   ),
 };
@@ -88,14 +102,25 @@ export const Hovered: Story = {
 
 /** Six stages in a narrow card: pills that do not fit their column are dropped, tiles go two per row below `sm`. */
 export const ManyStages: Story = {
-  args: { title: "Acquisition funnel", range: "Q3", delta: 0.11 },
-  parameters: { controls: { include: ["title","range","delta","shape","mono","headline","defaultRange","activeIndex"] } },
+  args: { title: 'Acquisition funnel', range: 'Q3', delta: 0.11 },
+  parameters: {
+    controls: {
+      include: [
+        'title',
+        'range',
+        'delta',
+        'shape',
+        'mono',
+        'headline',
+        'defaultRange',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame width={360}>
-      <FunnelChartCard {...args}
-
-
-
+      <FunnelChartCard
+        {...args}
         format={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}K` : String(v))}
         stages={[
           { label: 'Impressions', value: 48200 },

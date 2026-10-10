@@ -38,5 +38,9 @@ export function FadeOnChange({ fadeKey, style, children }: FadeOnChangeProps) {
     animation.start();
     return () => animation.stop();
   }, [fadeKey, opacity, reducedMotion]);
-  return <Animated.View style={[{ opacity, flexShrink: 1, minWidth: 0 }, style]}>{children}</Animated.View>;
+  return (
+    <Animated.View style={[{ opacity, flexShrink: 1, minWidth: 0 }, style]}>
+      {children}
+    </Animated.View>
+  );
 }

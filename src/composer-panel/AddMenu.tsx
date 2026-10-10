@@ -16,7 +16,11 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useComposerPopover } from './context';
 import { ADD_PANEL_WIDTH, CONTROL_SIZE, type ComposerPalette } from './shared';
-import type { ComposerPanelAddMenuGroup, ComposerPanelAddMenuRow, ComposerPanelLabels } from './types';
+import type {
+  ComposerPanelAddMenuGroup,
+  ComposerPanelAddMenuRow,
+  ComposerPanelLabels,
+} from './types';
 import { InlineAside } from './InlineAside';
 
 /** CSS `ease`. */
@@ -49,9 +53,16 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
   const rotation = useSharedValue(0);
 
   useEffect(() => {
-    rotation.value = reducedMotion ? (open ? 45 : 0) : withTiming(open ? 45 : 0, { duration: 200, easing: EASE });
+    rotation.value = reducedMotion
+      ? open
+        ? 45
+        : 0
+      : withTiming(open ? 45 : 0, { duration: 200, easing: EASE });
   }, [open, reducedMotion, rotation]);
-  const glyphStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.value}deg` }] }), [rotation]);
+  const glyphStyle = useAnimatedStyle(
+    () => ({ transform: [{ rotate: `${rotation.value}deg` }] }),
+    [rotation],
+  );
 
   const triggerStyle: WebCssStyle = {
     width: CONTROL_SIZE,
@@ -77,7 +88,10 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
 
   return (
     <>
-      <Button appearance="subtle" tone="neutral" iconOnly
+      <Button
+        appearance="subtle"
+        tone="neutral"
+        iconOnly
         ref={triggerRef}
         testID={testID}
         accessibilityRole="button"
@@ -85,8 +99,8 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}
-
-        style={[COMPOSER_BUTTON_LAYOUT, triggerStyle]}>
+        style={[COMPOSER_BUTTON_LAYOUT, triggerStyle]}
+      >
         <Animated.View style={glyphStyle}>
           <RiAddLine width={20} height={20} fill={palette.iconPrimary} />
         </Animated.View>
@@ -100,9 +114,13 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
         side="top"
         sideOffset={8}
         testID={testID ? `${testID}-panel` : undefined}
-        style={panelStyle}>
+        style={panelStyle}
+      >
         {groups.map((group) => (
-          <View key={group.label} style={{ width: '100%', flexDirection: 'column', gap: 6, paddingTop: 4 }}>
+          <View
+            key={group.label}
+            style={{ width: '100%', flexDirection: 'column', gap: 6, paddingTop: 4 }}
+          >
             <Text variant="body-medium" style={{ paddingLeft: 8, color: palette.textSecondary }}>
               {group.label}
             </Text>
@@ -140,24 +158,29 @@ function AddMenuRow({
   const Icon = row.icon;
   const iconSize = row.iconSize ?? 20;
   return (
-    <Button appearance="plain" tone="neutral"
+    <Button
+      appearance="plain"
+      tone="neutral"
       accessibilityRole="button"
       accessibilityLabel={row.description ? `${row.label} ${row.description}` : row.label}
       onPress={onPress}
       pressed={row.checked}
-
-      style={[COMPOSER_BUTTON_LAYOUT, {
-        width: '100%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        borderRadius: 10,
-        paddingLeft: 8,
-        paddingRight: 8,
-        paddingTop: 6,
-        paddingBottom: 6,
-        cursor: 'pointer',
-      }]} >
+      style={[
+        COMPOSER_BUTTON_LAYOUT,
+        {
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          borderRadius: 10,
+          paddingLeft: 8,
+          paddingRight: 8,
+          paddingTop: 6,
+          paddingBottom: 6,
+          cursor: 'pointer',
+        },
+      ]}
+    >
       {row.image ? (
         <View style={{ width: 24, height: 24, flexShrink: 0 }}>{row.image}</View>
       ) : Icon ? (
@@ -181,7 +204,12 @@ function AddMenuRow({
       {row.checked === undefined ? null : (
         <View style={{ marginLeft: 'auto', paddingLeft: 8, flexShrink: 0 }}>
           {row.checked ? (
-            <RiCheckLine testID={`bloom-row-checked-${row.id}`} width={18} height={18} fill={palette.text} />
+            <RiCheckLine
+              testID={`bloom-row-checked-${row.id}`}
+              width={18}
+              height={18}
+              fill={palette.text}
+            />
           ) : (
             <View style={{ width: 18, height: 18 }} />
           )}

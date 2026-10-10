@@ -24,13 +24,22 @@ export interface EarningsMessages {
   earnings: string;
 }
 
-export const EARNINGS_MESSAGES: MessageCatalog<EarningsMessages> = defineMessages<EarningsMessages>('EARNINGS_MESSAGES', {
-  earned: 'Earned',
-  period: 'Earnings period',
-  breakdown: 'What it came from',
-  payout: 'Next payout',
-  payoutState: { scheduled: 'Scheduled', processing: 'On its way', paid: 'Paid', held: 'On hold', failed: 'Failed' },
-  chart: (label) => `${label} earnings, by period`,
-  empty: 'Nothing earned yet',
-  earnings: 'Earnings',
-});
+export const EARNINGS_MESSAGES: MessageCatalog<EarningsMessages> = defineMessages<EarningsMessages>(
+  'EARNINGS_MESSAGES',
+  {
+    earned: 'Earned',
+    period: 'Earnings period',
+    breakdown: 'What it came from',
+    payout: 'Next payout',
+    payoutState: {
+      scheduled: 'Scheduled',
+      processing: 'On its way',
+      paid: 'Paid',
+      held: 'On hold',
+      failed: 'Failed',
+    },
+    chart: (label) => `${label} earnings, by period`,
+    empty: 'Nothing earned yet',
+    earnings: 'Earnings',
+  },
+);

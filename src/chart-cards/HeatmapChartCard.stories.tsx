@@ -7,15 +7,15 @@ import type { HeatmapRange, HeatmapRow } from './HeatmapChartCard';
 
 const meta: Meta<typeof HeatmapChartCard> = {
   argTypes: {
-    "title": { control: 'text' },
-    "color": { control: 'text' },
-    "activeColor": { control: 'text' },
-    "max": { control: 'number' },
-    "headline": { control: 'number' },
-    "delta": { control: 'number' },
-    "range": { control: 'text' },
-    "defaultRange": { control: 'text' },
-    "columnLabelEvery": { control: 'number' }
+    title: { control: 'text' },
+    color: { control: 'text' },
+    activeColor: { control: 'text' },
+    max: { control: 'number' },
+    headline: { control: 'number' },
+    delta: { control: 'number' },
+    range: { control: 'text' },
+    defaultRange: { control: 'text' },
+    columnLabelEvery: { control: 'number' },
   },
   title: 'Charts/Heatmap Chart',
   component: HeatmapChartCard,
@@ -42,7 +42,9 @@ const ROWS: HeatmapRow[] = [
 const scaleRows = (rows: HeatmapRow[], factor: number): HeatmapRow[] =>
   rows.map((row, r) => ({
     label: row.label,
-    values: row.values.map((v, c) => Math.round(v * factor * (1 + ((((r * 7 + c * 3) % 5) - 2) * 0.06)))),
+    values: row.values.map((v, c) =>
+      Math.round(v * factor * (1 + (((r * 7 + c * 3) % 5) - 2) * 0.06)),
+    ),
   }));
 
 const RANGES: HeatmapRange[] = [
@@ -77,17 +79,40 @@ export const Hovered: Story = {
 
 /** Region × month with a custom accent, a fixed `max`, a static pill and a falling delta. */
 export const CustomAccent: Story = {
-  args: { title: "Orders", range: "2024", color: "#f97316", max: 100 },
-  parameters: { controls: { include: ["title","range","color","max","activeColor","headline","defaultRange","columnLabelEvery"] } },
+  args: { title: 'Orders', range: '2024', color: '#f97316', max: 100 },
+  parameters: {
+    controls: {
+      include: [
+        'title',
+        'range',
+        'color',
+        'max',
+        'activeColor',
+        'headline',
+        'defaultRange',
+        'columnLabelEvery',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <HeatmapChartCard {...args}
-
-
+      <HeatmapChartCard
+        {...args}
         delta={-0.021}
-
-
-        columns={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']}
+        columns={[
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ]}
         rows={['North America', 'Europe', 'Asia', 'LATAM'].map((label, r) => ({
           label,
           values: Array.from({ length: 12 }, (_, c) => ((r * 31 + c * 17) % 90) + 5),
@@ -100,14 +125,31 @@ export const CustomAccent: Story = {
 
 /** 24 hourly columns: every other label shows. */
 export const DenseColumns: Story = {
-  args: { range: "Last 7 days" },
-  parameters: { controls: { include: ["range","title","color","activeColor","max","headline","delta","defaultRange","columnLabelEvery"] } },
+  args: { range: 'Last 7 days' },
+  parameters: {
+    controls: {
+      include: [
+        'range',
+        'title',
+        'color',
+        'activeColor',
+        'max',
+        'headline',
+        'delta',
+        'defaultRange',
+        'columnLabelEvery',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <HeatmapChartCard {...args}
-
+      <HeatmapChartCard
+        {...args}
         columns={Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0'))}
-        rows={ROWS.map((row) => ({ label: row.label, values: row.values.flatMap((v) => [v, Math.round(v * 0.8)]) }))}
+        rows={ROWS.map((row) => ({
+          label: row.label,
+          values: row.values.flatMap((v) => [v, Math.round(v * 0.8)]),
+        }))}
       />
     </Frame>
   ),

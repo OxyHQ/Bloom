@@ -68,7 +68,11 @@ function ArtistPickComponent({
           }}
         >
           {avatar ? <Avatar source={avatar} size={24} /> : null}
-          <Text variant="body-regular" numberOfLines={2} style={{ flexShrink: 1, color: paint.text }}>
+          <Text
+            variant="body-regular"
+            numberOfLines={2}
+            style={{ flexShrink: 1, color: paint.text }}
+          >
             {note}
           </Text>
         </View>

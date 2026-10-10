@@ -51,10 +51,18 @@ function PlaceReviewSummaryComponent({
 
   const stats: { key: string; icon: typeof RiShieldCheckLine; text: string }[] = [];
   if (depositReturnedRate != null) {
-    stats.push({ key: 'deposit', icon: RiShieldCheckLine, text: formatDepositReturned(toPercent(depositReturnedRate)) });
+    stats.push({
+      key: 'deposit',
+      icon: RiShieldCheckLine,
+      text: formatDepositReturned(toPercent(depositReturnedRate)),
+    });
   }
   if (recommendRate != null) {
-    stats.push({ key: 'recommend', icon: RiThumbUpLine, text: formatRecommend(toPercent(recommendRate)) });
+    stats.push({
+      key: 'recommend',
+      icon: RiThumbUpLine,
+      text: formatRecommend(toPercent(recommendRate)),
+    });
   }
 
   return (

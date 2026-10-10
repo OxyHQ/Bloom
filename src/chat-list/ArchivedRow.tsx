@@ -51,9 +51,7 @@ function ArchivedRowComponent({
   const [pressed, setPressed] = useState(false);
   const geo = CHAT_ROW_GEOMETRY[density];
   const showCount = (count ?? 0) > 0;
-  const name = showCount
-    ? messages.archivedName(label, count ?? 0)
-    : label;
+  const name = showCount ? messages.archivedName(label, count ?? 0) : label;
 
   const rowStyle: WebCssStyle = {
     position: 'relative',

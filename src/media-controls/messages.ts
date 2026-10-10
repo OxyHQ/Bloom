@@ -31,18 +31,19 @@ export interface MediaControlsMessages {
   nowPlaying: string;
 }
 
-export const MEDIA_CONTROLS_MESSAGES: MessageCatalog<MediaControlsMessages> = defineMessages<MediaControlsMessages>('MEDIA_CONTROLS_MESSAGES', {
-  play: 'Play',
-  pause: 'Pause',
-  playSubject: (s) => `Play ${s}`,
-  pauseSubject: (s) => `Pause ${s}`,
-  saveToLibrary: 'Save to Your Library',
-  saveSubjectToLibrary: (s) => `Save ${s} to Your Library`,
-  explicit: 'Explicit',
-  seek: 'Seek',
-  seekValue: (a, b) => `${a} of ${b}`,
-  mute: 'Mute',
-  unmute: 'Unmute',
-  volume: 'Volume',
-  nowPlaying: 'Now playing',
-});
+export const MEDIA_CONTROLS_MESSAGES: MessageCatalog<MediaControlsMessages> =
+  defineMessages<MediaControlsMessages>('MEDIA_CONTROLS_MESSAGES', {
+    play: 'Play',
+    pause: 'Pause',
+    playSubject: (s) => `Play ${s}`,
+    pauseSubject: (s) => `Pause ${s}`,
+    saveToLibrary: 'Save to Your Library',
+    saveSubjectToLibrary: (s) => `Save ${s} to Your Library`,
+    explicit: 'Explicit',
+    seek: 'Seek',
+    seekValue: (a, b) => `${a} of ${b}`,
+    mute: 'Mute',
+    unmute: 'Unmute',
+    volume: 'Volume',
+    nowPlaying: 'Now playing',
+  });

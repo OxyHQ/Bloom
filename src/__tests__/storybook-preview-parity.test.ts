@@ -193,7 +193,6 @@ describe('Storybook preview mounts the shipping Bloom stack', () => {
     const resolved: string[] = [];
 
     for (const { name, from } of REQUIRED_PROVIDERS) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const module: Record<string, unknown> = require(from);
       const value = module[name];
 

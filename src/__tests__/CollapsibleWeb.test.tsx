@@ -6,9 +6,7 @@ jest.mock('../hooks/use-prefers-reduced-motion', () => ({
   usePrefersReducedMotion: () => true,
 }));
 import { Collapsible } from '../collapsible/Collapsible.web';
-(
-  globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
-).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let container: HTMLDivElement, root: Root;
 let resize: () => void;
 let naturalHeight = 900;
@@ -24,15 +22,13 @@ beforeEach(() => {
     disconnect() {}
     unobserve() {}
   } as unknown as typeof ResizeObserver;
-  jest
-    .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
-    .mockImplementation(function (this: HTMLElement) {
-      return {
-        height: this.classList.contains('bloom-collapsible-content')
-          ? naturalHeight
-          : 0,
-      } as DOMRect;
-    });
+  jest.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    return {
+      height: this.classList.contains('bloom-collapsible-content') ? naturalHeight : 0,
+    } as DOMRect;
+  });
 });
 afterEach(() => {
   act(() => root.unmount());
@@ -66,9 +62,7 @@ it('measures arbitrary content, retains its state and hides closed descendants w
   draw(true);
   expect(panel.hasAttribute('inert')).toBe(false);
   expect(panel.style.maxHeight).toBe('900px');
-  expect(
-    container.querySelector('.custom-body')?.getAttribute('style'),
-  ).toContain('padding: 18px');
+  expect(container.querySelector('.custom-body')?.getAttribute('style')).toContain('padding: 18px');
   naturalHeight = 1300;
   act(() => resize());
   expect(panel.style.maxHeight).toBe('1300px');

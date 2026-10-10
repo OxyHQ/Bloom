@@ -21,12 +21,13 @@ export interface DeliverySlotMessages {
   emptyDescription: string;
 }
 
-export const DELIVERY_SLOT_MESSAGES: MessageCatalog<DeliverySlotMessages> = defineMessages<DeliverySlotMessages>('DELIVERY_SLOT_MESSAGES', {
-  tiers: { standard: 'Standard', express: 'Express' },
-  soldOut: 'Sold out',
-  asap: 'As soon as possible',
-  field: 'Delivery time',
-  day: 'Day',
-  emptyTitle: 'No windows left',
-  emptyDescription: 'Pick another day, or take the next courier.',
-});
+export const DELIVERY_SLOT_MESSAGES: MessageCatalog<DeliverySlotMessages> =
+  defineMessages<DeliverySlotMessages>('DELIVERY_SLOT_MESSAGES', {
+    tiers: { standard: 'Standard', express: 'Express' },
+    soldOut: 'Sold out',
+    asap: 'As soon as possible',
+    field: 'Delivery time',
+    day: 'Day',
+    emptyTitle: 'No windows left',
+    emptyDescription: 'Pick another day, or take the next courier.',
+  });

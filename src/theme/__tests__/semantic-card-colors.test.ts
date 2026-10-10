@@ -32,19 +32,33 @@ it('keeps card text and status pairs readable on the surface actually painted', 
         ['menu destructive hover', menu.rowHighlight, menu.destructive],
         ['select label', menu.trigger.background, menu.text],
         ['field placeholder', field.background, field.placeholder],
-        ['field invalid', painted(field.backgroundInvalid, theme.colors.background), field.placeholderInvalid],
+        [
+          'field invalid',
+          painted(field.backgroundInvalid, theme.colors.background),
+          field.placeholderInvalid,
+        ],
         ['chart label', chart.surface, chart.textSecondary],
         ['chart tick', chart.surface, chart.textTertiary],
         ['chart comparison', chart.surface, chart.neutralSeries],
         ['chart tile', chart.inner, chart.textSecondary],
         ['notification timestamp', notification.surface, notification.timestamp],
         ['notification description', notification.surface, notification.description],
-        ...(['positive', 'negative', 'neutral'] as const).map(key => [
-          `chart ${key}`, painted(chart[key].background, chart.surface), chart[key].foreground,
-        ] as [string, string, string]),
-        ...Object.entries(notification.status).map(([key, value]) => [
-          `notification ${key}`, painted(value.background, notification.surface), value.foreground,
-        ] as [string, string, string]),
+        ...(['positive', 'negative', 'neutral'] as const).map(
+          (key) =>
+            [
+              `chart ${key}`,
+              painted(chart[key].background, chart.surface),
+              chart[key].foreground,
+            ] as [string, string, string],
+        ),
+        ...Object.entries(notification.status).map(
+          ([key, value]) =>
+            [
+              `notification ${key}`,
+              painted(value.background, notification.surface),
+              value.foreground,
+            ] as [string, string, string],
+        ),
       ];
       for (const [role, background, foreground] of pairs) {
         const ratio = contrastRatio(foreground, background);

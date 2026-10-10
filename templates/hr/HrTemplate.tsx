@@ -1,12 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
-import {
-  BarListCard,
-  ComboChartCard,
-  RadarChartCard,
-  StageBarsCard,
-} from '../../src/chart-cards';
+import { BarListCard, ComboChartCard, RadarChartCard, StageBarsCard } from '../../src/chart-cards';
 import { chartHueTone } from '../../src/chart-cards/palette';
 import { Chip } from '../../src/chip';
 import {
@@ -84,7 +79,9 @@ function employeeColumns(): DataTableColumn<Employee>[] {
       flex: 1.4,
       accessor: (e) => e.name,
       cell: ({ row }) => (
-        <NameCell leading={<PersonAvatar name={row.name} avatar={row.avatar} color={row.initialsColor} />}>
+        <NameCell
+          leading={<PersonAvatar name={row.name} avatar={row.avatar} color={row.initialsColor} />}
+        >
           <NameLines name={row.name} detail={row.role} />
         </NameCell>
       ),
@@ -133,7 +130,9 @@ function employeeColumns(): DataTableColumn<Employee>[] {
       id: 'actions',
       header: 'Actions',
       width: 140,
-      cell: ({ row }) => <DataTableRowActions name={row.name} actions={DELETE_EDIT_ACTIONS} menu={EMPLOYEE_MENU} />,
+      cell: ({ row }) => (
+        <DataTableRowActions name={row.name} actions={DELETE_EDIT_ACTIONS} menu={EMPLOYEE_MENU} />
+      ),
     },
   ];
 }
@@ -187,7 +186,10 @@ export function EmployeesTable() {
             label="Filter by work status"
             value={statusFilter}
             onValueChange={filter(setStatusFilter)}
-            options={[{ value: 'all', label: 'All statuses' }, ...WORK_STATUSES.map((s) => ({ value: s.value, label: s.label }))]}
+            options={[
+              { value: 'all', label: 'All statuses' },
+              ...WORK_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+            ]}
           />
           <DataTableFilter
             label="Filter by salary"
@@ -195,7 +197,11 @@ export function EmployeesTable() {
             onValueChange={filter(setSalaryFilter)}
             options={SALARY_BUCKETS.map((b) => ({ value: b.id, label: b.label }))}
           />
-          <DataTableSearch label="Search employees" value={query} onValueChange={filter(setQuery)} />
+          <DataTableSearch
+            label="Search employees"
+            value={query}
+            onValueChange={filter(setQuery)}
+          />
         </>
       }
       selectable
@@ -217,7 +223,19 @@ export function EmployeesTable() {
  * the row's height, like a grid item without a fixed height.
  */
 function Track({ children, stretch = false }: { children: React.ReactNode; stretch?: boolean }) {
-  return <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, alignSelf: stretch ? 'stretch' : 'flex-start' }}>{children}</View>;
+  return (
+    <View
+      style={{
+        flexGrow: 1,
+        flexShrink: 1,
+        flexBasis: 0,
+        minWidth: 0,
+        alignSelf: stretch ? 'stretch' : 'flex-start',
+      }}
+    >
+      {children}
+    </View>
+  );
 }
 
 export function HrTemplate() {
@@ -240,11 +258,20 @@ export function HrTemplate() {
     />
   );
 
-  const combo = <ComboChartCard title="Hires" bar={HIRES_BAR} line={attrition} ranges={GROWTH_RANGES} tiles />;
-  const teams = <BarListCard tabs={TEAM_TABS} metricLabel="People" metric="value" style={{ flexGrow: 1 }} />;
+  const combo = (
+    <ComboChartCard title="Hires" bar={HIRES_BAR} line={attrition} ranges={GROWTH_RANGES} tiles />
+  );
+  const teams = (
+    <BarListCard tabs={TEAM_TABS} metricLabel="People" metric="value" style={{ flexGrow: 1 }} />
+  );
 
   return (
-    <DashboardShell selected="hr" title="HR Team" crumbIcon={RiTeamLine} primaryAction="Add employee">
+    <DashboardShell
+      selected="hr"
+      title="HR Team"
+      crumbIcon={RiTeamLine}
+      primaryAction="Add employee"
+    >
       <StatCards stats={HR_STATS} />
       {bp.xl ? (
         <View style={{ width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>

@@ -11,13 +11,7 @@ import { Avatar } from '../avatar';
 import { Badge } from '../badge';
 import { Button } from '../button';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
-import {
-  RiAddFill,
-  RiBookmarkLine,
-  RiMore2Line,
-  RiSearchLine,
-  RiShare2Line,
-} from '../icons/remix';
+import { RiAddFill, RiBookmarkLine, RiMore2Line, RiSearchLine, RiShare2Line } from '../icons/remix';
 import { ScrollOffsetProvider, TopEdgeProvider, useTopEdgeInset } from '../layout';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -37,7 +31,15 @@ const back = () => {};
 
 const HERO = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200';
 
-function Page({ children, fill, inset = false }: { children: React.ReactNode; fill?: string; inset?: boolean }) {
+function Page({
+  children,
+  fill,
+  inset = false,
+}: {
+  children: React.ReactNode;
+  fill?: string;
+  inset?: boolean;
+}) {
   const theme = useTheme();
   return (
     // The preview decorator pads every story by 24; a page header is edge to edge.
@@ -96,7 +98,9 @@ function LiveStatus() {
 }
 
 function IconAction({ icon, label }: { icon: typeof RiMore2Line; label: string }) {
-  return <Button appearance="outline" tone="neutral" size="md" icon={icon} accessibilityLabel={label} />;
+  return (
+    <Button appearance="outline" tone="neutral" size="md" icon={icon} accessibilityLabel={label} />
+  );
 }
 
 /**
@@ -448,7 +452,13 @@ export const Phone: Story = {
   render: () => (
     <View style={{ width: 390, maxWidth: '100%', alignSelf: 'flex-start' }}>
       <Page inset>
-        <PageHeader onBack={back} title="Order #4821" subtitle="Placed today" scrim="always" actions={<PageActions />} />
+        <PageHeader
+          onBack={back}
+          title="Order #4821"
+          subtitle="Placed today"
+          scrim="always"
+          actions={<PageActions />}
+        />
         <Rows count={6} />
       </Page>
     </View>
@@ -456,52 +466,146 @@ export const Phone: Story = {
 };
 
 export const Playground: StoryObj<typeof PageHeader> = {
-  args: { title: 'Community', subtitle: 'A shared canvas', presentation: 'floating', titleAlign: 'start', titleReveal: 'always', scrim: 'always', border: 'auto', sticky: false, onBack: () => {} },
-  parameters: { controls: { disable: false, include: ['title', 'subtitle', 'presentation', 'titleAlign', 'titleReveal', 'scrim', 'border'] } },
-  argTypes: { presentation: { control: 'select', options: ['floating','bar'] }, titleAlign: { control: 'select', options: ['start','center'] }, titleReveal: { control: 'select', options: ['always','onScroll'] }, scrim: { control: 'select', options: ['auto','always','none'] }, border: { control: 'select', options: ['auto','always','none'] }, title: { control: 'text' }, subtitle: { control: 'text' } },
+  args: {
+    title: 'Community',
+    subtitle: 'A shared canvas',
+    presentation: 'floating',
+    titleAlign: 'start',
+    titleReveal: 'always',
+    scrim: 'always',
+    border: 'auto',
+    sticky: false,
+    onBack: () => {},
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: [
+        'title',
+        'subtitle',
+        'presentation',
+        'titleAlign',
+        'titleReveal',
+        'scrim',
+        'border',
+      ],
+    },
+  },
+  argTypes: {
+    presentation: { control: 'select', options: ['floating', 'bar'] },
+    titleAlign: { control: 'select', options: ['start', 'center'] },
+    titleReveal: { control: 'select', options: ['always', 'onScroll'] },
+    scrim: { control: 'select', options: ['auto', 'always', 'none'] },
+    border: { control: 'select', options: ['auto', 'always', 'none'] },
+    title: { control: 'text' },
+    subtitle: { control: 'text' },
+  },
   render: function Playground(args) {
-
     const offset = useSharedValue(0);
-    const onScroll = useAnimatedScrollHandler(event => { offset.value = event.contentOffset.y; }, [offset]);
-    return <View style={{ width: 900, maxWidth: '100%', height: 420 }}><PageHeader {...args} scrollY={offset} placement="overlay" actions={<PageActions />} /><Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingTop: 88 }}><Rows count={16} /></Animated.ScrollView></View>;
+    const onScroll = useAnimatedScrollHandler(
+      (event) => {
+        offset.value = event.contentOffset.y;
+      },
+      [offset],
+    );
+    return (
+      <View style={{ width: 900, maxWidth: '100%', height: 420 }}>
+        <PageHeader {...args} scrollY={offset} placement="overlay" actions={<PageActions />} />
+        <Animated.ScrollView
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          contentContainerStyle={{ paddingTop: 88 }}
+        >
+          <Rows count={16} />
+        </Animated.ScrollView>
+      </View>
+    );
   },
 };
 
 /** The shared Screen signal takes over only after the in-content heading leaves. */
 export const RevealAfterContentHeading: Story = {
   args: { title: 'Library', subtitle: 'Everything you have saved', scrollThreshold: 20 },
-  parameters: { bloomScroll: 'document', controls: { disable: false, include: ['title', 'subtitle', 'scrollThreshold'] } },
-  argTypes: { title: { control: 'text' }, subtitle: { control: 'text' }, scrollThreshold: { control: { type: 'range', min: 1, max: 100 } } },
+  parameters: {
+    bloomScroll: 'document',
+    controls: { disable: false, include: ['title', 'subtitle', 'scrollThreshold'] },
+  },
+  argTypes: {
+    title: { control: 'text' },
+    subtitle: { control: 'text' },
+    scrollThreshold: { control: { type: 'range', min: 1, max: 100 } },
+  },
   render: function RevealAfterContentHeading(args) {
     const [headingHeight, setHeadingHeight] = useState(140);
     const theme = useTheme();
-    return <View style={{ flex: 1, minHeight: 0, width: '100%', backgroundColor: theme.colors.background }}>
-      <Screen documentScroll header={<PageHeader {...args} testID="revealed-header" onBack={back} sticky={false} titleReveal="onScroll" titleRevealOffset={headingHeight} actions={<PageActions />} />}>
-        <View testID="reveal-content">
-          <View testID="content-heading" onLayout={event => setHeadingHeight(event.nativeEvent.layout.height)} style={{ padding: 24, gap: 8 }}>
-            <Text variant="title-1-bold" role="heading" aria-level={1}>{args.title}</Text>
-            <Text style={{ color: theme.colors.textSecondary }}>{args.subtitle}</Text>
+    return (
+      <View
+        style={{ flex: 1, minHeight: 0, width: '100%', backgroundColor: theme.colors.background }}
+      >
+        <Screen
+          documentScroll
+          header={
+            <PageHeader
+              {...args}
+              testID="revealed-header"
+              onBack={back}
+              sticky={false}
+              titleReveal="onScroll"
+              titleRevealOffset={headingHeight}
+              actions={<PageActions />}
+            />
+          }
+        >
+          <View testID="reveal-content">
+            <View
+              testID="content-heading"
+              onLayout={(event) => setHeadingHeight(event.nativeEvent.layout.height)}
+              style={{ padding: 24, gap: 8 }}
+            >
+              <Text variant="title-1-bold" role="heading" aria-level={1}>
+                {args.title}
+              </Text>
+              <Text style={{ color: theme.colors.textSecondary }}>{args.subtitle}</Text>
+            </View>
+            <Rows count={30} />
           </View>
-          <Rows count={30} />
-        </View>
-      </Screen>
-    </View>;
+        </Screen>
+      </View>
+    );
   },
 };
-
 
 export const ProfileDocking: Story = {
   parameters: { bloomScroll: 'document', controls: { disable: true } },
   render: function ProfileDocking() {
     const [selected, setSelected] = useState('posts');
-    return <Screen documentScroll><ContentPanel>
-      <HeaderDockProvider>
-        <PageHeader testID="profile-header" placement="overlap" titleReveal="onDock" title="Alex Morgan" onBack={back} actions={<PageActions />} />
-        <View testID="profile-banner" style={{height:240,backgroundColor:'#46705b'}} />
-        <View style={{padding:24,gap:12}}><Text variant="title-1-bold">Alex Morgan</Text><Text>Design, reading and everyday discoveries.</Text></View>
-        <StickySection testID="profile-tabs"><Tabs value={selected} onValueChange={setSelected}><TabsTrigger value="posts" label="Posts"/><TabsTrigger value="media" label="Media"/></Tabs></StickySection>
-        <Rows count={35}/>
-      </HeaderDockProvider>
-    </ContentPanel></Screen>;
+    return (
+      <Screen documentScroll>
+        <ContentPanel>
+          <HeaderDockProvider>
+            <PageHeader
+              testID="profile-header"
+              placement="overlap"
+              titleReveal="onDock"
+              title="Alex Morgan"
+              onBack={back}
+              actions={<PageActions />}
+            />
+            <View testID="profile-banner" style={{ height: 240, backgroundColor: '#46705b' }} />
+            <View style={{ padding: 24, gap: 12 }}>
+              <Text variant="title-1-bold">Alex Morgan</Text>
+              <Text>Design, reading and everyday discoveries.</Text>
+            </View>
+            <StickySection testID="profile-tabs">
+              <Tabs value={selected} onValueChange={setSelected}>
+                <TabsTrigger value="posts" label="Posts" />
+                <TabsTrigger value="media" label="Media" />
+              </Tabs>
+            </StickySection>
+            <Rows count={35} />
+          </HeaderDockProvider>
+        </ContentPanel>
+      </Screen>
+    );
   },
 };

@@ -92,7 +92,13 @@ export function resolveChipPaint(
     selected,
     hue,
     surface,
-  }: { tone: AccentTone | BloomTone; variant: ChipVariant | BloomAppearance; selected: boolean; hue?: ChipHue; surface?: string },
+  }: {
+    tone: AccentTone | BloomTone;
+    variant: ChipVariant | BloomAppearance;
+    selected: boolean;
+    hue?: ChipHue;
+    surface?: string;
+  },
 ): ChipPaint {
   if (variant === 'inverted') {
     const text = theme.colors.text;
@@ -119,7 +125,11 @@ export function resolveChipPaint(
 
   const colors =
     !hue || selected
-      ? resolveBloomColors(theme.colors, selected ? 'accent' : normalizeTagTone(tone), variant === 'outlined' ? 'outline' : variant)
+      ? resolveBloomColors(
+          theme.colors,
+          selected ? 'accent' : normalizeTagTone(tone),
+          variant === 'outlined' ? 'outline' : variant,
+        )
       : { ...resolveChipHueColors(theme, hue, surface), border: 'transparent' };
 
   return {
@@ -165,4 +175,12 @@ export function chipRowOverflow({ x, viewport, content }: ChipRowScroll): {
   return { previous: x > 1, next: x < content - viewport - 1 };
 }
 
-export function normalizeTagTone(tone: AccentTone | BloomTone): BloomTone { return tone === 'primary' ? 'accent' : tone === 'error' ? 'danger' : tone === 'default' ? 'neutral' : tone as BloomTone; }
+export function normalizeTagTone(tone: AccentTone | BloomTone): BloomTone {
+  return tone === 'primary'
+    ? 'accent'
+    : tone === 'error'
+      ? 'danger'
+      : tone === 'default'
+        ? 'neutral'
+        : (tone as BloomTone);
+}

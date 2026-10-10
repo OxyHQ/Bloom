@@ -29,7 +29,8 @@ export function createSinglePathSVG({
         viewBox={viewBox || '0 0 24 24'}
         width={size}
         height={size}
-        style={[style]}>
+        style={[style]}
+      >
         {gradient}
         <Path
           fill={hasStroke ? 'none' : fill}
@@ -58,16 +59,11 @@ export function createMultiPathSVG({ paths, viewBox }: { paths: string[]; viewBo
         viewBox={viewBox || '0 0 24 24'}
         width={size}
         height={size}
-        style={[style]}>
+        style={[style]}
+      >
         {gradient}
         {paths.map((path, i) => (
-          <Path
-            key={i}
-            fill={fill}
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d={path}
-          />
+          <Path key={i} fill={fill} fillRule="evenodd" clipRule="evenodd" d={path} />
         ))}
       </Svg>
     );

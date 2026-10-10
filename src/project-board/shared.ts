@@ -1,8 +1,6 @@
 import type { BoardSort, ProjectColumn, ProjectTicket } from './types';
 
-export function cloneColumns(
-  columns: readonly ProjectColumn[],
-): ProjectColumn[] {
+export function cloneColumns(columns: readonly ProjectColumn[]): ProjectColumn[] {
   return columns.map((column) => ({
     ...column,
     tickets: column.tickets.map((ticket) => ({
@@ -21,9 +19,7 @@ export function moveTicket(
   destination: string,
   index = 0,
 ): ProjectColumn[] {
-  const source = columns.find((column) =>
-    column.tickets.some((ticket) => ticket.id === id),
-  );
+  const source = columns.find((column) => column.tickets.some((ticket) => ticket.id === id));
   const target = columns.find((column) => column.id === destination);
   const ticket = source?.tickets.find((item) => item.id === id);
   if (!source || !target || !ticket) return columns;
@@ -49,18 +45,13 @@ export function updateTicket(
   }));
 }
 
-export function sortColumns(
-  columns: ProjectColumn[],
-  sort: BoardSort,
-): ProjectColumn[] {
+export function sortColumns(columns: ProjectColumn[], sort: BoardSort): ProjectColumn[] {
   if (sort === 'manual') return columns;
   const rank = { Urgent: 0, High: 1, Medium: 2, Low: 3 };
   return columns.map((column) => ({
     ...column,
     tickets: [...column.tickets].sort((a, b) =>
-      sort === 'priority'
-        ? rank[a.priority] - rank[b.priority]
-        : a.title.localeCompare(b.title),
+      sort === 'priority' ? rank[a.priority] - rank[b.priority] : a.title.localeCompare(b.title),
     ),
   }));
 }
@@ -78,11 +69,7 @@ export function dropTarget(
   const column = columns.find((item) => {
     const rect = columnRects[item.id];
     return (
-      rect &&
-      x >= rect.x &&
-      x <= rect.x + rect.width &&
-      y >= rect.y &&
-      y <= rect.y + rect.height
+      rect && x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height
     );
   });
   if (!column) return null;
@@ -96,9 +83,7 @@ export function dropTarget(
       break;
     }
   }
-  const fromIndex = column.tickets.findIndex(
-    (ticket) => ticket.id === movingId,
-  );
+  const fromIndex = column.tickets.findIndex((ticket) => ticket.id === movingId);
   if (fromIndex >= 0 && fromIndex < index) index--;
   return { columnId: column.id, index };
 }

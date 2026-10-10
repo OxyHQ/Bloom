@@ -111,13 +111,7 @@ export function GlossArt({
         <Filter id={`${id}-soft`} x="-25%" y="-25%" width="150%" height="150%">
           <FeGaussianBlur stdDeviation={0.5} />
         </Filter>
-        <Filter
-          id={`${id}-hotspot`}
-          x="-50%"
-          y="-50%"
-          width="200%"
-          height="200%"
-        >
+        <Filter id={`${id}-hotspot`} x="-50%" y="-50%" width="200%" height="200%">
           <FeGaussianBlur stdDeviation={1} />
         </Filter>
       </Defs>

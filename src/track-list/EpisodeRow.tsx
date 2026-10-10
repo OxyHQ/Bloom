@@ -70,8 +70,10 @@ function EpisodeRowComponent({
   const [hovered, setHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const formatLength = labels?.formatLength ?? ((seconds: number) => formatEpisodeLength(seconds, messages));
-  const formatRemaining = labels?.formatRemaining ?? ((seconds: number) => formatEpisodeRemaining(seconds, messages));
+  const formatLength =
+    labels?.formatLength ?? ((seconds: number) => formatEpisodeLength(seconds, messages));
+  const formatRemaining =
+    labels?.formatRemaining ?? ((seconds: number) => formatEpisodeRemaining(seconds, messages));
   const playedLabel = labels?.played ?? messages.played;
   const progress = episode.progress ?? 0;
   const inProgress = !episode.played && progress > 0 && progress < episode.duration;
@@ -92,7 +94,10 @@ function EpisodeRowComponent({
         </View>
       ) : null}
       <Text variant="caption-1-regular" numberOfLines={1} style={{ color: paint.textMuted }}>
-        {[episode.played ? null : episode.date, episode.played ? episode.date : formatLength(episode.duration)]
+        {[
+          episode.played ? null : episode.date,
+          episode.played ? episode.date : formatLength(episode.duration),
+        ]
           .filter(Boolean)
           .join(' · ')}
       </Text>
@@ -206,7 +211,8 @@ function EpisodeRowComponent({
           paddingLeft: 12,
           paddingRight: 12,
           borderRadius: 12,
-          backgroundColor: IS_WEB && (hovered || menuOpen) && onPress ? paint.rowHover : 'transparent',
+          backgroundColor:
+            IS_WEB && (hovered || menuOpen) && onPress ? paint.rowHover : 'transparent',
           borderBottomWidth: divider ? StyleSheet.hairlineWidth : 0,
           borderBottomColor: paint.hairline,
         },

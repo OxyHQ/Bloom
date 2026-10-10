@@ -67,10 +67,7 @@ export interface BloomThemeContextValue {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
-  var __oxy_so_bloom_theme_context__:
-    | React.Context<BloomThemeContextValue | null>
-    | undefined;
+  var __oxy_so_bloom_theme_context__: React.Context<BloomThemeContextValue | null> | undefined;
 }
 
 /**
@@ -94,8 +91,9 @@ declare global {
  * `??=` runs `createContext` at most once per process.
  */
 export const BloomThemeContext: React.Context<BloomThemeContextValue | null> =
-  (globalThis.__oxy_so_bloom_theme_context__ ??=
-    createContext<BloomThemeContextValue | null>(null));
+  (globalThis.__oxy_so_bloom_theme_context__ ??= createContext<BloomThemeContextValue | null>(
+    null,
+  ));
 
 export interface BloomThemeProviderProps {
   /** Controlled mode. Omit to use Bloom's internal state (with optional persistence). */
@@ -205,9 +203,7 @@ function useThemeState({
   // Synchronous read happens once on first render. Succeeds on web with
   // localStorage-backed adapters; async adapters rehydrate via the effect
   // below. Lazy-initialized via `useState` so it runs exactly once per mount.
-  const [syncResult] = useState<SyncReadResult>(() =>
-    readPersistedThemeSync(persistKey, storage),
-  );
+  const [syncResult] = useState<SyncReadResult>(() => readPersistedThemeSync(persistKey, storage));
   const syncState = syncResult.kind === 'sync' ? syncResult.state : null;
 
   const initialMode = syncState?.mode ?? defaultMode;
@@ -236,6 +232,7 @@ function useThemeState({
 
   // Async hydration for adapters that can't be read synchronously
   // (AsyncStorage, MMKV via JSI fallback, etc).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (hydrated) return;
     if (!persistKey || !storage) {
@@ -263,7 +260,6 @@ function useThemeState({
     // Hydration runs once per storage instance. controlledMode/Preset are
     // captured by closure intentionally — switching controlled-ness mid-flight
     // is unsupported and would invalidate the in-flight hydration anyway.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistKey, storage]);
 
   const setMode = useCallback(
@@ -350,14 +346,12 @@ export function BloomThemeProvider({
   // active, ambient accents replace the static accent props entirely (a null
   // ambient accent = "no pin for this artwork colour").
   const ambientActive = ambient.seed !== null;
-  const effectiveSeed: string | undefined = ambientActive
-    ? ambient.seed ?? undefined
-    : seed;
+  const effectiveSeed: string | undefined = ambientActive ? (ambient.seed ?? undefined) : seed;
   const effectiveSecondary: string | undefined = ambientActive
-    ? ambient.secondary ?? undefined
+    ? (ambient.secondary ?? undefined)
     : secondaryColor;
   const effectiveTertiary: string | undefined = ambientActive
-    ? ambient.tertiary ?? undefined
+    ? (ambient.tertiary ?? undefined)
     : tertiaryColor;
 
   // The app-wide pinned accents, if any. Memoized so its identity only changes
@@ -413,13 +407,10 @@ export function BloomThemeProvider({
   const themeColors = useMemo(
     () =>
       effectiveSeed
-        ? buildThemeFromSeed(
-            effectiveSeed,
-            resolved,
-            undefined,
-            undefined,
-            { secondarySeed: effectiveSecondary, tertiarySeed: effectiveTertiary }
-          )
+        ? buildThemeFromSeed(effectiveSeed, resolved, undefined, undefined, {
+            secondarySeed: effectiveSecondary,
+            tertiarySeed: effectiveTertiary,
+          })
         : buildTheme(colorPreset, resolved, isAdaptive, explicitAccents),
     [
       effectiveSeed,
@@ -432,16 +423,43 @@ export function BloomThemeProvider({
     ],
   );
 
-  const scopeState = useMemo<ScopeState>(() => ({
-    theme: themeColors,
-    vars: themeVars,
-    resolveMode: (nextMode) => nextMode === resolved ? { theme: themeColors, vars: themeVars } : effectiveSeed
-      ? {
-          theme: buildThemeFromSeed(effectiveSeed, nextMode, undefined, undefined, { secondarySeed: effectiveSecondary, tertiarySeed: effectiveTertiary }),
-          vars: buildSeedScopeVars({ seed: effectiveSeed, mode: nextMode, secondarySeed: effectiveSecondary, tertiarySeed: effectiveTertiary }),
-        }
-      : { theme: buildTheme(colorPreset, nextMode, isAdaptive, explicitAccents), vars: buildScopeVars(colorPreset, nextMode, explicitAccents) },
-  }), [themeColors, themeVars, resolved, effectiveSeed, effectiveSecondary, effectiveTertiary, colorPreset, isAdaptive, explicitAccents]);
+  const scopeState = useMemo<ScopeState>(
+    () => ({
+      theme: themeColors,
+      vars: themeVars,
+      resolveMode: (nextMode) =>
+        nextMode === resolved
+          ? { theme: themeColors, vars: themeVars }
+          : effectiveSeed
+            ? {
+                theme: buildThemeFromSeed(effectiveSeed, nextMode, undefined, undefined, {
+                  secondarySeed: effectiveSecondary,
+                  tertiarySeed: effectiveTertiary,
+                }),
+                vars: buildSeedScopeVars({
+                  seed: effectiveSeed,
+                  mode: nextMode,
+                  secondarySeed: effectiveSecondary,
+                  tertiarySeed: effectiveTertiary,
+                }),
+              }
+            : {
+                theme: buildTheme(colorPreset, nextMode, isAdaptive, explicitAccents),
+                vars: buildScopeVars(colorPreset, nextMode, explicitAccents),
+              },
+    }),
+    [
+      themeColors,
+      themeVars,
+      resolved,
+      effectiveSeed,
+      effectiveSecondary,
+      effectiveTertiary,
+      colorPreset,
+      isAdaptive,
+      explicitAccents,
+    ],
+  );
 
   useIsomorphicLayoutEffect(() => {
     setColorSchemeSafe(effectiveMode);
@@ -485,16 +503,15 @@ export function BloomThemeProvider({
   // On native, the same record is handed to `VariableContextProvider` so
   // descendants resolve `var(--primary)` etc. through react-native-css's real
   // VariableContext. Web writes them to `document.documentElement` above.
-  const nativeVars = useMemo(
-    () => (Platform.OS === 'web' ? null : themeVars),
-    [themeVars],
-  );
+  const nativeVars = useMemo(() => (Platform.OS === 'web' ? null : themeVars), [themeVars]);
   const VariableProvider = getVariableContextProvider();
 
   const content = (
-    <ThemeScopeContext.Provider value={scopeState}><FontLoader enabled={fonts} fallback={onFontsLoading}>
-      {isGated ? onHydrating ?? null : children}
-    </FontLoader></ThemeScopeContext.Provider>
+    <ThemeScopeContext.Provider value={scopeState}>
+      <FontLoader enabled={fonts} fallback={onFontsLoading}>
+        {isGated ? (onHydrating ?? null) : children}
+      </FontLoader>
+    </ThemeScopeContext.Provider>
   );
 
   if (Platform.OS === 'web') {
@@ -516,5 +533,3 @@ export function BloomThemeProvider({
     </BloomThemeContext.Provider>
   );
 }
-
-

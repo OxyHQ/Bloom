@@ -7,16 +7,31 @@ import { resolveSurfaceOptics, resolveSurfaceTint } from './shared';
 import { surfaceMaterialCss } from './web-material';
 
 /** Move a web host fill into the shared body and edge paint; preserve layout and shadow. */
-export function useSurfaceMaterial(selector: string, id: string, fill: string, enabled = true): WebCssStyle {
+export function useSurfaceMaterial(
+  selector: string,
+  id: string,
+  fill: string,
+  enabled = true,
+): WebCssStyle {
   useSurfaceRefraction(enabled);
-  const css = useMemo(() => `${selector} { isolation: isolate; }\n${surfaceMaterialCss(selector, 'var(--bloom-surface-fill)')}`, [selector]);
+  const css = useMemo(
+    () =>
+      `${selector} { isolation: isolate; }\n${surfaceMaterialCss(selector, 'var(--bloom-surface-fill)')}`,
+    [selector],
+  );
   useInteractiveWebCss(id, css);
   const theme = useContext(BloomThemeContext)?.theme;
   const optics = resolveSurfaceOptics(theme?.isDark ?? false);
-  return useMemo(() => enabled ? ({
-    backgroundColor: 'transparent',
-    '--bloom-surface-fill': resolveSurfaceTint(fill),
-    '--bloom-surface-rim': optics.rim,
-    '--bloom-surface-sheen': optics.sheenCss,
-  }) : {}, [optics, fill, enabled]);
+  return useMemo(
+    () =>
+      enabled
+        ? {
+            backgroundColor: 'transparent',
+            '--bloom-surface-fill': resolveSurfaceTint(fill),
+            '--bloom-surface-rim': optics.rim,
+            '--bloom-surface-sheen': optics.sheenCss,
+          }
+        : {},
+    [optics, fill, enabled],
+  );
 }

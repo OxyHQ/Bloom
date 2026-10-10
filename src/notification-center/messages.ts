@@ -23,14 +23,15 @@ export interface NotificationCenterMessages {
   unreadDot: string;
 }
 
-export const NOTIFICATION_CENTER_MESSAGES: MessageCatalog<NotificationCenterMessages> = defineMessages<NotificationCenterMessages>('NOTIFICATION_CENTER_MESSAGES', {
-  title: 'Notifications',
-  emptyMessage: 'You’re all caught up.',
-  emptyDescription: 'New activity will appear here when it arrives.',
-  noUnread: 'No unread notifications',
-  unread: (n) => plural('en', n, { other: '{n} unread' }),
-  markAllRead: 'Mark all read',
-  category: 'Notification category',
-  tabs: { all: 'All', mentions: 'Mentions', system: 'System' },
-  unreadDot: 'Unread',
-});
+export const NOTIFICATION_CENTER_MESSAGES: MessageCatalog<NotificationCenterMessages> =
+  defineMessages<NotificationCenterMessages>('NOTIFICATION_CENTER_MESSAGES', {
+    title: 'Notifications',
+    emptyMessage: 'You’re all caught up.',
+    emptyDescription: 'New activity will appear here when it arrives.',
+    noUnread: 'No unread notifications',
+    unread: (n) => plural('en', n, { other: '{n} unread' }),
+    markAllRead: 'Mark all read',
+    category: 'Notification category',
+    tabs: { all: 'All', mentions: 'Mentions', system: 'System' },
+    unreadDot: 'Unread',
+  });

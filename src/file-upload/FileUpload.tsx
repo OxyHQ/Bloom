@@ -367,8 +367,20 @@ function StaggerLine({
     }
     const delay = kind === 'line' ? (order - 1) * STAGGER_STEP_MS : 0;
     Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: STAGGER_MS, delay, easing: STAGGER_EASE, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 0, duration: STAGGER_MS, delay, easing: STAGGER_EASE, useNativeDriver: true }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: STAGGER_MS,
+        delay,
+        easing: STAGGER_EASE,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: STAGGER_MS,
+        delay,
+        easing: STAGGER_EASE,
+        useNativeDriver: true,
+      }),
     ]).start();
   }, [state, kind, order, reducedMotion, opacity, translateY]);
 
@@ -527,7 +539,8 @@ const FileUploadComponent = function FileUpload({
 
   // Controlled progress: the caller's value reaching 100 is what completes it.
   useEffect(() => {
-    if (!fileControlled && controlled && phase === 'uploading' && file && progress >= 100) finish(file);
+    if (!fileControlled && controlled && phase === 'uploading' && file && progress >= 100)
+      finish(file);
   }, [fileControlled, controlled, phase, file, progress, finish]);
 
   // Fully controlled: hold the success state, then report; the caller clears `file`.
@@ -546,7 +559,10 @@ const FileUploadComponent = function FileUpload({
   const startUpload = (next: FileUploadFile) => {
     const extension = extensionFor(next.name);
     if (!allowedExtensions.map((value) => value.toLowerCase()).includes(extension)) {
-      reject(labels.unsupported(allowedExtensions.map((value) => value.toUpperCase()).join(', ')), next);
+      reject(
+        labels.unsupported(allowedExtensions.map((value) => value.toUpperCase()).join(', ')),
+        next,
+      );
       return;
     }
     if (next.size > maxBytes) {
@@ -610,7 +626,9 @@ const FileUploadComponent = function FileUpload({
     if (blocked) return;
     if (onPickFiles) {
       const picked = await onPickFiles();
-      const first = Array.isArray(picked) ? picked[0] : (picked as FileUploadFile | null | undefined);
+      const first = Array.isArray(picked)
+        ? picked[0]
+        : (picked as FileUploadFile | null | undefined);
       if (first) startUpload(first);
       return;
     }
@@ -733,7 +751,11 @@ const FileUploadComponent = function FileUpload({
             borderWidth: 2,
             borderStyle: 'dashed',
             borderColor: dashActive ? paint.dashActive : paint.dash,
-            opacity: IS_WEB ? (busy ? 0 : 1) : busyFade.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+            opacity: IS_WEB
+              ? busy
+                ? 0
+                : 1
+              : busyFade.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
           },
         ]}
       />
@@ -791,7 +813,12 @@ const FileUploadComponent = function FileUpload({
               : {
                   opacity: pillFade,
                   transform: [
-                    { translateY: pillDrop.interpolate({ inputRange: [0, 1], outputRange: [-10, 0] }) },
+                    {
+                      translateY: pillDrop.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-10, 0],
+                      }),
+                    },
                   ],
                 },
           ]}
@@ -841,7 +868,10 @@ const FileUploadComponent = function FileUpload({
             >
               {rejection ?? (
                 <>
-                  {labels.prompt} <Text variant="body-medium" style={{ color: paint.select }}>{labels.select}</Text>
+                  {labels.prompt}{' '}
+                  <Text variant="body-medium" style={{ color: paint.select }}>
+                    {labels.select}
+                  </Text>
                 </>
               )}
             </Text>
@@ -872,7 +902,13 @@ const FileUploadComponent = function FileUpload({
             justifyContent: 'center',
           }}
         >
-          {file ? (renderFileIcon ? renderFileIcon(file) : <DefaultFileIcon file={file} color={paint.fileIcon} />) : null}
+          {file ? (
+            renderFileIcon ? (
+              renderFileIcon(file)
+            ) : (
+              <DefaultFileIcon file={file} color={paint.fileIcon} />
+            )
+          ) : null}
         </StaggerLine>
         <StaggerLine
           state={busyReveal}

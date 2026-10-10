@@ -6,15 +6,16 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import { Button, CloseButton , LinkButton } from '../button';
-import { BUTTON_GEOMETRY, BUTTON_RADIUS, resolveButtonPalette, resolveLinkButtonPalette } from '../button/shared';
+import { Button, CloseButton, LinkButton } from '../button';
+import {
+  BUTTON_GEOMETRY,
+  BUTTON_RADIUS,
+  resolveButtonPalette,
+  resolveLinkButtonPalette,
+} from '../button/shared';
 import { TYPE_SCALE } from '../typography/scale';
 import { pressHost } from './support/press-host';
-import {
-  classNamesOn,
-  renderedChildren,
-  resolvedStyle,
-} from './support/rendered-style';
+import { classNamesOn, renderedChildren, resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -37,24 +38,52 @@ function captureTheme(): Theme {
 }
 
 describe('Button', () => {
-  it.each([undefined, false, 'false', true, 'page', 'step', 'location', 'date', 'time'] as const)('announces current=%s through the native selected trait without inventing a toggle', current => {
-    const api = renderWithTheme(<Button href="/orders" testID="current" aria-current={current}>Orders</Button>);
-    const host = api.getByTestId('current');
-    expect(host.props.accessibilityRole).toBe('link');
-    expect(host.props['aria-pressed']).toBeUndefined();
-    expect(host.props.accessibilityState.selected).toBe(current === undefined ? undefined : current !== false && current !== 'false');
-  });
+  it.each([undefined, false, 'false', true, 'page', 'step', 'location', 'date', 'time'] as const)(
+    'announces current=%s through the native selected trait without inventing a toggle',
+    (current) => {
+      const api = renderWithTheme(
+        <Button href="/orders" testID="current" aria-current={current}>
+          Orders
+        </Button>,
+      );
+      const host = api.getByTestId('current');
+      expect(host.props.accessibilityRole).toBe('link');
+      expect(host.props['aria-pressed']).toBeUndefined();
+      expect(host.props.accessibilityState.selected).toBe(
+        current === undefined ? undefined : current !== false && current !== 'false',
+      );
+    },
+  );
 
   it('keeps an explicit native toggle state authoritative when current is also supplied', () => {
-    const api = renderWithTheme(<Button testID="current" aria-current="page" pressed={false}>Orders</Button>);
+    const api = renderWithTheme(
+      <Button testID="current" aria-current="page" pressed={false}>
+        Orders
+      </Button>,
+    );
     expect(api.getByTestId('current').props.accessibilityState.selected).toBe(false);
   });
 
   it('uses an exact flat fill in the native control and retains a paired label', () => {
-    const api = renderWithTheme(<Button material="flat" colors={{ background: '#123456', foreground: '#ffffff' }} testID="flat">Flat</Button>);
+    const api = renderWithTheme(
+      <Button
+        material="flat"
+        colors={{ background: '#123456', foreground: '#ffffff' }}
+        testID="flat"
+      >
+        Flat
+      </Button>,
+    );
     expect(resolvedStyle(api.getByTestId('flat').props.style).backgroundColor).toBe('#123456');
     expect(api.UNSAFE_queryAllByType(Stop)).toHaveLength(0);
-    const palette = resolveButtonPalette('solid', captureTheme(), 'accent', { background: 'rgba(18,52,86,.5)', foreground: '#ffffff' }, undefined, 'flat');
+    const palette = resolveButtonPalette(
+      'solid',
+      captureTheme(),
+      'accent',
+      { background: 'rgba(18,52,86,.5)', foreground: '#ffffff' },
+      undefined,
+      'flat',
+    );
     expect(palette.rest.background).toBe('rgba(18,52,86,.5)');
     expect(palette.hover.background).toMatch(/, 0.5\)$/);
     expect(palette.active.foreground).toBe('#ffffff');
@@ -67,12 +96,20 @@ describe('Button', () => {
   });
 
   it('keeps arrays and fragments of raw text in a native Text host', () => {
-    const { getByText } = renderWithTheme(<Button>{['Hello', <React.Fragment key="tail"> world</React.Fragment>]}</Button>);
+    const { getByText } = renderWithTheme(
+      <Button>{['Hello', <React.Fragment key="tail"> world</React.Fragment>]}</Button>,
+    );
     expect(getByText('Hello world')).toBeTruthy();
   });
 
   it('keeps custom layout children outside Text hosts', () => {
-    const { getByTestId } = renderWithTheme(<Button><View testID="custom-content"><Text>Custom</Text></View></Button>);
+    const { getByTestId } = renderWithTheme(
+      <Button>
+        <View testID="custom-content">
+          <Text>Custom</Text>
+        </View>
+      </Button>,
+    );
     let parent = getByTestId('custom-content').parent;
     while (parent) {
       expect(parent.type).not.toBe(Text);
@@ -83,7 +120,9 @@ describe('Button', () => {
   it('calls onPress when pressed', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <Button testID="btn" onPress={onPress}>Press</Button>,
+      <Button testID="btn" onPress={onPress}>
+        Press
+      </Button>,
     );
     // Through `pressHost`, not a bare `fireEvent.press(getByText('Press'))`:
     // that walks up past the button to `<Button onPress={…}>` in this file's own
@@ -93,16 +132,12 @@ describe('Button', () => {
   });
 
   it('supports testID prop', () => {
-    const { getByTestId } = renderWithTheme(
-      <Button testID="my-button">Test</Button>,
-    );
+    const { getByTestId } = renderWithTheme(<Button testID="my-button">Test</Button>);
     expect(getByTestId('my-button')).toBeTruthy();
   });
 
   it('has accessibilityRole button set on the Pressable', () => {
-    const { getByTestId } = renderWithTheme(
-      <Button testID="a11y-btn">A11y</Button>,
-    );
+    const { getByTestId } = renderWithTheme(<Button testID="a11y-btn">A11y</Button>);
     const btn = getByTestId('a11y-btn');
     expect(btn.props.accessibilityRole).toBe('button');
   });
@@ -129,9 +164,7 @@ describe('Button', () => {
   });
 
   it('keeps children mounted when loading so width is preserved', () => {
-    const { UNSAFE_queryAllByType } = renderWithTheme(
-      <Button loading>Submit</Button>,
-    );
+    const { UNSAFE_queryAllByType } = renderWithTheme(<Button loading>Submit</Button>);
     // The text node remains in the tree even though it is visually hidden.
     const texts = UNSAFE_queryAllByType(Text);
     const hasSubmit = texts.some((node) =>
@@ -152,25 +185,33 @@ describe('Button', () => {
     expect(btn.props.disabled).toBe(true);
   });
 
-  it.each(['ios', 'android'] as const)('keeps composed labels exposed to %s accessibility while loading', platform => {
-    jest.replaceProperty(Platform, 'OS', platform);
-    const ui = (loading: boolean) => <BloomThemeProvider mode="light" colorPreset="teal">
-      <Button loading={loading} testID="named-loading"><Text>Publish </Text><Text>draft</Text></Button>
-    </BloomThemeProvider>;
-    const api = render(ui(false));
-    const label = api.getByText('Publish ');
-    api.rerender(ui(true));
-    const button = api.getByTestId('named-loading');
-    expect(button.props.accessibilityState).toMatchObject({ busy: true, disabled: true });
-    for (let node = api.getByText('Publish '); node; node = node.parent!) {
-      expect(node.props.accessibilityElementsHidden).not.toBe(true);
-      expect(node.props.importantForAccessibility).not.toBe('no-hide-descendants');
-    }
-    expect(api.getByText('Publish ')).toBe(label);
-    api.rerender(ui(false));
-    expect(api.getByTestId('named-loading').props.disabled).toBe(false);
-    jest.restoreAllMocks();
-  });
+  it.each(['ios', 'android'] as const)(
+    'keeps composed labels exposed to %s accessibility while loading',
+    (platform) => {
+      jest.replaceProperty(Platform, 'OS', platform);
+      const ui = (loading: boolean) => (
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <Button loading={loading} testID="named-loading">
+            <Text>Publish </Text>
+            <Text>draft</Text>
+          </Button>
+        </BloomThemeProvider>
+      );
+      const api = render(ui(false));
+      const label = api.getByText('Publish ');
+      api.rerender(ui(true));
+      const button = api.getByTestId('named-loading');
+      expect(button.props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+      for (let node = api.getByText('Publish '); node; node = node.parent!) {
+        expect(node.props.accessibilityElementsHidden).not.toBe(true);
+        expect(node.props.importantForAccessibility).not.toBe('no-hide-descendants');
+      }
+      expect(api.getByText('Publish ')).toBe(label);
+      api.rerender(ui(false));
+      expect(api.getByTestId('named-loading').props.disabled).toBe(false);
+      jest.restoreAllMocks();
+    },
+  );
 
   it('marks loading state as busy + disabled', () => {
     const { getByTestId } = renderWithTheme(
@@ -255,7 +296,9 @@ describe('layout: the button IS the node its parent lays out', () => {
   it('keeps the icon variant chrome when the caller passes a className', () => {
     const theme = captureTheme();
     const palette = resolveButtonPalette('outline', theme, 'neutral');
-    const { getByTestId } = renderWithTheme(<Button testID="icon" className="flex-1" appearance="outline" tone="neutral" />);
+    const { getByTestId } = renderWithTheme(
+      <Button testID="icon" className="flex-1" appearance="outline" tone="neutral" />,
+    );
     const style = resolvedStyle(getByTestId('icon').props.style);
     expect(style.backgroundColor).toBe('transparent');
     expect(style.borderColor).toBe(palette.rest.border);
@@ -274,21 +317,33 @@ describe('layout: the button IS the node its parent lays out', () => {
 // finger needs the target, a cursor does not.
 describe('variant="text" geometry', () => {
   it('is a compact affordance, not a ghost button', () => {
-    const { getByTestId } = renderWithTheme(<Button testID="txt" appearance="plain" tone="accent">Text</Button>);
+    const { getByTestId } = renderWithTheme(
+      <Button testID="txt" appearance="plain" tone="accent">
+        Text
+      </Button>,
+    );
     const style = resolvedStyle(getByTestId('txt').props.style);
     expect(style.paddingVertical).toBeUndefined();
     expect(style.paddingHorizontal).toBe(8);
   });
 
   it('ghost keeps the full size-config padding', () => {
-    const { getByTestId } = renderWithTheme(<Button testID="ghost" appearance="subtle" tone="accent">Ghost</Button>);
+    const { getByTestId } = renderWithTheme(
+      <Button testID="ghost" appearance="subtle" tone="accent">
+        Ghost
+      </Button>,
+    );
     const style = resolvedStyle(getByTestId('ghost').props.style);
     expect(style.paddingVertical).toBeUndefined();
     expect(style.paddingHorizontal).toBe(BUTTON_GEOMETRY.md.paddingHorizontal);
   });
 
   it('keeps the size-config height so the touch target survives', () => {
-    const { getByTestId } = renderWithTheme(<Button testID="txt" appearance="plain" tone="accent">Text</Button>);
+    const { getByTestId } = renderWithTheme(
+      <Button testID="txt" appearance="plain" tone="accent">
+        Text
+      </Button>,
+    );
     expect(resolvedStyle(getByTestId('txt').props.style).height).toBe(36);
   });
 });
@@ -318,20 +373,17 @@ const GEOMETRY = [
 ] as const;
 
 describe('Button geometry', () => {
-  it.each(GEOMETRY)(
-    '$size is a $height tall pill',
-    ({ size, height, lineHeight }) => {
-      const { getByTestId } = renderWithTheme(
-        <Button testID="btn" size={size} appearance="outline" tone="neutral">
-          Save changes
-        </Button>,
-      );
-      const style = resolvedStyle(getByTestId('btn').props.style);
-      expect(style.height).toBe(height);
-      expect(style.borderRadius).toBe(BUTTON_RADIUS);
-      expect(lineHeight + MAX_VERTICAL_BORDER).toBeLessThanOrEqual(height);
-    },
-  );
+  it.each(GEOMETRY)('$size is a $height tall pill', ({ size, height, lineHeight }) => {
+    const { getByTestId } = renderWithTheme(
+      <Button testID="btn" size={size} appearance="outline" tone="neutral">
+        Save changes
+      </Button>,
+    );
+    const style = resolvedStyle(getByTestId('btn').props.style);
+    expect(style.height).toBe(height);
+    expect(style.borderRadius).toBe(BUTTON_RADIUS);
+    expect(lineHeight + MAX_VERTICAL_BORDER).toBeLessThanOrEqual(height);
+  });
 
   // `hitSlop` is read against the `Pressable` element, not the host view:
   // Pressable feeds it to Pressability and never forwards it, so the resolved
@@ -365,16 +417,24 @@ describe('Button geometry', () => {
       Platform.OS = original;
     });
 
-    it.each(GEOMETRY)('$size reaches 48dp with vertical slop only', ({ size, height, verticalSlop }) => {
-      const { UNSAFE_getByType } = renderWithTheme(
-        <Button testID="btn" size={size}>
-          Save changes
-        </Button>,
-      );
-      const slop = UNSAFE_getByType(Pressable).props.hitSlop;
-      expect(slop).toEqual({ top: verticalSlop + 2, bottom: verticalSlop + 2, left: 0, right: 0 });
-      expect(height + slop.top + slop.bottom).toBeGreaterThanOrEqual(ANDROID_MIN_TOUCH_TARGET);
-    });
+    it.each(GEOMETRY)(
+      '$size reaches 48dp with vertical slop only',
+      ({ size, height, verticalSlop }) => {
+        const { UNSAFE_getByType } = renderWithTheme(
+          <Button testID="btn" size={size}>
+            Save changes
+          </Button>,
+        );
+        const slop = UNSAFE_getByType(Pressable).props.hitSlop;
+        expect(slop).toEqual({
+          top: verticalSlop + 2,
+          bottom: verticalSlop + 2,
+          left: 0,
+          right: 0,
+        });
+        expect(height + slop.top + slop.bottom).toBeGreaterThanOrEqual(ANDROID_MIN_TOUCH_TARGET);
+      },
+    );
 
     it.each(GEOMETRY)('$size icon square reaches 48dp on both axes', ({ size, height }) => {
       const { UNSAFE_getByType } = renderWithTheme(
@@ -388,7 +448,13 @@ describe('Button geometry', () => {
 
   it.each(GEOMETRY)('$size icon variant is an unpadded square', ({ size, height }) => {
     const { getByTestId } = renderWithTheme(
-      <Button testID="btn" size={size} icon={() => <View testID="glyph" />} appearance="outline" tone="neutral" />,
+      <Button
+        testID="btn"
+        size={size}
+        icon={() => <View testID="glyph" />}
+        appearance="outline"
+        tone="neutral"
+      />,
     );
     const style = resolvedStyle(getByTestId('btn').props.style);
     expect(style.width).toBe(height);
@@ -396,7 +462,7 @@ describe('Button geometry', () => {
     expect(style.paddingHorizontal).toBe(0);
   });
 
-  it('iconOnly renders the leading icon at the size\'s glyph size and no label', () => {
+  it("iconOnly renders the leading icon at the size's glyph size and no label", () => {
     const Glyph = jest.fn((_: { width?: number; height?: number; fill?: string }) => null);
     const { getByTestId, queryByText } = renderWithTheme(
       <Button testID="btn" size="sm" icon={Glyph} accessibilityLabel="Add" />,
@@ -420,14 +486,18 @@ describe('Button geometry', () => {
 describe('Button variants', () => {
   it('PrimaryButton renders without crashing', () => {
     const { getByText } = renderWithTheme(
-      <Button appearance="solid" tone="accent">Primary</Button>,
+      <Button appearance="solid" tone="accent">
+        Primary
+      </Button>,
     );
     expect(getByText('Primary')).toBeTruthy();
   });
 
   it('SecondaryButton renders without crashing', () => {
     const { getByText } = renderWithTheme(
-      <Button appearance="outline" tone="neutral">Secondary</Button>,
+      <Button appearance="outline" tone="neutral">
+        Secondary
+      </Button>,
     );
     expect(getByText('Secondary')).toBeTruthy();
   });
@@ -441,14 +511,18 @@ describe('Button variants', () => {
 
   it('GhostButton renders without crashing', () => {
     const { getByText } = renderWithTheme(
-      <Button appearance="subtle" tone="accent">Ghost</Button>,
+      <Button appearance="subtle" tone="accent">
+        Ghost
+      </Button>,
     );
     expect(getByText('Ghost')).toBeTruthy();
   });
 
   it('TextButton renders without crashing', () => {
     const { getByText } = renderWithTheme(
-      <Button appearance="plain" tone="accent">Text</Button>,
+      <Button appearance="plain" tone="accent">
+        Text
+      </Button>,
     );
     expect(getByText('Text')).toBeTruthy();
   });
@@ -466,13 +540,24 @@ describe('button details', () => {
   it('labels use the type ramp step, in Inter', () => {
     const { getByText } = renderWithTheme(<Button size="xs">Go</Button>);
     const style = resolvedStyle(getByText('Go').props.style);
-    expect(style).toMatchObject({ fontSize: 12, lineHeight: 16, letterSpacing: 0.15, fontWeight: '600' });
+    expect(style).toMatchObject({
+      fontSize: 12,
+      lineHeight: 16,
+      letterSpacing: 0.15,
+      fontWeight: '600',
+    });
     expect(style.fontFamily).toBe('Inter');
   });
 
   it('a bordered medium icon-only button grows with its border (38 × 36)', () => {
     const { getByTestId } = renderWithTheme(
-      <Button testID="btn" icon={() => null} accessibilityLabel="Add" appearance="outline" tone="neutral" />,
+      <Button
+        testID="btn"
+        icon={() => null}
+        accessibilityLabel="Add"
+        appearance="outline"
+        tone="neutral"
+      />,
     );
     const style = resolvedStyle(getByTestId('btn').props.style);
     expect(style.width).toBe(36);
@@ -481,19 +566,38 @@ describe('button details', () => {
 
   it('IconButton takes an icon COMPONENT and draws it 16px at small', () => {
     const Glyph = jest.fn((_: { width?: number; height?: number; fill?: string }) => null);
-    renderWithTheme(<Button size="sm" icon={Glyph} accessibilityLabel="More" appearance="outline" tone="neutral" />);
+    renderWithTheme(
+      <Button
+        size="sm"
+        icon={Glyph}
+        accessibilityLabel="More"
+        appearance="outline"
+        tone="neutral"
+      />,
+    );
     expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 16, height: 16 });
   });
 
   it('IconButton retains material opacity when disabled', () => {
     const { getByTestId } = renderWithTheme(
-      <Button testID="btn" disabled leading={<View />} accessibilityLabel="More" appearance="outline" tone="neutral" />,
+      <Button
+        testID="btn"
+        disabled
+        leading={<View />}
+        accessibilityLabel="More"
+        appearance="outline"
+        tone="neutral"
+      />,
     );
     expect(resolvedStyle(getByTestId('btn').props.style).opacity).toBe(1);
   });
 
   it('LinkButton has no container: no height, no padding, a 4px gap', () => {
-    const { getByTestId } = renderWithTheme(<Button testID="btn" href="https://example.com" appearance="plain" tone="accent">Learn more</Button>);
+    const { getByTestId } = renderWithTheme(
+      <Button testID="btn" href="https://example.com" appearance="plain" tone="accent">
+        Learn more
+      </Button>,
+    );
     const style = resolvedStyle(getByTestId('btn').props.style);
     expect(style.height).toBeUndefined();
     expect(style.paddingHorizontal).toBe(0);
@@ -503,7 +607,11 @@ describe('button details', () => {
 
   it('LinkButton variant picks the link colour', () => {
     const theme = captureTheme();
-    const { getByText } = renderWithTheme(<Button appearance="plain" tone="neutral">Docs</Button>);
+    const { getByText } = renderWithTheme(
+      <Button appearance="plain" tone="neutral">
+        Docs
+      </Button>,
+    );
     expect(resolvedStyle(getByText('Docs').props.style).color).toBe(
       resolveButtonPalette('plain', theme, 'neutral').rest.foreground,
     );
@@ -526,35 +634,34 @@ describe('button details', () => {
 });
 
 describe('filled button material', () => {
-  it.each(['accent', 'danger', 'success', 'warning', 'info'] as const)('renders the shared three-stop sheen for %s', tone => {
-    const screen = renderWithTheme(<Button tone={tone}>Save</Button>);
-    const stops = screen.UNSAFE_getAllByType(Stop).map(stop => stop.props.stopColor);
-    expect(stops).toHaveLength(3);
-    expect(stops[0]).not.toBe(stops[2]);
-    expect(stops.every(color => typeof color === 'string' && !color.startsWith('rgba'))).toBe(true);
-  });
+  it.each(['accent', 'danger', 'success', 'warning', 'info'] as const)(
+    'renders the shared three-stop sheen for %s',
+    (tone) => {
+      const screen = renderWithTheme(<Button tone={tone}>Save</Button>);
+      const stops = screen.UNSAFE_getAllByType(Stop).map((stop) => stop.props.stopColor);
+      expect(stops).toHaveLength(3);
+      expect(stops[0]).not.toBe(stops[2]);
+      expect(stops.every((color) => typeof color === 'string' && !color.startsWith('rgba'))).toBe(
+        true,
+      );
+    },
+  );
 });
 
 describe('Button underline and the reading tone', () => {
   it('underline="rest" draws the underline with no pointer at all', () => {
-    const { getByText } = renderWithTheme(
-      <LinkButton  underline="rest">
-        Clear all
-      </LinkButton>,
-    );
+    const { getByText } = renderWithTheme(<LinkButton underline="rest">Clear all</LinkButton>);
     expect(resolvedStyle(getByText('Clear all').props.style).textDecorationLine).toBe('underline');
   });
 
   it('underline="hover" and the link default draw NO underline at rest', () => {
     const { getByText, rerender } = renderWithTheme(
-      <LinkButton  underline="hover">
-        Learn more
-      </LinkButton>,
+      <LinkButton underline="hover">Learn more</LinkButton>,
     );
     expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBeUndefined();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <LinkButton >Learn more</LinkButton>
+        <LinkButton>Learn more</LinkButton>
       </BloomThemeProvider>,
     );
     expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBeUndefined();
@@ -562,7 +669,7 @@ describe('Button underline and the reading tone', () => {
 
   it('underline="hover" underlines once the pointer arrives', () => {
     const { getByTestId, getByText } = renderWithTheme(
-      <LinkButton testID="btn"  underline="hover">
+      <LinkButton testID="btn" underline="hover">
         Learn more
       </LinkButton>,
     );
@@ -573,7 +680,11 @@ describe('Button underline and the reading tone', () => {
   });
 
   it('every other variant underlines nothing unless asked', () => {
-    const { getByText } = renderWithTheme(<Button  tone="accent" appearance="solid">Save</Button>);
+    const { getByText } = renderWithTheme(
+      <Button tone="accent" appearance="solid">
+        Save
+      </Button>,
+    );
     expect(resolvedStyle(getByText('Save').props.style).textDecorationLine).toBeUndefined();
   });
 
@@ -594,7 +705,7 @@ describe('Button underline and the reading tone', () => {
   it('linkTone="text" takes the secondary colour under a pointer', () => {
     const theme = captureTheme();
     const { getByTestId, getByText } = renderWithTheme(
-      <LinkButton testID="btn"  linkTone="text" underline="rest">
+      <LinkButton testID="btn" linkTone="text" underline="rest">
         Show more
       </LinkButton>,
     );
@@ -617,23 +728,19 @@ describe('Button underline and the reading tone', () => {
     expect(label.fontWeight).toBe(TYPE_SCALE['body-semibold'].fontWeight);
     expect(label.fontWeight).not.toBe(TYPE_SCALE[BUTTON_GEOMETRY.small.type].fontWeight);
     // …while the BOX is still the size's.
-    expect(resolvedStyle(getByTestId('btn').props.style).height).toBe(
-      BUTTON_GEOMETRY.small.height,
-    );
+    expect(resolvedStyle(getByTestId('btn').props.style).height).toBe(BUTTON_GEOMETRY.small.height);
   });
 
   it('numberOfLines reaches the label', () => {
     const { getByText } = renderWithTheme(
-      <LinkButton  numberOfLines={1}>
-        A label far longer than its button
-      </LinkButton>,
+      <LinkButton numberOfLines={1}>A label far longer than its button</LinkButton>,
     );
     expect(getByText('A label far longer than its button').props.numberOfLines).toBe(1);
   });
 
   it('accessibilityRole overrides the role, for a link with no href', () => {
     const { getByTestId } = renderWithTheme(
-      <LinkButton testID="btn"  accessibilityRole="link">
+      <LinkButton testID="btn" accessibilityRole="link">
         128 reviews
       </LinkButton>,
     );
@@ -641,12 +748,16 @@ describe('Button underline and the reading tone', () => {
   });
 });
 
-
 describe('native text hosts for composed button children', () => {
-  it.each([false, true])('wraps primitives mixed with layout, including square=%s', iconOnly => {
+  it.each([false, true])('wraps primitives mixed with layout, including square=%s', (iconOnly) => {
     const { getByText, getByTestId } = renderWithTheme(
       <Button iconOnly={iconOnly} accessibilityLabel="Save changes">
-        Save<View testID="badge" /><>{3}<View testID="nested" /></>
+        Save
+        <View testID="badge" />
+        <>
+          {3}
+          <View testID="nested" />
+        </>
       </Button>,
     );
     expect(getByText('Save')).toBeTruthy();
@@ -656,46 +767,82 @@ describe('native text hosts for composed button children', () => {
   });
 });
 
+it.each([false, true])(
+  'keeps adjacent primitive label parts in one Text host with square=%s',
+  (iconOnly) => {
+    const { getByText, getByTestId } = renderWithTheme(
+      <Button iconOnly={iconOnly} accessibilityLabel="Save three changes">
+        {[
+          'Save',
+          ' ',
+          <React.Fragment key="count">{3}</React.Fragment>,
+          <View key="badge" testID="run-badge" />,
+        ]}
+      </Button>,
+    );
+    expect(getByText('Save 3')).toBeTruthy();
+    expect(getByTestId('run-badge').type).toBe('View');
+  },
+);
 
-it.each([false, true])('keeps adjacent primitive label parts in one Text host with square=%s', iconOnly => {
-  const { getByText, getByTestId } = renderWithTheme(
-    <Button iconOnly={iconOnly} accessibilityLabel="Save three changes">
-      {['Save', ' ', <React.Fragment key="count">{3}</React.Fragment>, <View key="badge" testID="run-badge" />]}
-    </Button>,
-  );
-  expect(getByText('Save 3')).toBeTruthy();
-  expect(getByTestId('run-badge').type).toBe('View');
-});
-
-it.each([false, true])('retains native child state through loading with iconOnly=%s', iconOnly => {
-  let mounts = 0;
-  let increment: () => void = () => {};
-  function Counter() {
-    const [count, setCount] = React.useState(0);
-    React.useEffect(() => { mounts += 1; }, []);
-    increment = () => setCount(n => n + 1);
-    return <Text testID="counter">{count}</Text>;
-  }
-  const tree = (loading: boolean) => <BloomThemeProvider mode="light" colorPreset="teal"><Button loading={loading} iconOnly={iconOnly} accessibilityLabel="Save"><Counter /></Button></BloomThemeProvider>;
-  const result = render(tree(false));
-  act(() => increment());
-  result.rerender(tree(true));
-  expect(result.getByTestId('counter', { includeHiddenElements: true }).props.children).toBe(1);
-  act(() => increment());
-  result.rerender(tree(false));
-  expect(result.getByTestId('counter').props.children).toBe(2);
-  expect(mounts).toBe(1);
-});
+it.each([false, true])(
+  'retains native child state through loading with iconOnly=%s',
+  (iconOnly) => {
+    let mounts = 0;
+    let increment: () => void = () => {};
+    function Counter() {
+      const [count, setCount] = React.useState(0);
+      React.useEffect(() => {
+        mounts += 1;
+      }, []);
+      increment = () => setCount((n) => n + 1);
+      return <Text testID="counter">{count}</Text>;
+    }
+    const tree = (loading: boolean) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Button loading={loading} iconOnly={iconOnly} accessibilityLabel="Save">
+          <Counter />
+        </Button>
+      </BloomThemeProvider>
+    );
+    const result = render(tree(false));
+    act(() => increment());
+    result.rerender(tree(true));
+    expect(result.getByTestId('counter', { includeHiddenElements: true }).props.children).toBe(1);
+    act(() => increment());
+    result.rerender(tree(false));
+    expect(result.getByTestId('counter').props.children).toBe(2);
+    expect(mounts).toBe(1);
+  },
+);
 
 it('forwards native focus and hover events while retaining its interaction palette', () => {
-  const focus = jest.fn(), blur = jest.fn(), enter = jest.fn(), leave = jest.fn();
-  const api = renderWithTheme(<Button testID="events" material="flat" onFocus={focus} onBlur={blur} onHoverIn={enter} onHoverOut={leave} onKeyDown={() => {}} onKeyUp={() => {}}>Preview</Button>);
+  const focus = jest.fn(),
+    blur = jest.fn(),
+    enter = jest.fn(),
+    leave = jest.fn();
+  const api = renderWithTheme(
+    <Button
+      testID="events"
+      material="flat"
+      onFocus={focus}
+      onBlur={blur}
+      onHoverIn={enter}
+      onHoverOut={leave}
+      onKeyDown={() => {}}
+      onKeyUp={() => {}}
+    >
+      Preview
+    </Button>,
+  );
   const host = api.getByTestId('events');
   expect(host.props.onKeyDown).toBeUndefined();
   expect(host.props.onKeyUp).toBeUndefined();
   const event = { nativeEvent: { target: 1 } };
-  fireEvent(host, 'focus', event); fireEvent(host, 'blur', event);
-  expect(focus).toHaveBeenCalledWith(event); expect(blur).toHaveBeenCalledWith(event);
+  fireEvent(host, 'focus', event);
+  fireEvent(host, 'blur', event);
+  expect(focus).toHaveBeenCalledWith(event);
+  expect(blur).toHaveBeenCalledWith(event);
   const before = JSON.stringify(host.props.style);
   fireEvent(host, 'hoverIn', event);
   expect(enter).toHaveBeenCalledWith(event);

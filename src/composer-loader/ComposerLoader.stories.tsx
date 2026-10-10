@@ -10,20 +10,40 @@ import { ComposerLoader } from './index';
 
 const meta: Meta<typeof ComposerLoader> = {
   argTypes: {
-    "active": { control: 'boolean' },
-    "speed": { control: 'number' },
-    "intensity": { control: 'number' },
-    "bloom": { control: 'number' },
-    "bloomStrength": { control: 'number' },
-    "arc": { control: 'number' },
-    "reverse": { control: 'boolean' },
-    "radius": { control: 'number' },
-    "line": { control: 'number' },
-    "bloomOnly": { control: 'boolean' },
-    "surface": { control: 'boolean' },
-    "taper": { control: 'number' },
-    "blend": { control: 'select', options: ["color","overlay","normal","multiply","screen","darken","lighten","color-dodge","color-burn","hard-light","soft-light","difference","exclusion","hue","saturation","luminosity"] },
-    "offset": { control: 'number' }
+    active: { control: 'boolean' },
+    speed: { control: 'number' },
+    intensity: { control: 'number' },
+    bloom: { control: 'number' },
+    bloomStrength: { control: 'number' },
+    arc: { control: 'number' },
+    reverse: { control: 'boolean' },
+    radius: { control: 'number' },
+    line: { control: 'number' },
+    bloomOnly: { control: 'boolean' },
+    surface: { control: 'boolean' },
+    taper: { control: 'number' },
+    blend: {
+      control: 'select',
+      options: [
+        'color',
+        'overlay',
+        'normal',
+        'multiply',
+        'screen',
+        'darken',
+        'lighten',
+        'color-dodge',
+        'color-burn',
+        'hard-light',
+        'soft-light',
+        'difference',
+        'exclusion',
+        'hue',
+        'saturation',
+        'luminosity',
+      ],
+    },
+    offset: { control: 'number' },
   },
   title: 'Blocks/Composer Loader',
   component: ComposerLoader,
@@ -51,10 +71,29 @@ function Label({ children }: { children: string }) {
 
 export const Default: Story = {
   args: { active: true },
-  parameters: { controls: { include: ["active","speed","intensity","bloom","bloomStrength","arc","reverse","radius","line","bloomOnly","surface","taper","blend","offset"] } },
+  parameters: {
+    controls: {
+      include: [
+        'active',
+        'speed',
+        'intensity',
+        'bloom',
+        'bloomStrength',
+        'arc',
+        'reverse',
+        'radius',
+        'line',
+        'bloomOnly',
+        'surface',
+        'taper',
+        'blend',
+        'offset',
+      ],
+    },
+  },
   render: (args) => (
     <View style={{ width: '100%', maxWidth: WIDTH }}>
-      <ComposerLoader {...args}  testID="loader">
+      <ComposerLoader {...args} testID="loader">
         <Pill />
       </ComposerLoader>
     </View>
@@ -155,9 +194,22 @@ export const WithComposer: Story = {
               onChangeText={setValue}
               placeholder="Ask anything"
               accessibilityLabel="Message"
-              style={{ flex: 1, minWidth: 0, color: theme.colors.text, fontSize: 14, lineHeight: 20 }}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                color: theme.colors.text,
+                fontSize: 14,
+                lineHeight: 20,
+              }}
             />
-            <Button size="sm" icon={RiArrowUpLine} accessibilityLabel={busy ? 'Stop' : 'Send'} onPress={() => setBusy((b) => !b)} appearance="solid" tone="accent" />
+            <Button
+              size="sm"
+              icon={RiArrowUpLine}
+              accessibilityLabel={busy ? 'Stop' : 'Send'}
+              onPress={() => setBusy((b) => !b)}
+              appearance="solid"
+              tone="accent"
+            />
           </View>
         </ComposerLoader>
       </View>

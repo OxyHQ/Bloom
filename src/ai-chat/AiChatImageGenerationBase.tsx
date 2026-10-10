@@ -16,7 +16,14 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { RevealFade, RevealLine, RevealSequence } from './AiChatReveal';
-import { CARD_RADIUS, dataHook, IS_WEB, useAiChatPalette, useAiChatWebCss, type AiChatPalette } from './shared';
+import {
+  CARD_RADIUS,
+  dataHook,
+  IS_WEB,
+  useAiChatPalette,
+  useAiChatWebCss,
+  type AiChatPalette,
+} from './shared';
 import type { AiChatImageGenerationProps } from './types';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES } from './messages';
@@ -26,7 +33,6 @@ const FRAME_HEIGHT = 250;
 const EASE_QUINT = Easing.bezier(0.22, 1, 0.36, 1);
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
 const EASE_STANDARD = Easing.bezier(0.4, 0, 0.2, 1);
-
 
 // ---------------------------------------------------------------------------
 //  Dot wave
@@ -153,11 +159,24 @@ function DotField({ palette }: { palette: AiChatPalette }) {
       const ny = py / FRAME_HEIGHT;
       const edgeFade = Math.min(1, nx * 7, (1 - nx) * 7, ny * 7, (1 - ny) * 7);
       const opacity = Math.max(0, edgeFade * (0.08 + 0.24 * 0.68 * 0.92));
-      dots.push(<Circle key={`${row}-${column}`} cx={px} cy={py} r={0.84} fill={palette.iconQuaternary} opacity={opacity} />);
+      dots.push(
+        <Circle
+          key={`${row}-${column}`}
+          cx={px}
+          cy={py}
+          r={0.84}
+          fill={palette.iconQuaternary}
+          opacity={opacity}
+        />,
+      );
     }
   }
   return (
-    <Svg width={FRAME_WIDTH} height={FRAME_HEIGHT} style={{ position: 'absolute', top: 0, left: 0 }}>
+    <Svg
+      width={FRAME_WIDTH}
+      height={FRAME_HEIGHT}
+      style={{ position: 'absolute', top: 0, left: 0 }}
+    >
       {dots}
     </Svg>
   );
@@ -168,7 +187,15 @@ function DotField({ palette }: { palette: AiChatPalette }) {
 // ---------------------------------------------------------------------------
 
 /** Half of a flap card: the whole glyph in a 16px line box, clipped to its top or bottom 8px. */
-function FlapHalf({ digit, half, palette }: { digit: string; half: 'top' | 'bottom'; palette: AiChatPalette }) {
+function FlapHalf({
+  digit,
+  half,
+  palette,
+}: {
+  digit: string;
+  half: 'top' | 'bottom';
+  palette: AiChatPalette;
+}) {
   return (
     <View style={{ height: 8, overflow: 'hidden', backgroundColor: palette.tertiary }}>
       <Text
@@ -180,7 +207,8 @@ function FlapHalf({ digit, half, palette }: { digit: string; half: 'top' | 'bott
           textAlign: 'center',
           color: palette.textSecondary,
           fontVariant: ['tabular-nums'],
-        }}>
+        }}
+      >
         {digit}
       </Text>
     </View>
@@ -191,6 +219,7 @@ function FlapHalf({ digit, half, palette }: { digit: string; half: 'top' | 'bott
 function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React.ReactNode }) {
   const reducedMotion = useReducedMotion();
   const angle = useSharedValue(kind === 'fall' ? 0 : 90);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (reducedMotion) {
       angle.value = kind === 'fall' ? -90 : 0;
@@ -199,8 +228,10 @@ function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React
     angle.value =
       kind === 'fall'
         ? withTiming(-90, { duration: 150, easing: Easing.bezier(0.55, 0, 0.9, 0.35) })
-        : withDelay(150, withTiming(0, { duration: 230, easing: Easing.bezier(0.25, 0.7, 0.35, 1) }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        : withDelay(
+            150,
+            withTiming(0, { duration: 230, easing: Easing.bezier(0.25, 0.7, 0.35, 1) }),
+          );
   }, []);
   const style = useAnimatedStyle(
     () => ({
@@ -220,7 +251,8 @@ function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React
           backfaceVisibility: 'hidden',
         },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </Animated.View>
   );
@@ -244,17 +276,34 @@ function FlapDigit({ digit, palette }: { digit: string; palette: AiChatPalette }
   return (
     <View
       {...dataHook('bloomAiChatFlapCard')}
-      style={{ position: 'relative', width: 11, overflow: 'hidden', borderRadius: 3, backgroundColor: palette.tertiary }}>
+      style={{
+        position: 'relative',
+        width: 11,
+        overflow: 'hidden',
+        borderRadius: 3,
+        backgroundColor: palette.tertiary,
+      }}
+    >
       <FlapHalf digit={digit} half="top" palette={palette} />
       <FlapHalf digit={leaving} half="bottom" palette={palette} />
       {flipKey > 0 ? (
-        <View key={flipKey} pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+        <View
+          key={flipKey}
+          pointerEvents="none"
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        >
           {IS_WEB ? (
             <>
-              <View {...dataHook('bloomAiChatFlap', 'fall')} style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
+              <View
+                {...dataHook('bloomAiChatFlap', 'fall')}
+                style={{ position: 'absolute', left: 0, right: 0, top: 0 }}
+              >
                 <FlapHalf digit={leaving} half="top" palette={palette} />
               </View>
-              <View {...dataHook('bloomAiChatFlap', 'rise')} style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+              <View
+                {...dataHook('bloomAiChatFlap', 'rise')}
+                style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}
+              >
                 <FlapHalf digit={digit} half="bottom" palette={palette} />
               </View>
             </>
@@ -274,12 +323,21 @@ function FlapDigit({ digit, palette }: { digit: string; palette: AiChatPalette }
   );
 }
 
-function FlapCountdown({ seconds, label, palette }: { seconds: number; label: string; palette: AiChatPalette }) {
+function FlapCountdown({
+  seconds,
+  label,
+  palette,
+}: {
+  seconds: number;
+  label: string;
+  palette: AiChatPalette;
+}) {
   return (
     <View
       accessible
       accessibilityLabel={label}
-      style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+      style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 1 }}
+    >
       {String(seconds)
         .split('')
         .map((digit, index) => (
@@ -297,18 +355,30 @@ function FlapCountdown({ seconds, label, palette }: { seconds: number; label: st
 // ---------------------------------------------------------------------------
 
 /** A transient toast over the image's bottom edge, rising 8px in and out (420ms). */
-function FrameToast({ message, leaving, palette }: { message: string; leaving: boolean; palette: AiChatPalette }) {
+function FrameToast({
+  message,
+  leaving,
+  palette,
+}: {
+  message: string;
+  leaving: boolean;
+  palette: AiChatPalette;
+}) {
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
     const target = leaving ? 0 : 1;
-    progress.value = reducedMotion ? target : withTiming(target, { duration: 420, easing: EASE_QUINT });
+    progress.value = reducedMotion
+      ? target
+      : withTiming(target, { duration: 420, easing: EASE_QUINT });
   }, [leaving, reducedMotion, progress]);
   const animated = useAnimatedStyle(
     () => ({
       opacity: progress.value,
       transform: [{ translateY: 8 * (1 - progress.value) }],
-      ...(IS_WEB ? { filter: progress.value >= 1 ? 'none' : `blur(${4 * (1 - progress.value)}px)` } : null),
+      ...(IS_WEB
+        ? { filter: progress.value >= 1 ? 'none' : `blur(${4 * (1 - progress.value)}px)` }
+        : null),
     }),
     [progress],
   );
@@ -452,17 +522,19 @@ export function AiChatImageGenerationBase({
   // Unfold.
   const unfold = useSharedValue(reducedMotion ? 1 : 0);
   const unfoldFade = useSharedValue(reducedMotion ? 1 : 0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (reducedMotion) return;
     unfold.value = withTiming(1, { duration: 550, easing: EASE_QUINT });
     unfoldFade.value = withTiming(1, { duration: 350, easing: EASE_OUT });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const frameStyle = useAnimatedStyle(
     () => ({
       height: FRAME_HEIGHT * unfold.value,
       opacity: unfoldFade.value,
-      ...(IS_WEB ? { filter: unfoldFade.value >= 1 ? 'none' : `blur(${6 * (1 - unfoldFade.value)}px)` } : null),
+      ...(IS_WEB
+        ? { filter: unfoldFade.value >= 1 ? 'none' : `blur(${6 * (1 - unfoldFade.value)}px)` }
+        : null),
     }),
     [unfold, unfoldFade],
   );
@@ -470,11 +542,16 @@ export function AiChatImageGenerationBase({
   const status = useEased(ready ? 0 : 1, 300);
   const statusStyle = useAnimatedStyle(() => ({ opacity: status.value }), [status]);
   const nativeReveal = useEased(ready ? 1 : 0, 1550);
-  const nativeRevealStyle = useAnimatedStyle(() => ({ opacity: nativeReveal.value }), [nativeReveal]);
+  const nativeRevealStyle = useAnimatedStyle(
+    () => ({ opacity: nativeReveal.value }),
+    [nativeReveal],
+  );
   const feedback = useSharedValue(0);
   useEffect(() => {
     if (!ready) return;
-    feedback.value = reducedMotion ? 1 : withTiming(1, { duration: 250, easing: Easing.bezier(0.25, 0.1, 0.25, 1) });
+    feedback.value = reducedMotion
+      ? 1
+      : withTiming(1, { duration: 250, easing: Easing.bezier(0.25, 0.1, 0.25, 1) });
   }, [ready, reducedMotion, feedback]);
   const feedbackStyle = useAnimatedStyle(
     () => ({ opacity: feedback.value, transform: [{ translateY: 4 * (1 - feedback.value) }] }),
@@ -482,7 +559,11 @@ export function AiChatImageGenerationBase({
   );
 
   return (
-    <RevealFade animate testID={testID} style={[{ width: '100%', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }, style]}>
+    <RevealFade
+      animate
+      testID={testID}
+      style={[{ width: '100%', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }, style]}
+    >
       {!hideHeader ? (
         <RevealSequence animate>
           <RevealLine>
@@ -509,12 +590,21 @@ export function AiChatImageGenerationBase({
             borderRadius: CARD_RADIUS,
             backgroundColor: palette.primary,
             boxShadow: palette.shadowCard,
-          }}>
+          }}
+        >
           {IS_WEB ? (
             <View
               {...dataHook('bloomAiChatFade')}
               pointerEvents="none"
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: ready ? 0 : 1 }}>
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                opacity: ready ? 0 : 1,
+              }}
+            >
               <DotWaveCanvas palette={palette} running={!ready} />
             </View>
           ) : ready ? null : (
@@ -535,25 +625,48 @@ export function AiChatImageGenerationBase({
                 gap: 12,
               },
               statusStyle,
-            ]}>
-            <AgentProgressLoadingText variant="body-2-medium" style={{ color: palette.textTertiary }}>
+            ]}
+          >
+            <AgentProgressLoadingText
+              variant="body-2-medium"
+              style={{ color: palette.textTertiary }}
+            >
               {l.generating}
             </AgentProgressLoadingText>
-            <FlapCountdown seconds={secondsLeft} label={l.remaining(secondsLeft)} palette={palette} />
+            <FlapCountdown
+              seconds={secondsLeft}
+              label={l.remaining(secondsLeft)}
+              palette={palette}
+            />
           </Animated.View>
 
           {IS_WEB ? (
             <View
               {...dataHook('bloomAiChatReveal', ready ? 'shown' : '')}
               pointerEvents="none"
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-              <Image source={source} accessibilityLabel={alt} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            >
+              <Image
+                source={source}
+                accessibilityLabel={alt}
+                resizeMode="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
             </View>
           ) : (
             <Animated.View
               pointerEvents="none"
-              style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, nativeRevealStyle]}>
-              <Image source={source} accessibilityLabel={alt} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
+              style={[
+                { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+                nativeRevealStyle,
+              ]}
+            >
+              <Image
+                source={source}
+                accessibilityLabel={alt}
+                resizeMode="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
             </Animated.View>
           )}
 

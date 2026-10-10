@@ -1,17 +1,5 @@
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type ComponentType,
-} from 'react';
-import {
-  Platform,
-  TextInput,
-  type TextInputProps,
-  type View,
-} from 'react-native';
+import { useCallback, useEffect, useId, useRef, useState, type ComponentType } from 'react';
+import { Platform, TextInput, type TextInputProps, type View } from 'react-native';
 import { styled } from 'react-native-css';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -47,9 +35,7 @@ export function CustomColorPicker({
   const id = useId().replace(/:/g, '');
   const fieldRef = useRef<View>(null);
   const railRef = useRef<View>(null);
-  const [hsv, setHsv] = useState<Hsv>(
-    () => hexToHsv(value) ?? { h: 259, s: 0.83, v: 1 },
-  );
+  const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(value) ?? { h: 259, s: 0.83, v: 1 });
   const [hexDraft, setHexDraft] = useState(() => value.toLowerCase());
   const [seenValue, setSeenValue] = useState(() => value.toLowerCase());
   const [lastEmitted, setLastEmitted] = useState(() => value.toLowerCase());
@@ -115,9 +101,7 @@ export function CustomColorPicker({
       railRef.current?.focus();
       emit({ ...hsv, h: Math.min(clamp01(event.x / width) * 360, 359.9) });
     })
-    .onUpdate((event) =>
-      emit({ ...hsv, h: Math.min(clamp01(event.x / width) * 360, 359.9) }),
-    );
+    .onUpdate((event) => emit({ ...hsv, h: Math.min(clamp01(event.x / width) * 360, 359.9) }));
   useTrackEvents(fieldRef, undefined, (key, shift) => {
     const step = shift ? 0.1 : 0.02;
     const moves: Record<string, Partial<Hsv>> = {
@@ -164,19 +148,12 @@ export function CustomColorPicker({
     borderWidth: 1,
     borderColor: '#ffffff',
     borderRadius: 8,
-    transform:
-      Platform.OS === 'web'
-        ? undefined
-        : [{ translateX: -8 }, { translateY: -8 }],
+    transform: Platform.OS === 'web' ? undefined : [{ translateX: -8 }, { translateY: -8 }],
     boxShadow: '0 2px 4px rgba(0,0,0,.18), inset 0 0 0 1px rgba(0,0,0,.06)',
   };
   return (
     <StyledView
-      className={
-        className
-          ? `flex flex-col gap-2.5 ${className}`
-          : 'flex flex-col gap-2.5'
-      }
+      className={className ? `flex flex-col gap-2.5 ${className}` : 'flex flex-col gap-2.5'}
     >
       <GestureDetector gesture={field}>
         <StyledView
@@ -203,10 +180,7 @@ export function CustomColorPicker({
           onAccessibilityAction={(event) =>
             emit({
               ...hsv,
-              v: clamp01(
-                hsv.v +
-                  (event.nativeEvent.actionName === 'increment' ? 0.02 : -0.02),
-              ),
+              v: clamp01(hsv.v + (event.nativeEvent.actionName === 'increment' ? 0.02 : -0.02)),
             })
           }
         >
@@ -227,12 +201,7 @@ export function CustomColorPicker({
               </LinearGradient>
             </Defs>
             <Rect rx={16} width="100%" height="100%" fill={`url(#${id}-sat)`} />
-            <Rect
-              rx={16}
-              width="100%"
-              height="100%"
-              fill={`url(#${id}-value)`}
-            />
+            <Rect rx={16} width="100%" height="100%" fill={`url(#${id}-value)`} />
           </Svg>
           <StyledView
             pointerEvents="none"
@@ -276,11 +245,7 @@ export function CustomColorPicker({
             emit({
               ...hsv,
               h: Math.min(
-                Math.max(
-                  hsv.h +
-                    (event.nativeEvent.actionName === 'increment' ? 3 : -3),
-                  0,
-                ),
+                Math.max(hsv.h + (event.nativeEvent.actionName === 'increment' ? 3 : -3), 0),
                 359.9,
               ),
             })
@@ -294,21 +259,11 @@ export function CustomColorPicker({
           >
             <Defs>
               <LinearGradient id={`${id}-hue`} x1="0" x2="1" y1="0" y2="0">
-                {[
-                  '#ff0000',
-                  '#ffff00',
-                  '#00ff00',
-                  '#00ffff',
-                  '#0000ff',
-                  '#ff00ff',
-                  '#ff0000',
-                ].map((color, index) => (
-                  <Stop
-                    key={color + index}
-                    offset={index / 6}
-                    stopColor={color}
-                  />
-                ))}
+                {['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff', '#ff0000'].map(
+                  (color, index) => (
+                    <Stop key={color + index} offset={index / 6} stopColor={color} />
+                  ),
+                )}
               </LinearGradient>
             </Defs>
             <Rect rx={6} width="100%" height={12} fill={`url(#${id}-hue)`} />
@@ -367,9 +322,7 @@ export function CustomColorPicker({
                   height: 32,
                   borderRadius: 10,
                   paddingHorizontal: 10,
-                  backgroundColor: hexFocused
-                    ? colors.card
-                    : colors.backgroundTertiary,
+                  backgroundColor: hexFocused ? colors.card : colors.backgroundTertiary,
                   color: colors.text,
                   fontFamily: 'monospace',
                   fontSize: 13,

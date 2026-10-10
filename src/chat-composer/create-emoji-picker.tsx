@@ -45,11 +45,13 @@ import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createEmojiPicker({ Surface, Button }: {
+export function createEmojiPicker({
+  Surface,
+  Button,
+}: {
   Surface: typeof SurfaceComponent;
   Button: typeof ButtonComponent;
 }) {
-
   const HEADER_HEIGHT = 26;
   const EMOJI_TAB = '__emoji';
 
@@ -186,18 +188,25 @@ export function createEmojiPicker({ Surface, Button }: {
               const base = emojiChar(entry);
               const char = applySkinTone(base, tone);
               return (
-                <Button appearance="plain" tone="neutral"
+                <Button
+                  appearance="plain"
+                  tone="neutral"
                   key={`${base}-${i}`}
                   accessibilityLabel={entryName(entry, char)}
                   onPress={() => onSelectEmoji?.(char)}
-                  style={{ padding: 0, minWidth: 0, minHeight: 0, flexShrink: 0,
+                  style={{
+                    padding: 0,
+                    minWidth: 0,
+                    minHeight: 0,
+                    flexShrink: 0,
                     width: EMOJI_CELL,
                     height: EMOJI_CELL,
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: 8,
                   }}
-                  testID={testID ? `${testID}-emoji-${base}` : undefined}>
+                  testID={testID ? `${testID}-emoji-${base}` : undefined}
+                >
                   <Text variant="title-2-regular">{char}</Text>
                 </Button>
               );
@@ -218,7 +227,10 @@ export function createEmojiPicker({ Surface, Button }: {
       '--bloom-chat-composer-ring': palette.focusRing,
     };
 
-    const topTabs = [{ key: EMOJI_TAB, label: labels.emojiTab, icon: RiEmotionLine }, ...(tabs ?? [])];
+    const topTabs = [
+      { key: EMOJI_TAB, label: labels.emojiTab, icon: RiEmotionLine },
+      ...(tabs ?? []),
+    ];
     const activeCustom = tabs?.find((t) => t.key === tab);
 
     return (
@@ -227,7 +239,8 @@ export function createEmojiPicker({ Surface, Button }: {
           <View
             accessibilityRole="tablist"
             style={{ flexDirection: 'row', gap: 4 }}
-            testID={testID ? `${testID}-tabs` : undefined}>
+            testID={testID ? `${testID}-tabs` : undefined}
+          >
             {topTabs.map((entry) => {
               const selected = entry.key === tab;
               return (
@@ -247,10 +260,12 @@ export function createEmojiPicker({ Surface, Button }: {
                     borderRadius: 9999,
                     backgroundColor: selected ? palette.accentSoft : 'transparent',
                   }}
-                  testID={testID ? `${testID}-tab-${entry.key}` : undefined}>
+                  testID={testID ? `${testID}-tab-${entry.key}` : undefined}
+                >
                   <Text
                     variant="body-2-medium"
-                    style={{ color: selected ? palette.accentStrong : palette.textSecondary }}>
+                    style={{ color: selected ? palette.accentStrong : palette.textSecondary }}
+                  >
                     {entry.label}
                   </Text>
                 </Pressable>
@@ -276,7 +291,8 @@ export function createEmojiPicker({ Surface, Button }: {
                   backgroundColor: palette.inset,
                   paddingLeft: 8,
                   paddingRight: 8,
-                }}>
+                }}
+              >
                 <RiSearchLine width={16} height={16} fill={palette.iconSecondary} />
                 <TextInput
                   {...dataHook('bloomChatComposerInput')}
@@ -298,11 +314,17 @@ export function createEmojiPicker({ Surface, Button }: {
                   testID={testID ? `${testID}-search` : undefined}
                 />
               </View>
-              <Button appearance="plain" tone="neutral"
+              <Button
+                appearance="plain"
+                tone="neutral"
                 accessibilityLabel={labels.skinTone}
                 aria-expanded={toneOpen}
                 onPress={() => setToneOpen(!toneOpen)}
-                style={{ padding: 0, minWidth: 0, minHeight: 0, flexShrink: 0,
+                style={{
+                  padding: 0,
+                  minWidth: 0,
+                  minHeight: 0,
+                  flexShrink: 0,
                   width: 32,
                   height: 32,
                   alignItems: 'center',
@@ -310,19 +332,25 @@ export function createEmojiPicker({ Surface, Button }: {
                   borderRadius: 9999,
                   backgroundColor: toneOpen ? palette.hover : palette.inset,
                 }}
-                testID={testID ? `${testID}-skin-tone` : undefined}>
-                <Text variant="body-regular">{SKIN_TONE_SWATCHES[tone] ?? SKIN_TONE_SWATCHES[0]}</Text>
+                testID={testID ? `${testID}-skin-tone` : undefined}
+              >
+                <Text variant="body-regular">
+                  {SKIN_TONE_SWATCHES[tone] ?? SKIN_TONE_SWATCHES[0]}
+                </Text>
               </Button>
             </View>
 
             {toneOpen ? (
               <View
                 style={{ flexDirection: 'row', gap: 2, justifyContent: 'flex-end' }}
-                testID={testID ? `${testID}-skin-tones` : undefined}>
+                testID={testID ? `${testID}-skin-tones` : undefined}
+              >
                 {SKIN_TONE_SWATCHES.map((swatch, index) => {
                   const selected = index === tone;
                   return (
-                    <Button appearance="plain" tone="neutral"
+                    <Button
+                      appearance="plain"
+                      tone="neutral"
                       key={index}
                       accessibilityLabel={`${labels.skinTone} ${index + 1}`}
                       pressed={selected}
@@ -330,7 +358,11 @@ export function createEmojiPicker({ Surface, Button }: {
                         setTone(index);
                         setToneOpen(false);
                       }}
-                      style={{ padding: 0, minWidth: 0, minHeight: 0, flexShrink: 0,
+                      style={{
+                        padding: 0,
+                        minWidth: 0,
+                        minHeight: 0,
+                        flexShrink: 0,
                         width: 30,
                         height: 30,
                         alignItems: 'center',
@@ -338,7 +370,8 @@ export function createEmojiPicker({ Surface, Button }: {
                         borderRadius: 9999,
                         backgroundColor: selected ? palette.accentSoft : 'transparent',
                       }}
-                      testID={testID ? `${testID}-skin-tone-${index}` : undefined}>
+                      testID={testID ? `${testID}-skin-tone-${index}` : undefined}
+                    >
                       <Text variant="body-regular">{swatch}</Text>
                     </Button>
                   );
@@ -349,7 +382,8 @@ export function createEmojiPicker({ Surface, Button }: {
             <View
               accessibilityRole="tablist"
               style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-              testID={testID ? `${testID}-categories` : undefined}>
+              testID={testID ? `${testID}-categories` : undefined}
+            >
               {groups.map((group) => {
                 const selected = group.key === category;
                 const Glyph = group.icon ?? EMOJI_CATEGORY_ICONS[group.key] ?? RiEmotionLine;
@@ -370,7 +404,8 @@ export function createEmojiPicker({ Surface, Button }: {
                       borderRadius: 9999,
                       backgroundColor: selected ? palette.accentSoft : 'transparent',
                     }}
-                    testID={testID ? `${testID}-category-${group.key}` : undefined}>
+                    testID={testID ? `${testID}-category-${group.key}` : undefined}
+                  >
                     <Glyph
                       width={18}
                       height={18}

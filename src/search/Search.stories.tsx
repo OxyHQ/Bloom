@@ -89,7 +89,15 @@ export const Playground: StoryObj<typeof Search> = {
   argTypes: { label: { control: 'text' }, value: { control: 'text' } },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 440, maxWidth: '100%' }}><Search {...args} onValueChange={next => updateArgs({ value: next })} onClearText={() => updateArgs({ value: '' })} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <Search
+          {...args}
+          onValueChange={(next) => updateArgs({ value: next })}
+          onClearText={() => updateArgs({ value: '' })}
+        />
+      </View>
+    );
   },
 };
 
@@ -99,27 +107,49 @@ export const StyledSlots: Story = {
     const [value, setValue] = useState('');
     const [disabled, setDisabled] = useState(false);
     const [invalid, setInvalid] = useState(false);
-    return <View style={{ width:480, gap:16 }}>
-      <Search label="Default search" value="" />
-      <Search label="Styled search" value={value} onValueChange={setValue} onClearText={() => setValue('')}
-        disabled={disabled} invalid={invalid} containerClassName="bloom-demo-search-container"
-        fieldClassName="bloom-demo-search-field" fieldChromeClassName="bloom-demo-search-chrome" />
-      <Button onPress={() => setDisabled(value => !value)}>Toggle disabled</Button>
-      <Button onPress={() => setInvalid(value => !value)}>Toggle invalid</Button>
-    </View>;
+    return (
+      <View style={{ width: 480, gap: 16 }}>
+        <Search label="Default search" value="" />
+        <Search
+          label="Styled search"
+          value={value}
+          onValueChange={setValue}
+          onClearText={() => setValue('')}
+          disabled={disabled}
+          invalid={invalid}
+          containerClassName="bloom-demo-search-container"
+          fieldClassName="bloom-demo-search-field"
+          fieldChromeClassName="bloom-demo-search-chrome"
+        />
+        <Button onPress={() => setDisabled((value) => !value)}>Toggle disabled</Button>
+        <Button onPress={() => setInvalid((value) => !value)}>Toggle invalid</Button>
+      </View>
+    );
   },
 };
 
 export const CustomAffordances: Story = {
   render: function CustomAffordancesStory() {
-    const [value, setValue] = useState('A long search query to verify the clear control never overlaps text');
+    const [value, setValue] = useState(
+      'A long search query to verify the clear control never overlaps text',
+    );
     const [disabled, setDisabled] = useState(false);
-    return <View style={{ width: 320, gap: 20 }}>
-      <Search label="Custom search" value={value} onValueChange={setValue} onClearText={() => setValue('')}
-        iconSize={24} clearButtonProps={{ size: 24, glyphSize: 24 }} disabled={disabled}
-        fieldClassName="bloom-demo-search-layout" fieldChromeClassName="bloom-demo-search-chrome"
-        style={{ fontSize: 16, lineHeight: 20 }} />
-      <Button onPress={() => setDisabled(v => !v)}>Toggle disabled</Button>
-    </View>;
+    return (
+      <View style={{ width: 320, gap: 20 }}>
+        <Search
+          label="Custom search"
+          value={value}
+          onValueChange={setValue}
+          onClearText={() => setValue('')}
+          iconSize={24}
+          clearButtonProps={{ size: 24, glyphSize: 24 }}
+          disabled={disabled}
+          fieldClassName="bloom-demo-search-layout"
+          fieldChromeClassName="bloom-demo-search-chrome"
+          style={{ fontSize: 16, lineHeight: 20 }}
+        />
+        <Button onPress={() => setDisabled((v) => !v)}>Toggle disabled</Button>
+      </View>
+    );
   },
 };
