@@ -1,5 +1,5 @@
 import { surfaceFillOn } from '../styles/surface-levels';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';

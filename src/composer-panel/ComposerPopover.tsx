@@ -24,7 +24,7 @@ import {
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { parseRgba } from '../theme/color-utils';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import {
   Modal,
   Pressable,

@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';

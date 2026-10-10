@@ -1,4 +1,4 @@
-import React, { memo, useContext, useEffect, useId, useState } from 'react';
+import { memo, useContext, useEffect, useId, useState } from 'react';
 import {
   Platform,
   StyleSheet,

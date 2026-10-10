@@ -1,7 +1,7 @@
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
 import { hairlineOn } from '../styles/surface-levels';
-import React, { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 
 import { RiFullscreenLine } from '../icons/remix/RiFullscreenLine';

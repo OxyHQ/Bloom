@@ -10,7 +10,7 @@
  * rule that a disabled option still SAYS WHY, because "the reason is shown" is
  * a claim a prop-level test would pass by simply passing `unavailableReason`.
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

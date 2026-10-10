@@ -14,7 +14,7 @@
  * neutral module naming a forked target resolves to NATIVE in every bundler
  * that is not Metro and no gate would report it.
  */
-import React, { useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import type { View as RNView } from 'react-native';
 
 import {

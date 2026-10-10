@@ -1,4 +1,4 @@
-import { cardLayout, cardFill } from './support/card-surface';
+import { cardLayout } from './support/card-surface';
 import type React from 'react';
 import { render } from '@testing-library/react-native';
 

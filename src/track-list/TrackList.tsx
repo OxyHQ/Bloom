@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { dragShift, dragTarget } from '../hooks/list-reorder';
 import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 

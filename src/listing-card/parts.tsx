@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Badge } from '../badge';

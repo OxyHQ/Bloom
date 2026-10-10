@@ -1,4 +1,3 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Border, Fill, Image, resolve } from '../shapes';
 import { assertImageSource } from '../shapes/validation';

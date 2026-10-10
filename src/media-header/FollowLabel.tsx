@@ -1,4 +1,3 @@
-import React from 'react';
 import { Platform, type StyleProp, type TextStyle } from 'react-native';
 import { Text } from '../typography';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';

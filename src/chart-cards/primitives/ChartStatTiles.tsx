@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BREAKPOINTS } from '../../styles/breakpoints';

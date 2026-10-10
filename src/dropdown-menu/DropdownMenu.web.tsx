@@ -6,7 +6,7 @@
  * `floating/menu-rows` set the native file publishes; what changes between the
  * two is stated once, as `presentation`.
  */
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
 
 import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';

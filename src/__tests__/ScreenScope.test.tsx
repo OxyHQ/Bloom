@@ -14,7 +14,7 @@
  * everything would pass a one-directional test while breaking the surface's own
  * chrome.
  */
-import React from 'react';
+
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 

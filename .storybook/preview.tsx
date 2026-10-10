@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Decorator, Preview } from '@storybook/react-vite';
 
 // The compiled Tailwind/NativeWind stylesheet. This import is what makes every

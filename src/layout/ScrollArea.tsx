@@ -1,4 +1,4 @@
-import React, { forwardRef, type ComponentType, type Ref } from 'react';
+import { forwardRef, type ComponentType, type Ref } from 'react';
 import { ScrollView, type ScrollViewProps } from 'react-native';
 import { styled } from 'react-native-css';
 import { useScrollMetricsBinding } from './use-scroll-metrics-binding';

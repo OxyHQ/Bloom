@@ -5,7 +5,7 @@
  * flips, the button's NAME is an attribute, and a pointer press never takes
  * focus from the input — which only the DOM can show.
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

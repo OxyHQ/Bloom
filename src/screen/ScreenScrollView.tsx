@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { type ScrollView, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useScreenScroll } from './use-screen-scroll';

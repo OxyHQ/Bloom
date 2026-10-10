@@ -1,7 +1,7 @@
 import { surfaceFillOn } from '../styles/surface-levels';
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
-import React, { memo, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { memo, useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   Platform,
   Pressable,

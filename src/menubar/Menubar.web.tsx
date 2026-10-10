@@ -10,7 +10,7 @@
  * menubar menu hang under its trigger the way a desktop menu bar does, rather
  * than centring like a popover.
  */
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { View } from 'react-native';
 
 import {

@@ -17,7 +17,6 @@
  * <ToastOutlet ToasterOverlayWrapper={FullWindowOverlay} />
  * ```
  */
-import * as React from 'react';
 
 import type { ToastHostProps } from './types';
 

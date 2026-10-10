@@ -1,4 +1,4 @@
-import React, { useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
 import { SocialLogo, SocialFeed, SocialWidgets } from './SocialContent';

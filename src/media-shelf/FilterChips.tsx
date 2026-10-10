@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { Chip, ChipRow } from '../chip';
 import type { FilterChipsProps } from './types';

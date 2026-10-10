@@ -14,7 +14,6 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import React from 'react';
 import { Platform, Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 

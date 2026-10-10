@@ -1,5 +1,5 @@
 import { useSurfaceFill } from '../styles/surface-levels';
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 
 import { GlyphButton } from '../button';

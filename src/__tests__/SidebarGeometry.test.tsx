@@ -1,4 +1,3 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Sidebar, SIDEBAR_METRICS } from '../sidebar';
 import { RiAddLine } from '../icons/remix/RiAddLine';

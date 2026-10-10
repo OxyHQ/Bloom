@@ -14,7 +14,6 @@
  * MINUS the heading (it points at north while the map turns), and the control
  * removes itself once the map is already there.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

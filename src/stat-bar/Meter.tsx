@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { styled } from 'react-native-css';
 import { Animated, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 

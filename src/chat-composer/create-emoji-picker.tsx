@@ -17,7 +17,7 @@ import type { Surface as SurfaceComponent } from '../surface';
  * dozen are mounted, and the exact offsets are what let a category tab jump
  * straight to its header instead of estimating.
  */
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Button as ButtonComponent } from '../button';
 import { FlatList, Pressable, TextInput, View } from 'react-native';
 

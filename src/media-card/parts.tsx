@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { Button, GlyphButton } from '../button';
+import { GlyphButton } from '../button';
 import {
   DropdownMenu,
   DropdownMenuContent,

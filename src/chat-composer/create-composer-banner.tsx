@@ -8,7 +8,7 @@
  * rail and the surface, which is the difference between "you are in a mode" and
  * "here is a fact about sending".
  */
-import React from 'react';
+
 import { Image, View } from 'react-native';
 
 import { RiCloseLine } from '../icons/remix/RiCloseLine';

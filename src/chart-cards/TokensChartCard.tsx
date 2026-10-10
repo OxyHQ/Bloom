@@ -1,5 +1,5 @@
 import { Card } from '../card';
-import React, { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import {
   Easing,
   Platform,

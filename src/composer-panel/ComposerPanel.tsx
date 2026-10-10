@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ComposerPanelBase } from './ComposerPanelBase';
 import { ComposerPopover } from './ComposerPopover';
 import { ComposerPopoverContext } from './context';

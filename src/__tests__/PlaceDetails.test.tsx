@@ -16,7 +16,7 @@
  * with their `fill` — which is enough to measure that the current hour takes a
  * different paint from its neighbours and that a closed hour draws none.
  */
-import React from 'react';
+
 import { act } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));

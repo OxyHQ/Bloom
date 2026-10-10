@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { FLOOR_OPTIONS, localizedOptions } from './constants';
 import { ToggleChipGroup } from './ToggleChipGroup';
 import { useMessages } from '../locale/messages';

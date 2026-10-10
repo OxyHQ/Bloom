@@ -18,7 +18,7 @@
  * jsdom lays nothing out, so the photo grid's `ResizeObserver` is stood in for
  * — without it the section renders but reports no width.
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

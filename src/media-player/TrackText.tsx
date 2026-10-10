@@ -1,5 +1,5 @@
 import { surfaceFillOn } from '../styles/surface-levels';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { Image, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';

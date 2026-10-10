@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions, type TextStyle } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';

@@ -1,6 +1,6 @@
 import React, { createRef } from 'react';
 import { Dimensions, Modal, Text, View } from 'react-native';
-import { act, render, within } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 
 import { useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

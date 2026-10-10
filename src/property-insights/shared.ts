@@ -1,6 +1,5 @@
 import { Platform } from 'react-native';
 
-import { groupThousands } from '../chart-cards/primitives/format';
 import { resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';

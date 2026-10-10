@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Platform, View, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {

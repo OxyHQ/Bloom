@@ -1,14 +1,7 @@
 import { useBloomAppearance } from '../appearance';
 import type React from 'react';
 import { useRef, useState } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  TextInput,
-  type TextStyle,
-  type TextInputProps,
-  View,
-} from 'react-native';
+import { Platform, StyleSheet, TextInput, type TextStyle, type TextInputProps } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';

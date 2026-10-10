@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { PropertyType } from '../stay-filters';
 import { PropertyTypeTiles } from '../stay-filters/PropertyTypeTiles';
 import type { PropertyTypePickerProps } from './types';

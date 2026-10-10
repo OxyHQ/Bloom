@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { BloomColorScope } from './ColorScope.web';
 import { useTheme } from '../use-theme';

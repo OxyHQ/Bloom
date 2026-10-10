@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import { useId } from 'react';
 import { Platform, Text } from 'react-native';
 import { LABEL_MESSAGES } from '../label/messages';
 import { useMessages } from '../locale/messages';

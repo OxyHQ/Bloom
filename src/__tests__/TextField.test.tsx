@@ -2,7 +2,6 @@ import type React from 'react';
 import { contrastRatio } from '../styles/color-contrast';
 import {
   AA_TEXT,
-  hairlineOn,
   resolveSurfaceLevel,
   surfaceFillOn,
   surfaceTextOn,

@@ -1,13 +1,6 @@
 import type React from 'react';
 import { memo } from 'react';
-import {
-  type TextProps as RNTextProps,
-  Platform,
-  StyleSheet,
-  type TextStyle,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Platform, StyleSheet, type TextStyle, useWindowDimensions, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { fontFamilies } from '../fonts/tokens';

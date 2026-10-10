@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { RiPlayFill } from '../icons/remix/RiPlayFill';

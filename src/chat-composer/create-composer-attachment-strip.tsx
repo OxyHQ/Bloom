@@ -5,7 +5,7 @@
  * imported rather than retyped, because a second ring drawn from a second path
  * helper is how two composers end up with rings that close at different angles.
  */
-import React from 'react';
+
 import { Image, Pressable, ScrollView, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 

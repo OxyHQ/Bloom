@@ -7,7 +7,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
-import { SurfaceLevelProvider, useSurfaceFill, surfaceFillOn } from '../styles/surface-levels';
+import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import { TabBar, TabBarButton } from '../tab-bar';
 import { TabBarGlyph as NativeTabBarGlyph } from '../tab-bar/glyph.native';
 import { resolveTabBarTheme } from '../tab-bar/shared';

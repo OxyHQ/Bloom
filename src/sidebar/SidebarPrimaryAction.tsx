@@ -1,4 +1,3 @@
-import React from 'react';
 import { Fab } from '../fab';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { SIDEBAR_ACTION_DIAMETER, useSidebarGeometry } from './geometry';

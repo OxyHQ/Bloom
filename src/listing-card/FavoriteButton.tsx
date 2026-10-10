@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';

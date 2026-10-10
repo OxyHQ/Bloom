@@ -1,4 +1,3 @@
-import React from 'react';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
 import { CartesianPlot } from '../chart-cards/primitives/CartesianPlot';

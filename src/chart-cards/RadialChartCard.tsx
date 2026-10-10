@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import {
   Platform,
   StyleSheet,

@@ -43,7 +43,6 @@ import {
 } from '../segmented-control';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { Item } from '../item';
-import { useDialogControl } from './context';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { H1, Text } from '../typography';

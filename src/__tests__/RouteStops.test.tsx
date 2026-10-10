@@ -10,7 +10,7 @@
  * at all, because "offered only for exactly two stops" is a claim a prop-level
  * test would pass by simply passing `onSwap`.
  */
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import Svg, { Defs, Path, RadialGradient, Stop } from 'react-native-svg';
 
 import { LOCATION_PUCK_CONE_STOPS } from './constants';

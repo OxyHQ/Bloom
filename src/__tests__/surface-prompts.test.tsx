@@ -1,4 +1,3 @@
-import React from 'react';
 import type { GestureResponderEvent } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 

@@ -20,7 +20,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalProvider, PortalOutlet, Portal } from '../portal';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipTextBubble } from '../tooltip';
+import { Tooltip, TooltipTrigger, TooltipTextBubble } from '../tooltip';
 import { findHost } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {

@@ -62,7 +62,7 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
  * than to the ones it reads, so an omitted value runs the mapper once and
  * freezes it.
  */
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, type View } from 'react-native';
 import Animated, {
   Easing,

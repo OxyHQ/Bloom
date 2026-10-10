@@ -6,7 +6,7 @@
  * Everything below the anchor — portal, overlay rank, dismiss layer, placement —
  * is `floating/FloatingPanel`, shared with the other three anchored families.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
 
 import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';

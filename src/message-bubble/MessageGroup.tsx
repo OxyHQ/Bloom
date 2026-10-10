@@ -1,4 +1,4 @@
-import React, { Children, cloneElement, isValidElement, memo, useMemo } from 'react';
+import { Children, cloneElement, isValidElement, memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Avatar } from '../avatar';

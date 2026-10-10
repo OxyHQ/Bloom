@@ -3,7 +3,7 @@ import { useFieldMembership } from '../field/membership';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
-import React, { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Platform, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';

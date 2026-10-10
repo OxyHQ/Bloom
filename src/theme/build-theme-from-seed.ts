@@ -1,7 +1,6 @@
 import { chartColorsFromTokens } from './chart-colors';
 import { generateRoleColors, type RoleColors, type SchemeVariant } from './color-engine';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
-import { STATUS_COLORS } from './build-theme';
 import { THEME_GRADIENTS } from './gradients';
 import type { Theme, ThemeColors } from './types';
 

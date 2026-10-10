@@ -2,7 +2,7 @@
  * Web stub for `react-native-safe-area-context` used by Storybook. Returns
  * zero insets and a frame matching the window.
  */
-import React, { type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { View, type ViewProps } from 'react-native';
 
 const ZERO_INSETS = { top: 0, right: 0, bottom: 0, left: 0 } as const;

@@ -1,6 +1,6 @@
 import { useResolvedSurface } from '../surface/use-resolved-surface';
 import { Surface } from '../surface';
-import React, { memo, useContext, useMemo, useRef } from 'react';
+import { memo, useContext, useMemo, useRef } from 'react';
 import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';

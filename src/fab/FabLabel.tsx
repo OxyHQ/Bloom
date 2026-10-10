@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { View, type StyleProp, type TextStyle } from 'react-native';
 import Animated, {
   Easing,

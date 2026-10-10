@@ -21,7 +21,7 @@
  * property: use this component with `ratio`, or a plain `View` with the class,
  * never both. Wrap it in a `StyledView` for the surrounding layout classes.
  */
-import React from 'react';
+
 import { View } from 'react-native';
 
 import type { AspectRatioProps } from './types';

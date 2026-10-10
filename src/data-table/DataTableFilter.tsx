@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useControllableState } from '../hooks/use-controllable-state';
 import {
   Select,

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
 
 import { borderRadius } from '../styles/tokens';

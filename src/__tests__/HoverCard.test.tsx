@@ -5,7 +5,7 @@
  * press into an `asChild` child rather than wrapping it, since a wrapping
  * `Pressable` never receives a gesture its pressable child claims.
  */
-import React from 'react';
+
 import { Pressable, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 

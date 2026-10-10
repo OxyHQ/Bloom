@@ -1,4 +1,4 @@
-import { surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
+import { surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
 import { Platform, type DimensionValue } from 'react-native';
 
 import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';

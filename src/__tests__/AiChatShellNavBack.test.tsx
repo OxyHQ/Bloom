@@ -8,7 +8,7 @@
  * `usePanelInteraction` like the panel; this pins that it takes back while
  * open, and hands it on once closed.
  */
-import React from 'react';
+
 import { Text } from 'react-native';
 import * as ReactNative from 'react-native';
 import { render } from '@testing-library/react-native';

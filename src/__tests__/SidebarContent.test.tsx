@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text, Pressable, ScrollView } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Sidebar } from '../sidebar';

@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Pressable, StyleSheet, View, type TextStyle } from 'react-native';
 
 import { Avatar } from '../avatar';

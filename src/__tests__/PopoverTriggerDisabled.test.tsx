@@ -13,7 +13,7 @@
  * suite used to live on `Combobox`, whose trigger is exactly that shape; it now
  * pins the mechanism on `Popover` directly.
  */
-import React from 'react';
+
 import { Pressable, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 

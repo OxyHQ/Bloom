@@ -8,7 +8,7 @@
  * the element under it (a link, an avatar) owns that. A touch device reaches the
  * card the way native does — see `HoverCard.tsx`.
  */
-import React, { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import type { NativeSyntheticEvent, View } from 'react-native';
 
 import { useAnchorRect } from '../floating/use-anchor-rect';

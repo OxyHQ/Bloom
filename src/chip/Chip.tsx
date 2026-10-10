@@ -1,6 +1,6 @@
 import { useBloomAppearance } from '../appearance';
 import { normalizeTagTone } from './shared';
-import React, { forwardRef, memo, useMemo } from 'react';
+import { forwardRef, memo, useMemo } from 'react';
 import { View, Platform, Pressable, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';

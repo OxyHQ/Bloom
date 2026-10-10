@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { AgentChatActionsBase } from './AgentChatActionsBase';
 import { AgentChatBase } from './AgentChatBase';
 import { AgentChatComposerBase } from './AgentChatComposerBase';

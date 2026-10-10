@@ -34,7 +34,7 @@
  * pipeline"), a named property falls back to NOTHING rather than to the
  * default. A caller who names it is asking to own it.
  */
-import React from 'react';
+
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { useMenuPalette } from '../floating/menu-palette';

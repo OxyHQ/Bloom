@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import { colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
+import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';

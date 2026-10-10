@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { Animated, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { contrastRatio } from '../styles/color-contrast';

@@ -18,7 +18,7 @@
  *    not to repeat.
  *  - the add row is OUTSIDE the radiogroup, so it is not one of the choices.
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

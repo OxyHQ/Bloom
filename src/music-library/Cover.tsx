@@ -1,4 +1,4 @@
-import React, { useState, type ComponentType } from 'react';
+import { useState } from 'react';
 import { Image, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { RiBookOpenLine } from '../icons/remix/RiBookOpenLine';

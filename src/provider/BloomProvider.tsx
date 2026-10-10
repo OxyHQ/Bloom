@@ -1,16 +1,15 @@
 /** Universal application state. Supply scrollAdapter explicitly to enable router restoration.
  * Visual outlets remain owned by the app's composition to avoid duplicate hosts.
  */
-import type { ReactNode } from 'react';
 
 import { GlassBlurTargetProvider } from '../glass/blur-target';
 import { BottomEdgeProvider } from '../layout/bottom-edge';
 import { TopEdgeProvider } from '../layout/top-edge';
-import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
+import { ImageResolverProvider } from '../image-resolver';
 import { LocaleProvider } from '../locale/context';
 import { BloomHapticsProvider } from '../hooks/use-haptics';
 import { TabBarMinimizeProvider } from '../tab-bar/context';
-import { BloomThemeProvider, type BloomThemeProviderProps } from '../theme';
+import { BloomThemeProvider } from '../theme';
 import { ScrollRestorationProvider } from '../scroll/context';
 import { useEffect } from 'react';
 import type { ScrollRouterAdapter } from '../scroll/types';

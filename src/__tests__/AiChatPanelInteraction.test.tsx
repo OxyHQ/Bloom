@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import React from 'react';
+
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));

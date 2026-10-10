@@ -5,7 +5,7 @@
  * a control takes no text selection (`styles/base-web-css.ts`), whatever family
  * drew it, while links — which sit inside prose — keep theirs.
  */
-import React from 'react';
+
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 

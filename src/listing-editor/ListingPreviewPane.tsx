@@ -1,7 +1,6 @@
-import React, { memo, useMemo } from 'react';
+import { memo } from 'react';
 import { Image, View } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useImageResolver } from '../image-resolver/context';
 import { ListingCard } from '../listing-card';

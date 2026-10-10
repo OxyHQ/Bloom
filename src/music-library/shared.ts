@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
-import { parseRgb } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type {
   LibraryEntry,

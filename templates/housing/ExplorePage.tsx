@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 
-import { Button, InverseButton } from '../../src/button';
+import { InverseButton } from '../../src/button';
 import { resolveButtonRamps } from '../../src/button/shared';
 import { CategoryBar } from '../../src/category-bar';
 import { useDialogControl } from '../../src/dialog';

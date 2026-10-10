@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { Offering } from '../listing-card/types';

@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { HOME_SEARCH_SEGMENTS } from '../home-search/constants';
 import { HomeSearchBar } from '../home-search/HomeSearchBar';

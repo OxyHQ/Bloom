@@ -16,7 +16,6 @@
  *     measuring contrast, so it is asserted against the measurement rather than
  *     against a remembered hex.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

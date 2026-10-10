@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Platform, View } from 'react-native';
 
 import { RiStarFill } from '../icons/remix/RiStarFill';

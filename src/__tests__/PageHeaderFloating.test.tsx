@@ -17,7 +17,7 @@
  * below an overlaying header — is measured by reading the claim back out of the
  * registry, which is the only place the two ever meet.
  */
-import React from 'react';
+
 import * as ReactNative from 'react-native';
 import { Text, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';

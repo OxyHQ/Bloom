@@ -11,7 +11,6 @@
  * out — which is the claim the API makes and the one a second component would
  * quietly break.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

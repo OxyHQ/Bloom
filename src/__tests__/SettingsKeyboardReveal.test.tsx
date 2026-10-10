@@ -6,7 +6,7 @@
  * scroll it out (Pixel 8a, Android 16, Bloom 4.23.0). The page now pads by the
  * keyboard and scrolls the focused field up by exactly its overlap.
  */
-import React from 'react';
+
 import * as ReactNative from 'react-native';
 import { act, renderHook } from '@testing-library/react-native';
 

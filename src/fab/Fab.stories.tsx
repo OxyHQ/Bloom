@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../button/index.web';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';

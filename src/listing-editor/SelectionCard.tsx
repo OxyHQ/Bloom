@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, type ReactNode } from 'react';
+import { memo, useEffect, useMemo, type ReactNode } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';

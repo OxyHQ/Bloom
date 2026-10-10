@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { View } from 'react-native';
 
 import { RiUser3Fill } from '../icons/remix/RiUser3Fill';

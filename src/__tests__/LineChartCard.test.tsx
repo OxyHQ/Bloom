@@ -3,7 +3,6 @@ import { materialChartPalette as resolveChartCardPalette } from './support/card-
 import { cardLayout, cardFill } from './support/card-surface';
 import type React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
-import { resolvedStyle } from './support/rendered-style';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';

@@ -12,7 +12,6 @@
  * DIFFERENT painted colour per state, and that the two densities draw different
  * things from the same props.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

@@ -1,4 +1,4 @@
-import React, { useId, useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import Svg, {
   Circle,
   ClipPath,
@@ -12,13 +12,7 @@ import Svg, {
 } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
-import {
-  ChartCardFrame,
-  ChartPlot,
-  chartAccessibilityLabel,
-  groupThousands,
-  useActiveIndex,
-} from './ChartCard';
+import { ChartCardFrame, ChartPlot, chartAccessibilityLabel, useActiveIndex } from './ChartCard';
 import { monotoneXAreaPath, monotoneXPath, pointX, yScale } from './geometry';
 import { revenueSeriesTone } from './palette';
 import type { RevenueChartCardProps } from './types';

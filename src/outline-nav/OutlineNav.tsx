@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Platform, Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { Meter } from '../stat-bar';

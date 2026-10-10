@@ -12,7 +12,7 @@
  * The rows come from `floating/menu-rows`, the same set `ContextMenu` and
  * `Menubar` publish under their own prefixes.
  */
-import React, { useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import type { View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';

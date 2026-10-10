@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
 import type { GestureResponderEvent, View } from 'react-native';
 
 import { GlyphButton } from '../button';

@@ -1,4 +1,4 @@
-import React, { Children, isValidElement, memo, useState } from 'react';
+import { Children, isValidElement, memo, useState } from 'react';
 import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 
 import { IS_WEB, listingGridColumns } from './shared';

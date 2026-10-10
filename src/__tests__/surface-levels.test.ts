@@ -29,7 +29,6 @@ import {
   resolveSurfaceLevel,
   SURFACE_LEVELS,
   surfaceFillOn,
-  surfaceTextOn,
   type SurfaceLevel,
 } from '../styles/surface-levels';
 import { buildTheme } from '../theme/build-theme';

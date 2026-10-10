@@ -1,4 +1,3 @@
-import React from 'react';
 import type { GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import { LinkButton } from '../button';

@@ -1,6 +1,6 @@
 import { resolveSurfaceGeometry } from './resolve-surface-geometry';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { forwardRef, memo } from 'react';
+import { forwardRef, memo } from 'react';
 import { StyleSheet, type View } from 'react-native';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useResolvedSurface } from './use-resolved-surface';

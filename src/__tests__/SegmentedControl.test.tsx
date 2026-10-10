@@ -10,7 +10,7 @@
  * react-native-web drops `accessibilityState` entirely, so a control that set
  * only that would announce nothing at all on web.
  */
-import React from 'react';
+
 import { render, fireEvent, act } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

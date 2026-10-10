@@ -1,6 +1,6 @@
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
   Platform,

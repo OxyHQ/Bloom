@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Image, View } from 'react-native';
 
 import { useImageResolver } from '../image-resolver/context';

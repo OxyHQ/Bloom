@@ -1,7 +1,7 @@
 import { resolveBloomColors } from '../appearance/colors';
 import type { BloomAppearance, BloomTone } from '../appearance';
 import { TYPE_SCALE, type TypeScaleVariant } from '../typography/scale';
-import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
+import { type AccentTone } from '../theme/accent-colors';
 import { pressedSurface } from '../theme/press-colors';
 import type { Theme } from '../theme/types';
 import { resolveChipHueColors } from './hue-colors';

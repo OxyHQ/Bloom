@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 import type { Theme } from '../theme/types';

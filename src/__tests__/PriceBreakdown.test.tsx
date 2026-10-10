@@ -10,7 +10,7 @@
  * a thousands separator that is a dot — and the assertion is that every one of
  * them comes out byte for byte.
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

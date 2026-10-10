@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Platform, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 

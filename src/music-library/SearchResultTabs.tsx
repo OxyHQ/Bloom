@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import { Platform, type View } from 'react-native';
 
 import { Chip, ChipRow } from '../chip';

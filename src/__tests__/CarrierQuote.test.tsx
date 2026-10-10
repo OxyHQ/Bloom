@@ -14,7 +14,6 @@
  *     answer must not be drawn at all, and the loading list must announce that
  *     it is busy. A prop-level test passes all three by handing the props over.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

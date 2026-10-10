@@ -1,4 +1,4 @@
-import React, { memo, useContext } from 'react';
+import { memo, useContext } from 'react';
 import { View } from 'react-native';
 
 import { ButtonGroupItem } from '../button-group';

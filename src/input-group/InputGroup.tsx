@@ -1,5 +1,5 @@
 import { useBloomAppearance, type BloomSize } from '../appearance';
-import React, { Children, createContext, isValidElement, memo, useContext, useMemo } from 'react';
+import { Children, createContext, isValidElement, memo, useContext, useMemo } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';

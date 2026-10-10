@@ -7,7 +7,7 @@ import {
   surfaceFillVars,
   useSurfaceLevelValue,
 } from '../styles/surface-levels';
-import React, { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 
 import { AvatarPresence } from '../chat-indicators/AvatarPresence';

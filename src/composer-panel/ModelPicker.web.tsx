@@ -1,5 +1,4 @@
 import { Button } from '../button/Button.web';
-import React from 'react';
 
 import { ComposerPopover } from './ComposerPopover.web';
 import { ComposerPopoverContext, ComposerButtonContext } from './context';

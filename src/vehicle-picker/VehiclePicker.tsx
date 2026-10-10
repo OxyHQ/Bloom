@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { View, type TextStyle } from 'react-native';
 
 import { Chip } from '../chip';

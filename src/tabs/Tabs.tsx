@@ -26,7 +26,6 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withTiming,
-  type SharedValue,
 } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
@@ -39,13 +38,7 @@ import { hairlineOn, surfaceFillOn, useSurfaceFill } from '../styles/surface-lev
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
 import type { WebCssStyle } from '../styles/web-view-style';
-import type {
-  TabsContentProps,
-  TabsIconComponent,
-  TabsProps,
-  TabsTriggerProps,
-  TabsVariant,
-} from './types';
+import type { TabsContentProps, TabsProps, TabsTriggerProps, TabsVariant } from './types';
 
 /**
  * Tabs and its pill tab switcher.

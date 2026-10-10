@@ -1,7 +1,6 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
 import { chartHueTone } from '../chart-cards/palette';
 import { useTheme } from '../theme/use-theme';
 import type { PriceHistogramProps } from './types';

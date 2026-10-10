@@ -1,7 +1,6 @@
-import React, { memo, useMemo } from 'react';
+import { memo } from 'react';
 import { View } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { FilterSectionProps } from './types';

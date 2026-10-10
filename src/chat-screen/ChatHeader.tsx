@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import { Button } from '../button';

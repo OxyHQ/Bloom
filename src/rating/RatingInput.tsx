@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
 import { RiStarFill } from '../icons/remix/RiStarFill';

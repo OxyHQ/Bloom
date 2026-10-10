@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { StyledPressable } from '../styles/styled-primitives';
 import Svg, { Path } from 'react-native-svg';

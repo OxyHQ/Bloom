@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useCallback, useEffect } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -27,7 +27,6 @@ import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { Text } from '../typography';
 import { FollowLabel } from './FollowLabel';
 import { useMediaHeaderPaint } from './parts';
 import { IS_WEB } from './shared';

@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { Platform, View, type AccessibilityActionEvent } from 'react-native';
 
 import { Button, type ButtonProps } from '../button';

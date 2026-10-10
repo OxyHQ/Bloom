@@ -1,5 +1,5 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState, type PropsWithChildren } from 'react';
+import { useState, type PropsWithChildren } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

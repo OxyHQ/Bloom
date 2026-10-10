@@ -1,4 +1,4 @@
-import React, { memo, useId, useMemo } from 'react';
+import { memo, useId, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Text } from '../typography';

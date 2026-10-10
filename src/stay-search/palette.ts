@@ -6,7 +6,6 @@ import {
 } from '../styles/surface-levels';
 import { useMemo } from 'react';
 
-import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';

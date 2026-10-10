@@ -6,7 +6,7 @@
  * foot of the screen, "fitted" by 30px and landed under Android's gesture bar
  * (Pixel 8a, Android 16, Bloom 4.23.0).
  */
-import React from 'react';
+
 import { Text, type View } from 'react-native';
 import * as ReactNative from 'react-native';
 import * as SafeArea from 'react-native-safe-area-context';

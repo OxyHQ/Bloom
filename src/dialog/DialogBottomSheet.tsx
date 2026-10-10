@@ -1,6 +1,6 @@
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
 import { Platform, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, type AnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

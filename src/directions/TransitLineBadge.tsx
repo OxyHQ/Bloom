@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Platform, View } from 'react-native';
 
 import { Badge } from '../badge';

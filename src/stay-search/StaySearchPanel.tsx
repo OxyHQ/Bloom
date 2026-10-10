@@ -1,5 +1,5 @@
 import { Surface } from '../surface';
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import type { WebCssStyle } from '../styles/web-view-style';
 import { STAY_SEARCH_PANEL_RADIUS } from './constants';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { act, render } from '@testing-library/react-native';
 import type { NativeScrollEvent } from 'react-native';
 import * as Reanimated from 'react-native-reanimated';

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Linking, View } from 'react-native';
 
 import { fontSize, space } from '../styles/tokens';

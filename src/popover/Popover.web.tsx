@@ -8,7 +8,7 @@
  * on its trigger by default (shadcn's `align="center"`) and does not take the
  * trigger's width as a floor.
  */
-import React, { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useWindowDimensions, type View } from 'react-native';
 
 import { POPOVER_TRIGGER_POPUP } from '../floating/constants';

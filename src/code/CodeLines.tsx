@@ -1,4 +1,4 @@
-import React, { createElement, memo, useMemo } from 'react';
+import { createElement, memo, useMemo } from 'react';
 import { ScrollView, Text as RNText, View } from 'react-native';
 
 import { flattenWebStyle } from '../styles/flatten-web-style';

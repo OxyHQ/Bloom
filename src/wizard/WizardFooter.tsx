@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import { memo, useState } from 'react';
 import { Platform, View } from 'react-native';
 
 import { Button, LinkButton } from '../button';

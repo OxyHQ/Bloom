@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { render } from '@testing-library/react-native';
 

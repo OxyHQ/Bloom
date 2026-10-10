@@ -1,7 +1,6 @@
 import { Platform } from 'react-native';
 
 import { colorRamp, mixColor, resolveButtonRamps, ACCENT_TABLE } from '../button/shared';
-import { formatFileSize } from '../file-upload/shared';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 import type { Theme } from '../theme/types';
 import { MESSAGE_MEDIA_MESSAGES, type MessageMediaMessages } from './messages';

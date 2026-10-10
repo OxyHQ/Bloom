@@ -19,7 +19,7 @@
  */
 import React from 'react';
 import { act, render } from '@testing-library/react-native';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 // A NAMESPACE import, not `jest.requireMock`: this is the very module object
 // `store.ts` calls through, so a spy written here is a spy the store sees.
 import * as Reanimated from 'react-native-reanimated';

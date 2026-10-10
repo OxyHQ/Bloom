@@ -6,7 +6,7 @@
  * would have gone on measuring whatever the default happened to be, which is
  * the one thing a gate on a default must not do.
  */
-import React from 'react';
+
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';

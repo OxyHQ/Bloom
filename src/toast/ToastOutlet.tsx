@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { Toaster } from './Toaster';
 import type { ToasterProps } from './types';
 

@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import React from 'react';
+
 import { act, render, cleanup, fireEvent } from '@testing-library/react-native/pure';
 jest.mock('react-native', () => {
   const base = jest.requireActual('../../__mocks__/react-native');
@@ -17,7 +17,7 @@ jest.mock('react-native', () => {
 jest.mock('../hooks/use-prefers-reduced-motion', () => ({
   usePrefersReducedMotion: jest.fn(() => false),
 }));
-import { Text, TextInput, View } from 'react-native';
+import { Text, TextInput } from 'react-native';
 import { Collapsible } from '../collapsible/Collapsible';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { resolvedStyle } from './support/rendered-style';

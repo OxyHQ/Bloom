@@ -1,11 +1,11 @@
-import React, { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { G, Path, Rect } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
 import { niceTicks } from './geometry';
 import { chartHueTone } from './palette';
-import { formatDollars, monthTitle } from './LineChartCard';
+import { monthTitle } from './LineChartCard';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { describeDeltaRatio } from './primitives/format';
 import { MultiAxisPlot } from './primitives/MultiAxisPlot';

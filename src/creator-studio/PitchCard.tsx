@@ -1,7 +1,7 @@
 import { surfaceFillOn } from '../styles/surface-levels';
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button } from '../button';

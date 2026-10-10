@@ -21,7 +21,6 @@
  *
  * That ink lands under a real pointer is `scripts/verify-signature-pad.mjs`.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

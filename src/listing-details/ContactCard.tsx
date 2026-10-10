@@ -1,6 +1,6 @@
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
-import React, { isValidElement, memo, useMemo } from 'react';
+import { isValidElement, memo, useMemo } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';

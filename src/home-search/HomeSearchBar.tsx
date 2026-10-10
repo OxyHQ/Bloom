@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, TextInput, View, type TextStyle, type ViewStyle } from 'react-native';
 
 import { Button } from '../button';

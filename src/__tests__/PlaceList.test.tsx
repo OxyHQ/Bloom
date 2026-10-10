@@ -11,7 +11,7 @@
  * through what the live region says, because a reader who cannot see the swap
  * has nothing else.
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

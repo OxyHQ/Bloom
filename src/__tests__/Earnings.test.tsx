@@ -15,7 +15,6 @@
  *     payout state must reach a reader in WORDS rather than only in a tint. A
  *     prop-level test passes all three by handing the props over.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

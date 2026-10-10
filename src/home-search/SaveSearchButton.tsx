@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { RiNotification3Fill } from '../icons/remix/RiNotification3Fill';
 import { RiNotification3Line } from '../icons/remix/RiNotification3Line';

@@ -15,7 +15,7 @@
  * the helper: a prop-level check would pass on a component that resolved the
  * name correctly and then handed it to the wrong slot.
  */
-import React from 'react';
+
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import type { HomeSearchMode } from '../../src/home-search';
 import { EvictionsPage } from './EvictionsPage';

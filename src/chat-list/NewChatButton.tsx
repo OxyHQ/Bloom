@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { Fab } from '../fab';
 import { RiChatNewLine } from '../icons/remix/RiChatNewLine';

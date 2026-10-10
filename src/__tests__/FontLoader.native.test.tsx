@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text, type TextProps } from 'react-native';
 import { render } from '@testing-library/react-native';
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { Image, Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -8,7 +8,6 @@ import {
   BOOKING_STYLE_ID,
   BOOKING_WEB_CSS,
 } from '../booking/shared';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import { chartHueTone } from '../chart-cards/palette';
 import { pieSectorAngles, sectorPath } from '../chart-cards/polar-geometry';
 import { useInteractionState } from '../hooks/use-interaction-state';

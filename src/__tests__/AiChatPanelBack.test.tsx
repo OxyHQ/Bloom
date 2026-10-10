@@ -1,4 +1,3 @@
-import React from 'react';
 jest.mock('react-native', () => ({
   ...jest.requireActual('react-native'),
   Platform: { OS: 'android' },

@@ -1,4 +1,4 @@
-import React, { memo, useContext, useMemo, useState } from 'react';
+import { memo, useContext, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';

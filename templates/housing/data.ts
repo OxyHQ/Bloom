@@ -19,7 +19,6 @@ import {
   RiBriefcase4Line,
   RiBuilding2Line,
   RiBuilding4Line,
-  RiBusLine,
   RiCalendarCloseLine,
   RiCalendarLine,
   RiCarLine,

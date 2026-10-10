@@ -13,7 +13,6 @@ import {
 import Svg, { Path, Rect } from 'react-native-svg';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { DANGER_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
 import { RiFileExcel2Line } from '../icons/remix/RiFileExcel2Line';
 import { RiFileImageLine } from '../icons/remix/RiFileImageLine';
 import { RiFileTextLine } from '../icons/remix/RiFileTextLine';

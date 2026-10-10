@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ComposerStatusBarBase } from './ComposerStatusBarBase';
 import { ComposerPopover } from './ComposerPopover';
 import { ComposerPopoverContext } from './context';

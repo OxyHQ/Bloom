@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import { Chip, CHIP_GEOMETRY, resolveChipPaint } from '../chip';

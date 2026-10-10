@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 
 import { Avatar } from '../avatar';

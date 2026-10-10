@@ -1,6 +1,6 @@
 import { useCardFill } from '../card/use-card-fill';
 import { Surface } from '../surface';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
 import { Button, GlyphButton } from '../button';

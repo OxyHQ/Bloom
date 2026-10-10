@@ -8,7 +8,6 @@ import type { Surface as SurfaceComponent } from '../surface';
  * is shown in a different place (over a message, above its menu) and must stay
  * one row tall at 390px.
  */
-import React from 'react';
 import { View } from 'react-native';
 
 import type { Button as ButtonComponent } from '../button';

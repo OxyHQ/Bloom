@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect } from 'react-native-svg';
 

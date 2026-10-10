@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { AiChatContainerBase } from './AiChatContainer';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { AiChatGalleryPanelBase } from './AiChatGalleryPanelBase';

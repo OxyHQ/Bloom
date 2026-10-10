@@ -14,7 +14,7 @@
  *    `radiogroup` of `radio`s carrying `aria-checked`; a list is `list`s of
  *    `listitem`s. Passing the prop is not evidence either arrived.
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

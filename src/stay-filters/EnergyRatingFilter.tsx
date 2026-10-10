@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
@@ -16,7 +16,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ENERGY_RATINGS } from './constants';
 import type { EnergyRating, EnergyRatingFilterProps } from './types';
-import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import { contrastRatio } from '../styles/color-contrast';
 
 /**
  * An energy rating threshold, A (best) to G (worst), as seven small coloured

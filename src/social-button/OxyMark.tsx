@@ -1,4 +1,3 @@
-import React from 'react';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
 
 import { useSvgIdPrefix } from '../styles/svg-id';

@@ -1,4 +1,4 @@
-import React, { forwardRef, type ComponentType, type RefAttributes } from 'react';
+import { forwardRef, type ComponentType, type RefAttributes } from 'react';
 import type { View } from 'react-native';
 import type { ButtonProps } from '../button/types';
 import { useTheme } from '../theme/use-theme';

@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import React, { act, useEffect } from 'react';
+import { act, useEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { BloomThemeProvider } from '../BloomThemeProvider';
 import { BloomColorScope } from '../color-scope/ColorScope.web';

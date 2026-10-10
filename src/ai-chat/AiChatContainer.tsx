@@ -1,6 +1,6 @@
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
-import React, {
+import {
   forwardRef,
   useCallback,
   useContext,

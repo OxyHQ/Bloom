@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ComposerPanel } from './ComposerPanel.web';
 import type { ComposerAttachmentsProps } from './types';
 import { useAttachmentQueue } from './use-attachment-queue';

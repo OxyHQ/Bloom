@@ -11,7 +11,6 @@ import {
 import {
   type GestureResponderEvent,
   Platform,
-  Pressable,
   type PressableProps,
   type StyleProp,
   type TextStyle,

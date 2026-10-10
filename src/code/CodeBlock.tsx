@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Pressable, Text as RNText, View, type TextStyle } from 'react-native';
 
 import { RiCheckLine } from '../icons/remix/RiCheckLine';

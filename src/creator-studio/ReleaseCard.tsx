@@ -1,12 +1,11 @@
 import { useCardFill } from '../card/use-card-fill';
 import { Card } from '../card/Card';
 import { surfaceFillOn } from '../styles/surface-levels';
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { Badge } from '../badge';
 import { GlyphButton } from '../button';
-import { Chip } from '../chip';
 import {
   DropdownMenu,
   DropdownMenuContent,

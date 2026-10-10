@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { AvatarPresence } from '../chat-indicators/AvatarPresence';

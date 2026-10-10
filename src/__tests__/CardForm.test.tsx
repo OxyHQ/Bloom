@@ -15,7 +15,7 @@
  * this family is loudest about — that the mark draws the scheme's NAME and no
  * artwork.
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

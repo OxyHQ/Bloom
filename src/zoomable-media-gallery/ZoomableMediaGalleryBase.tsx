@@ -13,7 +13,6 @@ import {
   useWindowDimensions,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
-  type ViewStyle,
 } from 'react-native';
 import Animated, {
   useSharedValue,

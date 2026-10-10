@@ -1,6 +1,6 @@
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Checkbox } from '../checkbox';

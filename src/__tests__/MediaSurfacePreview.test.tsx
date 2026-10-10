@@ -3,7 +3,7 @@
  * failure retention are exercised with the real web renderer by Mention's
  * image viewer browser regression, not simulated by this Expo Image mock.
  */
-import React from 'react';
+
 import { render } from '@testing-library/react-native';
 import { Image } from 'expo-image';
 import { MediaPoster, MediaSurface } from '../media-flight/MediaSurface';

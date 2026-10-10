@@ -13,7 +13,7 @@
  * published here under the `Menubar*` names so a call site keeps every part it
  * wrote.
  */
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { SheetShell } from '../dialog/SheetShell';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';

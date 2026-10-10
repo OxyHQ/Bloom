@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { AccentTone } from '../theme/accent-colors';

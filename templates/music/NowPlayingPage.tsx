@@ -1,5 +1,5 @@
 import { Surface } from '../../src/surface';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Image, ScrollView, View } from 'react-native';
 
 import { Button } from '../../src/button';

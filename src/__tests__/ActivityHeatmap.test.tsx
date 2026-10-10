@@ -18,7 +18,7 @@
  *     on the next day. The two are asserted against each other, so the test can
  *     tell them apart rather than agreeing with whichever it is handed.
  */
-import React from 'react';
+
 import { render } from '@testing-library/react-native';
 
 import { ActivityHeatmap, bucketByDay } from '../activity-heatmap';

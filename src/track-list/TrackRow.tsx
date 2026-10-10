@@ -1,4 +1,4 @@
-import React, { forwardRef, Fragment, memo, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, Fragment, memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
   Pressable,

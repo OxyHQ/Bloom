@@ -1,4 +1,4 @@
-import React, { Children, memo, useEffect, useMemo, useState } from 'react';
+import { Children, memo, useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
 import { mixColor } from '../button/shared';

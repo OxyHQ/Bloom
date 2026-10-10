@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text, Pressable } from 'react-native';
 import { act, render, fireEvent } from '@testing-library/react-native';
 

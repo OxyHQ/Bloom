@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { PropertyTypeTiles } from './PropertyTypeTiles';
 import type { PropertyType, PropertyTypeFilterProps } from './types';
 

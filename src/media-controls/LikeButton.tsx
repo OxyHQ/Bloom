@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';

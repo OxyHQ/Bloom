@@ -3,7 +3,6 @@ import { Platform } from 'react-native';
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
-import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { MediaCardLayout, MediaCardPlayButton, MediaCardSize } from './types';
 import {

@@ -1,5 +1,4 @@
-import React from 'react';
-import { PixelRatio, Platform, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { PixelRatio, Platform, StyleSheet } from 'react-native';
 
 import { Fill } from '../fill';
 import { borderRadius } from '../styles/tokens';

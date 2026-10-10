@@ -15,7 +15,6 @@
  *  - the block's reason is drawn only for the two states that have one, and
  *    ignored for the other three whatever the caller passes.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

@@ -17,7 +17,6 @@ import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { PlaceReviewCard, PlaceReviewSummary, WriteReviewPrompt } from '../place-reviews';
-import { resolveHousingPalette } from '../tenancy/shared';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

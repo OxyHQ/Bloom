@@ -1,5 +1,5 @@
 import { Surface } from '../surface';
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar/Avatar';

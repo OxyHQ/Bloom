@@ -10,7 +10,6 @@
  * goes red. The second is the split between what is DRAWN and what is SAID —
  * the pill row clips, and the accessible name must still carry every cuisine.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

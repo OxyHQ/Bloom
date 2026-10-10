@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { ChipRow } from '../chip';
 import { SelectChip } from '../listing-actions/parts';

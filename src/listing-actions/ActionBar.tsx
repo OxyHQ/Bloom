@@ -1,6 +1,6 @@
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
-import React, { memo, useContext, useMemo } from 'react';
+import { memo, useContext, useMemo } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 

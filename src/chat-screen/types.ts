@@ -1,5 +1,5 @@
 import type { ImageSource } from '../shapes';
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { PresenceStatus } from '../chat-indicators/types';

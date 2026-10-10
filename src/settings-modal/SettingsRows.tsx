@@ -1,4 +1,4 @@
-import React, { Children, Fragment, isValidElement, useContext, type ReactNode } from 'react';
+import { Children, Fragment, isValidElement, useContext, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { StyledView } from '../styles/styled-primitives';

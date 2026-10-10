@@ -11,7 +11,7 @@
  *
  * The soft `drop-shadow` is a CSS filter: web only.
  */
-import React from 'react';
+
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 

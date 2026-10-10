@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Pressable } from 'react-native';
 
 import { bloomShadowStyle } from '../design-tokens/shadows';

@@ -11,7 +11,7 @@
  * enough on a cold sheet presentation, and whether focus lands on the first ROW
  * rather than on the container.
  */
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { AccessibilityInfo, Platform, View } from 'react-native';
 import TestRenderer, { act } from 'react-test-renderer';
 

@@ -1,6 +1,6 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';

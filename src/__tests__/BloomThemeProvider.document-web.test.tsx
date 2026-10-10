@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 
-import React, { act } from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Platform } from 'react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

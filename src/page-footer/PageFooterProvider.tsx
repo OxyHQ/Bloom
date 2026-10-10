@@ -1,4 +1,4 @@
-import React, { useState, type PropsWithChildren } from 'react';
+import { useState, type PropsWithChildren } from 'react';
 import { createEdgeStore } from '../layout/edge-store';
 import { PageFooterContext } from './context';
 

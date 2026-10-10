@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { ExplicitBadge } from '../media-controls';
 import { RiDiscFill } from '../icons/remix/RiDiscFill';

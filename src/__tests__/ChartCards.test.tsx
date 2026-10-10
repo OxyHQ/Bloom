@@ -1,6 +1,6 @@
 import { cardLayout } from './support/card-surface';
 import type React from 'react';
-import { quietText, quietTextOver } from '../styles/color-contrast';
+import { quietTextOver } from '../styles/color-contrast';
 import { AA_TEXT, AA_TEXT_STRONG, surfaceFillOn } from '../styles/surface-levels';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';

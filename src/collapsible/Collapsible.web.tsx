@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { CollapsibleFrame } from './CollapsibleFrame.web';
 import { DEFAULT_COLLAPSIBLE_TRANSITION, useCollapsibleMotion } from './use-collapsible-motion';
 import type { CollapsibleProps } from './types';

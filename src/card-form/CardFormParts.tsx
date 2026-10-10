@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { FieldControlProvider, type FieldControlValue } from '../field/context';

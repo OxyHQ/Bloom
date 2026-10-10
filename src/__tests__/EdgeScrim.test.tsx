@@ -5,7 +5,7 @@
  * which is what `SidebarScrollArea` used to do and which a caller would have to
  * rediscover.
  */
-import React from 'react';
+
 import { render } from '@testing-library/react-native';
 
 import { EdgeScrim } from '../page-header';

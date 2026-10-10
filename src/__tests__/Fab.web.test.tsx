@@ -5,7 +5,7 @@
 import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { getByRole, getByText, getByLabelText, fireEvent } from '@testing-library/dom';
+import { getByRole, fireEvent } from '@testing-library/dom';
 import '@testing-library/jest-dom';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

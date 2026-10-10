@@ -1,6 +1,6 @@
 import { surfaceStyle } from '../shapes/surface-style';
 import type { SurfaceShape } from '../shapes/corner-types';
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { Platform, StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useSvgIdPrefix } from '../styles/svg-id';

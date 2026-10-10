@@ -1,6 +1,6 @@
 import { useCardFill } from '../card/use-card-fill';
 import { Surface } from '../surface';
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 
 import { GlyphButton } from '../button';

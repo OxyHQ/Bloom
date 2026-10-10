@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Image, Pressable, View, type ViewStyle } from 'react-native';
 
 import { Button } from '../button';

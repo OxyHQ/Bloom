@@ -7,7 +7,7 @@
  * The rows are `floating/menu-rows`, published here under shadcn's
  * `ContextMenu*` names — one implementation, three families.
  */
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { SheetShell } from '../dialog/SheetShell';
 import { MENU_TRIGGER_POPUP } from '../floating/constants';

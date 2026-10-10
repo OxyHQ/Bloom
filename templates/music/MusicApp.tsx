@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ArtistPage } from './ArtistPage';
 import { AlbumPage, PlaylistPage } from './CollectionPages';
 import { ALBUM_BY_ID, EPISODE_BY_ID, LIBRARY, PLAYLIST_BY_ID, SHOW_BY_ID, TRACKS } from './data';

@@ -1,4 +1,4 @@
-import React, { memo, useMemo, type ComponentType, type ReactNode } from 'react';
+import { memo, useMemo, type ComponentType, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';

@@ -7,11 +7,7 @@ import { ThemeScopeContext } from './context';
 import { useScope } from './use-scope';
 import type { BloomColorScopeTokens } from './types';
 import type { AppColorName } from '../color-presets';
-import {
-  buildNativePresetStyle,
-  buildScopeVars,
-  getVariableContextProvider,
-} from './style-builder';
+import { buildNativePresetStyle, getVariableContextProvider } from './style-builder';
 
 /**
  * The variables a scope publishes when it carries no preset of its own.

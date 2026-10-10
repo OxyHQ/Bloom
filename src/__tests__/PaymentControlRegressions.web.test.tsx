@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import React from 'react';
+
 import { act } from 'react';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { Field } from '../field';

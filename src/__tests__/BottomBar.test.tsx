@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, Keyboard } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { BottomBarBase } from '../bottom-bar/BottomBarBase';

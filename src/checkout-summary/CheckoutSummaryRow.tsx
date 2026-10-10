@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';

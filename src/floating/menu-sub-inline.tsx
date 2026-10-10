@@ -13,7 +13,7 @@
  * `FloatingPanel`, so a runtime branch would drag `react-dom` and the portal
  * into every native bundle.
  */
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';

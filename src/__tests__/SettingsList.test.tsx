@@ -11,7 +11,6 @@ jest.mock('react-native-svg', () => ({
 
 import type React from 'react';
 import { render } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { SettingsListGroup, SettingsListItem } from '../settings-list/SettingsList';

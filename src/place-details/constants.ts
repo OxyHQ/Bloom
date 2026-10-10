@@ -1,7 +1,6 @@
 import { RiBusLine } from '../icons/remix/RiBusLine';
 import { RiExternalLinkLine } from '../icons/remix/RiExternalLinkLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
-import { RiPencilLine } from '../icons/remix/RiPencilLine';
 import { RiPhoneLine } from '../icons/remix/RiPhoneLine';
 import { RiRouteLine } from '../icons/remix/RiRouteLine';
 import { RiShip2Line } from '../icons/remix/RiShip2Line';

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, TextInput, View, useWindowDimensions, type TextStyle } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';

@@ -1,4 +1,4 @@
-import React, { useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Card } from '../card';

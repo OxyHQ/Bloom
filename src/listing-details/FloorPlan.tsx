@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';

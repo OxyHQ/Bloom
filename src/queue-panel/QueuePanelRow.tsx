@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';

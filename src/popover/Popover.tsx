@@ -15,7 +15,7 @@
  * `PopoverSeparator`'s full-bleed rule and `PopoverHeader`/`PopoverFooter`'s
  * `px-2` are measured against — below the handle's own 20px clearance.
  */
-import React, { useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { StyleSheet, type View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';

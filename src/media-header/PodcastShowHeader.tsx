@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Chip } from '../chip';

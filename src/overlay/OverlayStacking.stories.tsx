@@ -17,7 +17,7 @@
  * rule itself; `scripts/verify-overlay-stacking.mjs` drives these stories in a
  * real browser.
  */
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

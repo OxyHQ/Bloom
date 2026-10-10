@@ -11,7 +11,7 @@ import type { Surface as SurfaceComponent } from '../surface';
  * relative time in this fleet is forbidden to do; it also makes the three
  * states impossible to screenshot.
  */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   Easing,

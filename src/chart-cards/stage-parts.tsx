@@ -1,4 +1,4 @@
-import React, { isValidElement, useEffect, useRef, type ComponentType } from 'react';
+import React, { isValidElement, useEffect, useRef } from 'react';
 import {
   Animated,
   Easing,

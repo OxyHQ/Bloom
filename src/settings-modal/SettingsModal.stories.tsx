@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import { SettingsModalContext, settingsLayoutFor } from './context';
 import type { Meta, StoryObj } from '@storybook/react-vite';

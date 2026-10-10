@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, TextInput, type TextStyle } from 'react-native';
 
 import { MENU_FONT_FAMILY } from '../floating/menu-type';

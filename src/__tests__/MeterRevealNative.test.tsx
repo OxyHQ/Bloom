@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import React from 'react';
+
 import { act, render, cleanup } from '@testing-library/react-native/pure';
 
 // Exercise the native Meter fork with the real JS Animated value/timing engine.

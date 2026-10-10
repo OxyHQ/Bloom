@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { BloomIconComponent } from '../icons/icon-component';
 

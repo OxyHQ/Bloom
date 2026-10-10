@@ -1,4 +1,4 @@
-import React, { cloneElement, isValidElement, useMemo, useState, type ComponentType } from 'react';
+import { cloneElement, isValidElement, useMemo, useState, type ComponentType } from 'react';
 import { Platform, View, useWindowDimensions } from 'react-native';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { Screen, ScreenScrollView, useScreen } from '../screen';

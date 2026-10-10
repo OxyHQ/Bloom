@@ -1,4 +1,3 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Rect } from 'react-native-svg';
 jest.mock('../theme/use-theme', () => ({

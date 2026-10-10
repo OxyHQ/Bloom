@@ -9,7 +9,7 @@
  * pin the registration, the LIFO order, the release on close, the gallery's
  * use of it, and the gallery's safe-area chrome.
  */
-import React, { createRef } from 'react';
+import { createRef } from 'react';
 import { BackHandler, Platform, View } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 

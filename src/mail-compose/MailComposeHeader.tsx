@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { TextInput, View, type TextStyle } from 'react-native';
 
 import { LinkButton } from '../button';

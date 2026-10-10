@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 

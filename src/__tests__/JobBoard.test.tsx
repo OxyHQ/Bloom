@@ -15,7 +15,6 @@
  *     a filter chip must carry `aria-checked` and not just a `selected` prop. A
  *     prop-level test passes all three by handing the props over.
  */
-import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

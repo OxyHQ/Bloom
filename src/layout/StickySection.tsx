@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Platform, View, type ViewProps } from 'react-native';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { Z_INDEX } from '../styles/z-index';

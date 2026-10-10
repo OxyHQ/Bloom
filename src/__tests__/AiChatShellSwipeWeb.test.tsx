@@ -23,7 +23,7 @@
  * The window is made narrower than `lg` by way of `documentElement.clientWidth`,
  * which is what react-native-web's `Dimensions` measures.
  */
-import React from 'react';
+
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

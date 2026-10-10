@@ -1,4 +1,3 @@
-import React from 'react';
 import { act, render } from '@testing-library/react-native';
 import type { LayoutChangeEvent, ViewStyle } from 'react-native';
 

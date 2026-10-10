@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
 import { AiProfileCard } from '../../src/ai-profile-card';

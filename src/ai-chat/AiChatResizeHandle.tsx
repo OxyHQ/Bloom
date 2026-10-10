@@ -6,7 +6,7 @@
  * that module, its reanimated drawers and the whole ai-chat message catalog in
  * every app that renders an `AppShell`.
  */
-import React, { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { PanResponder, View, type LayoutChangeEvent, type PointerEvent } from 'react-native';
 
 import { useCommonMessages } from '../locale/common-messages';

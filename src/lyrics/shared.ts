@@ -2,7 +2,6 @@ import { resolveSurfaceLevel } from '../styles/surface-levels';
 import { Platform } from 'react-native';
 
 import { mixColor } from '../button/shared';
-import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import { LYRICS_MESSAGES } from './messages';

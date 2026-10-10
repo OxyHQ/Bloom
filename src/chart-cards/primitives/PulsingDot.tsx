@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Circle, G } from 'react-native-svg';
 import { useReducedMotion } from 'react-native-reanimated';
 

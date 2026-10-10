@@ -1,4 +1,3 @@
-import React from 'react';
 import { Image as NativeImage, StyleSheet } from 'react-native';
 import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 import { resolve } from './resolve';

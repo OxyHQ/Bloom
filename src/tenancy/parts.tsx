@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Card } from '../card';

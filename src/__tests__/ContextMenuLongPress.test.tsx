@@ -10,7 +10,7 @@
  * opens the menu, and a drag, an early lift or a cancel (a scroller taking the
  * touch) does not.
  */
-import React from 'react';
+
 import { ScrollView, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';

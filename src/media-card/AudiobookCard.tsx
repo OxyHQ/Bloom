@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { RiBookOpenFill } from '../icons/remix/RiBookOpenFill';
 import { useTheme } from '../theme/use-theme';

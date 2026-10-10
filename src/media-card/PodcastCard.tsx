@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { RiMic2Fill } from '../icons/remix/RiMic2Fill';
 import { MediaCard } from './MediaCard';

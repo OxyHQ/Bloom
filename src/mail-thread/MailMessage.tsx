@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';
@@ -6,11 +6,9 @@ import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { Card } from '../card';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { ComposerAttachmentStrip } from '../chat-composer';
-import { Chip } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
 import { RiCornerUpLeftLine } from '../icons/remix/RiCornerUpLeftLine';
-import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { MailStar } from '../mail-list/parts';

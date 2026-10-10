@@ -24,8 +24,6 @@ import {
   formatNumber,
   percentTick,
 } from '../chart-cards/primitives/format';
-import { resolveButtonRamps } from '../button/shared';
-import type { Theme } from '../theme/types';
 
 // The demo year used for these fixtures. Every expected pixel below was
 // read off recharts 3.10's SVG for that card at 480 wide (448 × 189 plot).

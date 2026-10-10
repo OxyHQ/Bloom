@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Platform, ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
 import { ActionCardShell } from '../booking/ActionCard';

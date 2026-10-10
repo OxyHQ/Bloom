@@ -11,7 +11,6 @@ import { RiNotification3Line } from '../icons/remix/RiNotification3Line';
 import { RiShieldUserLine } from '../icons/remix/RiShieldUserLine';
 import { RiLogoutBoxRLine } from '../icons/remix/RiLogoutBoxRLine';
 import { RiPaletteLine } from '../icons/remix/RiPaletteLine';
-import React from 'react';
 import { Button } from '../button';
 import { AgentAvatar, FOLD_CONFIG } from '../agent-avatar';
 import { RiAddLine } from '../icons/remix/RiAddLine';

@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { TenancyTimeline } from '../tenancy/TenancyTimeline';
 import type { TenancyTimelineEvent } from '../tenancy/types';

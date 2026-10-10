@@ -7,7 +7,7 @@
  *
  * `openDelay` / `closeDelay` do nothing here: a long press is its own intent.
  */
-import React, { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import type { View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';

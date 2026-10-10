@@ -1,5 +1,4 @@
 import { useArgs } from 'storybook/preview-api';
-import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

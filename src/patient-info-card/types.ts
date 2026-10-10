@@ -1,5 +1,4 @@
 import type { ImageSource } from '../shapes';
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { BloomIconComponent } from '../icons/icon-component';
 
