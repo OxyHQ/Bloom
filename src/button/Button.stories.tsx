@@ -201,3 +201,24 @@ export const CurrentDestination: Story = {
     </View>;
   },
 };
+
+
+/** Compare a compact wrapping row with full-width content distribution. */
+function IntrinsicWrappingExample() {
+  const [loading, setLoading] = useState(false);
+  const [height, setHeight] = useState(0);
+  return <View style={{ width: 344, maxWidth: '100%', gap: 16 }}>
+    <Button onPress={() => setLoading(value => !value)}>Toggle loading</Button>
+    <TextForCounter>{`Measured row group: ${height}dp`}</TextForCounter>
+    <View testID="intrinsic-button-grid" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
+      onLayout={event => setHeight(event.nativeEvent.layout.height)}>
+      {Array.from({ length: 12 }, (_, index) => <Button key={index} material="flat" loading={loading}
+        style={{ height: 'auto', minHeight: 40, maxWidth: 344, minWidth: 0, flexShrink: 1, paddingHorizontal: 16, paddingVertical: 0, borderWidth: 1.5 }}>
+        {`A${index + 1}`}
+      </Button>)}
+    </View>
+    <Button material="flat" style={{ width: '100%', justifyContent: 'space-between' }}
+      leading={<TextForCounter>Start</TextForCounter>} trailing={<TextForCounter>End</TextForCounter>} />
+  </View>;
+}
+export const IntrinsicWrapping: Story = { render: () => <IntrinsicWrappingExample /> };

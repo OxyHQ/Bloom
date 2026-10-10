@@ -173,3 +173,20 @@ or patch the upstream resolver.
 is preserved unless Button explicitly supplies one. Native represents current
 through `accessibilityState.selected`, since it has no separate current trait;
 an explicit `pressed` state retains precedence for a native toggle.
+
+
+### Native intrinsic layout
+
+A button can size to its label inside a wrapping row without reserving a full
+row for each item. The persistent content wrapper stretches horizontally inside
+a column host; its growth fills height without widening intrinsic measurement.
+Caller row/column direction and justification still
+apply to the content slots. Loading retains the same content and measured box.
+
+`ButtonNativeLayout.test.tsx` compiles the Yoga shipped with React Native using
+a C++20 compiler (`CXX`, default `g++`) and measures rendered host trees with RN's
+compatibility errata enabled. Its negative control recreates a 568dp parent
+around three 40dp rows; the corrected layout measures 136dp including gaps.
+Text widths are explicit fixture metrics, not claims about a platform font.
+`BLOOM_NATIVE_YOGA_PATH` can point to another installed RN's `ReactCommon/yoga`
+to verify the same trees against a consumer's engine.

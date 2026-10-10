@@ -192,7 +192,14 @@ const ButtonPressable = forwardRef<View, ButtonPressableProps>(function ButtonPr
     if (resolved?.[key] !== undefined) Object.assign(text, { [key]: resolved[key] });
     delete layout[key];
   }
-  return <Pressable {...props} ref={ref} style={[baseStyle, layout]}>
+  // Keep the persistent content wrapper in a column host. Stretch owns its
+  // width and vertical growth fills a definite button height. Growing the
+  // wrapper horizontally makes RN's compatibility Yoga mode measure a wrapped
+  // row as one full-width button per line, despite correct final positions.
+  // Caller direction/alignment belong to the content slots below.
+  return <Pressable {...props} ref={ref} style={[baseStyle, layout, {
+    flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+  }]}>
     <ContentStyleContext.Provider value={{ text, layout }}>
       {children}
     </ContentStyleContext.Provider>
