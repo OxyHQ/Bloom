@@ -67,7 +67,10 @@ export function Portal({ children }: React.PropsWithChildren<object>) {
     setRoot(getPortalRoot());
   }, []);
   if (!root) return null;
-  return createPortal(<div style={{ ...scope?.vars, display: 'contents' }}>{children}</div>, root);
+  return createPortal(
+    <div style={{ ...scope?.vars, display: 'contents', pointerEvents: 'none' }}>{children}</div>,
+    root,
+  );
 }
 
 // Native API parity — on web these are inert. `PortalProvider` mounts its

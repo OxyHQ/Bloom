@@ -6,6 +6,7 @@ import { Dialog } from '../../dialog/Dialog.web';
 import { useDialogControl } from '../../dialog/context';
 import { Button } from '../../button/Button.web';
 import { Portal } from '../../portal/Portal.web';
+import { WEB_POSITION_FIXED } from '../../styles/web-view-style';
 
 function Probe({ name }: { name: string }) {
   const theme = useTheme();
@@ -68,7 +69,7 @@ function ExactScopeFixture({ placement = 'end' }: { placement?: 'end' | 'bottom'
         </Dialog>
         {open ? (
           <Portal>
-            <div style={{ position: 'fixed', bottom: 12, right: 12 }}>
+            <div style={{ position: WEB_POSITION_FIXED, bottom: 12, right: 12 }}>
               <Probe name="portal-scope" />
             </div>
           </Portal>
