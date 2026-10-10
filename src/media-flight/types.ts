@@ -270,7 +270,9 @@ export interface MediaVideoSlotProps<P extends VideoPlayerLike = VideoPlayerLike
 }
 
 /**
- * Paint the video yourself.
+ * Paint the video yourself — with `VideoView` from `@oxy.so/bloom/video-view`,
+ * which keeps the web element inline (iPhone Safari never starts one that is
+ * not) and takes the slot's `player` as is.
  *
  * Bloom mounts a `VideoView` with the handful of props it knows about, which is
  * enough until a consumer needs something only its OWN element can give it: a

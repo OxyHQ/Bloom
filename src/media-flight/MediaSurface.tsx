@@ -28,11 +28,8 @@ import Animated from 'react-native-reanimated';
 import { SLOT_IDENTITY_CHURN_LIMIT, SLOT_IDENTITY_CHURN_WINDOW_MS } from './constants';
 import { handOffFlight } from './store';
 import type { MediaSurfaceContent, MediaVideoSlot } from './types';
-import {
-  loadExpoVideo,
-  warnExpoVideoUnavailable,
-  type VideoSurfaceType,
-} from './expo-video-module';
+import type { VideoSurfaceType } from './expo-video-module';
+import { VideoView } from '../video-view/VideoView';
 
 /**
  * Exactly what `Animated.View` accepts, taken from the component rather than
@@ -216,18 +213,6 @@ export const MediaSurface = memo(function MediaSurface({
 
   const still = content.kind === 'video' ? content.poster : content.uri;
   const preview = content.kind === 'video' ? undefined : content.previewUri;
-  // Loaded for the video arm only, and only when Bloom is the one building the
-  // element — an image surface must never make an app resolve an optional
-  // native peer, and neither must a consumer that brought its own view.
-  const expoVideo =
-    content.kind === 'video' && renderVideo === undefined ? loadExpoVideo() : null;
-  if (content.kind === 'video' && renderVideo === undefined && expoVideo === null) {
-    // Degrade to the poster rather than to nothing: a black hole where a video
-    // should be reads as a broken app, a still frame reads as a video that has
-    // not started. The warning is what makes the difference visible to the
-    // developer, once, in dev.
-    warnExpoVideoUnavailable();
-  }
 
   return (
     <Animated.View style={[styles.box, style]} pointerEvents={pointerEvents}>
@@ -267,8 +252,16 @@ export const MediaSurface = memo(function MediaSurface({
             contentFit,
           })
         : null}
-      {content.kind === 'video' && renderVideo === undefined && expoVideo !== null ? (
-        <expoVideo.VideoView
+      {content.kind === 'video' && renderVideo === undefined ? (
+        // Mounted for the video arm only, and only when Bloom is the one
+        // building the element: the view is what loads the optional native peer,
+        // and neither an image surface nor a consumer that brought its own view
+        // may make an app resolve it. When the peer is missing it renders
+        // nothing, so the poster above stays the picture — a still frame reads
+        // as a video that has not started, a black hole as a broken app — and
+        // it warns once, in dev. It is also what makes the `<video>` inline on
+        // web: without `playsinline` iPhone Safari never starts it.
+        <VideoView
           player={detached ? null : content.player}
           contentFit={contentFit}
           surfaceType={mountedSurfaceType}

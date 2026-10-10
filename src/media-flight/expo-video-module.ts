@@ -89,6 +89,11 @@ export interface VideoViewLikeProps {
   pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only';
   accessibilityLabel?: string;
   /**
+   * Whether the web `<video>` plays inside its box. iPhone Safari refuses an
+   * element without `playsinline`, so `video-view/VideoView` defaults it on.
+   */
+  playsInline?: boolean;
+  /**
    * Raised once the mounted player has rendered its first frame into this view.
    * On web expo-video raises it from the element's `loadeddata` event; it is the
    * only OBSERVABLE "this surface is live now" the package offers, and the media
@@ -195,8 +200,8 @@ export function warnExpoVideoUnavailable(): void {
   // so it names the package, the install command and what is lost.
   // eslint-disable-next-line no-console
   console.warn(
-    '[Bloom] A video media surface fell back to its poster: the optional peer ' +
-      '`expo-video` could not be loaded, so no video is rendered and the shared ' +
+    '[Bloom] A video view rendered nothing: the optional peer `expo-video` ' +
+      'could not be loaded, so a media surface shows its poster and the shared ' +
       'media transition carries a still frame instead. Install it ' +
       '(`npx expo install expo-video`) or pass image content only. ' +
       `Reason: ${unavailableReason}`,
