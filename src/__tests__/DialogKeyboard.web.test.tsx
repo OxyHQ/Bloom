@@ -329,3 +329,28 @@ describe('bottom dialog panel semantics', () => {
     expect(panel.querySelector('[aria-label="Email"]')).not.toBeNull();
   });
 });
+
+describe('temporarily unavailable modal controls', () => {
+  it('keeps Tab on the topmost empty panel without activating the parent trap', () => {
+    function NestedPending() {
+      const [inner, setInner] = React.useState(false);
+      return <Dialog open label="Outer">
+        <Pressable testID="open-pending" accessibilityRole="button" onPress={() => setInner(true)}><Text>Open pending</Text></Pressable>
+        <Dialog open={inner} label="Inner pending" dismissOnBackdrop={false}>
+          <button disabled>Unavailable</button>
+        </Dialog>
+      </Dialog>;
+    }
+    mount(<NestedPending />);
+    act(() => byTestId('open-pending').click());
+    act(() => jest.runOnlyPendingTimers());
+    const panel = dialogNamed('Inner pending');
+    expect(document.activeElement).toBe(panel);
+    for (const shiftKey of [false, true, false]) {
+      expect(press('Tab', { shiftKey }).defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(panel);
+    }
+    press('Escape');
+    expect(document.activeElement).toBe(panel);
+  });
+});
