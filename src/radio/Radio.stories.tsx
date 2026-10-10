@@ -1,9 +1,9 @@
 import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Radio, RadioCard, RadioGroup } from './index';
+import { Radio, RadioCard, RadioGroup, RadioChip } from './index';
 import { useTheme } from '../theme/use-theme';
 
 const meta: Meta<typeof RadioGroup> = {
@@ -216,4 +216,29 @@ export const Playground: StoryObj<typeof RadioGroup> = {
 export const KeyboardRows: Story = {
   render: args => <RadioGroup label="Sort results" variant={args.variant} defaultValue="recent" optionStyle={{ minHeight: 44, paddingVertical: 12 }}
     options={[{ value: 'recent', label: 'Most recent' }, { value: 'disabled', label: 'Unavailable', disabled: true }, { value: 'top', label: 'Top rated' }]} />,
+};
+
+/** Controlled pills retain their own host while the selection and order change. */
+export const Chips: Story = {
+  render: function RadioChipsStory() {
+    const [value, setValue] = useState<string | undefined>();
+    const [activations, setActivations] = useState(0);
+    return <View style={{ padding: 24, gap: 24, maxWidth: 460 }}>
+      <RadioGroup label="Size" variant="chip" size="md" tone="neutral" appearance="outline"
+        value={value} onValueChange={setValue}
+        options={[{ value: 'small', label: 'Small' }, { value: 'medium', label: 'Medium', disabled: true },
+          { value: 'large', label: 'Large' }, { value: 'extra', label: 'Extra large' }]} />
+      <RadioChip value="action" label="Activation example" onValueChange={() => setActivations(count => count + 1)} />
+      <Text testID="chip-activations">{activations}</Text>
+      <RadioGroup label="Disabled choices" variant="chip" disabled defaultValue="a"
+        options={[{ value: 'a', label: 'Disabled A' }, { value: 'b', label: 'Disabled B' }]} />
+      <RadioGroup label="Authored choices" variant="chip" defaultValue="a"
+        optionClassName={({ checked }) => `bloom-demo-radio-chip ${checked ? 'bloom-demo-radio-chip-selected' : ''}`}
+        optionLabelClassName="bloom-demo-radio-chip-label"
+        options={[{ value: 'a', label: 'Authored A' }, { value: 'b', label: 'Authored B' }]} />
+      <RadioGroup label="Decorative choices" variant="chip"
+        options={[{ value: 'a', accessibilityLabel: 'Decorative A', labelContent: <View style={{ width: 16, height: 16, backgroundColor: '#345678' }} /> },
+          { value: 'b', label: 'Decorative B' }]} />
+    </View>;
+  },
 };

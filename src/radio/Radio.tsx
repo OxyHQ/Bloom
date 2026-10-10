@@ -1,11 +1,11 @@
 import { useRadioGroupItem } from './use-radio-group-item';
 import { RadioGroupContext } from './context';
-import { useIsRtl } from '../hooks/use-is-rtl';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo, useRef, type KeyboardEvent } from 'react';
-import { View, Platform, Pressable } from 'react-native';
+import { View, Platform } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -20,6 +20,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { RadioIndicator } from '../radio-indicator';
 import { useFieldMembership } from '../field/membership';
 import { RadioCard } from './RadioCard';
+import { RadioChip } from './RadioChip';
+import { RadioHost, RadioGroupHost, RadioLabel } from './RadioHost';
 import type { RadioGroupProps, RadioProps } from './types';
 
 /**
@@ -66,7 +68,7 @@ const STYLE_ID = 'bloom-radio-web-css';
 const ROW = '[data-bloom-radio]';
 const DOT = '[data-bloom-radio-dot]';
 
-const BLOOM_RADIO_CSS = interactiveWebCss({
+const BLOOM_RADIO_CSS = `@layer base {${interactiveWebCss({
   selector: ROW,
   varPrefix: 'bloom-radio',
   base: `
@@ -88,7 +90,7 @@ ${ROW}:focus-visible {
 ${ROW}:focus-visible ${DOT} {
   box-shadow: ${focusRingShadow('--bloom-radio-ring')};
 }`,
-});
+})}}`;
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -104,6 +106,8 @@ const RadioComponent = function Radio<Value extends string = string>({
   tone: toneProp,
   style,
   labelStyle,
+  className,
+  labelClassName,
   accessibilityLabel,
   nativeID,
   testID,
@@ -152,10 +156,11 @@ const RadioComponent = function Radio<Value extends string = string>({
   const spaceKey = useRadioGroupItem(value, isDisabled, handlePress);
 
   return (
-    <Pressable
+    <RadioHost
+      className={className}
       {...spaceKey}
       {...(IS_WEB ? ({ dataSet: { bloomRadio: '' } } as Record<string, unknown>) : {})}
-      style={[rowStyle, style]}
+      style={[className ? { '--bloom-radio-ring': rowStyle['--bloom-radio-ring'], ...ringOffset } : rowStyle, style]}
       onPress={handlePress}
       disabled={isDisabled}
       nativeID={field.nativeID}
@@ -189,9 +194,9 @@ const RadioComponent = function Radio<Value extends string = string>({
               {labelContent}
             </View>
           ) : label && (
-            <Text variant={sizeConfig.label} style={[{ color: theme.colors.text }, labelStyle]}>
+            <RadioLabel className={labelClassName} variant={sizeConfig.label} style={[!labelClassName && { color: theme.colors.text }, labelStyle]}>
               {label}
-            </Text>
+            </RadioLabel>
           )}
           {description && (
             <Text
@@ -203,7 +208,7 @@ const RadioComponent = function Radio<Value extends string = string>({
           )}
         </View>
       )}
-    </Pressable>
+    </RadioHost>
   );
 };
 
@@ -230,6 +235,10 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
     style,
     labelStyle,
     optionStyle,
+    className,
+    optionClassName,
+    optionLabelClassName,
+    appearance,
     renderOption,
     variant = 'default',
     testID,
@@ -243,9 +252,10 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
   // own — so it goes in as the caller's name and outranks the field's.
   const field = useFieldMembership({ accessibilityLabel: label, disabled });
   const isDisabled = field.disabled;
-  const { size: scopedSize, tone } = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+  const { size: scopedSize, tone } = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: variant === 'chip' ? 'neutral' : 'accent'});
   const size = scopedSize;
   const rtl = useIsRtl();
+  const direction = useDirectionProps();
   const nodes = useRef(new Map<string, React.RefObject<View | null>>());
   const controlRef = useCallback((option: string) => {
     let ref = nodes.current.get(option);
@@ -282,19 +292,34 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
   };
   return (
     <RadioGroupContext.Provider value={{ tabValue, register, onKeyDown }}>
-      <View
-        style={[{ gap: space.sm }, style]}
+      <RadioGroupHost
+        {...direction}
+        className={className}
+        style={[!className && { gap: space.sm, ...(variant === 'chip' ? { flexDirection: 'row' as const, flexWrap: 'wrap' as const } : {}) }, style]}
         accessibilityRole="radiogroup"
         accessibilityLabel={field.accessibilityLabel}
         aria-label={field.accessibilityLabel}
         aria-describedby={field.describedBy}
         aria-invalid={field.invalid || undefined}
+        aria-disabled={isDisabled || undefined}
+        aria-required={field.required || undefined}
         testID={testID}
       >
         {options.map((option) => {
           const checked = option.value === value;
           const optionDisabled = isDisabled || option.disabled === true;
-          const ownedControl = variant === 'card' ? (
+          const state = { checked, disabled: optionDisabled, controlRef: controlRef(option.value) };
+          const optionClasses = typeof optionClassName === 'function' ? optionClassName(state) : optionClassName;
+          const labelClasses = typeof optionLabelClassName === 'function' ? optionLabelClassName(state) : optionLabelClassName;
+          const ownedControl = variant === 'chip' ? (
+            <RadioChip
+              key={option.value} value={option.value} checked={checked} onValueChange={onValueChange}
+              label={option.label} labelContent={option.labelContent} accessibilityLabel={option.accessibilityLabel}
+              description={option.description} disabled={optionDisabled} size={size} tone={tone} appearance={appearance}
+              style={optionStyle} labelStyle={labelStyle} className={optionClasses} labelClassName={labelClasses}
+              testID={option.testID}
+            />
+          ) : variant === 'card' ? (
             <RadioCard
               key={option.value}
               value={option.value}
@@ -307,6 +332,9 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
               disabled={optionDisabled}
               tone={tone}
               style={optionStyle}
+              labelStyle={labelStyle}
+              className={optionClasses}
+              labelClassName={labelClasses}
               testID={option.testID}
             />
           ) : (
@@ -324,14 +352,16 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
             tone={tone}
             labelStyle={labelStyle}
             style={optionStyle}
+            className={optionClasses}
+            labelClassName={labelClasses}
             testID={option.testID}
           />
           );
           return <React.Fragment key={option.value}>{renderOption
-            ? renderOption(option, ownedControl, { checked, disabled: optionDisabled, controlRef: controlRef(option.value) })
+            ? renderOption(option, ownedControl, state)
             : ownedControl}</React.Fragment>;
         })}
-      </View>
+      </RadioGroupHost>
     </RadioGroupContext.Provider>
   );
 };

@@ -56,7 +56,7 @@ import { InputGroup } from '../input-group';
 import { InputOtp } from '../input-otp';
 import { MailRecipientField } from '../mail-compose';
 import { PaymentMethodList } from '../payment-method';
-import { Radio, RadioGroup } from '../radio';
+import { Radio, RadioChip, RadioGroup } from '../radio';
 import { RatingInput } from '../rating';
 import { Search } from '../search';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
@@ -603,4 +603,14 @@ describe('the contract is opt-IN', () => {
     expect(props['aria-invalid']).toBeUndefined();
     expect(props.disabled).toBeFalsy();
   });
+});
+
+
+it('RadioChip joins Field naming, disabled, invalid and description constraints', () => {
+  const api = render(<BloomThemeProvider><Field label="Size" disabled error="Choose a size"><RadioChip value="small" label="Small" disabled={false} testID="chip-field" /></Field></BloomThemeProvider>);
+  const control = api.getByTestId('chip-field');
+  expect(control.props.accessibilityLabel).toBe('Small');
+  expect(control.props.disabled).toBe(true);
+  expect(control.props['aria-invalid']).toBe(true);
+  expect(control.props['aria-describedby']).toBeTruthy();
 });

@@ -10,7 +10,7 @@ beforeEach(() => { container = document.createElement('div'); document.body.appe
 afterEach(() => { act(() => root.unmount()); container.remove(); document.documentElement.dir = 'ltr'; });
 const options = [{ value: 'a', label: 'First' }, { value: 'b', label: 'Unavailable', disabled: true }, { value: 'c', label: 'Last' }];
 const key = (el: HTMLElement, key: string, type = 'keydown') => act(() => el.dispatchEvent(new KeyboardEvent(type, { key, bubbles: true, cancelable: true })));
-for (const variant of ['default', 'card'] as const) for (const rtl of [false, true]) {
+for (const variant of ['default', 'card', 'chip'] as const) for (const rtl of [false, true]) {
   it(`${variant} owns one tab stop, skips disabled options and wraps in ${rtl ? 'RTL' : 'LTR'}`, () => {
     document.documentElement.dir = rtl ? 'rtl' : 'ltr';
     const change = jest.fn();
@@ -45,7 +45,7 @@ it('retains controlled ownership, fallback tab stop and disabled group constrain
   expect(change).not.toHaveBeenCalled(); expect(radios.map(el => el.tabIndex)).toEqual([-1, -1]);
 });
 
-for (const variant of ['default', 'card'] as const) it(`${variant} composes decorative labels with independent sibling controls and stable host refs`, () => {
+for (const variant of ['default', 'card', 'chip'] as const) it(`${variant} composes decorative labels with independent sibling controls and stable host refs`, () => {
   const change = jest.fn();
   const refs = new Map<string, import('../radio').RadioOptionState['controlRef']>();
   const choices = options.map(option => ({ ...option, labelContent: <span>Decorative {option.value}</span>, accessibilityLabel: `Choice ${option.value}` }));
@@ -67,4 +67,20 @@ for (const variant of ['default', 'card'] as const) it(`${variant} composes deco
   act(() => radios[0]!.focus()); key(radios[0]!, 'ArrowDown');
   expect(document.activeElement).toBe(radios[2]); expect(change).toHaveBeenLastCalledWith('c');
   draw(); expect(refs.get('a')).toBe(firstRef); expect(firstRef?.current).toBe(radios[0]);
+});
+
+for (const variant of ['default', 'card', 'chip'] as const) it(`${variant} owns Space activation, cancellation and stable controlled focus`, () => {
+  const change = jest.fn();
+  const draw = (value: string | undefined) => act(() => root.render(<BloomThemeProvider><RadioGroup label="Size" variant={variant} value={value} onValueChange={change} options={options} /></BloomThemeProvider>));
+  draw(undefined);
+  const radio = container.querySelector<HTMLElement>('[role=radio]')!;
+  act(() => radio.focus());
+  key(radio, ' '); expect(change).not.toHaveBeenCalled();
+  key(radio, ' ', 'keyup'); expect(change).toHaveBeenCalledTimes(1);
+  expect(radio.getAttribute('aria-checked')).toBe('false');
+  draw('a'); expect(document.activeElement).toBe(radio); expect(radio.getAttribute('aria-checked')).toBe('true');
+  key(radio, ' '); key(radio, ' ', 'keyup'); expect(change).toHaveBeenCalledTimes(1);
+  draw(undefined);
+  key(radio, ' '); act(() => radio.blur()); key(radio, ' ', 'keyup');
+  expect(change).toHaveBeenCalledTimes(1);
 });

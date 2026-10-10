@@ -64,7 +64,7 @@ import { InputGroup } from '../input-group';
 import { SettingsListItem } from '../settings-list/SettingsList';
 import { FrostedIconButton } from '../frosted-icon-button';
 import { CompositionBar } from '../composition-bar';
-import { Radio, RadioGroup } from '../radio';
+import { Radio, RadioChip, RadioGroup } from '../radio';
 import { Meter, MeterRing, StatBar } from '../stat-bar';
 import { Loading } from '../loading';
 import { Loading as LoadingWeb } from '../loading/Loading.web';
@@ -576,6 +576,16 @@ describe('TabBar', () => {
 });
 
 describe('Radio', () => {
+  it.each([true, false])('RadioChip forwards its name, checked=%s and disabled state', checked => {
+    const c = mount(<RadioChip value="large" checked={checked} disabled label="Large" testID="chip" onValueChange={() => {}} />);
+    const el = byTestId(c, 'chip');
+    expect(el.getAttribute('role')).toBe('radio');
+    expect(el.getAttribute('aria-label')).toBe('Large');
+    expect(el.getAttribute('aria-checked')).toBe(String(checked));
+    expect(el.getAttribute('aria-disabled')).toBe('true');
+    expect(el.getAttribute('aria-pressed')).toBeNull();
+  });
+
   it('emits role="radio" with aria-checked', () => {
     const c = mount(
       <Radio value="daily" checked onValueChange={() => {}} label="Daily" testID="r" />,

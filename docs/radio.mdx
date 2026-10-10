@@ -171,3 +171,35 @@ Use [Collapsible](./collapsible.mdx) with `open={state.checked}` and
 `returnFocusRef={state.controlRef}` for a revealed form. Never place inputs,
 selects or buttons inside `labelContent`. `optionStyle` still styles each owned
 radio, including logical row composition such as `flexDirection: 'row-reverse'`.
+
+## Radio chips
+
+`RadioGroup variant="chip"` renders `RadioChip` controls: pills without a dot,
+with the same controlled/uncontrolled selection, roving focus, RTL arrows,
+Home/End and Space behavior as other radio groups. The default layout is a row
+with wrapping and an 8px gap. The default tone is neutral for chips; row and card
+defaults are unchanged. `size` xs/sm/md/lg gives minimum heights 32/36/40/44px;
+native touch hit slop brings smaller targets to 44px.
+
+```tsx
+<RadioGroup label="Size" variant="chip" value={size} onValueChange={setSize}
+  size="md" tone="neutral" appearance="outline"
+  options={[{ value: 'small', label: 'Small' }, { value: 'large', label: 'Large' }]} />
+```
+
+`appearance` controls selected chip paint (outline by default, also solid,
+subtle or plain). Unselected options retain a quiet neutral outline; plain chips
+have no border and underline the selected label. Neutral outlined selection uses
+the theme's text-colored edge. Selection never promotes a neutral choice to the
+brand tone. Description is an accessibility hint; use a row/card for visible
+secondary descriptions. `labelContent` stays decorative and requires `label` or
+`accessibilityLabel` for its name.
+
+`optionClassName` and `optionLabelClassName` accept a string or a function of
+`{ checked, disabled, controlRef }`, on all three group variants. The option
+class replaces its standard layout and paint; the label class replaces the
+built-in string label typography/color. The group `className` replaces its
+default layout. Explicit `optionStyle`, `labelStyle` and `style` remain last.
+The semantic disabled state and group keyboard handling stay owned by Bloom.
+Standalone `RadioChip` accepts the corresponding `className` and
+`labelClassName` props and the same `checked`/`onValueChange` contract as `Radio`.

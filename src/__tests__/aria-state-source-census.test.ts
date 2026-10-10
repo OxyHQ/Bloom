@@ -199,7 +199,9 @@ const RN_HOSTS = new Set([
 // spelling of the same thing. It is a claim its own file makes and
 // `Chip.test.tsx` pins against the real DOM, role by role, including that the
 // other two attributes are ABSENT (`aria-pressed` on a tab is invalid ARIA).
-const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell'];
+// RadioHost forwards the radio state/name to its native Pressable or owned DOM
+// button. aria-state-web.test.tsx exercises all three radio variants.
+const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'RadioHost'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
@@ -233,7 +235,7 @@ const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell'];
 // writes none. `DeliverySlotOption` always passes one — the window, what is
 // left of it and its surcharge, as one utterance — because a row built from
 // three separate Texts is three stops otherwise.
-const NAME_DELEGATING_TAGS = ['Button', 'Card', 'Chip', 'Item', 'LinkButton', 'MediaPressable', 'MenuRowShell'];
+const NAME_DELEGATING_TAGS = ['Button', 'Card', 'Chip', 'Item', 'LinkButton', 'MediaPressable', 'MenuRowShell', 'RadioHost'];
 
 /**
  * `const X = Animated.createAnimatedComponent(<host>)`, collected from the

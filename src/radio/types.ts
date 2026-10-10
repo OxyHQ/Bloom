@@ -1,5 +1,5 @@
 import type { ReactNode, ReactElement, RefObject } from 'react';
-import type { BloomSize } from '../appearance';
+import type { BloomAppearance, BloomSize } from '../appearance';
 import type { BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle, View } from 'react-native';
 
@@ -33,6 +33,8 @@ export interface RadioProps<Value extends string = string> {
   disabled?: boolean;
   /** Colour of the checked indicator. Uses the theme primary by default. */
   tone?: BloomTone;
+  className?: string;
+  labelClassName?: string;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
@@ -42,6 +44,12 @@ export interface RadioProps<Value extends string = string> {
    */
   nativeID?: string;
   testID?: string;
+}
+
+/** A pill-shaped radio with no separate indicator. */
+export interface RadioChipProps<Value extends string = string> extends RadioProps<Value> {
+  /** Paint of the selected option. Unselected chips retain a neutral outline. */
+  appearance?: BloomAppearance;
 }
 
 /** One option, as data, for {@link RadioGroupProps}. */
@@ -91,14 +99,22 @@ export interface RadioGroupProps<Value extends string = string> {
   tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
-  /** Layout/style on each owned Radio or RadioCard row. */
+  /** Class recipe on the group layout; replaces its default layout. */
+  className?: string;
+  /** Class recipes for owned options and their built-in string labels. */
+  optionClassName?: string | ((state: Readonly<RadioOptionState>) => string | undefined);
+  optionLabelClassName?: string | ((state: Readonly<RadioOptionState>) => string | undefined);
+  /** Selected chip paint; used with variant="chip". Defaults to outline. */
+  appearance?: BloomAppearance;
+  /** Layout/style on each owned Radio, RadioCard or RadioChip. */
   optionStyle?: StyleProp<ViewStyle>;
   /**
    * `default` renders each option as a `Radio` row; `card` as a `RadioCard`
    * (title + description left, the dot right, the whole
-   * card selectable). A card's title is the option's `label`.
+   * card selectable). `chip` renders a wrapping row of pill-shaped radios
+   * without an indicator. A card's title is the option's `label`.
    */
-  variant?: 'default' | 'card';
+  variant?: 'default' | 'card' | 'chip';
   testID?: string;
 }
 
@@ -119,6 +135,9 @@ export interface RadioCardProps<Value extends string = string> {
   disabled?: boolean;
   /** Accent for the checked dot. Uses the theme primary by default. */
   tone?: BloomTone;
+  className?: string;
+  labelClassName?: string;
+  labelStyle?: StyleProp<TextStyle>;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
   testID?: string;

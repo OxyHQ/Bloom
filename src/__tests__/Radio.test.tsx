@@ -2,7 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Radio, RadioCard, RadioGroup } from '../radio';
+import { Radio, RadioCard, RadioGroup, RadioChip } from '../radio';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -263,4 +263,27 @@ it('publishes each actual native radio host to renderOption without moving selec
   expect(refs.get('weekly')?.current).toBe(hosts.get('Weekly'));
   fireEvent.press(api.getByLabelText('Weekly'));expect(change).toHaveBeenCalledWith('weekly');
   fireEvent.press(api.getByLabelText('Never'));expect(change).toHaveBeenCalledTimes(1);
+});
+
+
+describe('RadioChip', () => {
+  it('owns native presses with no indicator, retains checked state and blocks disabled changes', () => {
+    const onChange = jest.fn();
+    const api = renderWithTheme(<RadioGroup label="Size" variant="chip" options={OPTIONS} defaultValue="daily" onValueChange={onChange} />);
+    expect(api.UNSAFE_queryAllByType(require('../radio-indicator').RadioIndicator)).toHaveLength(0);
+    fireEvent.press(api.getByLabelText('Weekly'));
+    expect(onChange).toHaveBeenCalledWith('weekly');
+    expect(api.getByLabelText('Weekly').props['aria-checked']).toBe(true);
+    fireEvent.press(api.getByLabelText('Weekly'));
+    fireEvent.press(api.getByLabelText('Never'));
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the explicit name for decorative content and preserves standalone ownership', () => {
+    const onChange = jest.fn();
+    const api = renderWithTheme(<RadioChip value="blue" labelContent={<></>} accessibilityLabel="Blue" onValueChange={onChange} />);
+    fireEvent.press(api.getByLabelText('Blue'));
+    expect(onChange).toHaveBeenCalledWith('blue');
+    expect(api.getByLabelText('Blue').props['aria-checked']).toBe(false);
+  });
 });

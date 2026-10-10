@@ -59,3 +59,9 @@ body { margin: 0; }
   .dark .bloom-demo-follow { background:#404040; }
   .dark .bloom-demo-follow-label { color:#abcdef; }
 }
+
+@layer utilities {
+  .bloom-demo-radio-chip { min-height: 48px; padding: 10px 20px; border-radius: 12px; border-width: 2px; border-color: #345678; background-color: #fff; }
+  .bloom-demo-radio-chip-selected { background-color: #e3edf6; }
+  .bloom-demo-radio-chip-label { font-size: 18px; line-height: 24px; color: #123456; }
+}
