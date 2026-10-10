@@ -144,7 +144,7 @@ describe('design-tokens Tailwind preset', () => {
   });
 
   it('color roles reach background/text/border buckets', () => {
-    expect(ext.backgroundColor['fill']).toBe('var(--card)');
+    expect(ext.backgroundColor.fill).toBe('var(--card)');
     expect(ext.textColor['text-tertiary']).toBe('var(--muted-foreground)');
     expect(ext.borderColor['border-input-active']).toBe('var(--ring)');
   });
@@ -153,25 +153,22 @@ describe('design-tokens Tailwind preset', () => {
     expect(ext.spacing['space-8']).toBe('8px');
     expect(ext.spacing['screen-margin']).toBe('20px');
     expect(ext.borderRadius['radius-20']).toBe('20px');
-    expect(ext.borderWidth['hairline']).toBe('0.5px');
+    expect(ext.borderWidth.hairline).toBe('0.5px');
   });
 
   it('fontSize entries are [size, { lineHeight }] tuples', () => {
-    expect(ext.fontSize['body']).toEqual(['15px', { lineHeight: '22px' }]);
-    expect(ext.fontSize['headerBold']).toEqual(['28px', { lineHeight: '34px' }]);
+    expect(ext.fontSize.body).toEqual(['15px', { lineHeight: '22px' }]);
+    expect(ext.fontSize.headerBold).toEqual(['28px', { lineHeight: '34px' }]);
   });
 
   it('fontFamily entries are [family, { fontWeight }] tuples', () => {
-    expect(ext.fontFamily['body']).toEqual(['var(--bloom-font-sans)', { fontWeight: '400' }]);
-    expect(ext.fontFamily['headerBold']).toEqual([
-      'var(--bloom-font-display)',
-      { fontWeight: '700' },
-    ]);
+    expect(ext.fontFamily.body).toEqual(['var(--bloom-font-sans)', { fontWeight: '400' }]);
+    expect(ext.fontFamily.headerBold).toEqual(['var(--bloom-font-display)', { fontWeight: '700' }]);
   });
 
   it('registers shadow-s and shadow-m box shadows', () => {
-    expect(ext.boxShadow['s']).toBe(SHADOW_BOX.s);
-    expect(ext.boxShadow['m']).toBe(SHADOW_BOX.m);
+    expect(ext.boxShadow.s).toBe(SHADOW_BOX.s);
+    expect(ext.boxShadow.m).toBe(SHADOW_BOX.m);
   });
 
   it('is frozen so consumer config merges cannot mutate it', () => {

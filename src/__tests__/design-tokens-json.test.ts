@@ -107,8 +107,8 @@ describe('tokens.json shape contract', () => {
   it('emits the numeric scales as px dimensions', () => {
     expect(tokens.spacing['space-8']).toEqual({ $value: '8px' });
     expect(tokens.radius['radius-max']).toEqual({ $value: '9999px' });
-    expect(tokens.borderWidth['hairline']).toEqual({ $value: '0.5px' });
-    expect(tokens.typography['body']).toMatchObject({
+    expect(tokens.borderWidth.hairline).toEqual({ $value: '0.5px' });
+    expect(tokens.typography.body).toMatchObject({
       fontSize: { $value: '15px' },
       fontWeight: { $value: 400 },
     });

@@ -67,5 +67,5 @@ export function platform<T extends Style>(specifics: {
  * Select a value based on theme name.
  */
 export function select<T>(themeName: string, options: Record<string, T>): T {
-  return options[themeName] ?? options['light'] ?? Object.values(options)[0]!;
+  return options[themeName] ?? options.light ?? Object.values(options)[0]!;
 }

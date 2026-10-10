@@ -43,7 +43,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['openai']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.openai!.replace(/#000000|#000|black/g, color)}
       />
     ),
     logoSize: 18,
@@ -70,7 +70,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['anthropic']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.anthropic!.replace(/#000000|#000|black/g, color)}
       />
     ),
     logoSize: 18,
@@ -95,7 +95,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['perplexity']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.perplexity!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -117,7 +117,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['cursor']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.cursor!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -139,7 +139,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['openrouter']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.openrouter!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -163,7 +163,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['deepseek']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.deepseek!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -186,7 +186,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['jina']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.jina!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -209,7 +209,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['ollama']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.ollama!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -235,7 +235,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['gemini']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.gemini!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -259,7 +259,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['meta']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.meta!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -282,7 +282,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['mistral']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.mistral!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -306,7 +306,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['xai']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.xai!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -329,7 +329,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['qwen']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.qwen!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -352,7 +352,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['groq']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.groq!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -375,7 +375,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['cohere']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.cohere!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -398,7 +398,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['moonshot']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.moonshot!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -420,7 +420,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['zhipu']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.zhipu!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
@@ -443,7 +443,7 @@ export const WORKSPACE_MODELS: ModelPickerProvider[] = [
         width={size}
         height={size}
         color={color}
-        xml={MARKS['aws']!.replace(/#000000|#000|black/g, color)}
+        xml={MARKS.aws!.replace(/#000000|#000|black/g, color)}
       />
     ),
     models: [
