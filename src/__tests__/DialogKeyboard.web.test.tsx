@@ -354,3 +354,60 @@ describe('temporarily unavailable modal controls', () => {
     expect(document.activeElement).toBe(panel);
   });
 });
+
+describe('closing before the entry focus frame', () => {
+  it('does not steal restored focus into a child that is already exiting', () => {
+    function CloseImmediately({ close }: { close: () => void }) {
+      React.useLayoutEffect(close, [close]);
+      return <button>Transient child action</button>;
+    }
+    function Nested() {
+      const [child, setChild] = React.useState(false);
+      const closeChild = React.useCallback(() => setChild(false), []);
+      return <Dialog open label="Parent">
+        <Pressable testID="rapid-child-opener" accessibilityRole="button" onPress={() => setChild(true)}><Text>Open child</Text></Pressable>
+        <Dialog open={child} label="Transient child" placement="end">
+          <CloseImmediately close={closeChild} />
+        </Dialog>
+      </Dialog>;
+    }
+    mount(<Nested />);
+    const trigger = byTestId('rapid-child-opener');
+    expect(document.activeElement).toBe(trigger);
+    act(() => trigger.click());
+    expect(document.activeElement).toBe(trigger);
+    // An exiting child must not trap Tab back into itself after returning focus.
+    const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    act(() => trigger.dispatchEvent(tab));
+    expect(tab.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(trigger);
+    // Closing has already restored the opener, but the entry RAF is pending.
+    act(() => jest.advanceTimersByTime(20));
+    expect(document.activeElement).toBe(trigger);
+    act(() => jest.runAllTimers());
+    expect(document.querySelector('[aria-label="Transient child"]')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+});
+
+
+it('preserves the opener when Escape dismisses a nested child before its autofocus frame', () => {
+  function Nested() {
+    const [child, setChild] = React.useState(false);
+    return <Dialog open label="Parent">
+      <Pressable testID="escape-child-opener" accessibilityRole="button" onPress={() => setChild(true)}><Text>Open child</Text></Pressable>
+      <Dialog open={child} onClose={() => setChild(false)} label="Transient child" placement="end">
+        <button>Transient child action</button>
+      </Dialog>
+    </Dialog>;
+  }
+  mount(<Nested />);
+  const trigger = byTestId('escape-child-opener');
+  act(() => trigger.click());
+  expect(document.activeElement).toBe(trigger);
+  // No animation frame has run between the pointer opening and Escape.
+  press('Escape');
+  act(() => jest.runAllTimers());
+  expect(document.querySelector('[aria-label="Transient child"]')).toBeNull();
+  expect(document.activeElement).toBe(trigger);
+});

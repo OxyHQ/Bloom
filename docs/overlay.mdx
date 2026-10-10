@@ -174,3 +174,7 @@ On web, Tab and Shift+Tab remain on the modal panel when all its controls are
 disabled, hidden, or absent. Moving focus to this fallback does not scroll the
 panel. Once controls become available, traversal resumes from the first or last
 control according to direction.
+
+A modal that has begun closing stops its entry autofocus and Tab trap. Its
+exit animation may keep the panel mounted, but cannot take focus back from
+the opener that closing already restored.
