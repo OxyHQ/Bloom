@@ -1,8 +1,8 @@
 import type { BackdropAppearance } from '../overlay/types';
 import type { SurfaceTransition } from '../motion/types';
 import type React from 'react';
-import { type LayoutChangeEvent, type ViewStyle, type StyleProp } from 'react-native';
-import { type AnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import type { LayoutChangeEvent, ViewStyle, StyleProp } from 'react-native';
+import type { AnimatedStyle, SharedValue } from 'react-native-reanimated';
 
 export interface BottomSheetRef {
   present: () => void;

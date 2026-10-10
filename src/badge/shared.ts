@@ -1,7 +1,7 @@
 import { resolveBloomColors } from '../appearance/colors';
 import type { BloomAppearance, BloomTone } from '../appearance';
 import { resolveButtonRamps } from '../button/shared';
-import { type AccentTone } from '../theme/accent-colors';
+import type { AccentTone } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import type { BadgeSize, BadgeVariant } from './types';
