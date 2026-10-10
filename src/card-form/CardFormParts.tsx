@@ -556,7 +556,7 @@ function CardFormCountryComponent({
             label={member.name}
             disabled={member.disabled}
             // The trigger sits BESIDE a text box on the same line, and a pill
-            // next to a 10-radius box reads as two different controls. It is
+            // next to a smaller-radius box reads as two different controls. It is
             // the override `SelectTrigger` documents for exactly this — a
             // trigger embedded in another control — and it is the field's own
             // radius, not a number picked here.

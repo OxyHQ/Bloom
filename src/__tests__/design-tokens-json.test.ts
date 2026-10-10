@@ -102,7 +102,7 @@ describe('tokens.json shape contract', () => {
   });
 
   it('exports shape radii as dimensions and adaptive curves as metadata', () => {
-    expect(tokens.shape.card).toEqual({ $extensions: { 'so.oxy.bloom': { curve: 'smooth' } }, radius: { $type: 'dimension', $value: '12px' } });
+    expect(tokens.shape.card).toEqual({ $extensions: { 'so.oxy.bloom': { curve: 'round' } }, radius: { $type: 'dimension', $value: '20px' } });
   });
 
   it('emits the numeric scales as px dimensions', () => {

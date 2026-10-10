@@ -17,8 +17,8 @@ describe('surface shapes', () => {
   it('uses web corner geometry without a native-only borderCurve', () => {
     platform('web');
     expect(surfaceStyle(SURFACE_SHAPES.card)).toEqual({
-      borderRadius: 12,
-      cornerShape: 'squircle',
+      borderRadius: 20,
+      cornerShape: 'round',
     });
     expect(surfaceStyle({ radius: 9999, curve: 'round' })).toEqual({
       borderRadius: 9999,

@@ -90,9 +90,9 @@ describe('Card axes', () => {
     expect(RADIUS['radius-20']).toBe(20);
   });
 
-  it('defaults to the radius-12 rung', () => {
+  it('defaults to the radius-20 rung', () => {
     const { toJSON } = renderWithTheme(<Card testID="c">{null}</Card>);
-    expect(chromeOf(toJSON(), 'c').borderRadius).toBe(RADIUS['radius-12']);
+    expect(chromeOf(toJSON(), 'c').borderRadius).toBe(RADIUS['radius-20']);
   });
 
   it.each([

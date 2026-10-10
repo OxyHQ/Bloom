@@ -63,7 +63,7 @@ card but flatter" should refine the axes rather than earn a fifth variant name.
 <Card radius={20} />          // ✗ does not type-check
 ```
 
-The scale has 2 / 4 / 12 / 16 / 20 / 24 / 28 / max. Taking a rung rather than a
+The default is the 20px rung with circular corners. The scale has 0 / 2 / 4 / 8 / 12 / 16 / 20 / 24 / 28 / max. Taking a rung rather than a
 number is what keeps "this surface is a bit rounder" to eight values instead of
 eight hundred, and it is why a design change to a rung moves every surface that
 uses it.
@@ -100,9 +100,9 @@ because a child deliberately overflows — opts out through `style`:
 <Card clipContent radius="radius-20" contentStyle={{ gap: 12 }} />
 ```
 
-`cornerCurve="smooth"` is the default: CSS squircle on supporting browsers,
-iOS continuous curves, circular corners on Android and unsupported browsers.
-`cornerCurve="round"` is circular everywhere. `radius-max` always remains a pill.
+`cornerCurve="round"` is the default, with circular corners everywhere.
+Opt into `cornerCurve="smooth"` for CSS squircle on supporting browsers,
+iOS continuous curves, and circular corners on Android and unsupported browsers. `radius-max` always remains a pill.
 `border="medium"` supplies a 2px selection border.
 Both layers use the same curve; the inner radius accounts for the border width.
 Explicit `radius`, `cornerCurve` and `border` own geometry. With no radius prop, a resolved `style.borderRadius` is used before the family default, matching Surface and GlassIsland. Individual corner radii, border widths and overflow remain controlled by the shape, border and clipping props. `contentStyle` cannot replace the resolved clip geometry.

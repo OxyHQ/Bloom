@@ -19,7 +19,7 @@ Coloured by Bloom's theme through the same ramps as `Button`:
 | text inset      | 4                  | 4       |
 | text            | 14/20 regular      | 14/20 regular |
 | icon            | 20                 | 20      |
-| radius          | 10                 | 10      |
+| radius          | 12                 | 12      |
 
 The shell uses the shared secondary surface with a 2px **inset** ring: transparent at rest, the semantic border under the pointer, and primary while focused. A focused field darkens its placeholder to the text colour.
 
@@ -211,7 +211,7 @@ For a real multiline field — rows, auto-grow, a character counter — use [`Te
 | `invalid?` | `boolean` | Paints the field in the negative palette and exposes it via context. |
 | `disabled?` | `boolean` | Disables the input and paints every part disabled. |
 | `size?` | `'md' \| 'sm'` | 36 or 32 tall. Default `md`. |
-| `radius?` | `number` | Corner radius of the chrome, default `10`. A large value (999) reads as a pill. |
+| `radius?` | `number` | Corner radius of the chrome, default `12`. A large value (999) reads as a pill. |
 | `leadingAddon?` | `React.ReactNode` | A control before the input (the phone input's country code); the shell's left padding becomes 4px. |
 | `style?` | `StyleProp<ViewStyle>` | Override the container style. |
 | `children?` | `React.ReactNode` | The input, plus any icon / suffix / ghost. |

@@ -213,11 +213,11 @@ describe('it IS a text field, not a lookalike', () => {
     expect(getComputedStyle(input()).paddingLeft).toBe('4px');
   });
 
-  it('paints the text-field shell: its fill, its 10px corner, its ring on focus', () => {
+  it('paints the text-field shell: its fill, its 12px corner, its ring on focus', () => {
     mount(<Harness label="Tags" placeholder="Add a tag" />);
     const rest = getComputedStyle(chrome());
     expect(rgb(rest.backgroundColor)).toEqual(rgb(FIELD.background));
-    expect(rest.borderTopLeftRadius).toBe('10px');
+    expect(rest.borderTopLeftRadius).toBe('12px');
     // No ring at rest — the fill is the field.
     expect(rest.borderTopColor).toBe('rgba(0, 0, 0, 0)');
     focus();

@@ -8,6 +8,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { surfaceFillOn, surfaceTextOn, useSurfaceFill } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { RADIUS } from '../design-tokens/scales';
 import { TYPE_SCALE } from '../typography/scale';
 
 /**
@@ -21,7 +22,7 @@ import { TYPE_SCALE } from '../typography/scale';
  *   input pl      4               4
  *   text          14/20 400       14/20 400
  *   icon          20              20
- *   radius        10              10
+ *   radius        12              12
  *
  * The shell is a FILLED surface with an inset 2px ring rather than a border:
  * transparent at rest, `border-button-hover` on hover, `border-button-active`
@@ -59,8 +60,8 @@ export const TEXT_FIELD_ADDON_PADDING: Record<
   sm: { paddingLeft: 4, paddingRight: 6 },
 };
 
-/** `rounded-2lg`. */
-export const TEXT_FIELD_RADIUS = 10;
+/** Shared field family corner rung. */
+export const TEXT_FIELD_RADIUS = RADIUS['radius-12'];
 /** Width of the inset ring (`ring-2 ring-inset`). */
 export const TEXT_FIELD_RING_WIDTH = 2;
 /** `pl-1` on the control. */
