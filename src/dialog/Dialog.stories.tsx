@@ -370,3 +370,30 @@ export const PendingFocus: Story = {
     </>;
   },
 };
+
+function CloseOnLayout({ close }: { close: () => void }) {
+  React.useLayoutEffect(() => { close(); }, [close]);
+  return <Button>Transient action</Button>;
+}
+
+/** A fast result can dismiss a child surface before its entry focus frame runs. */
+export const RapidNestedClose: Story = {
+  args: { placement: 'end' },
+  render: function RapidNestedCloseStory(args) {
+    const parent = useDialogControl();
+    const child = useDialogControl();
+    const [closed, setClosed] = React.useState(0);
+    const [immediate, setImmediate] = React.useState(true);
+    return <>
+      <OverlayInertBoundary><Button onPress={() => parent.open()}>Open parent surface</Button></OverlayInertBoundary>
+      <Dialog control={parent} placement={args.placement} label="Parent surface">
+        <Button onPress={() => { setImmediate(true); child.open(); }}>Open transient child</Button>
+        <Button onPress={() => { setImmediate(false); child.open(); }}>Open keyboard child</Button>
+        <Text testID="transient-close-count">{closed}</Text>
+        <Dialog control={child} placement="end" label="Transient child" onClose={() => setClosed(value => value + 1)}>
+          {immediate ? <CloseOnLayout close={child.close} /> : <Button>Child action</Button>}
+        </Dialog>
+      </Dialog>
+    </>;
+  },
+};

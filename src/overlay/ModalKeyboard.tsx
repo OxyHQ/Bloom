@@ -59,11 +59,12 @@ export function ModalKeyboard({ panelRef, closing = false, dismissible, dismiss 
     // A frame later, so content that focuses itself on mount has done so.
     const frame = requestAnimationFrame(() => {
       const node = panel();
-      if (!node || node.contains(document.activeElement) || !isTopmostOverlayLayer(layer)) return;
+      // A fast dismissal can restore the opener before this entry frame runs.
+      if (state.current.closing || !node || node.contains(document.activeElement) || !isTopmostOverlayLayer(layer)) return;
       initialFocusWithin(node).focus({ preventScroll: true });
     });
     const onTab = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || !isTopmostOverlayLayer(layer)) return;
+      if (state.current.closing || event.defaultPrevented || !isTopmostOverlayLayer(layer)) return;
       wrapTab(event, panel());
     };
     // Capture: a text field in the panel stops its own keydowns.
