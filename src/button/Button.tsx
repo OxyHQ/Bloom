@@ -213,16 +213,16 @@ function ButtonContent({ loading, gap, children }: {
     ...(layout.columnGap !== undefined && { columnGap: layout.columnGap }),
   };
   return <View pointerEvents={loading ? 'none' : undefined}
-    style={[styles.content, { gap }, contentLayout, loading && { opacity: 0 }]}
-    importantForAccessibility={loading ? 'no-hide-descendants' : undefined}
-    accessibilityElementsHidden={loading || undefined}>
+    style={[styles.content, { gap }, contentLayout, loading && { opacity: 0 }]}>
+    {/* Preserve the original descendants as the accessible name while busy. */}
     {children(text ?? {})}
   </View>;
 }
 
 function ButtonLoading({ color, fallback }: { color?: string; fallback: string }) {
   const { text } = useContext(ContentStyleContext);
-  return <View pointerEvents="none" style={styles.loadingOverlay}>
+  return <View pointerEvents="none" style={styles.loadingOverlay}
+    accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
     <ActivityIndicator size="small" color={color ?? text?.color ?? fallback} />
   </View>;
 }

@@ -318,3 +318,32 @@ export const BackdropTransition: Story = {
 };
 export const BackdropTransitionCenter: Story = { ...BackdropTransition, args: { placement: 'center' } };
 export const BackdropTransitionBottom: Story = { ...BackdropTransition, args: { placement: 'bottom' } };
+
+export const LoadingButtonNames: Story = {
+  render: function LoadingButtonNamesStory() {
+    const [open, setOpen] = React.useState(false);
+    const [pending, setPending] = React.useState(false);
+    return <>
+      <Button onPress={() => setOpen(true)}>Open pending dialog</Button>
+      <Dialog open={open} onClose={() => { if (!pending) setOpen(false); }} title="Pending action" dismissOnBackdrop={!pending}>
+        <View style={{ gap: 12 }}>
+          <Button disabled={pending} onPress={() => setOpen(false)}>Cancel action</Button>
+          <Button loading={pending} disabled={false} onPress={() => setPending(true)}>Remove variant</Button>
+          <Button loading={pending} disabled={false}><ComposedActionName /></Button>
+          <Button loading={pending} disabled={false}>حذف المتغيّر</Button>
+          <Button loading={pending} accessibilityLabel="Save item" iconOnly><Text>+</Text></Button>
+          <Button loading={pending} href="#destination">Open destination</Button>
+          <Button loading={pending} asChild><a href="#supplied">Supplied link</a></Button>
+          <Button onPress={() => setPending(false)}>Finish request</Button>
+        </View>
+      </Dialog>
+    </>;
+  },
+};
+
+function ComposedActionName() {
+  const [identity] = React.useState(() => Math.random().toString(36));
+  return <span data-testid="composed-action-name" data-identity={identity}>
+    Publish <strong>draft</strong><span aria-hidden="true"> decorative</span>
+  </span>;
+}
