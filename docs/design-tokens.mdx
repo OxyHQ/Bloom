@@ -356,3 +356,44 @@ caller-supplied hues, darkened only when their paired labels require it; their
 black/white image ink is intentional. Energy bands remain categorical data
 colors with measured black/white foregrounds. They are not shell backgrounds.
 `media-semantic-palette.test.ts` checks those pairs across all presets and modes.
+
+
+## Exact local color scopes
+
+`BloomColorScope` accepts an optional `mode` (`light` or `dark`) and `tokens`,
+a partial map keyed by `CanonicalToken` without the `--` prefix. These values
+are exact React Native color strings, not seeds: Bloom does not derive or adjust
+them. Supply readable foreground/fill pairs; unspecified tokens inherit the
+selected `colorPreset`, or the parent scope when no preset is supplied.
+
+```tsx
+import { BloomColorScope, type BloomColorScopeTokens } from '@oxy.so/bloom/theme';
+
+const colors = {
+  background: '#5433eb',
+  foreground: '#ffffff',
+  card: 'rgba(255, 255, 255, 0.12)',
+  'card-foreground': '#ffffff',
+} satisfies BloomColorScopeTokens;
+
+<BloomColorScope mode="dark" tokens={colors}>
+  <Content />
+</BloomColorScope>
+```
+
+The scope publishes the same values to canonical CSS variables, their
+`--color-*` utility aliases, native variable context and `useTheme()`.
+Bloom portals carry this scope to their destination, so a dialog or menu
+opened inside it keeps the same colors. Siblings and the app's stored theme,
+document classes and native global color scheme stay unchanged. The setters returned by `useBloomTheme()` still control the app provider;
+change local props to update the scope. Local mode
+selects the token palette and JS theme; it does not redefine a consumer's CSS
+`dark:` selector or change the device color scheme.
+
+Nested mode overrides resolve the parent's original preset or seed at the new
+mode and retain explicit ancestor token overrides. A new `colorPreset` starts
+a fresh palette. Updating or clearing scope props preserves mounted children
+and their state. `asChild` retains its existing single-child style contract.
+An omitted token inherits; an empty color, unknown token, CSS variable reference
+or color that React Native cannot parse is rejected. Resolve app-specific colors
+before passing them; do not restate Bloom's standard palette.

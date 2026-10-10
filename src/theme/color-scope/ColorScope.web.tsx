@@ -1,7 +1,9 @@
 import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 
-import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
-import { buildTheme } from '../build-theme';
+import { BloomThemeContext } from '../BloomThemeProvider';
+import { ThemeScopeContext } from './context';
+import { useScope } from './use-scope';
+import type { BloomColorScopeTokens } from './types';
 import type { AppColorName } from '../color-presets';
 import { buildScopeVars } from './style-builder';
 
@@ -11,10 +13,7 @@ import { buildScopeVars } from './style-builder';
  * utilities. Scoped onto an element's inline `style`, profile-level NativeWind
  * classes resolve against the subtree preset instead of the document root.
  */
-function buildWebScopeVars(
-  colorPreset: AppColorName,
-  mode: 'light' | 'dark',
-): React.CSSProperties {
+function buildWebScopeVars(colorPreset: AppColorName, mode: 'light' | 'dark'): React.CSSProperties {
   return buildScopeVars(colorPreset, mode) as React.CSSProperties;
 }
 
@@ -27,7 +26,11 @@ export interface BloomColorScopeProps {
    * tree is identical either way, so a preset that arrives late cannot remount
    * the subtree. `ColorScope.tsx` carries the full account.
    */
-  colorPreset: AppColorName | undefined;
+  colorPreset?: AppColorName;
+  /** Local resolved mode; does not change the app mode, storage or document. */
+  mode?: 'light' | 'dark';
+  /** Exact canonical colors. Unspecified roles inherit the selected preset or parent scope. */
+  tokens?: BloomColorScopeTokens;
   /**
    * When `true`, do not render a wrapping `<div>`. The single child is cloned
    * with the scope's CSS vars merged into its `style` prop (Radix-style).
@@ -55,13 +58,7 @@ export interface BloomColorScopeProps {
  * So the array form is used only when the child's own style is already
  * RN-shaped; every other child gets a plain object, which both runtimes accept.
  */
-type WebStyle =
-  | React.CSSProperties
-  | number
-  | null
-  | undefined
-  | false
-  | ReadonlyArray<WebStyle>;
+type WebStyle = React.CSSProperties | number | null | undefined | false | ReadonlyArray<WebStyle>;
 
 interface StyleableProps {
   style?: WebStyle;
@@ -69,32 +66,14 @@ interface StyleableProps {
 
 export function BloomColorScope({
   colorPreset,
+  mode,
+  tokens,
   asChild = false,
   style,
   children,
 }: BloomColorScopeProps) {
-  // All hooks are called UNCONDITIONALLY, in the same order on every render —
-  // never gate a hook behind an early return (rules of hooks). The conditional
-  // no-op/throw behavior is applied AFTER every hook has run, using the values
-  // the hooks produced. `resolvedMode` falls back harmlessly when the provider
-  // is absent (that render path throws below anyway).
-  const parent = useContext(BloomThemeContext);
-  const resolvedMode = parent?.theme.mode ?? 'light';
-
-  const contextValue = useMemo<BloomThemeContextValue | null>(() => {
-    if (!parent || !colorPreset) return null;
-    const theme = buildTheme(colorPreset, resolvedMode);
-    return { ...parent, theme, colorPreset };
-  }, [colorPreset, resolvedMode, parent]);
-
-  const varsStyle = useMemo<React.CSSProperties | null>(
-    () => (colorPreset ? buildWebScopeVars(colorPreset, resolvedMode) : null),
-    [colorPreset, resolvedMode],
-  );
-
-  if (!parent) {
-    throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
-  }
+  const { context, state, vars } = useScope(colorPreset, mode, tokens);
+  const varsStyle = vars as React.CSSProperties | undefined;
 
   let content: React.ReactNode;
   if (asChild) {
@@ -122,7 +101,9 @@ export function BloomColorScope({
   }
 
   return (
-    <BloomThemeContext.Provider value={contextValue ?? parent}>{content}</BloomThemeContext.Provider>
+    <BloomThemeContext.Provider value={context}>
+      <ThemeScopeContext.Provider value={state}>{content}</ThemeScopeContext.Provider>
+    </BloomThemeContext.Provider>
   );
 }
 

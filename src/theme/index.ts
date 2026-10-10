@@ -4,7 +4,7 @@ export type {
   BloomThemeContextValue,
 } from './BloomThemeProvider';
 export { BloomColorScope, useColorScopeStyle } from './color-scope';
-export type { BloomColorScopeProps } from './color-scope';
+export type { BloomColorScopeProps, BloomColorScopeTokens } from './color-scope';
 export { BloomSeedScope } from './seed-scope';
 export type { BloomSeedScopeProps } from './seed-scope';
 export { roleColorsToPresetTokens } from './color-scope/seed-scope';

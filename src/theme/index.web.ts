@@ -9,7 +9,7 @@ export type {
   BloomThemeContextValue,
 } from './BloomThemeProvider';
 export { BloomColorScope, useColorScopeStyle } from './color-scope/index.web';
-export type { BloomColorScopeProps } from './color-scope/index.web';
+export type { BloomColorScopeProps, BloomColorScopeTokens } from './color-scope/index.web';
 export { BloomSeedScope } from './seed-scope/index.web';
 export type { BloomSeedScopeProps } from './seed-scope/index.web';
 export { roleColorsToPresetTokens } from './color-scope/seed-scope';

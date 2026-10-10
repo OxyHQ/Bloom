@@ -28,6 +28,7 @@ import { useAmbientThemeState } from './ambient-store';
 
 import { applyDarkClass, applyDocumentTheme, applyVarsToDocument } from './apply-dark-class';
 import { buildTheme } from './build-theme';
+import { ThemeScopeContext, type ScopeState } from './color-scope/context';
 import { buildThemeFromSeed } from './build-theme-from-seed';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
 import { type AppColorName } from './color-presets';
@@ -431,6 +432,17 @@ export function BloomThemeProvider({
     ],
   );
 
+  const scopeState = useMemo<ScopeState>(() => ({
+    theme: themeColors,
+    vars: themeVars,
+    resolveMode: (nextMode) => nextMode === resolved ? { theme: themeColors, vars: themeVars } : effectiveSeed
+      ? {
+          theme: buildThemeFromSeed(effectiveSeed, nextMode, undefined, undefined, { secondarySeed: effectiveSecondary, tertiarySeed: effectiveTertiary }),
+          vars: buildSeedScopeVars({ seed: effectiveSeed, mode: nextMode, secondarySeed: effectiveSecondary, tertiarySeed: effectiveTertiary }),
+        }
+      : { theme: buildTheme(colorPreset, nextMode, isAdaptive, explicitAccents), vars: buildScopeVars(colorPreset, nextMode, explicitAccents) },
+  }), [themeColors, themeVars, resolved, effectiveSeed, effectiveSecondary, effectiveTertiary, colorPreset, isAdaptive, explicitAccents]);
+
   useIsomorphicLayoutEffect(() => {
     setColorSchemeSafe(effectiveMode);
     applyDarkClass(resolved);
@@ -480,9 +492,9 @@ export function BloomThemeProvider({
   const VariableProvider = getVariableContextProvider();
 
   const content = (
-    <FontLoader enabled={fonts} fallback={onFontsLoading}>
+    <ThemeScopeContext.Provider value={scopeState}><FontLoader enabled={fonts} fallback={onFontsLoading}>
       {isGated ? onHydrating ?? null : children}
-    </FontLoader>
+    </FontLoader></ThemeScopeContext.Provider>
   );
 
   if (Platform.OS === 'web') {

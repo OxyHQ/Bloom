@@ -4,6 +4,7 @@ import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemePro
 import { buildSeedScopeVars } from '../color-scope/seed-scope';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
 import type { SchemeVariant } from '../color-engine';
+import { ThemeScopeContext, type ScopeState } from '../color-scope/context';
 
 export interface BloomSeedScopeProps {
   /**
@@ -97,6 +98,15 @@ export function BloomSeedScope({
     return { ...parent, theme };
   }, [parent, seed, resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed]);
 
+  const scopeState = useMemo<ScopeState | null>(() => {
+    if (!seed) return null;
+    const resolveMode = (mode: 'light' | 'dark') => ({
+      theme: buildThemeFromSeed(seed, mode, variant, contrastLevel, { secondarySeed, tertiarySeed }),
+      vars: buildSeedScopeVars({ seed, mode, variant, contrastLevel, secondarySeed, tertiarySeed }),
+    });
+    return { ...resolveMode(resolvedMode), resolveMode };
+  }, [seed, resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed]);
+
   if (!parent) {
     throw new Error('BloomSeedScope must be used within a <BloomThemeProvider>');
   }
@@ -118,5 +128,5 @@ export function BloomSeedScope({
     content = <div style={mergedStyle}>{children}</div>;
   }
 
-  return <BloomThemeContext.Provider value={contextValue}>{content}</BloomThemeContext.Provider>;
+  return <BloomThemeContext.Provider value={contextValue}><ThemeScopeContext.Provider value={scopeState}>{content}</ThemeScopeContext.Provider></BloomThemeContext.Provider>;
 }
