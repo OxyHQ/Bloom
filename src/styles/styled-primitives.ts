@@ -22,7 +22,7 @@
  * versions stay unanimated so an element type is not created twice for the same
  * primitive. `button/Button.tsx` is the reference.
  */
-import type { ComponentType, Ref } from 'react';
+import type { ComponentType, ForwardRefExoticComponent, Ref, RefAttributes } from 'react';
 import {
   Image,
   Pressable,
@@ -121,7 +121,8 @@ export const StyledImage: ComponentType<ImageProps & { ref?: Ref<Image> }> = sty
   className: 'style',
 });
 
+const PressableBase: ForwardRefExoticComponent<StyledPressableBase & RefAttributes<View>> = Pressable;
 export const StyledPressable: ComponentType<StyledPressableProps> = styled(
-  Pressable as ComponentType<StyledPressableBase>,
+  PressableBase,
   { className: 'style' },
 );

@@ -5,16 +5,13 @@ import { EdgeScrim } from '../page-header/EdgeScrim';
 import { StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
-const ScrollSurfaceBase: React.ComponentType<
-  Pick<ScrollViewProps, 'style' | 'contentContainerStyle'>
-> = ScrollView;
 const StyledScrollView: React.ComponentType<
   ScrollViewProps & {
     className?: string;
     contentContainerClassName?: string;
     ref?: Ref<ScrollView>;
   }
-> = styled(ScrollSurfaceBase, {
+> = styled(ScrollView, {
   className: 'style',
   contentContainerClassName: 'contentContainerStyle',
 });
