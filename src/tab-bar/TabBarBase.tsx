@@ -140,11 +140,7 @@ function OptionalGesture({
   children,
   ...props
 }: ComponentProps<typeof GestureDetector> & { enabled: boolean }) {
-  return enabled ? (
-    <GestureDetector {...props}>{children}</GestureDetector>
-  ) : (
-    <Fragment>{children}</Fragment>
-  );
+  return enabled ? <GestureDetector {...props}>{children}</GestureDetector> : children;
 }
 
 interface TabBarBodyProps extends TabBarProps {

@@ -47,7 +47,11 @@ function ReadTheme() {
   return null;
 }
 
-function mount(ui: React.ReactElement, mode: 'light' | 'dark' = 'light', colorPreset = 'blue') {
+function mount(
+  ui: React.ReactElement | null,
+  mode: 'light' | 'dark' = 'light',
+  colorPreset = 'blue',
+) {
   act(() => {
     root.render(
       <BloomThemeProvider mode={mode} colorPreset={colorPreset as 'blue'}>
@@ -184,7 +188,7 @@ describe('Chip focus ring', () => {
       // moved both sides together would otherwise measure nothing.
       const worst: Array<{ preset: string; ratio: number }> = [];
       for (const preset of APP_COLOR_NAMES) {
-        mount(<></>, mode, preset);
+        mount(null, mode, preset);
         worst.push({ preset, ratio: contrast(resolveChipRing(theme), theme.colors.background) });
       }
       expect(worst.filter((w) => w.ratio < 4.2)).toEqual([]);
@@ -196,7 +200,7 @@ describe('Chip focus ring', () => {
     // solid chip the label is white, so the ring was white on a white page:
     // measured 1.09 in light mode. Pinned as an inequality against the fix so
     // the two cannot be swapped back without this going red.
-    mount(<></>, 'light', 'blue');
+    mount(null, 'light', 'blue');
     const solid = resolveChipPaint(theme, { tone: 'primary', variant: 'solid', selected: false });
     const old = contrast(solid.foreground, theme.colors.background);
     const now = contrast(resolveChipRing(theme), theme.colors.background);
@@ -231,7 +235,7 @@ describe('Chip inverted', () => {
   );
 
   it('does not promote to the brand tone the way the accent fills do', () => {
-    mount(<></>);
+    mount(null);
     const inverted = resolveChipPaint(theme, {
       tone: 'default',
       variant: 'inverted',
@@ -243,7 +247,7 @@ describe('Chip inverted', () => {
   });
 
   it('answers hover with its border, which is the only state a fill-less pill can show', () => {
-    mount(<></>);
+    mount(null);
     expect(
       resolveChipPaint(theme, { tone: 'default', variant: 'inverted', selected: false })
         .hoveredBorder,

@@ -43,7 +43,7 @@ function ReadTheme() {
   return null;
 }
 
-function mount(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
+function mount(ui: React.ReactElement | null, mode: 'light' | 'dark' = 'light') {
   act(() => {
     root.render(
       <BloomThemeProvider mode={mode} colorPreset="teal">
@@ -365,9 +365,9 @@ describe('RecentlyPlayedList', () => {
 
 describe('resolveQueuePanelPaint', () => {
   it('paints from the theme and differs between light and dark', () => {
-    mount(<></>, 'light');
+    mount(null, 'light');
     const light = resolveQueuePanelPaint(theme);
-    mount(<></>, 'dark');
+    mount(null, 'dark');
     const dark = resolveQueuePanelPaint(theme);
     expect(light.text).not.toBe(dark.text);
     expect(light.surface).not.toBe(dark.surface);

@@ -36,7 +36,7 @@ function ThemeProbe() {
   return null;
 }
 
-function mount(ui: React.ReactElement, mode: 'light' | 'dark' = 'light'): HTMLElement {
+function mount(ui: React.ReactElement | null, mode: 'light' | 'dark' = 'light'): HTMLElement {
   act(() => {
     root.render(
       <BloomThemeProvider mode={mode} colorPreset="teal">
@@ -115,10 +115,10 @@ describe('booking helpers', () => {
   });
 
   it('paints from the theme in both modes', () => {
-    mount(<></>, 'light');
+    mount(null, 'light');
     const lightTheme = theme();
     const lightPalette = resolveBookingPalette(lightTheme);
-    mount(<></>, 'dark');
+    mount(null, 'dark');
     const darkPalette = resolveBookingPalette(theme());
     expect(theme().isDark).toBe(true);
     expect(lightPalette.surface).toBe(lightTheme.colors.card);

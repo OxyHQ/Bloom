@@ -44,7 +44,7 @@ function ReadTheme() {
   return null;
 }
 
-function mount(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
+function mount(ui: React.ReactElement | null, mode: 'light' | 'dark' = 'light') {
   act(() => {
     root.render(
       <BloomThemeProvider mode={mode} colorPreset="teal">
@@ -90,7 +90,7 @@ describe('resolveMapMarkerPaint', () => {
   it.each(['light', 'dark'] as const)(
     'inverts the active pill against the surface (%s)',
     (mode) => {
-      mount(<></>, mode);
+      mount(null, mode);
       expect(paint.activeFill).toBe(theme.colors.text);
       expect(paint.surface).toBe(resolveMenuPalette(theme).surface);
       expect(paint.activeLabel).toBe(theme.colors.background);

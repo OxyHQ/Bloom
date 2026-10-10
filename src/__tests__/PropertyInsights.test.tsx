@@ -64,7 +64,11 @@ function ReadTheme() {
   return null;
 }
 
-function mount(ui: React.ReactElement, mode: 'light' | 'dark' = 'light', colorPreset = 'teal') {
+function mount(
+  ui: React.ReactElement | null,
+  mode: 'light' | 'dark' = 'light',
+  colorPreset = 'teal',
+) {
   act(() => {
     root.render(
       <BloomThemeProvider mode={mode} colorPreset={colorPreset as 'teal'}>
@@ -105,7 +109,7 @@ describe('energy tones', () => {
   it.each(['light', 'dark'] as const)(
     'run green → yellow → red, and every letter clears 4.5:1 (%s)',
     (mode) => {
-      mount(<></>, mode);
+      mount(null, mode);
       const tones = resolveEnergyTones(theme);
       expect(tones).toHaveLength(7);
       const hue = (c: string) => srgbToOklch(parseRgba(c)!).h;

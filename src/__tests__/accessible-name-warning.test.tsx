@@ -126,11 +126,7 @@ describe('missing accessible name guard', () => {
   });
 
   it('stays silent when Slider is named', () => {
-    mount(
-      <>
-        <Slider value={40} min={0} max={100} onValueChange={noop} accessibilityLabel="Volume" />
-      </>,
-    );
+    mount(<Slider value={40} min={0} max={100} onValueChange={noop} accessibilityLabel="Volume" />);
 
     expect(bloomWarnings('Slider')).toHaveLength(0);
   });

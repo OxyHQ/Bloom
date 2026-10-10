@@ -44,11 +44,13 @@ function createPortalGroup() {
 
     const append = useCallback<ContextType['append']>((id, component) => {
       map.current[id] = <Fragment key={id}>{component}</Fragment>;
+      // biome-ignore lint/complexity/noUselessFragments: the outlet state holds one element, and the fragment is what wraps the list
       setOutlet(<>{Object.values(map.current)}</>);
     }, []);
 
     const remove = useCallback<ContextType['remove']>((id) => {
       delete map.current[id];
+      // biome-ignore lint/complexity/noUselessFragments: the outlet state holds one element, and the fragment is what wraps the list
       setOutlet(<>{Object.values(map.current)}</>);
     }, []);
 

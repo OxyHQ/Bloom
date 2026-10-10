@@ -407,6 +407,7 @@ describe('AgentChat', () => {
 
   it('replaces the whole card body with `emptyState`', () => {
     const { getByText, queryByTestId } = renderIn(
+      // biome-ignore lint/complexity/noUselessFragments: the prop needs a present-but-empty element; null would take the absent-prop branch under test
       <AgentChat testID="chat" messages={[]} emptyState={<></>} />,
     );
     expect(queryByTestId('chat-composer')).toBeNull();

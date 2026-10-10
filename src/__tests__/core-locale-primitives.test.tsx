@@ -35,7 +35,7 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
   const slides = (count: number) =>
     Array.from({ length: count }, (_, i) => (
       <CarouselItem key={i} testID={`slide-${i}`}>
-        <></>
+        {null}
       </CarouselItem>
     ));
 

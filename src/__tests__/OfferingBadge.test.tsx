@@ -39,7 +39,7 @@ function ReadTheme() {
   return null;
 }
 
-function mount(ui: React.ReactElement, mode: 'light' | 'dark' = 'light', colorPreset = 'teal') {
+function mount(ui: React.ReactNode, mode: 'light' | 'dark' = 'light', colorPreset = 'teal') {
   act(() => {
     root.render(
       <BloomThemeProvider mode={mode} colorPreset={colorPreset as 'teal'}>
@@ -142,7 +142,7 @@ describe('OfferingBadge', () => {
     "tinted paints the tone's subtle pair, distinct per offering, on every preset (%s)",
     (mode) => {
       for (const preset of APP_COLOR_NAMES) {
-        mount(<></>, mode, preset);
+        mount(null, mode, preset);
         const backgrounds = new Set<string>();
         for (const offering of OFFERINGS) {
           const pair = resolveAccentColors(theme.colors, OFFERING_TONES[offering], 'subtle');
@@ -179,13 +179,7 @@ describe('OfferingBadge', () => {
 
   it('is never a control and never animates', () => {
     const offerings: Offering[] = [...OFFERINGS];
-    mount(
-      <>
-        {offerings.map((o) => (
-          <OfferingBadge key={o} offering={o} testID={o} />
-        ))}
-      </>,
-    );
+    mount(offerings.map((o) => <OfferingBadge key={o} offering={o} testID={o} />));
     expect(container.querySelectorAll('[role="button"], button, a')).toHaveLength(0);
     for (const o of offerings) {
       const t = getComputedStyle(byTestId(o)).transform;

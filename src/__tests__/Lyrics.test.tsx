@@ -52,7 +52,7 @@ function ReadTheme() {
 }
 
 function mount(
-  ui: React.ReactElement,
+  ui: React.ReactElement | null,
   mode: 'light' | 'dark' = 'light',
   colorPreset: string = 'teal',
 ) {
@@ -258,7 +258,7 @@ describe('resolveLyricsPalette', () => {
   it('keeps active 7:1, upcoming 4.5:1 and past 3:1 for every artwork colour, preset and mode', () => {
     for (const preset of presets) {
       for (const mode of ['light', 'dark'] as const) {
-        mount(<></>, mode, preset);
+        mount(null, mode, preset);
         for (const colour of [...ARTWORK, undefined]) {
           const p = resolveLyricsPalette(theme, colour);
           const label = `${preset}/${mode}/${colour}`;
@@ -282,7 +282,7 @@ describe('resolveLyricsPalette', () => {
   });
 
   it('paints white text on a shade of the artwork colour', () => {
-    mount(<></>);
+    mount(null);
     const p = resolveLyricsPalette(theme, '#6d4bd8');
     expect(p.fromArtwork).toBe(true);
     expect(p.active).toBe('#ffffff');
@@ -290,7 +290,7 @@ describe('resolveLyricsPalette', () => {
   });
 
   it('falls back to the neutral surface and the theme text for absent or unparseable colours', () => {
-    mount(<></>);
+    mount(null);
     for (const colour of [undefined, null, '', 'not-a-colour', 'var(--x)']) {
       const p = resolveLyricsPalette(theme, colour);
       expect(p.fromArtwork).toBe(false);

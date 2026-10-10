@@ -70,6 +70,7 @@ describe('ListingPhotoGrid layout="auto"', () => {
 describe('ListingHeader actions', () => {
   it('sit beside the title from 640 wide and under the meta row below it', () => {
     const api = renderWithTheme(
+      // biome-ignore lint/complexity/noUselessFragments: the prop needs a present-but-empty element; null would take the absent-prop branch under test
       <ListingHeader title="Flat" rating={4.9} actions={<></>} testID="h" />,
     );
     const root = api.getByTestId('h');

@@ -165,6 +165,7 @@ describe('AuthCard', () => {
   });
 
   it('drops the media below md rather than stacking it', () => {
+    // biome-ignore lint/complexity/noUselessFragments: the prop needs a present-but-empty element; null would take the absent-prop branch under test
     const { queryByTestId } = renderCard(<AuthCard testID="auth" media={<></>} />);
     expect(queryByTestId('auth-media')).toBeNull();
   });
@@ -172,6 +173,7 @@ describe('AuthCard', () => {
   it('puts the media in a second equal column from md and the footnote under the card', () => {
     withViewport(768);
     const { getByTestId, getByText } = renderCard(
+      // biome-ignore lint/complexity/noUselessFragments: the prop needs a present-but-empty element; null would take the absent-prop branch under test
       <AuthCard testID="auth" media={<></>} footnote="Terms apply." />,
     );
     expect(cardLayout(getByTestId('auth'))).toMatchObject({

@@ -56,7 +56,7 @@ function ReadTheme() {
   return null;
 }
 
-function mount(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
+function mount(ui: React.ReactElement | null, mode: 'light' | 'dark' = 'light') {
   act(() => {
     root.render(
       <BloomThemeProvider mode={mode} colorPreset="teal">
@@ -131,9 +131,9 @@ describe('resolvePlayVisibility', () => {
 
 describe('resolveCoverTint', () => {
   it('keeps light text at 4.5:1 over both gradient stops, for dark, bright and pale colours', () => {
-    mount(<></>);
+    mount(null);
     for (const mode of ['light', 'dark'] as const) {
-      mount(<></>, mode);
+      mount(null, mode);
       for (const color of [
         '#7c3aed',
         '#e0a800',
@@ -151,14 +151,14 @@ describe('resolveCoverTint', () => {
   });
 
   it('falls back to neutral without a colour or with one that does not parse', () => {
-    mount(<></>);
+    mount(null);
     const neutral = resolveCoverTint(theme);
     expect(resolveCoverTint(theme, 'not-a-colour')).toEqual(neutral);
     expect(contrastRatio(neutral.top, neutral.text)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
   });
 
   it('keeps a colour that already clears the bar exactly as it was given', () => {
-    mount(<></>);
+    mount(null);
     const tint = resolveCoverTint(theme, '#7c3aed');
     expect(normalise(tint.top)).toBe(normalise('#7c3aed'));
   });
@@ -169,13 +169,13 @@ describe('resolveCoverTint', () => {
    * a mid-slate — ten times lighter than it went in.
    */
   it('leaves a near-black colour alone instead of lightening it', () => {
-    mount(<></>);
+    mount(null);
     const tint = resolveCoverTint(theme, '#101820');
     expect(normalise(tint.top)).toBe(normalise('#101820'));
   });
 
   it('keeps the hue of a vivid colour it has to darken', () => {
-    mount(<></>);
+    mount(null);
     const tint = resolveCoverTint(theme, '#1db98a');
     const rgb = parseRgba(tint.top)!;
     // Scaling keeps the channels' ratio: green stays the largest, red the smallest.

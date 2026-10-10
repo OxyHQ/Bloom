@@ -82,48 +82,46 @@ function CollectionHeaderComponent({
             testID={testID ? `${testID}-cover` : undefined}
           >
             {canEdit ? (
-              <>
-                {IS_WEB && coverHovered ? (
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      borderRadius: 6,
-                      backgroundColor: 'rgba(0, 0, 0, 0.55)',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                    }}
-                  >
-                    <RiPencilLine width={40} height={40} fill="#ffffff" />
-                    <Text variant="body-semibold" style={{ color: '#ffffff' }}>
-                      {editLabel}
-                    </Text>
-                  </View>
-                ) : (
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: 'absolute',
-                      right: 8,
-                      bottom: 8,
-                      width: 32,
-                      height: 32,
-                      borderRadius: borderRadius.full,
-                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    testID={testID ? `${testID}-edit-badge` : undefined}
-                  >
-                    <RiPencilLine width={16} height={16} fill="#ffffff" />
-                  </View>
-                )}
-              </>
+              IS_WEB && coverHovered ? (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: 6,
+                    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <RiPencilLine width={40} height={40} fill="#ffffff" />
+                  <Text variant="body-semibold" style={{ color: '#ffffff' }}>
+                    {editLabel}
+                  </Text>
+                </View>
+              ) : (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: 'absolute',
+                    right: 8,
+                    bottom: 8,
+                    width: 32,
+                    height: 32,
+                    borderRadius: borderRadius.full,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  testID={testID ? `${testID}-edit-badge` : undefined}
+                >
+                  <RiPencilLine width={16} height={16} fill="#ffffff" />
+                </View>
+              )
             ) : null}
           </Cover>
         );

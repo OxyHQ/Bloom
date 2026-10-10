@@ -427,14 +427,12 @@ describe('typing in the promo field reaches the app', () => {
     function Harness() {
       const [value, setValue] = useState('');
       return (
-        <>
-          <CartPromoField
-            value={value}
-            onChangeText={setValue}
-            onApply={() => undefined}
-            testID="p"
-          />
-        </>
+        <CartPromoField
+          value={value}
+          onChangeText={setValue}
+          onApply={() => undefined}
+          testID="p"
+        />
       );
     }
     mount(<Harness />);

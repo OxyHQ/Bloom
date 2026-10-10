@@ -37,6 +37,7 @@ describe('Pre (code card)', () => {
   it('still renders non-string children as monospace text', () => {
     const { getByText } = renderWithTheme(
       <Pre>
+        {/* biome-ignore lint/complexity/noUselessFragments: the fragment is the non-string child under test */}
         <>{'nested'}</>
       </Pre>,
     );

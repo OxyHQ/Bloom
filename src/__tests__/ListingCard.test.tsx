@@ -82,7 +82,7 @@ function ReadTheme() {
   return null;
 }
 
-function mount(ui: React.ReactElement, mode: 'light' | 'dark' = 'light'): HTMLElement {
+function mount(ui: React.ReactElement | null, mode: 'light' | 'dark' = 'light'): HTMLElement {
   act(() => {
     root.render(
       <BloomThemeProvider mode={mode} colorPreset="teal">
@@ -178,7 +178,7 @@ describe('pure helpers', () => {
   });
 
   it.each(['light', 'dark'] as const)('paint reads the ramps (%s)', (mode) => {
-    mount(<></>, mode);
+    mount(null, mode);
     const paint = resolveListingCardPaint(theme);
     const { neutral } = resolveButtonRamps(theme);
     expect(paint.onMedia).toBe(neutral[50]);

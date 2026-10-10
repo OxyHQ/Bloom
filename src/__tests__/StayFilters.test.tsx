@@ -136,6 +136,7 @@ describe('FilterSection', () => {
   it('is a named group with a heading, 32 above and below, and a hairline unless divider={false}', () => {
     mount(
       <FilterSection title="Price range" description="Nightly prices" testID="s">
+        {/* biome-ignore lint/complexity/noUselessFragments: present-but-empty children keep the section's content slot; null drops it */}
         <></>
       </FilterSection>,
     );

@@ -754,6 +754,7 @@ describe('native text hosts for composed button children', () => {
       <Button iconOnly={iconOnly} accessibilityLabel="Save changes">
         Save
         <View testID="badge" />
+        {/* biome-ignore lint/complexity/noUselessFragments: the nested fragment is the composed child under test */}
         <>
           {3}
           <View testID="nested" />

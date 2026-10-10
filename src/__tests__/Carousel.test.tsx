@@ -46,7 +46,7 @@ function gallery(props: Partial<React.ComponentProps<typeof Carousel>> = {}, cou
     <Carousel accessibilityLabel="Gallery" testID="carousel" {...props}>
       {Array.from({ length: count }, (_, i) => (
         <CarouselItem key={i} testID={`slide-${i}`}>
-          <></>
+          {null}
         </CarouselItem>
       ))}
     </Carousel>
@@ -224,7 +224,7 @@ describe('Carousel', () => {
       <Carousel accessibilityLabel="Peek" align="center">
         {[0, 1, 2].map((i) => (
           <CarouselItem key={i} testID={`slide-${i}`} width={300}>
-            <></>
+            {null}
           </CarouselItem>
         ))}
       </Carousel>,
@@ -262,7 +262,7 @@ describe('Carousel', () => {
       <Carousel accessibilityLabel="Inset" inset={12} gap={12}>
         {[0, 1, 2].map((i) => (
           <CarouselItem key={i} testID={`slide-${i}`} width={172}>
-            <></>
+            {null}
           </CarouselItem>
         ))}
       </Carousel>,
@@ -290,7 +290,7 @@ describe('Carousel', () => {
       <Carousel accessibilityLabel="Narrow" inset={12} gap={12}>
         {[0, 1, 2, 3, 4].map((i) => (
           <CarouselItem key={i} testID={`slide-${i}`} width={172}>
-            <></>
+            {null}
           </CarouselItem>
         ))}
       </Carousel>,
@@ -336,7 +336,7 @@ describe('Carousel', () => {
         <Carousel accessibilityLabel="Narrow" inset={12} gap={12} {...props}>
           {[0, 1, 2, 3, 4].map((i) => (
             <CarouselItem key={i} testID={`slide-${i}`} width={172}>
-              <></>
+              {null}
             </CarouselItem>
           ))}
         </Carousel>,
@@ -418,7 +418,7 @@ describe('Carousel RTL scrolling', () => {
         >
           {[0, 1, 2, 3, 4].map((i) => (
             <CarouselItem key={i} testID={`slide-${i}`} width={172}>
-              <></>
+              {null}
             </CarouselItem>
           ))}
         </Carousel>,
@@ -625,7 +625,7 @@ describe('controlled Carousel', () => {
         >
           {[0, 1, 2, 3, 4].map((i) => (
             <CarouselItem key={i} testID={`slide-${i}`} width={172}>
-              <></>
+              {null}
             </CarouselItem>
           ))}
         </Carousel>,

@@ -324,6 +324,7 @@ describe('RadioChip', () => {
     const api = renderWithTheme(
       <RadioChip
         value="blue"
+        // biome-ignore lint/complexity/noUselessFragments: the prop needs a present-but-empty element; null would take the absent-prop branch under test
         labelContent={<></>}
         accessibilityLabel="Blue"
         onValueChange={onChange}

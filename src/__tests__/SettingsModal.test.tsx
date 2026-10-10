@@ -439,6 +439,7 @@ describe('SettingsCard rows', () => {
     const { getByTestId } = renderWithTheme(
       <SettingsCard testID="card">
         <SettingsRow testID="a" label="A" />
+        {/* biome-ignore lint/complexity/noUselessFragments: a row inside a fragment must still count as a row */}
         <>
           <SettingsRow testID="b" label="B" description="desc" />
         </>

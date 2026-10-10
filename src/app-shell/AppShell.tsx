@@ -96,11 +96,9 @@ export function createAppShell(
           label: item.label,
           onPress: () => onValueChange?.(item.value),
           icon: (props: { width?: number; height?: number; fill?: string }) =>
-            isValidElement<{ width?: number; height?: number; fill?: string }>(item.icon) ? (
-              cloneElement(item.icon, props)
-            ) : (
-              <>{item.icon}</>
-            ),
+            isValidElement<{ width?: number; height?: number; fill?: string }>(item.icon)
+              ? cloneElement(item.icon, props)
+              : item.icon,
         })),
       [navigation, onValueChange],
     );
@@ -267,11 +265,9 @@ export function createAppShell(
           label: item.label,
           onPress: () => onValueChange?.(item.value),
           icon: (iconProps: { width?: number; height?: number; fill?: string }) =>
-            isValidElement<{ width?: number; height?: number; fill?: string }>(item.icon) ? (
-              cloneElement(item.icon, iconProps)
-            ) : (
-              <>{item.icon}</>
-            ),
+            isValidElement<{ width?: number; height?: number; fill?: string }>(item.icon)
+              ? cloneElement(item.icon, iconProps)
+              : item.icon,
         })),
       [navigation, onValueChange],
     );

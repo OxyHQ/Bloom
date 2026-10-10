@@ -111,6 +111,7 @@ describe('type-scale line-height on native (Tailwind v4 → react-native-css)', 
     StyleCollection.inject(compile(css, {}).stylesheet());
 
     const screen = render(
+      // biome-ignore lint/complexity/noUselessFragments: render() takes one element, and the fragment is what wraps the list
       <>
         {candidates.map((className) => (
           <Text key={className} className={className} testID={className}>

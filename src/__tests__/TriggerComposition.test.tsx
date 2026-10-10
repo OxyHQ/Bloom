@@ -103,6 +103,7 @@ describe('asChild composition', () => {
       wrap(
         <Popover>
           <PopoverTrigger asChild label="Apps">
+            {/* biome-ignore lint/complexity/noUselessFragments: the fragment child is what the trigger must refuse */}
             <>
               <Pressable>
                 <Text>Open</Text>
