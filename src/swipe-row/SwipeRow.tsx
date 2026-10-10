@@ -35,8 +35,15 @@ import { SWIPE_ROW_MESSAGES } from './messages';
  * gesture springs straight back.
  *
  * The gesture activates only past a horizontal threshold and FAILS on vertical
- * travel, so a list scroll never turns into a swipe. Panes are laid UNDER the
- * row and grow with it rather than sliding in from outside: the row is what
+ * travel, so a vertical drag never turns into a swipe. That is NOT what keeps the
+ * list scrollable on web, though: RNGH stamps `touch-action: none` on the
+ * detector's view unless told otherwise, and rows tile the whole list, so a
+ * touch browser would be told never to scroll it — `failOffsetY` is a JS
+ * decision taken after the browser has already been told not to. The detector
+ * therefore passes `touchAction="pan-y"`: vertical panning stays the browser's
+ * (it cancels the pointer, and with it the pan, once it scrolls) and horizontal
+ * movement still reaches the pan. Native ignores the prop. Panes are laid UNDER
+ * the row and grow with it rather than sliding in from outside: the row is what
  * moves, and the action underneath is revealed, not pushed.
  *
  * It owns the gesture and almost nothing else. It draws no row and knows no
@@ -235,7 +242,10 @@ export function SwipeRow({
           {pane(right, 'right')}
         </Animated.View>
       ) : null}
-      <GestureDetector gesture={pan}>
+      {/* `pan-y` is load-bearing on touch web — see the doc comment above.
+          Without it RNGH's default `none` makes the list unscrollable by touch
+          wherever a row is under the finger, which is everywhere. */}
+      <GestureDetector gesture={pan} touchAction="pan-y">
         <Animated.View
           style={[
             { backgroundColor: rowFill },

@@ -27,6 +27,20 @@
  *    it runs beside two cases that DO move through the identical path.
  *  - `springs-back` — released under the commit fraction, the row returns to 0.
  *    Measured after the snap, so it also proves the snap runs at all.
+ *  - `touch-action` — the row's detector view computes `touch-action: pan-y`.
+ *    gesture-handler writes `none` there by default, and rows tile the list.
+ *  - `touch-scroll` — the bug the mouse cases above CANNOT see: a mouse never
+ *    consults `touch-action`. A real touch drag (`page.touchscreen`, i.e. CDP
+ *    `Input.dispatchTouchEvent`, which goes through the browser's own
+ *    touch-action and gesture pipeline) that STARTS ON A ROW must scroll the
+ *    list. (`Input.synthesizeScrollGesture` with `gestureSourceType: 'touch'`
+ *    scrolls nothing at all in headless Chrome, even off the rows — measured —
+ *    so it cannot be the probe.) Its NEGATIVE control repeats the identical
+ *    gesture after forcing every row's detector view back to `none` and must
+ *    NOT move it — so "it scrolled" is a property of `pan-y`, not of the probe.
+ *  - `touch-swipe` — the other half of `pan-y`: a horizontal TOUCH drag still
+ *    reaches the pan and opens the row (the mouse cases cannot say this,
+ *    since `touch-action` does not apply to a mouse).
  *
  * Every case verifies its own precondition: the row must exist, have a real
  * box, and be what `elementFromPoint` returns at the coordinates about to be
@@ -112,10 +126,69 @@ async function drag(page, dx, dy) {
   return { during, after };
 }
 
-async function open(browser) {
+/**
+ * The row's detector view — the travelling layer, parent of the mail row. A
+ * string, because it runs in the page: `page.evaluate` ships one function, not
+ * the functions it calls.
+ */
+const DETECTOR_VIEW = `(row) => {
+  const inner = document.querySelector('[data-testid="' + row + '-swipe"] [data-bloom-mail-row]');
+  return inner === null ? null : inner.parentElement;
+}`;
+
+/**
+ * A touch drag that starts on the row and pushes the content up. Returns how far
+ * the row moved up the viewport — whatever element turns out to be the scroller.
+ */
+async function touchScroll(page, forceNone) {
+  const box = await page.evaluate(
+    (row, forceNone, detectorViewSrc) => {
+      // eslint-disable-next-line no-new-func
+      const view = new Function(`return (${detectorViewSrc})`)();
+      if (forceNone) {
+        for (const el of document.querySelectorAll('[data-bloom-mail-row]')) {
+          el.parentElement.style.touchAction = 'none';
+        }
+      }
+      const el = document.querySelector(`[data-testid="${row}"]`);
+      if (el === null || view(row) === null) return null;
+      const r = el.getBoundingClientRect();
+      const x = r.x + r.width / 2;
+      const y = r.y + r.height / 2;
+      const hit = document.elementFromPoint(x, y);
+      return {
+        x,
+        y,
+        top: r.y,
+        onRow: hit !== null && (hit === el || el.contains(hit)),
+        touchAction: getComputedStyle(view(row)).touchAction,
+      };
+    },
+    ROW,
+    forceNone,
+    DETECTOR_VIEW,
+  );
+  if (box === null) return { error: 'no row' };
+  if (!box.onRow) return { error: 'the gesture would not start on the row' };
+  // Straight up, 180px, in 15 moves — a plain flick through the inbox.
+  await page.touchscreen.touchStart(box.x, box.y);
+  for (let i = 1; i <= 15; i++) {
+    await page.touchscreen.touchMove(box.x, box.y - i * 12);
+    await new Promise((resolve) => setTimeout(resolve, 16));
+  }
+  await page.touchscreen.touchEnd();
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  const top = await page.evaluate(
+    (row) => document.querySelector(`[data-testid="${row}"]`).getBoundingClientRect().y,
+    ROW,
+  );
+  return { touchAction: box.touchAction, moved: Math.round(box.top - top) };
+}
+
+async function open(browser, height = 844) {
   const page = await browser.newPage();
   // A COARSE pointer, which is the whole question `useSwipeAvailable()` asks.
-  await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+  await page.setViewport({ width: 390, height, isMobile: true, hasTouch: true });
   await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, { waitUntil: 'networkidle0' });
   await page.waitForSelector(`[data-testid="${ROW}"]`, { timeout: 20000 });
   await new Promise((resolve) => setTimeout(resolve, 400));
@@ -177,6 +250,58 @@ const record = (name, ok, detail) => results.push({ name, ok, detail });
       'springs-back',
       short.error === undefined && short.during < 0 && short.after === 0,
       JSON.stringify(short),
+    );
+    await page.close();
+
+    page = await open(browser);
+    const touchAction = await page.evaluate(
+      (row, detectorViewSrc) => {
+        // eslint-disable-next-line no-new-func
+        const view = new Function(`return (${detectorViewSrc})`)()(row);
+        return view === null ? null : getComputedStyle(view).touchAction;
+      },
+      ROW,
+      DETECTOR_VIEW,
+    );
+    record('touch-action', touchAction === 'pan-y', `computed touch-action=${touchAction}`);
+    await page.close();
+
+    // A short viewport, so the inbox is certainly taller than what shows.
+    page = await open(browser, 420);
+    const scrolled = await touchScroll(page, false);
+    record(
+      'touch-scroll',
+      scrolled.error === undefined && scrolled.touchAction === 'pan-y' && scrolled.moved > 40,
+      `a touch scroll starting on a row moves the list: ${JSON.stringify(scrolled)}`,
+    );
+    await page.close();
+
+    page = await open(browser);
+    const swiped = await page.evaluate((row) => {
+      const r = document.querySelector(`[data-testid="${row}"]`).getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }, ROW);
+    await page.touchscreen.touchStart(swiped.x, swiped.y);
+    for (let i = 1; i <= 14; i++) {
+      await page.touchscreen.touchMove(swiped.x - (120 * i) / 14, swiped.y);
+      await new Promise((resolve) => setTimeout(resolve, 16));
+    }
+    await new Promise((resolve) => setTimeout(resolve, 180));
+    const touchDuring = await travel(page);
+    await page.touchscreen.touchEnd();
+    record(
+      'touch-swipe',
+      touchDuring !== null && touchDuring < -40 && touchDuring >= -RIGHT_FULL,
+      `a horizontal touch drag still opens the row: during=${touchDuring}`,
+    );
+    await page.close();
+
+    page = await open(browser, 420);
+    const frozen = await touchScroll(page, true);
+    record(
+      'touch-scroll under none (negative control)',
+      frozen.error === undefined && frozen.touchAction === 'none' && frozen.moved === 0,
+      `the same gesture with the default restored does not: ${JSON.stringify(frozen)}`,
     );
     await page.close();
   } finally {
