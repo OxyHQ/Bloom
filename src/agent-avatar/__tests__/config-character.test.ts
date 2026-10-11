@@ -35,7 +35,11 @@ it('canonicalizes custom RGB while preserving all legacy recipe settings', () =>
     ...FOLD_CONFIG,
     lookAt: 'top-left' as const,
     foldShape: 'shield' as const,
-    character: { preset: 'blue_beret', bodyColor: '#Aa00Ff', selections: { accessory: 'bow' } },
+    character: {
+      preset: 'blue_beret',
+      bodyColor: '#Aa00Ff',
+      selections: { accessory: 'bow' },
+    },
   };
   expect(parsePreset({ name: 'Custom', config: input }).config).toEqual({
     ...input,
@@ -53,3 +57,62 @@ it.each(['#abc', '#12345678', 'abcdef', ' #abcdef', '#abcdef\n', '#gg0000', '', 
     );
   },
 );
+
+it('round-trips the named Clippo preset and independently reusable Clippo body and eyes', () => {
+  for (const character of [
+    { preset: 'clippo' },
+    { preset: 'blue_beret', selections: { shape: 'clippo', eyes: 'todd' } },
+    {
+      preset: 'blue_beret',
+      selections: { shape: 'todd', eyes: 'cyclops' },
+      eyeSpacing: 0.8,
+    },
+    {
+      preset: 'alfred',
+      selections: { shape: 'heart', eyes: 'clippo' },
+      bodyColor: '#999b9d',
+    },
+  ]) {
+    const saved = JSON.parse(
+      JSON.stringify({ name: 'Clippo', config: { ...FOLD_CONFIG, character } }),
+    );
+    expect(parsePreset(saved).config.character).toEqual(character);
+    expect(parsePreset(saved).config.foldShape).toBe(FOLD_CONFIG.foldShape);
+  }
+});
+
+it.each([0.5, 1, 1.5])('round-trips historical eye-spacing metadata %s', (eyeSpacing) => {
+  const character = { preset: 'lime_frog', eyeSpacing };
+  expect(
+    parsePreset({ name: 'Todd', config: { ...FOLD_CONFIG, character } }).config.character,
+  ).toEqual(character);
+});
+
+it.each([0.49, 1.51, NaN, Infinity, -Infinity, '1', null])(
+  'rejects invalid historical eye-spacing metadata %#',
+  (eyeSpacing) => {
+    expect(() => parseCharacterConfig({ preset: 'lime_frog', eyeSpacing })).toThrow(
+      'Invalid character eye spacing',
+    );
+  },
+);
+
+it('does not add historical eye-spacing metadata to new recipes', () => {
+  expect(parseCharacterConfig({ preset: 'lime_frog' })).not.toHaveProperty('eyeSpacing');
+});
+
+it('round-trips an independent single-eye style without introducing a body or discarding paired spacing', () => {
+  const character = {
+    preset: 'lime_frog',
+    selections: { eyes: 'cyclops', eyewear: 'monocle', accessory: 'crown' },
+    eyeSpacing: 1.28,
+  };
+  const saved = JSON.parse(
+    JSON.stringify({
+      name: 'Single eye',
+      config: { ...FOLD_CONFIG, character },
+    }),
+  );
+  expect(parsePreset(saved).config.character).toEqual(character);
+  expect(parsePreset(saved).config.character?.selections).not.toHaveProperty('shape');
+});

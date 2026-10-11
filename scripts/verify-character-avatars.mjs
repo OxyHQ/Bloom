@@ -45,6 +45,8 @@ try {
   await page.waitForFunction(() => window.ready || window.fail, {}, { timeout: 30000 });
   assert.equal(await page.evaluate(() => window.fail), undefined);
   await page.locator('canvas').first().click();
+  // Native input is delivered after an in-flight GPU batch completes.
+  await page.waitForFunction(() => control.diagnostics().lastReaction !== null);
   assert.equal(await page.evaluate(() => control.diagnostics().lastReaction), 0);
   await page.evaluate(() => {
     props = { ...props, workingKey: 1 };
@@ -101,7 +103,11 @@ try {
     };
     control.update(props);
   });
-  await page.waitForFunction(() => runtime.runtimeStats().active === 0, {}, { timeout: 30000 });
+  await page.waitForFunction(
+    () => !control.diagnostics().pending && runtime.runtimeStats().active === 0,
+    {},
+    { timeout: 30000 },
+  );
   await page.evaluate(() => {
     window.checkTransition = false;
   });
@@ -133,8 +139,8 @@ try {
   );
   assert.equal(
     await page.evaluate(() => control.diagnostics().lastReactionKind),
-    1,
-    'Customized presets fall back to the original Wave',
+    2,
+    'Customized bodies retain their original signature reaction',
   );
   // A cached duplicate must contain the final edited color, not a frame from
   // the debounce interval or the preceding appearance transition.
@@ -205,7 +211,12 @@ try {
     }
   });
   await page.waitForFunction(() => completed === 24 || failures.length, {}, { timeout: 60000 });
-  await page.waitForTimeout(100);
+  // The final portrait's resources are released after its GPU fence settles.
+  await page.waitForFunction(
+    () => runtime.runtimeStats().surface.contexts === 0 || failures.length,
+    {},
+    { timeout: 30000 },
+  );
   const portraits = await page.evaluate(() => ({
     completed,
     failures,

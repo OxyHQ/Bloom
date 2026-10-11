@@ -1,6 +1,8 @@
 // One budget per document, including separately imported/versioned adapters.
-// Renderers retain their painted 2D canvas when their GPU lease is released.
-const key = Symbol.for('bloom.character.render-budget');
+// Visible moving characters share one atlas/context; admission serializes cold
+// preparation, without suspending neighbours once their first frame is painted.
+// Offscreen/still characters retain their 2D image when their lease is released.
+const key = Symbol.for('bloom.character.shared-render-budget.v1');
 export function createRenderBudget(
   limit = 4,
   schedule = (fn) => requestAnimationFrame(fn),
@@ -148,4 +150,4 @@ export function createRenderBudget(
     }),
   };
 }
-export const renderBudget = (globalThis[key] ??= createRenderBudget());
+export const renderBudget = (globalThis[key] ??= createRenderBudget(Infinity));

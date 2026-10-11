@@ -45,7 +45,8 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   betaEyes: 'نمط العيون',
   eyewear: 'نظارات',
   accessory: 'إكسسوار',
-  characterOption: (_category, _id, title) => String(title),
+  characterOption: (category, id, title) =>
+    category === 'eyes' && id === 'cyclops' ? 'عين واحدة' : String(title),
   editor: 'محرر الوكيل',
   newBot: 'روبوت جديد',
   closeEditor: 'إغلاق محرر الوكيل',

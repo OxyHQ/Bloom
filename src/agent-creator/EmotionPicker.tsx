@@ -12,6 +12,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { EYES, type AvatarConfig } from '../agent-avatar';
 import { AgentFace } from '../agent-avatar/AgentFace';
+import { ClippoArtwork } from './ClippoArtwork';
+import { CyclopsArtwork } from './CyclopsArtwork';
 import { StyledImage, StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
@@ -24,6 +26,7 @@ export type EmotionChoice = {
   config: AvatarConfig;
   disabled?: boolean;
   thumbnail?: string;
+  artwork?: 'clippo' | 'cyclops';
 };
 function Emotion({
   config,
@@ -83,12 +86,20 @@ function Emotion({
             borderColor: active ? colors.icon : 'transparent',
           }}
         >
-          {choice.thumbnail ? (
+          {choice.artwork === 'cyclops' ? (
+            <CyclopsArtwork opacity={choice.disabled ? 0.35 : 1} />
+          ) : choice.artwork === 'clippo' ? (
+            <ClippoArtwork kind="eyes" opacity={choice.disabled ? 0.35 : 1} />
+          ) : choice.thumbnail ? (
             <StyledImage
               source={{ uri: choice.thumbnail }}
               resizeMode="contain"
               accessible={false}
-              style={{ width: 27, height: 27, opacity: choice.disabled ? 0.35 : 1 }}
+              style={{
+                width: 27,
+                height: 27,
+                opacity: choice.disabled ? 0.35 : 1,
+              }}
             />
           ) : (
             <AgentFace
@@ -128,7 +139,11 @@ export function EmotionPicker({
   const messages = useAgentCreatorMessages();
   const choices =
     choicesProp ??
-    EYES.map((eyes) => ({ id: eyes, label: messages.emotions[eyes], config: { ...config, eyes } }));
+    EYES.map((eyes) => ({
+      id: eyes,
+      label: messages.emotions[eyes],
+      config: { ...config, eyes },
+    }));
   const value = valueProp ?? config.eyes;
   const emit = (id: string) => (onSelect ? onSelect(id) : onChange(id as AvatarConfig['eyes']));
   const ref = useRef<View>(null);

@@ -2,6 +2,14 @@
 // the recovered engine, packaged meshes and native manifests remain intact.
 import createModule from './orbit-characters.mjs';
 import { decodeAppearance, encodeAppearance } from './appearance-codec.mjs';
+import { composePresetBody, composeCatalogParts } from './catalog-parts.mjs';
+import {
+  fitAuthoredEyeSpacing,
+  fitAuthoredHeadwear,
+  shapeFaceLayout,
+  authoredAssemblyRecords,
+} from './authored-parts.mjs';
+import { sha256 } from './sha256.mjs';
 import {
   deformLegacyAssembly,
   inspectLegacyAssembly,
@@ -10,13 +18,8 @@ import {
 const engine = createModule({
   locateFile: (file) => new URL(file, import.meta.url).href,
 });
-const digest = async (value) =>
-  Array.from(
-    new Uint8Array(
-      await crypto.subtle.digest('SHA-256', typeof value === 'string' ? new TextEncoder().encode(value) : value),
-    ),
-    (byte) => byte.toString(16).padStart(2, '0'),
-  ).join('');
+const digest = (value) =>
+  sha256(typeof value === 'string' ? new TextEncoder().encode(value) : value);
 // Cache only identities, never the large prepared buffers. The same face with
 // no accessories tells us exactly which meshes belong to eyes and eyewear.
 const faceIdentities = new Map();
@@ -25,8 +28,12 @@ async function accessoryTransforms(module, data, source) {
   // The editor selects one accessory. Preserve any unknown multi-accessory
   // state rather than guessing which of its pieces should move together.
   if (appearance.accessories.length !== 1) return {};
-  const translate = legacyAttachmentOffset(data.points, appearance.accessories[0]);
-  if (!translate || translate.every(value => Math.abs(value) < 1e-6)) return {};
+  const translate = legacyAttachmentOffset(
+    data.points,
+    appearance.accessories[0],
+  );
+  if (!translate || translate.every((value) => Math.abs(value) < 1e-6))
+    return {};
   appearance.accessories = [];
   appearance.accessoryColors = {};
   if (appearance.model) appearance.model.accessories = {};
@@ -34,22 +41,35 @@ async function accessoryTransforms(module, data, source) {
   const key = `${await digest(bytes)}:${data.quality}:${data.activities}`;
   let names = faceIdentities.get(key);
   if (!names) {
-    const base = module.orbitPrepareAssembly(bytes, data.quality, `${data.key}:attachment-base`, data.activities);
-    if (!base.bytes) throw new Error(base.error || 'Accessory reference preparation failed');
-    names = new Set(inspectLegacyAssembly(base.bytes).parts.slice(1).map(part => part.name));
+    const base = module.orbitPrepareAssembly(
+      bytes,
+      data.quality,
+      `${data.key}:attachment-base`,
+      data.activities,
+    );
+    if (!base.bytes)
+      throw new Error(base.error || 'Accessory reference preparation failed');
+    names = new Set(
+      inspectLegacyAssembly(base.bytes)
+        .parts.slice(1)
+        .map((part) => part.name),
+    );
     faceIdentities.set(key, names);
-    if (faceIdentities.size > 32) faceIdentities.delete(faceIdentities.keys().next().value);
+    if (faceIdentities.size > 32)
+      faceIdentities.delete(faceIdentities.keys().next().value);
   }
   // Do not move anything unless every original face mesh survives unchanged.
-  const current = new Set(source.parts.slice(1).map(part => part.name));
-  if ([...names].some(name => !current.has(name))) return {};
-  const attachments = source.parts.slice(1)
-    .filter(part => !names.has(part.name))
-    .map(part => ({ part: part.part, translate }));
+  const current = new Set(source.parts.slice(1).map((part) => part.name));
+  if ([...names].some((name) => !current.has(name))) return {};
+  const attachments = source.parts
+    .slice(1)
+    .filter((part) => !names.has(part.name))
+    .map((part) => ({ part: part.part, translate }));
   const attachmentKeys = {};
-  for (const attachment of attachments) attachmentKeys[attachment.part] = await digest(
-    JSON.stringify([source.parts[attachment.part].name, translate]),
-  );
+  for (const attachment of attachments)
+    attachmentKeys[attachment.part] = await digest(
+      JSON.stringify([source.parts[attachment.part].name, translate]),
+    );
   return { attachments, attachmentKeys };
 }
 let queue = Promise.resolve();
@@ -63,7 +83,12 @@ self.onmessage = ({ data }) => {
         data.key,
         data.activities,
       );
-      if (result.bytes) {
+      // Native preparation may return a view of temporary storage. Subsequent
+      // face/donor reference calls must never overwrite the target scene.
+      if (result.bytes) result.bytes = result.bytes.slice();
+      if (result.bytes && data.authoredParts?.bodyPreset)
+        result.bytes = await composePresetBody(module, result.bytes, data);
+      if (result.bytes && data.points) {
         const source = inspectLegacyAssembly(result.bytes);
         const geometryKey = await digest(
           JSON.stringify([source.body.name, data.points]),
@@ -71,8 +96,42 @@ self.onmessage = ({ data }) => {
         result.bytes = deformLegacyAssembly(result.bytes, {
           points: data.points,
           geometryKey,
-          ...await accessoryTransforms(module, data, source),
+          ...(await accessoryTransforms(module, data, source)),
         });
+      }
+      if (result.bytes && data.authoredParts)
+        data.faceLayout = shapeFaceLayout(
+          authoredAssemblyRecords(result.bytes),
+          data,
+          module,
+        );
+      if (
+        result.bytes &&
+        (data.authoredParts?.shape === 'clippo' ||
+          data.authoredParts?.eyes === 'clippo')
+      ) {
+        const { composeClippoAssembly } = await import('./clippo-geometry.mjs');
+        result.bytes = await composeClippoAssembly(module, result.bytes, data);
+      }
+      if (result.bytes && data.authoredParts) {
+        result.bytes = await composeCatalogParts(module, result.bytes, data, [
+          'eyes',
+          'accessory',
+        ]);
+        if (data.authoredParts.eyes === 'cyclops') {
+          const { composeCyclopsAssembly } =
+            await import('./cyclops-geometry.mjs');
+          result.bytes = await composeCyclopsAssembly(
+            module,
+            result.bytes,
+            data,
+          );
+        }
+        result.bytes = await composeCatalogParts(module, result.bytes, data, [
+          'eyewear',
+        ]);
+        result.bytes = await fitAuthoredEyeSpacing(result.bytes, data);
+        result.bytes = await fitAuthoredHeadwear(result.bytes, data);
       }
       self.postMessage(
         { id: data.id, ...result },
