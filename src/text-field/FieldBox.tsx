@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 import { styled } from 'react-native-css';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -6,6 +6,13 @@ import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 
 // The field owns two distinct boxes: layout and a non-layout inset ring. Keep
 // their defaults below caller classes without moving the ring into box sizing.
+//
+// Horizontal padding is declared ONCE, as the logical pair. A rule that also
+// declares `padding-left`/`padding-right` lets whichever comes later win for
+// the same side, and an unset variable falls back to `initial`: with both
+// families listed, `padding-inline-start: initial` silently zeroed every
+// field's `paddingHorizontal` (7.17.0 to 7.33.0). Physical defaults are folded
+// into the logical pair against this box's own `dir` (`horizontalPadding`).
 const properties = [
   'width',
   'minWidth',
@@ -13,8 +20,6 @@ const properties = [
   'flexDirection',
   'alignItems',
   'position',
-  'paddingLeft',
-  'paddingRight',
   'paddingInlineStart',
   'paddingInlineEnd',
   'borderRadius',
@@ -37,7 +42,24 @@ const fallbacks: Record<string, string> = {
   flex: '0 0 auto',
   flexDirection: 'column',
 };
-const CSS = `@layer base { [data-bloom-field-box] { display:flex; box-sizing:border-box; border-style:solid; border-width:0; min-width:0; ${properties.map((name) => `${cssName(name)}:var(--bloom-field-${cssName(name)},${fallbacks[name] ?? 'initial'});`).join('')} } }`;
+/**
+ * The resting horizontal padding as the logical pair. A logical value wins over
+ * a physical one for the same side, as `paddingStart` wins over `paddingLeft`
+ * in React Native; a physical value keeps its side by mapping through `dir`.
+ */
+export function horizontalPadding(
+  defaults: React.CSSProperties,
+  dir: 'ltr' | 'rtl',
+): Pick<React.CSSProperties, 'paddingInlineStart' | 'paddingInlineEnd'> {
+  const rtl = dir === 'rtl';
+  return {
+    paddingInlineStart:
+      defaults.paddingInlineStart ?? (rtl ? defaults.paddingRight : defaults.paddingLeft),
+    paddingInlineEnd:
+      defaults.paddingInlineEnd ?? (rtl ? defaults.paddingLeft : defaults.paddingRight),
+  };
+}
+export const FIELD_BOX_CSS = `@layer base { [data-bloom-field-box] { display:flex; box-sizing:border-box; border-style:solid; border-width:0; min-width:0; ${properties.map((name) => `${cssName(name)}:var(--bloom-field-${cssName(name)},${fallbacks[name] ?? 'initial'});`).join('')} } }`;
 interface FieldBoxProps {
   children?: React.ReactNode;
   className?: string;
@@ -64,14 +86,15 @@ function FieldBoxComponent({
   onMouseOut,
   testID,
 }: FieldBoxProps) {
-  useInteractiveWebCss('bloom-field-box', CSS);
+  useInteractiveWebCss('bloom-field-box', FIELD_BOX_CSS);
   if (Platform.OS !== 'web')
     return (
       <View pointerEvents={pointerEvents} testID={testID} style={[baseStyle, style, stateStyle]}>
         {children}
       </View>
     );
-  const defaults = resolveNativeWebStyle(baseStyle);
+  const resolved = resolveNativeWebStyle(baseStyle);
+  const defaults = { ...resolved, ...horizontalPadding(resolved, dir ?? 'ltr') };
   const variables: Record<string, unknown> = {};
   for (const name of properties) {
     const value = defaults[name as keyof React.CSSProperties];
