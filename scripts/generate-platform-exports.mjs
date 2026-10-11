@@ -116,6 +116,11 @@ const SUBPATHS = /** @type {const} */ ([
   ['./settings-modal', 'settings-modal/index.ts'],
   // Rows on a screen should not link the dialog, its pages or the calendar.
   ['./settings-modal/rows', 'settings-modal/rows.ts'],
+  // The dialog shell and its rows, without the Storage/Tools/Plan pages (and
+  // their Select, FileUpload, Pagination) or the fields' calendar.
+  ['./settings-modal/modal', 'settings-modal/modal.ts'],
+  // The committing text/date fields, without the dialog or its pages.
+  ['./settings-modal/fields', 'settings-modal/fields.ts'],
   ['./auth-card', 'auth-card/index.ts'],
   ['./agent-thinking', 'agent-thinking/index.ts'],
   ['./agent-log', 'agent-log/index.ts'],
