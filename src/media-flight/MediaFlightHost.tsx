@@ -49,10 +49,7 @@ export function MediaFlightHost<P extends VideoPlayerLike = VideoPlayerLike>({
 }: MediaFlightHostProps<P>) {
   // A callback ref rather than an effect: the anchor must be measurable the
   // moment the box is on screen, and a tap can come one frame later.
-  const setNode = useCallback(
-    (node: View | null) => registerAnchor(id, node),
-    [id],
-  );
+  const setNode = useCallback((node: View | null) => registerAnchor(id, node), [id]);
 
   return (
     <View ref={setNode} style={style} pointerEvents={pointerEvents}>

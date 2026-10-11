@@ -265,16 +265,16 @@ export function MenuRowShell({
         { backgroundColor: highlighted ? palette.rowHighlight : 'transparent' },
         style,
       ]}
-      testID={testID}>
-      {leading != null ? (
-        <StyledView className={ROW_LEADING_CLASS}>{leading}</StyledView>
-      ) : null}
+      testID={testID}
+    >
+      {leading != null ? <StyledView className={ROW_LEADING_CLASS}>{leading}</StyledView> : null}
       {title != null ? (
         <StyledText
           numberOfLines={1}
           className={ROW_TEXT_CLASS}
           // `text-body-medium`, in Inter.
-          style={[ROW_LABEL_TYPE, { color: labelColor }]}>
+          style={[ROW_LABEL_TYPE, { color: labelColor }]}
+        >
           {title}
         </StyledText>
       ) : (

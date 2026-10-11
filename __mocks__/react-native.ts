@@ -76,9 +76,7 @@ export const FlatList = React.forwardRef((props: Record<string, unknown>, ref: u
   const renderItem = props.renderItem as
     | ((info: { item: unknown; index: number }) => React.ReactNode)
     | undefined;
-  const keyExtractor = props.keyExtractor as
-    | ((item: unknown, index: number) => string)
-    | undefined;
+  const keyExtractor = props.keyExtractor as ((item: unknown, index: number) => string) | undefined;
   const renderSlot = (slot: unknown): React.ReactNode => {
     if (!slot) return null;
     if (React.isValidElement(slot)) return slot;
@@ -108,13 +106,23 @@ export const Animated = {
   View: createComponent('Animated.View'),
   Text: createComponent('Animated.Text'),
   ScrollView: React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
-    return React.createElement('Animated.ScrollView', { ref, ...props }, props.children as React.ReactNode);
+    return React.createElement(
+      'Animated.ScrollView',
+      { ref, ...props },
+      props.children as React.ReactNode,
+    );
   }),
   Value: class AnimatedValue {
     _value: number;
-    constructor(val: number) { this._value = val; }
-    setValue(val: number) { this._value = val; }
-    stopAnimation(cb?: (value: number) => void) { cb?.(this._value); }
+    constructor(val: number) {
+      this._value = val;
+    }
+    setValue(val: number) {
+      this._value = val;
+    }
+    stopAnimation(cb?: (value: number) => void) {
+      cb?.(this._value);
+    }
     interpolate(_config: Record<string, unknown>) {
       // Return a stand-in animated node; tests only assert structure, not
       // interpolated output.
@@ -159,7 +167,13 @@ export const Easing = {
 
 export const Dimensions = {
   get: (dim: 'window' | 'screen') => ({ ...dimensionValues[dim] }),
-  addEventListener: (_event: string, handler: (event: { window: { width: number; height: number }; screen: { width: number; height: number } }) => void) => {
+  addEventListener: (
+    _event: string,
+    handler: (event: {
+      window: { width: number; height: number };
+      screen: { width: number; height: number };
+    }) => void,
+  ) => {
     return {
       remove: jest.fn(),
     };
@@ -194,7 +208,11 @@ export const I18nManager = {
   allowRTL: (_allow: boolean) => {},
   forceRTL: (_force: boolean) => {},
   swapLeftAndRightInRTL: (_swap: boolean) => {},
-  getConstants: () => ({ isRTL: I18nManager.isRTL, doLeftAndRightSwapInRTL: true, localeIdentifier: 'en_US' }),
+  getConstants: () => ({
+    isRTL: I18nManager.isRTL,
+    doLeftAndRightSwapInRTL: true,
+    localeIdentifier: 'en_US',
+  }),
 };
 
 export const PixelRatio = {
@@ -226,7 +244,9 @@ export const useColorScheme = () => 'light' as const;
 export const Appearance = {
   getColorScheme: () => 'light' as 'light' | 'dark' | null,
   setColorScheme: (_scheme: 'light' | 'dark' | 'system') => {},
-  addChangeListener: (_listener: (preferences: { colorScheme: 'light' | 'dark' | null }) => void) => ({
+  addChangeListener: (
+    _listener: (preferences: { colorScheme: 'light' | 'dark' | null }) => void,
+  ) => ({
     remove: jest.fn(),
   }),
 };

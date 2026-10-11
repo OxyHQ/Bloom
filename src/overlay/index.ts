@@ -16,4 +16,10 @@ export {
   OverlayRoot,
   Backdrop,
 } from './Overlay';
-export type { OverlayRootProps, BackdropProps, OverlayInertBoundaryProps } from './types';
+export type {
+  OverlayRootProps,
+  BackdropProps,
+  BackdropAppearance,
+  BackdropGradient,
+  OverlayInertBoundaryProps,
+} from './types';

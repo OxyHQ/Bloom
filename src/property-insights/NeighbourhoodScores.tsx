@@ -52,7 +52,11 @@ function BarItem({ item, max, palette, valueText, display, testID }: ItemProps) 
     <View style={{ gap: 8 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         {Icon ? <Icon width={20} height={20} fill={palette.text} /> : null}
-        <Text variant="body-medium" numberOfLines={1} style={{ flex: 1, minWidth: 0, color: palette.text }}>
+        <Text
+          variant="body-medium"
+          numberOfLines={1}
+          style={{ flex: 1, minWidth: 0, color: palette.text }}
+        >
           {item.label}
         </Text>
         <Text
@@ -95,7 +99,10 @@ function RingItem({ item, max, palette, valueText, display, testID }: ItemProps)
         valueText={valueText}
         testID={testID ? `${testID}-ring` : undefined}
       >
-        <Text variant="body-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+        <Text
+          variant="body-semibold"
+          style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+        >
           {display}
         </Text>
       </MeterRing>
@@ -129,7 +136,11 @@ function NeighbourhoodScoresComponent({
   const { width, onLayout } = useContainerWidth();
   const max = maxProp > 0 ? maxProp : 10;
   const count =
-    columns === 'auto' ? (width != null && width >= NEIGHBOURHOOD_SCORES_TWO_COLUMN_MIN_WIDTH ? 2 : 1) : columns;
+    columns === 'auto'
+      ? width != null && width >= NEIGHBOURHOOD_SCORES_TWO_COLUMN_MIN_WIDTH
+        ? 2
+        : 1
+      : columns;
   const Item = variant === 'rings' ? RingItem : BarItem;
 
   return (

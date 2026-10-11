@@ -21,13 +21,24 @@ function graph(entry: string): Set<string> {
     files.add(file);
     const ast = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
     for (const statement of ast.statements) {
-      if ((!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) || !statement.moduleSpecifier || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+      if (
+        (!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) ||
+        !statement.moduleSpecifier ||
+        !ts.isStringLiteral(statement.moduleSpecifier)
+      )
+        continue;
       if (ts.isImportDeclaration(statement) && statement.importClause?.isTypeOnly) continue;
       if (ts.isExportDeclaration(statement) && statement.isTypeOnly) continue;
       const specifier = statement.moduleSpecifier.text;
       if (!specifier.startsWith('.')) continue;
       const base = resolve(dirname(file), specifier);
-      const target = [base, `${base}.ts`, `${base}.tsx`, join(base, 'index.ts'), join(base, 'index.tsx')].find((path) => existsSync(path) && statSync(path).isFile());
+      const target = [
+        base,
+        `${base}.ts`,
+        `${base}.tsx`,
+        join(base, 'index.ts'),
+        join(base, 'index.tsx'),
+      ].find((path) => existsSync(path) && statSync(path).isFile());
       if (target) walk(target);
     }
   }
@@ -43,7 +54,9 @@ function bytes(files: Iterable<string>): number {
 
 function report(name: string, lean: Set<string>, full: Set<string>) {
   const avoided = [...full].filter((file) => !lean.has(file));
-  console.info(`${name}: ${lean.size} modules / ${bytes(lean)} B; avoids ${avoided.length} modules / ${bytes(avoided)} B.`);
+  console.info(
+    `${name}: ${lean.size} modules / ${bytes(lean)} B; avoids ${avoided.length} modules / ${bytes(avoided)} B.`,
+  );
   return avoided;
 }
 
@@ -51,7 +64,15 @@ describe('lean entries stay lean', () => {
   it('settings-modal/rows links the rows, not the dialog or its pages', () => {
     const rows = graph('settings-modal/rows.ts');
     expect(rows.has('settings-modal/SettingsRows.tsx')).toBe(true);
-    for (const heavy of ['SettingsModal.tsx', 'SettingsStorage.tsx', 'SettingsTools.tsx', 'SettingsArt.tsx', 'SettingsFields.tsx', 'SettingsPlanCard.tsx', 'index.ts']) {
+    for (const heavy of [
+      'SettingsModal.tsx',
+      'SettingsStorage.tsx',
+      'SettingsTools.tsx',
+      'SettingsArt.tsx',
+      'SettingsFields.tsx',
+      'SettingsPlanCard.tsx',
+      'index.ts',
+    ]) {
       expect(rows.has(`settings-modal/${heavy}`)).toBe(false);
     }
     expect([...rows].filter((file) => file.startsWith('date-picker/'))).toEqual([]);
@@ -62,7 +83,17 @@ describe('lean entries stay lean', () => {
   it('chat-people/contact-row links one row, not the lists, form or story viewer', () => {
     const row = graph('chat-people/contact-row.ts');
     expect(row.has('chat-people/ContactRow.tsx')).toBe(true);
-    for (const heavy of ['ContactList.tsx', 'MemberList.tsx', 'MemberRow.tsx', 'NewGroupForm.tsx', 'StoryViewer.tsx', 'StoryProgressBars.tsx', 'ChannelPostCard.tsx', 'SelectedChipsRow.tsx', 'index.ts']) {
+    for (const heavy of [
+      'ContactList.tsx',
+      'MemberList.tsx',
+      'MemberRow.tsx',
+      'NewGroupForm.tsx',
+      'StoryViewer.tsx',
+      'StoryProgressBars.tsx',
+      'ChannelPostCard.tsx',
+      'SelectedChipsRow.tsx',
+      'index.ts',
+    ]) {
       expect(row.has(`chat-people/${heavy}`)).toBe(false);
     }
     report('chat-people/contact-row', row, graph('chat-people/index.ts'));

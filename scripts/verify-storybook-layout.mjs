@@ -30,7 +30,8 @@ function parseArgs(argv) {
     else if (arg === '--screenshots') options.screenshots = true;
     else if (arg === '--match') {
       const value = argv[++index];
-      if (!value || value.startsWith('--')) throw new Error('--match requires a story-id substring.');
+      if (!value || value.startsWith('--'))
+        throw new Error('--match requires a story-id substring.');
       options.match = value.toLowerCase();
     } else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -39,22 +40,27 @@ function parseArgs(argv) {
 
 /** Runs inside the page: inspect painted elements, not hidden error templates. */
 function readPageState() {
-  const visible = element => {
+  const visible = (element) => {
     if (!element) return false;
     const style = getComputedStyle(element);
     const rect = element.getBoundingClientRect();
-    return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    return (
+      style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0
+    );
   };
   const panel = [...document.querySelectorAll('.sb-errordisplay, #error-message')].find(visible);
   const root = document.querySelector('#storybook-root');
   const frame = root?.querySelector('[data-bloom-story-layout]');
   const content = frame ?? root;
-  const hasRenderedContent = !!content?.childElementCount && [...content.querySelectorAll('*')].some(visible);
+  const hasRenderedContent =
+    !!content?.childElementCount && [...content.querySelectorAll('*')].some(visible);
   const bodyError = document.body.classList.contains('sb-show-errordisplay');
   return {
     rendered: hasRenderedContent,
     nodeCount: root?.querySelectorAll('*').length ?? 0,
-    errorPanel: panel?.textContent?.trim().slice(0, 4000) || (bodyError ? 'Storybook displayed its error state.' : null),
+    errorPanel:
+      panel?.textContent?.trim().slice(0, 4000) ||
+      (bodyError ? 'Storybook displayed its error state.' : null),
     documentWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
     viewportWidth: innerWidth,
     documentHeight: document.documentElement.scrollHeight,
@@ -64,38 +70,56 @@ function readPageState() {
 
 async function auditStory(page, entry, base, outputDir, screenshots) {
   const pageErrors = [];
-  const recordError = error => pageErrors.push(error.message ?? String(error));
+  const recordError = (error) => pageErrors.push(error.message ?? String(error));
   page.on('pageerror', recordError);
-  const result = { id: entry.id, title: entry.title, name: entry.name, file: entry.importPath, pageErrors, failures: [] };
+  const result = {
+    id: entry.id,
+    title: entry.title,
+    name: entry.name,
+    file: entry.importPath,
+    pageErrors,
+    failures: [],
+  };
   try {
     const url = new URL('iframe.html', base);
     url.searchParams.set('id', entry.id);
     url.searchParams.set('viewMode', 'story');
     const response = await page.goto(url.href, { waitUntil: 'domcontentloaded' });
     if (!response?.ok()) throw new Error(`Preview response: ${response?.status() ?? 'missing'}`);
-    await page.waitForFunction(() => {
-      const root = document.querySelector('#storybook-root');
-      const content = root?.querySelector('[data-bloom-story-layout]') ?? root;
-      return !!content?.childElementCount || document.body.classList.contains('sb-show-errordisplay');
-    }, { timeout: 30_000, polling: 100 });
+    await page.waitForFunction(
+      () => {
+        const root = document.querySelector('#storybook-root');
+        const content = root?.querySelector('[data-bloom-story-layout]') ?? root;
+        return (
+          !!content?.childElementCount || document.body.classList.contains('sb-show-errordisplay')
+        );
+      },
+      { timeout: 30_000, polling: 100 },
+    );
     await page.evaluate(async () => {
       let timer;
       try {
         await Promise.race([
           document.fonts?.ready ?? Promise.resolve(),
-          new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Font readiness timed out.')), 15_000); }),
+          new Promise((_, reject) => {
+            timer = setTimeout(() => reject(new Error('Font readiness timed out.')), 15_000);
+          }),
         ]);
-      } finally { clearTimeout(timer); }
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      } finally {
+        clearTimeout(timer);
+      }
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       // Flush effects and measurements after font layout, without networkidle
       // (streaming demos and long-lived connections intentionally never idle).
-      await new Promise(resolve => setTimeout(resolve, 250));
+      await new Promise((resolve) => setTimeout(resolve, 250));
     });
     Object.assign(result, await page.evaluate(readPageState));
     if (!result.rendered) result.failures.push('No visible story content rendered.');
     if (result.errorPanel) result.failures.push('Storybook error panel.');
     if (result.documentWidth > result.viewportWidth + 1) {
-      result.failures.push(`Horizontal overflow: ${result.documentWidth}px document / ${result.viewportWidth}px viewport.`);
+      result.failures.push(
+        `Horizontal overflow: ${result.documentWidth}px document / ${result.viewportWidth}px viewport.`,
+      );
     }
     if (screenshots) {
       // Encode separators too: story metadata must never escape the run folder.
@@ -117,15 +141,25 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   const base = new URL(process.env.STORYBOOK_URL ?? 'http://localhost:6006');
   if (!base.pathname.endsWith('/')) base.pathname += '/';
-  const response = await fetch(new URL('index.json', base), { signal: AbortSignal.timeout(30_000) });
+  const response = await fetch(new URL('index.json', base), {
+    signal: AbortSignal.timeout(30_000),
+  });
   if (!response.ok) throw new Error(`Story index responded ${response.status}.`);
   const index = await response.json();
   const entries = Object.values(index.entries ?? {})
-    .filter(entry => entry.type === 'story' && typeof entry.id === 'string' && entry.id.toLowerCase().includes(options.match))
+    .filter(
+      (entry) =>
+        entry.type === 'story' &&
+        typeof entry.id === 'string' &&
+        entry.id.toLowerCase().includes(options.match),
+    )
     .sort((a, b) => a.id.localeCompare(b.id));
-  if (!entries.length) throw new Error(`No stories matched ${JSON.stringify(options.match)}; nothing was audited.`);
+  if (!entries.length)
+    throw new Error(`No stories matched ${JSON.stringify(options.match)}; nothing was audited.`);
 
-  const outputParent = path.resolve(process.env.OUTPUT_DIR ?? path.join(tmpdir(), 'bloom-storybook-layout'));
+  const outputParent = path.resolve(
+    process.env.OUTPUT_DIR ?? path.join(tmpdir(), 'bloom-storybook-layout'),
+  );
   await mkdir(outputParent, { recursive: true });
   const outputDir = await mkdtemp(path.join(outputParent, options.mobile ? 'mobile-' : 'desktop-'));
   const startedAt = new Date().toISOString();
@@ -135,10 +169,17 @@ async function main() {
   const imported = require(moduleName);
   const puppeteer = imported.default ?? imported;
   const browser = await puppeteer.launch({
-    ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' }),
+    ...(process.env.CHROME_PATH
+      ? { executablePath: process.env.CHROME_PATH }
+      : { channel: 'chrome' }),
     headless: true,
     protocolTimeout: 90_000,
-    args: ['--no-sandbox', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'],
+    args: [
+      '--no-sandbox',
+      '--disable-background-timer-throttling',
+      '--disable-renderer-backgrounding',
+      '--disable-backgrounding-occluded-windows',
+    ],
   });
   const results = [];
   let next = 0;
@@ -154,10 +195,14 @@ async function main() {
           const entry = entries[next++];
           const result = await auditStory(page, entry, base, outputDir, options.screenshots);
           results.push(result);
-          if (result.failures.length) console.error(`FAIL ${entry.id}: ${result.failures.join(' ')}`);
-          if (results.length % 25 === 0 || results.length === entries.length) console.log(`${results.length}/${entries.length} stories checked.`);
+          if (result.failures.length)
+            console.error(`FAIL ${entry.id}: ${result.failures.join(' ')}`);
+          if (results.length % 25 === 0 || results.length === entries.length)
+            console.log(`${results.length}/${entries.length} stories checked.`);
         }
-      } finally { await page.close(); }
+      } finally {
+        await page.close();
+      }
     });
     // Await every worker before closing the browser, including on worker failure.
     const settled = await Promise.allSettled(workers);
@@ -165,19 +210,32 @@ async function main() {
   } finally {
     await browser.close();
     results.sort((a, b) => a.id.localeCompare(b.id));
-    await writeFile(path.join(outputDir, 'results.json'), JSON.stringify({
-      startedAt, finishedAt: new Date().toISOString(), url: base.href, viewport,
-      match: options.match, expectedStories: entries.length, checkedStories: results.length,
-      failedStories: results.filter(result => result.failures.length).length, results,
-    }, null, 2));
+    await writeFile(
+      path.join(outputDir, 'results.json'),
+      JSON.stringify(
+        {
+          startedAt,
+          finishedAt: new Date().toISOString(),
+          url: base.href,
+          viewport,
+          match: options.match,
+          expectedStories: entries.length,
+          checkedStories: results.length,
+          failedStories: results.filter((result) => result.failures.length).length,
+          results,
+        },
+        null,
+        2,
+      ),
+    );
     console.log(`Report: ${path.join(outputDir, 'results.json')}`);
   }
-  const failures = results.filter(result => result.failures.length);
+  const failures = results.filter((result) => result.failures.length);
   console.log(`${results.length} stories checked; ${failures.length} failed.`);
   if (failures.length || results.length !== entries.length) process.exitCode = 1;
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error(error.message ?? error);
   process.exitCode = 1;
 });

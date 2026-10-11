@@ -85,7 +85,12 @@ function CodeLinesComponent({
                   {
                     'aria-hidden': true,
                     'data-bloom-code-number': '',
-                    style: { width: metrics.number, flexShrink: 0, textAlign: 'right', color: palette.lineNumber },
+                    style: {
+                      width: metrics.number,
+                      flexShrink: 0,
+                      textAlign: 'right',
+                      color: palette.lineNumber,
+                    },
                   },
                   String(index + 1),
                 )
@@ -99,7 +104,11 @@ function CodeLinesComponent({
               },
               line.length
                 ? line.map((token, t) =>
-                    createElement('span', { key: t, style: { color: tokenColor(token.kind, palette) } }, token.text),
+                    createElement(
+                      'span',
+                      { key: t, style: { color: tokenColor(token.kind, palette) } },
+                      token.text,
+                    ),
                   )
                 : '\n',
             ),
@@ -110,7 +119,15 @@ function CodeLinesComponent({
   }
 
   const rows = lines.map((line, index) => (
-    <View key={index} style={{ minHeight: metrics.lineHeight, flexDirection: 'row', alignItems: 'flex-start', gap: lineNumbers ? metrics.gap : 0 }}>
+    <View
+      key={index}
+      style={{
+        minHeight: metrics.lineHeight,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: lineNumbers ? metrics.gap : 0,
+      }}
+    >
       {lineNumbers ? (
         <RNText
           selectable={false}
@@ -122,7 +139,8 @@ function CodeLinesComponent({
             fontSize: metrics.fontSize,
             lineHeight: metrics.lineHeight,
             color: palette.lineNumber,
-          }}>
+          }}
+        >
           {String(index + 1)}
         </RNText>
       ) : null}
@@ -133,7 +151,8 @@ function CodeLinesComponent({
           fontSize: metrics.fontSize,
           lineHeight: metrics.lineHeight,
           color: palette.plain,
-        }}>
+        }}
+      >
         {line.length === 0
           ? ' '
           : line.length === 1 && line[0]!.kind === 'plain'
@@ -155,7 +174,13 @@ function CodeLinesComponent({
     );
   }
   return (
-    <ScrollView horizontal testID={testID} {...dataHook('bloomCodeScroll')} style={{ flexGrow: 0 }} contentContainerStyle={[{ flexDirection: 'column' }, style]}>
+    <ScrollView
+      horizontal
+      testID={testID}
+      {...dataHook('bloomCodeScroll')}
+      style={{ flexGrow: 0 }}
+      contentContainerStyle={[{ flexDirection: 'column' }, style]}
+    >
       {rows}
     </ScrollView>
   );

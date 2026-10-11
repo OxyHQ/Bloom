@@ -9,9 +9,21 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { AreaChartCard, ChartLegend, ChartStatTiles } from '../chart-cards';
 import type { AreaPoint, AreaRange, AreaSeries } from '../chart-cards';
-import { areaBandPath, niceTicks, plotBox, pointX, scaleY, stackSeries } from '../chart-cards/geometry';
+import {
+  areaBandPath,
+  niceTicks,
+  plotBox,
+  pointX,
+  scaleY,
+  stackSeries,
+} from '../chart-cards/geometry';
 import { chartHueTone, resolveTone } from '../chart-cards/palette';
-import { compactNumber, describeDeltaRatio, formatNumber, percentTick } from '../chart-cards/primitives/format';
+import {
+  compactNumber,
+  describeDeltaRatio,
+  formatNumber,
+  percentTick,
+} from '../chart-cards/primitives/format';
 import { resolveButtonRamps } from '../button/shared';
 import type { Theme } from '../theme/types';
 
@@ -43,7 +55,9 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 
 function layoutPlot(getByTestId: (id: string) => unknown, id: string, width = 448, height = 189) {
   act(() => {
-    fireEvent(getByTestId(id) as never, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height } } });
+    fireEvent(getByTestId(id) as never, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width, height } },
+    });
   });
 }
 
@@ -70,7 +84,8 @@ describe('area chart geometry matches recharts', () => {
   it('draws a stacked band exactly as recharts: top curve, drop, base curve back', () => {
     const domain = [0, 13500] as const;
     const [, referral] = stackSeries([ORGANIC, REFERRAL, PAID]);
-    const pts = (values: number[]) => values.map((v, i) => ({ x: pointX(i, 12, box), y: scaleY(v, domain, box) }));
+    const pts = (values: number[]) =>
+      values.map((v, i) => ({ x: pointX(i, 12, box), y: scaleY(v, domain, box) }));
     expect(areaBandPath(pts(referral!.upper), pts(referral!.lower))).toBe(
       'M44,117.667C56.061,115.083,68.121,112.5,80.182,110.778C92.242,109.056,104.303,108.29,116.364,107.333C128.424,106.377,140.485,106.568,152.545,105.037C164.606,103.506,176.667,98.34,188.727,95.852C200.788,93.364,212.848,92.599,224.909,90.111C236.97,87.623,249.03,81.691,261.091,80.926C273.152,80.16,285.212,80.543,297.273,79.778C309.333,79.012,321.394,75.951,333.455,72.889C345.515,69.827,357.576,62.173,369.636,61.407C381.697,60.642,393.758,61.025,405.818,60.259C417.879,59.494,429.939,54.136,442,48.778' +
         'L442,87.815C429.939,92.407,417.879,97,405.818,97C393.758,97,381.697,94.704,369.636,94.704C357.576,94.704,345.515,98.148,333.455,100.444C321.394,102.741,309.333,108.481,297.273,108.481C285.212,108.481,273.152,106.185,261.091,106.185C249.03,106.185,236.97,108.864,224.909,110.778C212.848,112.691,200.788,115.37,188.727,117.667C176.667,119.963,164.606,124.556,152.545,124.556C140.485,124.556,128.424,122.259,116.364,122.259C104.303,122.259,92.242,125.321,80.182,126.852C68.121,128.383,56.061,129.914,44,131.444Z',
@@ -79,7 +94,8 @@ describe('area chart geometry matches recharts', () => {
 
   it('draws the sharp 100% band with straight segments', () => {
     const [, , paid] = stackSeries([ORGANIC, REFERRAL, PAID], 'expand');
-    const pts = (values: number[]) => values.map((v, i) => ({ x: pointX(i, 12, box), y: scaleY(v, [0, 1], box) }));
+    const pts = (values: number[]) =>
+      values.map((v, i) => ({ x: pointX(i, 12, box), y: scaleY(v, [0, 1], box) }));
     expect(areaBandPath(pts(paid!.upper), pts(paid!.lower), 'linear')).toBe(
       'M44,4L80.182,4L116.364,4L152.545,4L188.727,4L224.909,4L261.091,4L297.273,4L333.455,4L369.636,4L405.818,4L442,4' +
         'L442,37.033L405.818,36.706L369.636,32.317L333.455,36.632L297.273,36.069L261.091,30.463L224.909,35L188.727,33.632L152.545,28.911L116.364,34.446L80.182,26.143L44,32.182Z',
@@ -113,8 +129,14 @@ describe('chart series tones', () => {
   it('lets an explicit colour win, darkening it for the hover step', () => {
     const tones = [{ color: 'rgb(1 2 3)', activeColor: 'rgb(4 5 6)' }];
     expect(resolveTone(tones, 3)).toBe(tones[0]);
-    expect(resolveTone(tones, 0, 'rgb(200 100 50)')).toEqual({ color: 'rgb(200 100 50)', activeColor: 'rgb(164 82 41)' });
-    expect(resolveTone(tones, 0, 'rgb(200 100 50)', 'red')).toEqual({ color: 'rgb(200 100 50)', activeColor: 'red' });
+    expect(resolveTone(tones, 0, 'rgb(200 100 50)')).toEqual({
+      color: 'rgb(200 100 50)',
+      activeColor: 'rgb(164 82 41)',
+    });
+    expect(resolveTone(tones, 0, 'rgb(200 100 50)', 'red')).toEqual({
+      color: 'rgb(200 100 50)',
+      activeColor: 'red',
+    });
   });
 });
 
@@ -134,20 +156,31 @@ describe('AreaChartCard', () => {
 
   it('reads the stacked total, the delta chip and each series total in the legend', () => {
     const { getByTestId, getByText } = renderCard(
-      <AreaChartCard testID="area" data={DATA} series={SERIES} delta={0.082} range="Jan – Dec 2024" />,
+      <AreaChartCard
+        testID="area"
+        data={DATA}
+        series={SERIES}
+        delta={0.082}
+        range="Jan – Dec 2024"
+      />,
     );
     expect(getByTestId('area-headline').props.children).toBe('94,700');
     expect(getByText('+8.2%')).toBeTruthy();
     expect(getByText('Visitors')).toBeTruthy();
     expect(getByText('Jan – Dec 2024')).toBeTruthy();
-    for (const text of ['Organic', '50,500', 'Referral', '25,900', 'Paid', '18,300']) expect(getByText(text)).toBeTruthy();
+    for (const text of ['Organic', '50,500', 'Referral', '25,900', 'Paid', '18,300'])
+      expect(getByText(text)).toBeTruthy();
   });
 
   it('headlines the first series in overlap, and an explicit headline everywhere', () => {
-    const overlap = renderCard(<AreaChartCard testID="area" variant="overlap" data={DATA} series={SERIES} />);
+    const overlap = renderCard(
+      <AreaChartCard testID="area" variant="overlap" data={DATA} series={SERIES} />,
+    );
     expect(overlap.getByTestId('area-headline').props.children).toBe('50,500');
     overlap.unmount();
-    const fixed = renderCard(<AreaChartCard testID="area" data={DATA} series={SERIES} headline={1234} />);
+    const fixed = renderCard(
+      <AreaChartCard testID="area" data={DATA} series={SERIES} headline={1234} />,
+    );
     expect(fixed.getByTestId('area-headline').props.children).toBe('1,234');
   });
 
@@ -171,13 +204,22 @@ describe('AreaChartCard', () => {
     );
     layoutPlot(getByTestId, 'area-plot');
     for (const label of ['0', '4.5K', '9K', '13.5K']) expect(getByText(label)).toBeTruthy();
-    const all = UNSAFE_getAllByType('Line' as never) as unknown as { props: Record<string, unknown> }[];
+    const all = UNSAFE_getAllByType('Line' as never) as unknown as {
+      props: Record<string, unknown>;
+    }[];
     const grid = all.filter((l) => l.props.x1 === 44 && l.props.x2 === 442);
-    expect(grid.map((l) => l.props.y1)).toEqual([159, expect.closeTo(107.333, 3), expect.closeTo(55.667, 3), 4]);
+    expect(grid.map((l) => l.props.y1)).toEqual([
+      159,
+      expect.closeTo(107.333, 3),
+      expect.closeTo(55.667, 3),
+      4,
+    ]);
     expect(grid.every((l) => l.props.strokeDasharray === '4 4')).toBe(true);
     const cursor = all.find((l) => l.props.y1 === 4 && l.props.y2 === 159);
     expect(cursor?.props.x1).toBeCloseTo(261.091, 3);
-    const dots = UNSAFE_getAllByType('Circle' as never) as unknown as { props: Record<string, unknown> }[];
+    const dots = UNSAFE_getAllByType('Circle' as never) as unknown as {
+      props: Record<string, unknown>;
+    }[];
     expect(dots.map((d) => [d.props.r, Math.round(Number(d.props.cy) * 1000) / 1000])).toEqual([
       [4, 106.185],
       [4, 80.926],
@@ -196,12 +238,19 @@ describe('AreaChartCard', () => {
   it('tracks the month under the pointer, clears over the axes and on leave', () => {
     const onActiveIndexChange = jest.fn();
     const { getByTestId } = renderCard(
-      <AreaChartCard testID="area" data={DATA} series={SERIES} onActiveIndexChange={onActiveIndexChange} />,
+      <AreaChartCard
+        testID="area"
+        data={DATA}
+        series={SERIES}
+        onActiveIndexChange={onActiveIndexChange}
+      />,
     );
     layoutPlot(getByTestId, 'area-plot');
     const surface = getByTestId('area-plot-surface');
     expect(surface.props.role).toBe('img');
-    expect(surface.props.accessibilityLabel).toBe('Visitors stacked area chart: Organic, Referral, Paid');
+    expect(surface.props.accessibilityLabel).toBe(
+      'Visitors stacked area chart: Organic, Referral, Paid',
+    );
 
     act(() => {
       fireEvent(surface, 'pointerMove', { nativeEvent: { offsetX: 258, offsetY: 90 } });
@@ -232,7 +281,13 @@ describe('AreaChartCard', () => {
     ];
     const onRangeChange = jest.fn();
     const { getByTestId, getByText } = renderCard(
-      <AreaChartCard testID="area" series={SERIES} ranges={ranges} defaultRange="q" onRangeChange={onRangeChange} />,
+      <AreaChartCard
+        testID="area"
+        series={SERIES}
+        ranges={ranges}
+        defaultRange="q"
+        onRangeChange={onRangeChange}
+      />,
     );
     expect(getByText('Last quarter')).toBeTruthy();
     expect(getByText('-3.6%')).toBeTruthy();
@@ -248,15 +303,26 @@ describe('AreaChartCard', () => {
     expect(cardLayout(getByTestId('area')).height).toBeUndefined();
     expect(queryByTestId('area-legend')).toBeNull();
     const tile = resolvedStyle(getByTestId('area-tiles-tile-0').props.style);
-    expect(tile).toMatchObject({ borderRadius: 10, paddingTop: 8, paddingBottom: 8, paddingLeft: 10, paddingRight: 10 });
+    expect(tile).toMatchObject({
+      borderRadius: 10,
+      paddingTop: 8,
+      paddingBottom: 8,
+      paddingLeft: 10,
+      paddingRight: 10,
+    });
   });
 
   it('paints the dark card from its semantic surface', () => {
-    const { getByTestId } = renderCard(<AreaChartCard testID="area" data={DATA} series={SERIES} tiles />, 'dark');
+    const { getByTestId } = renderCard(
+      <AreaChartCard testID="area" data={DATA} series={SERIES} tiles />,
+      'dark',
+    );
     const theme = buildTheme('teal', 'dark');
     const palette = resolveChartCardPalette(theme);
     expect(cardFill(getByTestId('area'))).toBe(resolveSurfaceTint(theme.colors.card));
-    expect(resolvedStyle(getByTestId('area-tiles-tile-0').props.style).backgroundColor).toBe(palette.inner);
+    expect(resolvedStyle(getByTestId('area-tiles-tile-0').props.style).backgroundColor).toBe(
+      palette.inner,
+    );
   });
 });
 

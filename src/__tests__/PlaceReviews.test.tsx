@@ -121,7 +121,16 @@ describe('PlaceReviewCard', () => {
 
   it('the helpful toggle carries aria-pressed, its count in the name, and flips', () => {
     const onHelpfulChange = jest.fn();
-    mount(<PlaceReviewCard {...base} helpfulCount={12} helpful onHelpfulChange={onHelpfulChange} onReport={noop} testID="r" />);
+    mount(
+      <PlaceReviewCard
+        {...base}
+        helpfulCount={12}
+        helpful
+        onHelpfulChange={onHelpfulChange}
+        onReport={noop}
+        testID="r"
+      />,
+    );
     const toggle = byTestId('r-helpful');
     expect(toggle.getAttribute('aria-pressed')).toBe('true');
     expect(toggle.getAttribute('aria-label')).toBe('Helpful, 12');
@@ -154,14 +163,20 @@ describe('PlaceReviewSummary', () => {
     expect(byTestId('s-summary-score').getAttribute('aria-label')).toBe(
       'Rated 3.9 out of 5, Rated by past tenants, 46 reviews',
     );
-    expect(byTestId('s-summary-category-0-bar').getAttribute('aria-label')).toBe('Landlord responsiveness');
-    expect(byTestId('s-deposit').getAttribute('aria-label')).toBe('Deposit returned in 82% of tenancies');
+    expect(byTestId('s-summary-category-0-bar').getAttribute('aria-label')).toBe(
+      'Landlord responsiveness',
+    );
+    expect(byTestId('s-deposit').getAttribute('aria-label')).toBe(
+      'Deposit returned in 82% of tenancies',
+    );
     expect(byTestId('s-recommend').textContent).toBe('71% would recommend living here');
   });
 
   it('says "1 review" and omits stats that are not given', () => {
     mount(<PlaceReviewSummary rating={5} reviewCount={1} testID="s" />);
-    expect(byTestId('s-summary-score').getAttribute('aria-label')).toBe('Rated 5.0 out of 5, 1 review');
+    expect(byTestId('s-summary-score').getAttribute('aria-label')).toBe(
+      'Rated 5.0 out of 5, 1 review',
+    );
     expect(queryTestId('s-deposit')).toBeNull();
   });
 });
@@ -170,7 +185,14 @@ describe('WriteReviewPrompt', () => {
   it('names the building in the default copy, and wires start and dismiss', () => {
     const onStart = jest.fn();
     const onDismiss = jest.fn();
-    mount(<WriteReviewPrompt buildingTitle="Calle del Olmo 14" onStart={onStart} onDismiss={onDismiss} testID="w" />);
+    mount(
+      <WriteReviewPrompt
+        buildingTitle="Calle del Olmo 14"
+        onStart={onStart}
+        onDismiss={onDismiss}
+        testID="w"
+      />,
+    );
     expect(byTestId('w-title').getAttribute('role')).toBe('heading');
     expect(byTestId('w-title').textContent).toBe('Did you live here?');
     expect(byTestId('w-description').textContent).toBe(

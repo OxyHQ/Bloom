@@ -194,8 +194,7 @@ export const MENU_SUB_SCROLL_CLASS =
  * `min-width: auto` is what stops a long label from ever shrinking.
  */
 export const ROW_CLASS =
-  'relative flex-row items-center select-none ' +
-  'p-space-8 gap-space-8 min-w-0 rounded-[10px]';
+  'relative flex-row items-center select-none ' + 'p-space-8 gap-space-8 min-w-0 rounded-[10px]';
 
 /**
  * `cursor-pointer`, applied only while the row is ENABLED.
@@ -321,8 +320,7 @@ export const MENUBAR_CLASS =
   'flex-row items-center self-start h-10 gap-space-4 p-space-4 border rounded-[10px]';
 
 /** The trigger: `flex items-center rounded-md px-2 py-1.5`. */
-export const MENUBAR_TRIGGER_CLASS =
-  'items-center justify-center px-space-8 py-1.5 rounded-[6px]';
+export const MENUBAR_TRIGGER_CLASS = 'items-center justify-center px-space-8 py-1.5 rounded-[6px]';
 
 /**
  * Retired: the open trigger's wash is `MenuPalette.rowHighlight`, inline. Kept

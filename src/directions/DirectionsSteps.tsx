@@ -68,7 +68,11 @@ function DirectionsStepsComponent({
       {legs.map((leg, legIndex) => {
         const legId = testID ? `${testID}-leg-${legIndex}` : undefined;
         const LegIcon = DIRECTIONS_MODE_ICON[leg.mode ?? 'drive'];
-        const legName = [leg.title, leg.line ? describeTransitLine(leg.line, messages) : undefined, leg.meta]
+        const legName = [
+          leg.title,
+          leg.line ? describeTransitLine(leg.line, messages) : undefined,
+          leg.meta,
+        ]
           .filter((part): part is string => typeof part === 'string' && part !== '')
           .join(', ');
 

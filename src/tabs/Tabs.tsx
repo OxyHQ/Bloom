@@ -172,38 +172,84 @@ export interface TabsPaint {
  * Every colour a strip paints, per variant. Pure — takes the theme rather than
  * calling `useTheme()`, so it can be walked over presets and modes.
  */
-export function resolveTabsPaint(theme: Theme, variant: TabsVariant, surface = theme.colors.background): TabsPaint {
+export function resolveTabsPaint(
+  theme: Theme,
+  variant: TabsVariant,
+  surface = theme.colors.background,
+): TabsPaint {
   const c = theme.colors;
   const raised = surfaceFillOn(theme, surface);
   const hairline = hairlineOn(theme, surface);
   const count = {
     countSelectedBackground: c.primarySubtle,
     countSelectedForeground: c.primarySubtleForeground,
-    countIdleBackground: c.backgroundTertiary, countIdleForeground: c.text,
-    separator: hairline, underline: c.primary, ring: c.primary,
+    countIdleBackground: c.backgroundTertiary,
+    countIdleForeground: c.text,
+    separator: hairline,
+    underline: c.primary,
+    ring: c.primary,
   };
   switch (resolveVariant(variant)) {
     case 'underline':
-      return { ...count, thumb: 'transparent', hover: 'transparent',
-        selectedLabel: c.primarySubtleForeground, selectedIcon: c.primarySubtleForeground,
-        idleLabel: c.text, idleIcon: c.text };
+      return {
+        ...count,
+        thumb: 'transparent',
+        hover: 'transparent',
+        selectedLabel: c.primarySubtleForeground,
+        selectedIcon: c.primarySubtleForeground,
+        idleLabel: c.text,
+        idleIcon: c.text,
+      };
     case 'pill':
-      return { ...count, thumb: c.primarySubtle, hover: surfaceFillOn(theme, raised),
-        selectedLabel: c.primarySubtleForeground, selectedIcon: c.primarySubtleForeground,
-        idleLabel: c.textSecondary, idleIcon: c.textSecondary };
+      return {
+        ...count,
+        thumb: c.primarySubtle,
+        hover: surfaceFillOn(theme, raised),
+        selectedLabel: c.primarySubtleForeground,
+        selectedIcon: c.primarySubtleForeground,
+        idleLabel: c.textSecondary,
+        idleIcon: c.textSecondary,
+      };
     case 'filled':
     default:
-      return { ...count, thumb: raised, hover: surfaceFillOn(theme, raised),
-        selectedLabel: c.text, selectedIcon: c.text,
-        idleLabel: c.textSecondary, idleIcon: c.textSecondary };
+      return {
+        ...count,
+        thumb: raised,
+        hover: surfaceFillOn(theme, raised),
+        selectedLabel: c.text,
+        selectedIcon: c.text,
+        idleLabel: c.textSecondary,
+        idleIcon: c.textSecondary,
+      };
   }
 }
 
 /** Per-variant trigger geometry (`Tab` vs `PillTab`). */
 const GEOMETRY = {
-  underline: { paddingHorizontal: 10, paddingVertical: 8, gap: 10, labelGap: 6, icon: 16, radius: 4 },
-  pill: { paddingHorizontal: 8, paddingVertical: 5, gap: 4, labelGap: 4, icon: 20, radius: borderRadius.full },
-  filled: { paddingHorizontal: 8, paddingVertical: 5, gap: 4, labelGap: 4, icon: 20, radius: borderRadius.full },
+  underline: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 10,
+    labelGap: 6,
+    icon: 16,
+    radius: 4,
+  },
+  pill: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    gap: 4,
+    labelGap: 4,
+    icon: 20,
+    radius: borderRadius.full,
+  },
+  filled: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    gap: 4,
+    labelGap: 4,
+    icon: 20,
+    radius: borderRadius.full,
+  },
 } as const;
 
 /** The strip's gap between triggers (`gap-1`), both variants. */
@@ -594,10 +640,11 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // node, or the full-width row.
   useRovingTabIndex(
     () =>
-      (fullWidth
+      fullWidth
         ? (stripRef.current as unknown as Element | null)
-        : ((scrollRef.current as unknown as { getScrollableNode?: () => Element | null } | null)
-            ?.getScrollableNode?.() ?? null)),
+        : ((
+            scrollRef.current as unknown as { getScrollableNode?: () => Element | null } | null
+          )?.getScrollableNode?.() ?? null),
     TRIGGER,
     isSelectedTab,
     STRIP,
@@ -612,9 +659,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
         // Ordered by measured position, so "the neighbour" means the tab next
         // to it ON SCREEN. Deriving it from child order instead would be wrong
         // the moment a caller reorders or conditionally renders a trigger.
-        const ordered = Object.entries(triggerLayoutsRef.current).sort(
-          (a, b) => a[1].x - b[1].x,
-        );
+        const ordered = Object.entries(triggerLayoutsRef.current).sort((a, b) => a[1].x - b[1].x);
         const index = ordered.findIndex(([tabValue]) => tabValue === current);
         const from = ordered[index]?.[1];
         if (from === undefined) return null;
@@ -713,9 +758,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // so it is pulled down by the baseline's own width — read from the caller's
   // `style` too, so a strip that zeroes the border (a published consumer
   // does) does not get an underline hanging 1px below the strip.
-  const baselineWidth = isUnderline
-    ? (StyleSheet.flatten(style)?.borderBottomWidth ?? 1)
-    : 0;
+  const baselineWidth = isUnderline ? (StyleSheet.flatten(style)?.borderBottomWidth ?? 1) : 0;
 
   // Deps: every shared value the mapper READS is listed. On web WITHOUT the
   // react-native-worklets babel plugin — the production reality for Bloom's
@@ -847,10 +890,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
 
   // Registration IS the insertion/removal signal the strip acts on, so it must
   // outlive nothing: the cleanup drops both the measure hook and the geometry.
-  useEffect(
-    () => registerTrigger(value, measureSelf),
-    [registerTrigger, value, measureSelf],
-  );
+  useEffect(() => registerTrigger(value, measureSelf), [registerTrigger, value, measureSelf]);
 
   // FOCUS-DRIVEN path only. This covers programmatic navigation too — a deep
   // link, a browser Back, a back gesture — because nothing here asks HOW the
@@ -879,7 +919,11 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     () =>
       IS_WEB
         ? {
-            onKeyDown: (event: { key: string; currentTarget: unknown; preventDefault: () => void }) => {
+            onKeyDown: (event: {
+              key: string;
+              currentTarget: unknown;
+              preventDefault: () => void;
+            }) => {
               handleRovingKeyDown(event, {
                 selector: TRIGGER,
                 owner: STRIP,
@@ -945,12 +989,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
       <Pressable
         {...webDataSet({ bloomTabsTrigger: variant })}
         {...webKeyboard}
-        style={[
-          triggerStyle,
-          fullWidth && { flex: 1 },
-          disabled && { opacity: 0.5 },
-          style,
-        ]}
+        style={[triggerStyle, fullWidth && { flex: 1 }, disabled && { opacity: 0.5 }, style]}
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}

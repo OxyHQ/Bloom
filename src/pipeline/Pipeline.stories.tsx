@@ -86,7 +86,14 @@ const STAGES: PipelineStage[] = [
   { id: 'qualified', name: 'Qualified', count: 2, total: '€170,400', tone: 'info' },
   { id: 'proposal', name: 'Proposal', count: 2, total: '€1,304,900', tone: 'primary' },
   { id: 'negotiation', name: 'Negotiation', count: 1, total: '€318,500', tone: 'warning' },
-  { id: 'won', name: 'Closed won', count: 0, total: '€0', tone: 'success', emptyLabel: 'Nothing closed this month yet' },
+  {
+    id: 'won',
+    name: 'Closed won',
+    count: 0,
+    total: '€0',
+    tone: 'success',
+    emptyLabel: 'Nothing closed this month yet',
+  },
   { id: 'lost', name: 'Closed lost', count: 0, total: '€0', tone: 'error' },
 ];
 
@@ -193,7 +200,14 @@ export const Columns: Story = {
           emptyLabel="Nothing closed this month yet"
           testID="col-empty"
         />
-        <PipelineColumn name="Qualified" loading count={3} total="€170,400" width={288} testID="col-loading" />
+        <PipelineColumn
+          name="Qualified"
+          loading
+          count={3}
+          total="€170,400"
+          width={288}
+          testID="col-loading"
+        />
         <PipelineColumn
           name="Negotiation"
           count={12}
@@ -264,7 +278,11 @@ export const Cards: Story = {
           />
         </View>
         <View style={{ width: 288 }}>
-          <DealCard title="No amount, no owner, no signal" account="Unqualified inbound" testID="card-bare" />
+          <DealCard
+            title="No amount, no owner, no signal"
+            account="Unqualified inbound"
+            testID="card-bare"
+          />
         </View>
       </View>
     </Page>

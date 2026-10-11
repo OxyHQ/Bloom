@@ -148,9 +148,7 @@ describe('writePersistedTheme', () => {
         throw new Error('boom');
       },
     };
-    await expect(
-      writePersistedTheme('k', storage, { mode: 'dark' }),
-    ).resolves.toBeUndefined();
+    await expect(writePersistedTheme('k', storage, { mode: 'dark' })).resolves.toBeUndefined();
   });
 });
 
@@ -167,7 +165,8 @@ describe('webLocalStorage', () => {
       jest.isolateModules(() => {
         const { Platform } = require('react-native') as { Platform: { OS: string } };
         Platform.OS = 'web';
-        const { webLocalStorage } = require('../theme/persistence') as typeof import('../theme/persistence');
+        const { webLocalStorage } =
+          require('../theme/persistence') as typeof import('../theme/persistence');
         expect(webLocalStorage).toBeUndefined();
       });
     } finally {

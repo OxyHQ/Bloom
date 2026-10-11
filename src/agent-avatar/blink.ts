@@ -37,9 +37,7 @@ export function advanceBlink(state: BlinkState, seconds: number): number {
     state.blinking = false;
     const double = !state.second && random(state) < 0.12;
     state.second = double;
-    state.wait = double
-      ? 0.14 + random(state) * 0.12
-      : 2.1 + random(state) * 5.2;
+    state.wait = double ? 0.14 + random(state) * 0.12 : 2.1 + random(state) * 5.2;
     return 1;
   }
   // A quicker close and a soft reopen, with no hard frame at the seam.

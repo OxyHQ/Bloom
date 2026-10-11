@@ -13,7 +13,12 @@ import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiTimerLine } from '../icons/remix/RiTimerLine';
 import { useTheme } from '../theme/use-theme';
 import { PlayerIconButton } from './PlayerIconButton';
-import { parseSleepTimerKey, SLEEP_TIMER_MINUTES, sleepTimerKey, TRANSPORT_GEOMETRY } from './shared';
+import {
+  parseSleepTimerKey,
+  SLEEP_TIMER_MINUTES,
+  sleepTimerKey,
+  TRANSPORT_GEOMETRY,
+} from './shared';
 import type { SleepTimerMenuProps } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_PLAYER_MESSAGES, type MediaPlayerMessages } from './messages';

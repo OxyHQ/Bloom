@@ -44,11 +44,20 @@ export interface PolarSurfaceProps {
  * Fills its parent absolutely unless `style` says otherwise. testIDs:
  * `<testID>` on the measured box, `<testID>-surface` on the hit surface.
  */
-export function PolarSurface({ accessibilityLabel, onPointerAt, onPointerLeave, style, testID, children }: PolarSurfaceProps) {
+export function PolarSurface({
+  accessibilityLabel,
+  onPointerAt,
+  onPointerLeave,
+  style,
+  testID,
+  children,
+}: PolarSurfaceProps) {
   const [size, setSize] = useState<ChartSize | null>(null);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setSize((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
+    setSize((prev) =>
+      prev && prev.width === width && prev.height === height ? prev : { width, height },
+    );
   }, []);
 
   const at = (x: number, y: number) => {
@@ -63,8 +72,10 @@ export function PolarSurface({ accessibilityLabel, onPointerAt, onPointerLeave, 
           onStartShouldSetResponder: () => true,
           onMoveShouldSetResponder: () => true,
           onResponderTerminationRequest: () => false,
-          onResponderGrant: (e: GestureResponderEvent) => at(e.nativeEvent.locationX, e.nativeEvent.locationY),
-          onResponderMove: (e: GestureResponderEvent) => at(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderGrant: (e: GestureResponderEvent) =>
+            at(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderMove: (e: GestureResponderEvent) =>
+            at(e.nativeEvent.locationX, e.nativeEvent.locationY),
           onResponderRelease: () => onPointerLeave(),
           onResponderTerminate: () => onPointerLeave(),
         }),

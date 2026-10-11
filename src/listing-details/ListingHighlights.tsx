@@ -14,7 +14,12 @@ import type { ListingHighlightsProps } from './types';
  *   title        headline-semibold, text-primary
  *   description  body-regular, text-secondary, 2px under the title
  */
-function ListingHighlightsComponent({ items, iconSize = 28, style, testID }: ListingHighlightsProps) {
+function ListingHighlightsComponent({
+  items,
+  iconSize = 28,
+  style,
+  testID,
+}: ListingHighlightsProps) {
   const theme = useTheme();
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);
   return (

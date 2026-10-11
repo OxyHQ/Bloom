@@ -392,21 +392,50 @@ export const PointerTargets: Story = {
     const [starred, setStarred] = useState(false);
     const [checked, setChecked] = useState(false);
     const [archived, setArchived] = useState(0);
-    return <View style={{ width: 700, maxWidth: '100%', gap: 12 }}>
-      <Text testID="hit-opened">{String(opened)}</Text>
-      <Text testID="hit-archived">{String(archived)}</Text>
-      {(['compact', 'comfortable'] as const).map(density => <MailRow
-        key={density} density={density} testID={`hit-${density}`}
-        sender={{ name: 'Pointer Sender' }} subject="Click subject" snippet="Click preview"
-        time="09:41" hasAttachment threadCount={2}
-        starred={starred} onStarredChange={setStarred}
-        onPress={() => setOpened(n => n + 1)}
-      />)}
-      <MailRow actionsPlacement="inline" testID="hit-actions" sender={{ name: 'Action Sender' }} subject="Archive separately"
-        onPress={() => setOpened(n => n + 1)}
-        actions={[{ key: 'archive', label: 'Archive', icon: RiArchiveLine, onPress: () => setArchived(n => n + 1) }]} />
-      <MailRow testID="hit-selection" sender={{ name: 'Selected Sender' }} subject="Select separately"
-        checked={checked} onCheckedChange={setChecked} onPress={() => setOpened(n => n + 1)} />
-    </View>;
+    return (
+      <View style={{ width: 700, maxWidth: '100%', gap: 12 }}>
+        <Text testID="hit-opened">{String(opened)}</Text>
+        <Text testID="hit-archived">{String(archived)}</Text>
+        {(['compact', 'comfortable'] as const).map((density) => (
+          <MailRow
+            key={density}
+            density={density}
+            testID={`hit-${density}`}
+            sender={{ name: 'Pointer Sender' }}
+            subject="Click subject"
+            snippet="Click preview"
+            time="09:41"
+            hasAttachment
+            threadCount={2}
+            starred={starred}
+            onStarredChange={setStarred}
+            onPress={() => setOpened((n) => n + 1)}
+          />
+        ))}
+        <MailRow
+          actionsPlacement="inline"
+          testID="hit-actions"
+          sender={{ name: 'Action Sender' }}
+          subject="Archive separately"
+          onPress={() => setOpened((n) => n + 1)}
+          actions={[
+            {
+              key: 'archive',
+              label: 'Archive',
+              icon: RiArchiveLine,
+              onPress: () => setArchived((n) => n + 1),
+            },
+          ]}
+        />
+        <MailRow
+          testID="hit-selection"
+          sender={{ name: 'Selected Sender' }}
+          subject="Select separately"
+          checked={checked}
+          onCheckedChange={setChecked}
+          onPress={() => setOpened((n) => n + 1)}
+        />
+      </View>
+    );
   },
 };

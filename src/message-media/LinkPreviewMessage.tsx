@@ -6,11 +6,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MediaImage, MediaPressable } from './parts';
-import {
-  MESSAGE_MEDIA_RADIUS,
-  MESSAGE_MEDIA_WIDTH,
-  resolveMessageMediaPaint,
-} from './shared';
+import { MESSAGE_MEDIA_RADIUS, MESSAGE_MEDIA_WIDTH, resolveMessageMediaPaint } from './shared';
 import type { LinkPreviewMessageProps } from './types';
 
 /** `tracking-wide` at the site name's 12px. */

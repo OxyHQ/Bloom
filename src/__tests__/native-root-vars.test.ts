@@ -105,11 +105,9 @@ describe('applyNativeRootVars (native variant)', () => {
 
   it('guards when rootVariables is not callable (defensive, never throws)', () => {
     jest.isolateModules(() => {
-      jest.doMock(
-        'react-native-css/native-internal',
-        () => ({ rootVariables: undefined }),
-        { virtual: true },
-      );
+      jest.doMock('react-native-css/native-internal', () => ({ rootVariables: undefined }), {
+        virtual: true,
+      });
       const { applyNativeRootVars } = require('../theme/native-root-vars.native') as {
         applyNativeRootVars: (preset: string, mode: 'light' | 'dark') => void;
       };

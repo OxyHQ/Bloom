@@ -16,6 +16,8 @@ export { GlyphButton } from './GlyphButton';
 export type {
   ButtonProps,
   ButtonSize,
+  ButtonFocusEvent,
+  ButtonHoverEvent,
   ButtonIconComponent,
   ButtonLinkTone,
   ButtonUnderline,

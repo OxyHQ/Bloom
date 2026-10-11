@@ -25,7 +25,9 @@ export function CoverImage({
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setBox((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
+    setBox((prev) =>
+      prev && prev.width === width && prev.height === height ? prev : { width, height },
+    );
   }, []);
   const onLoad = useCallback((event: NativeSyntheticEvent<ImageLoadEventData>) => {
     const s = event.nativeEvent?.source;
@@ -37,11 +39,20 @@ export function CoverImage({
     const scale = Math.max(box.width / natural.width, box.height / natural.height);
     const width = natural.width * scale;
     const height = natural.height * scale;
-    return { width, height, left: (box.width - width) * position.x, top: (box.height - height) * position.y };
+    return {
+      width,
+      height,
+      left: (box.width - width) * position.x,
+      top: (box.height - height) * position.y,
+    };
   }, [box, natural, position.x, position.y]);
 
   return (
-    <View style={StyleSheet.absoluteFill} onLayout={onLayout} testID={testID ? `${testID}-frame` : undefined}>
+    <View
+      style={StyleSheet.absoluteFill}
+      onLayout={onLayout}
+      testID={testID ? `${testID}-frame` : undefined}
+    >
       <Image
         testID={testID}
         source={resolved}
@@ -51,7 +62,13 @@ export function CoverImage({
         resizeMode="cover"
         style={
           frame
-            ? { position: 'absolute', left: frame.left, top: frame.top, width: frame.width, height: frame.height }
+            ? {
+                position: 'absolute',
+                left: frame.left,
+                top: frame.top,
+                width: frame.width,
+                height: frame.height,
+              }
             : StyleSheet.absoluteFill
         }
       />

@@ -13,7 +13,13 @@ jest.mock('react-native-svg', () => {
     C.displayName = name;
     return C;
   };
-  return { ...actual, __esModule: true, default: actual.Svg, Filter: stub('Filter'), FeGaussianBlur: stub('FeGaussianBlur') };
+  return {
+    ...actual,
+    __esModule: true,
+    default: actual.Svg,
+    Filter: stub('Filter'),
+    FeGaussianBlur: stub('FeGaussianBlur'),
+  };
 });
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual('../../__mocks__/react-native-reanimated');
@@ -86,8 +92,13 @@ describe('composerLoaderGeometry', () => {
   });
 
   it('drops layers for bloom 0 and bloomOnly', () => {
-    expect(composerLoaderGeometry({ ...BASE, bloom: 0 }).strokes.map((s) => s.key)).toEqual(['glow-0', 'line-0']);
-    expect(composerLoaderGeometry({ ...BASE, bloomOnly: true }).strokes.map((s) => s.key)).toEqual(['bloom-0']);
+    expect(composerLoaderGeometry({ ...BASE, bloom: 0 }).strokes.map((s) => s.key)).toEqual([
+      'glow-0',
+      'line-0',
+    ]);
+    expect(composerLoaderGeometry({ ...BASE, bloomOnly: true }).strokes.map((s) => s.key)).toEqual([
+      'bloom-0',
+    ]);
   });
 
   it('stacks 14 shorter centred copies per layer when tapering, sharing the opacity', () => {
@@ -135,9 +146,7 @@ describe('dashOffsetAt (the CSS animation, as a function of time)', () => {
 
 describe('gradientMidColor', () => {
   it('blends the two middle stops, never washing to white', () => {
-    expect(gradientMidColor('rgb(0, 100, 200)', 'rgb(100, 200, 0)')).toBe(
-      'rgb(50,150,100)',
-    );
+    expect(gradientMidColor('rgb(0, 100, 200)', 'rgb(100, 200, 0)')).toBe('rgb(50,150,100)');
   });
 });
 

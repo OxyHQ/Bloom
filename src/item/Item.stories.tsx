@@ -8,13 +8,13 @@ import { RiUserLine as PersonIcon } from '../icons/remix/RiUserLine';
 
 const meta: Meta<typeof Item> = {
   argTypes: {
-    "disabled": { control: 'boolean' },
-    "destructive": { control: 'boolean' },
-    "selected": { control: 'boolean' },
-    "active": { control: 'boolean' },
-    "density": { control: 'select', options: ["comfortable","compact"] },
-    "role": { control: 'select', options: ["checkbox","menuitem","radio","option","listitem"] },
-    "expanded": { control: 'boolean' }
+    disabled: { control: 'boolean' },
+    destructive: { control: 'boolean' },
+    selected: { control: 'boolean' },
+    active: { control: 'boolean' },
+    density: { control: 'select', options: ['comfortable', 'compact'] },
+    role: { control: 'select', options: ['checkbox', 'menuitem', 'radio', 'option', 'listitem'] },
+    expanded: { control: 'boolean' },
   },
   title: 'Base/Item',
   component: Item,
@@ -29,13 +29,26 @@ export const Basic: Story = {
 };
 
 export const Pressable: Story = {
-  args: { title: "Account", subtitle: "Email, password, sessions" },
-  parameters: { controls: { include: ["title","subtitle","disabled","destructive","selected","active","density","role","expanded"] } },
+  args: { title: 'Account', subtitle: 'Email, password, sessions' },
+  parameters: {
+    controls: {
+      include: [
+        'title',
+        'subtitle',
+        'disabled',
+        'destructive',
+        'selected',
+        'active',
+        'density',
+        'role',
+        'expanded',
+      ],
+    },
+  },
   render: (args) => (
     <View style={{ maxWidth: '100%', width: 360 }}>
-      <Item {...args}
-
-
+      <Item
+        {...args}
         leading={<PersonIcon size="md" />}
         trailing={<Badge content={3} tone="accent" />}
         onPress={() => {}}

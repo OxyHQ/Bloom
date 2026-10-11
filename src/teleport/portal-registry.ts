@@ -4,7 +4,7 @@
  *
  * Changed: nothing — byte-for-byte, only its path.
  */
-import { createContext, useContext } from "react";
+import { createContext, useContext } from 'react';
 
 type PortalRegistryContextType = {
   registerHost: (name: string, node: HTMLElement | null) => void;
@@ -13,15 +13,12 @@ type PortalRegistryContextType = {
   unregisterPendingPortal: (name: string, callback: () => void) => void;
 };
 
-export const PortalRegistryContext =
-  createContext<PortalRegistryContextType | null>(null);
+export const PortalRegistryContext = createContext<PortalRegistryContextType | null>(null);
 
 export function usePortalRegistryContext() {
   const context = useContext(PortalRegistryContext);
   if (!context) {
-    throw new Error(
-      "usePortalRegistryContext must be used within a PortalRegistryContext",
-    );
+    throw new Error('usePortalRegistryContext must be used within a PortalRegistryContext');
   }
   return context;
 }

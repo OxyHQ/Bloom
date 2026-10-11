@@ -66,13 +66,15 @@ export function PopoverTrigger({
         accessibilityRole: 'button',
         'aria-haspopup': POPOVER_TRIGGER_POPUP,
         'aria-expanded': popover.open,
-      }}>
+      }}
+    >
       {children}
     </TriggerSlot>
   );
 }
 
 export function PopoverContent({
+  material,
   children,
   label: labelProp,
   className,
@@ -86,12 +88,14 @@ export function PopoverContent({
 
   return (
     <SheetShell
+      material={material}
       control={control}
       label={label}
       onClose={onSheetClose}
       contentClassName={className}
       contentStyle={[styles.body, style]}
-      contentTestID={testID}>
+      contentTestID={testID}
+    >
       {children}
     </SheetShell>
   );

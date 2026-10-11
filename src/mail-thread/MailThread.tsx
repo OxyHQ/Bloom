@@ -2,13 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';
-import { Divider } from '../divider';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { MailLabelChips, MailStar } from '../mail-list/parts';
 import { mailStrings, resolveMailPaint, visibleLabels } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useSurfaceFill } from '../styles/surface-levels';
-
+import { space } from '../styles/tokens';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -55,6 +54,7 @@ export function MailThread({
   expandedIds,
   onExpandedIdsChange,
   collapseAfter = 4,
+  messageGap = space.md,
   quickReply,
   header,
   strings,
@@ -94,11 +94,7 @@ export function MailThread({
   const { shown, overflow } = visibleLabels(labels, 3);
 
   return (
-    <View
-      accessibilityLabel={accessibilityLabel ?? subject}
-      style={style}
-      testID={testID}
-    >
+    <View accessibilityLabel={accessibilityLabel ?? subject} style={style} testID={testID}>
       {header}
       {subject !== undefined || onStarredChange !== undefined ? (
         <View
@@ -143,8 +139,10 @@ export function MailThread({
           />
         </View>
       ) : null}
-      <Divider />
-      <View style={{ paddingTop: 4, paddingBottom: 4 }}>
+      <View
+        testID={testID ? `${testID}-messages` : undefined}
+        style={{ paddingTop: space.xs, paddingBottom: space.xs, gap: messageGap }}
+      >
         {entries.map((entry) =>
           entry.kind === 'message' ? (
             <MailMessage
@@ -166,12 +164,13 @@ export function MailThread({
             // carried its own focus ring, its own fill and its own hover.
             <Button
               key="earlier"
-
               size="sm"
               onPress={() => setRevealed(true)}
               accessibilityLabel={text.earlierMessages(entry.count)}
               style={{ alignSelf: 'flex-start', marginLeft: MAIL_BODY_INSET }}
-              testID={testID ? `${testID}-earlier` : undefined} tone="neutral" appearance="outline"
+              testID={testID ? `${testID}-earlier` : undefined}
+              tone="neutral"
+              appearance="outline"
             >
               {text.earlierMessages(entry.count)}
             </Button>

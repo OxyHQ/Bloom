@@ -47,7 +47,13 @@ function rowsOf(count: number, perRow: number): number[][] {
  * label `body-regular` text-secondary truncating. Value `body-medium`
  * text-primary tabular. While one tile is active the others fade to 40%.
  */
-export function ChartStatTiles({ items, activeIndex = null, onActiveChange, style, testID }: ChartStatTilesProps) {
+export function ChartStatTiles({
+  items,
+  activeIndex = null,
+  onActiveChange,
+  style,
+  testID,
+}: ChartStatTilesProps) {
   const palette = useChartCardPalette();
   const { width } = useWindowDimensions();
   const perRow = width >= BREAKPOINTS.sm ? 3 : 2;
@@ -56,7 +62,13 @@ export function ChartStatTiles({ items, activeIndex = null, onActiveChange, styl
   const hovering = activeIndex !== null;
 
   return (
-    <View testID={testID} style={[{ marginLeft: -8, marginRight: -8, marginBottom: -4, flexDirection: 'column', gap: 8 }, style]}>
+    <View
+      testID={testID}
+      style={[
+        { marginLeft: -8, marginRight: -8, marginBottom: -4, flexDirection: 'column', gap: 8 },
+        style,
+      ]}
+    >
       {rowsOf(items.length, perRow).map((row) => (
         <View key={row[0]} style={{ flexDirection: 'row', gap: 8 }}>
           {row.map((i) => {
@@ -85,8 +97,17 @@ export function ChartStatTiles({ items, activeIndex = null, onActiveChange, styl
                     opacity: hovering && !active ? 0.4 : 1,
                   },
                   fade,
-                ]}>
-                <View style={{ minWidth: 0, maxWidth: '100%', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                ]}
+              >
+                <View
+                  style={{
+                    minWidth: 0,
+                    maxWidth: '100%',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
                   {item.color ? (
                     <View
                       style={[
@@ -95,7 +116,8 @@ export function ChartStatTiles({ items, activeIndex = null, onActiveChange, styl
                           height: 12,
                           flexShrink: 0,
                           borderRadius: 4,
-                          backgroundColor: active && item.activeColor ? item.activeColor : item.color,
+                          backgroundColor:
+                            active && item.activeColor ? item.activeColor : item.color,
                         },
                         swatchEase,
                       ]}
@@ -104,11 +126,16 @@ export function ChartStatTiles({ items, activeIndex = null, onActiveChange, styl
                   <Text
                     variant="body-regular"
                     numberOfLines={1}
-                    style={{ flexShrink: 1, color: palette.textSecondary }}>
+                    style={{ flexShrink: 1, color: palette.textSecondary }}
+                  >
                     {item.label}
                   </Text>
                 </View>
-                <Text variant="body-medium" numberOfLines={1} style={[{ color: palette.text }, TABULAR]}>
+                <Text
+                  variant="body-medium"
+                  numberOfLines={1}
+                  style={[{ color: palette.text }, TABULAR]}
+                >
                   {item.value}
                 </Text>
               </View>

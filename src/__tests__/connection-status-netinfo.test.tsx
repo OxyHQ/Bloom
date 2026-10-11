@@ -78,8 +78,8 @@ function loadWithNetInfo(factory: () => unknown): Harness {
     // A plain `require`, NOT `jest.requireActual`: the latter bypasses the mock
     // registry for the whole dependency subtree, so the doMocks above would be
     // ignored and the suite would silently exercise the REAL netinfo.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { ConnectionStatusToasts } = require('../connection-status') as typeof import('../connection-status');
+    const { ConnectionStatusToasts } =
+      require('../connection-status') as typeof import('../connection-status');
 
     harness = { ConnectionStatusToasts, toast };
   });

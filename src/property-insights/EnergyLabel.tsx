@@ -13,7 +13,12 @@ import {
 } from './constants';
 import { useMessages } from '../locale/messages';
 import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
-import { ENERGY_CLASSES, resolveEnergyTones, resolveInsightPalette, type EnergyTone } from './shared';
+import {
+  ENERGY_CLASSES,
+  resolveEnergyTones,
+  resolveInsightPalette,
+  type EnergyTone,
+} from './shared';
 import type { EnergyLabelProps, EnergyMeasurement } from './types';
 
 /**
@@ -57,9 +62,15 @@ interface Column {
 
 function Tag({ tone, text, testID }: { tone: EnergyTone; text: string; testID?: string }) {
   return (
-    <View style={{ flexDirection: 'row', height: ENERGY_LABEL_ROW_HEIGHT, maxWidth: '100%' }} testID={testID}>
+    <View
+      style={{ flexDirection: 'row', height: ENERGY_LABEL_ROW_HEIGHT, maxWidth: '100%' }}
+      testID={testID}
+    >
       <Svg width={TIP} height={ENERGY_LABEL_ROW_HEIGHT}>
-        <Path d={`M${TIP} 0L0 ${ENERGY_LABEL_ROW_HEIGHT / 2}L${TIP} ${ENERGY_LABEL_ROW_HEIGHT}Z`} fill={tone.fill} />
+        <Path
+          d={`M${TIP} 0L0 ${ENERGY_LABEL_ROW_HEIGHT / 2}L${TIP} ${ENERGY_LABEL_ROW_HEIGHT}Z`}
+          fill={tone.fill}
+        />
       </Svg>
       <View
         testID={testID ? `${testID}-body` : undefined}
@@ -113,19 +124,28 @@ function EnergyLabelComponent({
   const columns: Column[] = pending
     ? []
     : [
-        ...(consumption ? [{ key: 'consumption' as const, label: consumptionLabel, rating: consumption }] : []),
-        ...(emissions ? [{ key: 'emissions' as const, label: emissionsLabel, rating: emissions }] : []),
+        ...(consumption
+          ? [{ key: 'consumption' as const, label: consumptionLabel, rating: consumption }]
+          : []),
+        ...(emissions
+          ? [{ key: 'emissions' as const, label: emissionsLabel, rating: emissions }]
+          : []),
       ];
   // One column always fits its value; two only once there is room for both.
-  const inline = columns.length < 2 || (width != null && width >= ENERGY_LABEL_INLINE_VALUES_MIN_WIDTH);
+  const inline =
+    columns.length < 2 || (width != null && width >= ENERGY_LABEL_INLINE_VALUES_MIN_WIDTH);
   const columnWidth = inline ? INLINE_COLUMN_WIDTH : COMPACT_COLUMN_WIDTH;
 
   const name =
     accessibilityLabel ??
     (pending
       ? `${messages.energyRating}: ${pendingLabel}`
-      : [messages.energyRating, ...columns.map((c) => `${c.label}: ${[c.rating.rating, c.rating.value].filter(Boolean).join(', ')}`)]
-          .join('. ') + '.');
+      : [
+          messages.energyRating,
+          ...columns.map(
+            (c) => `${c.label}: ${[c.rating.rating, c.rating.value].filter(Boolean).join(', ')}`,
+          ),
+        ].join('. ') + '.');
 
   const caption = (text: string, testIDSuffix: string) => (
     <Text
@@ -150,8 +170,16 @@ function EnergyLabelComponent({
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 16 }}>
         <View style={{ flex: 1, minWidth: 0 }}>{caption(bestLabel, 'best')}</View>
         {columns.map((column) => (
-          <View key={column.key} style={{ width: columnWidth, gap: 2 }} testID={testID ? `${testID}-${column.key}-header` : undefined}>
-            <Text variant="caption-1-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
+          <View
+            key={column.key}
+            style={{ width: columnWidth, gap: 2 }}
+            testID={testID ? `${testID}-${column.key}-header` : undefined}
+          >
+            <Text
+              variant="caption-1-medium"
+              numberOfLines={1}
+              style={{ color: palette.textSecondary }}
+            >
               {column.label}
             </Text>
           </View>
@@ -187,7 +215,11 @@ function EnergyLabelComponent({
                   {column.rating.rating === letter ? (
                     <Tag
                       tone={tone}
-                      text={inline && column.rating.value ? `${letter} · ${column.rating.value}` : letter}
+                      text={
+                        inline && column.rating.value
+                          ? `${letter} · ${column.rating.value}`
+                          : letter
+                      }
                       testID={testID ? `${testID}-${column.key}-tag` : undefined}
                     />
                   ) : null}
@@ -204,11 +236,17 @@ function EnergyLabelComponent({
         <View style={{ gap: 4, marginTop: 4 }} testID={testID ? `${testID}-values` : undefined}>
           {columns.map((column) =>
             column.rating.value ? (
-              <View key={column.key} style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 6 }}>
+              <View
+                key={column.key}
+                style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 6 }}
+              >
                 <Text variant="body-2-regular" style={{ color: palette.textSecondary }}>
                   {column.label}
                 </Text>
-                <Text variant="body-2-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+                <Text
+                  variant="body-2-semibold"
+                  style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+                >
                   {`${column.rating.rating} · ${column.rating.value}`}
                 </Text>
               </View>
@@ -218,7 +256,10 @@ function EnergyLabelComponent({
       ) : null}
 
       {pending ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }} testID={testID ? `${testID}-pending` : undefined}>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}
+          testID={testID ? `${testID}-pending` : undefined}
+        >
           <RiTimeLine width={18} height={18} fill={palette.textSecondary} />
           <Text variant="body-medium" style={{ color: palette.text }}>
             {pendingLabel}

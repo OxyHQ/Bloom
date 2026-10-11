@@ -50,7 +50,6 @@ export function BookingLink({
   return (
     <LinkButton
       {...handle}
-
       linkTone="text"
       underline="rest"
       size="sm"

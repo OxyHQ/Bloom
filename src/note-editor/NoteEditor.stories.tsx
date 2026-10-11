@@ -46,11 +46,37 @@ function useActions(): NoteEditorAction[] {
   const [list, setList] = useState(false);
   const [check, setCheck] = useState(false);
   return [
-    { key: 'bold', label: 'Bold', icon: RiBold, active: bold, onPress: () => setBold((v) => !v), alwaysVisible: true },
-    { key: 'italic', label: 'Italic', icon: RiItalic, active: italic, onPress: () => setItalic((v) => !v), alwaysVisible: true },
+    {
+      key: 'bold',
+      label: 'Bold',
+      icon: RiBold,
+      active: bold,
+      onPress: () => setBold((v) => !v),
+      alwaysVisible: true,
+    },
+    {
+      key: 'italic',
+      label: 'Italic',
+      icon: RiItalic,
+      active: italic,
+      onPress: () => setItalic((v) => !v),
+      alwaysVisible: true,
+    },
     { key: 'heading', label: 'Heading', icon: RiFontSize, onPress: () => {} },
-    { key: 'list', label: 'Bulleted list', icon: RiListUnordered, active: list, onPress: () => setList((v) => !v) },
-    { key: 'checklist', label: 'Checklist', icon: RiListCheck3, active: check, onPress: () => setCheck((v) => !v) },
+    {
+      key: 'list',
+      label: 'Bulleted list',
+      icon: RiListUnordered,
+      active: list,
+      onPress: () => setList((v) => !v),
+    },
+    {
+      key: 'checklist',
+      label: 'Checklist',
+      icon: RiListCheck3,
+      active: check,
+      onPress: () => setCheck((v) => !v),
+    },
     { key: 'quote', label: 'Quote', icon: RiDoubleQuotesL, onPress: () => {} },
     { key: 'code', label: 'Code', icon: RiCodeSLine, onPress: () => {} },
     { key: 'link', label: 'Link', icon: RiLinkM, onPress: () => {} },
@@ -121,7 +147,11 @@ export const ToolbarWidths: Story = {
       <Page width={860}>
         <View style={{ gap: 6 }}>
           <Text variant="caption-1-regular">the whole column</Text>
-          <NoteEditorToolbar actions={actions} accessibilityLabel="Formatting, full width" testID="toolbar-full" />
+          <NoteEditorToolbar
+            actions={actions}
+            accessibilityLabel="Formatting, full width"
+            testID="toolbar-full"
+          />
         </View>
         {[340, 280, 200, 120].map((width) => (
           <View key={width} style={{ gap: 6 }}>
@@ -138,7 +168,12 @@ export const ToolbarWidths: Story = {
         <View style={{ gap: 6 }}>
           <Text variant="caption-1-regular">small, disabled</Text>
           <View style={{ width: 360 }}>
-            <NoteEditorToolbar actions={actions} size="sm" disabled accessibilityLabel="Formatting, disabled" />
+            <NoteEditorToolbar
+              actions={actions}
+              size="sm"
+              disabled
+              accessibilityLabel="Formatting, disabled"
+            />
           </View>
         </View>
       </Page>
@@ -149,7 +184,9 @@ export const ToolbarWidths: Story = {
 /** 360px: the header wraps its readings, the toolbar collapses. */
 export const Phone: Story = {
   render: function PhoneStory() {
-    const [title, setTitle] = useState('A note title long enough to need the second line of the input');
+    const [title, setTitle] = useState(
+      'A note title long enough to need the second line of the input',
+    );
     const actions = useActions();
     return (
       <Page width={360}>

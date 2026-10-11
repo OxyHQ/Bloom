@@ -4,10 +4,7 @@ import { LocaleProvider as DirectionProvider } from '../../src/locale';
 import { ProjectBoard } from '../../src/project-board';
 import { ProjectBoardShell } from './ProjectBoardShell';
 import { PROJECT_MEMBERS } from './project-board-data';
-import {
-  PROJECT_BOARD_DEMO_COLUMNS,
-  ProjectBoardTemplate,
-} from './ProjectBoardTemplate';
+import { PROJECT_BOARD_DEMO_COLUMNS, ProjectBoardTemplate } from './ProjectBoardTemplate';
 
 const meta: Meta<typeof ProjectBoardTemplate> = {
   title: 'Templates/Project Board',

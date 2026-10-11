@@ -94,241 +94,247 @@ export function createCommand(Dialog: DialogComponent) {
     const searchRef = useRef<TextInput>(null);
     const [activeIndex, setActiveIndex] = useState(0);
 
-  const [query, setQuery] = useControllableState<string>({
-    value: queryProp,
-    defaultValue: '',
-    onChange: onQueryChange,
-  });
-
-  const filtered = useMemo(
-    () => items.filter((it) => filter(it, query)),
-    [items, filter, query],
-  );
-
-  // Build a flattened render list with group headers, and a parallel list of
-  // just the selectable items for keyboard navigation.
-  const { entries, selectable } = useMemo(() => {
-    const groups = new Map<string, CommandItem[]>();
-    const ungrouped: CommandItem[] = [];
-    for (const it of filtered) {
-      if (it.group) {
-        const arr = groups.get(it.group) ?? [];
-        arr.push(it);
-        groups.set(it.group, arr);
-      } else {
-        ungrouped.push(it);
-      }
-    }
-
-    const flat: FlatEntry[] = [];
-    const sel: CommandItem[] = [];
-    const pushItem = (it: CommandItem) => {
-      flat.push({ type: 'item', item: it, selectableIndex: sel.length });
-      sel.push(it);
-    };
-
-    for (const it of ungrouped) pushItem(it);
-    for (const [group, arr] of groups) {
-      flat.push({ type: 'header', group });
-      for (const it of arr) pushItem(it);
-    }
-    return { entries: flat, selectable: sel };
-  }, [filtered]);
-
-  // Keep the active index in range as the filtered set changes. Reset to the
-  // first selectable item whenever the query changes (derive, no effect).
-  const prevQueryRef = useRef(query);
-  if (prevQueryRef.current !== query) {
-    prevQueryRef.current = query;
-    if (activeIndex !== 0) setActiveIndex(0);
-  }
-
-  // Reset the active index and focus the search field on the closed→open
-  // transition, derived from the `visible` prop (no effect). Focusing happens
-  // on the next frame so the dialog has mounted.
-  const prevVisibleRef = useRef(visible);
-  if (prevVisibleRef.current !== visible) {
-    prevVisibleRef.current = visible;
-    if (visible && activeIndex !== 0) setActiveIndex(0);
-  }
-
-  const clampedActive = Math.min(activeIndex, Math.max(0, selectable.length - 1));
-
-  const select = useCallback(
-    (item: CommandItem | undefined) => {
-      if (!item || item.disabled) return;
-      item.onSelect();
-      setQuery('');
-      onClose();
-    },
-    [setQuery, onClose],
-  );
-
-  // Bridge the public *controlled* `visible` prop onto the Dialog's imperative
-  // open/close (mirrors `AlertDialog`). `control` is referentially stable
-  // (memoised on its id), so this effect only re-runs when `visible` actually
-  // flips. Opening straight from an effect on mount is Bloom's fresh-mount
-  // imperative-open pattern. When a consumer flips `visible` to `false` (their own
-  // close, or after a select), we imperatively `close()` so the exit animation
-  // still plays.
-  const closingFromPropRef = useRef(false);
-  useEffect(() => {
-    if (visible) {
-      control.open();
-      return;
-    }
-    closingFromPropRef.current = true;
-    control.close();
-  }, [visible, control]);
-
-  // The Dialog fires `onClose` after the exit animation settles (imperative
-  // mode). Forward ONLY user-initiated dismissals (backdrop / Escape) to the
-  // consumer — a consumer-initiated close (they flipped `visible` to `false`,
-  // e.g. `select` already called `onClose`) must not re-enter `onClose`,
-  // preserving the previous controlled semantics where a programmatic close
-  // does not fire `onClose` a second time.
-  const handleClose = useCallback(() => {
-    if (closingFromPropRef.current) {
-      closingFromPropRef.current = false;
-      return;
-    }
-    onClose();
-  }, [onClose]);
-
-  // Web keyboard navigation on the search input.
-  const webKeyHandler: Record<string, unknown> =
-    Platform.OS === 'web'
-      ? {
-          onKeyDown: (e: { key: string; preventDefault: () => void }) => {
-            if (selectable.length === 0) return;
-            switch (e.key) {
-              case 'ArrowDown':
-                e.preventDefault();
-                setActiveIndex((i) => (i + 1) % selectable.length);
-                break;
-              case 'ArrowUp':
-                e.preventDefault();
-                setActiveIndex(
-                  (i) => (i - 1 + selectable.length) % selectable.length,
-                );
-                break;
-              case 'Enter':
-                e.preventDefault();
-                select(selectable[clampedActive]);
-                break;
-              default:
-                break;
-            }
-          },
-        }
-      : {};
-
-  // Keep the keyboard-highlighted row inside the scroll viewport (web).
-  const listRef = useRef<ScrollView | null>(null);
-  useEffect(() => {
-    if (Platform.OS !== 'web') return undefined;
-    const frame = requestAnimationFrame(() => {
-      const node = (listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null })
-        ?.getScrollableNode?.();
-      const active = node?.querySelector<HTMLElement>('[aria-selected="true"]');
-      if (!node || !active) return;
-      const top = active.offsetTop;
-      const bottom = top + active.offsetHeight;
-      if (top < node.scrollTop) node.scrollTop = top;
-      else if (bottom > node.scrollTop + node.clientHeight) node.scrollTop = bottom - node.clientHeight;
+    const [query, setQuery] = useControllableState<string>({
+      value: queryProp,
+      defaultValue: '',
+      onChange: onQueryChange,
     });
-    return () => cancelAnimationFrame(frame);
-  }, [clampedActive]);
 
-  const palette = useMenuPalette();
+    const filtered = useMemo(() => items.filter((it) => filter(it, query)), [items, filter, query]);
 
-  return (
-    <Dialog
-      control={control}
-      onClose={handleClose}
-      placement="center"
-      dismissOnBackdrop
-      maxWidth={COMMAND_MAX_WIDTH}
-      // The palette owns its insets (full-bleed separator) and its own results
-      // ScrollView, so the Dialog adds neither padding nor a wrapping scroller.
-      contentPadding={0}
-      scrollable={false}
-      label={messages.palette}
-      // The palette is the floating menu surface: card/neutral-800 panel,
-      // 1px border, radius 16, `shadow-dropdown`, edge-to-edge content.
-      style={[
-        styles.panel,
-        {
-          backgroundColor: palette.surface,
-          borderColor: palette.border,
-          boxShadow: palette.shadow,
-        },
-        style,
-      ]}
-      testID={testID}>
-      <View {...webKeyHandler}>
-        <View style={styles.searchRow}>
-          <RiSearchLine width={20} height={20} fill={palette.textPlaceholder} />
-          <TextInput
-            ref={searchRef}
-            accessibilityLabel={placeholder}
-            placeholder={placeholder}
-            placeholderTextColor={palette.textPlaceholder}
-            value={query}
-            onChangeText={setQuery}
-            // Focus as the field mounts, on every platform: a focus requested on
-            // the closed→open flip runs before the Dialog has mounted the input.
-            autoFocus
-            autoCorrect={false}
-            autoCapitalize="none"
-            style={[styles.searchInput, SEARCH_WEB_RESET, { color: palette.text }]}
-          />
-          {query ? (
-            <CloseButton size="xs" accessibilityLabel={messages.clearSearch} onPress={() => setQuery('')} />
-          ) : null}
-        </View>
-        <View style={[styles.separator, { backgroundColor: palette.border }]} />
+    // Build a flattened render list with group headers, and a parallel list of
+    // just the selectable items for keyboard navigation.
+    const { entries, selectable } = useMemo(() => {
+      const groups = new Map<string, CommandItem[]>();
+      const ungrouped: CommandItem[] = [];
+      for (const it of filtered) {
+        if (it.group) {
+          const arr = groups.get(it.group) ?? [];
+          arr.push(it);
+          groups.set(it.group, arr);
+        } else {
+          ungrouped.push(it);
+        }
+      }
 
-        {selectable.length === 0 ? (
-          <View style={styles.empty}>
-            <Text palette={palette} variant="body-medium" color={palette.textSecondary}>
-              {emptyText}
-            </Text>
-          </View>
-        ) : (
-          <ScrollView
-            ref={listRef}
-            style={{ maxHeight: maxListHeight }}
-            contentContainerStyle={styles.list}
-            keyboardShouldPersistTaps="handled">
-            {entries.map((entry, i) => {
-              if (entry.type === 'header') {
-                return (
-                  <View key={`h-${entry.group}-${i}`} style={i === 0 ? styles.groupFirst : styles.group}>
-                    <Text palette={palette} variant="body-medium" color={palette.textSecondary}>
-                      {entry.group}
-                    </Text>
-                  </View>
-                );
+      const flat: FlatEntry[] = [];
+      const sel: CommandItem[] = [];
+      const pushItem = (it: CommandItem) => {
+        flat.push({ type: 'item', item: it, selectableIndex: sel.length });
+        sel.push(it);
+      };
+
+      for (const it of ungrouped) pushItem(it);
+      for (const [group, arr] of groups) {
+        flat.push({ type: 'header', group });
+        for (const it of arr) pushItem(it);
+      }
+      return { entries: flat, selectable: sel };
+    }, [filtered]);
+
+    // Keep the active index in range as the filtered set changes. Reset to the
+    // first selectable item whenever the query changes (derive, no effect).
+    const prevQueryRef = useRef(query);
+    if (prevQueryRef.current !== query) {
+      prevQueryRef.current = query;
+      if (activeIndex !== 0) setActiveIndex(0);
+    }
+
+    // Reset the active index and focus the search field on the closed→open
+    // transition, derived from the `visible` prop (no effect). Focusing happens
+    // on the next frame so the dialog has mounted.
+    const prevVisibleRef = useRef(visible);
+    if (prevVisibleRef.current !== visible) {
+      prevVisibleRef.current = visible;
+      if (visible && activeIndex !== 0) setActiveIndex(0);
+    }
+
+    const clampedActive = Math.min(activeIndex, Math.max(0, selectable.length - 1));
+
+    const select = useCallback(
+      (item: CommandItem | undefined) => {
+        if (!item || item.disabled) return;
+        item.onSelect();
+        setQuery('');
+        onClose();
+      },
+      [setQuery, onClose],
+    );
+
+    // Bridge the public *controlled* `visible` prop onto the Dialog's imperative
+    // open/close (mirrors `AlertDialog`). `control` is referentially stable
+    // (memoised on its id), so this effect only re-runs when `visible` actually
+    // flips. Opening straight from an effect on mount is Bloom's fresh-mount
+    // imperative-open pattern. When a consumer flips `visible` to `false` (their own
+    // close, or after a select), we imperatively `close()` so the exit animation
+    // still plays.
+    const closingFromPropRef = useRef(false);
+    useEffect(() => {
+      if (visible) {
+        control.open();
+        return;
+      }
+      closingFromPropRef.current = true;
+      control.close();
+    }, [visible, control]);
+
+    // The Dialog fires `onClose` after the exit animation settles (imperative
+    // mode). Forward ONLY user-initiated dismissals (backdrop / Escape) to the
+    // consumer — a consumer-initiated close (they flipped `visible` to `false`,
+    // e.g. `select` already called `onClose`) must not re-enter `onClose`,
+    // preserving the previous controlled semantics where a programmatic close
+    // does not fire `onClose` a second time.
+    const handleClose = useCallback(() => {
+      if (closingFromPropRef.current) {
+        closingFromPropRef.current = false;
+        return;
+      }
+      onClose();
+    }, [onClose]);
+
+    // Web keyboard navigation on the search input.
+    const webKeyHandler: Record<string, unknown> =
+      Platform.OS === 'web'
+        ? {
+            onKeyDown: (e: { key: string; preventDefault: () => void }) => {
+              if (selectable.length === 0) return;
+              switch (e.key) {
+                case 'ArrowDown':
+                  e.preventDefault();
+                  setActiveIndex((i) => (i + 1) % selectable.length);
+                  break;
+                case 'ArrowUp':
+                  e.preventDefault();
+                  setActiveIndex((i) => (i - 1 + selectable.length) % selectable.length);
+                  break;
+                case 'Enter':
+                  e.preventDefault();
+                  select(selectable[clampedActive]);
+                  break;
+                default:
+                  break;
               }
-              const item = entry.item;
-              if (!item) return null;
-              const index = entry.selectableIndex ?? 0;
-              return (
-                <CommandRow
-                  key={item.id}
-                  item={item}
-                  active={index === clampedActive}
-                  palette={palette}
-                  onHover={() => setActiveIndex(index)}
-                  onPress={() => select(item)}
-                />
-              );
-            })}
-          </ScrollView>
-        )}
-      </View>
-    </Dialog>
+            },
+          }
+        : {};
+
+    // Keep the keyboard-highlighted row inside the scroll viewport (web).
+    const listRef = useRef<ScrollView | null>(null);
+    useEffect(() => {
+      if (Platform.OS !== 'web') return undefined;
+      const frame = requestAnimationFrame(() => {
+        const node = (
+          listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null }
+        )?.getScrollableNode?.();
+        const active = node?.querySelector<HTMLElement>('[aria-selected="true"]');
+        if (!node || !active) return;
+        const top = active.offsetTop;
+        const bottom = top + active.offsetHeight;
+        if (top < node.scrollTop) node.scrollTop = top;
+        else if (bottom > node.scrollTop + node.clientHeight)
+          node.scrollTop = bottom - node.clientHeight;
+      });
+      return () => cancelAnimationFrame(frame);
+    }, [clampedActive]);
+
+    const palette = useMenuPalette();
+
+    return (
+      <Dialog
+        control={control}
+        onClose={handleClose}
+        placement="center"
+        dismissOnBackdrop
+        maxWidth={COMMAND_MAX_WIDTH}
+        // The palette owns its insets (full-bleed separator) and its own results
+        // ScrollView, so the Dialog adds neither padding nor a wrapping scroller.
+        contentPadding={0}
+        scrollable={false}
+        label={messages.palette}
+        // The palette is the floating menu surface: card/neutral-800 panel,
+        // 1px border, radius 16, `shadow-dropdown`, edge-to-edge content.
+        style={[
+          styles.panel,
+          {
+            backgroundColor: palette.surface,
+            borderColor: palette.border,
+            boxShadow: palette.shadow,
+          },
+          style,
+        ]}
+        testID={testID}
+      >
+        <View {...webKeyHandler}>
+          <View style={styles.searchRow}>
+            <RiSearchLine width={20} height={20} fill={palette.textPlaceholder} />
+            <TextInput
+              ref={searchRef}
+              accessibilityLabel={placeholder}
+              placeholder={placeholder}
+              placeholderTextColor={palette.textPlaceholder}
+              value={query}
+              onChangeText={setQuery}
+              // Focus as the field mounts, on every platform: a focus requested on
+              // the closed→open flip runs before the Dialog has mounted the input.
+              autoFocus
+              autoCorrect={false}
+              autoCapitalize="none"
+              style={[styles.searchInput, SEARCH_WEB_RESET, { color: palette.text }]}
+            />
+            {query ? (
+              <CloseButton
+                size="xs"
+                accessibilityLabel={messages.clearSearch}
+                onPress={() => setQuery('')}
+              />
+            ) : null}
+          </View>
+          <View style={[styles.separator, { backgroundColor: palette.border }]} />
+
+          {selectable.length === 0 ? (
+            <View style={styles.empty}>
+              <Text palette={palette} variant="body-medium" color={palette.textSecondary}>
+                {emptyText}
+              </Text>
+            </View>
+          ) : (
+            <ScrollView
+              ref={listRef}
+              style={{ maxHeight: maxListHeight }}
+              contentContainerStyle={styles.list}
+              keyboardShouldPersistTaps="handled"
+            >
+              {entries.map((entry, i) => {
+                if (entry.type === 'header') {
+                  return (
+                    <View
+                      key={`h-${entry.group}-${i}`}
+                      style={i === 0 ? styles.groupFirst : styles.group}
+                    >
+                      <Text palette={palette} variant="body-medium" color={palette.textSecondary}>
+                        {entry.group}
+                      </Text>
+                    </View>
+                  );
+                }
+                const item = entry.item;
+                if (!item) return null;
+                const index = entry.selectableIndex ?? 0;
+                return (
+                  <CommandRow
+                    key={item.id}
+                    item={item}
+                    active={index === clampedActive}
+                    palette={palette}
+                    onHover={() => setActiveIndex(index)}
+                    onPress={() => select(item)}
+                  />
+                );
+              })}
+            </ScrollView>
+          )}
+        </View>
+      </Dialog>
     );
   };
 
@@ -392,10 +398,15 @@ function CommandRow({
         styles.row,
         ROW_TRANSITION,
         { backgroundColor: highlighted ? palette.rowHighlight : 'transparent' },
-      ]}>
+      ]}
+    >
       {Icon ? (
         <View style={styles.rowIcon}>
-          <Icon width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={item.disabled ? palette.textDisabled : palette.textSecondary} />
+          <Icon
+            width={ROW_ICON_SIZE}
+            height={ROW_ICON_SIZE}
+            fill={item.disabled ? palette.textDisabled : palette.textSecondary}
+          />
         </View>
       ) : null}
       <View style={styles.rowText}>
@@ -403,7 +414,12 @@ function CommandRow({
           {item.label}
         </Text>
         {item.description ? (
-          <Text palette={palette} variant="body-2-regular" color={palette.textSecondary} numberOfLines={1}>
+          <Text
+            palette={palette}
+            variant="body-2-regular"
+            color={palette.textSecondary}
+            numberOfLines={1}
+          >
             {item.description}
           </Text>
         ) : null}

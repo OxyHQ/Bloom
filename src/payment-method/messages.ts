@@ -19,4 +19,11 @@ export interface PaymentMethodMessages {
   paymentMethods: string;
 }
 
-export const PAYMENT_METHOD_MESSAGES: MessageCatalog<PaymentMethodMessages> = defineMessages<PaymentMethodMessages>('PAYMENT_METHOD_MESSAGES', { states: { expired: 'Expired', declined: 'Declined' }, default: 'Default', add: 'Add a payment method', emptyTitle: 'No saved payment methods', paymentMethods: 'Payment methods' });
+export const PAYMENT_METHOD_MESSAGES: MessageCatalog<PaymentMethodMessages> =
+  defineMessages<PaymentMethodMessages>('PAYMENT_METHOD_MESSAGES', {
+    states: { expired: 'Expired', declined: 'Declined' },
+    default: 'Default',
+    add: 'Add a payment method',
+    emptyTitle: 'No saved payment methods',
+    paymentMethods: 'Payment methods',
+  });

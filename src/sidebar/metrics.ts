@@ -37,7 +37,12 @@ export interface SidebarMetrics {
 
 const COLLAPSED_PADDING_X = 7;
 
-function size(expanded: number, padding: number, icon: number, label: TypeScaleVariant): SidebarMetrics {
+function size(
+  expanded: number,
+  padding: number,
+  icon: number,
+  label: TypeScaleVariant,
+): SidebarMetrics {
   const square = icon + padding * 2;
   return {
     expanded,
@@ -70,6 +75,6 @@ export const SidebarSizeProvider = SizeContext.Provider;
 export function useSidebarMetrics(own?: SidebarSize): SidebarMetrics {
   const inherited = useContext(SizeContext);
   const canonical = own === 'small' ? 'sm' : own === 'medium' ? 'md' : own === 'large' ? 'lg' : own;
-  const {size} = useBloomAppearance({size: canonical}, {size: 'md', tone: 'neutral'});
+  const { size } = useBloomAppearance({ size: canonical }, { size: 'md', tone: 'neutral' });
   return SIDEBAR_METRICS[own ?? inherited ?? (size === 'xs' ? 'sm' : size)];
 }

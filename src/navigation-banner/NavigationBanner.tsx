@@ -113,7 +113,11 @@ function NavigationBannerComponent({
       testID={testID}
     >
       <View role="img" accessibilityLabel={name} testID={testID ? `${testID}-guidance` : undefined}>
-        <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <View
+          aria-hidden
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           <View
             style={{
               flexDirection: 'row',
@@ -182,11 +186,7 @@ function NavigationBannerComponent({
               }}
             >
               {ThenGlyph ? (
-                <ThenGlyph
-                  width={g.smallGlyph}
-                  height={g.smallGlyph}
-                  fill={paint.textSecondary}
-                />
+                <ThenGlyph width={g.smallGlyph} height={g.smallGlyph} fill={paint.textSecondary} />
               ) : null}
               <Text
                 variant="body-2-medium"

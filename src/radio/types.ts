@@ -1,6 +1,7 @@
-import type { BloomSize } from '../appearance';
+import type { ReactNode, ReactElement, RefObject } from 'react';
+import type { BloomAppearance, BloomSize } from '../appearance';
 import type { BloomTone } from '../appearance';
-import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { StyleProp, ViewStyle, TextStyle, View } from 'react-native';
 
 export type RadioSize = BloomSize;
 
@@ -21,6 +22,9 @@ export interface RadioProps<Value extends string = string> {
   onValueChange?: (value: Value) => void;
   /** Optional label text. */
   label?: string;
+  /** Decorative label layout, rendered in a View instead of Text. Supply
+   * `label` or `accessibilityLabel` for its accessible name. Do not nest controls. */
+  labelContent?: ReactNode;
   /** Optional description shown below the label. */
   description?: string;
   /** Size preset. */
@@ -29,6 +33,8 @@ export interface RadioProps<Value extends string = string> {
   disabled?: boolean;
   /** Colour of the checked indicator. Uses the theme primary by default. */
   tone?: BloomTone;
+  className?: string;
+  labelClassName?: string;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
@@ -40,13 +46,29 @@ export interface RadioProps<Value extends string = string> {
   testID?: string;
 }
 
+/** A pill-shaped radio with no separate indicator. */
+export interface RadioChipProps<Value extends string = string> extends RadioProps<Value> {
+  /** Paint of the selected option. Unselected chips retain a neutral outline. */
+  appearance?: BloomAppearance;
+}
+
 /** One option, as data, for {@link RadioGroupProps}. */
 export interface RadioOption<Value extends string = string> {
   value: Value;
   label?: string;
+  /** Decorative layout inside the radio; interactive siblings belong in renderOption. */
+  labelContent?: ReactNode;
+  accessibilityLabel?: string;
   description?: string;
   disabled?: boolean;
   testID?: string;
+}
+
+export interface RadioOptionState {
+  checked: boolean;
+  disabled: boolean;
+  /** The group's actual radio host, suitable for Collapsible.returnFocusRef. Do not replace it. */
+  controlRef: RefObject<View | null>;
 }
 
 export interface RadioGroupProps<Value extends string = string> {
@@ -66,6 +88,13 @@ export interface RadioGroupProps<Value extends string = string> {
   onValueChange?: (value: Value) => void;
   /** The options, in order. */
   options: ReadonlyArray<RadioOption<Value>>;
+  /** Wrap the owned control with sibling content. Render it once, unchanged;
+   * selection, accessible radio semantics and roving focus stay group-owned. */
+  renderOption?: (
+    option: Readonly<RadioOption<Value>>,
+    ownedControl: ReactElement,
+    state: Readonly<RadioOptionState>,
+  ) => ReactNode;
   /** Size preset, applied to every option. */
   size?: RadioSize;
   /** Disables every option. An option may also disable itself. */
@@ -74,12 +103,22 @@ export interface RadioGroupProps<Value extends string = string> {
   tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
+  /** Class recipe on the group layout; replaces its default layout. */
+  className?: string;
+  /** Class recipes for owned options and their built-in string labels. */
+  optionClassName?: string | ((state: Readonly<RadioOptionState>) => string | undefined);
+  optionLabelClassName?: string | ((state: Readonly<RadioOptionState>) => string | undefined);
+  /** Selected chip paint; used with variant="chip". Defaults to outline. */
+  appearance?: BloomAppearance;
+  /** Layout/style on each owned Radio, RadioCard or RadioChip. */
+  optionStyle?: StyleProp<ViewStyle>;
   /**
    * `default` renders each option as a `Radio` row; `card` as a `RadioCard`
    * (title + description left, the dot right, the whole
-   * card selectable). A card's title is the option's `label`.
+   * card selectable). `chip` renders a wrapping row of pill-shaped radios
+   * without an indicator. A card's title is the option's `label`.
    */
-  variant?: 'default' | 'card';
+  variant?: 'default' | 'card' | 'chip';
   testID?: string;
 }
 
@@ -92,12 +131,17 @@ export interface RadioCardProps<Value extends string = string> {
   onValueChange?: (value: Value) => void;
   /** The card's title (one line); also its accessible name. */
   title: string;
+  /** Decorative label layout; title/accessibilityLabel still names the control. */
+  labelContent?: ReactNode;
   /** Optional one-line description under the title. */
   description?: string;
   /** Dims the whole card and stops it selecting. */
   disabled?: boolean;
   /** Accent for the checked dot. Uses the theme primary by default. */
   tone?: BloomTone;
+  className?: string;
+  labelClassName?: string;
+  labelStyle?: StyleProp<TextStyle>;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
   testID?: string;

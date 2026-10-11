@@ -166,16 +166,12 @@ export function MailRecipientField({
                 // ("Remove Mireia Solans", not "Remove Mireia Solans" spelled
                 // by a component that cannot be translated with the rest).
                 closeLabel={text.removeRecipient(name)}
-                startIcon={
-                  <Avatar source={recipient.avatar ?? null} name={name} size={20} />
-                }
+                startIcon={<Avatar source={recipient.avatar ?? null} name={name} size={20} />}
                 onClose={
                   field.disabled
                     ? undefined
                     : () =>
-                        onRecipientsChange(
-                          recipients.filter((entry) => entry.id !== recipient.id),
-                        )
+                        onRecipientsChange(recipients.filter((entry) => entry.id !== recipient.id))
                 }
                 testID={testID ? `${testID}-chip-${recipient.id}` : undefined}
               >

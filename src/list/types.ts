@@ -8,20 +8,14 @@ export interface VirtualListRenderItemInfo<T> {
 }
 
 /** Row renderer. Returns the element for a single item (or `null` to skip). */
-export type VirtualListRenderItem<T> = (
-  info: VirtualListRenderItemInfo<T>,
-) => ReactElement | null;
+export type VirtualListRenderItem<T> = (info: VirtualListRenderItemInfo<T>) => ReactElement | null;
 
 /**
  * A header / empty / footer slot. Either a ready element or a thunk that
  * produces one — both `<X />` and `() => <X />` call sites are supported,
  * matching React Native `FlatList` slot ergonomics.
  */
-export type VirtualListSlot =
-  | ReactElement
-  | (() => ReactElement | null)
-  | null
-  | undefined;
+export type VirtualListSlot = ReactElement | (() => ReactElement | null) | null | undefined;
 
 /**
  * Props for {@link VirtualList} — the canonical cross-platform virtualized list

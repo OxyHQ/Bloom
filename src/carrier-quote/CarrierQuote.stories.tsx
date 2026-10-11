@@ -47,7 +47,8 @@ const IVO: CarrierQuote = {
   eta: '17:40',
   priceValue: 38.4,
   etaMinutes: 210,
-  message: 'Happy to take the sofa. I work with a second pair of hands, so the stairs are no problem.',
+  message:
+    'Happy to take the sofa. I work with a second pair of hands, so the stairs are no problem.',
   priceLines: [
     { label: 'Collection and delivery', sublabel: '11.4 km', amount: '€26.00' },
     { label: 'Help loading', sublabel: 'Two people, both ends', amount: '€9.00' },
@@ -202,7 +203,7 @@ export const Empty: Story = {
       <CarrierQuoteList
         quotes={[]}
         emptyAction={
-          <Button  size="md" onPress={noop} tone="neutral" appearance="outline">
+          <Button size="md" onPress={noop} tone="neutral" appearance="outline">
             Edit the job
           </Button>
         }
@@ -330,8 +331,18 @@ export const EndToEnd: Story = {
       <Caption>1 — the route (route-stops)</Caption>
       <RouteStops
         stops={[
-          { id: 'a', title: 'Vellmar Passage 9', subtitle: 'Pick-up, third floor', state: 'reached' },
-          { id: 'b', title: 'Ashgrove Depot, Unit 4', subtitle: 'Drop-off at the loading bay', state: 'current' },
+          {
+            id: 'a',
+            title: 'Vellmar Passage 9',
+            subtitle: 'Pick-up, third floor',
+            state: 'reached',
+          },
+          {
+            id: 'b',
+            title: 'Ashgrove Depot, Unit 4',
+            subtitle: 'Drop-off at the loading bay',
+            state: 'current',
+          },
         ]}
       />
       <Caption>2 — the offer that was accepted (carrier-quote)</Caption>
@@ -342,12 +353,22 @@ export const EndToEnd: Story = {
         eta="Arrives 17:40"
         detail="One stop away"
         icon={RiBusLine}
-        progress={{ value: 2, max: 3, accessibilityLabel: 'Delivery progress', valueText: '2 of 3 stops' }}
+        progress={{
+          value: 2,
+          max: 3,
+          accessibilityLabel: 'Delivery progress',
+          valueText: '2 of 3 stops',
+        }}
       />
       <OrderStatusTimeline
         steps={[
           { label: 'Job accepted', timestamp: '13:02', state: 'done' },
-          { label: 'Picked up', timestamp: '14:18', note: 'Signed for at Vellmar Passage', state: 'done' },
+          {
+            label: 'Picked up',
+            timestamp: '14:18',
+            note: 'Signed for at Vellmar Passage',
+            state: 'done',
+          },
           { label: 'In transit', timestamp: '14:31', state: 'current' },
           { label: 'Delivered', state: 'upcoming' },
         ]}

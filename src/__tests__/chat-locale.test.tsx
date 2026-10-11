@@ -23,12 +23,7 @@ import {
   PinnedMessageBar,
   ScrollToBottomButton,
 } from '../chat-screen';
-import {
-  FileMessage,
-  MediaAlbum,
-  PollMessage,
-  VoiceMessage,
-} from '../message-media';
+import { FileMessage, MediaAlbum, PollMessage, VoiceMessage } from '../message-media';
 import {
   ChannelPostCard,
   ContactList,
@@ -167,7 +162,12 @@ describe('chat-indicators, message-bubble and chat-screen', () => {
     it('lets labels win: a forwardedFrom prefix and a deleted string', () => {
       const el = mount(
         <>
-          <MessageBubble direction="incoming" text="x" forwardedFrom="Ana" labels={{ forwardedFrom: 'Desde' }} />
+          <MessageBubble
+            direction="incoming"
+            text="x"
+            forwardedFrom="Ana"
+            labels={{ forwardedFrom: 'Desde' }}
+          />
           <MessageBubble direction="incoming" text="x" deleted labels={{ deleted: 'Borrado' }} />
         </>,
       );
@@ -180,7 +180,14 @@ describe('chat-indicators, message-bubble and chat-screen', () => {
     it('names the header controls in Spanish, common words included', () => {
       const noop = () => {};
       const el = mount(
-        <ChatHeader title="Ana" showBack onPressBack={noop} onPressCall={noop} onPressVideoCall={noop} onPressMore={noop} />,
+        <ChatHeader
+          title="Ana"
+          showBack
+          onPressBack={noop}
+          onPressCall={noop}
+          onPressVideoCall={noop}
+          onPressMore={noop}
+        />,
       );
       expect(byLabel(el, 'Atrás')).not.toBeNull();
       expect(byLabel(el, 'Llamar')).not.toBeNull();
@@ -199,7 +206,13 @@ describe('chat-indicators, message-bubble and chat-screen', () => {
     it('titles the pinned bar, the empty state, the jump button and a role badge in Spanish', () => {
       const el = mount(
         <>
-          <PinnedMessageBar pins={[{ id: 'a', preview: 'uno' }, { id: 'b', preview: 'dos' }]} index={1} />
+          <PinnedMessageBar
+            pins={[
+              { id: 'a', preview: 'uno' },
+              { id: 'b', preview: 'dos' },
+            ]}
+            index={1}
+          />
           <ChatEmptyState />
           <ScrollToBottomButton onPress={() => {}} />
           <ChatMemberRow member={{ id: 'm', name: 'Ana', role: 'owner' }} />
@@ -230,7 +243,12 @@ describe('message-media', () => {
   describe('message-media speaks the app locale', () => {
     it('names a voice message, its seek slider and its transcript toggle in Spanish', () => {
       const el = mount(
-        <VoiceMessage samples={[0.2, 0.8, 0.4]} duration={14} transcript="Hola" onSeek={() => {}} />,
+        <VoiceMessage
+          samples={[0.2, 0.8, 0.4]}
+          duration={14}
+          transcript="Hola"
+          onSeek={() => {}}
+        />,
       );
       expect(byLabel(el, 'Mensaje de voz, 0:14')).not.toBeNull();
       expect(byLabel(el, 'Buscar posición')).not.toBeNull();
@@ -265,7 +283,9 @@ describe('message-media', () => {
     });
 
     it('lets a caller label win over the catalog', () => {
-      const el = mount(<FileMessage name="Contrato.pdf" onDownload={() => {}} downloadLabel="Bajar" />);
+      const el = mount(
+        <FileMessage name="Contrato.pdf" onDownload={() => {}} downloadLabel="Bajar" />,
+      );
       expect(byLabel(el, 'Bajar')).not.toBeNull();
       expect(byLabel(el, 'Descargar')).toBeNull();
 
@@ -311,7 +331,16 @@ describe('chat-people', () => {
     });
 
     it('names roles, the member menu and the list controls', () => {
-      mount(<MemberRow id="a" name="Ana" role="admin" onPress={() => undefined} onRemove={() => undefined} testID="r" />);
+      mount(
+        <MemberRow
+          id="a"
+          name="Ana"
+          role="admin"
+          onPress={() => undefined}
+          onRemove={() => undefined}
+          testID="r"
+        />,
+      );
       expect(label('r-open')).toBe('Ana, Administrador');
       expect(label('r-actions')).toBe('Acciones de Ana');
     });
@@ -341,7 +370,14 @@ describe('chat-people', () => {
 
     it('names a post’s counts and controls', () => {
       mount(
-        <ChannelPostCard channelName="Canal" time="12:41" views="1" forwards="318" onShare={() => undefined} testID="p" />,
+        <ChannelPostCard
+          channelName="Canal"
+          time="12:41"
+          views="1"
+          forwards="318"
+          onShare={() => undefined}
+          testID="p"
+        />,
       );
       expect(label('p-views')).toBe('1 visualización');
       expect(label('p-forwards')).toBe('318 reenvíos');
@@ -351,7 +387,8 @@ describe('chat-people', () => {
 
   describe('chat-people plurals', () => {
     it('follows each language’s categories', () => {
-      const count = (lang: BloomLanguage, n: number) => messagesIn(CHAT_PEOPLE_MESSAGES, lang).newGroup.members(n);
+      const count = (lang: BloomLanguage, n: number) =>
+        messagesIn(CHAT_PEOPLE_MESSAGES, lang).newGroup.members(n);
       expect(count('es', 3)).toBe('3 miembros');
       expect(count('fr', 0)).toBe('0 membre');
       expect(count('ru', 1)).toBe('1 участник');
@@ -392,9 +429,25 @@ describe('chat-people', () => {
         />,
       );
       expect(label('f-photo')).toBe('Foto del equipo');
-      mount(<MemberList members={[]} onAddMembers={() => undefined} addMembersLabel="Invitar" testID="m" />);
+      mount(
+        <MemberList
+          members={[]}
+          onAddMembers={() => undefined}
+          addMembersLabel="Invitar"
+          testID="m"
+        />,
+      );
       expect(label('m-add')).toBe('Invitar');
-      mount(<ContactRow id="a" name="Ana" onAction={() => undefined} actionDone actionDoneLabel="Invitada" testID="c" />);
+      mount(
+        <ContactRow
+          id="a"
+          name="Ana"
+          onAction={() => undefined}
+          actionDone
+          actionDoneLabel="Invitada"
+          testID="c"
+        />,
+      );
       expect(byTestId('c-action-done').textContent).toBe('Invitada');
     });
   });
@@ -405,7 +458,9 @@ describe('chat-composer', () => {
 
   describe('chat-composer in Spanish', () => {
     it('names the composer controls and the field in the locale', () => {
-      const el = mount(<ChatComposer onAttachPress={() => {}} onMicPress={() => {}} onSend={() => {}} />);
+      const el = mount(
+        <ChatComposer onAttachPress={() => {}} onMicPress={() => {}} onSend={() => {}} />,
+      );
       expect(labelled(el, 'Adjuntar')).not.toBeNull();
       expect(labelled(el, 'Grabar un mensaje de voz')).not.toBeNull();
       expect(labelled(el, 'Enviar')).not.toBeNull();
@@ -415,16 +470,36 @@ describe('chat-composer', () => {
 
     it('keeps a caller label and placeholder over the catalog', () => {
       const el = mount(
-        <ChatComposer onAttachPress={() => {}} placeholder="Escribe algo" labels={{ attach: 'Añadir archivo' }} />,
+        <ChatComposer
+          onAttachPress={() => {}}
+          placeholder="Escribe algo"
+          labels={{ attach: 'Añadir archivo' }}
+        />,
       );
       expect(labelled(el, 'Añadir archivo')).not.toBeNull();
       expect(el.querySelector('[placeholder="Escribe algo"]')).not.toBeNull();
     });
 
     it('names the recorder, the reaction bar and the emoji picker', () => {
-      let el = mount(<VoiceRecorder state="recording" seconds={3} onCancel={() => {}} onSend={() => {}} slideToCancel={false} />);
+      let el = mount(
+        <VoiceRecorder
+          state="recording"
+          seconds={3}
+          onCancel={() => {}}
+          onSend={() => {}}
+          slideToCancel={false}
+        />,
+      );
       expect(labelled(el, 'Cancelar grabación')).not.toBeNull();
-      el = mount(<VoiceRecorder state="preview" seconds={3} onDelete={() => {}} onSend={() => {}} onPlayToggle={() => {}} />);
+      el = mount(
+        <VoiceRecorder
+          state="preview"
+          seconds={3}
+          onDelete={() => {}}
+          onSend={() => {}}
+          onPlayToggle={() => {}}
+        />,
+      );
       expect(labelled(el, 'Enviar mensaje de voz')).not.toBeNull();
       expect(labelled(el, 'Eliminar grabación')).not.toBeNull();
 
@@ -447,18 +522,28 @@ describe('chat-composer', () => {
       expect(labelled(el, 'foto.jpg entfernen')).not.toBeNull();
 
       el = mount(
-        <ComposerAttachmentStrip attachments={[attachment]} onRemove={() => {}} removeLabel={(a) => `Borrar ${a.name}`} />,
+        <ComposerAttachmentStrip
+          attachments={[attachment]}
+          onRemove={() => {}}
+          removeLabel={(a) => `Borrar ${a.name}`}
+        />,
       );
       expect(labelled(el, 'Borrar foto.jpg')).not.toBeNull();
     });
 
     it('keeps the exported English attachment rows, and localises the default rows', () => {
       expect(ATTACHMENT_MENU_ITEMS.map((item) => item.label)).toEqual([
-        'Gallery', 'Camera', 'File', 'Location', 'Contact', 'Poll', 'Music',
+        'Gallery',
+        'Camera',
+        'File',
+        'Location',
+        'Contact',
+        'Poll',
+        'Music',
       ]);
-      expect(attachmentMenuItems(messagesIn(CHAT_COMPOSER_MESSAGES, 'es')).map((item) => item.label)).toEqual([
-        'Galería', 'Cámara', 'Archivo', 'Ubicación', 'Contacto', 'Encuesta', 'Música',
-      ]);
+      expect(
+        attachmentMenuItems(messagesIn(CHAT_COMPOSER_MESSAGES, 'es')).map((item) => item.label),
+      ).toEqual(['Galería', 'Cámara', 'Archivo', 'Ubicación', 'Contacto', 'Encuesta', 'Música']);
     });
   });
 });
@@ -481,7 +566,11 @@ describe('chat-list', () => {
           testID="row"
         />,
       );
-      expect(labelled('Ana, Verificado, Borrador: nos vemos, 12:41, 3 mensajes no leídos, Silenciado, Fijado')).not.toBeNull();
+      expect(
+        labelled(
+          'Ana, Verificado, Borrador: nos vemos, 12:41, 3 mensajes no leídos, Silenciado, Fijado',
+        ),
+      ).not.toBeNull();
       expect(text()).toContain('Borrador:');
     });
 
@@ -512,7 +601,10 @@ describe('chat-list', () => {
       mount(
         <>
           <ArchivedRow count={1} onPress={() => {}} />
-          <ChatFolderTabs folders={[{ key: 'w', label: 'Trabajo', unreadCount: 5 }]} accessibilityLabel="Carpetas" />
+          <ChatFolderTabs
+            folders={[{ key: 'w', label: 'Trabajo', unreadCount: 5 }]}
+            accessibilityLabel="Carpetas"
+          />
         </>,
       );
       expect(labelled('Archivados, 1 chat')).not.toBeNull();
@@ -547,7 +639,11 @@ describe('chat-list', () => {
       mount(
         <>
           <ChatListItem name="Ana" pinned labels={{ pinned: 'Anclado' }} />
-          <ChatList chats={[]} labels={{ emptyTitle: 'Nada por aquí' }} accessibilityLabel="Conversaciones" />
+          <ChatList
+            chats={[]}
+            labels={{ emptyTitle: 'Nada por aquí' }}
+            accessibilityLabel="Conversaciones"
+          />
           <ArchivedRow label="Guardados" onPress={() => {}} />
         </>,
       );

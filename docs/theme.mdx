@@ -6,15 +6,45 @@ order: 2
 
 # Theme
 
-Wrap your app with `BloomThemeProvider`. It accepts controlled `mode` and `colorPreset` props — persist them however you like (AsyncStorage, Zustand, etc.).
+Mount `BloomProvider` once above the app's loading, auth and content branches.
+It owns theme state together with Bloom's other app-wide contexts. See
+[Provider](./provider.mdx) for the complete root and outlet setup.
 
 ```tsx
-import { BloomThemeProvider } from '@oxy.so/bloom/theme';
+import { BloomProvider } from '@oxy.so/bloom/provider';
 
-<BloomThemeProvider mode="system" colorPreset="teal">
+<BloomProvider defaultMode="system" defaultColorPreset="blue">
   <App />
-</BloomThemeProvider>
+</BloomProvider>
 ```
+
+### Defaults, controlled identity and preferences
+
+`defaultColorPreset` and `defaultMode` initialize uncontrolled state when there
+is no persisted preference. A user's saved choice takes precedence over those
+defaults. Use controlled `colorPreset` or `mode` when the app owns that value:
+
+```tsx
+<BloomProvider defaultMode="system" colorPreset="orange">
+  <App />
+</BloomProvider>
+```
+
+Here the preset stays orange even if storage contains a different preference;
+mode remains user-selectable. Controlled props take precedence over hydration.
+Use `onColorPresetChange` and `onModeChange` to receive requested changes when
+controlling values from application state.
+
+For Bloom-owned preferences, pass both `persistKey` and `storage`. Use the
+public `webLocalStorage` adapter from `@oxy.so/bloom/theme` on web, or an
+AsyncStorage-compatible adapter on native. Descendants change preferences with
+`useBloomTheme().setMode()` and `.setColorPreset()`; `.resetTheme()` restores the
+provider defaults and clears the persisted entry. No separate theme store or
+manual localStorage edits are needed. `useTheme()` returns resolved paint;
+`useBloomTheme()` also exposes the selected mode, preset and setters.
+
+`BloomThemeProvider` remains the lower-level theme provider. Use `BloomProvider`
+for an app root so scroll, locale and other Bloom contexts share that root.
 
 ## Modes
 
@@ -27,21 +57,37 @@ import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 
 ## Color presets
 
-10 named palettes:
+Named presets include `blue`, `orange`, `teal`, `green`, `yellow`, `red`,
+`purple`, `pink`, `sky` and `mint`, alongside extended and paired palettes.
+`yellow` is the supported name; there is no `amber` preset.
 
-`teal` · `blue` · `green` · `amber` · `red` · `purple` · `pink` · `sky` · `orange` · `mint`
+Use the public registry rather than copying a fixed list or count:
 
-Each preset has a tuned light + dark variant and a contrast-checked primary color.
+```tsx
+import { APP_COLOR_NAMES, COLOR_PRESET_REGISTRY, FREE_COLOR_NAMES } from '@oxy.so/bloom/theme';
+```
+
+`APP_COLOR_NAMES` is the ordered list of valid names. `COLOR_PRESET_REGISTRY`
+adds picker metadata such as display name, family, description, pairing and
+access gate. `FREE_COLOR_NAMES`, `HANDLE_COLOR_NAMES` and `PREMIUM_COLOR_NAMES`
+partition that registry by availability; consumers own the corresponding
+identity or entitlement checks.
+
+Each preset supplies light and dark tokens. The public `seed` prop can drive
+an app-wide dynamic palette; clearing it restores the named preset.
+`secondaryColor` and `tertiaryColor` optionally pin its additional accents.
 
 ## Reading theme values
 
 ```tsx
+import { View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
 import { useTheme } from '@oxy.so/bloom/theme';
 
 function MyComponent() {
   const theme = useTheme();
   return (
-    <View style={{ backgroundColor: theme.colors.surface }}>
+    <View style={{ backgroundColor: theme.colors.card }}>
       <Text style={{ color: theme.colors.text }}>{theme.isDark ? 'Dark' : 'Light'}</Text>
     </View>
   );
@@ -54,16 +100,23 @@ Every preset exposes:
 
 - `colors.primary` — brand color.
 - `colors.background` — page background.
-- `colors.surface` — elevated surface (cards, sheets).
+- `colors.card` — card surface; `colors.backgroundSecondary` and
+  `colors.backgroundTertiary` expose the secondary and tertiary backgrounds.
 - `colors.text` — body text.
-- `colors.muted` — secondary text.
+- `colors.textSecondary` — secondary text.
 - `colors.border` — divider lines.
-- `colors.success` / `colors.warning` / `colors.danger` — semantic colors.
+- `colors.success` / `colors.warning` / `colors.error` / `colors.info` —
+  semantic colors, with corresponding `*Foreground` and `*Subtle` pairs.
 - `isDark` — boolean.
 - `mode` — resolved mode (`'light' | 'dark'`).
 
 <Callout variant="info" title="Web CSS variables">
-On web, Bloom also writes the active palette to CSS variables on `:root`, so non-React surfaces (e.g. raw HTML pages) can theme themselves with `var(--bloom-primary)`.
+On web, Bloom writes the active palette to canonical CSS variables on `:root`,
+including `--primary`, `--primary-foreground`, `--background`, `--foreground`,
+`--card` and `--muted-foreground`. Raw HTML can read `var(--primary)`; configured
+Tailwind/NativeWind consumers use the matching semantic utilities such as
+`bg-primary` and `text-primary-foreground`. Do not redefine Bloom tokens in an app
+to choose a preset: configure the provider instead.
 </Callout>
 
 ## Mobile web document appearance

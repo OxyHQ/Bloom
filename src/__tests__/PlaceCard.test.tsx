@@ -84,7 +84,15 @@ describe('the row announces every fact it draws, in reading order', () => {
 
 describe('the heart is a sibling of the link, not a button inside it', () => {
   it('renders the heart outside the press target', () => {
-    mount(<PlaceCard {...PLACE} href="https://example.invalid/p" favorite onFavoriteChange={noop} testID="p" />);
+    mount(
+      <PlaceCard
+        {...PLACE}
+        href="https://example.invalid/p"
+        favorite
+        onFavoriteChange={noop}
+        testID="p"
+      />,
+    );
     const link = byTestId('p-link');
     const heart = byTestId('p-favorite');
     expect(link.contains(heart)).toBe(false);
@@ -125,7 +133,11 @@ describe('the open state is a different painted colour per state', () => {
     const painted = new Map<PlaceOpenState, string>();
     for (const state of states) {
       mount(<PlaceCard {...PLACE} openState={state} onPress={noop} testID="p" />);
-      const expected = resolveAccentColors(theme().colors, PLACE_OPEN_TONE[state], 'subtle').background;
+      const expected = resolveAccentColors(
+        theme().colors,
+        PLACE_OPEN_TONE[state],
+        'subtle',
+      ).background;
       const actual = getComputedStyle(byTestId('p-state')).backgroundColor;
       expect([state, actual]).toEqual([state, css(expected)]);
       painted.set(state, actual);

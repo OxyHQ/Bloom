@@ -29,7 +29,10 @@ const CodeComponent = function Code({ children, style, ...rest }: CodeProps) {
   }
 
   return (
-    <RNText {...rest} style={[{ fontFamily: MONO_FAMILY, fontSize: 13, color: palette.inline }, style]}>
+    <RNText
+      {...rest}
+      style={[{ fontFamily: MONO_FAMILY, fontSize: 13, color: palette.inline }, style]}
+    >
       {children}
     </RNText>
   );

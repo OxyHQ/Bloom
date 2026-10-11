@@ -142,7 +142,9 @@ function TopFade({ color, visible }: { color: string; visible: boolean }) {
 
   useEffect(() => {
     const target = visible ? 1 : 0;
-    opacity.value = reducedMotion ? target : withTiming(target, { duration: FADE_MS, easing: EASE_OUT });
+    opacity.value = reducedMotion
+      ? target
+      : withTiming(target, { duration: FADE_MS, easing: EASE_OUT });
   }, [visible, reducedMotion, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
@@ -193,14 +195,13 @@ function ImportantAlertsCardComponent({
   const feedHook: WebDataSet = IS_WEB ? { dataSet: { bloomAlertsFeed: '' } } : {};
 
   return (
-    <Card radius="radius-20" elevation="none" clipContent
+    <Card
+      radius="radius-20"
+      elevation="none"
+      clipContent
       contentStyle={styles.cardContent}
       testID={testID}
-      style={[
-        styles.card,
-        { height },
-        style,
-      ]}
+      style={[styles.card, { height }, style]}
     >
       <View style={styles.header}>
         <View style={styles.headline}>
@@ -331,7 +332,14 @@ const styles = StyleSheet.create({
   },
   chevron: { width: 16, height: 16, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
   rangeLabel: { flexGrow: 1, flexShrink: 1, flexBasis: 0, textAlign: 'center' },
-  feedFrame: { position: 'relative', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0, width: '100%' },
+  feedFrame: {
+    position: 'relative',
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minHeight: 0,
+    width: '100%',
+  },
   feed: { width: '100%', height: '100%' },
   feedContent: { gap: 10, paddingBottom: 10 },
   alert: {

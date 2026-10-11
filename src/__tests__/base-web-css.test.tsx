@@ -25,11 +25,21 @@ describe('base web rules', () => {
     const root = createRoot(container);
     try {
       act(() => {
-        root.render(<BloomThemeProvider mode="light" colorPreset="teal">{null}</BloomThemeProvider>);
+        root.render(
+          <BloomThemeProvider mode="light" colorPreset="teal">
+            {null}
+          </BloomThemeProvider>,
+        );
       });
       const base = sheets.adopted().find((sheet) => sheet.cssText === BASE_WEB_CSS);
       expect(base).toBeDefined();
-      for (const selector of ['button', '[role="button"]', '[role="tab"]', '[role="menuitem"]', '[role="option"]']) {
+      for (const selector of [
+        'button',
+        '[role="button"]',
+        '[role="tab"]',
+        '[role="menuitem"]',
+        '[role="option"]',
+      ]) {
         expect(BASE_WEB_CSS).toContain(selector);
       }
       expect(BASE_WEB_CSS).toMatch(/user-select:\s*none/);

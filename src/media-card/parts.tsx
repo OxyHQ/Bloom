@@ -131,7 +131,11 @@ export function Artwork({
         {Icon ? (
           // Positioned, so it paints above the absolutely-positioned gradient on web.
           <View style={{ position: 'relative' }}>
-            <Icon width={glyph} height={glyph} fill={tint ? tint.textMuted : paint.placeholderGlyph} />
+            <Icon
+              width={glyph}
+              height={glyph}
+              fill={tint ? tint.textMuted : paint.placeholderGlyph}
+            />
           </View>
         ) : null}
       </>
@@ -187,10 +191,7 @@ export function Mosaic({
   const cellW = width / 2;
   const cellH = height / 2;
   return (
-    <View
-      style={{ width, height, flexDirection: 'row', flexWrap: 'wrap' }}
-      testID={testID}
-    >
+    <View style={{ width, height, flexDirection: 'row', flexWrap: 'wrap' }} testID={testID}>
       {[0, 1, 2, 3].map((index) => {
         const uri = resolveArtworkUri(covers[index], resolver);
         return uri ? (
@@ -250,10 +251,7 @@ export function ListenProgress({
       track={paint.rail}
       accessibilityLabel={label}
       valueText={`${pct}%`}
-      style={[
-        { flexGrow: width === undefined ? 1 : 0, flexShrink: 1, minWidth: 24 },
-        style,
-      ]}
+      style={[{ flexGrow: width === undefined ? 1 : 0, flexShrink: 1, minWidth: 24 }, style]}
       testID={testID}
     />
   );
@@ -282,7 +280,16 @@ export interface CardLinkProps {
  * or an artist link are drawn over it as their OWN targets. A button inside an
  * anchor is invalid HTML and would make every inner press open the card.
  */
-export function CardLink({ name, onPress, href, onLongPress, selected = false, radius, paint, testID }: CardLinkProps) {
+export function CardLink({
+  name,
+  onPress,
+  href,
+  onLongPress,
+  selected = false,
+  radius,
+  paint,
+  testID,
+}: CardLinkProps) {
   const handlePress = (event: GestureResponderEvent) => {
     if (onPress) {
       if (IS_WEB && href) event.preventDefault();
@@ -350,7 +357,10 @@ export function CardMenu({
   const name = common.labelFor(label, subject);
   return (
     <View
-      {...webDataSet({ bloomMediaCardMenu: '', ...(reveal ? { bloomMediaCardReveal: 'hover' } : null) })}
+      {...webDataSet({
+        bloomMediaCardMenu: '',
+        ...(reveal ? { bloomMediaCardReveal: 'hover' } : null),
+      })}
       style={{ flexShrink: 0 }}
     >
       <DropdownMenu open={open} onOpenChange={onOpenChange}>

@@ -108,8 +108,11 @@ export function snapTime(
   const size = Math.max(1, Math.round(step));
   const scaled = minutes / size;
   let snapped =
-    (round === 'up' ? Math.ceil(scaled) : round === 'down' ? Math.floor(scaled) : Math.round(scaled)) *
-    size;
+    (round === 'up'
+      ? Math.ceil(scaled)
+      : round === 'down'
+        ? Math.floor(scaled)
+        : Math.round(scaled)) * size;
   const low = min ? toMinutes(min) : null;
   const high = max ? toMinutes(max) : null;
   if (low != null && high != null && low > high) return null;

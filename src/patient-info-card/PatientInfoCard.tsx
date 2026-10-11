@@ -49,7 +49,9 @@ function PatientInfoCardComponent({
   const letters = initials ?? name.trim().charAt(0).toUpperCase();
 
   return (
-    <Card radius="radius-20" elevation="none"
+    <Card
+      radius="radius-20"
+      elevation="none"
       testID={testID}
       style={[styles.card, { height }, style]}
     >
@@ -74,7 +76,15 @@ function PatientInfoCardComponent({
         />
         {hideAddPhoto ? null : (
           <View style={styles.addPhoto}>
-            <Button testID={testID ? `${testID}-add-photo` : undefined} size="xs" icon={RiAddLine} accessibilityLabel={addPhotoLabel} onPress={onAddPhoto} appearance="subtle" tone="neutral" />
+            <Button
+              testID={testID ? `${testID}-add-photo` : undefined}
+              size="xs"
+              icon={RiAddLine}
+              accessibilityLabel={addPhotoLabel}
+              onPress={onAddPhoto}
+              appearance="subtle"
+              tone="neutral"
+            />
           </View>
         )}
       </View>
@@ -128,7 +138,13 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   avatarWrap: { position: 'relative' },
-  initials: { fontSize: 24.75, lineHeight: 37.125, fontWeight: '600', letterSpacing: 0, textAlign: 'center' },
+  initials: {
+    fontSize: 24.75,
+    lineHeight: 37.125,
+    fontWeight: '600',
+    letterSpacing: 0,
+    textAlign: 'center',
+  },
   addPhoto: { position: 'absolute', top: -2, right: -2 },
   details: { width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, gap: 10 },
   row: {

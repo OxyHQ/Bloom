@@ -29,11 +29,7 @@ import { join } from 'node:path';
 
 import { Keyframe } from 'react-native-reanimated';
 
-import {
-  ScaleAndFadeIn,
-  ScaleAndFadeOut,
-  ShrinkAndPop,
-} from '../motion/motion.web';
+import { ScaleAndFadeIn, ScaleAndFadeOut, ShrinkAndPop } from '../motion/motion.web';
 
 const SRC = join(__dirname, '..');
 const read = (rel: string) => readFileSync(join(SRC, rel), 'utf8');
@@ -131,10 +127,9 @@ describe('motion web fork', () => {
     );
     expect(forked).toContain("'./motion'");
 
-    const pkg: { exports: Record<string, { browser?: { import?: string } }> } =
-      JSON.parse(readFileSync(join(SRC, '..', 'package.json'), 'utf8'));
-    expect(pkg.exports['./motion']?.browser?.import).toBe(
-      './lib/module/motion/index.web.js',
+    const pkg: { exports: Record<string, { browser?: { import?: string } }> } = JSON.parse(
+      readFileSync(join(SRC, '..', 'package.json'), 'utf8'),
     );
+    expect(pkg.exports['./motion']?.browser?.import).toBe('./lib/module/motion/index.web.js');
   });
 });

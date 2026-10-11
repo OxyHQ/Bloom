@@ -28,7 +28,6 @@ import { MEDIA_PLAYER_MESSAGES } from './messages';
 export const FULL_SCREEN_PLAYER_WIDE = 900;
 export const FULL_SCREEN_PLAYER_ARTWORK_MAX = 480;
 
-
 export interface FullScreenPlayerPaint {
   /** The artwork colour darkened for contrast, or `null` without one. */
   tint: string | null;
@@ -38,7 +37,15 @@ export interface FullScreenPlayerPaint {
   card: string;
 }
 
-function LyricsCard({ lyrics, card, testID }: { lyrics: LyricsPreview; card: string; testID?: string }) {
+function LyricsCard({
+  lyrics,
+  card,
+  testID,
+}: {
+  lyrics: LyricsPreview;
+  card: string;
+  testID?: string;
+}) {
   const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
@@ -151,7 +158,11 @@ function FullScreenPlayerBody({
       />
       <View style={{ flex: 1, minWidth: 0, alignItems: 'center' }}>
         {contextLabel ? (
-          <Text variant="caption-2-semibold" numberOfLines={1} style={{ color: paint.textMuted, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+          <Text
+            variant="caption-2-semibold"
+            numberOfLines={1}
+            style={{ color: paint.textMuted, textTransform: 'uppercase', letterSpacing: 0.6 }}
+          >
             {contextLabel}
           </Text>
         ) : null}
@@ -211,20 +222,34 @@ function FullScreenPlayerBody({
         style={{ justifyContent: 'space-between' }}
         testID={id('transport')}
       />
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} testID={id('bottom-row')}>
+      <View
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+        testID={id('bottom-row')}
+      >
         {onDevicePress || casting ? (
           <Pressable
             role="button"
             accessibilityLabel={casting ? `${labels.devices}, ${deviceName}` : labels.devices}
             onPress={onDevicePress}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 40, flexShrink: 1, minWidth: 0 }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              minHeight: 40,
+              flexShrink: 1,
+              minWidth: 0,
+            }}
             testID={id('devices')}
           >
             <View pointerEvents="none">
               <DeviceGlyph width={20} height={20} fill={casting ? paint.accent : paint.textMuted} />
             </View>
             {casting ? (
-              <Text variant="caption-1-semibold" numberOfLines={1} style={{ color: paint.accent, flexShrink: 1 }}>
+              <Text
+                variant="caption-1-semibold"
+                numberOfLines={1}
+                style={{ color: paint.accent, flexShrink: 1 }}
+              >
                 {deviceName}
               </Text>
             ) : null}
@@ -268,29 +293,30 @@ function FullScreenPlayerBody({
     </View>
   );
 
-  const belowFold = lyrics || aboutArtist ? (
-    <View
-      style={{
-        flexDirection: wide ? 'row' : 'column',
-        alignItems: wide ? 'flex-start' : 'stretch',
-        gap: 16,
-        paddingLeft: wide ? 48 : 16,
-        paddingRight: wide ? 48 : 16,
-        paddingBottom: 32,
-        width: '100%',
-        maxWidth: wide ? 1080 : undefined,
-        alignSelf: 'center',
-      }}
-      testID={id('below-fold')}
-    >
-      {lyrics ? (
-        <View style={{ flex: wide ? 1 : undefined }}>
-          <LyricsCard lyrics={lyrics} card={surface.card} testID={id('lyrics')} />
-        </View>
-      ) : null}
-      {aboutArtist ? <View style={{ flex: wide ? 1 : undefined }}>{aboutArtist}</View> : null}
-    </View>
-  ) : null;
+  const belowFold =
+    lyrics || aboutArtist ? (
+      <View
+        style={{
+          flexDirection: wide ? 'row' : 'column',
+          alignItems: wide ? 'flex-start' : 'stretch',
+          gap: 16,
+          paddingLeft: wide ? 48 : 16,
+          paddingRight: wide ? 48 : 16,
+          paddingBottom: 32,
+          width: '100%',
+          maxWidth: wide ? 1080 : undefined,
+          alignSelf: 'center',
+        }}
+        testID={id('below-fold')}
+      >
+        {lyrics ? (
+          <View style={{ flex: wide ? 1 : undefined }}>
+            <LyricsCard lyrics={lyrics} card={surface.card} testID={id('lyrics')} />
+          </View>
+        ) : null}
+        {aboutArtist ? <View style={{ flex: wide ? 1 : undefined }}>{aboutArtist}</View> : null}
+      </View>
+    ) : null;
 
   return (
     <View
@@ -331,7 +357,9 @@ function FullScreenPlayerBody({
             </View>
           ) : (
             <View style={{ flex: 1, alignItems: 'center', gap: 24, paddingTop: 16 }}>
-              <View style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+              <View
+                style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}
+              >
                 {artwork}
               </View>
               {details}
@@ -367,7 +395,11 @@ function FullScreenPlayerComponent(props: FullScreenPlayerProps) {
   const paint = useMemo<FullScreenPlayerPaint>(() => {
     const dark = immersiveDarkTheme(theme, ctx?.colorPreset ?? 'oxy');
     const darkPaint = resolveMediaControlsPaint(dark);
-    const tint = resolveArtworkTint(props.artworkColor, darkPaint.text, darkPaint.textMuted).background;
+    const tint = resolveArtworkTint(
+      props.artworkColor,
+      darkPaint.text,
+      darkPaint.textMuted,
+    ).background;
     return { tint, base: dark.colors.background, card: tint ?? dark.colors.backgroundSecondary };
   }, [theme, ctx?.colorPreset, props.artworkColor]);
 

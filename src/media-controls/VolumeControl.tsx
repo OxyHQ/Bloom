@@ -102,7 +102,12 @@ function VolumeControlComponent({
         bloomVolumeReveal: IS_WEB ? sliderVisibility : 'always',
       })}
       style={[
-        { flexDirection: 'row', alignItems: 'center', gap: 4, opacity: disabled ? DISABLED_OPACITY : 1 },
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 4,
+          opacity: disabled ? DISABLED_OPACITY : 1,
+        },
         style,
       ]}
       testID={testID}
@@ -121,10 +126,17 @@ function VolumeControlComponent({
         testID={testID ? `${testID}-mute` : undefined}
       >
         <View pointerEvents="none" style={{ width: 20, height: 20 }}>
-          <Glyph width={20} height={20} fill={hovered && !disabled ? paint.text : paint.textMuted} />
+          <Glyph
+            width={20}
+            height={20}
+            fill={hovered && !disabled ? paint.text : paint.textMuted}
+          />
         </View>
       </Pressable>
-      <View {...webDataSet({ bloomVolumeSlider: '' })} style={{ width: sliderWidth, flexDirection: 'row' }}>
+      <View
+        {...webDataSet({ bloomVolumeSlider: '' })}
+        style={{ width: sliderWidth, flexDirection: 'row' }}
+      >
         <MediaTrack
           value={drawn}
           max={1}

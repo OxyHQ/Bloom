@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 
 import { MAIL_THREAD_MESSAGES } from './messages';
 import type { MailThreadMessage, MailAddress, MailThreadStrings } from './types';
@@ -43,8 +44,8 @@ export const MAIL_THREAD_GEOMETRY = {
   glyph: 16,
   /** The star and the overflow trigger. A touch target, so 44. */
   action: 44,
-  /** Radius of a message's own surface. */
-  radius: 12,
+  /** Default radius; rendered messages inherit BloomScope.panelRadius via Card. */
+  radius: SURFACE_SHAPES.sidebar.radius,
 } as const;
 
 /**
@@ -52,9 +53,7 @@ export const MAIL_THREAD_GEOMETRY = {
  * than under the avatar. Derived, never written twice.
  */
 export const MAIL_BODY_INSET =
-  MAIL_THREAD_GEOMETRY.paddingHorizontal +
-  MAIL_THREAD_GEOMETRY.avatar +
-  MAIL_THREAD_GEOMETRY.gap;
+  MAIL_THREAD_GEOMETRY.paddingHorizontal + MAIL_THREAD_GEOMETRY.avatar + MAIL_THREAD_GEOMETRY.gap;
 
 // ---------------------------------------------------------------------------
 //  Strings

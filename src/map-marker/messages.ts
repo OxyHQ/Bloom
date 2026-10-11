@@ -14,8 +14,9 @@ export interface MapMarkerMessages {
   stays: (count: number | string) => string;
 }
 
-export const MAP_MARKER_MESSAGES: MessageCatalog<MapMarkerMessages> = defineMessages<MapMarkerMessages>('MAP_MARKER_MESSAGES', {
-  searchAsMapMoves: 'Search as I move the map',
-  searchThisArea: 'Search this area',
-  stays: (n) => countOf('en', n, { one: '{n} stay', other: '{n} stays' }),
-});
+export const MAP_MARKER_MESSAGES: MessageCatalog<MapMarkerMessages> =
+  defineMessages<MapMarkerMessages>('MAP_MARKER_MESSAGES', {
+    searchAsMapMoves: 'Search as I move the map',
+    searchThisArea: 'Search this area',
+    stays: (n) => countOf('en', n, { one: '{n} stay', other: '{n} stays' }),
+  });

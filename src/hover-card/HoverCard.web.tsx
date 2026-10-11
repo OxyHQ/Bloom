@@ -100,7 +100,6 @@ export function HoverCardTrigger({
     [disabled, show],
   );
 
-
   return (
     <StyledView
       ref={card.anchorRef}
@@ -114,7 +113,8 @@ export function HoverCardTrigger({
       // Focus and blur BUBBLE here from the focusable child (React's `onFocus`
       // is `focusin`), so the wrapper needs no tab stop of its own.
       onFocus={onFocus}
-      onBlur={hide}>
+      onBlur={hide}
+    >
       {children}
     </StyledView>
   );
@@ -157,7 +157,8 @@ export function HoverCardContent({
       alignOffset={alignOffset}
       className={className}
       style={style}
-      testID={testID}>
+      testID={testID}
+    >
       {children}
     </HoverCardPanel>
   );

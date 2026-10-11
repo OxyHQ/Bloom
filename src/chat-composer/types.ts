@@ -1,5 +1,5 @@
 import type { ReactNode, RefObject } from 'react';
-import type { StyleProp, TextInput, ViewStyle } from 'react-native';
+import type { StyleProp, TextInput, TextStyle, ViewStyle } from 'react-native';
 
 import type { BloomIconComponent } from '../icons/icon-component';
 
@@ -124,6 +124,12 @@ export interface ChatComposerLabels {
 }
 
 export interface ChatComposerProps extends PartProps {
+  /** Style the input bar itself; outer `style` includes suggestions and banners. */
+  barStyle?: StyleProp<ViewStyle>;
+  /** Typography and other text styles on the editable field. */
+  inputStyle?: StyleProp<TextStyle>;
+  /** Send control glyph. Defaults to the paper plane. */
+  sendIcon?: ChatComposerIcon;
   /** The draft. Works controlled or uncontrolled. */
   value?: string;
   defaultValue?: string;
@@ -164,7 +170,8 @@ export interface ChatComposerProps extends PartProps {
   onEmojiPress?: () => void;
   /** Draws a camera button between the field and the emoji button. */
   onCameraPress?: () => void;
-  /** The mic, shown whenever the draft is empty and there are no attachments. */
+  /** The mic, shown for an empty draft only when a mic callback is provided.
+   * Without recording callbacks, the empty composer shows a disabled send button. */
   onMicPress?: () => void;
   /** Press-and-hold on the mic (native). Both fire on web too. */
   onMicPressIn?: () => void;

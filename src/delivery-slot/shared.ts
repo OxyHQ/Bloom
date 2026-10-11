@@ -10,7 +10,12 @@
  * Pure, so `DeliverySlot.test.tsx` can walk presets and modes without
  * rendering.
  */
-import { hairlineOn, surfaceFillOn, surfaceTextOn, type SurfaceTextPaint } from '../styles/surface-levels';
+import {
+  hairlineOn,
+  surfaceFillOn,
+  surfaceTextOn,
+  type SurfaceTextPaint,
+} from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { DELIVERY_DETAIL_SEPARATOR } from './constants';
 import { DELIVERY_SLOT_MESSAGES, type DeliverySlotMessages } from './messages';
@@ -69,7 +74,11 @@ export function windowName(
 ): string {
   return (
     window.accessibilityLabel ??
-    joinDeliveryParts([window.label, windowDetail(window, tierLabels, soldOutLabel, messages), window.price]) ??
+    joinDeliveryParts([
+      window.label,
+      windowDetail(window, tierLabels, soldOutLabel, messages),
+      window.price,
+    ]) ??
     window.label
   );
 }

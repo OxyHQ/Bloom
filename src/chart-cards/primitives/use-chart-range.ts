@@ -22,7 +22,11 @@ export function useChartRange<T extends object>(
   ranges: readonly ChartRange<T>[] | undefined,
   defaultId?: string,
   onChange?: (id: string) => void,
-): { selected: ChartRange<T> | undefined; selectedId: string | undefined; select: (id: string) => void } {
+): {
+  selected: ChartRange<T> | undefined;
+  selectedId: string | undefined;
+  select: (id: string) => void;
+} {
   const [selectedId, setSelectedId] = useState<string | undefined>(defaultId);
   const selected = ranges?.find((r) => r.id === selectedId) ?? ranges?.[0];
   const select = useCallback(

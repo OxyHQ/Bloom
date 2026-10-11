@@ -149,9 +149,10 @@ export function puckBoxSize(options: {
 }): number {
   const { dot, ring } = LOCATION_PUCK_GEOMETRY;
   const puck = dot + ring * 2;
-  const halo = options.accuracyRadius !== undefined && Number.isFinite(options.accuracyRadius)
-    ? Math.max(0, options.accuracyRadius) * 2
-    : 0;
+  const halo =
+    options.accuracyRadius !== undefined && Number.isFinite(options.accuracyRadius)
+      ? Math.max(0, options.accuracyRadius) * 2
+      : 0;
   const cone = options.cone
     ? Math.max(0, options.coneLength ?? LOCATION_PUCK_GEOMETRY.cone) * 2
     : 0;

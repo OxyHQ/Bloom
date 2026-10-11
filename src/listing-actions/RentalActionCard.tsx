@@ -54,7 +54,8 @@ function RentalActionCardComponent({
   const applyLabel = applyLabelProp ?? messages.apply;
   const info = RENTAL_STATUS[status];
   const available = status === 'available';
-  const message = statusMessage ?? (status === 'available' ? info.message : messages.rentalStatusMessage[status]);
+  const message =
+    statusMessage ?? (status === 'available' ? info.message : messages.rentalStatusMessage[status]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
   return (
@@ -80,7 +81,9 @@ function RentalActionCardComponent({
         }
       />
 
-      {facts && facts.length > 0 ? <FactList facts={facts} style={{ marginTop: 20 }} testID={id('facts')} /> : null}
+      {facts && facts.length > 0 ? (
+        <FactList facts={facts} style={{ marginTop: 20 }} testID={id('facts')} />
+      ) : null}
 
       {!available && message ? (
         <StatusMessage style={{ marginTop: 16 }} testID={id('status-message')}>
@@ -90,33 +93,39 @@ function RentalActionCardComponent({
 
       <View style={{ marginTop: 16, gap: 8 }}>
         <Button
-
           size="lg"
           fullWidth
           onPress={onRequestViewing}
           disabled={!available}
           loading={loading}
-          testID={id('request-viewing')} tone="accent" appearance="solid"
+          testID={id('request-viewing')}
+          tone="accent"
+          appearance="solid"
         >
           {requestViewingLabel}
         </Button>
         {onApply ? (
           <Button
-
             size="lg"
             fullWidth
             onPress={onApply}
             disabled={!available}
-            testID={id('apply')} tone="neutral" appearance="outline"
+            testID={id('apply')}
+            tone="neutral"
+            appearance="outline"
           >
             {applyLabel}
           </Button>
         ) : null}
       </View>
 
-      {available && note != null ? <ActionCardNote style={{ marginTop: 12 }}>{note}</ActionCardNote> : null}
+      {available && note != null ? (
+        <ActionCardNote style={{ marginTop: 12 }}>{note}</ActionCardNote>
+      ) : null}
 
-      {footer != null ? <View style={{ marginTop: 24, alignItems: 'center' }}>{footer}</View> : null}
+      {footer != null ? (
+        <View style={{ marginTop: 24, alignItems: 'center' }}>{footer}</View>
+      ) : null}
     </ActionCardShell>
   );
 }

@@ -38,7 +38,7 @@ const FORBIDDEN: Record<string, string> = {
   // The optional video peer. It is loaded through an optional `require`, which
   // this scan deliberately ignores — listed so the intent is recorded, and
   // caught here the day somebody turns it into a static import.
-  'expo-video': '@oxy.so/bloom/media-flight',
+  'expo-video': '@oxy.so/bloom/video-view (and ./media-flight)',
 };
 
 /**

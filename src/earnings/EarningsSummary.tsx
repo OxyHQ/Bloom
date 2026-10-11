@@ -118,14 +118,20 @@ function EarningsSummaryComponent({
 
   // The chart's active bar is OWNED here: the headline has to be able to say
   // which amount it is showing, and only this component knows the strings.
-  const [selection, setSelection] = useState<{ period: string | undefined; index: number | null } | null>(null);
+  const [selection, setSelection] = useState<{
+    period: string | undefined;
+    index: number | null;
+  } | null>(null);
   const currentPeriod = current?.id;
   // A controlled prop change must clear selection before the new headline paints.
   if (selection && selection.period !== currentPeriod) setSelection(null);
-  const activeIndex = selection?.period === currentPeriod ? selection?.index ?? null : null;
-  const setActiveIndex = useCallback((index: number | null) => {
-    setSelection({ period: currentPeriod, index });
-  }, [currentPeriod]);
+  const activeIndex = selection?.period === currentPeriod ? (selection?.index ?? null) : null;
+  const setActiveIndex = useCallback(
+    (index: number | null) => {
+      setSelection({ period: currentPeriod, index });
+    },
+    [currentPeriod],
+  );
   const changePeriod = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -274,11 +280,7 @@ function EarningsSummaryComponent({
         ) : null}
 
         {!showStats && !showBreakdown && shownPayout === undefined ? (
-          <Text
-            variant="body-regular"
-            style={{ color: paint.textSecondary }}
-            testID={id('empty')}
-          >
+          <Text variant="body-regular" style={{ color: paint.textSecondary }} testID={id('empty')}>
             {labels.empty}
           </Text>
         ) : null}

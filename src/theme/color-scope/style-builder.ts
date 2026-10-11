@@ -115,7 +115,6 @@ function warnScopeInert(detail: string): void {
   hasWarned = true;
   // Internal Bloom diagnostic: only the consumer's package.json can fix this,
   // so it names the package and the install command.
-  // eslint-disable-next-line no-console
   console.warn(
     `[Bloom] BloomColorScope cannot scope NativeWind classes on native: ${detail} ` +
       'Descendants keep resolving `var(--primary)` and friends against the ' +

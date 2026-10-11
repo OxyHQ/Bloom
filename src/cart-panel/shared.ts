@@ -7,7 +7,12 @@
  *
  * Pure, so `CartPanel.test.tsx` can walk presets and modes without rendering.
  */
-import { hairlineOn, surfaceFillOn, surfaceTextOn, type SurfaceTextPaint } from '../styles/surface-levels';
+import {
+  hairlineOn,
+  surfaceFillOn,
+  surfaceTextOn,
+  type SurfaceTextPaint,
+} from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { CART_OPTION_SEPARATOR } from './constants';
 import { CART_PANEL_MESSAGES, type CartPanelMessages } from './messages';

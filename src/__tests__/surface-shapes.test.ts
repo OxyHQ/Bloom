@@ -17,8 +17,8 @@ describe('surface shapes', () => {
   it('uses web corner geometry without a native-only borderCurve', () => {
     platform('web');
     expect(surfaceStyle(SURFACE_SHAPES.card)).toEqual({
-      borderRadius: 12,
-      cornerShape: 'squircle',
+      borderRadius: 20,
+      cornerShape: 'round',
     });
     expect(surfaceStyle({ radius: 9999, curve: 'round' })).toEqual({
       borderRadius: 9999,
@@ -47,9 +47,7 @@ describe('surface shapes', () => {
   });
   it('mirrors asymmetric corners explicitly on both renderers', () => {
     platform('web');
-    expect(
-      surfaceStyle({ radius: { topStart: 12, bottomEnd: 4 } }, 'rtl'),
-    ).toMatchObject({
+    expect(surfaceStyle({ radius: { topStart: 12, bottomEnd: 4 } }, 'rtl')).toMatchObject({
       borderTopLeftRadius: 0,
       borderTopRightRadius: 12,
       borderBottomLeftRadius: 4,
@@ -62,15 +60,10 @@ describe('surface shapes', () => {
       cornerShape: 'squircle',
     });
   });
-  it.each([-1, NaN, Infinity, -Infinity])(
-    'rejects invalid radius %s',
-    (radius) => {
-      expect(() => surfaceStyle({ radius })).toThrow(RangeError);
-      expect(() => surfaceStyle({ radius: { topEnd: radius } })).toThrow(
-        RangeError,
-      );
-    },
-  );
+  it.each([-1, NaN, Infinity, -Infinity])('rejects invalid radius %s', (radius) => {
+    expect(() => surfaceStyle({ radius })).toThrow(RangeError);
+    expect(() => surfaceStyle({ radius: { topEnd: radius } })).toThrow(RangeError);
+  });
   it('permits zero and fractional radii without rounding to device pixels', () => {
     platform('android');
     expect(surfaceStyle({ radius: 0 })).toEqual({ borderRadius: 0 });

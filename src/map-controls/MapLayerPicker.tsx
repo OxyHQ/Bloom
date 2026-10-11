@@ -76,10 +76,7 @@ function MapLayerPickerComponent({
 
       <DropdownMenuContent label={triggerLabel} testID={testID ? `${testID}-content` : undefined}>
         <DropdownMenuLabel>{layersLabel}</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={layerId}
-          onValueChange={(next) => onLayerChange?.(next)}
-        >
+        <DropdownMenuRadioGroup value={layerId} onValueChange={(next) => onLayerChange?.(next)}>
           {layers.map((layer) => (
             <DropdownMenuRadioItem
               key={layer.id}

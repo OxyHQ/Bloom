@@ -5,12 +5,7 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TabBar, TabBarButton, TabBarMinimizeProvider, useMinimizeState } from '../tab-bar';
 import type { MinimizeState } from '../tab-bar/context';
-import {
-  BAR_MARGIN,
-  MAX_EXPANDED_ITEM_WIDTH,
-  MINIMIZED_INSET,
-  ROW_PAD_H,
-} from '../tab-bar/shared';
+import { BAR_MARGIN, MAX_EXPANDED_ITEM_WIDTH, MINIMIZED_INSET, ROW_PAD_H } from '../tab-bar/shared';
 import type { TabBarItem } from '../tab-bar/types';
 
 /**
@@ -181,9 +176,13 @@ function renderBar(props: {
   items?: TabBarItem[];
 }) {
   const utils = render(<Tree {...props} />);
-  const host = utils.UNSAFE_root.findAll(node => typeof node.type === 'string' && typeof node.props.onLayout === 'function')[0];
+  const host = utils.UNSAFE_root.findAll(
+    (node) => typeof node.type === 'string' && typeof node.props.onLayout === 'function',
+  )[0];
   if (!host) throw new Error('missing measured bar host');
-  fireEvent(host, 'layout', { nativeEvent: { layout: { width: mockWindowWidth, height: 58, x: 0, y: 0 } } });
+  fireEvent(host, 'layout', {
+    nativeEvent: { layout: { width: mockWindowWidth, height: 58, x: 0, y: 0 } },
+  });
   return { ...utils, resettle: () => utils.rerender(<Tree {...props} />) };
 }
 
@@ -220,7 +219,10 @@ function wrapStyle(root: ReactTestInstance): Record<string, unknown> {
 function highlightStyle(root: ReactTestInstance): Record<string, unknown> {
   return styleOf(
     root,
-    (style) => style.position === 'absolute' && style.insetInlineStart === 0 && typeof style.width === 'number',
+    (style) =>
+      style.position === 'absolute' &&
+      style.insetInlineStart === 0 &&
+      typeof style.width === 'number',
     'highlight',
   );
 }

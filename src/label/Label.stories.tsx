@@ -6,10 +6,10 @@ import { Label } from './Label';
 
 const meta: Meta<typeof Label> = {
   argTypes: {
-    "htmlFor": { control: 'text' },
-    "required": { control: 'boolean' },
-    "disabled": { control: 'boolean' },
-    "size": { control: 'select', options: ["xs","sm","md"] }
+    htmlFor: { control: 'text' },
+    required: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+    size: { control: 'select', options: ['xs', 'sm', 'md'] },
   },
   title: 'Base/Label',
   component: Label,

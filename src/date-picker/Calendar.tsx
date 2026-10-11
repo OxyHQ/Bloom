@@ -116,13 +116,10 @@ function CalendarFrame({
     [visibleMonths],
   );
 
-  const page = useCallback(
-    (months: number) => {
-      setFirstMonth((current) => addMonths(current, months));
-      setFocusedDate((current) => addMonths(current, months));
-    },
-    [],
-  );
+  const page = useCallback((months: number) => {
+    setFirstMonth((current) => addMonths(current, months));
+    setFocusedDate((current) => addMonths(current, months));
+  }, []);
 
   const previousDisabled =
     minDate != null && compareDays(endOfMonth(addMonths(firstMonth, -1)), minDate) < 0;
@@ -130,8 +127,7 @@ function CalendarFrame({
 
   // The one tab stop: the focused day when it is on show, else the first
   // enabled day of the first month.
-  const focusedOnShow =
-    isSameMonth(focusedDate, firstMonth) || isSameMonth(focusedDate, lastMonth);
+  const focusedOnShow = isSameMonth(focusedDate, firstMonth) || isSameMonth(focusedDate, lastMonth);
   let tabStop = focusedOnShow && !isDisabled(focusedDate) ? focusedDate : null;
   if (!tabStop) {
     for (let day = startOfMonth(firstMonth); isSameMonth(day, firstMonth); day = addDays(day, 1)) {
@@ -146,7 +142,9 @@ function CalendarFrame({
   useEffect(() => {
     if (!focusAfterMove.current) return;
     focusAfterMove.current = false;
-    const node = nodes.current.get(dayKey(focusedDate)) as (View & { focus?: () => void }) | undefined;
+    const node = nodes.current.get(dayKey(focusedDate)) as
+      | (View & { focus?: () => void })
+      | undefined;
     node?.focus?.();
   }, [focusedDate, firstMonth]);
 

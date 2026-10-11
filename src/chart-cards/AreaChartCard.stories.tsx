@@ -7,15 +7,15 @@ import type { AreaPoint, AreaRange, AreaSeries } from './types';
 
 const meta: Meta<typeof AreaChartCard> = {
   argTypes: {
-    "variant": { control: 'select', options: ["stacked","overlap","percent"] },
-    "shape": { control: 'select', options: ["curved","sharp"] },
-    "title": { control: 'text' },
-    "headline": { control: 'number' },
-    "delta": { control: 'number' },
-    "range": { control: 'text' },
-    "defaultRange": { control: 'text' },
-    "tiles": { control: 'boolean' },
-    "activeIndex": { control: 'number' }
+    variant: { control: 'select', options: ['stacked', 'overlap', 'percent'] },
+    shape: { control: 'select', options: ['curved', 'sharp'] },
+    title: { control: 'text' },
+    headline: { control: 'number' },
+    delta: { control: 'number' },
+    range: { control: 'text' },
+    defaultRange: { control: 'text' },
+    tiles: { control: 'boolean' },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Area Chart',
   component: AreaChartCard,
@@ -97,22 +97,50 @@ export const Stacked: Story = {
 
 /** Translucent areas drawn over each other; the headline follows the first series. */
 export const Overlap: Story = {
-  args: { variant: "overlap" },
-  parameters: { controls: { include: ["variant","shape","title","headline","delta","range","defaultRange","tiles","activeIndex"] } },
+  args: { variant: 'overlap' },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'shape',
+        'title',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'tiles',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <AreaChartCard {...args} testID="area"  series={SERIES} ranges={RANGES} />
+      <AreaChartCard {...args} testID="area" series={SERIES} ranges={RANGES} />
     </Frame>
   ),
 };
 
 /** 100% stacked: every month fills the height, so the chart reads as share. */
 export const Percent: Story = {
-  args: { variant: "percent" },
-  parameters: { controls: { include: ["variant","shape","title","headline","delta","range","defaultRange","tiles","activeIndex"] } },
+  args: { variant: 'percent' },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'shape',
+        'title',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'tiles',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <AreaChartCard {...args} testID="area"  series={SERIES} ranges={RANGES} />
+      <AreaChartCard {...args} testID="area" series={SERIES} ranges={RANGES} />
     </Frame>
   ),
 };
@@ -131,22 +159,49 @@ export const Sharp: Story = {
 
 /** Stat tiles instead of the legend; the card grows to fit (a marketing dashboard). */
 export const Tiles: Story = {
-  args: { title: "Visitors", tiles: true },
-  parameters: { controls: { include: ["title","tiles","variant","shape","headline","delta","range","defaultRange","activeIndex"] } },
+  args: { title: 'Visitors', tiles: true },
+  parameters: {
+    controls: {
+      include: [
+        'title',
+        'tiles',
+        'variant',
+        'shape',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <AreaChartCard {...args} testID="area"  series={SERIES} ranges={RANGES}  />
+      <AreaChartCard {...args} testID="area" series={SERIES} ranges={RANGES} />
     </Frame>
   ),
 };
 
 /** A static period pill and a falling delta. */
 export const StaticRange: Story = {
-  args: { range: "Jan – Dec 2024" },
-  parameters: { controls: { include: ["range","variant","shape","title","headline","defaultRange","tiles","activeIndex"] } },
+  args: { range: 'Jan – Dec 2024' },
+  parameters: {
+    controls: {
+      include: [
+        'range',
+        'variant',
+        'shape',
+        'title',
+        'headline',
+        'defaultRange',
+        'tiles',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <AreaChartCard {...args} testID="area"  delta={-0.036} data={WEEK} series={SERIES} />
+      <AreaChartCard {...args} testID="area" delta={-0.036} data={WEEK} series={SERIES} />
     </Frame>
   ),
 };
@@ -165,14 +220,31 @@ export const Hovered: Story = {
 
 /** Custom series colours, more series than the legend fits on one line, a flat delta. */
 export const CustomSeries: Story = {
-  args: { title: "Sessions", delta: 0 },
-  parameters: { controls: { include: ["title","delta","variant","shape","headline","range","defaultRange","tiles","activeIndex"] } },
+  args: { title: 'Sessions', delta: 0 },
+  parameters: {
+    controls: {
+      include: [
+        'title',
+        'delta',
+        'variant',
+        'shape',
+        'headline',
+        'range',
+        'defaultRange',
+        'tiles',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <AreaChartCard {...args}
-
-
-        data={YEAR.map((row, i) => ({ ...row, social: 600 + ((i * 137) % 500), email: 300 + ((i * 89) % 260) }))}
+      <AreaChartCard
+        {...args}
+        data={YEAR.map((row, i) => ({
+          ...row,
+          social: 600 + ((i * 137) % 500),
+          email: 300 + ((i * 89) % 260),
+        }))}
         series={[
           ...SERIES,
           { key: 'social', label: 'Social' },

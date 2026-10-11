@@ -11,4 +11,10 @@ export interface AgentLimitsCardMessages {
   managePlan: string;
 }
 
-export const AGENT_LIMITS_CARD_MESSAGES: MessageCatalog<AgentLimitsCardMessages> = defineMessages<AgentLimitsCardMessages>('AGENT_LIMITS_CARD_MESSAGES', { contextWindow: 'Context window', freeSpace: 'Free space', planUsageLimits: 'Plan usage limits', managePlan: 'Manage plan' });
+export const AGENT_LIMITS_CARD_MESSAGES: MessageCatalog<AgentLimitsCardMessages> =
+  defineMessages<AgentLimitsCardMessages>('AGENT_LIMITS_CARD_MESSAGES', {
+    contextWindow: 'Context window',
+    freeSpace: 'Free space',
+    planUsageLimits: 'Plan usage limits',
+    managePlan: 'Manage plan',
+  });

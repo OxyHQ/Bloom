@@ -24,13 +24,18 @@ export function useEasedValues(
   const [shown, setShown] = useState<readonly number[]>(targets);
   const shownRef = useRef<readonly number[]>(targets);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the serialised targets
   useEffect(() => {
     const from = shownRef.current;
     const snap = () => {
       shownRef.current = targets;
       setShown(targets);
     };
-    if (reducedMotion || typeof requestAnimationFrame !== 'function' || from.length !== targets.length) {
+    if (
+      reducedMotion ||
+      typeof requestAnimationFrame !== 'function' ||
+      from.length !== targets.length
+    ) {
       snap();
       return;
     }
@@ -50,7 +55,6 @@ export function useEasedValues(
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the serialised targets
   }, [key, reducedMotion, durationMs]);
 
   if (reducedMotion || shown.length !== targets.length) return targets;

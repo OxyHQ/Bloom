@@ -17,8 +17,7 @@ import { createElement, type ReactNode } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
-(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 // Only the two navigation hooks `scroll/expo-router` consumes; `virtual` keeps the
 // real (native-heavy) expo-router off the resolver.
@@ -81,7 +80,11 @@ describe('BloomProvider (web)', () => {
         createElement(BloomProvider, {
           fonts: false,
           imageResolver: (id: string, variant?: string) => `${id}:${variant}`,
-          children: createElement(Scrollable, { onResolve: (url) => { resolved = url; } }),
+          children: createElement(Scrollable, {
+            onResolve: (url) => {
+              resolved = url;
+            },
+          }),
         }),
       );
     }).not.toThrow();
@@ -98,8 +101,17 @@ describe('BloomProvider (web)', () => {
       useScreenFocusEffect: () => {},
     };
     let observed: ScrollRouterAdapter | undefined;
-    function Probe() { observed = useScrollRestorationContext().adapter; return null; }
-    const mounted = render(createElement(BloomProvider, { fonts: false, scrollAdapter: adapter, children: createElement(Probe) }));
+    function Probe() {
+      observed = useScrollRestorationContext().adapter;
+      return null;
+    }
+    const mounted = render(
+      createElement(BloomProvider, {
+        fonts: false,
+        scrollAdapter: adapter,
+        children: createElement(Probe),
+      }),
+    );
     expect(observed).toBe(adapter);
     unmount(mounted);
   });

@@ -9,19 +9,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Sidebar } from '../../src/sidebar';
 import { NotificationBell } from '../../src/app-shell';
-import {
-  StyledView,
-  StyledPressable,
-} from '../../src/styles/styled-primitives';
+import { StyledView, StyledPressable } from '../../src/styles/styled-primitives';
 import { useIsRtl } from '../../src/hooks/use-is-rtl';
 import { useCommonMessages } from '../../src/locale/common-messages';
-import {
-  ACCOUNT,
-  NAV_ITEMS,
-  NOTIFICATIONS,
-  SECONDARY_ITEMS,
-  TEAM,
-} from '../shared/dashboard';
+import { ACCOUNT, NAV_ITEMS, NOTIFICATIONS, SECONDARY_ITEMS, TEAM } from '../shared/dashboard';
 import { ProjectBoardTemplate } from './ProjectBoardTemplate';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
@@ -55,10 +46,7 @@ export function ProjectBoardShell() {
     }),
     [progress, rtl],
   );
-  const maskStyle = useAnimatedStyle(
-    () => ({ opacity: progress.value }),
-    [progress],
-  );
+  const maskStyle = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
   const sidebar = (
     <Sidebar
       items={NAV_ITEMS}
@@ -103,9 +91,7 @@ export function ProjectBoardShell() {
             paddingLeft: 6,
           }}
           accessibilityElementsHidden={!mobileOpen}
-          importantForAccessibility={
-            mobileOpen ? 'auto' : 'no-hide-descendants'
-          }
+          importantForAccessibility={mobileOpen ? 'auto' : 'no-hide-descendants'}
         >
           <AnimatedView
             className={`h-full w-[260px] origin-left rtl:origin-right will-change-transform ${mobileOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
@@ -143,11 +129,7 @@ export function ProjectBoardShell() {
         <ProjectBoardTemplate
           onMenuClick={() => setMobileOpen(true)}
           headerActions={
-            <NotificationBell
-              notifications={NOTIFICATIONS}
-              unreadCount={5}
-              width={430}
-            />
+            <NotificationBell notifications={NOTIFICATIONS} unreadCount={5} width={430} />
           }
         />
       </AnimatedView>

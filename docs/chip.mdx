@@ -165,3 +165,8 @@ In a flex row of chips — a filter bar, a tag list — each pill keeps its size
 ## Compatibility
 
 The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.
+
+When a chip provides both `onPress` (or `onCheckedChange`) and `onClose`, selection
+and removal are two sibling controls inside one painted pill. Each is keyboard
+focusable and has its own accessible name. Closing does not select the chip;
+`disabled` disables both actions. The forwarded ref targets the selection control.

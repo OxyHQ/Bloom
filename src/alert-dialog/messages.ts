@@ -8,6 +8,7 @@ export interface AlertDialogMessages {
   confirm: string;
 }
 
-export const ALERT_DIALOG_MESSAGES: MessageCatalog<AlertDialogMessages> = defineMessages<AlertDialogMessages>('ALERT_DIALOG_MESSAGES', {
-  confirm: 'Confirm',
-});
+export const ALERT_DIALOG_MESSAGES: MessageCatalog<AlertDialogMessages> =
+  defineMessages<AlertDialogMessages>('ALERT_DIALOG_MESSAGES', {
+    confirm: 'Confirm',
+  });

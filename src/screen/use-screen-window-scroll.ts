@@ -14,7 +14,11 @@ export function useScreenWindowScroll(options: ScreenScrollOptions = {}) {
 }
 
 /** Internal default listener yields to a registered list/virtualizer. */
-export function useScreenWindowBinding(screen: ScreenContextValue, options: ScreenScrollOptions = {}, owner: string | null = null) {
+export function useScreenWindowBinding(
+  screen: ScreenContextValue,
+  options: ScreenScrollOptions = {},
+  owner: string | null = null,
+) {
   const reducedMotion = useReducedMotion();
   useEffect(() => {
     if (!screen.active || options.active === false || typeof window === 'undefined') return;

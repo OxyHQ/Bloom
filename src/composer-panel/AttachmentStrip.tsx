@@ -84,7 +84,14 @@ function TileDismiss({
       : {}),
   };
   return (
-    <Button appearance="solid" colors={{ background: overImage ? 'rgba(255,255,255,0.5)' : mixColor(palette.surface, palette.tertiary, 0.5), foreground: color }}
+    <Button
+      appearance="solid"
+      colors={{
+        background: overImage
+          ? 'rgba(255,255,255,0.5)'
+          : mixColor(palette.surface, palette.tertiary, 0.5),
+        foreground: color,
+      }}
       disabled={!visible}
       aria-hidden={!visible}
       accessibilityRole="button"
@@ -92,12 +99,22 @@ function TileDismiss({
       accessibilityElementsHidden={!visible}
       importantForAccessibility={visible ? 'auto' : 'no-hide-descendants'}
       onPress={onPress}
-
       hitSlop={6}
-      style={[COMPOSER_BUTTON_LAYOUT, style]}>
+      style={[COMPOSER_BUTTON_LAYOUT, style]}
+    >
       <Svg width={glyph} height={glyph} viewBox={`0 0 ${glyph} ${glyph}`} fill="none">
-        <Path d={`M${inset} ${inset}L${glyph - inset} ${glyph - inset}`} stroke={color} strokeWidth={1.6} strokeLinecap="round" />
-        <Path d={`M${glyph - inset} ${inset}L${inset} ${glyph - inset}`} stroke={color} strokeWidth={1.6} strokeLinecap="round" />
+        <Path
+          d={`M${inset} ${inset}L${glyph - inset} ${glyph - inset}`}
+          stroke={color}
+          strokeWidth={1.6}
+          strokeLinecap="round"
+        />
+        <Path
+          d={`M${glyph - inset} ${inset}L${inset} ${glyph - inset}`}
+          stroke={color}
+          strokeWidth={1.6}
+          strokeLinecap="round"
+        />
       </Svg>
     </Button>
   );
@@ -108,7 +125,15 @@ function TileDismiss({
  * sits (3, 4), a 14px refresh glyph in the error foreground, text-primary on
  * hover.
  */
-function TileRetry({ label, onPress, palette }: { label: string; onPress: () => void; palette: ComposerPalette }) {
+function TileRetry({
+  label,
+  onPress,
+  palette,
+}: {
+  label: string;
+  onPress: () => void;
+  palette: ComposerPalette;
+}) {
   const Button = useComposerButton();
   const style: WebCssStyle = {
     position: 'absolute',
@@ -123,13 +148,15 @@ function TileRetry({ label, onPress, palette }: { label: string; onPress: () => 
     '--bloom-composer-ring': palette.focusRing,
   };
   return (
-    <Button appearance="solid" colors={{ background: palette.surface, foreground: palette.errorText }}
+    <Button
+      appearance="solid"
+      colors={{ background: palette.surface, foreground: palette.errorText }}
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-
       hitSlop={4}
-      style={[COMPOSER_BUTTON_LAYOUT, style]}>
+      style={[COMPOSER_BUTTON_LAYOUT, style]}
+    >
       <RiRefreshLine width={14} height={14} fill={palette.errorText} />
     </Button>
   );
@@ -191,7 +218,10 @@ export const AttachmentTile = memo(function AttachmentTile({
   const progress = failed ? undefined : attachment.progress;
   const inFlight = progress !== undefined;
   const image = attachment.kind === 'image' ? attachment.src : undefined;
-  const dash = inFlight && progress < 100 ? (Math.max(0, progress) / 100) * TILE_RING_LENGTH : TILE_RING_LENGTH + 2;
+  const dash =
+    inFlight && progress < 100
+      ? (Math.max(0, progress) / 100) * TILE_RING_LENGTH
+      : TILE_RING_LENGTH + 2;
   const KindIcon = attachment.kind === 'image' ? null : ATTACHMENT_KIND_ICONS[attachment.kind];
 
   return (
@@ -206,28 +236,53 @@ export const AttachmentTile = memo(function AttachmentTile({
         borderRadius: TILE_RADIUS,
         borderWidth: 1,
         borderColor: failed ? palette.errorText : palette.tileBorder,
-      }}>
+      }}
+    >
       {image ? (
         <View
           style={[
-            { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: inFlight ? 0.6 : 1 },
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              opacity: inFlight ? 0.6 : 1,
+            },
             fade('opacity'),
-          ]}>
-        <Image
-          source={{ uri: image }}
-          accessibilityLabel={attachment.name}
-          resizeMode="cover"
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: TILE_RADIUS - 1 }}
-        />
+          ]}
+        >
+          <Image
+            source={{ uri: image }}
+            accessibilityLabel={attachment.name}
+            resizeMode="cover"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderRadius: TILE_RADIUS - 1,
+            }}
+          />
         </View>
       ) : (
         <View
           style={[
-            { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: inFlight ? 0.6 : 1 },
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              opacity: inFlight ? 0.6 : 1,
+            },
             fade('opacity'),
-          ]}>
+          ]}
+        >
           <View style={{ position: 'absolute', top: 4, left: 3, width: 24, height: 24 }}>
-            {attachment.icon ?? (KindIcon ? <KindIcon width={24} height={24} fill={palette.iconSecondary} /> : null)}
+            {attachment.icon ??
+              (KindIcon ? <KindIcon width={24} height={24} fill={palette.iconSecondary} /> : null)}
           </View>
           <Text
             numberOfLines={1}
@@ -242,7 +297,8 @@ export const AttachmentTile = memo(function AttachmentTile({
               fontWeight: '500',
               letterSpacing: 0.2,
               color: palette.textSecondary,
-            }}>
+            }}
+          >
             {attachment.name}
           </Text>
         </View>
@@ -258,9 +314,20 @@ export const AttachmentTile = memo(function AttachmentTile({
             bottom: 0,
             borderRadius: TILE_RADIUS - 1,
             backgroundColor: palette.errorSurface,
-          }}>
+          }}
+        >
           {onRetry ? null : (
-            <View style={{ position: 'absolute', top: 4, left: 3, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
+            <View
+              style={{
+                position: 'absolute',
+                top: 4,
+                left: 3,
+                width: 24,
+                height: 24,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <RiErrorWarningLine width={20} height={20} fill={palette.errorText} />
             </View>
           )}
@@ -276,10 +343,13 @@ export const AttachmentTile = memo(function AttachmentTile({
               lineHeight: 11,
               fontWeight: '500',
               color: palette.errorText,
-            }}>
+            }}
+          >
             {error}
           </Text>
-          {onRetry ? <TileRetry label={retryLabel(attachment.name)} onPress={onRetry} palette={palette} /> : null}
+          {onRetry ? (
+            <TileRetry label={retryLabel(attachment.name)} onPress={onRetry} palette={palette} />
+          ) : null}
         </View>
       ) : null}
 
@@ -288,9 +358,17 @@ export const AttachmentTile = memo(function AttachmentTile({
         pointerEvents="none"
         {...dataHook('bloomComposerTileRing')}
         style={[
-          { position: 'absolute', top: -1, left: -1, width: TILE, height: TILE, opacity: inFlight ? 1 : 0 },
+          {
+            position: 'absolute',
+            top: -1,
+            left: -1,
+            width: TILE,
+            height: TILE,
+            opacity: inFlight ? 1 : 0,
+          },
           fade('opacity'),
-        ]}>
+        ]}
+      >
         <Svg width={TILE} height={TILE} viewBox={`0 0 ${TILE} ${TILE}`}>
           <Path
             d={TILE_RING}
@@ -313,7 +391,8 @@ export const AttachmentTile = memo(function AttachmentTile({
             fontWeight: '500',
             fontVariant: ['tabular-nums'],
             color: image ? '#ffffff' : palette.accent500,
-          }}>
+          }}
+        >
           {`${inFlight ? progress : 100}%`}
         </Text>
       </View>
@@ -364,7 +443,9 @@ function PresenceTile({
     () => ({
       opacity: progress.value,
       transform: [{ scale: 0.8 + 0.2 * progress.value }],
-      ...(IS_WEB ? { filter: progress.value >= 1 ? 'none' : `blur(${4 * (1 - progress.value)}px)` } : null),
+      ...(IS_WEB
+        ? { filter: progress.value >= 1 ? 'none' : `blur(${4 * (1 - progress.value)}px)` }
+        : null),
     }),
     [progress],
   );
@@ -387,7 +468,14 @@ interface StripProps {
  * scale 0.8 → 1, fade and un-blur on arrival over 280ms `cubic-bezier(0.22, 1,
  * 0.36, 1)`, and play it backwards on dismissal before leaving the row.
  */
-export function AttachmentStrip({ attachments, palette, onRemove, onRetry, removeLabel, retryLabel }: StripProps) {
+export function AttachmentStrip({
+  attachments,
+  palette,
+  onRemove,
+  onRetry,
+  removeLabel,
+  retryLabel,
+}: StripProps) {
   const [leaving, setLeaving] = useState<ReadonlyArray<ComposerPanelAttachment>>([]);
   const previous = useRef(attachments);
 
@@ -401,10 +489,11 @@ export function AttachmentStrip({ attachments, palette, onRemove, onRetry, remov
   }, [attachments]);
 
   // Leaving tiles keep their slot: rendered in the order they last held.
-  const rendered: Array<{ attachment: ComposerPanelAttachment; leaving: boolean }> = attachments.map((attachment) => ({
-    attachment,
-    leaving: false,
-  }));
+  const rendered: Array<{ attachment: ComposerPanelAttachment; leaving: boolean }> =
+    attachments.map((attachment) => ({
+      attachment,
+      leaving: false,
+    }));
   for (const gone of leaving) {
     if (rendered.some((entry) => entry.attachment.id === gone.id)) continue;
     rendered.push({ attachment: gone, leaving: true });
@@ -416,7 +505,8 @@ export function AttachmentStrip({ attachments, palette, onRemove, onRetry, remov
         <PresenceTile
           key={attachment.id}
           leaving={isLeaving}
-          onLeft={() => setLeaving((current) => current.filter((a) => a.id !== attachment.id))}>
+          onLeft={() => setLeaving((current) => current.filter((a) => a.id !== attachment.id))}
+        >
           <AttachmentTile
             attachment={attachment}
             palette={palette}

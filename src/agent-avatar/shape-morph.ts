@@ -76,14 +76,8 @@ export function recordingPath(record = true): RecordedPath {
           const t = i / 12,
             u = 1 - t;
           contour.push([
-            u ** 3 * a[0] +
-              3 * u * u * t * x1 +
-              3 * u * t * t * x2 +
-              t ** 3 * x3,
-            u ** 3 * a[1] +
-              3 * u * u * t * y1 +
-              3 * u * t * t * y2 +
-              t ** 3 * y3,
+            u ** 3 * a[0] + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t ** 3 * x3,
+            u ** 3 * a[1] + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t ** 3 * y3,
           ]);
         }
       }
@@ -139,9 +133,7 @@ function trace(points: Point[], closed: boolean): RecordedPath {
   for (let i = 0; i < points.length - (closed ? 0 : 1); i++) {
     const point = (n: number) =>
       points[
-        closed
-          ? (n + points.length) % points.length
-          : Math.min(points.length - 1, Math.max(0, n))
+        closed ? (n + points.length) % points.length : Math.min(points.length - 1, Math.max(0, n))
       ]!;
     const a = point(i - 1),
       b = point(i),
@@ -171,8 +163,7 @@ export function morphPaper(
   now: number,
 ): PaperGeometry {
   if (state.shape !== shape) {
-    state.from =
-      state.resolved ?? (state.last ? sample(state.last) : undefined);
+    state.from = state.resolved ?? (state.last ? sample(state.last) : undefined);
     state.started = now;
     state.shape = shape;
   }

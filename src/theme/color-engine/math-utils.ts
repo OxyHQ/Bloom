@@ -56,11 +56,7 @@ export function differenceDegrees(a: number, b: number): number {
 /** Multiply a 1×3 row vector by a 3×3 matrix. */
 export function matrixMultiply(
   row: [number, number, number],
-  matrix: [
-    [number, number, number],
-    [number, number, number],
-    [number, number, number],
-  ],
+  matrix: [[number, number, number], [number, number, number], [number, number, number]],
 ): [number, number, number] {
   const a = row[0] * matrix[0][0] + row[1] * matrix[0][1] + row[2] * matrix[0][2];
   const b = row[0] * matrix[1][0] + row[1] * matrix[1][1] + row[2] * matrix[1][2];

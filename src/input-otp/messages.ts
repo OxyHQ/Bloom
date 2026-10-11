@@ -13,8 +13,9 @@ export interface InputOtpMessages {
   characterOf: (position: number, total: number) => string;
 }
 
-export const INPUT_OTP_MESSAGES: MessageCatalog<InputOtpMessages> = defineMessages<InputOtpMessages>('INPUT_OTP_MESSAGES', {
-  oneTimeCode: 'One-time code',
-  digitOf: (i, n) => `Digit ${i} of ${n}`,
-  characterOf: (i, n) => `Character ${i} of ${n}`,
-});
+export const INPUT_OTP_MESSAGES: MessageCatalog<InputOtpMessages> =
+  defineMessages<InputOtpMessages>('INPUT_OTP_MESSAGES', {
+    oneTimeCode: 'One-time code',
+    digitOf: (i, n) => `Digit ${i} of ${n}`,
+    characterOf: (i, n) => `Character ${i} of ${n}`,
+  });

@@ -5,4 +5,5 @@ export interface AgentThinkingMessages {
   thinking: string;
 }
 
-export const AGENT_THINKING_MESSAGES: MessageCatalog<AgentThinkingMessages> = defineMessages<AgentThinkingMessages>('AGENT_THINKING_MESSAGES', { thinking: 'Thinking' });
+export const AGENT_THINKING_MESSAGES: MessageCatalog<AgentThinkingMessages> =
+  defineMessages<AgentThinkingMessages>('AGENT_THINKING_MESSAGES', { thinking: 'Thinking' });

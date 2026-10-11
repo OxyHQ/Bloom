@@ -118,10 +118,7 @@ function CallHistoryRowComponent({
   };
 
   return (
-    <View
-      style={[{ flexDirection: 'row', alignItems: 'center', gap: 4 }, style]}
-      testID={testID}
-    >
+    <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 4 }, style]} testID={testID}>
       {onPress === undefined ? (
         <View style={shell}>{body}</View>
       ) : (

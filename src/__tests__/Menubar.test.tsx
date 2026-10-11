@@ -32,7 +32,11 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { classNamesOn, findHost, hostNodes } from './support/rendered-style';
 
 function renderBar(ui: React.ReactNode) {
-  return render(<BloomThemeProvider mode="light" colorPreset="teal">{ui}</BloomThemeProvider>);
+  return render(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      {ui}
+    </BloomThemeProvider>,
+  );
 }
 
 function bar(children: React.ReactNode, props: Record<string, unknown> = {}) {

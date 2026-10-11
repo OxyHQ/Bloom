@@ -18,16 +18,8 @@ const STATUS_ICONS = {
   done: RiCheckboxCircleLine,
 };
 const StyledSvg: ComponentType<Props> = styled(Svg, { className: 'style' });
-export function TicketStatusIcon({
-  status,
-  className,
-}: {
-  status: string;
-  className?: string;
-}) {
-  const Icon =
-    STATUS_ICONS[status as keyof typeof STATUS_ICONS] ??
-    RiCheckboxBlankCircleLine;
+export function TicketStatusIcon({ status, className }: { status: string; className?: string }) {
+  const Icon = STATUS_ICONS[status as keyof typeof STATUS_ICONS] ?? RiCheckboxBlankCircleLine;
   return (
     <StyledView className={cx('size-[18px] shrink-0', className)}>
       <Icon width={18} height={18} fill="currentColor" />

@@ -108,7 +108,9 @@ describe('an absolutely-filling Svg declares its size', () => {
     expect(/\bwidth\s*=/.test(good[0]!)).toBe(true);
     expect(/\bheight\s*=/.test(good[0]!)).toBe(true);
     // And a multi-line tag, which is how two of the three real ones are written.
-    const wrapped = svgTags('<Svg\n  width="100%"\n  height="100%"\n  style={StyleSheet.absoluteFill}\n>');
+    const wrapped = svgTags(
+      '<Svg\n  width="100%"\n  height="100%"\n  style={StyleSheet.absoluteFill}\n>',
+    );
     expect(wrapped).toHaveLength(1);
     expect(/\bheight\s*=/.test(wrapped[0]!)).toBe(true);
   });

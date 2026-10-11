@@ -23,11 +23,13 @@ import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createReactionPicker({ Surface, Button }: {
+export function createReactionPicker({
+  Surface,
+  Button,
+}: {
   Surface: typeof SurfaceComponent;
   Button: typeof ButtonComponent;
 }) {
-
   const BOX = { sm: 30, md: 36 } as const;
   const GLYPH = { sm: 'title-3-regular', md: 'title-2-regular' } as const;
 
@@ -44,8 +46,11 @@ export function createReactionPicker({ Surface, Button }: {
     accessibilityLabel: accessibilityLabelProp,
     emojiLabel,
   }: ReactionPickerProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
-  const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
+    const { size: inheritedSize } = useBloomAppearance(
+      { size: sizeProp },
+      { size: 'md', tone: 'neutral' },
+    );
+    const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
 
     const theme = useTheme();
     const raisedFill = useCardFill(style);
@@ -72,14 +77,17 @@ export function createReactionPicker({ Surface, Button }: {
     };
 
     const cell: WebCssStyle = {
-      width: box, height: box, minWidth: box, minHeight: box, flexShrink: 0, padding: 0, borderRadius: 9999,
+      width: box,
+      height: box,
+      minWidth: box,
+      minHeight: box,
+      flexShrink: 0,
+      padding: 0,
+      borderRadius: 9999,
     };
 
     return (
-      <Container
-        accessibilityLabel={accessibilityLabel}
-        style={[bar, style]}
-        testID={testID}>
+      <Container accessibilityLabel={accessibilityLabel} style={[bar, style]} testID={testID}>
         {emojis.map((emoji) => {
           const active = selected === emoji;
           return (
@@ -91,7 +99,8 @@ export function createReactionPicker({ Surface, Button }: {
               pressed={active}
               onPress={() => onSelectEmoji?.(emoji)}
               style={cell}
-              testID={testID ? `${testID}-${emoji}` : undefined}>
+              testID={testID ? `${testID}-${emoji}` : undefined}
+            >
               <Text variant={GLYPH[size]}>{emoji}</Text>
             </Button>
           );
@@ -106,7 +115,8 @@ export function createReactionPicker({ Surface, Button }: {
             icon={RiAddLine}
             iconSize={18}
             style={cell}
-            testID={testID ? `${testID}-more` : undefined} />
+            testID={testID ? `${testID}-more` : undefined}
+          />
         ) : null}
       </Container>
     );

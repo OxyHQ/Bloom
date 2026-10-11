@@ -62,7 +62,12 @@ function FriendActivityCardComponent({
 
   if (skeleton) {
     return (
-      <View aria-busy accessibilityLabel={common.loading} style={[{ flexDirection: 'row', gap: 12, padding: ROW_PADDING }, style]} testID={testID}>
+      <View
+        aria-busy
+        accessibilityLabel={common.loading}
+        style={[{ flexDirection: 'row', gap: 12, padding: ROW_PADDING }, style]}
+        testID={testID}
+      >
         <SkeletonCircle size={AVATAR} />
         <View style={{ flex: 1, gap: 8, justifyContent: 'center' }}>
           <SkeletonBox width="35%" height={12} borderRadius={4} />
@@ -93,13 +98,32 @@ function FriendActivityCardComponent({
 
   return (
     <View
-      {...webDataSet({ bloomMediaCard: 'activity', ...(onPress || href ? { bloomMediaCardHover: '' } : null) })}
+      {...webDataSet({
+        bloomMediaCard: 'activity',
+        ...(onPress || href ? { bloomMediaCardHover: '' } : null),
+      })}
       style={[rootStyle, style]}
       testID={testID}
     >
-      <CardLink name={label} onPress={onPress} href={href} selected={selected} radius={ROW_RADIUS} paint={paint} testID={testID} />
+      <CardLink
+        name={label}
+        onPress={onPress}
+        href={href}
+        selected={selected}
+        radius={ROW_RADIUS}
+        paint={paint}
+        testID={testID}
+      />
       <View pointerEvents="none" style={{ width: AVATAR, height: AVATAR }}>
-        <Artwork source={avatar} width={AVATAR} height={AVATAR} round radius={0} icon={RiUser3Fill} paint={paint} />
+        <Artwork
+          source={avatar}
+          width={AVATAR}
+          height={AVATAR}
+          round
+          radius={0}
+          icon={RiUser3Fill}
+          paint={paint}
+        />
         {live ? (
           <View
             testID={testID ? `${testID}-live-dot` : undefined}
@@ -115,19 +139,38 @@ function FriendActivityCardComponent({
               justifyContent: 'center',
             }}
           >
-            <View style={{ width: DOT, height: DOT, borderRadius: borderRadius.full, backgroundColor: paint.accent }} />
+            <View
+              style={{
+                width: DOT,
+                height: DOT,
+                borderRadius: borderRadius.full,
+                backgroundColor: paint.accent,
+              }}
+            />
           </View>
         ) : null}
       </View>
       <View pointerEvents="none" style={{ flex: 1, minWidth: 0, gap: 2 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Text variant="body-semibold" numberOfLines={1} style={{ flex: 1, minWidth: 0, color: paint.text }}>
+          <Text
+            variant="body-semibold"
+            numberOfLines={1}
+            style={{ flex: 1, minWidth: 0, color: paint.text }}
+          >
             {name}
           </Text>
           {live ? (
-            <NowPlayingIndicator size={12} label={liveLabel} testID={testID ? `${testID}-live` : undefined} />
+            <NowPlayingIndicator
+              size={12}
+              label={liveLabel}
+              testID={testID ? `${testID}-live` : undefined}
+            />
           ) : time ? (
-            <Text variant="caption-1-regular" numberOfLines={1} style={{ color: paint.textSecondary }}>
+            <Text
+              variant="caption-1-regular"
+              numberOfLines={1}
+              style={{ color: paint.textSecondary }}
+            >
               {time}
             </Text>
           ) : null}
@@ -143,7 +186,11 @@ function FriendActivityCardComponent({
             <View aria-hidden>
               <ContextGlyph width={12} height={12} fill={paint.textSecondary} />
             </View>
-            <Text variant="caption-1-regular" numberOfLines={1} style={{ flexShrink: 1, color: paint.textSecondary }}>
+            <Text
+              variant="caption-1-regular"
+              numberOfLines={1}
+              style={{ flexShrink: 1, color: paint.textSecondary }}
+            >
               {context}
             </Text>
           </View>

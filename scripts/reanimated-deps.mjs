@@ -120,12 +120,20 @@ function readsIn(root) {
 
 /** Analyse one file: every hook call and the deps it needs. */
 export function analyseSource(fileName, text) {
-  const sf = ts.createSourceFile(fileName, text, ts.ScriptTarget.Latest, true,
-    fileName.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const sf = ts.createSourceFile(
+    fileName,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    fileName.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
   const results = [];
   const visit = (node) => {
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
-        Object.hasOwn(HOOK_DEPS_INDEX, node.expression.text)) {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      Object.hasOwn(HOOK_DEPS_INDEX, node.expression.text)
+    ) {
       const hook = node.expression.text;
       const depsIndex = HOOK_DEPS_INDEX[hook];
       let enclosing = node.parent;
@@ -138,18 +146,30 @@ export function analyseSource(fileName, text) {
         const needed = [];
         for (const w of worklets) {
           for (const name of readsIn(w)) {
-            if (scope.has(name) && !insideWorklets.has(name) && !needed.includes(name)) needed.push(name);
+            if (scope.has(name) && !insideWorklets.has(name) && !needed.includes(name))
+              needed.push(name);
           }
         }
         const depsArg = node.arguments[depsIndex];
-        const existing = depsArg && ts.isArrayLiteralExpression(depsArg)
-          ? depsArg.elements.map((e) => e.getText(sf)) : null;
+        const existing =
+          depsArg && ts.isArrayLiteralExpression(depsArg)
+            ? depsArg.elements.map((e) => e.getText(sf))
+            : null;
         const opaque = depsArg && !ts.isArrayLiteralExpression(depsArg); // e.g. a variable / null
         // `insets.top` in the array covers a read of `insets` — compare by root identifier.
         const roots = (existing ?? []).map((e) => e.split(/[.?[(\s]/)[0]);
         const missing = opaque ? [] : needed.filter((n) => !roots.includes(n));
         const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
-        results.push({ hook, line: line + 1, node, depsArg, existing, missing, hasArray: !!existing, opaque });
+        results.push({
+          hook,
+          line: line + 1,
+          node,
+          depsArg,
+          existing,
+          missing,
+          hasArray: !!existing,
+          opaque,
+        });
       }
     }
     ts.forEachChild(node, visit);
@@ -183,12 +203,14 @@ export function fixSource(fileName, text) {
 
 /** Calls that are missing an array or missing entries in it. */
 export function problemsIn(fileName, text) {
-  return analyseSource(fileName, text).results
-    .filter((r) => !r.opaque && (!r.hasArray || r.missing.length > 0))
+  return analyseSource(fileName, text)
+    .results.filter((r) => !r.opaque && (!r.hasArray || r.missing.length > 0))
     .map((r) => ({ hook: r.hook, line: r.line, missing: r.missing, hasArray: r.hasArray }));
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname);
+const isMain =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname);
 if (isMain) {
   const args = process.argv.slice(2);
   const write = args.includes('--write');
@@ -200,10 +222,16 @@ if (isMain) {
     if (!Object.keys(HOOK_DEPS_INDEX).some((h) => text.includes(h))) continue;
     if (write) {
       const { text: next, changed } = fixSource(file, text);
-      if (changed) { fs.writeFileSync(file, next); console.log(`${file}: ${changed} call(s)`); total += changed; }
+      if (changed) {
+        fs.writeFileSync(file, next);
+        console.log(`${file}: ${changed} call(s)`);
+        total += changed;
+      }
     } else {
       for (const p of problemsIn(file, text)) {
-        console.log(`${file}:${p.line} ${p.hook} ${p.hasArray ? 'missing ' + p.missing.join(', ') : 'has no dependency array'}${!p.hasArray && p.missing.length ? ` (needs [${p.missing.join(', ')}])` : ''}`);
+        console.log(
+          `${file}:${p.line} ${p.hook} ${p.hasArray ? 'missing ' + p.missing.join(', ') : 'has no dependency array'}${!p.hasArray && p.missing.length ? ` (needs [${p.missing.join(', ')}])` : ''}`,
+        );
         total++;
       }
     }

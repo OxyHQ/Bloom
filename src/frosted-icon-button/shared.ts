@@ -34,7 +34,6 @@ export function resolveFrostedSize(size: FrostedIconButtonSize | number): Froste
   return SIZE_CONFIG[size];
 }
 
-
 /** A React element that accepts a `fill` prop (Bloom icons, raw SVG). */
 type FillableElement = ReactElement<{ fill?: unknown }>;
 

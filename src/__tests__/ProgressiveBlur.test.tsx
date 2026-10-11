@@ -24,12 +24,21 @@ function renderWithTheme(ui: React.ReactElement) {
 }
 
 describe('ProgressiveBlur', () => {
-  it.each([ProgressiveBlur, WebProgressiveBlur])('fades into the enclosing surface fill', Blur => {
-    const tree = renderWithTheme(<SurfaceLevelProvider level={1} fill="#abc123"><Blur direction="bottom" /></SurfaceLevelProvider>);
-    const gradients = hostNodes(tree.toJSON()).map(node => resolvedStyle(node.props.style))
-      .map(style => style.backgroundImage ?? style.experimental_backgroundImage).filter(Boolean);
-    expect(gradients).toContain(buildTailGradient('#abc123', 'bottom'));
-  });
+  it.each([ProgressiveBlur, WebProgressiveBlur])(
+    'fades into the enclosing surface fill',
+    (Blur) => {
+      const tree = renderWithTheme(
+        <SurfaceLevelProvider level={1} fill="#abc123">
+          <Blur direction="bottom" />
+        </SurfaceLevelProvider>,
+      );
+      const gradients = hostNodes(tree.toJSON())
+        .map((node) => resolvedStyle(node.props.style))
+        .map((style) => style.backgroundImage ?? style.experimental_backgroundImage)
+        .filter(Boolean);
+      expect(gradients).toContain(buildTailGradient('#abc123', 'bottom'));
+    },
+  );
   it('stacks several layers rather than drawing one blur with a hard edge', () => {
     const { UNSAFE_root } = renderWithTheme(<ProgressiveBlur />);
     const layers = UNSAFE_root.findAllByType('BlurView' as never);

@@ -51,8 +51,14 @@ describe('interactiveWebCss builds what its callers actually needed', () => {
   } as const;
 
   it('emits the canonical outline ring by default', () => {
-    const css = interactiveWebCss({ ...base, hover: { declarations: 'color: red;' }, outlineOffset: 2 });
-    expect(css).toContain('.x:focus-visible {\n  outline: 2px solid var(--bloom-x-ring, currentColor);');
+    const css = interactiveWebCss({
+      ...base,
+      hover: { declarations: 'color: red;' },
+      outlineOffset: 2,
+    });
+    expect(css).toContain(
+      '.x:focus-visible {\n  outline: 2px solid var(--bloom-x-ring, currentColor);',
+    );
     expect(css).toContain('outline-offset: 2px;');
     // `:focus-visible`, never `:focus` — a mouse press must not leave a ring.
     expect(css).not.toMatch(/\.x:focus\s*\{/);
@@ -67,7 +73,9 @@ describe('interactiveWebCss builds what its callers actually needed', () => {
   it('defaults the disabled block to the one opacity, and lets a recolouring family opt out', () => {
     expect(interactiveWebCss({ ...base })).toContain(`opacity: ${DISABLED_OPACITY};`);
     expect(interactiveWebCss({ ...base, disabled: { opacity: null } })).not.toContain('opacity:');
-    expect(interactiveWebCss({ ...base, disabled: { declarations: 'color: grey;' } })).toContain('color: grey;');
+    expect(interactiveWebCss({ ...base, disabled: { declarations: 'color: grey;' } })).toContain(
+      'color: grey;',
+    );
   });
 
   it('drops the <button> reset and the press scale for a react-native-web caller', () => {
@@ -109,7 +117,8 @@ describe('one focus-ring mechanism', () => {
       for (const line of text.split('\n')) {
         if (!/box-shadow:\s*0 0 0/.test(line)) continue;
         // The gap is the FIRST shadow of a ring. It must be a variable.
-        if (/0 0 0 \d+px\s*(#|rgb|white|currentColor)/i.test(line)) offenders.push(`${path}: ${line.trim()}`);
+        if (/0 0 0 \d+px\s*(#|rgb|white|currentColor)/i.test(line))
+          offenders.push(`${path}: ${line.trim()}`);
       }
     }
     expect(offenders).toEqual([]);
@@ -129,7 +138,9 @@ describe('one focus-ring mechanism', () => {
     // `checkbox/shared`'s `FOCUS_RING_OFFSET_COLOR` was the bug's home. It may
     // still exist as an alias of the fallback; it may not be a literal again.
     const checkbox = FILES.find((f) => f.path === 'checkbox/shared.tsx');
-    expect(checkbox?.text).toContain('export const FOCUS_RING_OFFSET_COLOR = RING_OFFSET_FALLBACK;');
+    expect(checkbox?.text).toContain(
+      'export const FOCUS_RING_OFFSET_COLOR = RING_OFFSET_FALLBACK;',
+    );
   });
 });
 
@@ -168,15 +179,17 @@ describe('the builder is used, not just its adopter hook', () => {
    */
   it('has at least the families migrated to it', () => {
     const callers = FILES.filter((f) => /\binteractiveWebCss\(/.test(f.text)).map((f) => f.path);
-    expect(callers).toEqual(expect.arrayContaining([
-      // `FilterChip` and `FilterTextButton` folded into `Chip` and `Button`
-      // after this list was written; the recipe now reaches those call sites
-      // through the two base families instead.
-      'chip/Chip.tsx',
-      'button/Button.web.tsx',
-      'stay-filters/PropertyTypeTiles.tsx',
-      'stepper/Stepper.tsx',
-    ]));
+    expect(callers).toEqual(
+      expect.arrayContaining([
+        // `FilterChip` and `FilterTextButton` folded into `Chip` and `Button`
+        // after this list was written; the recipe now reaches those call sites
+        // through the two base families instead.
+        'chip/Chip.tsx',
+        'button/Button.web.tsx',
+        'stay-filters/PropertyTypeTiles.tsx',
+        'stepper/Stepper.tsx',
+      ]),
+    );
     expect(callers.length).toBeGreaterThanOrEqual(10);
   });
 });

@@ -27,11 +27,7 @@ import type { VideoPlayer } from 'expo-video';
 import type { MediaFlightHostProps } from '../media-flight/types';
 
 import { PortalOutlet, PortalProvider } from '../portal';
-import {
-  acquireOverlayRank,
-  OVERLAY_STACK_BASE,
-  resetOverlayStack,
-} from '../overlay/stack';
+import { acquireOverlayRank, OVERLAY_STACK_BASE, resetOverlayStack } from '../overlay/stack';
 import { MediaFlightHost } from '../media-flight/MediaFlightHost';
 import { MediaFlightLayer } from '../media-flight/MediaFlightLayer';
 import { MediaPoster, MediaSurface } from '../media-flight/MediaSurface';
@@ -52,10 +48,7 @@ import {
   resetMediaFlight,
   subscribeToFlights,
 } from '../media-flight/store';
-import {
-  SLOT_IDENTITY_CHURN_LIMIT,
-  SURFACE_MOUNT_TIMEOUT_MS,
-} from '../media-flight/constants';
+import { SLOT_IDENTITY_CHURN_LIMIT, SURFACE_MOUNT_TIMEOUT_MS } from '../media-flight/constants';
 import type { MediaFlightAnchorNode, MediaSurfaceContent } from '../media-flight/types';
 import type { VideoPlayerLike } from '../media-flight/expo-video-module';
 import { hostNodes, resolvedStyle } from './support/rendered-style';
@@ -336,9 +329,7 @@ describe('MediaFlightLayer', () => {
     act(() => {
       flyTo('a', TARGET, IMAGE, { from: RECT });
     });
-    expect(
-      hostNodes(toJSON()).filter((node) => node.type === 'ExpoImage'),
-    ).not.toHaveLength(0);
+    expect(hostNodes(toJSON()).filter((node) => node.type === 'ExpoImage')).not.toHaveLength(0);
   });
 
   it('stops painting when the surface is released', () => {
@@ -382,9 +373,7 @@ describe('MediaFlightLayer', () => {
     });
     // The prop, not a style key — react-native-web resolves the RN-only values
     // from the prop path only, and as a style entry it is silently inert.
-    const surfaces = hostNodes(toJSON()).filter(
-      (node) => node.props?.pointerEvents === 'none',
-    );
+    const surfaces = hostNodes(toJSON()).filter((node) => node.props?.pointerEvents === 'none');
     expect(surfaces.length).toBeGreaterThan(0);
   });
 });
@@ -710,9 +699,7 @@ describe('MediaPoster', () => {
   });
 
   it('degrades to an empty box for a video with no poster', () => {
-    const { toJSON } = render(
-      <MediaPoster content={{ kind: 'video', player: PLAYER }} />,
-    );
+    const { toJSON } = render(<MediaPoster content={{ kind: 'video', player: PLAYER }} />);
     expect(hostNodes(toJSON()).filter((node) => node.type === 'ExpoImage')).toHaveLength(0);
   });
 });
@@ -864,7 +851,7 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
     expect(hasFlight('a')).toBe(false);
   });
 
-  it('a destination IMAGE surface hands off on load, and its poster never does', () => {
+  it('a destination IMAGE surface hands off on display, and its poster never does', () => {
     // Both arms report the same fact, because a flight can land on either. But
     // on the VIDEO arm the poster is scenery — handing off on it would release
     // the flying copy while the destination still had no video.
@@ -874,9 +861,11 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
 
     const image = render(<MediaSurface content={IMAGE} flightId="a" />);
     const [imageNode] = hostNodes(image.toJSON()).filter((n) => n.type === 'ExpoImage');
-    expect(typeof imageNode?.props?.onLoad).toBe('function');
+    expect(imageNode?.props?.onLoad).toBeUndefined();
+    expect(typeof imageNode?.props?.onDisplay).toBe('function');
+    expect(hasFlight('a')).toBe(true);
     act(() => {
-      (imageNode?.props?.onLoad as () => void)();
+      (imageNode?.props?.onDisplay as () => void)();
     });
     expect(hasFlight('a')).toBe(false);
 
@@ -885,7 +874,7 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
     notifySurfaceSettled('b');
     const video = render(<MediaSurface content={VIDEO} flightId="b" />);
     const [poster] = hostNodes(video.toJSON()).filter((n) => n.type === 'ExpoImage');
-    expect(poster?.props?.onLoad).toBeUndefined();
+    expect(poster?.props?.onDisplay).toBeUndefined();
     expect(hasFlight('b')).toBe(true);
   });
 });
@@ -1252,7 +1241,6 @@ describe('the hand-written expo-video types', () => {
     );
     expect(inferred.props.id).toBe('v');
   });
-
 
   it('accepts a real VideoPlayer', () => {
     // `VideoPlayerLike` is hand-written so no expo-video type reaches Bloom's

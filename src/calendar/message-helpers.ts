@@ -8,6 +8,8 @@
 export function compactDuration(hourUnit: string, minuteUnit: string, joiner: string) {
   return (hours: number, minutes: number): string => {
     if (hours === 0) return `${minutes}${minuteUnit}`;
-    return minutes > 0 ? `${hours}${hourUnit}${joiner}${minutes}${minuteUnit}` : `${hours}${hourUnit}`;
+    return minutes > 0
+      ? `${hours}${hourUnit}${joiner}${minutes}${minuteUnit}`
+      : `${hours}${hourUnit}`;
   };
 }

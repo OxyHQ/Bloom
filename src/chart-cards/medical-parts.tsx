@@ -1,5 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Animated,
+  Easing,
+  Platform,
+  Pressable,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
@@ -85,7 +93,10 @@ function useChartCss(): void {
  * `data-*` hook plus the ring colour as a custom property. Adopts the sheet once.
  * Web only; native has no keyboard focus ring to draw.
  */
-export function useChartFocusRing(kind: 'outset' | 'inset', color: string): { hook: WebDataSet; ring: WebCssStyle | null } {
+export function useChartFocusRing(
+  kind: 'outset' | 'inset',
+  color: string,
+): { hook: WebDataSet; ring: WebCssStyle | null } {
   useChartCss();
   if (Platform.OS !== 'web') return { hook: {}, ring: null };
   return { hook: { dataSet: { bloomChartFocus: kind } }, ring: { '--bloom-chart-ring': color } };
@@ -122,7 +133,14 @@ export interface MedicalHeadlineProps {
  * with its suffix `caption-1-medium` text-secondary 4px after it, sharing the
  * number's baseline.
  */
-export function MedicalHeadline({ label, value, format, suffix, fadeKey, testID }: MedicalHeadlineProps) {
+export function MedicalHeadline({
+  label,
+  value,
+  format,
+  suffix,
+  fadeKey,
+  testID,
+}: MedicalHeadlineProps) {
   const palette = useChartCardPalette();
   const rolled = useCountUp(value);
   const animated = fadeKey !== undefined;
@@ -131,7 +149,8 @@ export function MedicalHeadline({ label, value, format, suffix, fadeKey, testID 
       variant="title-1-medium"
       numberOfLines={1}
       testID={testID ? `${testID}-headline` : undefined}
-      style={[{ color: palette.text }, TABULAR]}>
+      style={[{ color: palette.text }, TABULAR]}
+    >
       {format(animated ? rolled : value)}
     </Text>
   );
@@ -143,7 +162,11 @@ export function MedicalHeadline({ label, value, format, suffix, fadeKey, testID 
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
         {animated ? <FadeOnChange fadeKey={fadeKey}>{number}</FadeOnChange> : number}
         {suffix ? (
-          <Text variant="caption-1-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
+          <Text
+            variant="caption-1-medium"
+            numberOfLines={1}
+            style={{ color: palette.textSecondary }}
+          >
             {suffix}
           </Text>
         ) : null}
@@ -165,7 +188,8 @@ export function MedicalHeader({ children }: { children: React.ReactNode }) {
         paddingLeft: 6,
         paddingRight: 6,
         paddingTop: 6,
-      }}>
+      }}
+    >
       {children}
     </View>
   );
@@ -234,7 +258,15 @@ function RollingLabel({ label, color }: { label: string; color: string }) {
   }, [label, reducedMotion, progress]);
 
   const textStyle = { color, textAlign: 'center' as const };
-  const layer: ViewStyle = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' };
+  const layer: ViewStyle = {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
   return (
     <View style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
       {/* Invisible spacer keeps the line box for the absolute layers. */}
@@ -249,9 +281,17 @@ function RollingLabel({ label, color }: { label: string; color: string }) {
             layer,
             {
               opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
-              transform: [{ translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [0, -LABEL_SHIFT] }) }],
+              transform: [
+                {
+                  translateY: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -LABEL_SHIFT],
+                  }),
+                },
+              ],
             },
-          ]}>
+          ]}
+        >
           <Text variant="body-medium" numberOfLines={1} style={textStyle}>
             {previous}
           </Text>
@@ -264,10 +304,18 @@ function RollingLabel({ label, color }: { label: string; color: string }) {
           previous !== null
             ? {
                 opacity: progress,
-                transform: [{ translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [LABEL_SHIFT, 0] }) }],
+                transform: [
+                  {
+                    translateY: progress.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [LABEL_SHIFT, 0],
+                    }),
+                  },
+                ],
               }
             : null,
-        ]}>
+        ]}
+      >
         <Text variant="body-medium" numberOfLines={1} style={textStyle}>
           {label}
         </Text>
@@ -293,7 +341,11 @@ function NavButton({
   const { hook, ring } = useChartFocusRing('outset', medical.focusRing);
   const ease: WebCssStyle | null =
     Platform.OS === 'web'
-      ? { transitionProperty: 'background-color', transitionDuration: '150ms', transitionTimingFunction: 'ease' }
+      ? {
+          transitionProperty: 'background-color',
+          transitionDuration: '150ms',
+          transitionTimingFunction: 'ease',
+        }
       : null;
   return (
     <Pressable
@@ -316,7 +368,8 @@ function NavButton({
         },
         ease,
         ring,
-      ]}>
+      ]}
+    >
       <Chevron16 direction={direction} color={palette.textSecondary} />
     </Pressable>
   );
@@ -382,9 +435,15 @@ export function WeekRangePill({
           paddingRight: 4,
         },
         style,
-      ]}>
+      ]}
+    >
       {interactive ? (
-        <NavButton direction="left" label={prevLabel} onPress={onPrev ?? noop} testID={testID ? `${testID}-prev` : undefined} />
+        <NavButton
+          direction="left"
+          label={prevLabel}
+          onPress={onPrev ?? noop}
+          testID={testID ? `${testID}-prev` : undefined}
+        />
       ) : (
         <View aria-hidden style={{ width: 16, height: 16, flexShrink: 0 }}>
           <Chevron16 direction="left" color={palette.textSecondary} />
@@ -393,12 +452,21 @@ export function WeekRangePill({
       {interactive ? (
         <RollingLabel label={label} color={palette.text} />
       ) : (
-        <Text variant="body-medium" numberOfLines={1} style={{ flex: 1, textAlign: 'center', color: palette.text }}>
+        <Text
+          variant="body-medium"
+          numberOfLines={1}
+          style={{ flex: 1, textAlign: 'center', color: palette.text }}
+        >
           {label}
         </Text>
       )}
       {interactive ? (
-        <NavButton direction="right" label={nextLabel} onPress={onNext ?? noop} testID={testID ? `${testID}-next` : undefined} />
+        <NavButton
+          direction="right"
+          label={nextLabel}
+          onPress={onNext ?? noop}
+          testID={testID ? `${testID}-next` : undefined}
+        />
       ) : (
         <View aria-hidden style={{ width: 16, height: 16, flexShrink: 0 }}>
           <Chevron16 direction="right" color={palette.textSecondary} />

@@ -255,3 +255,29 @@ last content without nested vertical scroll containers.
 ### Shared surface paint
 
 The painted host delegates its fill to Surface: a 90%-opacity body with a subtle refracted edge on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.
+
+Panel corners inherit `BloomScope panelRadius` (28 by default), matching card sidebars. Both preserve the circular corner shape of the content panel on web and native.
+`chrome="none"` removes the border, shadow and material rim/sheen while retaining the
+framed radius and content clipping. Use it for a reader pane that should have a plain fill.
+
+For a page outside split panes, `errorBoundary` opts into themed local recovery inside
+the existing surface: `errorBoundary={{ resetKey: pathname, emptyState: { title: 'Cannot open this page' } }}`.
+The frame remains mounted while content retries. Omit it when `AppShellSplitPanes`
+already owns the pane boundary. See [Error boundary](/docs/error-boundary).
+
+### Transparent content layout
+
+Use `appearance="plain"` when the content should sit directly on the enclosing
+surface, for example individual message cards inside a reader. The panel keeps
+its responsive framing, scoped radius, clipping and height behavior, but paints
+no backing, material, border or shadow. Its descendants inherit the enclosing
+surface's actual level and fill, so `PageHeader` and `PageFooter` scrims blend
+into that surface. Background overrides and `surfaceColor` apply only to the
+default `appearance="solid"` mode. This differs from `chrome="none"`, which
+removes the edge while retaining the solid backing.
+
+```tsx
+<ContentPanel appearance="plain" fill overlaySizing="panel">
+  <MailThread messages={messages} />
+</ContentPanel>
+```

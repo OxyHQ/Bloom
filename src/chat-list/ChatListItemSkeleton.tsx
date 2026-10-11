@@ -21,12 +21,7 @@ export function ChatListItemSkeleton({
 }: ChatListItemSkeletonProps) {
   const geo = CHAT_ROW_GEOMETRY[density];
   return (
-    <View
-      aria-hidden
-      importantForAccessibility="no-hide-descendants"
-      style={style}
-      testID={testID}
-    >
+    <View aria-hidden importantForAccessibility="no-hide-descendants" style={style} testID={testID}>
       {Array.from({ length: count }, (_, index) => {
         const nameWidth = 38 + ((index * 37) % 26);
         const previewWidth = 46 + ((index * 23) % 34);

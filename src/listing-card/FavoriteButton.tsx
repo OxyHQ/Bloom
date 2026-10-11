@@ -89,11 +89,7 @@ function FavoriteButtonComponent({
             opacity: favorite ? 1 : HEART_SCRIM_OPACITY,
           }}
         >
-          <RiHeart3Fill
-            width={size}
-            height={size}
-            fill={favorite ? paint.favorite : paint.scrim}
-          />
+          <RiHeart3Fill width={size} height={size} fill={favorite ? paint.favorite : paint.scrim} />
         </View>
         <View style={{ position: 'absolute', top: 0, left: 0 }}>
           <RiHeart3Line width={size} height={size} fill={paint.onMedia} />

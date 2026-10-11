@@ -97,11 +97,17 @@ export function resolveNotificationCenterPalette(theme: Theme): CenterPalette {
   };
   const neutral = { background: c.backgroundTertiary, foreground: c.textSecondary };
   return {
-    section: c.backgroundSecondary, border: c.border,
+    section: c.backgroundSecondary,
+    border: c.border,
     shadow: theme.isDark ? MENU_SHADOW.dark : MENU_SHADOW.light,
-    well: c.backgroundSecondary, card: c.card, text: c.text,
-    textSecondary: c.textSecondary, textTertiary: c.textTertiary, icon: c.textSecondary,
-    countBackground: c.backgroundTertiary, unread: c.primary,
+    well: c.backgroundSecondary,
+    card: c.card,
+    text: c.text,
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    icon: c.textSecondary,
+    countBackground: c.backgroundTertiary,
+    unread: c.primary,
     status: { neutral, information: pair('info'), success: pair('success'), error: pair('error') },
     avatar: { neutral, blue: pair('primary'), lime: pair('success'), pink: pair('tertiary') },
   };
@@ -137,7 +143,13 @@ function NotificationVisual({
 }
 
 /** `Avatar size="lg" className="size-10"`: 40px, 18/24 semibold initials. */
-function PersonAvatar({ avatar, palette }: { avatar: NotificationCenterAvatar; palette: CenterPalette }) {
+function PersonAvatar({
+  avatar,
+  palette,
+}: {
+  avatar: NotificationCenterAvatar;
+  palette: CenterPalette;
+}) {
   const tint = palette.avatar[avatar.color ?? 'neutral'];
   if (avatar.source) {
     return <Avatar source={avatar.source} size={40} style={{ flexShrink: 0 }} />;
@@ -178,7 +190,10 @@ function CountPill({ count, palette }: { count: number; palette: CenterPalette }
         backgroundColor: palette.countBackground,
       }}
     >
-      <Text variant="caption-1-medium" style={{ color: palette.textSecondary, textAlign: 'center' }}>
+      <Text
+        variant="caption-1-medium"
+        style={{ color: palette.textSecondary, textAlign: 'center' }}
+      >
         {count}
       </Text>
     </View>
@@ -227,7 +242,10 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
   );
 
   const visible = useMemo(
-    () => (activeTab === 'all' ? notifications : notifications.filter((item) => item.category === activeTab)),
+    () =>
+      activeTab === 'all'
+        ? notifications
+        : notifications.filter((item) => item.category === activeTab),
     [activeTab, notifications],
   );
 
@@ -251,23 +269,38 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
   const scrollStyle: ViewStyle = { maxHeight: 516, backgroundColor: palette.well };
 
   return (
-    <View
-      role="region"
-      accessibilityLabel={title}
-      testID={testID}
-      style={[sectionStyle, style]}
-    >
-      <View style={{ gap: 12, paddingTop: 16, paddingLeft: 16, paddingRight: 16, paddingBottom: 6 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+    <View role="region" accessibilityLabel={title} testID={testID} style={[sectionStyle, style]}>
+      <View
+        style={{ gap: 12, paddingTop: 16, paddingLeft: 16, paddingRight: 16, paddingBottom: 6 }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 16,
+          }}
+        >
           <View style={{ flexShrink: 1, minWidth: 0, gap: 2 }}>
-            <Text role="heading" aria-level={2} variant="title-3-medium" style={{ color: palette.text }}>
+            <Text
+              role="heading"
+              aria-level={2}
+              variant="title-3-medium"
+              style={{ color: palette.text }}
+            >
               {title}
             </Text>
             <Text variant="body-regular" style={{ color: palette.textSecondary }}>
               {unreadCount === 0 ? messages.noUnread : messages.unread(unreadCount)}
             </Text>
           </View>
-          <Button size="sm" onPress={markAllRead} disabled={unreadCount === 0} appearance="subtle" tone="accent">
+          <Button
+            size="sm"
+            onPress={markAllRead}
+            disabled={unreadCount === 0}
+            appearance="subtle"
+            tone="accent"
+          >
             {messages.markAllRead}
           </Button>
         </View>
@@ -280,7 +313,11 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
           style={{ alignSelf: 'stretch', width: '100%' }}
         >
           {TABS.map((id) => (
-            <SegmentedControlItem key={id} value={id} testID={testID ? `${testID}-tab-${id}` : undefined}>
+            <SegmentedControlItem
+              key={id}
+              value={id}
+              testID={testID ? `${testID}-tab-${id}` : undefined}
+            >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <SegmentedControlItemText>{messages.tabs[id]}</SegmentedControlItemText>
                 <CountPill count={counts[id]} palette={palette} />
@@ -356,11 +393,25 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
                             gap: 12,
                           }}
                         >
-                          <Text variant="body-medium" style={{ flexShrink: 1, minWidth: 0, color: palette.text }}>
+                          <Text
+                            variant="body-medium"
+                            style={{ flexShrink: 1, minWidth: 0, color: palette.text }}
+                          >
                             {item.title}
                           </Text>
-                          <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                            <Text variant="caption-1-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
+                          <View
+                            style={{
+                              flexShrink: 0,
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 8,
+                            }}
+                          >
+                            <Text
+                              variant="caption-1-medium"
+                              numberOfLines={1}
+                              style={{ color: palette.textTertiary }}
+                            >
                               {item.timestamp}
                             </Text>
                             {unread ? (
@@ -391,10 +442,16 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
                             }}
                           >
                             {item.actions.map((action) => (
-                              <Button key={action.id} size="sm" appearance={action.appearance ?? 'subtle'} tone={action.tone ?? 'neutral'} onPress={() => {
+                              <Button
+                                key={action.id}
+                                size="sm"
+                                appearance={action.appearance ?? 'subtle'}
+                                tone={action.tone ?? 'neutral'}
+                                onPress={() => {
                                   setReadIds((current) => new Set(current).add(item.id));
                                   onAction?.(item.id, action.id);
-                                }}>
+                                }}
+                              >
                                 {action.label}
                               </Button>
                             ))}

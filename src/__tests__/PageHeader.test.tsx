@@ -33,7 +33,9 @@ function renderBar(props: PageHeaderProps, mode: 'light' | 'dark' = 'light') {
 }
 
 function setWidth(width: number) {
-  jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  jest
+    .spyOn(ReactNative, 'useWindowDimensions')
+    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
 function opacity(node: { props: { [key: string]: unknown } }) {
@@ -68,9 +70,17 @@ describe('PageHeader', () => {
     const title = screen.getByTestId('h-title');
     expect(title.props.role).toBe('heading');
     expect(title.props['aria-level']).toBe(2);
-    expect(resolvedStyle(title.props.style)).toMatchObject({ fontSize: 16, lineHeight: 22, fontWeight: '500' });
+    expect(resolvedStyle(title.props.style)).toMatchObject({
+      fontSize: 16,
+      lineHeight: 22,
+      fontWeight: '500',
+    });
     const subtitle = screen.getByTestId('h-subtitle');
-    expect(resolvedStyle(subtitle.props.style)).toMatchObject({ fontSize: 13, lineHeight: 18, fontWeight: '400' });
+    expect(resolvedStyle(subtitle.props.style)).toMatchObject({
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '400',
+    });
     expect(subtitle.props.role).toBeUndefined();
   });
 
@@ -88,11 +98,18 @@ describe('PageHeader', () => {
   it('bar is 56 tall with 16 insets below sm and 24 from sm', () => {
     setWidth(390);
     const phone = renderBar({ title: 'A' });
-    expect(resolvedStyle(phone.getByTestId('h-bar').props.style)).toMatchObject({ minHeight: 56, paddingLeft: 16, paddingRight: 16 });
+    expect(resolvedStyle(phone.getByTestId('h-bar').props.style)).toMatchObject({
+      minHeight: 56,
+      paddingLeft: 16,
+      paddingRight: 16,
+    });
     phone.unmount();
     setWidth(1024);
     const wide = renderBar({ title: 'A' });
-    expect(resolvedStyle(wide.getByTestId('h-bar').props.style)).toMatchObject({ paddingLeft: 24, paddingRight: 24 });
+    expect(resolvedStyle(wide.getByTestId('h-bar').props.style)).toMatchObject({
+      paddingLeft: 24,
+      paddingRight: 24,
+    });
   });
 
   it('sizes itself from its CONTAINER once measured, not from the window', () => {
@@ -132,11 +149,19 @@ describe('PageHeader', () => {
       actions: <ReactNative.View testID="action" />,
     });
     act(() => {
-      fireEvent(screen.getByTestId('h-start'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 36, height: 36 } } });
-      fireEvent(screen.getByTestId('h-actions'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 82, height: 36 } } });
+      fireEvent(screen.getByTestId('h-start'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 36, height: 36 } },
+      });
+      fireEvent(screen.getByTestId('h-actions'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 82, height: 36 } },
+      });
     });
     // 16 side inset + 82 (wider side) + 8 gap.
-    expect(resolvedStyle(screen.getByTestId('h-center').props.style)).toMatchObject({ position: 'absolute', left: 106, right: 106 });
+    expect(resolvedStyle(screen.getByTestId('h-center').props.style)).toMatchObject({
+      position: 'absolute',
+      left: 106,
+      right: 106,
+    });
     expect(screen.queryByTestId('h-title')).toBeTruthy();
   });
 
@@ -153,8 +178,12 @@ describe('PageHeader', () => {
       actions: <ReactNative.View testID="action" />,
     });
     act(() => {
-      fireEvent(screen.getByTestId('h-start'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 130, height: 36 } } });
-      fireEvent(screen.getByTestId('h-actions'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 130, height: 36 } } });
+      fireEvent(screen.getByTestId('h-start'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 130, height: 36 } },
+      });
+      fireEvent(screen.getByTestId('h-actions'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 130, height: 36 } },
+      });
     });
     const slot = resolvedStyle(screen.getByTestId('h-center').props.style);
     const left = slot.left as number;
@@ -170,11 +199,19 @@ describe('PageHeader', () => {
     setWidth(390);
     const screen = render(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <PageHeader testID="h" presentation="bar" title="Messages" titleAlign="center" actions={<ReactNative.View />} />
+        <PageHeader
+          testID="h"
+          presentation="bar"
+          title="Messages"
+          titleAlign="center"
+          actions={<ReactNative.View />}
+        />
       </BloomThemeProvider>,
     );
     act(() => {
-      fireEvent(screen.getByTestId('h-actions'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 120, height: 36 } } });
+      fireEvent(screen.getByTestId('h-actions'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 120, height: 36 } },
+      });
     });
     expect(resolvedStyle(screen.getByTestId('h-center').props.style).left).toBe(16 + 120 + 8);
     screen.rerender(
@@ -221,13 +258,31 @@ describe('PageHeader', () => {
     const held = renderBar({ title: 'A', titleReveal: 'onScroll', scrollY: { value: 0 } as never });
     expect(opacity(held.getByTestId('h-title-block', { includeHiddenElements: true }))).toBe(0);
     held.unmount();
-    const arrived = renderBar({ title: 'A', titleReveal: 'onScroll', scrollY: { value: 20 } as never });
+    const arrived = renderBar({
+      title: 'A',
+      titleReveal: 'onScroll',
+      scrollY: { value: 20 } as never,
+    });
     expect(opacity(arrived.getByTestId('h-title-block'))).toBe(1);
   });
 
   it('delays both title lines independently of the scrim and hides them from accessibility at rest', () => {
-    for (const [offset, expected] of [[20, 0], [99, 0], [100, 0], [110, 0.5], [120, 1]] as const) {
-      const tree = renderBar({ title: 'Library', subtitle: 'Saved items', presentation: 'floating', titleReveal: 'onScroll', titleRevealOffset: 100, scrollThreshold: 20, scrollY: { value: offset } as never });
+    for (const [offset, expected] of [
+      [20, 0],
+      [99, 0],
+      [100, 0],
+      [110, 0.5],
+      [120, 1],
+    ] as const) {
+      const tree = renderBar({
+        title: 'Library',
+        subtitle: 'Saved items',
+        presentation: 'floating',
+        titleReveal: 'onScroll',
+        titleRevealOffset: 100,
+        scrollThreshold: 20,
+        scrollY: { value: offset } as never,
+      });
       const block = tree.getByTestId('h-title-block', { includeHiddenElements: true });
       expect(opacity(block)).toBe(expected);
       if (offset === 20) expect(opacity(tree.getByTestId('h-scrim'))).toBe(1);
@@ -239,20 +294,29 @@ describe('PageHeader', () => {
   });
 
   it('inherits the containing surface for both the scrim and bar, including fill changes', () => {
-    const tree = (fill: string) => <BloomThemeProvider mode="light" colorPreset="teal">
-      <SurfaceLevelProvider level={1} fill={fill}>
-        <PageHeader testID="floating" title="Feed" />
-        <PageHeader testID="bar" title="Feed" presentation="bar" />
-      </SurfaceLevelProvider>
-    </BloomThemeProvider>;
+    const tree = (fill: string) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <SurfaceLevelProvider level={1} fill={fill}>
+          <PageHeader testID="floating" title="Feed" />
+          <PageHeader testID="bar" title="Feed" presentation="bar" />
+        </SurfaceLevelProvider>
+      </BloomThemeProvider>
+    );
     const screen = render(tree('#e4edcf'));
-    const stops = () => screen.getByTestId('floating-scrim-gradient').findAll(node => node.props.stopColor !== undefined);
+    const stops = () =>
+      screen
+        .getByTestId('floating-scrim-gradient')
+        .findAll((node) => node.props.stopColor !== undefined);
     expect(stops().length).toBeGreaterThan(0);
-    expect(stops().every(node => node.props.stopColor === '#e4edcf')).toBe(true);
-    expect(resolvedStyle(screen.getByTestId('bar-background').props.style).backgroundColor).toBe('#e4edcf');
+    expect(stops().every((node) => node.props.stopColor === '#e4edcf')).toBe(true);
+    expect(resolvedStyle(screen.getByTestId('bar-background').props.style).backgroundColor).toBe(
+      '#e4edcf',
+    );
     screen.rerender(tree('#d3dabc'));
-    expect(stops().every(node => node.props.stopColor === '#d3dabc')).toBe(true);
-    expect(resolvedStyle(screen.getByTestId('bar-background').props.style).backgroundColor).toBe('#d3dabc');
+    expect(stops().every((node) => node.props.stopColor === '#d3dabc')).toBe(true);
+    expect(resolvedStyle(screen.getByTestId('bar-background').props.style).backgroundColor).toBe(
+      '#d3dabc',
+    );
   });
 
   it('separator and background follow the theme ramps in light and dark', () => {
@@ -262,9 +326,16 @@ describe('PageHeader', () => {
     const lightBg = resolvedStyle(light.getByTestId('h-background').props.style).backgroundColor;
     light.unmount();
     const dark = renderBar({ title: 'A' }, 'dark');
-    expect(resolvedStyle(dark.getByTestId('h-border').props.style).backgroundColor).not.toBe(lightBorder);
-    expect(resolvedStyle(dark.getByTestId('h-background').props.style).backgroundColor).not.toBe(lightBg);
-    expect(resolvedStyle(dark.getByTestId('h-border').props.style)).toMatchObject({ height: 1, bottom: 0 });
+    expect(resolvedStyle(dark.getByTestId('h-border').props.style).backgroundColor).not.toBe(
+      lightBorder,
+    );
+    expect(resolvedStyle(dark.getByTestId('h-background').props.style).backgroundColor).not.toBe(
+      lightBg,
+    );
+    expect(resolvedStyle(dark.getByTestId('h-border').props.style)).toMatchObject({
+      height: 1,
+      bottom: 0,
+    });
   });
 
   it('native: pads by the safe-area top inset unless safeArea is false; no sticky', () => {
@@ -291,34 +362,56 @@ describe('PageHeader', () => {
     setWidth(1024);
     (ReactNative.Platform as { OS: string }).OS = 'web';
     const sticky = renderBar({ title: 'A' });
-    expect(resolvedStyle(sticky.getByTestId('h').props.style)).toMatchObject({ position: 'sticky', top: 'var(--bloom-panel-sticky-top, 0px)', paddingTop: 0 });
+    expect(resolvedStyle(sticky.getByTestId('h').props.style)).toMatchObject({
+      position: 'sticky',
+      top: 'var(--bloom-panel-sticky-top, 0px)',
+      paddingTop: 0,
+    });
     sticky.unmount();
     const flow = renderBar({ title: 'A', sticky: false });
     expect(resolvedStyle(flow.getByTestId('h').props.style).position).toBe('relative');
   });
 });
 
-it.each(['android', 'ios', 'web'] as const)('layers an overlay above its native list without reserving flow space (%s)', (platform) => {
-  (ReactNative.Platform as { OS: string }).OS = platform;
-  const screen = renderHeader({ placement: 'overlay', title: 'Profile', onBack: jest.fn() });
-  const header = screen.getByTestId('h');
-  const style = resolvedStyle(header.props.style);
-  expect(style).toMatchObject({ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 });
-  expect(style.elevation).toBe(platform === 'web' ? undefined : 10);
-  expect(style.marginBottom).toBeUndefined();
-  expect(header.props.pointerEvents).toBe('box-none');
-  expect(screen.getByLabelText('Back')).toBeTruthy();
-});
+it.each(['android', 'ios', 'web'] as const)(
+  'layers an overlay above its native list without reserving flow space (%s)',
+  (platform) => {
+    (ReactNative.Platform as { OS: string }).OS = platform;
+    const screen = renderHeader({ placement: 'overlay', title: 'Profile', onBack: jest.fn() });
+    const header = screen.getByTestId('h');
+    const style = resolvedStyle(header.props.style);
+    expect(style).toMatchObject({ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 });
+    expect(style.elevation).toBe(platform === 'web' ? undefined : 10);
+    expect(style.marginBottom).toBeUndefined();
+    expect(header.props.pointerEvents).toBe('box-none');
+    expect(screen.getByLabelText('Back')).toBeTruthy();
+  },
+);
 
 it('keeps Android floating back and action controls mounted and operable while its title is hidden', () => {
   (ReactNative.Platform as { OS: string }).OS = 'android';
   const onBack = jest.fn();
   const onAction = jest.fn();
   const screen = renderHeader({
-    placement: 'overlay', presentation: 'floating', title: 'Profile', titleReveal: 'onDock', onBack,
-    actions: <ButtonGroup><ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search profile" onPress={onAction} /></ButtonGroup>,
+    placement: 'overlay',
+    presentation: 'floating',
+    title: 'Profile',
+    titleReveal: 'onDock',
+    onBack,
+    actions: (
+      <ButtonGroup>
+        <ButtonGroupItem
+          iconOnly
+          leadingIcon={RiSearchLine}
+          accessibilityLabel="Search profile"
+          onPress={onAction}
+        />
+      </ButtonGroup>
+    ),
   });
-  expect(screen.getByTestId('h-title-block', { includeHiddenElements: true }).props['aria-hidden']).toBe(true);
+  expect(
+    screen.getByTestId('h-title-block', { includeHiddenElements: true }).props['aria-hidden'],
+  ).toBe(true);
   expect(screen.getByTestId('h-back-island')).toBeTruthy();
   fireEvent.press(screen.getByLabelText('Back'));
   fireEvent.press(screen.getByLabelText('Search profile'));

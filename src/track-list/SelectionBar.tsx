@@ -98,7 +98,6 @@ export function SelectionBar({
           return (
             <Button
               key={action.key}
-
               size="sm"
               icon={destructiveIcon}
               leadingIcon={destructiveIcon ? undefined : Icon}
@@ -107,7 +106,9 @@ export function SelectionBar({
               disabled={action.disabled}
               onPress={action.onPress}
               testID={testID ? `${testID}-${action.key}` : undefined}
-              textStyle={action.destructive ? { color: theme.colors.error } : undefined} tone="accent" appearance="plain"
+              textStyle={action.destructive ? { color: theme.colors.error } : undefined}
+              tone="accent"
+              appearance="plain"
             >
               {action.label}
             </Button>

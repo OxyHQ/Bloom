@@ -1,12 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import {
-  ACCENT_TABLE,
-  BUTTON_SHADOW,
-  colorRamp,
-  resolveButtonRamps,
-} from '../button/shared';
+import { ACCENT_TABLE, BUTTON_SHADOW, colorRamp, resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
@@ -51,7 +46,8 @@ function toRgb({ l, c, h }: Oklch): string {
   for (let i = 0; i < 24; i++) {
     const rgb = oklchToSrgb({ l, c: chroma, h });
     const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01) return srgbToRgbString(rgb);
+    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01)
+      return srgbToRgbString(rgb);
     chroma *= 0.9;
   }
   return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
@@ -130,7 +126,10 @@ export function tokenColor(kind: CodeTokenKind, palette: CodePalette): string {
   }
 }
 
-export const LINE_METRICS: Record<CodeLinesSize, { fontSize: number; lineHeight: number; number: number; gap: number }> = {
+export const LINE_METRICS: Record<
+  CodeLinesSize,
+  { fontSize: number; lineHeight: number; number: number; gap: number }
+> = {
   sm: { fontSize: 11, lineHeight: 18, number: 12, gap: 12 },
   md: { fontSize: 13, lineHeight: 23, number: 20, gap: 13 },
 };

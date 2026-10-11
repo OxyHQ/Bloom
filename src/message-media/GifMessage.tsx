@@ -15,11 +15,7 @@ import {
   MediaProgressRing,
 } from './parts';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
-import {
-  fitMedia,
-  MESSAGE_MEDIA_RADIUS,
-  resolveMessageMediaPaint,
-} from './shared';
+import { fitMedia, MESSAGE_MEDIA_RADIUS, resolveMessageMediaPaint } from './shared';
 import type { GifMessageProps } from './types';
 
 /**

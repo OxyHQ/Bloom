@@ -132,8 +132,8 @@ function Harness({
 }
 
 function order(): string[] {
-  return Array.from(container.querySelectorAll('[role="listitem"]')).map(
-    (el) => (el.getAttribute('data-testid') ?? '').replace('g-photo-', ''),
+  return Array.from(container.querySelectorAll('[role="listitem"]')).map((el) =>
+    (el.getAttribute('data-testid') ?? '').replace('g-photo-', ''),
   );
 }
 
@@ -188,7 +188,9 @@ describe('SortablePhotoGrid', () => {
 
   it('names each photo with its position, the cover, its alt and an error', async () => {
     await mount(<Harness />);
-    expect(byTestId('g-photo-a').getAttribute('aria-label')).toBe('Photo 1 of 4, Cover, Living room');
+    expect(byTestId('g-photo-a').getAttribute('aria-label')).toBe(
+      'Photo 1 of 4, Cover, Living room',
+    );
     expect(byTestId('g-photo-b').getAttribute('aria-label')).toBe('Photo 2 of 4');
     expect(byTestId('g-photo-d').getAttribute('aria-label')).toBe('Photo 4 of 4, Upload failed');
   });
@@ -199,10 +201,15 @@ describe('SortablePhotoGrid', () => {
     const laterFirst = byTestId('g-photo-a-later');
     expect(earlierFirst.getAttribute('aria-label')).toBe('Move photo 1 earlier');
     expect(laterFirst.getAttribute('aria-label')).toBe('Move photo 1 later');
-    expect(earlierFirst.hasAttribute('disabled') || earlierFirst.getAttribute('aria-disabled') === 'true').toBe(true);
+    expect(
+      earlierFirst.hasAttribute('disabled') ||
+        earlierFirst.getAttribute('aria-disabled') === 'true',
+    ).toBe(true);
     const laterLast = byTestId('g-photo-d-later');
     expect(laterLast.getAttribute('aria-label')).toBe('Move photo 4 later');
-    expect(laterLast.hasAttribute('disabled') || laterLast.getAttribute('aria-disabled') === 'true').toBe(true);
+    expect(
+      laterLast.hasAttribute('disabled') || laterLast.getAttribute('aria-disabled') === 'true',
+    ).toBe(true);
   });
 
   it('reorders with the move buttons, reports the whole list and announces the position', async () => {
@@ -258,7 +265,9 @@ describe('SortablePhotoGrid', () => {
 
   it('draws the upload as a named progressbar, and a spinner without a progress', async () => {
     await mount(
-      <Harness initial={[...PHOTOS, { id: 'e', uri: 'https://example.com/e.jpg', status: 'uploading' }]} />,
+      <Harness
+        initial={[...PHOTOS, { id: 'e', uri: 'https://example.com/e.jpg', status: 'uploading' }]}
+      />,
     );
     const bar = byTestId('g-photo-c-progress');
     expect(bar.getAttribute('role')).toBe('progressbar');
@@ -276,7 +285,15 @@ describe('SortablePhotoGrid', () => {
     const tile = byTestId('g-photo-a');
     const fire = (target: EventTarget, type: string, x: number, y: number) =>
       act(() => {
-        target.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
+        target.dispatchEvent(
+          new MouseEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            clientX: x,
+            clientY: y,
+            button: 0,
+          }),
+        );
       });
     fire(tile, 'pointerdown', 20, 20);
     // Slot 2 is x 366..537 at 171 + 12.
@@ -296,7 +313,15 @@ describe('SortablePhotoGrid', () => {
     const tile = byTestId('g-photo-b');
     const fire = (target: EventTarget, type: string, x: number, y: number) =>
       act(() => {
-        target.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
+        target.dispatchEvent(
+          new MouseEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            clientX: x,
+            clientY: y,
+            button: 0,
+          }),
+        );
       });
     fire(tile, 'pointerdown', 200, 20);
     fire(window, 'pointermove', 202, 21);

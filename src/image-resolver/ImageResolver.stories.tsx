@@ -42,11 +42,33 @@ const resolver: ImageResolver = (id, variant) => {
   )}`;
 };
 
-function Case({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
+function Case({
+  title,
+  note,
+  children,
+}: {
+  title: string;
+  note: string;
+  children: React.ReactNode;
+}) {
   return (
-    <Card appearance="outline" radius="radius-16" style={{ padding: 16, gap: 10, width: 260, maxWidth: '100%' }}>
+    <Card
+      appearance="outline"
+      radius="radius-16"
+      style={{ padding: 16, gap: 10, width: 260, maxWidth: '100%' }}
+    >
       <Text style={{ fontWeight: '600' }}>{title}</Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 12, alignItems: 'center' }}>{children}</View>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          maxWidth: '100%',
+          gap: 12,
+          alignItems: 'center',
+        }}
+      >
+        {children}
+      </View>
       <Text style={{ fontSize: 12, opacity: 0.7 }}>{note}</Text>
     </Card>
   );
@@ -119,7 +141,15 @@ export const Variants: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <ImageResolverProvider value={resolver}>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16, alignItems: 'center' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          maxWidth: '100%',
+          gap: 16,
+          alignItems: 'center',
+        }}
+      >
         <Avatar source="file_v" name="A" size={48} />
         <Avatar source="file_v" variant="w320" name="A" size={64} />
         <Avatar source="file_v" variant="full" name="A" size={80} />

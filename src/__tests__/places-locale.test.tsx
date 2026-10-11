@@ -75,7 +75,9 @@ function mount(ui: React.ReactElement, locale: string | null = 'es'): HTMLElemen
 
 /** Every accessible name in the tree. */
 function names(): string[] {
-  return Array.from(container.querySelectorAll('[aria-label]')).map((node) => node.getAttribute('aria-label')!);
+  return Array.from(container.querySelectorAll('[aria-label]')).map(
+    (node) => node.getAttribute('aria-label')!,
+  );
 }
 
 function hasName(name: string): boolean {
@@ -96,7 +98,12 @@ describe('address', () => {
   it('draws the empty state and names the list in the locale; its props still win', () => {
     mount(<AddressList sections={[]} />);
     expect(text()).toContain('Aún no hay nada aquí');
-    mount(<AddressList sections={[{ title: 'Guardadas', entries: [{ id: 'a', title: 'Casa' }] }]} variant="picker" />);
+    mount(
+      <AddressList
+        sections={[{ title: 'Guardadas', entries: [{ id: 'a', title: 'Casa' }] }]}
+        variant="picker"
+      />,
+    );
     expect(hasName('Direcciones')).toBe(true);
     mount(<AddressList sections={[]} emptyTitle="Sin direcciones" />);
     expect(text()).toContain('Sin direcciones');
@@ -124,7 +131,16 @@ describe('category-bar', () => {
     scrollTrack(100, 400, 1000);
     expect(hasName('Vorherige Kategorien')).toBe(true);
     expect(hasName('Nächste Kategorien')).toBe(true);
-    mount(<CategoryBar items={items} value="a" accessibilityLabel="Kategorien" previousLabel="Zurück" testID="c" />, 'de');
+    mount(
+      <CategoryBar
+        items={items}
+        value="a"
+        accessibilityLabel="Kategorien"
+        previousLabel="Zurück"
+        testID="c"
+      />,
+      'de',
+    );
     scrollTrack(100, 400, 1000);
     expect(hasName('Zurück')).toBe(true);
   });
@@ -132,7 +148,10 @@ describe('category-bar', () => {
 
 describe('map-attribution', () => {
   it('names the strip and the scale in the locale; a scaleLabel still wins', () => {
-    mount(<MapAttribution credit="© OpenStreetMap" scales={[{ width: 80, label: '500 m' }]} />, 'fr');
+    mount(
+      <MapAttribution credit="© OpenStreetMap" scales={[{ width: 80, label: '500 m' }]} />,
+      'fr',
+    );
     expect(hasName('Données cartographiques')).toBe(true);
     expect(hasName('Échelle, 500 m')).toBe(true);
     mount(<MapScaleBar scales={[{ width: 80, label: '500 m' }]} scaleLabel="Maßstab" />, 'fr');
@@ -197,7 +216,13 @@ describe('route-stops', () => {
   it('puts the verb where German puts it, and lets labels win', () => {
     mount(<RouteStops stops={stops} onRemoveStop={noop} />, 'de');
     expect(hasName('Oficina entfernen')).toBe(true);
-    mount(<RouteStops stops={stops} onAddStop={noop} labels={{ addStop: 'Otra parada', origin: 'Salida' }} />);
+    mount(
+      <RouteStops
+        stops={stops}
+        onAddStop={noop}
+        labels={{ addStop: 'Otra parada', origin: 'Salida' }}
+      />,
+    );
     expect(text()).toContain('Otra parada');
     expect(hasName('Salida, Alcanzada, Casa')).toBe(true);
   });
@@ -220,7 +245,15 @@ describe('directions', () => {
   ];
 
   it('draws the summary in the locale', () => {
-    mount(<DirectionsSummary routes={routes} mode="walk" modes={['drive', 'walk']} onModeChange={noop} onStart={noop} />);
+    mount(
+      <DirectionsSummary
+        routes={routes}
+        mode="walk"
+        modes={['drive', 'walk']}
+        onModeChange={noop}
+        onStart={noop}
+      />,
+    );
     expect(hasName('Indicaciones')).toBe(true);
     expect(text()).toContain('A pie');
     expect(text()).toContain('Tráfico fluido');
@@ -238,7 +271,13 @@ describe('directions', () => {
   });
 
   it('lets labels and currentLabel win', () => {
-    mount(<DirectionsSummary routes={routes} onStart={noop} labels={{ start: 'Vamos', figure: 'En coche' }} />);
+    mount(
+      <DirectionsSummary
+        routes={routes}
+        onStart={noop}
+        labels={{ start: 'Vamos', figure: 'En coche' }}
+      />,
+    );
     expect(text()).toContain('Vamos');
     expect(text()).toContain('En coche');
     mount(<DirectionsSteps legs={legs} currentStepId="s1" currentLabel="Ahora" />);
@@ -249,11 +288,21 @@ describe('directions', () => {
 describe('navigation-banner', () => {
   it('announces the banner with the next maneuver in the language’s own order', () => {
     mount(
-      <NavigationBanner maneuver="right" distance="400 m" instruction="Carrer del Roure" thenManeuver="left" />,
+      <NavigationBanner
+        maneuver="right"
+        distance="400 m"
+        instruction="Carrer del Roure"
+        thenManeuver="left"
+      />,
     );
-    expect(hasName('400 m, Gira a la derecha, Carrer del Roure, luego gira a la izquierda')).toBe(true);
+    expect(hasName('400 m, Gira a la derecha, Carrer del Roure, luego gira a la izquierda')).toBe(
+      true,
+    );
     expect(text()).toContain('luego gira a la izquierda');
-    mount(<NavigationBanner maneuver="right" instruction="Hauptstraße" thenManeuver="roundabout" />, 'de');
+    mount(
+      <NavigationBanner maneuver="right" instruction="Hauptstraße" thenManeuver="roundabout" />,
+      'de',
+    );
     // German keeps the noun capitalised mid-sentence; only the first letter drops.
     expect(text()).toContain('dann im Kreisverkehr');
     mount(<NavigationBanner maneuver="right" instruction="Calle Mayor" state="rerouting" />);
@@ -262,7 +311,12 @@ describe('navigation-banner', () => {
 
   it('lets a caller’s then word keep the English-shaped line', () => {
     mount(
-      <NavigationBanner maneuver="right" instruction="Calle Mayor" thenManeuver="left" labels={{ then: 'y después' }} />,
+      <NavigationBanner
+        maneuver="right"
+        instruction="Calle Mayor"
+        thenManeuver="left"
+        labels={{ then: 'y después' }}
+      />,
     );
     expect(text()).toContain('y después gira a la izquierda');
   });
@@ -284,11 +338,20 @@ describe('navigation-banner', () => {
   it('names the speed sign and the arrival strip in the locale; labels win', () => {
     mount(<SpeedLimitPill limit={50} unit="km/h" exceeded />);
     expect(hasName('Límite de velocidad 50 km/h, por encima del límite')).toBe(true);
-    mount(<ArrivalBar arrival="18:42" remainingTime="24 min" remainingDistance="8,2 km" onEnd={noop} />, 'it');
+    mount(
+      <ArrivalBar arrival="18:42" remainingTime="24 min" remainingDistance="8,2 km" onEnd={noop} />,
+      'it',
+    );
     expect(hasName('Arrivo 18:42, Rimanente 24 min, Distanza 8,2 km')).toBe(true);
     expect(text()).toContain('Termina');
     mount(
-      <ArrivalBar arrival="18:42" remainingTime="24 min" remainingDistance="8,2 km" onEnd={noop} labels={{ end: 'Salir' }} />,
+      <ArrivalBar
+        arrival="18:42"
+        remainingTime="24 min"
+        remainingDistance="8,2 km"
+        onEnd={noop}
+        labels={{ end: 'Salir' }}
+      />,
     );
     expect(text()).toContain('Salir');
   });
@@ -296,7 +359,10 @@ describe('navigation-banner', () => {
 
 describe('map-controls', () => {
   it('names every control in the locale; labels win', () => {
-    mount(<MapControls onLocate={noop} onZoomIn={noop} onZoomOut={noop} onTiltChange={noop} />, 'pt');
+    mount(
+      <MapControls onLocate={noop} onZoomIn={noop} onZoomOut={noop} onTiltChange={noop} />,
+      'pt',
+    );
     expect(hasName('Controles do mapa')).toBe(true);
     expect(hasName('Mostrar minha localização')).toBe(true);
     expect(hasName('Aumentar zoom')).toBe(true);
@@ -327,7 +393,11 @@ describe('place-card', () => {
 
   it('composes the name with the rating sentence and the state in the locale', () => {
     mount(<PlaceCard {...place} onPress={noop} testID="p" />);
-    expect(hasName('Forner de la Plaça, Panadería, Valoración de 4.6 sobre 5, 318 reseñas, Cierra pronto')).toBe(true);
+    expect(
+      hasName(
+        'Forner de la Plaça, Panadería, Valoración de 4.6 sobre 5, 318 reseñas, Cierra pronto',
+      ),
+    ).toBe(true);
     expect(text()).toContain('Cierra pronto');
     // The card's own Rating speaks the locale too: no English sentence left.
     expect(names().filter((name) => /out of|review/i.test(name))).toEqual([]);
@@ -336,8 +406,12 @@ describe('place-card', () => {
   it('pluralises the review count per language', () => {
     expect(PLACE_CARD_MESSAGES.en.rated('4.6', 1)).toBe('Rated 4.6 out of 5, 1 review');
     expect(PLACE_CARD_MESSAGES.en.rated('4.6', 318)).toBe('Rated 4.6 out of 5, 318 reviews');
-    expect(messagesIn(PLACE_CARD_MESSAGES, 'ru').rated('4,6', 22)).toBe('Оценка 4,6 из 5, 22 отзыва');
-    expect(messagesIn(PLACE_CARD_MESSAGES, 'ru').rated('4,6', 25)).toBe('Оценка 4,6 из 5, 25 отзывов');
+    expect(messagesIn(PLACE_CARD_MESSAGES, 'ru').rated('4,6', 22)).toBe(
+      'Оценка 4,6 из 5, 22 отзыва',
+    );
+    expect(messagesIn(PLACE_CARD_MESSAGES, 'ru').rated('4,6', 25)).toBe(
+      'Оценка 4,6 из 5, 25 отзывов',
+    );
     expect(messagesIn(PLACE_CARD_MESSAGES, 'fr').rated('4,6', 0)).toBe('Noté 4,6 sur 5, 0 avis');
   });
 
@@ -369,7 +443,10 @@ describe('place-list', () => {
     expect(hasName('Luoghi salvati')).toBe(true);
     expect(hasName('Sposta in posizione 2')).toBe(true);
     expect(hasName("Rimuovi Forn dall'elenco")).toBe(true);
-    mount(<PlaceList places={places} onRemove={noop} labels={{ remove: (name) => `Treure ${name}` }} />, 'it');
+    mount(
+      <PlaceList places={places} onRemove={noop} labels={{ remove: (name) => `Treure ${name}` }} />,
+      'it',
+    );
     expect(hasName('Treure Forn')).toBe(true);
   });
 });
@@ -391,7 +468,15 @@ describe('place-reviews', () => {
     expect(text()).toContain('Fianza no devuelta');
     expect(text()).toContain('Útil');
     expect(text()).toContain('Denunciar');
-    mount(<PlaceReviewCard authorLabel="Ana" text="Bien." rating={4} wouldRecommend recommendLabel="¡Sí!" />);
+    mount(
+      <PlaceReviewCard
+        authorLabel="Ana"
+        text="Bien."
+        rating={4}
+        wouldRecommend
+        recommendLabel="¡Sí!"
+      />,
+    );
     expect(text()).toContain('¡Sí!');
   });
 
@@ -403,7 +488,14 @@ describe('place-reviews', () => {
   });
 
   it('counts reviews per language, and a string count is drawn as given', () => {
-    mount(<PlaceReviewSummary rating={4.2} reviewCount={1} depositReturnedRate={0.82} recommendRate={0.91} />);
+    mount(
+      <PlaceReviewSummary
+        rating={4.2}
+        reviewCount={1}
+        depositReturnedRate={0.82}
+        recommendRate={0.91}
+      />,
+    );
     expect(text()).toContain('1 reseña');
     expect(text()).toContain('Fianza devuelta en el 82% de los alquileres');
     expect(text()).toContain('El 91% recomendaría vivir aquí');
@@ -434,7 +526,13 @@ describe('place-details', () => {
     mount(
       <PlaceInfoList
         items={[
-          { id: 'a', label: 'Dirección', value: 'Carrer del Forn 12', action: 'copy', onPress: noop },
+          {
+            id: 'a',
+            label: 'Dirección',
+            value: 'Carrer del Forn 12',
+            action: 'copy',
+            onPress: noop,
+          },
           { id: 'b', label: 'Teléfono', value: '934 000 000', action: 'call', onPress: noop },
         ]}
       />,
@@ -450,7 +548,15 @@ describe('place-details', () => {
         name: 'Plaça de la Vila',
         mode: 'metro' as const,
         lines: [{ name: 'L4' }],
-        departures: [{ id: 'd', line: { name: 'L4' }, headsign: 'Trinitat Nova', time: '4 min', realtime: true }],
+        departures: [
+          {
+            id: 'd',
+            line: { name: 'L4' },
+            headsign: 'Trinitat Nova',
+            time: '4 min',
+            realtime: true,
+          },
+        ],
       },
       { id: 't', name: 'Pont', mode: 'bus' as const },
     ];
@@ -466,7 +572,10 @@ describe('place-details', () => {
 
   it('names amenities and the busy chart in the locale', () => {
     mount(
-      <PlaceAmenities layout="chips" items={[{ label: 'Wifi', available: false }, { label: 'Terraza' }]} />,
+      <PlaceAmenities
+        layout="chips"
+        items={[{ label: 'Wifi', available: false }, { label: 'Terraza' }]}
+      />,
       'es',
     );
     expect(hasName('Servicios')).toBe(true);
@@ -506,11 +615,23 @@ describe('place-details', () => {
 
 describe('with no locale anywhere', () => {
   it('speaks English, byte for byte', () => {
-    mount(<RouteStops stops={[{ id: 'a', title: 'Home' }, { id: 'b', title: 'Work' }]} onSwap={noop} />, null);
+    mount(
+      <RouteStops
+        stops={[
+          { id: 'a', title: 'Home' },
+          { id: 'b', title: 'Work' },
+        ]}
+        onSwap={noop}
+      />,
+      null,
+    );
     expect(hasName('Swap origin and destination')).toBe(true);
     mount(<MapClusterMarker count={12} />, null);
     expect(hasName('12 stays')).toBe(true);
-    mount(<LaneGuidance lanes={[{ directions: ['left'], allowed: true }, { directions: ['right'] }]} />, null);
+    mount(
+      <LaneGuidance lanes={[{ directions: ['left'], allowed: true }, { directions: ['right'] }]} />,
+      null,
+    );
     expect(hasName('Lane guidance, 2 lanes, use lane 1')).toBe(true);
   });
 });

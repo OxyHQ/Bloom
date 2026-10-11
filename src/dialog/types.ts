@@ -1,3 +1,5 @@
+import type { BackdropAppearance } from '../overlay/types';
+import type { SurfaceTransition } from '../motion/types';
 import type { ReactNode } from 'react';
 import type { ButtonIconComponent } from '../button/types';
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
@@ -231,6 +233,12 @@ export type DialogAction = {
  * be a responsive map that collapses to a bottom-sheet on narrow viewports.
  */
 export type DialogProps = React.PropsWithChildren<{
+  /** Standard optical surface, or a plain fill without refraction/sheen. Default surface. */
+  material?: 'surface' | 'flat';
+  /** Backdrop paint; the surface continues to own dismissal and layering. */
+  backdrop?: BackdropAppearance;
+  /** Opt-in timing for panel and backdrop. Live reduced motion settles immediately. */
+  transition?: SurfaceTransition;
   /** Content owns paint and motion; shared overlay, focus and dismissal remain. */
   presentation?: 'default' | 'custom';
   /** Custom presentation exit lifetime, in milliseconds. */
@@ -270,6 +278,8 @@ export type DialogProps = React.PropsWithChildren<{
   placement?: ResponsiveDialogPlacement;
   /** Side-sheet width (px) on wide screens. Defaults to `460`. */
   width?: number;
+  /** Minimum space beyond a side sheet and its insets. Defaults to 24; zero permits full viewport width. */
+  minSideGutter?: number;
   /** Centered-card max width (px). Defaults to `480`. */
   maxWidth?: number;
   /** Bottom-sheet max height as a fraction of the viewport height. Defaults to `0.9`. */

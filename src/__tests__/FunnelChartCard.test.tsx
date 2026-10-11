@@ -32,9 +32,16 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   );
 }
 
-function layoutPlot(getByTestId: (id: string) => unknown, id = 'funnel-plot', width = 448, height = 160) {
+function layoutPlot(
+  getByTestId: (id: string) => unknown,
+  id = 'funnel-plot',
+  width = 448,
+  height = 160,
+) {
   act(() => {
-    fireEvent(getByTestId(id) as never, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height } } });
+    fireEvent(getByTestId(id) as never, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width, height } },
+    });
   });
 }
 
@@ -57,7 +64,9 @@ describe('funnel geometry', () => {
       'M0,12 L46.095,12 C77.9225,12 77.9225,42.03045685279188 109.75,42.03045685279188 L109.75,117.96954314720813 C77.9225,117.96954314720813 77.9225,148 46.095,148 L0,148 Z',
     );
     // The outer edge layer is the same band 12px taller on each side.
-    expect(funnelBandPath(0, 109.75, 80, geo.heightOf(197) + 24, geo.heightOf(110) + 24, 'curved')).toBe(
+    expect(
+      funnelBandPath(0, 109.75, 80, geo.heightOf(197) + 24, geo.heightOf(110) + 24, 'curved'),
+    ).toBe(
       'M0,0 L46.095,0 C77.9225,0 77.9225,30.03045685279188 109.75,30.03045685279188 L109.75,129.96954314720813 C77.9225,129.96954314720813 77.9225,160 46.095,160 L0,160 Z',
     );
   });
@@ -77,7 +86,7 @@ describe('funnel geometry', () => {
 });
 
 describe('FunnelChartCard', () => {
-  it("keeps the chart card shell and headlines the first stage", () => {
+  it('keeps the chart card shell and headlines the first stage', () => {
     const { getByTestId, getByText } = renderCard(
       <FunnelChartCard testID="funnel" stages={STAGES} delta={0.052} range="Last 7 days" />,
     );
@@ -88,20 +97,30 @@ describe('FunnelChartCard', () => {
   });
 
   it('draws two edge layers per stage, then the bands, then pills — in palette order', () => {
-    const { getByTestId, UNSAFE_getAllByType, getByText } = renderCard(<FunnelChartCard testID="funnel" stages={STAGES} />);
+    const { getByTestId, UNSAFE_getAllByType, getByText } = renderCard(
+      <FunnelChartCard testID="funnel" stages={STAGES} />,
+    );
     layoutPlot(getByTestId);
     const paths = UNSAFE_getAllByType('Path' as never) as unknown as Node[];
     const tones = resolveChartTones(buildTheme('teal', 'light'));
     const layers = paths.filter((p) => p.props.fillOpacity !== undefined);
-    expect(layers.map((p) => p.props.fillOpacity)).toEqual([0.1, 0.1, 0.1, 0.1, 0.22, 0.22, 0.22, 0.22]);
+    expect(layers.map((p) => p.props.fillOpacity)).toEqual([
+      0.1, 0.1, 0.1, 0.1, 0.22, 0.22, 0.22, 0.22,
+    ]);
     const bands = [0, 1, 2, 3].map((i) => getByTestId(`funnel-band-${i}`));
     expect(bands.map((b) => b.props.fill)).toEqual(tones.slice(0, 4).map((t) => t.color));
     for (const label of ['100%', '56%', '39%', '19%']) expect(getByText(label)).toBeTruthy();
-    expect(resolvedStyle(getByTestId('funnel-pill-1').props.style)).toMatchObject({ height: 20, borderRadius: 10, top: 70 });
+    expect(resolvedStyle(getByTestId('funnel-pill-1').props.style)).toMatchObject({
+      height: 20,
+      borderRadius: 10,
+      top: 70,
+    });
   });
 
   it('puts a 36px backing band behind every sharp column and no edge layers', () => {
-    const { getByTestId, UNSAFE_getAllByType } = renderCard(<FunnelChartCard testID="funnel" shape="sharp" stages={STAGES} />);
+    const { getByTestId, UNSAFE_getAllByType } = renderCard(
+      <FunnelChartCard testID="funnel" shape="sharp" stages={STAGES} />,
+    );
     layoutPlot(getByTestId);
     const rects = getByTestId('funnel-plot').findAllByType('Rect' as never) as unknown as Node[];
     expect(rects.map((r) => [r.props.y, r.props.height, r.props.fillOpacity])).toEqual(
@@ -114,7 +133,12 @@ describe('FunnelChartCard', () => {
   it('hovers the band under the pointer, keeps it over empty space and clears on leave', () => {
     const onActiveIndexChange = jest.fn();
     const { getByTestId, getAllByText } = renderCard(
-      <FunnelChartCard testID="funnel" stages={STAGES} delta={0.052} onActiveIndexChange={onActiveIndexChange} />,
+      <FunnelChartCard
+        testID="funnel"
+        stages={STAGES}
+        delta={0.052}
+        onActiveIndexChange={onActiveIndexChange}
+      />,
     );
     layoutPlot(getByTestId);
     const surface = getByTestId('funnel-plot-surface');
@@ -162,9 +186,16 @@ describe('FunnelChartCard', () => {
   it('reads a range, and tiles focus their stage', () => {
     const ranges: FunnelRange[] = [
       { id: '7d', label: 'Last 7 days', stages: STAGES, delta: 0.052 },
-      { id: '30d', label: 'Last 30 days', stages: STAGES.map((s, i) => ({ ...s, value: [842, 463, 301, 152][i]! })), delta: 0.034 },
+      {
+        id: '30d',
+        label: 'Last 30 days',
+        stages: STAGES.map((s, i) => ({ ...s, value: [842, 463, 301, 152][i]! })),
+        delta: 0.034,
+      },
     ];
-    const { getByTestId, getByText } = renderCard(<FunnelChartCard testID="funnel" ranges={ranges} defaultRange="30d" />);
+    const { getByTestId, getByText } = renderCard(
+      <FunnelChartCard testID="funnel" ranges={ranges} defaultRange="30d" />,
+    );
     expect(getByTestId('funnel-headline').props.children).toBe('842');
     expect(getByText('+3.4%')).toBeTruthy();
     fireEvent(getByTestId('funnel-tiles-tile-2'), 'pointerEnter');
@@ -177,7 +208,9 @@ describe('FunnelChartCard', () => {
     );
     // 375-wide test window: two per row, and the short last row keeps an empty
     // track so the fifth tile stays one column wide.
-    const rows = getByTestId('funnel-tiles').props.children as React.ReactElement<{ children: unknown[] }>[];
+    const rows = getByTestId('funnel-tiles').props.children as React.ReactElement<{
+      children: unknown[];
+    }>[];
     expect(rows).toHaveLength(3);
     const [tiles, empties] = rows[2]!.props.children as unknown[][];
     expect(tiles).toHaveLength(1);
@@ -185,12 +218,21 @@ describe('FunnelChartCard', () => {
   });
 
   it('paints every column in the mono ink and hides the swatches', () => {
-    const { getByTestId, UNSAFE_getAllByType } = renderCard(<FunnelChartCard testID="funnel" mono stages={STAGES} />, 'dark');
+    const { getByTestId, UNSAFE_getAllByType } = renderCard(
+      <FunnelChartCard testID="funnel" mono stages={STAGES} />,
+      'dark',
+    );
     layoutPlot(getByTestId);
     const mono = resolveMonoTone(buildTheme('teal', 'dark'));
-    expect([0, 1, 2, 3].map((i) => getByTestId(`funnel-band-${i}`).props.fill)).toEqual(Array(4).fill(mono.color));
+    expect([0, 1, 2, 3].map((i) => getByTestId(`funnel-band-${i}`).props.fill)).toEqual(
+      Array(4).fill(mono.color),
+    );
     const views = UNSAFE_getAllByType('View' as never) as unknown as Node[];
-    const swatches = views.filter((v) => resolvedStyle(v.props.style).width === 12 && resolvedStyle(v.props.style).borderRadius === 4);
+    const swatches = views.filter(
+      (v) =>
+        resolvedStyle(v.props.style).width === 12 &&
+        resolvedStyle(v.props.style).borderRadius === 4,
+    );
     expect(swatches).toHaveLength(0);
   });
 });

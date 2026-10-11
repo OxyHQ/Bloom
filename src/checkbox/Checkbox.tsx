@@ -1,3 +1,4 @@
+import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
@@ -87,6 +88,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
     defaultChecked = false,
     onCheckedChange,
     label,
+    labelContent,
     description,
     size: sizeProp,
     disabled = false,
@@ -98,7 +100,12 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
     nativeID,
     testID,
   } = props;
-  const [checked, setChecked] = useControllableState({ value: checkedProp ?? false, controlled: Object.prototype.hasOwnProperty.call(props, 'checked'), defaultValue: defaultChecked, onChange: onCheckedChange });
+  const [checked, setChecked] = useControllableState({
+    value: checkedProp ?? false,
+    controlled: Object.prototype.hasOwnProperty.call(props, 'checked'),
+    defaultValue: defaultChecked,
+    onChange: onCheckedChange,
+  });
   const theme = useTheme();
   // The label is ADJACENT — the words beside the box ARE the control, so they
   // name it and a `Field` around it only supplies what is missing. `disabled`
@@ -111,7 +118,10 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
     nativeID,
   });
   const isDisabled = field.disabled;
-  const { size: scopedSize, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
+  const { size: scopedSize, tone } = useBloomAppearance(
+    { size: sizeProp, tone: toneProp },
+    { size: 'md', tone: 'accent' },
+  );
   const size = scopedSize;
   const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
   useInteractiveWebCss(STYLE_ID, BLOOM_CHECKBOX_CSS);
@@ -121,7 +131,10 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
   // only other state the design defines. No press scale.
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const sizeConfig = CHECKBOX_SIZE_CONFIG[size];
-  const paint = useMemo(() => resolveCheckboxPaint(theme, color, foreground), [theme, color, foreground]);
+  const paint = useMemo(
+    () => resolveCheckboxPaint(theme, color, foreground),
+    [theme, color, foreground],
+  );
   const highlighted = !isDisabled && (hovered || pressed);
 
   const handlePress = useCallback(() => {
@@ -130,7 +143,8 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
     }
   }, [checked, isDisabled, setChecked]);
 
-  const hasText = Boolean(label || description);
+  const hasLabel = labelContent != null || Boolean(label);
+  const hasText = hasLabel || Boolean(description);
 
   const rowStyle = useMemo(
     (): WebCssStyle => ({
@@ -146,12 +160,16 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
 
   const slop = Math.max(8, Math.ceil((MIN_TOUCH_TARGET - sizeConfig.box) / 2));
 
+  const spaceKey = useChoiceSpaceKey(isDisabled, handlePress);
+
   return (
     <Pressable
+      {...spaceKey}
       // The DOM hooks the adopted sheets hang off. Through `dataSet`, because
       // react-native-web drops any prop outside its own fixed list — a literal
       // `'data-bloom-checkbox'` prop never reaches the DOM. See the longer note
       // in `chip/Chip.tsx`, where this was measured.
+      // biome-ignore format: keeps `as Record<string, unknown>` on one line for the line-based cast census in classname-interop.test.ts
       {...(IS_WEB
         ? ({ dataSet: { bloomCheckbox: '', bloomCheckboxFocusable: '' } } as Record<string, unknown>)
         : {})}
@@ -191,15 +209,26 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
 
       {hasText && (
         <View style={{ flex: 1 }}>
-          {label && (
-            <Text variant={sizeConfig.label} style={[{ color: paint.text }, labelStyle]}>
-              {label}
-            </Text>
+          {labelContent != null ? (
+            <View
+              pointerEvents="none"
+              aria-hidden
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              {labelContent}
+            </View>
+          ) : (
+            label && (
+              <Text variant={sizeConfig.label} style={[{ color: paint.text }, labelStyle]}>
+                {label}
+              </Text>
+            )
           )}
           {description && (
             <Text
               variant={sizeConfig.description}
-              style={{ color: paint.description, marginTop: label ? DESCRIPTION_GAP : 0 }}
+              style={{ color: paint.description, marginTop: hasLabel ? DESCRIPTION_GAP : 0 }}
             >
               {description}
             </Text>

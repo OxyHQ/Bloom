@@ -7,12 +7,12 @@ import { AgentProgress, AgentProgressLoadingText } from './index';
 
 const meta: Meta<typeof AgentProgress> = {
   argTypes: {
-    "stepDuration": { control: 'number' },
-    "completionDelay": { control: 'number' },
-    "paused": { control: 'boolean' },
-    "completedCount": { control: 'number' },
-    "minimized": { control: 'boolean' },
-    "defaultMinimized": { control: 'boolean' }
+    stepDuration: { control: 'number' },
+    completionDelay: { control: 'number' },
+    paused: { control: 'boolean' },
+    completedCount: { control: 'number' },
+    minimized: { control: 'boolean' },
+    defaultMinimized: { control: 'boolean' },
   },
   title: 'Blocks/Agent Progress',
   component: AgentProgress,
@@ -42,10 +42,21 @@ export const Default: Story = {
 /** Faster clock, for watching every transition. */
 export const Fast: Story = {
   args: { stepDuration: 1500 },
-  parameters: { controls: { include: ["stepDuration","completionDelay","paused","completedCount","minimized","defaultMinimized"] } },
+  parameters: {
+    controls: {
+      include: [
+        'stepDuration',
+        'completionDelay',
+        'paused',
+        'completedCount',
+        'minimized',
+        'defaultMinimized',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <AgentProgress {...args}  />
+      <AgentProgress {...args} />
     </Frame>
   ),
 };
@@ -53,10 +64,21 @@ export const Fast: Story = {
 /** Starts minimized: the 44px bar with the current step. Hover to reveal the expand glyph. */
 export const Minimized: Story = {
   args: { defaultMinimized: true, stepDuration: 4000 },
-  parameters: { controls: { include: ["defaultMinimized","stepDuration","completionDelay","paused","completedCount","minimized"] } },
+  parameters: {
+    controls: {
+      include: [
+        'defaultMinimized',
+        'stepDuration',
+        'completionDelay',
+        'paused',
+        'completedCount',
+        'minimized',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <AgentProgress {...args}   />
+      <AgentProgress {...args} />
     </Frame>
   ),
 };
@@ -64,18 +86,32 @@ export const Minimized: Story = {
 /** Controlled progress, as a real agent would drive it. */
 export const Controlled: Story = {
   args: { stepDuration: 5000 },
-  parameters: { controls: { include: ["stepDuration","completionDelay","paused","minimized","defaultMinimized"] } },
+  parameters: {
+    controls: {
+      include: ['stepDuration', 'completionDelay', 'paused', 'minimized', 'defaultMinimized'],
+    },
+  },
   render: function Render(args) {
     const steps = ['Plan the change', 'Edit the files', 'Run the tests'];
     const [done, setDone] = useState(1);
     return (
       <Frame>
-        <AgentProgress {...args} steps={steps} completedCount={done}  />
+        <AgentProgress {...args} steps={steps} completedCount={done} />
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button size="sm" onPress={() => setDone((d) => Math.max(0, d - 1))} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setDone((d) => Math.max(0, d - 1))}
+            appearance="outline"
+            tone="neutral"
+          >
             Back
           </Button>
-          <Button size="sm" onPress={() => setDone((d) => Math.min(steps.length, d + 1))} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setDone((d) => Math.min(steps.length, d + 1))}
+            appearance="outline"
+            tone="neutral"
+          >
             Complete step
           </Button>
         </View>
@@ -108,7 +144,9 @@ export const LoadingText: Story = {
   render: () => (
     <Frame>
       <AgentProgressLoadingText testID="shimmer">Generating image</AgentProgressLoadingText>
-      <AgentProgressLoadingText variant="title-3-medium">Thinking about your request</AgentProgressLoadingText>
+      <AgentProgressLoadingText variant="title-3-medium">
+        Thinking about your request
+      </AgentProgressLoadingText>
     </Frame>
   ),
 };

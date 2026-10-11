@@ -1,18 +1,5 @@
-import {
-  memo,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
-import {
-  AccessibilityInfo,
-  AppState,
-  PixelRatio,
-  Platform,
-  type View,
-} from 'react-native';
+import { memo, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, AppState, PixelRatio, Platform, type View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useMessages } from '../locale/messages';
 import { StyledView } from '../styles/styled-primitives';
@@ -22,13 +9,7 @@ import { advanceBlink, createBlink } from './blink';
 import { AvatarDrawingObserver } from './context';
 import { DrawingContext } from './drawing';
 import { ENTRANCE_SECONDS } from './entrance';
-import {
-  easeFace,
-  expressionRig,
-  faceAtSize,
-  gazeAngles,
-  type FaceRig,
-} from './face';
+import { easeFace, expressionRig, faceAtSize, gazeAngles, type FaceRig } from './face';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { ShapeMorph } from './shape-morph';
 import { Drawing } from './SvgDrawing';
@@ -62,10 +43,7 @@ function AgentAvatarComponent({
   const initialReduced = useReducedMotion();
   const [reduced, setReduced] = useState(initialReduced);
   useEffect(() => {
-    const subscription = AccessibilityInfo.addEventListener(
-      'reduceMotionChanged',
-      setReduced,
-    );
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
     const media =
       Platform.OS === 'web' && typeof matchMedia !== 'undefined'
         ? matchMedia('(prefers-reduced-motion: reduce)')
@@ -136,10 +114,7 @@ function AgentAvatarComponent({
     const s = state.current!,
       cycles = Math.max(1, Math.floor(workingCycles));
     if (!randomized.current) {
-      s.wander = createWander(
-        randomSeed() ^ config.seed,
-        config.family === 'fold',
-      );
+      s.wander = createWander(randomSeed() ^ config.seed, config.family === 'fold');
       const seed = randomSeed();
       s.phase = (seed / 4294967296) * TAU;
       s.blink = createBlink(seed);
@@ -206,40 +181,22 @@ function AgentAvatarComponent({
         if (visible && active) {
           const milliseconds = Math.min(now - last, 64),
             seconds = milliseconds / 1000;
-          s.entrance.elapsed = Math.min(
-            ENTRANCE_SECONDS,
-            s.entrance.elapsed + seconds,
-          );
+          s.entrance.elapsed = Math.min(ENTRANCE_SECONDS, s.entrance.elapsed + seconds);
           s.working.elapsed = Math.min(duration, s.working.elapsed + seconds);
-          const base = easeFace(
-            s.expression ?? target,
-            target,
-            s.velocity,
-            seconds,
-          );
+          const base = easeFace(s.expression ?? target, target, s.velocity, seconds);
           s.expression = base;
           transitioning =
-            (Object.keys(target) as (keyof FaceRig)[]).some(
-              (key) => base[key] !== target[key],
-            ) || s.shapeMorph.active;
+            (Object.keys(target) as (keyof FaceRig)[]).some((key) => base[key] !== target[key]) ||
+            s.shapeMorph.active;
           s.face =
             config.family === 'fold' || base.smile > 0.2
-              ? advanceAttention(
-                  s.attention,
-                  (seconds * 8) / config.duration,
-                  base,
-                  appearance,
-                )
+              ? advanceAttention(s.attention, (seconds * 8) / config.duration, base, appearance)
               : base;
           s.face.blink = config.idle ? 1 : advanceBlink(s.blink, seconds);
           transitioning ||= s.blink.blinking;
           s.phase = (s.phase + (seconds * TAU) / config.duration) % TAU;
           if (!config.idle && config.lookAt === 'wander')
-            advanceWander(
-              s.wander,
-              (seconds * 8) / config.duration,
-              config.family === 'fold',
-            );
+            advanceWander(s.wander, (seconds * 8) / config.duration, config.family === 'fold');
           const aim = gazeAngles(appearance, s.phase, s.face, s.wander.point),
             ease = 1 - Math.exp(-milliseconds / 85);
           s.gaze = [
@@ -274,16 +231,7 @@ function AgentAvatarComponent({
       subscription?.remove?.();
       observer?.disconnect();
     };
-  }, [
-    config,
-    size,
-    backingSize,
-    paused,
-    reduced,
-    entranceKey,
-    workingKey,
-    workingCycles,
-  ]);
+  }, [config, size, backingSize, paused, reduced, entranceKey, workingKey, workingCycles]);
   return (
     <StyledView
       ref={root}

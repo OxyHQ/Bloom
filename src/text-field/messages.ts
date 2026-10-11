@@ -13,4 +13,9 @@ export interface TextFieldMessages {
   required: string;
 }
 
-export const TEXT_FIELD_MESSAGES: MessageCatalog<TextFieldMessages> = defineMessages<TextFieldMessages>('TEXT_FIELD_MESSAGES', { showPassword: 'Show password', hidePassword: 'Hide password', required: 'required' });
+export const TEXT_FIELD_MESSAGES: MessageCatalog<TextFieldMessages> =
+  defineMessages<TextFieldMessages>('TEXT_FIELD_MESSAGES', {
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    required: 'required',
+  });

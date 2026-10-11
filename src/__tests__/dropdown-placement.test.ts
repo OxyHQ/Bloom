@@ -213,7 +213,7 @@ describe('resolveDropdownPlacement', () => {
      * horizontal axis for every side would pass every test above and place every
      * submenu at its trigger's `left`.
      */
-    it("align acts on the VERTICAL axis when the side is horizontal", () => {
+    it('align acts on the VERTICAL axis when the side is horizontal', () => {
       const anchor = trigger(100); // 100..140
       expect(place({ anchor, side: 'right', align: 'start' }).top).toBe(100);
       expect(place({ anchor, side: 'right', align: 'end' }).top).toBe(40);

@@ -87,7 +87,10 @@ export function loadLottiePlayer(): ComponentType<LottiePlayerProps> | null {
   if (typeof require === 'undefined') return loadedPlayer;
 
   try {
-    const loaded = require('@lottiefiles/dotlottie-react') as { DotLottieReact?: unknown } | null | undefined;
+    const loaded = require('@lottiefiles/dotlottie-react') as
+      | { DotLottieReact?: unknown }
+      | null
+      | undefined;
     if (isComponent(loaded?.DotLottieReact)) loadedPlayer = adapt(loaded.DotLottieReact);
   } catch {
     loadedPlayer = null;
@@ -98,7 +101,6 @@ export function loadLottiePlayer(): ComponentType<LottiePlayerProps> | null {
 export function warnLottieUnavailable(): void {
   if (process.env.NODE_ENV === 'production' || hasWarned) return;
   hasWarned = true;
-  // eslint-disable-next-line no-console
   console.warn(
     '[Bloom] An animated Sticker fell back to its still image: the optional peer ' +
       '`@lottiefiles/dotlottie-react` could not be loaded. Install it to animate ' +

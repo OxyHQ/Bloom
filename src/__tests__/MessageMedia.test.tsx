@@ -124,9 +124,7 @@ describe('albumLayout', () => {
     for (let count = 2; count <= 10; count++) {
       const layout = albumLayout(count, WIDTH, { gap: GAP });
       expect(layout.cells).toHaveLength(count);
-      expect(layout.cells.map((c) => c.index)).toEqual(
-        Array.from({ length: count }, (_, i) => i),
-      );
+      expect(layout.cells.map((c) => c.index)).toEqual(Array.from({ length: count }, (_, i) => i));
       expect(layout.overflow).toBe(0);
     }
   });
@@ -450,7 +448,14 @@ describe('accessibility names', () => {
     mount(<VideoMessage source="https://x.invalid/v.jpg" duration={187} testID="video" />);
     expect(byTestId('video-frame').getAttribute('aria-label')).toBe('Video · 3:07');
 
-    mount(<FileMessage name="Lease.pdf" sizeBytes={2.44 * 1024 * 1024} onPress={() => {}} testID="file" />);
+    mount(
+      <FileMessage
+        name="Lease.pdf"
+        sizeBytes={2.44 * 1024 * 1024}
+        onPress={() => {}}
+        testID="file"
+      />,
+    );
     // The row's press target is the identity half; the download button beside it
     // is its own control (a button inside a button is invalid HTML).
     expect(byTestId('file-open').getAttribute('aria-label')).toBe('Lease.pdf · 2.4 MB · PDF');
@@ -458,18 +463,24 @@ describe('accessibility names', () => {
   });
 
   it('names a sticker, a location, a contact and a link preview', () => {
-    mount(<StickerMessage source="https://x.invalid/s.png" accessibilityLabel="Sticker: waving" testID="st" />);
+    mount(
+      <StickerMessage
+        source="https://x.invalid/s.png"
+        accessibilityLabel="Sticker: waving"
+        testID="st"
+      />,
+    );
     expect(byTestId('st-frame').getAttribute('aria-label')).toBe('Sticker: waving');
 
     mount(<LocationMessage title="Casa" address="Carrer 1" live onPress={() => {}} testID="loc" />);
     expect(byTestId('loc-map').getAttribute('aria-label')).toBe('Live location · Casa · Carrer 1');
 
     mount(<ContactMessage name="Marta Ferreira" detail="+34 600" testID="contact" />);
-    expect(byTestId('contact').getAttribute('aria-label')).toBe('Contact · Marta Ferreira · +34 600');
-
-    mount(
-      <LinkPreviewMessage url="https://example.invalid/a" title="A guide" testID="link" />,
+    expect(byTestId('contact').getAttribute('aria-label')).toBe(
+      'Contact · Marta Ferreira · +34 600',
     );
+
+    mount(<LinkPreviewMessage url="https://example.invalid/a" title="A guide" testID="link" />);
     const link = byTestId('link');
     expect(link.getAttribute('role')).toBe('link');
     expect(link.getAttribute('aria-label')).toBe('A guide');
@@ -495,7 +506,13 @@ describe('accessibility names', () => {
 describe('accessibility STATE reaches the DOM', () => {
   it('gives the waveform a slider role with all three value attributes', () => {
     mount(
-      <VoiceMessage samples={SAMPLES} duration={14} position={5} onSeek={() => {}} testID="voice" />,
+      <VoiceMessage
+        samples={SAMPLES}
+        duration={14}
+        position={5}
+        onSeek={() => {}}
+        testID="voice"
+      />,
     );
     const track = byTestId('voice-waveform');
     expect(track.getAttribute('role')).toBe('slider');
@@ -516,9 +533,7 @@ describe('accessibility STATE reaches the DOM', () => {
   });
 
   it('makes the transcript toggle an expandable control', () => {
-    mount(
-      <VoiceMessage samples={SAMPLES} duration={9} transcript="Hello there" testID="tr" />,
-    );
+    mount(<VoiceMessage samples={SAMPLES} duration={9} transcript="Hello there" testID="tr" />);
     const toggle = byTestId('tr-transcribe');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(queryTestId('tr-transcript')).toBeNull();
@@ -593,7 +608,9 @@ describe('accessibility STATE reaches the DOM', () => {
         ]}
       />,
     );
-    expect(byTestId('quiz-option-w').getAttribute('aria-label')).toBe('One month, 25%, your answer');
+    expect(byTestId('quiz-option-w').getAttribute('aria-label')).toBe(
+      'One month, 25%, your answer',
+    );
     expect(byTestId('quiz-option-r').getAttribute('aria-label')).toBe(
       'Two months, 75%, correct answer',
     );
@@ -629,7 +646,12 @@ describe('accessibility STATE reaches the DOM', () => {
 
   it('makes a determinate send ring a progressbar and an indeterminate one busy', () => {
     mount(
-      <ImageMessage source="https://x.invalid/a.jpg" state="sending" progress={0.38} testID="det" />,
+      <ImageMessage
+        source="https://x.invalid/a.jpg"
+        state="sending"
+        progress={0.38}
+        testID="det"
+      />,
     );
     const ring = byTestId('det-progress');
     expect(ring.getAttribute('role')).toBe('progressbar');
@@ -665,7 +687,12 @@ describe('accessibility STATE reaches the DOM', () => {
   it('offers a retry on a failed send', () => {
     const onRetry = jest.fn();
     mount(
-      <ImageMessage source="https://x.invalid/a.jpg" state="failed" onRetry={onRetry} testID="fail" />,
+      <ImageMessage
+        source="https://x.invalid/a.jpg"
+        state="failed"
+        onRetry={onRetry}
+        testID="fail"
+      />,
     );
     expect(byTestId('fail-failed').textContent).toContain('Not sent');
   });

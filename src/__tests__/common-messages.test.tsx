@@ -39,8 +39,12 @@ describe('COMMON_MESSAGES', () => {
 
   it("joins a name to its subject with the language's own connector", () => {
     expect(COMMON_MESSAGES.en.labelFor('More actions', 'Ana')).toBe('More actions for Ana');
-    expect(messagesIn(COMMON_MESSAGES, 'es').labelFor('Más acciones', 'Ana')).toBe('Más acciones de Ana');
-    expect(messagesIn(COMMON_MESSAGES, 'ja').labelFor('その他の操作', 'アナ')).toBe('アナのその他の操作');
+    expect(messagesIn(COMMON_MESSAGES, 'es').labelFor('Más acciones', 'Ana')).toBe(
+      'Más acciones de Ana',
+    );
+    expect(messagesIn(COMMON_MESSAGES, 'ja').labelFor('その他の操作', 'アナ')).toBe(
+      'アナのその他の操作',
+    );
     for (const language of BLOOM_LANGUAGES) {
       if (language === 'en') continue;
       // Never an English connector between translated words.
@@ -53,20 +57,37 @@ describe('families speak the common words in the locale', () => {
   it('names a PageHeader back button from the locale, and a backLabel still wins', () => {
     const onBack = jest.fn();
     expect(
-      renderIn('es', <PageHeader presentation="bar" title="Bandeja" onBack={onBack} testID="h" />).getByLabelText('Atrás'),
+      renderIn(
+        'es',
+        <PageHeader presentation="bar" title="Bandeja" onBack={onBack} testID="h" />,
+      ).getByLabelText('Atrás'),
     ).toBeTruthy();
     expect(
-      renderIn('de', <PageHeader presentation="bar" title="Inbox" onBack={onBack} testID="h" />).getByLabelText('Zurück'),
+      renderIn(
+        'de',
+        <PageHeader presentation="bar" title="Inbox" onBack={onBack} testID="h" />,
+      ).getByLabelText('Zurück'),
     ).toBeTruthy();
     expect(
-      renderIn('es', <PageHeader presentation="bar" title="Bandeja" onBack={onBack} backLabel="Volver al buzón" testID="h" />)
-        .getByLabelText('Volver al buzón'),
+      renderIn(
+        'es',
+        <PageHeader
+          presentation="bar"
+          title="Bandeja"
+          onBack={onBack}
+          backLabel="Volver al buzón"
+          testID="h"
+        />,
+      ).getByLabelText('Volver al buzón'),
     ).toBeTruthy();
   });
 
   it('keeps English with no locale anywhere (the runtime here is English)', () => {
     expect(
-      renderIn(undefined, <PageHeader presentation="bar" title="Inbox" onBack={() => {}} testID="h" />).getByLabelText('Back'),
+      renderIn(
+        undefined,
+        <PageHeader presentation="bar" title="Inbox" onBack={() => {}} testID="h" />,
+      ).getByLabelText('Back'),
     ).toBeTruthy();
   });
 

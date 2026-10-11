@@ -97,7 +97,11 @@ function SearchResultTabsComponent({
             accessibilityLabel={tab.label}
             onPress={() => onValueChange(tab.value)}
             {...(IS_WEB
-              ? { tabIndex: tabbable ? 0 : -1, onKeyDown: (event: { key: string; preventDefault: () => void }) => onKey(tab.value, event) }
+              ? {
+                  tabIndex: tabbable ? 0 : -1,
+                  onKeyDown: (event: { key: string; preventDefault: () => void }) =>
+                    onKey(tab.value, event),
+                }
               : null)}
             testID={testID ? `${testID}-${tab.value}` : undefined}
           >

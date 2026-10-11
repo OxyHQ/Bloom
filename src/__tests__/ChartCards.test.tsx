@@ -64,7 +64,9 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 /** The chart only draws once it has a size — recharts' `ResponsiveContainer`. */
 function layoutPlot(getByTestId: (id: string) => unknown, id: string, width = 528, height = 216) {
   act(() => {
-    fireEvent(getByTestId(id) as never, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height } } });
+    fireEvent(getByTestId(id) as never, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width, height } },
+    });
   });
 }
 
@@ -82,7 +84,12 @@ describe('chart-cards geometry matches what recharts drew', () => {
     const ticks = fixedDomainTicks(0, max, 4);
     expect(ticks.slice(0, 3)).toEqual([0, 5500, 11000]);
     expect(ticks[3]).toBeCloseTo(16174.312, 3);
-    expect(ticks.map((t) => yScale(t, max, box))).toEqual([186, expect.closeTo(124.1117, 3), expect.closeTo(62.2235, 3), 4]);
+    expect(ticks.map((t) => yScale(t, max, box))).toEqual([
+      186,
+      expect.closeTo(124.1117, 3),
+      expect.closeTo(62.2235, 3),
+      4,
+    ]);
     expect(fixedDomainTicks(0, 2410 * 1.1, 4)).toEqual([0, 900, 1800, 2651]);
   });
 
@@ -93,7 +100,12 @@ describe('chart-cards geometry matches what recharts drew', () => {
       216,
       'preserveEnd',
     );
-    expect(y.map((t) => t.tickCoord)).toEqual([186, expect.closeTo(124.1117, 3), expect.closeTo(62.2235, 3), 9]);
+    expect(y.map((t) => t.tickCoord)).toEqual([
+      186,
+      expect.closeTo(124.1117, 3),
+      expect.closeTo(62.2235, 3),
+      9,
+    ]);
 
     const x = placeTicks(
       REVENUE.map((_, i) => ({ coordinate: pointX(i, 12, box), size: 25.16 })),
@@ -119,12 +131,16 @@ describe('chart-cards geometry matches what recharts drew', () => {
 
   it("draws d3's monotone-X curve, point for point", () => {
     const max = 14703.92 * 1.1;
-    const d = monotoneXPath(REVENUE.map((p, i) => ({ x: pointX(i, 12, box), y: yScale(p.current, max, box) })));
-    expect(d.startsWith(
-      'M44,75.276C58.485,74.751,72.97,74.226,87.455,72.126C101.939,70.025,116.424,57.948,130.909,57.948' +
-        'C145.394,57.948,159.879,62.674,174.364,62.674C188.848,62.674,203.333,51.946,217.818,48.608' +
-        'C232.303,45.27,246.788,45.964,261.273,42.644C275.758,39.325,290.242,28.691,304.727,28.691',
-    )).toBe(true);
+    const d = monotoneXPath(
+      REVENUE.map((p, i) => ({ x: pointX(i, 12, box), y: yScale(p.current, max, box) })),
+    );
+    expect(
+      d.startsWith(
+        'M44,75.276C58.485,74.751,72.97,74.226,87.455,72.126C101.939,70.025,116.424,57.948,130.909,57.948' +
+          'C145.394,57.948,159.879,62.674,174.364,62.674C188.848,62.674,203.333,51.946,217.818,48.608' +
+          'C232.303,45.27,246.788,45.964,261.273,42.644C275.758,39.325,290.242,28.691,304.727,28.691',
+      ),
+    ).toBe(true);
   });
 
   it('sizes paired bars like recharts: 28% category gap, 3px apart, whole-pixel width', () => {
@@ -176,7 +192,9 @@ describe('RevenueChartCard', () => {
   });
 
   it('swaps the headline for a hovered month (controlled)', () => {
-    const { getByText, getByTestId } = renderCard(<RevenueChartCard testID="rev" data={REVENUE} activeIndex={6} />);
+    const { getByText, getByTestId } = renderCard(
+      <RevenueChartCard testID="rev" data={REVENUE} activeIndex={6} />,
+    );
     expect(getByText('July')).toBeTruthy();
     expect(getByTestId('rev-headline').props.children).toBe('$13,980');
     expect(getByText('+18.9%')).toBeTruthy();
@@ -243,10 +261,18 @@ describe('RevenueChartCard', () => {
   it('paints a falling year with the rose status pair and a flat one neutral', () => {
     const theme = buildTheme('teal', 'light');
     const palette = resolveChartCardPalette(theme);
-    const declining = REVENUE.map((p) => ({ label: p.label, current: p.previous, previous: p.current }));
-    const { getByTestId, getByText, rerender } = renderCard(<RevenueChartCard testID="rev" data={declining} />);
+    const declining = REVENUE.map((p) => ({
+      label: p.label,
+      current: p.previous,
+      previous: p.current,
+    }));
+    const { getByTestId, getByText, rerender } = renderCard(
+      <RevenueChartCard testID="rev" data={declining} />,
+    );
     expect(getByText('-13.8%')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('rev-delta').props.style).backgroundColor).toBe(palette.negative.background);
+    expect(resolvedStyle(getByTestId('rev-delta').props.style).backgroundColor).toBe(
+      palette.negative.background,
+    );
 
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
@@ -254,7 +280,9 @@ describe('RevenueChartCard', () => {
       </BloomThemeProvider>,
     );
     expect(getByText('0%')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('rev-delta').props.style).backgroundColor).toBe(palette.neutral.background);
+    expect(resolvedStyle(getByTestId('rev-delta').props.style).backgroundColor).toBe(
+      palette.neutral.background,
+    );
   });
 });
 
@@ -276,7 +304,9 @@ describe('OrdersChartCard', () => {
     for (const label of ['0', '900', '1.8k', '2.7k']) expect(getByText(label)).toBeTruthy();
     // Band 6 (Jul) spans 281..321.2 at 528 wide.
     act(() => {
-      fireEvent(getByTestId('ord-plot-surface'), 'pointerMove', { nativeEvent: { offsetX: 320, offsetY: 100 } });
+      fireEvent(getByTestId('ord-plot-surface'), 'pointerMove', {
+        nativeEvent: { offsetX: 320, offsetY: 100 },
+      });
     });
     expect(onActiveIndexChange).toHaveBeenLastCalledWith(6);
     expect(getByText('July')).toBeTruthy();
@@ -291,8 +321,16 @@ describe('chart card palette', () => {
       const p = resolveChartCardPalette(buildTheme('teal', mode));
       expect(p).toMatchObject({
         surface: c.card,
-        textSecondary: quietTextOver([c.card, surfaceFillOn(buildTheme('teal', mode), c.card)], c.text, AA_TEXT_STRONG),
-        textTertiary: quietTextOver([c.card, surfaceFillOn(buildTheme('teal', mode), c.card)], c.text, AA_TEXT),
+        textSecondary: quietTextOver(
+          [c.card, surfaceFillOn(buildTheme('teal', mode), c.card)],
+          c.text,
+          AA_TEXT_STRONG,
+        ),
+        textTertiary: quietTextOver(
+          [c.card, surfaceFillOn(buildTheme('teal', mode), c.card)],
+          c.text,
+          AA_TEXT,
+        ),
         positive: { background: c.successSubtle, foreground: c.successSubtleForeground },
         negative: { background: c.errorSubtle, foreground: c.errorSubtleForeground },
         inner: surfaceFillOn(buildTheme('teal', mode), c.card),

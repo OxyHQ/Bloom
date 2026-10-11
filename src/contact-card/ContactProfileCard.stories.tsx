@@ -113,7 +113,11 @@ const LONG: ContactProfileCardProps = {
     { kind: 'video', onPress: noop },
   ],
   owner: { name: 'Wilhelmina Featherstonehaugh' },
-  headline: { label: 'Open pipeline against this quarter', value: '€4,180,000', delta: '+124 basis points' },
+  headline: {
+    label: 'Open pipeline against this quarter',
+    value: '€4,180,000',
+    delta: '+124 basis points',
+  },
   stats: [
     { value: '17', label: 'Open deals in the current quarter' },
     { value: '€246k', label: 'Average deal size' },
@@ -185,7 +189,7 @@ function BothModes({ children }: { children: React.ReactNode }) {
 
 /** The labelled actions a card carries once it is wide enough for words. */
 const logANote = (
-  <Button  size="sm" leadingIcon={RiDraftLine} onPress={noop} tone="neutral" appearance="outline">
+  <Button size="sm" leadingIcon={RiDraftLine} onPress={noop} tone="neutral" appearance="outline">
     Log a note
   </Button>
 );
@@ -193,12 +197,7 @@ const logANote = (
 export const Person: Story = {
   render: () => (
     <Page maxWidth={680}>
-      <ContactProfileCard
-        {...NORA}
-        onPress={noop}
-        actions={logANote}
-        testID="contact-nora"
-      />
+      <ContactProfileCard {...NORA} onPress={noop} actions={logANote} testID="contact-nora" />
       <ContactProfileCard {...IDRIS} onPress={noop} testID="contact-idris" />
     </Page>
   ),
@@ -300,7 +299,14 @@ export const BothThemes: Story = {
 // ---------------------------------------------------------------------------
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const BANDS: [number, number][] = [[0, 0], [1, 4], [5, 9], [10, 15], [16, 24], [25, 40]];
+const BANDS: [number, number][] = [
+  [0, 0],
+  [1, 4],
+  [5, 9],
+  [10, 15],
+  [16, 24],
+  [25, 40],
+];
 
 function tierFor(row: number, col: number) {
   const seed = hashContributionCell(row, col) % 20;

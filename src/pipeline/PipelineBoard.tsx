@@ -7,10 +7,7 @@ import { useContainerWidth } from '../hooks/use-container-width';
 import { useMessages } from '../locale/messages';
 import { PIPELINE_MESSAGES } from './messages';
 import { PipelineColumn } from './PipelineColumn';
-import {
-  PIPELINE_COLUMN_WIDTH,
-  PIPELINE_SINGLE_MAX_WIDTH,
-} from './constants';
+import { PIPELINE_COLUMN_WIDTH, PIPELINE_SINGLE_MAX_WIDTH } from './constants';
 import type { PipelineBoardLayout, PipelineBoardProps, PipelineStage } from './types';
 
 /**
@@ -113,7 +110,9 @@ function PipelineBoardComponent({
               selected={stage.id === current?.id}
               onPress={() => setSelectedId(stage.id)}
               accessibilityLabel={
-                stage.count === undefined ? stage.name : messages.stageWithCount(stage.name, stage.count)
+                stage.count === undefined
+                  ? stage.name
+                  : messages.stageWithCount(stage.name, stage.count)
               }
               testID={id(`tab-${stage.id}`)}
             >

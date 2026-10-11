@@ -1,4 +1,9 @@
-import { useSurfaceFill, useSurfaceLevelValue, surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
+import {
+  useSurfaceFill,
+  useSurfaceLevelValue,
+  surfaceFillOn,
+  surfaceTextOn,
+} from '../styles/surface-levels';
 import { useMemo } from 'react';
 
 import { resolveButtonRamps } from '../button/shared';
@@ -92,8 +97,12 @@ export function useStaySearchPalette(): StaySearchPalette {
   return useMemo(() => {
     const palette = resolveStaySearchPalette(theme);
     if (level === 0) return palette;
-    return { ...palette, textSecondary: surfaceTextOn(theme, fill).textSecondary,
+    return {
+      ...palette,
+      textSecondary: surfaceTextOn(theme, fill).textSecondary,
       placeholder: surfaceTextOn(theme, fill).textTertiary,
-      tile: surfaceFillOn(theme, fill), rowHighlight: surfaceFillOn(theme, fill) };
+      tile: surfaceFillOn(theme, fill),
+      rowHighlight: surfaceFillOn(theme, fill),
+    };
   }, [theme, fill, level]);
 }

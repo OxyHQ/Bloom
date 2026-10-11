@@ -17,11 +17,11 @@ import {
 
 const meta: Meta<typeof DatePicker> = {
   argTypes: {
-    "placeholder": { control: 'text' },
-    "disabled": { control: 'boolean' },
-    "open": { control: 'boolean' },
-    "defaultOpen": { control: 'boolean' },
-    "locale": { control: 'text' }
+    placeholder: { control: 'text' },
+    disabled: { control: 'boolean' },
+    open: { control: 'boolean' },
+    defaultOpen: { control: 'boolean' },
+    locale: { control: 'text' },
   },
   title: 'Base/Date Picker',
   component: DatePicker,
@@ -52,7 +52,15 @@ export const Basic: Story = {
 export const Triggers: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16, alignItems: 'flex-start' }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
+        gap: 16,
+        alignItems: 'flex-start',
+      }}
+    >
       <DatePicker />
       <DatePicker defaultValue={day(16)} />
       <DatePicker disabled />
@@ -63,10 +71,12 @@ export const Triggers: Story = {
 /** The popup open on a committed day, with the days before the 3rd disabled. */
 export const Open: Story = {
   args: { defaultOpen: true },
-  parameters: { controls: { include: ["defaultOpen","placeholder","disabled","open","locale"] } },
+  parameters: {
+    controls: { include: ['defaultOpen', 'placeholder', 'disabled', 'open', 'locale'] },
+  },
   render: (args) => (
     <View style={{ alignItems: 'flex-start', minHeight: 520 }}>
-      <DatePicker {...args} defaultValue={day(16)} minDate={day(3)}  testID="date-picker" />
+      <DatePicker {...args} defaultValue={day(16)} minDate={day(3)} testID="date-picker" />
     </View>
   ),
 };
@@ -97,7 +107,12 @@ export const InlineRange: Story = {
       const { width } = useWindowDimensions();
       return (
         <View style={{ alignItems: 'flex-start' }}>
-          <RangeCalendar value={value} onChange={setValue} visibleMonths={width < 700 ? 1 : 2} testID="range" />
+          <RangeCalendar
+            value={value}
+            onChange={setValue}
+            visibleMonths={width < 700 ? 1 : 2}
+            testID="range"
+          />
         </View>
       );
     }
@@ -109,7 +124,11 @@ export const RangePicker: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ maxWidth: '100%', width: 920, alignItems: 'flex-end', minHeight: 520 }}>
-      <DateRangePicker defaultValue={{ start: day(9), end: day(22) }} defaultOpen testID="range-picker" />
+      <DateRangePicker
+        defaultValue={{ start: day(9), end: day(22) }}
+        defaultOpen
+        testID="range-picker"
+      />
     </View>
   ),
 };
@@ -189,7 +208,12 @@ export const TimeFields: Story = {
       <View style={{ gap: 20, padding: 24 }}>
         <View style={row}>
           <DatePicker value={date} onChange={setDate} />
-          <TimeField value={plain} onChange={setPlain} accessibilityLabel="Viewing time" testID="tf-24h" />
+          <TimeField
+            value={plain}
+            onChange={setPlain}
+            accessibilityLabel="Viewing time"
+            testID="tf-24h"
+          />
         </View>
         <View style={row}>
           <TimeField
@@ -215,9 +239,27 @@ export const TimeFields: Story = {
           <Text>{`09:00 – 20:00, every 15 min — value: ${booking ?? 'null'}`}</Text>
         </View>
         <View style={row}>
-          <TimeField value={small} onChange={setSmall} size="sm" accessibilityLabel="Start" testID="tf-small" />
-          <TimeField value={null} onChange={() => {}} size="sm" accessibilityLabel="End" testID="tf-empty" />
-          <TimeField value="12:00" onChange={() => {}} disabled accessibilityLabel="Locked" testID="tf-disabled" />
+          <TimeField
+            value={small}
+            onChange={setSmall}
+            size="sm"
+            accessibilityLabel="Start"
+            testID="tf-small"
+          />
+          <TimeField
+            value={null}
+            onChange={() => {}}
+            size="sm"
+            accessibilityLabel="End"
+            testID="tf-empty"
+          />
+          <TimeField
+            value="12:00"
+            onChange={() => {}}
+            disabled
+            accessibilityLabel="Locked"
+            testID="tf-disabled"
+          />
         </View>
       </View>
     );

@@ -5,11 +5,7 @@ import { Card } from '../card';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { BookingPrice } from './BookingPrice';
-import {
-  BOOKING_CARD_MAX_WIDTH,
-  BOOKING_CARD_PADDING,
-  resolveBookingPalette,
-} from './shared';
+import { BOOKING_CARD_MAX_WIDTH, BOOKING_CARD_PADDING, resolveBookingPalette } from './shared';
 import type { BookingPriceProps } from './types';
 
 /**
@@ -52,7 +48,13 @@ export function ActionCardShell({
   };
 
   return (
-    <Card radius="radius-16" elevation="m" testID={testID} onLayout={onLayout} style={[cardStyle, style]}>
+    <Card
+      radius="radius-16"
+      elevation="m"
+      testID={testID}
+      onLayout={onLayout}
+      style={[cardStyle, style]}
+    >
       {children}
     </Card>
   );
@@ -107,7 +109,10 @@ export function ActionCardNote({
   return (
     <View testID={testID} style={[{ alignItems: 'center' }, style]}>
       {typeof children === 'string' ? (
-        <Text variant="body-2-regular" style={{ color: palette.textSecondary, textAlign: 'center' }}>
+        <Text
+          variant="body-2-regular"
+          style={{ color: palette.textSecondary, textAlign: 'center' }}
+        >
           {children}
         </Text>
       ) : (

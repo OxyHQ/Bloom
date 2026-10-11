@@ -38,7 +38,13 @@ import { ListingPhotoGrid } from './ListingPhotoGrid';
 import { ListingSection } from './ListingSection';
 import { ReviewCard } from './ReviewCard';
 import { ReviewSummary } from './ReviewSummary';
-import type { Amenity, ListingHighlight, ListingPhoto, ReviewCategory, ReviewDistributionRow } from './types';
+import type {
+  Amenity,
+  ListingHighlight,
+  ListingPhoto,
+  ReviewCategory,
+  ReviewDistributionRow,
+} from './types';
 
 const meta: Meta = {
   title: 'Blocks/Stays/Listing Details',
@@ -77,9 +83,21 @@ const PHOTOS: ListingPhoto[] = [
 const SUBTITLE = ['Entire rental unit in Porto', '4 guests', '2 bedrooms', '3 beds', '1 bath'];
 
 const HIGHLIGHTS: ListingHighlight[] = [
-  { icon: RiDoorOpenLine, title: 'Self check-in', description: 'Check yourself in with the lockbox.' },
-  { icon: RiBriefcase4Line, title: 'Dedicated workspace', description: 'A room with wifi that’s well suited for working.' },
-  { icon: RiCalendarCloseLine, title: 'Free cancellation before 12 May', description: 'Get a full refund if you change your mind.' },
+  {
+    icon: RiDoorOpenLine,
+    title: 'Self check-in',
+    description: 'Check yourself in with the lockbox.',
+  },
+  {
+    icon: RiBriefcase4Line,
+    title: 'Dedicated workspace',
+    description: 'A room with wifi that’s well suited for working.',
+  },
+  {
+    icon: RiCalendarCloseLine,
+    title: 'Free cancellation before 12 May',
+    description: 'Get a full refund if you change your mind.',
+  },
 ];
 
 const AMENITIES: Amenity[] = [
@@ -119,8 +137,7 @@ const REVIEWS = [
     subtitle: 'Lisbon, Portugal',
     rating: 5,
     date: 'August 2026',
-    text:
-      'The flat is even brighter than the photos. Marta left a handwritten list of bakeries and a map of the river walk, and the lockbox made a late arrival painless. The bedroom stays quiet even on a Saturday night, and the workspace has a proper chair — I got a full week of work done without once missing my desk at home.',
+    text: 'The flat is even brighter than the photos. Marta left a handwritten list of bakeries and a map of the river walk, and the lockbox made a late arrival painless. The bedroom stays quiet even on a Saturday night, and the workspace has a proper chair — I got a full week of work done without once missing my desk at home.',
     hostResponse: {
       title: 'Response from Marta',
       date: 'August 2026',
@@ -141,20 +158,22 @@ const REVIEWS = [
     subtitle: 'Tampere, Finland',
     rating: 4,
     date: 'June 2026',
-    text:
-      'Lovely place in a great neighbourhood with trams at the door. The stairs are steep with luggage, which the listing does mention. The kitchen had everything we needed for cooking dinners in, and the terrace caught the evening sun. Would stay again.',
+    text: 'Lovely place in a great neighbourhood with trams at the door. The stairs are steep with luggage, which the listing does mention. The kitchen had everything we needed for cooking dinners in, and the terrace caught the evening sun. Would stay again.',
   },
   {
     name: 'Rafael',
     subtitle: 'São Paulo, Brazil',
     rating: 5,
     date: 'May 2026',
-    text:
-      'Our second stay here. Communication was quick, the beds are comfortable and the neighbourhood is full of small places to eat.',
+    text: 'Our second stay here. Communication was quick, the beds are comfortable and the neighbourhood is full of small places to eat.',
   },
 ];
 
-const GALLERY: GalleryImage[] = PHOTOS.map((p) => ({ uri: p.source, alt: p.alt, aspectRatio: 1.5 }));
+const GALLERY: GalleryImage[] = PHOTOS.map((p) => ({
+  uri: p.source,
+  alt: p.alt,
+  aspectRatio: 1.5,
+}));
 
 const noop = () => {};
 
@@ -165,7 +184,15 @@ const noop = () => {};
 /** The preview decorator pads every story by 24; a page is edge to edge. */
 const BLEED = {};
 
-function Frame({ width, children, padded = true }: { width: number; children: React.ReactNode; padded?: boolean }) {
+function Frame({
+  width,
+  children,
+  padded = true,
+}: {
+  width: number;
+  children: React.ReactNode;
+  padded?: boolean;
+}) {
   width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   return (
@@ -258,7 +285,12 @@ function ListingPage({ width }: { width: number }) {
       ) : (
         <View style={[gutterStyle, { paddingTop: 32, gap: 24 }]}>
           {header}
-          <ListingPhotoGrid photos={PHOTOS} onPressPhoto={open} onShowAll={() => open(0)} testID="page-photos" />
+          <ListingPhotoGrid
+            photos={PHOTOS}
+            onPressPhoto={open}
+            onShowAll={() => open(0)}
+            testID="page-photos"
+          />
         </View>
       )}
       <View style={[gutterStyle, { paddingTop: narrow ? 24 : 40, paddingBottom: 48 }]}>
@@ -279,7 +311,15 @@ function ListingPage({ width }: { width: number }) {
             categories={CATEGORIES}
             distribution={DISTRIBUTION}
           />
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 64, rowGap: 32, marginTop: 16 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              columnGap: 64,
+              rowGap: 32,
+              marginTop: 16,
+            }}
+          >
             {reviews.map((review) => (
               <ReviewCard
                 key={review.name}
@@ -490,7 +530,12 @@ export const Summary: Story = {
         />
       </Frame>
       <Frame width={375}>
-        <ReviewSummary rating={4.92} description="128 reviews" categories={CATEGORIES} distribution={DISTRIBUTION} />
+        <ReviewSummary
+          rating={4.92}
+          description="128 reviews"
+          categories={CATEGORIES}
+          distribution={DISTRIBUTION}
+        />
       </Frame>
     </View>
   ),
@@ -516,7 +561,8 @@ export const Sections: Story = {
       const theme = useTheme();
       return (
         <Text variant="body-regular" style={{ color: theme.colors.text }}>
-          A quiet two-bedroom flat on the third floor of a restored townhouse, five minutes on foot from the river.
+          A quiet two-bedroom flat on the third floor of a restored townhouse, five minutes on foot
+          from the river.
         </Text>
       );
     }
@@ -525,7 +571,11 @@ export const Sections: Story = {
         <ListingSection divider={false} title="About this place" testID="section-1">
           <Body />
         </ListingSection>
-        <ListingSection title="Where you’ll sleep" subtitle="2 bedrooms · 3 beds" testID="section-2">
+        <ListingSection
+          title="Where you’ll sleep"
+          subtitle="2 bedrooms · 3 beds"
+          testID="section-2"
+        >
           <Body />
         </ListingSection>
         <ListingSection size="small" title="House rules">
@@ -556,7 +606,13 @@ export const PartsDark: Story = {
           <ListingPhotoGrid photos={PHOTOS} layout="grid" onPressPhoto={noop} onShowAll={noop} />
           <ListingHighlights items={HIGHLIGHTS} />
           <AmenityList items={AMENITIES} limit={10} total={42} onShowAll={noop} />
-          <ReviewSummary rating={4.92} title="Loved by guests" description="128 reviews" categories={CATEGORIES} distribution={DISTRIBUTION} />
+          <ReviewSummary
+            rating={4.92}
+            title="Loved by guests"
+            description="128 reviews"
+            categories={CATEGORIES}
+            distribution={DISTRIBUTION}
+          />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 48 }}>
             <ReviewCard {...REVIEWS[0]!} numberOfLines={3} style={{ flex: 1 }} />
             <HostCard

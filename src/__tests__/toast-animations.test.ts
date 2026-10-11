@@ -15,9 +15,7 @@ describe('toast layout animations', () => {
   });
 
   it('returns a different enter instance per position', () => {
-    const instances = POSITIONS.map((position) =>
-      getToastEnterAnimation(position),
-    );
+    const instances = POSITIONS.map((position) => getToastEnterAnimation(position));
     expect(new Set(instances).size).toBe(POSITIONS.length);
   });
 
@@ -55,9 +53,7 @@ describe('toast layout animations', () => {
       isSingle: true,
       stackGap: 8,
     };
-    expect(getToastExitAnimation({ ...base, ...override })).not.toBe(
-      getToastExitAnimation(base),
-    );
+    expect(getToastExitAnimation({ ...base, ...override })).not.toBe(getToastExitAnimation(base));
   });
 
   it('gives each cached instance its own definition object', () => {
@@ -78,9 +74,7 @@ describe('toast layout animations', () => {
         stackGap,
       });
     }
-    expect(toastAnimationCacheSize()).toBeLessThanOrEqual(
-      MAX_CACHED_ANIMATIONS,
-    );
+    expect(toastAnimationCacheSize()).toBeLessThanOrEqual(MAX_CACHED_ANIMATIONS);
   });
 
   it('still serves a shape that was evicted, by rebuilding it', () => {
@@ -91,8 +85,6 @@ describe('toast layout animations', () => {
       stackGap: 0,
     });
     expect(rebuilt).toBeDefined();
-    expect(toastAnimationCacheSize()).toBeLessThanOrEqual(
-      MAX_CACHED_ANIMATIONS,
-    );
+    expect(toastAnimationCacheSize()).toBeLessThanOrEqual(MAX_CACHED_ANIMATIONS);
   });
 });

@@ -32,11 +32,11 @@ const DATA = sampleData(364, END_DATE);
 
 const meta: Meta<typeof ActivityHeatmap> = {
   argTypes: {
-    "numDays": { control: 'number' },
-    "endDate": { control: 'text' },
-    "emptyColor": { control: 'text' },
-    "cellSize": { control: 'number' },
-    "gap": { control: 'number' }
+    numDays: { control: 'number' },
+    endDate: { control: 'text' },
+    emptyColor: { control: 'text' },
+    cellSize: { control: 'number' },
+    gap: { control: 'number' },
   },
   title: 'Charts/Activity Heatmap',
   component: ActivityHeatmap,
@@ -82,17 +82,15 @@ export const Dark: Story = {
 
 export const CustomScale: Story = {
   args: { numDays: 140, cellSize: 14, gap: 4 },
-  parameters: { controls: { include: ["numDays","cellSize","gap","emptyColor"] } },
+  parameters: { controls: { include: ['numDays', 'cellSize', 'gap', 'emptyColor'] } },
   render: (args) => (
     <BloomThemeProvider mode="dark">
       <View style={{ padding: 24, backgroundColor: '#000' }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <ActivityHeatmap {...args}
+          <ActivityHeatmap
+            {...args}
             data={DATA}
             endDate={END_DATE}
-
-
-
             // One colour per threshold, PLUS one for "positive but below the
             // first" — pass five here and `#7DF3BD` would never paint, which is
             // the bug the defaults used to have.

@@ -93,11 +93,16 @@ interface SpeechLike {
   speak: (utterance: unknown) => void;
 }
 
-function webSpeech(): { synth: SpeechLike; Utterance: new (text: string) => { onend: (() => void) | null; onerror: (() => void) | null } } | null {
+function webSpeech(): {
+  synth: SpeechLike;
+  Utterance: new (text: string) => { onend: (() => void) | null; onerror: (() => void) | null };
+} | null {
   if (!IS_WEB || typeof window === 'undefined') return null;
   const w = window as unknown as {
     speechSynthesis?: SpeechLike;
-    SpeechSynthesisUtterance?: new (text: string) => { onend: (() => void) | null; onerror: (() => void) | null };
+    SpeechSynthesisUtterance?: new (
+      text: string,
+    ) => { onend: (() => void) | null; onerror: (() => void) | null };
   };
   if (!w.speechSynthesis || !w.SpeechSynthesisUtterance) return null;
   return { synth: w.speechSynthesis, Utterance: w.SpeechSynthesisUtterance };
@@ -194,7 +199,8 @@ function MessageActions({
     <View
       {...dataHook('bloomAgentChatActions', hidden ? 'hidden' : 'shown')}
       pointerEvents={hidden ? 'none' : 'auto'}
-      style={rowStyle}>
+      style={rowStyle}
+    >
       {copyHandler ? (
         <IconAction
           {...iconProps}
@@ -224,9 +230,7 @@ function MessageActions({
         />
       ) : null}
       {at ? (
-        <Text
-          variant="caption-1-regular"
-          style={{ marginLeft: 4, color: palette.textTertiary }}>
+        <Text variant="caption-1-regular" style={{ marginLeft: 4, color: palette.textTertiary }}>
           {formatTime(at)}
         </Text>
       ) : null}
@@ -289,7 +293,8 @@ export function AgentChatMessage({
     <View
       {...dataHook('bloomAgentChatMessage')}
       testID={testID}
-      style={[{ flexDirection: 'column', gap: 4, paddingLeft: 4, paddingRight: 4 }, style]}>
+      style={[{ flexDirection: 'column', gap: 4, paddingLeft: 4, paddingRight: 4 }, style]}
+    >
       <View style={{ flexDirection: 'column', gap: 12 }}>
         {lines.map((line, index) => (
           <Line key={index} text={line} color={palette.text} animate={!reducedMotion} />
@@ -311,8 +316,15 @@ export function AgentChatMessage({
 AgentChatMessage.displayName = 'AgentChatMessage';
 
 /** Paragraph reveal shared by conversation surfaces. Each line enters only once. */
-export function StreamedText({text,paragraphs=false}:{text:string;paragraphs?:boolean}) {
-  const reduced=useReducedMotion(), palette=useAgentChatPalette();
-  const lines=text.split('\n').filter(line=>line.trim()!=='');
-  return <View style={{gap:paragraphs?12:0}}>{lines.map((line,index)=><Line key={index} text={line} color={palette.text} animate={!reduced}/>)}</View>;
+export function StreamedText({ text, paragraphs = false }: { text: string; paragraphs?: boolean }) {
+  const reduced = useReducedMotion(),
+    palette = useAgentChatPalette();
+  const lines = text.split('\n').filter((line) => line.trim() !== '');
+  return (
+    <View style={{ gap: paragraphs ? 12 : 0 }}>
+      {lines.map((line, index) => (
+        <Line key={index} text={line} color={palette.text} animate={!reduced} />
+      ))}
+    </View>
+  );
 }

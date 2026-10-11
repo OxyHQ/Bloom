@@ -43,7 +43,8 @@ export const UNREAD_DOT_SIZES: Record<UnreadBadgeSize, number> = {
  */
 export const PRESENCE_LABELS: Record<PresenceStatus, string> = CHAT_INDICATORS_MESSAGES.en.presence;
 
-export const MESSAGE_STATUS_LABELS: Record<MessageDeliveryStatus, string> = CHAT_INDICATORS_MESSAGES.en.status;
+export const MESSAGE_STATUS_LABELS: Record<MessageDeliveryStatus, string> =
+  CHAT_INDICATORS_MESSAGES.en.status;
 
 /**
  * `count` as the pill draws it: `"7"`, or `"99+"` once it passes `max`.

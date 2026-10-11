@@ -3,11 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Switch } from '../switch';
-import {
-  SettingsListGroup,
-  SettingsListItem,
-  SettingsListDivider,
-} from './SettingsList';
+import { SettingsListGroup, SettingsListItem, SettingsListDivider } from './SettingsList';
 
 const meta: Meta = {
   component: SettingsListItem,
@@ -27,16 +23,8 @@ function BasicList() {
           description="Manage your account profile"
           onPress={() => {}}
         />
-        <SettingsListItem
-          title="Email"
-          value="nate@oxy.so"
-          onPress={() => {}}
-        />
-        <SettingsListItem
-          title="Sign out"
-          destructive
-          onPress={() => {}}
-        />
+        <SettingsListItem title="Email" value="nate@oxy.so" onPress={() => {}} />
+        <SettingsListItem title="Sign out" destructive onPress={() => {}} />
       </SettingsListGroup>
     </View>
   );
@@ -61,7 +49,9 @@ function WithToggles() {
         />
         <SettingsListItem
           title="Dark mode"
-          rightElement={<Switch checked={dark} onCheckedChange={setDark} accessibilityLabel="Dark mode" />}
+          rightElement={
+            <Switch checked={dark} onCheckedChange={setDark} accessibilityLabel="Dark mode" />
+          }
           showChevron={false}
         />
       </SettingsListGroup>
@@ -115,11 +105,35 @@ export const Composition: Story = {
 };
 
 export const Playground: StoryObj<typeof SettingsListItem> = {
-  args: { title: 'Profile', description: 'Manage your profile', value: 'Personal', showChevron: true, disabled: false, destructive: false },
-  parameters: { controls: { disable: false, include: ['title', 'description', 'value', 'showChevron', 'disabled', 'destructive'] } },
-  argTypes: { title: { control: 'text' }, description: { control: 'text' }, value: { control: 'text' }, showChevron: { control: 'boolean' }, disabled: { control: 'boolean' }, destructive: { control: 'boolean' } },
+  args: {
+    title: 'Profile',
+    description: 'Manage your profile',
+    value: 'Personal',
+    showChevron: true,
+    disabled: false,
+    destructive: false,
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['title', 'description', 'value', 'showChevron', 'disabled', 'destructive'],
+    },
+  },
+  argTypes: {
+    title: { control: 'text' },
+    description: { control: 'text' },
+    value: { control: 'text' },
+    showChevron: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+    destructive: { control: 'boolean' },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 520, maxWidth: '100%' }}><SettingsListGroup title="Account"><SettingsListItem {...args} onPress={() => {}} /></SettingsListGroup></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <SettingsListGroup title="Account">
+          <SettingsListItem {...args} onPress={() => {}} />
+        </SettingsListGroup>
+      </View>
+    );
   },
 };

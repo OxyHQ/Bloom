@@ -119,6 +119,7 @@ function AgentLogRevealComponent({
     onRevealed?.();
   }, [onRevealed]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) return;
     const { heightMs, revealMs, fadeMs } = AGENT_LOG_UNIT_MOTION;
@@ -129,7 +130,6 @@ function AgentLogRevealComponent({
       if (finished) runOnJS(settle)();
     });
     // Mount-only: the reveal plays once per unit.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onLayout = useCallback(
@@ -149,7 +149,8 @@ function AgentLogRevealComponent({
     if (!IS_WEB) return base;
     // Settled: drop the mask and blur outright (written as `none`, not omitted —
     // reanimated's web path never clears a key a later frame leaves out).
-    if (fade.value >= 1) return { ...base, filter: 'none', maskImage: 'none', WebkitMaskImage: 'none' };
+    if (fade.value >= 1)
+      return { ...base, filter: 'none', maskImage: 'none', WebkitMaskImage: 'none' };
     const mask = revealMask(fadePx * (1 - fade.value));
     return {
       ...base,
@@ -206,7 +207,11 @@ const BRANCH_MS = 140;
  * next row's branch. The last row omits the trunk so the guide finishes on the
  * corner. Rendered by `AgentLogRow`; exported for rows that build their own.
  */
-function AgentLogRowConnectorComponent({ first, last, reduce: reduceProp }: AgentLogRowConnectorProps) {
+function AgentLogRowConnectorComponent({
+  first,
+  last,
+  reduce: reduceProp,
+}: AgentLogRowConnectorProps) {
   const theme = useTheme();
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
@@ -216,6 +221,7 @@ function AgentLogRowConnectorComponent({ first, last, reduce: reduceProp }: Agen
   const draw = useSharedValue(animate ? 0 : 1);
   const trunk = useSharedValue(animate ? 0 : 1);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) return;
     draw.value = withDelay(
@@ -224,7 +230,6 @@ function AgentLogRowConnectorComponent({ first, last, reduce: reduceProp }: Agen
     );
     trunk.value = withTiming(1, { duration: TAIL_MS, easing: Easing.linear });
     // Mount-only, like the reveal it rides with.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const branchProps = useAnimatedProps(
@@ -289,7 +294,11 @@ AgentLogRowConnector.displayName = 'AgentLogRowConnector';
  * Render it inside a `position: relative` wrapper directly above the nested
  * list, with the same `offset` as that list's left margin.
  */
-function AgentLogGuideBridgeComponent({ height, offset = 8, reduce: reduceProp }: AgentLogGuideBridgeProps) {
+function AgentLogGuideBridgeComponent({
+  height,
+  offset = 8,
+  reduce: reduceProp,
+}: AgentLogGuideBridgeProps) {
   const theme = useTheme();
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
@@ -297,10 +306,10 @@ function AgentLogGuideBridgeComponent({ height, offset = 8, reduce: reduceProp }
 
   const [animate] = useState(!reduce);
   const scale = useSharedValue(animate ? 0 : 1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) return;
     scale.value = withTiming(1, { duration: TAIL_MS, easing: Easing.linear });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scaleY: scale.value }] }), [scale]);
 

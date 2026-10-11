@@ -63,11 +63,7 @@ function actionColor(style: AlertButton['style']): DialogAction['color'] {
  * ]);
  * ```
  */
-export function alert(
-  title: string,
-  message?: string,
-  buttons?: AlertButton[],
-): void {
+export function alert(title: string, message?: string, buttons?: AlertButton[]): void {
   // The surface is pure chrome — no children at all. The default button's
   // word is resolved where the surface renders, in the locale in effect there.
   void present(() => null, {
@@ -193,14 +189,11 @@ function PromptSurface({
  * dismissal.
  */
 export function prompt(options: SurfacePromptOptions): Promise<string | null> {
-  return present<unknown>(
-    (surface) => <PromptSurface options={options} surface={surface} />,
-    {
-      placement: options.placement ?? 'center',
-      dismissOnBackdrop: options.dismissible ?? true,
-      title: options.title,
-      description: options.description,
-      label: options.title,
-    },
-  ).then((result) => (typeof result === 'string' ? result : null));
+  return present<unknown>((surface) => <PromptSurface options={options} surface={surface} />, {
+    placement: options.placement ?? 'center',
+    dismissOnBackdrop: options.dismissible ?? true,
+    title: options.title,
+    description: options.description,
+    label: options.title,
+  }).then((result) => (typeof result === 'string' ? result : null));
 }

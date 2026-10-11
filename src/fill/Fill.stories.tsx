@@ -27,13 +27,13 @@ export const Scrim: Story = {
   parameters: { controls: { disable: true } },
   render: () => {
     return (
-      <View style={{ maxWidth: '100%', width: 320, height: 180, borderRadius: 12, overflow: 'hidden' }}>
+      <View
+        style={{ maxWidth: '100%', width: 320, height: 180, borderRadius: 12, overflow: 'hidden' }}
+      >
         <View style={{ flex: 1, backgroundColor: 'steelblue' }} />
         <Fill style={{ backgroundColor: 'rgba(0,0,0,0.45)' }} />
         <Fill style={{ alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color: 'white', fontSize: 20, fontWeight: '700' }}>
-            Over the top
-          </Text>
+          <Text style={{ color: 'white', fontSize: 20, fontWeight: '700' }}>Over the top</Text>
         </Fill>
       </View>
     );
@@ -47,7 +47,8 @@ export const Stacked: Story = {
     const { colors } = useTheme();
     return (
       <View
-        style={{ maxWidth: '100%',
+        style={{
+          maxWidth: '100%',
           width: 320,
           height: 140,
           backgroundColor: colors.backgroundSecondary,

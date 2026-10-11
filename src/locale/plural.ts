@@ -53,10 +53,12 @@ export function countValue(count: number | string): number {
   if (typeof count === 'number') return count;
   // An abbreviated count ("2.1K", "12,5 mil") is no whole number to inflect for:
   // NaN lands every language on its general plural form.
-  if (/\d\s*[^\d\s.,\u066b\u066c\u202f]/u.test(count.replace(NATIVE_DIGITS, '0'))) return Number.NaN;
+  if (/\d\s*[^\d\s.,\u066b\u066c\u202f]/u.test(count.replace(NATIVE_DIGITS, '0')))
+    return Number.NaN;
   const ascii = count.replace(NATIVE_DIGITS, (digit) => {
     const code = digit.charCodeAt(0);
-    const zero = [0x0660, 0x06f0, 0x0966, 0x09e6].find((base) => code >= base && code <= base + 9) ?? code;
+    const zero =
+      [0x0660, 0x06f0, 0x0966, 0x09e6].find((base) => code >= base && code <= base + 9) ?? code;
     return String(code - zero);
   });
   // A decimal part only exists after the LAST mark when it is not three digits long.
@@ -76,5 +78,8 @@ export function plural(
   count: number | string,
   forms: Partial<Record<PluralCategory, string>> & { other: string },
 ): string {
-  return (forms[pluralCategory(language, countValue(count))] ?? forms.other).replace('{n}', String(count));
+  return (forms[pluralCategory(language, countValue(count))] ?? forms.other).replace(
+    '{n}',
+    String(count),
+  );
 }

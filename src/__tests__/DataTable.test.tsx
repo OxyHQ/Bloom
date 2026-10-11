@@ -3,7 +3,12 @@ import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { DataTable, DataTableRowAction, type DataTableColumn, type DataTableProps } from '../data-table';
+import {
+  DataTable,
+  DataTableRowAction,
+  type DataTableColumn,
+  type DataTableProps,
+} from '../data-table';
 import { clampPage, nextSort, sortRows } from '../data-table/sorting';
 import { RiEditLine } from '../icons/remix';
 import { pressHost } from './support/press-host';
@@ -22,7 +27,11 @@ const PEOPLE: Person[] = [
 const COLUMNS: DataTableColumn<Person>[] = [
   { id: 'name', header: 'Name', accessor: (p) => p.name, basis: 240 },
   { id: 'age', header: 'Age', accessor: (p) => p.age },
-  { id: 'note', header: 'Note', cell: ({ row, size, selected }) => <Text>{`${row.id}:${size}:${selected}`}</Text> },
+  {
+    id: 'note',
+    header: 'Note',
+    cell: ({ row, size, selected }) => <Text>{`${row.id}:${size}:${selected}`}</Text>,
+  },
 ];
 
 function renderTable(props: Partial<DataTableProps<Person>> = {}) {
@@ -45,7 +54,9 @@ function renderTable(props: Partial<DataTableProps<Person>> = {}) {
  * elements, and a table's structural `View`s (row, cell, columnheader) are not.
  */
 function hostsByRole(utils: ReturnType<typeof render>, role: string) {
-  return utils.UNSAFE_root.findAll((node) => typeof node.type === 'string' && node.props.role === role);
+  return utils.UNSAFE_root.findAll(
+    (node) => typeof node.type === 'string' && node.props.role === role,
+  );
 }
 
 /** The text of each body row's first cell, in render order. */
@@ -69,7 +80,9 @@ describe('data-table sorting helpers (TanStack defaults)', () => {
     });
     expect(nextSort({ columnId: 'name', direction: 'descending' }, name, PEOPLE)).toBeNull();
     expect(nextSort(null, age, PEOPLE)).toEqual({ columnId: 'age', direction: 'descending' });
-    expect(nextSort({ columnId: 'age', direction: 'descending' }, age, PEOPLE)?.direction).toBe('ascending');
+    expect(nextSort({ columnId: 'age', direction: 'descending' }, age, PEOPLE)?.direction).toBe(
+      'ascending',
+    );
     // Pressing another column replaces the sort.
     expect(nextSort({ columnId: 'name', direction: 'ascending' }, age, PEOPLE)).toEqual({
       columnId: 'age',
@@ -79,27 +92,15 @@ describe('data-table sorting helpers (TanStack defaults)', () => {
   });
 
   it('compares text alphanumerically and keeps empty values last in both directions', () => {
-    expect(sortRows(PEOPLE, COLUMNS, { columnId: 'name', direction: 'ascending' }).map((p) => p.name)).toEqual([
-      'Row 1',
-      'Row 2',
-      'Row 3',
-      'Row 9',
-      'Row 10',
-    ]);
-    expect(sortRows(PEOPLE, COLUMNS, { columnId: 'age', direction: 'descending' }).map((p) => p.id)).toEqual([
-      'e',
-      'b',
-      'a',
-      'd',
-      'c',
-    ]);
-    expect(sortRows(PEOPLE, COLUMNS, { columnId: 'age', direction: 'ascending' }).map((p) => p.id)).toEqual([
-      'd',
-      'a',
-      'b',
-      'e',
-      'c',
-    ]);
+    expect(
+      sortRows(PEOPLE, COLUMNS, { columnId: 'name', direction: 'ascending' }).map((p) => p.name),
+    ).toEqual(['Row 1', 'Row 2', 'Row 3', 'Row 9', 'Row 10']);
+    expect(
+      sortRows(PEOPLE, COLUMNS, { columnId: 'age', direction: 'descending' }).map((p) => p.id),
+    ).toEqual(['e', 'b', 'a', 'd', 'c']);
+    expect(
+      sortRows(PEOPLE, COLUMNS, { columnId: 'age', direction: 'ascending' }).map((p) => p.id),
+    ).toEqual(['d', 'a', 'b', 'e', 'c']);
     expect(sortRows(PEOPLE, COLUMNS, null)).toBe(PEOPLE);
   });
 
@@ -131,7 +132,8 @@ describe('DataTable', () => {
 
   it('cycles a header through ascending, descending and unsorted', () => {
     const utils = renderTable();
-    const sortName = () => hostsByRole(utils, 'button').find((b) => b.props.accessibilityLabel === 'Name')!;
+    const sortName = () =>
+      hostsByRole(utils, 'button').find((b) => b.props.accessibilityLabel === 'Name')!;
     expect(firstCells(utils)).toEqual(['Row 10', 'Row 9', 'Row 2', 'Row 1', 'Row 3']);
     act(() => pressHost(sortName()));
     expect(firstCells(utils)).toEqual(['Row 1', 'Row 2', 'Row 3', 'Row 9', 'Row 10']);
@@ -192,7 +194,9 @@ describe('DataTable', () => {
 
   it('keeps the first column sortable beside the selection checkbox', () => {
     const utils = renderTable({ selectable: true });
-    const sortName = hostsByRole(utils, 'button').find((b) => b.props.accessibilityLabel === 'Name')!;
+    const sortName = hostsByRole(utils, 'button').find(
+      (b) => b.props.accessibilityLabel === 'Name',
+    )!;
     act(() => pressHost(sortName));
     expect(firstCells(utils)).toEqual(['Row 1', 'Row 2', 'Row 3', 'Row 9', 'Row 10']);
     expect(sortName.props['aria-sort']).toBe('ascending');
@@ -205,7 +209,11 @@ describe('DataTable', () => {
   });
 
   it('hands cell renderers the row, the density and the selection', () => {
-    const utils = renderTable({ selectable: true, defaultSelectedRowIds: ['b'], defaultSize: 'sm' });
+    const utils = renderTable({
+      selectable: true,
+      defaultSelectedRowIds: ['b'],
+      defaultSize: 'sm',
+    });
     expect(utils.getByText('a:sm:false')).toBeTruthy();
     expect(utils.getByText('b:sm:true')).toBeTruthy();
   });
@@ -249,7 +257,8 @@ describe('DataTable layout="inset"', () => {
     const utils = renderTable({ layout: 'inset', selectable: true });
     const [header, ...body] = rowsOf(utils);
     expect(resolvedStyle(header!.props.style)).toMatchObject({ paddingLeft: 12 });
-    for (const row of body) expect(resolvedStyle(row.props.style)).toMatchObject({ marginLeft: 12 });
+    for (const row of body)
+      expect(resolvedStyle(row.props.style)).toMatchObject({ marginLeft: 12 });
     expect(resolvedStyle(hostsByRole(utils, 'columnheader')[0]!.props.style)).toMatchObject({
       paddingLeft: 0,
       paddingRight: 0,
@@ -258,7 +267,10 @@ describe('DataTable layout="inset"', () => {
       paddingLeft: 12,
       paddingRight: 12,
     });
-    expect(resolvedStyle(hostsByRole(utils, 'cell')[0]!.props.style)).toMatchObject({ paddingLeft: 0, paddingRight: 0 });
+    expect(resolvedStyle(hostsByRole(utils, 'cell')[0]!.props.style)).toMatchObject({
+      paddingLeft: 0,
+      paddingRight: 0,
+    });
   });
 
   it('keeps the default table layout unchanged', () => {
@@ -267,7 +279,9 @@ describe('DataTable layout="inset"', () => {
     expect(resolvedStyle(header!.props.style).paddingLeft).toBeUndefined();
     expect(resolvedStyle(first!.props.style).marginLeft).toBeUndefined();
     expect(resolvedStyle(first!.props.style).backgroundColor).not.toBe('transparent');
-    expect(resolvedStyle(hostsByRole(utils, 'columnheader')[0]!.props.style)).toMatchObject({ paddingLeft: 12 });
+    expect(resolvedStyle(hostsByRole(utils, 'columnheader')[0]!.props.style)).toMatchObject({
+      paddingLeft: 12,
+    });
   });
 
   it('draws a hairline under the last row while paginated, and none on the footer', () => {
@@ -278,7 +292,9 @@ describe('DataTable layout="inset"', () => {
 
     const single = renderTable({ layout: 'inset' });
     const singleRows = rowsOf(single).slice(1);
-    expect(singleRows.map((r) => resolvedStyle(r.props.style).borderBottomWidth)).toEqual([1, 1, 1, 1, 0]);
+    expect(singleRows.map((r) => resolvedStyle(r.props.style).borderBottomWidth)).toEqual([
+      1, 1, 1, 1, 0,
+    ]);
 
     const table = renderTable({ pageSize: 2 });
     expect(resolvedStyle(footerOf(table)!.props.style).borderTopWidth).toBe(1);
@@ -296,21 +312,32 @@ describe('DataTable layout="inset"', () => {
     const labelColor = (text: string) => resolvedStyle(utils.getByText(text).props.style).color;
     const resting = labelColor('Name');
     expect(resting).toBe(labelColor('Age'));
-    const sortName = hostsByRole(utils, 'button').find((b) => b.props.accessibilityLabel === 'Name')!;
+    const sortName = hostsByRole(utils, 'button').find(
+      (b) => b.props.accessibilityLabel === 'Name',
+    )!;
     act(() => pressHost(sortName));
     expect(labelColor('Name')).not.toBe(resting);
     expect(labelColor('Age')).toBe(resting);
-    expect(hostsByRole(utils, 'button').some((b) => b.props.accessibilityLabel === 'Name')).toBe(true);
+    expect(hostsByRole(utils, 'button').some((b) => b.props.accessibilityLabel === 'Name')).toBe(
+      true,
+    );
   });
 
   it('shows the empty state in a 40px-padded band instead of the 160px one', () => {
     const utils = renderTable({ layout: 'inset', rows: [], emptyState: 'Nothing here.' });
     let node = utils.getByText('Nothing here.').parent;
-    while (node && !(typeof node.type === 'string' && resolvedStyle(node.props.style).paddingTop === 40)) {
+    while (
+      node &&
+      !(typeof node.type === 'string' && resolvedStyle(node.props.style).paddingTop === 40)
+    ) {
       node = node.parent;
     }
     expect(node).toBeTruthy();
-    expect(resolvedStyle(node!.props.style)).toMatchObject({ paddingBottom: 40, paddingLeft: 12, paddingRight: 12 });
+    expect(resolvedStyle(node!.props.style)).toMatchObject({
+      paddingBottom: 40,
+      paddingLeft: 12,
+      paddingRight: 12,
+    });
     expect(resolvedStyle(node!.props.style).height).toBeUndefined();
   });
 });

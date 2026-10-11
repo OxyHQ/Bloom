@@ -30,7 +30,12 @@ const IS_WEB = Platform.OS === 'web';
  * its own, so the name sits on the wrapper — `role="img"` on web, where a plain
  * `div` carrying an `aria-label` is not announced at all.
  */
-function TransitLineBadgeComponent({ line, size = 'label-small', style, testID }: TransitLineBadgeProps) {
+function TransitLineBadgeComponent({
+  line,
+  size = 'label-small',
+  style,
+  testID,
+}: TransitLineBadgeProps) {
   const { messages } = useMessages(DIRECTIONS_MESSAGES);
   const theme = useTheme();
   const colors = useMemo(

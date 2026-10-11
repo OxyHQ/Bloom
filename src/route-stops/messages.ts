@@ -20,13 +20,14 @@ export interface RouteStopsMessages {
   state: Record<RouteStopState, string>;
 }
 
-export const ROUTE_STOPS_MESSAGES: MessageCatalog<RouteStopsMessages> = defineMessages<RouteStopsMessages>('ROUTE_STOPS_MESSAGES', {
-  routeStops: 'Route stops',
-  origin: 'Origin',
-  destination: 'Destination',
-  stop: (position) => `Stop ${position}`,
-  swap: 'Swap origin and destination',
-  addStop: 'Add a stop',
-  removeStop: (title) => `Remove ${title}`,
-  state: { reached: 'Reached', current: 'Current stop', pending: 'Not reached' },
-});
+export const ROUTE_STOPS_MESSAGES: MessageCatalog<RouteStopsMessages> =
+  defineMessages<RouteStopsMessages>('ROUTE_STOPS_MESSAGES', {
+    routeStops: 'Route stops',
+    origin: 'Origin',
+    destination: 'Destination',
+    stop: (position) => `Stop ${position}`,
+    swap: 'Swap origin and destination',
+    addStop: 'Add a stop',
+    removeStop: (title) => `Remove ${title}`,
+    state: { reached: 'Reached', current: 'Current stop', pending: 'Not reached' },
+  });

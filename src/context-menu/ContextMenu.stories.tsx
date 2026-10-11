@@ -51,7 +51,8 @@ export const Basic: Story = {
             <ContextMenuItem
               testID="context-copy"
               onPress={() => setLast('copy')}
-              trailing={<ContextMenuShortcut>⌘C</ContextMenuShortcut>}>
+              trailing={<ContextMenuShortcut>⌘C</ContextMenuShortcut>}
+            >
               Copy link
             </ContextMenuItem>
             <ContextMenuItem onPress={() => setLast('pin')}>Pin to profile</ContextMenuItem>

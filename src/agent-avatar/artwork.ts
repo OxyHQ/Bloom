@@ -9,22 +9,13 @@ const TAU = Math.PI * 2;
 export function avatarSilhouette(c: AvatarConfig, phase: number) {
   const path = new DrawingPath();
   if (c.family === 'alien') {
-    const sx =
-      c.alienShape === 'round' ? 1.06 : c.alienShape === 'long' ? 0.86 : 1;
-    const sy =
-      c.alienShape === 'round' ? 0.92 : c.alienShape === 'long' ? 1.03 : 1;
+    const sx = c.alienShape === 'round' ? 1.06 : c.alienShape === 'long' ? 0.86 : 1;
+    const sy = c.alienShape === 'round' ? 0.92 : c.alienShape === 'long' ? 1.03 : 1;
     path.moveTo(0, -86 * sy);
     path.bezierCurveTo(49 * sx, -88 * sy, 87 * sx, -61 * sy, 82 * sx, -20 * sy);
     path.bezierCurveTo(80 * sx, 18 * sy, 47 * sx, 52 * sy, 17 * sx, 80 * sy);
     path.quadraticCurveTo(0, 96 * sy, -17 * sx, 80 * sy);
-    path.bezierCurveTo(
-      -47 * sx,
-      52 * sy,
-      -80 * sx,
-      18 * sy,
-      -82 * sx,
-      -20 * sy,
-    );
+    path.bezierCurveTo(-47 * sx, 52 * sy, -80 * sx, 18 * sy, -82 * sx, -20 * sy);
     path.bezierCurveTo(-87 * sx, -61 * sy, -49 * sx, -88 * sy, 0, -86 * sy);
     path.closePath();
   } else if (c.shape === 'squircle') {
@@ -51,14 +42,12 @@ export function avatarSilhouette(c: AvatarConfig, phase: number) {
       let radius = 83;
       if (c.shape === 'pebble')
         radius +=
-          7 * Math.sin(a * 3 + 0.7 + (Math.sin(phase) * c.motion) / 350) +
-          4 * Math.cos(a * 2 - 1);
+          7 * Math.sin(a * 3 + 0.7 + (Math.sin(phase) * c.motion) / 350) + 4 * Math.cos(a * 2 - 1);
       if (c.shape === 'flower') radius += 10 * Math.cos(a * 5 + 0.5);
       if (c.shape === 'diamond')
         radius =
           83 /
-          (Math.pow(Math.abs(Math.cos(a)), 1.35) +
-            Math.pow(Math.abs(Math.sin(a)), 1.35)) **
+          (Math.pow(Math.abs(Math.cos(a)), 1.35) + Math.pow(Math.abs(Math.sin(a)), 1.35)) **
             (1 / 1.35);
       const x = Math.cos(a) * radius,
         y = Math.sin(a) * radius;
@@ -95,9 +84,7 @@ export function drawAvatar(
   ctx.translate(-100, -100);
   ctx.translate(
     100 + (Math.sin(phase * 23) * rig.tremble * c.motion) / 28,
-    100 +
-      (Math.sin(phase) * c.motion) / 28 -
-      (Math.cos(phase * 2) * rig.bounce * c.motion) / 12,
+    100 + (Math.sin(phase) * c.motion) / 28 - (Math.cos(phase * 2) * rig.bounce * c.motion) / 12,
   );
   ctx.rotate((Math.sin(phase) * c.motion) / 2400);
   const breath = 1 + (Math.sin(phase) * c.motion) / 4000;

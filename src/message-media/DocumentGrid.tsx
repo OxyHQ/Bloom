@@ -38,8 +38,7 @@ function DocumentGridComponent({
   const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
   const paint = useMemo(() => resolveMessageMediaPaint(theme, 'incoming'), [theme]);
 
-  const listName =
-    accessibilityLabel ?? messages.sharedFiles(items.length);
+  const listName = accessibilityLabel ?? messages.sharedFiles(items.length);
 
   return (
     <View role="list" accessibilityLabel={listName} style={style ?? null} testID={testID}>
@@ -48,9 +47,7 @@ function DocumentGridComponent({
           key={item.id}
           role="listitem"
           style={
-            divider && index > 0
-              ? { borderTopWidth: 1, borderTopColor: paint.border }
-              : undefined
+            divider && index > 0 ? { borderTopWidth: 1, borderTopColor: paint.border } : undefined
           }
         >
           <FileMessage

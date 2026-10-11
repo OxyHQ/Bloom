@@ -139,7 +139,8 @@ function PriceEstimateComponent({
   const format = formatProp ?? ((value: number) => formatEuros(value, locale));
   const title = titleProp ?? messages.estimatedPrice;
   const askingLabel = askingLabelProp ?? messages.asking;
-  const formatVerdict = formatVerdictProp ?? ((v: PriceVerdict) => defaultFormatVerdict(v, messages));
+  const formatVerdict =
+    formatVerdictProp ?? ((v: PriceVerdict) => defaultFormatVerdict(v, messages));
   const lowConfidenceVerdictLabel = lowConfidenceVerdictLabelProp ?? messages.noVerdict;
   const reasonsLabel = reasonsLabelProp ?? messages.whyThisEstimate;
   const comparablesLabel = comparablesLabelProp ?? messages.comparables;
@@ -156,7 +157,8 @@ function PriceEstimateComponent({
   const lowConfidence = confidence === 'low';
   const geometry = estimateGeometry(low, high, confidence, [asking, estimate]);
   const [dMin, dMax] = geometry.domain;
-  const px = (v: number) => (width == null || dMax === dMin ? 0 : ((v - dMin) / (dMax - dMin)) * width);
+  const px = (v: number) =>
+    width == null || dMax === dMin ? 0 : ((v - dMin) / (dMax - dMin)) * width;
   const pct = (v: number) => (dMax === dMin ? 0 : ((v - dMin) / (dMax - dMin)) * 100);
 
   const verdict = asking != null ? computePriceVerdict(low, high, asking) : undefined;
@@ -226,7 +228,11 @@ function PriceEstimateComponent({
       >
         {asking != null ? (
           <View style={[placed(px(asking)), { top: 0 }]}>
-            <Text variant="caption-1-semibold" numberOfLines={1} style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+            <Text
+              variant="caption-1-semibold"
+              numberOfLines={1}
+              style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+            >
               {`${askingLabel} ${format(asking)}`}
             </Text>
           </View>
@@ -302,12 +308,20 @@ function PriceEstimateComponent({
           />
         ) : null}
         <View style={[placed(px(geometry.band[0])), { top: asking != null ? 50 : 20 }]}>
-          <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary, fontVariant: ['tabular-nums'] }}>
+          <Text
+            variant="caption-1-regular"
+            numberOfLines={1}
+            style={{ color: palette.textSecondary, fontVariant: ['tabular-nums'] }}
+          >
             {format(geometry.band[0])}
           </Text>
         </View>
         <View style={[placed(px(geometry.band[1])), { top: asking != null ? 50 : 20 }]}>
-          <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary, fontVariant: ['tabular-nums'] }}>
+          <Text
+            variant="caption-1-regular"
+            numberOfLines={1}
+            style={{ color: palette.textSecondary, fontVariant: ['tabular-nums'] }}
+          >
             {format(geometry.band[1])}
           </Text>
         </View>
@@ -316,7 +330,11 @@ function PriceEstimateComponent({
       <View style={{ gap: 12 }}>
         {verdict ? (
           lowConfidence ? (
-            <Text variant="body-medium" style={{ color: palette.textSecondary }} testID={testID ? `${testID}-verdict` : undefined}>
+            <Text
+              variant="body-medium"
+              style={{ color: palette.textSecondary }}
+              testID={testID ? `${testID}-verdict` : undefined}
+            >
               {lowConfidenceVerdictLabel}
             </Text>
           ) : (
@@ -333,7 +351,15 @@ function PriceEstimateComponent({
           )
         ) : null}
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 10, rowGap: 4 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            columnGap: 10,
+            rowGap: 4,
+          }}
+        >
           <View
             accessibilityRole="progressbar"
             accessibilityLabel={confidenceLabel}
@@ -382,7 +408,16 @@ function PriceEstimateComponent({
             aria-expanded={expanded}
             accessibilityState={{ expanded }}
             onPress={() => setExpanded(!expanded)}
-            style={[{ flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderRadius: 4 }, ring]}
+            style={[
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                alignSelf: 'flex-start',
+                borderRadius: 4,
+              },
+              ring,
+            ]}
             testID={testID ? `${testID}-reasons-toggle` : undefined}
           >
             <Text variant="body-semibold" style={{ color: palette.text }}>
@@ -399,9 +434,24 @@ function PriceEstimateComponent({
               {reasons && reasons.length > 0 ? (
                 <View role="list" style={{ gap: 6 }}>
                   {reasons.map((reason, i) => (
-                    <View key={`${reason}-${i}`} role="listitem" style={{ flexDirection: 'row', gap: 8 }}>
-                      <View style={{ width: 4, height: 4, borderRadius: 2, marginTop: 8, backgroundColor: palette.textSecondary }} />
-                      <Text variant="body-regular" style={{ flex: 1, minWidth: 0, color: palette.text }}>
+                    <View
+                      key={`${reason}-${i}`}
+                      role="listitem"
+                      style={{ flexDirection: 'row', gap: 8 }}
+                    >
+                      <View
+                        style={{
+                          width: 4,
+                          height: 4,
+                          borderRadius: 2,
+                          marginTop: 8,
+                          backgroundColor: palette.textSecondary,
+                        }}
+                      />
+                      <Text
+                        variant="body-regular"
+                        style={{ flex: 1, minWidth: 0, color: palette.text }}
+                      >
                         {reason}
                       </Text>
                     </View>
@@ -409,7 +459,11 @@ function PriceEstimateComponent({
                 </View>
               ) : null}
               {comparables != null ? (
-                <Text variant="body-2-regular" style={{ color: palette.textSecondary }} testID={testID ? `${testID}-comparables` : undefined}>
+                <Text
+                  variant="body-2-regular"
+                  style={{ color: palette.textSecondary }}
+                  testID={testID ? `${testID}-comparables` : undefined}
+                >
                   {comparablesLabel(comparables)}
                 </Text>
               ) : null}
@@ -419,7 +473,11 @@ function PriceEstimateComponent({
       ) : null}
 
       {footer ? (
-        <Text variant="caption-1-regular" style={{ color: palette.muted }} testID={testID ? `${testID}-footer` : undefined}>
+        <Text
+          variant="caption-1-regular"
+          style={{ color: palette.muted }}
+          testID={testID ? `${testID}-footer` : undefined}
+        >
           {footer}
         </Text>
       ) : null}

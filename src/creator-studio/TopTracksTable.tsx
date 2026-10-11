@@ -71,11 +71,24 @@ export function TrendGlyph({
   );
 }
 
-function Cover({ artwork, paint, size }: { artwork?: string; paint: CreatorStudioPaint; size: number }) {
+function Cover({
+  artwork,
+  paint,
+  size,
+}: {
+  artwork?: string;
+  paint: CreatorStudioPaint;
+  size: number;
+}) {
   const resolver = useImageResolver();
   const uri = artwork ? (isImageUrl(artwork) ? artwork : resolver?.(artwork, 'thumb')) : undefined;
   return (
-    <View style={[styles.cover, { width: size, height: size, borderRadius: size / 5, backgroundColor: paint.placeholder }]}>
+    <View
+      style={[
+        styles.cover,
+        { width: size, height: size, borderRadius: size / 5, backgroundColor: paint.placeholder },
+      ]}
+    >
       {uri ? (
         <Image source={{ uri }} style={styles.coverImage} accessibilityIgnoresInvertColors />
       ) : (
@@ -128,7 +141,11 @@ function TopTracksTableComponent({
       accessor: (r) => r.track[id],
       sortDescFirst: true,
       cell: ({ row }) => (
-        <Text variant="body-regular" numberOfLines={1} style={[styles.tabular, { color: paint.text }]}>
+        <Text
+          variant="body-regular"
+          numberOfLines={1}
+          style={[styles.tabular, { color: paint.text }]}
+        >
           {format(row.track[id])}
         </Text>
       ),
@@ -161,7 +178,11 @@ function TopTracksTableComponent({
                 {row.track.title}
               </Text>
               {row.track.subtitle ? (
-                <Text variant="body-2-regular" numberOfLines={1} style={{ color: paint.textSecondary }}>
+                <Text
+                  variant="body-2-regular"
+                  numberOfLines={1}
+                  style={{ color: paint.textSecondary }}
+                >
                   {row.track.subtitle}
                 </Text>
               ) : null}
@@ -219,7 +240,13 @@ const styles = StyleSheet.create({
   root: { width: '100%' },
   tabular: { fontVariant: ['tabular-nums'] },
   // Stretched to the cell (which aligns its content to the start), so a long title truncates.
-  trackCell: { alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', gap: 12, minWidth: 0 },
+  trackCell: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minWidth: 0,
+  },
   trackText: { flex: 1, minWidth: 0, gap: 2 },
   cover: {
     width: 40,

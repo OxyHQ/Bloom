@@ -82,6 +82,7 @@ export interface FloatingPositionProps {
 }
 
 export interface FloatingPanelProps extends FloatingPositionProps {
+  material?: 'surface' | 'flat';
   /** Rendered only while true — `OverlayRoot` takes its stack rank on mount. */
   open: boolean;
   /**

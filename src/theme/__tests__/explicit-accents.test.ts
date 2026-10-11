@@ -8,11 +8,7 @@
  *      (and away from the derived one), and
  *   2. omitting the seeds is byte-identical to the pre-feature derived output.
  */
-import {
-  argbFromHex,
-  generateRoleColors,
-  type RoleColors,
-} from '../color-engine';
+import { argbFromHex, generateRoleColors, type RoleColors } from '../color-engine';
 import { Hct } from '../color-engine/hct';
 import { buildSeedScopeVars } from '../color-scope/seed-scope';
 
@@ -79,8 +75,12 @@ describe('explicit accent pinning — generateRoleColors', () => {
       tertiarySeed: PINK,
     });
 
-    expect(hueDistance(hueOf(pinned.secondary), Hct.fromInt(argbFromHex(YELLOW)).hue)).toBeLessThan(20);
-    expect(hueDistance(hueOf(pinned.tertiary), Hct.fromInt(argbFromHex(PINK)).hue)).toBeLessThan(20);
+    expect(hueDistance(hueOf(pinned.secondary), Hct.fromInt(argbFromHex(YELLOW)).hue)).toBeLessThan(
+      20,
+    );
+    expect(hueDistance(hueOf(pinned.tertiary), Hct.fromInt(argbFromHex(PINK)).hue)).toBeLessThan(
+      20,
+    );
     // Primary + surfaces are seed-driven and must not move.
     expect(pinned.primary).toBe(derived.primary);
     expect(pinned.background).toBe(derived.background);
@@ -99,7 +99,9 @@ describe('explicit accent pinning — generateRoleColors', () => {
       isDark: true,
       secondarySeed: YELLOW,
     });
-    expect(hueDistance(hueOf(pinnedDark.secondary), Hct.fromInt(argbFromHex(YELLOW)).hue)).toBeLessThan(20);
+    expect(
+      hueDistance(hueOf(pinnedDark.secondary), Hct.fromInt(argbFromHex(YELLOW)).hue),
+    ).toBeLessThan(20);
   });
 });
 

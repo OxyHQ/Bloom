@@ -78,9 +78,7 @@ describe('SettingsListItem', () => {
   });
 
   it('respects left inset when provided', () => {
-    const { getByTestId } = renderWithTheme(
-      <SettingsListItem title="Inset" leftInset={32} />,
-    );
+    const { getByTestId } = renderWithTheme(<SettingsListItem title="Inset" leftInset={32} />);
 
     const content = getByTestId('settings-list-item-content');
     expect(content.props['data-left-inset']).toBe(32);
@@ -103,7 +101,9 @@ describe('SettingsListItem', () => {
     };
 
     expect(lines(<SettingsListItem title="Carrer del Forn 12, 08002" />)).toBe(1);
-    expect(lines(<SettingsListItem title="Carrer del Forn 12, 08002" titleNumberOfLines={2} />)).toBe(2);
+    expect(
+      lines(<SettingsListItem title="Carrer del Forn 12, 08002" titleNumberOfLines={2} />),
+    ).toBe(2);
     expect(
       lines(<SettingsListItem title="Carrer del Forn 12, 08002" titleNumberOfLines={0} />),
     ).toBeUndefined();
@@ -138,7 +138,9 @@ describe('SettingsListGroup', () => {
     };
     walk(toJSON());
     // Shared material paints below the transparent layout host.
-    for (const material of UNSAFE_root.findAll(node => node.props.radius != null && typeof node.props.fill === 'string')) {
+    for (const material of UNSAFE_root.findAll(
+      (node) => node.props.radius != null && typeof node.props.fill === 'string',
+    )) {
       backgrounds.push(material.props.fill);
     }
     return { backgrounds, colors };

@@ -53,8 +53,10 @@ const VERSION = JSON.parse(
  * Chrome decodes it; a Playwright Chromium would not, which is why this script
  * launches the packaged Chrome.
  */
-const CLIP = readFileSync(join(HERE, '..', 'src', 'media-flight', 'MediaFlight.stories.tsx'), 'utf8')
-  .match(/const TINY_MP4 = '([^']+)';/)?.[1];
+const CLIP = readFileSync(
+  join(HERE, '..', 'src', 'media-flight', 'MediaFlight.stories.tsx'),
+  'utf8',
+).match(/const TINY_MP4 = '([^']+)';/)?.[1];
 if (!CLIP) throw new Error('could not read TINY_MP4 out of MediaFlight.stories.tsx');
 
 const source = readFileSync(PLAYER_SOURCE, 'utf8')
@@ -74,9 +76,17 @@ try {
   const page = await browser.newPage();
   await page.setContent('<body></body>');
   await page.evaluate(() => {
-    globalThis.expo = { SharedObject: class { addListener() {} removeListener() {} emit() {} } };
+    globalThis.expo = {
+      SharedObject: class {
+        addListener() {}
+        removeListener() {}
+        emit() {}
+      },
+    };
     globalThis.resolveAssetSource = () => null;
-    globalThis.useMemo = () => { throw new Error('unused'); };
+    globalThis.useMemo = () => {
+      throw new Error('unused');
+    };
   });
   await page.addScriptTag({ content: `${source}\nwindow.VideoPlayerWeb = VideoPlayerWeb;` });
 
@@ -84,14 +94,19 @@ try {
     const settle = (ms) => new Promise((r) => setTimeout(r, ms));
     const el = () => {
       const v = document.createElement('video');
-      v.src = clip; v.muted = true; v.loop = true; v.playsInline = true;
+      v.src = clip;
+      v.muted = true;
+      v.loop = true;
+      v.playsInline = true;
       document.body.appendChild(v);
       return v;
     };
     const two = () => {
       const player = new window.VideoPlayerWeb({ uri: clip });
-      const a = el(); const b = el();
-      player.mountVideoView(a); player.mountVideoView(b);
+      const a = el();
+      const b = el();
+      player.mountVideoView(a);
+      player.mountVideoView(b);
       return { player, a, b };
     };
     const report = {};
@@ -167,10 +182,10 @@ try {
   console.log(
     leaking
       ? '\nLEAK PRESENT: an unmounted view still pauses the live one. Bloom needs the\n' +
-        '`player={null}` commit (see `releaseFlight`) — do not remove it.'
+          '`player={null}` commit (see `releaseFlight`) — do not remove it.'
       : '\nLEAK GONE: an unmounted view no longer controls the player. Bloom can drop\n' +
-        'the `player={null}` commit, and the tests that pin it, once this is the\n' +
-        'lowest version consumers install.',
+          'the `player={null}` commit, and the tests that pin it, once this is the\n' +
+          'lowest version consumers install.',
   );
 } finally {
   await browser.close();

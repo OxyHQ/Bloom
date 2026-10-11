@@ -110,14 +110,14 @@ function PlaceListCardComponent(props: PlaceListCardProps) {
             overflow: 'hidden',
             flexDirection: 'row',
             gap: seam,
-            backgroundColor: uris.length === 0 ? color ?? paint.tile : undefined,
+            backgroundColor: uris.length === 0 ? (color ?? paint.tile) : undefined,
             alignItems: uris.length === 0 ? 'center' : undefined,
             justifyContent: uris.length === 0 ? 'center' : undefined,
           }}
           testID={testID ? `${testID}-cover` : undefined}
         >
           {uris.length === 0
-            ? empty ?? null
+            ? (empty ?? null)
             : uris.map((uri, index) => tile(uri, `tile-${index}`, index === 0 ? 2 : 1))}
         </View>
 

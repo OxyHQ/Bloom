@@ -32,16 +32,31 @@ export interface ChartLegendProps {
  *
  * Plain text, so a screen reader reads the legend in order.
  */
-export function ChartLegend({ items, activeIndex = null, onActiveChange, style, testID }: ChartLegendProps) {
+export function ChartLegend({
+  items,
+  activeIndex = null,
+  onActiveChange,
+  style,
+  testID,
+}: ChartLegendProps) {
   const palette = useChartCardPalette();
   const transition = useWebTransition('opacity', 200);
   return (
     <View
       testID={testID}
       style={[
-        { width: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', columnGap: 16, rowGap: 4 },
+        {
+          width: '100%',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'center',
+          columnGap: 16,
+          rowGap: 4,
+        },
         style,
-      ]}>
+      ]}
+    >
       {items.map((item, index) => {
         const dimmed = activeIndex !== null && activeIndex !== index;
         return (
@@ -50,13 +65,29 @@ export function ChartLegend({ items, activeIndex = null, onActiveChange, style, 
             testID={testID ? `${testID}-item-${index}` : undefined}
             onPointerEnter={onActiveChange ? () => onActiveChange(index) : undefined}
             onPointerLeave={onActiveChange ? () => onActiveChange(null) : undefined}
-            style={[{ flexDirection: 'row', alignItems: 'center', gap: 6, opacity: dimmed ? 0.5 : 1 }, transition]}>
-            <View style={{ width: 12, height: 12, flexShrink: 0, borderRadius: 4, backgroundColor: item.color }} />
+            style={[
+              { flexDirection: 'row', alignItems: 'center', gap: 6, opacity: dimmed ? 0.5 : 1 },
+              transition,
+            ]}
+          >
+            <View
+              style={{
+                width: 12,
+                height: 12,
+                flexShrink: 0,
+                borderRadius: 4,
+                backgroundColor: item.color,
+              }}
+            />
             <Text variant="body-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
               {item.label}
             </Text>
             {item.value !== undefined ? (
-              <Text variant="body-medium" numberOfLines={1} style={[{ color: palette.text }, TABULAR]}>
+              <Text
+                variant="body-medium"
+                numberOfLines={1}
+                style={[{ color: palette.text }, TABULAR]}
+              >
                 {item.value}
               </Text>
             ) : null}

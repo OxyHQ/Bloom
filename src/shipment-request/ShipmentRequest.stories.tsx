@@ -3,7 +3,12 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { RiShakeHandsLine, RiShieldCheckLine, RiFlashlightLine, RiPaintBrushLine } from '../icons/remix';
+import {
+  RiShakeHandsLine,
+  RiShieldCheckLine,
+  RiFlashlightLine,
+  RiPaintBrushLine,
+} from '../icons/remix';
 import { OfferingEditor } from '../listing-editor';
 import type { OfferingValue } from '../listing-editor';
 import type { RouteStop } from '../route-stops';
@@ -252,11 +257,12 @@ function FullForm({ maxWidth = 640, photos = true }: { maxWidth?: number; photos
         }}
         footer={
           <Button
-
             size="lg"
             fullWidth
             disabled={!isShipmentLoadComplete(load)}
-            onPress={noop} tone="accent" appearance="solid"
+            onPress={noop}
+            tone="accent"
+            appearance="solid"
           >
             Ask for quotes
           </Button>
@@ -313,7 +319,10 @@ export const Modes: Story = {
  */
 export const BesideTheReference: Story = {
   render: function BesideTheReferenceStory() {
-    const [offering, setOffering] = useState<OfferingValue>({ kinds: ['rent'], rent: { amount: '1200' } });
+    const [offering, setOffering] = useState<OfferingValue>({
+      kinds: ['rent'],
+      rent: { amount: '1200' },
+    });
     const [load, setLoad] = useState<ShipmentLoad>(A_SOFA);
     return (
       <Page maxWidth={640}>

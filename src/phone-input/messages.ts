@@ -12,4 +12,8 @@ export interface PhoneInputMessages {
   countryCode: string;
 }
 
-export const PHONE_INPUT_MESSAGES: MessageCatalog<PhoneInputMessages> = defineMessages<PhoneInputMessages>('PHONE_INPUT_MESSAGES', { phoneNumber: 'Phone number', countryCode: 'Country code' });
+export const PHONE_INPUT_MESSAGES: MessageCatalog<PhoneInputMessages> =
+  defineMessages<PhoneInputMessages>('PHONE_INPUT_MESSAGES', {
+    phoneNumber: 'Phone number',
+    countryCode: 'Country code',
+  });

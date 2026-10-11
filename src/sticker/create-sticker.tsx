@@ -30,10 +30,7 @@ const TRANSPARENT = 'transparent';
  * bubble behind it is a picture of a sticker. `StickerMessage` is this plus the
  * chat affordances (press, sending, failed).
  */
-export function createSticker({
-  loadLottiePlayer,
-  warnLottieUnavailable,
-}: StickerPlatform) {
+export function createSticker({ loadLottiePlayer, warnLottieUnavailable }: StickerPlatform) {
   function StickerComponent({
     animation,
     fallback,
@@ -56,8 +53,7 @@ export function createSticker({
       setFailed(false);
     }, [animation]);
 
-    const Player =
-      animation && !reducedMotion && !failed ? loadLottiePlayer() : null;
+    const Player = animation && !reducedMotion && !failed ? loadLottiePlayer() : null;
     useEffect(() => {
       if (animation && !reducedMotion && !Player) warnLottieUnavailable();
     }, [animation, reducedMotion, Player]);
@@ -71,12 +67,9 @@ export function createSticker({
       <View
         accessible={!decorative}
         accessibilityRole={decorative ? undefined : 'image'}
-        accessibilityLabel={decorative ? undefined : accessibilityLabelProp ?? messages.sticker}
+        accessibilityLabel={decorative ? undefined : (accessibilityLabelProp ?? messages.sticker)}
         aria-hidden={decorative}
-        style={[
-          { width: size, height: size, position: 'relative' },
-          style ?? null,
-        ]}
+        style={[{ width: size, height: size, position: 'relative' }, style ?? null]}
         testID={testID}
       >
         {showStill ? (
@@ -92,7 +85,7 @@ export function createSticker({
             <MediaImage
               source={fallback}
               placeholder={TRANSPARENT}
-              resizeMode='contain'
+              resizeMode="contain"
               testID={testID ? `${testID}-still` : undefined}
             />
           </View>

@@ -58,19 +58,25 @@ function LeaseSummaryCardComponent({
   const nextPaymentLabel = nextPaymentLabelProp ?? messages.nextPayment;
   const palette = useHousingPalette();
   const { width, onLayout } = useContainerWidth();
-  const wide = layout === 'wide' || (layout === 'auto' && width != null && width >= LEASE_CARD_WIDE_MIN_WIDTH);
+  const wide =
+    layout === 'wide' || (layout === 'auto' && width != null && width >= LEASE_CARD_WIDE_MIN_WIDTH);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
   const period = `${startDate} – ${endDate}`;
   const payment = nextPayment ? LEASE_PAYMENT_STATUS[nextPayment.status] : null;
-  const paymentStatus = nextPayment ? nextPayment.statusLabel ?? messages.leasePaymentStatus[nextPayment.status] : undefined;
+  const paymentStatus = nextPayment
+    ? (nextPayment.statusLabel ?? messages.leasePaymentStatus[nextPayment.status])
+    : undefined;
 
   const figures: { key: string; label: string; body: React.ReactNode }[] = [
     {
       key: 'rent',
       label: rentLabel,
       body: (
-        <Text variant="title-3-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+        <Text
+          variant="title-3-semibold"
+          style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+        >
           {rent}
         </Text>
       ),
@@ -81,7 +87,10 @@ function LeaseSummaryCardComponent({
       key: 'deposit',
       label: depositLabel,
       body: (
-        <Text variant="title-3-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+        <Text
+          variant="title-3-semibold"
+          style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+        >
           {deposit}
         </Text>
       ),
@@ -93,8 +102,13 @@ function LeaseSummaryCardComponent({
       label: nextPaymentLabel,
       body: (
         <View style={{ gap: 6, alignItems: 'flex-start' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 6 }}>
-            <Text variant="title-3-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 6 }}
+          >
+            <Text
+              variant="title-3-semibold"
+              style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+            >
               {nextPayment.amount ?? rent}
             </Text>
             <Text variant="body-2-regular" style={{ color: palette.textSecondary }}>
@@ -152,7 +166,11 @@ function LeaseSummaryCardComponent({
                   <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.text }}>
                     {party.name}
                   </Text>
-                  <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+                  <Text
+                    variant="caption-1-regular"
+                    numberOfLines={1}
+                    style={{ color: palette.textSecondary }}
+                  >
                     {party.role}
                   </Text>
                 </View>

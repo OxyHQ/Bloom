@@ -13,4 +13,8 @@ export interface OrderStatusMessages {
   status: string;
 }
 
-export const ORDER_STATUS_MESSAGES: MessageCatalog<OrderStatusMessages> = defineMessages<OrderStatusMessages>('ORDER_STATUS_MESSAGES', { states: { current: 'In progress', upcoming: 'Not yet', failed: 'Failed' }, status: 'Status' });
+export const ORDER_STATUS_MESSAGES: MessageCatalog<OrderStatusMessages> =
+  defineMessages<OrderStatusMessages>('ORDER_STATUS_MESSAGES', {
+    states: { current: 'In progress', upcoming: 'Not yet', failed: 'Failed' },
+    status: 'Status',
+  });

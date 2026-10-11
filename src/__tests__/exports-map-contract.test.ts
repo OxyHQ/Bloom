@@ -78,7 +78,9 @@ describe('package.json#exports — react-native condition', () => {
       }
       const keys = Object.keys(condition);
       if (keys.join(',') !== 'types,default') {
-        offenders.push(`${name}: react-native keys are [${keys.join(', ')}], expected [types, default]`);
+        offenders.push(
+          `${name}: react-native keys are [${keys.join(', ')}], expected [types, default]`,
+        );
       }
     }
     expect(offenders).toEqual([]);
@@ -92,7 +94,9 @@ describe('package.json#exports — react-native condition', () => {
       const { types, default: def } = condition as { types?: unknown; default?: unknown };
 
       if (typeof def !== 'string' || !def.startsWith('./src/')) {
-        offenders.push(`${name}: react-native.default is ${JSON.stringify(def)}, expected a ./src/ path`);
+        offenders.push(
+          `${name}: react-native.default is ${JSON.stringify(def)}, expected a ./src/ path`,
+        );
       }
       if (typeof types !== 'string' || !types.startsWith('./lib/typescript/')) {
         offenders.push(
@@ -276,7 +280,9 @@ describe('package.json#typesVersions — legacy node10 resolution', () => {
       const importTypes = (entry.import as { types?: string } | undefined)?.types;
       const legacy = map[name.slice(2)];
       if (legacy?.length !== 1 || legacy[0] !== importTypes) {
-        offenders.push(`${name}: typesVersions ${JSON.stringify(legacy)} !== import.types ${String(importTypes)}`);
+        offenders.push(
+          `${name}: typesVersions ${JSON.stringify(legacy)} !== import.types ${String(importTypes)}`,
+        );
       }
     }
     expect(offenders).toEqual([]);

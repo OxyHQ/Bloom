@@ -277,9 +277,14 @@ function CartPanelComponent({
         )}
       </View>
 
-      {hasLines && tip ? <CartTipPicker {...tip} testID={tip.testID ?? (testID ? `${testID}-tip` : undefined)} /> : null}
+      {hasLines && tip ? (
+        <CartTipPicker {...tip} testID={tip.testID ?? (testID ? `${testID}-tip` : undefined)} />
+      ) : null}
       {hasLines && promo ? (
-        <CartPromoField {...promo} testID={promo.testID ?? (testID ? `${testID}-promo` : undefined)} />
+        <CartPromoField
+          {...promo}
+          testID={promo.testID ?? (testID ? `${testID}-promo` : undefined)}
+        />
       ) : null}
 
       {hasLines && minimumOrder ? (
@@ -303,12 +308,13 @@ function CartPanelComponent({
 
       {hasLines && onCheckout ? (
         <Button
-
           size="lg"
           fullWidth
           disabled={checkoutDisabled}
           onPress={onCheckout}
-          testID={testID ? `${testID}-checkout` : undefined} tone="accent" appearance="solid"
+          testID={testID ? `${testID}-checkout` : undefined}
+          tone="accent"
+          appearance="solid"
         >
           {checkoutLabel}
         </Button>

@@ -1,8 +1,22 @@
-import { hashContributionCell, type ContributionCell } from '../../src/chart-cards/contributions-cells';
-import type { ContributionsStat, EarningsPoint, EarningsRange, LinePoint, LineRange } from '../../src/chart-cards';
+import {
+  hashContributionCell,
+  type ContributionCell,
+} from '../../src/chart-cards/contributions-cells';
+import type {
+  ContributionsStat,
+  EarningsPoint,
+  EarningsRange,
+  LinePoint,
+  LineRange,
+} from '../../src/chart-cards';
 import type { ChipHue } from '../../src/chip';
 import type { DataTableSelectOption } from '../../src/data-table';
-import { RiBox3Line, RiChatSmile2Line, RiGroupLine, RiShoppingBasketLine } from '../../src/icons/remix';
+import {
+  RiBox3Line,
+  RiChatSmile2Line,
+  RiGroupLine,
+  RiShoppingBasketLine,
+} from '../../src/icons/remix';
 import type { RecentHire } from '../../src/recent-hires-card';
 import type { StatCardsItem } from '../../src/stat-cards';
 import { AVATARS, MONTHS, PHOTO_PEOPLE, assetUri, makeRng } from '../shared/dashboard';
@@ -18,18 +32,38 @@ import { AVATARS, MONTHS, PHOTO_PEOPLE, assetUri, makeRng } from '../shared/dash
 // ---------------------------------------------------------------------------
 
 export const RECENT_HIRES: RecentHire[] = [
-  { name: 'Livia Saris', joined: 'Joined today', role: 'Backend Engineer', avatar: assetUri(AVATARS.liviaSaris) },
-  { name: 'Jaydon Aminoff', joined: '2 days ago', role: 'UI Designer', avatar: assetUri(AVATARS.jaydonAminoff) },
-  { name: 'Maria Lubin', joined: '5 days ago', role: 'User Researcher', avatar: assetUri(AVATARS.mariaLubin) },
-  { name: 'Ann Press', joined: 'A week ago', role: 'DevOps Engineer', avatar: assetUri(AVATARS.annPress) },
+  {
+    name: 'Livia Saris',
+    joined: 'Joined today',
+    role: 'Backend Engineer',
+    avatar: assetUri(AVATARS.liviaSaris),
+  },
+  {
+    name: 'Jaydon Aminoff',
+    joined: '2 days ago',
+    role: 'UI Designer',
+    avatar: assetUri(AVATARS.jaydonAminoff),
+  },
+  {
+    name: 'Maria Lubin',
+    joined: '5 days ago',
+    role: 'User Researcher',
+    avatar: assetUri(AVATARS.mariaLubin),
+  },
+  {
+    name: 'Ann Press',
+    joined: 'A week ago',
+    role: 'DevOps Engineer',
+    avatar: assetUri(AVATARS.annPress),
+  },
 ];
 
 // ---------------------------------------------------------------------------
 //  Charts (earnings, line, contributions)
 // ---------------------------------------------------------------------------
 
-
-const earnings = (values: number[]): EarningsPoint[] => values.map((value, i) => ({ label: MONTHS[i]!, value }));
+const earnings = (values: number[]): EarningsPoint[] =>
+  values.map((value, i) => ({ label: MONTHS[i]!, value }));
 
 export const EARNINGS_RANGES: EarningsRange[] = [
   {
@@ -59,7 +93,8 @@ export const EARNINGS_RANGES: EarningsRange[] = [
 export const EARNINGS_Y_TICKS = [0, 3000, 5000, 10000];
 export const EARNINGS_Y_MAX = 12000;
 
-const revenue = (values: number[]): LinePoint[] => values.map((value, i) => ({ label: MONTHS[i]!, value }));
+const revenue = (values: number[]): LinePoint[] =>
+  values.map((value, i) => ({ label: MONTHS[i]!, value }));
 
 export const REVENUE_RANGES: LineRange[] = [
   {
@@ -81,11 +116,20 @@ export const REVENUE_RANGES: LineRange[] = [
     label: 'Yearly',
     headline: 512400,
     delta: -0.032,
-    data: revenue([28000, 34000, 46000, 41000, 52000, 49000, 61000, 55000, 68000, 72000, 64000, 83000]),
+    data: revenue([
+      28000, 34000, 46000, 41000, 52000, 49000, 61000, 55000, 68000, 72000, 64000, 83000,
+    ]),
   },
 ];
 
-const COUNT_BANDS: [number, number][] = [[0, 0], [1, 4], [5, 9], [10, 15], [16, 24], [25, 40]];
+const COUNT_BANDS: [number, number][] = [
+  [0, 0],
+  [1, 4],
+  [5, 9],
+  [10, 15],
+  [16, 24],
+  [25, 40],
+];
 
 function tierFor(row: number, col: number) {
   const seed = hashContributionCell(row, col) % 20;
@@ -123,8 +167,20 @@ export const CONTRIBUTION_STATS: ContributionsStat[] = [
 export const DASHBOARD_STATS: StatCardsItem[] = [
   { icon: RiGroupLine, label: 'Customers', value: '14,592', delta: '+5.3%', deltaColor: 'lime' },
   { icon: RiBox3Line, label: 'Unit sold', value: '385', delta: '-2.1%', deltaColor: 'rose' },
-  { icon: RiShoppingBasketLine, label: 'Orders', value: '1,394', delta: '0.00%', deltaColor: 'neutral' },
-  { icon: RiChatSmile2Line, label: 'Support tickets', value: '708', delta: '+12.8%', deltaColor: 'lime' },
+  {
+    icon: RiShoppingBasketLine,
+    label: 'Orders',
+    value: '1,394',
+    delta: '0.00%',
+    deltaColor: 'neutral',
+  },
+  {
+    icon: RiChatSmile2Line,
+    label: 'Support tickets',
+    value: '708',
+    delta: '+12.8%',
+    deltaColor: 'lime',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -159,7 +215,14 @@ const STATUSES: CustomerStatus[] = [
   { label: 'Confirmed', color: 'cyan' },
 ];
 
-export const PRODUCTS = ['Sneakers', 'Backpack', 'Smart watch', 'Headphones', 'Sunglasses', 'Wallet'];
+export const PRODUCTS = [
+  'Sneakers',
+  'Backpack',
+  'Smart watch',
+  'Headphones',
+  'Sunglasses',
+  'Wallet',
+];
 export const REGIONS = ['North America', 'Europe', 'Asia', 'Oceania'];
 
 export const PRICE_BUCKETS: { id: string; label: string; test: (p: number) => boolean }[] = [
@@ -176,8 +239,60 @@ export const PURCHASES: DataTableSelectOption[] = [
   { value: 'processing', label: 'Processing', dot: 'info' },
 ];
 
-const FIRST_NAMES = ['Marcus', 'Cheyenne', 'Alfredo', 'Talan', 'Roger', 'Cristofer', 'Emery', 'Kadin', 'Nolan', 'Ruben', 'Skylar', 'Hanna', 'Corey', 'Miracle', 'Zaire', 'Cooper', 'Leilani', 'Alena', 'Terry', 'Jaxson', 'Kaiya', 'Omar', 'Phoenix', 'Adison', 'Gretchen', 'Marcus', 'Nova', 'Ellis', 'Dulce', 'Wilson'];
-const LAST_NAMES = ['Culhane', 'Herwitz', 'Septimus', 'Bergson', 'Curtis', 'Vetrovs', 'Rhiel', 'Dokidis', 'Kenter', 'Stanton', 'Baptista', 'Workman', 'Torff', 'Calzoni', 'Rosser', 'Geidt', 'Bator', 'Vaccaro', 'Lipshutz', 'Botosh'];
+const FIRST_NAMES = [
+  'Marcus',
+  'Cheyenne',
+  'Alfredo',
+  'Talan',
+  'Roger',
+  'Cristofer',
+  'Emery',
+  'Kadin',
+  'Nolan',
+  'Ruben',
+  'Skylar',
+  'Hanna',
+  'Corey',
+  'Miracle',
+  'Zaire',
+  'Cooper',
+  'Leilani',
+  'Alena',
+  'Terry',
+  'Jaxson',
+  'Kaiya',
+  'Omar',
+  'Phoenix',
+  'Adison',
+  'Gretchen',
+  'Marcus',
+  'Nova',
+  'Ellis',
+  'Dulce',
+  'Wilson',
+];
+const LAST_NAMES = [
+  'Culhane',
+  'Herwitz',
+  'Septimus',
+  'Bergson',
+  'Curtis',
+  'Vetrovs',
+  'Rhiel',
+  'Dokidis',
+  'Kenter',
+  'Stanton',
+  'Baptista',
+  'Workman',
+  'Torff',
+  'Calzoni',
+  'Rosser',
+  'Geidt',
+  'Bator',
+  'Vaccaro',
+  'Lipshutz',
+  'Botosh',
+];
 
 export function formatPrice(n: number) {
   return n >= 1000 ? `$${Math.floor(n / 1000)}.${String(n % 1000).padStart(3, '0')}` : `$${n}`;
@@ -185,7 +300,7 @@ export function formatPrice(n: number) {
 
 export const CUSTOMERS: Customer[] = (() => {
   const rng = makeRng(42);
-  const pick = <T,>(arr: T[]) => arr[Math.floor(rng() * arr.length)]!;
+  const pick = <T>(arr: T[]) => arr[Math.floor(rng() * arr.length)]!;
   return Array.from({ length: 660 }, (_, i) => {
     const status = pick(STATUSES);
     const purchase: Purchase =
@@ -208,7 +323,13 @@ export const CUSTOMERS: Customer[] = (() => {
       updatedTs: Date.UTC(2026, monthIdx, day),
     };
     const person = PHOTO_PEOPLE[i];
-    if (person) return { ...base, name: person.name, avatar: person.avatar, initialsColor: 'neutral' as const };
+    if (person)
+      return {
+        ...base,
+        name: person.name,
+        avatar: person.avatar,
+        initialsColor: 'neutral' as const,
+      };
     const name = `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
     return { ...base, name, initialsColor: rng() > 0.5 ? ('blue' as const) : ('neutral' as const) };
   });

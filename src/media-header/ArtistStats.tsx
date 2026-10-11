@@ -13,7 +13,10 @@ import type { ArtistStatsProps } from './types';
 function ArtistStatsComponent({ stats, style, testID }: ArtistStatsProps) {
   const paint = useMediaHeaderPaint();
   return (
-    <View style={[{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 32, rowGap: 16 }, style]} testID={testID}>
+    <View
+      style={[{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 32, rowGap: 16 }, style]}
+      testID={testID}
+    >
       {stats.map((stat, i) => (
         <View
           key={`${stat.label}-${i}`}

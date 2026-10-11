@@ -4,9 +4,9 @@
  *
  * Changed: import paths only, for this flat directory.
  */
-import PortalHost from "./PortalHost";
-import NativePortalProvider from "./PortalProviderView";
-import { PortalManagerProvider } from "./portal-manager";
+import PortalHost from './PortalHost';
+import NativePortalProvider from './PortalProviderView';
+import { PortalManagerProvider } from './portal-manager';
 
 type PortalProviderProps = {
   children: React.ReactNode;
@@ -42,7 +42,7 @@ export default function PortalProvider({ children }: PortalProviderProps) {
 
 const styles = {
   root: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     bottom: 0,
     left: 0,

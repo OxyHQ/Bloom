@@ -6,10 +6,10 @@ import { SleepScoreCard, type SleepMetric } from './SleepScoreCard';
 
 const meta: Meta<typeof SleepScoreCard> = {
   argTypes: {
-    "title": { control: 'text' },
-    "range": { control: 'text' },
-    "height": { control: 'number' },
-    "activeIndex": { control: 'number' }
+    title: { control: 'text' },
+    range: { control: 'text' },
+    height: { control: 'number' },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Sleep Score',
   component: SleepScoreCard,
@@ -32,22 +32,22 @@ const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: n
 
 /** The verdict, the segmented score ring and its sub-scores; hover an arc for its score. */
 export const Default: Story = {
-  args: { range: "29 Jun - 5 Jul" },
-  parameters: { controls: { include: ["range","title","height","activeIndex"] } },
+  args: { range: '29 Jun - 5 Jul' },
+  parameters: { controls: { include: ['range', 'title', 'height', 'activeIndex'] } },
   render: (args) => (
     <Frame>
-      <SleepScoreCard {...args} testID="sleep" metrics={METRICS}  />
+      <SleepScoreCard {...args} testID="sleep" metrics={METRICS} />
     </Frame>
   ),
 };
 
 /** Bedtime hovered (controlled): the centre shows 29, the other arcs drop to 70%. */
 export const Hovered: Story = {
-  args: { range: "29 Jun - 5 Jul", activeIndex: 1 },
-  parameters: { controls: { include: ["range","activeIndex","title","height"] } },
+  args: { range: '29 Jun - 5 Jul', activeIndex: 1 },
+  parameters: { controls: { include: ['range', 'activeIndex', 'title', 'height'] } },
   render: (args) => (
     <Frame>
-      <SleepScoreCard {...args} metrics={METRICS}   />
+      <SleepScoreCard {...args} metrics={METRICS} />
     </Frame>
   ),
 };

@@ -68,8 +68,12 @@ function MessageGroupComponent({
 
   const withAvatar = !outgoing && showAvatar !== false;
   const nameColor =
-    senderColor ?? (senderName === undefined ? paint.muted : senderNameColor(senderColorSeed ?? senderName, theme));
-  const drawName = (showSenderName ?? (senderName !== undefined && !outgoing)) && senderName !== undefined;
+    senderColor ??
+    (senderName === undefined
+      ? paint.muted
+      : senderNameColor(senderColorSeed ?? senderName, theme));
+  const drawName =
+    (showSenderName ?? (senderName !== undefined && !outgoing)) && senderName !== undefined;
 
   return (
     <View style={[{ marginTop: GROUP_GAP }, style]} testID={testID}>

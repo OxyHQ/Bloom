@@ -126,10 +126,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
 
       <View style={styles.content}>
         {displaySiteName ? (
-          <Text
-            numberOfLines={1}
-            style={[styles.siteName, { color: colors.textSecondary }]}
-          >
+          <Text numberOfLines={1} style={[styles.siteName, { color: colors.textSecondary }]}>
             {displaySiteName}
           </Text>
         ) : null}
@@ -141,10 +138,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
         ) : null}
 
         {description ? (
-          <Text
-            numberOfLines={2}
-            style={[styles.description, { color: colors.textSecondary }]}
-          >
+          <Text numberOfLines={2} style={[styles.description, { color: colors.textSecondary }]}>
             {description}
           </Text>
         ) : null}

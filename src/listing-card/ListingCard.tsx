@@ -29,13 +29,30 @@ import { Text } from '../typography';
 import { OfferingBadge } from '../offering-badge/OfferingBadge';
 import { OFFERING_BADGE_MESSAGES, type OfferingBadgeMessages } from '../offering-badge/messages';
 import { FavoriteButton } from './FavoriteButton';
+import { ListingFacts, ListingLocationLine, ListingPriceLines, ListingStatusPill } from './parts';
 import {
-  ListingFacts,
-  ListingLocationLine,
-  ListingPriceLines,
-  ListingStatusPill,
-} from './parts';
-import { COMPACT_PHOTO_RADIUS, COMPACT_PHOTO_SIZE, describeFacts, describePriceLine, DOT_INACTIVE_OPACITY, DOT_SIZE, dotWindow, HORIZONTAL_PHOTO_WIDTH, IS_WEB, LISTING_CARD_CSS, LISTING_CARD_STYLE_ID, PHOTO_ASPECT_RATIO, PHOTO_RADIUS, resolveListingCardPaint, locationText, resolvePhoto, resolvePriceLines, STATUS_WASH_OPACITY, statusLabelFor, uniqueOfferings, type ListingCardPaint } from './shared';
+  COMPACT_PHOTO_RADIUS,
+  COMPACT_PHOTO_SIZE,
+  describeFacts,
+  describePriceLine,
+  DOT_INACTIVE_OPACITY,
+  DOT_SIZE,
+  dotWindow,
+  HORIZONTAL_PHOTO_WIDTH,
+  IS_WEB,
+  LISTING_CARD_CSS,
+  LISTING_CARD_STYLE_ID,
+  PHOTO_ASPECT_RATIO,
+  PHOTO_RADIUS,
+  resolveListingCardPaint,
+  locationText,
+  resolvePhoto,
+  resolvePriceLines,
+  STATUS_WASH_OPACITY,
+  statusLabelFor,
+  uniqueOfferings,
+  type ListingCardPaint,
+} from './shared';
 import type { ListingCardLayout, ListingCardProps } from './types';
 import { useMessages } from '../locale/messages';
 import { LISTING_CARD_MESSAGES, type ListingCardMessages } from './messages';
@@ -183,7 +200,8 @@ function PhotoTrack({
           style={{ width: '100%', height: '100%' }}
         >
           {photos.map((photo, index) => {
-            const uri = index <= mountedThrough ? resolvePhoto(photo, resolver, variant) : undefined;
+            const uri =
+              index <= mountedThrough ? resolvePhoto(photo, resolver, variant) : undefined;
             return (
               <View
                 key={`${index}-${photo}`}
@@ -213,7 +231,15 @@ function PhotoTrack({
 //  Overlay parts
 // ---------------------------------------------------------------------------
 
-function Dots({ count, active, paint }: { count: number; active: number; paint: ListingCardPaint }) {
+function Dots({
+  count,
+  active,
+  paint,
+}: {
+  count: number;
+  active: number;
+  paint: ListingCardPaint;
+}) {
   const slots = dotWindow(count, active);
   if (slots.length === 0) return null;
   return (
@@ -338,11 +364,20 @@ function Details(props: ListingCardProps & { paint: ListingCardPaint; horizontal
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Text variant="body-semibold" numberOfLines={1} style={{ flex: 1, minWidth: 0, color: paint.text }}>
+        <Text
+          variant="body-semibold"
+          numberOfLines={1}
+          style={{ flex: 1, minWidth: 0, color: paint.text }}
+        >
           {title}
         </Text>
         {rating !== undefined ? (
-          <Rating value={rating} count={reviewCount} newLabel={newLabel} style={{ flexShrink: 0 }} />
+          <Rating
+            value={rating}
+            count={reviewCount}
+            newLabel={newLabel}
+            style={{ flexShrink: 0 }}
+          />
         ) : null}
       </View>
       {subtitle ? (
@@ -435,10 +470,7 @@ function ListingCardSkeleton({
       style={[{ flexDirection: horizontal ? 'row' : 'column', alignItems: 'flex-start' }, style]}
       testID={testID}
     >
-      <SkeletonBox
-        borderRadius={PHOTO_RADIUS}
-        style={[photoBoxStyle(layout), { flexShrink: 0 }]}
-      />
+      <SkeletonBox borderRadius={PHOTO_RADIUS} style={[photoBoxStyle(layout), { flexShrink: 0 }]} />
       <View
         style={{
           flex: horizontal ? 1 : undefined,
@@ -515,7 +547,11 @@ function CompactRow(props: CompactRowProps) {
   const secondary = { color: paint.textSecondary };
 
   return (
-    <View {...webDataSet({ bloomListingCard: 'compact' })} style={[{ position: 'relative' }, style]} testID={testID}>
+    <View
+      {...webDataSet({ bloomListingCard: 'compact' })}
+      style={[{ position: 'relative' }, style]}
+      testID={testID}
+    >
       <Pressable {...linkProps} style={linkStyle}>
         <View
           style={{
@@ -565,11 +601,21 @@ function CompactRow(props: CompactRowProps) {
             </View>
           ) : null}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text variant="body-semibold" numberOfLines={1} style={{ flex: 1, minWidth: 0, color: paint.text }}>
+            <Text
+              variant="body-semibold"
+              numberOfLines={1}
+              style={{ flex: 1, minWidth: 0, color: paint.text }}
+            >
               {title}
             </Text>
             {rating !== undefined ? (
-              <Rating size="small" value={rating} count={reviewCount} newLabel={newLabel} style={{ flexShrink: 0 }} />
+              <Rating
+                size="small"
+                value={rating}
+                count={reviewCount}
+                newLabel={newLabel}
+                style={{ flexShrink: 0 }}
+              />
             ) : null}
           </View>
           {subtitle ? (
@@ -599,7 +645,11 @@ function CompactRow(props: CompactRowProps) {
             testID={testID ? `${testID}-price` : undefined}
           />
           {total ? (
-            <Text variant={lines.length > 0 ? 'body-2-regular' : 'body-2-semibold'} numberOfLines={1} style={lines.length > 0 ? secondary : { marginTop: 2, color: paint.text }}>
+            <Text
+              variant={lines.length > 0 ? 'body-2-regular' : 'body-2-semibold'}
+              numberOfLines={1}
+              style={lines.length > 0 ? secondary : { marginTop: 2, color: paint.text }}
+            >
               {total}
             </Text>
           ) : null}
@@ -725,7 +775,8 @@ function ListingCardComponent(props: ListingCardProps) {
   };
 
   const compact = density === 'compact';
-  if (loading) return <ListingCardSkeleton layout={layout} compact={compact} style={style} testID={testID} />;
+  if (loading)
+    return <ListingCardSkeleton layout={layout} compact={compact} style={style} testID={testID} />;
 
   const horizontal = layout === 'horizontal';
   const name = accessibilityLabel ?? composeName(props, messages, offeringText.offerings);
@@ -774,7 +825,11 @@ function ListingCardComponent(props: ListingCardProps) {
         {...props}
         paint={paint}
         linkProps={linkProps}
-        linkStyle={{ flexDirection: 'row', alignItems: 'flex-start', '--bloom-listing-card-ring': paint.ring }}
+        linkStyle={{
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          '--bloom-listing-card-ring': paint.ring,
+        }}
         statusText={shownStatus}
       />
     );
@@ -791,7 +846,9 @@ function ListingCardComponent(props: ListingCardProps) {
   return (
     <View
       {...webDataSet(
-        hoverZoom ? { bloomListingCard: layout, bloomListingCardZoom: '' } : { bloomListingCard: layout },
+        hoverZoom
+          ? { bloomListingCard: layout, bloomListingCardZoom: '' }
+          : { bloomListingCard: layout },
       )}
       style={[{ position: 'relative' }, style]}
       testID={testID}
@@ -877,13 +934,14 @@ function ListingCardComponent(props: ListingCardProps) {
                 style={{ position: 'absolute', left: 8, top: '50%', marginTop: -16 }}
               >
                 <Button
-
                   size="sm"
                   iconOnly
                   leadingIcon={RiArrowLeftSLine}
                   accessibilityLabel={previousPhotoLabel}
                   onPress={() => goTo(active - 1)}
-                  testID={testID ? `${testID}-previous` : undefined} tone="neutral" appearance="outline"
+                  testID={testID ? `${testID}-previous` : undefined}
+                  tone="neutral"
+                  appearance="outline"
                 />
               </View>
             ) : null}
@@ -893,13 +951,14 @@ function ListingCardComponent(props: ListingCardProps) {
                 style={{ position: 'absolute', right: 8, top: '50%', marginTop: -16 }}
               >
                 <Button
-
                   size="sm"
                   iconOnly
                   leadingIcon={RiArrowRightSLine}
                   accessibilityLabel={nextPhotoLabel}
                   onPress={() => goTo(active + 1)}
-                  testID={testID ? `${testID}-next` : undefined} tone="neutral" appearance="outline"
+                  testID={testID ? `${testID}-next` : undefined}
+                  tone="neutral"
+                  appearance="outline"
                 />
               </View>
             ) : null}

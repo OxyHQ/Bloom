@@ -62,7 +62,11 @@ export function OrdersChartCard({
   // This year's bars are filled with the `-active` step itself.
   const fill = activeColor ?? color ?? tone.activeColor;
   const comparisonFill = previousColor ?? palette.neutralSeries;
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
 
   const current = useMemo(() => data.map((d) => d.current), [data]);
   const previous = useMemo(() => data.map((d) => d.previous), [data]);
@@ -70,7 +74,13 @@ export function OrdersChartCard({
   const previousAnim = useChartProgress(previous);
 
   const label =
-    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? chartText.titles.orders, frame.currentLabel, frame.previousLabel, chartText);
+    accessibilityLabel ??
+    chartAccessibilityLabel(
+      frame.title ?? chartText.titles.orders,
+      frame.currentLabel,
+      frame.previousLabel,
+      chartText,
+    );
 
   return (
     <ChartCardFrame
@@ -108,7 +118,13 @@ export function OrdersChartCard({
             // Mount: grow from the base. Data change: morph from the old height.
             const shown = anim.from ? lerp(anim.from[i]!, v, anim.progress) : v * anim.progress;
             const top = yScale(shown, domainMax, box);
-            return topRoundedBarPath(box.left + i * band + position.offset, top, position.size, box.bottom - top, BAR_RADIUS);
+            return topRoundedBarPath(
+              box.left + i * band + position.offset,
+              top,
+              position.size,
+              box.bottom - top,
+              BAR_RADIUS,
+            );
           };
 
           return (

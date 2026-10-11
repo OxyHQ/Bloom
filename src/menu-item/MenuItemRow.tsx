@@ -98,13 +98,14 @@ function MenuItemRowComponent(props: MenuItemRowProps) {
     />
   ) : onAdd ? (
     <Button
-
       size="sm"
       iconOnly
       leadingIcon={RiAddLine}
       accessibilityLabel={addLabel ?? messages.addItem(name)}
       onPress={onAdd}
-      testID={testID ? `${testID}-add` : undefined} tone="neutral" appearance="outline"
+      testID={testID ? `${testID}-add` : undefined}
+      tone="neutral"
+      appearance="outline"
     />
   ) : null;
 
@@ -184,7 +185,9 @@ function MenuItemRowComponent(props: MenuItemRowProps) {
         style={{ marginTop: 2 }}
         testID={testID}
       />
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2, minWidth: 0 }}>
+      <View
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2, minWidth: 0 }}
+      >
         <ListingPriceLines
           lines={[{ price, originalPrice }]}
           size={compact ? 'small' : 'medium'}

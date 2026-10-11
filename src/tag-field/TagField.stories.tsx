@@ -62,7 +62,6 @@ export const Basic: Story = {
   },
 };
 
-
 /** Three people, no photographs: the chips are what is being compared. */
 const PICKED: PersonSummary[] = [
   { id: 'ana', name: 'Ana Restrepo' },
@@ -95,7 +94,13 @@ export const BesideItsNeighbours: Story = {
     return (
       <Page width={860}>
         <Pair label="Empty — the same rung, the same corner, the same fill">
-          <TagField value={[]} onChange={() => {}} placeholder="Add a tag" label="Tags" testID="empty" />
+          <TagField
+            value={[]}
+            onChange={() => {}}
+            placeholder="Add a tag"
+            label="Tags"
+            testID="empty"
+          />
           <TextFieldInput label="Notebook" placeholder="Notebook" testID="plain" />
         </Pair>
         <Pair label="Filled">
@@ -113,11 +118,23 @@ export const BesideItsNeighbours: Story = {
           <SelectedChipsRow people={PICKED} layout="wrap" onRemove={() => undefined} />
         </Pair>
         <Pair label="Invalid">
-          <TagField value={['tide']} onChange={() => {}} invalid placeholder="Add a tag" label="Tags" />
+          <TagField
+            value={['tide']}
+            onChange={() => {}}
+            invalid
+            placeholder="Add a tag"
+            label="Tags"
+          />
           <TextFieldInput label="Notebook" defaultValue="Field notes" isInvalid />
         </Pair>
         <Pair label="Disabled">
-          <TagField value={['tide']} onChange={() => {}} disabled placeholder="Add a tag" label="Tags" />
+          <TagField
+            value={['tide']}
+            onChange={() => {}}
+            disabled
+            placeholder="Add a tag"
+            label="Tags"
+          />
           <TextFieldInput label="Notebook" defaultValue="Field notes" disabled />
         </Pair>
       </Page>
@@ -141,9 +158,14 @@ export const InAField: Story = {
           error={invalid ? 'Pick at least two.' : undefined}
           required
         >
-          <TagField value={tags} onChange={(next) => setTags([...next])} suggestions={VOCABULARY} testID="in-field" />
+          <TagField
+            value={tags}
+            onChange={(next) => setTags([...next])}
+            suggestions={VOCABULARY}
+            testID="in-field"
+          />
         </Field>
-        <Button  size="sm" onPress={() => setInvalid((v) => !v)} tone="neutral" appearance="outline">
+        <Button size="sm" onPress={() => setInvalid((v) => !v)} tone="neutral" appearance="outline">
           Toggle the error
         </Button>
         <Field label="Disabled by the field" disabled>
@@ -194,7 +216,13 @@ export const LimitsAndVocabulary: Story = {
           <Text variant="caption-1-medium">Small, toned, disabled</Text>
           <TagField value={['recipes', 'winter']} onChange={() => {}} size="sm" tone="primary" />
           <TagField value={['recipes', 'winter']} onChange={() => {}} disabled />
-          <TagField value={[]} onChange={() => {}} invalid placeholder="Invalid and empty" label="Tags" />
+          <TagField
+            value={[]}
+            onChange={() => {}}
+            invalid
+            placeholder="Invalid and empty"
+            label="Tags"
+          />
         </View>
       </Page>
     );
@@ -213,7 +241,13 @@ export const NotAboutNotes: Story = {
           <TagField
             value={skills}
             onChange={(next) => setSkills([...next])}
-            suggestions={['TypeScript', 'Design systems', 'Accessibility', 'Rust', 'Data modelling']}
+            suggestions={[
+              'TypeScript',
+              'Design systems',
+              'Accessibility',
+              'Rust',
+              'Data modelling',
+            ]}
             tone="info"
           />
         </Field>

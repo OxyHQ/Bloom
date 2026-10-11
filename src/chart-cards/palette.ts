@@ -29,7 +29,10 @@ export interface ChartSeriesTone {
   activeColor: string;
 }
 
-export function resolveChartCardPalette(theme: Theme, surface = theme.colors.card): ChartCardPalette {
+export function resolveChartCardPalette(
+  theme: Theme,
+  surface = theme.colors.card,
+): ChartCardPalette {
   const c = theme.colors;
   const inner = surfaceFillOn(theme, surface);
   const raised = surfaceFillOn(theme, inner);
@@ -45,7 +48,12 @@ export function resolveChartCardPalette(theme: Theme, surface = theme.colors.car
     negative: resolveAccentColors(c, 'error', 'subtle'),
     neutral: resolveAccentColors(c, 'default', 'subtle'),
     inner,
-    pill: { background: inner, hover: raised, border: hairlineOn(theme, inner), shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] },
+    pill: {
+      background: inner,
+      hover: raised,
+      border: hairlineOn(theme, inner),
+      shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
+    },
   };
 }
 

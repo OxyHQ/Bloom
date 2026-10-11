@@ -24,8 +24,24 @@ import { Textarea } from '../../src/textarea';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { WizardFooter, WizardProgress } from '../../src/wizard';
-import { PUBLISH_PHOTOS, PUBLISH_STEPS, TYPE_LABELS, bathFact, bedFact, areaFact, picsum } from './data';
-import { Hairline, HousingFrame, IS_WEB, PageColumn, useHousingLayout, useHousingNav, webSticky } from './HousingHeader';
+import {
+  PUBLISH_PHOTOS,
+  PUBLISH_STEPS,
+  TYPE_LABELS,
+  bathFact,
+  bedFact,
+  areaFact,
+  picsum,
+} from './data';
+import {
+  Hairline,
+  HousingFrame,
+  IS_WEB,
+  PageColumn,
+  useHousingLayout,
+  useHousingNav,
+  webSticky,
+} from './HousingHeader';
 
 interface Draft {
   type: PropertyType | null;
@@ -65,10 +81,14 @@ const OFFERING_FOR_KIND: Record<OfferingValue['kinds'][number], Offering> = {
 function offeringErrors(value: OfferingValue): OfferingErrors {
   const errors: OfferingErrors = {};
   if (value.kinds.length === 0) errors.kinds = 'Pick at least one way to offer the home.';
-  if (value.kinds.includes('rent') && !value.rent?.amount) errors['rent.amount'] = 'Enter the monthly rent.';
-  if (value.kinds.includes('sale') && !value.sale?.price) errors['sale.price'] = 'Enter the asking price.';
-  if (value.kinds.includes('stay') && !value.stay?.nightlyRate) errors['stay.nightlyRate'] = 'Enter the nightly rate.';
-  if (value.kinds.includes('swap') && !value.swap?.mode) errors['swap.mode'] = 'Choose how you would like to exchange.';
+  if (value.kinds.includes('rent') && !value.rent?.amount)
+    errors['rent.amount'] = 'Enter the monthly rent.';
+  if (value.kinds.includes('sale') && !value.sale?.price)
+    errors['sale.price'] = 'Enter the asking price.';
+  if (value.kinds.includes('stay') && !value.stay?.nightlyRate)
+    errors['stay.nightlyRate'] = 'Enter the nightly rate.';
+  if (value.kinds.includes('swap') && !value.swap?.mode)
+    errors['swap.mode'] = 'Choose how you would like to exchange.';
   return errors;
 }
 
@@ -78,8 +98,15 @@ function previewData(draft: Draft): ListingPreviewData {
   const { kinds, rent, sale, stay } = draft.offering;
   const priceLines = [
     kinds.includes('rent') && rent?.amount ? { price: money(rent.amount), unit: '/ month' } : null,
-    kinds.includes('sale') && sale?.price ? { price: money(sale.price), secondary: `${money(String(Math.round(Number(sale.price) / draft.area)))}/m²` } : null,
-    kinds.includes('stay') && stay?.nightlyRate ? { price: money(stay.nightlyRate), unit: 'night' } : null,
+    kinds.includes('sale') && sale?.price
+      ? {
+          price: money(sale.price),
+          secondary: `${money(String(Math.round(Number(sale.price) / draft.area)))}/m²`,
+        }
+      : null,
+    kinds.includes('stay') && stay?.nightlyRate
+      ? { price: money(stay.nightlyRate), unit: 'night' }
+      : null,
   ].filter((line): line is NonNullable<typeof line> => line != null);
   const typeLabel = draft.type ? TYPE_LABELS[draft.type] : 'Home';
   return {
@@ -91,7 +118,10 @@ function previewData(draft: Draft): ListingPreviewData {
     approximateLocation: draft.precision === 'approximate',
     facts: [bedFact(draft.bedrooms), bathFact(draft.bathrooms), areaFact(draft.area)],
     rating: null,
-    location: draft.precision === 'approximate' ? 'Near the old harbour, Varnholm' : 'Calle Lirio, Varnholm',
+    location:
+      draft.precision === 'approximate'
+        ? 'Near the old harbour, Varnholm'
+        : 'Calle Lirio, Varnholm',
     description: draft.description || undefined,
   };
 }
@@ -120,7 +150,16 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
     setStep(next);
     if (IS_WEB) (globalThis as { scrollTo?: (x: number, y: number) => void }).scrollTo?.(0, 0);
   };
-  const canContinue = [draft.type != null, draft.address.trim().length > 0, true, true, draft.photos.length > 0, draft.title.length > 0, true, true][step];
+  const canContinue = [
+    draft.type != null,
+    draft.address.trim().length > 0,
+    true,
+    true,
+    draft.photos.length > 0,
+    draft.title.length > 0,
+    true,
+    true,
+  ][step];
 
   const onNext = () => {
     if (step === 3 && Object.keys(offeringErrors(draft.offering)).length > 0) {
@@ -144,17 +183,46 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
 
   const preview = useMemo(() => previewData(draft), [draft]);
   const quality: ListingQualityItem[] = [
-    { key: 'photos', label: 'Add at least 5 photos', tip: `You have ${draft.photos.length}. Listings with more photos are saved twice as often.`, done: draft.photos.length >= 5, weight: 2, onPress: () => goTo(4) },
-    { key: 'kitchen', label: 'Describe the kitchen', tip: 'Mention the appliances and how many it seats.', done: /kitchen/i.test(draft.description), onPress: () => goTo(5) },
-    { key: 'length', label: 'Write at least 120 characters', done: draft.description.length >= 120, onPress: () => goTo(5) },
-    { key: 'energy', label: 'Add energy certificate', tip: 'Required to publish a rental in most regions.', done: false },
+    {
+      key: 'photos',
+      label: 'Add at least 5 photos',
+      tip: `You have ${draft.photos.length}. Listings with more photos are saved twice as often.`,
+      done: draft.photos.length >= 5,
+      weight: 2,
+      onPress: () => goTo(4),
+    },
+    {
+      key: 'kitchen',
+      label: 'Describe the kitchen',
+      tip: 'Mention the appliances and how many it seats.',
+      done: /kitchen/i.test(draft.description),
+      onPress: () => goTo(5),
+    },
+    {
+      key: 'length',
+      label: 'Write at least 120 characters',
+      done: draft.description.length >= 120,
+      onPress: () => goTo(5),
+    },
+    {
+      key: 'energy',
+      label: 'Add energy certificate',
+      tip: 'Required to publish a rental in most regions.',
+      done: false,
+    },
     { key: 'precision', label: 'Choose the map precision', done: true },
   ];
 
   const body = (() => {
     switch (step) {
       case 0:
-        return <PropertyTypeSelector value={draft.type} onValueChange={(type) => set({ type })} testID="housing-publish-type" />;
+        return (
+          <PropertyTypeSelector
+            value={draft.type}
+            onValueChange={(type) => set({ type })}
+            testID="housing-publish-type"
+          />
+        );
       case 1:
         return (
           <View style={{ gap: 24 }}>
@@ -170,15 +238,37 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
                 />
               </TextField>
             </View>
-            <AddressPrecisionPicker value={draft.precision} onValueChange={(precision) => set({ precision })} />
+            <AddressPrecisionPicker
+              value={draft.precision}
+              onValueChange={(precision) => set({ precision })}
+            />
           </View>
         );
       case 2:
         return (
           <View>
-            <StepperRow title="Bedrooms" value={draft.bedrooms} onValueChange={(bedrooms) => set({ bedrooms })} max={12} divider />
-            <StepperRow title="Bathrooms" value={draft.bathrooms} onValueChange={(bathrooms) => set({ bathrooms })} min={1} max={8} divider />
-            <StepperRow title="Beds" value={draft.beds} onValueChange={(beds) => set({ beds })} max={20} divider />
+            <StepperRow
+              title="Bedrooms"
+              value={draft.bedrooms}
+              onValueChange={(bedrooms) => set({ bedrooms })}
+              max={12}
+              divider
+            />
+            <StepperRow
+              title="Bathrooms"
+              value={draft.bathrooms}
+              onValueChange={(bathrooms) => set({ bathrooms })}
+              min={1}
+              max={8}
+              divider
+            />
+            <StepperRow
+              title="Beds"
+              value={draft.beds}
+              onValueChange={(beds) => set({ beds })}
+              max={20}
+              divider
+            />
             <StepperRow
               title="Floor area"
               description="Used to show the price per m²"
@@ -192,7 +282,15 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
           </View>
         );
       case 3:
-        return <OfferingEditor value={draft.offering} onValueChange={(offering) => set({ offering })} area={draft.area} errors={errors} testID="housing-publish-offering" />;
+        return (
+          <OfferingEditor
+            value={draft.offering}
+            onValueChange={(offering) => set({ offering })}
+            area={draft.area}
+            errors={errors}
+            testID="housing-publish-offering"
+          />
+        );
       case 4:
         return (
           <SortablePhotoGrid
@@ -201,7 +299,15 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
             onRemove={(id) => set({ photos: draft.photos.filter((p) => p.id !== id) })}
             onAdd={() => {
               uploads.current += 1;
-              set({ photos: [...draft.photos, { id: `added-${uploads.current}`, uri: picsum(`publish-added-${uploads.current}`) }] });
+              set({
+                photos: [
+                  ...draft.photos,
+                  {
+                    id: `added-${uploads.current}`,
+                    uri: picsum(`publish-added-${uploads.current}`),
+                  },
+                ],
+              });
             }}
             maxPhotos={20}
             addHint="JPG or PNG"
@@ -214,7 +320,13 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
             <View style={{ gap: 6 }}>
               <TextFieldLabel>Title</TextFieldLabel>
               <TextField>
-                <TextFieldInput label="Title" value={draft.title} onChangeText={(title) => set({ title })} maxLength={60} testID="housing-publish-title" />
+                <TextFieldInput
+                  label="Title"
+                  value={draft.title}
+                  onChangeText={(title) => set({ title })}
+                  maxLength={60}
+                  testID="housing-publish-title"
+                />
               </TextField>
             </View>
             <Textarea
@@ -229,7 +341,15 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
           </View>
         );
       case 6:
-        return <ListingQualityMeter items={quality} tips={['Photos taken in daylight make rooms look larger.', 'Mention the distance to transport.']} />;
+        return (
+          <ListingQualityMeter
+            items={quality}
+            tips={[
+              'Photos taken in daylight make rooms look larger.',
+              'Mention the distance to transport.',
+            ]}
+          />
+        );
       default:
         return published ? (
           <Admonition type="tip">
@@ -249,20 +369,45 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
   return (
     <HousingFrame testID="housing-publish">
       <View style={{ backgroundColor: theme.colors.background }}>
-        <PageColumn style={{ height: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <PageColumn
+          style={{
+            height: 72,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <Text variant="title-3-semibold" style={{ color: theme.colors.text }}>
             List your home
           </Text>
-          <Button  size="sm" onPress={() => go('explore')} testID="housing-publish-exit" tone="neutral" appearance="outline">
+          <Button
+            size="sm"
+            onPress={() => go('explore')}
+            testID="housing-publish-exit"
+            tone="neutral"
+            appearance="outline"
+          >
             Save and exit
           </Button>
         </PageColumn>
         <Hairline />
       </View>
       <PageColumn maxWidth={1120} style={{ flexGrow: 1, paddingTop: 32, paddingBottom: 32 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start', gap: 48 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+            gap: 48,
+          }}
+        >
           <View style={{ flex: 1, maxWidth: 680, gap: 32, minWidth: 0 }}>
-            <WizardProgress steps={PUBLISH_STEPS} current={step} currentProgress={published ? 1 : canContinue ? 1 : 0.5} testID="housing-publish-progress" />
+            <WizardProgress
+              steps={PUBLISH_STEPS}
+              current={step}
+              currentProgress={published ? 1 : canContinue ? 1 : 0.5}
+              testID="housing-publish-progress"
+            />
             {body}
           </View>
           {lg ? (

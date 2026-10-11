@@ -33,7 +33,9 @@ describe('Breadcrumb', () => {
     // 3 items + 2 separators, each separator hidden from assistive tech.
     const host = (predicate: (props: Record<string, any>) => boolean) =>
       list.findAll((node) => typeof node.type === 'string' && predicate(node.props));
-    expect(host((props) => props['aria-hidden'] === true && props.style?.width === 12)).toHaveLength(2);
+    expect(
+      host((props) => props['aria-hidden'] === true && props.style?.width === 12),
+    ).toHaveLength(2);
     expect(host((props) => props.role === 'listitem')).toHaveLength(3);
   });
 

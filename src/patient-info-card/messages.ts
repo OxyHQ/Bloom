@@ -6,4 +6,7 @@ export interface PatientInfoCardMessages {
   addPhoto: string;
 }
 
-export const PATIENT_INFO_CARD_MESSAGES: MessageCatalog<PatientInfoCardMessages> = defineMessages<PatientInfoCardMessages>('PATIENT_INFO_CARD_MESSAGES', { addPhoto: 'Add profile photo' });
+export const PATIENT_INFO_CARD_MESSAGES: MessageCatalog<PatientInfoCardMessages> =
+  defineMessages<PatientInfoCardMessages>('PATIENT_INFO_CARD_MESSAGES', {
+    addPhoto: 'Add profile photo',
+  });

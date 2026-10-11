@@ -254,12 +254,16 @@ function publishedBarrels(): Array<{ rel: string; platform: Platform }> {
     // and `exports-map-contract.test.ts` holds its shape.
     if (subpath.includes('*')) continue;
     const rn = entry['react-native'];
-    const native = typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
+    const native =
+      typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
     if (typeof native === 'string' && native.startsWith('./src/')) {
       out.set(native.replace('./src/', ''), 'native');
     }
     const browser = entry.browser;
-    const built = typeof browser === 'object' && browser !== null ? (browser as { import?: unknown }).import : undefined;
+    const built =
+      typeof browser === 'object' && browser !== null
+        ? (browser as { import?: unknown }).import
+        : undefined;
     if (typeof built !== 'string') continue;
     const stem = built.replace(/^\.\/lib\/module\//, '').replace(/\.js$/, '');
     for (const ext of ['.ts', '.tsx']) {
@@ -269,7 +273,9 @@ function publishedBarrels(): Array<{ rel: string; platform: Platform }> {
       }
     }
   }
-  return [...out].map(([rel, platform]) => ({ rel, platform })).sort((a, b) => a.rel.localeCompare(b.rel));
+  return [...out]
+    .map(([rel, platform]) => ({ rel, platform }))
+    .sort((a, b) => a.rel.localeCompare(b.rel));
 }
 
 const BARRELS = publishedBarrels();

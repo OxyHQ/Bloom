@@ -58,7 +58,10 @@ function MicBar({ bar, color }: { bar: (typeof MIC_BARS)[number]; color: string 
     // The keyframes live in the family sheet; each bar runs its own clock.
     const web: WebCssStyle = reducedMotion
       ? { ...base, transform: [{ scaleY: 0.7 }] }
-      : { ...base, animation: `bloom-composer-mic-bars ${bar.duration}ms ease-in-out ${bar.delay}ms infinite` };
+      : {
+          ...base,
+          animation: `bloom-composer-mic-bars ${bar.duration}ms ease-in-out ${bar.delay}ms infinite`,
+        };
     return <View style={web} />;
   }
   return <Animated.View style={[base, nativeStyle]} />;
@@ -69,13 +72,19 @@ function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactN
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(shown ? 1 : 0);
   useEffect(() => {
-    progress.value = reducedMotion ? (shown ? 1 : 0) : withTiming(shown ? 1 : 0, { duration: 280, easing: EASE_OUT });
+    progress.value = reducedMotion
+      ? shown
+        ? 1
+        : 0
+      : withTiming(shown ? 1 : 0, { duration: 280, easing: EASE_OUT });
   }, [shown, reducedMotion, progress]);
   const style = useAnimatedStyle(
     () => ({
       opacity: progress.value,
       transform: [{ scale: 0.8 + 0.2 * progress.value }],
-      ...(IS_WEB ? { filter: progress.value >= 1 ? 'none' : `blur(${3 * (1 - progress.value)}px)` } : null),
+      ...(IS_WEB
+        ? { filter: progress.value >= 1 ? 'none' : `blur(${3 * (1 - progress.value)}px)` }
+        : null),
     }),
     [progress],
   );
@@ -83,9 +92,18 @@ function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactN
     <Animated.View
       pointerEvents="none"
       style={[
-        { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
+        {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </Animated.View>
   );
@@ -110,9 +128,21 @@ export function MicButton({
   const Button = useComposerButton();
   return (
     <Button
-      appearance="solid" tone="neutral" size="md" iconOnly
-      accessibilityLabel={label} pressed={listening} onPress={onToggle}
-      style={{ width: CONTROL_SIZE, height: CONTROL_SIZE, flexShrink: 0, paddingLeft: 0, paddingRight: 0 }}>
+      appearance="solid"
+      tone="neutral"
+      size="md"
+      iconOnly
+      accessibilityLabel={label}
+      pressed={listening}
+      onPress={onToggle}
+      style={{
+        width: CONTROL_SIZE,
+        height: CONTROL_SIZE,
+        flexShrink: 0,
+        paddingLeft: 0,
+        paddingRight: 0,
+      }}
+    >
       <SwapLayer shown={listening}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2.5 }}>
           {MIC_BARS.map((bar, index) => (
@@ -128,21 +158,58 @@ export function MicButton({
 }
 
 /** Send delegates its material, state colours and accessible disabled behavior to Button. */
-export function SendButton({ disabled, onPress, label }: {
-  disabled: boolean; onPress: () => void; label: string;
+export function SendButton({
+  disabled,
+  onPress,
+  label,
+}: {
+  disabled: boolean;
+  onPress: () => void;
+  label: string;
 }) {
   const Button = useComposerButton();
-  return <Button appearance="solid" tone="action" size="md" iconOnly icon={RiArrowUpLine} iconSize={20}
-    disabled={disabled} onPress={onPress} accessibilityLabel={label}
-    style={{ width: CONTROL_SIZE, height: CONTROL_SIZE, flexShrink: 0, paddingLeft: 0, paddingRight: 0 }} />;
+  return (
+    <Button
+      appearance="solid"
+      tone="action"
+      size="md"
+      iconOnly
+      icon={RiArrowUpLine}
+      iconSize={20}
+      disabled={disabled}
+      onPress={onPress}
+      accessibilityLabel={label}
+      style={{
+        width: CONTROL_SIZE,
+        height: CONTROL_SIZE,
+        flexShrink: 0,
+        paddingLeft: 0,
+        paddingRight: 0,
+      }}
+    />
+  );
 }
 
 /** Cancellation stays enabled while the composer's draft/send controls are disabled. */
-export function StopButton({ onPress, label }: {
-  onPress?: () => void; label: string;
-}) {
+export function StopButton({ onPress, label }: { onPress?: () => void; label: string }) {
   const Button = useComposerButton();
-  return <Button appearance="solid" tone="action" size="md" iconOnly icon={RiStopFill} iconSize={20}
-    onPress={onPress} accessibilityLabel={label}
-    style={{ width: CONTROL_SIZE, height: CONTROL_SIZE, flexShrink: 0, paddingLeft: 0, paddingRight: 0 }} />;
+  return (
+    <Button
+      appearance="solid"
+      tone="action"
+      size="md"
+      iconOnly
+      icon={RiStopFill}
+      iconSize={20}
+      onPress={onPress}
+      accessibilityLabel={label}
+      style={{
+        width: CONTROL_SIZE,
+        height: CONTROL_SIZE,
+        flexShrink: 0,
+        paddingLeft: 0,
+        paddingRight: 0,
+      }}
+    />
+  );
 }

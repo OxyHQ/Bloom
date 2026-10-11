@@ -1,6 +1,14 @@
 import React, { useEffect, useRef, useState, type ReactNode } from 'react';
 import { View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { cancelAnimation, Easing, runOnJS, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {
+  cancelAnimation,
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 type Placement = 'rail' | 'sidebar';
 interface Props {
@@ -32,7 +40,7 @@ export function ResponsiveNavigation({ placement, children, style, testID }: Pro
     if (version !== generation.current) return;
     shownRef.current = next;
     setShown(next);
-    opacity.value = withTiming(1, { duration: 200, easing: EASE }, finished => {
+    opacity.value = withTiming(1, { duration: 200, easing: EASE }, (finished) => {
       if (finished) runOnJS(finish)(version);
     });
   };
@@ -55,15 +63,18 @@ export function ResponsiveNavigation({ placement, children, style, testID }: Pro
     setTransitioning(true);
     if (placement === shownRef.current) {
       width.value = withTiming(naturalWidth.current, { duration: 200, easing: EASE });
-      opacity.value = withTiming(1, { duration: 200, easing: EASE }, finished => {
+      opacity.value = withTiming(1, { duration: 200, easing: EASE }, (finished) => {
         if (finished) runOnJS(finish)(version);
       });
     } else {
-      opacity.value = withTiming(0, { duration: 90, easing: EASE }, finished => {
+      opacity.value = withTiming(0, { duration: 90, easing: EASE }, (finished) => {
         if (finished) runOnJS(commit)(placement, version);
       });
     }
-    return () => { cancelAnimation(opacity); cancelAnimation(width); };
+    return () => {
+      cancelAnimation(opacity);
+      cancelAnimation(width);
+    };
   }, [placement, reducedMotion, opacity, width]);
 
   const measure = (event: LayoutChangeEvent) => {
@@ -71,11 +82,25 @@ export function ResponsiveNavigation({ placement, children, style, testID }: Pro
     naturalWidth.current = nextWidth;
     if (moving.current) width.value = withTiming(nextWidth, { duration: 160, easing: EASE });
   };
-  const frameStyle = useAnimatedStyle(() => ({ width: transitioning ? width.value : 'auto' }), [transitioning, width]);
+  const frameStyle = useAnimatedStyle(
+    () => ({ width: transitioning ? width.value : 'auto' }),
+    [transitioning, width],
+  );
   const contentStyle = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
-  return <Animated.View testID={testID ? `${testID}-frame` : undefined} style={[{ flexShrink: 0, minHeight: 0 }, frameStyle]}>
-    <Animated.View style={[{ flex: 1, minHeight: 0, alignSelf: 'flex-start' }, contentStyle]}>
-      <View testID={testID} onLayout={measure} style={[{ flex: 1, minHeight: 0, alignSelf: 'flex-start' }, style]}>{children(shown)}</View>
+  return (
+    <Animated.View
+      testID={testID ? `${testID}-frame` : undefined}
+      style={[{ flexShrink: 0, minHeight: 0 }, frameStyle]}
+    >
+      <Animated.View style={[{ flex: 1, minHeight: 0, alignSelf: 'flex-start' }, contentStyle]}>
+        <View
+          testID={testID}
+          onLayout={measure}
+          style={[{ flex: 1, minHeight: 0, alignSelf: 'flex-start' }, style]}
+        >
+          {children(shown)}
+        </View>
+      </Animated.View>
     </Animated.View>
-  </Animated.View>;
+  );
 }

@@ -62,9 +62,7 @@ const columns: ProjectColumn[] = [
   { id: 'done', title: 'Done', limit: 3, tickets: [] },
 ];
 const members = { maya: { id: 'maya', name: 'Maya Chen', initials: 'MC' } };
-function renderBoard(
-  extra: Partial<React.ComponentProps<typeof ProjectBoard>> = {},
-) {
+function renderBoard(extra: Partial<React.ComponentProps<typeof ProjectBoard>> = {}) {
   return render(
     <BloomThemeProvider colorPreset="teal" mode="light">
       <ProjectBoard
@@ -80,10 +78,7 @@ function renderBoard(
 describe('ProjectBoard data transitions', () => {
   it('moves within and across columns without losing fields or mutating its source', () => {
     const reordered = moveTicket(columns, 'a', 'todo', 1);
-    expect(reordered[0]?.tickets.map((ticket) => ticket.id)).toEqual([
-      'b',
-      'a',
-    ]);
+    expect(reordered[0]?.tickets.map((ticket) => ticket.id)).toEqual(['b', 'a']);
     const moved = moveTicket(reordered, 'a', 'done');
     expect(moved[0]?.tickets.map((ticket) => ticket.id)).toEqual(['b']);
     expect(moved[1]?.tickets[0]?.description).toBe('Original description');
@@ -96,12 +91,14 @@ describe('ProjectBoard data transitions', () => {
     expect(columns[0]?.tickets[0]?.assignees).toEqual(['maya']);
   });
   it('sorts all priorities and titles with a stable manual order', () => {
-    expect(
-      sortColumns(columns, 'priority')[0]?.tickets.map((ticket) => ticket.id),
-    ).toEqual(['b', 'a']);
-    expect(
-      sortColumns(columns, 'title')[0]?.tickets.map((ticket) => ticket.id),
-    ).toEqual(['b', 'a']);
+    expect(sortColumns(columns, 'priority')[0]?.tickets.map((ticket) => ticket.id)).toEqual([
+      'b',
+      'a',
+    ]);
+    expect(sortColumns(columns, 'title')[0]?.tickets.map((ticket) => ticket.id)).toEqual([
+      'b',
+      'a',
+    ]);
     expect(sortColumns(columns, 'manual')).toBe(columns);
   });
   it('chooses an empty column underneath the pointer instead of cards in an adjacent column', () => {
@@ -144,14 +141,9 @@ describe('ProjectBoard interactions', () => {
     const screen = renderBoard({ onColumnsChange });
     fireEvent.press(screen.getByLabelText('Add ticket to Done'));
     fireEvent.changeText(screen.getByLabelText('Ticket title'), '  New task  ');
-    fireEvent.changeText(
-      screen.getByLabelText('Description'),
-      '  Task context  ',
-    );
+    fireEvent.changeText(screen.getByLabelText('Description'), '  Task context  ');
     fireEvent.press(screen.getByTestId('project-board-create-submit'));
-    const next = onColumnsChange.mock.calls.slice(
-      -1,
-    )[0]?.[0] as ProjectColumn[];
+    const next = onColumnsChange.mock.calls.slice(-1)[0]?.[0] as ProjectColumn[];
     expect(next[1]?.tickets[0]).toMatchObject({
       title: 'New task',
       description: 'Task context',
@@ -171,13 +163,8 @@ describe('ProjectBoard interactions', () => {
     expect(screen.getByLabelText('Ticket title').props.value).toBe('');
     fireEvent.changeText(screen.getByLabelText('Ticket title'), 'Two');
     fireEvent.press(screen.getByTestId('project-board-create-submit'));
-    const next = onColumnsChange.mock.calls.slice(
-      -1,
-    )[0]?.[0] as ProjectColumn[];
-    expect(next[0]?.tickets.slice(0, 2).map((ticket) => ticket.title)).toEqual([
-      'Two',
-      'One',
-    ]);
+    const next = onColumnsChange.mock.calls.slice(-1)[0]?.[0] as ProjectColumn[];
+    expect(next[0]?.tickets.slice(0, 2).map((ticket) => ticket.title)).toEqual(['Two', 'One']);
   });
   it('puts a long native creation form inside a bounded scroll view that keeps submit taps', () => {
     const previousOS = Platform.OS;
@@ -190,7 +177,10 @@ describe('ProjectBoard interactions', () => {
       expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
       expect(StyleSheet.flatten(scroll.props.contentContainerStyle).padding).toBe(16);
       fireEvent.changeText(screen.getByLabelText('Ticket title'), 'Long task');
-      fireEvent.changeText(screen.getByLabelText('Description'), Array(40).fill('Context line').join('\n'));
+      fireEvent.changeText(
+        screen.getByLabelText('Description'),
+        Array(40).fill('Context line').join('\n'),
+      );
       fireEvent.press(screen.getByTestId('project-board-create-submit'));
       expect(screen.getByText('Long task')).toBeTruthy();
       screen.unmount();
@@ -203,19 +193,12 @@ describe('ProjectBoard interactions', () => {
     const onTicketOpen = jest.fn();
     const screen = renderBoard({ onColumnsChange, onTicketOpen });
     fireEvent.press(screen.getByLabelText('Open FE-1: Zebra title'));
-    expect(onTicketOpen).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'a' }),
-    );
+    expect(onTicketOpen).toHaveBeenCalledWith(expect.objectContaining({ id: 'a' }));
     expect(screen.getByText('Original description')).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Add to favorites'));
-    fireEvent.changeText(
-      screen.getByLabelText('Add a comment'),
-      '  Reviewed with the team  ',
-    );
+    fireEvent.changeText(screen.getByLabelText('Add a comment'), '  Reviewed with the team  ');
     fireEvent.press(screen.getByLabelText('Post comment'));
-    const next = onColumnsChange.mock.calls.slice(
-      -1,
-    )[0]?.[0] as ProjectColumn[];
+    const next = onColumnsChange.mock.calls.slice(-1)[0]?.[0] as ProjectColumn[];
     expect(next[0]?.tickets[0]?.isFavorite).toBe(true);
     expect(next[0]?.tickets[0]?.comments?.[0]).toMatchObject({
       author: 'you',
@@ -226,14 +209,10 @@ describe('ProjectBoard interactions', () => {
   it('moves with native accessibility actions while preserving every ticket', () => {
     const onColumnsChange = jest.fn();
     const screen = renderBoard({ onColumnsChange });
-    fireEvent(
-      screen.getByLabelText('Open FE-1: Zebra title'),
-      'accessibilityAction',
-      { nativeEvent: { actionName: 'nextColumn' } },
-    );
-    const next = onColumnsChange.mock.calls.slice(
-      -1,
-    )[0]?.[0] as ProjectColumn[];
+    fireEvent(screen.getByLabelText('Open FE-1: Zebra title'), 'accessibilityAction', {
+      nativeEvent: { actionName: 'nextColumn' },
+    });
+    const next = onColumnsChange.mock.calls.slice(-1)[0]?.[0] as ProjectColumn[];
     expect(next[0]?.tickets.map((ticket) => ticket.id)).toEqual(['b']);
     expect(next[1]?.tickets.map((ticket) => ticket.id)).toEqual(['a']);
     expect(next.flatMap((column) => column.tickets)).toHaveLength(2);

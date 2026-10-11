@@ -14,7 +14,17 @@ import {
 } from '../../src/music-library';
 import { TrackList, TrackListEmpty } from '../../src/track-list';
 import { Text } from '../../src/typography';
-import { ALBUMS, ARTISTS, EPISODES, GENRES, PLAYLISTS, RECENT_SEARCHES, SHOWS, TRACKS, ARTIST_BY_ID } from './data';
+import {
+  ALBUMS,
+  ARTISTS,
+  EPISODES,
+  GENRES,
+  PLAYLISTS,
+  RECENT_SEARCHES,
+  SHOWS,
+  TRACKS,
+  ARTIST_BY_ID,
+} from './data';
 import {
   AlbumTile,
   ArtistTile,
@@ -89,7 +99,11 @@ export function SearchPage({ query = '' }: { query?: string }) {
                   style={{ maxWidth: 640 }}
                 />
               ) : null}
-              <BrowseGrid title="Browse all" minTileWidth={mobile ? 150 : 180} gap={mobile ? 12 : 16}>
+              <BrowseGrid
+                title="Browse all"
+                minTileWidth={mobile ? 150 : 180}
+                gap={mobile ? 12 : 16}
+              >
                 {GENRES.map((genre) => (
                   <GenreCard
                     key={genre.id}
@@ -97,7 +111,10 @@ export function SearchPage({ query = '' }: { query?: string }) {
                     color={genre.color}
                     artwork={genre.artwork}
                     onPress={() =>
-                      router.replace({ name: 'search', query: genre.title === 'Podcasts' ? 'Quiet' : 'Harbour' })
+                      router.replace({
+                        name: 'search',
+                        query: genre.title === 'Podcasts' ? 'Quiet' : 'Harbour',
+                      })
                     }
                     style={{ width: '100%' }}
                   />
@@ -121,11 +138,16 @@ function SearchResults({ query }: { query: string }) {
 
   const results = useMemo(() => {
     const artists = ARTISTS.filter((a) => matches(a.name, query));
-    const albums = ALBUMS.filter((a) => matches(a.title, query) || matches(ARTIST_BY_ID[a.artistId]!.name, query));
-    const tracks = TRACKS.filter(
-      (t) => matches(t.title, query) || t.artistIds.some((id) => matches(ARTIST_BY_ID[id]!.name, query)),
+    const albums = ALBUMS.filter(
+      (a) => matches(a.title, query) || matches(ARTIST_BY_ID[a.artistId]!.name, query),
     );
-    const playlists = PLAYLISTS.filter((p) => matches(p.title, query) || matches(p.description, query));
+    const tracks = TRACKS.filter(
+      (t) =>
+        matches(t.title, query) || t.artistIds.some((id) => matches(ARTIST_BY_ID[id]!.name, query)),
+    );
+    const playlists = PLAYLISTS.filter(
+      (p) => matches(p.title, query) || matches(p.description, query),
+    );
     const shows = SHOWS.filter((s) => matches(s.title, query) || matches(s.publisher, query));
     const episodes = EPISODES.filter((e) => matches(e.title, query));
     return { artists, albums, tracks, playlists, shows, episodes };
@@ -159,7 +181,11 @@ function SearchResults({ query }: { query: string }) {
     <TrackList
       testID="music-search-songs"
       tracks={results.tracks.slice(0, limit).map((t) => toListTrack(t, player.liked.has(t.id)))}
-      columns={compact ? ['title', 'duration', 'actions'] : ['index', 'title', 'album', 'duration', 'actions']}
+      columns={
+        compact
+          ? ['title', 'duration', 'actions']
+          : ['index', 'title', 'album', 'duration', 'actions']
+      }
       density={compact ? 'compact' : 'comfortable'}
       showHeader={!compact}
       selectable={false}
@@ -274,7 +300,13 @@ function SearchResults({ query }: { query: string }) {
 
       {tab === 'songs' ? songsTable(50, false) : null}
       {tab === 'artists' ? (
-        <Shelf title="Artists" layout="grid" rows={Infinity} minItemWidth={mobile ? 140 : 184} contentInset={0}>
+        <Shelf
+          title="Artists"
+          layout="grid"
+          rows={Infinity}
+          minItemWidth={mobile ? 140 : 184}
+          contentInset={0}
+        >
           {results.artists.map((a) => (
             <ArtistTile key={a.id} id={a.id} size={tileSize} />
           ))}
@@ -295,7 +327,12 @@ function SearchResults({ query }: { query: string }) {
         </Shelf>
       ) : null}
       {tab === 'podcasts' ? (
-        <Shelf title="Podcasts & shows" layout="grid" rows={Infinity} minItemWidth={mobile ? 140 : 184}>
+        <Shelf
+          title="Podcasts & shows"
+          layout="grid"
+          rows={Infinity}
+          minItemWidth={mobile ? 140 : 184}
+        >
           {results.shows.map((s) => (
             <PodcastTile key={s.id} id={s.id} size={tileSize} />
           ))}

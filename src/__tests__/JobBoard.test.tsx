@@ -94,12 +94,7 @@ describe('the order is the board’s, and it is stable', () => {
   });
 
   it('keeps the caller’s order among equals, and among the ones with no number', () => {
-    const set = [
-      job('b', { payValue: 10 }),
-      job('a', { payValue: 10 }),
-      job('y'),
-      job('x'),
-    ];
+    const set = [job('b', { payValue: 10 }), job('a', { payValue: 10 }), job('y'), job('x')];
     expect(sortJobOffers(set, 'pay').map((j) => j.id)).toEqual(['b', 'a', 'y', 'x']);
   });
 
@@ -219,7 +214,12 @@ describe('the card draws the job and names its actions', () => {
     const taken: string[] = [];
     const passed: string[] = [];
     mount(
-      <JobCard job={SOFA} onTake={(id) => taken.push(id)} onPass={(id) => passed.push(id)} testID="j" />,
+      <JobCard
+        job={SOFA}
+        onTake={(id) => taken.push(id)}
+        onPass={(id) => passed.push(id)}
+        testID="j"
+      />,
     );
     click(byTestId('j-take'));
     click(byTestId('j-pass'));
@@ -412,7 +412,9 @@ describe('the board counts, filters, orders and refreshes', () => {
   });
 
   it('carries the narrowed count in the control’s NAME, not only in a numeral', () => {
-    mount(<JobBoard jobs={JOBS} defaultFilter={{ maxDistanceKm: 25, vehicles: ['van'] }} testID="b" />);
+    mount(
+      <JobBoard jobs={JOBS} defaultFilter={{ maxDistanceKm: 25, vehicles: ['van'] }} testID="b" />,
+    );
     expect(byTestId('b-filters-toggle').getAttribute('aria-label')).toBe('Filters, 2 applied');
     // The numeral says nothing on its own, so it is hidden from a reader.
     expect(byTestId('b-filters-count').getAttribute('aria-hidden')).toBe('true');
@@ -443,7 +445,6 @@ describe('the board counts, filters, orders and refreshes', () => {
   });
 });
 
-
 it('makes replacement job actions inert when disabled and restores them', () => {
   const actions = <button data-testid="custom">Take</button>;
   mount(<JobCard job={SOFA} disabled actions={actions} />);
@@ -452,8 +453,7 @@ it('makes replacement job actions inert when disabled and restores them', () => 
   expect(byTestId('custom').closest('[inert]')).toBeNull();
 });
 
-
-it.each(['taken', 'expired'] as const)('locks custom actions for a %s job', state => {
+it.each(['taken', 'expired'] as const)('locks custom actions for a %s job', (state) => {
   mount(<JobCard job={{ ...SOFA, state }} actions={<button data-testid="custom">Take</button>} />);
   expect(byTestId('custom').closest('[inert]')).not.toBeNull();
 });

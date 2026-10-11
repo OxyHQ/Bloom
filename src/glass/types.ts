@@ -16,7 +16,14 @@ export interface GlassBlurWindowProps {
 }
 
 /** Geometry is controlled by radius and cornerCurve; material owns clipping. */
-type GlassStyle = Omit<ViewStyle, Extract<keyof ViewStyle, `border${string}Radius` | `border${string}Width` | 'borderCurve' | 'overflow'>> & Pick<ViewStyle, 'borderRadius'>;
+type GlassStyle = Omit<
+  ViewStyle,
+  Extract<
+    keyof ViewStyle,
+    `border${string}Radius` | `border${string}Width` | 'borderCurve' | 'overflow'
+  >
+> &
+  Pick<ViewStyle, 'borderRadius'>;
 
 export interface GlassIslandProps {
   children?: ReactNode;

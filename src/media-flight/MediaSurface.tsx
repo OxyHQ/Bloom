@@ -28,11 +28,8 @@ import Animated from 'react-native-reanimated';
 import { SLOT_IDENTITY_CHURN_LIMIT, SLOT_IDENTITY_CHURN_WINDOW_MS } from './constants';
 import { handOffFlight } from './store';
 import type { MediaSurfaceContent, MediaVideoSlot } from './types';
-import {
-  loadExpoVideo,
-  warnExpoVideoUnavailable,
-  type VideoSurfaceType,
-} from './expo-video-module';
+import type { VideoSurfaceType } from './expo-video-module';
+import { VideoView } from '../video-view/VideoView';
 
 /**
  * Exactly what `Animated.View` accepts, taken from the component rather than
@@ -208,24 +205,14 @@ export const MediaSurface = memo(function MediaSurface({
   // Both arms report the same fact — "there is a picture here now" — because the
   // destination of a flight can be either, and a caller should not have to know
   // which one it wired. expo-video raises `onFirstFrameRender` from `loadeddata`
-  // on web; expo-image raises `onLoad` once the source is decoded and displayed.
+  // on web; expo-image's `onDisplay` means the image has actually been painted
+  // (native `onLoad` can run before that first frame).
   const reportLive = useCallback(() => {
     if (flightId !== undefined) handOffFlight(flightId);
   }, [flightId]);
 
   const still = content.kind === 'video' ? content.poster : content.uri;
-  // Loaded for the video arm only, and only when Bloom is the one building the
-  // element — an image surface must never make an app resolve an optional
-  // native peer, and neither must a consumer that brought its own view.
-  const expoVideo =
-    content.kind === 'video' && renderVideo === undefined ? loadExpoVideo() : null;
-  if (content.kind === 'video' && renderVideo === undefined && expoVideo === null) {
-    // Degrade to the poster rather than to nothing: a black hole where a video
-    // should be reads as a broken app, a still frame reads as a video that has
-    // not started. The warning is what makes the difference visible to the
-    // developer, once, in dev.
-    warnExpoVideoUnavailable();
-  }
+  const preview = content.kind === 'video' ? undefined : content.previewUri;
 
   return (
     <Animated.View style={[styles.box, style]} pointerEvents={pointerEvents}>
@@ -237,15 +224,22 @@ export const MediaSurface = memo(function MediaSurface({
         // `poster` attribute and an Android TextureView runs with the ExoPlayer
         // shutter off, so neither draws anything opaque over this.
         <Image
+          key={still}
           source={{ uri: still }}
+          placeholder={preview && preview !== still ? { uri: preview } : undefined}
+          placeholderContentFit={contentFit}
+          recyclingKey={still}
           contentFit={contentFit}
           style={StyleSheet.absoluteFill}
-          transition={0}
+          cachePolicy="memory-disk"
+          priority="high"
+          loading="eager"
+          transition={preview && preview !== still ? 120 : 0}
           accessibilityLabel={accessibilityLabel}
           // Only the arm that IS the picture reports being live. On the video
           // arm the poster is scenery: handing off on it would release the
           // flying surface while the destination still had no video.
-          onLoad={content.kind === 'video' ? undefined : reportLive}
+          onDisplay={content.kind === 'video' ? undefined : reportLive}
           {...webDraggableProps}
         />
       )}
@@ -258,8 +252,16 @@ export const MediaSurface = memo(function MediaSurface({
             contentFit,
           })
         : null}
-      {content.kind === 'video' && renderVideo === undefined && expoVideo !== null ? (
-        <expoVideo.VideoView
+      {content.kind === 'video' && renderVideo === undefined ? (
+        // Mounted for the video arm only, and only when Bloom is the one
+        // building the element: the view is what loads the optional native peer,
+        // and neither an image surface nor a consumer that brought its own view
+        // may make an app resolve it. When the peer is missing it renders
+        // nothing, so the poster above stays the picture — a still frame reads
+        // as a video that has not started, a black hole as a broken app — and
+        // it warns once, in dev. It is also what makes the `<video>` inline on
+        // web: without `playsinline` iPhone Safari never starts it.
+        <VideoView
           player={detached ? null : content.player}
           contentFit={contentFit}
           surfaceType={mountedSurfaceType}
@@ -294,7 +296,6 @@ let hasWarnedAboutSlotChurn = false;
 function warnSlotNotMemoised(): void {
   if (process.env.NODE_ENV === 'production' || hasWarnedAboutSlotChurn) return;
   hasWarnedAboutSlotChurn = true;
-  // eslint-disable-next-line no-console
   console.warn(
     `[Bloom] A \`renderVideo\` slot was a NEW function on ${SLOT_IDENTITY_CHURN_LIMIT} ` +
       'consecutive renders, including ones where nothing it reads changed. The slot is ' +
@@ -327,13 +328,16 @@ export function MediaPoster({
   contentFit?: 'contain' | 'cover';
   accessibilityLabel?: string;
 }) {
-  const uri = content.kind === 'video' ? content.poster : content.uri;
+  const uri = content.kind === 'video' ? content.poster : content.previewUri || content.uri;
   if (uri === undefined) return <EmptyMediaSurface style={style} />;
   return (
     <Image
+      key={uri}
       source={{ uri }}
+      recyclingKey={uri}
       contentFit={contentFit}
       style={style}
+      cachePolicy="memory-disk"
       transition={0}
       accessibilityLabel={accessibilityLabel}
       {...webDraggableProps}

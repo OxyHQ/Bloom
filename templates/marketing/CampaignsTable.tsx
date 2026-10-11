@@ -24,7 +24,15 @@ import {
 } from '../../src/icons/remix';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
-import { CellText, DELETE_EDIT_ACTIONS, IconTile, MONTHS, NameCell, dateValue, makeRng } from '../shared/dashboard';
+import {
+  CellText,
+  DELETE_EDIT_ACTIONS,
+  IconTile,
+  MONTHS,
+  NameCell,
+  dateValue,
+  makeRng,
+} from '../shared/dashboard';
 
 /**
  * The marketing template's campaigns table: the
@@ -208,7 +216,9 @@ const COLUMNS: DataTableColumn<Campaign>[] = [
     id: 'actions',
     header: 'Actions',
     width: 140,
-    cell: ({ row }) => <DataTableRowActions name={row.name} actions={DELETE_EDIT_ACTIONS} menu={MORE_MENU} />,
+    cell: ({ row }) => (
+      <DataTableRowActions name={row.name} actions={DELETE_EDIT_ACTIONS} menu={MORE_MENU} />
+    ),
   },
 ];
 
@@ -253,7 +263,10 @@ export function CampaignsTable({ initialQuery = '' }: { initialQuery?: string })
             label="Filter by channel"
             value={channelFilter}
             onValueChange={filter(setChannelFilter)}
-            options={[{ value: 'all', label: 'All channels' }, ...CHANNELS.map((c) => ({ value: c.label, label: c.label }))]}
+            options={[
+              { value: 'all', label: 'All channels' },
+              ...CHANNELS.map((c) => ({ value: c.label, label: c.label })),
+            ]}
           />
           <DataTableFilter
             label="Filter by objective"
@@ -270,7 +283,11 @@ export function CampaignsTable({ initialQuery = '' }: { initialQuery?: string })
             onValueChange={filter(setSpendFilter)}
             options={SPEND_BUCKETS.map((b) => ({ value: b.id, label: b.label }))}
           />
-          <DataTableSearch label="Search campaigns" value={query} onValueChange={filter(setQuery)} />
+          <DataTableSearch
+            label="Search campaigns"
+            value={query}
+            onValueChange={filter(setQuery)}
+          />
         </>
       }
       selectable

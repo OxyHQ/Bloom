@@ -10,7 +10,13 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Artwork, CoverGradient, useMediaCardCss } from './parts';
-import { IS_WEB, RECAP_RADIUS, resolveCoverTint, resolveMediaCardPaint, type CoverTint } from './shared';
+import {
+  IS_WEB,
+  RECAP_RADIUS,
+  resolveCoverTint,
+  resolveMediaCardPaint,
+  type CoverTint,
+} from './shared';
 import type { RecapCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
@@ -21,7 +27,17 @@ import { MEDIA_CARD_MESSAGES } from './messages';
  * light text colour and its label the cover's own colour, in BOTH modes — a
  * theme-painted button would be dark-on-dark on a dark cover in dark mode.
  */
-function SharePill({ label, onPress, tint, testID }: { label: string; onPress: () => void; tint: CoverTint; testID?: string }) {
+function SharePill({
+  label,
+  onPress,
+  tint,
+  testID,
+}: {
+  label: string;
+  onPress: () => void;
+  tint: CoverTint;
+  testID?: string;
+}) {
   const [hovered, setHovered] = useState(false);
   const style: WebCssStyle = {
     flexDirection: 'row',
@@ -98,18 +114,34 @@ function RecapCardComponent({
   return (
     <View
       {...webDataSet({ bloomMediaCard: 'recap' })}
-      style={[{ position: 'relative', borderRadius: RECAP_RADIUS, overflow: 'hidden', backgroundColor: tint.top }, style]}
+      style={[
+        {
+          position: 'relative',
+          borderRadius: RECAP_RADIUS,
+          overflow: 'hidden',
+          backgroundColor: tint.top,
+        },
+        style,
+      ]}
       testID={testID}
     >
       <CoverGradient top={tint.top} bottom={tint.bottom} />
-      <View style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24, paddingBottom: 24, gap: 20 }}>
+      <View
+        style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24, paddingBottom: 24, gap: 20 }}
+      >
         <View style={{ gap: 4 }}>
           {eyebrow ? (
             <Text variant="headline-medium" style={{ color: tint.textMuted }}>
               {eyebrow}
             </Text>
           ) : null}
-          <Text variant="display-2-bold" numberOfLines={1} adjustsFontSizeToFit style={{ color: tint.text }} testID={testID ? `${testID}-value` : undefined}>
+          <Text
+            variant="display-2-bold"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={{ color: tint.text }}
+            testID={testID ? `${testID}-value` : undefined}
+          >
             {value}
           </Text>
           {unit ? (
@@ -121,10 +153,24 @@ function RecapCardComponent({
         {highlights && highlights.length > 0 ? (
           <View style={{ gap: 12 }}>
             {highlights.map((item, index) => (
-              <View key={`${index}-${item.title}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <Artwork source={item.artwork} width={56} height={56} round={item.round} radius={6} paint={paint} />
+              <View
+                key={`${index}-${item.title}`}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
+              >
+                <Artwork
+                  source={item.artwork}
+                  width={56}
+                  height={56}
+                  round={item.round}
+                  radius={6}
+                  paint={paint}
+                />
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text variant="caption-1-medium" numberOfLines={1} style={{ color: tint.textMuted }}>
+                  <Text
+                    variant="caption-1-medium"
+                    numberOfLines={1}
+                    style={{ color: tint.textMuted }}
+                  >
                     {item.label}
                   </Text>
                   <Text variant="headline-semibold" numberOfLines={1} style={{ color: tint.text }}>
@@ -135,7 +181,14 @@ function RecapCardComponent({
             ))}
           </View>
         ) : null}
-        {onShare ? <SharePill label={shareLabel} onPress={onShare} tint={tint} testID={testID ? `${testID}-share` : undefined} /> : null}
+        {onShare ? (
+          <SharePill
+            label={shareLabel}
+            onPress={onShare}
+            tint={tint}
+            testID={testID ? `${testID}-share` : undefined}
+          />
+        ) : null}
       </View>
     </View>
   );

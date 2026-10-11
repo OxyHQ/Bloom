@@ -161,7 +161,14 @@ function LocationPuckComponent({
       role="img"
       accessibilityLabel={
         accessibilityLabel ??
-        describeLocationPuck({ state, mode, heading, headingUnknown, labels: stateLabels, messages })
+        describeLocationPuck({
+          state,
+          mode,
+          heading,
+          headingUnknown,
+          labels: stateLabels,
+          messages,
+        })
       }
       testID={testID}
       style={[{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}

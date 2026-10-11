@@ -18,10 +18,11 @@ export interface AppShellMessages {
   proOffer: string;
 }
 
-export const APP_SHELL_MESSAGES: MessageCatalog<AppShellMessages> = defineMessages<AppShellMessages>('APP_SHELL_MESSAGES', {
-  openNavigation: 'Open navigation',
-  closeNavigation: 'Close navigation',
-  resizePanes: 'Resize panes',
-  notifications: 'Notifications',
-  proOffer: 'Pro offer',
-});
+export const APP_SHELL_MESSAGES: MessageCatalog<AppShellMessages> =
+  defineMessages<AppShellMessages>('APP_SHELL_MESSAGES', {
+    openNavigation: 'Open navigation',
+    closeNavigation: 'Close navigation',
+    resizePanes: 'Resize panes',
+    notifications: 'Notifications',
+    proOffer: 'Pro offer',
+  });

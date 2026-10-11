@@ -85,7 +85,6 @@ export function priceAccessibilityName(
   return messages.priceName(price, unit, originalPrice);
 }
 
-
 // ---------------------------------------------------------------------------
 //  Keyboard focus on web
 //

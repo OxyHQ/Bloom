@@ -45,19 +45,34 @@ export function ChartCenterReadout({
       testID={testID}
       pointerEvents="none"
       style={[
-        { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' },
+        {
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
         style,
-      ]}>
+      ]}
+    >
       <FadeOnChange fadeKey={fadeKey}>
         <Text
           variant={size === 'display' ? 'display-4-medium' : 'title-1-medium'}
-          style={[{ color: palette.text }, TABULAR]}>
+          style={[{ color: palette.text }, TABULAR]}
+        >
           {format(display)}
         </Text>
       </FadeOnChange>
       {caption ? (
         <FadeOnChange fadeKey={`caption:${fadeKey}`} style={{ marginTop: -4, maxWidth: 120 }}>
-          <Text variant="caption-1-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
+          <Text
+            variant="caption-1-medium"
+            numberOfLines={1}
+            style={{ color: palette.textTertiary }}
+          >
             {caption}
           </Text>
         </FadeOnChange>

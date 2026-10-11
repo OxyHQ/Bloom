@@ -51,7 +51,14 @@ function AvailabilityFilterComponent({
         testID={testID ? `${testID}-now` : undefined}
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-        <Text variant="body-medium" style={{ flex: 1, minWidth: 0, color: availableNow ? theme.colors.textSecondary : theme.colors.text }}>
+        <Text
+          variant="body-medium"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            color: availableNow ? theme.colors.textSecondary : theme.colors.text,
+          }}
+        >
           {dateLabel}
         </Text>
         <DatePicker

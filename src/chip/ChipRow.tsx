@@ -81,16 +81,24 @@ function ChipRowComponent({
 
   const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
-    setScroll({ x: contentOffset.x, viewport: layoutMeasurement.width, content: contentSize.width });
+    setScroll({
+      x: contentOffset.x,
+      viewport: layoutMeasurement.width,
+      content: contentSize.width,
+    });
   }, []);
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout;
-    setScroll((previous) => (previous.viewport === width ? previous : { ...previous, viewport: width }));
+    setScroll((previous) =>
+      previous.viewport === width ? previous : { ...previous, viewport: width },
+    );
   }, []);
 
   const onContentSizeChange = useCallback((width: number) => {
-    setScroll((previous) => (previous.content === width ? previous : { ...previous, content: width }));
+    setScroll((previous) =>
+      previous.content === width ? previous : { ...previous, content: width },
+    );
   }, []);
 
   // The fade has to cover the SCROLLER, which sits `ringInset` outside the
@@ -160,10 +168,18 @@ function ChipRowComponent({
         {children}
       </ScrollView>
       {IS_WEB && overflow.previous ? (
-        <View pointerEvents="none" style={edgeStyle('left')} testID={testID ? `${testID}-fade-start` : undefined} />
+        <View
+          pointerEvents="none"
+          style={edgeStyle('left')}
+          testID={testID ? `${testID}-fade-start` : undefined}
+        />
       ) : null}
       {IS_WEB && overflow.next ? (
-        <View pointerEvents="none" style={edgeStyle('right')} testID={testID ? `${testID}-fade-end` : undefined} />
+        <View
+          pointerEvents="none"
+          style={edgeStyle('right')}
+          testID={testID ? `${testID}-fade-end` : undefined}
+        />
       ) : null}
     </View>
   );

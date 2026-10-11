@@ -54,12 +54,42 @@ function MockMap({
         alignItems: 'flex-start',
       }}
     >
-      <View style={{ position: 'absolute', left: '4%', top: '8%', width: '44%', height: '46%', borderRadius: 20, backgroundColor: t.park }} />
+      <View
+        style={{
+          position: 'absolute',
+          left: '4%',
+          top: '8%',
+          width: '44%',
+          height: '46%',
+          borderRadius: 20,
+          backgroundColor: t.park,
+        }}
+      />
       {[0.4, 0.78].map((top) => (
-        <View key={`h${top}`} style={{ position: 'absolute', left: 0, right: 0, top: height * top, height: 10, backgroundColor: t.road }} />
+        <View
+          key={`h${top}`}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: height * top,
+            height: 10,
+            backgroundColor: t.road,
+          }}
+        />
       ))}
       {[0.55].map((left) => (
-        <View key={`v${left}`} style={{ position: 'absolute', top: 0, bottom: 0, left: `${left * 100}%`, width: 10, backgroundColor: t.road }} />
+        <View
+          key={`v${left}`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: `${left * 100}%`,
+            width: 10,
+            backgroundColor: t.road,
+          }}
+        />
       ))}
       {children}
     </View>
@@ -108,7 +138,12 @@ export const Everything: Story = {
         />
       </View>
       <Caption>Inline — already inside a surface the app painted</Caption>
-      <MapAttribution variant="inline" credit="Map data © Open Map Project contributors" scales={METRIC} updated="Updated 12 March" />
+      <MapAttribution
+        variant="inline"
+        credit="Map data © Open Map Project contributors"
+        scales={METRIC}
+        updated="Updated 12 March"
+      />
     </Page>
   ),
 };
@@ -141,15 +176,29 @@ export const OnAMap: Story = {
     <Page>
       <Caption>Pale</Caption>
       <MockMap tone="pale">
-        <MapAttribution credit="Map data © Open Map Project contributors" scales={BOTH} updated="Updated 12 March" onPressCredit={() => {}} />
+        <MapAttribution
+          credit="Map data © Open Map Project contributors"
+          scales={BOTH}
+          updated="Updated 12 March"
+          onPressCredit={() => {}}
+        />
       </MockMap>
       <Caption>Night</Caption>
       <MockMap tone="night">
-        <MapAttribution credit="Map data © Open Map Project contributors" scales={BOTH} updated="Updated 12 March" onPressCredit={() => {}} />
+        <MapAttribution
+          credit="Map data © Open Map Project contributors"
+          scales={BOTH}
+          updated="Updated 12 March"
+          onPressCredit={() => {}}
+        />
       </MockMap>
       <Caption>Satellite</Caption>
       <MockMap tone="photo">
-        <MapAttribution credit="Imagery © Northwind Aerial Survey" scales={METRIC} updated="Updated 3 days ago" />
+        <MapAttribution
+          credit="Imagery © Northwind Aerial Survey"
+          scales={METRIC}
+          updated="Updated 3 days ago"
+        />
       </MockMap>
     </Page>
   ),

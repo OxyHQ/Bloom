@@ -92,7 +92,7 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
     const unit = size / DEFAULT_SIZE;
     return {
       surface: theme.colors.card,
-      border: borderColor ?? (theme.colors.border),
+      border: borderColor ?? theme.colors.border,
       borderWidth: unit,
       shadow: BUTTON_SHADOW[dark ? 'dark' : 'light'],
       top: ramp[500],
@@ -101,7 +101,8 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
       // The dot sits on the accent. On the theme primary it takes the preset's
       // readable foreground (white on blue, dark on yellow); a caller colour
       // falls back to white, since Bloom cannot know its contrast.
-      dot: selectedForeground ?? (selectedColor == null ? theme.colors.primaryForeground : '#FFFFFF'),
+      dot:
+        selectedForeground ?? (selectedColor == null ? theme.colors.primaryForeground : '#FFFFFF'),
     };
   }, [theme, selectedColor, selectedForeground, borderColor, size]);
 

@@ -18,7 +18,7 @@ import type { ScrollRouterAdapter } from '../scroll/types';
 // Stable inert adapter keeps root composition universal; routing is explicit.
 const noRouterAdapter: ScrollRouterAdapter = {
   useScreenContentId: () => null,
-  useScreenFocusEffect: effect => useEffect(effect, [effect]),
+  useScreenFocusEffect: (effect) => useEffect(effect, [effect]),
 };
 import type { BloomProviderProps } from './types';
 

@@ -6,7 +6,12 @@ import type { SidebarSurface } from './types';
 export const SIDEBAR_ACTION_DIAMETER = FAB_METRICS.md.diameter;
 
 /** The lane is shared by every collapsed control, independently of row height. */
-export function resolveSidebarGeometry(metrics: SidebarMetrics, surface: SidebarSurface, hasAction: boolean, hasTree = false) {
+export function resolveSidebarGeometry(
+  metrics: SidebarMetrics,
+  surface: SidebarSurface,
+  hasAction: boolean,
+  hasTree = false,
+) {
   const expandedInset = hasTree ? 0 : 2;
   const collapsedLane = Math.max(metrics.row.square, hasAction ? SIDEBAR_ACTION_DIAMETER : 0);
   const borderWidth = surface === 'card' ? 2 : surface === 'docked' ? 1 : 0;
@@ -17,6 +22,10 @@ export function resolveSidebarGeometry(metrics: SidebarMetrics, surface: Sidebar
     collapsedWidth: collapsedLane + metrics.collapsedPaddingX * 2 + borderWidth,
   };
 }
-const SidebarGeometryContext = createContext<ReturnType<typeof resolveSidebarGeometry> | null>(null);
+const SidebarGeometryContext = createContext<ReturnType<typeof resolveSidebarGeometry> | null>(
+  null,
+);
 export const SidebarGeometryProvider = SidebarGeometryContext.Provider;
-export function useSidebarGeometry() { return useContext(SidebarGeometryContext); }
+export function useSidebarGeometry() {
+  return useContext(SidebarGeometryContext);
+}

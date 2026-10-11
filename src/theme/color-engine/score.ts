@@ -23,7 +23,10 @@ export interface ScoreOptions {
 }
 
 /** Rank quantized colours as theme seeds. Best first. */
-export function score(colorsToPopulation: Map<number, number>, options: ScoreOptions = {}): number[] {
+export function score(
+  colorsToPopulation: Map<number, number>,
+  options: ScoreOptions = {},
+): number[] {
   const desired = options.desired ?? 4;
   const fallbackColorARGB = options.fallbackColorARGB ?? 0xff4285f4;
   const filter = options.filter ?? true;

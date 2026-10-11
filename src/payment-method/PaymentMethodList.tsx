@@ -23,7 +23,6 @@ import type { PaymentMethodEntry, PaymentMethodListProps } from './types';
  */
 const PICKER_ROW_ROLE = 'radio' as const;
 
-
 /**
  * The saved methods, with the default marked, an add row, an empty state and a
  * loading state.
@@ -156,7 +155,11 @@ function PaymentMethodListComponent({
               paddingVertical: 10,
             }}
           >
-            <Skeleton.Box width={g.plateWidth} height={g.plateHeight} borderRadius={g.plateRadius} />
+            <Skeleton.Box
+              width={g.plateWidth}
+              height={g.plateHeight}
+              borderRadius={g.plateRadius}
+            />
             <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
               <Skeleton.Text style={{ width: '50%', lineHeight: 16 }} />
               <Skeleton.Text style={{ width: '32%', lineHeight: 14 }} />
@@ -210,7 +213,11 @@ function PaymentMethodListComponent({
         state={entry.state}
         stateMessage={entry.stateMessage}
         action={entry.action}
-        disabled={isDisabled || entry.disabled === true || (picker && entry.state != null && entry.state !== 'ok')}
+        disabled={
+          isDisabled ||
+          entry.disabled === true ||
+          (picker && entry.state != null && entry.state !== 'ok')
+        }
         density={density}
         accessibilityLabel={entry.accessibilityLabel}
         style={entry.style}
@@ -255,7 +262,12 @@ function PaymentMethodListComponent({
 
   return (
     <View style={[{ gap: PAYMENT_METHOD_LIST_GAP }, style]}>
-      <View role="list" accessibilityLabel={name} style={{ gap: PAYMENT_METHOD_LIST_GAP }} testID={testID}>
+      <View
+        role="list"
+        accessibilityLabel={name}
+        style={{ gap: PAYMENT_METHOD_LIST_GAP }}
+        testID={testID}
+      >
         {rows}
       </View>
       {addRow}

@@ -11,7 +11,11 @@ import React from 'react';
 import { View, type DimensionValue } from 'react-native';
 
 import type { Button as ButtonComponent } from '../button';
-import type { Popover as PopoverComponent, PopoverContent as PopoverContentComponent, PopoverTrigger as PopoverTriggerComponent } from '../popover';
+import type {
+  Popover as PopoverComponent,
+  PopoverContent as PopoverContentComponent,
+  PopoverTrigger as PopoverTriggerComponent,
+} from '../popover';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -22,13 +26,17 @@ import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createAttachmentMenu({ Button, Popover, PopoverContent, PopoverTrigger }: {
+export function createAttachmentMenu({
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+}: {
   Button: typeof ButtonComponent;
   Popover: typeof PopoverComponent;
   PopoverContent: typeof PopoverContentComponent;
   PopoverTrigger: typeof PopoverTriggerComponent;
 }) {
-
   /** A 48px tinted disc with its label under it. */
   function GridCell({
     item,
@@ -67,22 +75,28 @@ export function createAttachmentMenu({ Button, Popover, PopoverContent, PopoverT
         disabled={item.disabled}
         onPress={onPress}
         style={cell}
-        testID={testID}>
+        testID={testID}
+      >
         <View style={{ alignItems: 'center', gap: 6 }}>
-        <View
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: 24,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: palette.accentSoft,
-          }}>
-          <item.icon width={22} height={22} fill={tint} />
-        </View>
-        <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
-          {item.label}
-        </Text>
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: palette.accentSoft,
+            }}
+          >
+            <item.icon width={22} height={22} fill={tint} />
+          </View>
+          <Text
+            variant="caption-1-regular"
+            numberOfLines={1}
+            style={{ color: palette.textSecondary }}
+          >
+            {item.label}
+          </Text>
         </View>
       </Button>
     );
@@ -125,22 +139,24 @@ export function createAttachmentMenu({ Button, Popover, PopoverContent, PopoverT
         disabled={item.disabled}
         onPress={onPress}
         style={row}
-        testID={testID}>
+        testID={testID}
+      >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' }}>
-        <View
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: palette.accentSoft,
-          }}>
-          <item.icon width={18} height={18} fill={tint} />
-        </View>
-        <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
-          {item.label}
-        </Text>
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: palette.accentSoft,
+            }}
+          >
+            <item.icon width={18} height={18} fill={tint} />
+          </View>
+          <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
+            {item.label}
+          </Text>
         </View>
       </Button>
     );
@@ -186,14 +202,16 @@ export function createAttachmentMenu({ Button, Popover, PopoverContent, PopoverT
           align="start"
           minWidth={layout === 'grid' ? Math.max(264, columns * 72) : 220}
           style={style}
-          testID={testID}>
+          testID={testID}
+        >
           {recent ? <View style={{ paddingBottom: 8 }}>{recent}</View> : null}
           <View
             style={
               layout === 'grid'
                 ? { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }
                 : { flexDirection: 'column', gap: 2 }
-            }>
+            }
+          >
             {items.map((item) =>
               layout === 'grid' ? (
                 <GridCell

@@ -33,17 +33,30 @@ export interface CalendarViewPalette {
 export function resolveCalendarViewPalette(theme: Theme): CalendarViewPalette {
   const c = theme.colors;
   return {
-    card: c.backgroundSecondary, pill: c.backgroundSecondary,
-    dayCurrent: c.card, dayOutside: c.backgroundTertiary,
-    denseDayCurrent: c.card, denseDayOutside: c.backgroundSecondary,
-    gridLine: c.borderLight, panel: c.card, panelBorder: c.border,
-    rowHover: c.backgroundSecondary, secondaryHover: c.backgroundTertiary,
-    detailRow: c.backgroundSecondary, infoChip: c.backgroundTertiary,
-    text: c.text, textSecondary: c.textSecondary, iconPrimary: c.text,
-    iconSecondary: c.textSecondary, ring: c.primary, isDark: theme.isDark,
+    card: c.backgroundSecondary,
+    pill: c.backgroundSecondary,
+    dayCurrent: c.card,
+    dayOutside: c.backgroundTertiary,
+    denseDayCurrent: c.card,
+    denseDayOutside: c.backgroundSecondary,
+    gridLine: c.borderLight,
+    panel: c.card,
+    panelBorder: c.border,
+    rowHover: c.backgroundSecondary,
+    secondaryHover: c.backgroundTertiary,
+    detailRow: c.backgroundSecondary,
+    infoChip: c.backgroundTertiary,
+    text: c.text,
+    textSecondary: c.textSecondary,
+    iconPrimary: c.text,
+    iconSecondary: c.textSecondary,
+    ring: c.primary,
+    isDark: theme.isDark,
     shadowDetails: '0px 1px 2px 0px rgba(0,0,0,0.04), 0px 7px 8px 0px rgba(0,0,0,0.04)',
     shadowCard: theme.isDark ? '0 1px 1px 0 rgb(0 0 0 / 0.14)' : '0 1px 1px 0 rgb(0 0 0 / 0.05)',
-    shadowDropdown: theme.isDark ? '0 1px 1px 0 rgb(0 0 0 / 0.14), 0 4px 4px 0 rgb(0 0 0 / 0.10)' : '0 1px 1px 0 rgb(0 0 0 / 0.04), 0 4px 4px 0 rgb(0 0 0 / 0.02)',
+    shadowDropdown: theme.isDark
+      ? '0 1px 1px 0 rgb(0 0 0 / 0.14), 0 4px 4px 0 rgb(0 0 0 / 0.10)'
+      : '0 1px 1px 0 rgb(0 0 0 / 0.04), 0 4px 4px 0 rgb(0 0 0 / 0.02)',
   };
 }
 
@@ -116,7 +129,8 @@ function toRgb(l: number, c: number, h: number): string {
   for (let i = 0; i < 24; i++) {
     const rgb = oklchToSrgb({ l, c: chroma, h });
     const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01) return srgbToRgbString(rgb);
+    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01)
+      return srgbToRgbString(rgb);
     chroma *= 0.9;
   }
   return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));

@@ -120,13 +120,10 @@ function DealCardComponent({
   return (
     <SurfaceLevelProvider level={2} fill={paint.surface}>
       <Card
-
         radius="radius-12"
-        style={[
-          { padding: DEAL_CARD_PADDING, gap: 8, ...surfaceFillVars(paint.surface) },
-          style,
-        ]}
-        testID={testID} appearance="outline"
+        style={[{ padding: DEAL_CARD_PADDING, gap: 8, ...surfaceFillVars(paint.surface) }, style]}
+        testID={testID}
+        appearance="outline"
       >
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4 }}>
           {subject}
@@ -206,7 +203,13 @@ function DealCardComponent({
             ) : null}
             <View style={{ flex: 1 }} />
             {owner ? (
-              <Avatar size={24} source={owner.avatar} name={owner.name} alt={owner.name} testID={id('owner')} />
+              <Avatar
+                size={24}
+                source={owner.avatar}
+                name={owner.name}
+                alt={owner.name}
+                testID={id('owner')}
+              />
             ) : null}
           </View>
         ) : null}

@@ -188,7 +188,15 @@ export interface SearchFieldProps {
   testID?: string;
 }
 
-export type TopResultKind = 'song' | 'artist' | 'album' | 'playlist' | 'podcast' | 'episode' | 'audiobook' | 'profile';
+export type TopResultKind =
+  | 'song'
+  | 'artist'
+  | 'album'
+  | 'playlist'
+  | 'podcast'
+  | 'episode'
+  | 'audiobook'
+  | 'profile';
 
 export interface TopResultCardProps {
   title: string;

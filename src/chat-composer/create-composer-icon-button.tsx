@@ -7,23 +7,26 @@ import type { ComposerIconButtonProps } from './types';
 
 /** Geometry adapter; Button owns paint, interaction, focus and disabled state. */
 export function createComposerIconButton(Button: ComponentType<ButtonProps & RefAttributes<View>>) {
-  return forwardRef<View, ComposerIconButtonProps>(function ComposerIconButton({
-    icon,
-    accessibilityLabel,
-    onPress,
-    onLongPress,
-    onPressIn,
-    onPressOut,
-    onLayout,
-    disabled = false,
-    tone = 'plain',
-    size = CONTROL_SIZE,
-    iconSize,
-    style,
-    testID,
-    'aria-expanded': ariaExpanded,
-    'aria-haspopup': ariaHasPopup,
-  }, ref) {
+  return forwardRef<View, ComposerIconButtonProps>(function ComposerIconButton(
+    {
+      icon,
+      accessibilityLabel,
+      onPress,
+      onLongPress,
+      onPressIn,
+      onPressOut,
+      onLayout,
+      disabled = false,
+      tone = 'plain',
+      size = CONTROL_SIZE,
+      iconSize,
+      style,
+      testID,
+      'aria-expanded': ariaExpanded,
+      'aria-haspopup': ariaHasPopup,
+    },
+    ref,
+  ) {
     const palette = resolveChatComposerPalette(useTheme());
     const accent = tone === 'accent';
     return (
@@ -35,7 +38,10 @@ export function createComposerIconButton(Button: ComponentType<ButtonProps & Ref
         iconOnly
         icon={icon}
         iconSize={iconSize ?? Math.max(16, size - 16)}
-        colors={{ background: accent ? palette.send.rest.background : 'transparent', foreground: accent ? palette.onAccent : palette.iconPrimary }}
+        colors={{
+          background: accent ? palette.send.rest.background : 'transparent',
+          foreground: accent ? palette.onAccent : palette.iconPrimary,
+        }}
         accessibilityLabel={accessibilityLabel}
         aria-expanded={ariaExpanded}
         aria-haspopup={ariaHasPopup === true ? 'menu' : ariaHasPopup || undefined}
@@ -44,7 +50,18 @@ export function createComposerIconButton(Button: ComponentType<ButtonProps & Ref
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         disabled={disabled}
-        style={[{ width: size, height: size, minWidth: 0, minHeight: 0, flexShrink: 0, borderRadius: 9999, padding: 0 }, style]}
+        style={[
+          {
+            width: size,
+            height: size,
+            minWidth: 0,
+            minHeight: 0,
+            flexShrink: 0,
+            borderRadius: 9999,
+            padding: 0,
+          },
+          style,
+        ]}
         testID={testID}
       />
     );

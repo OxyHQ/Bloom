@@ -11,4 +11,8 @@ export interface WebSearchMessages {
   working: string;
 }
 
-export const WEB_SEARCH_MESSAGES: MessageCatalog<WebSearchMessages> = defineMessages<WebSearchMessages>('WEB_SEARCH_MESSAGES', { sources: 'Sources', working: 'Working' });
+export const WEB_SEARCH_MESSAGES: MessageCatalog<WebSearchMessages> =
+  defineMessages<WebSearchMessages>('WEB_SEARCH_MESSAGES', {
+    sources: 'Sources',
+    working: 'Working',
+  });

@@ -41,7 +41,11 @@ export function parseRgba(color: string): RgbaChannels | null {
   const trimmed = color.trim();
   if (trimmed.startsWith('#')) {
     let hex = trimmed.slice(1);
-    if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('');
+    if (hex.length === 3)
+      hex = hex
+        .split('')
+        .map((c) => c + c)
+        .join('');
     if (hex.length !== 6) return null;
     const r = parseInt(hex.slice(0, 2), 16);
     const g = parseInt(hex.slice(2, 4), 16);
@@ -58,9 +62,7 @@ export function parseRgba(color: string): RgbaChannels | null {
   if ([r, g, b].some((v) => Number.isNaN(v))) return null;
   const alphaText = raw[3];
   if (alphaText === undefined) return { r, g, b, a: 1 };
-  const a = alphaText.endsWith('%')
-    ? Number(alphaText.slice(0, -1)) / 100
-    : Number(alphaText);
+  const a = alphaText.endsWith('%') ? Number(alphaText.slice(0, -1)) / 100 : Number(alphaText);
   if (Number.isNaN(a)) return null;
   return { r, g, b, a };
 }

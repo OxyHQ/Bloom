@@ -6,12 +6,7 @@ import { ENTRANCE_SECONDS, entrancePose } from '../entrance';
 import { easeFace, expressionRig, faceAtSize, projectEyePoint } from '../face';
 import { GRAIN_URI } from '../grain';
 import { DEFAULT_CONFIG, parsePreset, type AvatarConfig } from '../model';
-import {
-  morphPaper,
-  recordingPath,
-  type PaperGeometry,
-  type ShapeMorph,
-} from '../shape-morph';
+import { morphPaper, recordingPath, type PaperGeometry, type ShapeMorph } from '../shape-morph';
 import { WORKING_SECONDS, workingPose } from '../working';
 import golden from './artwork-golden.json';
 
@@ -46,12 +41,7 @@ describe('original artwork geometry', () => {
   it('retains exact elliptical turn contours and mirrored winding', () => {
     const ellipse = new DrawingPath();
     ellipse.ellipse(0, 0, 76, 88, 0, 0, Math.PI * 2);
-    expect(ellipse.commands.map((command) => command.kind)).toEqual([
-      'M',
-      'A',
-      'A',
-      'Z',
-    ]);
+    expect(ellipse.commands.map((command) => command.kind)).toEqual(['M', 'A', 'A', 'Z']);
     expect(ellipse.commands[1]!.values.slice(0, 5)).toEqual([76, 88, 0, 0, 1]);
     const mirrored = new DrawingPath();
     mirrored.addPath(ellipse, new DrawingMatrix([-1, 0, 0, 1, 0, 0]));
@@ -66,8 +56,7 @@ describe('original artwork geometry', () => {
     while (offset < png.length) {
       const length = png.readUInt32BE(offset),
         type = png.toString('ascii', offset + 4, offset + 8);
-      if (type === 'IDAT')
-        chunks.push(png.subarray(offset + 8, offset + 8 + length));
+      if (type === 'IDAT') chunks.push(png.subarray(offset + 8, offset + 8 + length));
       offset += length + 12;
     }
     const pixels = inflateSync(Buffer.concat(chunks));
@@ -76,8 +65,7 @@ describe('original artwork geometry', () => {
       expect(pixels[y * 193]).toBe(0);
       for (let x = 0; x < 192; x++) {
         seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-        if (pixels[y * 193 + x + 1] !== seed >>> 24)
-          throw new Error(`Grain differs at ${x},${y}`);
+        if (pixels[y * 193 + x + 1] !== seed >>> 24) throw new Error(`Grain differs at ${x},${y}`);
       }
     }
   });
@@ -99,9 +87,9 @@ describe('recipe and animation contract', () => {
       eyes: 'shook',
       lookAt: 'wander',
     });
-    expect(() =>
-      parsePreset({ name: 'Bad', config: { ...DEFAULT_CONFIG, hue: NaN } }),
-    ).toThrow('Invalid hue');
+    expect(() => parsePreset({ name: 'Bad', config: { ...DEFAULT_CONFIG, hue: NaN } })).toThrow(
+      'Invalid hue',
+    );
     expect(() =>
       parsePreset({
         name: 'Bad',
@@ -110,9 +98,7 @@ describe('recipe and animation contract', () => {
     ).toThrow('Unknown fold surface');
   });
   it('optically sizes small avatars without changing the stored recipe', () => {
-    expect(faceAtSize(DEFAULT_CONFIG, 24).eyeSize).toBeCloseTo(
-      DEFAULT_CONFIG.eyeSize * 1.35,
-    );
+    expect(faceAtSize(DEFAULT_CONFIG, 24).eyeSize).toBeCloseTo(DEFAULT_CONFIG.eyeSize * 1.35);
     expect(faceAtSize(DEFAULT_CONFIG, 64)).toBe(DEFAULT_CONFIG);
     expect(DEFAULT_CONFIG.eyeSize).toBe(22);
   });
@@ -146,9 +132,7 @@ describe('recipe and animation contract', () => {
       0.032,
     );
     expect(retargeted.smile).toBeGreaterThan(0);
-    expect(projectEyePoint(-21, 0, 0.5, -0.2).every(Number.isFinite)).toBe(
-      true,
-    );
+    expect(projectEyePoint(-21, 0, 0.5, -0.2).every(Number.isFinite)).toBe(true);
   });
   it('retargets a changing paper shape from its last rendered contour', () => {
     const geometry = (radius: number): PaperGeometry => {
@@ -179,8 +163,8 @@ describe('recipe and animation contract', () => {
     const retargeted = morphPaper(geometry(80), state, 'petal', 250);
     expect(retargeted.paper.toString()).toBe(midway.paper.toString());
     expect(state.active).toBe(true);
-    expect(
-      morphPaper(geometry(80), state, 'petal', 1000).paper.toString(),
-    ).toBe(geometry(80).paper.toString());
+    expect(morphPaper(geometry(80), state, 'petal', 1000).paper.toString()).toBe(
+      geometry(80).paper.toString(),
+    );
   });
 });

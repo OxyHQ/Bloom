@@ -2,23 +2,28 @@ import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { RadarChartCard, type RadarPoint, type RadarRange, type RadarSeries } from './RadarChartCard';
+import {
+  RadarChartCard,
+  type RadarPoint,
+  type RadarRange,
+  type RadarSeries,
+} from './RadarChartCard';
 
 const meta: Meta<typeof RadarChartCard> = {
   argTypes: {
-    "variant": { control: 'select', options: ["filled","dots","lines","score"] },
-    "title": { control: 'text' },
-    "max": { control: 'number' },
-    "headline": { control: 'number' },
-    "delta": { control: 'number' },
-    "range": { control: 'text' },
-    "defaultRange": { control: 'text' },
-    "alertBelow": { control: 'number' },
-    "tiles": { control: 'boolean' },
-    "radiusScale": { control: 'number' },
-    "plotOffsetY": { control: 'number' },
-    "legend": { control: 'select', options: ["bottom","top","overlay"] },
-    "activeIndex": { control: 'number' }
+    variant: { control: 'select', options: ['filled', 'dots', 'lines', 'score'] },
+    title: { control: 'text' },
+    max: { control: 'number' },
+    headline: { control: 'number' },
+    delta: { control: 'number' },
+    range: { control: 'text' },
+    defaultRange: { control: 'text' },
+    alertBelow: { control: 'number' },
+    tiles: { control: 'boolean' },
+    radiusScale: { control: 'number' },
+    plotOffsetY: { control: 'number' },
+    legend: { control: 'select', options: ['bottom', 'top', 'overlay'] },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Radar Chart',
   component: RadarChartCard,
@@ -66,7 +71,10 @@ const RANGES: RadarRange[] = [
 
 const SCORE_SERIES: RadarSeries[] = [{ key: 'score', label: 'Score' }];
 const scoreRows = (values: number[]): RadarPoint[] =>
-  ['Focus', 'Consistency', 'Target', 'Balance', 'Deep work'].map((label, i) => ({ label, score: values[i]! }));
+  ['Focus', 'Consistency', 'Target', 'Balance', 'Deep work'].map((label, i) => ({
+    label,
+    score: values[i]!,
+  }));
 
 const SCORE_RANGES: RadarRange[] = [
   { id: 'this-week', label: 'This week', data: scoreRows([100, 9, 100, 100, 97]) },
@@ -90,33 +98,87 @@ export const Filled: Story = {
 
 /** A dot on every vertex. */
 export const Dots: Story = {
-  args: { variant: "dots" },
-  parameters: { controls: { include: ["variant","title","max","headline","delta","range","defaultRange","alertBelow","tiles","radiusScale","plotOffsetY","legend","activeIndex"] } },
+  args: { variant: 'dots' },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'alertBelow',
+        'tiles',
+        'radiusScale',
+        'plotOffsetY',
+        'legend',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadarChartCard {...args} testID="radar"  series={DESKTOP} ranges={RANGES} />
+      <RadarChartCard {...args} testID="radar" series={DESKTOP} ranges={RANGES} />
     </Frame>
   ),
 };
 
 /** Outline only — two series compared, legend under the chart. */
 export const Lines: Story = {
-  args: { variant: "lines", range: "Jan – Jun 2024" },
-  parameters: { controls: { include: ["variant","range","title","max","headline","delta","defaultRange","alertBelow","tiles","radiusScale","plotOffsetY","legend","activeIndex"] } },
+  args: { variant: 'lines', range: 'Jan – Jun 2024' },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'range',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'defaultRange',
+        'alertBelow',
+        'tiles',
+        'radiusScale',
+        'plotOffsetY',
+        'legend',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadarChartCard {...args} testID="radar"  series={BOTH} data={H1}  />
+      <RadarChartCard {...args} testID="radar" series={BOTH} data={H1} />
     </Frame>
   ),
 };
 
 /** Axis values on the labels, the average in a raised centre disc, values under 50 in rose. */
 export const Score: Story = {
-  args: { variant: "score", alertBelow: 50 },
-  parameters: { controls: { include: ["variant","alertBelow","title","max","headline","delta","range","defaultRange","tiles","radiusScale","plotOffsetY","legend","activeIndex"] } },
+  args: { variant: 'score', alertBelow: 50 },
+  parameters: {
+    controls: {
+      include: [
+        'variant',
+        'alertBelow',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'tiles',
+        'radiusScale',
+        'plotOffsetY',
+        'legend',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadarChartCard {...args} testID="radar"  series={SCORE_SERIES} ranges={SCORE_RANGES}  />
+      <RadarChartCard {...args} testID="radar" series={SCORE_SERIES} ranges={SCORE_RANGES} />
     </Frame>
   ),
 };
@@ -135,10 +197,28 @@ export const LegendPlacement: Story = {
 /** Stat tiles, one per axis; the card grows to fit. */
 export const Tiles: Story = {
   args: { tiles: true },
-  parameters: { controls: { include: ["tiles","variant","title","max","headline","delta","range","defaultRange","alertBelow","radiusScale","plotOffsetY","legend","activeIndex"] } },
+  parameters: {
+    controls: {
+      include: [
+        'tiles',
+        'variant',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'alertBelow',
+        'radiusScale',
+        'plotOffsetY',
+        'legend',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadarChartCard {...args} testID="radar" series={DESKTOP} ranges={RANGES}  />
+      <RadarChartCard {...args} testID="radar" series={DESKTOP} ranges={RANGES} />
     </Frame>
   ),
 };
@@ -149,7 +229,13 @@ export const Hovered: Story = {
   render: () => (
     <Frame>
       <RadarChartCard series={BOTH} ranges={RANGES} activeIndex={1} />
-      <RadarChartCard variant="score" series={SCORE_SERIES} ranges={SCORE_RANGES} alertBelow={50} activeIndex={1} />
+      <RadarChartCard
+        variant="score"
+        series={SCORE_SERIES}
+        ranges={SCORE_RANGES}
+        alertBelow={50}
+        activeIndex={1}
+      />
       <RadarChartCard series={DESKTOP} ranges={RANGES} tiles activeIndex={1} />
     </Frame>
   ),
@@ -158,10 +244,27 @@ export const Hovered: Story = {
 /** `radiusScale` and `plotOffsetY` tune the polygon inside a fixed card. */
 export const Scaled: Story = {
   args: { radiusScale: 1.15 },
-  parameters: { controls: { include: ["radiusScale","variant","title","max","headline","delta","range","defaultRange","alertBelow","tiles","legend","activeIndex"] } },
+  parameters: {
+    controls: {
+      include: [
+        'radiusScale',
+        'variant',
+        'title',
+        'max',
+        'headline',
+        'delta',
+        'range',
+        'defaultRange',
+        'alertBelow',
+        'tiles',
+        'legend',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <RadarChartCard {...args} series={DESKTOP} ranges={RANGES}  plotOffsetY={-6} />
+      <RadarChartCard {...args} series={DESKTOP} ranges={RANGES} plotOffsetY={-6} />
     </Frame>
   ),
 };

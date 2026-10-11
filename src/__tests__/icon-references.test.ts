@@ -192,12 +192,8 @@ describe('icon reference integrity', () => {
 
   it('resolves the export/import directions of `as` correctly', () => {
     // `export { A as B }` publishes B; `import { A as B }` reads A.
-    expect(exportedNames("export { RiCloseLine as X } from './remix';")).toEqual(
-      ['X'],
-    );
-    expect(namedBindings('RiCheckLine as CheckIcon', 'import')).toEqual([
-      'RiCheckLine',
-    ]);
+    expect(exportedNames("export { RiCloseLine as X } from './remix';")).toEqual(['X']);
+    expect(namedBindings('RiCheckLine as CheckIcon', 'import')).toEqual(['RiCheckLine']);
   });
 
   it('flags the two mistakes that have actually been made', () => {
@@ -205,7 +201,7 @@ describe('icon reference integrity', () => {
       "import { Icons } from '@oxy.so/bloom/icons';",
       'const a = <Icons.Home />;',
       "import { Bell, Home } from '@oxy.so/bloom/icons';",
-      " * A doc comment saying `<Icons.Lock size=\"sm\" />`, which is where four of these lived.",
+      ' * A doc comment saying `<Icons.Lock size="sm" />`, which is where four of these lived.',
     ].join('\n');
 
     expect(unresolvedIconRefs(probe, ICON_EXPORTS)).toEqual([

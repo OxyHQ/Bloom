@@ -93,7 +93,11 @@ function RouteStopsComponent({
   };
 
   const list = (
-    <View role="list" accessibilityLabel={accessibilityLabel} testID={testID ? `${testID}-list` : undefined}>
+    <View
+      role="list"
+      accessibilityLabel={accessibilityLabel}
+      testID={testID ? `${testID}-list` : undefined}
+    >
       {stops.map((stop, index) => {
         const state: RouteStopState = stop.state ?? 'pending';
         const first = index === 0;
@@ -188,35 +192,35 @@ function RouteStopsComponent({
               width of its own one-line title.
             */}
             <View style={{ flex: 1, minWidth: 0 }}>
-            <AddressRow
-              title={stop.title}
-              subtitle={stop.subtitle}
-              meta={stop.meta}
-              badge={stop.badge}
-              kind={stop.kind}
-              leading={null}
-              density={density}
-              onPress={press(stop.id)}
-              accessibilityLabel={onPressStop ? name : undefined}
-              action={
-                <>
-                  {stop.action}
-                  {onRemoveStop ? (
-                    <GlyphButton
-                      size={32}
-                      glyphSize={16}
-                      icon={RiCloseLine}
-                      color={paint.textTertiary}
-                      hoverColor={paint.text}
-                      onPress={() => onRemoveStop(stop.id)}
-                      accessibilityLabel={removeWord(stop)}
-                      testID={id('remove')}
-                    />
-                  ) : null}
-                </>
-              }
-              testID={id('row')}
-            />
+              <AddressRow
+                title={stop.title}
+                subtitle={stop.subtitle}
+                meta={stop.meta}
+                badge={stop.badge}
+                kind={stop.kind}
+                leading={null}
+                density={density}
+                onPress={press(stop.id)}
+                accessibilityLabel={onPressStop ? name : undefined}
+                action={
+                  <>
+                    {stop.action}
+                    {onRemoveStop ? (
+                      <GlyphButton
+                        size={32}
+                        glyphSize={16}
+                        icon={RiCloseLine}
+                        color={paint.textTertiary}
+                        hoverColor={paint.text}
+                        onPress={() => onRemoveStop(stop.id)}
+                        accessibilityLabel={removeWord(stop)}
+                        testID={id('remove')}
+                      />
+                    ) : null}
+                  </>
+                }
+                testID={id('row')}
+              />
             </View>
           </View>
         );
@@ -232,7 +236,11 @@ function RouteStopsComponent({
         <View style={{ flex: 1, minWidth: 0 }}>{list}</View>
         {swappable ? (
           <View
-            style={{ width: ROUTE_STOPS_SWAP_COLUMN, alignItems: 'center', justifyContent: 'center' }}
+            style={{
+              width: ROUTE_STOPS_SWAP_COLUMN,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
             <GlyphButton
               size={ROUTE_STOPS_SWAP_SIZE}
@@ -249,12 +257,13 @@ function RouteStopsComponent({
       {onAddStop ? (
         <View style={{ alignItems: 'flex-start', paddingLeft: 8, paddingTop: 4 }}>
           <Button
-
             size="sm"
             leadingIcon={addIcon}
             onPress={onAddStop}
             disabled={!canAddStop}
-            testID={testID ? `${testID}-add` : undefined} tone="accent" appearance="plain"
+            testID={testID ? `${testID}-add` : undefined}
+            tone="accent"
+            appearance="plain"
           >
             {labels?.addStop ?? messages.addStop}
           </Button>

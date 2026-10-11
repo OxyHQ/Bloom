@@ -1,6 +1,16 @@
 import React, { useCallback, useId, useMemo } from 'react';
 import { View } from 'react-native';
-import Svg, { Circle, ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, {
+  Circle,
+  ClipPath,
+  Defs,
+  G,
+  Line,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+} from 'react-native-svg';
 
 import { borderRadius } from '../styles/tokens';
 import { niceTicks, type Point } from '../chart-cards/geometry';
@@ -19,7 +29,12 @@ import { formatEuros, formatEurosCompact } from './shared';
 import { useMessages } from '../locale/messages';
 import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
 import type { PropertyInsightsMessages } from './messages';
-import type { PriceEventKind, PriceHistoryChartProps, PriceHistoryEvent, PriceHistoryPoint } from './types';
+import type {
+  PriceEventKind,
+  PriceHistoryChartProps,
+  PriceHistoryEvent,
+  PriceHistoryPoint,
+} from './types';
 
 import { useChartCardSurfacePalette } from '../chart-cards/primitives/use-chart-palette';
 /**
@@ -87,7 +102,10 @@ function linePath(points: readonly Point[]): string {
 }
 
 /** The Y domain: nice ticks around the prices, padded so the line never sits on the frame. */
-export function priceDomain(values: readonly number[]): { ticks: number[]; domain: [number, number] } {
+export function priceDomain(values: readonly number[]): {
+  ticks: number[];
+  domain: [number, number];
+} {
   if (values.length === 0) return { ticks: [0, 1], domain: [0, 1] };
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -109,8 +127,16 @@ export function describePriceHistory(
   const head = periodLabel ? `${title}, ${periodLabel}` : title;
   if (!first || !last) return head;
   const parts = [
-    messages.priceHistoryTrend(head, format(first.value), first.title ?? first.label, format(last.value), last.title ?? last.label),
-    ...events.map((e) => `${e.label}, ${e.date ?? data[e.index]?.title ?? data[e.index]?.label ?? ''}.`),
+    messages.priceHistoryTrend(
+      head,
+      format(first.value),
+      first.title ?? first.label,
+      format(last.value),
+      last.title ?? last.label,
+    ),
+    ...events.map(
+      (e) => `${e.label}, ${e.date ?? data[e.index]?.title ?? data[e.index]?.label ?? ''}.`,
+    ),
   ];
   return parts.join(' ');
 }
@@ -137,7 +163,8 @@ export function PriceHistoryChart({
 }: PriceHistoryChartProps) {
   const { locale, messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
   const format = formatProp ?? ((value: number) => formatEuros(value, locale));
-  const formatAxisValue = formatAxisValueProp ?? ((value: number) => formatEurosCompact(value, locale));
+  const formatAxisValue =
+    formatAxisValueProp ?? ((value: number) => formatEurosCompact(value, locale));
   const title = titleProp ?? messages.currentPrice;
   const currentLabel = currentLabelProp ?? messages.now;
   const emptyLabel = emptyLabelProp ?? messages.noPriceHistory;
@@ -148,7 +175,11 @@ export function PriceHistoryChart({
   const data = selected?.data ?? dataProp ?? [];
   const events = (selected ? selected.events : eventsProp) ?? [];
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const selectPeriod = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -174,7 +205,14 @@ export function PriceHistoryChart({
     accessibilityLabel ??
     (empty
       ? `${messages.priceHistory}: ${emptyLabel}`
-      : describePriceHistory(messages.priceHistory, selected?.label, data, events, format, messages));
+      : describePriceHistory(
+          messages.priceHistory,
+          selected?.label,
+          data,
+          events,
+          format,
+          messages,
+        ));
 
   return (
     <ChartCardSurface height="auto" style={style} testID={testID}>
@@ -196,7 +234,12 @@ export function PriceHistoryChart({
           accessibilityRole="image"
           accessibilityLabel={summary}
           testID={testID ? `${testID}-empty` : undefined}
-          style={{ height: PRICE_HISTORY_PLOT_HEIGHT, alignItems: 'center', justifyContent: 'center', gap: 8 }}
+          style={{
+            height: PRICE_HISTORY_PLOT_HEIGHT,
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+          }}
         >
           <RiLineChartLine width={28} height={28} fill={palette.textTertiary} />
           <Text variant="body-medium" style={{ color: palette.textSecondary }}>
@@ -221,9 +264,15 @@ export function PriceHistoryChart({
             {({ size, box, x, y }) => {
               const points: Point[] = values.map((v, i) => ({
                 x: x(i),
-                y: y(anim.from && anim.from.length === values.length ? lerp(anim.from[i]!, v, anim.progress) : v),
+                y: y(
+                  anim.from && anim.from.length === values.length
+                    ? lerp(anim.from[i]!, v, anim.progress)
+                    : v,
+                ),
               }));
-              const revealWidth = anim.from ? size.width : box.left + (size.width - box.left) * anim.progress;
+              const revealWidth = anim.from
+                ? size.width
+                : box.left + (size.width - box.left) * anim.progress;
               const path = shape === 'line' ? linePath(points) : stepPath(points);
               const firstPoint = points[0]!;
               const lastPoint = points[points.length - 1]!;
@@ -244,7 +293,13 @@ export function PriceHistoryChart({
                     </Defs>
                     <G clipPath={`url(#${id}-reveal)`}>
                       <Path d={area} fill={`url(#${id}-fill)`} stroke="none" />
-                      <Path d={path} fill="none" stroke={stroke} strokeWidth={2} testID={testID ? `${testID}-series` : undefined} />
+                      <Path
+                        d={path}
+                        fill="none"
+                        stroke={stroke}
+                        strokeWidth={2}
+                        testID={testID ? `${testID}-series` : undefined}
+                      />
                       {events.map((event, i) => {
                         const p = points[event.index];
                         if (!p) return null;
@@ -261,7 +316,14 @@ export function PriceHistoryChart({
                           />
                         );
                       })}
-                      <Circle cx={lastPoint.x} cy={lastPoint.y} r={4} fill={stroke} stroke={palette.surface} strokeWidth={2} />
+                      <Circle
+                        cx={lastPoint.x}
+                        cy={lastPoint.y}
+                        r={4}
+                        fill={stroke}
+                        stroke={palette.surface}
+                        strokeWidth={2}
+                      />
                     </G>
                     {active ? (
                       <>
@@ -274,7 +336,14 @@ export function PriceHistoryChart({
                           strokeWidth={1}
                           strokeDasharray="4 4"
                         />
-                        <Circle cx={active.x} cy={active.y} r={5} fill={stroke} stroke={palette.surface} strokeWidth={3} />
+                        <Circle
+                          cx={active.x}
+                          cy={active.y}
+                          r={5}
+                          fill={stroke}
+                          stroke={palette.surface}
+                          strokeWidth={3}
+                        />
                       </>
                     ) : null}
                   </Svg>
@@ -313,12 +382,29 @@ export function PriceHistoryChart({
       {!empty && events.length > 0 ? (
         <View
           role="list"
-          style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 6, paddingBottom: 4 }}
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            columnGap: 16,
+            rowGap: 6,
+            paddingBottom: 4,
+          }}
           testID={testID ? `${testID}-legend` : undefined}
         >
           {events.map((event, i) => (
-            <View key={`${event.kind}-${event.index}-${i}`} role="listitem" style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: priceEventColor(theme, event.kind) }} />
+            <View
+              key={`${event.kind}-${event.index}-${i}`}
+              role="listitem"
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+            >
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: priceEventColor(theme, event.kind),
+                }}
+              />
               <Text variant="body-2-medium" style={{ color: palette.text }}>
                 {event.label}
               </Text>

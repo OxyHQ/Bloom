@@ -79,7 +79,11 @@ function PriceSummaryLineComponent({
     >
       <View style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
         <View style={{ flexShrink: 1, minWidth: 0 }}>
-          <Text variant="body-regular" testID={testID ? `${testID}-label` : undefined} style={{ color: labelColor }}>
+          <Text
+            variant="body-regular"
+            testID={testID ? `${testID}-label` : undefined}
+            style={{ color: labelColor }}
+          >
             {label}
           </Text>
           {sublabel ? (
@@ -129,7 +133,11 @@ function PriceSummaryLineComponent({
           <Text
             variant="body-2-regular"
             testID={testID ? `${testID}-secondary-amount` : undefined}
-            style={{ color: paint.textSecondary, fontVariant: ['tabular-nums'], textAlign: 'right' }}
+            style={{
+              color: paint.textSecondary,
+              fontVariant: ['tabular-nums'],
+              textAlign: 'right',
+            }}
           >
             {secondaryAmount}
           </Text>

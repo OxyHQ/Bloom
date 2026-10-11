@@ -79,6 +79,8 @@ const SUBPATHS = /** @type {const} */ ([
   // Window-edge geometry shared by every floating surface, plus the registry
   // that keeps them off each other. Platform-neutral, no native deps.
   ['./layout', 'layout/index.ts'],
+  ['./viewport', 'viewport/index.ts'],
+  ['./collapsible', 'collapsible/index.ts'],
   ['./fab', 'fab/index.ts'],
   ['./frosted-icon-button', 'frosted-icon-button/index.ts'],
   ['./divider', 'divider/index.ts'],
@@ -107,6 +109,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./sidebar', 'sidebar/index.ts'],
   ['./app-shell', 'app-shell/index.ts'],
   ['./page-header', 'page-header/index.ts'],
+  ['./page-footer', 'page-footer/index.ts'],
   ['./cover-header', 'cover-header/index.ts'],
   ['./notification-center', 'notification-center/index.ts'],
   ['./theme-toggle', 'theme-toggle/index.ts'],
@@ -180,6 +183,11 @@ const SUBPATHS = /** @type {const} */ ([
   // The shared-element layer that survives a route change. Subpath-only for the
   // same reason as the gallery: it statically links `expo-image`.
   ['./media-flight', 'media-flight/index.ts'],
+  // expo-video's view with inline playback on. Subpath-only because its
+  // declarations name `expo-video`'s own types: an app imports it to render
+  // video, so it has the optional peer; an app that renders none never loads
+  // those declarations.
+  ['./video-view', 'video-view/index.ts'],
   ['./teleport', 'teleport/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],
@@ -343,6 +351,11 @@ const SUBPATHS = /** @type {const} */ ([
  * if you remove a fork delete the entry here and re-run the script.
  */
 const WEB_FORKED_SUBPATHS = new Set([
+  './viewport',
+  './collapsible',
+  './accordion',
+  './rating',
+  './stat-bar',
   './agent-creator',
   './project-board',
   './multi-agent-chat',
@@ -712,7 +725,11 @@ function discoverWebBarrels() {
   // Bootstrap a newly published fork as well as refreshing existing barrels.
   // The generator owns their creation; no empty hand-written barrel is needed.
   for (const [name, source] of SUBPATHS) {
-    if (WEB_FORKED_SUBPATHS.has(name) && /(?:^|\/)index\.ts$/.test(source) && !found.includes(source)) {
+    if (
+      WEB_FORKED_SUBPATHS.has(name) &&
+      /(?:^|\/)index\.ts$/.test(source) &&
+      !found.includes(source)
+    ) {
       found.push(source);
     }
   }
@@ -745,12 +762,18 @@ function resolveSpecifier(fromDir, specifier) {
 }
 
 /** Whether a resolved stem has a `.web` fork beside it. */
-const publishedWebBarrelStems = new Set(SUBPATHS
-  .filter(([name, source]) => WEB_FORKED_SUBPATHS.has(name) && /(?:^|\/)index\.ts$/.test(source))
-  .map(([, source]) => join(SRC, source.slice(0, -3))));
+const publishedWebBarrelStems = new Set(
+  SUBPATHS.filter(
+    ([name, source]) => WEB_FORKED_SUBPATHS.has(name) && /(?:^|\/)index\.ts$/.test(source),
+  ).map(([, source]) => join(SRC, source.slice(0, -3))),
+);
 
 function hasWebFork(stem) {
-  return publishedWebBarrelStems.has(stem) || existsSync(`${stem}.web.ts`) || existsSync(`${stem}.web.tsx`);
+  return (
+    publishedWebBarrelStems.has(stem) ||
+    existsSync(`${stem}.web.ts`) ||
+    existsSync(`${stem}.web.tsx`)
+  );
 }
 
 /**
@@ -844,9 +867,7 @@ function main() {
   );
 
   // 3. Stat package.json so the size shows up in CI logs.
-  console.log(
-    `[generate-platform-exports] package.json is now ${statSync(PKG_PATH).size} bytes`,
-  );
+  console.log(`[generate-platform-exports] package.json is now ${statSync(PKG_PATH).size} bytes`);
 }
 
 main();

@@ -183,7 +183,13 @@ function resolveCollisions(columns: TreeNode[][], height: number, padding: numbe
   }
 }
 
-function relax(tree: TreeNode[], columns: TreeNode[][], links: WorkLink[], alpha: number, rightToLeft: boolean) {
+function relax(
+  tree: TreeNode[],
+  columns: TreeNode[][],
+  links: WorkLink[],
+  alpha: number,
+  rightToLeft: boolean,
+) {
   const order = rightToLeft ? [...columns].reverse() : columns;
   for (const nodes of order) {
     if (!nodes) continue;
@@ -204,8 +210,12 @@ function relax(tree: TreeNode[], columns: TreeNode[][], links: WorkLink[], alpha
 
 function stackLinks(tree: TreeNode[], links: WorkLink[]) {
   for (const node of tree) {
-    node.targetLinks.sort((a, b) => (tree[links[a]!.target]?.y ?? 0) - (tree[links[b]!.target]?.y ?? 0));
-    node.sourceLinks.sort((a, b) => (tree[links[a]!.source]?.y ?? 0) - (tree[links[b]!.source]?.y ?? 0));
+    node.targetLinks.sort(
+      (a, b) => (tree[links[a]!.target]?.y ?? 0) - (tree[links[b]!.target]?.y ?? 0),
+    );
+    node.sourceLinks.sort(
+      (a, b) => (tree[links[a]!.source]?.y ?? 0) - (tree[links[b]!.source]?.y ?? 0),
+    );
     let sy = 0;
     for (const id of node.targetLinks) {
       const link = links[id]!;
@@ -222,7 +232,13 @@ function stackLinks(tree: TreeNode[], links: WorkLink[]) {
 }
 
 /** recharts `resolveNodeLinkCollisions`: keeps a node off a link that skips its column. */
-function resolveNodeLinkCollisions(tree: TreeNode[], columns: TreeNode[][], links: WorkLink[], height: number, padding: number) {
+function resolveNodeLinkCollisions(
+  tree: TreeNode[],
+  columns: TreeNode[][],
+  links: WorkLink[],
+  height: number,
+  padding: number,
+) {
   const depthOf = new Map<TreeNode, number>();
   columns.forEach((nodes, depth) => nodes?.forEach((n) => depthOf.set(n, depth)));
   for (let depth = 0; depth < columns.length; depth++) {
@@ -245,7 +261,9 @@ function resolveNodeLinkCollisions(tree: TreeNode[], columns: TreeNode[][], link
       const y1 = t.y + link.ty + link.dy / 2;
       return [{ y: cubicValue(y0, y0, y1, y1, p) - link.dy / 2, dy: link.dy }];
     });
-    const contained = obstacles.filter((o) => nodes.some((n) => n.y >= o.y && n.y + n.dy <= o.y + o.dy));
+    const contained = obstacles.filter((o) =>
+      nodes.some((n) => n.y >= o.y && n.y + n.dy <= o.y + o.dy),
+    );
     if (contained.length === 0) continue;
     type Item = { fixed: true; y: number; dy: number } | { fixed: false; node: TreeNode };
     const itemY = (i: Item) => (i.fixed ? i.y : i.node.y);
@@ -305,7 +323,9 @@ export function layoutSankey(
   if (nodeCount === 0 || width <= 0 || height <= 0) return { nodes: [], links: [] };
 
   // Links that name a node outside the list are dropped, as recharts' guards do.
-  const valid = links.filter((l) => l.source >= 0 && l.source < nodeCount && l.target >= 0 && l.target < nodeCount);
+  const valid = links.filter(
+    (l) => l.source >= 0 && l.source < nodeCount && l.target >= 0 && l.target < nodeCount,
+  );
   const tree = buildTree(nodeCount, valid, contentWidth, nodeWidth, align);
   const columns: TreeNode[][] = [];
   for (const node of tree) (columns[node.depth] ??= []).push(node);
@@ -313,7 +333,9 @@ export function layoutSankey(
   let yRatio = Math.min(
     ...columns.map((nodes) => {
       const value = (nodes ?? []).reduce((s, n) => s + n.value, 0);
-      return value === 0 ? Infinity : (contentHeight - ((nodes?.length ?? 0) - 1) * nodePadding) / value;
+      return value === 0
+        ? Infinity
+        : (contentHeight - ((nodes?.length ?? 0) - 1) * nodePadding) / value;
     }),
   );
   if (yRatio === Infinity) yRatio = 0;
@@ -392,7 +414,14 @@ export function sankeyRibbonPath(link: SankeyLinkPath): string {
  * The node outline: rounded (radius ≤ 5) only on its outward side, so a
  * ribbon meets a square edge. Sources round on the left, sinks on the right.
  */
-export function sankeyNodePath(x: number, y: number, w: number, h: number, roundLeft: boolean, roundRight: boolean): string {
+export function sankeyNodePath(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  roundLeft: boolean,
+  roundRight: boolean,
+): string {
   const r = Math.min(5, w, h / 2);
   const rl = roundLeft ? r : 0;
   const rr = roundRight ? r : 0;
@@ -424,7 +453,8 @@ export function hitTestSankey(
 ): { type: 'node' | 'link'; index: number } | null {
   for (let i = layout.nodes.length - 1; i >= 0; i--) {
     const n = layout.nodes[i]!;
-    if (px >= n.x && px <= n.x + n.width && py >= n.y && py <= n.y + n.height) return { type: 'node', index: n.index };
+    if (px >= n.x && px <= n.x + n.width && py >= n.y && py <= n.y + n.height)
+      return { type: 'node', index: n.index };
   }
   for (let i = layout.links.length - 1; i >= 0; i--) {
     const l = layout.links[i]!;

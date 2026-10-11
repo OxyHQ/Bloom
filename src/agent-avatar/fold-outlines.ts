@@ -78,13 +78,7 @@ export function paperSymbolPoint(shape: PaperSymbol, angle: number): Point {
   const start: Point = previous ? [previous[4], previous[5]] : outline.start;
   const c = outline.curves[index]!;
   return [
-    u ** 3 * start[0] +
-      3 * u * u * t * c[0] +
-      3 * u * t * t * c[2] +
-      t ** 3 * c[4],
-    u ** 3 * start[1] +
-      3 * u * u * t * c[1] +
-      3 * u * t * t * c[3] +
-      t ** 3 * c[5],
+    u ** 3 * start[0] + 3 * u * u * t * c[0] + 3 * u * t * t * c[2] + t ** 3 * c[4],
+    u ** 3 * start[1] + 3 * u * u * t * c[1] + 3 * u * t * t * c[3] + t ** 3 * c[5],
   ];
 }

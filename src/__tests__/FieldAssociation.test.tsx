@@ -143,7 +143,9 @@ describe('Field association', () => {
     const group = screen.getByTestId('field');
     expect(group.props.role).toBe('group');
     expect(group.props['aria-labelledby']).toBeTruthy();
-    expect(group.props['aria-describedby']).toBe(screen.getByText('Enter a full date.').props.nativeID);
+    expect(group.props['aria-describedby']).toBe(
+      screen.getByText('Enter a full date.').props.nativeID,
+    );
     // Neither control took the field's id, and neither is described by the
     // group's error.
     expect(screen.getByTestId('day').props.nativeID).toBeUndefined();

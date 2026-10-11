@@ -132,7 +132,19 @@ const Slide = memo(function Slide({
     drive(rotate, pose.rotate, duration);
     drive(scale, pose.scale, duration);
     drive(radius, pose.radius, duration);
-  }, [pose.x, pose.depth, pose.rotate, pose.scale, pose.radius, duration, x, depth, rotate, scale, radius]);
+  }, [
+    pose.x,
+    pose.depth,
+    pose.rotate,
+    pose.scale,
+    pose.radius,
+    duration,
+    x,
+    depth,
+    rotate,
+    scale,
+    radius,
+  ]);
 
   const animatedStyle = useAnimatedStyle(
     () => ({
@@ -157,7 +169,8 @@ const Slide = memo(function Slide({
       style={[
         { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' },
         animatedStyle,
-      ]}>
+      ]}
+    >
       <Image
         source={source}
         resizeMode="cover"
@@ -180,10 +193,13 @@ function Dot({ active, reducedMotion }: { active: boolean; reducedMotion: boolea
       ? target
       : withTiming(target, { duration: DOT_MS, easing: EASE_OUT });
   }, [active, reducedMotion, progress]);
-  const style = useAnimatedStyle(() => ({
-    width: 6 + 14 * progress.value,
-    opacity: 0.45 + 0.45 * progress.value,
-  }), [progress]);
+  const style = useAnimatedStyle(
+    () => ({
+      width: 6 + 14 * progress.value,
+      opacity: 0.45 + 0.45 * progress.value,
+    }),
+    [progress],
+  );
   return (
     <Animated.View
       aria-hidden
@@ -233,26 +249,29 @@ function AuthMediaCarouselComponent({
       style={[
         { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' },
         style,
-      ]}>
+      ]}
+    >
       {/* Nothing until the panel is measured: the queued slides are placed a
           panel-width to the right, and at width 0 they would stack over the
           current one for a frame. */}
-      {width > 0 ? slides.map((slide, slideIndex) => {
-        // 0 is the slide in play, 1 is next in the queue, the rest wait right.
-        const position = (slideIndex - index + count) % count;
-        const moving = position === 0 || (position === 1 && phase === 'slide');
-        const animate = moving && phase !== 'enter' && !reducedMotion;
-        return (
-          <Slide
-            key={typeof slide.source === 'string' ? slide.source : slideIndex}
-            testID={testID ? `${testID}-slide-${slideIndex}` : undefined}
-            slide={slide}
-            pose={poseFor(position, phase)}
-            duration={animate ? beatDuration : null}
-            width={width}
-          />
-        );
-      }) : null}
+      {width > 0
+        ? slides.map((slide, slideIndex) => {
+            // 0 is the slide in play, 1 is next in the queue, the rest wait right.
+            const position = (slideIndex - index + count) % count;
+            const moving = position === 0 || (position === 1 && phase === 'slide');
+            const animate = moving && phase !== 'enter' && !reducedMotion;
+            return (
+              <Slide
+                key={typeof slide.source === 'string' ? slide.source : slideIndex}
+                testID={testID ? `${testID}-slide-${slideIndex}` : undefined}
+                slide={slide}
+                pose={poseFor(position, phase)}
+                duration={animate ? beatDuration : null}
+                width={width}
+              />
+            );
+          })
+        : null}
 
       {count > 1 ? (
         <View
@@ -265,7 +284,8 @@ function AuthMediaCarouselComponent({
             flexDirection: 'row',
             justifyContent: 'center',
             gap: 6,
-          }}>
+          }}
+        >
           {slides.map((slide, slideIndex) => (
             <Dot
               key={typeof slide.source === 'string' ? slide.source : slideIndex}

@@ -4,7 +4,7 @@ export type {
   BloomThemeContextValue,
 } from './BloomThemeProvider';
 export { BloomColorScope, useColorScopeStyle } from './color-scope';
-export type { BloomColorScopeProps } from './color-scope';
+export type { BloomColorScopeProps, BloomColorScopeTokens } from './color-scope';
 export { BloomSeedScope } from './seed-scope';
 export type { BloomSeedScopeProps } from './seed-scope';
 export { roleColorsToPresetTokens } from './color-scope/seed-scope';
@@ -37,7 +37,14 @@ export type {
 } from './ambient-store';
 export { useNavigationTheme } from './use-navigation-theme';
 export type { NavigationTheme, NavigationThemeFont } from './use-navigation-theme';
-export type { Theme, ThemeColors, ThemeMode, ThemeGradient, ThemeGradients, ThemeChartColor } from './types';
+export type {
+  Theme,
+  ThemeColors,
+  ThemeMode,
+  ThemeGradient,
+  ThemeGradients,
+  ThemeChartColor,
+} from './types';
 export type {
   AppColorName,
   AppColorPreset,

@@ -121,7 +121,9 @@ describe('TenancyTimeline', () => {
       normalise(resolveAccentColors(theme.colors, 'primary', 'solid').background),
     );
     const current = getComputedStyle(byTestId('t-1-marker'));
-    expect(current.backgroundColor).toBe(normalise(resolveAccentColors(theme.colors, 'warning', 'solid').background));
+    expect(current.backgroundColor).toBe(
+      normalise(resolveAccentColors(theme.colors, 'warning', 'solid').background),
+    );
     expect(current.borderTopWidth).toBe('3px');
     const upcoming = getComputedStyle(byTestId('t-2-marker'));
     expect(upcoming.backgroundColor).toBe(normalise(palette.surface));
@@ -183,20 +185,33 @@ describe('LeaseSummaryCard', () => {
         <LeaseSummaryCard
           {...base}
           layout="wide"
-          nextPayment={{ date: '1 Oct', status, statusLabel: status === 'due' ? 'Due in 5 days' : undefined }}
+          nextPayment={{
+            date: '1 Oct',
+            status,
+            statusLabel: status === 'due' ? 'Due in 5 days' : undefined,
+          }}
           testID="l"
         />,
       );
       const badge = byTestId('l-payment-status');
       expectSubtle(badge, LEASE_PAYMENT_STATUS[status].tone);
-      expect(badge.textContent).toBe(status === 'due' ? 'Due in 5 days' : LEASE_PAYMENT_STATUS[status].label);
+      expect(badge.textContent).toBe(
+        status === 'due' ? 'Due in 5 days' : LEASE_PAYMENT_STATUS[status].label,
+      );
     }
     expect(LEASE_PAYMENT_STATUS.overdue.tone).toBe('error');
     expect(LEASE_PAYMENT_STATUS.paid.tone).toBe('success');
   });
 
   it('lays the figures in a row when wide and stacked when narrow', () => {
-    mount(<LeaseSummaryCard {...base} layout="wide" nextPayment={{ date: '1 Oct', status: 'due' }} testID="l" />);
+    mount(
+      <LeaseSummaryCard
+        {...base}
+        layout="wide"
+        nextPayment={{ date: '1 Oct', status: 'due' }}
+        testID="l"
+      />,
+    );
     expect(getComputedStyle(byTestId('l-figures')).flexDirection).toBe('row');
     expect(getComputedStyle(byTestId('l-figure-deposit')).borderLeftWidth).toBe('1px');
     mount(<LeaseSummaryCard {...base} layout="narrow" testID="l" />);
@@ -215,10 +230,30 @@ describe('LeaseSummaryCard', () => {
 describe('RentPaymentList', () => {
   const receipt = jest.fn();
   const payments = [
-    { id: 'a', month: 'August 2026', dueDate: '1 Aug', amount: '€1,150', method: 'Bank transfer', status: 'paid' as const, onDownloadReceipt: receipt },
-    { id: 'b', month: 'September 2026', dueDate: '1 Sep', amount: '€1,150', status: 'overdue' as const },
+    {
+      id: 'a',
+      month: 'August 2026',
+      dueDate: '1 Aug',
+      amount: '€1,150',
+      method: 'Bank transfer',
+      status: 'paid' as const,
+      onDownloadReceipt: receipt,
+    },
+    {
+      id: 'b',
+      month: 'September 2026',
+      dueDate: '1 Sep',
+      amount: '€1,150',
+      status: 'overdue' as const,
+    },
     { id: 'c', month: 'July 2026', dueDate: '1 Jul', amount: '€600', status: 'partial' as const },
-    { id: 'd', month: 'October 2026', dueDate: '1 Oct', amount: '€1,150', status: 'pending' as const },
+    {
+      id: 'd',
+      month: 'October 2026',
+      dueDate: '1 Oct',
+      amount: '€1,150',
+      status: 'pending' as const,
+    },
   ];
 
   it('paints each status badge in its tone', () => {
@@ -243,7 +278,14 @@ describe('RentPaymentList', () => {
 
   it('draws the summary and paints outstanding in the error text colour on request', () => {
     mount(
-      <RentPaymentList payments={payments} paidThisYear="€9,800" outstanding="€550" outstandingTone="error" layout="wide" testID="p" />,
+      <RentPaymentList
+        payments={payments}
+        paidThisYear="€9,800"
+        outstanding="€550"
+        outstandingTone="error"
+        layout="wide"
+        testID="p"
+      />,
     );
     expect(byTestId('p-paid').textContent).toBe('Paid this year€9,800');
     expect(getComputedStyle(byTestId('p-outstanding-value')).color).toBe(
@@ -273,14 +315,23 @@ describe('MaintenanceRequestCard', () => {
 
   it('draws the stage badge, the priority chip and the category line', () => {
     mount(
-      <MaintenanceRequestCard title="Leak" category="plumbing" reference="#1042" priority="urgent" stage="scheduled" testID="m" />,
+      <MaintenanceRequestCard
+        title="Leak"
+        category="plumbing"
+        reference="#1042"
+        priority="urgent"
+        stage="scheduled"
+        testID="m"
+      />,
     );
     const stage = byTestId('m-stage');
     expectSubtle(stage, MAINTENANCE_STAGE.scheduled.tone);
     expect(stage.textContent).toBe('Scheduled');
     expect(byTestId('m-priority').textContent).toBe('Urgent');
     expect(getComputedStyle(byTestId('m-priority')).backgroundColor).toBe(
-      normalise(resolveAccentColors(theme.colors, MAINTENANCE_PRIORITY.urgent.tone, 'subtle').background),
+      normalise(
+        resolveAccentColors(theme.colors, MAINTENANCE_PRIORITY.urgent.tone, 'subtle').background,
+      ),
     );
     expect(container.textContent).toContain('Plumbing · #1042');
     expect(byTestId('m-title').getAttribute('role')).toBe('heading');
@@ -292,7 +343,10 @@ describe('MaintenanceRequestCard', () => {
         title="Leak"
         category="plumbing"
         stage="acknowledged"
-        stages={{ reported: { date: '12 Mar', actor: 'You' }, acknowledged: { date: '13 Mar', actor: 'Landlord' } }}
+        stages={{
+          reported: { date: '12 Mar', actor: 'You' },
+          acknowledged: { date: '13 Mar', actor: 'Landlord' },
+        }}
         testID="m"
       />,
     );
@@ -344,8 +398,23 @@ describe('MaintenanceRequestCard', () => {
 describe('DocumentList', () => {
   const sign = jest.fn();
   const documents = [
-    { id: '1', name: 'Lease.pdf', type: 'pdf' as const, size: '412 KB', date: 'Signed 2 Sep', status: 'signed' as const, onView: noop, onDownload: noop },
-    { id: '2', name: 'Addendum.pdf', type: 'pdf' as const, status: 'pending' as const, onSign: sign },
+    {
+      id: '1',
+      name: 'Lease.pdf',
+      type: 'pdf' as const,
+      size: '412 KB',
+      date: 'Signed 2 Sep',
+      status: 'signed' as const,
+      onView: noop,
+      onDownload: noop,
+    },
+    {
+      id: '2',
+      name: 'Addendum.pdf',
+      type: 'pdf' as const,
+      status: 'pending' as const,
+      onSign: sign,
+    },
     { id: '3', name: 'Certificate.docx', type: 'document' as const, status: 'expired' as const },
   ];
 

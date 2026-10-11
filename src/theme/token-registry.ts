@@ -141,7 +141,7 @@ export function hslToSrgb(triple: string): string {
   const l = Number.isFinite(light) ? light : 0;
 
   const chroma = (1 - Math.abs(2 * l - 1)) * s;
-  const huePrime = ((((h % 360) + 360) % 360) / 60);
+  const huePrime = (((h % 360) + 360) % 360) / 60;
   const second = chroma * (1 - Math.abs((huePrime % 2) - 1));
 
   let r = 0;
@@ -167,9 +167,7 @@ export function hslToSrgb(triple: string): string {
   const blue = Math.round((b + match) * 255);
 
   if (alphaPart !== undefined && alphaPart !== '') {
-    const alpha = alphaPart.endsWith('%')
-      ? parseFloat(alphaPart) / 100
-      : parseFloat(alphaPart);
+    const alpha = alphaPart.endsWith('%') ? parseFloat(alphaPart) / 100 : parseFloat(alphaPart);
     const safeAlpha = Number.isFinite(alpha) ? alpha : 1;
     return `rgb(${red} ${green} ${blue} / ${safeAlpha})`;
   }

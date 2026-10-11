@@ -1,7 +1,8 @@
 import React, { memo, useCallback, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
 
-import { borderRadius } from '../styles/tokens';import Animated, {
+import { borderRadius } from '../styles/tokens';
+import Animated, {
   Easing,
   useAnimatedStyle,
   useReducedMotion,
@@ -36,11 +37,28 @@ function TreeConnector({ count, color }: { count: number; color: string }) {
   if (count === 0) return null;
   const height = FIRST_CENTER + ROW_PITCH * (count - 1) + 1;
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, insetInlineStart: 16.5, width: 12, height, transform: rtl ? [{ scaleX: -1 }] : undefined }}>
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: 0,
+        insetInlineStart: 16.5,
+        width: 12,
+        height,
+        transform: rtl ? [{ scaleX: -1 }] : undefined,
+      }}
+    >
       <Svg width={12} height={height} viewBox={`0 0 12 ${height}`} fill="none">
         {Array.from({ length: count }, (_, i) => {
           const y = FIRST_CENTER + ROW_PITCH * i;
-          return <Path key={y} d={`M0.5 0 V${y - 5} Q0.5 ${y} 5.5 ${y} H11.5`} stroke={color} strokeWidth={1} />;
+          return (
+            <Path
+              key={y}
+              d={`M0.5 0 V${y - 5} Q0.5 ${y} 5.5 ${y} H11.5`}
+              stroke={color}
+              strokeWidth={1}
+            />
+          );
         })}
       </Svg>
     </View>
@@ -78,53 +96,66 @@ function TreeRow({
     '--bloom-sidebar-ring': palette.ring,
   };
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}
-      onPointerEnter={item.onPrefetch} onTouchStart={item.onPrefetch}>
-    <Pressable
-      {...(IS_WEB
-        ? {
-            dataSet: { bloomSidebar: 'ring' },
-            ...(item.href ? { href: item.href } : null),
-            ...(selected ? { 'aria-current': 'page' } : null),
-          }
-        : {})}
-      role={item.href ? 'link' : 'button'}
-      accessibilityLabel={item.meta ? `${item.label}, ${item.meta}` : item.label}
-      accessibilityState={{ selected }}
-      focusable={focusable}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
-      onLongPress={item.onLongPress}
-      onPress={(event: GestureResponderEvent) => {
-        item.onPrefetch?.();
-        if (!onPress) return;
-        if (IS_WEB && item.href) event.preventDefault();
-        onPress(item, folder);
-      }}
-      style={style}>
-      <Text variant="body-medium" numberOfLines={1} style={{ minWidth: 0, flex: 1, color: palette.textSecondary }}>
-        {item.label}
-      </Text>
-      {item.meta ? (
-        <View
-          style={{
-            flexShrink: 0,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 4,
-            backgroundColor: palette.tertiary,
-            paddingLeft: 4,
-            paddingRight: 4,
-            paddingTop: 1,
-            paddingBottom: 1,
-          }}>
-          <Text variant="caption-1-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
-            {item.meta}
-          </Text>
-        </View>
-      ) : null}
-    </Pressable>
-    {item.actions}
+    <View
+      style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}
+      onPointerEnter={item.onPrefetch}
+      onTouchStart={item.onPrefetch}
+    >
+      <Pressable
+        {...(IS_WEB
+          ? {
+              dataSet: { bloomSidebar: 'ring' },
+              ...(item.href ? { href: item.href } : null),
+              ...(selected ? { 'aria-current': 'page' } : null),
+            }
+          : {})}
+        role={item.href ? 'link' : 'button'}
+        accessibilityLabel={item.meta ? `${item.label}, ${item.meta}` : item.label}
+        accessibilityState={{ selected }}
+        focusable={focusable}
+        onHoverIn={onIn}
+        onHoverOut={onOut}
+        onLongPress={item.onLongPress}
+        onPress={(event: GestureResponderEvent) => {
+          item.onPrefetch?.();
+          if (!onPress) return;
+          if (IS_WEB && item.href) event.preventDefault();
+          onPress(item, folder);
+        }}
+        style={style}
+      >
+        <Text
+          variant="body-medium"
+          numberOfLines={1}
+          style={{ minWidth: 0, flex: 1, color: palette.textSecondary }}
+        >
+          {item.label}
+        </Text>
+        {item.meta ? (
+          <View
+            style={{
+              flexShrink: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 4,
+              backgroundColor: palette.tertiary,
+              paddingLeft: 4,
+              paddingRight: 4,
+              paddingTop: 1,
+              paddingBottom: 1,
+            }}
+          >
+            <Text
+              variant="caption-1-medium"
+              numberOfLines={1}
+              style={{ color: palette.textSecondary }}
+            >
+              {item.meta}
+            </Text>
+          </View>
+        ) : null}
+      </Pressable>
+      {item.actions}
     </View>
   );
 }
@@ -169,7 +200,9 @@ function SidebarFolderComponent({
   const contentHeight = useSharedValue(0);
   useEffect(() => {
     const target = expanded ? 1 : 0;
-    progress.value = reducedMotion ? target : withTiming(target, { duration: 300, easing: EASE_IN_OUT });
+    progress.value = reducedMotion
+      ? target
+      : withTiming(target, { duration: 300, easing: EASE_IN_OUT });
   }, [expanded, reducedMotion, progress]);
   const onContentLayout = useCallback(
     (event: LayoutChangeEvent) => {
@@ -200,24 +233,29 @@ function SidebarFolderComponent({
   return (
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column' }, style]}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <Pressable
-        {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
-        role="button"
-        accessibilityLabel={folder.label}
-        aria-expanded={expanded}
-        accessibilityState={{ expanded }}
-        onHoverIn={onIn}
-        onHoverOut={onOut}
-        onPress={() => setOpen(!isOpen)}
-        style={rowStyle}>
-        <View style={{ flexShrink: 0 }}>
-          <Icon width={20} height={20} fill={palette.textSecondary} />
-        </View>
-        <Text variant="body-medium" numberOfLines={1} style={{ flexShrink: 1, color: palette.textSecondary }}>
-          {folder.label}
-        </Text>
-      </Pressable>
-      {folder.actions}
+        <Pressable
+          {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
+          role="button"
+          accessibilityLabel={folder.label}
+          aria-expanded={expanded}
+          accessibilityState={{ expanded }}
+          onHoverIn={onIn}
+          onHoverOut={onOut}
+          onPress={() => setOpen(!isOpen)}
+          style={rowStyle}
+        >
+          <View style={{ flexShrink: 0 }}>
+            <Icon width={20} height={20} fill={palette.textSecondary} />
+          </View>
+          <Text
+            variant="body-medium"
+            numberOfLines={1}
+            style={{ flexShrink: 1, color: palette.textSecondary }}
+          >
+            {folder.label}
+          </Text>
+        </Pressable>
+        {folder.actions}
       </View>
       <Animated.View
         aria-hidden={!expanded}
@@ -225,8 +263,18 @@ function SidebarFolderComponent({
         accessibilityElementsHidden={!expanded}
         importantForAccessibility={expanded ? 'auto' : 'no-hide-descendants'}
         {...(IS_WEB && !expanded ? { inert: true } : {})}
-        style={[{ overflow: 'hidden' }, clipStyle]}>
-        <View onLayout={onContentLayout} style={{ position: 'relative', width: '100%', flexDirection: 'column', gap: 2, paddingTop: 2 }}>
+        style={[{ overflow: 'hidden' }, clipStyle]}
+      >
+        <View
+          onLayout={onContentLayout}
+          style={{
+            position: 'relative',
+            width: '100%',
+            flexDirection: 'column',
+            gap: 2,
+            paddingTop: 2,
+          }}
+        >
           <TreeConnector count={folder.items.length} color={palette.iconQuaternary} />
           {folder.items.map((item) => (
             <TreeRow

@@ -38,10 +38,7 @@ function bandTransform(
   const swallow = phase(0.32, 1, progress);
   const extension = dockY * phase(0, 0.42, progress);
   const scaleX = 1 - 0.88 * swallow;
-  const scaleY = Math.max(
-    0.001,
-    ((height + extension) * (1 - swallow)) / height,
-  );
+  const scaleY = Math.max(0.001, ((height + extension) * (1 - swallow)) / height);
   const right = width + dockX * phase(0, 0.72, progress);
   const section = (y: number) => {
     const bend = neck * (y / height) ** 3;
@@ -61,10 +58,7 @@ function bandTransform(
 
 /** Match complete IDs, so a reference ending in -10 never matches -1. */
 function rebaseIds(copy: HTMLElement, prefix: string) {
-  const elements = [
-    copy,
-    ...Array.from(copy.querySelectorAll<HTMLElement>('*')),
-  ];
+  const elements = [copy, ...Array.from(copy.querySelectorAll<HTMLElement>('*'))];
   const ids = new Map<string, string>();
   elements.forEach((element) => {
     if (element.id) {
@@ -78,13 +72,10 @@ function rebaseIds(copy: HTMLElement, prefix: string) {
       if (attribute.name === 'id') continue;
       let value = attribute.value.replace(
         /url\((["']?)#([^"')]+)\1\)/g,
-        (reference, _quote, id: string) =>
-          ids.has(id) ? `url(#${ids.get(id)})` : reference,
+        (reference, _quote, id: string) => (ids.has(id) ? `url(#${ids.get(id)})` : reference),
       );
-      if (value.startsWith('#') && ids.has(value.slice(1)))
-        value = `#${ids.get(value.slice(1))}`;
-      if (value !== attribute.value)
-        element.setAttribute(attribute.name, value);
+      if (value.startsWith('#') && ids.has(value.slice(1))) value = `#${ids.get(value.slice(1))}`;
+      if (value !== attribute.value) element.setAttribute(attribute.name, value);
     }
   });
 }
@@ -100,14 +91,8 @@ async function snapshotCharts(source: HTMLDivElement, copy: HTMLDivElement) {
       const { width, height } = chart.getBoundingClientRect();
       if (!width || !height) return;
       const svg = chart.cloneNode(true) as SVGSVGElement;
-      const originals = [
-        chart,
-        ...Array.from(chart.querySelectorAll<SVGElement>('*')),
-      ];
-      const elements = [
-        svg,
-        ...Array.from(svg.querySelectorAll<SVGElement>('*')),
-      ];
+      const originals = [chart, ...Array.from(chart.querySelectorAll<SVGElement>('*'))];
+      const elements = [svg, ...Array.from(svg.querySelectorAll<SVGElement>('*'))];
       const paint = [
         'fill',
         'fill-opacity',
@@ -164,14 +149,8 @@ async function snapshotCharts(source: HTMLDivElement, copy: HTMLDivElement) {
 function copySurface(source: HTMLDivElement, prefix: string) {
   const copy = source.cloneNode(true) as HTMLDivElement;
   rebaseIds(copy, prefix);
-  const originals = [
-    source,
-    ...Array.from(source.querySelectorAll<HTMLElement>('*')),
-  ];
-  const elements = [
-    copy,
-    ...Array.from(copy.querySelectorAll<HTMLElement>('*')),
-  ];
+  const originals = [source, ...Array.from(source.querySelectorAll<HTMLElement>('*'))];
+  const elements = [copy, ...Array.from(copy.querySelectorAll<HTMLElement>('*'))];
   elements.forEach((element, index) => {
     // Freeze nested chart reveals and progressive backdrop filters while the
     // browser paints each clipped band once. No filters animate on these bands.
@@ -193,11 +172,7 @@ function copySurface(source: HTMLDivElement, prefix: string) {
 
 /** Tall panels use cached bands instead of re-running a full-height SVG
  * displacement + blur pass each frame. Only transform and opacity animate. */
-export function TicketCornerGenieSurface({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function TicketCornerGenieSurface({ children }: { children: ReactNode }) {
   const { isClosing: exiting = false } = useDialogContext();
   adoptStyleSheet('bloom-ticket-detail', CSS);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -239,8 +214,7 @@ export function TicketCornerGenieSurface({
       const dockY = Math.max(0, window.innerHeight - bounds.bottom) + 24;
       const count = Math.min(36, Math.max(16, Math.ceil(height / 32)));
       const fragment = document.createDocumentFragment();
-      const slices: { element: HTMLDivElement; top: number; bottom: number }[] =
-        [];
+      const slices: { element: HTMLDivElement; top: number; bottom: number }[] = [];
       const template = copySurface(surface, `genie-${crypto.randomUUID()}`);
       if (root.dataset.entered === 'true') {
         await snapshotCharts(surface, template);
@@ -261,15 +235,7 @@ export function TicketCornerGenieSurface({
         element.className = styles.band;
         element.style.width = `${width}px`;
         element.style.height = `${bottom - top}px`;
-        element.style.transform = bandTransform(
-          width,
-          height,
-          top,
-          bottom,
-          dockX,
-          dockY,
-          0,
-        );
+        element.style.transform = bandTransform(width, height, top, bottom, dockX, dockY, 0);
         const copy = template.cloneNode(true) as HTMLDivElement;
         // Definitions in each slice need unique IDs (e.g. chart gradients).
         rebaseIds(copy, `genie-band-${index}-${crypto.randomUUID()}`);
@@ -285,11 +251,9 @@ export function TicketCornerGenieSurface({
         slices.push({ element, top, bottom });
       }
       bands.replaceChildren(fragment);
-      bands
-        .querySelectorAll<HTMLElement>('[data-genie-scroll]')
-        .forEach((element) => {
-          element.scrollTop = Number(element.dataset.genieScroll);
-        });
+      bands.querySelectorAll<HTMLElement>('[data-genie-scroll]').forEach((element) => {
+        element.scrollTop = Number(element.dataset.genieScroll);
+      });
       if (!exiting) {
         // Paint at the final resolution before shrinking to the dock. Starting
         // cold at a near-zero scale makes Chromium rasterize growing layers
@@ -314,15 +278,7 @@ export function TicketCornerGenieSurface({
         animations.push(
           element.animate(
             progress.map((value) => ({
-              transform: bandTransform(
-                width,
-                height,
-                top,
-                bottom,
-                dockX,
-                dockY,
-                value,
-              ),
+              transform: bandTransform(width, height, top, bottom, dockX, dockY, value),
             })),
             { duration: DURATION, fill: 'both', easing: 'linear' },
           ),
@@ -370,13 +326,9 @@ export function TicketCornerGenieSurface({
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
-      if (
-        clock &&
-        (clock.playState === 'running' || clock.playState === 'paused')
-      ) {
+      if (clock && (clock.playState === 'running' || clock.playState === 'paused')) {
         progressRef.current =
-          from +
-          (to - from) * smooth(Number(clock.currentTime ?? 0) / DURATION);
+          from + (to - from) * smooth(Number(clock.currentTime ?? 0) / DURATION);
       }
       animations.forEach((animation) => animation.cancel());
       bands.replaceChildren();
@@ -385,22 +337,18 @@ export function TicketCornerGenieSurface({
 
   return (
     <TicketGenieEnteredContext.Provider value={entered}>
-    <div ref={rootRef} className={styles.genie}>
-      <div
-        ref={shadowRef}
-        aria-hidden
-        className={styles.shadow}
-        style={{ opacity: reducedMotion ? 1 : 0 }}
-      />
-      <div
-        ref={surfaceRef}
-        className={styles.surface}
-        style={{ opacity: reducedMotion ? 1 : 0 }}
-      >
-        {children}
+      <div ref={rootRef} className={styles.genie}>
+        <div
+          ref={shadowRef}
+          aria-hidden
+          className={styles.shadow}
+          style={{ opacity: reducedMotion ? 1 : 0 }}
+        />
+        <div ref={surfaceRef} className={styles.surface} style={{ opacity: reducedMotion ? 1 : 0 }}>
+          {children}
+        </div>
+        <div ref={bandsRef} aria-hidden inert className={styles.bands} />
       </div>
-      <div ref={bandsRef} aria-hidden inert className={styles.bands} />
-    </div>
     </TicketGenieEnteredContext.Provider>
   );
 }

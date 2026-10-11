@@ -8,8 +8,12 @@ export type { TextFieldSize } from './shared';
 
 export type TextFieldProps = React.PropsWithChildren<
   {
+    /** Classes on the layout host: width, height and padding. */
+    className?: string;
+    /** Classes on the inset surface: background, border/ring and radius. State paint remains authoritative. */
+    chromeClassName?: string;
     invalid?: boolean;
-  isInvalid?: boolean;
+    isInvalid?: boolean;
     /**
      * Paint the whole field disabled: the dimmed fill,
      * no ring, dimmed adornments, and a non-editable input. An input with
@@ -31,14 +35,11 @@ export type TextFieldProps = React.PropsWithChildren<
   } & ViewStyleProp
 >;
 
-export type TextFieldInputProps = Omit<
-  TextInputProps,
-  'value' | 'onChangeText' | 'placeholder'
-> & {
+export type TextFieldInputProps = Omit<TextInputProps, 'value' | 'onChangeText' | 'placeholder'> & {
   label: string;
   value?: string;
   onValueChange?: (value: string) => void;
-    onChangeText?: (value: string) => void;
+  onChangeText?: (value: string) => void;
   invalid?: boolean;
   isInvalid?: boolean;
   /** Disable the input; the field around it paints disabled. */
@@ -95,14 +96,16 @@ export type TextFieldHintProps = React.PropsWithChildren<
   {
     /** Paint the hint in the error colour. */
     invalid?: boolean;
-  isInvalid?: boolean;
+    isInvalid?: boolean;
     nativeID?: string;
   } & TextStyleProp
 >;
 
 export interface TextFieldIconProps {
-  /** A Bloom icon component, drawn at 20px. */
+  /** A Bloom icon component. */
   icon: React.ComponentType<SVGIconProps>;
+  /** Icon edge in pixels. Default 20. */
+  size?: number;
   /** `leading` (default) sits 2px before the input; `trailing` 8px after it. */
   position?: 'leading' | 'trailing';
 }

@@ -171,7 +171,13 @@ export function PictureInPicture({
   }
 
   return (
-    <Pressable role="button" accessibilityLabel={moveLabel} onPress={onMove} style={frame} testID={testID}>
+    <Pressable
+      role="button"
+      accessibilityLabel={moveLabel}
+      onPress={onMove}
+      style={frame}
+      testID={testID}
+    >
       {body}
     </Pressable>
   );

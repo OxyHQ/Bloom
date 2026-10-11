@@ -25,18 +25,12 @@ export function createWander(seed: number, attentive = false): WanderState {
     travel: 0.2,
     hold: 0,
   };
-  state.hold = attentive
-    ? 0.35 + random(state) * 0.55
-    : 0.4 + random(state) * 1.3;
+  state.hold = attentive ? 0.35 + random(state) * 0.55 : 0.4 + random(state) * 1.3;
   return state;
 }
 
 /** Runs on active animation time, so pausing or hiding the avatar freezes its gaze. */
-export function advanceWander(
-  state: WanderState,
-  seconds: number,
-  attentive = false,
-): GazePoint {
+export function advanceWander(state: WanderState, seconds: number, attentive = false): GazePoint {
   state.elapsed += Math.max(0, seconds);
   while (state.elapsed >= state.travel + state.hold) {
     state.elapsed -= state.travel + state.hold;
@@ -54,11 +48,7 @@ export function advanceWander(
       state.travel =
         0.38 +
         random(state) * 0.24 +
-        Math.hypot(
-          state.target[0] - state.from[0],
-          state.target[1] - state.from[1],
-        ) *
-          0.22;
+        Math.hypot(state.target[0] - state.from[0], state.target[1] - state.from[1]) * 0.22;
       state.hold = 0.45 + random(state) * 1.05;
       continue;
     }
@@ -66,16 +56,12 @@ export function advanceWander(
     let next: GazePoint = [0, 0];
     for (let attempt = 0; attempt < 4; attempt++) {
       next = [(random(state) * 2 - 1) * range, (random(state) * 2 - 1) * range];
-      if (Math.hypot(next[0] - state.from[0], next[1] - state.from[1]) > 0.3)
-        break;
+      if (Math.hypot(next[0] - state.from[0], next[1] - state.from[1]) > 0.3) break;
     }
     state.target = next;
     state.travel = 0.16 + random(state) * 0.3;
     // A quick checking glance sometimes interrupts the longer, relaxed holds.
-    state.hold =
-      random(state) < 0.2
-        ? 0.25 + random(state) * 0.45
-        : 1 + random(state) * 2.6;
+    state.hold = random(state) < 0.2 ? 0.25 + random(state) * 0.45 : 1 + random(state) * 2.6;
   }
   const t = Math.min(state.elapsed / state.travel, 1);
   const ease = t * t * (3 - 2 * t);

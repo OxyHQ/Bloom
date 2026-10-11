@@ -56,9 +56,14 @@ import { InputGroup } from '../input-group';
 import { InputOtp } from '../input-otp';
 import { MailRecipientField } from '../mail-compose';
 import { PaymentMethodList } from '../payment-method';
-import { Radio, RadioGroup } from '../radio';
+import { Radio, RadioChip, RadioGroup } from '../radio';
 import { RatingInput } from '../rating';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import { Search } from '../search';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { Select, SelectTrigger, SelectValue } from '../select';
 import { Slider } from '../slider';
 import { Stepper } from '../stepper';
@@ -118,6 +123,17 @@ const SUBJECTS: Subject[] = [
     lastResortName: 'Hex color',
   },
   {
+    name: 'search',
+    render: (p) => <Search testID={TID} value="query" onClearText={() => {}} {...p} />,
+    ownNameProp: 'accessibilityLabel',
+    isInert: inputInert,
+    node: 'textInput',
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'Search',
+  },
+  {
     name: 'switch',
     render: (p) => <Switch testID={TID} checked={false} onCheckedChange={() => {}} {...p} />,
     ownNameProp: 'accessibilityLabel',
@@ -162,7 +178,9 @@ const SUBJECTS: Subject[] = [
   },
   {
     name: 'slider',
-    render: (p) => <Slider testID={TID} value={2} onValueChange={() => {}} min={0} max={10} {...p} />,
+    render: (p) => (
+      <Slider testID={TID} value={2} onValueChange={() => {}} min={0} max={10} {...p} />
+    ),
     ownNameProp: 'accessibilityLabel',
     isInert: viewInert,
     describedBy: true,
@@ -223,9 +241,7 @@ const SUBJECTS: Subject[] = [
     // contract lands on. Its own `label` is the "To" gutter beside the input,
     // so it is `adjacent` — the field only fills the gap when there is none.
     name: 'mail-compose',
-    render: (p) => (
-      <MailRecipientField recipients={[]} onRecipientsChange={() => {}} {...p} />
-    ),
+    render: (p) => <MailRecipientField recipients={[]} onRecipientsChange={() => {}} {...p} />,
     ownNameProp: 'label',
     isInert: inputInert,
     node: 'textInput',
@@ -537,7 +553,13 @@ describe('a disabled field reaches the controls INSIDE a composite', () => {
         <InputGroup testID="group">
           <TextFieldInput testID="group-input" label="Domain" value="" onChangeText={() => {}} />
           <InputGroupAddon>
-            <Button testID="group-button" size="sm" appearance="subtle" tone="accent" onPress={() => {}}>
+            <Button
+              testID="group-button"
+              size="sm"
+              appearance="subtle"
+              tone="accent"
+              onPress={() => {}}
+            >
               Go
             </Button>
           </InputGroupAddon>
@@ -573,7 +595,12 @@ describe('the contract is opt-IN', () => {
     const screen = wrap(
       <Field label="Anything" disabled error="Broken">
         <TextField>
-          <Switch testID="named" checked={false} onCheckedChange={() => {}} accessibilityLabel="Own name" />
+          <Switch
+            testID="named"
+            checked={false}
+            onCheckedChange={() => {}}
+            accessibilityLabel="Own name"
+          />
         </TextField>
       </Field>,
     );
@@ -583,7 +610,9 @@ describe('the contract is opt-IN', () => {
   });
 
   it('changes nothing outside a Field', () => {
-    const screen = wrap(<Switch testID="bare" checked={false} onCheckedChange={() => {}} accessibilityLabel="Bare" />);
+    const screen = wrap(
+      <Switch testID="bare" checked={false} onCheckedChange={() => {}} accessibilityLabel="Bare" />,
+    );
     const props = screen.getByTestId('bare').props as Props;
     expect(props.accessibilityLabel).toBe('Bare');
     expect(props.nativeID).toBeUndefined();
@@ -591,4 +620,19 @@ describe('the contract is opt-IN', () => {
     expect(props['aria-invalid']).toBeUndefined();
     expect(props.disabled).toBeFalsy();
   });
+});
+
+it('RadioChip joins Field naming, disabled, invalid and description constraints', () => {
+  const api = render(
+    <BloomThemeProvider>
+      <Field label="Size" disabled error="Choose a size">
+        <RadioChip value="small" label="Small" disabled={false} testID="chip-field" />
+      </Field>
+    </BloomThemeProvider>,
+  );
+  const control = api.getByTestId('chip-field');
+  expect(control.props.accessibilityLabel).toBe('Small');
+  expect(control.props.disabled).toBe(true);
+  expect(control.props['aria-invalid']).toBe(true);
+  expect(control.props['aria-describedby']).toBeTruthy();
 });

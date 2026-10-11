@@ -22,15 +22,16 @@ export interface CartPanelMessages {
   tip: string;
 }
 
-export const CART_PANEL_MESSAGES: MessageCatalog<CartPanelMessages> = defineMessages<CartPanelMessages>('CART_PANEL_MESSAGES', {
-  basket: 'Basket',
-  checkout: 'Go to checkout',
-  emptyTitle: 'Your basket is empty',
-  emptyDescription: 'Add something from the menu and it will show up here.',
-  soldOut: 'Sold out',
-  removeItem: (name) => `Remove ${name}`,
-  originally: (price, original) => `${price}, originally ${original}`,
-  promoCode: 'Promo code',
-  apply: 'Apply',
-  tip: 'Tip',
-});
+export const CART_PANEL_MESSAGES: MessageCatalog<CartPanelMessages> =
+  defineMessages<CartPanelMessages>('CART_PANEL_MESSAGES', {
+    basket: 'Basket',
+    checkout: 'Go to checkout',
+    emptyTitle: 'Your basket is empty',
+    emptyDescription: 'Add something from the menu and it will show up here.',
+    soldOut: 'Sold out',
+    removeItem: (name) => `Remove ${name}`,
+    originally: (price, original) => `${price}, originally ${original}`,
+    promoCode: 'Promo code',
+    apply: 'Apply',
+    tip: 'Tip',
+  });

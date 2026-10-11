@@ -14,7 +14,7 @@ import {
 
 const meta: Meta<typeof Admonition> = {
   argTypes: {
-    "type": { control: 'select', options: ["info","tip","warning","error","apology"] }
+    type: { control: 'select', options: ['info', 'tip', 'warning', 'error', 'apology'] },
   },
   title: 'Base/Admonition',
   component: Admonition,
@@ -32,21 +32,13 @@ export const Types: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ maxWidth: '100%', gap: 12, width: 460 }}>
-      <Admonition type="info">
-        Your session is signed in on three devices.
-      </Admonition>
-      <Admonition type="tip">
-        Press ⌘K anywhere to open the command palette.
-      </Admonition>
+      <Admonition type="info">Your session is signed in on three devices.</Admonition>
+      <Admonition type="tip">Press ⌘K anywhere to open the command palette.</Admonition>
       <Admonition type="warning">
         Changing your handle breaks existing links to your profile.
       </Admonition>
-      <Admonition type="error">
-        We could not reach the server. Nothing was saved.
-      </Admonition>
-      <Admonition type="apology">
-        This part of the app is still being rebuilt.
-      </Admonition>
+      <Admonition type="error">We could not reach the server. Nothing was saved.</Admonition>
+      <Admonition type="apology">This part of the app is still being rebuilt.</Admonition>
     </View>
   ),
 };
@@ -64,9 +56,7 @@ export const WithAction: Story = {
         <AdmonitionRow>
           <AdmonitionIcon />
           <AdmonitionContent>
-            <AdmonitionText>
-              Two-factor authentication is off for this account.
-            </AdmonitionText>
+            <AdmonitionText>Two-factor authentication is off for this account.</AdmonitionText>
             <AdmonitionButton onPress={() => {}}>Turn on</AdmonitionButton>
           </AdmonitionContent>
         </AdmonitionRow>

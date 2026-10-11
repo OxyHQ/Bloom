@@ -67,7 +67,7 @@ export function resolveImageUri(
   variant: string,
 ): string | undefined {
   if (!source) return undefined;
-  return isImageUrl(source) ? source : resolver?.(source, variant) ?? undefined;
+  return isImageUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
 }
 
 // ---------------------------------------------------------------------------

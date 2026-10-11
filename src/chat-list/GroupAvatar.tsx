@@ -33,9 +33,30 @@ interface ClusterLayout {
 }
 
 const LAYOUTS: Record<2 | 3 | 4, ClusterLayout> = {
-  2: { ratio: 0.62, positions: [[0, 0], [1, 1]] },
-  3: { ratio: 0.55, positions: [[0.5, 0], [0, 1], [1, 1]] },
-  4: { ratio: 0.48, positions: [[0, 0], [1, 0], [0, 1], [1, 1]] },
+  2: {
+    ratio: 0.62,
+    positions: [
+      [0, 0],
+      [1, 1],
+    ],
+  },
+  3: {
+    ratio: 0.55,
+    positions: [
+      [0.5, 0],
+      [0, 1],
+      [1, 1],
+    ],
+  },
+  4: {
+    ratio: 0.48,
+    positions: [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+    ],
+  },
 };
 
 export const GROUP_AVATAR_MAX_FACES = 4;
@@ -57,7 +78,10 @@ function GroupAvatarComponent({
   const named = accessibilityLabel !== undefined && accessibilityLabel !== '';
   const a11y = named
     ? { accessibilityLabel, role: 'img' as const }
-    : { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' as const };
+    : {
+        accessibilityElementsHidden: true,
+        importantForAccessibility: 'no-hide-descendants' as const,
+      };
 
   const face = (entry: ChatFace, key: number, diameter: number) => (
     <Avatar

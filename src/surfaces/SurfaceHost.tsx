@@ -1,9 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useSyncExternalStore,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { BackHandler, Platform } from 'react-native';
 
 import { useDialogControl } from '../dialog/context';
@@ -134,9 +129,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
         startOpen={status !== 'closing'}
         {...dialogProps}
       >
-        <SurfaceContext.Provider value={controls}>
-          {entry.render(controls)}
-        </SurfaceContext.Provider>
+        <SurfaceContext.Provider value={controls}>{entry.render(controls)}</SurfaceContext.Provider>
       </Dialog>
     );
   }

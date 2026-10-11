@@ -80,7 +80,8 @@ function Marker({ step, state, geometry, label, surface, testID }: MarkerProps) 
   const Glyph =
     geometry.glyph === 0
       ? undefined
-      : (step.icon ?? (state === 'done' ? RiCheckLine : state === 'failed' ? RiCloseLine : undefined));
+      : (step.icon ??
+        (state === 'done' ? RiCheckLine : state === 'failed' ? RiCloseLine : undefined));
 
   return (
     <View

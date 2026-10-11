@@ -12,7 +12,14 @@ export interface PaymentStatusMessages {
   reference: string;
 }
 
-export const PAYMENT_STATUS_MESSAGES: MessageCatalog<PaymentStatusMessages> = defineMessages<PaymentStatusMessages>('PAYMENT_STATUS_MESSAGES', {
-  states: { authorising: 'Authorising', paid: 'Paid', failed: 'Payment failed', refunded: 'Refunded', pending: 'Payment pending' },
-  reference: 'Reference',
-});
+export const PAYMENT_STATUS_MESSAGES: MessageCatalog<PaymentStatusMessages> =
+  defineMessages<PaymentStatusMessages>('PAYMENT_STATUS_MESSAGES', {
+    states: {
+      authorising: 'Authorising',
+      paid: 'Paid',
+      failed: 'Payment failed',
+      refunded: 'Refunded',
+      pending: 'Payment pending',
+    },
+    reference: 'Reference',
+  });

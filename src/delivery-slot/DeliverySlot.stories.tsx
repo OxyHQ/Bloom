@@ -26,7 +26,13 @@ const DAYS: DeliveryDay[] = [
   { id: 'thu', weekday: 'Thu', day: '23', accessibilityLabel: 'Thursday 23 October' },
   { id: 'fri', weekday: 'Fri', day: '24', accessibilityLabel: 'Friday 24 October' },
   { id: 'sat', weekday: 'Sat', day: '25', accessibilityLabel: 'Saturday 25 October' },
-  { id: 'sun', weekday: 'Sun', day: '26', disabled: true, accessibilityLabel: 'Sunday 26 October, closed' },
+  {
+    id: 'sun',
+    weekday: 'Sun',
+    day: '26',
+    disabled: true,
+    accessibilityLabel: 'Sunday 26 October, closed',
+  },
   { id: 'mon', weekday: 'Mon', day: '27', accessibilityLabel: 'Monday 27 October' },
   { id: 'tue', weekday: 'Tue', day: '28', accessibilityLabel: 'Tuesday 28 October' },
   { id: 'wed', weekday: 'Wed', day: '29', accessibilityLabel: 'Wednesday 29 October' },
@@ -36,7 +42,13 @@ const WINDOWS: Record<string, DeliveryWindow[]> = {
   thu: [
     { id: 'thu-1', label: '09:00 – 11:00', price: 'Free', capacity: '2 left' },
     { id: 'thu-2', label: '11:00 – 13:00', soldOut: true },
-    { id: 'thu-3', label: '17:00 – 19:00', tier: 'express', price: '+€3.50', capacity: 'Almost full' },
+    {
+      id: 'thu-3',
+      label: '17:00 – 19:00',
+      tier: 'express',
+      price: '+€3.50',
+      capacity: 'Almost full',
+    },
   ],
   fri: [
     { id: 'fri-1', label: '08:00 – 10:00', price: 'Free' },

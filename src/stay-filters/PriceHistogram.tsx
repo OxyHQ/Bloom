@@ -41,7 +41,15 @@ const BAR_GAP = 2;
 const BAR_RADIUS = 3;
 const MIN_BAR = 2;
 
-function PriceHistogramComponent({ buckets, min, max, value, height = 64, style, testID }: PriceHistogramProps) {
+function PriceHistogramComponent({
+  buckets,
+  min,
+  max,
+  value,
+  height = 64,
+  style,
+  testID,
+}: PriceHistogramProps) {
   const theme = useTheme();
   const tallest = buckets.reduce((m, n) => Math.max(m, n), 0);
   const selected = histogramSelection(buckets.length, min, max, value);
@@ -57,7 +65,8 @@ function PriceHistogramComponent({ buckets, min, max, value, height = 64, style,
       style={[{ height, flexDirection: 'row', alignItems: 'flex-end', gap: BAR_GAP }, style]}
     >
       {buckets.map((count, i) => {
-        const barHeight = count <= 0 || tallest <= 0 ? 0 : Math.max(MIN_BAR, (count / tallest) * height);
+        const barHeight =
+          count <= 0 || tallest <= 0 ? 0 : Math.max(MIN_BAR, (count / tallest) * height);
         return (
           <View
             key={i}

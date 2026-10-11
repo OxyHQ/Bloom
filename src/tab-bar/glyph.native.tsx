@@ -27,12 +27,7 @@ export function TabBarGlyph({ item, tint, size, active }: TabBarGlyphProps) {
     // name renders nothing rather than crashing, which is why no runtime
     // validation is warranted.
     return (
-      <SymbolView
-        name={item.sfSymbol as SFSymbol}
-        tintColor={tint}
-        size={size}
-        weight="semibold"
-      />
+      <SymbolView name={item.sfSymbol as SFSymbol} tintColor={tint} size={size} weight="semibold" />
     );
   }
 

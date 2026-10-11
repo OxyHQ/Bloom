@@ -73,9 +73,7 @@ describe('MailRow on a touch pointer', () => {
   });
 
   it('takes the drag by DEFAULT on a touch pointer, with no prop asked of the app', () => {
-    const screen = mount(
-      <MailRow {...ROW} swipeActions={{ right: [DELETE] }} testID="r" />,
-    );
+    const screen = mount(<MailRow {...ROW} swipeActions={{ right: [DELETE] }} testID="r" />);
     expect(screen.getByTestId('r-swipe', HIDDEN)).toBeTruthy();
   });
 

@@ -87,7 +87,8 @@ function MiniPlayerContent({
   const pan = useMemo(
     () =>
       PanResponder.create({
-        onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
+        onMoveShouldSetPanResponder: (_e, g) =>
+          Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
         onPanResponderRelease: (_e, g) => {
           if (g.dx <= -MINI_PLAYER_SWIPE) swipe.current.onNext?.();
           else if (g.dx >= MINI_PLAYER_SWIPE) swipe.current.onPrevious?.();
@@ -139,7 +140,9 @@ function MiniPlayerContent({
           </View>
         </View>
       </Pressable>
-      {onLikedChange ? <LikeButton liked={liked} onLikedChange={onLikedChange} testID={id('like')} /> : null}
+      {onLikedChange ? (
+        <LikeButton liked={liked} onLikedChange={onLikedChange} testID={id('like')} />
+      ) : null}
       <PlayButton
         playing={playing}
         onPress={onPlayPause}
@@ -198,8 +201,12 @@ function MiniPlayerComponent(props: MiniPlayerProps) {
     () => resolveMiniPlayerSurface(theme, ctx?.colorPreset ?? 'oxy', props.artworkColor),
     [theme, ctx?.colorPreset, props.artworkColor],
   );
-  const ownFill = StyleSheet.flatten(props.style)?.backgroundColor ?? (surface.tinted ? surface.background : undefined);
-  const material = useResolvedSurface({ fill: ownFill === undefined ? undefined : String(ownFill) });
+  const ownFill =
+    StyleSheet.flatten(props.style)?.backgroundColor ??
+    (surface.tinted ? surface.background : undefined);
+  const material = useResolvedSurface({
+    fill: ownFill === undefined ? undefined : String(ownFill),
+  });
   return (
     <Surface
       {...webDataSet({ bloomMiniPlayer: surface.tinted ? 'tinted' : 'neutral' })}

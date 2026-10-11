@@ -112,15 +112,26 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     testID,
   }) => {
     const theme = useTheme();
-    const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+    const { size, tone } = useBloomAppearance(
+      { size: sizeProp, tone: toneProp },
+      { size: 'md', tone: 'accent' },
+    );
     const sizeConfig = SIZE_CONFIG[size];
     const effectiveIconSize = iconSize ?? sizeConfig.spinner;
-    const spinnerColor = className ? 'currentColor' : (color ?? resolveBloomColors(theme.colors, tone, 'solid').background);
+    const spinnerColor = className
+      ? 'currentColor'
+      : (color ?? resolveBloomColors(theme.colors, tone, 'solid').background);
     const textColor = color ?? theme.colors.textSecondary;
 
     return (
-      <LoadingRoot accessibilityLabel={accessibilityLabel} style={[styles.container, style]} testID={testID}>
-        {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} className={className} />}
+      <LoadingRoot
+        accessibilityLabel={accessibilityLabel}
+        style={[styles.container, style]}
+        testID={testID}
+      >
+        {spinnerIcon ?? (
+          <SpinnerIcon size={effectiveIconSize} color={spinnerColor} className={className} />
+        )}
         {showText && text && (
           <Text
             style={[
@@ -148,21 +159,23 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     testID,
   }) => {
     const theme = useTheme();
-    const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+    const { size, tone } = useBloomAppearance(
+      { size: sizeProp, tone: toneProp },
+      { size: 'md', tone: 'accent' },
+    );
     const sizeConfig = SIZE_CONFIG[size];
     const spinnerColor = color ?? resolveBloomColors(theme.colors, tone, 'solid').background;
     const textColor = theme.colors.textSecondary;
 
     return (
-      <LoadingRoot accessibilityLabel={accessibilityLabel} style={[styles.inlineContainer, style]} testID={testID}>
+      <LoadingRoot
+        accessibilityLabel={accessibilityLabel}
+        style={[styles.inlineContainer, style]}
+        testID={testID}
+      >
         {spinnerIcon ?? <SpinnerIcon size={sizeConfig.spinner} color={spinnerColor} />}
         {text && (
-          <Text
-            style={[
-              { color: textColor, fontSize: sizeConfig.text, marginLeft: 8 },
-              textStyle,
-            ]}
-          >
+          <Text style={[{ color: textColor, fontSize: sizeConfig.text, marginLeft: 8 }, textStyle]}>
             {text}
           </Text>
         )}

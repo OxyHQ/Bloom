@@ -24,9 +24,31 @@ export const STAY_SEARCH_TILE_SIZE = 48;
 export const STAY_SEARCH_TILE_RADIUS = 12;
 
 /** A bar's labels in one language; the search button's word comes from the common catalog. */
-export function staySearchBarLabels(messages: StaySearchMessages, search: string): StaySearchBarLabels {
-  const { where, checkIn, checkOut, when, who, destinationPlaceholder, datesPlaceholder, guestsPlaceholder } = messages;
-  return { where, checkIn, checkOut, when, who, destinationPlaceholder, datesPlaceholder, guestsPlaceholder, search };
+export function staySearchBarLabels(
+  messages: StaySearchMessages,
+  search: string,
+): StaySearchBarLabels {
+  const {
+    where,
+    checkIn,
+    checkOut,
+    when,
+    who,
+    destinationPlaceholder,
+    datesPlaceholder,
+    guestsPlaceholder,
+  } = messages;
+  return {
+    where,
+    checkIn,
+    checkOut,
+    when,
+    who,
+    destinationPlaceholder,
+    datesPlaceholder,
+    guestsPlaceholder,
+    search,
+  };
 }
 
 /** The English labels. The components read the locale's catalog instead. */
@@ -37,7 +59,8 @@ export const DEFAULT_STAY_SEARCH_BAR_LABELS: StaySearchBarLabels = staySearchBar
 
 export const DEFAULT_GUEST_LABELS: Record<GuestKind, string> = STAY_SEARCH_MESSAGES.en.guests;
 
-export const DEFAULT_GUEST_DESCRIPTIONS: Record<GuestKind, string> = STAY_SEARCH_MESSAGES.en.guestDescriptions;
+export const DEFAULT_GUEST_DESCRIPTIONS: Record<GuestKind, string> =
+  STAY_SEARCH_MESSAGES.en.guestDescriptions;
 
 export const GUEST_KINDS: readonly GuestKind[] = ['adults', 'children', 'infants', 'pets'];
 
@@ -49,6 +72,5 @@ export function dateFlexibilityOptions(messages: StaySearchMessages): DateFlexib
   ];
 }
 
-export const DEFAULT_DATE_FLEXIBILITY_OPTIONS: readonly DateFlexibilityOption[] = dateFlexibilityOptions(
-  STAY_SEARCH_MESSAGES.en,
-);
+export const DEFAULT_DATE_FLEXIBILITY_OPTIONS: readonly DateFlexibilityOption[] =
+  dateFlexibilityOptions(STAY_SEARCH_MESSAGES.en);

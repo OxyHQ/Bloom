@@ -7,9 +7,7 @@ import { CARRIER_QUOTE_MESSAGES } from './messages';
  * Every default word the card and the list draw, in English. The components
  * speak the locale's (`CARRIER_QUOTE_MESSAGES`, via `BloomProvider locale`).
  */
-export const CARRIER_QUOTE_LABELS: Required<
-  Omit<CarrierQuoteLabels, 'marks' | 'sortOptions'>
-> & {
+export const CARRIER_QUOTE_LABELS: Required<Omit<CarrierQuoteLabels, 'marks' | 'sortOptions'>> & {
   marks: Record<CarrierQuoteMark, string>;
   sortOptions: Record<CarrierQuoteSort, string>;
 } = CARRIER_QUOTE_MESSAGES.en.labels;

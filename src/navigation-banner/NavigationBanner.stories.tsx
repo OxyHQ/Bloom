@@ -56,13 +56,53 @@ function MockMap({
         justifyContent: 'space-between',
       }}
     >
-      <View style={{ position: 'absolute', left: '6%', top: '14%', width: '38%', height: '34%', borderRadius: 20, backgroundColor: t.park }} />
-      <View style={{ position: 'absolute', left: '56%', top: '52%', width: '38%', height: '34%', borderRadius: 20, backgroundColor: t.park }} />
+      <View
+        style={{
+          position: 'absolute',
+          left: '6%',
+          top: '14%',
+          width: '38%',
+          height: '34%',
+          borderRadius: 20,
+          backgroundColor: t.park,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          left: '56%',
+          top: '52%',
+          width: '38%',
+          height: '34%',
+          borderRadius: 20,
+          backgroundColor: t.park,
+        }}
+      />
       {[0.34, 0.72].map((top) => (
-        <View key={`h${top}`} style={{ position: 'absolute', left: 0, right: 0, top: height * top, height: 10, backgroundColor: t.road }} />
+        <View
+          key={`h${top}`}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: height * top,
+            height: 10,
+            backgroundColor: t.road,
+          }}
+        />
       ))}
       {[0.3, 0.7].map((left) => (
-        <View key={`v${left}`} style={{ position: 'absolute', top: 0, bottom: 0, left: `${left * 100}%`, width: 10, backgroundColor: t.road }} />
+        <View
+          key={`v${left}`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: `${left * 100}%`,
+            width: 10,
+            backgroundColor: t.road,
+          }}
+        />
       ))}
       {children}
     </View>
@@ -102,7 +142,11 @@ export const Guiding: Story = {
         testID="banner"
       />
       <Caption>Without a following maneuver</Caption>
-      <NavigationBanner maneuver="roundabout" distance="1.2 km" instruction="Take the third exit onto Ronda del Nord" />
+      <NavigationBanner
+        maneuver="roundabout"
+        distance="1.2 km"
+        instruction="Take the third exit onto Ronda del Nord"
+      />
       <Caption>Without a distance — the street becomes the headline</Caption>
       <NavigationBanner maneuver="arrive" instruction="Arriving at Plaça de les Bruixes" />
       <Caption>A long street name, wrapping to two lines</Caption>
@@ -129,14 +173,27 @@ export const WithLanesAndLimit: Story = {
         then="onto Carrer de la Séquia"
         testID="full"
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+        >
           <LaneGuidance lanes={LANES} testID="lanes" />
           <SpeedLimitPill limit="80" unit="km/h" testID="limit" />
         </View>
       </NavigationBanner>
       <Caption>Lane rows on their own — nothing allowed, one allowed, four allowed</Caption>
       <View style={{ gap: 12 }}>
-        <LaneGuidance lanes={[{ directions: ['left'] }, { directions: ['straight'] }, { directions: ['right'] }]} />
+        <LaneGuidance
+          lanes={[
+            { directions: ['left'] },
+            { directions: ['straight'] },
+            { directions: ['right'] },
+          ]}
+        />
         <LaneGuidance lanes={LANES} />
         <LaneGuidance
           lanes={[
@@ -163,9 +220,19 @@ export const OffRoute: Story = {
   render: () => (
     <Page>
       <Caption>Off the line — the maneuver stops being claimed at all</Caption>
-      <NavigationBanner state="off-route" maneuver="right" instruction="Head back to Carrer del Roure" testID="off" />
+      <NavigationBanner
+        state="off-route"
+        maneuver="right"
+        instruction="Head back to Carrer del Roure"
+        testID="off"
+      />
       <Caption>Working on a new one</Caption>
-      <NavigationBanner state="rerouting" maneuver="right" instruction="Keep going, a new route is on its way" testID="rerouting" />
+      <NavigationBanner
+        state="rerouting"
+        maneuver="right"
+        instruction="Keep going, a new route is on its way"
+        testID="rerouting"
+      />
     </Page>
   ),
 };
@@ -175,7 +242,13 @@ export const Arrival: Story = {
   render: () => (
     <Page>
       <Caption>Three readings of equal weight, and the way out</Caption>
-      <ArrivalBar arrival="18:42" remainingTime="24 min" remainingDistance="8.2 km" onEnd={() => {}} testID="arrival" />
+      <ArrivalBar
+        arrival="18:42"
+        remainingTime="24 min"
+        remainingDistance="8.2 km"
+        onEnd={() => {}}
+        testID="arrival"
+      />
       <Caption>Without an ending action</Caption>
       <ArrivalBar arrival="09:05" remainingTime="1 h 12 min" remainingDistance="104 km" />
     </Page>
@@ -188,22 +261,49 @@ export const OnAMap: Story = {
     <Page>
       <Caption>Pale</Caption>
       <MockMap tone="pale">
-        <NavigationBanner maneuver="right" distance="400 m" instruction="Carrer del Roure" thenManeuver="left" then="onto Passatge de l'Om">
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <NavigationBanner
+          maneuver="right"
+          distance="400 m"
+          instruction="Carrer del Roure"
+          thenManeuver="left"
+          then="onto Passatge de l'Om"
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}
+          >
             <LaneGuidance lanes={LANES} />
             <SpeedLimitPill limit="80" unit="km/h" />
           </View>
         </NavigationBanner>
-        <ArrivalBar arrival="18:42" remainingTime="24 min" remainingDistance="8.2 km" onEnd={() => {}} />
+        <ArrivalBar
+          arrival="18:42"
+          remainingTime="24 min"
+          remainingDistance="8.2 km"
+          onEnd={() => {}}
+        />
       </MockMap>
       <Caption>Night</Caption>
       <MockMap tone="night">
         <NavigationBanner maneuver="slight-left" distance="1.4 km" instruction="Ronda del Nord" />
-        <ArrivalBar arrival="23:18" remainingTime="52 min" remainingDistance="61 km" onEnd={() => {}} />
+        <ArrivalBar
+          arrival="23:18"
+          remainingTime="52 min"
+          remainingDistance="61 km"
+          onEnd={() => {}}
+        />
       </MockMap>
       <Caption>Satellite, off route</Caption>
       <MockMap tone="photo">
-        <NavigationBanner state="off-route" maneuver="right" instruction="Head back to Carrer del Roure" />
+        <NavigationBanner
+          state="off-route"
+          maneuver="right"
+          instruction="Head back to Carrer del Roure"
+        />
         <ArrivalBar arrival="—" remainingTime="—" remainingDistance="—" onEnd={() => {}} />
       </MockMap>
     </Page>

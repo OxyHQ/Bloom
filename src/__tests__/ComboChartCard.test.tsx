@@ -21,7 +21,11 @@ import { roundedBarPath, singleBarSlot } from '../chart-cards/rounded-bar-geomet
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const SESSIONS = [4200, 4800, 5600, 5200, 6400, 7100, 6800, 7600, 8400, 8100, 9200, 9800];
 const RATE = [2.4, 2.6, 3.1, 2.9, 3.4, 3.8, 3.6, 4.1, 4.4, 4.2, 4.8, 5.2];
-const DATA: ComboPoint[] = MONTHS.map((label, i) => ({ label, sessions: SESSIONS[i]!, rate: RATE[i]! }));
+const DATA: ComboPoint[] = MONTHS.map((label, i) => ({
+  label,
+  sessions: SESSIONS[i]!,
+  rate: RATE[i]!,
+}));
 const BAR: ComboSeries = { key: 'sessions', label: 'Sessions', format: formatNumber };
 const LINE: ComboSeries = { key: 'rate', label: 'Conversion', format: formatPercent };
 
@@ -35,7 +39,9 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 
 function layoutPlot(getByTestId: (id: string) => unknown, id: string, width = 448, height = 229) {
   act(() => {
-    fireEvent(getByTestId(id) as never, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height } } });
+    fireEvent(getByTestId(id) as never, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width, height } },
+    });
   });
 }
 
@@ -72,7 +78,14 @@ describe('combo chart geometry matches recharts', () => {
 describe('ComboChartCard', () => {
   it('reads "<title> · <line> <average>", the bar total and the delta', () => {
     const { getByTestId, getByText } = renderCard(
-      <ComboChartCard testID="combo" bar={BAR} line={LINE} data={DATA} delta={0.094} range="This year" />,
+      <ComboChartCard
+        testID="combo"
+        bar={BAR}
+        line={LINE}
+        data={DATA}
+        delta={0.094}
+        range="This year"
+      />,
     );
     expect(getByText('Sessions · Conversion 3.7%')).toBeTruthy();
     expect(getByTestId('combo-headline').props.children).toBe('83,200');
@@ -89,16 +102,24 @@ describe('ComboChartCard', () => {
       <ComboChartCard testID="combo" bar={BAR} line={LINE} data={DATA} />,
     );
     layoutPlot(getByTestId, 'combo-plot');
-    for (const label of ['0', '3.5K', '7K', '10.5K', '0%', '2%', '4%', '6%']) expect(getByText(label)).toBeTruthy();
+    for (const label of ['0', '3.5K', '7K', '10.5K', '0%', '2%', '4%', '6%'])
+      expect(getByText(label)).toBeTruthy();
 
-    const grid = (UNSAFE_getAllByType('Line' as never) as unknown as Node[]).map((l) => [l.props.x1, l.props.y1, l.props.x2, l.props.strokeDasharray]);
+    const grid = (UNSAFE_getAllByType('Line' as never) as unknown as Node[]).map((l) => [
+      l.props.x1,
+      l.props.y1,
+      l.props.x2,
+      l.props.strokeDasharray,
+    ]);
     expect(grid).toEqual([
       [44, 4, 408, '4 4'],
       [44, 199, 408, '4 4'],
     ]);
 
     const bar0 = getByTestId('combo-bar-0');
-    expect(bar0.props.d).toBe(roundedBarPath(44 + singleBarSlot(364 / 12, 0.22, 34).offset, 121, 17, 78, 8));
+    expect(bar0.props.d).toBe(
+      roundedBarPath(44 + singleBarSlot(364 / 12, 0.22, 34).offset, 121, 17, 78, 8),
+    );
     expect(bar0.props.fill).toBe(barTone!.color);
 
     const paths = UNSAFE_getAllByType('Path' as never) as unknown as Node[];
@@ -106,12 +127,18 @@ describe('ComboChartCard', () => {
     const stroke = paths.find((p) => p.props.strokeWidth === 2);
     expect(casing?.props.stroke).toBe(palette.surface);
     expect(stroke?.props.stroke).toBe(lineTone!.activeColor);
-    expect(String(stroke?.props.d).startsWith('M59.167,121C69.278,119.646,79.389,118.292,89.5,114.5')).toBe(true);
+    expect(
+      String(stroke?.props.d).startsWith('M59.167,121C69.278,119.646,79.389,118.292,89.5,114.5'),
+    ).toBe(true);
     expect(stroke?.props.strokeLinecap).toBe('round');
 
     const dots = UNSAFE_getAllByType('Circle' as never) as unknown as Node[];
     expect(dots).toHaveLength(12);
-    expect([dots[0]!.props.cx, dots[0]!.props.r, dots[0]!.props.strokeWidth]).toEqual([expect.closeTo(59.167, 3), 3, 2]);
+    expect([dots[0]!.props.cx, dots[0]!.props.r, dots[0]!.props.strokeWidth]).toEqual([
+      expect.closeTo(59.167, 3),
+      3,
+      2,
+    ]);
     expect(dots[11]!.props.cy).toBeCloseTo(30, 3);
   });
 
@@ -123,12 +150,16 @@ describe('ComboChartCard', () => {
     layoutPlot(getByTestId, 'combo-plot', 448, 196);
     expect(getByText('Jul · Conversion 3.6%')).toBeTruthy();
     expect(getByTestId('combo-headline').props.children).toBe('6,800');
-    expect(getByTestId('combo-bar-6').props).toMatchObject({ fill: barTone!.activeColor, opacity: 1 });
+    expect(getByTestId('combo-bar-6').props).toMatchObject({
+      fill: barTone!.activeColor,
+      opacity: 1,
+    });
     expect(getByTestId('combo-bar-5').props).toMatchObject({ fill: barTone!.color, opacity: 0.3 });
     const dot = UNSAFE_getByType(PulsingDot);
     expect(dot.props.color).toBe(lineTone!.activeColor);
     expect(dot.props.cx).toBeCloseTo(241.167, 3);
-    for (const text of ['Sessions · total', 'Conversion · this month', '3.6%']) expect(getByText(text)).toBeTruthy();
+    for (const text of ['Sessions · total', 'Conversion · this month', '3.6%'])
+      expect(getByText(text)).toBeTruthy();
     expect(getAllByText('6,800')).toHaveLength(2);
   });
 
@@ -140,7 +171,8 @@ describe('ComboChartCard', () => {
     let wrap = getByTestId('combo-plot').parent;
     while (wrap && resolvedStyle(wrap.props.style).height === undefined) wrap = wrap.parent;
     expect(resolvedStyle(wrap?.props.style).height).toBe(196);
-    for (const text of ['Sessions · total', 'Conversion · average']) expect(getByText(text)).toBeTruthy();
+    for (const text of ['Sessions · total', 'Conversion · average'])
+      expect(getByText(text)).toBeTruthy();
     expect(getAllByText('83,200')).toHaveLength(2);
     expect(getAllByText('3.7%').length).toBeGreaterThan(0);
   });
@@ -157,7 +189,13 @@ describe('ComboChartCard', () => {
 
   it('uses a custom caption', () => {
     const { getByText } = renderCard(
-      <ComboChartCard bar={BAR} line={LINE} data={DATA} activeIndex={0} caption={(row) => (row ? `${row.rate} rate` : 'rest')} />,
+      <ComboChartCard
+        bar={BAR}
+        line={LINE}
+        data={DATA}
+        activeIndex={0}
+        caption={(row) => (row ? `${row.rate} rate` : 'rest')}
+      />,
     );
     expect(getByText('Jan · 2.4 rate')).toBeTruthy();
   });
@@ -169,13 +207,22 @@ describe('ComboChartCard', () => {
       { id: 'q4', label: 'Last quarter', data: DATA.slice(9), delta: -0.028 },
     ];
     const { getByTestId, getByText } = renderCard(
-      <ComboChartCard testID="combo" bar={BAR} line={LINE} ranges={ranges} defaultRange="q4" onActiveIndexChange={onActiveIndexChange} />,
+      <ComboChartCard
+        testID="combo"
+        bar={BAR}
+        line={LINE}
+        ranges={ranges}
+        defaultRange="q4"
+        onActiveIndexChange={onActiveIndexChange}
+      />,
     );
     expect(getByText('-2.8%')).toBeTruthy();
     expect(getByTestId('combo-headline').props.children).toBe('27,100');
     layoutPlot(getByTestId, 'combo-plot');
     const surface = getByTestId('combo-plot-surface');
-    expect(surface.props.accessibilityLabel).toBe('Sessions chart: Sessions bars against Conversion line');
+    expect(surface.props.accessibilityLabel).toBe(
+      'Sessions chart: Sessions bars against Conversion line',
+    );
     act(() => {
       fireEvent(surface, 'pointerMove', { nativeEvent: { offsetX: 300, offsetY: 90 } });
     });
@@ -200,8 +247,12 @@ describe('ComboChartCard', () => {
       'dark',
     );
     layoutPlot(getByTestId, 'combo-plot');
-    const casing = (UNSAFE_getAllByType('Path' as never) as unknown as Node[]).find((p) => p.props.strokeWidth === 7);
+    const casing = (UNSAFE_getAllByType('Path' as never) as unknown as Node[]).find(
+      (p) => p.props.strokeWidth === 7,
+    );
     expect(casing?.props.stroke).toBe(palette.surface);
-    expect(cardFill(getByTestId('combo'))).toBe(resolveSurfaceTint(buildTheme('teal', 'dark').colors.card));
+    expect(cardFill(getByTestId('combo'))).toBe(
+      resolveSurfaceTint(buildTheme('teal', 'dark').colors.card),
+    );
   });
 });

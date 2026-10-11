@@ -18,7 +18,14 @@ import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
-import { ScreenScope, ScrollOffsetProvider, TopEdgeProvider, useClaimTopEdge, useTopEdgeInset, useScrollOffset } from '../layout';
+import {
+  ScreenScope,
+  ScrollOffsetProvider,
+  TopEdgeProvider,
+  useClaimTopEdge,
+  useTopEdgeInset,
+  useScrollOffset,
+} from '../layout';
 import { BottomEdgeProvider, useBottomEdgeInset, useClaimBottomEdge } from '../layout';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { DialogBody } from '../dialog/DialogContent';

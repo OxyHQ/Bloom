@@ -2,7 +2,11 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { useMessages } from '../locale/messages';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

@@ -76,7 +76,9 @@ export function resolveChatPeoplePaint(theme: Theme): ChatPeoplePaint {
     textTertiary: c.textTertiary,
     accent: accent[500],
     onAccent: c.primaryForeground,
-    accentSubtle: dark ? mixColor(c.background, accent[500], 0.22) : mixColor(c.background, accent[500], 0.12),
+    accentSubtle: dark
+      ? mixColor(c.background, accent[500], 0.22)
+      : mixColor(c.background, accent[500], 0.12),
     onAccentSubtle: dark ? accent[300] : accent[700],
     negative: dark ? red[400] : red[500],
     owner: dark ? amber[300] : amber[700],
@@ -110,10 +112,7 @@ export function resolveChatPeoplePaint(theme: Theme): ChatPeoplePaint {
  * and putting it at the top of the rail puts the least-used target where the
  * thumb naturally lands.
  */
-export const CONTACT_ALPHABET: readonly string[] = [
-  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
-  '#',
-];
+export const CONTACT_ALPHABET: readonly string[] = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''), '#'];
 
 /** The letters the rail shows: the caller's, else each section's own heading. */
 export function contactIndexLetters(
@@ -133,10 +132,7 @@ export function contactIndexLetters(
  * list that only has six letters in it, and pressing K must do nothing rather
  * than jump to whatever happens to be first.
  */
-export function contactSectionIndex(
-  sections: readonly ContactSection[],
-  letter: string,
-): number {
+export function contactSectionIndex(sections: readonly ContactSection[], letter: string): number {
   return sections.findIndex((section) => section.letter === letter);
 }
 

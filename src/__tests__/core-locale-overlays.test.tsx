@@ -12,7 +12,12 @@ import { AlertDialog } from '../alert-dialog';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Command } from '../command';
 import { ConnectionDots } from '../connection-dots';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../context-menu';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '../context-menu';
 import { Dialog, useDialogControl } from '../dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '../hover-card';
 import { RiHomeLine } from '../icons/remix';
@@ -53,7 +58,11 @@ describe('sidebar, surfaces and the overlays', () => {
 
   let dialogControl: ReturnType<typeof useDialogControl> | undefined;
 
-  function Harness({ children }: { children: (control: ReturnType<typeof useDialogControl>) => React.ReactNode }) {
+  function Harness({
+    children,
+  }: {
+    children: (control: ReturnType<typeof useDialogControl>) => React.ReactNode;
+  }) {
     const control = useDialogControl();
     dialogControl = control;
     return <>{children(control)}</>;
@@ -79,7 +88,9 @@ describe('sidebar, surfaces and the overlays', () => {
     });
 
     it('lets a *Label prop win over the catalog', () => {
-      const screen = inLocale(<Sidebar items={ITEMS} accessibilityLabel="Navegación principal" collapseLabel="Plegar" />);
+      const screen = inLocale(
+        <Sidebar items={ITEMS} accessibilityLabel="Navegación principal" collapseLabel="Plegar" />,
+      );
       expect(screen.getByLabelText('Navegación principal')).toBeTruthy();
       expect(screen.getByLabelText('Plegar')).toBeTruthy();
       expect(screen.queryByLabelText('Barra lateral')).toBeNull();
@@ -140,7 +151,9 @@ describe('sidebar, surfaces and the overlays', () => {
     });
 
     it('lets placeholder and emptyText win', () => {
-      const screen = inLocale(<Command visible onClose={() => {}} items={[]} placeholder="Busca algo" emptyText="Nada" />);
+      const screen = inLocale(
+        <Command visible onClose={() => {}} items={[]} placeholder="Busca algo" emptyText="Nada" />,
+      );
       expect(screen.getByPlaceholderText('Busca algo')).toBeTruthy();
       expect(screen.getByText('Nada')).toBeTruthy();
     });
@@ -154,7 +167,9 @@ describe('sidebar, surfaces and the overlays', () => {
     });
 
     it('lets confirmLabel win', () => {
-      const screen = inLocale(<AlertDialog visible onClose={() => {}} title="¿Borrar?" confirmLabel="Borrar" />);
+      const screen = inLocale(
+        <AlertDialog visible onClose={() => {}} title="¿Borrar?" confirmLabel="Borrar" />,
+      );
       expect(screen.getByText('Borrar')).toBeTruthy();
       expect(screen.queryByText('Confirmar')).toBeNull();
     });
@@ -167,7 +182,16 @@ describe('sidebar, surfaces and the overlays', () => {
           {(control) => (
             <Dialog
               control={control}
-              header={{ segments: { items: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }], value: 'a', onChange: () => {} } }}
+              header={{
+                segments: {
+                  items: [
+                    { key: 'a', label: 'A' },
+                    { key: 'b', label: 'B' },
+                  ],
+                  value: 'a',
+                  onChange: () => {},
+                },
+              }}
             >
               <Text>Cuerpo</Text>
             </Dialog>
@@ -188,7 +212,9 @@ describe('sidebar, surfaces and the overlays', () => {
         </Harness>,
       );
       // The backdrop is not in the tree RNTL queries by default; its name is what is asserted.
-      expect(unnamed.getAllByLabelText('Cerrar diálogo', { includeHiddenElements: true }).length).toBeGreaterThan(0);
+      expect(
+        unnamed.getAllByLabelText('Cerrar diálogo', { includeHiddenElements: true }).length,
+      ).toBeGreaterThan(0);
       unnamed.unmount();
       const named = openDialog(
         <Harness>
@@ -200,7 +226,9 @@ describe('sidebar, surfaces and the overlays', () => {
         </Harness>,
         'de',
       );
-      expect(named.getAllByLabelText('Filtros schließen', { includeHiddenElements: true }).length).toBeGreaterThan(0);
+      expect(
+        named.getAllByLabelText('Filtros schließen', { includeHiddenElements: true }).length,
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -276,9 +304,19 @@ describe('sidebar, surfaces and the overlays', () => {
 
   describe('connection-dots, breadcrumb, pagination', () => {
     it('ConnectionDots is named in the provider locale, and its prop still wins', () => {
-      const screen = inLocale(<ConnectionDots left={<Text>A</Text>} right={<Text>B</Text>} />, 'fr');
+      const screen = inLocale(
+        <ConnectionDots left={<Text>A</Text>} right={<Text>B</Text>} />,
+        'fr',
+      );
       expect(screen.getByLabelText('Connexion en cours')).toBeTruthy();
-      const own = inLocale(<ConnectionDots left={<Text>A</Text>} right={<Text>B</Text>} accessibilityLabel="Liaison" />, 'fr');
+      const own = inLocale(
+        <ConnectionDots
+          left={<Text>A</Text>}
+          right={<Text>B</Text>}
+          accessibilityLabel="Liaison"
+        />,
+        'fr',
+      );
       expect(own.getByLabelText('Liaison')).toBeTruthy();
     });
 
@@ -296,7 +334,15 @@ describe('sidebar, surfaces and the overlays', () => {
       const screen = inLocale(<Pagination page={2} totalPages={5} onChange={() => {}} />, 'ru');
       expect(screen.getByLabelText('Нумерация страниц')).toBeTruthy();
       expect(screen.getByLabelText('Перейти на страницу 3')).toBeTruthy();
-      const own = inLocale(<Pagination page={2} totalPages={5} onChange={() => {}} getPageLabel={(n) => `Стр. ${n}`} />, 'ru');
+      const own = inLocale(
+        <Pagination
+          page={2}
+          totalPages={5}
+          onChange={() => {}}
+          getPageLabel={(n) => `Стр. ${n}`}
+        />,
+        'ru',
+      );
       expect(own.getByLabelText('Стр. 3')).toBeTruthy();
     });
 

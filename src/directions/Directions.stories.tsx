@@ -88,13 +88,51 @@ const DRIVE_LEGS: DirectionsLeg[] = [
     meta: '24 min · 8.2 km',
     mode: 'drive',
     steps: [
-      { id: 'd1', maneuver: 'depart', instruction: 'Head north on Carrer de l’Om', detail: 'Towards the water tower', distance: '250 m' },
-      { id: 'd2', maneuver: 'right', instruction: 'Turn right onto Passatge del Vidre', distance: '400 m' },
-      { id: 'd3', maneuver: 'merge', instruction: 'Merge onto the Ronda del Nord', detail: 'Keep in the right-hand lane', distance: '5.6 km' },
-      { id: 'd4', maneuver: 'roundabout', instruction: 'At the roundabout, take the second exit', detail: 'Signposted Vall de l’Om', distance: '1.1 km' },
-      { id: 'd5', maneuver: 'slight-left', instruction: 'Bear left onto Avinguda dels Til·lers', distance: '600 m' },
-      { id: 'd6', maneuver: 'left', instruction: 'Turn left onto Carrer del Roure', distance: '180 m' },
-      { id: 'd7', maneuver: 'arrive', instruction: 'Arrive at Forner de la Plaça', detail: 'On your right' },
+      {
+        id: 'd1',
+        maneuver: 'depart',
+        instruction: 'Head north on Carrer de l’Om',
+        detail: 'Towards the water tower',
+        distance: '250 m',
+      },
+      {
+        id: 'd2',
+        maneuver: 'right',
+        instruction: 'Turn right onto Passatge del Vidre',
+        distance: '400 m',
+      },
+      {
+        id: 'd3',
+        maneuver: 'merge',
+        instruction: 'Merge onto the Ronda del Nord',
+        detail: 'Keep in the right-hand lane',
+        distance: '5.6 km',
+      },
+      {
+        id: 'd4',
+        maneuver: 'roundabout',
+        instruction: 'At the roundabout, take the second exit',
+        detail: 'Signposted Vall de l’Om',
+        distance: '1.1 km',
+      },
+      {
+        id: 'd5',
+        maneuver: 'slight-left',
+        instruction: 'Bear left onto Avinguda dels Til·lers',
+        distance: '600 m',
+      },
+      {
+        id: 'd6',
+        maneuver: 'left',
+        instruction: 'Turn left onto Carrer del Roure',
+        distance: '180 m',
+      },
+      {
+        id: 'd7',
+        maneuver: 'arrive',
+        instruction: 'Arrive at Forner de la Plaça',
+        detail: 'On your right',
+      },
     ],
   },
 ];
@@ -106,8 +144,18 @@ const TRANSIT_LEGS: DirectionsLeg[] = [
     meta: '4 min · 300 m',
     mode: 'walk',
     steps: [
-      { id: 'w1', maneuver: 'depart', instruction: 'Head north on Carrer de l’Om', distance: '300 m' },
-      { id: 'w2', maneuver: 'board', instruction: 'Enter the station', detail: 'Platform 2, step-free' },
+      {
+        id: 'w1',
+        maneuver: 'depart',
+        instruction: 'Head north on Carrer de l’Om',
+        distance: '300 m',
+      },
+      {
+        id: 'w2',
+        maneuver: 'board',
+        instruction: 'Enter the station',
+        detail: 'Platform 2, step-free',
+      },
     ],
   },
   {
@@ -117,7 +165,13 @@ const TRANSIT_LEGS: DirectionsLeg[] = [
     mode: 'transit',
     line: L4,
     steps: [
-      { id: 'l4-1', maneuver: 'board', instruction: 'Board towards Pla del Bosc', detail: '6 stops', line: L4 },
+      {
+        id: 'l4-1',
+        maneuver: 'board',
+        instruction: 'Board towards Pla del Bosc',
+        detail: '6 stops',
+        line: L4,
+      },
       { id: 'l4-2', maneuver: 'alight', instruction: 'Get off at Pla del Bosc' },
     ],
   },
@@ -128,8 +182,19 @@ const TRANSIT_LEGS: DirectionsLeg[] = [
     mode: 'transit',
     line: N12,
     steps: [
-      { id: 'n12-1', maneuver: 'transfer', instruction: 'Change platform', detail: 'Two minutes, follow the yellow signs' },
-      { id: 'n12-2', maneuver: 'board', instruction: 'Board towards the port', detail: '3 stops', line: N12 },
+      {
+        id: 'n12-1',
+        maneuver: 'transfer',
+        instruction: 'Change platform',
+        detail: 'Two minutes, follow the yellow signs',
+      },
+      {
+        id: 'n12-2',
+        maneuver: 'board',
+        instruction: 'Board towards the port',
+        detail: '3 stops',
+        line: N12,
+      },
       { id: 'n12-3', maneuver: 'alight', instruction: 'Get off at Plaça de les Bruixes' },
     ],
   },
@@ -139,7 +204,12 @@ const TRANSIT_LEGS: DirectionsLeg[] = [
     meta: '3 min · 200 m',
     mode: 'walk',
     steps: [
-      { id: 'w3', maneuver: 'straight', instruction: 'Continue along Plaça de les Bruixes', distance: '200 m' },
+      {
+        id: 'w3',
+        maneuver: 'straight',
+        instruction: 'Continue along Plaça de les Bruixes',
+        distance: '200 m',
+      },
       { id: 'w4', maneuver: 'arrive', instruction: 'Arrive at Forner de la Plaça' },
     ],
   },
@@ -164,7 +234,13 @@ function Page({ children }: { children: React.ReactNode }) {
 
 // ---------------------------------------------------------------------------
 
-function Planner({ routes, initialMode }: { routes: DirectionsRoute[]; initialMode: DirectionsMode }) {
+function Planner({
+  routes,
+  initialMode,
+}: {
+  routes: DirectionsRoute[];
+  initialMode: DirectionsMode;
+}) {
   const [mode, setMode] = useState<DirectionsMode>(initialMode);
   const [selected, setSelected] = useState(routes[0]!.id);
   const [stops, setStops] = useState(STOPS);
@@ -212,7 +288,10 @@ export const Transit: Story = {
           <TransitLineBadge line={L4} size="label-medium" />
           <TransitLineBadge line={N12} size="label-medium" />
           <TransitLineBadge line={S1} size="label-medium" />
-          <TransitLineBadge line={{ name: 'R2', headsign: 'towards the hills' }} size="label-medium" />
+          <TransitLineBadge
+            line={{ name: 'R2', headsign: 'towards the hills' }}
+            size="label-medium"
+          />
         </View>
       </Section>
     </Page>
@@ -246,9 +325,24 @@ export const Edges: Story = {
                   detail: 'Unsurfaced for the first two hundred metres',
                   distance: '1.2 km',
                 },
-                { id: 's2', maneuver: 'uturn', instruction: 'Make a U-turn at the end of the road', distance: '40 m' },
-                { id: 's3', maneuver: 'sharp-left', instruction: 'Sharp left onto the track', distance: '300 m' },
-                { id: 's4', maneuver: 'slight-right', instruction: 'Bear right at the fork', distance: '900 m' },
+                {
+                  id: 's2',
+                  maneuver: 'uturn',
+                  instruction: 'Make a U-turn at the end of the road',
+                  distance: '40 m',
+                },
+                {
+                  id: 's3',
+                  maneuver: 'sharp-left',
+                  instruction: 'Sharp left onto the track',
+                  distance: '300 m',
+                },
+                {
+                  id: 's4',
+                  maneuver: 'slight-right',
+                  instruction: 'Bear right at the fork',
+                  distance: '900 m',
+                },
               ],
             },
           ]}

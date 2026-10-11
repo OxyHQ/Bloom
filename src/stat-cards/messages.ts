@@ -8,4 +8,8 @@ export interface StatCardsMessages {
   fromLastMonth: string;
 }
 
-export const STAT_CARDS_MESSAGES: MessageCatalog<StatCardsMessages> = defineMessages<StatCardsMessages>('STAT_CARDS_MESSAGES', { about: (label) => `About ${label}`, fromLastMonth: 'From last month' });
+export const STAT_CARDS_MESSAGES: MessageCatalog<StatCardsMessages> =
+  defineMessages<StatCardsMessages>('STAT_CARDS_MESSAGES', {
+    about: (label) => `About ${label}`,
+    fromLastMonth: 'From last month',
+  });

@@ -7,14 +7,18 @@ import { Notification } from '../notification';
 import { NOTIFICATION_GEOMETRY, resolveNotificationPaint } from '../notification/shared';
 import type { NotificationProps } from '../notification';
 
-const renderNotification = (props: Partial<NotificationProps> = {}, mode: 'light' | 'dark' = 'light') =>
+const renderNotification = (
+  props: Partial<NotificationProps> = {},
+  mode: 'light' | 'dark' = 'light',
+) =>
   render(
     <BloomThemeProvider mode={mode} colorPreset="blue">
       <Notification title="Deploy failed" {...props} />
     </BloomThemeProvider>,
   );
 
-const hostName = (node: { type: unknown }): string => (typeof node.type === 'string' ? node.type : '');
+const hostName = (node: { type: unknown }): string =>
+  typeof node.type === 'string' ? node.type : '';
 
 /** Flatten a host's `style` prop (arrays nest) into one object. */
 function flat(style: unknown): Record<string, unknown> {
@@ -23,7 +27,9 @@ function flat(style: unknown): Record<string, unknown> {
 }
 
 const cardOf = (utils: ReturnType<typeof renderNotification>) =>
-  utils.UNSAFE_root.findAll((n) => hostName(n) === 'Animated.View' && n.props.role !== undefined)[0];
+  utils.UNSAFE_root.findAll(
+    (n) => hostName(n) === 'Animated.View' && n.props.role !== undefined,
+  )[0];
 
 describe('Notification', () => {
   it('paints the card geometry', () => {
@@ -47,7 +53,12 @@ describe('Notification', () => {
     for (const mode of ['light', 'dark'] as const) {
       const paint = resolveNotificationPaint(buildTheme('blue', mode));
       const style = flat(cardOf(renderNotification({}, mode))?.props.style);
-      expect({ mode, bg: style.backgroundColor, border: style.borderColor, shadow: style.boxShadow }).toEqual({
+      expect({
+        mode,
+        bg: style.backgroundColor,
+        border: style.borderColor,
+        shadow: style.boxShadow,
+      }).toEqual({
         mode,
         bg: paint.surface,
         border: paint.border,
@@ -59,28 +70,43 @@ describe('Notification', () => {
   it('defaults the live-region role from the status, and honours an override', () => {
     expect(cardOf(renderNotification())?.props.role).toBe('status');
     expect(cardOf(renderNotification({ status: 'error' }))?.props.role).toBe('alert');
-    expect(cardOf(renderNotification({ status: 'error', role: 'status' }))?.props.role).toBe('status');
+    expect(cardOf(renderNotification({ status: 'error', role: 'status' }))?.props.role).toBe(
+      'status',
+    );
   });
 
   it('renders a 40px tinted disc for each status, each a distinct colour', () => {
     const paint = resolveNotificationPaint(buildTheme('blue', 'light'));
-    const discs = (['neutral', 'information', 'success', 'warning', 'error'] as const).map((status) => {
-      const disc = renderNotification({ status }).UNSAFE_root.findAll(
-        (n) => hostName(n) === 'View' && flat(n.props.style).width === NOTIFICATION_GEOMETRY.visual,
-      )[0];
-      const style = flat(disc?.props.style);
-      expect(style.backgroundColor).toBe(paint.status[status].background);
-      expect(style.borderRadius).toBe(20);
-      return style.backgroundColor;
-    });
+    const discs = (['neutral', 'information', 'success', 'warning', 'error'] as const).map(
+      (status) => {
+        const disc = renderNotification({ status }).UNSAFE_root.findAll(
+          (n) =>
+            hostName(n) === 'View' && flat(n.props.style).width === NOTIFICATION_GEOMETRY.visual,
+        )[0];
+        const style = flat(disc?.props.style);
+        expect(style.backgroundColor).toBe(paint.status[status].background);
+        expect(style.borderRadius).toBe(20);
+        return style.backgroundColor;
+      },
+    );
     expect(new Set(discs).size).toBe(5);
   });
 
   it('renders title, timestamp and description on the type ramp', () => {
     const { getByText } = renderNotification({ timestamp: '2m ago', description: 'Exit code 1.' });
-    expect(flat(getByText('Deploy failed').props.style)).toMatchObject({ fontSize: 14, lineHeight: 20, fontWeight: '500' });
-    expect(flat(getByText('2m ago').props.style)).toMatchObject({ fontSize: 14, fontWeight: '400' });
-    expect(flat(getByText('Exit code 1.').props.style)).toMatchObject({ fontSize: 14, fontWeight: '400' });
+    expect(flat(getByText('Deploy failed').props.style)).toMatchObject({
+      fontSize: 14,
+      lineHeight: 20,
+      fontWeight: '500',
+    });
+    expect(flat(getByText('2m ago').props.style)).toMatchObject({
+      fontSize: 14,
+      fontWeight: '400',
+    });
+    expect(flat(getByText('Exit code 1.').props.style)).toMatchObject({
+      fontSize: 14,
+      fontWeight: '400',
+    });
   });
 
   it('centres a title-only card and its close button on the 40px visual', () => {
@@ -95,12 +121,21 @@ describe('Notification', () => {
 
   it('names the close button and dismisses through it', () => {
     const onDismiss = jest.fn();
-    const utils = renderNotification({ onDismiss, closeLabel: 'Close it', description: 'Exit code 1.' });
+    const utils = renderNotification({
+      onDismiss,
+      closeLabel: 'Close it',
+      description: 'Exit code 1.',
+    });
     const close = utils.UNSAFE_root.findAll(
       (n) => hostName(n) === 'Pressable' && n.props.accessibilityLabel === 'Close it',
     )[0];
     expect(close).toBeDefined();
-    expect(flat(close?.props.style)).toMatchObject({ position: 'absolute', top: 12, right: 12, width: 20 });
+    expect(flat(close?.props.style)).toMatchObject({
+      position: 'absolute',
+      top: 12,
+      right: 12,
+      width: 20,
+    });
     act(() => {
       if (close) fireEvent.press(close);
     });
@@ -135,7 +170,11 @@ describe('Notification', () => {
       const bar = utils.UNSAFE_root.findAll(
         (n) => hostName(n) === 'Animated.View' && flat(n.props.style).height === 3,
       )[0];
-      expect(flat(bar?.props.style)).toMatchObject({ position: 'absolute', bottom: 0, backgroundColor: paint.countdown });
+      expect(flat(bar?.props.style)).toMatchObject({
+        position: 'absolute',
+        bottom: 0,
+        backgroundColor: paint.countdown,
+      });
       act(() => {
         jest.advanceTimersByTime(4999);
       });
@@ -170,7 +209,11 @@ describe('resolveNotificationPaint', () => {
       const brand = [theme.colors.primary, theme.colors.primarySubtle, theme.colors.negative];
       const paint = resolveNotificationPaint(theme);
       for (const [status, tone] of Object.entries(paint.status)) {
-        expect({ mode, status, leaks: [tone.background, tone.foreground].filter((c) => brand.includes(c)) }).toEqual({
+        expect({
+          mode,
+          status,
+          leaks: [tone.background, tone.foreground].filter((c) => brand.includes(c)),
+        }).toEqual({
           mode,
           status,
           leaks: [],

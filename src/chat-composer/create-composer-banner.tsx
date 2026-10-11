@@ -26,10 +26,11 @@ import type { ComposerBannerProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createComposerBanner({ ComposerIconButton }: {
+export function createComposerBanner({
+  ComposerIconButton,
+}: {
   ComposerIconButton: typeof ComposerIconButtonComponent;
 }) {
-
   /** A URL passes through; a bare id goes to the app's `ImageResolver`. */
   function isUrl(value: string): boolean {
     return /^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('file:');
@@ -59,7 +60,11 @@ export function createComposerBanner({ ComposerIconButton }: {
     const note = kind === 'note';
 
     const thumbUri =
-      thumbnail === undefined ? undefined : isUrl(thumbnail) ? thumbnail : resolveImage?.(thumbnail, 'thumb');
+      thumbnail === undefined
+        ? undefined
+        : isUrl(thumbnail)
+          ? thumbnail
+          : resolveImage?.(thumbnail, 'thumb');
 
     if (note) {
       return (
@@ -78,13 +83,22 @@ export function createComposerBanner({ ComposerIconButton }: {
             },
             style,
           ]}
-          testID={testID}>
+          testID={testID}
+        >
           <Icon width={14} height={14} fill={palette.iconSecondary} />
-          <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary, flexShrink: 1 }}>
+          <Text
+            variant="caption-1-regular"
+            numberOfLines={1}
+            style={{ color: palette.textSecondary, flexShrink: 1 }}
+          >
             {title}
           </Text>
           {preview ? (
-            <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textPlaceholder, flexShrink: 1 }}>
+            <Text
+              variant="caption-1-regular"
+              numberOfLines={1}
+              style={{ color: palette.textPlaceholder, flexShrink: 1 }}
+            >
               {preview}
             </Text>
           ) : null}
@@ -120,7 +134,8 @@ export function createComposerBanner({ ComposerIconButton }: {
           },
           style,
         ]}
-        testID={testID}>
+        testID={testID}
+      >
         <View
           testID={testID ? `${testID}-rail` : undefined}
           style={{
@@ -144,7 +159,11 @@ export function createComposerBanner({ ComposerIconButton }: {
             {title}
           </Text>
           {preview ? (
-            <Text variant="body-2-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+            <Text
+              variant="body-2-regular"
+              numberOfLines={1}
+              style={{ color: palette.textSecondary }}
+            >
               {preview}
             </Text>
           ) : null}

@@ -80,7 +80,13 @@ describe('Dialog.web keyframe self-injection', () => {
     expect(document.getElementById(DIALOG_STYLE_ID)).toBeNull();
 
     let control: ReturnType<typeof useDialogControl> | undefined;
-    mount(<Harness onControl={(c) => { control = c; }} />);
+    mount(
+      <Harness
+        onControl={(c) => {
+          control = c;
+        }}
+      />,
+    );
 
     const styleEl = document.getElementById(DIALOG_STYLE_ID);
     expect(styleEl).not.toBeNull();
@@ -98,7 +104,9 @@ describe('Dialog.web keyframe self-injection', () => {
 
     // Opening the dialog (the path that actually plays the animation) must not
     // duplicate the stylesheet.
-    act(() => { control?.open(); });
+    act(() => {
+      control?.open();
+    });
     expect(document.querySelectorAll(`#${DIALOG_STYLE_ID}`).length).toBe(1);
   });
 
@@ -155,16 +163,33 @@ describe('Dialog.web resets the ambient surface for its content', () => {
     });
 
     const text = document.body.textContent ?? '';
-    expect(text).toContain(`fill=${resolveSurfaceMaterial({ fill: theme.colors.background, parentFill: theme.colors.background, level: 0 }).publishedFill}`);
+    expect(text).toContain(
+      `fill=${resolveSurfaceMaterial({ fill: theme.colors.background, parentFill: theme.colors.background, level: 0 }).publishedFill}`,
+    );
     expect(text).not.toContain(`fill=${theme.colors.card}`);
   });
 });
 
-
 it('publishes an explicit dialog background rather than the nominal page token', () => {
   let control: ReturnType<typeof useDialogControl> | undefined;
-  function Probe() { return <Text>{`custom-fill=${useSurfaceFill()}`}</Text>; }
-  act(() => root.render(<BloomThemeProvider mode="dark" colorPreset="teal"><Harness style={{backgroundColor:'#123456'}} onControl={c => {control=c;}} body={<Probe />} /></BloomThemeProvider>));
+  function Probe() {
+    return <Text>{`custom-fill=${useSurfaceFill()}`}</Text>;
+  }
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="dark" colorPreset="teal">
+        <Harness
+          style={{ backgroundColor: '#123456' }}
+          onControl={(c) => {
+            control = c;
+          }}
+          body={<Probe />}
+        />
+      </BloomThemeProvider>,
+    ),
+  );
   act(() => control?.open());
-  expect(document.body.textContent).toContain(`custom-fill=${resolveSurfaceMaterial({ fill: '#123456', parentFill: buildTheme('teal', 'dark').colors.background, level: 0 }).publishedFill}`);
+  expect(document.body.textContent).toContain(
+    `custom-fill=${resolveSurfaceMaterial({ fill: '#123456', parentFill: buildTheme('teal', 'dark').colors.background, level: 0 }).publishedFill}`,
+  );
 });

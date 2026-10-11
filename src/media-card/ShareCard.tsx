@@ -42,11 +42,16 @@ function ShareCardComponent({
   return (
     <View
       {...webDataSet({ bloomMediaCard: 'share' })}
-      style={[{ width: 320, borderRadius: RECAP_RADIUS, overflow: 'hidden', backgroundColor: tint.top }, style]}
+      style={[
+        { width: 320, borderRadius: RECAP_RADIUS, overflow: 'hidden', backgroundColor: tint.top },
+        style,
+      ]}
       testID={testID}
     >
       <CoverGradient top={tint.top} bottom={tint.bottom} />
-      <View style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24, paddingBottom: 24, gap: 16 }}>
+      <View
+        style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 24, paddingBottom: 24, gap: 16 }}
+      >
         <View
           style={{ width: '100%', aspectRatio: 1 }}
           onLayout={(event) => setCoverWidth(event.nativeEvent.layout.width)}
@@ -66,7 +71,11 @@ function ShareCardComponent({
         </View>
         <View style={{ gap: 2 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text variant="title-2-bold" numberOfLines={2} style={{ flexShrink: 1, color: tint.text }}>
+            <Text
+              variant="title-2-bold"
+              numberOfLines={2}
+              style={{ flexShrink: 1, color: tint.text }}
+            >
               {title}
             </Text>
             {explicit ? <ExplicitBadge /> : null}
@@ -77,7 +86,15 @@ function ShareCardComponent({
         </View>
         {lyrics && lyrics.length > 0 ? (
           <View
-            style={{ borderRadius: 12, paddingLeft: 16, paddingRight: 16, paddingTop: 16, paddingBottom: 16, backgroundColor: tint.bottom, gap: 4 }}
+            style={{
+              borderRadius: 12,
+              paddingLeft: 16,
+              paddingRight: 16,
+              paddingTop: 16,
+              paddingBottom: 16,
+              backgroundColor: tint.bottom,
+              gap: 4,
+            }}
             testID={testID ? `${testID}-lyrics` : undefined}
           >
             {lyrics.map((line, index) => (

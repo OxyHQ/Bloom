@@ -96,7 +96,6 @@ interface Registry {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __oxy_so_bloom_media_flight__: Registry | undefined;
 }
 
@@ -494,7 +493,6 @@ let hasWarnedNoLayer = false;
 function warnNoLayerMounted(): void {
   if (process.env.NODE_ENV === 'production' || hasWarnedNoLayer) return;
   hasWarnedNoLayer = true;
-  // eslint-disable-next-line no-console
   console.warn(
     '[Bloom] flyTo() timed out waiting for a media surface to mount. Nothing is ' +
       'rendering <MediaFlightLayer>, so no media transition will ever run and a ' +

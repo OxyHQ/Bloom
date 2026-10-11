@@ -234,7 +234,9 @@ export const ARTISTS: DemoArtist[] = [
   ),
 ];
 
-export const ARTIST_BY_ID: Record<string, DemoArtist> = Object.fromEntries(ARTISTS.map((a) => [a.id, a]));
+export const ARTIST_BY_ID: Record<string, DemoArtist> = Object.fromEntries(
+  ARTISTS.map((a) => [a.id, a]),
+);
 
 // ---------------------------------------------------------------------------
 //  Lyrics
@@ -502,9 +504,42 @@ const BUILT = [
     '1,204 saves',
     { disc2At: 10, featuring: 'odessa-rowe' },
   ),
-  makeAlbum(2, 'soft-static', 'Soft Static', 'lumen-vale', '2024', 'album', '#312e81', '#22d3ee', 11, '842 saves'),
-  makeAlbum(3, 'blue-hour-ep', 'Blue Hour', 'lumen-vale', '2025', 'ep', '#1e40af', '#c084fc', 5, '310 saves'),
-  makeAlbum(4, 'afterglow-single', 'Afterglow', 'lumen-vale', '2026', 'single', '#9d174d', '#fde68a', 1, '96 saves'),
+  makeAlbum(
+    2,
+    'soft-static',
+    'Soft Static',
+    'lumen-vale',
+    '2024',
+    'album',
+    '#312e81',
+    '#22d3ee',
+    11,
+    '842 saves',
+  ),
+  makeAlbum(
+    3,
+    'blue-hour-ep',
+    'Blue Hour',
+    'lumen-vale',
+    '2025',
+    'ep',
+    '#1e40af',
+    '#c084fc',
+    5,
+    '310 saves',
+  ),
+  makeAlbum(
+    4,
+    'afterglow-single',
+    'Afterglow',
+    'lumen-vale',
+    '2026',
+    'single',
+    '#9d174d',
+    '#fde68a',
+    1,
+    '96 saves',
+  ),
   makeAlbum(
     5,
     'brass-and-honey',
@@ -517,7 +552,18 @@ const BUILT = [
     12,
     '2,114 saves',
   ),
-  makeAlbum(6, 'ferry-songs', 'Ferry Songs', 'paper-lanterns', '2026', 'album', '#155e75', '#bef264', 10, '988 saves'),
+  makeAlbum(
+    6,
+    'ferry-songs',
+    'Ferry Songs',
+    'paper-lanterns',
+    '2026',
+    'album',
+    '#155e75',
+    '#bef264',
+    10,
+    '988 saves',
+  ),
   makeAlbum(
     7,
     'tram-wire-rain',
@@ -530,8 +576,30 @@ const BUILT = [
     9,
     '1,530 saves',
   ),
-  makeAlbum(8, 'two-rivers', 'Two Rivers', 'solenne-ashby', '2025', 'album', '#365314', '#fcd34d', 10, '412 saves'),
-  makeAlbum(9, 'night-boat', 'Night Boat', 'north-ferry', '2026', 'album', '#172554', '#f97316', 11, '1,006 saves'),
+  makeAlbum(
+    8,
+    'two-rivers',
+    'Two Rivers',
+    'solenne-ashby',
+    '2025',
+    'album',
+    '#365314',
+    '#fcd34d',
+    10,
+    '412 saves',
+  ),
+  makeAlbum(
+    9,
+    'night-boat',
+    'Night Boat',
+    'north-ferry',
+    '2026',
+    'album',
+    '#172554',
+    '#f97316',
+    11,
+    '1,006 saves',
+  ),
   makeAlbum(
     10,
     'weather-standards',
@@ -544,9 +612,42 @@ const BUILT = [
     8,
     '377 saves',
   ),
-  makeAlbum(11, 'slow-trains', 'Slow Trains', 'arlo-tamsin', '2026', 'album', '#134e4a', '#e0f2fe', 7, '690 saves'),
-  makeAlbum(12, 'meridian-single', 'Meridian', 'kiko-marenne', '2026', 'single', '#be185d', '#a78bfa', 1, '221 saves'),
-  makeAlbum(13, 'coastline-ep', 'Coastline', 'paper-lanterns', '2025', 'ep', '#0f766e', '#fef08a', 4, '188 saves'),
+  makeAlbum(
+    11,
+    'slow-trains',
+    'Slow Trains',
+    'arlo-tamsin',
+    '2026',
+    'album',
+    '#134e4a',
+    '#e0f2fe',
+    7,
+    '690 saves',
+  ),
+  makeAlbum(
+    12,
+    'meridian-single',
+    'Meridian',
+    'kiko-marenne',
+    '2026',
+    'single',
+    '#be185d',
+    '#a78bfa',
+    1,
+    '221 saves',
+  ),
+  makeAlbum(
+    13,
+    'coastline-ep',
+    'Coastline',
+    'paper-lanterns',
+    '2025',
+    'ep',
+    '#0f766e',
+    '#fef08a',
+    4,
+    '188 saves',
+  ),
   makeAlbum(
     14,
     'harbour-live',
@@ -563,8 +664,12 @@ const BUILT = [
 
 export const ALBUMS: DemoAlbum[] = BUILT.map((b) => b.album);
 export const TRACKS: DemoTrack[] = BUILT.flatMap((b) => b.tracks);
-export const ALBUM_BY_ID: Record<string, DemoAlbum> = Object.fromEntries(ALBUMS.map((a) => [a.id, a]));
-export const TRACK_BY_ID: Record<string, DemoTrack> = Object.fromEntries(TRACKS.map((t) => [t.id, t]));
+export const ALBUM_BY_ID: Record<string, DemoAlbum> = Object.fromEntries(
+  ALBUMS.map((a) => [a.id, a]),
+);
+export const TRACK_BY_ID: Record<string, DemoTrack> = Object.fromEntries(
+  TRACKS.map((t) => [t.id, t]),
+);
 
 export function albumsBy(artistId: string): DemoAlbum[] {
   return ALBUMS.filter((a) => a.artistId === artistId);
@@ -647,7 +752,10 @@ function playlist(
     artworkColor: from,
     artwork: withArtwork ? cover(id, from, to) : undefined,
     trackIds: pickTracks(seed, count),
-    dateAdded: Array.from({ length: count }, (_, i) => ADDED[Math.min(ADDED.length - 1, Math.floor(i / 2))]!),
+    dateAdded: Array.from(
+      { length: count },
+      (_, i) => ADDED[Math.min(ADDED.length - 1, Math.floor(i / 2))]!,
+    ),
     saves,
     mine,
   };
@@ -737,7 +845,9 @@ export const PLAYLISTS: DemoPlaylist[] = [
 ];
 PLAYLISTS[0]!.collaborative = true;
 
-export const PLAYLIST_BY_ID: Record<string, DemoPlaylist> = Object.fromEntries(PLAYLISTS.map((p) => [p.id, p]));
+export const PLAYLIST_BY_ID: Record<string, DemoPlaylist> = Object.fromEntries(
+  PLAYLISTS.map((p) => [p.id, p]),
+);
 
 export interface DemoMix {
   id: string;
@@ -906,39 +1016,78 @@ const EPISODE_TITLES: Record<string, [string, string][]> = {
       'A phantom island appeared on charts for two centuries. We follow the ship logs that kept it alive.',
     ],
     ['Paper towns', 'Mapmakers once invented villages to catch copiers. One of them became real.'],
-    ['The border in the lake', 'A line drawn with a ruler split a lake, a pier and a family kitchen.'],
+    [
+      'The border in the lake',
+      'A line drawn with a ruler split a lake, a pier and a family kitchen.',
+    ],
     ['Lighthouses with no sea', 'Why a dozen lighthouses stand hundreds of kilometres inland.'],
-    ['The road that was never built', 'A motorway that exists only in atlases, and the town that waited for it.'],
-    ['Maps of places that never were', 'Listeners send in the imaginary places from the maps of their childhood.'],
+    [
+      'The road that was never built',
+      'A motorway that exists only in atlases, and the town that waited for it.',
+    ],
+    [
+      'Maps of places that never were',
+      'Listeners send in the imaginary places from the maps of their childhood.',
+    ],
   ],
   'signal-and-noise': [
-    ['How a tram finds its way', 'The century-old signalling trick still running under every junction in the city.'],
-    ['The machine that listens', 'What a microphone actually hears, and why your voice arrives late.'],
-    ['Cold storage', 'Inside the vault where a country keeps the recordings nobody plays any more.'],
-    ['A short history of the loading spinner', 'Waiting, measured: why software tells you it is busy.'],
+    [
+      'How a tram finds its way',
+      'The century-old signalling trick still running under every junction in the city.',
+    ],
+    [
+      'The machine that listens',
+      'What a microphone actually hears, and why your voice arrives late.',
+    ],
+    [
+      'Cold storage',
+      'Inside the vault where a country keeps the recordings nobody plays any more.',
+    ],
+    [
+      'A short history of the loading spinner',
+      'Waiting, measured: why software tells you it is busy.',
+    ],
     ['Ten thousand tiny mirrors', 'The projector in your pocket, explained slowly.'],
     ['Cables under the bay', 'We follow one fibre from a beach hut to the other side of the sea.'],
   ],
   'the-long-table': [
-    ['Bread and weather', 'A baker who plans the week by the forecast, and the loaf that proves it.'],
+    [
+      'Bread and weather',
+      'A baker who plans the week by the forecast, and the loaf that proves it.',
+    ],
     ['Everything but the fish', 'A fisherman, a cook and the parts of the catch nobody sells.'],
-    ['Twelve jars', 'Preserving season with a grower who has not bought a vegetable in nine years.'],
+    [
+      'Twelve jars',
+      'Preserving season with a grower who has not bought a vegetable in nine years.',
+    ],
     ['The last dining car', 'Dinner at 90 km/h, with the crew who still cook it.'],
     ['A kitchen with no menu', 'What happens when the market decides what you eat.'],
     ['Sunday, slowly', 'A four-hour lunch, recorded in full and cut to forty minutes.'],
   ],
   'liner-notes': [
-    ['Lumen Vale takes “Lanterns” apart', 'Every pad, every take, and the drum machine that would not stay in time.'],
+    [
+      'Lumen Vale takes “Lanterns” apart',
+      'Every pad, every take, and the drum machine that would not stay in time.',
+    ],
     ['Odessa Rowe on singing live with a horn section', 'One room, eight players, no headphones.'],
-    ['Kiko Marenne’s field recorder', 'Rain on tram wires, a stairwell, a market — and how they became a club track.'],
-    ['The Paper Lanterns on writing at the harbour', 'Four friends, two chords and a ferry timetable.'],
+    [
+      'Kiko Marenne’s field recorder',
+      'Rain on tram wires, a stairwell, a market — and how they became a club track.',
+    ],
+    [
+      'The Paper Lanterns on writing at the harbour',
+      'Four friends, two chords and a ferry timetable.',
+    ],
     ['Solenne Ashby in two languages', 'Writing a chorus that has to work twice.'],
     ['Arlo Tamsin on the long fade', 'Why a record can take an hour to finish.'],
   ],
   'small-hours': [
     ['The night porter', 'A short story read aloud, for the hours when you cannot sleep.'],
     ['Lamp oil', 'A lighthouse keeper writes to a sister who never answers.'],
-    ['The 3:40 to Lintfield', 'Two strangers, one carriage, and the stop that is not on the board.'],
+    [
+      'The 3:40 to Lintfield',
+      'Two strangers, one carriage, and the stop that is not on the board.',
+    ],
     ['Low tide, low light', 'What the sea leaves behind, and who comes to collect it.'],
     ['Winter timetable', 'The village that is only reachable for four months of the year.'],
     ['The last listener', 'A radio station keeps broadcasting long after the town has gone.'],
@@ -952,14 +1101,23 @@ export const EPISODES: DemoEpisode[] = SHOWS.flatMap((show, s) =>
     title,
     description,
     date: ['Sep 15', 'Sep 8', 'Sep 1', 'Aug 25', 'Aug 18', 'Aug 11'][i]!,
-    longDate: ['Sep 15, 2026', 'Sep 8, 2026', 'Sep 1, 2026', 'Aug 25, 2026', 'Aug 18, 2026', 'Aug 11, 2026'][i]!,
+    longDate: [
+      'Sep 15, 2026',
+      'Sep 8, 2026',
+      'Sep 1, 2026',
+      'Aug 25, 2026',
+      'Aug 18, 2026',
+      'Aug 11, 2026',
+    ][i]!,
     duration: [2880, 3420, 2460, 3900, 2710, 3120][i]! + s * 60,
     progress: i === 0 ? 1140 : i === 2 ? 2100 : undefined,
     played: i === 3 || i === 5,
   })),
 );
 
-export const EPISODE_BY_ID: Record<string, DemoEpisode> = Object.fromEntries(EPISODES.map((e) => [e.id, e]));
+export const EPISODE_BY_ID: Record<string, DemoEpisode> = Object.fromEntries(
+  EPISODES.map((e) => [e.id, e]),
+);
 
 export function episodesOf(showId: string): DemoEpisode[] {
   return EPISODES.filter((e) => e.showId === showId);
@@ -1282,7 +1440,13 @@ export const LIBRARY: LibraryEntry[] = [
     addedAt: NOW - 80 * DAY,
     lastPlayedAt: NOW - 14 * DAY,
   },
-  { id: 'road-trips', title: 'Road trips', kind: 'folder', meta: 'Folder · 4 playlists', addedAt: NOW - 300 * DAY },
+  {
+    id: 'road-trips',
+    title: 'Road trips',
+    kind: 'folder',
+    meta: 'Folder · 4 playlists',
+    addedAt: NOW - 300 * DAY,
+  },
   {
     id: 'kitchen-soul',
     title: 'Kitchen Soul',
@@ -1295,8 +1459,19 @@ export const LIBRARY: LibraryEntry[] = [
 ];
 
 export const RECENT_SEARCHES: RecentSearchEntry[] = [
-  { id: 'rs-1', title: 'Lumen Vale', meta: 'Artist', cover: ARTIST_BY_ID['lumen-vale']!.photo, round: true },
-  { id: 'rs-2', title: 'Night Boat', meta: 'Album · North Ferry', cover: ALBUM_BY_ID['night-boat']!.artwork },
+  {
+    id: 'rs-1',
+    title: 'Lumen Vale',
+    meta: 'Artist',
+    cover: ARTIST_BY_ID['lumen-vale']!.photo,
+    round: true,
+  },
+  {
+    id: 'rs-2',
+    title: 'Night Boat',
+    meta: 'Album · North Ferry',
+    cover: ALBUM_BY_ID['night-boat']!.artwork,
+  },
   {
     id: 'rs-3',
     title: 'Quiet Cartography',
@@ -1309,7 +1484,12 @@ export const RECENT_SEARCHES: RecentSearchEntry[] = [
     meta: 'Playlist · Tidewater Radio',
     cover: PLAYLIST_BY_ID['rainy-trams']!.artwork,
   },
-  { id: 'rs-5', title: 'Glass Harbour', meta: 'Song · Lumen Vale', cover: ALBUM_BY_ID['soft-static']!.artwork },
+  {
+    id: 'rs-5',
+    title: 'Glass Harbour',
+    meta: 'Song · Lumen Vale',
+    cover: ALBUM_BY_ID['soft-static']!.artwork,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1317,11 +1497,41 @@ export const RECENT_SEARCHES: RecentSearchEntry[] = [
 // ---------------------------------------------------------------------------
 
 export const FOLLOWERS = [
-  { id: 'p-1', name: 'Mika Oduya', avatar: FRIENDS[0]!.avatar, followers: '214 followers', followsYou: true },
-  { id: 'p-2', name: 'Jonas Arvid', avatar: FRIENDS[1]!.avatar, followers: '88 followers', followsYou: true },
-  { id: 'p-3', name: 'Priya Castell', avatar: FRIENDS[2]!.avatar, followers: '1,032 followers', followsYou: false },
-  { id: 'p-4', name: 'Sol Mendes', avatar: FRIENDS[3]!.avatar, followers: '47 followers', followsYou: true },
-  { id: 'p-5', name: 'Hana Ekberg', avatar: FRIENDS[4]!.avatar, followers: '392 followers', followsYou: false },
+  {
+    id: 'p-1',
+    name: 'Mika Oduya',
+    avatar: FRIENDS[0]!.avatar,
+    followers: '214 followers',
+    followsYou: true,
+  },
+  {
+    id: 'p-2',
+    name: 'Jonas Arvid',
+    avatar: FRIENDS[1]!.avatar,
+    followers: '88 followers',
+    followsYou: true,
+  },
+  {
+    id: 'p-3',
+    name: 'Priya Castell',
+    avatar: FRIENDS[2]!.avatar,
+    followers: '1,032 followers',
+    followsYou: false,
+  },
+  {
+    id: 'p-4',
+    name: 'Sol Mendes',
+    avatar: FRIENDS[3]!.avatar,
+    followers: '47 followers',
+    followsYou: true,
+  },
+  {
+    id: 'p-5',
+    name: 'Hana Ekberg',
+    avatar: FRIENDS[4]!.avatar,
+    followers: '392 followers',
+    followsYou: false,
+  },
   {
     id: 'p-6',
     name: 'Tomas Rhee',
@@ -1350,7 +1560,9 @@ export const GREETING = 'Good evening';
 
 function series(base: number, drift: number, count = 14, seed = 1): number[] {
   const rnd = makeRng(seed);
-  return Array.from({ length: count }, (_, i) => Math.round(base + drift * i + (rnd() - 0.5) * base * 0.16));
+  return Array.from({ length: count }, (_, i) =>
+    Math.round(base + drift * i + (rnd() - 0.5) * base * 0.16),
+  );
 }
 
 export const STUDIO_METRICS = [
@@ -1389,10 +1601,14 @@ export const STUDIO_METRICS = [
 ];
 
 /** 21 Aug … 17 Sep. */
-const STREAM_DAYS = Array.from({ length: 28 }, (_, i) => (i < 11 ? `${21 + i} Aug` : `${i - 10} Sep`));
+const STREAM_DAYS = Array.from({ length: 28 }, (_, i) =>
+  i < 11 ? `${21 + i} Aug` : `${i - 10} Sep`,
+);
 const streamsByDay = STREAM_DAYS.map((label, i) => ({
   label,
-  value: Math.round(38000 + i * 520 + Math.sin(i / 2) * 3400 + (i >= 16 ? 21000 * Math.exp(-(i - 16) / 6) : 0)),
+  value: Math.round(
+    38000 + i * 520 + Math.sin(i / 2) * 3400 + (i >= 16 ? 21000 * Math.exp(-(i - 16) / 6) : 0),
+  ),
 }));
 
 export const STUDIO_STREAMS = [
@@ -1425,7 +1641,10 @@ export const STUDIO_TOP_TRACKS = TRACKS.filter((t) => t.artistIds[0] === 'lumen-
   });
 
 export const STUDIO_BREAKDOWN = {
-  cities: ARTIST_BY_ID['lumen-vale']!.cities.map((c) => ({ label: c.city, value: Number(c.count.replace(/,/g, '')) })),
+  cities: ARTIST_BY_ID['lumen-vale']!.cities.map((c) => ({
+    label: c.city,
+    value: Number(c.count.replace(/,/g, '')),
+  })),
   countries: [
     { label: 'Marovia', value: 418200 },
     { label: 'Estland Isles', value: 211800 },
@@ -1553,7 +1772,12 @@ export const STUDIO_STEPS = [
     date: 'Now',
     description: 'Add a square cover, at least 3000 px.',
   },
-  { id: 'review', label: 'Review', state: 'upcoming' as const, description: 'Usually takes 2–3 days.' },
+  {
+    id: 'review',
+    label: 'Review',
+    state: 'upcoming' as const,
+    description: 'Usually takes 2–3 days.',
+  },
   { id: 'scheduled', label: 'Scheduled', state: 'upcoming' as const },
   { id: 'live', label: 'Live', state: 'upcoming' as const, date: '20 Nov' },
 ];
@@ -1573,12 +1797,17 @@ export const STUDIO_GENRES = [
   label,
 }));
 
-export const STUDIO_LANGUAGES = ['English', 'Spanish', 'French', 'Portuguese', 'Catalan', 'Instrumental'].map(
-  (label) => ({
-    value: label.toLowerCase(),
-    label,
-  }),
-);
+export const STUDIO_LANGUAGES = [
+  'English',
+  'Spanish',
+  'French',
+  'Portuguese',
+  'Catalan',
+  'Instrumental',
+].map((label) => ({
+  value: label.toLowerCase(),
+  label,
+}));
 
 export const STUDIO_MOODS = ['Dreamy', 'Nocturnal', 'Melancholy', 'Uplifting', 'Driving', 'Calm'];
 export const STUDIO_PITCH_GENRES = ['Synth-pop', 'Indie pop', 'Electronic', 'Dream pop', 'Ambient'];

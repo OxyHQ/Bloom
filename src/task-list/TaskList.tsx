@@ -78,10 +78,15 @@ export interface TaskListPalette {
 export function resolveTaskListPalette(theme: Theme): TaskListPalette {
   const c = theme.colors;
   return {
-    textPrimary: c.text, textSecondary: c.textSecondary,
-    iconSecondary: c.textSecondary, iconTertiary: c.textTertiary, ring: c.primary,
-    chipBorder: c.borderLight, chipBorderHover: c.border,
-    chipSurface: c.backgroundSecondary, chipSurfaceHover: c.backgroundTertiary,
+    textPrimary: c.text,
+    textSecondary: c.textSecondary,
+    iconSecondary: c.textSecondary,
+    iconTertiary: c.textTertiary,
+    ring: c.primary,
+    chipBorder: c.borderLight,
+    chipBorderHover: c.border,
+    chipSurface: c.backgroundSecondary,
+    chipSurfaceHover: c.backgroundTertiary,
   };
 }
 
@@ -160,6 +165,7 @@ function TitleSwapLayer({
   // 0 = hidden below/above, 1 = settled.
   const progress = useSharedValue(phase === 'enter' && animate ? 0 : 1);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) {
       if (phase === 'exit') onExited?.(layer.id);
@@ -175,7 +181,6 @@ function TitleSwapLayer({
       done,
     );
     // Mount-only: each layer plays its one transition.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle((): WebCssStyle => {
@@ -297,7 +302,10 @@ function Collapse({
       opacity.value = target;
       return;
     }
-    height.value = withTiming(target, { duration: COLLAPSE_HEIGHT_MS, easing: AGENT_LOG_SOFT_EASE });
+    height.value = withTiming(target, {
+      duration: COLLAPSE_HEIGHT_MS,
+      easing: AGENT_LOG_SOFT_EASE,
+    });
     opacity.value = withTiming(target, { duration: COLLAPSE_OPACITY_MS, easing: EASE_OUT });
   }, [open, reduce, height, opacity]);
 
@@ -365,7 +373,13 @@ function Chip({ chip, palette }: { chip: TaskListChip; palette: TaskListPalette 
       {chip.icon ? (
         <View
           aria-hidden
-          style={{ width: 14, height: 14, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}
+          style={{
+            width: 14,
+            height: 14,
+            flexShrink: 0,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
           {chip.icon}
         </View>
@@ -454,7 +468,9 @@ function TaskSection({
   const rotation = useSharedValue(open ? 180 : 0);
   useEffect(() => {
     const target = open ? 180 : 0;
-    rotation.value = reduce ? target : withTiming(target, { duration: CHEVRON_MS, easing: CSS_EASE });
+    rotation.value = reduce
+      ? target
+      : withTiming(target, { duration: CHEVRON_MS, easing: CSS_EASE });
   }, [open, reduce, rotation]);
   const chevronStyle = useAnimatedStyle(
     () => ({ transform: [{ rotate: `${rotation.value}deg` }] }),
@@ -512,7 +528,8 @@ function TaskSection({
             if (revealed <= unit) return null;
             // Last REVEALED step, not last in the data: the guide ends on the
             // newest branch and extends as the log grows.
-            const lastShown = stepIndex === Math.min(revealed - headIndex - 2, task.steps.length - 1);
+            const lastShown =
+              stepIndex === Math.min(revealed - headIndex - 2, task.steps.length - 1);
             return (
               <StepRow
                 key={`${step.label}-${stepIndex}`}

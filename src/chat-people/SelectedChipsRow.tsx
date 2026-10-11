@@ -56,12 +56,7 @@ function PersonChip({
       }}
       testID={testID}
     >
-      <Avatar
-        source={person.avatar}
-        variant={person.avatarVariant}
-        name={person.name}
-        size={24}
-      />
+      <Avatar source={person.avatar} variant={person.avatarVariant} name={person.name} size={24} />
       <Text
         variant="body-2-medium"
         numberOfLines={1}
@@ -126,10 +121,7 @@ function SelectedChipsRowComponent({
 
   if (layout === 'wrap') {
     return (
-      <View
-        style={[{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, style]}
-        testID={testID}
-      >
+      <View style={[{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, style]} testID={testID}>
         {chips}
       </View>
     );

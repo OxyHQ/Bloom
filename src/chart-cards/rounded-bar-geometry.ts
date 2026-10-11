@@ -10,7 +10,13 @@ const clean = (n: number) => Number(n.toFixed(4));
  * recharts `getRectanglePath` for four equal corners: every radius clamped to
  * half the bar's width and height, arcs clockwise from the top-left.
  */
-export function roundedBarPath(x: number, y: number, width: number, height: number, radius: number): string {
+export function roundedBarPath(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+): string {
   if (width <= 0 || height <= 0) return '';
   const r = Math.max(0, Math.min(radius, width / 2, height / 2));
   const f = clean;
@@ -31,7 +37,11 @@ export function roundedBarPath(x: number, y: number, width: number, height: numb
  * width left over rounded to whole pixels, then capped at `maxBarSize` — the
  * capped bar centred on where the uncapped one would have been.
  */
-export function singleBarSlot(band: number, categoryGap: number, maxBarSize?: number): { offset: number; size: number } {
+export function singleBarSlot(
+  band: number,
+  categoryGap: number,
+  maxBarSize?: number,
+): { offset: number; size: number } {
   const offset = band * categoryGap;
   let original = band - 2 * offset;
   if (original > 1) original = Math.round(original);

@@ -60,7 +60,14 @@ describe('BarListCard', () => {
     const { getByTestId } = renderCard(<BarListCard testID="barlist" tabs={TABS} />);
     const card = cardLayout(getByTestId('barlist'));
     expect(card.height).toBeUndefined();
-    expect(card).toMatchObject({ borderRadius: 16, gap: 12, paddingTop: 4, paddingLeft: 16, paddingRight: 16, paddingBottom: 12 });
+    expect(card).toMatchObject({
+      borderRadius: 16,
+      gap: 12,
+      paddingTop: 4,
+      paddingLeft: 16,
+      paddingRight: 16,
+      paddingBottom: 12,
+    });
     const palette = resolveChartCardPalette(buildTheme('teal', 'light'));
     expect(resolvedStyle(getByTestId('barlist-header').props.style)).toMatchObject({
       marginLeft: -16,
@@ -71,15 +78,23 @@ describe('BarListCard', () => {
       borderBottomWidth: 1,
       borderBottomColor: palette.track,
     });
-    expect(resolvedStyle(getByTestId('barlist-rows').props.style)).toMatchObject({ marginLeft: -8, marginRight: -8, marginBottom: -4 });
+    expect(resolvedStyle(getByTestId('barlist-rows').props.style)).toMatchObject({
+      marginLeft: -8,
+      marginRight: -8,
+      marginBottom: -4,
+    });
   });
 
   it('prints shares of the tab total by default, raw values with metric="value"', () => {
     const shares = renderCard(<BarListCard testID="barlist" tabs={TABS} />);
-    for (const text of ['Desktop', '61%', '31%', '8%', 'Visitors']) expect(shares.getByText(text)).toBeTruthy();
+    for (const text of ['Desktop', '61%', '31%', '8%', 'Visitors'])
+      expect(shares.getByText(text)).toBeTruthy();
     shares.unmount();
-    const values = renderCard(<BarListCard testID="barlist" tabs={TABS} metric="value" metricLabel="People" />);
-    for (const text of ['5,980', '3,020', '820', 'People']) expect(values.getByText(text)).toBeTruthy();
+    const values = renderCard(
+      <BarListCard testID="barlist" tabs={TABS} metric="value" metricLabel="People" />,
+    );
+    for (const text of ['5,980', '3,020', '820', 'People'])
+      expect(values.getByText(text)).toBeTruthy();
   });
 
   it('draws 36px rows with a 14% tint of chart-6, deepened to 26% on hover', () => {
@@ -115,14 +130,21 @@ describe('BarListCard', () => {
   });
 
   it('hides rows past the limit behind a "more" pill that shows them all', () => {
-    const { getByTestId, queryByText, getByText } = renderCard(<BarListCard testID="barlist" tabs={TABS} defaultTab="browsers" />);
+    const { getByTestId, queryByText, getByText } = renderCard(
+      <BarListCard testID="barlist" tabs={TABS} defaultTab="browsers" />,
+    );
     expect(getByText('Samsung Internet')).toBeTruthy();
     expect(queryByText('Opera')).toBeNull();
     const more = getByTestId('barlist-rows-more');
     expect(more.props.role).toBe('button');
     expect(more.props.accessibilityLabel).toBe('Show 2 more');
     expect(more.props['aria-expanded']).toBe(false);
-    expect(resolvedStyle(more.props.style)).toMatchObject({ width: 40, height: 20, bottom: 4, marginLeft: -20 });
+    expect(resolvedStyle(more.props.style)).toMatchObject({
+      width: 40,
+      height: 20,
+      bottom: 4,
+      marginLeft: -20,
+    });
 
     fireEvent.press(more);
     expect(getByText('Opera')).toBeTruthy();
@@ -137,9 +159,13 @@ describe('BarListCard', () => {
 
   it('switches tabs and reports them', () => {
     const onTabChange = jest.fn();
-    const { UNSAFE_getAllByProps, queryByText, getByText } = renderCard(<BarListCard tabs={TABS} onTabChange={onTabChange} />);
+    const { UNSAFE_getAllByProps, queryByText, getByText } = renderCard(
+      <BarListCard tabs={TABS} onTabChange={onTabChange} />,
+    );
     expect(queryByText('Chrome')).toBeNull();
-    const tabs = UNSAFE_getAllByProps({ variant: 'underline' }) as unknown as { props: { onValueChange: (v: string) => void; style: unknown } }[];
+    const tabs = UNSAFE_getAllByProps({ variant: 'underline' }) as unknown as {
+      props: { onValueChange: (v: string) => void; style: unknown };
+    }[];
     expect(resolvedStyle(tabs[0]!.props.style).borderBottomWidth).toBe(0);
     fireEvent(tabs[0] as never, 'valueChange', 'browsers');
     expect(onTabChange).toHaveBeenCalledWith('browsers');
@@ -159,19 +185,27 @@ describe('BarListCard', () => {
     const theme = buildTheme('teal', 'dark');
     const palette = resolveChartCardPalette(theme);
     const mono = renderCard(<BarListCard testID="barlist" tabs={TABS} mono />, 'dark');
-    expect(resolvedStyle(mono.getByTestId('barlist-rows-row-0-bar').props.style).backgroundColor).toBe(
-      mixColor(palette.surface, resolveMonoTone(theme).color, 0.14),
-    );
+    expect(
+      resolvedStyle(mono.getByTestId('barlist-rows-row-0-bar').props.style).backgroundColor,
+    ).toBe(mixColor(palette.surface, resolveMonoTone(theme).color, 0.14));
     mono.unmount();
     const custom = renderCard(
-      <BarListCard testID="barlist" title="Referrers" items={[{ label: 'a', value: 2, color: 'rgb(200 100 50)' }, { label: 'b', value: 1 }]} color="rgb(10 20 30)" />,
+      <BarListCard
+        testID="barlist"
+        title="Referrers"
+        items={[
+          { label: 'a', value: 2, color: 'rgb(200 100 50)' },
+          { label: 'b', value: 1 },
+        ]}
+        color="rgb(10 20 30)"
+      />,
       'dark',
     );
-    expect(resolvedStyle(custom.getByTestId('barlist-rows-row-0-bar').props.style).backgroundColor).toBe(
-      mixColor(palette.surface, 'rgb(200 100 50)', 0.14),
-    );
-    expect(resolvedStyle(custom.getByTestId('barlist-rows-row-1-bar').props.style).backgroundColor).toBe(
-      mixColor(palette.surface, 'rgb(10 20 30)', 0.14),
-    );
+    expect(
+      resolvedStyle(custom.getByTestId('barlist-rows-row-0-bar').props.style).backgroundColor,
+    ).toBe(mixColor(palette.surface, 'rgb(200 100 50)', 0.14));
+    expect(
+      resolvedStyle(custom.getByTestId('barlist-rows-row-1-bar').props.style).backgroundColor,
+    ).toBe(mixColor(palette.surface, 'rgb(10 20 30)', 0.14));
   });
 });

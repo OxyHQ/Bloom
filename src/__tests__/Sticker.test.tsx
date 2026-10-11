@@ -22,7 +22,12 @@ jest.mock('react-native-reanimated', () => ({
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { StickerMessage } from '../message-media';
-import { Sticker, provideLottiePlayer, resetLottiePlayer, type LottiePlayerProps } from '../sticker';
+import {
+  Sticker,
+  provideLottiePlayer,
+  resetLottiePlayer,
+  type LottiePlayerProps,
+} from '../sticker';
 
 let container: HTMLDivElement;
 let root: Root;
@@ -38,7 +43,11 @@ function FakePlayer(props: LottiePlayerProps) {
 
 function mount(ui: React.ReactElement) {
   act(() => {
-    root.render(<BloomThemeProvider mode="light" colorPreset="teal">{ui}</BloomThemeProvider>);
+    root.render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {ui}
+      </BloomThemeProvider>,
+    );
   });
 }
 
@@ -116,7 +125,9 @@ describe('Sticker', () => {
 
   it('is named as an image unless its container names it', () => {
     mount(<Sticker fallback={STILL} accessibilityLabel="Sticker: waving" testID="named" />);
-    expect(container.querySelector('[data-testid="named"]')?.getAttribute('aria-label')).toBe('Sticker: waving');
+    expect(container.querySelector('[data-testid="named"]')?.getAttribute('aria-label')).toBe(
+      'Sticker: waving',
+    );
 
     mount(<Sticker fallback={STILL} decorative testID="quiet" />);
     const quiet = container.querySelector('[data-testid="quiet"]');
@@ -129,10 +140,19 @@ describe('StickerMessage with an animation', () => {
   it('animates inside the pressable, which keeps the only accessible name', () => {
     provideLottiePlayer(FakePlayer);
     mount(
-      <StickerMessage source={STILL} animation={ANIMATION} accessibilityLabel="Sticker: waving" testID="msg" />,
+      <StickerMessage
+        source={STILL}
+        animation={ANIMATION}
+        accessibilityLabel="Sticker: waving"
+        testID="msg"
+      />,
     );
-    expect(container.querySelector('[data-testid="msg-frame"]')?.getAttribute('aria-label')).toBe('Sticker: waving');
-    expect(container.querySelector('[data-testid="msg-sticker"]')?.getAttribute('aria-hidden')).toBe('true');
+    expect(container.querySelector('[data-testid="msg-frame"]')?.getAttribute('aria-label')).toBe(
+      'Sticker: waving',
+    );
+    expect(
+      container.querySelector('[data-testid="msg-sticker"]')?.getAttribute('aria-hidden'),
+    ).toBe('true');
     expect(lastPlayer?.uri).toBe(ANIMATION);
   });
 

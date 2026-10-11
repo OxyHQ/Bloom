@@ -7,7 +7,12 @@ import { HomePage } from './HomePage';
 import { MusicFrame, type SidePane } from './MusicFrame';
 import { LibraryPanel } from '../../src/music-library';
 import { PageScroll, albumPlay, showPlay, useMusicLayout } from './parts';
-import { PlayerProvider, playablesFromTrackIds, type PlayContext, type Playable } from './PlayerContext';
+import {
+  PlayerProvider,
+  playablesFromTrackIds,
+  type PlayContext,
+  type Playable,
+} from './PlayerContext';
 import { PodcastPage, EpisodePage } from './PodcastPages';
 import { ProfilePage } from './ProfilePage';
 import { MusicRouterProvider, useMusicRouter, type MusicRoute } from './router';
@@ -35,7 +40,13 @@ function loadedState(loaded: MusicAppProps['loaded'], playing: boolean) {
   if (loaded === 'episode') {
     const episode = EPISODE_BY_ID['quiet-cartography-ep-1']!;
     const play = showPlay(SHOW_BY_ID[episode.showId]!);
-    return { items: play.items, index: 0, context: play.context, position: episode.progress ?? 0, playing } satisfies {
+    return {
+      items: play.items,
+      index: 0,
+      context: play.context,
+      position: episode.progress ?? 0,
+      playing,
+    } satisfies {
       items: Playable[];
       index: number;
       context: PlayContext;

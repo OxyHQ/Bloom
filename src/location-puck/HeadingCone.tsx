@@ -57,13 +57,7 @@ function HeadingConeComponent({ length, halfAngle, color, testID }: HeadingConeP
           centre is the apex and the radius is the cone's length, exactly, for
           every angle.
         */}
-        <RadialGradient
-          id={gradientId}
-          gradientUnits="userSpaceOnUse"
-          cx={r}
-          cy={r}
-          r={r}
-        >
+        <RadialGradient id={gradientId} gradientUnits="userSpaceOnUse" cx={r} cy={r} r={r}>
           <Stop
             offset={String(LOCATION_PUCK_CONE_STOPS.inner.offset)}
             stopColor={color}

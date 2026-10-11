@@ -34,17 +34,17 @@ import {
 
 const meta: Meta<typeof DataTable> = {
   argTypes: {
-    "selectable": { control: 'boolean' },
-    "selectAllLabel": { control: 'text' },
-    "pageSize": { control: 'number' },
-    "page": { control: 'number' },
-    "defaultPage": { control: 'number' },
-    "size": { control: 'select', options: ["sm","md"] },
-    "defaultSize": { control: 'select', options: ["sm","md"] },
-    "showSizeToggle": { control: 'boolean' },
-    "sizeToggleAccessibilityLabel": { control: 'text' },
-    "minWidth": { control: 'number' },
-    "layout": { control: 'select', options: ["inset","table"] }
+    selectable: { control: 'boolean' },
+    selectAllLabel: { control: 'text' },
+    pageSize: { control: 'number' },
+    page: { control: 'number' },
+    defaultPage: { control: 'number' },
+    size: { control: 'select', options: ['sm', 'md'] },
+    defaultSize: { control: 'select', options: ['sm', 'md'] },
+    showSizeToggle: { control: 'boolean' },
+    sizeToggleAccessibilityLabel: { control: 'text' },
+    minWidth: { control: 'number' },
+    layout: { control: 'select', options: ['inset', 'table'] },
   },
   title: 'Blocks/Data Table',
   component: DataTable,
@@ -109,8 +109,50 @@ const PHOTO_PEOPLE: { name: string; avatar: string }[] = [
   { name: 'Ann Press', avatar: photo('photo-1517841905240-472988babdf9') },
 ];
 
-const FIRST_NAMES = ['Marcus', 'Cheyenne', 'Alfredo', 'Talan', 'Roger', 'Cristofer', 'Emery', 'Kadin', 'Nolan', 'Ruben', 'Skylar', 'Hanna', 'Corey', 'Miracle', 'Zaire', 'Cooper', 'Leilani', 'Alena', 'Terry', 'Jaxson'];
-const LAST_NAMES = ['Culhane', 'Herwitz', 'Septimus', 'Bergson', 'Curtis', 'Vetrovs', 'Rhiel', 'Dokidis', 'Kenter', 'Stanton', 'Baptista', 'Workman', 'Torff', 'Calzoni', 'Rosser', 'Geidt', 'Bator', 'Vaccaro', 'Lipshutz', 'Botosh'];
+const FIRST_NAMES = [
+  'Marcus',
+  'Cheyenne',
+  'Alfredo',
+  'Talan',
+  'Roger',
+  'Cristofer',
+  'Emery',
+  'Kadin',
+  'Nolan',
+  'Ruben',
+  'Skylar',
+  'Hanna',
+  'Corey',
+  'Miracle',
+  'Zaire',
+  'Cooper',
+  'Leilani',
+  'Alena',
+  'Terry',
+  'Jaxson',
+];
+const LAST_NAMES = [
+  'Culhane',
+  'Herwitz',
+  'Septimus',
+  'Bergson',
+  'Curtis',
+  'Vetrovs',
+  'Rhiel',
+  'Dokidis',
+  'Kenter',
+  'Stanton',
+  'Baptista',
+  'Workman',
+  'Torff',
+  'Calzoni',
+  'Rosser',
+  'Geidt',
+  'Bator',
+  'Vaccaro',
+  'Lipshutz',
+  'Botosh',
+];
 
 function makeRng(seed: number) {
   let a = seed;
@@ -164,7 +206,12 @@ const CUSTOMERS: Customer[] = (() => {
     };
     const person = PHOTO_PEOPLE[i];
     if (person) {
-      return { ...base, name: person.name, avatar: person.avatar, initialsColor: 'neutral' as const };
+      return {
+        ...base,
+        name: person.name,
+        avatar: person.avatar,
+        initialsColor: 'neutral' as const,
+      };
     }
     const name = `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
     return { ...base, name, initialsColor: rng() > 0.5 ? ('blue' as const) : ('neutral' as const) };
@@ -196,8 +243,17 @@ function CustomerAvatar({ customer, size }: { customer: Customer; size: DataTabl
         <Text
           style={
             size === 'sm'
-              ? { fontSize: 10, lineHeight: 15, fontWeight: '600', color: blueTone ? blue[900] : theme.colors.textSecondary }
-              : { ...TYPE_SCALE['caption-1-semibold'], letterSpacing: 0, color: blueTone ? blue[900] : theme.colors.textSecondary }
+              ? {
+                  fontSize: 10,
+                  lineHeight: 15,
+                  fontWeight: '600',
+                  color: blueTone ? blue[900] : theme.colors.textSecondary,
+                }
+              : {
+                  ...TYPE_SCALE['caption-1-semibold'],
+                  letterSpacing: 0,
+                  color: blueTone ? blue[900] : theme.colors.textSecondary,
+                }
           }
         >
           {initialsOf(customer.name)}
@@ -227,7 +283,9 @@ function buildColumns(): DataTableColumn<Customer>[] {
       basis: 240,
       accessor: (c) => c.name,
       cell: ({ row, size }) => (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0, flexShrink: 1 }}>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0, flexShrink: 1 }}
+        >
           <CustomerAvatar customer={row} size={size} />
           <Text numberOfLines={1} variant="body-medium" style={{ flexShrink: 1 }}>
             {row.name}
@@ -289,7 +347,9 @@ function buildColumns(): DataTableColumn<Customer>[] {
       // Three 32px buttons + two 10px gaps + the 12px insets: the natural
       // width for the row's three actions.
       minWidth: 140,
-      cell: ({ row }) => <DataTableRowActions name={row.name} actions={ROW_ACTIONS} menu={MORE_MENU_ACTIONS} />,
+      cell: ({ row }) => (
+        <DataTableRowActions name={row.name} actions={ROW_ACTIONS} menu={MORE_MENU_ACTIONS} />
+      ),
     },
   ];
 }
@@ -354,15 +414,25 @@ function CustomersDataTable({
               label="Filter by product"
               value={productFilter}
               onValueChange={filter(setProductFilter)}
-              options={[{ value: 'all', label: 'All products' }, ...PRODUCTS.map((p) => ({ value: p, label: p }))]}
+              options={[
+                { value: 'all', label: 'All products' },
+                ...PRODUCTS.map((p) => ({ value: p, label: p })),
+              ]}
             />
             <DataTableFilter
               label="Filter by region"
               value={regionFilter}
               onValueChange={filter(setRegionFilter)}
-              options={[{ value: 'all', label: 'All regions' }, ...REGIONS.map((r) => ({ value: r, label: r }))]}
+              options={[
+                { value: 'all', label: 'All regions' },
+                ...REGIONS.map((r) => ({ value: r, label: r })),
+              ]}
             />
-            <DataTableSearch label="Search customers" value={query} onValueChange={filter(setQuery)} />
+            <DataTableSearch
+              label="Search customers"
+              value={query}
+              onValueChange={filter(setQuery)}
+            />
           </>
         }
         selectable
@@ -384,7 +454,11 @@ function CustomersDataTable({
 /** Paints the theme's page colour behind a story, so dark mode reads as dark. */
 function Page({ children, padding = 0 }: { children: React.ReactNode; padding?: number }) {
   const theme = useTheme();
-  return <View style={{ width: '100%', minWidth: 0, padding, backgroundColor: theme.colors.background }}>{children}</View>;
+  return (
+    <View style={{ width: '100%', minWidth: 0, padding, backgroundColor: theme.colors.background }}>
+      {children}
+    </View>
+  );
 }
 
 /** An advanced data table: filters, search, sortable columns, row selection, row actions, pagination and the density toggle. */
@@ -463,22 +537,61 @@ export const Parts: Story = {
     return (
       <Page>
         <View style={{ gap: 16, alignItems: 'flex-start' }} testID="dt-parts">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16, alignItems: 'center' }}>
-            <DataTableSelect label="Purchase status" defaultValue="waiting" options={PURCHASES} width={142} />
-            <DataTableSelect label="Purchase status (compact)" defaultValue="completed" options={PURCHASES} width={132} size="sm" />
-            <DataTableSelect label="Admission status" defaultValue="outpatient" options={ADMISSIONS} width={150} />
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              maxWidth: '100%',
+              gap: 16,
+              alignItems: 'center',
+            }}
+          >
+            <DataTableSelect
+              label="Purchase status"
+              defaultValue="waiting"
+              options={PURCHASES}
+              width={142}
+            />
+            <DataTableSelect
+              label="Purchase status (compact)"
+              defaultValue="completed"
+              options={PURCHASES}
+              width={132}
+              size="sm"
+            />
+            <DataTableSelect
+              label="Admission status"
+              defaultValue="outpatient"
+              options={ADMISSIONS}
+              width={150}
+            />
           </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 10, alignItems: 'center' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              maxWidth: '100%',
+              gap: 10,
+              alignItems: 'center',
+            }}
+          >
             <DataTableFilter
               label="Filter by region"
               value={region}
               onValueChange={setRegion}
-              options={[{ value: 'all', label: 'All regions' }, ...REGIONS.map((r) => ({ value: r, label: r }))]}
+              options={[
+                { value: 'all', label: 'All regions' },
+                ...REGIONS.map((r) => ({ value: r, label: r })),
+              ]}
             />
             <DataTableSearch label="Search customers" value={query} onValueChange={setQuery} />
           </View>
           <View style={{ width: 140 }}>
-            <DataTableRowActions name="John Clarkson" actions={ROW_ACTIONS} menu={MORE_MENU_ACTIONS} />
+            <DataTableRowActions
+              name="John Clarkson"
+              actions={ROW_ACTIONS}
+              menu={MORE_MENU_ACTIONS}
+            />
           </View>
         </View>
       </Page>
@@ -496,21 +609,49 @@ const PEOPLE: Person[] = [
 
 /** The generic API with nothing but accessors: default text cells, sorting, no toolbar, no selection. */
 export const Minimal: Story = {
-  args: { selectable: false, defaultSize: 'md', showSizeToggle: true, pageSize: 5, layout: 'inset' },
-  parameters: { controls: { include: ["selectable","defaultSize","showSizeToggle","pageSize","layout","selectAllLabel","page","defaultPage","size","sizeToggleAccessibilityLabel","minWidth"] } },
+  args: {
+    selectable: false,
+    defaultSize: 'md',
+    showSizeToggle: true,
+    pageSize: 5,
+    layout: 'inset',
+  },
+  parameters: {
+    controls: {
+      include: [
+        'selectable',
+        'defaultSize',
+        'showSizeToggle',
+        'pageSize',
+        'layout',
+        'selectAllLabel',
+        'page',
+        'defaultPage',
+        'size',
+        'sizeToggleAccessibilityLabel',
+        'minWidth',
+      ],
+    },
+  },
   render: (args) => (
     <Page>
       <View style={{ maxWidth: '100%', width: 600 }}>
-      <DataTable {...args}
-        accessibilityLabel="People"
-        rows={PEOPLE}
-        getRowId={(p) => p.id}
-        columns={[
-          { id: 'name', header: 'Name', accessor: (p) => p.name },
-          { id: 'role', header: 'Role', accessor: (p) => p.role },
-          { id: 'joined', header: 'Joined', accessor: (p) => p.joined, cell: ({ row }) => row.joined.toDateString() },
-        ]}
-      />
+        <DataTable
+          {...args}
+          accessibilityLabel="People"
+          rows={PEOPLE}
+          getRowId={(p) => p.id}
+          columns={[
+            { id: 'name', header: 'Name', accessor: (p) => p.name },
+            { id: 'role', header: 'Role', accessor: (p) => p.role },
+            {
+              id: 'joined',
+              header: 'Joined',
+              accessor: (p) => p.joined,
+              cell: ({ row }) => row.joined.toDateString(),
+            },
+          ]}
+        />
       </View>
     </Page>
   ),

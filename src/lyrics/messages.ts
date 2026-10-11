@@ -12,9 +12,12 @@ export interface LyricsMessages {
   empty: string;
 }
 
-export const LYRICS_MESSAGES: MessageCatalog<LyricsMessages> = defineMessages<LyricsMessages>('LYRICS_MESSAGES', {
-  lyrics: 'Lyrics',
-  showLyrics: 'Show lyrics',
-  backToCurrent: 'Back to current line',
-  empty: 'Lyrics aren’t available for this track',
-});
+export const LYRICS_MESSAGES: MessageCatalog<LyricsMessages> = defineMessages<LyricsMessages>(
+  'LYRICS_MESSAGES',
+  {
+    lyrics: 'Lyrics',
+    showLyrics: 'Show lyrics',
+    backToCurrent: 'Back to current line',
+    empty: 'Lyrics aren’t available for this track',
+  },
+);

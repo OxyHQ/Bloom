@@ -7,13 +7,27 @@ import type { Theme, ThemeChartColor } from './types';
 /** Keep the first five canonical series stable; interleave four extra hues. */
 const HUE_OFFSETS = [0, 72, 144, 216, 288, 36, 108, 180, 252] as const;
 const MONO_STEPS = [0, 1, 2, 3, 4, 0.5, 1.5, 2.5, 3.5] as const;
-const rgb = (argb: number) => `rgb(${redFromArgb(argb)} ${greenFromArgb(argb)} ${blueFromArgb(argb)})`;
+const rgb = (argb: number) =>
+  `rgb(${redFromArgb(argb)} ${greenFromArgb(argb)} ${blueFromArgb(argb)})`;
 
 /** One categorical policy for CSS tokens, JS themes and custom-theme fallback. */
-export function createChartColors(hue: number, isDark: boolean, monochrome: boolean): readonly ThemeChartColor[] {
+export function createChartColors(
+  hue: number,
+  isDark: boolean,
+  monochrome: boolean,
+): readonly ThemeChartColor[] {
   return HUE_OFFSETS.map((offset, index) => {
-    const palette = TonalPalette.fromHueAndChroma(monochrome ? 0 : (hue + offset) % 360, monochrome ? 0 : 60);
-    const tone = monochrome ? (isDark ? 40 + MONO_STEPS[index]! * 13 : 78 - MONO_STEPS[index]! * 13) : isDark ? 72 : 48;
+    const palette = TonalPalette.fromHueAndChroma(
+      monochrome ? 0 : (hue + offset) % 360,
+      monochrome ? 0 : 60,
+    );
+    const tone = monochrome
+      ? isDark
+        ? 40 + MONO_STEPS[index]! * 13
+        : 78 - MONO_STEPS[index]! * 13
+      : isDark
+        ? 72
+        : 48;
     // A uniform mono shift keeps every neighbouring step separated, including
     // the lightest dark-mode series; clipping an +8 shift would crowd it.
     const activeTone = tone + (isDark ? (monochrome ? 3 : 8) : -8);

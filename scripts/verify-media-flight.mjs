@@ -32,10 +32,7 @@ const require = createRequire(import.meta.url);
 
 // puppeteer-core is not a Bloom dependency — this is a local verification tool,
 // not part of the package. Resolve it from a sibling repo that already has it.
-const PUPPETEER_PATHS = [
-  '/home/nate/Oxy/Homiio/node_modules/puppeteer-core',
-  'puppeteer-core',
-];
+const PUPPETEER_PATHS = ['/home/nate/Oxy/Homiio/node_modules/puppeteer-core', 'puppeteer-core'];
 
 function loadPuppeteer() {
   for (const candidate of PUPPETEER_PATHS) {
@@ -300,7 +297,9 @@ async function checkPaintLatency(page, failures) {
       `against a warm ${worstWarm} ms, so this harness cannot tell the two apart and the ` +
       'warm assertion above proves nothing',
   );
-  console.log(`      paint latency after flyTo resolve: warm ${warm.join('/')} ms, cold(throttled) ${cold} ms`);
+  console.log(
+    `      paint latency after flyTo resolve: warm ${warm.join('/')} ms, cold(throttled) ${cold} ms`,
+  );
 }
 
 /**
@@ -403,24 +402,36 @@ async function checkVideoGeometry(page, failures) {
   // throttled tab returns a handful of samples that all look fine. "It tracked
   // its box on every frame" over 20 frames of a 60-frame flight is a pass for
   // want of anything to look at. See `page.bringToFront()` in `main`.
-  report(failures, !Array.isArray(good) || good.length >= 30,
+  report(
+    failures,
+    !Array.isArray(good) || good.length >= 30,
     `video: only ${good?.length ?? 0} samples across the flight — too few to have watched it. ` +
-    'A throttled tab (rAF at ~3 Hz) produces exactly this, and every assertion below would pass on it');
-  report(failures, Array.isArray(good) && good.length > 5,
+      'A throttled tab (rAF at ~3 Hz) produces exactly this, and every assertion below would pass on it',
+  );
+  report(
+    failures,
+    Array.isArray(good) && good.length > 5,
     `video: no <video> was observed at all (${good === null ? 'trigger not clickable' : `${good?.length ?? 0} samples`}) — ` +
-    'provideExpoVideo did not install a view, so this phase measures nothing');
+      'provideExpoVideo did not install a view, so this phase measures nothing',
+  );
   if (!Array.isArray(good) || good.length <= 5) return;
 
   // The media element must match its box on EVERY frame, both axes.
   const off = good.filter(({ v, b }) => Math.abs(v[0] - b[0]) > 2 || Math.abs(v[1] - b[1]) > 2);
-  report(failures, off.length === 0,
+  report(
+    failures,
+    off.length === 0,
     `video: the media element did not track its box on ${off.length}/${good.length} frames — ` +
-    `e.g. video=${JSON.stringify(off[0]?.v)} box=${JSON.stringify(off[0]?.b)}`);
+      `e.g. video=${JSON.stringify(off[0]?.v)} box=${JSON.stringify(off[0]?.b)}`,
+  );
 
   // …and the box must actually have moved, or "it tracked" is vacuous.
   const heights = good.map((f) => f.b[1]);
-  report(failures, Math.max(...heights) - Math.min(...heights) > 20,
-    `video: the box never changed size (heights ${Math.min(...heights)}..${Math.max(...heights)}), so tracking proves nothing`);
+  report(
+    failures,
+    Math.max(...heights) - Math.min(...heights) > 20,
+    `video: the box never changed size (heights ${Math.min(...heights)}..${Math.max(...heights)}), so tracking proves nothing`,
+  );
 
   // POSITIVE CONTROL: the same flight with a view that applies width and not
   // height must be CAUGHT. Without this, "it tracked" is also what a detector
@@ -429,9 +440,12 @@ async function checkVideoGeometry(page, failures) {
   const brokenOff = Array.isArray(broken)
     ? broken.filter(({ v, b }) => Math.abs(v[1] - b[1]) > 2).length
     : 0;
-  report(failures, brokenOff > 0,
+  report(
+    failures,
+    brokenOff > 0,
     'video: the control did NOT discriminate — a view that applies no height was ' +
-    'measured as tracking its box, so the assertion above proves nothing');
+      'measured as tracking its box, so the assertion above proves nothing',
+  );
 }
 
 /**
@@ -456,11 +470,12 @@ async function checkStillPlaying(page, failures) {
     return;
   }
 
-  const read = () => page.evaluate(() => {
-    const v = document.querySelector('#bloom-portal-root video');
-    if (!v) return null;
-    return { paused: v.paused, t: v.currentTime, ready: v.readyState };
-  });
+  const read = () =>
+    page.evaluate(() => {
+      const v = document.querySelector('#bloom-portal-root video');
+      if (!v) return null;
+      return { paused: v.paused, t: v.currentTime, ready: v.readyState };
+    });
 
   await sleep(120);
   const during = await read();
@@ -475,8 +490,11 @@ async function checkStillPlaying(page, failures) {
   report(failures, !during.paused, 'playing: the video was PAUSED mid-flight');
   report(failures, !after.paused, 'playing: the video was PAUSED after landing');
   // …and it actually advanced, or "not paused" is satisfied by a stalled element.
-  report(failures, after.t > during.t,
-    `playing: currentTime did not advance (${during.t} -> ${after.t}) — not paused, but not moving either`);
+  report(
+    failures,
+    after.t > during.t,
+    `playing: currentTime did not advance (${during.t} -> ${after.t}) — not paused, but not moving either`,
+  );
 
   // CONTROL: pause it by hand and confirm this phase would say so. Without it,
   // "still playing" is also what a probe that reads the wrong element reports.
@@ -486,10 +504,15 @@ async function checkStillPlaying(page, failures) {
     v.pause();
     return v.paused;
   });
-  report(failures, caught === true,
+  report(
+    failures,
+    caught === true,
     'playing: the control did not discriminate — pausing the element by hand did not register, ' +
-    'so this phase cannot tell a playing video from a frozen one');
-  console.log(`      playback: mid-flight t=${during.t.toFixed(2)} paused=${during.paused}; after t=${after.t.toFixed(2)} paused=${after.paused}`);
+      'so this phase cannot tell a playing video from a frozen one',
+  );
+  console.log(
+    `      playback: mid-flight t=${during.t.toFixed(2)} paused=${during.paused}; after t=${after.t.toFixed(2)} paused=${after.paused}`,
+  );
 }
 
 /**
@@ -512,21 +535,26 @@ async function checkStillPlaying(page, failures) {
  * phase is measuring a query that happens to find the same node twice.
  */
 async function checkElementIdentity(page, failures) {
-  const sample = async () => ({ at: Date.now(), ...(await page.evaluate(() => {
-    const found = [...document.querySelectorAll('video[data-el-id]')];
-    return {
-      ids: found.map((v) => v.dataset.elId),
-      count: found.length,
-      // The consequence of identity, in the currency the viewer feels: a NEW
-      // element starts at zero however perfectly it is positioned.
-      t: Math.max(0, ...found.map((v) => v.currentTime)),
-      duration: Math.max(0, ...found.map((v) => (Number.isFinite(v.duration) ? v.duration : 0))),
-      paused: found.every((v) => v.paused),
-    };
-  })) });
+  const sample = async () => ({
+    at: Date.now(),
+    ...(await page.evaluate(() => {
+      const found = [...document.querySelectorAll('video[data-el-id]')];
+      return {
+        ids: found.map((v) => v.dataset.elId),
+        count: found.length,
+        // The consequence of identity, in the currency the viewer feels: a NEW
+        // element starts at zero however perfectly it is positioned.
+        t: Math.max(0, ...found.map((v) => v.currentTime)),
+        duration: Math.max(0, ...found.map((v) => (Number.isFinite(v.duration) ? v.duration : 0))),
+        paused: found.every((v) => v.paused),
+      };
+    })),
+  });
 
   async function run(story, trigger) {
-    await page.goto(`${BASE}/iframe.html?id=${story}&viewMode=story`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE}/iframe.html?id=${story}&viewMode=story`, {
+      waitUntil: 'networkidle0',
+    });
     await page.waitForSelector(`[data-testid="${trigger}"]`, { timeout: 20000 });
     // The origin's element, before anything is pressed.
     await sleep(150);
@@ -570,31 +598,48 @@ async function checkElementIdentity(page, failures) {
   if (good === null) return;
 
   const stamps = [...good.before.ids, ...good.during.ids, ...good.after.ids];
-  report(failures, good.before.count === 1,
+  report(
+    failures,
+    good.before.count === 1,
     `identity: the origin showed ${good.before.count} video elements, not 1 — ` +
-    'no video was created, so every identity assertion below is vacuous');
-  report(failures, good.during.count === 1,
-    `identity: ${good.during.count} video elements mid-flight, not 1`);
-  report(failures, good.after.count === 1,
-    `identity: ${good.after.count} video elements after landing, not 1`);
-  report(failures, new Set(stamps).size === 1,
+      'no video was created, so every identity assertion below is vacuous',
+  );
+  report(
+    failures,
+    good.during.count === 1,
+    `identity: ${good.during.count} video elements mid-flight, not 1`,
+  );
+  report(
+    failures,
+    good.after.count === 1,
+    `identity: ${good.after.count} video elements after landing, not 1`,
+  );
+  report(
+    failures,
+    new Set(stamps).size === 1,
     `identity: the element was RECREATED during the flight — stamps ${JSON.stringify(stamps)} ` +
-    '(origin, mid-flight, landed). One stamp per creation, so more than one means a new element');
+      '(origin, mid-flight, landed). One stamp per creation, so more than one means a new element',
+  );
   // …and what identity is FOR. A recreated element restarts, so playback must
   // carry across both the take-off and the landing, and must still be moving at
   // the end rather than parked on the right frame.
-  report(failures, slip(good.before, good.during) < RESTART_S,
+  report(
+    failures,
+    slip(good.before, good.during) < RESTART_S,
     `identity: playback RESTARTED at take-off (${good.before.t.toFixed(2)} -> ${good.during.t.toFixed(2)}, ` +
-    `slip ${slip(good.before, good.during).toFixed(2)}s) — the flight is showing a different element than the origin was`);
-  report(failures, slip(good.during, good.after) < RESTART_S,
+      `slip ${slip(good.before, good.during).toFixed(2)}s) — the flight is showing a different element than the origin was`,
+  );
+  report(
+    failures,
+    slip(good.during, good.after) < RESTART_S,
     `identity: playback RESTARTED at the landing (${good.during.t.toFixed(2)} -> ${good.after.t.toFixed(2)}, ` +
-    `slip ${slip(good.during, good.after).toFixed(2)}s) — the destination is showing a different element than the flight was`);
-  report(failures, !good.after.paused,
-    'identity: the video is PAUSED after landing');
+      `slip ${slip(good.during, good.after).toFixed(2)}s) — the destination is showing a different element than the flight was`,
+  );
+  report(failures, !good.after.paused, 'identity: the video is PAUSED after landing');
   console.log(
     `      identity: stamps ${JSON.stringify(stamps)}, t ${good.before.t.toFixed(2)} -> ` +
-    `${good.during.t.toFixed(2)} -> ${good.after.t.toFixed(2)}, slip ` +
-    `${slip(good.before, good.during).toFixed(2)}s / ${slip(good.during, good.after).toFixed(2)}s`,
+      `${good.during.t.toFixed(2)} -> ${good.after.t.toFixed(2)}, slip ` +
+      `${slip(good.before, good.during).toFixed(2)}s / ${slip(good.during, good.after).toFixed(2)}s`,
   );
 
   // POSITIVE CONTROL: the pre-host architecture, same script.
@@ -602,20 +647,26 @@ async function checkElementIdentity(page, failures) {
   report(failures, control !== null, 'identity: the control story was not clickable');
   if (control === null) return;
   const controlStamps = [...control.before.ids, ...control.during.ids, ...control.after.ids];
-  report(failures, new Set(controlStamps).size > 1,
+  report(
+    failures,
+    new Set(controlStamps).size > 1,
     'identity: the control did NOT discriminate — a surface rebuilt at every stage was ' +
-    `measured as one element (${JSON.stringify(controlStamps)}), so the assertion above proves nothing`);
+      `measured as one element (${JSON.stringify(controlStamps)}), so the assertion above proves nothing`,
+  );
   // The control must also trip the RESTART limit, or that limit is untested:
   // a threshold derived only from the healthy population cannot be shown to
   // separate anything.
-  report(failures, slip(control.before, control.during) >= RESTART_S,
+  report(
+    failures,
+    slip(control.before, control.during) >= RESTART_S,
     'identity: the control did not restart playback ' +
-    `(${control.before.t.toFixed(2)} -> ${control.during.t.toFixed(2)}, slip ` +
-    `${slip(control.before, control.during).toFixed(2)}s), so the ${RESTART_S}s limit above is untested`);
+      `(${control.before.t.toFixed(2)} -> ${control.during.t.toFixed(2)}, slip ` +
+      `${slip(control.before, control.during).toFixed(2)}s), so the ${RESTART_S}s limit above is untested`,
+  );
   console.log(
     `      identity control: stamps ${JSON.stringify(controlStamps)}, ` +
-    `t ${control.before.t.toFixed(2)} -> ${control.during.t.toFixed(2)} -> ${control.after.t.toFixed(2)}, ` +
-    `slip ${slip(control.before, control.during).toFixed(2)}s`,
+      `t ${control.before.t.toFixed(2)} -> ${control.during.t.toFixed(2)} -> ${control.after.t.toFixed(2)}, ` +
+      `slip ${slip(control.before, control.during).toFixed(2)}s`,
   );
 }
 
@@ -644,9 +695,7 @@ async function main() {
     // the median gap fell from a 20x spread to a steady 17 ms once the tab was
     // brought to the front. It was the instrument, not the build.
     await page.bringToFront();
-    await page.emulateMediaFeatures([
-      { name: 'prefers-reduced-motion', value: 'no-preference' },
-    ]);
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
     // The idle case first: it is the state the layer spends its life in, and it
     // loads its own story (one that mounts the layer and never flies anything).
     await checkIdle(page, failures);
@@ -666,7 +715,11 @@ async function main() {
 
     // Vacuity floor: nothing is flying before the tap, so a later "it is at the
     // destination" cannot be a stale reading of something already there.
-    report(failures, (await flyingRect(page)) === null, 'a surface was already flying before the tap');
+    report(
+      failures,
+      (await flyingRect(page)) === null,
+      'a surface was already flying before the tap',
+    );
 
     if (!(await clickTestId(page, 'flight-thumb'))) {
       failures.push('the origin thumbnail was not clickable');
@@ -726,8 +779,10 @@ async function main() {
     if (target && landed) {
       report(
         failures,
-        near(landed.x, target.x) && near(landed.y, target.y) &&
-          near(landed.width, target.width) && near(landed.height, target.height),
+        near(landed.x, target.x) &&
+          near(landed.y, target.y) &&
+          near(landed.width, target.width) &&
+          near(landed.height, target.height),
         `landed on the wrong rect: landed=${JSON.stringify(landed)} target=${JSON.stringify(target)}`,
       );
     }
@@ -736,7 +791,11 @@ async function main() {
     // parked over the app forever.
     await clickTestId(page, 'flight-back');
     await sleep(900);
-    report(failures, (await flyingRect(page)) === null, 'the surface was not released after flyBack');
+    report(
+      failures,
+      (await flyingRect(page)) === null,
+      'the surface was not released after flyBack',
+    );
   } finally {
     await browser.close();
   }
@@ -745,7 +804,9 @@ async function main() {
   if (failures.length === 0) {
     console.log('PASS  idle layer contributes no node and steals no click');
     console.log('PASS  a warm flight presents pixels within a frame or two of flyTo resolving');
-    console.log('PASS  a flight with NO origin rect jumps to the destination (documented degradation)');
+    console.log(
+      'PASS  a flight with NO origin rect jumps to the destination (documented degradation)',
+    );
     console.log('PASS  a flying VIDEO element tracks its box on every frame, height included');
     console.log('PASS  the video is still PLAYING mid-flight and after landing');
     console.log('PASS  ONE element identity from the origin through the flight to the destination');

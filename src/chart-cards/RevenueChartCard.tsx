@@ -1,5 +1,15 @@
 import React, { useId, useMemo } from 'react';
-import Svg, { Circle, ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, {
+  Circle,
+  ClipPath,
+  Defs,
+  G,
+  Line,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+} from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
 import {
@@ -61,7 +71,11 @@ export function RevenueChartCard({
   const fill = color ?? tone.color;
   const stroke = activeColor ?? color ?? tone.activeColor;
   const comparisonStroke = previousColor ?? palette.neutralSeries;
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
 
   // `useId` yields `«r0»` / `:r0:`, which a CSS `url(#…)` cannot reference.
   const rawId = useId();
@@ -73,7 +87,13 @@ export function RevenueChartCard({
   const previousAnim = useChartProgress(previous);
 
   const label =
-    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? chartText.titles.revenue, frame.currentLabel, frame.previousLabel, chartText);
+    accessibilityLabel ??
+    chartAccessibilityLabel(
+      frame.title ?? chartText.titles.revenue,
+      frame.currentLabel,
+      frame.previousLabel,
+      chartText,
+    );
 
   return (
     <ChartCardFrame
@@ -145,12 +165,27 @@ export function RevenueChartCard({
                 />
               </G>
               <G clipPath={`url(#${id}-reveal-current)`}>
-                <Path d={monotoneXAreaPath(currentPoints, box.bottom)} fill={`url(#${id}-fill)`} stroke="none" />
-                <Path d={monotoneXPath(currentPoints)} fill="none" stroke={stroke} strokeWidth={2.5} />
+                <Path
+                  d={monotoneXAreaPath(currentPoints, box.bottom)}
+                  fill={`url(#${id}-fill)`}
+                  stroke="none"
+                />
+                <Path
+                  d={monotoneXPath(currentPoints)}
+                  fill="none"
+                  stroke={stroke}
+                  strokeWidth={2.5}
+                />
               </G>
               {activePoint ? (
                 <G>
-                  <Circle cx={activePoint.x} cy={activePoint.y} r={7} fill={stroke} opacity={0.25} />
+                  <Circle
+                    cx={activePoint.x}
+                    cy={activePoint.y}
+                    r={7}
+                    fill={stroke}
+                    opacity={0.25}
+                  />
                   <Circle
                     cx={activePoint.x}
                     cy={activePoint.y}

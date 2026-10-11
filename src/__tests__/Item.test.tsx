@@ -18,9 +18,7 @@ function renderWithTheme(ui: React.ReactElement) {
 
 describe('Item', () => {
   it('renders title and subtitle', () => {
-    const { getByText } = renderWithTheme(
-      <Item title="Profile" subtitle="Manage your details" />,
-    );
+    const { getByText } = renderWithTheme(<Item title="Profile" subtitle="Manage your details" />);
     expect(getByText('Profile')).toBeTruthy();
     expect(getByText('Manage your details')).toBeTruthy();
   });
@@ -37,9 +35,7 @@ describe('Item', () => {
 
   it('is pressable when onPress is provided and fires the handler', () => {
     const onPress = jest.fn();
-    const { getByLabelText } = renderWithTheme(
-      <Item title="Tap me" onPress={onPress} />,
-    );
+    const { getByLabelText } = renderWithTheme(<Item title="Tap me" onPress={onPress} />);
     // The row's own host node, found by the label `Item` derives from `title`.
     // Pressing the title `Text` instead would walk up past the row to
     // `<Item onPress={…}>` in this file's own JSX and report a call the
@@ -72,11 +68,7 @@ describe('Item', () => {
 
   it('renders leading and trailing slots', () => {
     const { getByText } = renderWithTheme(
-      <Item
-        title="With slots"
-        leading={<Text>L</Text>}
-        trailing={<Text>R</Text>}
-      />,
+      <Item title="With slots" leading={<Text>L</Text>} trailing={<Text>R</Text>} />,
     );
     expect(getByText('L')).toBeTruthy();
     expect(getByText('R')).toBeTruthy();
@@ -103,7 +95,9 @@ describe('Item', () => {
     });
 
     it('announces nothing for the cursor: the row is neither chosen nor current', () => {
-      const { getByLabelText } = renderWithTheme(<Item title="Row" onPress={() => {}} highlighted />);
+      const { getByLabelText } = renderWithTheme(
+        <Item title="Row" onPress={() => {}} highlighted />,
+      );
       const row = getByLabelText('Row');
       expect(row.props['aria-pressed']).toBeUndefined();
       expect(row.props.accessibilityState.selected).toBeUndefined();

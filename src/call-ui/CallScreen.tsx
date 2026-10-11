@@ -86,7 +86,10 @@ function CallScreenComponent({
   const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme, accentColor), [theme, accentColor]);
-  const l = useMemo(() => ({ ...messages.status, ...messages.screen, ...labels }), [messages, labels]);
+  const l = useMemo(
+    () => ({ ...messages.status, ...messages.screen, ...labels }),
+    [messages, labels],
+  );
 
   const line = resolveCallStatusLine({ status, duration, statusText, labels: l });
   const live = callIsLive(status);
@@ -267,7 +270,9 @@ function CallScreenComponent({
           width={localVideoWidth}
           borderColor={paint.pipBorder}
           backgroundColor={paint.tile}
-          moveLabel={onMoveLocal === undefined ? undefined : l.movePip(CALL_PIP_CYCLE[localVideoCorner])}
+          moveLabel={
+            onMoveLocal === undefined ? undefined : l.movePip(CALL_PIP_CYCLE[localVideoCorner])
+          }
           onMove={
             onMoveLocal === undefined
               ? undefined
@@ -285,15 +290,15 @@ function CallScreenComponent({
 
       {/* Controls */}
       <View style={{ paddingRight: 16, paddingBottom: 24, paddingLeft: 16, paddingTop: 8 }}>
-        {controlsSlot !== undefined
-          ? controlsSlot
-          : controls !== undefined && live
-            ? <CallControls
-                {...controls}
-                accentColor={controls.accentColor ?? accentColor}
-                testID={testID ? `${testID}-controls` : undefined}
-              />
-            : null}
+        {controlsSlot !== undefined ? (
+          controlsSlot
+        ) : controls !== undefined && live ? (
+          <CallControls
+            {...controls}
+            accentColor={controls.accentColor ?? accentColor}
+            testID={testID ? `${testID}-controls` : undefined}
+          />
+        ) : null}
       </View>
     </View>
   );

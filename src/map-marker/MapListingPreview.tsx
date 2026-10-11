@@ -186,13 +186,14 @@ function MapListingPreviewComponent({
 
   const closeButton = onClose ? (
     <Button
-
       size="xs"
       iconOnly
       leadingIcon={RiCloseLine}
       accessibilityLabel={closeLabel}
       onPress={onClose}
-      testID={testID ? `${testID}-close` : undefined} tone="neutral" appearance="outline"
+      testID={testID ? `${testID}-close` : undefined}
+      tone="neutral"
+      appearance="outline"
     />
   ) : null;
 
@@ -254,9 +255,7 @@ function MapListingPreviewComponent({
             <Rating size="small" value={rating} count={reviewCount} />
           ) : null}
         </View>
-        {showRating && compact ? (
-          <Rating size="small" value={rating} count={reviewCount} />
-        ) : null}
+        {showRating && compact ? <Rating size="small" value={rating} count={reviewCount} /> : null}
         {subtitle ? (
           <Text variant="body-2-regular" numberOfLines={1} style={{ color: paint.labelSecondary }}>
             {subtitle}
@@ -272,7 +271,11 @@ function MapListingPreviewComponent({
             testID={testID ? `${testID}-price` : undefined}
           />
         ) : price ? (
-          <Text variant="body-2-regular" numberOfLines={1} style={{ marginTop: 4, color: paint.labelSecondary }}>
+          <Text
+            variant="body-2-regular"
+            numberOfLines={1}
+            style={{ marginTop: 4, color: paint.labelSecondary }}
+          >
             {originalPrice ? (
               <Text
                 variant="body-2-regular"

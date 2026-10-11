@@ -22,9 +22,9 @@ import {
 
 const meta: Meta = {
   argTypes: {
-    "value": { control: 'text' },
-    "defaultValue": { control: 'text' },
-    "label": { control: 'text' }
+    value: { control: 'text' },
+    defaultValue: { control: 'text' },
+    label: { control: 'text' },
   },
   component: Menubar,
   parameters: { controls: { disable: true } },
@@ -44,14 +44,13 @@ export const Basic: Story = {
         <Text testID="result">last: {last}</Text>
         <Menubar>
           <MenubarMenu value="file">
-            <MenubarTrigger testID="menubar-file">
-              File
-            </MenubarTrigger>
+            <MenubarTrigger testID="menubar-file">File</MenubarTrigger>
             <MenubarContent testID="menubar-file-panel">
               <MenubarItem
                 testID="menubar-new"
                 onPress={() => setLast('new')}
-                trailing={<MenubarShortcut>⌘N</MenubarShortcut>}>
+                trailing={<MenubarShortcut>⌘N</MenubarShortcut>}
+              >
                 New tab
               </MenubarItem>
               <MenubarItem onPress={() => setLast('open')}>Open…</MenubarItem>
@@ -75,9 +74,7 @@ export const Basic: Story = {
           </MenubarMenu>
 
           <MenubarMenu value="edit">
-            <MenubarTrigger testID="menubar-edit">
-              Edit
-            </MenubarTrigger>
+            <MenubarTrigger testID="menubar-edit">Edit</MenubarTrigger>
             <MenubarContent>
               <MenubarItem onPress={() => setLast('undo')}>Undo</MenubarItem>
               <MenubarItem onPress={() => setLast('redo')}>Redo</MenubarItem>
@@ -85,9 +82,7 @@ export const Basic: Story = {
           </MenubarMenu>
 
           <MenubarMenu value="view">
-            <MenubarTrigger testID="menubar-view">
-              View
-            </MenubarTrigger>
+            <MenubarTrigger testID="menubar-view">View</MenubarTrigger>
             <MenubarContent>
               <MenubarLabel>Layout</MenubarLabel>
               <MenubarRadioGroup value="comfortable" onValueChange={setLast}>
@@ -116,9 +111,7 @@ export const Controlled: Story = {
         <Text>open: {open ?? 'none'}</Text>
         <Menubar value={open} onValueChange={setOpen}>
           <MenubarMenu value="view">
-            <MenubarTrigger>
-              View
-            </MenubarTrigger>
+            <MenubarTrigger>View</MenubarTrigger>
             <MenubarContent>
               <MenubarCheckboxItem checked={dense} onCheckedChange={setDense} keepOpen>
                 Dense rows
@@ -126,9 +119,7 @@ export const Controlled: Story = {
             </MenubarContent>
           </MenubarMenu>
           <MenubarMenu value="help">
-            <MenubarTrigger>
-              Help
-            </MenubarTrigger>
+            <MenubarTrigger>Help</MenubarTrigger>
             <MenubarContent>
               <MenubarItem>Documentation</MenubarItem>
             </MenubarContent>

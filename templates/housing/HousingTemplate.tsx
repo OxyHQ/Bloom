@@ -23,7 +23,11 @@ export interface HousingTemplateProps {
  * router so the logo, the account menu, the cards and the sidebar can move
  * between them.
  */
-export function HousingTemplate({ initialPage = 'explore', initialMode, initialMap }: HousingTemplateProps) {
+export function HousingTemplate({
+  initialPage = 'explore',
+  initialMode,
+  initialMap,
+}: HousingTemplateProps) {
   const [page, setPage] = useState<HousingPage>(initialPage);
   const go = useCallback((next: HousingPage) => {
     setPage(next);
@@ -33,15 +37,17 @@ export function HousingTemplate({ initialPage = 'explore', initialMode, initialM
   return (
     <HousingNavProvider value={go}>
       <HousingPageProvider value={page}>
-      {page === 'explore' ? <ExplorePage initialMode={initialMode} initialMap={initialMap} /> : null}
-      {page === 'rent' ? <RentListingPage /> : null}
-      {page === 'sale' ? <SaleListingPage /> : null}
-      {page === 'stay' ? <StayListingPage /> : null}
-      {page === 'swap' ? <SwapListingPage /> : null}
-      {page === 'my-home' ? <MyHomePage /> : null}
-      {page === 'evictions' ? <EvictionsPage /> : null}
-      {page === 'publish' ? <PublishPage /> : null}
-      {page === 'saved' ? <SavedPage /> : null}
+        {page === 'explore' ? (
+          <ExplorePage initialMode={initialMode} initialMap={initialMap} />
+        ) : null}
+        {page === 'rent' ? <RentListingPage /> : null}
+        {page === 'sale' ? <SaleListingPage /> : null}
+        {page === 'stay' ? <StayListingPage /> : null}
+        {page === 'swap' ? <SwapListingPage /> : null}
+        {page === 'my-home' ? <MyHomePage /> : null}
+        {page === 'evictions' ? <EvictionsPage /> : null}
+        {page === 'publish' ? <PublishPage /> : null}
+        {page === 'saved' ? <SavedPage /> : null}
       </HousingPageProvider>
     </HousingNavProvider>
   );

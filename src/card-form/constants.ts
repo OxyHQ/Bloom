@@ -36,4 +36,3 @@ export const CARD_FORM_EMPTY_VALUE: CardFormValue = {
  * the pair of half-width boxes is the place that shows when they do not.
  */
 export const CARD_FORM_GAP = 12;
-

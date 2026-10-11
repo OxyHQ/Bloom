@@ -70,18 +70,20 @@ function FiltersButton({ count, compact = false }: { count: number; compact?: bo
     <Badge content={count} placement="top-right" invisible={count === 0}>
       {compact ? (
         <Button
-
           size="md"
           iconOnly
           leadingIcon={RiEqualizerLine}
-          accessibilityLabel={`Filters, ${count} applied`} tone="neutral" appearance="outline"
+          accessibilityLabel={`Filters, ${count} applied`}
+          tone="neutral"
+          appearance="outline"
         />
       ) : (
         <Button
-
           size="md"
           leadingIcon={RiEqualizerLine}
-          accessibilityLabel={`Filters, ${count} applied`} tone="neutral" appearance="outline"
+          accessibilityLabel={`Filters, ${count} applied`}
+          tone="neutral"
+          appearance="outline"
         >
           Filters
         </Button>
@@ -193,7 +195,11 @@ export const TrailingSwitch: Story = {
                 <Text variant="body-2-medium" style={{ color: theme.colors.text }}>
                   Display total before taxes
                 </Text>
-                <Switch checked={total} onCheckedChange={setTotal} accessibilityLabel="Display total before taxes" />
+                <Switch
+                  checked={total}
+                  onCheckedChange={setTotal}
+                  accessibilityLabel="Display total before taxes"
+                />
               </View>
             }
           />

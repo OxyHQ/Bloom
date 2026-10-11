@@ -17,6 +17,7 @@ import { StyledImage, StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { RAINBOW_DARK, RAINBOW_LIGHT } from './rainbow-artwork';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 /** The original four-layer glossy sphere, with the same 26px reflection geometry. */
 export function GlossArt({
@@ -87,7 +88,7 @@ export function GlossArt({
     );
   }
   return (
-    <Svg width={size} height={size} viewBox="0 0 26 26" accessible={false}>
+    <Svg width={size} height={size} viewBox="0 0 26 26" {...svgA11yProps()}>
       <Defs>
         <ClipPath id={`${id}-clip`}>
           <Circle cx={13} cy={13} r={13} />
@@ -111,13 +112,7 @@ export function GlossArt({
         <Filter id={`${id}-soft`} x="-25%" y="-25%" width="150%" height="150%">
           <FeGaussianBlur stdDeviation={0.5} />
         </Filter>
-        <Filter
-          id={`${id}-hotspot`}
-          x="-50%"
-          y="-50%"
-          width="200%"
-          height="200%"
-        >
+        <Filter id={`${id}-hotspot`} x="-50%" y="-50%" width="200%" height="200%">
           <FeGaussianBlur stdDeviation={1} />
         </Filter>
       </Defs>

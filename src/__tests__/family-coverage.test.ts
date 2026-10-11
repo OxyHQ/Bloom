@@ -70,7 +70,7 @@ const DOC_ALIASES: Readonly<Record<string, string>> = {
   // one of five contracts documented together in `docs/composition.mdx`.
   // Splitting it into a page of its own would put the precedence rule in one
   // file and the four things that obey it in another.
-  'appearance': 'composition',
+  appearance: 'composition',
 };
 
 /** Doc subtrees that are not component documentation. */
@@ -94,7 +94,8 @@ function publishedFamilies(): Set<string> {
   for (const entry of Object.values(pkg.exports)) {
     if (typeof entry === 'string') continue;
     const rn = entry['react-native'];
-    const source = typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
+    const source =
+      typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
     if (typeof source !== 'string') continue;
     const rel = source.replace(/^\.\/src\//, '');
     if (rel.includes('/')) out.add(rel.slice(0, rel.indexOf('/')));
@@ -203,7 +204,13 @@ const isPascalCase = (name: string): boolean => /^[A-Z][A-Za-z0-9]*$/.test(name)
  * make the story rule fire on a family that only ships prop types.
  */
 function exportedPascalValues(file: string, kind: ts.ScriptKind): string[] {
-  const sf = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true, kind);
+  const sf = ts.createSourceFile(
+    file,
+    readFileSync(file, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+    kind,
+  );
   const names: string[] = [];
   for (const stmt of sf.statements) {
     if (ts.isExportDeclaration(stmt)) {
@@ -222,9 +229,10 @@ function exportedPascalValues(file: string, kind: ts.ScriptKind): string[] {
       for (const d of stmt.declarationList.declarations) {
         const collectBinding = (binding: ts.BindingName): void => {
           if (ts.isIdentifier(binding)) names.push(binding.text);
-          else for (const element of binding.elements) {
-            if (ts.isBindingElement(element)) collectBinding(element.name);
-          }
+          else
+            for (const element of binding.elements) {
+              if (ts.isBindingElement(element)) collectBinding(element.name);
+            }
         };
         collectBinding(d.name);
       }
@@ -445,7 +453,9 @@ describe('the coverage census reads real artifacts', () => {
     // Declared in a `.tsx`, exported through `memo(X) as typeof X`.
     expect(publishedComponents('radio')).toContain('Radio');
     // A factory destructured directly in its .tsx implementation.
-    expect(publishedComponents('button-group')).toEqual(expect.arrayContaining(['ButtonGroup', 'ButtonGroupItem']));
+    expect(publishedComponents('button-group')).toEqual(
+      expect.arrayContaining(['ButtonGroup', 'ButtonGroupItem']),
+    );
     // Declared in a `.ts` BARREL by a factory call — the branch whose absence
     // would exempt four families that plainly render.
     expect(factoryBoundComponents('alert-dialog')).toContain('AlertDialog');

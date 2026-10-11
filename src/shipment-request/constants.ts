@@ -20,7 +20,13 @@ import type {
   ShipmentRequestFormLabels,
 } from './types';
 
-const KIND_ORDER: readonly ShipmentLoadKind[] = ['envelope', 'parcel', 'furniture', 'pallet', 'food'];
+const KIND_ORDER: readonly ShipmentLoadKind[] = [
+  'envelope',
+  'parcel',
+  'furniture',
+  'pallet',
+  'food',
+];
 const KIND_ICON: Record<ShipmentLoadKind, BloomIconComponent> = {
   envelope: RiMailLine,
   parcel: RiBox3Line,
@@ -45,12 +51,16 @@ const ACCESS_ICON: Record<ShipmentAccess, BloomIconComponent> = {
 };
 
 /** The five built-in kinds in one language's words. */
-export function builtInLoadKinds(messages: ShipmentRequestMessages): readonly ShipmentLoadKindOption[] {
+export function builtInLoadKinds(
+  messages: ShipmentRequestMessages,
+): readonly ShipmentLoadKindOption[] {
   return KIND_ORDER.map((value) => ({ value, ...messages.kinds[value], icon: KIND_ICON[value] }));
 }
 
 /** The four built-in size rungs in one language's words. */
-export function builtInLoadSizes(messages: ShipmentRequestMessages): readonly ShipmentLoadSizeOption[] {
+export function builtInLoadSizes(
+  messages: ShipmentRequestMessages,
+): readonly ShipmentLoadSizeOption[] {
   return SIZE_CODE.map(([value, label]) => ({ value, label, detail: messages.sizes[value] }));
 }
 
@@ -59,7 +69,9 @@ export function builtInLoadSizes(messages: ShipmentRequestMessages): readonly Sh
  * take first, then the two that need a van, then food — which is not a size at
  * all but a condition.
  */
-export const SHIPMENT_LOAD_KINDS: readonly ShipmentLoadKindOption[] = builtInLoadKinds(SHIPMENT_REQUEST_MESSAGES.en);
+export const SHIPMENT_LOAD_KINDS: readonly ShipmentLoadKindOption[] = builtInLoadKinds(
+  SHIPMENT_REQUEST_MESSAGES.en,
+);
 
 /**
  * The four size rungs.
@@ -72,14 +84,18 @@ export const SHIPMENT_LOAD_KINDS: readonly ShipmentLoadKindOption[] = builtInLoa
  * In English, like the kinds and access words; a picker given no `kinds` or
  * `sizes` draws them in the resolved locale's words.
  */
-export const SHIPMENT_LOAD_SIZES: readonly ShipmentLoadSizeOption[] = builtInLoadSizes(SHIPMENT_REQUEST_MESSAGES.en);
+export const SHIPMENT_LOAD_SIZES: readonly ShipmentLoadSizeOption[] = builtInLoadSizes(
+  SHIPMENT_REQUEST_MESSAGES.en,
+);
 
 /** Ground floor, stairs, lift. One of them is true, so they are a single choice. */
-export const SHIPMENT_ACCESS_OPTIONS: readonly ShipmentAccessOption[] = ACCESS_ORDER.map((value) => ({
-  value,
-  label: SHIPMENT_REQUEST_MESSAGES.en.access[value],
-  icon: ACCESS_ICON[value],
-}));
+export const SHIPMENT_ACCESS_OPTIONS: readonly ShipmentAccessOption[] = ACCESS_ORDER.map(
+  (value) => ({
+    value,
+    label: SHIPMENT_REQUEST_MESSAGES.en.access[value],
+    icon: ACCESS_ICON[value],
+  }),
+);
 
 // The default copy below is English and stays exported; the components speak
 // `SHIPMENT_REQUEST_MESSAGES` in the resolved locale.

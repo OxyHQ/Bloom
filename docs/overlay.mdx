@@ -142,3 +142,39 @@ Check for a `Portal` before assuming a surface participates.
 
 On native there is a second mechanism z-index cannot reach: each of these
 surfaces is its own RN `<Modal>` window.
+
+### Focus restoration and inert app content
+
+On web, modal keyboard focus returns after the opener's actual `inert` boundary
+becomes available. Exit animations can keep that boundary inert after closing
+begins; an attempted focus before removal is ignored by the browser. Restoration
+observes the boundary lifecycle rather than assuming an animation duration,
+works when the host unmounts the dialog, uses `preventScroll`, and yields to a
+destination the host deliberately focused while closing.
+
+## Backdrop appearance
+
+`BackdropAppearance` is the paint-only contract shared by `Backdrop` and the
+`backdrop` prop on `Dialog` / `BottomSheet`. It contains `blurIntensity`,
+`blurTint`, `dimColor`, `dimOpacity` and optional `dimGradient`.
+
+A `BackdropGradient` uses `direction` (`start-to-end`, `end-to-start`,
+`top-to-bottom`, `bottom-to-top`) and at least two `{ offset, color }` stops.
+Horizontal directions mirror with RTL. Stops are normalized into ordered 0..1
+positions; invalid stop lists fall back to the uniform dim. The gradient
+replaces the solid dim fill, rather than painting over it. `dimOpacity` still
+multiplies its alpha. Both animated and static paths paint on the dim layer,
+leaving the press target, accessibility and surface stack unchanged. Web uses a
+CSS background image; native uses React Native's gradient background support.
+
+Blur clamps to 0..100, opacity to 0..1, and non-finite values use the shared
+backdrop defaults. `blurIntensity={0}` mounts no blur layer.
+
+On web, Tab and Shift+Tab remain on the modal panel when all its controls are
+disabled, hidden, or absent. Moving focus to this fallback does not scroll the
+panel. Once controls become available, traversal resumes from the first or last
+control according to direction.
+
+A modal that has begun closing stops its entry autofocus and Tab trap. Its
+exit animation may keep the panel mounted, but cannot take focus back from
+the opener that closing already restored.

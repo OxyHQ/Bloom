@@ -54,13 +54,53 @@ function MockMap({
         justifyContent: 'center',
       }}
     >
-      <View style={{ position: 'absolute', left: '6%', top: '10%', width: '36%', height: '32%', borderRadius: 20, backgroundColor: t.park }} />
-      <View style={{ position: 'absolute', left: '58%', top: '56%', width: '36%', height: '32%', borderRadius: 20, backgroundColor: t.park }} />
+      <View
+        style={{
+          position: 'absolute',
+          left: '6%',
+          top: '10%',
+          width: '36%',
+          height: '32%',
+          borderRadius: 20,
+          backgroundColor: t.park,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          left: '58%',
+          top: '56%',
+          width: '36%',
+          height: '32%',
+          borderRadius: 20,
+          backgroundColor: t.park,
+        }}
+      />
       {[0.18, 0.5, 0.82].map((top) => (
-        <View key={`h${top}`} style={{ position: 'absolute', left: 0, right: 0, top: height * top, height: 10, backgroundColor: t.road }} />
+        <View
+          key={`h${top}`}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: height * top,
+            height: 10,
+            backgroundColor: t.road,
+          }}
+        />
       ))}
       {[0.24, 0.66].map((left) => (
-        <View key={`v${left}`} style={{ position: 'absolute', top: 0, bottom: 0, left: `${left * 100}%`, width: 10, backgroundColor: t.road }} />
+        <View
+          key={`v${left}`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: `${left * 100}%`,
+            width: 10,
+            backgroundColor: t.road,
+          }}
+        />
       ))}
       {children}
     </View>
@@ -80,7 +120,15 @@ function Page({ children }: { children: React.ReactNode }) {
 }
 
 /** A tile-coloured cell, so a puck can be judged against a backdrop it will meet. */
-function Cell({ tone, label, children }: { tone: MapTone; label: string; children: React.ReactNode }) {
+function Cell({
+  tone,
+  label,
+  children,
+}: {
+  tone: MapTone;
+  label: string;
+  children: React.ReactNode;
+}) {
   const t = TONES[tone];
   return (
     <View style={{ gap: 6, alignItems: 'center' }}>
@@ -94,7 +142,16 @@ function Cell({ tone, label, children }: { tone: MapTone; label: string; childre
           justifyContent: 'center',
         }}
       >
-        <View style={{ position: 'absolute', left: 0, right: 0, top: 88, height: 10, backgroundColor: t.road }} />
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 88,
+            height: 10,
+            backgroundColor: t.road,
+          }}
+        />
         {children}
       </View>
       <Caption>{label}</Caption>

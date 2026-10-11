@@ -5,4 +5,9 @@
  * tree-shake barrel exports.
  */
 export { ContactRow } from './ContactRow';
-export type { ContactRowProps, ContactRowTrailing, PersonAvatarSource, PersonSummary } from './types';
+export type {
+  ContactRowProps,
+  ContactRowTrailing,
+  PersonAvatarSource,
+  PersonSummary,
+} from './types';

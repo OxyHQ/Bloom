@@ -92,7 +92,11 @@ function CheckoutSummaryComponent({
   const own = useSurfaceLevel(1);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
-  const line = (row: CheckoutSummaryLine, fallbackIcon: CheckoutSummaryLine['icon'], key: string) => (
+  const line = (
+    row: CheckoutSummaryLine,
+    fallbackIcon: CheckoutSummaryLine['icon'],
+    key: string,
+  ) => (
     <CheckoutSummaryRow
       key={row.id ?? key}
       label={row.label}
@@ -197,7 +201,9 @@ function CheckoutSummaryComponent({
         </SurfaceLevelProvider>
       </View>
 
-      {children != null ? <View style={{ marginTop: CHECKOUT_SECTION_GAP }}>{children}</View> : null}
+      {children != null ? (
+        <View style={{ marginTop: CHECKOUT_SECTION_GAP }}>{children}</View>
+      ) : null}
 
       {confirm ? (
         <CheckoutConfirm

@@ -96,7 +96,9 @@ describe('a color preset arriving after the first render', () => {
     // The scope's OWN element, not the theme provider's — that one carries the
     // app-wide preset and would report a variable in every branch.
     const scoped = () =>
-      container.querySelector<HTMLElement>('[data-testid="scoped"]')!.style.getPropertyValue('--primary');
+      container
+        .querySelector<HTMLElement>('[data-testid="scoped"]')!
+        .style.getPropertyValue('--primary');
 
     render(undefined);
     const before = scoped();

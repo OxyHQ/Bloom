@@ -12,7 +12,11 @@ import { Chip } from '../chip';
 import { CoverHeader } from '../cover-header';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useMessages } from '../locale/messages';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -189,7 +193,8 @@ function AiProfileCardComponent({
         paddingBottom: 16,
         paddingLeft: 16,
         paddingRight: 16,
-      }}>
+      }}
+    >
       <Avatar
         testID={testID ? `${testID}-avatar` : undefined}
         size={AVATAR_SIZE}
@@ -202,13 +207,22 @@ function AiProfileCardComponent({
           <Text
             allowFontScaling={false}
             numberOfLines={1}
-            style={[styles.initials, { color: colors.textSecondary }]}>
+            style={[styles.initials, { color: colors.textSecondary }]}
+          >
             {letters}
           </Text>
         }
       />
 
-      <View style={{ position: 'relative', width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 15 }}>
+      <View
+        style={{
+          position: 'relative',
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: 15,
+        }}
+      >
         <View style={{ minWidth: 0, flex: 1, flexDirection: 'column', gap: 4 }}>
           <Text variant="title-2-medium" numberOfLines={1} style={{ color: colors.text }}>
             {name}
@@ -216,7 +230,11 @@ function AiProfileCardComponent({
           {handle != null || badge != null ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               {handle != null ? (
-                <Text variant="headline-medium" numberOfLines={1} style={{ color: colors.textSecondary }}>
+                <Text
+                  variant="headline-medium"
+                  numberOfLines={1}
+                  style={{ color: colors.textSecondary }}
+                >
                   {handle}
                 </Text>
               ) : null}
@@ -242,7 +260,8 @@ function AiProfileCardComponent({
               alignItems: 'center',
               justifyContent: 'flex-end',
               gap: 10,
-            }}>
+            }}
+          >
             {actions}
           </View>
         ) : null}
@@ -266,7 +285,8 @@ function AiProfileCardComponent({
                 size="md"
                 testID={testID ? `${testID}-delta` : undefined}
                 style={{ alignSelf: 'center', backgroundColor: colors.chip.background }}
-                textStyle={{ color: colors.chip.foreground }}>
+                textStyle={{ color: colors.chip.foreground }}
+              >
                 {delta}
               </Chip>
             ) : null}
@@ -274,7 +294,10 @@ function AiProfileCardComponent({
         </View>
 
         {stats && stats.length > 0 ? (
-          <View testID={testID ? `${testID}-stats` : undefined} style={{ flexDirection: 'column', gap: 8 }}>
+          <View
+            testID={testID ? `${testID}-stats` : undefined}
+            style={{ flexDirection: 'column', gap: 8 }}
+          >
             {(wide ? [stats.map((_, i) => i)] : pairs(stats.length)).map((row) => (
               <View key={row[0]} style={{ flexDirection: 'row', alignItems: 'stretch', gap: 8 }}>
                 {row.map((i) => {
@@ -283,14 +306,20 @@ function AiProfileCardComponent({
                     <View
                       key={`${i}-${stat.label}`}
                       testID={testID ? `${testID}-stat-${i}` : undefined}
-                      style={[styles.tile, { backgroundColor: colors.secondary }]}>
-                      <Text variant="body-medium" numberOfLines={1} style={{ width: '100%', color: colors.text }}>
+                      style={[styles.tile, { backgroundColor: colors.secondary }]}
+                    >
+                      <Text
+                        variant="body-medium"
+                        numberOfLines={1}
+                        style={{ width: '100%', color: colors.text }}
+                      >
                         {stat.value}
                       </Text>
                       <Text
                         variant="body-2-medium"
                         numberOfLines={1}
-                        style={{ width: '100%', color: colors.textSecondary }}>
+                        style={{ width: '100%', color: colors.textSecondary }}
+                      >
                         {stat.label}
                       </Text>
                     </View>
@@ -311,7 +340,8 @@ function AiProfileCardComponent({
             justifyContent: 'space-between',
             paddingTop: 6,
             paddingLeft: 2,
-          }}>
+          }}
+        >
           <Text variant="body-2-medium" style={{ color: colors.textSecondary }}>
             {activityLabel}
           </Text>
@@ -321,12 +351,14 @@ function AiProfileCardComponent({
               type="radio"
               variant="plain"
               value={selectedPeriod}
-              onValueChange={setPeriod}>
+              onValueChange={setPeriod}
+            >
               {periods.map((p) => (
                 <SegmentedControlItem
                   key={p.id}
                   value={p.id}
-                  testID={testID ? `${testID}-period-${p.id}` : undefined}>
+                  testID={testID ? `${testID}-period-${p.id}` : undefined}
+                >
                   <SegmentedControlItemText>{p.label}</SegmentedControlItemText>
                 </SegmentedControlItem>
               ))}
@@ -356,7 +388,13 @@ export const AiProfileCard = memo(AiProfileCardComponent);
 AiProfileCard.displayName = 'AiProfileCard';
 
 const styles = StyleSheet.create({
-  initials: { fontSize: 30, lineHeight: 42.5, fontWeight: '500', letterSpacing: 0, textAlign: 'center' },
+  initials: {
+    fontSize: 30,
+    lineHeight: 42.5,
+    fontWeight: '500',
+    letterSpacing: 0,
+    textAlign: 'center',
+  },
   tile: {
     flex: 1,
     flexBasis: 0,

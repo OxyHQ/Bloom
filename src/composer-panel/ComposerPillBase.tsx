@@ -1,6 +1,11 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parseRgba } from '../theme/color-utils';
@@ -44,7 +49,12 @@ import {
   type ComposerPalette,
 } from './shared';
 import { COMPOSER_PANEL_MESSAGES } from './messages';
-import type { ComposerPanelLabels, ComposerPillLabels, ComposerPillProps, ModelPickerModel } from './types';
+import type {
+  ComposerPanelLabels,
+  ComposerPillLabels,
+  ComposerPillProps,
+  ModelPickerModel,
+} from './types';
 import { dataHook, IS_WEB, useComposerWebCss } from './web-hooks';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -64,7 +74,11 @@ function GlassChip({ shown, radius, dark }: { shown: boolean; radius: number; da
   const [mounted, setMounted] = useState(shown);
   useEffect(() => {
     if (shown) setMounted(true);
-    opacity.value = reducedMotion ? (shown ? 1 : 0) : withTiming(shown ? 1 : 0, { duration: GLASS_MS, easing: EASE });
+    opacity.value = reducedMotion
+      ? shown
+        ? 1
+        : 0
+      : withTiming(shown ? 1 : 0, { duration: GLASS_MS, easing: EASE });
     if (!shown) {
       const timer = setTimeout(() => setMounted(false), reducedMotion ? 0 : GLASS_MS);
       return () => clearTimeout(timer);
@@ -72,9 +86,11 @@ function GlassChip({ shown, radius, dark }: { shown: boolean; radius: number; da
   }, [shown, reducedMotion, opacity]);
   const fade = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
   if (!mounted) return null;
-  return <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, fade]}>
-    <SurfacePaint fill={`rgba(255, 255, 255, ${dark ? 0.06 : 0.12})`} radius={radius} />
-  </Animated.View>;
+  return (
+    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, fade]}>
+      <SurfacePaint fill={`rgba(255, 255, 255, ${dark ? 0.06 : 0.12})`} radius={radius} />
+    </Animated.View>
+  );
 }
 
 /** A chevron that turns to `degrees` over 200ms `ease`. */
@@ -84,7 +100,10 @@ function TurningChevron({ degrees, color }: { degrees: number; color: string }) 
   useEffect(() => {
     rotation.value = reducedMotion ? degrees : withTiming(degrees, { duration: 200, easing: EASE });
   }, [degrees, reducedMotion, rotation]);
-  const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.value}deg` }] }), [rotation]);
+  const style = useAnimatedStyle(
+    () => ({ transform: [{ rotate: `${rotation.value}deg` }] }),
+    [rotation],
+  );
   return (
     <Animated.View style={[{ width: 18, height: 18, flexShrink: 0 }, style]}>
       <RiArrowDownSLine width={18} height={18} fill={color} />
@@ -109,7 +128,9 @@ function EffortValue({ value, color }: { value: string; color: string }) {
   const style = useAnimatedStyle(
     () => ({
       opacity: progress.value,
-      ...(IS_WEB ? { filter: progress.value >= 1 ? 'none' : `blur(${4 * (1 - progress.value)}px)` } : null),
+      ...(IS_WEB
+        ? { filter: progress.value >= 1 ? 'none' : `blur(${4 * (1 - progress.value)}px)` }
+        : null),
     }),
     [progress],
   );
@@ -164,7 +185,8 @@ function ModelRow({
         borderRadius: 10,
         backgroundColor: selected || hovered || focused ? palette.hover : 'transparent',
         cursor: 'pointer',
-      }}>
+      }}
+    >
       <Text variant="body-medium" numberOfLines={1} style={{ flexShrink: 1, color: palette.text }}>
         {name}
       </Text>
@@ -246,7 +268,9 @@ function ModelMenu({
   };
   return (
     <>
-      <Button appearance="plain" tone="neutral"
+      <Button
+        appearance="plain"
+        tone="neutral"
         ref={triggerRef}
         testID={testID}
         accessibilityRole="button"
@@ -254,10 +278,14 @@ function ModelMenu({
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}
-
         onLayout={(event) => onTriggerLayout?.(event.nativeEvent.layout.width)}
-        style={[COMPOSER_BUTTON_LAYOUT, triggerStyle]}>
-        <Text variant="body-medium" numberOfLines={1} style={{ paddingLeft: 2, paddingRight: 2, color: palette.textSecondary }}>
+        style={[COMPOSER_BUTTON_LAYOUT, triggerStyle]}
+      >
+        <Text
+          variant="body-medium"
+          numberOfLines={1}
+          style={{ paddingLeft: 2, paddingRight: 2, color: palette.textSecondary }}
+        >
           {modelName}
         </Text>
         <TurningChevron degrees={open ? 180 : 0} color={palette.iconSecondary} />
@@ -280,12 +308,17 @@ function ModelMenu({
           padding: 10,
           boxShadow: palette.shadowDropdown,
           gap: 0,
-        }}>
+        }}
+      >
         <View style={{ width: '100%', flexDirection: 'column', gap: 6, paddingTop: 4 }}>
           <Text variant="body-medium" style={{ paddingLeft: 8, color: palette.textSecondary }}>
             {labels.models}
           </Text>
-          <View role="radiogroup" accessibilityLabel={labels.modelGroup} style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
+          <View
+            role="radiogroup"
+            accessibilityLabel={labels.modelGroup}
+            style={{ width: '100%', flexDirection: 'column', gap: 4 }}
+          >
             {models.map((entry) => (
               <ModelRow
                 key={entry.id}
@@ -302,13 +335,27 @@ function ModelMenu({
         </View>
         {hasEffort ? (
           <>
-            <View style={{ height: 1, marginLeft: -10, marginRight: -10, marginTop: 7, marginBottom: 12, backgroundColor: palette.border }} />
+            <View
+              style={{
+                height: 1,
+                marginLeft: -10,
+                marginRight: -10,
+                marginTop: 7,
+                marginBottom: 12,
+                backgroundColor: palette.border,
+              }}
+            />
             <View style={{ width: '100%', flexDirection: 'column' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 8 }}>
                 <Text variant="body-medium" style={{ color: palette.textSecondary }}>
                   {`${labels.effort} `}
                 </Text>
-                <EffortValue value={effort === null ? labels.effortAuto : (levels[effort] ?? labels.effortAuto)} color={palette.text} />
+                <EffortValue
+                  value={
+                    effort === null ? labels.effortAuto : (levels[effort] ?? labels.effortAuto)
+                  }
+                  color={palette.text}
+                />
               </View>
               <View style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
                 <View
@@ -321,7 +368,8 @@ function ModelMenu({
                     paddingRight: 8,
                     paddingTop: 8,
                     paddingBottom: 3,
-                  }}>
+                  }}
+                >
                   <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
                     {labels.faster}
                   </Text>
@@ -446,7 +494,11 @@ export function ComposerPillBase({
   const effortLevels: ReadonlyArray<string> = effortLevelsProp ?? messages.effortLevels;
   const compact = useWindowDimensions().width < COMPACT_WIDTH;
 
-  const [text, setText] = useControllableState<string>({ value, defaultValue, onChange: onValueChange });
+  const [text, setText] = useControllableState<string>({
+    value,
+    defaultValue,
+    onChange: onValueChange,
+  });
   const [isListening, setListening] = useControllableState<boolean>({
     value: listening,
     defaultValue: defaultListening,
@@ -488,7 +540,13 @@ export function ComposerPillBase({
   const controlPalette: ComposerPalette = useMemo(
     () =>
       glass
-        ? { ...palette, surface: 'transparent', hover: 'transparent', border: 'transparent', shadowXs: '0 0 0 0 transparent' }
+        ? {
+            ...palette,
+            surface: 'transparent',
+            hover: 'transparent',
+            border: 'transparent',
+            shadowXs: '0 0 0 0 transparent',
+          }
         : palette,
     [palette, glass],
   );
@@ -513,7 +571,8 @@ export function ComposerPillBase({
       onKeyPressProp?.(event);
       if (event.defaultPrevented) return;
 
-      const native: TextInputKeyPressEventData & { shiftKey?: boolean; isComposing?: boolean } = event.nativeEvent;
+      const native: TextInputKeyPressEventData & { shiftKey?: boolean; isComposing?: boolean } =
+        event.nativeEvent;
       /*
        * Shift+Enter is a NEWLINE, not a send.
        *
@@ -525,12 +584,12 @@ export function ComposerPillBase({
        * was a difference nobody chose.
        */
       if (
-        !IS_WEB
-        || native.key !== 'Enter'
-        || native.shiftKey
-        || native.isComposing
-        || disabled
-        || busy
+        !IS_WEB ||
+        native.key !== 'Enter' ||
+        native.shiftKey ||
+        native.isComposing ||
+        disabled ||
+        busy
       ) {
         return;
       }
@@ -584,10 +643,16 @@ export function ComposerPillBase({
   const parentLevel = useSurfaceLevelValue();
   const customSurface = StyleSheet.flatten(style);
   const surfaceFill = customSurface?.backgroundColor ?? palette.surface;
-  const paintsSurface = surface && typeof surfaceFill === 'string' && surfaceFill !== 'transparent' && parseRgba(surfaceFill)?.a !== 0;
+  const paintsSurface =
+    surface &&
+    typeof surfaceFill === 'string' &&
+    surfaceFill !== 'transparent' &&
+    parseRgba(surfaceFill)?.a !== 0;
   const ownFill = paintsSurface ? surfaceFill : customSurface?.backgroundColor;
-  const publishedFill = typeof ownFill === 'string' && ownFill !== 'transparent' && parseRgba(ownFill)?.a !== 0
-    ? resolveSurfaceMaterial({ fill: ownFill, parentFill, paint: paintsSurface }).publishedFill : undefined;
+  const publishedFill =
+    typeof ownFill === 'string' && ownFill !== 'transparent' && parseRgba(ownFill)?.a !== 0
+      ? resolveSurfaceMaterial({ fill: ownFill, parentFill, paint: paintsSurface }).publishedFill
+      : undefined;
   const pillStyle: WebCssStyle = {
     width: '100%',
     height: pillHeight,
@@ -618,8 +683,22 @@ export function ComposerPillBase({
   };
 
   const content = (
-    <View {...dataHook('bloomComposerPill')} testID={testID} style={[pillStyle, style, paintsSurface ? { backgroundColor: 'transparent' } : undefined, surfaceFillVars(publishedFill)]}>
-      {paintsSurface ? <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? (multiLine ? 26 : 9999)} /> : null}
+    <View
+      {...dataHook('bloomComposerPill')}
+      testID={testID}
+      style={[
+        pillStyle,
+        style,
+        paintsSurface ? { backgroundColor: 'transparent' } : undefined,
+        surfaceFillVars(publishedFill),
+      ]}
+    >
+      {paintsSurface ? (
+        <SurfacePaint
+          fill={surfaceFill}
+          radius={customSurface?.borderRadius ?? (multiLine ? 26 : 9999)}
+        />
+      ) : null}
       {addMenu.length > 0 ? (
         <View style={{ position: 'relative', flexShrink: 0 }}>
           <GlassChip shown={glass} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
@@ -651,13 +730,17 @@ export function ComposerPillBase({
           cursorColor={palette.accent500}
           returnKeyType="send"
           multiline
-          onContentSizeChange={IS_WEB ? undefined : (event) => setContentHeight(event.nativeEvent.contentSize.height)}
+          onContentSizeChange={
+            IS_WEB ? undefined : (event) => setContentHeight(event.nativeEvent.contentSize.height)
+          }
           style={{
             width: '100%',
             height: fieldHeight,
             // react-native-web gives a multiline field a resize grip and a
             // scrollbar it does not need: the pill owns the height.
-            ...(IS_WEB ? { resize: 'none', overflowY: lines >= maxLines ? 'auto' : 'hidden' } : null),
+            ...(IS_WEB
+              ? { resize: 'none', overflowY: lines >= maxLines ? 'auto' : 'hidden' }
+              : null),
             padding: 0,
             margin: 0,
             ...TYPE_SCALE['body-regular'],
@@ -688,7 +771,15 @@ export function ComposerPillBase({
         </View>
       ) : null}
 
-      <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 6 }}>
+      <View
+        style={{
+          flexShrink: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          paddingLeft: 6,
+        }}
+      >
         <View style={{ position: 'relative' }}>
           <GlassChip shown={glass} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
           <MicButton
@@ -719,8 +810,13 @@ export function ComposerPillBase({
       </View>
     </View>
   );
-  return publishedFill ? <SurfaceLevelProvider level={surface ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
-
+  return publishedFill ? (
+    <SurfaceLevelProvider level={surface ? 1 : parentLevel} fill={publishedFill}>
+      {content}
+    </SurfaceLevelProvider>
+  ) : (
+    content
+  );
 }
 
 /**

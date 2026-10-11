@@ -46,7 +46,7 @@ describe('InputGroup', () => {
     expect(getByTestId('group').props['aria-disabled']).toBe(true);
   });
 
-  it('renders a field inside it bare: one shell, the group\'s', () => {
+  it("renders a field inside it bare: one shell, the group's", () => {
     const { toJSON } = renderWithTheme(
       <InputGroup invalid testID="group">
         <InputGroupAddon>https://</InputGroupAddon>
@@ -59,7 +59,10 @@ describe('InputGroup', () => {
       if (!node || typeof node !== 'object') return;
       if (Array.isArray(node)) return node.forEach(walk);
       const n = node as { props?: { style?: unknown }; children?: unknown };
-      const flat = ([] as unknown[]).concat(n.props?.style ?? []).flat(Infinity) as Array<Record<string, unknown> | null>;
+      const flat = ([] as unknown[]).concat(n.props?.style ?? []).flat(Infinity) as Array<Record<
+        string,
+        unknown
+      > | null>;
       if (flat.some((s) => s && s.borderWidth === 2)) ringed.push(node);
       walk(n.children);
     };

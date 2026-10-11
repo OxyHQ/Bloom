@@ -2,6 +2,7 @@ import type { AppColorName } from '../theme/color-presets';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
 import type { ContentPanelFramedBreakpoint } from '../content-panel/types';
 import type { NotificationCenterItem, NotificationCenterTab } from '../notification-center/types';
 import type { SidebarProps } from '../sidebar/types';
@@ -68,6 +69,14 @@ export type AppShellBarVisibility = 'compact' | 'always';
 
 export interface AppShellEngineProps {
   /**
+   * Native: keep the shell, navigation and pages inside the device's safe area.
+   * The bottom-bar slot still owns its bottom inset; without bottom chrome the
+   * frame reserves it. Use `safeArea={false}` on descendant PageHeaders because
+   * the frame already owns their top edge. Device insets remain available to
+   * dialogs and other portaled surfaces. Defaults to false; no effect on web.
+   */
+  safeArea?: boolean;
+  /**
    * The layout shape. Defaults to `dashboard` — the behaviour this component
    * had before variants existed, down to the pixel.
    */
@@ -124,8 +133,8 @@ export interface AppShellEngineProps {
    */
   asideCollapse?: 'stack' | 'hidden';
   children?: ReactNode;
-  /** The content column's max width. Defaults to 1300. */
-  contentMaxWidth?: number;
+  /** The content column's max width. Defaults to 1300; `none` fills the available width. */
+  contentMaxWidth?: number | 'none';
   /** Floating extras rendered last, e.g. a `ProOfferCard`. */
   overlay?: ReactNode;
   /** Controlled drawer state (below `lg`). */
@@ -364,23 +373,34 @@ export interface AppShellNavigationProps {
   actions?: ReactNode;
   header?: ReactNode;
   children?: ReactNode;
-  contentMaxWidth?: number;
+  contentMaxWidth?: number | 'none';
   overlay?: ReactNode;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
-
 /** Additive entry point: legacy layout variants and adaptive navigation share the same chrome. */
-export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> & AppShellNavigationProps & {
-  scroll?: AppShellScroll | 'auto' | 'external';
-};
-
+export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> &
+  AppShellNavigationProps & {
+    scroll?: AppShellScroll | 'auto' | 'external';
+  };
 
 /** A bounded list/detail/info layout, independent of navigation or surfaces. */
 export interface AppShellSplitPanesProps {
+  /** Each visible pane isolates render errors by default. false delegates to an outer boundary. */
+  listErrorBoundary?: false | PanelErrorBoundaryOptions;
+  detailErrorBoundary?: false | PanelErrorBoundaryOptions;
+  infoErrorBoundary?: false | PanelErrorBoundaryOptions;
   /** Joined uses hairline dividers (default); separated leaves a 12px gutter for independent panel surfaces. */
   variant?: 'joined' | 'separated';
+  /**
+   * Animate list/detail visibility using live layout geometry. Defaults to none.
+   * Showing both panes reveals detail beside a shrinking list; hiding the list
+   * slides between full-width panes. Exiting content remains mounted until the
+   * expansion motion settles, but is immediately inactive/inaccessible.
+   * Info visibility is unchanged. Respects the system reduced-motion setting.
+   */
+  transition?: 'none' | 'slide';
   list?: ReactNode;
   detail?: ReactNode;
   info?: ReactNode;

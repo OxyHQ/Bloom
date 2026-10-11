@@ -9,7 +9,12 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Cover } from './Cover';
-import { IS_WEB, MUSIC_LIBRARY_CSS, MUSIC_LIBRARY_STYLE_ID, resolveMusicLibraryPaint } from './shared';
+import {
+  IS_WEB,
+  MUSIC_LIBRARY_CSS,
+  MUSIC_LIBRARY_STYLE_ID,
+  resolveMusicLibraryPaint,
+} from './shared';
 import { useMessages } from '../locale/messages';
 import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import type { TopResultCardProps } from './types';
@@ -115,7 +120,11 @@ function TopResultCardComponent({
               </Text>
             </View>
             {subtitle ? (
-              <Text variant="body-medium" numberOfLines={1} style={{ color: paint.textMuted, flexShrink: 1 }}>
+              <Text
+                variant="body-medium"
+                numberOfLines={1}
+                style={{ color: paint.textMuted, flexShrink: 1 }}
+              >
                 {subtitle}
               </Text>
             ) : null}

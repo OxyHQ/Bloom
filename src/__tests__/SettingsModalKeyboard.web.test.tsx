@@ -34,24 +34,60 @@ afterEach(() => {
   resetOverlayStack();
   jest.useRealTimers();
 });
-const flush = () => act(() => { jest.runOnlyPendingTimers(); });
+const flush = () =>
+  act(() => {
+    jest.runOnlyPendingTimers();
+  });
 function mount(onClose = jest.fn(), guard?: () => boolean) {
   function Controlled() {
     const [open, setOpen] = React.useState(true);
-    return <SettingsModal open={open} initialView="page" onBeforeLeave={guard}
-      onClose={() => { onClose(); setOpen(false); }}
-      groups={[{ label: 'Settings', items: [{ key: 'general', page: 'general', label: 'General', icon: RiSettings6Line }] }]}
-      pages={{ general: { title: 'General', content: <TextInput accessibilityLabel="Setting" testID="field" /> } }} />;
+    return (
+      <SettingsModal
+        open={open}
+        initialView="page"
+        onBeforeLeave={guard}
+        onClose={() => {
+          onClose();
+          setOpen(false);
+        }}
+        groups={[
+          {
+            label: 'Settings',
+            items: [{ key: 'general', page: 'general', label: 'General', icon: RiSettings6Line }],
+          },
+        ]}
+        pages={{
+          general: {
+            title: 'General',
+            content: <TextInput accessibilityLabel="Setting" testID="field" />,
+          },
+        }}
+      />
+    );
   }
-  act(() => root.render(<BloomThemeProvider mode="light"><Controlled /></BloomThemeProvider>));
-  flush(); flush();
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="light">
+        <Controlled />
+      </BloomThemeProvider>,
+    ),
+  );
+  flush();
+  flush();
   return onClose;
 }
 function pressEscape() {
-  act(() => document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', {
-    key: 'Escape', bubbles: true, cancelable: true,
-  })));
-  flush(); flush();
+  act(() =>
+    document.activeElement?.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      }),
+    ),
+  );
+  flush();
+  flush();
 }
 function field() {
   return document.querySelector<HTMLInputElement>('[data-testid="field"]')!;
@@ -85,7 +121,11 @@ it('leaves the first Escape to an anchored select layer and closes settings on t
   const option = document.createElement('button');
   document.body.appendChild(option);
   let release = () => {};
-  const closeSelect = jest.fn(() => { release(); option.remove(); field().focus(); });
+  const closeSelect = jest.fn(() => {
+    release();
+    option.remove();
+    field().focus();
+  });
   release = pushFloatingEscape(closeSelect);
   try {
     option.focus();
@@ -96,23 +136,50 @@ it('leaves the first Escape to an anchored select layer and closes settings on t
     pressEscape();
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(document.activeElement).toBe(opener);
-  } finally { release(); option.remove(); }
+  } finally {
+    release();
+    option.remove();
+  }
 });
 
 it('closes on Escape pressed before the enter frame, instead of the enter reopening it', () => {
   const onClose = jest.fn();
   function Controlled() {
     const [open, setOpen] = React.useState(true);
-    return <SettingsModal open={open}
-      onClose={() => { onClose(); setOpen(false); }}
-      groups={[{ label: 'Settings', items: [{ key: 'general', page: 'general', label: 'General', icon: RiSettings6Line }] }]}
-      pages={{ general: { title: 'General', content: null } }} />;
+    return (
+      <SettingsModal
+        open={open}
+        onClose={() => {
+          onClose();
+          setOpen(false);
+        }}
+        groups={[
+          {
+            label: 'Settings',
+            items: [{ key: 'general', page: 'general', label: 'General', icon: RiSettings6Line }],
+          },
+        ]}
+        pages={{ general: { title: 'General', content: null } }}
+      />
+    );
   }
   // Mounted and in the DOM, but the enter frame has not run yet.
-  act(() => root.render(<BloomThemeProvider mode="light"><Controlled /></BloomThemeProvider>));
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="light">
+        <Controlled />
+      </BloomThemeProvider>,
+    ),
+  );
   expect(document.querySelector('[role="dialog"]')).not.toBeNull();
-  act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
-  flush(); flush(); flush();
+  act(() =>
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    ),
+  );
+  flush();
+  flush();
+  flush();
   expect(onClose).toHaveBeenCalledTimes(1);
   expect(document.querySelector('[role="dialog"]')).toBeNull();
 });

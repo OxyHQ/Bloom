@@ -113,8 +113,17 @@ describe('AuthCard', () => {
   it('paints the provider button as the secondary button surface', () => {
     const { getByTestId } = renderCard(<AuthCard testID="auth" providers={['github']} />);
     const theme = buildTheme('teal', 'light');
-    const backing = resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background }).publishedFill;
-    const palette = resolveButtonPalette('outline', theme, 'neutral', undefined, surfaceFillOn(theme, backing));
+    const backing = resolveSurfaceMaterial({
+      fill: theme.colors.card,
+      parentFill: theme.colors.background,
+    }).publishedFill;
+    const palette = resolveButtonPalette(
+      'outline',
+      theme,
+      'neutral',
+      undefined,
+      surfaceFillOn(theme, backing),
+    );
     expect(cardFill(getByTestId('auth-provider-github'))).toBe(palette.rest.background);
     expect(resolvedStyle(getByTestId('auth-provider-github').props.style)).toMatchObject({
       borderColor: palette.rest.border,
@@ -180,7 +189,6 @@ describe('AuthCard', () => {
     expect(AUTH_CARD_WEB_CSS).toContain('[data-bloom-auth-link]:focus-visible');
     expect(AUTH_CARD_WEB_CSS).not.toMatch(/:focus\s*\{/);
   });
-
 });
 
 describe('AuthMediaCarousel', () => {

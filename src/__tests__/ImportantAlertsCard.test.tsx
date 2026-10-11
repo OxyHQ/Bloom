@@ -12,8 +12,20 @@ import { RiHeartPulseFill } from '../icons/remix/RiHeartPulseFill';
 import { resolvedStyle } from './support/rendered-style';
 
 const ALERTS: ImportantAlertsCardAlert[] = [
-  { icon: RiHeartPulseFill, tone: 'rose', title: 'High Heart rate', description: 'Above 120 BPM.', date: 'June, 12' },
-  { icon: RiHeartPulseFill, iconBackground: 'rgb(1 2 3)', title: 'Custom', description: 'Explicit.', date: 'June, 9' },
+  {
+    icon: RiHeartPulseFill,
+    tone: 'rose',
+    title: 'High Heart rate',
+    description: 'Above 120 BPM.',
+    date: 'June, 12',
+  },
+  {
+    icon: RiHeartPulseFill,
+    iconBackground: 'rgb(1 2 3)',
+    title: 'Custom',
+    description: 'Explicit.',
+    date: 'June, 9',
+  },
 ];
 
 function renderIn(ui: React.ReactElement) {
@@ -25,8 +37,10 @@ function renderIn(ui: React.ReactElement) {
 }
 
 describe('ImportantAlertsCard', () => {
-  it("keeps card geometry with the shared material and no bottom padding", () => {
-    const { getByTestId } = renderIn(<ImportantAlertsCard testID="card" alerts={ALERTS} count={12} />);
+  it('keeps card geometry with the shared material and no bottom padding', () => {
+    const { getByTestId } = renderIn(
+      <ImportantAlertsCard testID="card" alerts={ALERTS} count={12} />,
+    );
     const surfaces = resolveDashboardSurfaces(buildTheme('teal', 'light'));
     const card = cardLayout(getByTestId('card'));
     expect(card).toMatchObject({
@@ -42,7 +56,9 @@ describe('ImportantAlertsCard', () => {
   });
 
   it('paints icon circles from the tone, and lets an explicit colour win', () => {
-    const { getByTestId } = renderIn(<ImportantAlertsCard testID="card" alerts={ALERTS} count={2} />);
+    const { getByTestId } = renderIn(
+      <ImportantAlertsCard testID="card" alerts={ALERTS} count={2} />,
+    );
     const theme = buildTheme('teal', 'light');
     const circle = (index: number) => resolvedStyle(getByTestId(`card-icon-${index}`).props.style);
     expect(circle(0).backgroundColor).toBe(toneColor(theme, 'rose', 600));
@@ -56,7 +72,11 @@ describe('ImportantAlertsCard', () => {
     expect(getByText('Important alerts')).toBeTruthy();
     expect(getByText('12')).toBeTruthy();
     expect(getByText('this week')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('card-range').props.style)).toMatchObject({ width: 151, height: 32, borderRadius: 10 });
+    expect(resolvedStyle(getByTestId('card-range').props.style)).toMatchObject({
+      width: 151,
+      height: 32,
+      borderRadius: 10,
+    });
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
         <ImportantAlertsCard testID="card" alerts={ALERTS} count={12} />
@@ -66,13 +86,17 @@ describe('ImportantAlertsCard', () => {
   });
 
   it('pins the date pill to the row corner', () => {
-    const { getByTestId } = renderIn(<ImportantAlertsCard testID="card" alerts={ALERTS} count={2} />);
+    const { getByTestId } = renderIn(
+      <ImportantAlertsCard testID="card" alerts={ALERTS} count={2} />,
+    );
     const pill = resolvedStyle(getByTestId('card-date-0').props.style);
     expect(pill).toMatchObject({ position: 'absolute', top: 10, right: 10, borderRadius: 6 });
   });
 
   it('accepts scrolling without throwing', () => {
-    const { getByTestId } = renderIn(<ImportantAlertsCard testID="card" alerts={ALERTS} count={2} />);
+    const { getByTestId } = renderIn(
+      <ImportantAlertsCard testID="card" alerts={ALERTS} count={2} />,
+    );
     fireEvent.scroll(getByTestId('card-feed'), { nativeEvent: { contentOffset: { y: 40 } } });
     fireEvent.scroll(getByTestId('card-feed'), { nativeEvent: { contentOffset: { y: 0 } } });
   });

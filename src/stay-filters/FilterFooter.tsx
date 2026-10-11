@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { View } from 'react-native';
 
-import { Button , LinkButton } from '../button';
+import { Button, LinkButton } from '../button';
 
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
@@ -57,7 +57,6 @@ function FilterFooterComponent({
       ]}
     >
       <LinkButton
-
         linkTone="text"
         underline="rest"
         size="sm"
@@ -70,13 +69,14 @@ function FilterFooterComponent({
         {clearLabel}
       </LinkButton>
       <Button
-
         size="lg"
         onPress={onApply}
         loading={loading}
         disabled={applyDisabled}
         accessibilityLabel={resultsLabel}
-        testID={testID ? `${testID}-apply` : undefined} tone="accent" appearance="solid"
+        testID={testID ? `${testID}-apply` : undefined}
+        tone="accent"
+        appearance="solid"
       >
         {resultsLabel}
       </Button>

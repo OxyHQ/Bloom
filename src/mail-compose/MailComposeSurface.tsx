@@ -16,7 +16,12 @@ import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
 import { useMessages } from '../locale/messages';
 import { resolveMailPaint } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { SurfaceLevelProvider, hairlineOn, useSurfaceLevelValue, useSurfaceFill } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  hairlineOn,
+  useSurfaceLevelValue,
+  useSurfaceFill,
+} from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -90,7 +95,12 @@ export function MailComposeSurface({
   const customFrame = StyleSheet.flatten(style);
   const paintsSurface = docked;
   const customFill = customFrame?.backgroundColor;
-  const material = resolveSurfaceMaterial({ fill: String(customFill ?? (docked ? layer.fill : parent)), parentFill: parent, parentLevel: layer.parentLevel, paint: paintsSurface });
+  const material = resolveSurfaceMaterial({
+    fill: String(customFill ?? (docked ? layer.fill : parent)),
+    parentFill: parent,
+    parentLevel: layer.parentLevel,
+    paint: paintsSurface,
+  });
   const { paintFill, publishedFill: fill } = material;
   const paint = useMemo(() => resolveMailPaint(theme, fill), [theme, fill]);
   const text = useMemo(() => mailComposeStrings(strings, messages), [strings, messages]);
@@ -191,12 +201,13 @@ export function MailComposeSurface({
       >
         {onSend === undefined ? null : (
           <Button
-
             size="sm"
             icon={RiSendPlaneLine}
             disabled={sending || sendDisabled}
             onPress={onSend}
-            testID={testID ? `${testID}-send` : undefined} tone="accent" appearance="solid"
+            testID={testID ? `${testID}-send` : undefined}
+            tone="accent"
+            appearance="solid"
           >
             {sending ? text.sending : text.send}
           </Button>
@@ -242,11 +253,16 @@ export function MailComposeSurface({
               }
             : { flex: 1, minHeight: 0 },
           style,
-          { backgroundColor: docked ? 'transparent' : customFill == null ? 'transparent' : fill, ...material.vars },
+          {
+            backgroundColor: docked ? 'transparent' : customFill == null ? 'transparent' : fill,
+            ...material.vars,
+          },
         ]}
         testID={testID}
       >
-        {paintsSurface ? <SurfacePaint fill={paintFill} radius={customFrame?.borderRadius ?? geo.radius} /> : null}
+        {paintsSurface ? (
+          <SurfacePaint fill={paintFill} radius={customFrame?.borderRadius ?? geo.radius} />
+        ) : null}
         {bar}
         {folded ? null : body}
       </View>

@@ -34,18 +34,20 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 }
 
 describe('contribution cells', () => {
-  it("bands counts into tiers: 0 · 1–4 · 5–9 · 10–15 · 16–24 · 25+", () => {
-    expect([0, 1, 4, 5, 9, 10, 15, 16, 24, 25, 99].map((count) => contributionTier({ count }))).toEqual([0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
+  it('bands counts into tiers: 0 · 1–4 · 5–9 · 10–15 · 16–24 · 25+', () => {
+    expect(
+      [0, 1, 4, 5, 9, 10, 15, 16, 24, 25, 99].map((count) => contributionTier({ count })),
+    ).toEqual([0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
     expect(contributionTier({ count: 0, tier: 4 })).toBe(4);
   });
 
-  it("writes the tooltip copy", () => {
+  it('writes the tooltip copy', () => {
     expect(contributionLabel({ count: 0, date: 'Apr 26' })).toBe('No contributions on Apr 26');
     expect(contributionLabel({ count: 1, date: 'Apr 26' })).toBe('1 contribution on Apr 26');
     expect(contributionLabel({ count: 12 })).toBe('12 contributions');
   });
 
-  it("keeps the cell hash, so the demo scatters identically", () => {
+  it('keeps the cell hash, so the demo scatters identically', () => {
     // Seed buckets <6 · <11 · <15 · <18 · <19 · else → tiers 0–5. The real grid's first row starts 0, 0, 4 (violet-600).
     const tier = (row: number, col: number) => {
       const seed = hashContributionCell(row, col) % 20;
@@ -74,12 +76,16 @@ describe('contribution cells', () => {
 
 describe('ContributionsCard', () => {
   beforeEach(() => {
-    jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 1024, height: 768, scale: 2, fontScale: 1 });
+    jest
+      .spyOn(ReactNative, 'useWindowDimensions')
+      .mockReturnValue({ width: 1024, height: 768, scale: 2, fontScale: 1 });
   });
   afterEach(() => jest.restoreAllMocks());
 
-  it("keeps the card: 337 tall, padding 16, radius 16, clipped", () => {
-    const { getByTestId } = renderCard(<ContributionsCard testID="c" total={958} delta={0.148} stats={STATS} cells={CELLS} />);
+  it('keeps the card: 337 tall, padding 16, radius 16, clipped', () => {
+    const { getByTestId } = renderCard(
+      <ContributionsCard testID="c" total={958} delta={0.148} stats={STATS} cells={CELLS} />,
+    );
     expect(cardLayout(getByTestId('c'))).toMatchObject({
       height: 337,
       borderRadius: 16,
@@ -92,16 +98,39 @@ describe('ContributionsCard', () => {
   });
 
   it('goes auto-height with 13px cells in a horizontal scroller below sm', () => {
-    (ReactNative.useWindowDimensions as jest.Mock).mockReturnValue({ width: 390, height: 844, scale: 3, fontScale: 1 });
-    const { getByTestId } = renderCard(<ContributionsCard testID="c" total={958} stats={STATS} cells={CELLS} />);
+    (ReactNative.useWindowDimensions as jest.Mock).mockReturnValue({
+      width: 390,
+      height: 844,
+      scale: 3,
+      fontScale: 1,
+    });
+    const { getByTestId } = renderCard(
+      <ContributionsCard testID="c" total={958} stats={STATS} cells={CELLS} />,
+    );
     expect(cardLayout(getByTestId('c')).height).toBeUndefined();
-    expect(resolvedStyle(getByTestId('c-grid-cell-0').props.style)).toMatchObject({ width: 13, height: 13 });
+    expect(resolvedStyle(getByTestId('c-grid-cell-0').props.style)).toMatchObject({
+      width: 13,
+      height: 13,
+    });
   });
 
   it('reads the header, the chip, the stat cards, the period control and the months', () => {
-    const { getByTestId, getByText } = renderCard(<ContributionsCard testID="c" total={958} delta={0.148} stats={STATS} cells={CELLS} />);
+    const { getByTestId, getByText } = renderCard(
+      <ContributionsCard testID="c" total={958} delta={0.148} stats={STATS} cells={CELLS} />,
+    );
     expect(getByTestId('c-headline').props.children).toBe('958');
-    for (const t of ['Contributions this year', '+14.8%', '9B', 'Top streak', 'Activity', 'Weekly', 'Monthly', 'Yearly', 'Jan', 'Dec']) {
+    for (const t of [
+      'Contributions this year',
+      '+14.8%',
+      '9B',
+      'Top streak',
+      'Activity',
+      'Weekly',
+      'Monthly',
+      'Yearly',
+      'Jan',
+      'Dec',
+    ]) {
       expect(getByText(t)).toBeTruthy();
     }
     expect(resolvedStyle(getByTestId('c-stat-0').props.style)).toMatchObject({
@@ -110,7 +139,10 @@ describe('ContributionsCard', () => {
       paddingLeft: 10,
       boxShadow: '0 1px 1px 0 rgb(0 0 0 / 0.05)',
     });
-    expect(resolvedStyle(getByTestId('c-stats').props.style)).toMatchObject({ marginLeft: -8, marginRight: -8 });
+    expect(resolvedStyle(getByTestId('c-stats').props.style)).toMatchObject({
+      marginLeft: -8,
+      marginRight: -8,
+    });
   });
 
   it('defaults the headline to the sum of the counts and lets a period override it', () => {
@@ -120,7 +152,12 @@ describe('ContributionsCard', () => {
     ];
     const onPeriodChange = jest.fn();
     const { getByTestId, getByText } = renderCard(
-      <ContributionsCard testID="c" cells={[{ count: 3 }, { count: 4 }]} periods={periods} onPeriodChange={onPeriodChange} />,
+      <ContributionsCard
+        testID="c"
+        cells={[{ count: 3 }, { count: 4 }]}
+        periods={periods}
+        onPeriodChange={onPeriodChange}
+      />,
     );
     expect(getByTestId('c-headline').props.children).toBe('7');
     act(() => {
@@ -135,20 +172,36 @@ describe('ContributionsCard', () => {
     const light = renderCard(<ContributionsGrid testID="g" cells={cells} columns={1} />);
     const lt = buildTheme('teal', 'light');
     const lr = resolveButtonRamps(lt).accent;
-    expect([0, 1, 2, 3, 4, 5].map((i) => resolvedStyle(light.getByTestId(`g-cell-${i}`).props.style).backgroundColor)).toEqual([
-      resolveChartCardPalette(lt, lt.colors.background).track, lr[200], lr[400], lr[500], lr[600], lr[700],
+    expect(
+      [0, 1, 2, 3, 4, 5].map(
+        (i) => resolvedStyle(light.getByTestId(`g-cell-${i}`).props.style).backgroundColor,
+      ),
+    ).toEqual([
+      resolveChartCardPalette(lt, lt.colors.background).track,
+      lr[200],
+      lr[400],
+      lr[500],
+      lr[600],
+      lr[700],
     ]);
-    expect(resolvedStyle(light.getByTestId('g-cell-0').props.style)).toMatchObject({ borderRadius: 3, aspectRatio: 1 });
+    expect(resolvedStyle(light.getByTestId('g-cell-0').props.style)).toMatchObject({
+      borderRadius: 3,
+      aspectRatio: 1,
+    });
     light.unmount();
     const dark = renderCard(<ContributionsGrid testID="g" cells={cells} columns={1} />, 'dark');
     const dt = buildTheme('teal', 'dark');
     const dr = resolveButtonRamps(dt).accent;
-    expect([1, 5].map((i) => resolvedStyle(dark.getByTestId(`g-cell-${i}`).props.style).backgroundColor)).toEqual([dr[950], dr[500]]);
+    expect(
+      [1, 5].map((i) => resolvedStyle(dark.getByTestId(`g-cell-${i}`).props.style).backgroundColor),
+    ).toEqual([dr[950], dr[500]]);
   });
 
   it('names every cell and reports the hovered one', () => {
     const onActiveCellChange = jest.fn();
-    const { getByTestId } = renderCard(<ContributionsGrid testID="g" cells={CELLS} onActiveCellChange={onActiveCellChange} />);
+    const { getByTestId } = renderCard(
+      <ContributionsGrid testID="g" cells={CELLS} onActiveCellChange={onActiveCellChange} />,
+    );
     const cell = getByTestId('g-cell-23');
     expect(cell.props.role).toBe('img');
     expect(cell.props.accessibilityLabel).toBe('23 contributions on Day 23');

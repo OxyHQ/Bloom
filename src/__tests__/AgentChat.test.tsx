@@ -14,7 +14,13 @@ jest.mock('react-native-svg', () => {
     C.displayName = name;
     return C;
   };
-  return { ...actual, __esModule: true, default: actual.Svg, Filter: stub('Filter'), FeGaussianBlur: stub('FeGaussianBlur') };
+  return {
+    ...actual,
+    __esModule: true,
+    default: actual.Svg,
+    Filter: stub('Filter'),
+    FeGaussianBlur: stub('FeGaussianBlur'),
+  };
 });
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual('../../__mocks__/react-native-reanimated');
@@ -171,8 +177,17 @@ describe('AgentChatComposer', () => {
     const { getByTestId, getByLabelText } = renderIn(<AgentChatComposer testID="c" />);
     let pill = getByLabelText('Add attachment');
     while (pill && resolvedStyle(pill.props.style)?.height !== 52) pill = pill.parent!;
-    expect(resolvedStyle(pill.props.style)).toMatchObject({ height: 52, padding: 8, gap: 10, borderRadius: 9999 });
-    expect(resolvedStyle(getByTestId('c-send').props.style)).toMatchObject({ width: 36, height: 36, opacity: DISABLED_OPACITY });
+    expect(resolvedStyle(pill.props.style)).toMatchObject({
+      height: 52,
+      padding: 8,
+      gap: 10,
+      borderRadius: 9999,
+    });
+    expect(resolvedStyle(getByTestId('c-send').props.style)).toMatchObject({
+      width: 36,
+      height: 36,
+      opacity: DISABLED_OPACITY,
+    });
   });
 
   it('enables send once there is text, submits it and clears when uncontrolled', () => {
@@ -223,7 +238,11 @@ describe('AgentChatActions', () => {
     });
     expect(onShare).toHaveBeenCalledWith('You: hi');
     expect(getByLabelText('Transcript copied')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('a-share').props.style)).toMatchObject({ width: 28, height: 28, borderRadius: 9999 });
+    expect(resolvedStyle(getByTestId('a-share').props.style)).toMatchObject({
+      width: 28,
+      height: 28,
+      borderRadius: 9999,
+    });
 
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
@@ -256,10 +275,14 @@ describe('AgentChatHistory', () => {
     expect(getByText('2m')).toBeTruthy();
     expect(getByText('34m')).toBeTruthy();
     expect(getByLabelText('Unread, Names')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('h-thread-t1').props.style).backgroundColor).toBe(palette.rowHover);
+    expect(resolvedStyle(getByTestId('h-thread-t1').props.style).backgroundColor).toBe(
+      palette.rowHover,
+    );
     expect(resolvedStyle(getByTestId('h-thread-t2').props.style).backgroundColor).toBeUndefined();
     expect(resolvedStyle(getByText('Names').props.style).color).toBe(palette.text);
-    expect(resolvedStyle(getByText('Product update').props.style).color).toBe(palette.textSecondary);
+    expect(resolvedStyle(getByText('Product update').props.style).color).toBe(
+      palette.textSecondary,
+    );
     pressHost(getByTestId('h-thread-t2-select'));
     expect(onSelect).toHaveBeenCalledWith('t2');
   });
@@ -280,7 +303,8 @@ describe('AgentChatHistory', () => {
       'dark',
     );
     let footer = getByTestId('h-export');
-    while (footer && resolvedStyle(footer.props.style)?.borderTopWidth === undefined) footer = footer.parent!;
+    while (footer && resolvedStyle(footer.props.style)?.borderTopWidth === undefined)
+      footer = footer.parent!;
     expect(resolvedStyle(footer.props.style)).toMatchObject({
       borderTopWidth: 1,
       borderTopColor: resolveAgentChatPalette(theme).separator,
@@ -328,13 +352,22 @@ describe('AgentChat', () => {
 
   it('reports an error as an alert', () => {
     const { getByText } = renderIn(<AgentChat messages={[MESSAGES[0]!]} status="error" />);
-    expect(getByText('Something went wrong. Check the server logs, then try again.').props.role).toBe('alert');
+    expect(
+      getByText('Something went wrong. Check the server logs, then try again.').props.role,
+    ).toBe('alert');
   });
 
   it('trims the composer text, refuses while busy, and titles the header from the active thread', () => {
     const onSubmit = jest.fn();
     const { getByTestId, rerender } = renderIn(
-      <AgentChat testID="chat" messages={MESSAGES} threads={THREADS} activeThreadId="t2" showHistory onSubmit={onSubmit} />,
+      <AgentChat
+        testID="chat"
+        messages={MESSAGES}
+        threads={THREADS}
+        activeThreadId="t2"
+        showHistory
+        onSubmit={onSubmit}
+      />,
     );
     expect(within(getByTestId('chat-header')).getByText('Names')).toBeTruthy();
     fireEvent.changeText(getByTestId('chat-composer-field'), '  more please ');
@@ -358,10 +391,18 @@ describe('AgentChat', () => {
     expect(queryByTestId('chat-history')).toBeNull();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <AgentChat testID="chat" messages={MESSAGES} status="streaming" threads={THREADS} showHistory />
+        <AgentChat
+          testID="chat"
+          messages={MESSAGES}
+          status="streaming"
+          threads={THREADS}
+          showHistory
+        />
       </BloomThemeProvider>,
     );
-    expect(getByTestId('chat-history-new').props.accessibilityState).toMatchObject({ disabled: true });
+    expect(getByTestId('chat-history-new').props.accessibilityState).toMatchObject({
+      disabled: true,
+    });
   });
 
   it('replaces the whole card body with `emptyState`', () => {

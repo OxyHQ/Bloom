@@ -6,9 +6,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const recipes = JSON.parse(
   execFileSync(
     'bun',
@@ -40,13 +38,10 @@ try {
       body: '<!doctype html><html><body></body></html>',
     }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__bloom_avatar_gate.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__bloom_avatar_gate.html`);
   await page.evaluate(async (recipes) => {
     document.body.replaceChildren();
-    document.body.style.cssText =
-      'display:grid;grid-template-columns:repeat(5,150px);gap:8px';
+    document.body.style.cssText = 'display:grid;grid-template-columns:repeat(5,150px);gap:8px';
     window.runtime = await import('/bloom-character/runtime.mjs');
     window.completed = 0;
     window.failures = [];
@@ -68,19 +63,13 @@ try {
       );
     }
   }, recipes);
-  await page.waitForFunction(
-    () => completed === 15 || failures.length,
-    {},
-    { timeout: 120000 },
-  );
+  await page.waitForFunction(() => completed === 15 || failures.length, {}, { timeout: 120000 });
   const result = await page.evaluate(() => ({
     completed,
     failures,
     stats: runtime.runtimeStats(),
     portraits: [...document.querySelectorAll('canvas:not([id])')].map((c) => {
-      const data = c
-        .getContext('2d')
-        .getImageData(0, 0, c.width, c.height).data;
+      const data = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
       let painted = 0;
       for (let i = 3; i < data.length; i += 4) if (data[i] > 24) painted++;
       return { id: c.dataset.recipe, painted, pixels: c.toDataURL() };
@@ -98,10 +87,7 @@ try {
   assert.equal(result.stats.legacy.modules, 0);
   const triangle = recipes.find((r) => r.id === 'blob-triangle');
   assert.equal(triangle.legacy.shape, 'rounded_triangle');
-  assert.ok(
-    !triangle.legacy.points,
-    'Use the actual beta triangle, not a duplicate migrated mesh',
-  );
+  assert.ok(!triangle.legacy.points, 'Use the actual beta triangle, not a duplicate migrated mesh');
   await page.evaluate(() => controls.forEach((c) => c.dispose()));
   const cloud = recipes.find((r) => r.id === 'fold-cloud');
   const star = recipes.find((r) => r.id === 'fold-star');
@@ -122,16 +108,9 @@ try {
       onError: (error) => failures.push(String(error)),
     });
   }, cloud);
-  await page.waitForFunction(
-    () => ready || failures.length,
-    {},
-    { timeout: 30000 },
-  );
+  await page.waitForFunction(() => ready || failures.length, {}, { timeout: 30000 });
   await page.locator('canvas').first().click();
-  assert.equal(
-    await page.evaluate(() => control.diagnostics().lastReaction),
-    0,
-  );
+  assert.equal(await page.evaluate(() => control.diagnostics().lastReaction), 0);
   await page.evaluate(() => {
     props = { ...props, workingKey: 1 };
     control.update(props);
@@ -141,10 +120,7 @@ try {
     {},
     { timeout: 30000 },
   );
-  assert.equal(
-    await page.evaluate(() => control.diagnostics().lastActivityResult),
-    0,
-  );
+  assert.equal(await page.evaluate(() => control.diagnostics().lastActivityResult), 0);
   await page.waitForFunction(
     () => !control.diagnostics()?.activityMode && control.diagnostics()?.ready,
     {},
@@ -214,11 +190,7 @@ try {
     }
   });
   await page.waitForTimeout(120);
-  await page.waitForFunction(
-    () => runtime.runtimeStats().active === 0,
-    {},
-    { timeout: 30000 },
-  );
+  await page.waitForFunction(() => runtime.runtimeStats().active === 0, {}, { timeout: 30000 });
   assert.deepEqual(await page.evaluate(() => failures), []);
   // Superseded async creation and unmount must not revive a discarded contour.
   await page.evaluate(
@@ -230,9 +202,7 @@ try {
     [cloud, triangle, star],
   );
   await page.waitForFunction(
-    () =>
-      runtime.runtimeStats().legacy.modules === 0 &&
-      runtime.runtimeStats().instances === 0,
+    () => runtime.runtimeStats().legacy.modules === 0 && runtime.runtimeStats().instances === 0,
     {},
     { timeout: 30000 },
   );
@@ -251,11 +221,7 @@ try {
       },
     );
   }, cloud);
-  await page.waitForFunction(
-    () => offscreenReady || failures.length,
-    {},
-    { timeout: 20000 },
-  );
+  await page.waitForFunction(() => offscreenReady || failures.length, {}, { timeout: 20000 });
   assert.deepEqual(await page.evaluate(() => failures), []);
   await page.evaluate(() => offscreen.dispose());
   // Every migrated contour must accept the original eye meshes, including
@@ -289,20 +255,12 @@ try {
       await page.waitForFunction(
         () =>
           failures.length ||
-          (eyeControl.diagnostics()?.ready &&
-            !eyeControl.diagnostics()?.pending),
+          (eyeControl.diagnostics()?.ready && !eyeControl.diagnostics()?.pending),
         {},
         { timeout: 30000 },
       );
-      assert.deepEqual(
-        await page.evaluate(() => failures),
-        [],
-        `${item.id}/${eyes}`,
-      );
-      assert.equal(
-        await page.evaluate(() => eyeCapabilities.selected.eyes),
-        eyes,
-      );
+      assert.deepEqual(await page.evaluate(() => failures), [], `${item.id}/${eyes}`);
+      assert.equal(await page.evaluate(() => eyeCapabilities.selected.eyes), eyes);
       assert.ok(
         await page
           .locator('canvas')
@@ -317,32 +275,19 @@ try {
       );
     }
     await page.evaluate(() => {
-      for (const eyes of [
-        'sparkle_capsules',
-        'double_highlights',
-        'oval',
-        'highlight_capsules',
-      ]) {
+      for (const eyes of ['sparkle_capsules', 'double_highlights', 'oval', 'highlight_capsules']) {
         eyeProps = { ...eyeProps, legacy: { ...eyeProps.legacy, eyes } };
         eyeControl.update(eyeProps);
       }
     });
     await page.waitForFunction(
       () =>
-        failures.length ||
-        (eyeControl.diagnostics()?.ready && !eyeControl.diagnostics()?.pending),
+        failures.length || (eyeControl.diagnostics()?.ready && !eyeControl.diagnostics()?.pending),
       {},
       { timeout: 30000 },
     );
-    assert.deepEqual(
-      await page.evaluate(() => failures),
-      [],
-      `${item.id} rapid eye edits`,
-    );
-    assert.equal(
-      await page.evaluate(() => eyeCapabilities.selected.eyes),
-      'highlight_capsules',
-    );
+    assert.deepEqual(await page.evaluate(() => failures), [], `${item.id} rapid eye edits`);
+    assert.equal(await page.evaluate(() => eyeCapabilities.selected.eyes), 'highlight_capsules');
     // Cover every original accessory and eyewear type on each contour. The
     // engine's availability remains authoritative for shape-dependent pairs.
     for (const [category, ids] of Object.entries({
@@ -370,8 +315,7 @@ try {
         if (
           id !== 'none' &&
           !(await page.evaluate(
-            ({ category, id }) =>
-              eyeCapabilities.available[`${category}:${id}`],
+            ({ category, id }) => eyeCapabilities.available[`${category}:${id}`],
             { category, id },
           ))
         )
@@ -392,21 +336,13 @@ try {
         await page.waitForFunction(
           () =>
             failures.length ||
-            (eyeControl.diagnostics()?.ready &&
-              !eyeControl.diagnostics()?.pending),
+            (eyeControl.diagnostics()?.ready && !eyeControl.diagnostics()?.pending),
           {},
           { timeout: 30000 },
         );
-        assert.deepEqual(
-          await page.evaluate(() => failures),
-          [],
-          `${item.id}/${category}/${id}`,
-        );
+        assert.deepEqual(await page.evaluate(() => failures), [], `${item.id}/${category}/${id}`);
         assert.equal(
-          await page.evaluate(
-            (category) => eyeCapabilities.selected[category],
-            category,
-          ),
+          await page.evaluate((category) => eyeCapabilities.selected[category], category),
           id,
         );
       }
@@ -420,10 +356,7 @@ try {
       0,
       `${item.id} must accept a native reaction`,
     );
-    assert.equal(
-      await page.evaluate(() => eyeControl.diagnostics().lastReactionKind),
-      1,
-    );
+    assert.equal(await page.evaluate(() => eyeControl.diagnostics().lastReactionKind), 1);
     await page.evaluate(() => eyeControl.dispose());
   }
   // Exercise the React editor too: its old controls must feed the 3D canvas.
@@ -481,23 +414,18 @@ try {
     0,
     'shape chips must not create avatar renderers',
   );
-  assert.ok(
-    (await shapes.locator('svg').count()) > 0,
-    'migrated shapes use static silhouettes',
-  );
+  assert.ok((await shapes.locator('svg').count()) > 0, 'migrated shapes use static silhouettes');
   before = await preview.evaluate((c) => c.toDataURL());
   await page.getByRole('button', { name: 'Blue avatar', exact: true }).click();
   await page.waitForFunction(
-    (previous) =>
-      document.querySelector('canvas:not([id])')?.toDataURL() !== previous,
+    (previous) => document.querySelector('canvas:not([id])')?.toDataURL() !== previous,
     before,
     { timeout: 30000 },
   );
   before = await preview.evaluate((c) => c.toDataURL());
   await page.getByRole('button', { name: 'Dots', exact: true }).click();
   await page.waitForFunction(
-    (previous) =>
-      document.querySelector('canvas:not([id])')?.toDataURL() !== previous,
+    (previous) => document.querySelector('canvas:not([id])')?.toDataURL() !== previous,
     before,
     { timeout: 30000 },
   );
@@ -528,17 +456,10 @@ try {
       0,
       `${name} must finish preparing without losing the avatar`,
     );
-    assert.equal(
-      await preview.count(),
-      1,
-      `${name} must retain the live canvas`,
-    );
+    assert.equal(await preview.count(), 1, `${name} must retain the live canvas`);
     selectableEyes++;
   }
-  assert.ok(
-    selectableEyes >= 7,
-    'compatible eye choices must stay selectable after edits',
-  );
+  assert.ok(selectableEyes >= 7, 'compatible eye choices must stay selectable after edits');
   for (const [controlName, option] of [
     ['Accessory', 'Bulb'],
     ['Eyewear', 'Monocle'],
@@ -558,23 +479,17 @@ try {
       { controlName, option },
     );
     await page.waitForFunction(
-      (previous) =>
-        document.querySelector('canvas:not([id])')?.toDataURL() !== previous,
+      (previous) => document.querySelector('canvas:not([id])')?.toDataURL() !== previous,
       before,
       { timeout: 30000 },
     );
     await page.waitForTimeout(1200);
-    assert.equal(
-      await page.getByText('Avatar unavailable', { exact: true }).count(),
-      0,
-    );
+    assert.equal(await page.getByText('Avatar unavailable', { exact: true }).count(), 0);
     assert.equal(await preview.count(), 1);
   }
   // The original working panel has cyan translucent pixels, unlike the orange
   // body. This distinguishes the actual activity from ordinary idle motion.
-  await page
-    .getByRole('button', { name: 'Orange avatar', exact: true })
-    .click();
+  await page.getByRole('button', { name: 'Orange avatar', exact: true }).click();
   await page.waitForFunction(
     () => {
       const c = document.querySelector('canvas:not([id])');
@@ -582,8 +497,7 @@ try {
       const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
       let orange = 0;
       for (let i = 0; i < d.length; i += 4)
-        if (d[i + 3] > 128 && d[i] > d[i + 1] + 30 && d[i + 1] > d[i + 2] + 20)
-          orange++;
+        if (d[i + 3] > 128 && d[i] > d[i + 1] + 30 && d[i + 1] > d[i + 2] + 20) orange++;
       return orange > 300;
     },
     {},
@@ -598,8 +512,7 @@ try {
       const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
       let cyan = 0;
       for (let i = 0; i < d.length; i += 4)
-        if (d[i + 3] > 15 && d[i + 1] > d[i] + 20 && d[i + 2] > d[i] + 20)
-          cyan++;
+        if (d[i + 3] > 15 && d[i + 1] > d[i] + 20 && d[i + 2] > d[i] + 20) cyan++;
       return cyan > 20;
     },
     {},

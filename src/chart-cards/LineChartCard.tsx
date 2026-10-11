@@ -99,7 +99,20 @@ const TICK_COUNT = 4;
 /** `gap-6` — this card's header-to-chart gap. */
 const CARD_GAP = 24;
 
-const MONTH_ABBREVIATIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_ABBREVIATIONS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 /**
  * A label that is an English month abbreviation (`"Jul"`, how chart data names
@@ -114,10 +127,15 @@ export function monthTitle(label: string, locale?: string): string {
 /** `$18,240` — `` `$${display.toLocaleString()}` ``. */
 export const formatDollars = (value: number) => `$${groupThousands(value)}`;
 /** `$0`, else `$6K` rounded to thousands. */
-export const formatDollarsK = (value: number) => (value === 0 ? '$0' : `$${Math.round(value / 1000)}K`);
+export const formatDollarsK = (value: number) =>
+  value === 0 ? '$0' : `$${Math.round(value / 1000)}K`;
 
 /** recharts `Area` on a flat base: the curve, down to the base at the last point, back to the first, closed. */
-export function closedAreaPath(points: readonly Point[], baseY: number, shape: 'monotone' | 'linear'): string {
+export function closedAreaPath(
+  points: readonly Point[],
+  baseY: number,
+  shape: 'monotone' | 'linear',
+): string {
   const first = points[0];
   const last = points[points.length - 1];
   if (!first || !last) return '';
@@ -148,7 +166,12 @@ export function LineChartCard({
 }: LineChartCardProps) {
   const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const format = formatProp ?? ((value: number) => formatCurrency(value, 'USD', chartLocale));
-  const formatAxisValue = formatAxisValueProp ?? ((value: number) => (value === 0 ? formatCurrency(0, 'USD', chartLocale) : formatCompactCurrency(value, 'USD', chartLocale, 0)));
+  const formatAxisValue =
+    formatAxisValueProp ??
+    ((value: number) =>
+      value === 0
+        ? formatCurrency(0, 'USD', chartLocale)
+        : formatCompactCurrency(value, 'USD', chartLocale, 0));
   const title = titleProp ?? chartText.titles.revenue;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
@@ -161,7 +184,11 @@ export function LineChartCard({
   const fill = color ?? tone.color;
   const stroke = activeColor ?? (color ? color : tone.activeColor);
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const selectRange = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -182,7 +209,11 @@ export function LineChartCard({
   const hovering = activeIndex !== null;
   const total = headline ?? values.reduce((sum, v) => sum + v, 0);
   const point = hovering ? data[activeIndex] : undefined;
-  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label, chartLocale)) : title;
+  const label = point
+    ? getPointTitle
+      ? getPointTitle(point, activeIndex!)
+      : monthTitle(point.label, chartLocale)
+    : title;
 
   const rawId = useId();
   const id = `bloom-line-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -213,13 +244,20 @@ export function LineChartCard({
           onActiveIndexChange={setActiveIndex}
           palette={palette}
           accessibilityLabel={accessibilityLabel ?? chartText.lineChart(title)}
-          testID={testID ? `${testID}-plot` : undefined}>
+          testID={testID ? `${testID}-plot` : undefined}
+        >
           {({ size, box, x, y }) => {
             const points: Point[] = values.map((v, i) => ({
               x: x(i),
-              y: y(anim.from && anim.from.length === values.length ? lerp(anim.from[i]!, v, anim.progress) : v),
+              y: y(
+                anim.from && anim.from.length === values.length
+                  ? lerp(anim.from[i]!, v, anim.progress)
+                  : v,
+              ),
             }));
-            const revealWidth = anim.from ? size.width : box.left + (size.width - box.left) * anim.progress;
+            const revealWidth = anim.from
+              ? size.width
+              : box.left + (size.width - box.left) * anim.progress;
             const active = activeIndex !== null ? points[activeIndex] : undefined;
             return (
               <Svg width={size.width} height={size.height} pointerEvents="none">
@@ -233,8 +271,17 @@ export function LineChartCard({
                   </ClipPath>
                 </Defs>
                 <G clipPath={`url(#${id}-reveal)`}>
-                  <Path d={closedAreaPath(points, box.bottom, curve)} fill={`url(#${id}-fill)`} stroke="none" />
-                  <Path d={curvePath(points, curve)} fill="none" stroke={stroke} strokeWidth={2.5} />
+                  <Path
+                    d={closedAreaPath(points, box.bottom, curve)}
+                    fill={`url(#${id}-fill)`}
+                    stroke="none"
+                  />
+                  <Path
+                    d={curvePath(points, curve)}
+                    fill="none"
+                    stroke={stroke}
+                    strokeWidth={2.5}
+                  />
                 </G>
                 {active ? (
                   <>

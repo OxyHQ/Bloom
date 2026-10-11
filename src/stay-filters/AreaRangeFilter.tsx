@@ -41,7 +41,10 @@ function AreaRangeFilterComponent({
   const maxLabel = maxLabelProp ?? messages.maximum;
   const accessibilityLabel = accessibilityLabelProp ?? messages.area;
   const toOpen = useCallback(
-    ([low, high]: [number, number]): [number | null, number | null] => [low <= min ? null : low, high >= max ? null : high],
+    ([low, high]: [number, number]): [number | null, number | null] => [
+      low <= min ? null : low,
+      high >= max ? null : high,
+    ],
     [min, max],
   );
 
@@ -54,7 +57,12 @@ function AreaRangeFilterComponent({
   );
 
   return (
-    <View testID={testID} role="group" accessibilityLabel={accessibilityLabel} style={[{ width: '100%', gap: 24 }, style]}>
+    <View
+      testID={testID}
+      role="group"
+      accessibilityLabel={accessibilityLabel}
+      style={[{ width: '100%', gap: 24 }, style]}
+    >
       {slider ? (
         <RangeSlider
           value={[value[0] ?? min, value[1] ?? max]}

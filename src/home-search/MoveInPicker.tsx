@@ -83,7 +83,11 @@ function MoveInPickerComponent({
           accessibilityLabel={labels.date}
           testID={testID ? `${testID}-calendar` : undefined}
         />
-        <View role="group" accessibilityLabel={labels.date} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View
+          role="group"
+          accessibilityLabel={labels.date}
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
+        >
           {timingChip('flexible', labels.flexible)}
           {timingChip('asap', labels.asap)}
         </View>

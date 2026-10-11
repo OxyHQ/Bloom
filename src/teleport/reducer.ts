@@ -4,7 +4,7 @@
  *
  * Changed: nothing — byte-for-byte, only its path.
  */
-import type { ScrollViewContextValue } from "./scroll-view-context/types";
+import type { ScrollViewContextValue } from './scroll-view-context/types';
 
 export type PortalState = {
   removed: Record<string, Record<string, Record<string, boolean>>>;
@@ -13,23 +13,23 @@ export type PortalState = {
 };
 
 export type Action =
-  | { type: "REMOVE_PORTAL"; hostName: string; name: string }
+  | { type: 'REMOVE_PORTAL'; hostName: string; name: string }
   | {
-      type: "CLEAR_REMOVED_ON_UNMOUNT";
+      type: 'CLEAR_REMOVED_ON_UNMOUNT';
       hostName: string;
       name: string;
       instanceId: string;
     }
   | {
-      type: "REGISTER_PORTAL";
+      type: 'REGISTER_PORTAL';
       hostName: string;
       name: string;
       instanceId: string;
     }
-  | { type: "REGISTER_HOST"; hostName: string }
-  | { type: "UNREGISTER_HOST"; hostName: string }
+  | { type: 'REGISTER_HOST'; hostName: string }
+  | { type: 'UNREGISTER_HOST'; hostName: string }
   | {
-      type: "SET_HOST_SCROLL_VIEW_CONTEXT";
+      type: 'SET_HOST_SCROLL_VIEW_CONTEXT';
       hostName: string;
       value: ScrollViewContextValue;
     };
@@ -46,21 +46,20 @@ export const reducer = (state: PortalState, action: Action): PortalState => {
     removed: { ...state.removed },
     hostScrollViewContexts: { ...state.hostScrollViewContexts },
   };
-  const hostRemoved =
-    "name" in action ? cloned.removed[action.hostName] || {} : {};
+  const hostRemoved = 'name' in action ? cloned.removed[action.hostName] || {} : {};
   cloned.removed[action.hostName] = hostRemoved;
-  const nameRemoved = "name" in action ? hostRemoved[action.name] || {} : {};
-  if ("name" in action) {
+  const nameRemoved = 'name' in action ? hostRemoved[action.name] || {} : {};
+  if ('name' in action) {
     hostRemoved[action.name] = nameRemoved;
   }
 
   switch (action.type) {
-    case "REGISTER_HOST": {
+    case 'REGISTER_HOST': {
       const hosts = { ...cloned.hosts };
       hosts[action.hostName] = (hosts[action.hostName] || 0) + 1;
       return { ...cloned, hosts };
     }
-    case "UNREGISTER_HOST": {
+    case 'UNREGISTER_HOST': {
       const hosts = { ...cloned.hosts };
       const count = (hosts[action.hostName] || 0) - 1;
       if (count <= 0) {
@@ -71,18 +70,18 @@ export const reducer = (state: PortalState, action: Action): PortalState => {
       }
       return { ...cloned, hosts };
     }
-    case "SET_HOST_SCROLL_VIEW_CONTEXT":
+    case 'SET_HOST_SCROLL_VIEW_CONTEXT':
       cloned.hostScrollViewContexts[action.hostName] = action.value;
       return cloned;
-    case "REGISTER_PORTAL":
+    case 'REGISTER_PORTAL':
       if (!nameRemoved[action.instanceId]) {
         nameRemoved[action.instanceId] = false;
       }
       return cloned;
-    case "REMOVE_PORTAL":
+    case 'REMOVE_PORTAL':
       Object.keys(nameRemoved).forEach((id) => (nameRemoved[id] = true));
       return cloned;
-    case "CLEAR_REMOVED_ON_UNMOUNT":
+    case 'CLEAR_REMOVED_ON_UNMOUNT':
       delete nameRemoved[action.instanceId];
       if (Object.keys(nameRemoved).length === 0) {
         delete hostRemoved[action.name];

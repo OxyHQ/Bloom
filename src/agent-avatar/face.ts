@@ -4,18 +4,12 @@ import type { AvatarConfig } from './model';
 /** Optical sizing is based on CSS pixels, never the canvas's Retina resolution.
  * Keep the saved recipe unchanged; the same agent adapts to its display size.
  */
-export function faceAtSize(
-  config: AvatarConfig,
-  cssSize: number,
-): AvatarConfig {
+export function faceAtSize(config: AvatarConfig, cssSize: number): AvatarConfig {
   const small = Math.max(0, Math.min(1, (64 - cssSize) / 40));
   if (small === 0) return config;
   return {
     ...config,
-    eyeSize: Math.min(
-      36,
-      config.eyeSize * (1 + small * (config.family === 'alien' ? 0.22 : 0.35)),
-    ),
+    eyeSize: Math.min(36, config.eyeSize * (1 + small * (config.family === 'alien' ? 0.22 : 0.35))),
     eyeGap: config.eyeGap * (1 + small * 0.14),
   };
 }
@@ -212,8 +206,7 @@ const EXPRESSIONS: Record<AvatarConfig['eyes'], Partial<FaceRig>> = {
 export function mixFace(from: FaceRig, to: FaceRig, progress: number): FaceRig {
   const result = { ...to };
   for (const key of Object.keys(result) as (keyof FaceRig)[])
-    result[key] =
-      (from[key] ?? to[key]) + (to[key] - (from[key] ?? to[key])) * progress;
+    result[key] = (from[key] ?? to[key]) + (to[key] - (from[key] ?? to[key])) * progress;
   return result;
 }
 
@@ -235,15 +228,7 @@ export function easeFace(
     let next = target[key] + (delta + change * dt) * decay;
     let nextVelocity = (v - speed * change * dt) * decay;
     if (
-      [
-        'leftOpen',
-        'rightOpen',
-        'width',
-        'bounce',
-        'tremble',
-        'smile',
-        'brow',
-      ].includes(key) &&
+      ['leftOpen', 'rightOpen', 'width', 'bounce', 'tremble', 'smile', 'brow'].includes(key) &&
       next < 0
     ) {
       next = 0;
@@ -253,10 +238,7 @@ export function easeFace(
       next = 1;
       nextVelocity = 0;
     }
-    if (
-      Math.abs(next - target[key]) < 0.0005 &&
-      Math.abs(nextVelocity) < 0.005
-    ) {
+    if (Math.abs(next - target[key]) < 0.0005 && Math.abs(nextVelocity) < 0.005) {
       next = target[key];
       nextVelocity = 0;
     }
@@ -275,11 +257,7 @@ export function expressionRig(config: AvatarConfig): FaceRig {
       rightOpen: 0.13,
       headTilt: 0.09,
     };
-  return mixFace(
-    NEUTRAL,
-    { ...NEUTRAL, ...EXPRESSIONS[config.eyes] },
-    config.expression / 100,
-  );
+  return mixFace(NEUTRAL, { ...NEUTRAL, ...EXPRESSIONS[config.eyes] }, config.expression / 100);
 }
 
 /** Project artwork attached to a sphere, pitching first and then turning sideways.
@@ -301,10 +279,7 @@ export function projectEyePoint(
   return [x2 * perspective, y1 * perspective];
 }
 
-const DIRECTIONS: Record<
-  Exclude<AvatarConfig['lookAt'], 'wander'>,
-  [number, number]
-> = {
+const DIRECTIONS: Record<Exclude<AvatarConfig['lookAt'], 'wander'>, [number, number]> = {
   'top-left': [-1, -1],
   top: [0, -1],
   'top-right': [1, -1],
@@ -323,8 +298,7 @@ export function gazeAngles(
   wander: [number, number] = [0, 0],
 ): [number, number] {
   if (c.idle) return [0, 0.055];
-  const [x, y] =
-    c.lookAt === 'wander' ? wander : (DIRECTIONS[c.lookAt] ?? [0, 0]);
+  const [x, y] = c.lookAt === 'wander' ? wander : (DIRECTIONS[c.lookAt] ?? [0, 0]);
   // Narrow silhouettes leave less room for the same face to turn.
   const room =
     c.family === 'fold'
@@ -336,14 +310,10 @@ export function gazeAngles(
           : c.shape === 'diamond'
             ? 0.7
             : 1;
-  const eyeExtent =
-    c.eyeSize * Math.max(rig.leftOpen, rig.rightOpen) + rig.browLift;
+  const eyeExtent = c.eyeSize * Math.max(rig.leftOpen, rig.rightOpen) + rig.browLift;
   const sizeRoom = Math.max(0.45, 1 - Math.max(0, eyeExtent - 27) * 0.018);
   const travel = (c.gaze / 100) * room * sizeRoom;
-  return [
-    x * 0.68 * travel + rig.lookX / 180,
-    y * 0.62 * travel + rig.lookY / 180,
-  ];
+  return [x * 0.68 * travel + rig.lookX / 180, y * 0.62 * travel + rig.lookY / 180];
 }
 
 export function drawFace(
@@ -366,9 +336,7 @@ export function drawFace(
     );
   const blink = c.motion > 0 ? rig.blink : 1;
   ctx.save();
-  ctx.fillStyle = ctx.strokeStyle = c.lightEyes
-    ? 'hsl(40, 30%, 98%)'
-    : 'hsl(240, 15%, 8%)';
+  ctx.fillStyle = ctx.strokeStyle = c.lightEyes ? 'hsl(40, 30%, 98%)' : 'hsl(240, 15%, 8%)';
   ctx.lineCap = 'round';
   const faceAlpha = ctx.globalAlpha;
 
@@ -385,16 +353,11 @@ export function drawFace(
     if (ctx.globalAlpha === 0) continue;
     const open = side === -1 ? rig.leftOpen : rig.rightOpen;
     const minimumLid = cssSize <= 48 ? 90 / cssSize : 1.2;
-    const h = Math.max(
-      minimumLid,
-      c.eyeSize * (alien ? 0.6 : 0.96) * open * blink,
-    );
+    const h = Math.max(minimumLid, c.eyeSize * (alien ? 0.6 : 0.96) * open * blink);
     const w = alien
       ? Math.min(c.eyeSize * 1.06 * (rig.width / 0.45) ** 0.25, c.eyeGap * 0.43)
       : c.eyeSize * rig.width;
-    const angle =
-      (side === -1 ? rig.leftAngle : rig.rightAngle) +
-      (alien ? 0.08 - side * 0.4 : 0);
+    const angle = (side === -1 ? rig.leftAngle : rig.rightAngle) + (alien ? 0.08 - side * 0.4 : 0);
     const eyePoint = (x: number, y: number) =>
       project(
         center + x * Math.cos(angle) - y * Math.sin(angle),
@@ -420,10 +383,7 @@ export function drawFace(
       // Morph a vertical capsule into a bent horizontal capsule. Sample both
       // the round caps and connecting edges so the lid keeps a curved middle.
       const lidRadius = Math.min(w, Math.max(minimumLid, c.eyeSize * 0.16));
-      const vertex = (
-        corner: number,
-        a: number,
-      ): [number, number, number, number] => {
+      const vertex = (corner: number, a: number): [number, number, number, number] => {
         const direction = corner === 0 || corner === 3 ? 1 : -1;
         return [
           direction * (w - radius) + Math.cos(a) * radius,
@@ -466,16 +426,11 @@ export function drawFace(
     if (alien && !c.idle && open > 0.4 && rig.smile < 0.4 && cssSize >= 48) {
       ctx.save();
       ctx.clip();
-      ctx.strokeStyle = c.lightEyes
-        ? 'hsla(240, 15%, 8%, .13)'
-        : 'hsla(180, 20%, 98%, .28)';
+      ctx.strokeStyle = c.lightEyes ? 'hsla(240, 15%, 8%, .13)' : 'hsla(180, 20%, 98%, .28)';
       ctx.lineWidth = 1.8;
       ctx.beginPath();
       ctx.moveTo(...eyePoint(-w * 0.53, -h * 0.32));
-      ctx.quadraticCurveTo(
-        ...eyePoint(-w * 0.28, -h * 0.74),
-        ...eyePoint(w * 0.05, -h * 0.58),
-      );
+      ctx.quadraticCurveTo(...eyePoint(-w * 0.28, -h * 0.74), ...eyePoint(w * 0.05, -h * 0.58));
       ctx.stroke();
       ctx.restore();
     }
@@ -483,8 +438,7 @@ export function drawFace(
     if (rig.brow > 0.01 && !alien) {
       ctx.save();
       ctx.globalAlpha *= rig.brow;
-      const y =
-        -c.eyeSize * 0.95 - 6 - rig.browLift + side * rig.browAsymmetry * 0.5;
+      const y = -c.eyeSize * 0.95 - 6 - rig.browLift + side * rig.browAsymmetry * 0.5;
       ctx.lineWidth = Math.max(2.5, c.eyeSize * 0.2);
       ctx.beginPath();
       for (let i = 0; i <= 16; i++) {
@@ -511,11 +465,7 @@ export function drawSleepMarks(
   phase: number,
   gaze: [number, number],
 ) {
-  const anchor = projectEyePoint(
-    c.eyeGap / 2 + c.eyeSize * 0.5,
-    -c.eyeSize * 0.55,
-    ...gaze,
-  );
+  const anchor = projectEyePoint(c.eyeGap / 2 + c.eyeSize * 0.5, -c.eyeSize * 0.55, ...gaze);
   ctx.save();
   ctx.fillStyle = c.lightEyes ? 'hsl(40, 30%, 98%)' : 'hsl(240, 15%, 8%)';
   ctx.textAlign = 'center';

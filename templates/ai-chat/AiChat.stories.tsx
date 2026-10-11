@@ -11,8 +11,15 @@ import { AiChatTemplate } from './AiChatTemplate';
 const meta: Meta<typeof AiChatTemplate> = {
   component: AiChatTemplate,
   args: { defaultScenario: 'coding-scenario' },
-  argTypes: { defaultScenario: { name: 'Conversation', control: 'select', options: ['coding-scenario', 'landing-page-design', 'image-generation'], description: 'Changing the conversation restarts its scripted demo.' } },
-  render: args => <AiChatTemplate key={args.defaultScenario} {...args} />,
+  argTypes: {
+    defaultScenario: {
+      name: 'Conversation',
+      control: 'select',
+      options: ['coding-scenario', 'landing-page-design', 'image-generation'],
+      description: 'Changing the conversation restarts its scripted demo.',
+    },
+  },
+  render: (args) => <AiChatTemplate key={args.defaultScenario} {...args} />,
   title: 'Templates/AI Chat',
   parameters: { layout: 'fullscreen' },
 };

@@ -166,9 +166,7 @@ function ChatListItemComponent({
     // when the line truncates. A draft hides it: the draft prefix is the point
     // of the line, and two lead-ins compete.
     const AttachmentIcon =
-      preview.attachment && !preview.draft
-        ? CHAT_ATTACHMENT_ICONS[preview.attachment.kind]
-        : null;
+      preview.attachment && !preview.draft ? CHAT_ATTACHMENT_ICONS[preview.attachment.kind] : null;
     const body = [preview.attachment?.label, preview.text].filter(Boolean).join(' ');
     previewLine = (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 }}>
@@ -298,14 +296,15 @@ function ChatListItemComponent({
             >
               {name}
             </Text>
-            {marker ?? (badge ? (
-              <badge.icon
-                width={geo.glyph}
-                height={geo.glyph}
-                fill={badge.accent ? paint.accent : paint.textMuted}
-                testID={testID ? `${testID}-marker` : undefined}
-              />
-            ) : null)}
+            {marker ??
+              (badge ? (
+                <badge.icon
+                  width={geo.glyph}
+                  height={geo.glyph}
+                  fill={badge.accent ? paint.accent : paint.textMuted}
+                  testID={testID ? `${testID}-marker` : undefined}
+                />
+              ) : null)}
           </View>
           {previewLine}
         </View>

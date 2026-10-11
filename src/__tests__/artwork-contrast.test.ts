@@ -30,9 +30,26 @@ import { parseRgba } from '../theme/color-utils';
 const PRESETS = ['blue', 'teal', 'oxy'] as const;
 const MODES = ['light', 'dark'] as const;
 const COLORS = [
-  '#7c3aed', '#e0a800', '#0e7490', '#6d28d9', '#bae6fd', '#f5e9a8', '#2f7d6d',
-  '#be185d', '#1db98a', '#f4d35e', '#f7f3ea', '#101820', '#ffffff', '#000000',
-  '#3A6EA5', '#F4E3A1', '#8B3A62', '#777777', '#1d2b53', '#c2302f',
+  '#7c3aed',
+  '#e0a800',
+  '#0e7490',
+  '#6d28d9',
+  '#bae6fd',
+  '#f5e9a8',
+  '#2f7d6d',
+  '#be185d',
+  '#1db98a',
+  '#f4d35e',
+  '#f7f3ea',
+  '#101820',
+  '#ffffff',
+  '#000000',
+  '#3A6EA5',
+  '#F4E3A1',
+  '#8B3A62',
+  '#777777',
+  '#1d2b53',
+  '#c2302f',
 ];
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -106,9 +123,12 @@ describe('the four artwork surfaces hold their text', () => {
           const active = contrastRatio(p.background, p.active);
           const upcoming = contrastRatio(p.background, p.upcoming);
           const past = contrastRatio(p.background, p.past);
-          if (active < AAA_TEXT_CONTRAST) failures.push(`${preset}/${mode}/${color} active ${active}`);
-          if (upcoming < AA_TEXT_CONTRAST) failures.push(`${preset}/${mode}/${color} upcoming ${upcoming}`);
-          if (past < AA_LARGE_TEXT_CONTRAST) failures.push(`${preset}/${mode}/${color} past ${past}`);
+          if (active < AAA_TEXT_CONTRAST)
+            failures.push(`${preset}/${mode}/${color} active ${active}`);
+          if (upcoming < AA_TEXT_CONTRAST)
+            failures.push(`${preset}/${mode}/${color} upcoming ${upcoming}`);
+          if (past < AA_LARGE_TEXT_CONTRAST)
+            failures.push(`${preset}/${mode}/${color} past ${past}`);
           floor = Math.min(floor, active);
         }
       }
@@ -130,8 +150,14 @@ describe('the four artwork surfaces hold their text', () => {
         const theme = buildTheme(preset, mode);
         for (const color of COLORS) {
           const tint = resolveCoverTint(theme, color);
-          for (const [name, surface] of [['top', tint.top], ['bottom', tint.bottom]] as const) {
-            for (const [fg, ink] of [['text', tint.text], ['muted', tint.textMuted]] as const) {
+          for (const [name, surface] of [
+            ['top', tint.top],
+            ['bottom', tint.bottom],
+          ] as const) {
+            for (const [fg, ink] of [
+              ['text', tint.text],
+              ['muted', tint.textMuted],
+            ] as const) {
               const ratio = contrastRatio(surface, ink);
               if (ratio < AA_TEXT_CONTRAST) {
                 failures.push(`${preset}/${mode}/${color}/${name}/${fg} ${ratio}`);

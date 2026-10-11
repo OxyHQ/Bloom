@@ -162,21 +162,28 @@ function QueueReorderRow({
     [move, index, canUp, canDown],
   );
 
-  const offset = drag ? (dragging ? drag.dy : dragShift(index, drag.from, target, QUEUE_ROW_HEIGHT)) : 0;
+  const offset = drag
+    ? dragging
+      ? drag.dy
+      : dragShift(index, drag.from, target, QUEUE_ROW_HEIGHT)
+    : 0;
 
   const liftStyle: WebCssStyle = {
     transform: [{ translateY: offset }],
     zIndex: dragging ? 1 : 0,
     borderRadius: 8,
-    ...(dragging
-      ? { backgroundColor: paint.dragSurface, boxShadow: paint.dragShadow }
+    ...(dragging ? { backgroundColor: paint.dragSurface, boxShadow: paint.dragShadow } : null),
+    ...(IS_WEB && drag && !dragging
+      ? { transitionProperty: 'transform', transitionDuration: '120ms' }
       : null),
-    ...(IS_WEB && drag && !dragging ? { transitionProperty: 'transform', transitionDuration: '120ms' } : null),
   };
 
   const title = track.title;
   const reveal = (children: React.ReactNode) => (
-    <View {...webDataSet({ bloomQueueReveal: '' })} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+    <View
+      {...webDataSet({ bloomQueueReveal: '' })}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}
+    >
       {children}
     </View>
   );
@@ -249,7 +256,13 @@ function QueueReorderRow({
             { name: 'moveDown', label: labels.moveDown },
           ]}
           onAccessibilityAction={onAccessibilityAction}
-          style={{ width: 24, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: 6 }}
+          style={{
+            width: 24,
+            height: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 6,
+          }}
           testID={testID ? `${testID}-handle` : undefined}
         >
           <RiDraggable width={16} height={16} fill={paint.textSecondary} />

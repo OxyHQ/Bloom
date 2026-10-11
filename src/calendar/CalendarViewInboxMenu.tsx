@@ -20,7 +20,11 @@ import {
   type HueResolver,
 } from './palette';
 import { IS_WEB, type WebDataSet } from './shared';
-import type { CalendarViewFeed, CalendarViewFeedAccount, CalendarViewInboxMenuProps } from './types';
+import type {
+  CalendarViewFeed,
+  CalendarViewFeedAccount,
+  CalendarViewInboxMenuProps,
+} from './types';
 
 /**
  * `CalendarViewInboxMenu`: the header's inbox button and the subscribed-feeds
@@ -161,7 +165,14 @@ function InboxBody({
           </View>
         </React.Fragment>
       ))}
-      <Button size="sm" leadingIcon={RiAddFill} onPress={onAddAccount} style={{ width: '100%' }} appearance="subtle" tone="neutral">
+      <Button
+        size="sm"
+        leadingIcon={RiAddFill}
+        onPress={onAddAccount}
+        style={{ width: '100%' }}
+        appearance="subtle"
+        tone="neutral"
+      >
         {addAccountLabel}
       </Button>
     </View>
@@ -205,7 +216,14 @@ export function CalendarViewInboxMenu({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button size="md" icon={RiInbox2Line} accessibilityLabel={accessibilityLabel} testID={testID} appearance="plain" tone="neutral" />
+        <Button
+          size="md"
+          icon={RiInbox2Line}
+          accessibilityLabel={accessibilityLabel}
+          testID={testID}
+          appearance="plain"
+          tone="neutral"
+        />
       </PopoverTrigger>
       <PopoverContent
         label={messages.inboxMenu}

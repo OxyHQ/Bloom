@@ -35,7 +35,11 @@ const SEGMENT_GAP = 4;
 const SEGMENT_TRANSITION_MS = 300;
 
 /** The fill fraction of each segment. Pure. */
-export function wizardSegmentFills(total: number, current: number, currentProgress: number): number[] {
+export function wizardSegmentFills(
+  total: number,
+  current: number,
+  currentProgress: number,
+): number[] {
   const clampedCurrent = Math.min(Math.max(0, current), Math.max(0, total - 1));
   const partial = Math.min(1, Math.max(0, currentProgress));
   return Array.from({ length: total }, (_, index) =>
@@ -90,7 +94,15 @@ function WizardProgressComponent({
         ))}
       </View>
       <View style={{ gap: 4 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 20 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            minHeight: 20,
+          }}
+        >
           <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
             {countLine}
           </Text>

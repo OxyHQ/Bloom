@@ -33,15 +33,15 @@ export const Alert: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 12, width: 320, maxWidth: '100%' }}>
-      <Button onPress={() => alert('Saved', 'Your changes are live.')}>
-        One button
-      </Button>
-      <Button onPress={() =>
+      <Button onPress={() => alert('Saved', 'Your changes are live.')}>One button</Button>
+      <Button
+        onPress={() =>
           alert('Delete draft?', 'This cannot be undone.', [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Delete', style: 'destructive' },
           ])
-        }>
+        }
+      >
         Custom buttons
       </Button>
     </View>
@@ -55,17 +55,20 @@ export const Confirm: Story = {
     const [answer, setAnswer] = useState<string>('—');
     return (
       <View style={{ gap: 12, width: 320, maxWidth: '100%' }}>
-        <Button onPress={async () => {
+        <Button
+          onPress={async () => {
             const ok = await confirm({
               title: 'Leave this page?',
               description: 'Your draft will be kept.',
               confirmLabel: 'Leave',
             });
             setAnswer(ok ? 'confirmed' : 'cancelled');
-          }}>
+          }}
+        >
           Ask
         </Button>
-        <Button onPress={async () => {
+        <Button
+          onPress={async () => {
             const ok = await confirm({
               title: 'Delete account',
               description: 'Everything is removed immediately.',
@@ -73,7 +76,8 @@ export const Confirm: Story = {
               destructive: true,
             });
             setAnswer(ok ? 'confirmed' : 'cancelled');
-          }}>
+          }}
+        >
           Ask (destructive)
         </Button>
         <Text>Answer: {answer}</Text>
@@ -89,13 +93,15 @@ export const Prompt: Story = {
     const [name, setName] = useState<string>('—');
     return (
       <View style={{ gap: 12, width: 320, maxWidth: '100%' }}>
-        <Button onPress={async () => {
+        <Button
+          onPress={async () => {
             const value = await prompt({
               title: 'Name this list',
               placeholder: 'Reading list',
             });
             setName(value ?? 'cancelled');
-          }}>
+          }}
+        >
           Ask for a name
         </Button>
         <Text>Name: {name}</Text>
@@ -114,7 +120,8 @@ export const CustomSurface: Story = {
     const [picked, setPicked] = useState('—');
     return (
       <View style={{ gap: 12, width: 320, maxWidth: '100%' }}>
-        <Button onPress={async () => {
+        <Button
+          onPress={async () => {
             const value = await present<string>(
               (surface) => (
                 <View style={{ gap: 8, padding: 8 }}>
@@ -128,7 +135,8 @@ export const CustomSurface: Story = {
               { placement: 'bottom', title: 'Pick a size', label: 'Pick a size' },
             );
             setPicked(value ?? 'dismissed');
-          }}>
+          }}
+        >
           Present a sheet
         </Button>
         <Text>Picked: {picked}</Text>
@@ -142,10 +150,12 @@ export const TwoAtOnce: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 320, maxWidth: '100%' }}>
-      <Button onPress={() => {
+      <Button
+        onPress={() => {
           alert('First', 'Opened first.');
           alert('Second', 'Opened second — this one is on top.');
-        }}>
+        }}
+      >
         Open two
       </Button>
     </View>

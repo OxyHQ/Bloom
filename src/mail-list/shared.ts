@@ -256,10 +256,15 @@ export function mailActionColor(action: MailAction, paint: MailPaint): string {
  * The English strings. Components speak the LOCALE's (`MAIL_LIST_MESSAGES`,
  * through `BloomProvider locale`); this stays exported as the English set.
  */
-export const DEFAULT_MAIL_STRINGS: MailStrings = (({ list: _list, ...strings }) => strings)(MAIL_LIST_MESSAGES.en);
+export const DEFAULT_MAIL_STRINGS: MailStrings = (({ list: _list, ...strings }) => strings)(
+  MAIL_LIST_MESSAGES.en,
+);
 
 /** `base` (the locale's strings, English by default) with the caller's overrides laid over it. */
-export function mailStrings(overrides?: Partial<MailStrings>, base: MailStrings = DEFAULT_MAIL_STRINGS): MailStrings {
+export function mailStrings(
+  overrides?: Partial<MailStrings>,
+  base: MailStrings = DEFAULT_MAIL_STRINGS,
+): MailStrings {
   return overrides === undefined ? base : { ...base, ...overrides };
 }
 
@@ -327,7 +332,11 @@ export function toSwipeActions(actions: MailSwipeActions): SwipeRowActions {
           label: action.label,
           icon: action.icon,
           tone:
-            action.tone === 'negative' ? 'negative' : action.tone === 'accent' ? 'accent' : 'neutral',
+            action.tone === 'negative'
+              ? 'negative'
+              : action.tone === 'accent'
+                ? 'accent'
+                : 'neutral',
           onPress: action.onPress,
         }));
   return { left: side(actions.left), right: side(actions.right) };
@@ -357,9 +366,7 @@ export interface MailRowNameInput {
  */
 export function composeMailRowName(input: MailRowNameInput, strings: MailStrings): string {
   const snippet =
-    input.draft === true
-      ? [strings.draft, input.snippet].filter(Boolean).join(' ')
-      : input.snippet;
+    input.draft === true ? [strings.draft, input.snippet].filter(Boolean).join(' ') : input.snippet;
   return [
     input.sender,
     input.subject,
@@ -416,7 +423,8 @@ export function groupMailByDay(
     strings,
     locale,
     formatDate = (date: Date) =>
-      formatGregorian(date, locale, { month: 'short', day: 'numeric' }) ?? date.toISOString().slice(0, 10),
+      formatGregorian(date, locale, { month: 'short', day: 'numeric' }) ??
+      date.toISOString().slice(0, 10),
   } = options;
   const today = dayIndex(now);
   const messages = pickMessages(MAIL_LIST_MESSAGES, locale);

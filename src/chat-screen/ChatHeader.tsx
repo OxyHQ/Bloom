@@ -69,17 +69,21 @@ function HeaderIconButton({
   size?: 'sm' | 'md';
   testID?: string;
 }) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = inheritedSize;
   return (
     <Button
-
       size={size}
       iconOnly
       icon={<Icon width={size === 'sm' ? 18 : 20} height={size === 'sm' ? 18 : 20} fill={tint} />}
       accessibilityLabel={label}
       onPress={onPress}
-      testID={testID} tone="accent" appearance="plain"
+      testID={testID}
+      tone="accent"
+      appearance="plain"
     />
   );
 }
@@ -246,7 +250,9 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
   const resolvedMarkerLabel = marker ? (markerLabel ?? messages[marker]) : undefined;
 
   const identity = (
-    <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+    <View
+      style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}
+    >
       {avatar ?? (
         <AvatarPresence
           source={avatarSource ?? undefined}
@@ -369,18 +375,16 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
             tint={paint.textSecondary}
           />
         ) : null}
-        {renderMore
-          ? renderMore()
-          : onPressMore
-            ? (
-                <HeaderIconButton
-                  icon={RiMore2Fill}
-                  label={moreLabel}
-                  onPress={onPressMore}
-                  tint={paint.textSecondary}
-                />
-              )
-            : null}
+        {renderMore ? (
+          renderMore()
+        ) : onPressMore ? (
+          <HeaderIconButton
+            icon={RiMore2Fill}
+            label={moreLabel}
+            onPress={onPressMore}
+            tint={paint.textSecondary}
+          />
+        ) : null}
         {actions}
       </View>
     </View>

@@ -7,4 +7,8 @@ export interface ImportantAlertsCardMessages {
   thisWeek: string;
 }
 
-export const IMPORTANT_ALERTS_CARD_MESSAGES: MessageCatalog<ImportantAlertsCardMessages> = defineMessages<ImportantAlertsCardMessages>('IMPORTANT_ALERTS_CARD_MESSAGES', { title: 'Important alerts', thisWeek: 'this week' });
+export const IMPORTANT_ALERTS_CARD_MESSAGES: MessageCatalog<ImportantAlertsCardMessages> =
+  defineMessages<ImportantAlertsCardMessages>('IMPORTANT_ALERTS_CARD_MESSAGES', {
+    title: 'Important alerts',
+    thisWeek: 'this week',
+  });

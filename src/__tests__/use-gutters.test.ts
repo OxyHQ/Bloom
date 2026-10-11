@@ -28,9 +28,7 @@ describe('useGutters', () => {
   });
 
   it('maps a four-value list to [top, right, bottom, left]', () => {
-    const { result } = renderHook(() =>
-      useGutters(['compact', 'base', 0, 'wide']),
-    );
+    const { result } = renderHook(() => useGutters(['compact', 'base', 0, 'wide']));
     expect(result.current).toEqual({
       paddingTop: space.sm,
       paddingRight: space.lg,

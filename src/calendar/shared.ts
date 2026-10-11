@@ -51,7 +51,9 @@ export function sixWeekGrid(month: Date): { date: Date; inMonth: boolean }[] {
  * Events grouped by day, earliest first. All-day events (no `time`) sort ahead
  * of timed ones (`"" < "HH:mm"`).
  */
-export function useEventsByDay(events: readonly CalendarViewEvent[]): Map<string, CalendarViewEvent[]> {
+export function useEventsByDay(
+  events: readonly CalendarViewEvent[],
+): Map<string, CalendarViewEvent[]> {
   return useMemo(() => {
     const map = new Map<string, CalendarViewEvent[]>();
     for (const event of events) {
@@ -75,7 +77,8 @@ export function visibleEvents(events: readonly CalendarViewEvent[]): {
   visible: readonly CalendarViewEvent[];
   hidden: number;
 } {
-  const visible = events.length > MAX_VISIBLE_EVENTS ? events.slice(-OVERFLOW_VISIBLE_EVENTS) : events;
+  const visible =
+    events.length > MAX_VISIBLE_EVENTS ? events.slice(-OVERFLOW_VISIBLE_EVENTS) : events;
   return { visible, hidden: events.length - visible.length };
 }
 

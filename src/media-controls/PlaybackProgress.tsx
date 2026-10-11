@@ -99,7 +99,11 @@ function PlaybackProgressComponent({
       importantForAccessibility="no"
       accessibilityElementsHidden
       aria-hidden
-      style={[timeStyle, { textAlign: align }, timesPosition === 'inline' ? { minWidth: 40 } : null]}
+      style={[
+        timeStyle,
+        { textAlign: align },
+        timesPosition === 'inline' ? { minWidth: 40 } : null,
+      ]}
     >
       {text}
     </Text>

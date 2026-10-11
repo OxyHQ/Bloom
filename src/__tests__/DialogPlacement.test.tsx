@@ -39,7 +39,12 @@ function ResolveProbe({
 function resolve(placement: ResponsiveDialogPlacement | undefined): DialogPlacement {
   let captured: DialogPlacement = 'center';
   renderWithTheme(
-    <ResolveProbe placement={placement} onResolve={(p) => { captured = p; }} />,
+    <ResolveProbe
+      placement={placement}
+      onResolve={(p) => {
+        captured = p;
+      }}
+    />,
   );
   return captured;
 }
@@ -126,12 +131,7 @@ describe('Dialog controlled open mode', () => {
   it('requests close via onClose exactly once when an action is pressed (no double-fire)', () => {
     const onClose = jest.fn();
     const { getByText } = renderWithTheme(
-      <Dialog
-        open
-        onClose={onClose}
-        title="Controlled"
-        actions={[{ label: 'Done' }]}
-      />,
+      <Dialog open onClose={onClose} title="Controlled" actions={[{ label: 'Done' }]} />,
     );
     act(() => {
       fireEvent.press(getByText('Done'));

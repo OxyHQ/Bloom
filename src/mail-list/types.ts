@@ -181,7 +181,13 @@ export interface MailRowProps {
 export interface MailSummary
   extends Omit<
     MailRowProps,
-    'onPress' | 'onLongPress' | 'onAction' | 'onCheckedChange' | 'onStarredChange' | 'density' | 'testID'
+    | 'onPress'
+    | 'onLongPress'
+    | 'onAction'
+    | 'onCheckedChange'
+    | 'onStarredChange'
+    | 'density'
+    | 'testID'
   > {
   id: string;
   /**

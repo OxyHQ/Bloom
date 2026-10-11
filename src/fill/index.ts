@@ -1,3 +1,1 @@
-export {
-  Fill,
-} from './Fill';
+export { Fill } from './Fill';

@@ -14,7 +14,13 @@ import { MEDIA_CARD_MESSAGES } from './messages';
  *
  * Name: "Slow Signals, Podcast, Harbor Audio".
  */
-function PodcastCardComponent({ title, publisher, typeLabel: typeLabelProp, layout = 'tile', ...rest }: PodcastCardProps) {
+function PodcastCardComponent({
+  title,
+  publisher,
+  typeLabel: typeLabelProp,
+  layout = 'tile',
+  ...rest
+}: PodcastCardProps) {
   const { messages } = useMessages(MEDIA_CARD_MESSAGES);
   const typeLabel = typeLabelProp ?? messages.podcast;
   const row = layout === 'row';
@@ -25,7 +31,9 @@ function PodcastCardComponent({ title, publisher, typeLabel: typeLabelProp, layo
       title={title}
       typeLabel={typeLabel}
       subtitle={row ? joinMeta([typeLabel, publisher]) : publisher}
-      accessibilityLabel={rest.accessibilityLabel ?? [title, typeLabel, publisher].filter(Boolean).join(', ')}
+      accessibilityLabel={
+        rest.accessibilityLabel ?? [title, typeLabel, publisher].filter(Boolean).join(', ')
+      }
       artworkRadius={row ? 8 : PODCAST_RADIUS}
       placeholderIcon={RiMic2Fill}
     />

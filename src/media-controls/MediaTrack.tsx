@@ -191,8 +191,7 @@ export function MediaTrack({
 
   const active = !disabled && (hovered || dragValue !== null);
   const fraction = safeMax > 0 ? shown / safeMax : 0;
-  const bufferedFraction =
-    buffered != null && safeMax > 0 ? clamp(buffered / safeMax, 0, 1) : 0;
+  const bufferedFraction = buffered != null && safeMax > 0 ? clamp(buffered / safeMax, 0, 1) : 0;
   const railTop = (MEDIA_TRACK_HIT - MEDIA_TRACK_RAIL) / 2;
 
   const rootStyle: WebCssStyle = {

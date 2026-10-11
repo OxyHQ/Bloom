@@ -123,7 +123,14 @@ describe('ChatHeader status precedence', () => {
   });
 
   it('lets typing WIN over the status line', () => {
-    mount(<ChatHeader title="Ana" status="last seen recently" typingLabel="Ana is typing…" testID="h" />);
+    mount(
+      <ChatHeader
+        title="Ana"
+        status="last seen recently"
+        typingLabel="Ana is typing…"
+        testID="h"
+      />,
+    );
     const status = byTestId('h-status');
     // `TypingDots` names itself and hides the drawn copy of the label, so the
     // NAME is the assertion, not the text content.
@@ -421,9 +428,7 @@ describe('ChatBackground', () => {
   });
 
   it('dims an image wallpaper, and the dim is not optional', () => {
-    mount(
-      <ChatBackground variant="image" source="https://example.test/wall.jpg" testID="bg" />,
-    );
+    mount(<ChatBackground variant="image" source="https://example.test/wall.jpg" testID="bg" />);
     const dim = byTestId('chat-background-dim');
     expect(Number(getComputedStyle(dim).opacity)).toBeCloseTo(paint().imageDimOpacity, 5);
     expect(normalise(getComputedStyle(dim).backgroundColor)).toBe(normalise(paint().imageDim));
@@ -529,7 +534,9 @@ describe('the jump buttons', () => {
     expect(normalise(style.borderTopColor)).toBe(normalise(paint().floatingBorder));
     const material = byTestId('jump-button').querySelector('.bloom-surface-paint') as HTMLElement;
     expect(material).not.toBeNull();
-    expect(normalise(material.style.getPropertyValue('--bloom-surface-paint-fill'))).toBe(normalise(paint().floatingSurface));
+    expect(normalise(material.style.getPropertyValue('--bloom-surface-paint-fill'))).toBe(
+      normalise(paint().floatingSurface),
+    );
   });
 
   it('fires', () => {
@@ -593,12 +600,7 @@ describe('ChatMemberRow', () => {
     mount(<ChatMemberRow member={MEMBERS[2] as ChatMember} testID="row" />);
     expect(maybeTestId('row-role')).toBeNull();
 
-    mount(
-      <ChatMemberRow
-        member={{ id: 'x', name: 'Plain', role: 'member' }}
-        testID="row"
-      />,
-    );
+    mount(<ChatMemberRow member={{ id: 'x', name: 'Plain', role: 'member' }} testID="row" />);
     expect(maybeTestId('row-role')).toBeNull();
   });
 
@@ -620,8 +622,17 @@ describe('ChatMemberRow', () => {
 
 describe('ChatInfoPanel', () => {
   const tabs = [
-    { value: 'media', label: 'Media', count: 12, content: <ChatDateHeader label="MEDIA" placement="inline" testID="pane-media" /> },
-    { value: 'files', label: 'Files', content: <ChatDateHeader label="FILES" placement="inline" testID="pane-files" /> },
+    {
+      value: 'media',
+      label: 'Media',
+      count: 12,
+      content: <ChatDateHeader label="MEDIA" placement="inline" testID="pane-media" />,
+    },
+    {
+      value: 'files',
+      label: 'Files',
+      content: <ChatDateHeader label="FILES" placement="inline" testID="pane-files" />,
+    },
   ];
 
   it('is a fixed-width column as a pane and fills the screen as a screen', () => {
@@ -650,7 +661,9 @@ describe('ChatInfoPanel', () => {
 
   it('honours a CONTROLLED tab and reports the change', () => {
     const onTabChange = jest.fn();
-    mount(<ChatInfoPanel name="Ana" tabs={tabs} tab="files" onTabChange={onTabChange} testID="panel" />);
+    mount(
+      <ChatInfoPanel name="Ana" tabs={tabs} tab="files" onTabChange={onTabChange} testID="panel" />,
+    );
     expect(maybeTestId('pane-files')).not.toBeNull();
 
     const mediaTab = Array.from(container.querySelectorAll('[role="tab"]')).find((el) =>
@@ -748,7 +761,13 @@ describe('ChatInfoPanel', () => {
 
   it('names the close button and the add-members row', () => {
     mount(
-      <ChatInfoPanel name="Crew" members={MEMBERS} onClose={() => {}} onAddMember={() => {}} testID="panel" />,
+      <ChatInfoPanel
+        name="Crew"
+        members={MEMBERS}
+        onClose={() => {}}
+        onAddMember={() => {}}
+        testID="panel"
+      />,
     );
     expect(byTestId('panel-close').getAttribute('aria-label')).toBe('Close');
     expect(byTestId('panel-add-member').getAttribute('aria-label')).toBe('Add members');

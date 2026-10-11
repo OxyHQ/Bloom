@@ -33,20 +33,14 @@ describe('ConnectionDots', () => {
 
   it('exposes a single accessibility label for the (decorative) dots', () => {
     const { getByLabelText } = renderWithTheme(
-      <ConnectionDots
-        left={<View />}
-        right={<View />}
-        accessibilityLabel="Linking your account"
-      />,
+      <ConnectionDots left={<View />} right={<View />} accessibilityLabel="Linking your account" />,
     );
     const node = getByLabelText('Linking your account');
     expect(node.props.accessibilityRole).toBe('image');
   });
 
   it('defaults the accessibility label to "Connecting"', () => {
-    const { getByLabelText } = renderWithTheme(
-      <ConnectionDots left={<View />} right={<View />} />,
-    );
+    const { getByLabelText } = renderWithTheme(<ConnectionDots left={<View />} right={<View />} />);
     expect(getByLabelText('Connecting')).toBeTruthy();
   });
 
@@ -58,20 +52,13 @@ describe('ConnectionDots', () => {
   });
 
   it('renders the default of 6 dots when dotCount is omitted', () => {
-    const { toJSON } = renderWithTheme(
-      <ConnectionDots left={<View />} right={<View />} />,
-    );
+    const { toJSON } = renderWithTheme(<ConnectionDots left={<View />} right={<View />} />);
     expect(countAnimatedDots(toJSON())).toBe(6);
   });
 
   it('renders dots under reduced motion without crashing', () => {
     const { toJSON, getByLabelText } = renderWithTheme(
-      <ConnectionDots
-        left={<View />}
-        right={<View />}
-        dotCount={5}
-        reducedMotion
-      />,
+      <ConnectionDots left={<View />} right={<View />} dotCount={5} reducedMotion />,
     );
     expect(getByLabelText('Connecting')).toBeTruthy();
     expect(countAnimatedDots(toJSON())).toBe(5);

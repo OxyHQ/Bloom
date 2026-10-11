@@ -14,7 +14,12 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PLACE_DETAILS_GEOMETRY } from './constants';
 import { PLACE_DETAILS_MESSAGES } from './messages';
-import { describeHoursDay, formatHoursDay, resolvePlaceDetailsPaint, type HoursFormat } from './shared';
+import {
+  describeHoursDay,
+  formatHoursDay,
+  resolvePlaceDetailsPaint,
+  type HoursFormat,
+} from './shared';
 import type { PlaceHoursProps } from './types';
 
 /** The accordion's one item. A week is a single disclosure, not a set of them. */
@@ -90,12 +95,7 @@ function PlaceHoursComponent({
   const word = openLabelFor(state, stateLabel, placeCard);
 
   return (
-    <View
-      role="group"
-      accessibilityLabel={accessibilityLabel}
-      style={style}
-      testID={testID}
-    >
+    <View role="group" accessibilityLabel={accessibilityLabel} style={style} testID={testID}>
       <Accordion type="single" value={open ? WEEK : undefined} onValueChange={onValueChange}>
         <AccordionItem value={WEEK}>
           <AccordionTrigger

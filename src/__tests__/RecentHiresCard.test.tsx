@@ -11,7 +11,12 @@ import { resolveRecentHiresPalette } from '../recent-hires-card/RecentHiresCard'
 import { resolvedStyle } from './support/rendered-style';
 
 const HIRES: RecentHire[] = [
-  { name: 'Livia Saris', joined: 'Joined today', role: 'Backend Engineer', avatar: 'https://example.com/a.webp' },
+  {
+    name: 'Livia Saris',
+    joined: 'Joined today',
+    role: 'Backend Engineer',
+    avatar: 'https://example.com/a.webp',
+  },
   { name: 'Jaydon Aminoff', joined: '2 days ago', role: 'UI Designer' },
   { name: 'Maria Lubin', joined: '5 days ago', role: 'User Researcher' },
   { name: 'Ann Press', joined: 'A week ago', role: 'DevOps Engineer' },
@@ -57,9 +62,16 @@ describe('RecentHiresCard', () => {
   });
 
   it('paints the person cards as inner tiles: radius 10, padding 10, the card shadow', () => {
-    const { getByTestId } = renderIn(<RecentHiresCard testID="card" count={56} hires={HIRES} />, 'dark');
+    const { getByTestId } = renderIn(
+      <RecentHiresCard testID="card" count={56} hires={HIRES} />,
+      'dark',
+    );
     const theme = buildTheme('teal', 'dark');
-    const palette = resolveRecentHiresPalette(theme, resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background }).publishedFill);
+    const palette = resolveRecentHiresPalette(
+      theme,
+      resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background })
+        .publishedFill,
+    );
     const tile = resolvedStyle(getByTestId('card-hire-0').props.style);
     expect(tile).toMatchObject({
       borderRadius: 10,
@@ -79,7 +91,11 @@ describe('RecentHiresCard', () => {
 
     const { getByTestId } = renderIn(<RecentHiresCard testID="card" count={56} hires={HIRES} />);
     const chip = resolvedStyle(getByTestId('card-hire-1-role').props.style);
-    expect(chip).toMatchObject({ alignSelf: 'stretch', justifyContent: 'center', backgroundColor: resolveRecentHiresPalette(light).role });
+    expect(chip).toMatchObject({
+      alignSelf: 'stretch',
+      justifyContent: 'center',
+      backgroundColor: resolveRecentHiresPalette(light).role,
+    });
   });
 
   it('names the team switcher and forwards the presses', () => {
@@ -116,8 +132,12 @@ describe('RecentHiresCard', () => {
   });
 });
 
-
 it.each(['light', 'dark'] as const)('RecentHires shares card and inset roles in %s', (mode) => {
   const theme = buildTheme('teal', mode);
-  expect(resolveRecentHiresPalette(theme)).toMatchObject({ surface: theme.colors.card, inner: surfaceFillOn(theme, theme.colors.card), textSecondary: theme.colors.textSecondary, ring: theme.colors.primary });
+  expect(resolveRecentHiresPalette(theme)).toMatchObject({
+    surface: theme.colors.card,
+    inner: surfaceFillOn(theme, theme.colors.card),
+    textSecondary: theme.colors.textSecondary,
+    ring: theme.colors.primary,
+  });
 });

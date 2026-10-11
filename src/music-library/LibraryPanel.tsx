@@ -98,7 +98,10 @@ const searchInputStyle: TextStyle = {
   backgroundColor: 'transparent',
 };
 
-function mergeLabels(d: LibraryPanelLabels, labels: LibraryPanelProps['labels']): LibraryPanelLabels {
+function mergeLabels(
+  d: LibraryPanelLabels,
+  labels: LibraryPanelProps['labels'],
+): LibraryPanelLabels {
   if (!labels) return d;
   return {
     ...d,
@@ -152,8 +155,16 @@ function LibraryPanelComponent({
     [messages, common, labelsProp],
   );
 
-  const [filter, setFilter] = useControllable<LibraryFilter | null>(filterProp, null, onFilterChange);
-  const [downloadedOnly, setDownloadedOnly] = useControllable(downloadedProp, false, onDownloadedOnlyChange);
+  const [filter, setFilter] = useControllable<LibraryFilter | null>(
+    filterProp,
+    null,
+    onFilterChange,
+  );
+  const [downloadedOnly, setDownloadedOnly] = useControllable(
+    downloadedProp,
+    false,
+    onDownloadedOnlyChange,
+  );
   const [sort, setSort] = useControllable<LibrarySort>(sortProp, 'recents', onSortChange);
   const [view, setView] = useControllable<LibraryView>(viewProp, 'list', onViewChange);
   const [query, setQuery] = useControllable(queryProp, '', onQueryChange);
@@ -290,7 +301,12 @@ function LibraryPanelComponent({
   );
 
   return (
-    <Surface role="region" accessibilityLabel={labels.title} style={[surfaceStyle, style]} testID={testID}>
+    <Surface
+      role="region"
+      accessibilityLabel={labels.title}
+      style={[surfaceStyle, style]}
+      testID={testID}
+    >
       {/* Header */}
       <View
         style={{
@@ -315,7 +331,15 @@ function LibraryPanelComponent({
             {titleContent}
           </Pressable>
         ) : (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 4, flexShrink: 1 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              paddingLeft: 4,
+              flexShrink: 1,
+            }}
+          >
             {titleContent}
           </View>
         )}
@@ -510,9 +534,17 @@ function LibraryPanelComponent({
               <ViewGlyph width={16} height={16} fill={paint.textMuted} />
             </Pressable>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" label={labels.sortAndView} minWidth={200} testID={pid('sort-menu')}>
+          <DropdownMenuContent
+            align="end"
+            label={labels.sortAndView}
+            minWidth={200}
+            testID={pid('sort-menu')}
+          >
             <DropdownMenuLabel>{labels.sortBy}</DropdownMenuLabel>
-            <DropdownMenuRadioGroup value={sort} onValueChange={(next) => setSort(next as LibrarySort)}>
+            <DropdownMenuRadioGroup
+              value={sort}
+              onValueChange={(next) => setSort(next as LibrarySort)}
+            >
               {SORTS.map((key) => (
                 <DropdownMenuRadioItem
                   key={key}
@@ -527,7 +559,10 @@ function LibraryPanelComponent({
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
             <DropdownMenuLabel>{labels.viewAs}</DropdownMenuLabel>
-            <DropdownMenuRadioGroup value={view} onValueChange={(next) => setView(next as LibraryView)}>
+            <DropdownMenuRadioGroup
+              value={view}
+              onValueChange={(next) => setView(next as LibraryView)}
+            >
               {VIEWS.map((key) => (
                 <DropdownMenuRadioItem
                   key={key}
@@ -562,7 +597,11 @@ function LibraryPanelComponent({
         ) : view === 'grid' ? (
           <View role="list" style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
             {shown.map((item) => (
-              <View key={item.id} role="listitem" style={tileWidth !== undefined ? { width: tileWidth } : undefined}>
+              <View
+                key={item.id}
+                role="listitem"
+                style={tileWidth !== undefined ? { width: tileWidth } : undefined}
+              >
                 {renderItem(item, 'grid')}
               </View>
             ))}

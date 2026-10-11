@@ -1,10 +1,7 @@
 import { AppState, type AppStateStatus } from 'react-native';
 import { act, renderHook } from '@testing-library/react-native';
 
-import {
-  subscribeToAppState,
-  useAppStateChange,
-} from '../toast/use-app-state';
+import { subscribeToAppState, useAppStateChange } from '../toast/use-app-state';
 
 /**
  * Both platform branches matter: RN-Web reports `AppState.isAvailable === false`
@@ -19,9 +16,7 @@ describe('subscribeToAppState', () => {
 
   it('subscribes and unsubscribes when AppState is available', () => {
     const remove = jest.fn();
-    const addEventListener = jest
-      .spyOn(AppState, 'addEventListener')
-      .mockReturnValue({ remove });
+    const addEventListener = jest.spyOn(AppState, 'addEventListener').mockReturnValue({ remove });
 
     const unsubscribe = subscribeToAppState(() => {});
     expect(addEventListener).toHaveBeenCalledTimes(1);
@@ -55,9 +50,7 @@ describe('useAppStateChange', () => {
       return { remove };
     });
 
-    const hook = renderHook(() =>
-      useAppStateChange({ onBackground, onForeground }),
-    );
+    const hook = renderHook(() => useAppStateChange({ onBackground, onForeground }));
 
     const emit = (status: AppStateStatus) => {
       act(() => {
@@ -118,9 +111,7 @@ describe('useAppStateChange', () => {
     const onBackground = jest.fn();
     const onForeground = jest.fn();
 
-    const hook = renderHook(() =>
-      useAppStateChange({ onBackground, onForeground }),
-    );
+    const hook = renderHook(() => useAppStateChange({ onBackground, onForeground }));
     expect(() => hook.unmount()).not.toThrow();
     expect(onBackground).not.toHaveBeenCalled();
   });

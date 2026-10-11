@@ -21,10 +21,7 @@
  */
 import * as React from 'react';
 import { Platform, Pressable, View } from 'react-native';
-import {
-  SafeAreaInsetsContext,
-  initialWindowMetrics,
-} from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext, initialWindowMetrics } from 'react-native-safe-area-context';
 
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { useDynamicToastContext, useToastContext } from './context';
@@ -54,8 +51,7 @@ const FALLBACK_INSETS = initialWindowMetrics?.insets ?? {
  * siblings by elevation.
  */
 const ANDROID_ELEVATION = 9999;
-const androidElevationStyle =
-  Platform.OS === 'android' ? { elevation: ANDROID_ELEVATION } : null;
+const androidElevationStyle = Platform.OS === 'android' ? { elevation: ANDROID_ELEVATION } : null;
 
 export const Positioner: React.FC<
   React.PropsWithChildren<Pick<ToasterProps, 'position' | 'style'>>
@@ -82,7 +78,8 @@ export const Positioner: React.FC<
   }, [isExpanded, collapse]);
 
   // Collapsing by pressing outside only makes sense for an anchored stack.
-  const shouldAllowCollapse = resolvedPosition !== 'center' && isExpanded;
+  // Web observes outside presses in ToastHost without intercepting the app.
+  const shouldAllowCollapse = Platform.OS !== 'web' && resolvedPosition !== 'center' && isExpanded;
   const hasChildren = React.Children.count(children) > 0;
 
   return (

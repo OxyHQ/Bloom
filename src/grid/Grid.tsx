@@ -24,7 +24,8 @@ const RowComponent = function Row({
             marginRight: -gap / 2,
           },
           style,
-        ]}>
+        ]}
+      >
         {children}
       </View>
     </GridContext.Provider>
@@ -54,7 +55,8 @@ const ColComponent = function Col({
           width: `${width * 100}%` as unknown as number,
         },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </View>
   );

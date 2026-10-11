@@ -52,9 +52,7 @@ describe('LinkPreviewCard', () => {
   });
 
   it('opens the URL via Linking when no onPress is supplied', () => {
-    const openURL = jest
-      .spyOn(Linking, 'openURL')
-      .mockResolvedValue(undefined);
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     const { getByLabelText } = renderWithTheme(
       <LinkPreviewCard url="https://example.com/open" title="Open me" />,
     );
@@ -113,7 +111,9 @@ describe('LinkPreviewCard', () => {
      * suggests — asserting on the composite reads `undefined` for every style
      * key and would pass whatever the block is padded with.
      */
-    function contentBlock(text: { parent: { parent: { props: Record<string, unknown> } | null } | null }) {
+    function contentBlock(text: {
+      parent: { parent: { props: Record<string, unknown> } | null } | null;
+    }) {
       const block = text.parent?.parent;
       if (!block || block.props.style === undefined) {
         throw new Error('no host content block above the site-name line');
@@ -168,9 +168,7 @@ describe('LinkPreviewCard', () => {
       const { getByText } = renderCard();
       const siteName = resolvedStyle(getByText('Example').props.style).color;
       const title = resolvedStyle(getByText('A great article').props.style).color;
-      const description = resolvedStyle(
-        getByText('The summary of the article.').props.style,
-      ).color;
+      const description = resolvedStyle(getByText('The summary of the article.').props.style).color;
 
       expect(typeof siteName).toBe('string');
       expect(typeof title).toBe('string');

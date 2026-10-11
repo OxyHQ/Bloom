@@ -52,13 +52,7 @@ export function useCommonSVGProps(props: Props) {
     _fill = `url(#${id})`;
     gradientDef = (
       <Defs>
-        <LinearGradient
-          id={id}
-          x1="0"
-          y1="0"
-          x2="100%"
-          y2="0"
-          gradientTransform="rotate(45)">
+        <LinearGradient id={id} x1="0" y1="0" x2="100%" y2="0" gradientTransform="rotate(45)">
           {config.values.map(([stop, fillColor]) => (
             <Stop key={String(stop)} offset={String(stop)} stopColor={fillColor} />
           ))}

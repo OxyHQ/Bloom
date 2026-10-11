@@ -91,7 +91,8 @@ function RangeFieldsComponent({
     setDraft(null);
     if (parsed == null) {
       if (!nullable || draft.text.trim() !== '') return;
-      const next: [number | null, number | null] = draft.index === 0 ? [null, value[1]] : [value[0], null];
+      const next: [number | null, number | null] =
+        draft.index === 0 ? [null, value[1]] : [value[0], null];
       onCommit(next);
       return;
     }

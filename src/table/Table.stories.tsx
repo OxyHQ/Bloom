@@ -65,7 +65,8 @@ function SortableTable({ size }: { size: TableSize }) {
   const toggle = (key: 'name' | 'role') =>
     setSort((current) => ({
       key,
-      direction: current.key === key && current.direction === 'ascending' ? 'descending' : 'ascending',
+      direction:
+        current.key === key && current.direction === 'ascending' ? 'descending' : 'ascending',
     }));
   const direction = (key: 'name' | 'role'): TableSortDirection =>
     sort.key === key ? sort.direction : 'none';
@@ -127,7 +128,17 @@ export const Empty: Story = {
 export const Scrolling: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 360, maxWidth: '100%', borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)', borderRadius: 16, paddingTop: 8, overflow: 'hidden' }}>
+    <View
+      style={{
+        width: 360,
+        maxWidth: '100%',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.08)',
+        borderRadius: 16,
+        paddingTop: 8,
+        overflow: 'hidden',
+      }}
+    >
       <Table accessibilityLabel="Customers" minWidth={640}>
         <TableHeader>
           <TableColumn width={200}>Customer name</TableColumn>
@@ -153,6 +164,29 @@ export const Scrolling: Story = {
 export const Playground: Story = {
   args: { size: 'md', accessibilityLabel: 'Customers', minWidth: 420 },
   parameters: { controls: { disable: false, include: ['size', 'accessibilityLabel', 'minWidth'] } },
-  argTypes: { size: { control: 'select', options: ['sm', 'md'] }, accessibilityLabel: { control: 'text' }, minWidth: { control: { type: 'range', min: 280, max: 900, step: 20 } } },
-  render: args => <View style={{ width: 620, maxWidth: '100%' }}><Table {...args}><TableHeader><TableColumn>Name</TableColumn><TableColumn>Role</TableColumn><TableColumn>Status</TableColumn></TableHeader><TableBody>{PEOPLE.map(person => <TableRow key={person.id}><TableCell>{person.name}</TableCell><TableCell>{person.role}</TableCell><TableCell>{person.status}</TableCell></TableRow>)}</TableBody></Table></View>,
+  argTypes: {
+    size: { control: 'select', options: ['sm', 'md'] },
+    accessibilityLabel: { control: 'text' },
+    minWidth: { control: { type: 'range', min: 280, max: 900, step: 20 } },
+  },
+  render: (args) => (
+    <View style={{ width: 620, maxWidth: '100%' }}>
+      <Table {...args}>
+        <TableHeader>
+          <TableColumn>Name</TableColumn>
+          <TableColumn>Role</TableColumn>
+          <TableColumn>Status</TableColumn>
+        </TableHeader>
+        <TableBody>
+          {PEOPLE.map((person) => (
+            <TableRow key={person.id}>
+              <TableCell>{person.name}</TableCell>
+              <TableCell>{person.role}</TableCell>
+              <TableCell>{person.status}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </View>
+  ),
 };

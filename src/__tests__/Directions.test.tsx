@@ -46,8 +46,22 @@ setupHarness();
 const noop = () => undefined;
 
 const ROUTES: DirectionsRoute[] = [
-  { id: 'a', duration: '24 min', distance: '8.2 km', arrival: 'Arrives 18:42', via: 'Via Ronda del Nord', traffic: 'light' },
-  { id: 'b', duration: '31 min', distance: '6.9 km', arrival: 'Arrives 18:49', via: 'Via the old town', traffic: 'heavy' },
+  {
+    id: 'a',
+    duration: '24 min',
+    distance: '8.2 km',
+    arrival: 'Arrives 18:42',
+    via: 'Via Ronda del Nord',
+    traffic: 'light',
+  },
+  {
+    id: 'b',
+    duration: '31 min',
+    distance: '6.9 km',
+    arrival: 'Arrives 18:49',
+    via: 'Via the old town',
+    traffic: 'heavy',
+  },
   { id: 'c', duration: '38 min', via: 'Via the coast road', traffic: 'moderate' },
 ];
 
@@ -58,8 +72,19 @@ const LEGS: DirectionsLeg[] = [
     meta: '24 min · 8.2 km',
     mode: 'drive',
     steps: [
-      { id: 's1', maneuver: 'depart', instruction: 'Head north on Carrer de l’Om', distance: '250 m' },
-      { id: 's2', maneuver: 'right', instruction: 'Turn right onto Passatge del Vidre', detail: 'Past the tower', distance: '400 m' },
+      {
+        id: 's1',
+        maneuver: 'depart',
+        instruction: 'Head north on Carrer de l’Om',
+        distance: '250 m',
+      },
+      {
+        id: 's2',
+        maneuver: 'right',
+        instruction: 'Turn right onto Passatge del Vidre',
+        detail: 'Past the tower',
+        distance: '400 m',
+      },
       { id: 's3', maneuver: 'arrive', instruction: 'Arrive at Forner de la Plaça' },
     ],
   },
@@ -67,7 +92,9 @@ const LEGS: DirectionsLeg[] = [
 
 describe('the chosen route is drawn in full and is NOT in its own alternates', () => {
   it('leads with the chosen duration and lists only the others', () => {
-    mount(<DirectionsSummary routes={ROUTES} selectedRouteId="b" onSelectRoute={noop} testID="d" />);
+    mount(
+      <DirectionsSummary routes={ROUTES} selectedRouteId="b" onSelectRoute={noop} testID="d" />,
+    );
     expect(byTestId('d-duration').textContent).toBe('31 min');
     expect(queryTestId('d-route-0')).not.toBeNull();
     expect(queryTestId('d-route-1')).not.toBeNull();
@@ -89,7 +116,14 @@ describe('the chosen route is drawn in full and is NOT in its own alternates', (
 
   it('announces a whole alternate as one sentence and chooses it on press', () => {
     const chosen: string[] = [];
-    mount(<DirectionsSummary routes={ROUTES} selectedRouteId="a" onSelectRoute={(id) => chosen.push(id)} testID="d" />);
+    mount(
+      <DirectionsSummary
+        routes={ROUTES}
+        selectedRouteId="a"
+        onSelectRoute={(id) => chosen.push(id)}
+        testID="d"
+      />,
+    );
     const row = byLabel('31 min, 6.9 km, Arrives 18:49, Via the old town, Heavy traffic');
     click(row);
     expect(chosen).toEqual(['b']);
@@ -109,7 +143,10 @@ describe('the header and the switcher are the families that already own them', (
     mount(
       <DirectionsSummary
         routes={ROUTES}
-        stops={[{ id: 'a', title: 'Home' }, { id: 'b', title: 'The bakery' }]}
+        stops={[
+          { id: 'a', title: 'Home' },
+          { id: 'b', title: 'The bakery' },
+        ]}
         onSwapStops={noop}
         testID="d"
       />,
@@ -190,15 +227,20 @@ describe('a step announces the maneuver before the instruction', () => {
     mount(<DirectionsSteps legs={LEGS} testID="s" />);
     const lists = allByRole('list');
     expect(lists).toHaveLength(1);
-    expect(lists[0]!.getAttribute('aria-label')).toBe('Drive to Plaça de les Bruixes, 24 min · 8.2 km');
+    expect(lists[0]!.getAttribute('aria-label')).toBe(
+      'Drive to Plaça de les Bruixes, 24 min · 8.2 km',
+    );
   });
 
   it('takes an explicit step name over the composed one, and still says it is current', () => {
     expect(
-      describeStep({ id: 'x', instruction: 'Anything', accessibilityLabel: 'Gireu a la dreta' }, {
-        current: true,
-        currentWord: 'Pas actual',
-      }),
+      describeStep(
+        { id: 'x', instruction: 'Anything', accessibilityLabel: 'Gireu a la dreta' },
+        {
+          current: true,
+          currentWord: 'Pas actual',
+        },
+      ),
     ).toBe('Pas actual, Gireu a la dreta');
   });
 });

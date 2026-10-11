@@ -23,14 +23,26 @@ const EN = LISTING_ACTIONS_MESSAGES.en;
  */
 export const RENTAL_STATUS: Record<RentalStatus, OfferStatusInfo> = {
   available: { tone: 'success', label: EN.rentalStatus.available, message: '' },
-  reserved: { tone: 'warning', label: EN.rentalStatus.reserved, message: EN.rentalStatusMessage.reserved },
-  rented: { tone: 'default', label: EN.rentalStatus.rented, message: EN.rentalStatusMessage.rented },
+  reserved: {
+    tone: 'warning',
+    label: EN.rentalStatus.reserved,
+    message: EN.rentalStatusMessage.reserved,
+  },
+  rented: {
+    tone: 'default',
+    label: EN.rentalStatus.rented,
+    message: EN.rentalStatusMessage.rented,
+  },
 };
 
 /** `SaleActionCard`'s badge tone, and its English label and message per status. */
 export const SALE_STATUS: Record<SaleStatus, OfferStatusInfo> = {
   available: { tone: 'success', label: EN.saleStatus.available, message: '' },
-  reserved: { tone: 'warning', label: EN.saleStatus.reserved, message: EN.saleStatusMessage.reserved },
+  reserved: {
+    tone: 'warning',
+    label: EN.saleStatus.reserved,
+    message: EN.saleStatusMessage.reserved,
+  },
   sold: { tone: 'default', label: EN.saleStatus.sold, message: EN.saleStatusMessage.sold },
 };
 
@@ -42,19 +54,36 @@ export const APPLICATION_ITEM_STATUS: Record<
   ApplicationItemStatus,
   { tone: AccentTone; label: string; action: string }
 > = {
-  missing: { tone: 'default', label: EN.applicationStatus.missing, action: EN.applicationAction.upload },
-  uploaded: { tone: 'primary', label: EN.applicationStatus.uploaded, action: EN.applicationAction.view },
-  verified: { tone: 'success', label: EN.applicationStatus.verified, action: EN.applicationAction.view },
-  rejected: { tone: 'error', label: EN.applicationStatus.rejected, action: EN.applicationAction.replace },
+  missing: {
+    tone: 'default',
+    label: EN.applicationStatus.missing,
+    action: EN.applicationAction.upload,
+  },
+  uploaded: {
+    tone: 'primary',
+    label: EN.applicationStatus.uploaded,
+    action: EN.applicationAction.view,
+  },
+  verified: {
+    tone: 'success',
+    label: EN.applicationStatus.verified,
+    action: EN.applicationAction.view,
+  },
+  rejected: {
+    tone: 'error',
+    label: EN.applicationStatus.rejected,
+    action: EN.applicationAction.replace,
+  },
 };
 
 /** Which of `applicationAction` each status's button says. */
-export const APPLICATION_ITEM_ACTION: Record<ApplicationItemStatus, 'upload' | 'view' | 'replace'> = {
-  missing: 'upload',
-  uploaded: 'view',
-  verified: 'view',
-  rejected: 'replace',
-};
+export const APPLICATION_ITEM_ACTION: Record<ApplicationItemStatus, 'upload' | 'view' | 'replace'> =
+  {
+    missing: 'upload',
+    uploaded: 'view',
+    verified: 'view',
+    rejected: 'replace',
+  };
 
 export const MORTGAGE_TERM_OPTIONS: readonly number[] = [10, 15, 20, 25, 30];
 

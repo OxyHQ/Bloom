@@ -4,4 +4,7 @@ export interface AvatarMessages {
   live: string;
 }
 
-export const AVATAR_MESSAGES: MessageCatalog<AvatarMessages> = defineMessages<AvatarMessages>('AVATAR_MESSAGES', { live: 'LIVE' });
+export const AVATAR_MESSAGES: MessageCatalog<AvatarMessages> = defineMessages<AvatarMessages>(
+  'AVATAR_MESSAGES',
+  { live: 'LIVE' },
+);

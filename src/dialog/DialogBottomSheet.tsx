@@ -1,19 +1,7 @@
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, {
-  useCallback,
-  useEffect,
-  useId,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-} from 'react';
-import {
-  useWindowDimensions,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
+import { Platform, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, type AnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -31,10 +19,7 @@ import {
   useDialogHeaderController,
 } from './DialogHeader';
 import { DialogMorphContent, useDialogMorph } from './DialogMorph';
-import {
-  DEFAULT_DIALOG_CONTENT_PADDING,
-  DEFAULT_MAX_HEIGHT_RATIO,
-} from './placement';
+import { DEFAULT_DIALOG_CONTENT_PADDING, DEFAULT_MAX_HEIGHT_RATIO } from './placement';
 import type { DialogControlProps, DialogProps } from './types';
 
 /**
@@ -58,6 +43,8 @@ import type { DialogControlProps, DialogProps } from './types';
  *   - `title` / `description` / `actions` / `children` → declarative body
  */
 export function DialogBottomSheet({
+  backdrop,
+  transition,
   control,
   open: controlledOpen,
   startOpen,
@@ -67,6 +54,7 @@ export function DialogBottomSheet({
   description,
   actions,
   header,
+  material: surfaceMaterial = 'surface',
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
   showHandle = true,
   dismissOnBackdrop = true,
@@ -172,10 +160,7 @@ export function DialogBottomSheet({
   // Backdrop press → dismiss, unless the host disabled it. Returning `false`
   // from `onDismissAttempt` blocks the BottomSheet's own backdrop/pan dismissal,
   // which is how `dismissOnBackdrop: false` maps onto the single sheet API.
-  const onDismissAttempt = useCallback(
-    () => dismissOnBackdrop,
-    [dismissOnBackdrop],
-  );
+  const onDismissAttempt = useCallback(() => dismissOnBackdrop, [dismissOnBackdrop]);
 
   const scrollableResolved = scrollable ?? true;
 
@@ -253,6 +238,12 @@ export function DialogBottomSheet({
 
   return (
     <BottomSheet
+      backdrop={backdrop}
+      transition={transition}
+      material={surfaceMaterial}
+      accessibilityLabel={label ?? header?.title}
+      aria-labelledby={!header && title ? titleId : undefined}
+      aria-describedby={!header && description ? descriptionId : undefined}
       ref={ref}
       // Seed the sheet's open state so a fresh mount that should be open renders
       // visible on its FIRST commit instead of relying on a present()-in-effect
@@ -289,6 +280,7 @@ export function DialogBottomSheet({
       headerOverlay={
         header ? (
           <DialogNavHeader
+            flatSurface={surfaceMaterial === 'flat'}
             controller={headerController}
             header={header}
             onDismiss={close}
@@ -305,9 +297,11 @@ export function DialogBottomSheet({
       <Context.Provider value={context}>
         <StyledView
           testID={testID}
-          accessibilityLabel={label}
-          aria-labelledby={title ? titleId : undefined}
-          aria-describedby={description ? descriptionId : undefined}
+          accessibilityLabel={Platform.OS === 'web' ? undefined : label}
+          aria-labelledby={Platform.OS === 'web' ? undefined : title ? titleId : undefined}
+          aria-describedby={
+            Platform.OS === 'web' ? undefined : description ? descriptionId : undefined
+          }
           // Bottom placement renders ONE node for both, so the two classes are
           // joined rather than spread twice — the second spread used to
           // overwrite the first, so `containerClassName` was silently dropped on
@@ -334,7 +328,10 @@ export function DialogBottomSheet({
           {/* The morph layer is its own node INSIDE the class-name'd container:
               a className'd component's `onLayout` never fires on web, and this
               one has to measure the incoming frame. */}
-          <DialogMorphContent morph={morphState} style={scrollableResolved ? undefined : FILL_BOUNDED}>
+          <DialogMorphContent
+            morph={morphState}
+            style={scrollableResolved ? undefined : FILL_BOUNDED}
+          >
             {header ? headerBody : dialogBody}
           </DialogMorphContent>
           {/* The bottom safe area, INSIDE the scroll content. Without it the
@@ -346,7 +343,9 @@ export function DialogBottomSheet({
               rather than a padding: the content box keeps the caller's
               `padding`/`contentPadding` untouched on both platforms, and the
               morph layer above still measures the content alone. */}
-          {bottomInset > 0 ? <SafeAreaSpacer testID={SAFE_AREA_SPACER_TESTID} inset={bottomInset} /> : null}
+          {bottomInset > 0 ? (
+            <SafeAreaSpacer testID={SAFE_AREA_SPACER_TESTID} inset={bottomInset} />
+          ) : null}
         </StyledView>
       </Context.Provider>
     </BottomSheet>
@@ -365,7 +364,10 @@ const SAFE_AREA_SPACER_TESTID = 'dialog-sheet-safe-area';
  */
 function SafeAreaSpacer({ inset, testID }: { inset: number; testID: string }) {
   const keyboard = useSheetKeyboardHeight();
-  const style = useAnimatedStyle(() => ({ height: keyboard.value > 0 ? 0 : inset }), [keyboard, inset]);
+  const style = useAnimatedStyle(
+    () => ({ height: keyboard.value > 0 ? 0 : inset }),
+    [keyboard, inset],
+  );
   return <Animated.View testID={testID} style={style} />;
 }
 
@@ -379,6 +381,8 @@ const FILL_BOUNDED = { flex: 1, minHeight: 0 } as const;
  */
 export type DialogBottomSheetProps = Pick<
   DialogProps,
+  | 'backdrop'
+  | 'transition'
   | 'control'
   | 'open'
   | 'startOpen'
@@ -388,6 +392,7 @@ export type DialogBottomSheetProps = Pick<
   | 'description'
   | 'actions'
   | 'header'
+  | 'material'
   | 'maxHeightRatio'
   | 'showHandle'
   | 'dismissOnBackdrop'

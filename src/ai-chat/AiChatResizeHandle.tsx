@@ -83,7 +83,9 @@ export function AiChatResizeHandle({
           startX.current = event.nativeEvent.clientX;
           setDragging(true);
           callbacks.current.onResizeStart?.();
-          (event.currentTarget as unknown as DomTarget).setPointerCapture(event.nativeEvent.pointerId);
+          (event.currentTarget as unknown as DomTarget).setPointerCapture(
+            event.nativeEvent.pointerId,
+          );
         },
         onPointerMove: (event: PointerEvent) => {
           const target = event.currentTarget as unknown as DomTarget;
@@ -138,12 +140,28 @@ export function AiChatResizeHandle({
         height.current = event.nativeEvent.layout.height;
       }}
       style={[
-        { position: 'absolute', top: 0, bottom: 0, right: -10, zIndex: 10, width: 20, alignItems: 'center' },
+        {
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          right: -10,
+          zIndex: 10,
+          width: 20,
+          alignItems: 'center',
+        },
         style,
-      ]}>
-      <View {...dataHook('bloomAiChatGripPill', dragging ? 'dragging' : '')} pointerEvents="none" style={grip}>
+      ]}
+    >
+      <View
+        {...dataHook('bloomAiChatGripPill', dragging ? 'dragging' : '')}
+        pointerEvents="none"
+        style={grip}
+      >
         {[0, 1, 2].map((line) => (
-          <View key={line} style={{ width: 1, height: 13, backgroundColor: palette.iconQuaternary }} />
+          <View
+            key={line}
+            style={{ width: 1, height: 13, backgroundColor: palette.iconQuaternary }}
+          />
         ))}
       </View>
     </View>

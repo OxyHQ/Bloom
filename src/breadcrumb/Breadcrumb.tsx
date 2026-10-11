@@ -50,7 +50,12 @@ interface BreadcrumbPalette {
 
 function resolveBreadcrumbPalette(theme: Theme): BreadcrumbPalette {
   const c = theme.colors;
-  return { tertiary: c.textSecondary, secondary: c.text, hover: c.backgroundSecondary, ring: c.primary };
+  return {
+    tertiary: c.textSecondary,
+    secondary: c.text,
+    hover: c.backgroundSecondary,
+    ring: c.primary,
+  };
 }
 
 const STYLE_ID = 'bloom-breadcrumb-web-css';
@@ -91,7 +96,12 @@ function Chevron({ color, rtl }: { color: string; rtl: boolean }) {
   return (
     <View
       aria-hidden
-      style={{ width: 12, height: 12, flexShrink: 0, ...(rtl ? { transform: [{ scaleX: -1 }] } : null) }}
+      style={{
+        width: 12,
+        height: 12,
+        flexShrink: 0,
+        ...(rtl ? { transform: [{ scaleX: -1 }] } : null),
+      }}
     >
       <Svg width={12} height={12} viewBox="0 0 12 12" fill="none">
         <Path
@@ -146,7 +156,13 @@ const BreadcrumbComponent: React.FC<BreadcrumbProps> = ({
       >
         <View
           role="list"
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: 4, paddingRight: 4 }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            paddingLeft: 4,
+            paddingRight: 4,
+          }}
         >
           {items.map((item, index) => (
             <Fragment key={item.key ?? index}>
@@ -188,7 +204,12 @@ const BreadcrumbItemComponent: React.FC<BreadcrumbItemProps> = ({
       {Icon ? <Icon width={16} height={16} fill={foreground} /> : null}
       {children != null ? (
         typeof children === 'string' || typeof children === 'number' ? (
-          <Text selectable={false} variant="caption-1-medium" numberOfLines={1} style={[{ color: foreground }, textStyle]}>
+          <Text
+            selectable={false}
+            variant="caption-1-medium"
+            numberOfLines={1}
+            style={[{ color: foreground }, textStyle]}
+          >
             {children}
           </Text>
         ) : (

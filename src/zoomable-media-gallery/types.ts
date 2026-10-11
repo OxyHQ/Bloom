@@ -1,8 +1,5 @@
-import type {
-  MeasuredRect,
-  MediaSurfaceImage,
-  MediaSurfaceVideo,
-} from '../media-flight/types';
+import type { ReactNode } from 'react';
+import type { MeasuredRect, MediaSurfaceImage, MediaSurfaceVideo } from '../media-flight/types';
 
 /**
  * A still image page.
@@ -89,6 +86,23 @@ export interface ZoomableMediaGalleryLabels {
 }
 
 export interface ZoomableMediaGalleryProps {
+  /** Existing dimmed overlay (default), or an opaque page using the current theme. */
+  appearance?: 'overlay' | 'page';
+  /** Zero-based media index, emitted on opening and once per actual page change. */
+  onIndexChange?: (index: number) => void;
+  /**
+   * Reports an accepted opening and completion of the closing transition.
+   * Also reports false if an open viewer unmounts. No initial false event.
+   * Use this to coordinate consumer-owned video players with inline views.
+   */
+  onOpenChange?: (open: boolean) => void;
+  /**
+   * Consumer-owned status/actions over the active video, within its fitted box.
+   * Rendered outside the viewer's dismiss gestures so interactive children work
+   * normally. Called with current props; never called for images or while closed.
+   * Return null when no status UI is needed. Bloom retains no player ownership.
+   */
+  renderVideoOverlay?: (media: GalleryVideo) => ReactNode;
   /** Overrides any of the viewer's names. */
   labels?: Partial<ZoomableMediaGalleryLabels>;
   /** Measures any thumbnail by its media subset index, used on dismiss. */

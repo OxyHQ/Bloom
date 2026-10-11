@@ -37,7 +37,10 @@ export function cardDigits(text: string): string {
  * Digits beyond the last named group fall into one final run, so a longer
  * number than a scheme expected is still readable rather than jammed together.
  */
-export function groupCardDigits(digits: string, groups: readonly number[] = DEFAULT_CARD_GROUPS): string {
+export function groupCardDigits(
+  digits: string,
+  groups: readonly number[] = DEFAULT_CARD_GROUPS,
+): string {
   const out: string[] = [];
   let index = 0;
   for (const size of groups) {
@@ -77,8 +80,7 @@ export function applyCardNumberEdit(
   const nextDigits = cardDigits(next);
   const previousDigits = cardDigits(previous);
   if (nextDigits.length > maxDigits && nextDigits.length >= previousDigits.length) return previous;
-  const atEnd =
-    previousDigits.startsWith(nextDigits) || nextDigits.startsWith(previousDigits);
+  const atEnd = previousDigits.startsWith(nextDigits) || nextDigits.startsWith(previousDigits);
   if (atEnd) return groupCardDigits(nextDigits, groups);
   return next.replace(/[^\d ]/g, '');
 }
@@ -178,8 +180,7 @@ export function matchCardScheme(
 export function applyCardExpiryEdit(previous: string, next: string): string {
   const nextDigits = cardDigits(next).slice(0, 4);
   const previousDigits = cardDigits(previous);
-  const atEnd =
-    previousDigits.startsWith(nextDigits) || nextDigits.startsWith(previousDigits);
+  const atEnd = previousDigits.startsWith(nextDigits) || nextDigits.startsWith(previousDigits);
   if (!atEnd) return next.replace(/[^\d/]/g, '');
   if (nextDigits.length <= 2) return nextDigits;
   return `${nextDigits.slice(0, 2)}/${nextDigits.slice(2)}`;

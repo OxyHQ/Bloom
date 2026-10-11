@@ -15,9 +15,7 @@ export function CharacterRuntimeFixture({
 }) {
   const { runtimeUrl, reportCapabilities, ...catalog } = value;
   return (
-    <CharacterRuntimeContext.Provider
-      value={{ runtimeUrl, reportCapabilities }}
-    >
+    <CharacterRuntimeContext.Provider value={{ runtimeUrl, reportCapabilities }}>
       <CharacterCapabilitiesContext.Provider value={catalog}>
         {children}
       </CharacterCapabilitiesContext.Provider>

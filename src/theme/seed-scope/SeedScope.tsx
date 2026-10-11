@@ -6,6 +6,7 @@ import { buildSeedScopeVars } from '../color-scope/seed-scope';
 import { getVariableContextProvider } from '../color-scope/style-builder';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
 import type { SchemeVariant } from '../color-engine';
+import { ThemeScopeContext, type ScopeState } from '../color-scope/context';
 
 export interface BloomSeedScopeProps {
   /**
@@ -69,16 +70,38 @@ export function BloomSeedScope({
   const nativeVars = useMemo<Record<string, string> | null>(
     () =>
       seed
-        ? buildSeedScopeVars({ seed, mode: resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed })
+        ? buildSeedScopeVars({
+            seed,
+            mode: resolvedMode,
+            variant,
+            contrastLevel,
+            secondarySeed,
+            tertiarySeed,
+          })
         : null,
     [seed, resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed],
   );
 
   const contextValue = useMemo<BloomThemeContextValue | null>(() => {
     if (!parent || !seed) return null;
-    const theme = buildThemeFromSeed(seed, resolvedMode, variant, contrastLevel, { secondarySeed, tertiarySeed });
+    const theme = buildThemeFromSeed(seed, resolvedMode, variant, contrastLevel, {
+      secondarySeed,
+      tertiarySeed,
+    });
     return { ...parent, theme };
   }, [parent, seed, resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed]);
+
+  const scopeState = useMemo<ScopeState | null>(() => {
+    if (!seed) return null;
+    const resolveMode = (mode: 'light' | 'dark') => ({
+      theme: buildThemeFromSeed(seed, mode, variant, contrastLevel, {
+        secondarySeed,
+        tertiarySeed,
+      }),
+      vars: buildSeedScopeVars({ seed, mode, variant, contrastLevel, secondarySeed, tertiarySeed }),
+    });
+    return { ...resolveMode(resolvedMode), resolveMode };
+  }, [seed, resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed]);
 
   if (!parent) {
     throw new Error('BloomSeedScope must be used within a <BloomThemeProvider>');
@@ -109,5 +132,9 @@ export function BloomSeedScope({
     content
   );
 
-  return <BloomThemeContext.Provider value={contextValue}>{scoped}</BloomThemeContext.Provider>;
+  return (
+    <BloomThemeContext.Provider value={contextValue}>
+      <ThemeScopeContext.Provider value={scopeState}>{scoped}</ThemeScopeContext.Provider>
+    </BloomThemeContext.Provider>
+  );
 }

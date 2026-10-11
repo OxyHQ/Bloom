@@ -153,17 +153,25 @@ describe('the compass points at north while the map turns', () => {
   it('removes itself once the map is already pointing north', () => {
     mount(<MapCompass heading={0} onPress={noop} testID="c" />);
     expect(queryTestId('c')).toBeNull();
-    mount(<MapCompass heading={MAP_CONTROLS_GEOMETRY.northTolerance / 2} onPress={noop} testID="c" />);
+    mount(
+      <MapCompass heading={MAP_CONTROLS_GEOMETRY.northTolerance / 2} onPress={noop} testID="c" />,
+    );
     expect(queryTestId('c')).toBeNull();
-    mount(<MapCompass heading={MAP_CONTROLS_GEOMETRY.northTolerance * 4} onPress={noop} testID="c" />);
+    mount(
+      <MapCompass heading={MAP_CONTROLS_GEOMETRY.northTolerance * 4} onPress={noop} testID="c" />,
+    );
     expect(queryTestId('c')).not.toBeNull();
   });
 
   it('stays when the app pins it, and says which way the map is facing', () => {
     mount(<MapCompass heading={0} hideAtNorth={false} onPress={noop} testID="c" />);
-    expect(byTestId('c-button').getAttribute('aria-label')).toBe('Facing 0 degrees. Reset to north');
+    expect(byTestId('c-button').getAttribute('aria-label')).toBe(
+      'Facing 0 degrees. Reset to north',
+    );
     mount(<MapCompass heading={34.4} hideAtNorth={false} onPress={noop} testID="c" />);
-    expect(byTestId('c-button').getAttribute('aria-label')).toBe('Facing 34 degrees. Reset to north');
+    expect(byTestId('c-button').getAttribute('aria-label')).toBe(
+      'Facing 34 degrees. Reset to north',
+    );
   });
 
   it('resets the map on a press', () => {

@@ -1,4 +1,5 @@
 import React from 'react';
+import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
 import { type StyleProp, type ViewStyle } from 'react-native';
 
 /**
@@ -18,7 +19,16 @@ export type ContentPanelChrome = 'elevated' | 'border' | 'none';
 export interface ContentPanelProps {
   children: React.ReactNode;
   /**
-   * Framing mode. Tri-state, resolved purely with NativeWind — no consumer
+   * `solid` (default) paints a panel surface. `plain` keeps layout, framing and
+   * clipping while leaving the enclosing surface visible, without material,
+   * border or shadow. Descendants inherit the parent's surface level and fill.
+   * In plain mode surface background overrides and surfaceColor are ignored.
+   */
+  appearance?: 'solid' | 'plain';
+  /** Opt in to local themed error recovery. Split panes already provide their own boundaries. */
+  errorBoundary?: boolean | PanelErrorBoundaryOptions;
+  /**
+   * Framing mode. Tri-state, managed by Bloom — no consumer
    * breakpoint hook needed:
    * - `undefined` (DEFAULT) → responsive: full-bleed below the `framedFrom`
    *   breakpoint, rounded + bordered at/above it.
@@ -41,7 +51,7 @@ export interface ContentPanelProps {
    *   surface lifted off the page rather than a box drawn on it.
    * - `'border'` — the hairline alone, which is what this panel drew before.
    * - `'none'` — no edge at all: a flat surface that still clips and rounds,
-   *   for an app whose page background already separates the two.
+   *   without material rim or sheen, for an app whose page background separates the two.
    *
    * Ignored while the panel is full-bleed (below `framedFrom`, or
    * `framed={false}`) — there is no edge to draw.

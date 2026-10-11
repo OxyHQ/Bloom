@@ -23,12 +23,7 @@ import { useMenuPalette } from './menu-palette';
 import { ROW_ICON_SIZE } from './constants';
 import { MenuSubProvider, useMenuSub } from './context';
 import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
-import type {
-  MenuSubContentProps,
-  MenuSubParts,
-  MenuSubProps,
-  MenuSubTriggerProps,
-} from './types';
+import type { MenuSubContentProps, MenuSubParts, MenuSubProps, MenuSubTriggerProps } from './types';
 
 /** Build one family's inline sub trio. `prefix` is used for nothing but `displayName`. */
 export function createInlineMenuSub(prefix: string): MenuSubParts {
@@ -72,11 +67,7 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
         // row's check, one step back in colour, exactly as the flyout's.
         trailing={
           <MenuRowChevron>
-            <Chevron
-              width={ROW_ICON_SIZE}
-              height={ROW_ICON_SIZE}
-              fill={palette.textSecondary}
-            />
+            <Chevron width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
           </MenuRowChevron>
         }
         title={title}
@@ -84,20 +75,15 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
         accessibilityLabel={accessibilityLabel}
         className={cx(SUB_TRIGGER_CLASS, className)}
         style={style}
-        testID={testID}>
+        testID={testID}
+      >
         {body}
       </MenuRowShell>
     );
   }
   MenuSubTrigger.displayName = `${prefix}SubTrigger`;
 
-  function MenuSubContent({
-    children,
-    label,
-    className,
-    style,
-    testID,
-  }: MenuSubContentProps) {
+  function MenuSubContent({ children, label, className, style, testID }: MenuSubContentProps) {
     const sub = useMenuSub();
     if (!sub.open) return null;
     // Indented under its trigger, which is the whole visual statement an inline
@@ -107,7 +93,8 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
         accessibilityLabel={label}
         className={cx('pl-space-16 gap-space-4', className)}
         style={style}
-        testID={testID}>
+        testID={testID}
+      >
         {children}
       </StyledView>
     );

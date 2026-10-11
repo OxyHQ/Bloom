@@ -243,8 +243,11 @@ function Bar({ activeIndex, activeProgress, onIndexChange, focusedIndex }: BarPr
 function mountBar(props: BarProps = {}) {
   let current = props;
   const utils = render(withTheme(<Bar {...current} />));
-  const host = utils.UNSAFE_root.findAll(node => typeof node.type === 'string' && typeof node.props.onLayout === 'function')[0];
-  if (host) fireEvent(host, 'layout', { nativeEvent: { layout: { width: 375, height: 58, x: 0, y: 0 } } });
+  const host = utils.UNSAFE_root.findAll(
+    (node) => typeof node.type === 'string' && typeof node.props.onLayout === 'function',
+  )[0];
+  if (host)
+    fireEvent(host, 'layout', { nativeEvent: { layout: { width: 375, height: 58, x: 0, y: 0 } } });
   const paint = () => utils.rerender(withTheme(<Bar {...current} />));
   paint();
   return {

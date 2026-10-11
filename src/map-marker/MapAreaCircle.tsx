@@ -27,7 +27,13 @@ import type { MapAreaCircleProps } from './types';
 
 const LABEL_HEIGHT = 24;
 
-function MapAreaCircleComponent({ radius, label, accessibilityLabel, style, testID }: MapAreaCircleProps) {
+function MapAreaCircleComponent({
+  radius,
+  label,
+  accessibilityLabel,
+  style,
+  testID,
+}: MapAreaCircleProps) {
   const theme = useTheme();
   const paint = useMemo(() => resolveMapMarkerPaint(theme), [theme]);
   const r = Math.max(0, radius);

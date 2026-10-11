@@ -3,7 +3,15 @@ import { View } from 'react-native';
 
 import { Rating } from '../rating';
 import { Text } from '../typography';
-import { Cover, HeaderTitle, InlineLink, MediaHeaderFrame, MetaLine, ProgressBar, useMediaHeaderPaint } from './parts';
+import {
+  Cover,
+  HeaderTitle,
+  InlineLink,
+  MediaHeaderFrame,
+  MetaLine,
+  ProgressBar,
+  useMediaHeaderPaint,
+} from './parts';
 import { selectTitleVariant } from './shared';
 import type { AudiobookHeaderProps } from './types';
 import { useMessages } from '../locale/messages';
@@ -48,7 +56,13 @@ function AudiobookHeaderComponent({
       actions={actions}
       coverWidth={(wide) => (wide ? 200 : 160)}
       cover={({ wide }) => (
-        <Cover source={cover} size={wide ? 200 : 160} shape="book" paint={paint} testID={testID ? `${testID}-cover` : undefined} />
+        <Cover
+          source={cover}
+          size={wide ? 200 : 160}
+          shape="book"
+          paint={paint}
+          testID={testID ? `${testID}-cover` : undefined}
+        />
       )}
     >
       {({ textWidth }) => (
@@ -82,7 +96,15 @@ function AudiobookHeaderComponent({
               {narrator}
             </Text>
           ) : null}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 4 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: 8,
+              marginTop: 4,
+            }}
+          >
             <MetaLine
               segments={[duration, chapters]}
               color={paint.onBand}
@@ -91,7 +113,11 @@ function AudiobookHeaderComponent({
             />
             {rating !== undefined ? (
               <View style={{ paddingLeft: 4 }}>
-                <Rating value={rating} count={ratingCount} testID={testID ? `${testID}-rating` : undefined} />
+                <Rating
+                  value={rating}
+                  count={ratingCount}
+                  testID={testID ? `${testID}-rating` : undefined}
+                />
               </View>
             ) : null}
           </View>

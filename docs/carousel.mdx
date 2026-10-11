@@ -27,12 +27,16 @@ import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
 | Prop | Default | |
 | --- | --- | --- |
 | `header` | | Leading content of the arrows row, e.g. a section title. Header at the start, arrows at the end — one row, not two. |
-| `showArrows` | `true` | Prev/next buttons, right-aligned above the track. They disable at each end. |
+| `showArrows` | `true` | Prev/next buttons. They disable at each end; use your app's breakpoint to hide them on small screens. |
+| `arrowsPlacement` | `'header'` | `'header'` shares the title row; `'overlay'` centers controls on the track edges; `'footer'` shares a row below the track. |
+| `arrowButtonProps` | | Visual options for both buttons: `className`, `material`, `appearance`, `tone`, `size`, `iconSize`. Names, events and disabled state stay carousel-owned. |
+| `hideUnavailableArrows` | `false` | Hide each unavailable control while retaining its layout slot; excludes it from focus and accessibility. |
 | `showDots` | `true` | Position indicator, one dot per stop (see below); never shown for a single stop. Each dot is a button. |
 | `align` | `'start'` | Where a slide rests when it snaps: `'start'` or `'center'`. |
 | `gap` | `16` | Space between slides, px. |
 | `inset` | `0` | Horizontal padding of the header row, the dots and the track's two ends. Slides scroll under it to the edges, and a start-aligned slide snaps to the inset rather than flush. |
-| `onIndexChange` | | The slide in view changed. |
+| `index` | Uncontrolled | Optional zero-based child index. Requests that child’s measured stop; clamps to the available list. |
+| `onIndexChange` | | Uncontrolled: the slide in view changed. Controlled: a user navigation request; pair with `index`. |
 | `previousLabel` / `nextLabel` / `dotLabel` | Localised via `BloomProvider locale` | Override the button names. |
 
 `CarouselItem` fills the track by default, so exactly one slide is in view. Pass a smaller `width` to peek the next slide (pair it with `align="center"` for a centred gallery).
@@ -56,3 +60,147 @@ The track is a real horizontal `ScrollView` — a native scroller rather than a 
 - Programmatic scrolls animate unless the user prefers reduced motion.
 
 Web CSS (snap, hidden scrollbar, the track's `:focus-visible` ring, dot transitions) is self-injected through `adoptStyleSheet` on `dataSet` hooks — nothing to copy into a consumer stylesheet.
+
+## Overlay controls
+
+```tsx
+const { width } = useWindowDimensions();
+<Carousel accessibilityLabel="Featured categories" arrowsPlacement="overlay"
+  showArrows={width >= 640} showDots={false}>
+  {categories.map(category => <CarouselItem key={category.id} width={172}>
+    <CategoryTile category={category} />
+  </CarouselItem>)}
+</Carousel>
+```
+
+Overlay buttons are 44px, inset 8px from each track edge. A supplied `header`
+remains above the track; an omitted header reserves no row. The space between
+controls permits pointer interaction with slides. Their logical placement and
+chevrons mirror in RTL; scroll events, imperative navigation and native snap
+positions normalize each platform's offset convention. Reduced motion disables
+programmatic scroll animation in either placement.
+
+## Controlled galleries and thumbnails
+
+```tsx
+const [index, setIndex] = useState(0);
+<>
+  <Carousel accessibilityLabel="Product photos" index={index} onIndexChange={setIndex}>
+    {photos.map(photo => <CarouselItem key={photo.id}>
+      <Image source={photo.source} style={{ height: 360 }} />
+    </CarouselItem>)}
+  </Carousel>
+  {photos.map((photo, i) => <Button key={photo.id} onPress={() => setIndex(i)}>
+    {photo.label}
+  </Button>)}
+</>
+```
+
+`index` counts children, not the deduplicated stops used by dots. Several narrow
+children can share a stop at the end; selecting one does not rewrite the owner's
+index to that stop's last child. Negative indices clamp to zero, indices beyond
+the list clamp to its last child, fractional indices truncate, and nonfinite
+values use zero. An empty list does not scroll or notify.
+
+Controlled arrows and dots request a new index through `onIndexChange`; the
+owner accepts by updating `index`. A swipe or keyboard/trackpad scroll reports
+once it settles (150ms without scrolling, after the pointer/drag is released).
+Declining that request restores the controlled selection. Prop-driven movement,
+initial positioning, resize and list changes do not echo through the callback,
+and intermediate smooth-scroll positions never overwrite a requested thumbnail.
+
+Keep stable child keys. Measurements follow those keys through reordering and
+replacement, while the selected position remains a child index. Initial layout,
+resize and list changes reposition immediately; a changed selection animates
+unless reduced motion is enabled. Omit `index` to retain the existing carousel
+behavior and its live `onIndexChange` notifications.
+
+
+## Reveal arrows on interaction
+
+`arrowsVisibility="hover"` fades rendered arrows in when a fine-pointer web user hovers over the carousel or focuses any of its controls. Keyboard focus reveals both arrows, including when the pointer is elsewhere. Reduced motion removes the fade. Native and touch/coarse-pointer browsers keep arrows visible; `showArrows` still lets the caller hide them at its mobile breakpoint.
+
+The default `arrowsVisibility="always"` keeps existing behavior. This option works with every `arrowsPlacement` and with controlled `index`.
+
+```tsx
+<Carousel accessibilityLabel="Product photos" arrowsPlacement="overlay" arrowsVisibility="hover" index={index} onIndexChange={setIndex}>
+  {photos.map(photo => <CarouselItem key={photo.id}>{photo.content}</CarouselItem>)}
+</Carousel>
+```
+
+## Arrow recipes and boundaries
+
+```tsx
+<Carousel accessibilityLabel="Photos" arrowsPlacement="overlay"
+  hideUnavailableArrows
+  arrowButtonProps={{ material: 'flat', className: 'h-10 w-10 rounded-full', iconSize: 20 }}>
+  {slides}
+</Carousel>
+```
+
+Use `material="flat"` for a consumer-authored fill and shadow. Leaving the visual
+options absent keeps the original buttons. Hidden boundary arrows retain their
+slots, so a remaining overlay arrow stays at its edge and header controls do
+not move. They are disabled, excluded from accessibility and cannot receive
+pointer input or keyboard focus. If a focused web arrow becomes unavailable,
+focus moves to the track without scrolling the page. The same measured stops
+still govern visibility, navigation, controlled indices, list changes and RTL.
+`arrowsVisibility="hover"` remains compatible; unavailable arrows stay hidden
+even while the gallery is hovered or focused.
+
+## Footer controls and wrapping
+
+`footer` renders leading content below the track and dots. Set
+`arrowsPlacement="footer"` to put the existing previous/next controls beside it;
+without that placement the footer still renders independently. This supports a
+thumbnail strip and navigation in one row, without a second scroll authority.
+
+`arrowsInset` changes overlay offsets only. A number applies to both logical
+edges; `{ start: -12, end: 20 }` supports asymmetric layouts. Omitted edges use
+8px; negative values extend beyond the track. The surrounding layout must leave
+those controls unclipped.
+
+`loop` wraps previous/next at the first/last distinct scroll stop. It also owns
+Left/Right on the focused web track, respecting RTL. It does not clone slides or
+wrap a physical swipe. Controlled `index` still belongs to the caller and
+out-of-range indices still clamp. With fewer than two scroll stops the controls
+remain unavailable; otherwise `hideUnavailableArrows` does not hide either edge.
+
+```tsx
+<Carousel accessibilityLabel="Photos" index={index} onIndexChange={setIndex}
+  loop arrowsPlacement="footer" showDots={false}
+  footer={<ThumbnailStrip index={index} onChange={setIndex} />}>
+  {photos.map(photo => <CarouselItem key={photo.id}><Photo photo={photo} /></CarouselItem>)}
+</Carousel>
+```
+
+## Advancing by groups
+
+`slidesPerGroup` controls arrow and focused-track keyboard destinations. Pass a
+responsive value (for example 1, 2 or 3); Bloom does not own viewport breakpoints.
+Destinations are anchored to child indices `0, N, 2N…`, with the reachable end
+always included. A final group may be shorter, and children sharing the physical
+end still represent one stop. Between boundaries, the next/previous action goes
+to the adjacent group boundary, not an index relative to the currently visible
+child. With `loop`, an action at an end goes to the opposite end without clones.
+
+```tsx
+<Carousel accessibilityLabel="Collections" slidesPerGroup={columns}>
+  {items.map(item => <CarouselItem key={item.id} width={cardWidth}>
+    <CollectionCard item={item} />
+  </CarouselItem>)}
+</Carousel>
+```
+
+Dots, controlled `index` and swipe keep their individual measured slide stops.
+`onIndexChange` still reports a **child index**, never a group number; the
+clamped end uses the last child's index. A responsive group-size change does not
+move the current selection or emit an event. Finite numbers truncate to integers
+and clamp to at least 1; NaN and infinities use 1. Omission preserves existing
+one-stop navigation. Groups larger than the list expose start/end destinations.
+
+For groups greater than 1, web Left/Right keys on the focused track follow the
+same boundaries as its buttons, including RTL. Keys on interactive slide content
+are left to that control. Native arrows use the same measured destinations;
+native swipe/snap offsets remain per-slide. Reduced motion retains immediate
+scroll behavior.

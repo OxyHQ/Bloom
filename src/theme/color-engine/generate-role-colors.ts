@@ -49,13 +49,9 @@ export function generateRoleColors(opts: GenerateOptions): RoleColors {
     opts.contrastLevel ?? 0,
     {
       secondarySource:
-        opts.secondarySeed !== undefined
-          ? Hct.fromInt(argbFromHex(opts.secondarySeed))
-          : undefined,
+        opts.secondarySeed !== undefined ? Hct.fromInt(argbFromHex(opts.secondarySeed)) : undefined,
       tertiarySource:
-        opts.tertiarySeed !== undefined
-          ? Hct.fromInt(argbFromHex(opts.tertiarySeed))
-          : undefined,
+        opts.tertiarySeed !== undefined ? Hct.fromInt(argbFromHex(opts.tertiarySeed)) : undefined,
     },
   );
   const out = {} as RoleColors;

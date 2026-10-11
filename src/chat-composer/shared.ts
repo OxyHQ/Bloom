@@ -55,7 +55,11 @@ import type {
   VoiceRecorderLabels,
 } from './types';
 import { COMMON_MESSAGES } from '../locale/common-messages';
-import { CHAT_COMPOSER_MESSAGES, type AttachmentMenuItemId, type ChatComposerMessages } from './messages';
+import {
+  CHAT_COMPOSER_MESSAGES,
+  type AttachmentMenuItemId,
+  type ChatComposerMessages,
+} from './messages';
 import { formatClock } from '../locale/format-number';
 
 // ---------------------------------------------------------------------------
@@ -230,7 +234,14 @@ export function filterEmojiGroups(
 }
 
 /** The five Fitzpatrick modifiers, index 1–5. Index 0 is "no modifier". */
-export const SKIN_TONE_MODIFIERS = ['', '\u{1F3FB}', '\u{1F3FC}', '\u{1F3FD}', '\u{1F3FE}', '\u{1F3FF}'] as const;
+export const SKIN_TONE_MODIFIERS = [
+  '',
+  '\u{1F3FB}',
+  '\u{1F3FC}',
+  '\u{1F3FD}',
+  '\u{1F3FE}',
+  '\u{1F3FF}',
+] as const;
 
 /**
  * The swatch each tone is drawn as. A hand emoji rather than a coloured dot:
@@ -246,16 +257,45 @@ export const SKIN_TONE_SWATCHES = SKIN_TONE_MODIFIERS.map((m) => `\u{270B}${m}`)
  * non-base renders as a bare colour square next to the emoji.
  */
 const MODIFIER_BASES: ReadonlyArray<readonly [number, number]> = [
-  [0x261d, 0x261d], [0x26f9, 0x26f9], [0x270a, 0x270d], [0x1f385, 0x1f385],
-  [0x1f3c2, 0x1f3c4], [0x1f3c7, 0x1f3c7], [0x1f3ca, 0x1f3cc], [0x1f442, 0x1f443],
-  [0x1f446, 0x1f450], [0x1f466, 0x1f478], [0x1f47c, 0x1f47c], [0x1f481, 0x1f483],
-  [0x1f485, 0x1f487], [0x1f48f, 0x1f48f], [0x1f491, 0x1f491], [0x1f4aa, 0x1f4aa],
-  [0x1f574, 0x1f575], [0x1f57a, 0x1f57a], [0x1f590, 0x1f590], [0x1f595, 0x1f596],
-  [0x1f645, 0x1f647], [0x1f64b, 0x1f64f], [0x1f6a3, 0x1f6a3], [0x1f6b4, 0x1f6b6],
-  [0x1f6c0, 0x1f6c0], [0x1f6cc, 0x1f6cc], [0x1f90c, 0x1f90c], [0x1f90f, 0x1f90f],
-  [0x1f918, 0x1f91f], [0x1f926, 0x1f926], [0x1f930, 0x1f939], [0x1f93c, 0x1f93e],
-  [0x1f977, 0x1f977], [0x1f9b5, 0x1f9b6], [0x1f9b8, 0x1f9b9], [0x1f9bb, 0x1f9bb],
-  [0x1f9cd, 0x1f9dd], [0x1fac3, 0x1fac5], [0x1faf0, 0x1faf8],
+  [0x261d, 0x261d],
+  [0x26f9, 0x26f9],
+  [0x270a, 0x270d],
+  [0x1f385, 0x1f385],
+  [0x1f3c2, 0x1f3c4],
+  [0x1f3c7, 0x1f3c7],
+  [0x1f3ca, 0x1f3cc],
+  [0x1f442, 0x1f443],
+  [0x1f446, 0x1f450],
+  [0x1f466, 0x1f478],
+  [0x1f47c, 0x1f47c],
+  [0x1f481, 0x1f483],
+  [0x1f485, 0x1f487],
+  [0x1f48f, 0x1f48f],
+  [0x1f491, 0x1f491],
+  [0x1f4aa, 0x1f4aa],
+  [0x1f574, 0x1f575],
+  [0x1f57a, 0x1f57a],
+  [0x1f590, 0x1f590],
+  [0x1f595, 0x1f596],
+  [0x1f645, 0x1f647],
+  [0x1f64b, 0x1f64f],
+  [0x1f6a3, 0x1f6a3],
+  [0x1f6b4, 0x1f6b6],
+  [0x1f6c0, 0x1f6c0],
+  [0x1f6cc, 0x1f6cc],
+  [0x1f90c, 0x1f90c],
+  [0x1f90f, 0x1f90f],
+  [0x1f918, 0x1f91f],
+  [0x1f926, 0x1f926],
+  [0x1f930, 0x1f939],
+  [0x1f93c, 0x1f93e],
+  [0x1f977, 0x1f977],
+  [0x1f9b5, 0x1f9b6],
+  [0x1f9b8, 0x1f9b9],
+  [0x1f9bb, 0x1f9bb],
+  [0x1f9cd, 0x1f9dd],
+  [0x1fac3, 0x1fac5],
+  [0x1faf0, 0x1faf8],
 ];
 
 function acceptsSkinTone(char: string): boolean {
@@ -287,14 +327,9 @@ export function applySkinTone(char: string, tone: number): string {
  * scroll left like a live meter; a floor keeps a silent passage as a row of
  * ticks rather than an invisible gap that reads as a dropped recording.
  */
-export function waveformBars(
-  amplitudes: ReadonlyArray<number>,
-  count: number,
-): number[] {
+export function waveformBars(amplitudes: ReadonlyArray<number>, count: number): number[] {
   const slice = amplitudes.slice(Math.max(0, amplitudes.length - count));
-  return slice.map((value) =>
-    Number.isFinite(value) ? Math.min(1, Math.max(0.06, value)) : 0.06,
-  );
+  return slice.map((value) => (Number.isFinite(value) ? Math.min(1, Math.max(0.06, value)) : 0.06));
 }
 
 // ---------------------------------------------------------------------------
@@ -315,7 +350,11 @@ const ATTACHMENT_MENU_ICONS: ReadonlyArray<readonly [AttachmentMenuItemId, ChatC
 export function attachmentMenuItems(
   messages: ChatComposerMessages = CHAT_COMPOSER_MESSAGES.en,
 ): ReadonlyArray<AttachmentMenuItem> {
-  return ATTACHMENT_MENU_ICONS.map(([id, icon]) => ({ id, label: messages.attachmentItems[id], icon }));
+  return ATTACHMENT_MENU_ICONS.map(([id, icon]) => ({
+    id,
+    label: messages.attachmentItems[id],
+    icon,
+  }));
 }
 
 /**

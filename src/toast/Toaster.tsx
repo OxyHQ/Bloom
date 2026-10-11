@@ -32,12 +32,7 @@ import type {
 import { useAppStateChange } from './use-app-state';
 import { useSingleOutletGuard } from './use-single-outlet-guard';
 
-const ALL_POSITIONS: ToastPosition[] = [
-  'top-center',
-  'bottom-center',
-  'bottom-right',
-  'center',
-];
+const ALL_POSITIONS: ToastPosition[] = ['top-center', 'bottom-center', 'bottom-right', 'center'];
 
 // Stable identities so the context memos below do not invalidate every render.
 const EMPTY_TOAST_OPTIONS: NonNullable<ToasterProps['toastOptions']> = {};
@@ -48,10 +43,7 @@ const EMPTY_ANIMATION: NonNullable<ToasterProps['animation']> = {};
  * A top-anchored stack grows downward from the newest toast, so its rows render
  * in reverse order.
  */
-function orderToastsFromPosition(
-  toasts: ToastProps[],
-  position: ToastPosition,
-): ToastProps[] {
+function orderToastsFromPosition(toasts: ToastProps[], position: ToastPosition): ToastProps[] {
   return position === 'top-center' ? toasts.slice().reverse() : toasts;
 }
 
@@ -86,12 +78,11 @@ export const Toaster: React.FC<ToasterProps> = ({
   // toast, so the warning must not wait for one.
   useSingleOutletGuard();
 
-  const { toasts, shouldShowOverlay, toastHeights, isExpanded } =
-    React.useSyncExternalStore(
-      toastStore.subscribe,
-      toastStore.getSnapshot,
-      toastStore.getSnapshot,
-    );
+  const { toasts, shouldShowOverlay, toastHeights, isExpanded } = React.useSyncExternalStore(
+    toastStore.subscribe,
+    toastStore.getSnapshot,
+    toastStore.getSnapshot,
+  );
 
   // Runs even while idle: the store must know the outlet's limits BEFORE the
   // first toast arrives, or that toast is resolved against the bare defaults.
@@ -194,9 +185,7 @@ export const Toaster: React.FC<ToasterProps> = ({
   const toastsByPosition = React.useMemo(() => {
     const groups = new Map<ToastPosition, ToastProps[]>();
     for (const candidate of ALL_POSITIONS) {
-      const group = toasts.filter(
-        (toast) => (toast.position ?? position) === candidate,
-      );
+      const group = toasts.filter((toast) => (toast.position ?? position) === candidate);
       if (candidate === position || group.length > 0) {
         groups.set(candidate, orderToastsFromPosition(group, candidate));
       }
@@ -226,11 +215,7 @@ export const Toaster: React.FC<ToasterProps> = ({
             );
 
             return (
-              <Positioner
-                key={currentPosition}
-                position={currentPosition}
-                style={positionerStyle}
-              >
+              <Positioner key={currentPosition} position={currentPosition} style={positionerStyle}>
                 {toastsForPosition.map((toast, index) => {
                   const row = (
                     <ToastRow

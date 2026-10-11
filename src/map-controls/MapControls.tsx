@@ -88,7 +88,9 @@ function MapControlsComponent({
             leadingIcon={RiFocus3Line}
             selected={following}
             accessibilityLabel={
-              following ? (labels?.following ?? messages.following) : (labels?.locate ?? messages.locate)
+              following
+                ? (labels?.following ?? messages.following)
+                : (labels?.locate ?? messages.locate)
             }
             onPress={onLocate}
             style={MAP_CONTROL_BOX}

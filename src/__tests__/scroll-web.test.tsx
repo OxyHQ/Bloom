@@ -19,22 +19,12 @@
 // non-expo consumer would use the hook. `requestAnimationFrame` is driven
 // manually so the multi-frame restore is deterministic.
 
-import {
-  createContext,
-  createElement,
-  useContext,
-  useEffect,
-  useRef,
-  type ReactNode,
-} from 'react';
+import { createContext, createElement, useContext, useEffect, useRef, type ReactNode } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
-import {
-  ScrollRestorationProvider,
-  useScrollRestoration,
-} from '../scroll/index.web';
+import { ScrollRestorationProvider, useScrollRestoration } from '../scroll/index.web';
 import type {
   ScreenFocusEffect,
   ScrollRestorationBinding,
@@ -43,8 +33,7 @@ import type {
 
 // React 19's `act` requires this flag to be set when driving updates manually
 // outside a testing-library renderer.
-(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 // ---- A test router ---------------------------------------------------------
 // `useScreenFocusEffect` mirrors expo-router's contract on the two points this
@@ -182,13 +171,7 @@ interface ScreenProps {
   onBinding?: (binding: ScrollRestorationBinding) => void;
 }
 
-function Screen({
-  node,
-  subKey,
-  enabled,
-  windowTarget,
-  onBinding,
-}: ScreenProps): ReactNode {
+function Screen({ node, subKey, enabled, windowTarget, onBinding }: ScreenProps): ReactNode {
   const ref = useRef(makeHandle(node));
   const binding = useScrollRestoration(windowTarget ? 'window' : ref, {
     key: subKey,
@@ -818,9 +801,7 @@ describe('web scroll-restoration hook', () => {
       harness.show({ node, content, windowTarget: true });
       // Positive control: the document is genuinely scrollable, so a 0 read
       // here would be a real user position rather than a collapse artefact.
-      expect(document.documentElement.scrollHeight).toBeGreaterThan(
-        window.innerHeight,
-      );
+      expect(document.documentElement.scrollHeight).toBeGreaterThan(window.innerHeight);
       scrollY = 5000;
       emitWindowScroll();
 
@@ -929,9 +910,7 @@ describe('web scroll-restoration hook', () => {
       emitWindowScroll();
       scrollY = 0; // the user scrolls back up; the document is still tall
       emitWindowScroll();
-      expect(document.documentElement.scrollHeight).toBeGreaterThan(
-        window.innerHeight,
-      );
+      expect(document.documentElement.scrollHeight).toBeGreaterThan(window.innerHeight);
 
       harness.show({ node, content, windowTarget: true, focused: false });
       scrollY = 3000; // something nudges the shared scroller in between

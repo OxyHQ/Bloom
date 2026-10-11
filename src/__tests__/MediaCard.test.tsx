@@ -106,7 +106,9 @@ const ART = 'https://example.test/cover.jpg';
 describe('resolvePlayVisibility', () => {
   it('draws nothing without onPlay or with never', () => {
     expect(resolvePlayVisibility({ hasOnPlay: false, playing: true, web: true })).toBe('none');
-    expect(resolvePlayVisibility({ hasOnPlay: true, mode: 'never', playing: true, web: true })).toBe('none');
+    expect(
+      resolvePlayVisibility({ hasOnPlay: true, mode: 'never', playing: true, web: true }),
+    ).toBe('none');
   });
 
   it('reveals on hover on web, and is not drawn on native, at rest', () => {
@@ -115,7 +117,12 @@ describe('resolvePlayVisibility', () => {
   });
 
   it('stays visible while playing, loading or current, and with always', () => {
-    for (const state of [{ playing: true }, { loading: true }, { current: true }, { mode: 'always' as const }]) {
+    for (const state of [
+      { playing: true },
+      { loading: true },
+      { current: true },
+      { mode: 'always' as const },
+    ]) {
       expect(resolvePlayVisibility({ hasOnPlay: true, web: true, ...state })).toBe('visible');
       expect(resolvePlayVisibility({ hasOnPlay: true, web: false, ...state })).toBe('visible');
     }
@@ -127,7 +134,15 @@ describe('resolveCoverTint', () => {
     mount(<></>);
     for (const mode of ['light', 'dark'] as const) {
       mount(<></>, mode);
-      for (const color of ['#7c3aed', '#e0a800', '#f5e9a8', '#bae6fd', '#0e7490', '#ffffff', '#000000']) {
+      for (const color of [
+        '#7c3aed',
+        '#e0a800',
+        '#f5e9a8',
+        '#bae6fd',
+        '#0e7490',
+        '#ffffff',
+        '#000000',
+      ]) {
         const tint = resolveCoverTint(theme, color);
         expect(contrastRatio(tint.top, tint.text)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
         expect(contrastRatio(tint.bottom, tint.text)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
@@ -171,14 +186,33 @@ describe('resolveCoverTint', () => {
 
 describe('the card link', () => {
   it('names the card from title, type and subtitle, and is a button with onPress', () => {
-    mount(<SongCard title="Night Drive" artists={['Mara Vell', 'Juno Park']} explicit artwork={ART} onPress={noop} testID="s" />);
+    mount(
+      <SongCard
+        title="Night Drive"
+        artists={['Mara Vell', 'Juno Park']}
+        explicit
+        artwork={ART}
+        onPress={noop}
+        testID="s"
+      />,
+    );
     const link = byTestId('s-link');
     expect(link.getAttribute('role')).toBe('button');
-    expect(link.getAttribute('aria-label')).toBe('Night Drive, Explicit, Song, Mara Vell, Juno Park');
+    expect(link.getAttribute('aria-label')).toBe(
+      'Night Drive, Explicit, Song, Mara Vell, Juno Park',
+    );
   });
 
   it('is a real anchor with href on web', () => {
-    mount(<AlbumCard title="Low Tide" artist="Mara Vell" year="2026" href="/album/low-tide" testID="a" />);
+    mount(
+      <AlbumCard
+        title="Low Tide"
+        artist="Mara Vell"
+        year="2026"
+        href="/album/low-tide"
+        testID="a"
+      />,
+    );
     const link = byTestId('a-link');
     expect(link.tagName).toBe('A');
     expect(link.getAttribute('href')).toBe('/album/low-tide');
@@ -186,7 +220,16 @@ describe('the card link', () => {
   });
 
   it('is a sibling of the play button and the menu trigger, never their ancestor', () => {
-    mount(<SongCard title="Night Drive" artwork={ART} onPress={noop} onPlay={noop} menuItems={[{ label: 'Share' }]} testID="s" />);
+    mount(
+      <SongCard
+        title="Night Drive"
+        artwork={ART}
+        onPress={noop}
+        onPlay={noop}
+        menuItems={[{ label: 'Share' }]}
+        testID="s"
+      />,
+    );
     const link = byTestId('s-link');
     expect(link.querySelector('[role="button"]')).toBeNull();
     expect(link.children.length).toBe(0);
@@ -197,7 +240,9 @@ describe('the card link', () => {
   it('marks the selected card with aria-current and the selected wash', () => {
     mount(<SongCard title="x" selected onPress={noop} testID="s" />);
     expect(byTestId('s-link').getAttribute('aria-current')).toBe('true');
-    expect(byTestId('s').style.backgroundColor).toBe(normalise(resolveMediaCardPaint(theme).selected));
+    expect(byTestId('s').style.backgroundColor).toBe(
+      normalise(resolveMediaCardPaint(theme).selected),
+    );
     mount(<SongCard title="x" onPress={noop} testID="s" />);
     expect(byTestId('s-link').hasAttribute('aria-current')).toBe(false);
     expect(byTestId('s').style.backgroundColor).toBe('');
@@ -242,7 +287,11 @@ describe('the play button', () => {
 
 describe('covers', () => {
   it('draws the tile sizes 200 / 160 / 120 and row sizes 56 / 48', () => {
-    for (const [size, px] of [['large', 200], ['medium', 160], ['small', 120]] as const) {
+    for (const [size, px] of [
+      ['large', 200],
+      ['medium', 160],
+      ['small', 120],
+    ] as const) {
       mount(<AlbumCard title="x" size={size} testID="a" />);
       expect(byTestId('a-artwork').style.width).toBe(`${px}px`);
       expect(byTestId('a').style.width).toBe(`${px + 24}px`);
@@ -313,15 +362,34 @@ describe('PlaylistCard covers', () => {
   });
 
   it('names the owner line and the collaborative mark', () => {
-    mount(<PlaylistCard title="Late Hours" owner="Maya" trackCount="42 songs" collaborative onPress={noop} testID="p" />);
-    expect(byTestId('p-link').getAttribute('aria-label')).toBe('Late Hours, Playlist, Collaborative, By Maya · 42 songs');
+    mount(
+      <PlaylistCard
+        title="Late Hours"
+        owner="Maya"
+        trackCount="42 songs"
+        collaborative
+        onPress={noop}
+        testID="p"
+      />,
+    );
+    expect(byTestId('p-link').getAttribute('aria-label')).toBe(
+      'Late Hours, Playlist, Collaborative, By Maya · 42 songs',
+    );
   });
 });
 
 describe('SongCard', () => {
   it('draws artist links over the card link when onPressArtist is set', () => {
     const onPressArtist = jest.fn();
-    mount(<SongCard title="x" artists={['Mara Vell', { name: 'Juno Park', id: 'juno' }]} onPressArtist={onPressArtist} onPress={noop} testID="s" />);
+    mount(
+      <SongCard
+        title="x"
+        artists={['Mara Vell', { name: 'Juno Park', id: 'juno' }]}
+        onPressArtist={onPressArtist}
+        onPress={noop}
+        testID="s"
+      />,
+    );
     const artist = byTestId('s-artist-1');
     expect(artist.getAttribute('role')).toBe('link');
     expect(byTestId('s-link').contains(artist)).toBe(false);
@@ -339,7 +407,16 @@ describe('SongCard', () => {
 
   it('draws a like toggle and the duration in the row layout only', () => {
     const onLikedChange = jest.fn();
-    mount(<SongCard title="x" layout="row" duration="3:45" liked onLikedChange={onLikedChange} testID="s" />);
+    mount(
+      <SongCard
+        title="x"
+        layout="row"
+        duration="3:45"
+        liked
+        onLikedChange={onLikedChange}
+        testID="s"
+      />,
+    );
     const like = container.querySelector('[aria-label="Save x to Your Library"]') as HTMLElement;
     expect(like.getAttribute('aria-pressed')).toBe('true');
     expect(container.textContent).toContain('3:45');
@@ -364,7 +441,18 @@ describe('EpisodeCard progress', () => {
   });
 
   it('draws a named progressbar with its value and the remaining time in the name', () => {
-    mount(<EpisodeCard title="Tide Tables" show="Slow Signals" date="12 Sep" duration="48 min" progress={0.62} remaining="18 min left" onPress={noop} testID="e" />);
+    mount(
+      <EpisodeCard
+        title="Tide Tables"
+        show="Slow Signals"
+        date="12 Sep"
+        duration="48 min"
+        progress={0.62}
+        remaining="18 min left"
+        onPress={noop}
+        testID="e"
+      />,
+    );
     const bar = byTestId('e-progress');
     expect(bar.getAttribute('role')).toBe('progressbar');
     expect(bar.getAttribute('aria-label')).toBe('Tide Tables progress');
@@ -372,7 +460,9 @@ describe('EpisodeCard progress', () => {
     expect(bar.getAttribute('aria-valuemin')).toBe('0');
     expect(bar.getAttribute('aria-valuemax')).toBe('100');
     expect(byTestId('e-progress-fill').style.width).toBe('62%');
-    expect(byTestId('e-link').getAttribute('aria-label')).toBe('Tide Tables, Episode, Slow Signals, 12 Sep · 48 min, 18 min left');
+    expect(byTestId('e-link').getAttribute('aria-label')).toBe(
+      'Tide Tables, Episode, Slow Signals, 12 Sep · 48 min, 18 min left',
+    );
   });
 
   it('replaces the bar with the played check', () => {
@@ -392,23 +482,48 @@ describe('EpisodeCard progress', () => {
 
 describe('AudiobookCard', () => {
   it('draws the listened fraction', () => {
-    mount(<AudiobookCard title="x" author="Ines Calder" narrator="Teo Marsh" progress={1.4} onPress={noop} testID="b" />);
+    mount(
+      <AudiobookCard
+        title="x"
+        author="Ines Calder"
+        narrator="Teo Marsh"
+        progress={1.4}
+        onPress={noop}
+        testID="b"
+      />,
+    );
     expect(byTestId('b-progress').getAttribute('aria-valuenow')).toBe('100');
-    expect(byTestId('b-link').getAttribute('aria-label')).toBe('x, Audiobook, Ines Calder, Narrated by Teo Marsh');
+    expect(byTestId('b-link').getAttribute('aria-label')).toBe(
+      'x, Audiobook, Ines Calder, Narrated by Teo Marsh',
+    );
   });
 });
 
 describe('the other cards', () => {
   it('ArtistCard names the verified mark and followers', () => {
-    mount(<ArtistCard name="Mara Vell" verified followers="1.2M followers" onPress={noop} testID="a" />);
-    expect(byTestId('a-link').getAttribute('aria-label')).toBe('Mara Vell, Verified, Artist, 1.2M followers');
+    mount(
+      <ArtistCard name="Mara Vell" verified followers="1.2M followers" onPress={noop} testID="a" />,
+    );
+    expect(byTestId('a-link').getAttribute('aria-label')).toBe(
+      'Mara Vell, Verified, Artist, 1.2M followers',
+    );
   });
 
   it('MixCard generates its cover with the cover title', () => {
-    mount(<MixCard title="Daily Mix 1" description="Mara Vell and more" artworkColor="#7c3aed" onPress={noop} testID="m" />);
+    mount(
+      <MixCard
+        title="Daily Mix 1"
+        description="Mara Vell and more"
+        artworkColor="#7c3aed"
+        onPress={noop}
+        testID="m"
+      />,
+    );
     expect(byTestId('m-cover').textContent).toContain('Daily Mix 1');
     expect(byTestId('m-cover').querySelector('svg linearGradient')).not.toBeNull();
-    expect(byTestId('m-link').getAttribute('aria-label')).toBe('Daily Mix 1, Mix, Mara Vell and more');
+    expect(byTestId('m-link').getAttribute('aria-label')).toBe(
+      'Daily Mix 1, Mix, Mara Vell and more',
+    );
   });
 
   it('GenreCard keeps its title legible, rotates its cover 25° and is 8-radius', () => {
@@ -424,9 +539,21 @@ describe('the other cards', () => {
 
   it('EventCard names the date and the sold-out state, which replaces the action', () => {
     mount(
-      <EventCard title="Mara Vell" month="Oct" day="14" venue="The Lantern Hall" city="Porto" soldOut action={<button>Tickets</button>} onPress={noop} testID="ev" />,
+      <EventCard
+        title="Mara Vell"
+        month="Oct"
+        day="14"
+        venue="The Lantern Hall"
+        city="Porto"
+        soldOut
+        action={<button>Tickets</button>}
+        onPress={noop}
+        testID="ev"
+      />,
     );
-    expect(byTestId('ev-link').getAttribute('aria-label')).toBe('Mara Vell, Event, Oct 14, The Lantern Hall · Porto, Sold out');
+    expect(byTestId('ev-link').getAttribute('aria-label')).toBe(
+      'Mara Vell, Event, Oct 14, The Lantern Hall · Porto, Sold out',
+    );
     expect(byTestId('ev-sold-out').textContent).toBe('Sold out');
     expect(container.textContent).not.toContain('Tickets');
   });
@@ -437,19 +564,53 @@ describe('the other cards', () => {
   });
 
   it('FriendActivityCard draws the live dot and bars instead of the time', () => {
-    mount(<FriendActivityCard name="Maya" track="Night Drive" artist="Mara Vell" context="Late Hours" live time="2 min" onPress={noop} testID="f" />);
+    mount(
+      <FriendActivityCard
+        name="Maya"
+        track="Night Drive"
+        artist="Mara Vell"
+        context="Late Hours"
+        live
+        time="2 min"
+        onPress={noop}
+        testID="f"
+      />,
+    );
     expect(query('f-live-dot')).not.toBeNull();
     expect(byTestId('f-live').getAttribute('aria-label')).toBe('Listening now');
     expect(container.textContent).not.toContain('2 min');
-    expect(byTestId('f-link').getAttribute('aria-label')).toBe('Maya, Listening now, Night Drive by Mara Vell, Late Hours');
-    mount(<FriendActivityCard name="Maya" track="Night Drive" artist="Mara Vell" time="2 min" onPress={noop} testID="f" />);
+    expect(byTestId('f-link').getAttribute('aria-label')).toBe(
+      'Maya, Listening now, Night Drive by Mara Vell, Late Hours',
+    );
+    mount(
+      <FriendActivityCard
+        name="Maya"
+        track="Night Drive"
+        artist="Mara Vell"
+        time="2 min"
+        onPress={noop}
+        testID="f"
+      />,
+    );
     expect(query('f-live-dot')).toBeNull();
     expect(container.textContent).toContain('2 min');
   });
 
   it('QuickAccessTile swaps the bars for the pause button on hover while current (web)', () => {
-    mount(<QuickAccessTile title="Late Hours" typeLabel="Playlist" current playing onPlay={noop} onPress={noop} testID="q" />);
-    expect(byTestId('q-now-playing').parentElement?.hasAttribute('data-bloom-media-card-conceal')).toBe(true);
+    mount(
+      <QuickAccessTile
+        title="Late Hours"
+        typeLabel="Playlist"
+        current
+        playing
+        onPlay={noop}
+        onPress={noop}
+        testID="q"
+      />,
+    );
+    expect(
+      byTestId('q-now-playing').parentElement?.hasAttribute('data-bloom-media-card-conceal'),
+    ).toBe(true);
     expect(byTestId('q-play').getAttribute('data-bloom-media-card-reveal')).toBe('hover');
     expect(byTestId('q-link').getAttribute('aria-label')).toBe('Late Hours, Playlist, Now playing');
     expect(byTestId('q').style.backgroundColor).toBe(normalise(resolveMediaCardPaint(theme).tile));
@@ -458,7 +619,15 @@ describe('the other cards', () => {
 
   it('RecapCard names its share button; ShareCard draws the lyrics', () => {
     const onShare = jest.fn();
-    mount(<RecapCard value="48,210" unit="minutes" artworkColor="#7c3aed" onShare={onShare} testID="r" />);
+    mount(
+      <RecapCard
+        value="48,210"
+        unit="minutes"
+        artworkColor="#7c3aed"
+        onShare={onShare}
+        testID="r"
+      />,
+    );
     const share = byTestId('r-share');
     expect(share.getAttribute('aria-label')).toBe('Share');
     act(() => share.click());
@@ -469,7 +638,15 @@ describe('the other cards', () => {
 
   it('MediaCard takes an eyebrow, description and footer directly', () => {
     mount(
-      <MediaCard title="Custom" eyebrow="Live" description="Something" typeLabel="Session" footer={<span>foot</span>} onPress={noop} testID="c" />,
+      <MediaCard
+        title="Custom"
+        eyebrow="Live"
+        description="Something"
+        typeLabel="Session"
+        footer={<span>foot</span>}
+        onPress={noop}
+        testID="c"
+      />,
       'dark',
     );
     expect(container.textContent).toContain('Live');

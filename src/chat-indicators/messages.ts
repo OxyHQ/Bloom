@@ -18,9 +18,17 @@ export interface ChatIndicatorsMessages {
   unreadCount: (count: number) => string;
 }
 
-export const CHAT_INDICATORS_MESSAGES: MessageCatalog<ChatIndicatorsMessages> = defineMessages<ChatIndicatorsMessages>('CHAT_INDICATORS_MESSAGES', {
-  presence: { online: 'Online', idle: 'Away', offline: 'Offline', busy: 'Busy' },
-  status: { sending: 'Sending…', sent: 'Sent', delivered: 'Delivered', read: 'Read', failed: 'Not sent' },
-  unread: 'Unread',
-  unreadCount: (n) => plural('en', n, { one: '{n} unread message', other: '{n} unread messages' }),
-});
+export const CHAT_INDICATORS_MESSAGES: MessageCatalog<ChatIndicatorsMessages> =
+  defineMessages<ChatIndicatorsMessages>('CHAT_INDICATORS_MESSAGES', {
+    presence: { online: 'Online', idle: 'Away', offline: 'Offline', busy: 'Busy' },
+    status: {
+      sending: 'Sending…',
+      sent: 'Sent',
+      delivered: 'Delivered',
+      read: 'Read',
+      failed: 'Not sent',
+    },
+    unread: 'Unread',
+    unreadCount: (n) =>
+      plural('en', n, { one: '{n} unread message', other: '{n} unread messages' }),
+  });

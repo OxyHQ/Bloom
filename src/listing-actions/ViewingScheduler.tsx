@@ -110,7 +110,11 @@ function ViewingSchedulerComponent({
   return (
     <ActionCardShell testID={testID} maxWidth={maxWidth} style={style}>
       {title != null ? (
-        <Text variant="headline-semibold" accessibilityRole="header" style={{ color: palette.text, marginBottom: 16 }}>
+        <Text
+          variant="headline-semibold"
+          accessibilityRole="header"
+          style={{ color: palette.text, marginBottom: 16 }}
+        >
           {title}
         </Text>
       ) : null}
@@ -209,13 +213,21 @@ function ViewingSchedulerComponent({
         >
           <SegmentedControlItem value="in-person" style={{ flex: 1 }} testID={id('mode-in-person')}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <RiUserLine width={16} height={16} fill={mode === 'in-person' ? palette.text : palette.textSecondary} />
+              <RiUserLine
+                width={16}
+                height={16}
+                fill={mode === 'in-person' ? palette.text : palette.textSecondary}
+              />
               <SegmentedControlItemText>{inPerson}</SegmentedControlItemText>
             </View>
           </SegmentedControlItem>
           <SegmentedControlItem value="video" style={{ flex: 1 }} testID={id('mode-video')}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <RiVideoLine width={16} height={16} fill={mode === 'video' ? palette.text : palette.textSecondary} />
+              <RiVideoLine
+                width={16}
+                height={16}
+                fill={mode === 'video' ? palette.text : palette.textSecondary}
+              />
               <SegmentedControlItemText>{video}</SegmentedControlItemText>
             </View>
           </SegmentedControlItem>
@@ -235,19 +247,22 @@ function ViewingSchedulerComponent({
       ) : null}
 
       <Button
-
         size="lg"
         fullWidth
         onPress={onSubmit}
         disabled={disabled}
         loading={loading}
         style={{ marginTop: 20, alignSelf: 'stretch' }}
-        testID={id('submit')} tone="accent" appearance="solid"
+        testID={id('submit')}
+        tone="accent"
+        appearance="solid"
       >
         {submitLabel}
       </Button>
 
-      {footer != null ? <View style={{ marginTop: 16, alignItems: 'center' }}>{footer}</View> : null}
+      {footer != null ? (
+        <View style={{ marginTop: 16, alignItems: 'center' }}>{footer}</View>
+      ) : null}
     </ActionCardShell>
   );
 }

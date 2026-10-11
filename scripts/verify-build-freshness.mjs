@@ -203,9 +203,9 @@ function main() {
       const tarball =
         tarballArgument === -1
           ? packSelf(scratch)
-          // `resolve`, not `join`: an absolute path passed on the command line
-          // would be appended to the cwd by `join` and silently point nowhere.
-          : resolve(process.cwd(), process.argv[tarballArgument + 1] ?? '');
+          : // `resolve`, not `join`: an absolute path passed on the command line
+            // would be appended to the cwd by `join` and silently point nowhere.
+            resolve(process.cwd(), process.argv[tarballArgument + 1] ?? '');
       log(`auditing ${relative(REPO_ROOT, tarball) || tarball}`);
       pkg = extract(tarball, scratch);
     }
@@ -224,7 +224,8 @@ function main() {
     }
 
     const sources = walk(srcRoot).filter(
-      (file) => /\.tsx?$/.test(file) && !NOT_COMPILED.test(file) && !file.includes(`${'__tests__'}`),
+      (file) =>
+        /\.tsx?$/.test(file) && !NOT_COMPILED.test(file) && !file.includes(`${'__tests__'}`),
     );
 
     const problems = [];
@@ -289,9 +290,12 @@ function main() {
 
     // Vacuity floors: "no stale symbol" is also what a walk that read nothing
     // reports, and it is the reading this gate is most likely to give wrongly.
-    if (checkedFiles < 200) problems.push(`only ${checkedFiles} source files were compared (expected 200+)`);
-    if (checkedValues < 500) problems.push(`only ${checkedValues} exported values were checked (expected 500+)`);
-    if (checkedTypes < 200) problems.push(`only ${checkedTypes} exported types were checked (expected 200+)`);
+    if (checkedFiles < 200)
+      problems.push(`only ${checkedFiles} source files were compared (expected 200+)`);
+    if (checkedValues < 500)
+      problems.push(`only ${checkedValues} exported values were checked (expected 500+)`);
+    if (checkedTypes < 200)
+      problems.push(`only ${checkedTypes} exported types were checked (expected 200+)`);
 
     if (problems.length > 0) {
       fail(problems);

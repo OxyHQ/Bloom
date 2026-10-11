@@ -6,4 +6,7 @@ export interface LabelMessages {
   required: string;
 }
 
-export const LABEL_MESSAGES: MessageCatalog<LabelMessages> = defineMessages<LabelMessages>('LABEL_MESSAGES', { required: 'required' });
+export const LABEL_MESSAGES: MessageCatalog<LabelMessages> = defineMessages<LabelMessages>(
+  'LABEL_MESSAGES',
+  { required: 'required' },
+);

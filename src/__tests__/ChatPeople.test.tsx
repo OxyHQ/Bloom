@@ -117,10 +117,17 @@ const SECTIONS: ContactSection[] = [
 describe('ContactRow', () => {
   it('renders application identity slots while retaining row naming and selection behavior', () => {
     const changes: boolean[] = [];
-    mount(<ContactRow id="a" name="Ana Restrepo" subtitle="@ana@example.social"
-      avatarSlot={<span data-testid="custom-avatar">Verified avatar</span>}
-      identitySlot={<span data-testid="custom-identity">Ana · verified · example.social</span>}
-      onSelectedChange={value => changes.push(value)} testID="r" />);
+    mount(
+      <ContactRow
+        id="a"
+        name="Ana Restrepo"
+        subtitle="@ana@example.social"
+        avatarSlot={<span data-testid="custom-avatar">Verified avatar</span>}
+        identitySlot={<span data-testid="custom-identity">Ana · verified · example.social</span>}
+        onSelectedChange={(value) => changes.push(value)}
+        testID="r"
+      />,
+    );
     expect(text(byTestId('custom-avatar'))).toContain('Verified avatar');
     expect(text(byTestId('custom-identity'))).toContain('example.social');
     expect(maybe('r-name')).toBeNull();
@@ -132,7 +139,17 @@ describe('ContactRow', () => {
   });
 
   it('supports intentionally empty slots without losing the accessible person name', () => {
-    mount(<ContactRow id="a" name="Ana" subtitle="@ana" avatarSlot={null} identitySlot={null} onPress={() => undefined} testID="r" />);
+    mount(
+      <ContactRow
+        id="a"
+        name="Ana"
+        subtitle="@ana"
+        avatarSlot={null}
+        identitySlot={null}
+        onPress={() => undefined}
+        testID="r"
+      />,
+    );
     expect(maybe('r-name')).toBeNull();
     expect(maybe('r-subtitle')).toBeNull();
     expect(byTestId('r-open').getAttribute('aria-label')).toBe('Ana, @ana');
@@ -154,7 +171,15 @@ describe('ContactRow', () => {
   });
 
   it('makes the ROW the checkbox — one role, not two', () => {
-    mount(<ContactRow id="a" name="Ana Restrepo" selected onSelectedChange={() => undefined} testID="r" />);
+    mount(
+      <ContactRow
+        id="a"
+        name="Ana Restrepo"
+        selected
+        onSelectedChange={() => undefined}
+        testID="r"
+      />,
+    );
     const row = byTestId('r-select');
     expect(row.getAttribute('role')).toBe('checkbox');
     expect(row.getAttribute('aria-checked')).toBe('true');
@@ -173,16 +198,31 @@ describe('ContactRow', () => {
 
   it('names a plain row with its subtitle, so the list reads as rows not names', () => {
     mount(
-      <ContactRow id="a" name="Ana Restrepo" subtitle="last seen recently" onPress={() => undefined} testID="r" />,
+      <ContactRow
+        id="a"
+        name="Ana Restrepo"
+        subtitle="last seen recently"
+        onPress={() => undefined}
+        testID="r"
+      />,
     );
     expect(byTestId('r-open').getAttribute('aria-label')).toBe('Ana Restrepo, last seen recently');
   });
 
   it('swaps the action button for a quiet mark once it is done', () => {
-    mount(<ContactRow id="a" name="Ana" actionLabel="Invite" onAction={() => undefined} testID="r" />);
+    mount(
+      <ContactRow id="a" name="Ana" actionLabel="Invite" onAction={() => undefined} testID="r" />,
+    );
     expect(text(byTestId('r-action'))).toContain('Invite');
     mount(
-      <ContactRow id="a" name="Ana" actionLabel="Invite" actionDone onAction={() => undefined} testID="r" />,
+      <ContactRow
+        id="a"
+        name="Ana"
+        actionLabel="Invite"
+        actionDone
+        onAction={() => undefined}
+        testID="r"
+      />,
     );
     expect(maybe('r-action')).toBeNull();
     expect(text(byTestId('r-action-done'))).toContain('Added');
@@ -259,13 +299,7 @@ describe('ContactList', () => {
   it('routes a row press and a selection change with the contact id', () => {
     const opened: string[] = [];
     const picked: [string, boolean][] = [];
-    mount(
-      <ContactList
-        sections={SECTIONS}
-        onContactPress={(id) => opened.push(id)}
-        testID="l"
-      />,
-    );
+    mount(<ContactList sections={SECTIONS} onContactPress={(id) => opened.push(id)} testID="l" />);
     press(byTestId('l-contact-kofi-open'));
     expect(opened).toEqual(['kofi']);
 
@@ -341,7 +375,12 @@ describe('NewGroupForm', () => {
 
   it('names the photo picker — it draws a glyph and no text', () => {
     mount(
-      <NewGroupForm name="" onNameChange={() => undefined} onPickPhoto={() => undefined} testID="f" />,
+      <NewGroupForm
+        name=""
+        onNameChange={() => undefined}
+        onPickPhoto={() => undefined}
+        testID="f"
+      />,
     );
     expect(byTestId('f-photo').getAttribute('aria-label')).toBe('Choose a group photo');
   });
@@ -393,7 +432,9 @@ describe('MemberRow', () => {
   });
 
   it('carries the role into the row name', () => {
-    mount(<MemberRow id="a" name="Ana Restrepo" role="admin" onPress={() => undefined} testID="r" />);
+    mount(
+      <MemberRow id="a" name="Ana Restrepo" role="admin" onPress={() => undefined} testID="r" />,
+    );
     expect(byTestId('r-open').getAttribute('aria-label')).toBe('Ana Restrepo, Admin');
   });
 
@@ -428,7 +469,9 @@ describe('MemberList', () => {
   it('draws the search field only with a handler, and never filters', () => {
     mount(<MemberList members={members} testID="l" />);
     expect(maybe('l-search')).toBeNull();
-    mount(<MemberList members={members} search="zzz" onSearchChange={() => undefined} testID="l" />);
+    mount(
+      <MemberList members={members} search="zzz" onSearchChange={() => undefined} testID="l" />,
+    );
     expect(maybe('l-search')).not.toBeNull();
     // Both rows survive a search string the component was never asked to apply.
     expect(maybe('l-member-ana')).not.toBeNull();
@@ -470,7 +513,13 @@ describe('ChannelPostCard', () => {
 
   it('draws the comments button from its own text', () => {
     mount(
-      <ChannelPostCard channelName="C" time="12:41" comments="128 comments" onComments={() => undefined} testID="p" />,
+      <ChannelPostCard
+        channelName="C"
+        time="12:41"
+        comments="128 comments"
+        onComments={() => undefined}
+        testID="p"
+      />,
     );
     expect(text(byTestId('p-comments'))).toContain('128 comments');
   });
@@ -545,7 +594,13 @@ describe('StoryProgressBars', () => {
     try {
       const done: number[] = [];
       mount(
-        <StoryProgressBars count={3} index={0} duration={1000} onComplete={() => done.push(1)} testID="s" />,
+        <StoryProgressBars
+          count={3}
+          index={0}
+          duration={1000}
+          onComplete={() => done.push(1)}
+          testID="s"
+        />,
       );
       act(() => {
         jest.advanceTimersByTime(1200);
@@ -553,7 +608,16 @@ describe('StoryProgressBars', () => {
       expect(done).toHaveLength(1);
 
       done.length = 0;
-      mount(<StoryProgressBars count={3} index={0} duration={1000} paused onComplete={() => done.push(1)} testID="s" />);
+      mount(
+        <StoryProgressBars
+          count={3}
+          index={0}
+          duration={1000}
+          paused
+          onComplete={() => done.push(1)}
+          testID="s"
+        />,
+      );
       act(() => {
         jest.advanceTimersByTime(3000);
       });
@@ -561,7 +625,14 @@ describe('StoryProgressBars', () => {
 
       done.length = 0;
       mount(
-        <StoryProgressBars count={3} index={0} progress={0.2} duration={1000} onComplete={() => done.push(1)} testID="s" />,
+        <StoryProgressBars
+          count={3}
+          index={0}
+          progress={0.2}
+          duration={1000}
+          onComplete={() => done.push(1)}
+          testID="s"
+        />,
       );
       act(() => {
         jest.advanceTimersByTime(3000);
@@ -580,7 +651,13 @@ describe('StoryProgressBars', () => {
     try {
       const done: number[] = [];
       mount(
-        <StoryProgressBars count={3} index={0} duration={800} onComplete={() => done.push(1)} testID="s" />,
+        <StoryProgressBars
+          count={3}
+          index={0}
+          duration={800}
+          onComplete={() => done.push(1)}
+          testID="s"
+        />,
       );
       act(() => {
         jest.advanceTimersByTime(900);

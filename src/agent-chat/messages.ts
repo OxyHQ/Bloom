@@ -73,60 +73,63 @@ export interface AgentChatMessages {
   };
 }
 
-export const AGENT_CHAT_MESSAGES: MessageCatalog<AgentChatMessages> = defineMessages<AgentChatMessages>('AGENT_CHAT_MESSAGES', {
-  chat: {
-    newChat: 'New chat',
-    emptyTitle: 'What can I help with?',
-    emptyDescription: 'This chat runs against your own API key. History stays in this browser.',
-    thinking: 'Thinking',
-    error: 'Something went wrong. Check the server logs, then try again.',
-    suggestions: [
-      'Explain what this starter does',
-      'Write a product update in three sentences',
-      'Give me five names for a scheduling app',
-    ],
-    you: 'You',
-    assistant: 'Assistant',
-  },
-  actions: {
-    share: 'Share chat',
-    shared: 'Transcript copied',
-    more: 'More actions for this chat',
-    exportChats: 'Export chats',
-    markUnread: 'Mark as unread',
-    deleteChat: 'Delete chat',
-  },
-  message: { copy: 'Copy message', readAloud: 'Read aloud', stopReading: 'Stop reading aloud' },
-  history: {
-    region: 'Chat history',
-    recent: 'Recent',
-    empty: 'Chats you start show up here.',
-    rename: 'Rename',
-    renameField: 'Rename chat',
-    markUnread: 'Mark as unread',
-    unread: 'Unread',
-    exportCount: (n) =>
-      n === 0 ? 'No chats to export' : plural('en', n, { one: 'Export {n} chat', other: 'Export {n} chats' }),
-    accountMenu: (name) => `${name} account menu`,
-    usageLeft: 'Usage left',
-    upgrade: 'Upgrade to Max',
-    logOut: 'Log out',
-  },
-  composer: {
-    field: 'Message',
-    placeholder: 'Ask me anything',
-    attach: 'Add attachment',
-    send: 'Send message',
-    stop: 'Stop generating',
-    notConfigured: 'Not configured',
-    messageCount: (n) => plural('en', n, { one: '{n} message', other: '{n} messages' }),
-    answeringWith: (model) => `Answering with ${model}`,
-  },
-  ago: {
-    justNow: 'just now',
-    minutes: (n) => plural('en', n, { one: '{n} minute ago', other: '{n} minutes ago' }),
-    hours: (n) => plural('en', n, { one: '{n} hour ago', other: '{n} hours ago' }),
-    days: (n) => plural('en', n, { one: '{n} day ago', other: '{n} days ago' }),
-  },
-  age: { now: 'now', minutes: (n) => `${n}m`, hours: (n) => `${n}h`, days: (n) => `${n}d` },
-});
+export const AGENT_CHAT_MESSAGES: MessageCatalog<AgentChatMessages> =
+  defineMessages<AgentChatMessages>('AGENT_CHAT_MESSAGES', {
+    chat: {
+      newChat: 'New chat',
+      emptyTitle: 'What can I help with?',
+      emptyDescription: 'This chat runs against your own API key. History stays in this browser.',
+      thinking: 'Thinking',
+      error: 'Something went wrong. Check the server logs, then try again.',
+      suggestions: [
+        'Explain what this starter does',
+        'Write a product update in three sentences',
+        'Give me five names for a scheduling app',
+      ],
+      you: 'You',
+      assistant: 'Assistant',
+    },
+    actions: {
+      share: 'Share chat',
+      shared: 'Transcript copied',
+      more: 'More actions for this chat',
+      exportChats: 'Export chats',
+      markUnread: 'Mark as unread',
+      deleteChat: 'Delete chat',
+    },
+    message: { copy: 'Copy message', readAloud: 'Read aloud', stopReading: 'Stop reading aloud' },
+    history: {
+      region: 'Chat history',
+      recent: 'Recent',
+      empty: 'Chats you start show up here.',
+      rename: 'Rename',
+      renameField: 'Rename chat',
+      markUnread: 'Mark as unread',
+      unread: 'Unread',
+      exportCount: (n) =>
+        n === 0
+          ? 'No chats to export'
+          : plural('en', n, { one: 'Export {n} chat', other: 'Export {n} chats' }),
+      accountMenu: (name) => `${name} account menu`,
+      usageLeft: 'Usage left',
+      upgrade: 'Upgrade to Max',
+      logOut: 'Log out',
+    },
+    composer: {
+      field: 'Message',
+      placeholder: 'Ask me anything',
+      attach: 'Add attachment',
+      send: 'Send message',
+      stop: 'Stop generating',
+      notConfigured: 'Not configured',
+      messageCount: (n) => plural('en', n, { one: '{n} message', other: '{n} messages' }),
+      answeringWith: (model) => `Answering with ${model}`,
+    },
+    ago: {
+      justNow: 'just now',
+      minutes: (n) => plural('en', n, { one: '{n} minute ago', other: '{n} minutes ago' }),
+      hours: (n) => plural('en', n, { one: '{n} hour ago', other: '{n} hours ago' }),
+      days: (n) => plural('en', n, { one: '{n} day ago', other: '{n} days ago' }),
+    },
+    age: { now: 'now', minutes: (n) => `${n}m`, hours: (n) => `${n}h`, days: (n) => `${n}d` },
+  });

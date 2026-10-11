@@ -46,9 +46,7 @@ it('expands controlled search, filters app content, clears it on close and remov
             ]}
           />
         }
-        content={
-          <Text>{'Security'.includes(query) ? 'Security' : 'No matches'}</Text>
-        }
+        content={<Text>{'Security'.includes(query) ? 'Security' : 'No matches'}</Text>}
       />
     );
   }
@@ -70,18 +68,12 @@ it('keeps a custom header outside the destination scroll and preserves it across
         testID="nav"
         showSearch={false}
         showThemeToggle={false}
-        header={({ collapsed }) => (
-          <Text>{collapsed ? 'Compact header' : 'Expanded header'}</Text>
-        )}
+        header={({ collapsed }) => <Text>{collapsed ? 'Compact header' : 'Expanded header'}</Text>}
         content={<Text>Conversation</Text>}
       />,
     ),
   );
-  for (
-    let node = screen.getByText('Expanded header').parent;
-    node;
-    node = node.parent
-  )
+  for (let node = screen.getByText('Expanded header').parent; node; node = node.parent)
     expect(node.props.testID).not.toBe('nav-scroll');
   expect(screen.queryByLabelText('Collapse sidebar')).toBeNull();
   screen.rerender(
@@ -91,9 +83,7 @@ it('keeps a custom header outside the destination scroll and preserves it across
         collapsed
         showSearch={false}
         showThemeToggle={false}
-        header={({ collapsed }) => (
-          <Text>{collapsed ? 'Compact header' : 'Expanded header'}</Text>
-        )}
+        header={({ collapsed }) => <Text>{collapsed ? 'Compact header' : 'Expanded header'}</Text>}
         content={<Text>Conversation</Text>}
       />,
     ),

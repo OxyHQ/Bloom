@@ -17,9 +17,14 @@ import type { CalendarPalette } from './palette';
  * the draft does not parse.
  */
 /** `transition-colors duration-100 ease-out` on the border. Web only. */
-const CHIP_TRANSITION: WebCssStyle | null = Platform.OS === 'web'
-  ? { transitionProperty: 'border-color', transitionDuration: '100ms', transitionTimingFunction: 'ease-out' }
-  : null;
+const CHIP_TRANSITION: WebCssStyle | null =
+  Platform.OS === 'web'
+    ? {
+        transitionProperty: 'border-color',
+        transitionDuration: '100ms',
+        transitionTimingFunction: 'ease-out',
+      }
+    : null;
 
 export function DateChipInput({
   date,

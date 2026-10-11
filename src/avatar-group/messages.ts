@@ -8,4 +8,8 @@ export interface AvatarGroupMessages {
   profile: string;
 }
 
-export const AVATAR_GROUP_MESSAGES: MessageCatalog<AvatarGroupMessages> = defineMessages<AvatarGroupMessages>('AVATAR_GROUP_MESSAGES', { more: (n) => `${n} more`, profile: 'Profile' });
+export const AVATAR_GROUP_MESSAGES: MessageCatalog<AvatarGroupMessages> =
+  defineMessages<AvatarGroupMessages>('AVATAR_GROUP_MESSAGES', {
+    more: (n) => `${n} more`,
+    profile: 'Profile',
+  });

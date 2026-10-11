@@ -62,11 +62,26 @@ describe('shelf geometry', () => {
   });
 
   it('reports overflow on each side with 1px slack', () => {
-    expect(shelfOverflow({ x: 0, viewport: 0, content: 900 })).toEqual({ previous: false, next: false });
-    expect(shelfOverflow({ x: 0, viewport: 500, content: 500.5 })).toEqual({ previous: false, next: false });
-    expect(shelfOverflow({ x: 0, viewport: 500, content: 900 })).toEqual({ previous: false, next: true });
-    expect(shelfOverflow({ x: 200, viewport: 500, content: 900 })).toEqual({ previous: true, next: true });
-    expect(shelfOverflow({ x: 399.5, viewport: 500, content: 900 })).toEqual({ previous: true, next: false });
+    expect(shelfOverflow({ x: 0, viewport: 0, content: 900 })).toEqual({
+      previous: false,
+      next: false,
+    });
+    expect(shelfOverflow({ x: 0, viewport: 500, content: 500.5 })).toEqual({
+      previous: false,
+      next: false,
+    });
+    expect(shelfOverflow({ x: 0, viewport: 500, content: 900 })).toEqual({
+      previous: false,
+      next: true,
+    });
+    expect(shelfOverflow({ x: 200, viewport: 500, content: 900 })).toEqual({
+      previous: true,
+      next: true,
+    });
+    expect(shelfOverflow({ x: 399.5, viewport: 500, content: 900 })).toEqual({
+      previous: true,
+      next: false,
+    });
   });
 
   it('pages by 90% of the viewport, clamped to the track', () => {
@@ -189,7 +204,13 @@ describe('FilterChips', () => {
     expect(onValueChange).toHaveBeenCalledTimes(1);
 
     mount(
-      <FilterChips options={OPTIONS} value="all" onValueChange={onValueChange} allowDeselect testID="fc" />,
+      <FilterChips
+        options={OPTIONS}
+        value="all"
+        onValueChange={onValueChange}
+        allowDeselect
+        testID="fc"
+      />,
     );
     click(byTestId('fc-all'));
     expect(onValueChange).toHaveBeenLastCalledWith(undefined);

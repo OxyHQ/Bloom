@@ -7,9 +7,9 @@ import { ActivityRingsCard, type ActivityRing } from './ActivityRingsCard';
 
 const meta: Meta<typeof ActivityRingsCard> = {
   argTypes: {
-    "title": { control: 'text' },
-    "height": { control: 'number' },
-    "activeIndex": { control: 'number' }
+    title: { control: 'text' },
+    height: { control: 'number' },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Activity Rings',
   component: ActivityRingsCard,
@@ -64,10 +64,10 @@ export const Default: Story = {
 /** Exercise hovered (controlled): the ring darkens, the others and their tiles dim. */
 export const Hovered: Story = {
   args: { activeIndex: 1 },
-  parameters: { controls: { include: ["activeIndex","title","height"] } },
+  parameters: { controls: { include: ['activeIndex', 'title', 'height'] } },
   render: (args) => (
     <Frame>
-      <ActivityRingsCard {...args} rings={RINGS}  />
+      <ActivityRingsCard {...args} rings={RINGS} />
     </Frame>
   ),
 };
@@ -80,7 +80,13 @@ function DayPicker() {
       <ActivityRingsCard testID="activity" title={current.title} rings={current.rings} />
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {DAYS.map((d, i) => (
-          <Button key={d.title} size="sm" appearance={i === day ? 'solid' : 'outline'} tone={i === day ? 'accent' : 'neutral'} onPress={() => setDay(i)}>
+          <Button
+            key={d.title}
+            size="sm"
+            appearance={i === day ? 'solid' : 'outline'}
+            tone={i === day ? 'accent' : 'neutral'}
+            onPress={() => setDay(i)}
+          >
             {i === 0 ? 'No day' : d.title.replace('Activity for ', '')}
           </Button>
         ))}

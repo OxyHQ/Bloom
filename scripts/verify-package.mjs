@@ -249,7 +249,9 @@ function assertNodeLoadable(subpaths, esmUnresolvable) {
 function assertDocsShip(files) {
   const entries = readdirSync(join(REPO_ROOT, DOCS_DIR), { recursive: true, encoding: 'utf8' });
   const everyMdx = entries.filter((name) => name.endsWith('.mdx')).sort();
-  const onDisk = everyMdx.filter((name) => !name.includes('/')).map((name) => `${DOCS_DIR}/${name}`);
+  const onDisk = everyMdx
+    .filter((name) => !name.includes('/'))
+    .map((name) => `${DOCS_DIR}/${name}`);
   const nested = everyMdx.filter((name) => name.includes('/'));
 
   const problems = [];

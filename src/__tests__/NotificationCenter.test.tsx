@@ -19,8 +19,24 @@ const ITEMS: NotificationCenterItem[] = [
     avatar: { initials: 'LS', name: 'Livia Saris', color: 'pink' },
     actions: [{ id: 'reply', label: 'Reply', appearance: 'solid', tone: 'accent' }],
   },
-  { id: 'b', category: 'system', group: 'Today', title: 'Backup', description: 'Ready', timestamp: '18m', unread: true, status: 'success' },
-  { id: 'c', category: 'activity', group: 'Today', title: 'Joined', description: 'Sea', timestamp: '1h' },
+  {
+    id: 'b',
+    category: 'system',
+    group: 'Today',
+    title: 'Backup',
+    description: 'Ready',
+    timestamp: '18m',
+    unread: true,
+    status: 'success',
+  },
+  {
+    id: 'c',
+    category: 'activity',
+    group: 'Today',
+    title: 'Joined',
+    description: 'Sea',
+    timestamp: '1h',
+  },
 ];
 
 function renderCenter(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
@@ -57,12 +73,16 @@ describe('NotificationCenter', () => {
     const section = resolvedStyle(screen.getByTestId('nc').props.style);
     expect(section.backgroundColor).toBe(colors.backgroundSecondary);
     expect(section.borderColor).toBe(colors.border);
-    expect(resolvedStyle(screen.getByTestId('notification-a').props.style).backgroundColor).toBe(colors.card);
+    expect(resolvedStyle(screen.getByTestId('notification-a').props.style).backgroundColor).toBe(
+      colors.card,
+    );
   });
 
   it('counts unread, names the unread dot, and marks all read', () => {
     const onMarkAllRead = jest.fn();
-    const screen = renderCenter(<NotificationCenter notifications={ITEMS} onMarkAllRead={onMarkAllRead} />);
+    const screen = renderCenter(
+      <NotificationCenter notifications={ITEMS} onMarkAllRead={onMarkAllRead} />,
+    );
     expect(screen.getByText('2 unread')).toBeTruthy();
     expect(screen.getByTestId('notification-a-unread').props.accessibilityLabel).toBe('Unread');
     fireEvent.press(screen.getByText('Mark all read'));
@@ -93,7 +113,9 @@ describe('NotificationCenter', () => {
     expect(screen.getByTestId('notification-b')).toBeTruthy();
 
     const empty = renderCenter(<NotificationCenter testID="e" notifications={[]} />);
-    expect(resolvedStyle(empty.getByTestId('e-empty').props.style)).toMatchObject({ minHeight: 256 });
+    expect(resolvedStyle(empty.getByTestId('e-empty').props.style)).toMatchObject({
+      minHeight: 256,
+    });
     expect(empty.getByText('You’re all caught up.')).toBeTruthy();
   });
 });

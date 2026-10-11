@@ -13,7 +13,15 @@ export interface CardFormMessages {
   selectCountry: string;
 }
 
-export const CARD_FORM_MESSAGES: MessageCatalog<CardFormMessages> = defineMessages<CardFormMessages>('CARD_FORM_MESSAGES', {
-  labels: { number: 'Card number', expiry: 'Expiry date', securityCode: 'Security code', name: 'Name on card', postcode: 'Postcode', country: 'Country' },
-  selectCountry: 'Select a country',
-});
+export const CARD_FORM_MESSAGES: MessageCatalog<CardFormMessages> =
+  defineMessages<CardFormMessages>('CARD_FORM_MESSAGES', {
+    labels: {
+      number: 'Card number',
+      expiry: 'Expiry date',
+      securityCode: 'Security code',
+      name: 'Name on card',
+      postcode: 'Postcode',
+      country: 'Country',
+    },
+    selectCountry: 'Select a country',
+  });

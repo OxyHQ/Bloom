@@ -64,7 +64,12 @@ function GenreCardComponent({
 
   if (skeleton) {
     return (
-      <View aria-busy accessibilityLabel={common.loading} style={[{ width: side, aspectRatio: 1 }, style]} testID={testID}>
+      <View
+        aria-busy
+        accessibilityLabel={common.loading}
+        style={[{ width: side, aspectRatio: 1 }, style]}
+        testID={testID}
+      >
         <SkeletonBox width="100%" height="100%" borderRadius={GENRE_RADIUS} />
       </View>
     );
@@ -83,12 +88,25 @@ function GenreCardComponent({
 
   return (
     <View
-      {...webDataSet({ bloomMediaCard: 'genre', ...(onPress || href ? { bloomMediaCardHover: '' } : null) })}
+      {...webDataSet({
+        bloomMediaCard: 'genre',
+        ...(onPress || href ? { bloomMediaCardHover: '' } : null),
+      })}
       style={[rootStyle, style]}
       testID={testID}
     >
-      <CardLink name={accessibilityLabel ?? title} onPress={onPress} href={href} radius={GENRE_RADIUS} paint={paint} testID={testID} />
-      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <CardLink
+        name={accessibilityLabel ?? title}
+        onPress={onPress}
+        href={href}
+        radius={GENRE_RADIUS}
+        paint={paint}
+        testID={testID}
+      />
+      <View
+        pointerEvents="none"
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      >
         <Text
           variant={TITLE[size]}
           numberOfLines={2}

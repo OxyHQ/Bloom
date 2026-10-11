@@ -362,15 +362,9 @@ function vividLegibleTone(palette: TonalPalette): number {
  * the foreground follows whichever tone that produces. A preset declaring a
  * white label deliberately stays at the deepest vivid white-label tone in dark.
  */
-function brandTone(
-  palette: TonalPalette,
-  isDark: boolean,
-  forceWhite: boolean,
-): number {
+function brandTone(palette: TonalPalette, isDark: boolean, forceWhite: boolean): number {
   if (!isDark) return Math.max(LIGHT_FILL_FLOOR, vividLegibleTone(palette) - LIGHT_DEPTH_STEP);
-  return forceWhite
-    ? vividLegibleTone(palette)
-    : Math.max(peakTone(palette.hue), DARK_SEED_FLOOR);
+  return forceWhite ? vividLegibleTone(palette) : Math.max(peakTone(palette.hue), DARK_SEED_FLOOR);
 }
 
 /**
@@ -467,7 +461,9 @@ export function buildPolicyTokens(
   const primary = fillPair(
     brandPalette,
     monochrome
-      ? (isDark ? MONOCHROME_FILL_TONE.dark : MONOCHROME_FILL_TONE.light)
+      ? isDark
+        ? MONOCHROME_FILL_TONE.dark
+        : MONOCHROME_FILL_TONE.light
       : brandTone(brandPalette, isDark, declaresWhiteLabel(seedHex)),
   );
 
@@ -496,9 +492,13 @@ export function buildPolicyTokens(
     ),
     '--ring': roles.primary,
     '--card': monochrome
-      ? (isDark ? roles.surfaceContainerHighest : roles.surfaceContainerLowest)
+      ? isDark
+        ? roles.surfaceContainerHighest
+        : roles.surfaceContainerLowest
       : rgb(neutral.tone(isDark ? 22 : 98)),
-    '--background': rgb(neutral.tone((isDark ? BACKGROUND_TONE.dark : BACKGROUND_TONE.light) + lightShift)),
+    '--background': rgb(
+      neutral.tone((isDark ? BACKGROUND_TONE.dark : BACKGROUND_TONE.light) + lightShift),
+    ),
     '--content-area': monochrome ? roles.background : rgb(neutral.tone(isDark ? 6 : 96)),
     '--foreground': monochrome ? roles.onBackground : foreground,
     '--surface-foreground': monochrome ? roles.onSurface : foreground,
@@ -568,25 +568,25 @@ export function buildPolicyTokens(
           ? MONOCHROME_SECONDARY_TONE.dark
           : MONOCHROME_SECONDARY_TONE.light
       : pinnedAction
-        // A deliberately paired action stays NEAR the hue's vivid peak instead of
-        // turning signal yellow into ochre or lime into olive on a light page. The
-        // matched foreground may be black; legibility is decided by the pair, not
-        // by a blanket white-label preference.
-        //
-        // Light and dark still have to differ, same as every other fill in this
-        // file — an EARLIER version of this branch floored both modes on
-        // `peakTone(hue)` directly with only the FLOOR differing (`LIGHT_FILL_FLOOR`
-        // vs `DARK_ACCENT_FLOOR`), so for any hue whose peak sits above both floors
-        // — the common case — the floor never bound anything and light and dark
-        // landed on the IDENTICAL tone: the same fill and the same foreground
-        // rendered twice. Measured across the 47 built-in presets that declare a
-        // `tertiaryHex`, that was ~30 of them, plus any app pinning its own
-        // `tertiaryColor`. Dark keeps the pure peak (the "stay vivid" case this
-        // branch exists for is a dark-page problem — deepening costs nothing
-        // there); light steps `PINNED_ACTION_LIGHT_STEP` below its own peak, so it
-        // still reads as "the same brand, a page deeper" rather than vanishing
-        // into the dark-mode swatch.
-        ? isDark
+        ? // A deliberately paired action stays NEAR the hue's vivid peak instead of
+          // turning signal yellow into ochre or lime into olive on a light page. The
+          // matched foreground may be black; legibility is decided by the pair, not
+          // by a blanket white-label preference.
+          //
+          // Light and dark still have to differ, same as every other fill in this
+          // file — an EARLIER version of this branch floored both modes on
+          // `peakTone(hue)` directly with only the FLOOR differing (`LIGHT_FILL_FLOOR`
+          // vs `DARK_ACCENT_FLOOR`), so for any hue whose peak sits above both floors
+          // — the common case — the floor never bound anything and light and dark
+          // landed on the IDENTICAL tone: the same fill and the same foreground
+          // rendered twice. Measured across the 47 built-in presets that declare a
+          // `tertiaryHex`, that was ~30 of them, plus any app pinning its own
+          // `tertiaryColor`. Dark keeps the pure peak (the "stay vivid" case this
+          // branch exists for is a dark-page problem — deepening costs nothing
+          // there); light steps `PINNED_ACTION_LIGHT_STEP` below its own peak, so it
+          // still reads as "the same brand, a page deeper" rather than vanishing
+          // into the dark-mode swatch.
+          isDark
           ? Math.max(peakTone(hue), DARK_ACCENT_FLOOR)
           : Math.max(LIGHT_FILL_FLOOR, peakTone(hue) - PINNED_ACTION_LIGHT_STEP)
         : accentTone(hue, isDark);

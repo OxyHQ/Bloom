@@ -52,15 +52,28 @@ function useFakeUploads(initial: SortablePhoto[]) {
     add: () => {
       counter.current += 1;
       const id = `new-${counter.current}`;
-      setPhotos((list) => [...list, { id, uri: photo(`marlow-${id}`), status: 'uploading', progress: 0 }]);
+      setPhotos((list) => [
+        ...list,
+        { id, uri: photo(`marlow-${id}`), status: 'uploading', progress: 0 },
+      ]);
     },
     remove: (id: string) => setPhotos((list) => list.filter((p) => p.id !== id)),
     retry: (id: string) =>
-      setPhotos((list) => list.map((p) => (p.id === id ? { ...p, status: 'uploading', progress: 0 } : p))),
+      setPhotos((list) =>
+        list.map((p) => (p.id === id ? { ...p, status: 'uploading', progress: 0 } : p)),
+      ),
   };
 }
 
-function Demo({ width, testID, initial = INITIAL }: { width: number; testID: string; initial?: SortablePhoto[] }) {
+function Demo({
+  width,
+  testID,
+  initial = INITIAL,
+}: {
+  width: number;
+  testID: string;
+  initial?: SortablePhoto[];
+}) {
   const theme = useTheme();
   const { photos, setPhotos, add, remove, retry } = useFakeUploads(initial);
   return (

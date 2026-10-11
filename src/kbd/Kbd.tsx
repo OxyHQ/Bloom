@@ -37,8 +37,12 @@ const KbdComponent = function Kbd({
   textStyle,
   testID,
 }: KbdProps) {
-  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
-  const size: NonNullable<KbdProps['size']> = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
+  const size: NonNullable<KbdProps['size']> =
+    inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
   const cfg = SIZE_CONFIG[size];
 

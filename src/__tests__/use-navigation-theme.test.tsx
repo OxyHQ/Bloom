@@ -140,9 +140,7 @@ describe('useNavigationTheme', () => {
           <Probe navRef={navRef} bloomRef={bloomRef} />
         </BloomThemeProvider>,
       );
-      expect(navRef.current!.colors.notification).toBe(
-        bloomRef.current!.colors.error,
-      );
+      expect(navRef.current!.colors.notification).toBe(bloomRef.current!.colors.error);
     });
 
     it('colors differ between light and dark presets (sanity check)', () => {

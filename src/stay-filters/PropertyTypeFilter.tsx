@@ -17,7 +17,9 @@ import type { PropertyType, PropertyTypeFilterProps } from './types';
  * The same tiles, compact, are the search panel's `PropertyTypePicker`
  * (`@oxy.so/bloom/home-search`).
  */
-export function PropertyTypeFilter<T extends string = PropertyType>(props: PropertyTypeFilterProps<T>) {
+export function PropertyTypeFilter<T extends string = PropertyType>(
+  props: PropertyTypeFilterProps<T>,
+) {
   return <PropertyTypeTiles<T> {...props} size="large" />;
 }
 

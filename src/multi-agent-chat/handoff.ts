@@ -13,10 +13,7 @@ export interface TravelingAvatar {
   from: AvatarRect;
   drawing?: DrawingContext;
 }
-const committedDrawings = new WeakMap<
-  AvatarNodes,
-  Map<string, DrawingContext>
->();
+const committedDrawings = new WeakMap<AvatarNodes, Map<string, DrawingContext>>();
 /** Each rendered frame is a new command stream; retaining it freezes the exact pose. */
 export function retainAvatarDrawing(
   nodes: AvatarNodes,
@@ -44,9 +41,7 @@ export interface AvatarHandoffState {
   arrived: string[];
 }
 export const REPLY_ARRIVAL_MS = 800;
-export function measureAvatar(
-  node: View | undefined,
-): Promise<AvatarRect | null> {
+export function measureAvatar(node: View | undefined): Promise<AvatarRect | null> {
   return new Promise((resolve) => {
     if (!node?.measureInWindow) {
       resolve(null);

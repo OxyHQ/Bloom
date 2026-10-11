@@ -274,7 +274,15 @@ export interface SleepTimerMenuProps {
 }
 
 /** Picks the device glyph. */
-export type PlaybackDeviceKind = 'computer' | 'phone' | 'tablet' | 'speaker' | 'tv' | 'car' | 'headphones' | 'group';
+export type PlaybackDeviceKind =
+  | 'computer'
+  | 'phone'
+  | 'tablet'
+  | 'speaker'
+  | 'tv'
+  | 'car'
+  | 'headphones'
+  | 'group';
 
 export interface PlaybackDevice {
   id: string;

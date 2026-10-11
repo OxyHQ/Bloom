@@ -121,7 +121,11 @@ function ChevronDownSmall({
   const transform: WebCssStyle = {
     transform: [{ rotate: open ? '180deg' : '0deg' }],
     ...(IS_WEB
-      ? { transitionProperty: 'transform', transitionDuration: '200ms', transitionTimingFunction: 'ease' }
+      ? {
+          transitionProperty: 'transform',
+          transitionDuration: '200ms',
+          transitionTimingFunction: 'ease',
+        }
       : null),
   };
   return (
@@ -405,7 +409,10 @@ export function MeetingScheduler({
   const shadow2xs = theme.isDark ? SHADOW_2XS.dark : SHADOW_2XS.light;
   const sendLabel = labels?.send ?? messages.send;
   const durationText = (labels?.duration ?? messages.duration)(meeting.durationMinutes);
-  const chevron = useMemo(() => ({ open, color: palette.secondaryText }), [open, palette.secondaryText]);
+  const chevron = useMemo(
+    () => ({ open, color: palette.secondaryText }),
+    [open, palette.secondaryText],
+  );
 
   const hostColumn = (
     <View
@@ -443,17 +450,25 @@ export function MeetingScheduler({
         ) : null}
       </View>
       <View style={{ marginTop: wide ? 'auto' : 0, gap: 12 }}>
-        <InfoRow icon={<RiGlobalLine width={20} height={20} fill={palette.text} />} palette={palette}>
+        <InfoRow
+          icon={<RiGlobalLine width={20} height={20} fill={palette.text} />}
+          palette={palette}
+        >
           {durationText}
         </InfoRow>
         {meeting.language ? (
-          <InfoRow icon={<RiFlagLine width={20} height={20} fill={palette.text} />} palette={palette}>
+          <InfoRow
+            icon={<RiFlagLine width={20} height={20} fill={palette.text} />}
+            palette={palette}
+          >
             {meeting.language}
           </InfoRow>
         ) : null}
         {meeting.conferencing ? (
           <InfoRow
-            icon={meeting.conferencingIcon ?? <RiVideoLine width={20} height={20} fill={palette.text} />}
+            icon={
+              meeting.conferencingIcon ?? <RiVideoLine width={20} height={20} fill={palette.text} />
+            }
             palette={palette}
           >
             {meeting.conferencing}
@@ -464,7 +479,9 @@ export function MeetingScheduler({
   );
 
   const calendarColumn = (
-    <View style={{ gap: 12, paddingTop: 8, paddingBottom: 12, alignItems: wide ? undefined : 'center' }}>
+    <View
+      style={{ gap: 12, paddingTop: 8, paddingBottom: 12, alignItems: wide ? undefined : 'center' }}
+    >
       <Calendar
         key={calendarKey}
         value={pending?.date ?? null}
@@ -516,12 +533,16 @@ export function MeetingScheduler({
             </>
           ) : null}
         </View>
-        <Button onPress={() => {
+        <Button
+          onPress={() => {
             // Guarded here too, not only by `disabled`: a booking needs a time.
             if (!pending?.time) return;
             setCommitted(pending);
             setOpenState(false);
-          }} disabled={!pending?.time} testID={testID ? `${testID}-send` : undefined}>
+          }}
+          disabled={!pending?.time}
+          testID={testID ? `${testID}-send` : undefined}
+        >
           {sendLabel}
         </Button>
       </View>

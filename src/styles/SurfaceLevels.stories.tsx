@@ -9,7 +9,12 @@ import { Tabs, TabsTrigger } from '../tabs';
 import { TextField, TextFieldInput } from '../text-field';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { SURFACE_LEVELS, SurfaceLevelProvider, resolveSurfaceLevel, type SurfaceLevel } from './surface-levels';
+import {
+  SURFACE_LEVELS,
+  SurfaceLevelProvider,
+  resolveSurfaceLevel,
+  type SurfaceLevel,
+} from './surface-levels';
 
 /**
  * The surface ladder, drawn.
@@ -52,7 +57,11 @@ function Rung({ level }: { level: SurfaceLevel }) {
           Tertiary caption, floored at 4.5:1 on this fill
         </Text>
         <TextField>
-          <TextFieldInput label="Search" placeholder="A field steps off this surface" testID={`field-${level}`} />
+          <TextFieldInput
+            label="Search"
+            placeholder="A field steps off this surface"
+            testID={`field-${level}`}
+          />
         </TextField>
         <Tabs value="one" onValueChange={() => {}}>
           <TabsTrigger value="one" label="Overview" />

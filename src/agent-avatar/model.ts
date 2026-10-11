@@ -1,13 +1,6 @@
 import { parseCharacterConfig, type AvatarCharacterConfig } from './config-character';
 
-export const SHAPES = [
-  'pebble',
-  'circle',
-  'squircle',
-  'triangle',
-  'flower',
-  'diamond',
-] as const;
+export const SHAPES = ['pebble', 'circle', 'squircle', 'triangle', 'flower', 'diamond'] as const;
 export const FAMILIES = ['blob', 'fold', 'alien', 'mascot'] as const;
 export const FOLD_SHAPES = [
   'slender',
@@ -472,8 +465,7 @@ const ranges: Record<string, [number, number]> = {
 
 /** Imported and persisted recipes are data, never trusted renderer input. */
 export function parsePreset(value: unknown): AvatarPreset {
-  if (!value || typeof value !== 'object')
-    throw new Error('Choose an Avatar Lab recipe.');
+  if (!value || typeof value !== 'object') throw new Error('Choose an Avatar Lab recipe.');
   const p = value as Record<string, unknown>;
   if (typeof p.name !== 'string' || !p.config || typeof p.config !== 'object')
     throw new Error('The recipe needs a name and settings.');
@@ -485,8 +477,7 @@ export function parsePreset(value: unknown): AvatarPreset {
   c.idle ??= false;
   c.family ??= 'blob';
   c.foldShape ??= 'slender';
-  if (c.foldShape === 'soft' || c.foldShape === 'round')
-    c.foldShape = 'slender';
+  if (c.foldShape === 'soft' || c.foldShape === 'round') c.foldShape = 'slender';
   c.foldDirection ??= 'right';
   c.foldDepth ??= 15;
   c.mascotBuild ??= 'egg';
@@ -524,9 +515,7 @@ export function parsePreset(value: unknown): AvatarPreset {
   if (
     !MASCOT_BUILDS.includes(c.mascotBuild as AvatarConfig['mascotBuild']) ||
     !MASCOT_OUTFITS.includes(c.mascotOutfit as AvatarConfig['mascotOutfit']) ||
-    !MASCOT_ACTIVITIES.includes(
-      c.mascotActivity as AvatarConfig['mascotActivity'],
-    ) ||
+    !MASCOT_ACTIVITIES.includes(c.mascotActivity as AvatarConfig['mascotActivity']) ||
     !MASCOT_FINISHES.includes(c.mascotFinish as AvatarConfig['mascotFinish'])
   )
     throw new Error('Unknown mascot style.');
@@ -551,8 +540,7 @@ export function parsePreset(value: unknown): AvatarPreset {
     (config as unknown as Record<string, unknown>)[key] = v;
   }
   for (const key of ['face', 'idle', 'lightEyes'] as const) {
-    if (typeof c[key] !== 'boolean')
-      throw new Error(`Invalid ${key} in recipe.`);
+    if (typeof c[key] !== 'boolean') throw new Error(`Invalid ${key} in recipe.`);
     config[key] = c[key];
   }
   if (

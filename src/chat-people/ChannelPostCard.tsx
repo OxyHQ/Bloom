@@ -80,12 +80,7 @@ function ChannelPostCardComponent({
         paddingRight: onMore === undefined ? 0 : 28,
       }}
     >
-      <Avatar
-        source={channelAvatar}
-        variant={channelAvatarVariant}
-        name={channelName}
-        size={32}
-      />
+      <Avatar source={channelAvatar} variant={channelAvatarVariant} name={channelName} size={32} />
       <View style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         <Text
           variant="body-semibold"
@@ -194,24 +189,26 @@ function ChannelPostCardComponent({
         <View style={{ flex: 1 }} />
         {comments === undefined ? null : (
           <Button
-
             size="sm"
             leadingIcon={RiChat3Line}
             onPress={onComments}
-            testID={testID ? `${testID}-comments` : undefined} tone="accent" appearance="plain"
+            testID={testID ? `${testID}-comments` : undefined}
+            tone="accent"
+            appearance="plain"
           >
             {comments}
           </Button>
         )}
         {onShare === undefined ? null : (
           <Button
-
             size="sm"
             iconOnly
             leadingIcon={RiShareForwardLine}
             accessibilityLabel={shareLabel}
             onPress={onShare}
-            testID={testID ? `${testID}-share` : undefined} tone="accent" appearance="plain"
+            testID={testID ? `${testID}-share` : undefined}
+            tone="accent"
+            appearance="plain"
           />
         )}
       </View>

@@ -87,9 +87,9 @@ export function setMinimized(state: MinimizeState, next: 0 | 1) {
  * the scrollable range so rubber-band overscroll can't flip the direction for a
  * frame and flicker the bar.
  */
-export function useMinimizeOnScroll<Context extends Record<string, unknown> = Record<string, unknown>>(
-  consumerHandler: ScrollHandlerProcessed<Context> | null = null,
-): ScrollHandlerProcessed<Context> {
+export function useMinimizeOnScroll<
+  Context extends Record<string, unknown> = Record<string, unknown>,
+>(consumerHandler: ScrollHandlerProcessed<Context> | null = null): ScrollHandlerProcessed<Context> {
   const state = useMinimizeState();
   const previousY = useSharedValue(0);
 

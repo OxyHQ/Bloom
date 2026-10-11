@@ -67,9 +67,14 @@ function useTween(target: readonly number[], ms: number): readonly number[] {
   const shownRef = useRef(shown);
   shownRef.current = shown;
   const key = target.join(',');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the serialised values
   useEffect(() => {
     const from = shownRef.current;
-    if (reducedMotion || typeof requestAnimationFrame !== 'function' || from.length !== target.length) {
+    if (
+      reducedMotion ||
+      typeof requestAnimationFrame !== 'function' ||
+      from.length !== target.length
+    ) {
       setShown(target);
       return;
     }
@@ -85,7 +90,6 @@ function useTween(target: readonly number[], ms: number): readonly number[] {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the serialised values
   }, [key, ms, reducedMotion]);
   return shown.length === target.length ? shown : target;
 }
@@ -134,7 +138,11 @@ export function ActivityRingsCard({
       }),
     [shown, palettes, theme],
   );
-  const [activeIndex, setActiveIndex] = useActiveIndex(shown.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    shown.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const hovering = activeIndex !== null;
   const pcts = useTween(
     useMemo(() => shown.map((r) => clampPct(r.goalPct)), [shown]),
@@ -168,27 +176,42 @@ export function ActivityRingsCard({
     }
     const p = toViewBox(x, y);
     const distance = Math.hypot(p.x - VIEWBOX / 2, p.y - VIEWBOX / 2);
-    const hit = shown.findIndex((_, i) => Math.abs(distance - RING_RADII[i]!) <= RING_STROKE_WIDTH / 2);
+    const hit = shown.findIndex(
+      (_, i) => Math.abs(distance - RING_RADII[i]!) <= RING_STROKE_WIDTH / 2,
+    );
     if (hit >= 0) setActiveIndex(hit);
   };
 
   const a11y =
-    accessibilityLabel ?? `${title}: ${shown.map((r) => chartText.ringItem(r.label, String(r.value), Math.round(clampPct(r.goalPct)))).join('; ')}`;
+    accessibilityLabel ??
+    `${title}: ${shown.map((r) => chartText.ringItem(r.label, String(r.value), Math.round(clampPct(r.goalPct)))).join('; ')}`;
 
   return (
-    <ChartCardSurface radius="radius-20"
+    <ChartCardSurface
+      radius="radius-20"
       height={height}
       testID={testID}
-      style={[{ paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
+      style={[{ paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}
+    >
       <View style={{ width: '100%', flexDirection: 'column', gap: 11 }}>
         <Text
           variant="body-medium"
           numberOfLines={1}
           testID={testID ? `${testID}-title` : undefined}
-          style={{ paddingLeft: 6, paddingRight: 6, paddingTop: 6, color: palette.textSecondary }}>
+          style={{ paddingLeft: 6, paddingRight: 6, paddingTop: 6, color: palette.textSecondary }}
+        >
           {title}
         </Text>
-        <View style={{ width: '100%', height: 57, flexShrink: 0, flexDirection: 'row', alignItems: 'stretch', gap: 8 }}>
+        <View
+          style={{
+            width: '100%',
+            height: 57,
+            flexShrink: 0,
+            flexDirection: 'row',
+            alignItems: 'stretch',
+            gap: 8,
+          }}
+        >
           {shown.map((ring, i) => (
             <View
               key={`${ring.label}-${i}`}
@@ -211,14 +234,31 @@ export function ActivityRingsCard({
                   opacity: hovering && activeIndex !== i ? 0.5 : 1,
                 },
                 fade,
-              ]}>
+              ]}
+            >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <View style={{ width: 12, height: 12, flexShrink: 0, borderRadius: 4, backgroundColor: tones[i]!.color }} />
-                <Text variant="body-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+                <View
+                  style={{
+                    width: 12,
+                    height: 12,
+                    flexShrink: 0,
+                    borderRadius: 4,
+                    backgroundColor: tones[i]!.color,
+                  }}
+                />
+                <Text
+                  variant="body-regular"
+                  numberOfLines={1}
+                  style={{ color: palette.textSecondary }}
+                >
                   {ring.label}
                 </Text>
               </View>
-              <Text variant="body-medium" numberOfLines={1} style={[{ color: palette.text }, TABULAR]}>
+              <Text
+                variant="body-medium"
+                numberOfLines={1}
+                style={[{ color: palette.text }, TABULAR]}
+              >
                 {ring.value}
               </Text>
             </View>
@@ -231,7 +271,8 @@ export function ActivityRingsCard({
           accessibilityLabel={a11y}
           testID={testID ? `${testID}-plot` : undefined}
           onPointerAt={onPointerAt}
-          onPointerLeave={() => setActiveIndex(null)}>
+          onPointerLeave={() => setActiveIndex(null)}
+        >
           {({ width, height: areaHeight }) => {
             const { svgHeight, top } = fit(width, areaHeight);
             return (
@@ -240,14 +281,18 @@ export function ActivityRingsCard({
                 height={svgHeight}
                 viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
                 style={[StyleSheet.absoluteFill, { top, height: svgHeight }]}
-                pointerEvents="none">
+                pointerEvents="none"
+              >
                 {shown.map((ring, i) => {
                   const r = RING_RADII[i]!;
                   const circumference = 2 * Math.PI * r;
                   const dimmed = hovering && activeIndex !== i;
                   const arc = (circumference * (pcts[i] ?? 0)) / 100;
                   return (
-                    <G key={`${ring.label}-${i}`} transform={`rotate(-90 ${VIEWBOX / 2} ${VIEWBOX / 2})`}>
+                    <G
+                      key={`${ring.label}-${i}`}
+                      transform={`rotate(-90 ${VIEWBOX / 2} ${VIEWBOX / 2})`}
+                    >
                       <Circle
                         cx={VIEWBOX / 2}
                         cy={VIEWBOX / 2}
@@ -259,18 +304,18 @@ export function ActivityRingsCard({
                         {...svgTransition(fade)}
                       />
                       <Circle
-                          testID={testID ? `${testID}-ring-${i}` : undefined}
-                          cx={VIEWBOX / 2}
-                          cy={VIEWBOX / 2}
-                          r={r}
-                          fill="none"
-                          stroke={activeIndex === i ? tones[i]!.activeColor : tones[i]!.color}
-                          strokeWidth={RING_STROKE_WIDTH}
-                          strokeLinecap="round"
-                          strokeDasharray={`${arc} ${circumference - arc}`}
-                          opacity={dimmed ? 0.5 : 1}
-                          {...svgTransition(ringEase)}
-                        />
+                        testID={testID ? `${testID}-ring-${i}` : undefined}
+                        cx={VIEWBOX / 2}
+                        cy={VIEWBOX / 2}
+                        r={r}
+                        fill="none"
+                        stroke={activeIndex === i ? tones[i]!.activeColor : tones[i]!.color}
+                        strokeWidth={RING_STROKE_WIDTH}
+                        strokeLinecap="round"
+                        strokeDasharray={`${arc} ${circumference - arc}`}
+                        opacity={dimmed ? 0.5 : 1}
+                        {...svgTransition(ringEase)}
+                      />
                     </G>
                   );
                 })}

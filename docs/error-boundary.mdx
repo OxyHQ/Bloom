@@ -70,3 +70,38 @@ React error boundaries catch errors thrown **during render**. They do not catch:
 
 So a boundary is a safety net for the unexpected, not the way you handle a
 failed request. A request that can fail has a designed failure state.
+
+## Recover one pane inside a healthy shell
+
+Use `PanelErrorBoundary` for content beneath Bloom's providers. It renders a themed
+`EmptyState` with localized error text and a retry button. `ErrorBoundary` remains
+the provider-independent last line of defense for failures outside those providers.
+
+```tsx
+<PanelErrorBoundary
+  resetKey={pathname}
+  emptyState={{ illustration: <BrandSticker />, title: 'Cannot open this message' }}
+>
+  <MessageContent />
+</PanelErrorBoundary>
+```
+
+The boundary catches render and lifecycle failures, not rejected requests or event
+handler exceptions. Keep expected loading/error data states in the content API.
+Changing `resetKey` clears a failed boundary; healthy content retains its state.
+Retry affects only this boundary. A supplied `emptyState.action.onPress` runs before
+retry, so it can clear local error data or request a refresh. Omitting `action`
+preserves the default retry button. `fallback` accepts the same node/render callback
+and error context as `ErrorBoundary`; a failing fallback escalates to the next outer
+boundary instead of retrying itself.
+
+The default fallback scrolls when space is short and clears the inherited occupied
+bottom edge. Set `bottomInset={0}` when its parent already reserves that space.
+An explicit `bottomInset` takes precedence over the inherited occupancy.
+
+`AppShellSplitPanes` installs independent boundaries for its list, detail and info
+panes by default. Configure each through `listErrorBoundary`, `detailErrorBoundary`
+and `infoErrorBoundary`, using the same options as `PanelErrorBoundary`; pass `false`
+to delegate that pane to an outer boundary. Shell navigation and healthy panes remain
+mounted. `ContentPanel errorBoundary` provides the same recovery inside the framed
+surface for pages outside a split; it is opt-in to avoid redundant boundaries.

@@ -195,7 +195,9 @@ function SwitcherGrid({
 }) {
   const weeks = buildMonthGrid(month, 0);
   const weekdays = weekdayLabels(0, locale);
-  const [focused, setFocused] = useState(() => (isSameMonth(today(), month) ? today() : startOfMonth(month)));
+  const [focused, setFocused] = useState(() =>
+    isSameMonth(today(), month) ? today() : startOfMonth(month),
+  );
   const nodes = useRef(new Map<string, View>());
   const focusAfterMove = useRef(false);
   const tabStop = isSameMonth(focused, month) ? focused : startOfMonth(month);
@@ -240,14 +242,21 @@ function SwitcherGrid({
             accessibilityLabel={weekday.long}
             style={{ width: DAY_SIZE, height: 24, alignItems: 'center' }}
           >
-            <Text variant="body-medium" style={{ color: palette.textSecondary, textAlign: 'center' }}>
+            <Text
+              variant="body-medium"
+              style={{ color: palette.textSecondary, textAlign: 'center' }}
+            >
               {weekday.short}
             </Text>
           </View>
         ))}
       </View>
       {weeks.map((week) => (
-        <View key={dayKey(week[0]!.date)} role="row" style={{ flexDirection: 'row', gap: CELL_GAP }}>
+        <View
+          key={dayKey(week[0]!.date)}
+          role="row"
+          style={{ flexDirection: 'row', gap: CELL_GAP }}
+        >
           {week.map(({ date, inMonth }) =>
             inMonth ? (
               <SwitcherDay
@@ -310,9 +319,13 @@ export function CalendarViewMonthSwitcher({
       duration: opacityMs,
       easing: OPACITY_EASING,
     });
-    progress.value = withTiming(open ? 1 : 0, { duration: heightMs, easing: HEIGHT_EASING }, (finished) => {
-      if (finished && !open) runOnJS(setMounted)(false);
-    });
+    progress.value = withTiming(
+      open ? 1 : 0,
+      { duration: heightMs, easing: HEIGHT_EASING },
+      (finished) => {
+        if (finished && !open) runOnJS(setMounted)(false);
+      },
+    );
   }, [open, reducedMotion, progress, fade]);
 
   const bodyStyle = useAnimatedStyle(
@@ -372,7 +385,12 @@ export function CalendarViewMonthSwitcher({
             paddingRight: 8,
           }}
         >
-          <NavButton direction="left" label={messages.previousMonth} onPress={onPreviousMonth} palette={palette} />
+          <NavButton
+            direction="left"
+            label={messages.previousMonth}
+            onPress={onPreviousMonth}
+            palette={palette}
+          />
           <Pressable
             {...titleHook}
             role="button"
@@ -387,7 +405,12 @@ export function CalendarViewMonthSwitcher({
               {title}
             </Text>
           </Pressable>
-          <NavButton direction="right" label={messages.nextMonth} onPress={onNextMonth} palette={palette} />
+          <NavButton
+            direction="right"
+            label={messages.nextMonth}
+            onPress={onNextMonth}
+            palette={palette}
+          />
         </View>
         {mounted ? (
           <Animated.View style={[{ overflow: 'hidden' }, bodyStyle]}>

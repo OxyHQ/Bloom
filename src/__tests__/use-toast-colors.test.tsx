@@ -19,12 +19,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
   </BloomThemeProvider>
 );
 
-const colorsFor = (
-  variant: ToastVariant | undefined,
-  richColors = false,
-) =>
-  renderHook(() => useToastColors({ variant, richColors }), { wrapper }).result
-    .current;
+const colorsFor = (variant: ToastVariant | undefined, richColors = false) =>
+  renderHook(() => useToastColors({ variant, richColors }), { wrapper }).result.current;
 
 /** Every variant plus the absent one — the full key space of the resolver. */
 const ALL: Array<ToastVariant | undefined> = [
@@ -43,7 +39,14 @@ describe('useToastColors', () => {
 
       for (const variant of ALL) {
         const colors = colorsFor(variant);
-        for (const key of ['surface', 'border', 'shadow', 'title', 'description', 'closeButton'] as const) {
+        for (const key of [
+          'surface',
+          'border',
+          'shadow',
+          'title',
+          'description',
+          'closeButton',
+        ] as const) {
           expect({ variant, key, value: colors[key] }).toEqual({
             variant,
             key,
@@ -144,7 +147,10 @@ describe('useToastColors', () => {
       for (const variant of STATUS) {
         const rich = colorsFor(variant, true);
         const plain = colorsFor(variant);
-        expect({ variant, changed: rich.border !== plain.border && rich.title !== plain.title }).toEqual({
+        expect({
+          variant,
+          changed: rich.border !== plain.border && rich.title !== plain.title,
+        }).toEqual({
           variant,
           changed: true,
         });

@@ -9,4 +9,8 @@ export interface CategoryBarMessages {
   next: string;
 }
 
-export const CATEGORY_BAR_MESSAGES: MessageCatalog<CategoryBarMessages> = defineMessages<CategoryBarMessages>('CATEGORY_BAR_MESSAGES', { previous: 'Previous categories', next: 'Next categories' });
+export const CATEGORY_BAR_MESSAGES: MessageCatalog<CategoryBarMessages> =
+  defineMessages<CategoryBarMessages>('CATEGORY_BAR_MESSAGES', {
+    previous: 'Previous categories',
+    next: 'Next categories',
+  });

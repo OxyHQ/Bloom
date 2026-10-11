@@ -38,11 +38,17 @@ function renderHeader(props: PageHeaderProps, mode: 'light' | 'dark' = 'light') 
 }
 
 function setWidth(width: number) {
-  jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  jest
+    .spyOn(ReactNative, 'useWindowDimensions')
+    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
-const materialCount = (tree: unknown) => hostNodes(tree).filter(n => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id))).length;
-const opacity = (node: { props: Record<string, unknown> }) => resolvedStyle(node.props.style).opacity;
+const materialCount = (tree: unknown) =>
+  hostNodes(tree).filter(
+    (n) => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)),
+  ).length;
+const opacity = (node: { props: Record<string, unknown> }) =>
+  resolvedStyle(node.props.style).opacity;
 
 afterEach(() => jest.restoreAllMocks());
 
@@ -88,8 +94,12 @@ describe('PageHeader, floating', () => {
     // One for the back capsule, one for the group. Two controls in the group,
     // and no third material under either of them.
     expect(materialCount(screen.toJSON())).toBe(2);
-    expect(resolvedStyle(screen.getByTestId('search').props.style).backgroundColor).toBe('transparent');
-    expect(resolvedStyle(screen.getByTestId('share').props.style).backgroundColor).toBe('transparent');
+    expect(resolvedStyle(screen.getByTestId('search').props.style).backgroundColor).toBe(
+      'transparent',
+    );
+    expect(resolvedStyle(screen.getByTestId('share').props.style).backgroundColor).toBe(
+      'transparent',
+    );
   });
 
   it('gives TWO declared groups two islands', () => {

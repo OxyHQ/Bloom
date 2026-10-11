@@ -4,11 +4,11 @@
  *
  * Changed: import paths only, for this flat directory.
  */
-import { useContext, useEffect } from "react";
-import { usePortalManagerContext } from "./portal-manager";
-import ScrollViewContext from "./scroll-view-context/context";
-import type { PortalHostProps } from "./types";
-import PortalHost from "./PortalHostView";
+import { useContext, useEffect } from 'react';
+import { usePortalManagerContext } from './portal-manager';
+import ScrollViewContext from './scroll-view-context/context';
+import type { PortalHostProps } from './types';
+import PortalHost from './PortalHostView';
 
 /**
  * PortalHost is a component that acts as an anchor for the portals.
@@ -36,16 +36,16 @@ const PortalHostComponent = ({ name, children, style }: PortalHostProps) => {
   const scrollViewContext = useContext(ScrollViewContext);
 
   useEffect(() => {
-    dispatch({ type: "REGISTER_HOST", hostName: name });
+    dispatch({ type: 'REGISTER_HOST', hostName: name });
 
     return () => {
-      dispatch({ type: "UNREGISTER_HOST", hostName: name });
+      dispatch({ type: 'UNREGISTER_HOST', hostName: name });
     };
   }, [name, dispatch]);
 
   useEffect(() => {
     dispatch({
-      type: "SET_HOST_SCROLL_VIEW_CONTEXT",
+      type: 'SET_HOST_SCROLL_VIEW_CONTEXT',
       hostName: name,
       value: scrollViewContext,
     });

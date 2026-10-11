@@ -109,7 +109,9 @@ const record = (name, ok, detail) => results.push({ name, ok, detail });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 900, height: 1000 });
-    await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, {
+      waitUntil: 'networkidle0',
+    });
     await page.waitForSelector(`[data-testid="${CHART}-plot-surface"]`, { timeout: 20000 });
     await new Promise((resolve) => setTimeout(resolve, 900));
 
@@ -146,9 +148,10 @@ const record = (name, ok, detail) => results.push({ name, ok, detail });
       // The mutation a pure test cannot catch: a `format` falling back to the
       // number the bar was SIZED by would still look like a plausible headline.
       const numeric = readings.filter((r) =>
-        [String(BARS.find((b) => b.index === r.index).value), String(Math.round(BARS.find((b) => b.index === r.index).value))].includes(
-          (r.got ?? '').trim(),
-        ),
+        [
+          String(BARS.find((b) => b.index === r.index).value),
+          String(Math.round(BARS.find((b) => b.index === r.index).value)),
+        ].includes((r.got ?? '').trim()),
       );
       record(
         'never a bare number',

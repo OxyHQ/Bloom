@@ -40,7 +40,7 @@ export interface NoteCardGeometry {
   padding: number;
   gap: number;
   /** A rung of the `RADIUS` scale — `Card` takes the rung, the focus ring takes its px. */
-  radius: CardRadius;
+  radius: Exclude<CardRadius, 'panel'>;
   excerptLines: number;
   titleLines: number;
   maxTags: number;
@@ -114,7 +114,8 @@ export function resolveNoteCardPaint(
 ): NoteCardPaint {
   const accentTone: AccentTone = tone ?? 'default';
   const accent = resolveAccentColors(theme.colors, accentTone, 'subtle');
-  const background = tone === undefined ? theme.colors.card : flattenOver(parent, accent.background);
+  const background =
+    tone === undefined ? theme.colors.card : flattenOver(parent, accent.background);
   const border = hairlineOn(theme, background);
   // The selected card is ONE SURFACE STEP off its own resting fill, not the tone
   // laid on twice. Laying the tint on again was the obvious move and it is

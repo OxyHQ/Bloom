@@ -5,7 +5,9 @@ description: Continuous content with coordinated header, scrolling and bottom ch
 
 # Screen
 
-`Screen` owns a continuous page canvas. `header` and `bottomBar` overlay the content;
+`Screen` owns a continuous page canvas. It paints the containing surface fill,
+so a Screen inside an AppShell panel matches that panel in light and dark mode.
+Standalone Screens use the page fill. `header` and `bottomBar` overlay the content;
 `ScreenScrollView` reserves their measured footprints, adding its own content padding.
 Safe-area padding belongs to the chrome, so it is included exactly once in those measurements.
 
@@ -53,7 +55,10 @@ content in a ScrollView or constrain Screen to a fixed-height flex slot.
 </Screen>
 ```
 
-Header and bottom chrome stay sticky within the Screen column's width. Screen
+Header and bottom chrome stay sticky within the Screen column's width. The
+header slot owns positioning, including a framed panel's inset; a PageHeader
+placed there does not add another sticky container. PageHeaders outside the slot
+retain their own positioning. Screen
 reserves their measured footprints in document flow, including bottom clearance;
 content can scroll fully above the bottom bar. The initial declared heights still
 apply before measurement. Without chrome slots Screen adds no content padding,

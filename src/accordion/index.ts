@@ -5,4 +5,5 @@ export type {
   AccordionTriggerProps,
   AccordionContentProps,
   AccordionType,
+  AccordionTransition,
 } from './types';

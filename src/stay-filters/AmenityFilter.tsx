@@ -48,7 +48,6 @@ export function AmenityFilter<T extends string = string>({
       {foldable ? (
         <View style={{ alignItems: 'flex-start' }}>
           <LinkButton
-
             linkTone="text"
             underline="rest"
             size="sm"

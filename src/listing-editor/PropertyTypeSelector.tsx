@@ -57,7 +57,9 @@ const PROPERTY_TYPE_ICONS: ReadonlyArray<readonly [PropertyType, PropertyTypeOpt
 ];
 
 /** Bloom's nine property types, labelled from the catalog for `labels` (`pickMessages(LISTING_EDITOR_MESSAGES, lang).propertyTypes`). */
-function propertyTypeOptions(labels: Record<PropertyType, string>): ReadonlyArray<PropertyTypeOption<PropertyType>> {
+function propertyTypeOptions(
+  labels: Record<PropertyType, string>,
+): ReadonlyArray<PropertyTypeOption<PropertyType>> {
   return PROPERTY_TYPE_ICONS.map(([value, icon]) => ({ value, label: labels[value], icon }));
 }
 
@@ -65,9 +67,8 @@ function propertyTypeOptions(labels: Record<PropertyType, string>): ReadonlyArra
  * Bloom's nine property types with their English labels. The selector's own
  * default speaks the locale; this stays for callers that build on it.
  */
-export const DEFAULT_PROPERTY_TYPES: ReadonlyArray<PropertyTypeOption<PropertyType>> = propertyTypeOptions(
-  LISTING_EDITOR_MESSAGES.en.propertyTypes,
-);
+export const DEFAULT_PROPERTY_TYPES: ReadonlyArray<PropertyTypeOption<PropertyType>> =
+  propertyTypeOptions(LISTING_EDITOR_MESSAGES.en.propertyTypes);
 
 export function propertyTypeColumns(width: number): number {
   if (width < 400) return 2;
@@ -99,7 +100,11 @@ export function PropertyTypeSelector<T extends string = PropertyType>({
   const list = (options ?? localizedDefaults) as ReadonlyArray<PropertyTypeOption<T>>;
 
   return (
-    <View testID={testID} style={[{ gap: 8 }, style]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+    <View
+      testID={testID}
+      style={[{ gap: 8 }, style]}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+    >
       <View
         role="radiogroup"
         accessibilityLabel={accessibilityLabel}
@@ -122,7 +127,11 @@ export function PropertyTypeSelector<T extends string = PropertyType>({
           : null}
       </View>
       {error ? (
-        <Text variant="body-2-regular" accessibilityLiveRegion="polite" style={{ color: paint.error }}>
+        <Text
+          variant="body-2-regular"
+          accessibilityLiveRegion="polite"
+          style={{ color: paint.error }}
+        >
           {error}
         </Text>
       ) : null}
@@ -191,7 +200,9 @@ function PropertyTile<T extends string>({
       testID={testID}
       style={tileStyle}
     >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <View
+        style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}
+      >
         <Icon width={28} height={28} fill={paint.icon} />
         {selected ? <CheckCircle selected paint={paint} size={20} /> : null}
       </View>
@@ -200,7 +211,11 @@ function PropertyTile<T extends string>({
           {option.label}
         </Text>
         {option.description && width >= 140 ? (
-          <Text variant="caption-1-regular" numberOfLines={2} style={{ color: paint.textSecondary }}>
+          <Text
+            variant="caption-1-regular"
+            numberOfLines={2}
+            style={{ color: paint.textSecondary }}
+          >
             {option.description}
           </Text>
         ) : null}

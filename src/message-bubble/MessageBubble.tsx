@@ -250,7 +250,8 @@ function MessageBubbleComponent({
       authorSignature !== undefined);
 
   const resolvedSenderColor =
-    senderColor ?? (senderName === undefined ? undefined : senderNameColor(senderColorSeed ?? senderName, theme));
+    senderColor ??
+    (senderName === undefined ? undefined : senderNameColor(senderColorSeed ?? senderName, theme));
 
   const meta = hasMeta ? (
     <MetaRow
@@ -309,7 +310,10 @@ function MessageBubbleComponent({
         <View
           style={{
             marginTop:
-              bleed && forwardedFrom === undefined && senderName === undefined && replyTo === undefined
+              bleed &&
+              forwardedFrom === undefined &&
+              senderName === undefined &&
+              replyTo === undefined
                 ? -BUBBLE_PADDING_Y
                 : 0,
             marginLeft: bleed ? -BUBBLE_PADDING_X : 0,
@@ -439,7 +443,14 @@ function MessageBubbleComponent({
         aria-hidden
         pointerEvents="none"
         style={[
-          { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: paint.highlightBand },
+          {
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: paint.highlightBand,
+          },
           flashStyle,
         ]}
       />

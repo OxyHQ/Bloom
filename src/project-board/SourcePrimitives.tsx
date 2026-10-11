@@ -46,9 +46,7 @@ function rowClass(className?: string) {
 function textChildren(children: ReactNode) {
   return Children.map(children, (child) =>
     typeof child === 'string' || typeof child === 'number' ? (
-      <BloomText className="text-body-medium text-text-primary">
-        {child}
-      </BloomText>
+      <BloomText className="text-body-medium text-text-primary">{child}</BloomText>
     ) : (
       child
     ),
@@ -84,17 +82,11 @@ export function SourcePressable({
     </StyledPressable>
   );
 }
-export function SourceAvatar({
-  className,
-  ...props
-}: AvatarProps & { className?: string }) {
+export function SourceAvatar({ className, ...props }: AvatarProps & { className?: string }) {
   const explicitSize = className?.match(/size-\[(\d+)px\]/)?.[1];
   return (
     <SourceView className={className}>
-      <BloomAvatar
-        {...props}
-        size={explicitSize ? Number(explicitSize) : props.size}
-      />
+      <BloomAvatar {...props} size={explicitSize ? Number(explicitSize) : props.size} />
     </SourceView>
   );
 }
@@ -104,9 +96,7 @@ export function SourceChip({ className, ...props }: ChipProps) {
       {...props}
       className={cx(
         className &&
-          /(?:^|\s)text-(?:body|caption|title|headline|display|large-title)[\w-]*/.test(
-            className,
-          )
+          /(?:^|\s)text-(?:body|caption|title|headline|display|large-title)[\w-]*/.test(className)
           ? CHIP_BASE.replace(' text-body-medium', '')
           : CHIP_BASE,
         className,
@@ -121,17 +111,11 @@ export function PriorityChip({
   priority: TicketPriority;
   className?: string;
 }) {
-  return (
-    <SourceChip className={cx(PRIORITY_STYLES[priority], className)}>
-      {priority}
-    </SourceChip>
-  );
+  return <SourceChip className={cx(PRIORITY_STYLES[priority], className)}>{priority}</SourceChip>;
 }
 /** Bloom's SVG icon components already read a styled colour; wrap at module
  * scope so the original icon utility classes resolve on both platforms. */
-function icon(
-  Icon: ComponentType<IconProps>,
-): ComponentType<IconProps & { className?: string }> {
+function icon(Icon: ComponentType<IconProps>): ComponentType<IconProps & { className?: string }> {
   return styled(Icon, { className: 'style' });
 }
 export const RiAddLine = icon(BaseRiAddLine);

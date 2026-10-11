@@ -186,7 +186,9 @@ export const TILE_RING_LENGTH = 2 * (TILE - 2 - 22) * 2 + 2 * Math.PI * 11;
 // ---------------------------------------------------------------------------
 
 /** The four permission modes, in `messages`' language. Auto is the default. */
-export function composerPermissions(messages: ComposerPanelMessages): readonly ComposerPanelPermissionOption[] {
+export function composerPermissions(
+  messages: ComposerPanelMessages,
+): readonly ComposerPanelPermissionOption[] {
   const modes = messages.permissionModes;
   return [
     { id: 'auto', ...modes.auto, icon: RiSpeedUpFill },
@@ -197,15 +199,15 @@ export function composerPermissions(messages: ComposerPanelMessages): readonly C
 }
 
 /** The four permission modes in English — what a component draws is its locale's (`composerPermissions`). */
-export const COMPOSER_PANEL_PERMISSIONS: readonly ComposerPanelPermissionOption[] = composerPermissions(
-  COMPOSER_PANEL_MESSAGES.en,
-);
+export const COMPOSER_PANEL_PERMISSIONS: readonly ComposerPanelPermissionOption[] =
+  composerPermissions(COMPOSER_PANEL_MESSAGES.en);
 
 /**
  * Six effort stops between "Faster" and "Smarter"; index 1 is the design's
  * resting stop. English — a component's default is its locale's `effortLevels`.
  */
-export const MODEL_PICKER_EFFORT_LEVELS: readonly string[] = COMPOSER_PANEL_MESSAGES.en.effortLevels;
+export const MODEL_PICKER_EFFORT_LEVELS: readonly string[] =
+  COMPOSER_PANEL_MESSAGES.en.effortLevels;
 export const DEFAULT_EFFORT = 1;
 
 /**
@@ -215,7 +217,9 @@ export const DEFAULT_EFFORT = 1;
  * defaults use the matching Remix file glyphs at the same 24px box; pass
  * `image` for your own artwork.
  */
-export function composerAddMenu(messages: ComposerPanelMessages): readonly ComposerPanelAddMenuGroup[] {
+export function composerAddMenu(
+  messages: ComposerPanelMessages,
+): readonly ComposerPanelAddMenuGroup[] {
   const m = messages.addMenuRows;
   return [
     {
@@ -229,20 +233,49 @@ export function composerAddMenu(messages: ComposerPanelMessages): readonly Compo
     {
       label: m.plugins,
       rows: [
-        { id: 'documents', icon: RiFileTextLine, iconSize: 24, label: m.documents, description: m.documentsDescription },
-        { id: 'spreadsheets', icon: RiFileExcel2Line, iconSize: 24, label: m.spreadsheets, description: m.spreadsheetsDescription },
-        { id: 'presentations', icon: RiSlideshow3Line, iconSize: 24, label: m.presentations, description: m.presentationsDescription },
-        { id: 'code', icon: RiCodeBlock, iconSize: 24, label: m.code, description: m.codeDescription },
+        {
+          id: 'documents',
+          icon: RiFileTextLine,
+          iconSize: 24,
+          label: m.documents,
+          description: m.documentsDescription,
+        },
+        {
+          id: 'spreadsheets',
+          icon: RiFileExcel2Line,
+          iconSize: 24,
+          label: m.spreadsheets,
+          description: m.spreadsheetsDescription,
+        },
+        {
+          id: 'presentations',
+          icon: RiSlideshow3Line,
+          iconSize: 24,
+          label: m.presentations,
+          description: m.presentationsDescription,
+        },
+        {
+          id: 'code',
+          icon: RiCodeBlock,
+          iconSize: 24,
+          label: m.code,
+          description: m.codeDescription,
+        },
       ],
     },
   ];
 }
 
 /** The add menu in English — what a component draws is its locale's (`composerAddMenu`). */
-export const COMPOSER_PANEL_ADD_MENU: readonly ComposerPanelAddMenuGroup[] = composerAddMenu(COMPOSER_PANEL_MESSAGES.en);
+export const COMPOSER_PANEL_ADD_MENU: readonly ComposerPanelAddMenuGroup[] = composerAddMenu(
+  COMPOSER_PANEL_MESSAGES.en,
+);
 
 /** The glyph a non-image attachment tile draws when it carries no `icon`. */
-export const ATTACHMENT_KIND_ICONS: Record<Exclude<ComposerPanelAttachmentKind, 'image'>, ComposerIcon> = {
+export const ATTACHMENT_KIND_ICONS: Record<
+  Exclude<ComposerPanelAttachmentKind, 'image'>,
+  ComposerIcon
+> = {
   document: RiFileTextLine,
   spreadsheet: RiFileExcel2Line,
   presentation: RiSlideshow3Line,

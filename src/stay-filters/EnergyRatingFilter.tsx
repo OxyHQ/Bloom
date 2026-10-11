@@ -122,7 +122,11 @@ function Pill({ rating, paint, included, checked, disabled, name, onPress, testI
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const hover = useInteractionState();
   const dark = theme.isDark;
-  const border = checked ? theme.colors.text : hover.state && !disabled ? (theme.colors.border) : 'transparent';
+  const border = checked
+    ? theme.colors.text
+    : hover.state && !disabled
+      ? theme.colors.border
+      : 'transparent';
 
   const style: WebCssStyle = {
     height: ENERGY_PILL_HEIGHT,
@@ -176,7 +180,8 @@ function EnergyRatingFilterComponent({
   testID,
 }: EnergyRatingFilterProps) {
   const { messages } = useMessages(STAY_FILTERS_MESSAGES);
-  const formatSummary = formatSummaryProp ?? ((rating: EnergyRating | null) => defaultEnergySummary(rating, messages));
+  const formatSummary =
+    formatSummaryProp ?? ((rating: EnergyRating | null) => defaultEnergySummary(rating, messages));
   const accessibilityLabel = accessibilityLabelProp ?? messages.energyRating;
   const theme = useTheme();
   useEffect(() => {

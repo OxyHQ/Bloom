@@ -4,7 +4,9 @@ import { Keyboard, Platform, TextInput, type KeyboardEvent, type ScrollView } fr
 /** Clearance kept between the focused field and the keyboard's top, px. */
 export const KEYBOARD_REVEAL_MARGIN = 16;
 
-type Measurable = { measureInWindow?: (cb: (x: number, y: number, width: number, height: number) => void) => void };
+type Measurable = {
+  measureInWindow?: (cb: (x: number, y: number, width: number, height: number) => void) => void;
+};
 
 /**
  * Keep a settings page's focused field above the software keyboard — native
@@ -24,7 +26,10 @@ export function useKeyboardReveal(
   offset: { value: number },
   enabled: boolean,
 ): number {
-  const [keyboard, setKeyboard] = useState<{ height: number; overlap: number }>({ height: 0, overlap: 0 });
+  const [keyboard, setKeyboard] = useState<{ height: number; overlap: number }>({
+    height: 0,
+    overlap: 0,
+  });
   const offsetRef = useRef(offset);
   offsetRef.current = offset;
 
@@ -38,13 +43,20 @@ export function useKeyboardReveal(
         return;
       }
       field.measureInWindow((_x, y, _width, fieldHeight) => {
-        setKeyboard({ height, overlap: Math.max(0, y + fieldHeight + KEYBOARD_REVEAL_MARGIN - screenY) });
+        setKeyboard({
+          height,
+          overlap: Math.max(0, y + fieldHeight + KEYBOARD_REVEAL_MARGIN - screenY),
+        });
       });
     };
     // iOS announces the keyboard before it moves; Android only once it is up.
-    const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', reveal);
-    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () =>
-      setKeyboard({ height: 0, overlap: 0 }),
+    const show = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      reveal,
+    );
+    const hide = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboard({ height: 0, overlap: 0 }),
     );
     return () => {
       show.remove();
@@ -55,7 +67,11 @@ export function useKeyboardReveal(
   // After the commit that pads the page by the keyboard: before it, the scroll
   // range ends where the keyboard begins and the scroll would be clamped short.
   useEffect(() => {
-    if (keyboard.overlap > 0) scrollRef.current?.scrollTo({ y: offsetRef.current.value + keyboard.overlap, animated: true });
+    if (keyboard.overlap > 0)
+      scrollRef.current?.scrollTo({
+        y: offsetRef.current.value + keyboard.overlap,
+        animated: true,
+      });
   }, [keyboard, scrollRef]);
 
   return enabled ? keyboard.height : 0;

@@ -8,6 +8,7 @@ export interface ContextMenuMessages {
   contextMenu: string;
 }
 
-export const CONTEXT_MENU_MESSAGES: MessageCatalog<ContextMenuMessages> = defineMessages<ContextMenuMessages>('CONTEXT_MENU_MESSAGES', {
-  contextMenu: 'Context menu',
-});
+export const CONTEXT_MENU_MESSAGES: MessageCatalog<ContextMenuMessages> =
+  defineMessages<ContextMenuMessages>('CONTEXT_MENU_MESSAGES', {
+    contextMenu: 'Context menu',
+  });

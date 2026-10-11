@@ -72,11 +72,18 @@ function QuickAccessTileComponent({
     );
   }
 
-  const visibility = resolvePlayVisibility({ hasOnPlay: Boolean(onPlay), playing, loading, current });
+  const visibility = resolvePlayVisibility({
+    hasOnPlay: Boolean(onPlay),
+    playing,
+    loading,
+    current,
+  });
   // On web the current tile shows the bars at rest and swaps them for the
   // pause button under the pointer or keyboard focus — one slot, never both.
   const swap = IS_WEB && current && visibility !== 'none' && !loading;
-  const name = accessibilityLabel ?? composeName([title, typeLabel, current && playing ? controls.nowPlaying : undefined]);
+  const name =
+    accessibilityLabel ??
+    composeName([title, typeLabel, current && playing ? controls.nowPlaying : undefined]);
 
   const rootStyle: WebCssStyle = {
     position: 'relative',
@@ -91,11 +98,22 @@ function QuickAccessTileComponent({
 
   return (
     <View
-      {...webDataSet({ bloomMediaCard: 'quick', ...(onPress || href ? { bloomMediaCardHover: '' } : null) })}
+      {...webDataSet({
+        bloomMediaCard: 'quick',
+        ...(onPress || href ? { bloomMediaCardHover: '' } : null),
+      })}
       style={[rootStyle, style]}
       testID={testID}
     >
-      <CardLink name={name} onPress={onPress} href={href} selected={selected} radius={QUICK_TILE_RADIUS} paint={paint} testID={testID} />
+      <CardLink
+        name={name}
+        onPress={onPress}
+        href={href}
+        selected={selected}
+        radius={QUICK_TILE_RADIUS}
+        paint={paint}
+        testID={testID}
+      />
       <View pointerEvents="none" style={{ paddingLeft: round ? 8 : 0 }}>
         <Artwork
           source={artwork}
@@ -111,27 +129,49 @@ function QuickAccessTileComponent({
         />
       </View>
       <View pointerEvents="none" style={{ flex: 1, minWidth: 0, marginLeft: 12, marginRight: 8 }}>
-        <Text variant="body-semibold" numberOfLines={2} style={{ color: current ? paint.accent : paint.text }}>
+        <Text
+          variant="body-semibold"
+          numberOfLines={2}
+          style={{ color: current ? paint.accent : paint.text }}
+        >
           {title}
         </Text>
       </View>
       {current || visibility !== 'none' ? (
         <View
-          style={{ width: 32, height: 32, marginRight: 12, alignItems: 'center', justifyContent: 'center' }}
+          style={{
+            width: 32,
+            height: 32,
+            marginRight: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
           pointerEvents="box-none"
         >
           {current && (swap || visibility === 'none') ? (
             <View pointerEvents="none" {...webDataSet(swap ? { bloomMediaCardConceal: '' } : {})}>
-              <NowPlayingIndicator playing={playing} size={14} testID={testID ? `${testID}-now-playing` : undefined} />
+              <NowPlayingIndicator
+                playing={playing}
+                size={14}
+                testID={testID ? `${testID}-now-playing` : undefined}
+              />
             </View>
           ) : null}
           {visibility !== 'none' ? (
             <View
-              {...webDataSet(swap || visibility === 'hover' ? { bloomMediaCardReveal: 'hover' } : {})}
+              {...webDataSet(
+                swap || visibility === 'hover' ? { bloomMediaCardReveal: 'hover' } : {},
+              )}
               style={{ position: 'absolute', top: 0, left: 0 }}
               testID={testID ? `${testID}-play` : undefined}
             >
-              <PlayButton playing={playing} loading={loading} onPress={onPlay} subject={title} size="sm" />
+              <PlayButton
+                playing={playing}
+                loading={loading}
+                onPress={onPlay}
+                subject={title}
+                size="sm"
+              />
             </View>
           ) : null}
         </View>

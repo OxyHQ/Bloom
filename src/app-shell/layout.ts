@@ -30,7 +30,8 @@ export function resolveScrollMode(variant: AppShellVariant, scroll: AppShellScro
   // split's panes each own their scrolling, and a canvas IS the viewport (a map
   // that grew the page would pan the page instead of the map). Both honour
   // `container` for a shell embedded in a bounded box.
-  if (variant === 'split' || variant === 'canvas') return scroll === 'container' ? 'container' : 'fixed';
+  if (variant === 'split' || variant === 'canvas')
+    return scroll === 'container' ? 'container' : 'fixed';
   if (scroll === 'document' && Platform.OS !== 'web') return 'container';
   return scroll;
 }

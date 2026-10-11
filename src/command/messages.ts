@@ -15,9 +15,12 @@ export interface CommandMessages {
   clearSearch: string;
 }
 
-export const COMMAND_MESSAGES: MessageCatalog<CommandMessages> = defineMessages<CommandMessages>('COMMAND_MESSAGES', {
-  placeholder: 'Type a command or search…',
-  empty: 'No results found.',
-  palette: 'Command palette',
-  clearSearch: 'Clear search',
-});
+export const COMMAND_MESSAGES: MessageCatalog<CommandMessages> = defineMessages<CommandMessages>(
+  'COMMAND_MESSAGES',
+  {
+    placeholder: 'Type a command or search…',
+    empty: 'No results found.',
+    palette: 'Command palette',
+    clearSearch: 'Clear search',
+  },
+);

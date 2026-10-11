@@ -7,13 +7,8 @@ const require = createRequire(import.meta.url);
 const puppeteer = require(process.env.PUPPETEER_MODULE ?? 'puppeteer-core');
 const executablePath =
   process.env.CHROME_PATH ??
-  [
-    '/opt/google/chrome/chrome',
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser',
-  ].find(existsSync);
-if (!executablePath)
-  throw new Error('Set CHROME_PATH to a Chrome or Chromium executable.');
+  ['/opt/google/chrome/chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'].find(existsSync);
+if (!executablePath) throw new Error('Set CHROME_PATH to a Chrome or Chromium executable.');
 const browser = await puppeteer.launch({
   executablePath,
   headless: true,
@@ -25,10 +20,9 @@ const base = process.argv[2] ?? 'http://localhost:6018';
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
 try {
-  await page.goto(
-    `${base}/iframe.html?id=base-shapes--geometry&viewMode=story`,
-    { waitUntil: 'networkidle0' },
-  );
+  await page.goto(`${base}/iframe.html?id=base-shapes--geometry&viewMode=story`, {
+    waitUntil: 'networkidle0',
+  });
   await page.waitForSelector('[data-testid="shape-border-probe"] svg', {
     timeout: 30000,
   });
@@ -58,36 +52,26 @@ try {
   }, png);
   assert.equal(thickness.cardinal, 8);
   // One diagonal sample spans sqrt(2) pixels. This bound rejects the old ~16px band.
-  assert.ok(
-    Math.abs(thickness.diagonal - 8) <= Math.SQRT2,
-    JSON.stringify(thickness),
-  );
+  assert.ok(Math.abs(thickness.diagonal - 8) <= Math.SQRT2, JSON.stringify(thickness));
   await page.waitForSelector('[data-testid="shape-fixed-child"]', {
     timeout: 30000,
   });
   const geometry = await page.evaluate(() => {
     const card = document.querySelector('[data-testid="shape-card"]');
-    const clip = [...card.children].find(
-      (node) => getComputedStyle(node).overflow === 'hidden',
-    );
-    const rtl = getComputedStyle(
-      document.querySelector('[data-testid="shape-rtl"]'),
-    );
+    const clip = [...card.children].find((node) => getComputedStyle(node).overflow === 'hidden');
+    const rtl = getComputedStyle(document.querySelector('[data-testid="shape-rtl"]'));
     return {
       supported: CSS.supports('corner-shape', 'squircle'),
       curve: getComputedStyle(card).getPropertyValue('corner-shape'),
       outerOverflow: getComputedStyle(card).overflow,
       clip: Boolean(clip),
-      clipCurve:
-        clip && getComputedStyle(clip).getPropertyValue('corner-shape'),
+      clipCurve: clip && getComputedStyle(clip).getPropertyValue('corner-shape'),
       rtlLeft: rtl.borderTopLeftRadius,
       rtlRight: rtl.borderTopRightRadius,
       fixedChildHeight: document
         .querySelector('[data-testid="shape-fixed-child"]')
         .getBoundingClientRect().height,
-      initialsHasShape: Boolean(
-        document.querySelector('[data-testid="shape-initials"] svg path'),
-      ),
+      initialsHasShape: Boolean(document.querySelector('[data-testid="shape-initials"] svg path')),
     };
   });
   assert.equal(geometry.outerOverflow, 'visible');
@@ -106,16 +90,11 @@ try {
   await page.waitForSelector('[data-testid="shape-many"] svg', {
     timeout: 30000,
   });
-  const ids = await page.$$eval(
-    '[data-testid="shape-many"] svg [id]',
-    (nodes) => nodes.map((node) => node.id),
+  const ids = await page.$$eval('[data-testid="shape-many"] svg [id]', (nodes) =>
+    nodes.map((node) => node.id),
   );
   assert.ok(ids.length >= 100, `Expected 100 border clips, got ${ids.length}`);
-  assert.equal(
-    new Set(ids).size,
-    ids.length,
-    'SVG identifiers collide across instances',
-  );
+  assert.equal(new Set(ids).size, ids.length, 'SVG identifiers collide across instances');
   assert.deepEqual(errors, []);
   console.log(
     JSON.stringify({

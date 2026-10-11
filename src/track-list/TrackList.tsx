@@ -92,7 +92,10 @@ export function TrackList({
   const [measured, setMeasured] = useState<number | null>(null);
   const layoutWidth = width ?? measured ?? window.width;
   const narrow = isNarrow(layoutWidth);
-  const visible = useMemo(() => resolveVisibleColumns(columns, layoutWidth), [columns, layoutWidth]);
+  const visible = useMemo(
+    () => resolveVisibleColumns(columns, layoutWidth),
+    [columns, layoutWidth],
+  );
   const geo = rowGeometry(density, narrow);
   const canReorder = reorderable && onReorder !== undefined;
 
@@ -142,7 +145,12 @@ export function TrackList({
     pendingFocus.current = targetTrack.id;
     if (extend && selectable) {
       if (anchor.current === null || !order.includes(anchor.current)) anchor.current = fromTrack.id;
-      const next = nextSelection(order, { selected, anchor: anchor.current }, targetTrack.id, 'range');
+      const next = nextSelection(
+        order,
+        { selected, anchor: anchor.current },
+        targetTrack.id,
+        'range',
+      );
       commit(next.selected);
     }
     // Focus moves in the effect above even when nothing re-renders.
@@ -260,7 +268,10 @@ export function TrackList({
                   <View
                     aria-hidden
                     importantForAccessibility="no-hide-descendants"
-                    style={{ width: narrow ? 20 : 32, alignItems: narrow ? 'flex-start' : 'center' }}
+                    style={{
+                      width: narrow ? 20 : 32,
+                      alignItems: narrow ? 'flex-start' : 'center',
+                    }}
                   >
                     <RiDiscLine width={18} height={18} fill={paint.textMuted} />
                   </View>

@@ -17,11 +17,14 @@ export interface CarouselMessages {
   slideRole: string;
 }
 
-export const CAROUSEL_MESSAGES: MessageCatalog<CarouselMessages> = defineMessages<CarouselMessages>('CAROUSEL_MESSAGES', {
-  previousSlide: 'Previous slide',
-  nextSlide: 'Next slide',
-  goToSlide: (n) => `Go to slide ${n}`,
-  slideOf: (at, of) => `${at} of ${of}`,
-  carouselRole: 'carousel',
-  slideRole: 'slide',
-});
+export const CAROUSEL_MESSAGES: MessageCatalog<CarouselMessages> = defineMessages<CarouselMessages>(
+  'CAROUSEL_MESSAGES',
+  {
+    previousSlide: 'Previous slide',
+    nextSlide: 'Next slide',
+    goToSlide: (n) => `Go to slide ${n}`,
+    slideOf: (at, of) => `${at} of ${of}`,
+    carouselRole: 'carousel',
+    slideRole: 'slide',
+  },
+);

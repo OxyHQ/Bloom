@@ -10,7 +10,12 @@ import { resolvedStyle } from './support/rendered-style';
 
 function ModeProbe() {
   const theme = useTheme();
-  return <>{null}{theme.isDark ? <DarkMarker /> : null}</>;
+  return (
+    <>
+      {null}
+      {theme.isDark ? <DarkMarker /> : null}
+    </>
+  );
 }
 function DarkMarker() {
   return null;
@@ -33,7 +38,12 @@ describe('ThemeToggle', () => {
     expect(row.props.accessibilityLabel).toBe('Dark mode');
     expect(row.props['aria-checked']).toBe(false);
     expect(resolvedStyle(row.props.style)).toMatchObject({ padding: 8, borderRadius: 10 });
-    expect(resolvedStyle(screen.getByTestId('theme-toggle-switch-track', { includeHiddenElements: true }).props.style)).toMatchObject({
+    expect(
+      resolvedStyle(
+        screen.getByTestId('theme-toggle-switch-track', { includeHiddenElements: true }).props
+          .style,
+      ),
+    ).toMatchObject({
       width: 28,
       height: 16,
     });
@@ -48,7 +58,11 @@ describe('ThemeToggle', () => {
     expect(button.props.accessibilityLabel).toBe('Use light mode');
     expect(button.props['aria-pressed']).toBe(true);
     expect(button.props.accessibilityState).toEqual({ selected: true });
-    expect(resolvedStyle(button.props.style)).toMatchObject({ width: 36, height: 36, borderRadius: 10 });
+    expect(resolvedStyle(button.props.style)).toMatchObject({
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+    });
     pressHost(button);
     expect(screen.UNSAFE_queryAllByType(DarkMarker)).toHaveLength(0);
   });

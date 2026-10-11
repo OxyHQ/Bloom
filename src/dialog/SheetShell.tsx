@@ -25,6 +25,7 @@ import type { DialogControlProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 
 export interface SheetShellProps {
+  material?: 'surface' | 'flat';
   control: DialogControlProps;
   label?: string;
   header?: React.ReactNode;
@@ -43,6 +44,7 @@ export interface SheetShellProps {
  * etc. rely on it to dismiss the sheet after selection.
  */
 export function SheetShell({
+  material = 'surface',
   control,
   label,
   header,
@@ -97,10 +99,7 @@ export function SheetShell({
 
   useImperativeHandle(control.ref, () => ({ open, close }), [open, close]);
 
-  const context = useMemo(
-    () => ({ close, isWithinDialog: true }),
-    [close],
-  );
+  const context = useMemo(() => ({ close, isWithinDialog: true }), [close]);
 
   const sheetStyle = useMemo(
     () => ({
@@ -113,6 +112,12 @@ export function SheetShell({
 
   return (
     <BottomSheet
+      material={material}
+      backgroundFill={
+        material === 'flat'
+          ? String(StyleSheet.flatten(contentStyle)?.backgroundColor ?? theme.colors.background)
+          : undefined
+      }
       ref={ref}
       onDismiss={handleDismiss}
       enablePanDownToClose

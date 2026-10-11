@@ -13,7 +13,12 @@ import Svg, { Path } from 'react-native-svg';
 import { Button } from '../button';
 import { ACCENT_TABLE, colorRamp, DANGER_TABLE } from '../button/shared';
 import { Chip } from '../chip';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../dropdown-menu';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -26,7 +31,13 @@ import { Text } from '../typography';
 import { useSettingsPalette } from './context';
 import { SETTINGS_MODAL_MESSAGES, type SettingsModalMessages } from './messages';
 import type { SettingsPalette } from './palette';
-import { SettingsCard, SettingsRow, SettingsSection, settingsRingVars, useSettingsRowIsLast } from './SettingsRows';
+import {
+  SettingsCard,
+  SettingsRow,
+  SettingsSection,
+  settingsRingVars,
+  useSettingsRowIsLast,
+} from './SettingsRows';
 import type {
   SettingsMcpServer,
   SettingsMenuAction,
@@ -166,7 +177,15 @@ function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
 //  Pieces
 // ---------------------------------------------------------------------------
 
-function InlineAction({ label, onPress, accessibilityLabel }: { label: string; onPress?: () => void; accessibilityLabel: string }) {
+function InlineAction({
+  label,
+  onPress,
+  accessibilityLabel,
+}: {
+  label: string;
+  onPress?: () => void;
+  accessibilityLabel: string;
+}) {
   const palette = useSettingsPalette();
   const [hovered, setHovered] = useState(false);
   return (
@@ -254,7 +273,9 @@ function ServerMenu({
           <DropdownMenuItem
             key={action.id}
             leading={
-              action.icon ? <action.icon width={18} height={18} fill={palette.iconSecondary} /> : undefined
+              action.icon ? (
+                <action.icon width={18} height={18} fill={palette.iconSecondary} />
+              ) : undefined
             }
             onPress={() => onAction?.(server.id, action.id)}
           >
@@ -321,7 +342,9 @@ function ServerRow({
               {hasTools ? (
                 <Pressable
                   role="button"
-                  accessibilityLabel={expanded ? copy.hideTools(server.name) : copy.showTools(server.name)}
+                  accessibilityLabel={
+                    expanded ? copy.hideTools(server.name) : copy.showTools(server.name)
+                  }
                   aria-expanded={expanded}
                   accessibilityState={{ expanded }}
                   {...webDataSet({ bloomSettingsPress: '' })}
@@ -331,7 +354,9 @@ function ServerRow({
                   testID={testID ? `${testID}-expand` : undefined}
                   style={styles.chevron}
                 >
-                  <ChevronUpDown color={chevronHovered ? palette.iconSecondary : palette.iconTertiary} />
+                  <ChevronUpDown
+                    color={chevronHovered ? palette.iconSecondary : palette.iconTertiary}
+                  />
                 </Pressable>
               ) : null}
             </View>
@@ -394,7 +419,12 @@ function NewServerRow({
       onHoverOut={() => setHovered(false)}
       style={styles.newRow}
     >
-      <View style={[styles.tile, { backgroundColor: hovered ? palette.tertiaryHover : palette.tertiary }]}>
+      <View
+        style={[
+          styles.tile,
+          { backgroundColor: hovered ? palette.tertiaryHover : palette.tertiary },
+        ]}
+      >
         <RiAddLine width={20} height={20} fill={palette.iconSecondary} />
       </View>
       <View style={styles.serverText}>
@@ -489,7 +519,12 @@ function ScopePills({
   }, [box, reducedMotion, x, w, h, shown]);
 
   const thumb = useAnimatedStyle(
-    () => ({ opacity: shown.value, width: w.value, height: h.value, transform: [{ translateX: x.value }] }),
+    () => ({
+      opacity: shown.value,
+      width: w.value,
+      height: h.value,
+      transform: [{ translateX: x.value }],
+    }),
     [x, w, h, shown],
   );
 
@@ -525,7 +560,10 @@ function ScopePills({
               }}
               style={[
                 styles.pill,
-                { backgroundColor: !selected && hovered === scope.id ? palette.primaryHover : 'transparent' },
+                {
+                  backgroundColor:
+                    !selected && hovered === scope.id ? palette.primaryHover : 'transparent',
+                },
               ]}
             >
               <Text
@@ -580,14 +618,13 @@ export function SettingsToolsPage({
 
   return (
     <View testID={testID} style={[styles.page, settingsRingVars(palette), style]}>
-      {scopes.length > 0 ? <ScopePills scopes={scopes} value={scope?.id ?? ''} onChange={setScopeId} /> : null}
+      {scopes.length > 0 ? (
+        <ScopePills scopes={scopes} value={scope?.id ?? ''} onChange={setScopeId} />
+      ) : null}
 
       <SettingsSection label={copy.authentication} inset={8}>
         <SettingsCard>
-          <SettingsRow
-            label={copy.waitForAuth}
-            description={copy.waitForAuthDescription}
-          >
+          <SettingsRow label={copy.waitForAuth} description={copy.waitForAuthDescription}>
             <Switch
               checked={waitForAuthentication}
               onCheckedChange={onWaitForAuthenticationChange}
@@ -630,7 +667,10 @@ export function SettingsToolsPage({
               <Text variant="body-medium" style={[styles.center, { color: palette.text }]}>
                 {copy.noTeamServers}
               </Text>
-              <Text variant="body-2-regular" style={[styles.center, styles.emptyBody, { color: palette.textSecondary }]}>
+              <Text
+                variant="body-2-regular"
+                style={[styles.center, styles.emptyBody, { color: palette.textSecondary }]}
+              >
                 {copy.noTeamServersBody}
               </Text>
             </View>

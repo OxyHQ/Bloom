@@ -22,13 +22,7 @@ export type ToastSwipeDirection = 'left' | 'up';
 export type ToastVariant = 'success' | 'error' | 'warning' | 'info' | 'loading';
 
 /** Public variant knob. `'default'` maps to an ABSENT `ToastVariant`. */
-export type ToastType =
-  | 'default'
-  | 'success'
-  | 'error'
-  | 'warning'
-  | 'info'
-  | 'loading';
+export type ToastType = 'default' | 'success' | 'error' | 'warning' | 'info' | 'loading';
 
 /**
  * Light/dark is owned by `BloomThemeProvider`/`BloomColorScope`, so this is
@@ -290,9 +284,7 @@ export type DynamicToastContextType = {
   toggleExpand: () => void;
 };
 
-export function isToastAction(
-  action: ToastAction | React.ReactNode,
-): action is ToastAction {
+export function isToastAction(action: ToastAction | React.ReactNode): action is ToastAction {
   if (typeof action !== 'object' || action === null) {
     return false;
   }

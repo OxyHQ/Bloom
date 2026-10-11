@@ -27,7 +27,10 @@ function renderScheduler(props: Partial<React.ComponentProps<typeof MeetingSched
 
 describe('MeetingScheduler', () => {
   it('renders the host card, the meeting summary and the timezone when open', () => {
-    const { getByText } = renderScheduler({ defaultOpen: true, defaultValue: { date: day(16), time: null } });
+    const { getByText } = renderScheduler({
+      defaultOpen: true,
+      defaultValue: { date: day(16), time: null },
+    });
     expect(getByText('Maya Collins')).toBeTruthy();
     expect(getByText('hi@example.com')).toBeTruthy();
     expect(getByText('30 min intro meeting')).toBeTruthy();

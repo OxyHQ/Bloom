@@ -9,4 +9,7 @@ export interface StepperMessages {
   increase: string;
 }
 
-export const STEPPER_MESSAGES: MessageCatalog<StepperMessages> = defineMessages<StepperMessages>('STEPPER_MESSAGES', { decrease: 'Decrease', increase: 'Increase' });
+export const STEPPER_MESSAGES: MessageCatalog<StepperMessages> = defineMessages<StepperMessages>(
+  'STEPPER_MESSAGES',
+  { decrease: 'Decrease', increase: 'Increase' },
+);

@@ -1,7 +1,4 @@
-import {
-  ESTIMATED_TOAST_HEIGHT,
-  OUTSIDE_PRESS_PADDING,
-} from '../toast/constants';
+import { ESTIMATED_TOAST_HEIGHT, OUTSIDE_PRESS_PADDING } from '../toast/constants';
 import {
   calculateOutsidePressableArea,
   getContainerStyle,
@@ -34,9 +31,7 @@ describe('getContainerStyle', () => {
     expect(style.height).toBeUndefined();
     expect(style.width).toBeUndefined();
     // All four edges pinned is what gives it the host's size instead.
-    expect([style.top, style.right, style.bottom, style.left]).toEqual([
-      0, 0, 0, 0,
-    ]);
+    expect([style.top, style.right, style.bottom, style.left]).toEqual([0, 0, 0, 0]);
   });
 
   /**
@@ -69,7 +64,12 @@ describe('getContainerStyle', () => {
     ['center', null],
   ])('keeps a real height for %s: only the anchored edge moves', (position, anchored) => {
     const merged = { ...getContainerStyle(), ...getInsetValues({ position }) };
-    const edges = { top: merged.top, right: merged.right, bottom: merged.bottom, left: merged.left };
+    const edges = {
+      top: merged.top,
+      right: merged.right,
+      bottom: merged.bottom,
+      left: merged.left,
+    };
 
     // Every edge is still pinned — none became undefined.
     expect(Object.values(edges).every((value) => value !== undefined)).toBe(true);
@@ -198,9 +198,7 @@ describe('calculateOutsidePressableArea', () => {
       visibleToasts: 3,
       insetValues: { bottom: 16 },
     });
-    expect(area.bottom).toBe(
-      16 + ESTIMATED_TOAST_HEIGHT * 3 + 8 * 2 + OUTSIDE_PRESS_PADDING,
-    );
+    expect(area.bottom).toBe(16 + ESTIMATED_TOAST_HEIGHT * 3 + 8 * 2 + OUTSIDE_PRESS_PADDING);
   });
 
   it('charges no gap for a single row', () => {

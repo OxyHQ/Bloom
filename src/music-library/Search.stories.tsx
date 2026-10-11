@@ -40,7 +40,12 @@ const RECENTS: RecentSearchEntry[] = [
   { id: 'r1', title: 'Lumen Vale', meta: 'Artist', cover: img('lumen-vale'), round: true },
   { id: 'r2', title: 'Paper Moons', meta: 'Album · Lumen Vale', cover: img('paper-moons') },
   { id: 'r3', title: 'Harbor Lights', meta: 'Song · Kaito Ferran', cover: img('harbor-lights') },
-  { id: 'r4', title: 'Field Notes on Sound', meta: 'Podcast · Ines Marlow', cover: img('field-notes') },
+  {
+    id: 'r4',
+    title: 'Field Notes on Sound',
+    meta: 'Podcast · Ines Marlow',
+    cover: img('field-notes'),
+  },
 ];
 
 const GENRES: BrowseTile[] = [
@@ -89,13 +94,30 @@ function Heading({ children }: { children: string }) {
 function SongRow({ song }: { song: (typeof SONGS)[number] }) {
   const theme = useTheme();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: 6, paddingBottom: 6, paddingLeft: 8, paddingRight: 8 }}>
-      <Image source={{ uri: img(song.id, 80) }} style={{ width: 40, height: 40, borderRadius: 4 }} />
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingTop: 6,
+        paddingBottom: 6,
+        paddingLeft: 8,
+        paddingRight: 8,
+      }}
+    >
+      <Image
+        source={{ uri: img(song.id, 80) }}
+        style={{ width: 40, height: 40, borderRadius: 4 }}
+      />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text variant="body-medium" numberOfLines={1} style={{ color: theme.colors.text }}>
           {song.title}
         </Text>
-        <Text variant="caption-1-regular" numberOfLines={1} style={{ color: theme.colors.textSecondary }}>
+        <Text
+          variant="caption-1-regular"
+          numberOfLines={1}
+          style={{ color: theme.colors.textSecondary }}
+        >
           {song.artist}
         </Text>
       </View>
@@ -188,18 +210,57 @@ export const Parts: Story = {
       <Canvas>
         <View style={{ gap: 12, maxWidth: 480 }}>
           <SearchField value={a} onChangeText={setA} onClear={() => setA('')} />
-          <SearchField value={b} onChangeText={setB} onClear={() => setB('')} onBrowsePress={() => {}} browseActive />
+          <SearchField
+            value={b}
+            onChangeText={setB}
+            onClear={() => setB('')}
+            onBrowsePress={() => {}}
+            browseActive
+          />
         </View>
         <SearchResultTabs tabs={TABS} value={tab} onValueChange={setTab} />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-          <TopResultCard title="Paper Moons" kind="album" subtitle="Lumen Vale" cover={img('paper-moons', 200)} onPress={() => {}} onPlayPress={() => {}} style={{ width: '100%', maxWidth: 420 }} />
-          <TopResultCard title="Field Notes on Sound" kind="podcast" subtitle="Ines Marlow" onPress={() => {}} onPlayPress={() => {}} playing style={{ width: '100%', maxWidth: 420 }} />
-          <TopResultCard title="maya.k" kind="profile" onPress={() => {}} style={{ width: '100%', maxWidth: 420 }} />
+          <TopResultCard
+            title="Paper Moons"
+            kind="album"
+            subtitle="Lumen Vale"
+            cover={img('paper-moons', 200)}
+            onPress={() => {}}
+            onPlayPress={() => {}}
+            style={{ width: '100%', maxWidth: 420 }}
+          />
+          <TopResultCard
+            title="Field Notes on Sound"
+            kind="podcast"
+            subtitle="Ines Marlow"
+            onPress={() => {}}
+            onPlayPress={() => {}}
+            playing
+            style={{ width: '100%', maxWidth: 420 }}
+          />
+          <TopResultCard
+            title="maya.k"
+            kind="profile"
+            onPress={() => {}}
+            style={{ width: '100%', maxWidth: 420 }}
+          />
         </View>
         <BrowseGrid title="Your own tiles" minTileWidth={200}>
           {['Mood', 'Decades', 'Charts'].map((label) => (
-            <View key={label} style={{ height: 100, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
-              <Text variant="headline-semibold" style={{ color: theme.colors.text }}>{label}</Text>
+            <View
+              key={label}
+              style={{
+                height: 100,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text variant="headline-semibold" style={{ color: theme.colors.text }}>
+                {label}
+              </Text>
             </View>
           ))}
         </BrowseGrid>

@@ -1,5 +1,12 @@
 /** Surface and text slots read canonical theme roles; fixed shadow geometry is unchanged. */
-import { ACCENT_TABLE, BUTTON_SHADOW, colorRamp, DANGER_TABLE, resolveButtonRamps, type Ramp } from '../button/shared';
+import {
+  ACCENT_TABLE,
+  BUTTON_SHADOW,
+  colorRamp,
+  DANGER_TABLE,
+  resolveButtonRamps,
+  type Ramp,
+} from '../button/shared';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import type { Theme } from '../theme/types';
 
@@ -46,17 +53,36 @@ export function resolveSettingsPalette(theme: Theme): SettingsPalette {
   const success = colorRamp(c.success, ACCENT_TABLE);
   const danger = colorRamp(c.error, DANGER_TABLE);
   return {
-    full: c.background, primary: c.card, primaryHover: c.backgroundSecondary,
-    secondary: c.backgroundSecondary, secondaryHover: c.backgroundTertiary,
-    secondaryHoverSoft: c.backgroundTertiary, tertiary: c.backgroundTertiary,
-    tertiaryHover: c.card, separator: c.borderLight, borderButton: c.border,
-    borderButtonHover: c.border, borderButtonActive: c.primary,
-    primaryActive: c.backgroundTertiary, borderCheckbox: c.border,
-    uploadIconBackground: c.backgroundTertiary, uploadIconForeground: c.textSecondary,
-    uploadIconForegroundHover: c.text, text: c.text, textSecondary: c.textSecondary,
-    textTertiary: c.textTertiary, iconPrimary: c.text, iconSecondary: c.textSecondary,
-    iconTertiary: c.textTertiary, error: c.errorSubtleForeground,
-    accent, neutral, success, danger, ring: c.primary, backdrop: 'rgba(0, 0, 0, 0.7)',
+    full: c.background,
+    primary: c.card,
+    primaryHover: c.backgroundSecondary,
+    secondary: c.backgroundSecondary,
+    secondaryHover: c.backgroundTertiary,
+    secondaryHoverSoft: c.backgroundTertiary,
+    tertiary: c.backgroundTertiary,
+    tertiaryHover: c.card,
+    separator: c.borderLight,
+    borderButton: c.border,
+    borderButtonHover: c.border,
+    borderButtonActive: c.primary,
+    primaryActive: c.backgroundTertiary,
+    borderCheckbox: c.border,
+    uploadIconBackground: c.backgroundTertiary,
+    uploadIconForeground: c.textSecondary,
+    uploadIconForegroundHover: c.text,
+    text: c.text,
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    iconPrimary: c.text,
+    iconSecondary: c.textSecondary,
+    iconTertiary: c.textTertiary,
+    error: c.errorSubtleForeground,
+    accent,
+    neutral,
+    success,
+    danger,
+    ring: c.primary,
+    backdrop: 'rgba(0, 0, 0, 0.7)',
     shadowXs: theme.isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     shadowDropdown: theme.isDark ? MENU_SHADOW.dark : MENU_SHADOW.light,
   };

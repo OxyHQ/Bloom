@@ -6,11 +6,11 @@ import { MostActiveDaysCard, type ActivityDay } from './MostActiveDaysCard';
 
 const meta: Meta<typeof MostActiveDaysCard> = {
   argTypes: {
-    "year": { control: 'number' },
-    "initialMonth": { control: 'number' },
-    "title": { control: 'text' },
-    "headline": { control: 'number' },
-    "suffix": { control: 'text' }
+    year: { control: 'number' },
+    initialMonth: { control: 'number' },
+    title: { control: 'text' },
+    headline: { control: 'number' },
+    suffix: { control: 'text' },
   },
   title: 'Charts/Most Active Days',
   component: MostActiveDaysCard,
@@ -37,7 +37,9 @@ function ringPct(month: number, day: number, ring: number) {
 }
 
 const rings = ({ month, day }: ActivityDay) =>
-  month > TODAY.month || (month === TODAY.month && day > TODAY.day) ? null : [0, 1, 2].map((r) => ringPct(month, day, r));
+  month > TODAY.month || (month === TODAY.month && day > TODAY.day)
+    ? null
+    : [0, 1, 2].map((r) => ringPct(month, day, r));
 
 const Frame = ({ children, width = 360 }: { children: React.ReactNode; width?: number }) => (
   <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
@@ -72,13 +74,12 @@ export const Default: Story = {
 /** Starting in January with nothing selected, custom ring colours. */
 export const January: Story = {
   args: { year: 2026, headline: 32459 },
-  parameters: { controls: { include: ["year","headline","initialMonth","title","suffix"] } },
+  parameters: { controls: { include: ['year', 'headline', 'initialMonth', 'title', 'suffix'] } },
   render: (args) => (
     <Frame>
-      <MostActiveDaysCard {...args}
+      <MostActiveDaysCard
+        {...args}
         testID="days"
-
-
         rings={rings}
         ringColors={['#f97316', '#8b5cf6', '#14b8a6']}
       />

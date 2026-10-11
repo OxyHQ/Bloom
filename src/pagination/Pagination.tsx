@@ -86,9 +86,16 @@ interface PaginationPalette {
 
 function resolvePaginationPalette(theme: Theme): PaginationPalette {
   const c = theme.colors;
-  return { currentBackground: c.card, currentBorder: c.border, primary: c.text,
-    secondary: c.textSecondary, tertiary: c.textTertiary, hover: c.backgroundTertiary,
-    shadow: theme.isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light, ring: c.primary };
+  return {
+    currentBackground: c.card,
+    currentBorder: c.border,
+    primary: c.text,
+    secondary: c.textSecondary,
+    tertiary: c.textTertiary,
+    hover: c.backgroundTertiary,
+    shadow: theme.isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
+    ring: c.primary,
+  };
 }
 
 const STYLE_ID = 'bloom-pagination-web-css';
@@ -118,7 +125,13 @@ interface PageCellProps {
   onChange: (page: number) => void;
 }
 
-const PageCell = memo(function PageCell({ page, current, palette, label, onChange }: PageCellProps) {
+const PageCell = memo(function PageCell({
+  page,
+  current,
+  palette,
+  label,
+  onChange,
+}: PageCellProps) {
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const style: WebCssStyle = current
@@ -221,7 +234,15 @@ const PaginationComponent: React.FC<PaginationProps> = ({
         style,
       ]}
     >
-      <Button size="sm" icon={ArrowLeft} accessibilityLabel={compact ? previousLabel : undefined} disabled={page <= 1} onPress={() => onChange(page - 1)} appearance="plain" tone="neutral">
+      <Button
+        size="sm"
+        icon={ArrowLeft}
+        accessibilityLabel={compact ? previousLabel : undefined}
+        disabled={page <= 1}
+        onPress={() => onChange(page - 1)}
+        appearance="plain"
+        tone="neutral"
+      >
         {compact ? undefined : previousLabel}
       </Button>
 
@@ -250,7 +271,16 @@ const PaginationComponent: React.FC<PaginationProps> = ({
         )}
       </View>
 
-      <Button size="sm" icon={compact ? ArrowRight : undefined} trailingIcon={compact ? undefined : ArrowRight} accessibilityLabel={compact ? nextLabel : undefined} disabled={page >= totalPages} onPress={() => onChange(page + 1)} appearance="plain" tone="neutral">
+      <Button
+        size="sm"
+        icon={compact ? ArrowRight : undefined}
+        trailingIcon={compact ? undefined : ArrowRight}
+        accessibilityLabel={compact ? nextLabel : undefined}
+        disabled={page >= totalPages}
+        onPress={() => onChange(page + 1)}
+        appearance="plain"
+        tone="neutral"
+      >
         {compact ? undefined : nextLabel}
       </Button>
     </View>

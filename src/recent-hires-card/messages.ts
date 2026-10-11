@@ -5,4 +5,5 @@ export interface RecentHiresCardMessages {
   title: string;
 }
 
-export const RECENT_HIRES_CARD_MESSAGES: MessageCatalog<RecentHiresCardMessages> = defineMessages<RecentHiresCardMessages>('RECENT_HIRES_CARD_MESSAGES', { title: 'Recent hires' });
+export const RECENT_HIRES_CARD_MESSAGES: MessageCatalog<RecentHiresCardMessages> =
+  defineMessages<RecentHiresCardMessages>('RECENT_HIRES_CARD_MESSAGES', { title: 'Recent hires' });

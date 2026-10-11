@@ -21,10 +21,16 @@ export interface VendorCardMessages {
   rated: (value: string, reviews?: number | string) => string;
 }
 
-export const VENDOR_CARD_MESSAGES: MessageCatalog<VendorCardMessages> = defineMessages<VendorCardMessages>('VENDOR_CARD_MESSAGES', {
-  facts: { deliveryTime: 'Delivery time', deliveryFee: 'Delivery', distance: 'Distance', minimumOrder: 'Minimum order' },
-  availability: { paused: 'Paused', closed: 'Closed' },
-  new: 'New',
-  rated: (value, reviews) =>
-    `Rated ${value} out of 5${has(reviews) ? `, ${counted('en', reviews, { one: '{n} review', other: '{n} reviews' })}` : ''}`,
-});
+export const VENDOR_CARD_MESSAGES: MessageCatalog<VendorCardMessages> =
+  defineMessages<VendorCardMessages>('VENDOR_CARD_MESSAGES', {
+    facts: {
+      deliveryTime: 'Delivery time',
+      deliveryFee: 'Delivery',
+      distance: 'Distance',
+      minimumOrder: 'Minimum order',
+    },
+    availability: { paused: 'Paused', closed: 'Closed' },
+    new: 'New',
+    rated: (value, reviews) =>
+      `Rated ${value} out of 5${has(reviews) ? `, ${counted('en', reviews, { one: '{n} review', other: '{n} reviews' })}` : ''}`,
+  });

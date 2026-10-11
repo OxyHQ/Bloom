@@ -120,7 +120,13 @@ function AnnouncementComponent({
       </View>
 
       {actionLabel ? (
-        <Button size="sm" onPress={onAction} style={{ width: "100%" }} appearance="subtle" tone="neutral">
+        <Button
+          size="sm"
+          onPress={onAction}
+          style={{ width: '100%' }}
+          appearance="subtle"
+          tone="neutral"
+        >
           {actionLabel}
         </Button>
       ) : null}

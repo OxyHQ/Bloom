@@ -67,7 +67,11 @@ function ArtworkUploaderComponent({
   const common = useCommonMessages();
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
-  const labels: ArtworkUploaderLabels = { ...messages.artwork, cancel: common.cancel, ...labelOverrides };
+  const labels: ArtworkUploaderLabels = {
+    ...messages.artwork,
+    cancel: common.cancel,
+    ...labelOverrides,
+  };
   const resolver = useImageResolver();
   const [replacing, setReplacing] = useState(false);
 
@@ -88,7 +92,10 @@ function ArtworkUploaderComponent({
 
       <View style={[styles.square, size ? { width: size, height: size } : null]}>
         {showPreview ? (
-          <View style={[styles.preview, { backgroundColor: paint.placeholder }]} testID={id('preview')}>
+          <View
+            style={[styles.preview, { backgroundColor: paint.placeholder }]}
+            testID={id('preview')}
+          >
             <Image
               source={{ uri: uri! }}
               style={styles.fill}
@@ -98,25 +105,27 @@ function ArtworkUploaderComponent({
             />
             <View style={styles.previewActions}>
               <Button
-
                 size="sm"
                 leadingIcon={RiRefreshLine}
                 onPress={() => setReplacing(true)}
                 disabled={disabled}
-                testID={id('replace')} tone="neutral" appearance="outline"
+                testID={id('replace')}
+                tone="neutral"
+                appearance="outline"
               >
                 {labels.replace}
               </Button>
               {onRemove ? (
                 <Button
-
                   size="sm"
                   iconOnly
                   leadingIcon={RiDeleteBinLine}
                   accessibilityLabel={labels.remove}
                   onPress={onRemove}
                   disabled={disabled}
-                  testID={id('remove')} tone="neutral" appearance="outline"
+                  testID={id('remove')}
+                  tone="neutral"
+                  appearance="outline"
                 />
               ) : null}
             </View>
@@ -147,11 +156,12 @@ function ArtworkUploaderComponent({
 
       {replacing && uri ? (
         <Button
-
           size="sm"
           onPress={() => setReplacing(false)}
           style={styles.cancel}
-          testID={id('cancel')} tone="neutral" appearance="outline"
+          testID={id('cancel')}
+          tone="neutral"
+          appearance="outline"
         >
           {labels.cancel}
         </Button>

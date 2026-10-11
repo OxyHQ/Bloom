@@ -6,7 +6,7 @@ describe('BottomSheet animated progress', () => {
 
   it('mirrors both presentation and drag position on the UI thread', () => {
     expect(source).toContain('useAnimatedReaction(');
-    expect(source).toContain('Math.min(\n            opacity.value,');
+    expect(source).toContain('Math.min(\n          opacity.value,');
     expect(source).toContain('interpolate(translateY.value, [0, screenHeightSV.value], [1, 0]');
     expect(source).toContain('animatedProgress.value = progress');
   });

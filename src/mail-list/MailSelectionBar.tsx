@@ -66,78 +66,78 @@ export function MailSelectionBar({
   const all = total > 0 && count >= total;
   return (
     <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-    <View
-      role="toolbar"
-      accessibilityLabel={text.selectedCount(count)}
-      style={[
-        {
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          height: MAIL_SELECTION_BAR_HEIGHT[density],
-          paddingLeft: geo.paddingHorizontal,
-          paddingRight: geo.paddingHorizontal,
-          backgroundColor: paint.barFill,
-        },
-        style,
-        backing.vars,
-      ]}
-      testID={testID}
-    >
-      {onSelectAll !== undefined ? (
-        <View style={{ width: geo.avatar, alignItems: 'center' }}>
-          <Checkbox
-            checked={all}
-            indeterminate={!all}
-            onCheckedChange={onSelectAll}
-            size={density === 'compact' ? 'sm' : 'md'}
-            accessibilityLabel={text.selectAll}
-            testID={testID ? `${testID}-select-all` : undefined}
-          />
-        </View>
-      ) : null}
-      <Text
-        variant="body-semibold"
-        numberOfLines={1}
-        style={{ color: paint.barText, flexShrink: 1, minWidth: 0 }}
-        testID={testID ? `${testID}-count` : undefined}
+      <View
+        role="toolbar"
+        accessibilityLabel={text.selectedCount(count)}
+        style={[
+          {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            height: MAIL_SELECTION_BAR_HEIGHT[density],
+            paddingLeft: geo.paddingHorizontal,
+            paddingRight: geo.paddingHorizontal,
+            backgroundColor: paint.barFill,
+          },
+          style,
+          backing.vars,
+        ]}
+        testID={testID}
       >
-        {text.selectedCount(count)}
-      </Text>
-      <View style={{ flex: 1 }} />
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-        {(actions ?? []).map((action) => (
-          <MailGlyphButton
-            key={action.key}
-            label={action.label}
-            icon={action.icon}
-            color={action.tone === undefined ? paint.barText : mailActionColor(action, paint)}
-            hoverFill={paint.selected}
-            ring={paint.accent}
-            size={geo.action}
-            glyph={geo.actionGlyph}
-            onPress={() => {
-              action.onPress?.();
-              onAction?.(action.key);
-            }}
-            testID={testID ? `${testID}-action-${action.key}` : undefined}
-          />
-        ))}
-        {onClear !== undefined ? (
-          <MailGlyphButton
-            label={text.clearSelection}
-            icon={RiCloseLine}
-            color={paint.barText}
-            hoverFill={paint.selected}
-            ring={paint.accent}
-            size={geo.action}
-            glyph={geo.actionGlyph}
-            onPress={onClear}
-            testID={testID ? `${testID}-clear` : undefined}
-          />
+        {onSelectAll !== undefined ? (
+          <View style={{ width: geo.avatar, alignItems: 'center' }}>
+            <Checkbox
+              checked={all}
+              indeterminate={!all}
+              onCheckedChange={onSelectAll}
+              size={density === 'compact' ? 'sm' : 'md'}
+              accessibilityLabel={text.selectAll}
+              testID={testID ? `${testID}-select-all` : undefined}
+            />
+          </View>
         ) : null}
+        <Text
+          variant="body-semibold"
+          numberOfLines={1}
+          style={{ color: paint.barText, flexShrink: 1, minWidth: 0 }}
+          testID={testID ? `${testID}-count` : undefined}
+        >
+          {text.selectedCount(count)}
+        </Text>
+        <View style={{ flex: 1 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+          {(actions ?? []).map((action) => (
+            <MailGlyphButton
+              key={action.key}
+              label={action.label}
+              icon={action.icon}
+              color={action.tone === undefined ? paint.barText : mailActionColor(action, paint)}
+              hoverFill={paint.selected}
+              ring={paint.accent}
+              size={geo.action}
+              glyph={geo.actionGlyph}
+              onPress={() => {
+                action.onPress?.();
+                onAction?.(action.key);
+              }}
+              testID={testID ? `${testID}-action-${action.key}` : undefined}
+            />
+          ))}
+          {onClear !== undefined ? (
+            <MailGlyphButton
+              label={text.clearSelection}
+              icon={RiCloseLine}
+              color={paint.barText}
+              hoverFill={paint.selected}
+              ring={paint.accent}
+              size={geo.action}
+              glyph={geo.actionGlyph}
+              onPress={onClear}
+              testID={testID ? `${testID}-clear` : undefined}
+            />
+          ) : null}
+        </View>
       </View>
-    </View>
     </SurfaceLevelProvider>
   );
 }

@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import Svg, { Circle, Ellipse, G } from 'react-native-svg';
 
 import { AgentProgress } from '../../src/agent-progress';
@@ -71,19 +76,21 @@ function landingPageMessages(): { id: string; node: React.ReactNode }[] {
           <AiChatMessageLine>Both changes are in:</AiChatMessageLine>
           <AiChatBulletList>
             <AiChatBullet>
-              <AiChatStrong>Sidebar PRO badge</AiChatStrong> — swapped the blue gradient for the minimal treatment: grey
-              bg-background-tertiary-default with text-text-secondary. Since ProBadge is only used in the docs sidebar
-              (the gallery cards have their own tier styling), this was a safe global restyle.
+              <AiChatStrong>Sidebar PRO badge</AiChatStrong> — swapped the blue gradient for the
+              minimal treatment: grey bg-background-tertiary-default with text-text-secondary. Since
+              ProBadge is only used in the docs sidebar (the gallery cards have their own tier
+              styling), this was a safe global restyle.
             </AiChatBullet>
           </AiChatBulletList>
           <AiChatMessageLine>
             One implementation note: the framework tabs needed a small client wrapper
-            (app/installation/framework-tabs.tsx) because icon components can&apos;t be passed from a server page
-            across the client boundary — the step content itself stays server-rendered so componentSource still works.
+            (app/installation/framework-tabs.tsx) because icon components can&apos;t be passed from
+            a server page across the client boundary — the step content itself stays server-rendered
+            so componentSource still works.
           </AiChatMessageLine>
           <AiChatMessageLine>
-            Verified: the page returns 200 on the dev server, the redirect works, and the full production build passes
-            cleanly. Happy to push when you&apos;re ready.
+            Verified: the page returns 200 on the dev server, the redirect works, and the full
+            production build passes cleanly. Happy to push when you&apos;re ready.
           </AiChatMessageLine>
         </AiChatAssistantMessage>
       ),
@@ -94,8 +101,8 @@ function landingPageMessages(): { id: string; node: React.ReactNode }[] {
         <AiChatUserMessage>
           <AiChatMessageLine>
             make detail screens like this for home and medical profile templates:{' '}
-            <AiChatLinkChip>figma.com/project/hse82s...</AiChatLinkChip> you can increase max width of the detail page
-            for this case otherwise dashboard page wouldn&apos;t fit
+            <AiChatLinkChip>figma.com/project/hse82s...</AiChatLinkChip> you can increase max width
+            of the detail page for this case otherwise dashboard page wouldn&apos;t fit
           </AiChatMessageLine>
         </AiChatUserMessage>
       ),
@@ -105,25 +112,28 @@ function landingPageMessages(): { id: string; node: React.ReactNode }[] {
       node: (
         <AiChatAssistantMessage>
           <AiChatMessageLine tone="secondary">Worked for 5m 32s</AiChatMessageLine>
-          <AiChatMessageLine>Both template detail pages are live, in the style defined in Figma.</AiChatMessageLine>
+          <AiChatMessageLine>
+            Both template detail pages are live, in the style defined in Figma.
+          </AiChatMessageLine>
           <AiChatBulletList>
             <AiChatBullet>
-              <AiChatStrong>New pages</AiChatStrong> — /components/home-dashboard and /components/medical-profile, built
-              with ComponentDetail: title and description, a scaled live preview of the full template (the actual
-              DashboardShell / MedicalShell rendered at 80% inside a bordered frame, fully interactive), a &quot;Live
-              template&quot; section linking to the full-size page under /templates/…, a &quot;What&apos;s
-              included&quot; section listing everything in the package, and a Pro callout instead of install
-              instructions.
+              <AiChatStrong>New pages</AiChatStrong> — /components/home-dashboard and
+              /components/medical-profile, built with ComponentDetail: title and description, a
+              scaled live preview of the full template (the actual DashboardShell / MedicalShell
+              rendered at 80% inside a bordered frame, fully interactive), a &quot;Live
+              template&quot; section linking to the full-size page under /templates/…, a
+              &quot;What&apos;s included&quot; section listing everything in the package, and a Pro
+              callout instead of install instructions.
             </AiChatBullet>
             <AiChatBullet>
-              <AiChatStrong>Wider layout</AiChatStrong> — ComponentDetail now takes a wide prop that bumps the page shell
-              from 1200px to 1560px (main column 900px → 1220px), so the dashboards fit without heavy downscaling.
-              Regular component pages are unchanged.
+              <AiChatStrong>Wider layout</AiChatStrong> — ComponentDetail now takes a wide prop that
+              bumps the page shell from 1200px to 1560px (main column 900px → 1220px), so the
+              dashboards fit without heavy downscaling. Regular component pages are unchanged.
             </AiChatBullet>
           </AiChatBulletList>
           <AiChatMessageLine>
-            Both pages return 200 on the dev server and lints are clean. Take a look — happy to adjust the preview scale
-            or frame height, and to push when you&apos;re ready.
+            Both pages return 200 on the dev server and lints are clean. Take a look — happy to
+            adjust the preview scale or frame height, and to push when you&apos;re ready.
           </AiChatMessageLine>
         </AiChatAssistantMessage>
       ),
@@ -133,7 +143,8 @@ function landingPageMessages(): { id: string; node: React.ReactNode }[] {
       node: (
         <AiChatUserMessage>
           <AiChatMessageLine>
-            looks great! add both templates to the docs sidebar under a new Templates group and push everything to main
+            looks great! add both templates to the docs sidebar under a new Templates group and push
+            everything to main
           </AiChatMessageLine>
         </AiChatUserMessage>
       ),
@@ -144,9 +155,10 @@ function landingPageMessages(): { id: string; node: React.ReactNode }[] {
         <AiChatAssistantMessage>
           <AiChatMessageLine tone="secondary">Worked for 1m 48s</AiChatMessageLine>
           <AiChatMessageLine>
-            Done — the docs sidebar now has a <AiChatStrong>Templates</AiChatStrong> group listing Home Dashboard and
-            Medical Profile with PRO badges, and the components gallery got a matching section. Everything is committed
-            and pushed to main; the Vercel build went through cleanly.
+            Done — the docs sidebar now has a <AiChatStrong>Templates</AiChatStrong> group listing
+            Home Dashboard and Medical Profile with PRO badges, and the components gallery got a
+            matching section. Everything is committed and pushed to main; the Vercel build went
+            through cleanly.
           </AiChatMessageLine>
         </AiChatAssistantMessage>
       ),
@@ -159,8 +171,8 @@ function CodingResponse() {
   return (
     <AiChatAssistantMessage>
       <AiChatMessageLine>
-        Done — the semantic dark-mode tokens and reusable theme toggle are wired. The toggle updates the root theme from
-        one place and persists the selection:
+        Done — the semantic dark-mode tokens and reusable theme toggle are wired. The toggle updates
+        the root theme from one place and persists the selection:
       </AiChatMessageLine>
       <CodeBlock
         code={CODING_RESPONSE_CODE}
@@ -222,7 +234,8 @@ function WorkSwap({ finished, onFinished }: { finished: boolean; onFinished: () 
       onLayout={(event) => {
         if (leave.value === 0) height.value = event.nativeEvent.layout.height;
       }}
-      style={[{ overflow: 'hidden' }, stepsStyle]}>
+      style={[{ overflow: 'hidden' }, stepsStyle]}
+    >
       <AgentProgress onFinished={onFinished} />
     </Animated.View>
   );
@@ -252,8 +265,8 @@ function Thread({
             node: (
               <AiChatUserMessage>
                 <AiChatMessageLine>
-                  Create a vintage editorial illustration of Lionel Messi dribbling in Argentina&apos;s home kit against
-                  a blue background.
+                  Create a vintage editorial illustration of Lionel Messi dribbling in
+                  Argentina&apos;s home kit against a blue background.
                 </AiChatMessageLine>
               </AiChatUserMessage>
             ),
@@ -276,8 +289,8 @@ function Thread({
               node: (
                 <AiChatUserMessage>
                   <AiChatMessageLine>
-                    update our color tokens for dark mode and add a reusable theme toggle to the registry. run lint and a
-                    production build when you&apos;re done.
+                    update our color tokens for dark mode and add a reusable theme toggle to the
+                    registry. run lint and a production build when you&apos;re done.
                   </AiChatMessageLine>
                 </AiChatUserMessage>
               ),
@@ -289,7 +302,10 @@ function Thread({
   const [visibleCount, setVisibleCount] = useState(1);
   useEffect(() => {
     if (visibleCount >= messages.length) return;
-    const timer = setTimeout(() => setVisibleCount((count) => count + 1), scenario === 'landing-page-design' ? 2000 : 900);
+    const timer = setTimeout(
+      () => setVisibleCount((count) => count + 1),
+      scenario === 'landing-page-design' ? 2000 : 900,
+    );
     return () => clearTimeout(timer);
   }, [messages.length, scenario, visibleCount]);
 
@@ -325,7 +341,9 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
     if (revealTimer.current) return;
     revealTimer.current = setTimeout(() => {
       revealTimer.current = null;
-      setGenerated((current) => (current.some((g) => g.id === GENERATED_IMAGE.id) ? current : [GENERATED_IMAGE, ...current]));
+      setGenerated((current) =>
+        current.some((g) => g.id === GENERATED_IMAGE.id) ? current : [GENERATED_IMAGE, ...current],
+      );
     }, GALLERY_REVEAL_DELAY_MS);
   }, []);
   useEffect(
@@ -379,14 +397,28 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
               changeCount={12}
               additions={156}
               deletions={23}
-              changedFiles={[{ path: 'bloom/app/components/button.tsx', additions: 74, status: 'New', icon: <ReactLogo /> }]}
+              changedFiles={[
+                {
+                  path: 'bloom/app/components/button.tsx',
+                  additions: 74,
+                  status: 'New',
+                  icon: <ReactLogo />,
+                },
+              ]}
               style={width === '100%' ? { minHeight: 0, flex: 1, height: undefined } : undefined}
             />
           )
-        }>
+        }
+      >
         <AiChatContainer
           project="vibl coding project"
-          title={scenario === 'image-generation' ? 'image generation' : scenario === 'coding-scenario' ? 'coding scenario' : 'landing page design'}
+          title={
+            scenario === 'image-generation'
+              ? 'image generation'
+              : scenario === 'coding-scenario'
+                ? 'coding scenario'
+                : 'landing page design'
+          }
           header={<AiChatMobileHeader title={image ? 'Image generation' : 'Agentic chat'} />}
           working={working}
           composer={
@@ -408,10 +440,16 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
                 />
               </ComposerLoader>
               <View style={{ paddingLeft: 6, paddingRight: 6 }}>
-                <ComposerStatusBar branch="Main" folders={LOCAL_FOLDERS} mode="Agent" context={57} />
+                <ComposerStatusBar
+                  branch="Main"
+                  folders={LOCAL_FOLDERS}
+                  mode="Agent"
+                  context={57}
+                />
               </View>
             </>
-          }>
+          }
+        >
           <Thread
             key={scenario}
             scenario={scenario}

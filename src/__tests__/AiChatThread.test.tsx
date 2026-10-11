@@ -21,7 +21,12 @@ jest.mock('react-native', () => {
 });
 
 import { Text } from 'react-native';
-import { AiChatContainer, AiChatThread, AiChatUserMessage, useAiChatChromeInsets } from '../ai-chat';
+import {
+  AiChatContainer,
+  AiChatThread,
+  AiChatUserMessage,
+  useAiChatChromeInsets,
+} from '../ai-chat';
 import type { AiChatChromeInsets, AiChatThreadHandle } from '../ai-chat';
 import { resolvedStyle } from './support/rendered-style';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -281,7 +286,13 @@ describe('AiChatContainer floatingChrome', () => {
 
   function floating(extra: Partial<React.ComponentProps<typeof AiChatContainer>> = {}) {
     return renderIn(
-      <AiChatContainer testID="chat" floatingChrome title="coding scenario" composer={<Text>composer</Text>} {...extra}>
+      <AiChatContainer
+        testID="chat"
+        floatingChrome
+        title="coding scenario"
+        composer={<Text>composer</Text>}
+        {...extra}
+      >
         <AiChatThread testID="thread">
           <AiChatUserMessage>hello</AiChatUserMessage>
         </AiChatThread>
@@ -304,7 +315,11 @@ describe('AiChatContainer floatingChrome', () => {
   function scrollTo_(api: ReturnType<typeof renderIn>, y: number, content: number) {
     act(() =>
       scroller(api).onScroll?.({
-        nativeEvent: { contentOffset: { y }, layoutMeasurement: { height: 400 }, contentSize: { height: content } },
+        nativeEvent: {
+          contentOffset: { y },
+          layoutMeasurement: { height: 400 },
+          contentSize: { height: content },
+        },
       } as never),
     );
   }
@@ -313,8 +328,18 @@ describe('AiChatContainer floatingChrome', () => {
     const api = floating();
     const top = api.getByTestId('chat-chrome-top');
     const bottom = api.getByTestId('chat-chrome-bottom');
-    expect(resolvedStyle(top.props.style)).toMatchObject({ position: 'absolute', top: 0, left: 0, right: 0 });
-    expect(resolvedStyle(bottom.props.style)).toMatchObject({ position: 'absolute', bottom: 0, left: 0, right: 0 });
+    expect(resolvedStyle(top.props.style)).toMatchObject({
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+    });
+    expect(resolvedStyle(bottom.props.style)).toMatchObject({
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+    });
     expect(top.props.pointerEvents).toBe('box-none');
     expect(bottom.props.pointerEvents).toBe('box-none');
     // The breadcrumb and the composer are inside the floating blocks.

@@ -31,7 +31,9 @@ describe('heatmap colour', () => {
   it('mixes the accent into the track by share of max, 8% floor', () => {
     expect(heatmapCellColor(0, 64, 'rgb(0 0 255)', 'rgb(255 255 255)')).toBe('rgb(235 235 255)');
     expect(heatmapCellColor(64, 64, 'rgb(0 0 255)', 'rgb(255 255 255)')).toBe('rgb(0 0 255)');
-    expect(heatmapCellColor(32, 64, 'rgb(0 0 255)', 'rgb(255 255 255)')).toBe(heatmapCellColor(32, 64, 'rgb(0 0 255)', 'rgb(255 255 255)'));
+    expect(heatmapCellColor(32, 64, 'rgb(0 0 255)', 'rgb(255 255 255)')).toBe(
+      heatmapCellColor(32, 64, 'rgb(0 0 255)', 'rgb(255 255 255)'),
+    );
     expect(heatmapCellColor(99, 64, 'rgb(0 0 255)', 'rgb(0 0 0)')).toBe('rgb(0 0 255)');
   });
 });
@@ -39,11 +41,22 @@ describe('heatmap colour', () => {
 describe('HeatmapChartCard', () => {
   it('headlines the total, draws 7 × 12 named cells, a 12-label axis and the ramp legend', () => {
     const { getByTestId, getByText, UNSAFE_root } = renderCard(
-      <HeatmapChartCard testID="heatmap" rows={ROWS} columns={COLUMNS} delta={0.052} range="Last 7 days" />,
+      <HeatmapChartCard
+        testID="heatmap"
+        rows={ROWS}
+        columns={COLUMNS}
+        delta={0.052}
+        range="Last 7 days"
+      />,
     );
-    expect(resolvedStyle(getByTestId('heatmap').props.style)).toMatchObject({ height: 329, borderRadius: 16 });
+    expect(resolvedStyle(getByTestId('heatmap').props.style)).toMatchObject({
+      height: 329,
+      borderRadius: 16,
+    });
     expect(getByTestId('heatmap-headline').props.children).toBe('1,892');
-    expect(UNSAFE_root.findAll((n) => typeof n.type === 'string' && n.props.role === 'img')).toHaveLength(84);
+    expect(
+      UNSAFE_root.findAll((n) => typeof n.type === 'string' && n.props.role === 'img'),
+    ).toHaveLength(84);
     expect(getByTestId('heatmap-cell-3-7').props.accessibilityLabel).toBe('Thu 14: 64');
     for (const t of ['Less', 'More', '+5.2%', 'Mon', '22']) expect(getByText(t)).toBeTruthy();
     const cell = resolvedStyle(getByTestId('heatmap-cell-0-0').props.style);
@@ -55,7 +68,13 @@ describe('HeatmapChartCard', () => {
     const theme = buildTheme('teal', 'light');
     const palette = resolveChartCardPalette(theme);
     const { getByTestId, getByText } = renderCard(
-      <HeatmapChartCard testID="heatmap" rows={ROWS} columns={COLUMNS} delta={0.052} onActiveCellChange={onActiveCellChange} />,
+      <HeatmapChartCard
+        testID="heatmap"
+        rows={ROWS}
+        columns={COLUMNS}
+        delta={0.052}
+        onActiveCellChange={onActiveCellChange}
+      />,
     );
     act(() => {
       fireEvent(getByTestId('heatmap-cell-3-7'), 'pointerEnter');
@@ -63,7 +82,9 @@ describe('HeatmapChartCard', () => {
     expect(onActiveCellChange).toHaveBeenLastCalledWith({ row: 3, col: 7 });
     expect(getByText('Thu · 14')).toBeTruthy();
     expect(getByTestId('heatmap-headline').props.children).toBe('64');
-    expect(resolvedStyle(getByTestId('heatmap-cell-3-7').props.style).boxShadow).toBe(`0 0 0 2px ${palette.cursor}`);
+    expect(resolvedStyle(getByTestId('heatmap-cell-3-7').props.style).boxShadow).toBe(
+      `0 0 0 2px ${palette.cursor}`,
+    );
     expect(resolvedStyle(getByText('Thu').props.style).color).toBe(palette.text);
     expect(resolvedStyle(getByText('Mon').props.style).color).toBe(palette.textTertiary);
     act(() => {
@@ -75,7 +96,10 @@ describe('HeatmapChartCard', () => {
   it('shows every n-th column label when there are more than 12', () => {
     const cols = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0'));
     const { getByText } = renderCard(
-      <HeatmapChartCard rows={ROWS.map((r) => ({ ...r, values: [...r.values, ...r.values] }))} columns={cols} />,
+      <HeatmapChartCard
+        rows={ROWS.map((r) => ({ ...r, values: [...r.values, ...r.values] }))}
+        columns={cols}
+      />,
     );
     const opacityOf = (t: string) => {
       let node = getByText(t).parent;
@@ -88,7 +112,11 @@ describe('HeatmapChartCard', () => {
 
   it('reads a range and honours a fixed max', () => {
     const { getByTestId } = renderCard(
-      <HeatmapChartCard testID="heatmap" columns={COLUMNS} ranges={[{ id: 'a', label: 'A', rows: ROWS.slice(0, 1), headline: 5 }]} />,
+      <HeatmapChartCard
+        testID="heatmap"
+        columns={COLUMNS}
+        ranges={[{ id: 'a', label: 'A', rows: ROWS.slice(0, 1), headline: 5 }]}
+      />,
     );
     expect(getByTestId('heatmap-headline').props.children).toBe('5');
   });

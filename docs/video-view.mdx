@@ -1,0 +1,84 @@
+---
+title: VideoView
+description: expo-video's VideoView with inline playback on by default — the one way an Oxy app paints a video.
+order: 78
+---
+
+# VideoView
+
+expo-video's own `VideoView`, every prop and the same `ref`, with one default
+changed: on web the `<video>` it renders carries `playsinline`.
+
+```tsx
+import { useVideoPlayer } from 'expo-video';
+import { VideoView, type VideoViewHandle } from '@oxy.so/bloom/video-view';
+
+const player = useVideoPlayer(uri, (p) => {
+  p.muted = true;
+  p.play();
+});
+const ref = useRef<VideoViewHandle>(null);
+
+<VideoView ref={ref} player={player} contentFit="cover" nativeControls={false} />
+```
+
+Render this instead of importing `VideoView` from `expo-video`. Keep creating
+and owning the player with expo-video's `useVideoPlayer` / `createVideoPlayer`;
+Bloom never makes one.
+
+## Why it exists
+
+iPhone Safari plays a `<video>` inside the page only when the element has
+`playsinline`. Without it a muted autoplay is refused outright, so the element
+keeps showing its poster: a feed of videos that look loaded and never start,
+on iPhones only. Desktop browsers and Android ignore the attribute, so nothing
+else shows the defect.
+
+expo-video's web view writes `playsInline={props.playsInline}`, so the
+attribute appears only when every call site remembers the prop — and none of
+the Oxy apps did. The default now lives in one place. Pass
+`playsInline={false}` to opt out; native ignores the prop, since iOS and
+Android views always play inside their box.
+
+`MediaSurface` (and with it `MediaFlightLayer`, `MediaFlightHost` and the media
+gallery) renders its video arm through this view. A `renderVideo` slot builds
+its own element, so render this `VideoView` there too.
+
+## Types
+
+- `VideoViewProps` — expo-video's `VideoViewProps`, with `player` typed by
+  Bloom's structural `VideoPlayerLike`, so a real `VideoPlayer` passes as is.
+- `VideoViewHandle` — what the `ref` receives: expo-video's view instance, with
+  `nativeRef`, `enterFullscreen()` and `startPictureInPicture()`.
+
+These name expo-video's own types, which is why the family is a subpath
+(`@oxy.so/bloom/video-view`) rather than a root export: an app that renders no
+video never loads them.
+
+## The optional peer
+
+The module is loaded through the same optional-peer boundary as `MediaSurface`
+(`provideExpoVideo` applies; see [MediaFlight](./media-flight.mdx)). When
+expo-video cannot be loaded the view renders nothing and warns once in dev.
+
+## Keeping apps on it
+
+Apps forbid the direct import with ESLint, so the default cannot be bypassed by
+accident:
+
+```js
+'no-restricted-imports': ['error', {
+  paths: [{
+    name: 'expo-video',
+    importNames: ['VideoView'],
+    message: "Render VideoView from '@oxy.so/bloom/video-view': it plays inline on iPhone Safari.",
+  }],
+}],
+```
+
+## Tests
+
+`src/__tests__/VideoView.web.test.tsx` renders expo-video's real web view
+through react-native-web into jsdom and reads the `playsinline` attribute off
+the element, for `VideoView` and for `MediaSurface`. Its control renders the
+same view without Bloom and must come out without the attribute.

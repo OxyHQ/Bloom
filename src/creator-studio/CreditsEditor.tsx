@@ -71,7 +71,9 @@ function CreditsEditorComponent({
     onCreditsChange(credits.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   const remove = (id: string) => onCreditsChange(credits.filter((c) => c.id !== id));
   const add = () => {
-    const id = createIdRef.current ? createIdRef.current() : `credit-${Date.now()}-${creditCounter++}`;
+    const id = createIdRef.current
+      ? createIdRef.current()
+      : `credit-${Date.now()}-${creditCounter++}`;
     onCreditsChange([...credits, { id, role: roles[0]?.value ?? '', name: '' }]);
   };
 
@@ -129,14 +131,15 @@ function CreditsEditorComponent({
               />
             </View>
             <Button
-
               size="md"
               iconOnly
               leadingIcon={RiDeleteBinLine}
               disabled={disabled}
               accessibilityLabel={labels.remove(index, credit.name)}
               onPress={() => remove(credit.id)}
-              testID={testID ? `${testID}-remove-${index}` : undefined} tone="neutral" appearance="outline"
+              testID={testID ? `${testID}-remove-${index}` : undefined}
+              tone="neutral"
+              appearance="outline"
             />
           </View>
         );
@@ -153,13 +156,14 @@ function CreditsEditorComponent({
       })}
 
       <Button
-
         size="md"
         leadingIcon={RiAddLine}
         onPress={add}
         disabled={disabled}
         style={styles.add}
-        testID={testID ? `${testID}-add` : undefined} tone="neutral" appearance="outline"
+        testID={testID ? `${testID}-add` : undefined}
+        tone="neutral"
+        appearance="outline"
       >
         {labels.add}
       </Button>
@@ -177,7 +181,14 @@ const styles = StyleSheet.create({
   rowStacked: { gap: 6 },
   role: { width: 200, flexShrink: 0 },
   roleStacked: { width: '100%' },
-  nameRow: { flexGrow: 1, flexShrink: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  nameRow: {
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   name: { flex: 1, minWidth: 0 },
   add: { alignSelf: 'flex-start', marginTop: 4 },
 });

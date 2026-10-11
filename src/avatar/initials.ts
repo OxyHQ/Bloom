@@ -75,16 +75,32 @@ export function avatarInitialsType(size: number): TextStyle {
 
 /** Tailwind v4 `lime-*` (L, C) — the ramp shape the lime tint is read from. */
 const LIME_TABLE: RampTable = {
-  50: [0.986, 0.031], 100: [0.967, 0.067], 200: [0.938, 0.127], 300: [0.897, 0.196],
-  400: [0.841, 0.238], 500: [0.768, 0.233], 600: [0.648, 0.2], 700: [0.532, 0.157],
-  800: [0.453, 0.124], 900: [0.405, 0.101], 950: [0.274, 0.072],
+  50: [0.986, 0.031],
+  100: [0.967, 0.067],
+  200: [0.938, 0.127],
+  300: [0.897, 0.196],
+  400: [0.841, 0.238],
+  500: [0.768, 0.233],
+  600: [0.648, 0.2],
+  700: [0.532, 0.157],
+  800: [0.453, 0.124],
+  900: [0.405, 0.101],
+  950: [0.274, 0.072],
 };
 
 /** Tailwind v4 `pink-*` (L, C). */
 const PINK_TABLE: RampTable = {
-  50: [0.971, 0.014], 100: [0.948, 0.028], 200: [0.899, 0.061], 300: [0.823, 0.12],
-  400: [0.718, 0.202], 500: [0.656, 0.241], 600: [0.592, 0.249], 700: [0.525, 0.223],
-  800: [0.459, 0.187], 900: [0.408, 0.153], 950: [0.284, 0.109],
+  50: [0.971, 0.014],
+  100: [0.948, 0.028],
+  200: [0.899, 0.061],
+  300: [0.823, 0.12],
+  400: [0.718, 0.202],
+  500: [0.656, 0.241],
+  600: [0.592, 0.249],
+  700: [0.525, 0.223],
+  800: [0.459, 0.187],
+  900: [0.408, 0.153],
+  950: [0.284, 0.109],
 };
 
 /**
@@ -153,7 +169,10 @@ export function resolveAvatarTint(theme: Theme, color: AvatarColor): AvatarTint 
     }
     case 'neutral':
     default: {
-      return { background: theme.colors.backgroundTertiary, foreground: theme.colors.textSecondary };
+      return {
+        background: theme.colors.backgroundTertiary,
+        foreground: theme.colors.textSecondary,
+      };
     }
   }
 }

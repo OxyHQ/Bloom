@@ -16,9 +16,10 @@ export interface DataTableMessages {
   density: { md: string; sm: string };
 }
 
-export const DATA_TABLE_MESSAGES: MessageCatalog<DataTableMessages> = defineMessages<DataTableMessages>('DATA_TABLE_MESSAGES', {
-  selectAll: 'Select all rows on this page',
-  selectRow: (id) => `Select row ${id}`,
-  densityLabel: 'Table density',
-  density: { md: 'Normal', sm: 'Compact' },
-});
+export const DATA_TABLE_MESSAGES: MessageCatalog<DataTableMessages> =
+  defineMessages<DataTableMessages>('DATA_TABLE_MESSAGES', {
+    selectAll: 'Select all rows on this page',
+    selectRow: (id) => `Select row ${id}`,
+    densityLabel: 'Table density',
+    density: { md: 'Normal', sm: 'Compact' },
+  });

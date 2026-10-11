@@ -15,7 +15,7 @@
  * set of the same three bugs.
  */
 import React, { memo, useCallback, useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import { Z_INDEX } from '../styles/z-index';
@@ -26,34 +26,15 @@ import { APP_SHELL_MESSAGES } from './messages';
 
 import type { AppShellSplitPanesProps } from './types';
 import { APP_SHELL_DEFAULTS as D } from './constants';
-
-/** One pane: a bounded column that scrolls its own overflow. */
-function Pane({
-  children,
-  scroll,
-  style,
-  testID,
-}: {
-  children: React.ReactNode;
-  scroll: boolean;
-  style: React.ComponentProps<typeof View>['style'];
-  testID?: string;
-}) {
-  return (
-    <View testID={testID} style={[{ minWidth: 0, alignSelf: 'stretch' }, style]}>
-      {scroll ? (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-          {children}
-        </ScrollView>
-      ) : (
-        <View style={{ flex: 1, minHeight: 0 }}>{children}</View>
-      )}
-    </View>
-  );
-}
+import { SplitPane as Pane } from './SplitPane';
+import { AppShellSplitMotion } from './AppShellSplitMotion';
 
 const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
   variant = 'joined',
+  transition = 'none',
+  listErrorBoundary,
+  detailErrorBoundary,
+  infoErrorBoundary,
   list,
   detail,
   info,
@@ -115,11 +96,62 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
   // Only the panes that are actually drawn count: alone, a pane fills the row.
   const solo = [showList, showDetail, showInfo].filter(Boolean).length === 1;
 
+  if (transition === 'slide') {
+    return (
+      <View style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, flexDirection: 'row' }}>
+        {(showList || showDetail) && (
+          <AppShellSplitMotion
+            list={list}
+            detail={detail}
+            showList={showList}
+            showDetail={showDetail}
+            width={width}
+            gap={divider.width}
+            paneScroll={paneScroll}
+            listErrorBoundary={listErrorBoundary}
+            detailErrorBoundary={detailErrorBoundary}
+            dividerStyle={divider}
+            testID={testID}
+            resizeHandle={
+              resizable ? (
+                <AiChatResizeHandle
+                  label={resizeLabel}
+                  onResizeStart={onResizeStart}
+                  onResize={onResize}
+                  onNudge={onNudge}
+                  testID={testID ? `${testID}-divider` : undefined}
+                />
+              ) : null
+            }
+          />
+        )}
+        {showInfo && (showList || showDetail) ? (
+          <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} />
+        ) : null}
+        {showInfo ? (
+          <Pane
+            testID={testID ? `${testID}-pane-info` : undefined}
+            errorBoundary={infoErrorBoundary}
+            scroll={paneScroll}
+            style={
+              solo
+                ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 }
+                : { width: infoWidth, flexShrink: 0 }
+            }
+          >
+            {info}
+          </Pane>
+        ) : null}
+      </View>
+    );
+  }
+
   return (
     <View style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, flexDirection: 'row' }}>
       {showList ? (
         <Pane
           testID={testID ? `${testID}-pane-list` : undefined}
+          errorBoundary={listErrorBoundary}
           scroll={paneScroll}
           style={solo ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 } : { width, flexShrink: 0 }}
         >
@@ -132,7 +164,11 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
             <View
               pointerEvents="box-none"
               testID={testID ? `${testID}-resize-anchor` : undefined}
-              style={separated ? { position: 'absolute', top: 0, bottom: 0, left: '50%', right: '50%', width: 0 } : { flex: 1 }}
+              style={
+                separated
+                  ? { position: 'absolute', top: 0, bottom: 0, left: '50%', right: '50%', width: 0 }
+                  : { flex: 1 }
+              }
             >
               <AiChatResizeHandle
                 label={resizeLabel}
@@ -148,18 +184,26 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
       {showDetail ? (
         <Pane
           testID={testID ? `${testID}-pane-detail` : undefined}
+          errorBoundary={detailErrorBoundary}
           scroll={paneScroll}
           style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}
         >
           {detail}
         </Pane>
       ) : null}
-      {showInfo && showDetail && !solo ? <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} /> : null}
+      {showInfo && showDetail && !solo ? (
+        <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} />
+      ) : null}
       {showInfo ? (
         <Pane
           testID={testID ? `${testID}-pane-info` : undefined}
+          errorBoundary={infoErrorBoundary}
           scroll={paneScroll}
-          style={solo ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 } : { width: infoWidth, flexShrink: 0 }}
+          style={
+            solo
+              ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 }
+              : { width: infoWidth, flexShrink: 0 }
+          }
         >
           {info}
         </Pane>

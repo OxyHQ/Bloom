@@ -135,10 +135,17 @@ function gestureReportedPress(event: GestureResponderEvent): boolean {
   return false;
 }
 
-function OptionalGesture({ enabled, children, ...props }: ComponentProps<typeof GestureDetector> & { enabled: boolean }) {
-  return enabled ? <GestureDetector {...props}>{children}</GestureDetector> : <Fragment>{children}</Fragment>;
+function OptionalGesture({
+  enabled,
+  children,
+  ...props
+}: ComponentProps<typeof GestureDetector> & { enabled: boolean }) {
+  return enabled ? (
+    <GestureDetector {...props}>{children}</GestureDetector>
+  ) : (
+    <Fragment>{children}</Fragment>
+  );
 }
-
 
 interface TabBarBodyProps extends TabBarProps {
   Surface: TabBarSurfaceComponent;
@@ -211,7 +218,10 @@ function TabBarBody({
   const layer = useSurfaceLayer();
   const theme = useTabBarTheme(themeOverrides);
   const ResolvedSurface = Surface;
-  const publishedFill = resolveSurfaceMaterial({ fill: ResolvedSurface.resolveFill?.(theme) ?? theme.glassTint, parentFill: layer.parentFill }).publishedFill;
+  const publishedFill = resolveSurfaceMaterial({
+    fill: ResolvedSurface.resolveFill?.(theme) ?? theme.glassTint,
+    parentFill: layer.parentFill,
+  }).publishedFill;
   const impact = useHaptics();
 
   // The pill's OUTER width (the box the animated minimize inset is applied
@@ -226,7 +236,9 @@ function TabBarBody({
   // tabs naturally grow the pill until it reaches the available width. An
   // explicit `maxWidth` remains an additional ceiling, never a width request.
   const availableWidth = Math.max(0, containerWidth - (embedded ? 0 : BAR_MARGIN * 2));
-  const minimizeInset = embedded ? 0 : Math.min(MINIMIZED_INSET, Math.max(0, (availableWidth - tabCount * 44 - ROW_PAD_H * 2) / 2));
+  const minimizeInset = embedded
+    ? 0
+    : Math.min(MINIMIZED_INSET, Math.max(0, (availableWidth - tabCount * 44 - ROW_PAD_H * 2) / 2));
   const contentWidth = tabCount * MAX_EXPANDED_ITEM_WIDTH + ROW_PAD_H * 2;
   const barOuterWidth = Math.min(availableWidth, contentWidth, maxWidth ?? Infinity);
 
@@ -506,12 +518,7 @@ function TabBarBody({
       [HIGHLIGHT_EXPANDED, HIGHLIGHT_MINIMIZED],
       Extrapolation.CLAMP,
     );
-    const sideInset = interpolate(
-      progress.value,
-      [0, 1],
-      [0, minimizeInset],
-      Extrapolation.CLAMP,
-    );
+    const sideInset = interpolate(progress.value, [0, 1], [0, minimizeInset], Extrapolation.CLAMP);
     // Same `barOuterWidth` the scrub worklet resolves an index from — see the
     // note where it is computed.
     const barWidth = barOuterWidth - sideInset * 2;
@@ -557,12 +564,41 @@ function TabBarBody({
   const constrainedWrapStyle: ViewStyle | null =
     barOuterWidth === availableWidth ? null : { width: barOuterWidth, alignSelf: 'center' };
   const barContext = useMemo(
-    () => ({ scrollable, progress, slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex }),
-    [scrollable, progress, slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex],
+    () => ({
+      scrollable,
+      progress,
+      slideIndex,
+      highlightOpacity,
+      isDragging,
+      theme,
+      activeIndex,
+      driven,
+      selectIndex,
+    }),
+    [
+      scrollable,
+      progress,
+      slideIndex,
+      highlightOpacity,
+      isDragging,
+      theme,
+      activeIndex,
+      driven,
+      selectIndex,
+    ],
   );
 
   return (
-    <View {...viewProps} {...dirProps} onLayout={(event) => { setContainerWidth(event.nativeEvent.layout.width); onLayout?.(event); }} pointerEvents="box-none" style={[embedded ? { width: '100%' } : styles.root, style]}>
+    <View
+      {...viewProps}
+      {...dirProps}
+      onLayout={(event) => {
+        setContainerWidth(event.nativeEvent.layout.width);
+        onLayout?.(event);
+      }}
+      pointerEvents="box-none"
+      style={[embedded ? { width: '100%' } : styles.root, style]}
+    >
       {/* Progressive blur rising from the screen's bottom edge behind the pill.
           Rendered CONDITIONALLY, and as nothing at all when off: the band is
           full-bleed and 114pt tall at a zero bottom inset, so it blurs whatever
@@ -584,7 +620,14 @@ function TabBarBody({
           }}
         />
       )}
-      <View pointerEvents="box-none" style={[embedded ? undefined : styles.barWrap, { marginBottom: bottomOffset }, constrainedWrapStyle]}>
+      <View
+        pointerEvents="box-none"
+        style={[
+          embedded ? undefined : styles.barWrap,
+          { marginBottom: bottomOffset },
+          constrainedWrapStyle,
+        ]}
+      >
         <OptionalGesture enabled={!scrollable} gesture={gesture}>
           <Animated.View style={[barStyle, surfaceFillVars(publishedFill)]}>
             <ResolvedSurface theme={theme} style={shapeStyle} />
@@ -592,7 +635,9 @@ function TabBarBody({
               style={[styles.highlight, { backgroundColor: theme.highlight }, highlightStyle]}
             />
             <View accessibilityRole="tablist" style={styles.itemRow}>
-              <SurfaceLevelProvider level={layer.level} fill={publishedFill}><BarContext.Provider value={barContext}>{children}</BarContext.Provider></SurfaceLevelProvider>
+              <SurfaceLevelProvider level={layer.level} fill={publishedFill}>
+                <BarContext.Provider value={barContext}>{children}</BarContext.Provider>
+              </SurfaceLevelProvider>
             </View>
           </Animated.View>
         </OptionalGesture>
@@ -628,7 +673,7 @@ function TabBarButtonBody({
   const highlightOpacity = bar?.highlightOpacity;
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
   // otherwise focus comes from the bar's controlled `activeIndex`.
-  const focused = isFocused ?? (bar?.activeIndex === index);
+  const focused = isFocused ?? bar?.activeIndex === index;
 
   // FOCUS-DRIVEN path only. Covers programmatic navigation too (deep links,
   // back gestures) — the trigger re-renders focused and the highlight follows.

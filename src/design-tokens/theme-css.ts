@@ -1,4 +1,9 @@
-import { COMPONENT_CONTAINERS, COMPONENT_COLOR_ROLES, COMPONENT_RADIUS, COMPONENT_SHADOWS } from './component-roles';
+import {
+  COMPONENT_CONTAINERS,
+  COMPONENT_COLOR_ROLES,
+  COMPONENT_RADIUS,
+  COMPONENT_SHADOWS,
+} from './component-roles';
 import { TYPE_SCALE } from '../typography/scale';
 /**
  * Tailwind v4 `@theme` block generator for the Oxy Unified Design Language.
@@ -95,7 +100,8 @@ export function bloomThemeCss(): string {
   // A rem defaults to 14px in the native CSS compiler. Authored numeric
   // utilities use the same 4px grid as the web, without consumer configuration.
   lines.push('  --spacing: 4px;');
-  for (const [name, width] of Object.entries(COMPONENT_CONTAINERS)) lines.push(`  --container-${name}: ${width};`);
+  for (const [name, width] of Object.entries(COMPONENT_CONTAINERS))
+    lines.push(`  --container-${name}: ${width};`);
 
   // Spacing.
   for (const [key, value] of Object.entries(SPACING)) {
@@ -134,12 +140,16 @@ export function bloomThemeCss(): string {
   // The detailed component typography vocabulary shares Typography's exact ramp.
   for (const [name, role] of Object.entries(TYPE_SCALE)) {
     lines.push(`  --text-${name}: ${role.fontSize}px;`);
-    lines.push(`  --text-${name}--line-height: ${lineHeightRatio(role.lineHeight, role.fontSize)};`);
+    lines.push(
+      `  --text-${name}--line-height: ${lineHeightRatio(role.lineHeight, role.fontSize)};`,
+    );
     lines.push(`  --text-${name}--font-weight: ${role.fontWeight};`);
     lines.push(`  --text-${name}--letter-spacing: ${role.letterSpacing}px;`);
   }
-  for (const [name, radius] of Object.entries(COMPONENT_RADIUS)) lines.push(`  --radius-${name}: ${radius};`);
-  for (const [name, shadow] of Object.entries(COMPONENT_SHADOWS)) lines.push(`  --shadow-${name}: ${shadow};`);
+  for (const [name, radius] of Object.entries(COMPONENT_RADIUS))
+    lines.push(`  --radius-${name}: ${radius};`);
+  for (const [name, shadow] of Object.entries(COMPONENT_SHADOWS))
+    lines.push(`  --shadow-${name}: ${shadow};`);
 
   // Bloom raw families.
   lines.push(`  --font-bloom-sans: ${FONT_FAMILY_VARS.sans};`);

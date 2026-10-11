@@ -33,8 +33,16 @@ const FACTS: OrderConfirmationFact[] = [
 function Lines() {
   return (
     <View>
-      <Item title="Ember flatbread" subtitle="Large · Extra smoked curd" trailing={<Text variant="body-medium">×2</Text>} />
-      <Item title="Sorrel and white bean stew" subtitle="Regular" trailing={<Text variant="body-medium">×1</Text>} />
+      <Item
+        title="Ember flatbread"
+        subtitle="Large · Extra smoked curd"
+        trailing={<Text variant="body-medium">×2</Text>}
+      />
+      <Item
+        title="Sorrel and white bean stew"
+        subtitle="Regular"
+        trailing={<Text variant="body-medium">×1</Text>}
+      />
       <Item title="Harbour pickles" trailing={<Text variant="body-medium">×1</Text>} />
     </View>
   );
@@ -57,9 +65,19 @@ export const Default: Story = {
           eta: 'Arrives 17:35',
           detail: 'The shop has started on it',
           icon: RiBikeLine,
-          progress: { value: 1, max: 4, accessibilityLabel: 'Order progress', valueText: '1 of 4 steps' },
+          progress: {
+            value: 1,
+            max: 4,
+            accessibilityLabel: 'Order progress',
+            valueText: '1 of 4 steps',
+          },
         }}
-        address={{ title: 'Home', subtitle: 'Carrer de l’Om 14, 2nd floor', kind: 'saved', meta: '1.2 km' }}
+        address={{
+          title: 'Home',
+          subtitle: 'Carrer de l’Om 14, 2nd floor',
+          kind: 'saved',
+          meta: '1.2 km',
+        }}
         facts={FACTS}
         items={<Lines />}
         action={{ label: 'Track order', onPress: () => {} }}

@@ -81,34 +81,91 @@ function normalise(color: string): string {
 
 function click(el: HTMLElement, init: MouseEventInit = {}) {
   act(() => {
-    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1, ...init }));
+    el.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1, ...init }),
+    );
   });
 }
 
 function key(el: HTMLElement, k: string, init: KeyboardEventInit = {}) {
   act(() => {
-    el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...init }));
+    el.dispatchEvent(
+      new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...init }),
+    );
   });
 }
 
 const TRACKS: Track[] = [
-  { id: 'a', title: 'Glass Harbour', artists: [{ id: 'x', name: 'Mira Vale' }], album: 'Low Tide', duration: 214, dateAdded: '2 days ago', plays: '1,204' },
-  { id: 'b', title: 'Paper Moons', artists: [{ name: 'Mira Vale' }, { name: 'Oren Reed' }], album: 'Low Tide', duration: 187, explicit: true, liked: true },
-  { id: 'c', title: 'Slow Orbit', artists: [{ name: 'Oren Reed' }], album: 'Low Tide', duration: 243 },
-  { id: 'd', title: 'Lost Signal', artists: [{ name: 'Tessa Grove' }], album: 'Static', duration: 199, unavailable: true },
+  {
+    id: 'a',
+    title: 'Glass Harbour',
+    artists: [{ id: 'x', name: 'Mira Vale' }],
+    album: 'Low Tide',
+    duration: 214,
+    dateAdded: '2 days ago',
+    plays: '1,204',
+  },
+  {
+    id: 'b',
+    title: 'Paper Moons',
+    artists: [{ name: 'Mira Vale' }, { name: 'Oren Reed' }],
+    album: 'Low Tide',
+    duration: 187,
+    explicit: true,
+    liked: true,
+  },
+  {
+    id: 'c',
+    title: 'Slow Orbit',
+    artists: [{ name: 'Oren Reed' }],
+    album: 'Low Tide',
+    duration: 243,
+  },
+  {
+    id: 'd',
+    title: 'Lost Signal',
+    artists: [{ name: 'Tessa Grove' }],
+    album: 'Static',
+    duration: 199,
+    unavailable: true,
+  },
 ];
 
 describe('resolveVisibleColumns', () => {
   it('collapses album and plays under 768, date under 1024, and to title + actions under 640', () => {
-    expect(resolveVisibleColumns(undefined, 1280)).toEqual(['index', 'title', 'album', 'dateAdded', 'plays', 'duration', 'actions']);
-    expect(resolveVisibleColumns(undefined, 1023)).toEqual(['index', 'title', 'album', 'plays', 'duration', 'actions']);
-    expect(resolveVisibleColumns(undefined, 767)).toEqual(['index', 'title', 'duration', 'actions']);
+    expect(resolveVisibleColumns(undefined, 1280)).toEqual([
+      'index',
+      'title',
+      'album',
+      'dateAdded',
+      'plays',
+      'duration',
+      'actions',
+    ]);
+    expect(resolveVisibleColumns(undefined, 1023)).toEqual([
+      'index',
+      'title',
+      'album',
+      'plays',
+      'duration',
+      'actions',
+    ]);
+    expect(resolveVisibleColumns(undefined, 767)).toEqual([
+      'index',
+      'title',
+      'duration',
+      'actions',
+    ]);
     expect(resolveVisibleColumns(undefined, 639)).toEqual(['title', 'actions']);
     expect(resolveVisibleColumns(undefined, 390)).toEqual(['title', 'actions']);
   });
 
   it('never shows a column that was not offered, and keeps layout order', () => {
-    expect(resolveVisibleColumns(['duration', 'title', 'index'], 1280)).toEqual(['index', 'title', 'duration']);
+    expect(resolveVisibleColumns(['duration', 'title', 'index'], 1280)).toEqual([
+      'index',
+      'title',
+      'duration',
+    ]);
     expect(resolveVisibleColumns(['index', 'title'], 390)).toEqual(['title']);
   });
 });
@@ -131,8 +188,13 @@ describe('selection logic', () => {
   });
 
   it('starts a range at the clicked row when there is no anchor', () => {
-    expect(nextSelection(order, { selected: [], anchor: null }, 'c', 'range')).toEqual({ selected: ['c'], anchor: 'c' });
-    expect(nextSelection(order, { selected: [], anchor: 'gone' }, 'c', 'range').selected).toEqual(['c']);
+    expect(nextSelection(order, { selected: [], anchor: null }, 'c', 'range')).toEqual({
+      selected: ['c'],
+      anchor: 'c',
+    });
+    expect(nextSelection(order, { selected: [], anchor: 'gone' }, 'c', 'range').selected).toEqual([
+      'c',
+    ]);
   });
 });
 
@@ -166,7 +228,14 @@ describe('TrackList — structure and accessibility', () => {
     const header = byTestId('tl-header');
     expect(header.getAttribute('role')).toBe('row');
     const headers = [...header.querySelectorAll('[role="columnheader"]')];
-    expect(headers.map((h) => h.textContent)).toEqual(['#', 'Title', 'Album', 'Date added', 'Plays', '']);
+    expect(headers.map((h) => h.textContent)).toEqual([
+      '#',
+      'Title',
+      'Album',
+      'Date added',
+      'Plays',
+      '',
+    ]);
     expect(headers[5]?.getAttribute('aria-label')).toBe('Duration');
 
     const row = byTestId('tl-row-1');
@@ -181,24 +250,43 @@ describe('TrackList — structure and accessibility', () => {
 
   it('names an unavailable row as such', () => {
     mount(<TrackList tracks={TRACKS} width={1280} testID="tl" />);
-    expect(byTestId('tl-row-3').getAttribute('aria-label')).toBe('Lost Signal, Tessa Grove, Unavailable');
+    expect(byTestId('tl-row-3').getAttribute('aria-label')).toBe(
+      'Lost Signal, Tessa Grove, Unavailable',
+    );
   });
 
   it('collapses the header and cells by width', () => {
     mount(<TrackList tracks={TRACKS} width={900} testID="tl" />);
-    expect([...byTestId('tl-header').querySelectorAll('[role="columnheader"]')].map((h) => h.textContent)).toEqual(['#', 'Title', 'Album', 'Plays', '']);
+    expect(
+      [...byTestId('tl-header').querySelectorAll('[role="columnheader"]')].map(
+        (h) => h.textContent,
+      ),
+    ).toEqual(['#', 'Title', 'Album', 'Plays', '']);
     mount(<TrackList tracks={TRACKS} width={700} testID="tl" />);
-    expect([...byTestId('tl-header').querySelectorAll('[role="columnheader"]')].map((h) => h.textContent)).toEqual(['#', 'Title', '']);
+    expect(
+      [...byTestId('tl-header').querySelectorAll('[role="columnheader"]')].map(
+        (h) => h.textContent,
+      ),
+    ).toEqual(['#', 'Title', '']);
     expect(byTestId('tl-row-0').textContent).not.toContain('Low Tide');
 
     // Narrow: no header, no index or duration, just the title cell.
-    mount(<TrackList tracks={TRACKS} width={390} testID="tl" menuItems={() => [{ key: 'q', label: 'Add to queue', onPress: () => {} }]} />);
+    mount(
+      <TrackList
+        tracks={TRACKS}
+        width={390}
+        testID="tl"
+        menuItems={() => [{ key: 'q', label: 'Add to queue', onPress: () => {} }]}
+      />,
+    );
     expect(document.querySelector('[data-testid="tl-header"]')).toBeNull();
     const row = byTestId('tl-row-0');
     expect(row.textContent).not.toContain('3:34');
     expect(row.textContent).toContain('Glass Harbour');
     // The more button is always there on narrow.
-    expect(byTestId('tl-row-0-more').getAttribute('aria-label')).toBe('More options for Glass Harbour');
+    expect(byTestId('tl-row-0-more').getAttribute('aria-label')).toBe(
+      'More options for Glass Harbour',
+    );
     expect(byTestId('tl').getAttribute('aria-rowcount')).toBe('4');
   });
 
@@ -207,21 +295,31 @@ describe('TrackList — structure and accessibility', () => {
       <TrackList
         tracks={TRACKS}
         width={1280}
-        groups={[{ key: 'd1', title: 'Disc 1', startIndex: 0 }, { key: 'd2', title: 'Disc 2', startIndex: 2 }]}
+        groups={[
+          { key: 'd1', title: 'Disc 1', startIndex: 0 },
+          { key: 'd2', title: 'Disc 2', startIndex: 2 },
+        ]}
         testID="tl"
       />,
     );
     const grid = byTestId('tl');
     expect(grid.getAttribute('aria-rowcount')).toBe('7');
-    const groupRows = [...grid.querySelectorAll('[role="row"]')].filter((r) => /^Disc/.test(r.textContent ?? ''));
-    expect(groupRows.map((r) => [r.textContent, r.getAttribute('aria-rowindex')])).toEqual([['Disc 1', '2'], ['Disc 2', '5']]);
+    const groupRows = [...grid.querySelectorAll('[role="row"]')].filter((r) =>
+      /^Disc/.test(r.textContent ?? ''),
+    );
+    expect(groupRows.map((r) => [r.textContent, r.getAttribute('aria-rowindex')])).toEqual([
+      ['Disc 1', '2'],
+      ['Disc 2', '5'],
+    ]);
     expect(byTestId('tl-row-2').getAttribute('aria-rowindex')).toBe('6');
   });
 
   it('uses the row geometry: 56 comfortable, 40 compact, radius 6 / 4', () => {
     mount(<TrackList tracks={TRACKS} width={1280} testID="tl" />);
     expect(byTestId('tl-row-0').style.height).toBe('56px');
-    expect(byTestId('tl-row-0').style.borderTopLeftRadius || byTestId('tl-row-0').style.borderRadius).toContain('6px');
+    expect(
+      byTestId('tl-row-0').style.borderTopLeftRadius || byTestId('tl-row-0').style.borderRadius,
+    ).toContain('6px');
     mount(<TrackList tracks={TRACKS} width={1280} density="compact" testID="tl" />);
     expect(byTestId('tl-row-0').style.height).toBe('40px');
     expect(rowGeometry('compact', false).radius).toBe(4);
@@ -235,7 +333,9 @@ describe('TrackList — current row', () => {
     const row = byTestId('tl-row-1');
     expect(row.querySelector('[role="img"][aria-label="Now playing"]')).not.toBeNull();
     const paint = resolveTrackListPaint(theme);
-    const title = [...row.querySelectorAll('div')].find((el) => el.textContent === 'Paper Moons' && el.children.length === 0);
+    const title = [...row.querySelectorAll('div')].find(
+      (el) => el.textContent === 'Paper Moons' && el.children.length === 0,
+    );
     expect(title?.style.color).toBe(normalise(paint.accent));
     // Other rows draw their number.
     expect(byTestId('tl-row-0').querySelector('[aria-label="Now playing"]')).toBeNull();
@@ -243,7 +343,9 @@ describe('TrackList — current row', () => {
   });
 
   it('shows an accent number while paused', () => {
-    mount(<TrackList tracks={TRACKS} width={1280} currentTrackId="b" isPlaying={false} testID="tl" />);
+    mount(
+      <TrackList tracks={TRACKS} width={1280} currentTrackId="b" isPlaying={false} testID="tl" />,
+    );
     const row = byTestId('tl-row-1');
     expect(row.querySelector('[aria-label="Now playing"]')).toBeNull();
     const number = row.querySelector('[data-bloom-track-number]') as HTMLElement;
@@ -253,20 +355,26 @@ describe('TrackList — current row', () => {
 
   it('uses the track number when given', () => {
     mount(<TrackList tracks={[{ ...TRACKS[0]!, number: 7 }]} width={1280} testID="tl" />);
-    expect((byTestId('tl-row-0').querySelector('[data-bloom-track-number]') as HTMLElement).textContent).toBe('7');
+    expect(
+      (byTestId('tl-row-0').querySelector('[data-bloom-track-number]') as HTMLElement).textContent,
+    ).toBe('7');
   });
 });
 
 describe('TrackList — selection', () => {
   it('selects on click, ranges on Shift-click and toggles on Cmd/Ctrl-click (uncontrolled)', () => {
     const onSelectionChange = jest.fn();
-    mount(<TrackList tracks={TRACKS} width={1280} onSelectionChange={onSelectionChange} testID="tl" />);
+    mount(
+      <TrackList tracks={TRACKS} width={1280} onSelectionChange={onSelectionChange} testID="tl" />,
+    );
     click(byTestId('tl-row-0'));
     expect(onSelectionChange).toHaveBeenLastCalledWith(['a']);
     expect(byTestId('tl-row-0').getAttribute('aria-selected')).toBe('true');
     click(byTestId('tl-row-2'), { shiftKey: true });
     expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'b', 'c']);
-    expect(['0', '1', '2', '3'].map((i) => byTestId(`tl-row-${i}`).getAttribute('aria-selected'))).toEqual(['true', 'true', 'true', 'false']);
+    expect(
+      ['0', '1', '2', '3'].map((i) => byTestId(`tl-row-${i}`).getAttribute('aria-selected')),
+    ).toEqual(['true', 'true', 'true', 'false']);
     click(byTestId('tl-row-1'), { metaKey: true });
     expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'c']);
     click(byTestId('tl-row-3'), { ctrlKey: true });
@@ -284,7 +392,15 @@ describe('TrackList — selection', () => {
 
   it('is controlled by selectedIds', () => {
     const onSelectionChange = jest.fn();
-    mount(<TrackList tracks={TRACKS} width={1280} selectedIds={[]} onSelectionChange={onSelectionChange} testID="tl" />);
+    mount(
+      <TrackList
+        tracks={TRACKS}
+        width={1280}
+        selectedIds={[]}
+        onSelectionChange={onSelectionChange}
+        testID="tl"
+      />,
+    );
     click(byTestId('tl-row-0'));
     expect(onSelectionChange).toHaveBeenCalledWith(['a']);
     expect(byTestId('tl-row-0').getAttribute('aria-selected')).toBe('false');
@@ -302,7 +418,17 @@ describe('TrackList — selection', () => {
   it('calls onPause for the current, playing row', () => {
     const onPlay = jest.fn();
     const onPause = jest.fn();
-    mount(<TrackList tracks={TRACKS} width={1280} onPlay={onPlay} onPause={onPause} currentTrackId="a" isPlaying testID="tl" />);
+    mount(
+      <TrackList
+        tracks={TRACKS}
+        width={1280}
+        onPlay={onPlay}
+        onPause={onPause}
+        currentTrackId="a"
+        isPlaying
+        testID="tl"
+      />,
+    );
     click(byTestId('tl-row-0'), { detail: 2 });
     expect(onPause).toHaveBeenCalledWith(TRACKS[0], 0);
     expect(onPlay).not.toHaveBeenCalled();
@@ -310,7 +436,15 @@ describe('TrackList — selection', () => {
 
   it('turns off with selectable={false}', () => {
     const onSelectionChange = jest.fn();
-    mount(<TrackList tracks={TRACKS} width={1280} selectable={false} onSelectionChange={onSelectionChange} testID="tl" />);
+    mount(
+      <TrackList
+        tracks={TRACKS}
+        width={1280}
+        selectable={false}
+        onSelectionChange={onSelectionChange}
+        testID="tl"
+      />,
+    );
     expect(byTestId('tl').hasAttribute('aria-multiselectable')).toBe(false);
     click(byTestId('tl-row-0'));
     expect(onSelectionChange).not.toHaveBeenCalled();
@@ -320,7 +454,9 @@ describe('TrackList — selection', () => {
 describe('TrackList — keyboard', () => {
   it('is one Tab stop; arrows, Home and End move focus', () => {
     mount(<TrackList tracks={TRACKS} width={1280} testID="tl" />);
-    expect(['0', '1', '2', '3'].map((i) => byTestId(`tl-row-${i}`).getAttribute('tabindex'))).toEqual(['0', '-1', '-1', '-1']);
+    expect(
+      ['0', '1', '2', '3'].map((i) => byTestId(`tl-row-${i}`).getAttribute('tabindex')),
+    ).toEqual(['0', '-1', '-1', '-1']);
     act(() => byTestId('tl-row-0').focus());
     key(byTestId('tl-row-0'), 'ArrowDown');
     expect(document.activeElement).toBe(byTestId('tl-row-1'));
@@ -339,7 +475,15 @@ describe('TrackList — keyboard', () => {
   it('Shift+Arrow extends the selection; Enter and Space play', () => {
     const onSelectionChange = jest.fn();
     const onPlay = jest.fn();
-    mount(<TrackList tracks={TRACKS} width={1280} onSelectionChange={onSelectionChange} onPlay={onPlay} testID="tl" />);
+    mount(
+      <TrackList
+        tracks={TRACKS}
+        width={1280}
+        onSelectionChange={onSelectionChange}
+        onPlay={onPlay}
+        testID="tl"
+      />,
+    );
     click(byTestId('tl-row-0'));
     key(byTestId('tl-row-0'), 'ArrowDown', { shiftKey: true });
     expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'b']);
@@ -430,7 +574,9 @@ describe('TrackList — reorder', () => {
     const row = byTestId('tl-row-0');
     act(() => row.focus());
     key(row, 'ContextMenu');
-    const up = [...document.querySelectorAll('[role="menuitem"]')].find((i) => i.textContent === 'Move up');
+    const up = [...document.querySelectorAll('[role="menuitem"]')].find(
+      (i) => i.textContent === 'Move up',
+    );
     expect(up?.getAttribute('aria-disabled')).toBe('true');
   });
 });
@@ -452,9 +598,21 @@ describe('TrackRow — controls', () => {
   it('makes artists and the album links when handlers are given', () => {
     const onArtistPress = jest.fn();
     const onAlbumPress = jest.fn();
-    mount(<TrackList tracks={TRACKS} width={1280} onArtistPress={onArtistPress} onAlbumPress={onAlbumPress} testID="tl" />);
+    mount(
+      <TrackList
+        tracks={TRACKS}
+        width={1280}
+        onArtistPress={onArtistPress}
+        onAlbumPress={onAlbumPress}
+        testID="tl"
+      />,
+    );
     const links = [...byTestId('tl-row-1').querySelectorAll('[role="link"]')] as HTMLElement[];
-    expect(links.map((l) => l.getAttribute('aria-label'))).toEqual(['Mira Vale', 'Oren Reed', 'Low Tide']);
+    expect(links.map((l) => l.getAttribute('aria-label'))).toEqual([
+      'Mira Vale',
+      'Oren Reed',
+      'Low Tide',
+    ]);
     click(links[1]!);
     expect(onArtistPress).toHaveBeenCalledWith({ name: 'Oren Reed' }, TRACKS[1]);
     click(links[2]!);
@@ -480,7 +638,9 @@ describe('TrackRow — controls', () => {
         testID="r"
       />,
     );
-    expect(byTestId('r').getAttribute('aria-label')).toBe('Lost Signal, Tessa Grove, No disponible');
+    expect(byTestId('r').getAttribute('aria-label')).toBe(
+      'Lost Signal, Tessa Grove, No disponible',
+    );
   });
 });
 
@@ -495,11 +655,21 @@ describe('TrackRowSkeleton and TrackListEmpty', () => {
 
   it('draws the title, description and action', () => {
     const onAction = jest.fn();
-    mount(<TrackListEmpty title="Nothing here yet" description="Find songs to add." actionLabel="Find songs" onAction={onAction} testID="e" />);
+    mount(
+      <TrackListEmpty
+        title="Nothing here yet"
+        description="Find songs to add."
+        actionLabel="Find songs"
+        onAction={onAction}
+        testID="e"
+      />,
+    );
     const el = byTestId('e');
     expect(el.querySelector('[role="heading"]')?.textContent).toBe('Nothing here yet');
     expect(el.textContent).toContain('Find songs to add.');
-    const button = [...el.querySelectorAll('button, [role="button"]')].find((b) => b.textContent === 'Find songs') as HTMLElement;
+    const button = [...el.querySelectorAll('button, [role="button"]')].find(
+      (b) => b.textContent === 'Find songs',
+    ) as HTMLElement;
     act(() => button.click());
     expect(onAction).toHaveBeenCalled();
   });

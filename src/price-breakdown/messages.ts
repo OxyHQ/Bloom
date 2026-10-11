@@ -18,10 +18,11 @@ export interface PriceBreakdownMessages {
   about: (label: string) => string;
 }
 
-export const PRICE_BREAKDOWN_MESSAGES: MessageCatalog<PriceBreakdownMessages> = defineMessages<PriceBreakdownMessages>('PRICE_BREAKDOWN_MESSAGES', {
-  states: { estimated: 'Estimated', pending: 'Pending' },
-  showDetails: 'Show price details',
-  hideDetails: 'Hide price details',
-  breakdown: 'Price breakdown',
-  about: (label) => `About ${label}`,
-});
+export const PRICE_BREAKDOWN_MESSAGES: MessageCatalog<PriceBreakdownMessages> =
+  defineMessages<PriceBreakdownMessages>('PRICE_BREAKDOWN_MESSAGES', {
+    states: { estimated: 'Estimated', pending: 'Pending' },
+    showDetails: 'Show price details',
+    hideDetails: 'Hide price details',
+    breakdown: 'Price breakdown',
+    about: (label) => `About ${label}`,
+  });

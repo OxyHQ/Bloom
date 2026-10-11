@@ -52,7 +52,6 @@ export const BLUR_BLEED = 44;
 /** Label type size. Small by design — the icon carries the meaning. */
 export const LABEL_FONT_SIZE = 9.5;
 
-
 /**
  * How long a press must be held before `onIndexLongPress` fires.
  *

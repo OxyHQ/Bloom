@@ -161,7 +161,8 @@ function HoverRow({
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={merged}>
+      style={merged}
+    >
       {children}
     </Pressable>
   );
@@ -306,7 +307,8 @@ function ThreadRow({
           paddingRight: 8,
           paddingTop: 6,
           paddingBottom: 6,
-        }}>
+        }}
+      >
         <TextInput
           {...dataHook('bloomAgentChatField')}
           ref={inputRef}
@@ -372,7 +374,8 @@ function ThreadRow({
         accessibilityState={{ disabled, selected: active }}
         disabled={disabled}
         onPress={() => onSelect?.(thread.id)}
-        style={selectStyle}>
+        style={selectStyle}
+      >
         {thread.unread ? (
           <View
             accessibilityLabel={labels.unread}
@@ -392,7 +395,8 @@ function ThreadRow({
             flex: 1,
             minWidth: 0,
             color: thread.unread ? palette.text : palette.textSecondary,
-          }}>
+          }}
+        >
           {thread.title}
         </Text>
       </Pressable>
@@ -407,11 +411,13 @@ function ThreadRow({
           alignItems: 'center',
           justifyContent: 'center',
           paddingRight: 4,
-        }}>
+        }}
+      >
         <View
           {...dataHook('bloomAgentChatAge')}
           aria-hidden={menuOpen}
-          style={ageOpacity === undefined ? undefined : { opacity: ageOpacity }}>
+          style={ageOpacity === undefined ? undefined : { opacity: ageOpacity }}
+        >
           <Text variant="caption-1-regular" style={{ color: palette.textTertiary }}>
             {formatAge(thread.updatedAt)}
           </Text>
@@ -429,7 +435,8 @@ function ThreadRow({
             // Nudged 1px left: the glyph reads as sitting right in its own box.
             transform: [{ translateX: -1 }],
             ...(menuOpacity === undefined ? null : { opacity: menuOpacity }),
-          }}>
+          }}
+        >
           <RowMenu
             testID={testID ? `${testID}-menu` : undefined}
             title={thread.title}
@@ -506,8 +513,13 @@ function AccountMenu({
       onOpenChange={(next) => {
         setOpen(next);
         if (!next) setUsageOpen(false);
-      }}>
-      <DropdownMenuTrigger asChild label={name} style={{ flex: 1, minWidth: 0, alignSelf: 'stretch' }}>
+      }}
+    >
+      <DropdownMenuTrigger
+        asChild
+        label={name}
+        style={{ flex: 1, minWidth: 0, alignSelf: 'stretch' }}
+      >
         <Pressable
           {...dataHook('bloomAgentChatControl')}
           testID={testID}
@@ -515,7 +527,8 @@ function AccountMenu({
           accessibilityLabel={name}
           onHoverIn={() => setHovered(true)}
           onHoverOut={() => setHovered(false)}
-          style={triggerStyle}>
+          style={triggerStyle}
+        >
           <Avatar
             size="sm"
             name={account.name}
@@ -526,7 +539,8 @@ function AccountMenu({
           <Text
             variant="body-2-medium"
             numberOfLines={1}
-            style={{ flex: 1, minWidth: 0, color: palette.text }}>
+            style={{ flex: 1, minWidth: 0, color: palette.text }}
+          >
             {account.name}
           </Text>
         </Pressable>
@@ -542,9 +556,14 @@ function AccountMenu({
               onPress={() => setUsageOpen((value) => !value)}
               hoverBackground={palette.chatSurface}
               palette={palette}
-              style={{ gap: 8, paddingLeft: 8, paddingRight: 8, paddingTop: 6, paddingBottom: 6 }}>
+              style={{ gap: 8, paddingLeft: 8, paddingRight: 8, paddingTop: 6, paddingBottom: 6 }}
+            >
               <RiSpeedUpLine width={18} height={18} fill={iconColor} />
-              <Text variant="body-medium" numberOfLines={1} style={{ flex: 1, color: palette.text }}>
+              <Text
+                variant="body-medium"
+                numberOfLines={1}
+                style={{ flex: 1, color: palette.text }}
+              >
                 {labels.usageLeft}
               </Text>
               <RotatingChevron open={usageOpen} color={iconColor} />
@@ -564,19 +583,30 @@ function AccountMenu({
                     paddingBottom: 2,
                     paddingRight: 8,
                     paddingLeft: 36,
-                  }}>
+                  }}
+                >
                   <Text
                     variant="body-2-medium"
                     numberOfLines={1}
-                    style={{ flex: 1, color: palette.text }}>
+                    style={{ flex: 1, color: palette.text }}
+                  >
                     {row.label}
                   </Text>
-                  <Text variant="body-2-regular" style={{ flexShrink: 0, color: palette.textSecondary }}>
+                  <Text
+                    variant="body-2-regular"
+                    style={{ flexShrink: 0, color: palette.textSecondary }}
+                  >
                     {row.value}
                   </Text>
                   <Text
                     variant="body-2-regular"
-                    style={{ width: 36, flexShrink: 0, textAlign: 'right', color: palette.textTertiary }}>
+                    style={{
+                      width: 36,
+                      flexShrink: 0,
+                      textAlign: 'right',
+                      color: palette.textTertiary,
+                    }}
+                  >
                     {`${Math.round(Math.min(100, Math.max(0, row.percent)))}%`}
                   </Text>
                 </View>
@@ -590,11 +620,19 @@ function AccountMenu({
                   }}
                   hoverBackground={palette.chatSurface}
                   palette={palette}
-                  style={{ gap: 8, paddingTop: 4, paddingBottom: 4, paddingRight: 8, paddingLeft: 36 }}>
+                  style={{
+                    gap: 8,
+                    paddingTop: 4,
+                    paddingBottom: 4,
+                    paddingRight: 8,
+                    paddingLeft: 36,
+                  }}
+                >
                   <Text
                     variant="body-2-medium"
                     numberOfLines={1}
-                    style={{ flex: 1, color: palette.text }}>
+                    style={{ flex: 1, color: palette.text }}
+                  >
                     {labels.upgrade}
                   </Text>
                   <RiGlobalLine width={16} height={16} fill={palette.iconTertiary} />
@@ -612,7 +650,8 @@ function AccountMenu({
                     className={DENSE_ROW_CLASS}
                     accessibilityLabel={item.label}
                     leading={Icon ? <Icon width={18} height={18} fill={iconColor} /> : undefined}
-                    onPress={item.onPress}>
+                    onPress={item.onPress}
+                  >
                     {item.label}
                   </DropdownMenuItem>
                 );
@@ -627,7 +666,8 @@ function AccountMenu({
               className={DENSE_ROW_CLASS}
               accessibilityLabel={labels.logOut}
               leading={<RiLogoutBoxRLine width={18} height={18} fill={iconColor} />}
-              onPress={onLogOut}>
+              onPress={onLogOut}
+            >
               {labels.logOut}
             </DropdownMenuItem>
           </>
@@ -700,7 +740,8 @@ export function AgentChatHistoryBase({
       role="complementary"
       aria-label={l.region}
       accessibilityLabel={l.region}
-      style={[rail, style]}>
+      style={[rail, style]}
+    >
       <HoverRow
         testID={testID ? `${testID}-new` : undefined}
         accessibilityLabel={l.newChat}
@@ -708,7 +749,8 @@ export function AgentChatHistoryBase({
         disabled={disabled}
         hoverBackground={palette.rowHover}
         palette={palette}
-        style={{ gap: 8, padding: 8 }}>
+        style={{ gap: 8, padding: 8 }}
+      >
         <RiAddLine width={20} height={20} fill={palette.iconSecondary} />
         <Text variant="body-medium" style={{ color: palette.text }}>
           {l.newChat}
@@ -719,16 +761,19 @@ export function AgentChatHistoryBase({
         {...dataHook('bloomAgentChatScrollHidden')}
         style={{ flex: 1, minHeight: 0 }}
         contentContainerStyle={{ flexDirection: 'column', gap: 4 }}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         <Text
           variant="body-2-medium"
-          style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 4, color: palette.textTertiary }}>
+          style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 4, color: palette.textTertiary }}
+        >
           {l.recent}
         </Text>
         {count === 0 ? (
           <Text
             variant="body-2-regular"
-            style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}>
+            style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}
+          >
             {l.empty}
           </Text>
         ) : (
@@ -762,7 +807,8 @@ export function AgentChatHistoryBase({
             borderTopColor: palette.separator,
             paddingTop: 12,
             paddingRight: 4,
-          }}>
+          }}
+        >
           {account ? (
             <AccountMenu
               testID={testID ? `${testID}-account` : undefined}
@@ -785,7 +831,8 @@ export function AgentChatHistoryBase({
               hoverOpacity={0.9}
               disabled={count === 0}
               onPress={onExport}
-              palette={palette}>
+              palette={palette}
+            >
               <RiDownloadLine width={14} height={14} fill="#ffffff" />
             </PrimaryDisc>
           ) : null}

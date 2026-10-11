@@ -13,13 +13,7 @@ import { SwipeRow, useSwipeAvailable } from '../swipe-row';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useMessages } from '../locale/messages';
-import {
-  MailGlyphButton,
-  MailLabelChips,
-  MailLabelMarks,
-  MailRowLink,
-  MailStar,
-} from './parts';
+import { MailGlyphButton, MailLabelChips, MailLabelMarks, MailRowLink, MailStar } from './parts';
 import {
   IS_WEB,
   MAIL_LIST_CSS,
@@ -236,7 +230,10 @@ function MailRowComponent({
   // --- the leading slot: a checkbox when the list can multi-select ----------
   const leading =
     onCheckedChange !== undefined ? (
-      <View pointerEvents="box-none" style={{ width: geo.avatar, alignItems: 'center', flexShrink: 0 }}>
+      <View
+        pointerEvents="box-none"
+        style={{ width: geo.avatar, alignItems: 'center', flexShrink: 0 }}
+      >
         <Checkbox
           checked={checked}
           onCheckedChange={onCheckedChange}
@@ -363,13 +360,14 @@ function MailRowComponent({
   // star inside it is a real button — a button inside an anchor is invalid HTML
   // and every star press would open the thread. Everything else in here is
   // hidden from assistive technology; the row's composed name already says it.
-  const states = paperclip || threadBadge || onStarredChange !== undefined ? (
-    <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-      {paperclip}
-      {threadBadge}
-      {onStarredChange === undefined ? (starred ? star : null) : star}
-    </View>
-  ) : null;
+  const states =
+    paperclip || threadBadge || onStarredChange !== undefined ? (
+      <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        {paperclip}
+        {threadBadge}
+        {onStarredChange === undefined ? (starred ? star : null) : star}
+      </View>
+    ) : null;
 
   const trailing = compact ? (
     <View

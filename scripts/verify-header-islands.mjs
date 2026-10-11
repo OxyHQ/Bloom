@@ -265,7 +265,9 @@ try {
   const a = light.row[0];
   const b = onPhoto.row[0];
   const move = Math.max(...[0, 1, 2].map((i) => Math.abs(a[i] - b[i])));
-  results.push(`the same capsule over a page and over a photo: rgb(${a}) vs rgb(${b}), moved ${move}`);
+  results.push(
+    `the same capsule over a page and over a photo: rgb(${a}) vs rgb(${b}), moved ${move}`,
+  );
   if (move < 10) {
     fail(`the capsule moved only ${move} levels between backdrops — that is a slab, not glass`);
   }
@@ -344,7 +346,9 @@ try {
   });
   await darkPage.close();
   const darkRuns = islandRuns(darkShot.row);
-  results.push(`islands across the bar, dark: ${darkRuns.runs} (widths ${darkRuns.widths.join(', ')})`);
+  results.push(
+    `islands across the bar, dark: ${darkRuns.runs} (widths ${darkRuns.widths.join(', ')})`,
+  );
   if (darkRuns.runs < 2) {
     fail(`expected at least two separated islands in dark mode, saw ${darkRuns.runs}`);
   }

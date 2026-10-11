@@ -1,6 +1,14 @@
 import React from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 
+/** Opt-in timing for a surface's panel and backdrop. Defaults remain owner-specific when omitted. */
+export interface SurfaceTransition {
+  /** Milliseconds, clamped to zero. Non-finite values fall back to 300. */
+  duration: number;
+  /** CSS cubic-bezier coordinates. Invalid curves fall back to ease. */
+  easing?: readonly [number, number, number, number];
+}
+
 /** Direction the incoming screen travels. */
 export type ScreenTransitionDirection = 'forward' | 'backward';
 

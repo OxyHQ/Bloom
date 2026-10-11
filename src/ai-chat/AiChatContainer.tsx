@@ -57,7 +57,6 @@ import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES } from './messages';
 import type { AiChatContainerProps, AiChatThreadHandle, AiChatThreadProps } from './types';
 
-
 /** The thread's own top padding: the gap between the header and the first turn. */
 const THREAD_PAD_TOP = 16;
 /** The footer's top padding: the gap between the last turn at rest and the composer. */
@@ -137,7 +136,10 @@ export function AiChatContainerBase({
   const palette = useAiChatPalette();
   const { messages } = useMessages(AI_CHAT_MESSAGES);
   const common = useCommonMessages();
-  const l = useMemo(() => ({ ...messages.container, more: common.moreOptions, ...labels }), [messages, common, labels]);
+  const l = useMemo(
+    () => ({ ...messages.container, more: common.moreOptions, ...labels }),
+    [messages, common, labels],
+  );
   const documentScroll = useAiChatShell()?.documentScroll ?? false;
   const gutterColor = useContext(AiChatDocumentGutterContext);
 
@@ -154,35 +156,58 @@ export function AiChatContainerBase({
         paddingLeft: 16,
         paddingRight: 16,
         paddingTop: 16,
-      }}>
+      }}
+    >
       <View pointerEvents="box-none" style={{ minWidth: 0, flex: 1 }}>
-        {title != null || project != null ? <Breadcrumb accessibilityLabel={l.breadcrumb}>
-          {project === undefined ? null : (
-            <BreadcrumbItem icon={projectIcon} onPress={onProjectPress}>
-              {project}
-            </BreadcrumbItem>
-          )}
-          {title == null ? null : <BreadcrumbItem current>{title}</BreadcrumbItem>}
-        </Breadcrumb> : null}
+        {title != null || project != null ? (
+          <Breadcrumb accessibilityLabel={l.breadcrumb}>
+            {project === undefined ? null : (
+              <BreadcrumbItem icon={projectIcon} onPress={onProjectPress}>
+                {project}
+              </BreadcrumbItem>
+            )}
+            {title == null ? null : <BreadcrumbItem current>{title}</BreadcrumbItem>}
+          </Breadcrumb>
+        ) : null}
       </View>
       <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        {actions ?? <>
-        {onShare ? <GlyphAction icon={RiShare2Line} label={l.share} onPress={onShare} palette={palette} /> : null}
-        {onMore ? <GlyphAction icon={RiMoreFill} label={l.more} onPress={onMore} palette={palette} /> : null}
-        </>}
+        {actions ?? (
+          <>
+            {onShare ? (
+              <GlyphAction
+                icon={RiShare2Line}
+                label={l.share}
+                onPress={onShare}
+                palette={palette}
+              />
+            ) : null}
+            {onMore ? (
+              <GlyphAction icon={RiMoreFill} label={l.more} onPress={onMore} palette={palette} />
+            ) : null}
+          </>
+        )}
       </View>
     </View>
   ) : null;
 
   const footerBody = (
     <>
-      {working ? <AgentThinking variant="infinity" label={workingLabel} style={{ paddingLeft: 6, paddingRight: 6 }} /> : null}
+      {working ? (
+        <AgentThinking
+          variant="infinity"
+          label={workingLabel}
+          style={{ paddingLeft: 6, paddingRight: 6 }}
+        />
+      ) : null}
       {composer}
     </>
   );
 
   const backgroundLayer = background ? (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+    <View
+      pointerEvents="none"
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+    >
       {background}
     </View>
   ) : null;
@@ -205,25 +230,28 @@ export function AiChatContainerBase({
   if (documentScroll) {
     return (
       <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-      <FloatingChrome
-        documentScroll
-        testID={testID}
-        rootStyle={[style, backing.vars]}
-        surfaceColor={surface ? String(StyleSheet.flatten(style)?.backgroundColor ?? palette.secondary) : null}
-        backgroundLayer={
-          background ? (
-            <View pointerEvents="none" style={[DOCUMENT_LAYER, { overflow: 'hidden' }]}>
-              {background}
-            </View>
-          ) : null
-        }
-        header={header}
-        crumbRow={crumbRow}
-        footerBody={footerBody}
-        fadeColor={surface ? backing.fill : null}
-        gutterColor={gutterColor}>
-        {children}
-      </FloatingChrome>
+        <FloatingChrome
+          documentScroll
+          testID={testID}
+          rootStyle={[style, backing.vars]}
+          surfaceColor={
+            surface ? String(StyleSheet.flatten(style)?.backgroundColor ?? palette.secondary) : null
+          }
+          backgroundLayer={
+            background ? (
+              <View pointerEvents="none" style={[DOCUMENT_LAYER, { overflow: 'hidden' }]}>
+                {background}
+              </View>
+            ) : null
+          }
+          header={header}
+          crumbRow={crumbRow}
+          footerBody={footerBody}
+          fadeColor={surface ? backing.fill : null}
+          gutterColor={gutterColor}
+        >
+          {children}
+        </FloatingChrome>
       </SurfaceLevelProvider>
     );
   }
@@ -231,33 +259,44 @@ export function AiChatContainerBase({
   if (floatingChrome) {
     return (
       <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-      <FloatingChrome
-        testID={testID}
-        rootStyle={rootStyle}
-        backgroundLayer={backgroundLayer}
-        header={header}
-        crumbRow={crumbRow}
-        footerBody={footerBody}
-        fadeColor={surface ? backing.fill : null}>
-        {children}
-      </FloatingChrome>
+        <FloatingChrome
+          testID={testID}
+          rootStyle={rootStyle}
+          backgroundLayer={backgroundLayer}
+          header={header}
+          crumbRow={crumbRow}
+          footerBody={footerBody}
+          fadeColor={surface ? backing.fill : null}
+        >
+          {children}
+        </FloatingChrome>
       </SurfaceLevelProvider>
     );
   }
 
   return (
     <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-    <View testID={testID} style={rootStyle}>
-      {backgroundLayer}
-      {header}
-      {crumbRow}
+      <View testID={testID} style={rootStyle}>
+        {backgroundLayer}
+        {header}
+        {crumbRow}
 
-      {children}
+        {children}
 
-      <View style={{ width: '100%', flexDirection: 'column', gap: 10, paddingLeft: 10, paddingRight: 10, paddingTop: 12, paddingBottom: 10 }}>
-        {footerBody}
+        <View
+          style={{
+            width: '100%',
+            flexDirection: 'column',
+            gap: 10,
+            paddingLeft: 10,
+            paddingRight: 10,
+            paddingTop: 12,
+            paddingBottom: 10,
+          }}
+        >
+          {footerBody}
+        </View>
       </View>
-    </View>
     </SurfaceLevelProvider>
   );
 }
@@ -316,7 +355,8 @@ function FloatingChrome({
       const top = Math.round(event.nativeEvent.layout.height);
       setHeaderHeight(top);
       // In the flow the header covers nothing at rest: no inset to publish.
-      if (!documentScroll) setInsets((previous) => (previous.top === top ? previous : { ...previous, top }));
+      if (!documentScroll)
+        setInsets((previous) => (previous.top === top ? previous : { ...previous, top }));
     },
     [documentScroll],
   );
@@ -343,7 +383,10 @@ function FloatingChrome({
     [topFade],
   );
 
-  const chrome = useMemo<AiChatFloatingChrome>(() => ({ insets, reportScroll }), [insets, reportScroll]);
+  const chrome = useMemo<AiChatFloatingChrome>(
+    () => ({ insets, reportScroll }),
+    [insets, reportScroll],
+  );
 
   // SVG never receives alpha inside stopColor; it travels on the containing view.
   const parsed = fadeColor ? parseRgba(fadeColor) : null;
@@ -363,7 +406,12 @@ function FloatingChrome({
     : { position: 'absolute', left: 0, right: 0, bottom: 0 };
 
   const top = (
-    <View testID={`${prefix}-chrome-top`} pointerEvents="box-none" onLayout={onHeaderLayout} style={headerPosition}>
+    <View
+      testID={`${prefix}-chrome-top`}
+      pointerEvents="box-none"
+      onLayout={onHeaderLayout}
+      style={headerPosition}
+    >
       {solid && scrolled && headerHeight > 0 ? (
         <Animated.View
           testID={`${prefix}-fade-top`}
@@ -378,17 +426,25 @@ function FloatingChrome({
               height: headerHeight + scrimTail,
               // The card's own corners, since nothing clips a document card.
               ...(documentScroll
-                ? { borderTopLeftRadius: DOCUMENT_CARD_RADIUS, borderTopRightRadius: DOCUMENT_CARD_RADIUS, overflow: 'hidden' as const }
+                ? {
+                    borderTopLeftRadius: DOCUMENT_CARD_RADIUS,
+                    borderTopRightRadius: DOCUMENT_CARD_RADIUS,
+                    overflow: 'hidden' as const,
+                  }
                 : null),
             },
             topStyle,
-          ]}>
+          ]}
+        >
           {/* SOLID behind the header's own block. A ramp that starts fading
               inside the block leaves the breadcrumb row over half-covered
               turns — measured in a browser, a code block's lines read straight
               through the chat's title and crumbs at every width. The ramp
               only starts where the block ends. */}
-          <View testID={`${prefix}-fade-top-surface`} style={{ height: headerHeight, backgroundColor: solid }} />
+          <View
+            testID={`${prefix}-fade-top-surface`}
+            style={{ height: headerHeight, backgroundColor: solid }}
+          />
           {/* Past the block's own bottom: a ramp that ends where the layout
               does is a line across the transcript again. */}
           <View style={{ height: scrimTail }}>
@@ -402,10 +458,24 @@ function FloatingChrome({
   );
 
   const bottom = (
-    <View testID={`${prefix}-chrome-bottom`} pointerEvents="box-none" onLayout={onFooterLayout} style={footerPosition}>
+    <View
+      testID={`${prefix}-chrome-bottom`}
+      pointerEvents="box-none"
+      onLayout={onFooterLayout}
+      style={footerPosition}
+    >
       <View
         pointerEvents="box-none"
-        style={{ width: '100%', flexDirection: 'column', gap: 10, paddingLeft: 10, paddingRight: 10, paddingTop: FOOTER_GAP, paddingBottom: 10 }}>
+        style={{
+          width: '100%',
+          flexDirection: 'column',
+          gap: 10,
+          paddingLeft: 10,
+          paddingRight: 10,
+          paddingTop: FOOTER_GAP,
+          paddingBottom: 10,
+        }}
+      >
         {footerBody}
       </View>
     </View>
@@ -416,14 +486,30 @@ function FloatingChrome({
   // without a stacking context of its own, the highest of them would climb
   // over the frame and show in the gutter, or over the header.
   const thread = (
-    <View style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, minHeight: 0, flexDirection: 'column', zIndex: 0 }}>
-      <AiChatFloatingChromeContext.Provider value={chrome}>{children}</AiChatFloatingChromeContext.Provider>
+    <View
+      style={{
+        flexGrow: 1,
+        flexShrink: 1,
+        minWidth: 0,
+        minHeight: 0,
+        flexDirection: 'column',
+        zIndex: 0,
+      }}
+    >
+      <AiChatFloatingChromeContext.Provider value={chrome}>
+        {children}
+      </AiChatFloatingChromeContext.Provider>
     </View>
   );
 
   if (documentScroll) {
     return (
-      <DocumentCard testID={testID} style={rootStyle} surfaceColor={surfaceColor} gutterColor={gutterColor}>
+      <DocumentCard
+        testID={testID}
+        style={rootStyle}
+        surfaceColor={surfaceColor}
+        gutterColor={gutterColor}
+      >
         {backgroundLayer}
         {top}
         {thread}
@@ -478,12 +564,24 @@ function DocumentCard({
       maskColor={gutterColor ?? undefined}
       surfaceStyle={{ backgroundColor: paintedFill }}
       surfaceColor={String(paintedFill)}
-      contentStyle={{ flexDirection: 'column' }}>
+      contentStyle={{ flexDirection: 'column' }}
+    >
       <View
         testID={testID}
         // One screen at the least, growing with the conversation.
-        style={[{ minHeight: webViewportHeightMinus(SHELL_GUTTER * 2), flexGrow: 1, flexDirection: 'column' }, layoutStyle, surfaceFillVars(backing.fill)]}>
-        <SurfaceLevelProvider level={backing.level} fill={backing.fill}>{children}</SurfaceLevelProvider>
+        style={[
+          {
+            minHeight: webViewportHeightMinus(SHELL_GUTTER * 2),
+            flexGrow: 1,
+            flexDirection: 'column',
+          },
+          layoutStyle,
+          surfaceFillVars(backing.fill),
+        ]}
+      >
+        <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
+          {children}
+        </SurfaceLevelProvider>
       </View>
     </ContentPanel>
   );
@@ -518,10 +616,16 @@ function DocumentCard({
  * motion they pass under it. It also reports its position so the container
  * knows when to fade each edge. Anywhere else nothing of this exists.
  */
-export const AiChatThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function AiChatThread(props, ref) {
-  const documentScroll = useAiChatShell()?.documentScroll ?? false;
-  return documentScroll ? <DocumentThread ref={ref} {...props} /> : <ScrollThread ref={ref} {...props} />;
-});
+export const AiChatThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(
+  function AiChatThread(props, ref) {
+    const documentScroll = useAiChatShell()?.documentScroll ?? false;
+    return documentScroll ? (
+      <DocumentThread ref={ref} {...props} />
+    ) : (
+      <ScrollThread ref={ref} {...props} />
+    );
+  },
+);
 
 /** The thread inside a card of fixed height: a `ScrollView` of its own. */
 const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function ScrollThread(
@@ -588,17 +692,26 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
         following.current = true;
         scrollRef.current?.scrollToEnd({ animated: options?.animated ?? true });
       },
-      scrollToOffset: ({ offset: y, animated = false }) => scrollRef.current?.scrollTo({ y, animated }),
+      scrollToOffset: ({ offset: y, animated = false }) =>
+        scrollRef.current?.scrollTo({ y, animated }),
       getScrollView: () => scrollRef.current,
     }),
     [],
   );
 
   const listening =
-    !!chrome || !!onScroll || !!onStartReached || followThreshold !== undefined || maintainStartPosition;
+    !!chrome ||
+    !!onScroll ||
+    !!onStartReached ||
+    followThreshold !== undefined ||
+    maintainStartPosition;
 
   const report = useCallback(() => {
-    chrome?.reportScroll({ offset: offset.current, viewport: viewport.current, content: contentHeight.current });
+    chrome?.reportScroll({
+      offset: offset.current,
+      viewport: viewport.current,
+      content: contentHeight.current,
+    });
   }, [chrome]);
 
   const handleScroll = useCallback(
@@ -608,7 +721,10 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
       offset.current = contentOffset.y;
       viewport.current = layoutMeasurement.height;
       if (contentSize?.height) contentHeight.current = contentSize.height;
-      if (movedUp || contentHeight.current - contentOffset.y - layoutMeasurement.height <= EDGE_THRESHOLD) {
+      if (
+        movedUp ||
+        contentHeight.current - contentOffset.y - layoutMeasurement.height <= EDGE_THRESHOLD
+      ) {
         following.current = false;
       }
       report();
@@ -716,14 +832,21 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
         paddingTop: THREAD_PAD_TOP + (chrome ? chrome.insets.top : 0),
         ...(chrome ? { paddingBottom: chrome.insets.bottom } : null),
       }}
-      scrollIndicatorInsets={chrome ? { top: chrome.insets.top, bottom: chrome.insets.bottom } : undefined}>
+      scrollIndicatorInsets={
+        chrome ? { top: chrome.insets.top, bottom: chrome.insets.bottom } : undefined
+      }
+    >
       {children}
     </ScrollView>
   );
 });
 
 /** A scroll event for a position that did not change while the content did. */
-function syntheticScroll(offset: number, viewport: number, content: number): NativeSyntheticEvent<NativeScrollEvent> {
+function syntheticScroll(
+  offset: number,
+  viewport: number,
+  content: number,
+): NativeSyntheticEvent<NativeScrollEvent> {
   return {
     nativeEvent: {
       contentOffset: { x: 0, y: offset },
@@ -792,7 +915,8 @@ const DocumentThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(functio
     ref,
     (): AiChatThreadHandle => ({
       scrollToEnd: (options) => scrollWindowTo(readWindow().end, options?.animated ?? true),
-      scrollToOffset: ({ offset: y, animated = false }) => scrollWindowTo(threadTop() + y, animated),
+      scrollToOffset: ({ offset: y, animated = false }) =>
+        scrollWindowTo(threadTop() + y, animated),
       getScrollView: () => null,
     }),
     [threadTop],
@@ -805,7 +929,12 @@ const DocumentThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(functio
   });
 
   const report = useCallback(() => {
-    const { chrome: frame, onScroll: listener, onStartReached: startReached, onStartReachedThreshold: zone } = handlers.current;
+    const {
+      chrome: frame,
+      onScroll: listener,
+      onStartReached: startReached,
+      onStartReachedThreshold: zone,
+    } = handlers.current;
     const { y, viewport, end } = readWindow();
     frame?.reportScroll({ offset: y, viewport, content: end });
     const top = threadTop();
@@ -907,7 +1036,8 @@ const DocumentThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(functio
           paddingTop: THREAD_PAD_TOP,
         },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </View>
   );

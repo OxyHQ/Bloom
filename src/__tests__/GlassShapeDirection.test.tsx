@@ -5,7 +5,7 @@ import { SurfacePaint } from '../surface/SurfacePaint';
 
 function flatten(style: unknown): Record<string, unknown> {
   if (Array.isArray(style)) return Object.assign({}, ...style.map(flatten));
-  return style && typeof style === 'object' ? style as Record<string, unknown> : {};
+  return style && typeof style === 'object' ? (style as Record<string, unknown>) : {};
 }
 
 describe('Glass surface logical corners', () => {
@@ -22,7 +22,12 @@ describe('Glass surface logical corners', () => {
       </BloomThemeProvider>,
     );
     const pane = tree.getByTestId('glass');
-    const expected = { borderTopLeftRadius: 0, borderTopRightRadius: 20, borderBottomLeftRadius: 8, borderBottomRightRadius: 0 };
+    const expected = {
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 20,
+      borderBottomLeftRadius: 8,
+      borderBottomRightRadius: 0,
+    };
     expect(flatten(pane.props.style)).toMatchObject(expected);
     const rim = pane.children[pane.children.length - 1];
     expect(typeof rim).not.toBe('string');

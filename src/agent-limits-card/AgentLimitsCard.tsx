@@ -140,11 +140,17 @@ function chartPalette(accent400: string): string[] {
 function resolvePalette(theme: Theme): CardPalette {
   const c = theme.colors;
   return {
-    text: c.text, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
-    limitFill: resolveButtonRamps(theme).accent[400], ring: c.primary,
+    text: c.text,
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    limitFill: resolveButtonRamps(theme).accent[400],
+    ring: c.primary,
     chart: chartPalette(colorRamp(c.primary, ACCENT_TABLE)[400]),
-    surface: c.card, hover: c.backgroundSecondary,
-    separator: c.borderLight, track: c.backgroundTertiary, deferred: c.border,
+    surface: c.card,
+    hover: c.backgroundSecondary,
+    separator: c.borderLight,
+    track: c.backgroundTertiary,
+    deferred: c.border,
   };
 }
 
@@ -385,7 +391,8 @@ function Track({
 // ---------------------------------------------------------------------------
 
 /** `<card testID>-<part>`, so several cards on one screen stay addressable. */
-const part = (testID: string | undefined, name: string) => (testID ? `${testID}-${name}` : undefined);
+const part = (testID: string | undefined, name: string) =>
+  testID ? `${testID}-${name}` : undefined;
 
 /** A full-width pressable row that bleeds 8px past the content and pills on hover. */
 function HoverRow({
@@ -488,7 +495,13 @@ function ContextGroupRow({
           {group.items.map((item) => (
             <View
               key={item.label}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 4, paddingBottom: 4 }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                paddingTop: 4,
+                paddingBottom: 4,
+              }}
             >
               <Text
                 numberOfLines={1}
@@ -523,7 +536,13 @@ function LegendRow({
 }) {
   return (
     <View
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 5, paddingBottom: 5 }}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingTop: 5,
+        paddingBottom: 5,
+      }}
     >
       <View
         style={{ width: 10, height: 10, borderRadius: 3, flexShrink: 0, backgroundColor: swatch }}
@@ -533,7 +552,11 @@ function LegendRow({
       </Text>
       <Text style={[BODY_REGULAR, TABULAR, { color: palette.textTertiary }]}>{tokens}</Text>
       <Text
-        style={[BODY_MEDIUM, TABULAR, { width: SHARE_WIDTH, textAlign: 'right', color: palette.text }]}
+        style={[
+          BODY_MEDIUM,
+          TABULAR,
+          { width: SHARE_WIDTH, textAlign: 'right', color: palette.text },
+        ]}
       >
         {share}
       </Text>
@@ -580,12 +603,19 @@ function ContextSection({
       >
         {(hovered) => (
           <>
-            <Text numberOfLines={1} style={[BODY_MEDIUM, { flexShrink: 1, color: palette.textSecondary }]}>
+            <Text
+              numberOfLines={1}
+              style={[BODY_MEDIUM, { flexShrink: 1, color: palette.textSecondary }]}
+            >
               {label}
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <Text numberOfLines={1} style={[BODY_MEDIUM, TABULAR, { color: palette.textSecondary }]}>
-                {readout} <Text style={[BODY_MEDIUM, TABULAR, { color: palette.text }]}>{percent}</Text>
+              <Text
+                numberOfLines={1}
+                style={[BODY_MEDIUM, TABULAR, { color: palette.textSecondary }]}
+              >
+                {readout}{' '}
+                <Text style={[BODY_MEDIUM, TABULAR, { color: palette.text }]}>{percent}</Text>
               </Text>
               <RotatingIcon active={expanded} degrees={180}>
                 <RiArrowDownSLine
@@ -645,7 +675,12 @@ function ContextSection({
           {context.groups && context.groups.length > 0 ? (
             <View style={{ marginTop: 6 }}>
               {context.groups.map((group) => (
-                <ContextGroupRow key={group.label} group={group} palette={palette} format={format} />
+                <ContextGroupRow
+                  key={group.label}
+                  group={group}
+                  palette={palette}
+                  format={format}
+                />
               ))}
             </View>
           ) : null}
@@ -706,13 +741,23 @@ function PlanLink({
 }
 
 function LimitRow({ limit, palette }: { limit: AgentLimitsUsageLimit; palette: CardPalette }) {
-  const pct = Math.round(Math.max(0, Math.min(1, Number.isFinite(limit.used) ? limit.used : 0)) * 100);
+  const pct = Math.round(
+    Math.max(0, Math.min(1, Number.isFinite(limit.used) ? limit.used : 0)) * 100,
+  );
   return (
     <View style={{ gap: 6 }}>
       <View
-        style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}
       >
-        <Text numberOfLines={1} style={[BODY_MEDIUM, { flexShrink: 1, minWidth: 0, color: palette.text }]}>
+        <Text
+          numberOfLines={1}
+          style={[BODY_MEDIUM, { flexShrink: 1, minWidth: 0, color: palette.text }]}
+        >
           {limit.label}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, flexShrink: 0 }}>
@@ -750,7 +795,10 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
 }) => {
   const theme = useTheme();
   const fill = useCardFill(style);
-  const palette = useMemo(() => ({ ...resolvePalette(theme), surface: fill, hover: surfaceFillOn(theme, fill) }), [theme, fill]);
+  const palette = useMemo(
+    () => ({ ...resolvePalette(theme), surface: fill, hover: surfaceFillOn(theme, fill) }),
+    [theme, fill],
+  );
   const { messages } = useMessages(AGENT_LIMITS_CARD_MESSAGES);
   const [expanded, setExpanded] = useControllableState({
     value: expandedProp,
@@ -767,7 +815,9 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
   const planHeading = `${labels?.planUsageLimits ?? messages.planUsageLimits}${plan ? ` · ${plan}` : ''}`;
 
   return (
-    <Card radius="radius-16" elevation="none"
+    <Card
+      radius="radius-16"
+      elevation="none"
       testID={testID}
       style={[
         {
@@ -797,7 +847,13 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
 
       {context && showPlan ? (
         <View
-          style={{ marginTop: 12, marginBottom: 12, height: 1, width: '100%', backgroundColor: palette.separator }}
+          style={{
+            marginTop: 12,
+            marginBottom: 12,
+            height: 1,
+            width: '100%',
+            backgroundColor: palette.separator,
+          }}
         />
       ) : null}
 
@@ -813,7 +869,10 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
               paddingBottom: 4,
             }}
           >
-            <Text numberOfLines={1} style={[BODY_MEDIUM, { flexShrink: 1, color: palette.textSecondary }]}>
+            <Text
+              numberOfLines={1}
+              style={[BODY_MEDIUM, { flexShrink: 1, color: palette.textSecondary }]}
+            >
               {planHeading}
             </Text>
             {onPlanPress ? (

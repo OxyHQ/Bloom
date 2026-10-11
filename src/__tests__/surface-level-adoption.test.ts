@@ -39,11 +39,19 @@ const MODES = ['light', 'dark'] as const;
  * `mint` are the high-lightness seeds whose fills sit near the top of the tone
  * range, `purple` peaks dark, and `blue`/`teal` are the two the audit measured.
  */
-const PRESETS = ['blue', 'teal', 'mono', 'yellow', 'mint', 'purple'] as const satisfies readonly AppColorName[];
+const PRESETS = [
+  'blue',
+  'teal',
+  'mono',
+  'yellow',
+  'mint',
+  'purple',
+] as const satisfies readonly AppColorName[];
 
-const THEMES: { theme: Theme; preset: AppColorName; mode: (typeof MODES)[number] }[] = PRESETS.flatMap(
-  (preset) => MODES.map((mode) => ({ preset, mode, theme: buildTheme(preset, mode) })),
-);
+const THEMES: { theme: Theme; preset: AppColorName; mode: (typeof MODES)[number] }[] =
+  PRESETS.flatMap((preset) =>
+    MODES.map((mode) => ({ preset, mode, theme: buildTheme(preset, mode) })),
+  );
 
 function themesIn(mode: (typeof MODES)[number]) {
   return THEMES.filter((t) => t.mode === mode);
@@ -75,7 +83,10 @@ describe('a field inside a card is distinguishable from it', () => {
         const p = resolveTextFieldPalette(theme, fill);
         const where = `${preset} field on ${name}`;
         expect([where, contrastRatio(p.background, fill) >= FILL_JND]).toEqual([where, true]);
-        expect([where, contrastRatio(p.placeholder, p.background) >= AA_TEXT]).toEqual([where, true]);
+        expect([where, contrastRatio(p.placeholder, p.background) >= AA_TEXT]).toEqual([
+          where,
+          true,
+        ]);
         expect([where, contrastRatio(p.count, p.background) >= AA_TEXT]).toEqual([where, true]);
         expect([where, contrastRatio(p.hint, fill) >= AA_TEXT]).toEqual([where, true]);
       }
@@ -87,7 +98,10 @@ describe('a field inside a card is distinguishable from it', () => {
       for (const { name, fill } of parents(theme)) {
         const paint = resolveTabsPaint(theme, 'underline', fill);
         const where = `${preset} rail on ${name}`;
-        expect([where, contrastRatio(paint.separator, fill) >= HAIRLINE_MIN]).toEqual([where, true]);
+        expect([where, contrastRatio(paint.separator, fill) >= HAIRLINE_MIN]).toEqual([
+          where,
+          true,
+        ]);
       }
     }
   });
@@ -107,15 +121,20 @@ describe('quiet text is read off the surface it lands on', () => {
       const p = resolveChartCardPalette(theme);
       const where = `${preset}/${mode}`;
       // Was 4.38 / 3.78 (label) and 2.42 / 2.29 (tick) on `blue`.
-      expect([where, contrastRatio(p.textSecondary, p.surface) >= AA_TEXT_STRONG]).toEqual([where, true]);
-      expect([where, contrastRatio(p.textTertiary, p.surface) >= AA_TEXT]).toEqual([where, true]);
-      expect([where, contrastRatio(p.textSecondary, p.inner) >= AA_TEXT_STRONG]).toEqual([where, true]);
-      expect([where, contrastRatio(p.text, p.surface) >= AA_TEXT_STRONG]).toEqual([where, true]);
-      // The delta chips carry their own label.
-      expect([where, contrastRatio(p.neutral.foreground, p.neutral.background) >= AA_TEXT]).toEqual([
+      expect([where, contrastRatio(p.textSecondary, p.surface) >= AA_TEXT_STRONG]).toEqual([
         where,
         true,
       ]);
+      expect([where, contrastRatio(p.textTertiary, p.surface) >= AA_TEXT]).toEqual([where, true]);
+      expect([where, contrastRatio(p.textSecondary, p.inner) >= AA_TEXT_STRONG]).toEqual([
+        where,
+        true,
+      ]);
+      expect([where, contrastRatio(p.text, p.surface) >= AA_TEXT_STRONG]).toEqual([where, true]);
+      // The delta chips carry their own label.
+      expect([where, contrastRatio(p.neutral.foreground, p.neutral.background) >= AA_TEXT]).toEqual(
+        [where, true],
+      );
       // And the tick is legible on the INNER tile too, which it also paints.
       expect([where, contrastRatio(p.textTertiary, p.inner) >= AA_TEXT]).toEqual([where, true]);
     }
@@ -126,17 +145,38 @@ describe('quiet text is read off the surface it lands on', () => {
       const where = `${preset}/${mode}`;
 
       const studio = resolveCreatorStudioPaint(theme);
-      expect([where, contrastRatio(studio.textSecondary, studio.surface) >= AA_TEXT_STRONG]).toEqual([where, true]);
-      expect([where, contrastRatio(studio.textTertiary, studio.surface) >= AA_TEXT]).toEqual([where, true]);
+      expect([
+        where,
+        contrastRatio(studio.textSecondary, studio.surface) >= AA_TEXT_STRONG,
+      ]).toEqual([where, true]);
+      expect([where, contrastRatio(studio.textTertiary, studio.surface) >= AA_TEXT]).toEqual([
+        where,
+        true,
+      ]);
 
       const insights = resolveInsightPalette(theme);
-      expect([where, contrastRatio(insights.muted, insights.card) >= AA_TEXT]).toEqual([where, true]);
-      expect([where, contrastRatio(insights.muted, insights.surface) >= AA_TEXT]).toEqual([where, true]);
-      expect([where, contrastRatio(insights.textSecondary, insights.surface) >= AA_TEXT]).toEqual([where, true]);
+      expect([where, contrastRatio(insights.muted, insights.card) >= AA_TEXT]).toEqual([
+        where,
+        true,
+      ]);
+      expect([where, contrastRatio(insights.muted, insights.surface) >= AA_TEXT]).toEqual([
+        where,
+        true,
+      ]);
+      expect([where, contrastRatio(insights.textSecondary, insights.surface) >= AA_TEXT]).toEqual([
+        where,
+        true,
+      ]);
 
       const header = resolveMediaHeaderPaint(theme, null);
-      expect([where, contrastRatio(header.textMuted, header.card) >= AA_TEXT]).toEqual([where, true]);
-      expect([where, contrastRatio(header.textMuted, header.background) >= AA_TEXT]).toEqual([where, true]);
+      expect([where, contrastRatio(header.textMuted, header.card) >= AA_TEXT]).toEqual([
+        where,
+        true,
+      ]);
+      expect([where, contrastRatio(header.textMuted, header.background) >= AA_TEXT]).toEqual([
+        where,
+        true,
+      ]);
     }
   });
 
@@ -146,7 +186,6 @@ describe('quiet text is read off the surface it lands on', () => {
     const onCard = surfaceTextOn(theme, resolveSurfaceLevel(theme, 2).background).textTertiary;
     expect(onPage).not.toBe(onCard);
   });
-
 });
 
 /**
@@ -177,7 +216,8 @@ describe('a settings group resolves a surface it cannot see', () => {
         const rung = resolveSurfaceLevel(theme, level).background;
         for (const behind of level === 1 ? [rung, theme.colors.card] : [rung]) {
           const ratio = contrastRatio(settingsGroupSurface(theme, behind), behind);
-          if (ratio < FILL_JND) offenders.push(`${preset}/${mode} level ${level}: ${ratio.toFixed(3)}`);
+          if (ratio < FILL_JND)
+            offenders.push(`${preset}/${mode} level ${level}: ${ratio.toFixed(3)}`);
         }
       }
     }

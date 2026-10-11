@@ -30,16 +30,17 @@ export interface MessageBubbleMessages {
   typing: string;
 }
 
-export const MESSAGE_BUBBLE_MESSAGES: MessageCatalog<MessageBubbleMessages> = defineMessages<MessageBubbleMessages>('MESSAGE_BUBBLE_MESSAGES', {
-  forwardedFrom: (name) => `Forwarded from ${name}`,
-  deleted: 'This message was deleted',
-  retry: 'Retry sending',
-  addReaction: 'Add a reaction',
-  replyTo: 'Go to the quoted message',
-  selected: 'Selected',
-  pending: 'Sending',
-  failed: 'Not sent',
-  reactionSelected: 'selected',
-  unread: 'Unread messages',
-  typing: 'Typing…',
-});
+export const MESSAGE_BUBBLE_MESSAGES: MessageCatalog<MessageBubbleMessages> =
+  defineMessages<MessageBubbleMessages>('MESSAGE_BUBBLE_MESSAGES', {
+    forwardedFrom: (name) => `Forwarded from ${name}`,
+    deleted: 'This message was deleted',
+    retry: 'Retry sending',
+    addReaction: 'Add a reaction',
+    replyTo: 'Go to the quoted message',
+    selected: 'Selected',
+    pending: 'Sending',
+    failed: 'Not sent',
+    reactionSelected: 'selected',
+    unread: 'Unread messages',
+    typing: 'Typing…',
+  });

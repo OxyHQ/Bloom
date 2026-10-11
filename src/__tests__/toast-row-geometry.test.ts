@@ -1,8 +1,4 @@
-import {
-  ESTIMATED_TOAST_HEIGHT,
-  MIN_STACK_SCALE_X,
-  TOAST_MAX_ROW_WIDTH,
-} from '../toast/constants';
+import { ESTIMATED_TOAST_HEIGHT, MIN_STACK_SCALE_X, TOAST_MAX_ROW_WIDTH } from '../toast/constants';
 import {
   calculateStackScaleX,
   calculateToastVisibleHeight,
@@ -67,16 +63,8 @@ describe('getOrderedToastIds', () => {
   });
 
   it('keeps the store order for every position when stacking is on', () => {
-    for (const position of [
-      'top-center',
-      'bottom-center',
-      'center',
-    ] as ToastPosition[]) {
-      expect(getOrderedToastIds(toasts, position, true)).toEqual([
-        'a',
-        'b',
-        'c',
-      ]);
+    for (const position of ['top-center', 'bottom-center', 'center'] as ToastPosition[]) {
+      expect(getOrderedToastIds(toasts, position, true)).toEqual(['a', 'b', 'c']);
     }
   });
 
@@ -108,10 +96,7 @@ describe('calculateToastPosition', () => {
     it.each([
       [2, -35],
       [1, -113],
-    ])('center index %i sits at %i (half the front row above the line)', (
-      index,
-      expected,
-    ) => {
+    ])('center index %i sits at %i (half the front row above the line)', (index, expected) => {
       expect(positionAt({ index, position: 'center' })).toBe(expected);
     });
 
@@ -156,33 +141,21 @@ describe('calculateToastPosition', () => {
       [0, 0],
       [1, 8],
       [2, 16],
-    ])('top-center index %i tucks behind the front row at %i', (
-      index,
-      expected,
-    ) => {
-      expect(
-        positionAt({ index, position: 'top-center', enableStacking: true }),
-      ).toBe(expected);
+    ])('top-center index %i tucks behind the front row at %i', (index, expected) => {
+      expect(positionAt({ index, position: 'top-center', enableStacking: true })).toBe(expected);
     });
 
     it.each([
       [2, 0],
       [1, -18],
       [0, -36],
-    ])('bottom-center index %i tucks behind the front row at %i', (
-      index,
-      expected,
-    ) => {
-      expect(
-        positionAt({ index, position: 'bottom-center', enableStacking: true }),
-      ).toBe(expected);
+    ])('bottom-center index %i tucks behind the front row at %i', (index, expected) => {
+      expect(positionAt({ index, position: 'bottom-center', enableStacking: true })).toBe(expected);
     });
 
     it('applies the center shift to a stacked center position', () => {
       // centerShift (-70/2) - (front 70 + 0 * stackGap - current 70)
-      expect(
-        positionAt({ index: 2, position: 'center', enableStacking: true }),
-      ).toBe(-35);
+      expect(positionAt({ index: 2, position: 'center', enableStacking: true })).toBe(-35);
     });
 
     it('expands into a spaced list using stackGap as the gap', () => {
@@ -278,9 +251,9 @@ describe('calculateStackScaleX', () => {
   });
 
   it('never squeezes past MIN_STACK_SCALE_X', () => {
-    expect(
-      scaleAt({ index: 0, numberOfToasts: 50, stackGap: 40, rowWidth: 200 }),
-    ).toBe(MIN_STACK_SCALE_X);
+    expect(scaleAt({ index: 0, numberOfToasts: 50, stackGap: 40, rowWidth: 200 })).toBe(
+      MIN_STACK_SCALE_X,
+    );
   });
 
   it('scales the squeeze with the row width', () => {
@@ -294,24 +267,26 @@ describe('calculateStackScaleX', () => {
    */
   it('squeezes a capped row by the same visible amount on a desktop viewport', () => {
     const desktopWindowWidth = 1280;
-    expect(scaleAt({ index: 1, rowWidth: TOAST_MAX_ROW_WIDTH })).toBe(
-      1 - 16 / TOAST_MAX_ROW_WIDTH,
-    );
+    expect(scaleAt({ index: 1, rowWidth: TOAST_MAX_ROW_WIDTH })).toBe(1 - 16 / TOAST_MAX_ROW_WIDTH);
     expect(scaleAt({ index: 1, rowWidth: TOAST_MAX_ROW_WIDTH })).toBeLessThan(
       scaleAt({ index: 1, rowWidth: desktopWindowWidth }),
     );
   });
 });
 
-
 describe('mixed-height stack clipping', () => {
   it.each<ToastPosition>(['top-center', 'bottom-center', 'bottom-right', 'center'])(
-    'bounds tall rear rows to the front while retaining intrinsic expansion (%s)', position => {
+    'bounds tall rear rows to the front while retaining intrinsic expansion (%s)',
+    (position) => {
       const top = position === 'top-center';
       const config = {
-        index: top ? 1 : 0, numberOfToasts: 2, enableStacking: true, position,
+        index: top ? 1 : 0,
+        numberOfToasts: 2,
+        enableStacking: true,
+        position,
         allToastHeights: { short: 54, tall: 180 },
-        orderedToastIds: top ? ['short', 'tall'] : ['tall', 'short'], isExpanded: false,
+        orderedToastIds: top ? ['short', 'tall'] : ['tall', 'short'],
+        isExpanded: false,
       };
       expect(calculateToastVisibleHeight(config)).toBe(54);
       expect(calculateToastVisibleHeight({ ...config, isExpanded: true })).toBe(180);

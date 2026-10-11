@@ -83,6 +83,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.props.onError?.(error, errorInfo);
   }
 
+  componentDidUpdate(previous: ErrorBoundaryProps): void {
+    if (this.state.hasError && !Object.is(previous.resetKey, this.props.resetKey)) {
+      this.setState({ hasError: false, error: null, errorInfo: null, retryCount: 0 });
+    }
+  }
+
   private handleRetry = (): void => {
     this.setState((prev) => ({
       hasError: false,

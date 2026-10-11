@@ -27,8 +27,12 @@ import { useMusicRouter } from './router';
  */
 
 function useEpisodeLibrary() {
-  const [saved, setSaved] = useState<ReadonlySet<string>>(() => new Set(['quiet-cartography-ep-2']));
-  const [downloaded, setDownloaded] = useState<ReadonlySet<string>>(() => new Set(['quiet-cartography-ep-1']));
+  const [saved, setSaved] = useState<ReadonlySet<string>>(
+    () => new Set(['quiet-cartography-ep-2']),
+  );
+  const [downloaded, setDownloaded] = useState<ReadonlySet<string>>(
+    () => new Set(['quiet-cartography-ep-1']),
+  );
   const toggle = (set: ReadonlySet<string>, id: string, on: boolean) => {
     const next = new Set(set);
     if (on) next.add(id);
@@ -104,7 +108,9 @@ function LiveEpisodeList({
           label: 'Add to queue',
           onPress: () =>
             player.addToQueue(
-              showPlay(SHOW_BY_ID[EPISODE_BY_ID[episode.id]!.showId]!).items.filter((p) => p.id === episode.id),
+              showPlay(SHOW_BY_ID[EPISODE_BY_ID[episode.id]!.showId]!).items.filter(
+                (p) => p.id === episode.id,
+              ),
             ),
         },
         { key: 'share', label: 'Share episode', onPress: () => {} },
@@ -187,7 +193,9 @@ function LiveEpisodeHeader({ episode }: { episode: DemoEpisode }) {
       onPlayPress={() => playEpisode(episode, listened)}
       progress={listened !== undefined ? listened / episode.duration : undefined}
       remainingLabel={
-        listened !== undefined ? `${Math.max(1, Math.round((episode.duration - listened) / 60))} min left` : undefined
+        listened !== undefined
+          ? `${Math.max(1, Math.round((episode.duration - listened) / 60))} min left`
+          : undefined
       }
       saved={saved}
       onSavedChange={setSaved}
@@ -212,9 +220,9 @@ export function EpisodePage({ id }: { id: string }) {
         <View style={{ gap: 12, maxWidth: 720 }}>
           <SectionTitle>Episode description</SectionTitle>
           <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
-            {episode.description} Recorded on location with the archivists, sailors and cartographers who still keep the
-            story going. Chapters: 00:00 Cold open · 04:12 The first sighting · 18:40 A second expedition · 31:05 What
-            the soundings said.
+            {episode.description} Recorded on location with the archivists, sailors and
+            cartographers who still keep the story going. Chapters: 00:00 Cold open · 04:12 The
+            first sighting · 18:40 A second expedition · 31:05 What the soundings said.
           </Text>
         </View>
         <View style={{ gap: 8, maxWidth: 900 }}>

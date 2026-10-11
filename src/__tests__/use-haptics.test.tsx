@@ -70,10 +70,7 @@ function loadWithHaptics(factory?: () => unknown): Harness {
     // name while the loader's `require` resolves through the same mapping — the
     // mock would never be consulted and every case would run against the manual
     // mock instead of the factory.
-    jest.doMock(
-      HAPTICS,
-      factory ?? (() => ({ ImpactFeedbackStyle: STYLES, impactAsync })),
-    );
+    jest.doMock(HAPTICS, factory ?? (() => ({ ImpactFeedbackStyle: STYLES, impactAsync })));
     // An isolated registry would otherwise build the hook against a SECOND copy
     // of React, whose dispatcher is null under the outer renderer — every case
     // would fail on `useContext` before reaching what it asserts. `react-native`
@@ -87,7 +84,6 @@ function loadWithHaptics(factory?: () => unknown): Harness {
     // A plain `require`, NOT `jest.requireActual`: the latter bypasses the mock
     // registry for the whole dependency subtree, so the doMocks above would be
     // ignored and the suite would silently exercise the real expo-haptics.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mod = require('../hooks/use-haptics') as typeof import('../hooks/use-haptics');
 
     harness = {

@@ -23,10 +23,11 @@ import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createComposerAttachmentStrip({ ComposerIconButton }: {
+export function createComposerAttachmentStrip({
+  ComposerIconButton,
+}: {
   ComposerIconButton: typeof ComposerIconButtonComponent;
 }) {
-
   function isUrl(value: string): boolean {
     return /^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('file:');
   }
@@ -101,7 +102,8 @@ export function createComposerAttachmentStrip({ ComposerIconButton }: {
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'hidden',
-            }}>
+            }}
+          >
             {uri ? (
               <Image
                 source={{ uri }}
@@ -117,7 +119,8 @@ export function createComposerAttachmentStrip({ ComposerIconButton }: {
               {...dataHook('bloomChatComposerRing')}
               pointerEvents="none"
               style={{ position: 'absolute', top: 0, left: 0, width: size, height: size }}
-              testID={testID ? `${testID}-ring` : undefined}>
+              testID={testID ? `${testID}-ring` : undefined}
+            >
               <Svg width={size} height={size}>
                 <Path
                   d={path}
@@ -151,7 +154,8 @@ export function createComposerAttachmentStrip({ ComposerIconButton }: {
         <Text
           variant="caption-2-regular"
           numberOfLines={1}
-          style={{ color: uploading ? palette.accent : palette.textSecondary }}>
+          style={{ color: uploading ? palette.accent : palette.textSecondary }}
+        >
           {uploading ? `${Math.round(progress)}%` : (attachment.caption ?? attachment.name)}
         </Text>
       </View>
@@ -170,7 +174,9 @@ export function createComposerAttachmentStrip({ ComposerIconButton }: {
     accessibilityLabel: accessibilityLabelProp,
   }: ComposerAttachmentStripProps) {
     const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
-    const removeLabel = removeLabelProp ?? ((attachment: ChatComposerAttachment) => messages.removeAttachment(attachment.name));
+    const removeLabel =
+      removeLabelProp ??
+      ((attachment: ChatComposerAttachment) => messages.removeAttachment(attachment.name));
     const accessibilityLabel = accessibilityLabelProp ?? messages.attachments;
     if (attachments.length === 0) return null;
     return (
@@ -191,7 +197,8 @@ export function createComposerAttachmentStrip({ ComposerIconButton }: {
           paddingBottom: 2,
         }}
         style={[{ flexGrow: 0 }, style]}
-        testID={testID}>
+        testID={testID}
+      >
         {attachments.map((attachment) => (
           <Tile
             key={attachment.id}

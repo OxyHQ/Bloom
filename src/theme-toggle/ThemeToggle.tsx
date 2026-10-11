@@ -229,9 +229,16 @@ function SwitchTrackSm({
 }) {
   const progress = useSharedValue(on ? 1 : 0);
   useEffect(() => {
-    progress.value = reducedMotion ? (on ? 1 : 0) : withTiming(on ? 1 : 0, { duration: THUMB_MS, easing: EASE });
+    progress.value = reducedMotion
+      ? on
+        ? 1
+        : 0
+      : withTiming(on ? 1 : 0, { duration: THUMB_MS, easing: EASE });
   }, [on, reducedMotion, progress]);
-  const thumbStyle = useAnimatedStyle(() => ({ transform: [{ translateX: progress.value * 12 }] }), [progress]);
+  const thumbStyle = useAnimatedStyle(
+    () => ({ transform: [{ translateX: progress.value * 12 }] }),
+    [progress],
+  );
   const chip = on ? palette.chipOn : palette.chipOff;
 
   const trackStyle: WebCssStyle = {
@@ -240,14 +247,28 @@ function SwitchTrackSm({
     borderRadius: borderRadius.full,
     backgroundColor: on ? palette.switchOn[0] : palette.switchOff,
     flexShrink: 0,
-    ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: `${THUMB_MS}ms` } : null),
+    ...(IS_WEB
+      ? { transitionProperty: 'background-color', transitionDuration: `${THUMB_MS}ms` }
+      : null),
   };
 
   return (
     <View aria-hidden style={trackStyle} testID="theme-toggle-switch-track">
-      {on ? <GradientLayer from={palette.switchOn[0]} to={palette.switchOn[1]} radius={borderRadius.full} /> : null}
       {on ? (
-        <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: borderRadius.full, boxShadow: palette.switchOnShadow }]} />
+        <GradientLayer
+          from={palette.switchOn[0]}
+          to={palette.switchOn[1]}
+          radius={borderRadius.full}
+        />
+      ) : null}
+      {on ? (
+        <View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFill,
+            { borderRadius: borderRadius.full, boxShadow: palette.switchOnShadow },
+          ]}
+        />
       ) : null}
       <Animated.View
         style={[
@@ -282,7 +303,13 @@ function SwitchTrackSm({
             boxShadow: '0 2px 2px 0 rgba(0, 0, 0, 0.03)',
           }}
         >
-          <GradientLayer from={chip.from} to={chip.to} fromOffset={0.43837} reverse radius={borderRadius.full} />
+          <GradientLayer
+            from={chip.from}
+            to={chip.to}
+            fromOffset={0.43837}
+            reverse
+            radius={borderRadius.full}
+          />
         </View>
       </Animated.View>
     </View>
@@ -434,10 +461,17 @@ function SegmentedToggle({
   const glass = variant === 'glass-segmented';
   const progress = useSharedValue(dark ? 1 : 0);
   useEffect(() => {
-    progress.value = reducedMotion ? (dark ? 1 : 0) : withTiming(dark ? 1 : 0, { duration: THUMB_MS, easing: EASE });
+    progress.value = reducedMotion
+      ? dark
+        ? 1
+        : 0
+      : withTiming(dark ? 1 : 0, { duration: THUMB_MS, easing: EASE });
   }, [dark, reducedMotion, progress]);
   // Segment width + the 4px gap.
-  const thumbStyle = useAnimatedStyle(() => ({ transform: [{ translateX: progress.value * 36 }] }), [progress]);
+  const thumbStyle = useAnimatedStyle(
+    () => ({ transform: [{ translateX: progress.value * 36 }] }),
+    [progress],
+  );
 
   return (
     <View
@@ -477,8 +511,20 @@ function SegmentedToggle({
           thumbStyle,
         ]}
       />
-      <SegmentButton mode="light" selected={!dark} glass={glass} palette={palette} onSelect={onSelect} />
-      <SegmentButton mode="dark" selected={dark} glass={glass} palette={palette} onSelect={onSelect} />
+      <SegmentButton
+        mode="light"
+        selected={!dark}
+        glass={glass}
+        palette={palette}
+        onSelect={onSelect}
+      />
+      <SegmentButton
+        mode="dark"
+        selected={dark}
+        glass={glass}
+        palette={palette}
+        onSelect={onSelect}
+      />
     </View>
   );
 }

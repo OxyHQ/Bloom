@@ -72,7 +72,10 @@ function PlayButtonComponent({
   style,
   testID,
 }: PlayButtonProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
 
   const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
@@ -90,7 +93,11 @@ function PlayButtonComponent({
   const custom = playing ? pauseLabel : playLabel;
   const action = custom ?? (playing ? messages.pause : messages.play);
   const withSubject = (s: string) =>
-    custom !== undefined ? `${custom} ${s}` : playing ? messages.pauseSubject(s) : messages.playSubject(s);
+    custom !== undefined
+      ? `${custom} ${s}`
+      : playing
+        ? messages.pauseSubject(s)
+        : messages.playSubject(s);
   const name = accessibilityLabel ?? (subject ? withSubject(subject) : action);
 
   const active = !disabled && (pressed || hovered);

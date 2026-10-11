@@ -164,11 +164,28 @@ export const CustomWidth: Story = {
 };
 
 export const Playground: StoryObj<typeof Rail> = {
-  args: { items: [{ id: 'home', label: 'Home', icon: <Icons.RiHomeLine /> }, { id: 'search', label: 'Search', icon: <Icons.RiSearchLine /> }], activeId: 'home', width: 80 },
+  args: {
+    items: [
+      { id: 'home', label: 'Home', icon: <Icons.RiHomeLine /> },
+      { id: 'search', label: 'Search', icon: <Icons.RiSearchLine /> },
+    ],
+    activeId: 'home',
+    width: 80,
+  },
   parameters: { controls: { disable: false, include: ['activeId', 'width'] } },
-  argTypes: { activeId: { control: 'select', options: ['home','search'] }, width: { control: { type: 'range', min: 64, max: 120 } } },
+  argTypes: {
+    activeId: { control: 'select', options: ['home', 'search'] },
+    width: { control: { type: 'range', min: 64, max: 120 } },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 520, maxWidth: '100%' }}><Screen><Rail {...args} onSelect={activeId => updateArgs({ activeId })} /><Feed /></Screen></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <Screen>
+          <Rail {...args} onSelect={(activeId) => updateArgs({ activeId })} />
+          <Feed />
+        </Screen>
+      </View>
+    );
   },
 };

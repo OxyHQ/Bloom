@@ -207,7 +207,10 @@ export const CALL_CONTROL_GEOMETRY: Record<
 };
 
 /** The English `CallScreen` words; components speak the locale's (`CALL_UI_MESSAGES`). */
-export const CALL_SCREEN_LABELS: CallScreenLabels = { ...CALL_UI_MESSAGES.en.status, ...CALL_UI_MESSAGES.en.screen };
+export const CALL_SCREEN_LABELS: CallScreenLabels = {
+  ...CALL_UI_MESSAGES.en.status,
+  ...CALL_UI_MESSAGES.en.screen,
+};
 
 export const CALL_PIP_CORNER_NAMES: Record<CallPipCorner, string> = CALL_UI_MESSAGES.en.pipCorners;
 
@@ -262,7 +265,11 @@ export interface CallGridLayout {
  * a tenth cell that breaks the 3×3. Getting this backwards is how a "9-up"
  * grid silently becomes a 10-cell 4×3.
  */
-export function callGridLayout(count: number, maxTiles = 9, columnsOverride?: number): CallGridLayout {
+export function callGridLayout(
+  count: number,
+  maxTiles = 9,
+  columnsOverride?: number,
+): CallGridLayout {
   const total = Math.max(0, Math.floor(count));
   const cap = maxTiles > 0 ? Math.floor(maxTiles) : total;
   const overflowing = total > cap;

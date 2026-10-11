@@ -22,19 +22,22 @@ export interface PlaceCardMessages {
   rated: (value: string, reviews?: number | string) => string;
 }
 
-export const PLACE_CARD_MESSAGES: MessageCatalog<PlaceCardMessages> = defineMessages<PlaceCardMessages>('PLACE_CARD_MESSAGES', {
-  openStates: {
-    open: 'Open',
-    'closing-soon': 'Closing soon',
-    closed: 'Closed',
-    'opening-soon': 'Opens soon',
-  },
-  new: 'New',
-  actions: 'Actions',
-  actionsFor: (name) => `${name} actions`,
-  rated: (value, reviews) =>
-    withReviews(
-      `Rated ${value} out of 5`,
-      reviews === undefined ? undefined : countOf('en', reviews, { one: '{n} review', other: '{n} reviews' }),
-    ),
-});
+export const PLACE_CARD_MESSAGES: MessageCatalog<PlaceCardMessages> =
+  defineMessages<PlaceCardMessages>('PLACE_CARD_MESSAGES', {
+    openStates: {
+      open: 'Open',
+      'closing-soon': 'Closing soon',
+      closed: 'Closed',
+      'opening-soon': 'Opens soon',
+    },
+    new: 'New',
+    actions: 'Actions',
+    actionsFor: (name) => `${name} actions`,
+    rated: (value, reviews) =>
+      withReviews(
+        `Rated ${value} out of 5`,
+        reviews === undefined
+          ? undefined
+          : countOf('en', reviews, { one: '{n} review', other: '{n} reviews' }),
+      ),
+  });

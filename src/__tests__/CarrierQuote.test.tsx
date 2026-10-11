@@ -220,7 +220,9 @@ describe('the card draws the offer and names its actions', () => {
   });
 
   it('names the identity block with everything the card draws around it', () => {
-    mount(<CarrierQuoteCard quote={{ ...IVO, marks: ['cheapest'] }} onPressCarrier={noop} testID="q" />);
+    mount(
+      <CarrierQuoteCard quote={{ ...IVO, marks: ['cheapest'] }} onPressCarrier={noop} testID="q" />,
+    );
     expect(byTestId('q-subject').getAttribute('aria-label')).toBe(
       'Ivo Brennan, Verified carrier, Cheapest, 4.92 out of 5, 214 jobs, Sable Haulage, €38.40',
     );
@@ -364,7 +366,9 @@ describe('the two states that are not a list', () => {
   it('names the whole list', () => {
     mount(<CarrierQuoteList quotes={SET} accessibilityLabel="Offers on this job" testID="l" />);
     expect(byTestId('l').getAttribute('aria-label')).toBe('Offers on this job');
-    expect(allByRole('group').some((node) => node.getAttribute('aria-label') === 'Offers on this job')).toBe(true);
+    expect(
+      allByRole('group').some((node) => node.getAttribute('aria-label') === 'Offers on this job'),
+    ).toBe(true);
   });
 });
 
@@ -376,7 +380,10 @@ describe('the paint is read off the fill the card lands on', () => {
       const paint = resolveCarrierQuotePaint(t, t.colors.card);
       expect([mode, contrastRatio(paint.tile, paint.surface) >= 1.1]).toEqual([mode, true]);
       expect([mode, contrastRatio(paint.tileText.text, paint.tile) >= 4.5]).toEqual([mode, true]);
-      expect([mode, contrastRatio(paint.tileText.textSecondary, paint.tile) >= 4.5]).toEqual([mode, true]);
+      expect([mode, contrastRatio(paint.tileText.textSecondary, paint.tile) >= 4.5]).toEqual([
+        mode,
+        true,
+      ]);
       expect([mode, contrastRatio(paint.hairline, paint.surface) >= 1.18]).toEqual([mode, true]);
     }
   });

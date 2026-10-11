@@ -9,9 +9,18 @@ import { pressHost } from './support/press-host';
 import type { SidebarProps } from '../sidebar/types';
 
 function mount(props: SidebarProps) {
-  return render(<BloomThemeProvider fonts={false}><Sidebar showSearch={false} showThemeToggle={false} {...props} /></BloomThemeProvider>);
+  return render(
+    <BloomThemeProvider fonts={false}>
+      <Sidebar showSearch={false} showThemeToggle={false} {...props} />
+    </BloomThemeProvider>,
+  );
 }
-const items = Array.from({ length: 20 }, (_, index) => ({ key: String(index), label: `Destination ${index}`, icon: RiHome5Line, onPress: () => {} }));
+const items = Array.from({ length: 20 }, (_, index) => ({
+  key: String(index),
+  label: `Destination ${index}`,
+  icon: RiHome5Line,
+  onPress: () => {},
+}));
 
 it.each([
   { variant: 'panel' as const, collapsed: false },
@@ -19,7 +28,12 @@ it.each([
   { variant: 'rail' as const },
 ])('keeps one named, operable action outside the scrolling destinations: %j', (mode) => {
   const onPress = jest.fn();
-  const tree = mount({ ...mode, testID: 'nav', items, primaryAction: { label: 'New post', icon: RiAddLine, onPress } });
+  const tree = mount({
+    ...mode,
+    testID: 'nav',
+    items,
+    primaryAction: { label: 'New post', icon: RiAddLine, onPress },
+  });
   const fab = tree.UNSAFE_root.findByType((Fab as unknown as { type: React.ComponentType }).type);
   expect(fab.props.label).toBe('New post');
   const button = tree.getByLabelText('New post');
@@ -32,22 +46,36 @@ it.each([
   }
 });
 
-it.each(['panel', 'rail'] as const)('prevents disabled primary action callbacks in %s', (variant) => {
-  const onPress = jest.fn();
-  const tree = mount({ variant, primaryAction: { label: 'New post', icon: RiAddLine, onPress, disabled: true } });
-  const button = tree.getByLabelText('New post');
-  expect(button.props.disabled).toBe(true);
-  // The RN mock removes the disabled host handler. fireEvent would climb
-  // past that host to Button's public onPress prop and call the test callback.
-  // Invoke only what the real host installs, never the composite ancestor.
-  act(() => button.props.onPress?.());
-  expect(onPress).not.toHaveBeenCalled();
-});
+it.each(['panel', 'rail'] as const)(
+  'prevents disabled primary action callbacks in %s',
+  (variant) => {
+    const onPress = jest.fn();
+    const tree = mount({
+      variant,
+      primaryAction: { label: 'New post', icon: RiAddLine, onPress, disabled: true },
+    });
+    const button = tree.getByLabelText('New post');
+    expect(button.props.disabled).toBe(true);
+    // The RN mock removes the disabled host handler. fireEvent would climb
+    // past that host to Button's public onPress prop and call the test callback.
+    // Invoke only what the real host installs, never the composite ancestor.
+    act(() => button.props.onPress?.());
+    expect(onPress).not.toHaveBeenCalled();
+  },
+);
 
 it('keeps its accessible name and callback across collapse and expansion', () => {
   const onPress = jest.fn();
-  const props = { primaryAction: { label: 'New post', icon: RiAddLine, onPress }, showSearch: false, showThemeToggle: false };
-  const ui = (collapsed: boolean) => <BloomThemeProvider fonts={false}><Sidebar {...props} collapsed={collapsed} /></BloomThemeProvider>;
+  const props = {
+    primaryAction: { label: 'New post', icon: RiAddLine, onPress },
+    showSearch: false,
+    showThemeToggle: false,
+  };
+  const ui = (collapsed: boolean) => (
+    <BloomThemeProvider fonts={false}>
+      <Sidebar {...props} collapsed={collapsed} />
+    </BloomThemeProvider>
+  );
   const tree = render(ui(false));
   for (const collapsed of [true, false, true]) {
     tree.rerender(ui(collapsed));

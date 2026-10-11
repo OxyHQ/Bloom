@@ -8,7 +8,7 @@ import { Avatar, AVATAR_SIZES, resolveAvatarTint } from '../avatar';
 import { avatarInitialsType, avatarTintForName } from '../avatar/initials';
 
 /** Deep-merge a style prop (jest's react-native mock does not flatten). */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: test helper reads arbitrary style shapes (carried over from the former eslint-disable)
 function flat(style: any): Record<string, any> {
   if (Array.isArray(style)) return Object.assign({}, ...style.map(flat));
   return style ?? {};
@@ -39,10 +39,27 @@ describe('Avatar — size rungs and initials', () => {
   });
 
   it('sets the initials type per rung', () => {
-    expect(avatarInitialsType(20)).toMatchObject({ fontSize: 10, lineHeight: 15, fontWeight: '600' });
-    expect(avatarInitialsType(24)).toMatchObject({ fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0 });
-    expect(avatarInitialsType(32)).toMatchObject({ fontSize: 16, lineHeight: 22, fontWeight: '600' });
-    expect(avatarInitialsType(36)).toMatchObject({ fontSize: 18, lineHeight: 24, fontWeight: '600' });
+    expect(avatarInitialsType(20)).toMatchObject({
+      fontSize: 10,
+      lineHeight: 15,
+      fontWeight: '600',
+    });
+    expect(avatarInitialsType(24)).toMatchObject({
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '600',
+      letterSpacing: 0,
+    });
+    expect(avatarInitialsType(32)).toMatchObject({
+      fontSize: 16,
+      lineHeight: 22,
+      fontWeight: '600',
+    });
+    expect(avatarInitialsType(36)).toMatchObject({
+      fontSize: 18,
+      lineHeight: 24,
+      fontWeight: '600',
+    });
     expect(avatarInitialsType(40)).toMatchObject({ fontSize: 18, lineHeight: 24 });
   });
 

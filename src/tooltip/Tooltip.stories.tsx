@@ -113,7 +113,17 @@ export const Sizes: Story = {
   parameters: { controls: { disable: true } },
   render: function SizesStory() {
     return (
-      <View style={{ paddingVertical: 80, paddingHorizontal: 40, maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', columnGap: 64, rowGap: 120 }}>
+      <View
+        style={{
+          paddingVertical: 80,
+          paddingHorizontal: 40,
+          maxWidth: '100%',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          columnGap: 64,
+          rowGap: 120,
+        }}
+      >
         {(['sm', 'md'] as const).map((size) =>
           (['top', 'bottom'] as const).map((position) => (
             <View key={`${size}-${position}`} style={{ alignItems: 'flex-start' }}>
@@ -168,9 +178,33 @@ export const AnchoredToTrigger: Story = {
 export const Playground: StoryObj<typeof Tooltip> = {
   args: { visible: false, position: 'top' },
   parameters: { controls: { disable: false, include: ['visible', 'position'] } },
-  argTypes: { visible: { control: 'boolean' }, position: { control: 'select', options: ['top','bottom'] } },
+  argTypes: {
+    visible: { control: 'boolean' },
+    position: { control: 'select', options: ['top', 'bottom'] },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 520, maxWidth: '100%' }}><View style={{ paddingVertical: 72, alignItems: 'center' }}><Tooltip {...args} onVisibleChange={visible => updateArgs({ visible })}><TooltipTrigger><Pressable accessibilityRole="button" accessibilityLabel="Preview tooltip" onHoverIn={() => updateArgs({ visible: true })} onHoverOut={() => updateArgs({ visible: false })} onFocus={() => updateArgs({ visible: true })} onBlur={() => updateArgs({ visible: false })} onPress={() => updateArgs({ visible: !args.visible })}><Text>Hover, focus or tap</Text></Pressable></TooltipTrigger><TooltipTextBubble>Copies the link to your clipboard</TooltipTextBubble></Tooltip></View></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <View style={{ paddingVertical: 72, alignItems: 'center' }}>
+          <Tooltip {...args} onVisibleChange={(visible) => updateArgs({ visible })}>
+            <TooltipTrigger>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Preview tooltip"
+                onHoverIn={() => updateArgs({ visible: true })}
+                onHoverOut={() => updateArgs({ visible: false })}
+                onFocus={() => updateArgs({ visible: true })}
+                onBlur={() => updateArgs({ visible: false })}
+                onPress={() => updateArgs({ visible: !args.visible })}
+              >
+                <Text>Hover, focus or tap</Text>
+              </Pressable>
+            </TooltipTrigger>
+            <TooltipTextBubble>Copies the link to your clipboard</TooltipTextBubble>
+          </Tooltip>
+        </View>
+      </View>
+    );
   },
 };

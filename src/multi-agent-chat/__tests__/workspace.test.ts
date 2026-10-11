@@ -6,11 +6,7 @@ import {
   restoreWorkspace,
   updateConversationAgents,
 } from '../data';
-import {
-  MARKETPLACE_ITEMS,
-  addMarketplaceBot,
-  filterMarketplace,
-} from '../marketplace-data';
+import { MARKETPLACE_ITEMS, addMarketplaceBot, filterMarketplace } from '../marketplace-data';
 import { streamReply, waitForReply } from '../stream-reply';
 
 describe('multi-agent workspace', () => {
@@ -35,13 +31,8 @@ describe('multi-agent workspace', () => {
     expect(updateConversationAgents(next, first.id, ['missing'])).toBe(next);
   });
   it('removes the active chat without losing other chats', () => {
-    const next = removeConversation(
-      INITIAL_WORKSPACE,
-      INITIAL_WORKSPACE.activeId,
-    );
-    expect(next.chats.some((c) => c.id === INITIAL_WORKSPACE.activeId)).toBe(
-      false,
-    );
+    const next = removeConversation(INITIAL_WORKSPACE, INITIAL_WORKSPACE.activeId);
+    expect(next.chats.some((c) => c.id === INITIAL_WORKSPACE.activeId)).toBe(false);
     expect(next.activeId).toBe(next.chats[0]!.id);
   });
   it('restores user edits and rejects malformed and duplicate saved records', () => {
@@ -52,9 +43,7 @@ describe('multi-agent workspace', () => {
         customTitle: 'My edited chat',
       })),
     };
-    expect(
-      restoreWorkspace(JSON.stringify(source))?.chats[0]?.customTitle,
-    ).toBe('My edited chat');
+    expect(restoreWorkspace(JSON.stringify(source))?.chats[0]?.customTitle).toBe('My edited chat');
     expect(restoreWorkspace('{bad')).toBeNull();
     expect(
       restoreWorkspace(
@@ -67,16 +56,12 @@ describe('multi-agent workspace', () => {
   });
   it('creates unused identities and installs marketplace bots once', () => {
     const identity = nextAgentIdentity(INITIAL_WORKSPACE.agents);
-    expect(INITIAL_WORKSPACE.agents.some((a) => a.name === identity.name)).toBe(
-      false,
-    );
+    expect(INITIAL_WORKSPACE.agents.some((a) => a.name === identity.name)).toBe(false);
     const bot = MARKETPLACE_ITEMS.find((item) => item.kind === 'bot')!;
     const next = addMarketplaceBot(INITIAL_WORKSPACE, bot);
     expect(next.agents).toHaveLength(INITIAL_WORKSPACE.agents.length + 1);
     expect(addMarketplaceBot(next, bot)).toBe(next);
-    expect(
-      filterMarketplace('research', 'bot').every((item) => item.kind === 'bot'),
-    ).toBe(true);
+    expect(filterMarketplace('research', 'bot').every((item) => item.kind === 'bot')).toBe(true);
   });
 });
 describe('abortable word streaming', () => {
@@ -85,9 +70,7 @@ describe('abortable word streaming', () => {
   it('preserves the exact whitespace and paragraph breaks', async () => {
     const text = 'One  two.\n\nThree four five. ';
     const chunks: string[] = [];
-    const task = streamReply(text, new AbortController().signal, (chunk) =>
-      chunks.push(chunk),
-    );
+    const task = streamReply(text, new AbortController().signal, (chunk) => chunks.push(chunk));
     await jest.runAllTimersAsync();
     await task;
     expect(chunks[chunks.length - 1]).toBe(text);
@@ -96,10 +79,8 @@ describe('abortable word streaming', () => {
   it('cancels pending pacing and never emits a late chunk', async () => {
     const controller = new AbortController();
     const chunks: string[] = [];
-    const task = streamReply(
-      'One two three four five six',
-      controller.signal,
-      (chunk) => chunks.push(chunk),
+    const task = streamReply('One two three four five six', controller.signal, (chunk) =>
+      chunks.push(chunk),
     ).catch(() => {});
     controller.abort();
     await task;
@@ -110,9 +91,7 @@ describe('abortable word streaming', () => {
   it('rejects an already aborted delay without installing timers', async () => {
     const controller = new AbortController();
     controller.abort('cancelled');
-    await expect(waitForReply(500, controller.signal)).rejects.toBe(
-      'cancelled',
-    );
+    await expect(waitForReply(500, controller.signal)).rejects.toBe('cancelled');
     expect(jest.getTimerCount()).toBe(0);
   });
 });

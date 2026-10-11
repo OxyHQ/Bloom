@@ -2,12 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import {
-  CompositionBar,
-  StatBar,
-  ActivityHeatmap,
-  bucketByDay,
-} from '../index';
+import { CompositionBar, StatBar, ActivityHeatmap, bucketByDay } from '../index';
 import type { CompositionCategory, AvatarGroupItem } from '../index';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -71,13 +66,7 @@ describe('StatBar', () => {
 
   it('renders split with a rounded percent and both values', () => {
     const { getByText } = renderWithTheme(
-      <StatBar
-        variant="split"
-        label="Net"
-        percent={62.4}
-        leftValue="+10"
-        rightValue="-4"
-      />,
+      <StatBar variant="split" label="Net" percent={62.4} leftValue="+10" rightValue="-4" />,
     );
     expect(getByText('62%')).toBeTruthy();
     expect(getByText('+10')).toBeTruthy();
@@ -98,9 +87,7 @@ describe('ActivityHeatmap', () => {
   });
 
   it('renders an empty container when there is no data and no endDate', () => {
-    const { getByTestId } = renderWithTheme(
-      <ActivityHeatmap data={[]} testID="heat-empty" />,
-    );
+    const { getByTestId } = renderWithTheme(<ActivityHeatmap data={[]} testID="heat-empty" />);
     expect(getByTestId('heat-empty')).toBeTruthy();
   });
 });

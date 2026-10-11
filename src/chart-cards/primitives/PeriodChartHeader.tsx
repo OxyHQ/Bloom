@@ -1,7 +1,11 @@
 import React from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../../segmented-control';
 import { BREAKPOINTS } from '../../styles/breakpoints';
 import { ChartHeadline, type ChartHeadlineProps } from './ChartHeader';
 import type { ChartRangeOption } from './use-chart-range';
@@ -43,7 +47,8 @@ export function PeriodChartHeader({
         wide
           ? { width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 2 }
           : { width: '100%', flexDirection: 'column', gap: 12 }
-      }>
+      }
+    >
       <ChartHeadline {...headline} testID={testID} style={wide ? { flex: 1 } : { width: '100%' }} />
       {ranges && ranges.length > 0 ? (
         <View testID={testID ? `${testID}-range` : undefined}>
@@ -51,12 +56,14 @@ export function PeriodChartHeader({
             label={rangesLabel}
             type="radio"
             value={rangeId ?? ranges[0]!.id}
-            onValueChange={(id) => onRangeChange?.(id)}>
+            onValueChange={(id) => onRangeChange?.(id)}
+          >
             {ranges.map((range) => (
               <SegmentedControlItem
                 key={range.id}
                 value={range.id}
-                testID={testID ? `${testID}-range-${range.id}` : undefined}>
+                testID={testID ? `${testID}-range-${range.id}` : undefined}
+              >
                 <SegmentedControlItemText>{range.label}</SegmentedControlItemText>
               </SegmentedControlItem>
             ))}

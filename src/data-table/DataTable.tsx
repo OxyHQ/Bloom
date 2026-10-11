@@ -18,7 +18,11 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { formatGregorian } from '../locale/format-date';
 import { useMessages } from '../locale/messages';
 import { Pagination } from '../pagination';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '../table';
 import type { Theme } from '../theme/types';
@@ -81,7 +85,12 @@ interface DataTablePalette {
 
 function resolveDataTablePalette(theme: Theme): DataTablePalette {
   const c = theme.colors;
-  return { border: c.borderLight, separator: c.borderLight, textTertiary: c.textSecondary, text: c.text };
+  return {
+    border: c.borderLight,
+    separator: c.borderLight,
+    textTertiary: c.textSecondary,
+    text: c.text,
+  };
 }
 
 /** `inset`: the rows' `pl-3` gutter. */
@@ -107,7 +116,12 @@ function bodyType(size: DataTableSize): TextStyle {
 /** A `basis` column's flex style — see `DataTableColumn.basis`. */
 function basisStyle<T>(column: DataTableColumn<T>): ViewStyle | undefined {
   if (column.basis == null) return undefined;
-  return { flexBasis: column.basis, flexGrow: column.basis, flexShrink: 1, minWidth: column.minWidth ?? 0 };
+  return {
+    flexBasis: column.basis,
+    flexGrow: column.basis,
+    flexShrink: 1,
+    minWidth: column.minWidth ?? 0,
+  };
 }
 
 function isTextLike(node: React.ReactNode): node is string | number {
@@ -156,7 +170,10 @@ export function DataTable<T>({
   const selectAllLabel = selectAllLabelProp ?? messages.selectAll;
   const sizeToggleLabels = sizeToggleLabelsProp ?? messages.density;
   const sizeToggleAccessibilityLabel = sizeToggleAccessibilityLabelProp ?? messages.densityLabel;
-  const {size: scopedSize} = useBloomAppearance({size: defaultSize}, {size: 'md', tone: 'neutral'});
+  const { size: scopedSize } = useBloomAppearance(
+    { size: defaultSize },
+    { size: 'md', tone: 'neutral' },
+  );
   const theme = useTheme();
   const palette = useMemo(() => resolveDataTablePalette(theme), [theme]);
 
@@ -274,14 +291,20 @@ export function DataTable<T>({
           >
             <View style={{ justifyContent: 'center', flexShrink: 0 }}>
               {isTextLike(title) ? (
-                <Text numberOfLines={1} style={[TYPE_SCALE['body-medium'], { color: palette.textTertiary }]}>
+                <Text
+                  numberOfLines={1}
+                  style={[TYPE_SCALE['body-medium'], { color: palette.textTertiary }]}
+                >
                   {title}
                 </Text>
               ) : (
                 title
               )}
               {isTextLike(summary) ? (
-                <Text numberOfLines={1} style={[TYPE_SCALE['body-medium'], { color: palette.text }]}>
+                <Text
+                  numberOfLines={1}
+                  style={[TYPE_SCALE['body-medium'], { color: palette.text }]}
+                >
                   {summary}
                 </Text>
               ) : (
@@ -296,7 +319,12 @@ export function DataTable<T>({
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={{ marginLeft: -12, marginRight: -12, alignSelf: 'stretch' }}
-                  contentContainerStyle={{ paddingLeft: 12, paddingRight: 12, gap: 10, alignItems: 'center' }}
+                  contentContainerStyle={{
+                    paddingLeft: 12,
+                    paddingRight: 12,
+                    gap: 10,
+                    alignItems: 'center',
+                  }}
                 >
                   {toolbar}
                 </ScrollView>
@@ -325,7 +353,8 @@ export function DataTable<T>({
                 const sortable = isSortable(column);
                 const direction = sort?.columnId === column.id ? sort.direction : 'none';
                 // `inset`: the sorted column's label reads in text-primary.
-                const labelColor = inset && direction !== 'none' ? palette.text : palette.textTertiary;
+                const labelColor =
+                  inset && direction !== 'none' ? palette.text : palette.textTertiary;
                 const layout = {
                   width: column.width,
                   flex: column.flex,
@@ -357,7 +386,10 @@ export function DataTable<T>({
                             onPress={() => pressSort(column)}
                           />
                         ) : isTextLike(column.header) ? (
-                          <Text numberOfLines={1} style={[bodyText, { color: palette.textTertiary }]}>
+                          <Text
+                            numberOfLines={1}
+                            style={[bodyText, { color: palette.textTertiary }]}
+                          >
                             {column.header}
                           </Text>
                         ) : (
@@ -367,13 +399,15 @@ export function DataTable<T>({
                     </TableColumn>
                   );
                 }
-                const primaryLabel = labelColor !== palette.textTertiary && isTextLike(column.header);
+                const primaryLabel =
+                  labelColor !== palette.textTertiary && isTextLike(column.header);
                 return (
                   <TableColumn
                     key={column.id}
                     {...layout}
                     accessibilityLabel={
-                      column.headerAccessibilityLabel ?? (primaryLabel ? String(column.header) : undefined)
+                      column.headerAccessibilityLabel ??
+                      (primaryLabel ? String(column.header) : undefined)
                     }
                     onSort={sortable ? () => pressSort(column) : undefined}
                     sortDirection={direction}
@@ -395,7 +429,12 @@ export function DataTable<T>({
                 // `flex w-full items-center justify-center py-10 pr-3`.
                 <View style={INSET_EMPTY_BAND}>
                   {isTextLike(emptyState) ? (
-                    <Text style={[TYPE_SCALE['body-medium'], { color: palette.textTertiary, textAlign: 'center' }]}>
+                    <Text
+                      style={[
+                        TYPE_SCALE['body-medium'],
+                        { color: palette.textTertiary, textAlign: 'center' },
+                      ]}
+                    >
                       {emptyState}
                     </Text>
                   ) : (
@@ -429,11 +468,21 @@ export function DataTable<T>({
                           <TableCell key={column.id} style={[basisStyle(column), flushCell]}>
                             {/* Stretched to the cell, so a long first-column label truncates
                                 instead of spilling into the next column. */}
-                            <View style={{ alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                            <View
+                              style={{
+                                alignSelf: 'stretch',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 8,
+                                minWidth: 0,
+                              }}
+                            >
                               <Checkbox
                                 checked={rowSelected}
                                 onCheckedChange={(on) => setSelection(toggleId(selection, id, on))}
-                                accessibilityLabel={getSelectRowLabel?.(row, id) ?? messages.selectRow(id)}
+                                accessibilityLabel={
+                                  getSelectRowLabel?.(row, id) ?? messages.selectRow(id)
+                                }
                               />
                               {isTextLike(content) ? (
                                 <Text numberOfLines={1} style={[bodyText, { flexShrink: 1 }]}>
@@ -505,7 +554,11 @@ function formatValue(
   if (value == null) return '';
   // The locale's own short date — `toLocaleDateString()` with no locale would
   // always speak the runtime's, whatever `BloomProvider locale` says.
-  if (value instanceof Date) return formatGregorian(value, locale, { year: 'numeric', month: 'numeric', day: 'numeric' }) ?? value.toDateString();
+  if (value instanceof Date)
+    return (
+      formatGregorian(value, locale, { year: 'numeric', month: 'numeric', day: 'numeric' }) ??
+      value.toDateString()
+    );
   return String(value);
 }
 
@@ -566,12 +619,21 @@ function SortButton({
       ) : (
         label
       )}
-      <SortGlyph direction={direction} color={direction === 'none' ? color : theme.colors.textSecondary} />
+      <SortGlyph
+        direction={direction}
+        color={direction === 'none' ? color : theme.colors.textSecondary}
+      />
     </Pressable>
   );
 }
 
-function SortGlyph({ direction, color }: { direction: 'ascending' | 'descending' | 'none'; color: string }) {
+function SortGlyph({
+  direction,
+  color,
+}: {
+  direction: 'ascending' | 'descending' | 'none';
+  color: string;
+}) {
   return (
     <View style={direction === 'ascending' ? { transform: [{ rotate: '180deg' }] } : undefined}>
       <Svg width={SORT_ICON_SIZE} height={SORT_ICON_SIZE} viewBox="0 0 24 24">
@@ -628,7 +690,15 @@ export function DataTableRowAction({
   const fill = IS_WEB ? 'currentColor' : theme.colors.text;
 
   const button = (
-    <Button {...buttonProps} size="sm" accessibilityLabel={accessibilityLabel ?? label} leading={<Icon width={ROW_ACTION_ICON_SIZE} height={ROW_ACTION_ICON_SIZE} fill={fill} />} style={[activeStyle, style]} appearance="plain" tone="neutral" />
+    <Button
+      {...buttonProps}
+      size="sm"
+      accessibilityLabel={accessibilityLabel ?? label}
+      leading={<Icon width={ROW_ACTION_ICON_SIZE} height={ROW_ACTION_ICON_SIZE} fill={fill} />}
+      style={[activeStyle, style]}
+      appearance="plain"
+      tone="neutral"
+    />
   );
 
   if (!tooltip || !IS_WEB) return button;

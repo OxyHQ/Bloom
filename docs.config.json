@@ -257,9 +257,7 @@
   "deprecatedVersions": [],
   "defaultVersion": "3.0.1",
   "docsPath": "docs/",
-  "docsIgnore": [
-    "superpowers"
-  ],
+  "docsIgnore": ["superpowers"],
   "typedoc": {
     "entry": "src/index.ts"
   },

@@ -9,18 +9,13 @@ export function assertSize(size: number): void {
 
 export function assertWidth(width: number): void {
   if (!Number.isFinite(width) || width < 0) {
-    throw new Error(
-      '[Bloom] Shapes: border width must be a non-negative finite number.',
-    );
+    throw new Error('[Bloom] Shapes: border width must be a non-negative finite number.');
   }
 }
 
 /** SVG and native image loaders only share this URI/asset subset. */
-export function assertImageSource(
-  source: unknown,
-): asserts source is ImageSource {
-  if (typeof source === 'number' && Number.isSafeInteger(source) && source > 0)
-    return;
+export function assertImageSource(source: unknown): asserts source is ImageSource {
+  if (typeof source === 'number' && Number.isSafeInteger(source) && source > 0) return;
   if (source && typeof source === 'object' && !Array.isArray(source)) {
     const descriptor = source as Record<string, unknown>;
     const keys = Object.keys(descriptor);
@@ -28,8 +23,7 @@ export function assertImageSource(
     const metadataValid = ['width', 'height', 'scale'].every((key) => {
       const value = descriptor[key];
       return (
-        value === undefined ||
-        (typeof value === 'number' && Number.isFinite(value) && value > 0)
+        value === undefined || (typeof value === 'number' && Number.isFinite(value) && value > 0)
       );
     });
     if (

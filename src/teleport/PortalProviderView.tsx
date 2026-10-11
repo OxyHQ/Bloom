@@ -4,9 +4,9 @@
  *
  * Changed: import paths only, for this flat directory.
  */
-import { useCallback, useMemo, useRef } from "react";
-import { PortalRegistryContext } from "./portal-registry";
-import type { PortalProviderProps } from "./types";
+import { useCallback, useMemo, useRef } from 'react';
+import { PortalRegistryContext } from './portal-registry';
+import type { PortalProviderProps } from './types';
 
 export default function PortalProvider({ children }: PortalProviderProps) {
   const hostsRef = useRef<Map<string, HTMLElement>>(new Map());
@@ -24,30 +24,21 @@ export default function PortalProvider({ children }: PortalProviderProps) {
       callbacks.forEach((callback) => callback());
     }
   }, []);
-  const getHost = useCallback(
-    (name: string) => hostsRef.current.get(name) ?? null,
-    [],
-  );
-  const registerPendingPortal = useCallback(
-    (name: string, callback: () => void) => {
-      const callbacks = pendingPortalsRef.current.get(name) ?? new Set();
-      callbacks.add(callback);
-      pendingPortalsRef.current.set(name, callbacks);
-    },
-    [],
-  );
-  const unregisterPendingPortal = useCallback(
-    (name: string, callback: () => void) => {
-      const callbacks = pendingPortalsRef.current.get(name);
-      if (callbacks) {
-        callbacks.delete(callback);
-        if (callbacks.size === 0) {
-          pendingPortalsRef.current.delete(name);
-        }
+  const getHost = useCallback((name: string) => hostsRef.current.get(name) ?? null, []);
+  const registerPendingPortal = useCallback((name: string, callback: () => void) => {
+    const callbacks = pendingPortalsRef.current.get(name) ?? new Set();
+    callbacks.add(callback);
+    pendingPortalsRef.current.set(name, callbacks);
+  }, []);
+  const unregisterPendingPortal = useCallback((name: string, callback: () => void) => {
+    const callbacks = pendingPortalsRef.current.get(name);
+    if (callbacks) {
+      callbacks.delete(callback);
+      if (callbacks.size === 0) {
+        pendingPortalsRef.current.delete(name);
       }
-    },
-    [],
-  );
+    }
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -59,9 +50,5 @@ export default function PortalProvider({ children }: PortalProviderProps) {
     [registerHost, getHost, registerPendingPortal, unregisterPendingPortal],
   );
 
-  return (
-    <PortalRegistryContext.Provider value={value}>
-      {children}
-    </PortalRegistryContext.Provider>
-  );
+  return <PortalRegistryContext.Provider value={value}>{children}</PortalRegistryContext.Provider>;
 }

@@ -19,15 +19,16 @@ export interface ContactCardMessages {
   owner: string;
 }
 
-export const CONTACT_CARD_MESSAGES: MessageCatalog<ContactCardMessages> = defineMessages<ContactCardMessages>('CONTACT_CARD_MESSAGES', {
-  channels: {
-    email: { action: 'Email', name: (s) => `Email ${s}` },
-    phone: { action: 'Call', name: (s) => `Call ${s}` },
-    chat: { action: 'Message', name: (s) => `Message ${s}` },
-    meeting: { action: 'Meet', name: (s) => `Schedule a meeting with ${s}` },
-    video: { action: 'Video', name: (s) => `Start a video call with ${s}` },
-    website: { action: 'Website', name: (s) => `Open the website of ${s}` },
-  },
-  labelsFor: (name) => `Labels for ${name}`,
-  owner: 'Owner',
-});
+export const CONTACT_CARD_MESSAGES: MessageCatalog<ContactCardMessages> =
+  defineMessages<ContactCardMessages>('CONTACT_CARD_MESSAGES', {
+    channels: {
+      email: { action: 'Email', name: (s) => `Email ${s}` },
+      phone: { action: 'Call', name: (s) => `Call ${s}` },
+      chat: { action: 'Message', name: (s) => `Message ${s}` },
+      meeting: { action: 'Meet', name: (s) => `Schedule a meeting with ${s}` },
+      video: { action: 'Video', name: (s) => `Start a video call with ${s}` },
+      website: { action: 'Website', name: (s) => `Open the website of ${s}` },
+    },
+    labelsFor: (name) => `Labels for ${name}`,
+    owner: 'Owner',
+  });

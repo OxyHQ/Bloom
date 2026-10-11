@@ -11,13 +11,7 @@
  */
 import { isValidElement, type ReactElement, type ReactNode } from 'react';
 import { toastStore } from './toast-store';
-import type {
-  PromiseToastOptions,
-  ToastFn,
-  ToastOptions,
-  ToastType,
-  ToastVariant,
-} from './types';
+import type { PromiseToastOptions, ToastFn, ToastOptions, ToastType, ToastVariant } from './types';
 
 const TYPE_TO_VARIANT: Record<ToastType, ToastVariant | undefined> = {
   default: undefined,
@@ -28,9 +22,7 @@ const TYPE_TO_VARIANT: Record<ToastType, ToastVariant | undefined> = {
   loading: 'loading',
 };
 
-const resolveContent = (
-  content: ReactNode,
-): { title: string; jsx?: ReactNode } => {
+const resolveContent = (content: ReactNode): { title: string; jsx?: ReactNode } => {
   if (typeof content === 'string') {
     return { title: content };
   }
@@ -38,9 +30,7 @@ const resolveContent = (
     // A custom element owns the whole row, so there is no title to render.
     return { title: '', jsx: content };
   }
-  throw new Error(
-    `Toast can be a string or a React element, got ${typeof content}`,
-  );
+  throw new Error(`Toast can be a string or a React element, got ${typeof content}`);
 };
 
 const dispatch = (
@@ -74,10 +64,9 @@ export const toast: ToastFn = Object.assign(
     loading: (content: ReactNode, options: Omit<ToastOptions, 'type'> = {}) =>
       dispatch(content, options, 'loading'),
 
-    custom: (jsx: ReactElement, options: Omit<ToastOptions, 'type'> = {}) =>
-      dispatch(jsx, options),
+    custom: (jsx: ReactElement, options: Omit<ToastOptions, 'type'> = {}) => dispatch(jsx, options),
 
-    promise: <T,>(promise: Promise<T>, options: PromiseToastOptions<T>) => {
+    promise: <T>(promise: Promise<T>, options: PromiseToastOptions<T>) => {
       const { loading, success, error, styles, ...rest } = options;
       return toastStore.addToast({
         ...rest,

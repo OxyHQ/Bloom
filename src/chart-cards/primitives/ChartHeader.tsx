@@ -81,7 +81,8 @@ export function ChartHeadline({
               variant="title-1-medium"
               numberOfLines={1}
               testID={testID ? `${testID}-headline` : undefined}
-              style={[{ color: palette.text }, TABULAR]}>
+              style={[{ color: palette.text }, TABULAR]}
+            >
               {format(display)}
             </Text>
           </FadeOnChange>
@@ -90,12 +91,14 @@ export function ChartHeadline({
               style={{ opacity: hovering ? 0 : 1 }}
               aria-hidden={hovering}
               accessibilityElementsHidden={hovering}
-              importantForAccessibility={hovering ? 'no-hide-descendants' : 'auto'}>
+              importantForAccessibility={hovering ? 'no-hide-descendants' : 'auto'}
+            >
               <Chip
                 size="md"
                 testID={testID ? `${testID}-delta` : undefined}
                 style={{ backgroundColor: chip.background }}
-                textStyle={{ color: chip.foreground }}>
+                textStyle={{ color: chip.foreground }}
+              >
                 {delta.label}
               </Chip>
             </View>
@@ -142,7 +145,16 @@ export function ChartHeader({
   return (
     <View
       testID={testID ? `${testID}-header` : undefined}
-      style={[{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }, headerStyle]}>
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 12,
+        },
+        headerStyle,
+      ]}
+    >
       <ChartHeadline {...headline} testID={testID} style={[{ flex: 1 }, headline.style]} />
       {trailing}
       {ranges && ranges.length > 0 ? (

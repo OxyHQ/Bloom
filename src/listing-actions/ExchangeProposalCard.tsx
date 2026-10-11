@@ -84,12 +84,16 @@ function ExchangeProposalCardComponent({
   const stacked =
     layout === 'vertical' || (layout === 'auto' && width != null && width < EXCHANGE_STACK_BELOW);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
-  const labels = useMemo(() => ({ ...messages.exchangeModes, ...modeLabels }), [messages, modeLabels]);
+  const labels = useMemo(
+    () => ({ ...messages.exchangeModes, ...modeLabels }),
+    [messages, modeLabels],
+  );
 
   // Side by side, the glyph sits on the photos' centre line: the label (15 +
   // 8 gap) plus half a 4:3 photo as wide as one tile.
   const tileWidth = rowWidth != null ? (rowWidth - SWAP_GLYPH - HOMES_GAP * 2) / 2 : 0;
-  const arrowTop = rowWidth != null ? Math.round(TILE_LABEL + (tileWidth * 3) / 4 / 2 - SWAP_GLYPH / 2) : 0;
+  const arrowTop =
+    rowWidth != null ? Math.round(TILE_LABEL + (tileWidth * 3) / 4 / 2 - SWAP_GLYPH / 2) : 0;
 
   const arrow = (
     <View
@@ -197,21 +201,24 @@ function ExchangeProposalCardComponent({
       ) : null}
 
       <Button
-
         size="lg"
         fullWidth
         onPress={onPropose}
         disabled={proposeDisabled}
         loading={loading}
         style={{ marginTop: 16, alignSelf: 'stretch' }}
-        testID={id('propose')} tone="accent" appearance="solid"
+        testID={id('propose')}
+        tone="accent"
+        appearance="solid"
       >
         {proposeLabel}
       </Button>
 
       {note != null ? <ActionCardNote style={{ marginTop: 12 }}>{note}</ActionCardNote> : null}
 
-      {footer != null ? <View style={{ marginTop: 24, alignItems: 'center' }}>{footer}</View> : null}
+      {footer != null ? (
+        <View style={{ marginTop: 24, alignItems: 'center' }}>{footer}</View>
+      ) : null}
     </ActionCardShell>
   );
 }

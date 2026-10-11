@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from './Avatar';
+import { RiUserLine } from '../icons/remix/RiUserLine';
 import { RiVerifiedBadgeLine } from '../icons/remix/RiVerifiedBadgeLine';
 
 const meta: Meta<typeof Avatar> = {
@@ -80,12 +81,7 @@ export const SizeMatrix: Story = {
         }}
       >
         {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
-          <Avatar
-            key={size}
-            size={size}
-            source={SAMPLE_URI}
-            alt="Profile photo"
-          />
+          <Avatar key={size} size={size} source={SAMPLE_URI} alt="Profile photo" />
         ))}
       </View>
     </View>
@@ -229,17 +225,9 @@ export const SeenVsUnseen: Story = {
       }}
     >
       {/* Unseen → gradient ring. */}
-      <Avatar
-        size={72}
-        uri={SAMPLE_URI}
-        ring={{ colors: STORY_GRADIENT, width: 3 }}
-      />
+      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: STORY_GRADIENT, width: 3 }} />
       {/* Seen → muted solid gray ring. */}
-      <Avatar
-        size={72}
-        uri={SAMPLE_URI}
-        ring={{ colors: SEEN_GRAY, width: 3 }}
-      />
+      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: SEEN_GRAY, width: 3 }} />
     </View>
   ),
   name: 'Seen vs unseen',
@@ -267,22 +255,9 @@ export const SolidRing: Story = {
         alignItems: 'center',
       }}
     >
-      <Avatar
-        size={72}
-        uri={SAMPLE_URI}
-        ring={{ colors: '#1A73E8', width: 3 }}
-      />
-      <Avatar
-        size={72}
-        uri={SAMPLE_URI}
-        shape="squircle"
-        ring={{ colors: '#1A73E8', width: 3 }}
-      />
-      <Avatar
-        size={72}
-        uri={SAMPLE_URI}
-        ring={{ colors: '#1A73E8', width: 3 }}
-      />
+      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: '#1A73E8', width: 3 }} />
+      <Avatar size={72} uri={SAMPLE_URI} shape="squircle" ring={{ colors: '#1A73E8', width: 3 }} />
+      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: '#1A73E8', width: 3 }} />
     </View>
   ),
   name: 'Solid ring',
@@ -341,4 +316,22 @@ export const Playground: Story = {
     verified: false,
     live: false,
   },
+};
+
+/** Caller-provided SVGs must paint above the positioned shape background. */
+export const CustomPlaceholder: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 24 }}>
+      {(['circle', 'squircle'] as const).map((shape) => (
+        <Avatar
+          key={shape}
+          testID={`placeholder-${shape}`}
+          size={96}
+          shape={shape}
+          placeholderColor="#eeeeee"
+          placeholderIcon={<RiUserLine width={40} height={40} fill="#111111" />}
+        />
+      ))}
+    </View>
+  ),
 };

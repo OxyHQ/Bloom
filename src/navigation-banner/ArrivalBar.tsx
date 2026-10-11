@@ -147,11 +147,12 @@ function ArrivalBarComponent({
         {action ??
           (onEnd ? (
             <Button
-
               size="lg"
               icon={RiCloseLine}
               onPress={onEnd}
-              testID={testID ? `${testID}-end` : undefined} tone="danger" appearance="solid"
+              testID={testID ? `${testID}-end` : undefined}
+              tone="danger"
+              appearance="solid"
             >
               {endWord}
             </Button>

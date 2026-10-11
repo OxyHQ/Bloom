@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button , LinkButton } from '../button';
+import { Button, LinkButton } from '../button';
 import { RangeCalendar, type DateRange } from '../date-picker';
 import { Divider } from '../divider';
 import { RiBuilding2Line } from '../icons/remix/RiBuilding2Line';
@@ -52,9 +52,24 @@ type Story = StoryObj;
 
 const AREAS: DestinationSuggestion[] = [
   { id: 'nearby', title: 'Nearby', description: 'Search around your location', icon: RiMapPinLine },
-  { id: 'recent', title: 'Old Halden · 2+ bedrooms', description: 'Recent search', icon: RiTimeLine },
-  { id: 'halden', title: 'Old Halden', description: 'City centre, 1,240 homes', icon: RiBuilding2Line },
-  { id: 'marrow', title: 'Marrowfield', description: 'Lakeside town, 312 homes', icon: RiHome4Line },
+  {
+    id: 'recent',
+    title: 'Old Halden · 2+ bedrooms',
+    description: 'Recent search',
+    icon: RiTimeLine,
+  },
+  {
+    id: 'halden',
+    title: 'Old Halden',
+    description: 'City centre, 1,240 homes',
+    icon: RiBuilding2Line,
+  },
+  {
+    id: 'marrow',
+    title: 'Marrowfield',
+    description: 'Lakeside town, 312 homes',
+    icon: RiHome4Line,
+  },
   { id: 'solvia', title: 'Solvia Bay', description: 'Coast, 586 homes', icon: RiMapPinLine },
 ];
 
@@ -62,13 +77,20 @@ const MONTH = new Date(2026, 9, 1);
 
 const euro = (n: number) => `€${n.toLocaleString('en-US')}`;
 const euroShort = (n: number) =>
-  n >= 1_000_000 ? `€${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M` : n >= 1000 ? `€${Math.round(n / 1000)}K` : `€${n}`;
+  n >= 1_000_000
+    ? `€${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`
+    : n >= 1000
+      ? `€${Math.round(n / 1000)}K`
+      : `€${n}`;
 
 function formatDay(date: Date): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function rangeSummary([min, max]: [number | null, number | null], format: (n: number) => string): string | undefined {
+function rangeSummary(
+  [min, max]: [number | null, number | null],
+  format: (n: number) => string,
+): string | undefined {
   if (min == null && max == null) return undefined;
   if (min == null) return `Up to ${format(max as number)}`;
   if (max == null) return `${format(min)}+`;
@@ -147,7 +169,15 @@ type SearchApi = ReturnType<typeof useSearchState>;
 //  Panels per mode
 // ---------------------------------------------------------------------------
 
-function LocationPanel({ api, next, heading }: { api: SearchApi; next: () => void; heading: string }) {
+function LocationPanel({
+  api,
+  next,
+  heading,
+}: {
+  api: SearchApi;
+  next: () => void;
+  heading: string;
+}) {
   const { state, set } = api;
   return (
     <StaySearchPanel width={420} accessibilityLabel={heading} testID="panel-location">
@@ -169,31 +199,62 @@ function DatesPanel({ api }: { api: SearchApi }) {
   return (
     <StaySearchPanel padding={compact ? 8 : 24} accessibilityLabel="Dates" testID="panel-dates">
       <View style={{ gap: 20 }}>
-        <RangeCalendar value={state.range} onChange={(range) => set({ range })} visibleMonths={compact ? 1 : 2} defaultMonth={MONTH} />
+        <RangeCalendar
+          value={state.range}
+          onChange={(range) => set({ range })}
+          visibleMonths={compact ? 1 : 2}
+          defaultMonth={MONTH}
+        />
         <DateFlexibilityChips value={state.flex} onChange={(flex) => set({ flex })} />
       </View>
     </StaySearchPanel>
   );
 }
 
-function panelFor(mode: HomeSearchMode, segment: string | null, api: SearchApi, go: (s: string | null) => void): React.ReactNode {
+function panelFor(
+  mode: HomeSearchMode,
+  segment: string | null,
+  api: SearchApi,
+  go: (s: string | null) => void,
+): React.ReactNode {
   const { state, set } = api;
   if (segment === null) return null;
   if (segment === 'location' || segment === 'destination') {
     const next = { rent: 'moveIn', buy: 'price', stays: 'checkIn', swap: 'dates' }[mode];
-    return <LocationPanel api={api} next={() => go(next)} heading={mode === 'rent' || mode === 'buy' ? 'Suggested areas' : 'Suggested destinations'} />;
+    return (
+      <LocationPanel
+        api={api}
+        next={() => go(next)}
+        heading={mode === 'rent' || mode === 'buy' ? 'Suggested areas' : 'Suggested destinations'}
+      />
+    );
   }
   switch (segment) {
     case 'moveIn':
       return (
-        <StaySearchPanel width={380} padding={24} accessibilityLabel="Move-in" testID="panel-move-in">
-          <MoveInPicker value={state.moveIn} onValueChange={(moveIn) => set({ moveIn })} defaultMonth={MONTH} testID="move-in" />
+        <StaySearchPanel
+          width={380}
+          padding={24}
+          accessibilityLabel="Move-in"
+          testID="panel-move-in"
+        >
+          <MoveInPicker
+            value={state.moveIn}
+            onValueChange={(moveIn) => set({ moveIn })}
+            defaultMonth={MONTH}
+            testID="move-in"
+          />
         </StaySearchPanel>
       );
     case 'budget':
       return (
         <StaySearchPanel width={420} padding={24} accessibilityLabel="Budget" testID="panel-budget">
-          <BudgetPicker value={state.budget} onValueChange={(budget) => set({ budget })} formatAmount={euro} testID="budget" />
+          <BudgetPicker
+            value={state.budget}
+            onValueChange={(budget) => set({ budget })}
+            formatAmount={euro}
+            testID="budget"
+          />
         </StaySearchPanel>
       );
     case 'price':
@@ -210,8 +271,17 @@ function panelFor(mode: HomeSearchMode, segment: string | null, api: SearchApi, 
       );
     case 'propertyType':
       return (
-        <StaySearchPanel width={460} padding={20} accessibilityLabel="Property type" testID="panel-type">
-          <PropertyTypePicker value={state.types} onValueChange={(types) => set({ types })} testID="types" />
+        <StaySearchPanel
+          width={460}
+          padding={20}
+          accessibilityLabel="Property type"
+          testID="panel-type"
+        >
+          <PropertyTypePicker
+            value={state.types}
+            onValueChange={(types) => set({ types })}
+            testID="types"
+          />
         </StaySearchPanel>
       );
     case 'checkIn':
@@ -230,8 +300,21 @@ function panelFor(mode: HomeSearchMode, segment: string | null, api: SearchApi, 
       return (
         <StaySearchPanel width={380} padding={8} accessibilityLabel="Home size" testID="panel-size">
           <View style={{ paddingLeft: 24, paddingRight: 24 }}>
-            <StepperRow title="Bedrooms" description="At least" value={state.bedrooms} onValueChange={(bedrooms) => set({ bedrooms })} max={8} divider />
-            <StepperRow title="Sleeps" description="People the home fits" value={state.sleeps} onValueChange={(sleeps) => set({ sleeps })} max={16} />
+            <StepperRow
+              title="Bedrooms"
+              description="At least"
+              value={state.bedrooms}
+              onValueChange={(bedrooms) => set({ bedrooms })}
+              max={8}
+              divider
+            />
+            <StepperRow
+              title="Sleeps"
+              description="People the home fits"
+              value={state.sleeps}
+              onValueChange={(sleeps) => set({ sleeps })}
+              max={16}
+            />
           </View>
         </StaySearchPanel>
       );
@@ -270,7 +353,11 @@ function segmentsFor(mode: HomeSearchMode, s: SearchState) {
         guests: guestSummary(s.guests),
       });
     case 'swap':
-      return homeSearchSegments('swap', { destination: s.location, dates: datesText, homeSize: sizeSummary(s) });
+      return homeSearchSegments('swap', {
+        destination: s.location,
+        dates: datesText,
+        homeSize: sizeSummary(s),
+      });
   }
 }
 
@@ -320,7 +407,10 @@ function DesktopDemo({
         panel={panelFor(mode, segment, api, setSegment)}
         testID="bar"
       />
-      <Text variant="caption-1-regular" style={{ color: theme.colors.textSecondary, marginLeft: 16 }}>
+      <Text
+        variant="caption-1-regular"
+        style={{ color: theme.colors.textSecondary, marginLeft: 16 }}
+      >
         {DEFAULT_HOME_SEARCH_MODE_LABELS[mode]} · {segment ? `open: ${segment}` : 'at rest'}
       </Text>
     </View>
@@ -345,7 +435,10 @@ export const Modes: Story = {
 export const RentBudget: Story = {
   render: () => (
     <View style={{ padding: 24 }}>
-      <DesktopDemo initialSegment="budget" initial={{ location: 'Old Halden', budget: [800, 1200] }} />
+      <DesktopDemo
+        initialSegment="budget"
+        initial={{ location: 'Old Halden', budget: [800, 1200] }}
+      />
     </View>
   ),
 };
@@ -356,7 +449,10 @@ export const RentMoveIn: Story = {
     <View style={{ padding: 24 }}>
       <DesktopDemo
         initialSegment="moveIn"
-        initial={{ location: 'Old Halden', moveIn: { timing: 'date', date: new Date(2026, 9, 15), contractLength: 'long' } }}
+        initial={{
+          location: 'Old Halden',
+          moveIn: { timing: 'date', date: new Date(2026, 9, 15), contractLength: 'long' },
+        }}
       />
     </View>
   ),
@@ -366,7 +462,11 @@ export const RentMoveIn: Story = {
 export const BuyPrice: Story = {
   render: () => (
     <View style={{ padding: 24 }}>
-      <DesktopDemo initialMode="buy" initialSegment="price" initial={{ location: 'Marrowfield', price: [150000, 300000] }} />
+      <DesktopDemo
+        initialMode="buy"
+        initialSegment="price"
+        initial={{ location: 'Marrowfield', price: [150000, 300000] }}
+      />
     </View>
   ),
 };
@@ -375,7 +475,11 @@ export const BuyPrice: Story = {
 export const BuyPropertyType: Story = {
   render: () => (
     <View style={{ padding: 24 }}>
-      <DesktopDemo initialMode="buy" initialSegment="propertyType" initial={{ location: 'Marrowfield', types: ['apartment', 'duplex'] }} />
+      <DesktopDemo
+        initialMode="buy"
+        initialSegment="propertyType"
+        initial={{ location: 'Marrowfield', types: ['apartment', 'duplex'] }}
+      />
     </View>
   ),
 };
@@ -384,7 +488,11 @@ export const BuyPropertyType: Story = {
 export const SwapHomeSize: Story = {
   render: () => (
     <View style={{ padding: 24 }}>
-      <DesktopDemo initialMode="swap" initialSegment="homeSize" initial={{ location: 'Solvia Bay', bedrooms: 2, sleeps: 4 }} />
+      <DesktopDemo
+        initialMode="swap"
+        initialSegment="homeSize"
+        initial={{ location: 'Solvia Bay', bedrooms: 2, sleeps: 4 }}
+      />
     </View>
   ),
 };
@@ -396,7 +504,10 @@ export const SwapDates: Story = {
       <DesktopDemo
         initialMode="swap"
         initialSegment="dates"
-        initial={{ location: 'Solvia Bay', range: { start: new Date(2026, 9, 12), end: new Date(2026, 9, 26) } }}
+        initial={{
+          location: 'Solvia Bay',
+          range: { start: new Date(2026, 9, 12), end: new Date(2026, 9, 26) },
+        }}
       />
     </View>
   ),
@@ -424,7 +535,11 @@ export const BarsPerMode: Story = {
             <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
               {DEFAULT_HOME_SEARCH_MODE_LABELS[mode]}
             </Text>
-            <HomeSearchBar segments={segmentsFor(mode, filled)} activeSegment={null} onActiveSegmentChange={() => {}} />
+            <HomeSearchBar
+              segments={segmentsFor(mode, filled)}
+              activeSegment={null}
+              onActiveSegmentChange={() => {}}
+            />
           </View>
         ))}
       </View>
@@ -454,14 +569,30 @@ export const ModeTabs: Story = {
         {caption('tabs')}
         <SearchModeTabs value={a} onValueChange={setA} testID="tabs" />
         {caption('tabs · subset, relabelled')}
-        <SearchModeTabs modes={['rent', 'buy']} labels={{ rent: 'To rent', buy: 'For sale' }} value={d} onValueChange={setD} />
+        <SearchModeTabs
+          modes={['rent', 'buy']}
+          labels={{ rent: 'To rent', buy: 'For sale' }}
+          value={d}
+          onValueChange={setD}
+        />
         {caption('segmented · 343 wide')}
         <View style={{ width: 343, maxWidth: '100%' }}>
-          <SearchModeTabs variant="segmented" value={b} onValueChange={setB} labels={{ stays: 'Holidays' }} testID="segmented" />
+          <SearchModeTabs
+            variant="segmented"
+            value={b}
+            onValueChange={setB}
+            labels={{ stays: 'Holidays' }}
+            testID="segmented"
+          />
         </View>
         {caption('segmented · three modes')}
         <View style={{ width: 343, maxWidth: '100%' }}>
-          <SearchModeTabs variant="segmented" modes={['rent', 'buy', 'stays']} value={c} onValueChange={setC} />
+          <SearchModeTabs
+            variant="segmented"
+            modes={['rent', 'buy', 'stays']}
+            value={c}
+            onValueChange={setC}
+          />
         </View>
       </View>
     );
@@ -477,18 +608,46 @@ export const PanelParts: Story = {
   render: function PanelPartsStory() {
     const [budget, setBudget] = useState<[number | null, number | null]>([null, 1200]);
     const [price, setPrice] = useState<[number | null, number | null]>([300000, 600000]);
-    const [moveIn, setMoveIn] = useState<MoveInValue>({ timing: 'flexible', date: null, contractLength: 'medium' });
+    const [moveIn, setMoveIn] = useState<MoveInValue>({
+      timing: 'flexible',
+      date: null,
+      contractLength: 'medium',
+    });
     const [types, setTypes] = useState<PropertyType[]>(['house']);
     return (
-      <View style={{ padding: 24, gap: 24, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <View
+        style={{
+          padding: 24,
+          gap: 24,
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'flex-start',
+        }}
+      >
         <StaySearchPanel width={420} padding={24}>
-          <BudgetPicker value={budget} onValueChange={setBudget} formatAmount={euro} testID="budget" />
+          <BudgetPicker
+            value={budget}
+            onValueChange={setBudget}
+            formatAmount={euro}
+            testID="budget"
+          />
         </StaySearchPanel>
         <StaySearchPanel width={440} padding={24}>
-          <BudgetPicker period="total" value={price} onValueChange={setPrice} formatAmount={euroShort} testID="price" />
+          <BudgetPicker
+            period="total"
+            value={price}
+            onValueChange={setPrice}
+            formatAmount={euroShort}
+            testID="price"
+          />
         </StaySearchPanel>
         <StaySearchPanel width={380} padding={24}>
-          <MoveInPicker value={moveIn} onValueChange={setMoveIn} defaultMonth={MONTH} testID="move-in" />
+          <MoveInPicker
+            value={moveIn}
+            onValueChange={setMoveIn}
+            defaultMonth={MONTH}
+            testID="move-in"
+          />
         </StaySearchPanel>
         <StaySearchPanel width={460} padding={20}>
           <PropertyTypePicker value={types} onValueChange={setTypes} testID="types" />
@@ -510,7 +669,13 @@ interface MobileStep {
   content: React.ReactNode;
 }
 
-function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: HomeSearchMode; lockMode?: boolean }) {
+function MobileFlow({
+  initialMode = 'rent',
+  lockMode = false,
+}: {
+  initialMode?: HomeSearchMode;
+  lockMode?: boolean;
+}) {
   const theme = useTheme();
   const [mode, setMode] = useState<HomeSearchMode>(initialMode);
   const [open, setOpen] = useState<string>('location');
@@ -533,10 +698,16 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
 
   const calendar = (
     <View style={{ marginLeft: -16, marginRight: -16, alignItems: 'center' }}>
-      <RangeCalendar value={state.range} onChange={(range) => set({ range })} defaultMonth={MONTH} />
+      <RangeCalendar
+        value={state.range}
+        onChange={(range) => set({ range })}
+        defaultMonth={MONTH}
+      />
     </View>
   );
-  const datesSummary = state.range ? `${formatDay(state.range.start)} – ${formatDay(state.range.end)}` : 'Any week';
+  const datesSummary = state.range
+    ? `${formatDay(state.range.start)} – ${formatDay(state.range.end)}`
+    : 'Any week';
 
   const stepsByMode: Record<HomeSearchMode, MobileStep[]> = {
     rent: [
@@ -548,7 +719,11 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
         summary: moveInSummary(state.moveIn) ?? 'Any time',
         content: (
           <View style={{ marginLeft: -16, marginRight: -16, paddingLeft: 8, paddingRight: 8 }}>
-            <MoveInPicker value={state.moveIn} onValueChange={(moveIn) => set({ moveIn })} defaultMonth={MONTH} />
+            <MoveInPicker
+              value={state.moveIn}
+              onValueChange={(moveIn) => set({ moveIn })}
+              defaultMonth={MONTH}
+            />
           </View>
         ),
       },
@@ -557,7 +732,13 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
         label: 'Budget',
         title: 'What’s your budget?',
         summary: rangeSummary(state.budget, euro) ?? 'Any',
-        content: <BudgetPicker value={state.budget} onValueChange={(budget) => set({ budget })} formatAmount={euro} />,
+        content: (
+          <BudgetPicker
+            value={state.budget}
+            onValueChange={(budget) => set({ budget })}
+            formatAmount={euro}
+          />
+        ),
       },
     ],
     buy: [
@@ -568,7 +749,12 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
         title: 'Your price range',
         summary: rangeSummary(state.price, euroShort) ?? 'Any',
         content: (
-          <BudgetPicker period="total" value={state.price} onValueChange={(price) => set({ price })} formatAmount={euroShort} />
+          <BudgetPicker
+            period="total"
+            value={state.price}
+            onValueChange={(price) => set({ price })}
+            formatAmount={euroShort}
+          />
         ),
       },
       {
@@ -576,7 +762,9 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
         label: 'Type',
         title: 'What kind of home?',
         summary: typesSummary(state.types) ?? 'Any type',
-        content: <PropertyTypePicker value={state.types} onValueChange={(types) => set({ types })} />,
+        content: (
+          <PropertyTypePicker value={state.types} onValueChange={(types) => set({ types })} />
+        ),
       },
     ],
     stays: [
@@ -598,12 +786,20 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
         label: 'Who',
         title: 'Who’s coming?',
         summary: guestSummary(state.guests) ?? 'Add guests',
-        content: <GuestPicker value={state.guests} onChange={(guests) => set({ guests })} max={16} />,
+        content: (
+          <GuestPicker value={state.guests} onChange={(guests) => set({ guests })} max={16} />
+        ),
       },
     ],
     swap: [
       where,
-      { key: 'dates', label: 'Dates', title: 'When do you swap?', summary: datesSummary, content: calendar },
+      {
+        key: 'dates',
+        label: 'Dates',
+        title: 'When do you swap?',
+        summary: datesSummary,
+        content: calendar,
+      },
       {
         key: 'homeSize',
         label: 'Home size',
@@ -611,8 +807,21 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
         summary: sizeSummary(state) ?? 'Any size',
         content: (
           <View>
-            <StepperRow title="Bedrooms" description="At least" value={state.bedrooms} onValueChange={(bedrooms) => set({ bedrooms })} max={8} divider />
-            <StepperRow title="Sleeps" description="People the home fits" value={state.sleeps} onValueChange={(sleeps) => set({ sleeps })} max={16} />
+            <StepperRow
+              title="Bedrooms"
+              description="At least"
+              value={state.bedrooms}
+              onValueChange={(bedrooms) => set({ bedrooms })}
+              max={8}
+              divider
+            />
+            <StepperRow
+              title="Sleeps"
+              description="People the home fits"
+              value={state.sleeps}
+              onValueChange={(sleeps) => set({ sleeps })}
+              max={16}
+            />
           </View>
         ),
       },
@@ -621,7 +830,15 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.backgroundSecondary }}>
-      <ScrollView contentContainerStyle={{ paddingTop: 16, paddingBottom: 16, paddingLeft: 12, paddingRight: 12, gap: 12 }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingTop: 16,
+          paddingBottom: 16,
+          paddingLeft: 12,
+          paddingRight: 12,
+          gap: 12,
+        }}
+      >
         {lockMode ? null : (
           <SearchModeTabs
             variant="segmented"
@@ -661,10 +878,8 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
           backgroundColor: theme.colors.card,
         }}
       >
-        <LinkButton  onPress={() => set(INITIAL)}>
-          Clear all
-        </LinkButton>
-        <Button  size="lg" icon={RiSearchLine} tone="accent" appearance="solid">
+        <LinkButton onPress={() => set(INITIAL)}>Clear all</LinkButton>
+        <Button size="lg" icon={RiSearchLine} tone="accent" appearance="solid">
           Search
         </Button>
       </View>
@@ -675,7 +890,17 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
 function PhoneFrame({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   return (
-    <View style={{ width: 375, maxWidth: '100%', height: 780, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: theme.colors.border }}>
+    <View
+      style={{
+        width: 375,
+        maxWidth: '100%',
+        height: 780,
+        borderRadius: 16,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+      }}
+    >
       {children}
     </View>
   );
@@ -693,11 +918,35 @@ const mobileStory = (mode: HomeSearchMode): Story => ({
 export const MobileTriggers: Story = {
   render: () => (
     <View style={{ padding: 16, gap: 12, width: 375, maxWidth: '100%' }}>
-      <SearchModeTabs<HomeSearchMode> variant="segmented" value="rent" onValueChange={() => {}} labels={{ stays: 'Holidays' }} />
-      <StaySearchCompact onPress={() => {}} title="Find a home to rent" summary="Anywhere · Any time · Any budget" onFilterPress={() => {}} />
-      <StaySearchCompact onPress={() => {}} title="Find a home to buy" summary="Marrowfield · €150K – €300K · House" onFilterPress={() => {}} />
-      <StaySearchCompact onPress={() => {}} summary="Anywhere · Any week · Add guests" onFilterPress={() => {}} />
-      <StaySearchCompact onPress={() => {}} title="Swap your home" summary="Solvia Bay · Oct 12 – 26 · 2+ bd" onFilterPress={() => {}} />
+      <SearchModeTabs<HomeSearchMode>
+        variant="segmented"
+        value="rent"
+        onValueChange={() => {}}
+        labels={{ stays: 'Holidays' }}
+      />
+      <StaySearchCompact
+        onPress={() => {}}
+        title="Find a home to rent"
+        summary="Anywhere · Any time · Any budget"
+        onFilterPress={() => {}}
+      />
+      <StaySearchCompact
+        onPress={() => {}}
+        title="Find a home to buy"
+        summary="Marrowfield · €150K – €300K · House"
+        onFilterPress={() => {}}
+      />
+      <StaySearchCompact
+        onPress={() => {}}
+        summary="Anywhere · Any week · Add guests"
+        onFilterPress={() => {}}
+      />
+      <StaySearchCompact
+        onPress={() => {}}
+        title="Swap your home"
+        summary="Solvia Bay · Oct 12 – 26 · 2+ bd"
+        onFilterPress={() => {}}
+      />
     </View>
   ),
 };
@@ -720,7 +969,14 @@ function SavedSearchList({ width }: { width: number }) {
   const [saved, setSaved] = useState(true);
   return (
     <View style={{ width, maxWidth: '100%', gap: 12 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}
+      >
         <Text variant="title-2-semibold" style={{ color: theme.colors.text, flexShrink: 1 }}>
           Saved searches
         </Text>
@@ -760,7 +1016,15 @@ function SavedSearchList({ width }: { width: number }) {
 /** A saved-searches list with the save toggle, at 560 and 343. */
 export const SavedSearches: Story = {
   render: () => (
-    <View style={{ padding: 16, gap: 32, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+    <View
+      style={{
+        padding: 16,
+        gap: 32,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+      }}
+    >
       <SavedSearchList width={560} />
       <SavedSearchList width={343} />
     </View>
@@ -772,7 +1036,15 @@ export const SaveButton: Story = {
   render: function SaveButtonStory() {
     const [saved, setSaved] = useState(false);
     return (
-      <View style={{ padding: 24, gap: 12, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
+      <View
+        style={{
+          padding: 24,
+          gap: 12,
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+        }}
+      >
         <SaveSearchButton saved={saved} onSavedChange={setSaved} testID="save" />
         <SaveSearchButton saved onSavedChange={() => {}} />
         <SaveSearchButton saved={false} onSavedChange={() => {}} disabled />
@@ -789,7 +1061,11 @@ function DarkCanvas() {
   const theme = useTheme();
   return (
     <View style={{ padding: 24, gap: 24, backgroundColor: theme.colors.background }}>
-      <DesktopDemo initialMode="buy" initialSegment="propertyType" initial={{ location: 'Marrowfield', types: ['apartment'] }} />
+      <DesktopDemo
+        initialMode="buy"
+        initialSegment="propertyType"
+        initial={{ location: 'Marrowfield', types: ['apartment'] }}
+      />
       <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <PhoneFrame>
           <MobileFlow initialMode="rent" />

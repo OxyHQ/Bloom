@@ -38,7 +38,9 @@ export function useMediaHeaderScroll({
   const update = useCallback(
     (offset: number) => {
       const next = mediaHeaderScrollProgress(offset, start, stop);
-      setProgress((prev) => (Math.abs(prev - next) < 0.01 && next !== 0 && next !== 1 ? prev : next));
+      setProgress((prev) =>
+        Math.abs(prev - next) < 0.01 && next !== 0 && next !== 1 ? prev : next,
+      );
     },
     [start, stop],
   );

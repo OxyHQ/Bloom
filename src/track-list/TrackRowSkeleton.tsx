@@ -25,15 +25,12 @@ export function TrackRowSkeleton({
   const has = (column: (typeof visible)[number]) => visible.includes(column);
   const geo = rowGeometry(density, narrow);
   const gap = { marginLeft: geo.gap };
-  const bar = (w: number | `${number}%`, h = 10) => <Skeleton.Box width={w} height={h} borderRadius={4} />;
+  const bar = (w: number | `${number}%`, h = 10) => (
+    <Skeleton.Box width={w} height={h} borderRadius={4} />
+  );
 
   return (
-    <View
-      aria-hidden
-      importantForAccessibility="no-hide-descendants"
-      style={style}
-      testID={testID}
-    >
+    <View aria-hidden importantForAccessibility="no-hide-descendants" style={style} testID={testID}>
       {Array.from({ length: count }, (_, i) => {
         // Vary the text widths a little so a block of rows does not read as a grid.
         const titleWidth = 50 + ((i * 37) % 35);
@@ -55,7 +52,12 @@ export function TrackRowSkeleton({
             {has('title') ? (
               <View
                 style={[
-                  { flex: CELL.flex.title, minWidth: 0, flexDirection: 'row', alignItems: 'center' },
+                  {
+                    flex: CELL.flex.title,
+                    minWidth: 0,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  },
                   has('index') && !narrow ? gap : null,
                 ]}
               >
@@ -66,7 +68,9 @@ export function TrackRowSkeleton({
                 </View>
               </View>
             ) : null}
-            {has('album') ? <View style={[{ flex: CELL.flex.album }, gap]}>{bar('60%')}</View> : null}
+            {has('album') ? (
+              <View style={[{ flex: CELL.flex.album }, gap]}>{bar('60%')}</View>
+            ) : null}
             {has('dateAdded') ? (
               <View style={[{ flex: CELL.flex.dateAdded }, gap]}>{bar('50%')}</View>
             ) : null}

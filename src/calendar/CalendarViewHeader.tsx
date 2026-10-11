@@ -56,7 +56,11 @@ export function CalendarViewHeader({
 
   return (
     // Raised over what follows: the month switcher grows DOWN over the grid.
-    <View role="banner" testID={testID} style={[{ width: '100%', gap: 4, zIndex: Z_INDEX.floating }, style]}>
+    <View
+      role="banner"
+      testID={testID}
+      style={[{ width: '100%', gap: 4, zIndex: Z_INDEX.floating }, style]}
+    >
       {breadcrumb}
       <View
         style={{
@@ -77,7 +81,14 @@ export function CalendarViewHeader({
           }}
         >
           {onMenuPress && !isLg ? (
-            <Button size="md" icon={RiMenuLine} accessibilityLabel={messages.openNavigation} onPress={onMenuPress} appearance="plain" tone="neutral" />
+            <Button
+              size="md"
+              icon={RiMenuLine}
+              accessibilityLabel={messages.openNavigation}
+              onPress={onMenuPress}
+              appearance="plain"
+              tone="neutral"
+            />
           ) : null}
           <Text
             role="heading"
@@ -132,7 +143,13 @@ export function CalendarViewHeader({
               locale={locale}
               testID={testID ? `${testID}-switcher` : undefined}
             />
-            <Button size="md" leadingIcon={RiAddFill} onPress={onNewEvent} appearance="solid" tone="accent">
+            <Button
+              size="md"
+              leadingIcon={RiAddFill}
+              onPress={onNewEvent}
+              appearance="solid"
+              tone="accent"
+            >
               {newEventLabel}
             </Button>
           </View>

@@ -279,8 +279,7 @@ export interface TypingBubbleProps {
  * takes, plus what the LIST needs to place it: who sent it, which day it is on,
  * and whether it is a service row rather than a message.
  */
-export interface MessageListItem
-  extends Omit<MessageBubbleProps, 'position' | 'style' | 'testID'> {
+export interface MessageListItem extends Omit<MessageBubbleProps, 'position' | 'style' | 'testID'> {
   id: string;
   /**
    * Who sent it. Two consecutive messages group only when this matches — omit

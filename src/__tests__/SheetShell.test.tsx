@@ -56,7 +56,8 @@ function OpenSheetShell({
       control={control}
       label="Menu"
       contentClassName={contentClassName}
-      contentTestID={contentTestID}>
+      contentTestID={contentTestID}
+    >
       <Text>Row</Text>
     </SheetShell>
   );

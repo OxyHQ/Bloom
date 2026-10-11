@@ -148,7 +148,7 @@ Two apps with the same rows should not look like the same app. That difference i
 
 | surface  | what it draws                                                      |
 | -------- | ------------------------------------------------------------------ |
-| `card`   | radius 24, a hairline and the panel shadow, on the panel fill       |
+| `card`   | shared panel radius (28 by default), a hairline and the panel shadow, on the panel fill       |
 | `plain`  | no radius, no border, no shadow — the rows sit straight on the page |
 | `docked` | the panel fill, square corners, ONE hairline on the inner edge, full height |
 
@@ -294,3 +294,18 @@ Multi Agent Chat uses these pieces with one sidebar scroll owner. Chrome measure
 ### Shared surface paint
 
 The painted host delegates its fill to Surface: a 90%-opacity body with a subtle refracted edge on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.
+
+### Icon-only navigation rails
+
+`variant="rail"` keeps visible captions and selected pills by default. Use
+`railLabels="hidden"` to keep only icons: each destination retains its accessible
+name, current-page state, focus ring and browser tooltip. Its minimum hit height
+is 48px. `railSelection="icon"` emphasizes the active glyph without a filled
+indicator; `activeIcon` can supply a filled counterpart. Hover feedback remains.
+
+`railWidth` owns the rail's layout width (default 80px, minimum 64px). AppShell
+measures that natural width, so the content moves with it without consumer
+width overrides. These props affect the rail only; the expanded panel and
+mobile drawer retain their normal labels and geometry. Standalone
+`SidebarRailItem` exposes `labelVisibility` and `selectedAppearance` for the same
+choices.

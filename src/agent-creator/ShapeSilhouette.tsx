@@ -7,6 +7,7 @@ import type { AvatarConfig } from '../agent-avatar/model';
 import { CHARACTER_COLORS } from './constants';
 import { ClippoArtwork } from './ClippoArtwork';
 import { ToddArtwork } from './ToddArtwork';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 const silhouettes = new Map<string, { path: string; viewBox: string }>();
 
@@ -21,10 +22,9 @@ function silhouette(config: AvatarConfig) {
   ]);
   const cached = silhouettes.get(key);
   if (cached) return cached;
-  const points = radialContour(
-    legacyContours({ ...config, grain: 0, material: 'solid' }),
-    128,
-  ).map(([x, y]) => [x, -y] as const);
+  const points = radialContour(legacyContours({ ...config, grain: 0, material: 'solid' }), 128).map(
+    ([x, y]) => [x, -y] as const,
+  );
   const xs = points.map(([x]) => x),
     ys = points.map(([, y]) => y);
   const left = Math.min(...xs),
@@ -35,33 +35,24 @@ function silhouette(config: AvatarConfig) {
   const padding = Math.max(width, height) * 0.025;
   const result = {
     path:
-      points
-        .map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(4)} ${y.toFixed(4)}`)
-        .join(' ') + 'Z',
+      points.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(4)} ${y.toFixed(4)}`).join(' ') + 'Z',
     viewBox: `${left - padding} ${top - padding} ${width + padding * 2} ${height + padding * 2}`,
   };
-  if (silhouettes.size >= 64)
-    silhouettes.delete(silhouettes.keys().next().value!);
+  if (silhouettes.size >= 64) silhouettes.delete(silhouettes.keys().next().value!);
   silhouettes.set(key, result);
   return result;
 }
 
 /** Shape-only selector artwork: no avatar, animation loop, or runtime request. */
-export const ShapeSilhouette = memo(function ShapeSilhouette({
-  config,
-}: {
-  config: AvatarConfig;
-}) {
+export const ShapeSilhouette = memo(function ShapeSilhouette({ config }: { config: AvatarConfig }) {
   if (
     config.character?.selections?.shape === 'todd' ||
-    (config.character?.preset === 'lime_frog' &&
-      !config.character.selections?.shape)
+    (config.character?.preset === 'lime_frog' && !config.character.selections?.shape)
   )
     return <ToddArtwork />;
   if (
     config.character?.selections?.shape === 'clippo' ||
-    (config.character?.preset === 'clippo' &&
-      !config.character.selections?.shape)
+    (config.character?.preset === 'clippo' && !config.character.selections?.shape)
   )
     return <ClippoArtwork kind="shape" />;
   const { path, viewBox } = silhouette(characterShapeGeometry(config));
@@ -71,7 +62,7 @@ export const ShapeSilhouette = memo(function ShapeSilhouette({
       height={56}
       viewBox={viewBox}
       preserveAspectRatio="xMidYMid meet"
-      accessible={false}
+      {...svgA11yProps()}
       pointerEvents="none"
     >
       <Path d={path} fill={CHARACTER_COLORS.pink} />

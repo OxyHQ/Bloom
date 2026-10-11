@@ -182,8 +182,7 @@ function packCluster(count: number): ClusterBubble[] {
   const centerY = (minY + maxY) / 2;
   let bound = 0;
   for (let i = 0; i < count; i++) {
-    const reach =
-      Math.hypot((xs[i] ?? 0) - centerX, (ys[i] ?? 0) - centerY) + (radii[i] ?? 0);
+    const reach = Math.hypot((xs[i] ?? 0) - centerX, (ys[i] ?? 0) - centerY) + (radii[i] ?? 0);
     if (reach > bound) bound = reach;
   }
   const scale = bound > EPSILON ? 0.5 / bound : 0.5;

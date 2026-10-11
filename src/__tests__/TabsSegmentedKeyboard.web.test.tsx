@@ -98,7 +98,8 @@ function ControlledTabs({
       onValueChange={(next) => {
         setValue(next);
         onChange?.(next);
-      }}>
+      }}
+    >
       <TabsTrigger value="overview" label="Overview" />
       <TabsTrigger value="activity" label="Activity" />
       <TabsTrigger value="billing" label="Billing" disabled />
@@ -168,7 +169,12 @@ describe('Tabs (web) — keyboard', () => {
     mount(
       <Tabs label="Profile">
         <TabsTrigger value="posts" label="Posts" isFocused onPress={() => pressed('posts')} />
-        <TabsTrigger value="likes" label="Likes" isFocused={false} onPress={() => pressed('likes')} />
+        <TabsTrigger
+          value="likes"
+          label="Likes"
+          isFocused={false}
+          onPress={() => pressed('likes')}
+        />
       </Tabs>,
     );
     act(() => named('tab', 'Posts').focus());
@@ -202,7 +208,8 @@ function Segmented({
       onValueChange={(next) => {
         setValue(next);
         onChange?.(next);
-      }}>
+      }}
+    >
       {['day', 'week', 'month', 'year'].map((v) => (
         <SegmentedControlItem key={v} value={v} accessibilityLabel={v} disabled={v === 'month'}>
           <SegmentedControlItemText>{v}</SegmentedControlItemText>

@@ -73,7 +73,8 @@ export function DropdownMenuTrigger({
         accessibilityRole: 'button',
         'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
-      }}>
+      }}
+    >
       {children}
     </TriggerSlot>
   );
@@ -102,7 +103,8 @@ export function DropdownMenuContent({
       onClose={onSheetClose}
       contentClassName={className}
       contentStyle={style}
-      contentTestID={testID}>
+      contentTestID={testID}
+    >
       <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
     </SheetShell>
   );

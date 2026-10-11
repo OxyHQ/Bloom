@@ -14,11 +14,7 @@ import { EYES, type AvatarConfig } from '../agent-avatar';
 import { AgentFace } from '../agent-avatar/AgentFace';
 import { ClippoArtwork } from './ClippoArtwork';
 import { CyclopsArtwork } from './CyclopsArtwork';
-import {
-  StyledImage,
-  StyledPressable,
-  StyledView,
-} from '../styles/styled-primitives';
+import { StyledImage, StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
@@ -149,17 +145,13 @@ export function EmotionPicker({
       config: { ...config, eyes },
     }));
   const value = valueProp ?? config.eyes;
-  const emit = (id: string) =>
-    onSelect ? onSelect(id) : onChange(id as AvatarConfig['eyes']);
+  const emit = (id: string) => (onSelect ? onSelect(id) : onChange(id as AvatarConfig['eyes']));
   const ref = useRef<View>(null);
   const visible = useSharedValue(true);
   const target = useSharedValue(0);
   const reduced = useReducedMotion();
   const rotation = useDerivedValue(
-    () =>
-      reduced
-        ? target.value
-        : withSpring(target.value, { stiffness: 180, damping: 28 }),
+    () => (reduced ? target.value : withSpring(target.value, { stiffness: 180, damping: 28 })),
     [target, reduced],
   );
   const dragging = useSharedValue(false);
@@ -202,8 +194,7 @@ export function EmotionPicker({
     .onStart((event) => {
       target.value = rotation.value;
       dragging.value = true;
-      previousAngle.value =
-        (Math.atan2(event.y - 134, event.x - 134) * 180) / Math.PI;
+      previousAngle.value = (Math.atan2(event.y - 134, event.x - 134) * 180) / Math.PI;
     })
     .onUpdate((event) => {
       const angle = (Math.atan2(event.y - 134, event.x - 134) * 180) / Math.PI;
@@ -235,10 +226,7 @@ export function EmotionPicker({
         <AnimatedView
           pointerEvents="box-none"
           className="pointer-events-none absolute inset-0"
-          style={[
-            { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
-            orbit,
-          ]}
+          style={[{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }, orbit]}
         >
           {choices.map((choice, index) => (
             <Emotion

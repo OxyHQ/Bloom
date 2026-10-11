@@ -61,12 +61,132 @@ why this is a separate prop rather than a wider `leadingIcon`: [Icons](/docs/ico
 Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
 
 
+## Flat controls
+
+`material="flat"` bypasses Surface paint while keeping the Button's geometry, semantic tone, interaction states, loading and accessibility. Solid fills use their exact semantic pair (or the explicit `colors` pair); subtle fills preserve their alpha, and outlines use the semantic border. There is no sheen, rim, blur, refraction or material shadow. `appearance="plain"` remains unfilled with either material.
+
+```tsx
+<Button material="flat" colors={{ background: '#5433eb', foreground: '#ffffff' }} onPress={buy}>Buy</Button>
+```
+
 ## Shared glass material
 
-Surface appearances (`solid`, `subtle`, `outline`, all using the shared material) share Surface's 90%-opaque body, gradient and specular rim, with subtle backdrop refraction on web. `appearance="plain"` and `LinkButton` retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
+With the default `material="surface"`, surface appearances (`solid`, `subtle`, `outline`, all using the shared material) share Surface's 90%-opaque body, gradient and specular rim, with subtle backdrop refraction on web. `appearance="plain"` and `LinkButton` retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
 
 Accent/status/brand colours keep their semantic foreground pairs. Neutral, semantic and disabled defaults use the same 90%-opaque fills. Explicit caller transparency is preserved. Loading retains its rest paint. The optional `colors={{ background, foreground }}` pair supports branded controls without changing geometry. Native uses one SVG; web uses a decorative pseudo-element. Geometry has no optical offsets.
 
 Button forwards its ref to the interactive node (the native View handle or the actual web button/anchor), so menus can anchor to it without a layout wrapper. Optional `onLayout` reports React Native's layout shape on both platforms; web installs a resize observer only when that callback is supplied. Press-in/out, cancellation and long press share the base gesture lifecycle. String labels keep the typography defaults; custom content can supply icons, animated glyphs or a composed row. Accessibility visibility props support controls that fade out without leaving an invisible focus target.
 
+`onFocus` / `onBlur` receive the original platform focus event; `onHoverIn` /
+`onHoverOut` expose Pressable hover on native and non-touch pointer entry/exit on
+web. Hover entry is suppressed while disabled or loading; exit still clears a
+consumer's preview. `onKeyDown` / `onKeyUp` receive DOM keyboard events on web
+and are ignored on native. Focusing a choice can select its preview without
+activating it; activation remains `onPress`.
+
+```tsx
+<Button ref={choiceRef} onFocus={() => select(index)}
+  onHoverIn={() => preview(index)} onHoverOut={() => preview(null)}
+  onKeyDown={event => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      nextChoiceRef.current?.focus();
+    }
+  }}>
+  Choice
+</Button>
+```
+
+The same handlers work on `href` and `asChild` buttons. Slotted child handlers
+run first, followed by the Button caller and internal lifecycle. Preventing a
+keyboard default also prevents a new press preview; key-up and blur still end
+an active preview. Existing child handlers, refs and long-press cancellation
+remain composed. `ButtonFocusEvent` and `ButtonHoverEvent` expose the shared
+platform-event unions for reusable callback types.
+
+
 Native text children are wrapped individually when mixed with custom layout nodes or fragments, including icon-only buttons. Custom layout nodes retain their own layout.
+
+### Loading and child state
+
+Changing `loading` preserves the mounted content and its component state. The
+content remains in layout while hidden and a spinner covers the button. This
+also preserves icon-only content; `asChild` retains the identity and state of
+the supplied element while applying the disabled/busy contract. Labels remain
+available to accessibility while loading, including composed text and caller
+labels; the spinner is decorative. Web links keep their link role while
+navigation is disabled. Hiding the paint does not replace or duplicate the
+content, alter its accessible name, or reset child state.
+
+## Consumer classes
+
+`className` owns the properties it supplies, including height, padding, radius,
+font, fill, border, shadow and state styles. Unclaimed properties keep Bloom's
+defaults. Use `material="flat"` when classes paint the complete control;
+`surface` retains Bloom's optical layers. Explicit `style` and `textStyle`
+overrides still take precedence over ordinary classes.
+
+Web defaults live in the CSS `base` layer so a consumer's `components` or
+utility recipes can override them. Native resolves utilities separately and applies them after
+Bloom's defaults, and forwards resolved text styles to the built-in label and
+foreground color to icon renderers and the loading spinner. Custom child
+components remain responsible for their own explicit styles. Loading retains
+mounted content and uses the resolved foreground unless `loadingColor` is set.
+
+```tsx
+import { useReducedMotion } from 'react-native-reanimated';
+
+const reducedMotion = useReducedMotion();
+const interactive = !disabled && !loading;
+<Button material="flat" disabled={disabled} loading={loading}
+  className={[
+    'purchase-action',
+    disabled ? 'purchase-action-disabled' : '',
+    interactive ? 'purchase-action-interactive' : '',
+    interactive && !reducedMotion ? 'purchase-action-motion' : '',
+  ].join(' ')}>
+  Continue
+</Button>
+```
+
+`purchase-action` is a consumer-owned class, not a Bloom token. Its interaction
+class can define `:hover` and `:active`; the optional motion class can define
+`transform: scale(.99)` on `:active`. Removing interaction classes during loading
+keeps the rest paint stable. With react-native-css 3.0.7, native `:enabled` and
+`:not(...)` rules are discarded, and its runtime does not evaluate
+`prefers-reduced-motion`; use conditional classes with the `useReducedMotion` hook from
+`react-native-reanimated` for shared recipes.
+Web recipes can additionally use the reduced-motion media query.
+
+The same native resolver version drops deferred `line-height` values even on a
+bare styled Text, for both pixel and unitless declarations. Combining that
+declaration with compound `box-shadow` in one rule can additionally leave an
+unresolved placeholder. Separate typography and shadow rules avoid the
+placeholder, but do not restore the missing native line height. Web line height
+works normally. Bloom forwards resolved styles; it does not rewrite consumer CSS
+or patch the upstream resolver.
+
+`aria-current` marks the current destination or item, independently of the
+`pressed` toggle state. It accepts the standard ARIA values (`page`, `step`,
+`location`, `date`, `time`, or boolean) and reaches the web button, link or
+`asChild` host. Omit it on ordinary links. An `asChild` child's own current value
+is preserved unless Button explicitly supplies one. Native represents current
+through `accessibilityState.selected`, since it has no separate current trait;
+an explicit `pressed` state retains precedence for a native toggle.
+
+
+### Native intrinsic layout
+
+A button can size to its label inside a wrapping row without reserving a full
+row for each item. The persistent content wrapper stretches horizontally inside
+a column host; its growth fills height without widening intrinsic measurement.
+Caller row/column direction and justification still
+apply to the content slots. Loading retains the same content and measured box.
+
+`ButtonNativeLayout.test.tsx` compiles the Yoga shipped with React Native using
+a C++20 compiler (`CXX`, default `g++`) and measures rendered host trees with RN's
+compatibility errata enabled. Its negative control recreates a 568dp parent
+around three 40dp rows; the corrected layout measures 136dp including gaps.
+Text widths are explicit fixture metrics, not claims about a platform font.
+`BLOOM_NATIVE_YOGA_PATH` can point to another installed RN's `ReactCommon/yoga`
+to verify the same trees against a consumer's engine.

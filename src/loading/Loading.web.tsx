@@ -44,7 +44,10 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+  const { size, tone } = useBloomAppearance(
+    { size: sizeProp, tone: toneProp },
+    { size: 'md', tone: 'accent' },
+  );
   const sizeConfig = SIZE_CONFIG[size];
   const effectiveIconSize = iconSize ?? sizeConfig.spinner;
   const targetHeight = Math.max(0, effectiveIconSize + sizeConfig.spinner + heightOffset);

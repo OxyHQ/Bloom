@@ -77,7 +77,17 @@ export function PickerShell({
   return (
     <Popover open={open} onOpenChange={disabled ? undefined : onOpenChange}>
       <PopoverTrigger asChild disabled={disabled}>
-        <Button size="md" leadingIcon={CalendarIcon} trailingIcon={trailingIcon} disabled={disabled} accessibilityLabel={`${accessibilityLabel}, ${triggerText}`} style={[{ height: TRIGGER_HEIGHT }, style]} testID={testID} appearance="outline" tone="neutral">
+        <Button
+          size="md"
+          leadingIcon={CalendarIcon}
+          trailingIcon={trailingIcon}
+          disabled={disabled}
+          accessibilityLabel={`${accessibilityLabel}, ${triggerText}`}
+          style={[{ height: TRIGGER_HEIGHT }, style]}
+          testID={testID}
+          appearance="outline"
+          tone="neutral"
+        >
           {triggerText}
         </Button>
       </PopoverTrigger>
@@ -88,7 +98,11 @@ export function PickerShell({
         sideOffset={sideOffset}
         style={panelStyle}
       >
-        {Platform.OS === 'web' ? children : <View style={{ alignItems: 'center' }}>{children}</View>}
+        {Platform.OS === 'web' ? (
+          children
+        ) : (
+          <View style={{ alignItems: 'center' }}>{children}</View>
+        )}
       </PopoverContent>
     </Popover>
   );
@@ -112,10 +126,19 @@ export function PickerActions({
 }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <Button onPress={onCancel} testID={testID ? `${testID}-cancel` : undefined} appearance="subtle" tone="neutral">
+      <Button
+        onPress={onCancel}
+        testID={testID ? `${testID}-cancel` : undefined}
+        appearance="subtle"
+        tone="neutral"
+      >
         {cancelLabel}
       </Button>
-      <Button onPress={onApply} disabled={applyDisabled} testID={testID ? `${testID}-apply` : undefined}>
+      <Button
+        onPress={onApply}
+        disabled={applyDisabled}
+        testID={testID ? `${testID}-apply` : undefined}
+      >
         {applyLabel}
       </Button>
     </View>

@@ -9,16 +9,37 @@ import { WishlistCard } from '../../src/listing-card';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { SAVED_SEARCHES, TRIPS, WISHLISTS } from './data';
-import { HousingFrame, HousingHeader, PageColumn, useHousingLayout, useHousingNav } from './HousingHeader';
+import {
+  HousingFrame,
+  HousingHeader,
+  PageColumn,
+  useHousingLayout,
+  useHousingNav,
+} from './HousingHeader';
 
 const noop = () => undefined;
 
-function Section({ title, description, children, testID }: { title: string; description?: string; children: React.ReactNode; testID?: string }) {
+function Section({
+  title,
+  description,
+  children,
+  testID,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  testID?: string;
+}) {
   const theme = useTheme();
   return (
     <View style={{ gap: 16 }} testID={testID}>
       <View style={{ gap: 2 }}>
-        <Text role="heading" aria-level={2} variant="title-3-semibold" style={{ color: theme.colors.text }}>
+        <Text
+          role="heading"
+          aria-level={2}
+          variant="title-3-semibold"
+          style={{ color: theme.colors.text }}
+        >
           {title}
         </Text>
         {description ? (
@@ -42,19 +63,30 @@ export function SavedPage() {
   const column = Math.min(width, 1120 + gutter * 2) - gutter * 2;
   const wishlistColumns = lg ? 4 : md ? 3 : 2;
   const wishlistGap = 16;
-  const wishlistWidth = Math.floor((column - wishlistGap * (wishlistColumns - 1)) / wishlistColumns);
+  const wishlistWidth = Math.floor(
+    (column - wishlistGap * (wishlistColumns - 1)) / wishlistColumns,
+  );
 
   return (
     <HousingFrame testID="housing-saved">
       <HousingHeader />
       <PageColumn maxWidth={1120} style={{ paddingTop: md ? 32 : 20, paddingBottom: 64, gap: 40 }}>
-        <Text role="heading" aria-level={1} variant="title-1-semibold" style={{ color: theme.colors.text }}>
+        <Text
+          role="heading"
+          aria-level={1}
+          variant="title-1-semibold"
+          style={{ color: theme.colors.text }}
+        >
           Saved
         </Text>
 
         <View style={{ flexDirection: lg ? 'row' : 'column', gap: 40, alignItems: 'flex-start' }}>
           <View style={{ flex: lg ? 1 : undefined, width: lg ? undefined : '100%', minWidth: 0 }}>
-            <Section title="Saved searches" description="We let you know when new homes match." testID="housing-saved-searches">
+            <Section
+              title="Saved searches"
+              description="We let you know when new homes match."
+              testID="housing-saved-searches"
+            >
               <View style={{ gap: 12 }}>
                 {searches.map(({ id, ...search }) => (
                   <SavedSearchCard
@@ -79,10 +111,22 @@ export function SavedPage() {
                     onPress={() => go(id === 'swap' ? 'swap' : 'stay')}
                     actions={
                       <>
-                        <Button  size="sm" leadingIcon={RiChat3Line} onPress={noop} tone="neutral" appearance="outline">
+                        <Button
+                          size="sm"
+                          leadingIcon={RiChat3Line}
+                          onPress={noop}
+                          tone="neutral"
+                          appearance="outline"
+                        >
                           Message
                         </Button>
-                        <Button  size="sm" leadingIcon={RiMapPinLine} onPress={noop} tone="accent" appearance="subtle">
+                        <Button
+                          size="sm"
+                          leadingIcon={RiMapPinLine}
+                          onPress={noop}
+                          tone="accent"
+                          appearance="subtle"
+                        >
                           Directions
                         </Button>
                       </>

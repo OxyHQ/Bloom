@@ -140,9 +140,7 @@ const NAMED_BY_SPREAD = ['pressable-scale/PressableScale.tsx <AnimatedPressable 
  * `ToastCloseButton` (a lone glyph, `role="button"`, no name) survived beside
  * the action button it sits next to.
  */
-const NAMED_BY_CONTENTS = [
-  'accordion/Accordion.tsx <Pressable role="button">',
-];
+const NAMED_BY_CONTENTS = ['accordion/Accordion.tsx <Pressable role="button">'];
 
 /**
  * The react-native primitives whose props land on a real host element. The rules
@@ -199,7 +197,9 @@ const RN_HOSTS = new Set([
 // spelling of the same thing. It is a claim its own file makes and
 // `Chip.test.tsx` pins against the real DOM, role by role, including that the
 // other two attributes are ABSENT (`aria-pressed` on a tab is invalid ARIA).
-const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell'];
+// RadioHost forwards the radio state/name to its native Pressable or owned DOM
+// button. aria-state-web.test.tsx exercises all three radio variants.
+const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'RadioHost'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
@@ -233,7 +233,16 @@ const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell'];
 // writes none. `DeliverySlotOption` always passes one — the window, what is
 // left of it and its surcharge, as one utterance — because a row built from
 // three separate Texts is three stops otherwise.
-const NAME_DELEGATING_TAGS = ['Button', 'Card', 'Chip', 'Item', 'LinkButton', 'MediaPressable', 'MenuRowShell'];
+const NAME_DELEGATING_TAGS = [
+  'Button',
+  'Card',
+  'Chip',
+  'Item',
+  'LinkButton',
+  'MediaPressable',
+  'MenuRowShell',
+  'RadioHost',
+];
 
 /**
  * `const X = Animated.createAnimatedComponent(<host>)`, collected from the
@@ -459,9 +468,7 @@ describe('the census can see', () => {
   });
 
   it('finds the native-only state props it exists to pair', () => {
-    const withNativeOnly = ALL.filter((e) =>
-      NATIVE_ONLY_STATE.some((p) => e.props.has(p)),
-    );
+    const withNativeOnly = ALL.filter((e) => NATIVE_ONLY_STATE.some((p) => e.props.has(p)));
     expect(withNativeOnly.length).toBeGreaterThan(5);
   });
 
@@ -505,9 +512,7 @@ describe('a role a user interacts with has a NAME', () => {
     // reader announced "switch, off" for every toggle in every app.
     const violations = unlabelled
       .filter(
-        (el) =>
-          !NAMED_BY_SPREAD.includes(id(el)) &&
-          !(namesFromContents(el) && el.textChildren),
+        (el) => !NAMED_BY_SPREAD.includes(id(el)) && !(namesFromContents(el) && el.textChildren),
       )
       .map((el) => `${el.file}:${el.line} <${el.tag} role="${el.role}"> has no accessible name`);
     expect(violations).toEqual([]);
@@ -531,9 +536,7 @@ describe('a role a user interacts with has a NAME', () => {
       ...new Set(
         unlabelled
           .filter(
-            (el) =>
-              !NAMED_BY_SPREAD.includes(id(el)) &&
-              namesFromContents(el) && el.textChildren,
+            (el) => !NAMED_BY_SPREAD.includes(id(el)) && namesFromContents(el) && el.textChildren,
           )
           .map(id),
       ),
@@ -549,9 +552,7 @@ describe('a role a user interacts with has a NAME', () => {
       ...new Set(
         ALL.filter(
           (el) =>
-            el.role !== undefined &&
-            NAME_REQUIRED_ROLES[el.role] !== undefined &&
-            !isHost(el.tag),
+            el.role !== undefined && NAME_REQUIRED_ROLES[el.role] !== undefined && !isHost(el.tag),
         ).map((el) => el.tag),
       ),
     ].sort();

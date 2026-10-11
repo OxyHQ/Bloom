@@ -39,6 +39,9 @@ export function useChartCardSurfacePalette(style?: StyleProp<ViewStyle>): ChartC
   const theme = useTheme();
   const layer = useSurfaceLayer();
   const fill = StyleSheet.flatten(style)?.backgroundColor;
-  const surface = resolveSurfaceMaterial({ fill: typeof fill === 'string' ? fill : layer.fill, parentFill: layer.parentFill }).publishedFill;
+  const surface = resolveSurfaceMaterial({
+    fill: typeof fill === 'string' ? fill : layer.fill,
+    parentFill: layer.parentFill,
+  }).publishedFill;
   return useMemo(() => resolveChartCardPalette(theme, surface), [theme, surface]);
 }

@@ -13,9 +13,7 @@ import { useMessages } from '../locale/messages';
 import { MEDIA_CARD_MESSAGES } from './messages';
 import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 
-export function normaliseArtists(
-  artists: SongCardProps['artists'],
-): SongCardArtist[] {
+export function normaliseArtists(artists: SongCardProps['artists']): SongCardArtist[] {
   return (artists ?? []).map((artist) => (typeof artist === 'string' ? { name: artist } : artist));
 }
 
@@ -88,11 +86,24 @@ function SongCardComponent({
     <>
       {onLikedChange ? (
         <View {...webDataSet(liked ? {} : { bloomMediaCardReveal: IS_WEB ? 'hover' : '' })}>
-          <LikeButton liked={liked} onLikedChange={onLikedChange} size="sm" accessibilityLabel={controls.saveSubjectToLibrary(title)} />
+          <LikeButton
+            liked={liked}
+            onLikedChange={onLikedChange}
+            size="sm"
+            accessibilityLabel={controls.saveSubjectToLibrary(title)}
+          />
         </View>
       ) : null}
       {duration ? (
-        <Text variant="body-2-regular" style={{ color: paint.textSecondary, minWidth: 36, textAlign: 'right', fontVariant: ['tabular-nums'] }}>
+        <Text
+          variant="body-2-regular"
+          style={{
+            color: paint.textSecondary,
+            minWidth: 36,
+            textAlign: 'right',
+            fontVariant: ['tabular-nums'],
+          }}
+        >
           {duration}
         </Text>
       ) : null}

@@ -54,12 +54,15 @@ import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createVoiceRecorder({ Surface, Button, ComposerIconButton }: {
+export function createVoiceRecorder({
+  Surface,
+  Button,
+  ComposerIconButton,
+}: {
   Surface: typeof SurfaceComponent;
   Button: typeof ButtonComponent;
   ComposerIconButton: typeof ComposerIconButtonComponent;
 }) {
-
   const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
 
   /** The live "we are recording" dot. CSS keyframes on web, a reanimated loop on native. */
@@ -126,8 +129,9 @@ export function createVoiceRecorder({ Surface, Button, ComposerIconButton }: {
           flexDirection: 'row',
           alignItems: 'center',
           gap: WAVE_BAR_GAP,
-            }}
-        testID={testID}>
+        }}
+        testID={testID}
+      >
         {bars.map((level, index) => (
           <View
             key={index}
@@ -185,7 +189,8 @@ export function createVoiceRecorder({ Surface, Button, ComposerIconButton }: {
       <Surface
         accessibilityLabel={accessibilityLabel ?? labels.recording}
         style={[bar, style]}
-        testID={testID}>
+        testID={testID}
+      >
         {preview ? (
           <>
             {onDelete ? (
@@ -216,7 +221,8 @@ export function createVoiceRecorder({ Surface, Button, ComposerIconButton }: {
         <Text
           variant="body-2-medium"
           style={{ color: palette.text, minWidth: 40 }}
-          testID={testID ? `${testID}-time` : undefined}>
+          testID={testID ? `${testID}-time` : undefined}
+        >
           {formatRecordingTime(seconds)}
         </Text>
 
@@ -240,8 +246,16 @@ export function createVoiceRecorder({ Surface, Button, ComposerIconButton }: {
             tone="neutral"
             accessibilityLabel={labels.cancel}
             onPress={onCancel}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 2, height: 'auto', minHeight: 0, padding: 0 }}
-            testID={testID ? `${testID}-slide` : undefined}>
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 2,
+              height: 'auto',
+              minHeight: 0,
+              padding: 0,
+            }}
+            testID={testID ? `${testID}-slide` : undefined}
+          >
             <RiArrowLeftSLine width={16} height={16} fill={palette.textSecondary} />
             <Text variant="caption-1-regular" style={{ color: palette.textSecondary }}>
               {labels.slideToCancel}

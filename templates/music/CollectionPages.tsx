@@ -24,7 +24,13 @@ import {
 import { Shelf } from '../../src/media-shelf';
 import { TextFieldInput } from '../../src/text-field';
 import { useTheme } from '../../src/theme/use-theme';
-import { SelectionBar, TrackList, TrackListEmpty, type Track, type TrackMenuItem } from '../../src/track-list';
+import {
+  SelectionBar,
+  TrackList,
+  TrackListEmpty,
+  type Track,
+  type TrackMenuItem,
+} from '../../src/track-list';
 import { Text } from '../../src/typography';
 import {
   ALBUM_BY_ID,
@@ -48,7 +54,13 @@ import {
   useContextPlay,
   useMusicLayout,
 } from './parts';
-import { playableFromTrack, playablesFromTrackIds, toListTrack, usePlayer, type PlayContext } from './PlayerContext';
+import {
+  playableFromTrack,
+  playablesFromTrackIds,
+  toListTrack,
+  usePlayer,
+  type PlayContext,
+} from './PlayerContext';
 import { useMusicRouter } from './router';
 
 /**
@@ -130,8 +142,10 @@ function useTrackActions(trackIds: readonly string[], context: PlayContext) {
     onPlay: (_: Track, index: number) => player.play(items, index, context),
     onPause: () => player.toggle(),
     onLikedChange: (track: Track, liked: boolean) => player.setLiked(track.id, liked),
-    onArtistPress: (artist: { id?: string }) => artist.id && router.navigate({ name: 'artist', id: artist.id }),
-    onAlbumPress: (track: Track) => router.navigate({ name: 'album', id: TRACK_BY_ID[track.id]!.albumId }),
+    onArtistPress: (artist: { id?: string }) =>
+      artist.id && router.navigate({ name: 'artist', id: artist.id }),
+    onAlbumPress: (track: Track) =>
+      router.navigate({ name: 'album', id: TRACK_BY_ID[track.id]!.albumId }),
     menuItems,
   };
 }
@@ -152,7 +166,9 @@ export function AlbumPage({ id }: { id: string }) {
   const download = useFakeDownload();
   const [view, setView] = useState<MediaViewMode>('list');
   const { progress, onScroll } = useMediaHeaderScroll({ start: mobile ? 360 : 300 });
-  const tracks = tracksOf(album).map((t) => toListTrack(t, player.liked.has(t.id), { number: t.number }));
+  const tracks = tracksOf(album).map((t) =>
+    toListTrack(t, player.liked.has(t.id), { number: t.number }),
+  );
   const groups =
     album.disc2At !== undefined
       ? [
@@ -218,7 +234,9 @@ export function AlbumPage({ id }: { id: string }) {
           />
         }
       />
-      <View style={{ paddingLeft: mobile ? 8 : gutter, paddingRight: mobile ? 8 : gutter, gap: 16 }}>
+      <View
+        style={{ paddingLeft: mobile ? 8 : gutter, paddingRight: mobile ? 8 : gutter, gap: 16 }}
+      >
         <TrackList
           testID="music-album-tracks"
           tracks={tracks}
@@ -305,7 +323,10 @@ export function PlaylistPage({ id, kind = 'playlist' }: { id: string; kind?: 'pl
         .reverse()
     : trackIds;
   const context: PlayContext = { id, name: details.title, type: mix ? 'mix' : 'playlist' };
-  const play = useMemo(() => ({ items: playablesFromTrackIds(ids), context }), [ids.join(','), details.title]);
+  const play = useMemo(
+    () => ({ items: playablesFromTrackIds(ids), context }),
+    [ids.join(','), details.title],
+  );
   const state = useContextPlay(play);
   const actions = useTrackActions(ids, context);
   const mine = liked || !!source?.mine;
@@ -313,7 +334,9 @@ export function PlaylistPage({ id, kind = 'playlist' }: { id: string; kind?: 'pl
 
   const tracks = ids.map((trackId, i) =>
     toListTrack(TRACK_BY_ID[trackId]!, player.liked.has(trackId), {
-      dateAdded: liked ? ['Today', 'Yesterday', '3 days ago', 'Sep 2, 2026'][Math.min(3, i)] : source?.dateAdded[i],
+      dateAdded: liked
+        ? ['Today', 'Yesterday', '3 days ago', 'Sep 2, 2026'][Math.min(3, i)]
+        : source?.dateAdded[i],
       downloaded: download.state === 'downloaded',
     }),
   );
@@ -351,7 +374,9 @@ export function PlaylistPage({ id, kind = 'playlist' }: { id: string; kind?: 'pl
       >
         <CollectionHeader
           variant={liked ? 'liked' : 'default'}
-          typeLabel={liked ? 'Playlist' : mix ? 'Mix' : source?.mine ? 'Public playlist' : 'Playlist'}
+          typeLabel={
+            liked ? 'Playlist' : mix ? 'Mix' : source?.mine ? 'Public playlist' : 'Playlist'
+          }
           title={details.title}
           description={details.description || undefined}
           cover={coverImage}
@@ -359,8 +384,14 @@ export function PlaylistPage({ id, kind = 'playlist' }: { id: string; kind?: 'pl
           owners={[
             source && !source.mine
               ? { name: source.owner }
-              : { name: ME.name, avatar: ME.avatar, onPress: () => router.navigate({ name: 'profile' }) },
-            ...(source?.collaborative ? [{ name: 'Mika Oduya', avatar: ARTIST_BY_ID['odessa-rowe']!.photo }] : []),
+              : {
+                  name: ME.name,
+                  avatar: ME.avatar,
+                  onPress: () => router.navigate({ name: 'profile' }),
+                },
+            ...(source?.collaborative
+              ? [{ name: 'Mika Oduya', avatar: ARTIST_BY_ID['odessa-rowe']!.photo }]
+              : []),
           ]}
           summary={ids.length > 0 ? summaryOf(ids) : '0 songs'}
           saves={liked || mix ? undefined : source?.saves}
@@ -389,7 +420,9 @@ export function PlaylistPage({ id, kind = 'playlist' }: { id: string; kind?: 'pl
             />
           }
         />
-        <View style={{ paddingLeft: mobile ? 8 : gutter, paddingRight: mobile ? 8 : gutter, gap: 16 }}>
+        <View
+          style={{ paddingLeft: mobile ? 8 : gutter, paddingRight: mobile ? 8 : gutter, gap: 16 }}
+        >
           {tracks.length === 0 ? (
             <TrackListEmpty
               icon={RiHeart3Line}
@@ -449,10 +482,11 @@ export function PlaylistPage({ id, kind = 'playlist' }: { id: string; kind?: 'pl
               <SectionTitle
                 trailing={
                   <Button
-
                     size="sm"
                     leadingIcon={RiRefreshLine}
-                    onPress={() => setRecommendSeed((s) => s + 1)} tone="accent" appearance="subtle"
+                    onPress={() => setRecommendSeed((s) => s + 1)}
+                    tone="accent"
+                    appearance="subtle"
                   >
                     Refresh
                   </Button>
@@ -563,17 +597,22 @@ function RecommendedRow({ trackId, onAdd }: { trackId: string; onAdd: () => void
       onPlay={() =>
         current
           ? player.toggle()
-          : player.play([item], 0, { id: `recommended-${trackId}`, name: 'Recommended songs', type: 'playlist' })
+          : player.play([item], 0, {
+              id: `recommended-${trackId}`,
+              name: 'Recommended songs',
+              type: 'playlist',
+            })
       }
       trailing={
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
           <Text variant="body-2-regular">{formatDuration(track.duration)}</Text>
           <Button
-
             size="sm"
             leadingIcon={RiAddLine}
             onPress={onAdd}
-            accessibilityLabel={`Add ${track.title} to playlist`} tone="neutral" appearance="outline"
+            accessibilityLabel={`Add ${track.title} to playlist`}
+            tone="neutral"
+            appearance="outline"
           >
             Add
           </Button>

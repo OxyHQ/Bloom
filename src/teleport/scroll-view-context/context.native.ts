@@ -6,9 +6,9 @@
  * because Bloom does not compile with their `react-native-strict-api` condition,
  * which is the only place that property is declared.
  */
-import type { Context } from "react";
-import { ScrollView } from "react-native";
-import type { ScrollViewContextValue } from "./types";
+import type { Context } from 'react';
+import { ScrollView } from 'react-native';
+import type { ScrollViewContextValue } from './types';
 
 // Bloom does not compile with their `react-native-strict-api` condition, and
 // `ScrollView.Context` is only declared there. Reached through the shape it has

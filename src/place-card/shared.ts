@@ -67,7 +67,8 @@ export function composePlaceName(
   if (props.rating !== undefined) {
     const rated = props.rating !== null && props.rating !== '';
     if (rated) {
-      const count = props.reviewCount != null && props.reviewCount !== '' ? props.reviewCount : undefined;
+      const count =
+        props.reviewCount != null && props.reviewCount !== '' ? props.reviewCount : undefined;
       parts.push(messages.rated(formatRatingValue(props.rating as number | string), count));
     } else {
       parts.push(props.newLabel ?? messages.new);
@@ -78,7 +79,8 @@ export function composePlaceName(
   if (props.hours) parts.push(props.hours);
   if (props.address) parts.push(props.address);
   for (const fact of props.facts ?? []) parts.push(fact.accessibilityLabel ?? fact.label);
-  if (props.figure) parts.push(props.figureLabel ? `${props.figureLabel}, ${props.figure}` : props.figure);
+  if (props.figure)
+    parts.push(props.figureLabel ? `${props.figureLabel}, ${props.figure}` : props.figure);
   if (props.figureDetail) parts.push(props.figureDetail);
   for (const stat of props.stats ?? []) parts.push(`${stat.value} ${stat.label}`);
   return parts.join(', ');

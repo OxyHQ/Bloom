@@ -76,64 +76,66 @@ export function ActionBarView({
 
   return (
     <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-    <View testID={testID} style={[barStyle, style, backing.vars]}>
-      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-        <BookingPrice
-          price={price}
-          originalPrice={originalPrice}
-          priceUnit={priceUnit}
-          priceUnitPrefix={priceUnitPrefix}
-          priceAccessibilityLabel={priceAccessibilityLabel}
-          priceVariant="headline-semibold"
-          unitVariant="body-regular"
-          testID={id('price')}
-        />
-        {subtitle ? (
-          onPressSubtitle ? (
-            <BookingLink
-              variant="body-2-medium"
-              numberOfLines={1}
-              onPress={onPressSubtitle}
-              testID={id(ids.subtitle)}
-            >
-              {subtitle}
-            </BookingLink>
-          ) : (
-            <Text
-              variant="body-2-medium"
-              numberOfLines={1}
-              testID={id(ids.subtitle)}
-              style={{ color: palette.text }}
-            >
-              {subtitle}
-            </Text>
-          )
-        ) : null}
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        {secondaryIcon ? (
-          <Button
-
-            size="lg"
-            iconOnly
-            icon={secondaryIcon}
-            accessibilityLabel={secondaryLabel}
-            onPress={onSecondary}
-            testID={id('secondary')} tone="neutral" appearance="outline"
+      <View testID={testID} style={[barStyle, style, backing.vars]}>
+        <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+          <BookingPrice
+            price={price}
+            originalPrice={originalPrice}
+            priceUnit={priceUnit}
+            priceUnitPrefix={priceUnitPrefix}
+            priceAccessibilityLabel={priceAccessibilityLabel}
+            priceVariant="headline-semibold"
+            unitVariant="body-regular"
+            testID={id('price')}
           />
-        ) : null}
-        <Button
-
-          size="lg"
-          onPress={onPrimary}
-          disabled={primaryDisabled}
-          loading={loading}
-          testID={id(ids.primary)} tone="accent" appearance="solid"
-        >
-          {primaryLabel}
-        </Button>
+          {subtitle ? (
+            onPressSubtitle ? (
+              <BookingLink
+                variant="body-2-medium"
+                numberOfLines={1}
+                onPress={onPressSubtitle}
+                testID={id(ids.subtitle)}
+              >
+                {subtitle}
+              </BookingLink>
+            ) : (
+              <Text
+                variant="body-2-medium"
+                numberOfLines={1}
+                testID={id(ids.subtitle)}
+                style={{ color: palette.text }}
+              >
+                {subtitle}
+              </Text>
+            )
+          ) : null}
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {secondaryIcon ? (
+            <Button
+              size="lg"
+              iconOnly
+              icon={secondaryIcon}
+              accessibilityLabel={secondaryLabel}
+              onPress={onSecondary}
+              testID={id('secondary')}
+              tone="neutral"
+              appearance="outline"
+            />
+          ) : null}
+          <Button
+            size="lg"
+            onPress={onPrimary}
+            disabled={primaryDisabled}
+            loading={loading}
+            testID={id(ids.primary)}
+            tone="accent"
+            appearance="solid"
+          >
+            {primaryLabel}
+          </Button>
+        </View>
       </View>
-    </View>
     </SurfaceLevelProvider>
   );
 }

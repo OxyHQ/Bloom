@@ -17,9 +17,17 @@ export interface ActivityFeedMessages {
   filterActivity: string;
 }
 
-export const ACTIVITY_FEED_MESSAGES: MessageCatalog<ActivityFeedMessages> = defineMessages<ActivityFeedMessages>('ACTIVITY_FEED_MESSAGES', {
-  kinds: { call: 'Call', email: 'Email', meeting: 'Meeting', note: 'Note', 'stage-change': 'Stage change', task: 'Task completed' },
-  empty: 'Nothing logged yet',
-  loggedBy: (name) => `Logged by ${name}`,
-  filterActivity: 'Filter activity',
-});
+export const ACTIVITY_FEED_MESSAGES: MessageCatalog<ActivityFeedMessages> =
+  defineMessages<ActivityFeedMessages>('ACTIVITY_FEED_MESSAGES', {
+    kinds: {
+      call: 'Call',
+      email: 'Email',
+      meeting: 'Meeting',
+      note: 'Note',
+      'stage-change': 'Stage change',
+      task: 'Task completed',
+    },
+    empty: 'Nothing logged yet',
+    loggedBy: (name) => `Logged by ${name}`,
+    filterActivity: 'Filter activity',
+  });

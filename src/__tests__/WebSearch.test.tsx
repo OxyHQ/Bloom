@@ -12,7 +12,10 @@ import { resolveWebSearchPalette } from '../web-search/WebSearch';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
 
-jest.mock('../styles/adopt-style-sheet', () => ({ adoptStyleSheet: jest.fn(), dropStyleSheet: jest.fn() }));
+jest.mock('../styles/adopt-style-sheet', () => ({
+  adoptStyleSheet: jest.fn(),
+  dropStyleSheet: jest.fn(),
+}));
 
 const SOURCES = [
   { title: 'PC Gamer', domain: 'www.pcgamer.com', href: 'https://www.pcgamer.com' },
@@ -115,11 +118,16 @@ describe('WebSearch', () => {
 
   it('shimmers only the newest step while running, and nothing under reduced motion', () => {
     const shimmering = (root: ReactTestInstance) =>
-      root.findAll((node) => String(node.type) === 'Text' && node.props.dataSet?.bloomAgentLogShimmer !== undefined);
+      root.findAll(
+        (node) =>
+          String(node.type) === 'Text' && node.props.dataSet?.bloomAgentLogShimmer !== undefined,
+      );
     const original = Platform.OS;
     Object.defineProperty(Platform, 'OS', { value: 'web', configurable: true });
     try {
-      const running = renderSearch(<WebSearch testID="ws" steps={STEPS} revealed={4} reduce={false} />);
+      const running = renderSearch(
+        <WebSearch testID="ws" steps={STEPS} revealed={4} reduce={false} />,
+      );
       const found = shimmering(running.getByTestId('ws', hidden));
       expect(found).toHaveLength(1);
       expect(found[0]!.props.children).toBe('Searched X for');
@@ -132,7 +140,9 @@ describe('WebSearch', () => {
   });
 
   it('insets steps 14 (the log default is 16) and nests sources 7 under the glyph', () => {
-    const { getByTestId } = renderSearch(<WebSearch testID="ws" steps={STEPS} revealed={99} reduce />);
+    const { getByTestId } = renderSearch(
+      <WebSearch testID="ws" steps={STEPS} revealed={99} reduce />,
+    );
     const step = getByTestId('ws-step-1', hidden);
     expect(resolvedStyle((step.children[0] as ReactTestInstance).props.style).paddingLeft).toBe(14);
     const bridge = getByTestId('ws-step-1', hidden).findAll(
@@ -142,10 +152,15 @@ describe('WebSearch', () => {
   });
 
   it('stacks up to six marks (20px, 1px ring by longhand, 6px overlap) and counts the rest', () => {
-    const { getByTestId, getByText } = renderSearch(<WebSearch testID="ws" steps={STEPS} revealed={99} reduce />);
+    const { getByTestId, getByText } = renderSearch(
+      <WebSearch testID="ws" steps={STEPS} revealed={99} reduce />,
+    );
     const stack = getByTestId('ws-step-1-sources-stack', hidden);
     const marks = stack.findAll(
-      (node) => typeof node.type === 'string' && resolvedStyle(node.props.style).width === 20 && resolvedStyle(node.props.style).borderTopWidth === 1,
+      (node) =>
+        typeof node.type === 'string' &&
+        resolvedStyle(node.props.style).width === 20 &&
+        resolvedStyle(node.props.style).borderTopWidth === 1,
     );
     expect(marks).toHaveLength(6);
     const mark = resolvedStyle(marks[0]!.props.style);
@@ -170,8 +185,9 @@ describe('WebSearch', () => {
       'dark',
     );
     const fillOf = (index: number) =>
-      getByTestId(`ws-step-${index}`, hidden).findAll((node) => node.props.d !== undefined && node.props.fill !== undefined)[0]!
-        .props.fill;
+      getByTestId(`ws-step-${index}`, hidden).findAll(
+        (node) => node.props.d !== undefined && node.props.fill !== undefined,
+      )[0]!.props.fill;
     expect(fillOf(0)).toBe(theme.colors.text);
     expect(fillOf(1)).toBe('#FF4500');
     expect(fillOf(2)).toBe(resolveButtonRamps(theme).accent[500]);
@@ -183,18 +199,37 @@ describe('WebSearch', () => {
         testID="ws"
         revealed={99}
         reduce
-        steps={[{
-          label: 'Searched the web for',
-          sources: [
-            { title: 'GSMArena', domain: 'www.gsmarena.com', faviconUrl: 'https://api.clarity.surf/favicons/www.gsmarena.com' },
-            { title: 'Reddit', domain: 'www.reddit.com', brand: 'reddit', faviconUrl: 'https://api.clarity.surf/favicons/www.reddit.com' },
-          ],
-        }]}
+        steps={[
+          {
+            label: 'Searched the web for',
+            sources: [
+              {
+                title: 'GSMArena',
+                domain: 'www.gsmarena.com',
+                faviconUrl: 'https://api.clarity.surf/favicons/www.gsmarena.com',
+              },
+              {
+                title: 'Reddit',
+                domain: 'www.reddit.com',
+                brand: 'reddit',
+                faviconUrl: 'https://api.clarity.surf/favicons/www.reddit.com',
+              },
+            ],
+          },
+        ]}
       />,
     );
     const stack = getByTestId('ws-step-0-sources-stack', hidden);
-    const images = () => stack.findAll((node) => typeof node.type === 'string' && node.props.source?.uri !== undefined && typeof node.props.onError === 'function');
-    expect(images().map((node) => node.props.source.uri)).toEqual(['https://api.clarity.surf/favicons/www.gsmarena.com']);
+    const images = () =>
+      stack.findAll(
+        (node) =>
+          typeof node.type === 'string' &&
+          node.props.source?.uri !== undefined &&
+          typeof node.props.onError === 'function',
+      );
+    expect(images().map((node) => node.props.source.uri)).toEqual([
+      'https://api.clarity.surf/favicons/www.gsmarena.com',
+    ]);
     expect(resolvedStyle(images()[0]!.props.style)).toMatchObject({ width: 12, height: 12 });
 
     act(() => images()[0]!.props.onError({ nativeEvent: { error: 'HTTP 404' } }));
@@ -210,12 +245,15 @@ describe('WebSearch', () => {
     expect(toggle.props['aria-expanded']).toBe(false);
     const stackCount = () =>
       getByTestId('ws-step-1-sources-stack', hidden).findAll(
-        (node) => typeof node.type === 'string' && resolvedStyle(node.props.style).borderTopWidth === 1,
+        (node) =>
+          typeof node.type === 'string' && resolvedStyle(node.props.style).borderTopWidth === 1,
       ).length;
 
     pressHost(toggle);
     expect(getByTestId('ws-step-1-sources-toggle', hidden).props['aria-expanded']).toBe(true);
-    expect(getByTestId('ws-step-1-sources-toggle', hidden).props.accessibilityState).toEqual({ expanded: true });
+    expect(getByTestId('ws-step-1-sources-toggle', hidden).props.accessibilityState).toEqual({
+      expanded: true,
+    });
     advance(100);
     // The 7th source (past the stack) opens first; the count goes with it.
     expect(stackCount()).toBe(6);
@@ -239,9 +277,13 @@ describe('WebSearch', () => {
   it('a source with href is a link; on native pressing it opens the URL', () => {
     jest.useFakeTimers();
     const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
-    const { getByTestId } = renderSearch(<WebSearch testID="ws" steps={STEPS} revealed={99} reduce />);
+    const { getByTestId } = renderSearch(
+      <WebSearch testID="ws" steps={STEPS} revealed={99} reduce />,
+    );
     const row = getByTestId('ws-step-1-sources-link-0', hidden);
-    const link = row.findAll((node) => typeof node.type === 'string' && node.props.role === 'link')[0]!;
+    const link = row.findAll(
+      (node) => typeof node.type === 'string' && node.props.role === 'link',
+    )[0]!;
     expect(link.props.accessibilityLabel).toBe('PC Gamer, www.pcgamer.com');
     pressHost(link);
     expect(open).toHaveBeenCalledWith('https://www.pcgamer.com');
@@ -257,6 +299,8 @@ describe('WebSearch', () => {
       <WebSearch testID="ws" steps={STEPS.slice(1)} revealed={1} reduce working="Reading" />,
     );
     const working = getByTestId('ws-working', hidden);
-    expect(resolvedStyle((working.children[0] as ReactTestInstance).props.style).paddingLeft).toBe(14);
+    expect(resolvedStyle((working.children[0] as ReactTestInstance).props.style).paddingLeft).toBe(
+      14,
+    );
   });
 });

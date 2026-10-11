@@ -59,7 +59,6 @@ export function useAccessibleNameWarning(component: string, name: string | undef
     warned.add(component);
     // Internal Bloom diagnostic: the consumer's own tree is the only place this
     // can be fixed, so the message states the fix rather than the symptom.
-    // eslint-disable-next-line no-console
     console.warn(
       `[Bloom] ${component}: no \`accessibilityLabel\`, so assistive technology ` +
         'announces the control with no name — a caption rendered beside it is a ' +

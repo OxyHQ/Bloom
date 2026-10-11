@@ -27,8 +27,10 @@ describe('shared button refraction definition', () => {
     expect(first.querySelector('svg')!.ownerDocument).toBe(first);
     expect(second.querySelector('svg')!.ownerDocument).toBe(second);
     const filter = first.getElementById(SURFACE_REFRACTION_ID)!;
-    expect(Array.from(filter.children, child => child.tagName)).toEqual([
-      'feTurbulence', 'feGaussianBlur', 'feDisplacementMap',
+    expect(Array.from(filter.children, (child) => child.tagName)).toEqual([
+      'feTurbulence',
+      'feGaussianBlur',
+      'feDisplacementMap',
     ]);
     const displacement = filter.querySelector('feDisplacementMap')!;
     expect(displacement.getAttribute('in')).toBe('SourceGraphic');

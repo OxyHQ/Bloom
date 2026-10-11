@@ -2,10 +2,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { useState } from 'react';
 import { CharacterRuntimeFixture } from './support/character-runtime-fixture';
 import { CharacterAvatar } from '../../agent-avatar/CharacterAvatar';
-import {
-  legacyCharacterRecipe,
-  legacyRecipe,
-} from '../../agent-avatar/legacy-recipe';
+import { legacyCharacterRecipe, legacyRecipe } from '../../agent-avatar/legacy-recipe';
 import { Select } from '../../select';
 import { CHARACTER_OPTIONS } from '../constants';
 import { ShapeArc } from '../ShapeArc';
@@ -54,10 +51,7 @@ describe('controlled agent creator', () => {
       ...agent,
       label: 'Architecture',
     });
-    fireEvent.changeText(
-      view.getByLabelText('Agent description'),
-      'Builds better systems',
-    );
+    fireEvent.changeText(view.getByLabelText('Agent description'), 'Builds better systems');
     expect(onChange).toHaveBeenLastCalledWith({
       ...agent,
       description: 'Builds better systems',
@@ -100,10 +94,7 @@ describe('controlled agent creator', () => {
       onPreviewVoice,
     });
     fireEvent.press(view.getByLabelText('Preview voice'));
-    expect(onPreviewVoice).toHaveBeenCalledWith(
-      'Hello! Ready when you are.',
-      agent.preferences,
-    );
+    expect(onPreviewVoice).toHaveBeenCalledWith('Hello! Ready when you are.', agent.preferences);
   });
   it('closes the host panel without committing a change', () => {
     const onClose = jest.fn(),
@@ -159,9 +150,7 @@ describe('optional character editor', () => {
         </BloomThemeProvider>
       </CharacterRuntimeFixture>,
     );
-    expect(view.UNSAFE_getByType(EmotionPicker).props.value).toBe(
-      'round_inset',
-    );
+    expect(view.UNSAFE_getByType(EmotionPicker).props.value).toBe('round_inset');
     expect(view.getByLabelText('Round inset').props.disabled).toBe(false);
     expect(view.queryByLabelText('Happy')).toBeNull();
     expect(view.getByLabelText('Custom avatar color')).toBeTruthy();
@@ -218,12 +207,8 @@ it('edits custom beta body RGB through the existing picker and retains the entir
     </CharacterRuntimeFixture>,
   );
   expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(false);
-  expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(
-    true,
-  );
-  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
-    '#123456',
-  );
+  expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(true);
+  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#123456');
   expect(
     view
       .UNSAFE_getAllByType(GlossArt)
@@ -260,13 +245,9 @@ describe('shared original-engine editor catalog', () => {
     onChange = jest.fn(),
     selected: Record<string, string> = {},
   ) {
-    const beta =
-      configured.avatar.character &&
-      configured.avatar.character.preset !== 'bloom';
+    const beta = configured.avatar.character && configured.avatar.character.preset !== 'bloom';
     const key = JSON.stringify(
-      beta
-        ? configured.avatar.character
-        : legacyCharacterRecipe(configured.avatar),
+      beta ? configured.avatar.character : legacyCharacterRecipe(configured.avatar),
     );
     const caps = {
       key,
@@ -303,9 +284,7 @@ describe('shared original-engine editor catalog', () => {
       const view = withRuntime(configured);
       const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
       expect(choices).toHaveLength(21);
-      expect(
-        new Set(choices.map((choice: { id: string }) => choice.id)).size,
-      ).toBe(21);
+      expect(new Set(choices.map((choice: { id: string }) => choice.id)).size).toBe(21);
       expect(choices.map((choice: { id: string }) => choice.id)).toEqual(
         expect.arrayContaining([
           'clippo',
@@ -323,9 +302,7 @@ describe('shared original-engine editor catalog', () => {
         ]),
       );
       expect(view.queryByLabelText('Happy')).toBeNull();
-      expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toHaveLength(
-        12,
-      );
+      expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toHaveLength(12);
       view.unmount();
     }
   });
@@ -339,37 +316,24 @@ describe('shared original-engine editor catalog', () => {
       },
     };
     const view = withRuntime(configured, jest.fn(), { color: 'blue' });
-    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
-      '#999b9d',
-    );
-    expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(
-      false,
-    );
+    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#999b9d');
+    expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(false);
     expect(
-      view.UNSAFE_getAllByType(GlossArt).find((node) => node.props.active)
-        ?.props,
+      view.UNSAFE_getAllByType(GlossArt).find((node) => node.props.active)?.props,
     ).toMatchObject({ center: '#999b9d', edge: '#999b9d', rainbow: false });
     const eyes = view.UNSAFE_getByType(EmotionPicker).props.choices;
-    expect(
-      eyes.find((choice: { id: string }) => choice.id === 'clippo'),
-    ).toMatchObject({
+    expect(eyes.find((choice: { id: string }) => choice.id === 'clippo')).toMatchObject({
       artwork: 'clippo',
       disabled: false,
     });
-    expect(
-      eyes.find((choice: { id: string }) => choice.id === 'clippo').thumbnail,
-    ).toBeUndefined();
+    expect(eyes.find((choice: { id: string }) => choice.id === 'clippo').thumbnail).toBeUndefined();
     const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
     expect(
-      choices.find((choice: { id: string }) => choice.id === 'clippo')
-        .thumbnail,
+      choices.find((choice: { id: string }) => choice.id === 'clippo').thumbnail,
     ).toBeUndefined();
+    for (const choice of choices) expect(choice.config.character.selections.eyes).toBe('clippo');
     for (const choice of choices)
-      expect(choice.config.character.selections.eyes).toBe('clippo');
-    for (const choice of choices)
-      expect(
-        choice.config.character.bodyColor ?? avatarHex(choice.config),
-      ).toBe('#999b9d');
+      expect(choice.config.character.bodyColor ?? avatarHex(choice.config)).toBe('#999b9d');
     view.unmount();
   });
 
@@ -386,9 +350,7 @@ describe('shared original-engine editor catalog', () => {
     };
     const view = withRuntime(configured);
     const eyes = view.UNSAFE_getByType(EmotionPicker).props.choices;
-    expect(
-      eyes.find((choice: { id: string }) => choice.id === 'todd'),
-    ).toMatchObject({
+    expect(eyes.find((choice: { id: string }) => choice.id === 'todd')).toMatchObject({
       thumbnail: '/thumbnails/eyes/todd.png',
       disabled: false,
     });
@@ -437,44 +399,33 @@ describe('shared original-engine editor catalog', () => {
     };
     const view = withRuntime(configured, jest.fn(), { bodyColor: '#f0bd73' });
     expect(avatarHex(configured.avatar)).not.toBe('#f0bd73');
-    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
-      '#f0bd73',
-    );
+    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#f0bd73');
     for (const choice of view.UNSAFE_getByType(ShapeArc).props.choices)
-      expect(
-        choice.config.character.bodyColor ?? avatarHex(choice.config),
-      ).toBe('#f0bd73');
-    expect(
-      view.getByLabelText('Custom avatar color').props['aria-pressed'],
-    ).toBe(true);
+      expect(choice.config.character.bodyColor ?? avatarHex(choice.config)).toBe('#f0bd73');
+    expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(true);
     view.unmount();
   });
 
   it.each([
     [{ bodyColor: '#123456' }, '#123456'],
     [{ selections: { color: 'blue' } }, '#4778ff'],
-  ])(
-    'keeps an explicit color ahead of unnamed preset RGB metadata %#',
-    (override, expected) => {
-      const configured = {
-        ...agent,
-        avatar: { ...agent.avatar, character: { preset: 'gus', ...override } },
-      };
-      const view = withRuntime(configured, jest.fn(), { bodyColor: '#f0bd73' });
-      expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
-        expected,
-      );
-      for (const choice of view.UNSAFE_getByType(ShapeArc).props.choices) {
-        const actual =
-          choice.config.character.bodyColor ??
-          (choice.config.character.selections.color === 'blue'
-            ? '#4778ff'
-            : avatarHex(choice.config));
-        expect(actual).toBe(expected);
-      }
-      view.unmount();
-    },
-  );
+  ])('keeps an explicit color ahead of unnamed preset RGB metadata %#', (override, expected) => {
+    const configured = {
+      ...agent,
+      avatar: { ...agent.avatar, character: { preset: 'gus', ...override } },
+    };
+    const view = withRuntime(configured, jest.fn(), { bodyColor: '#f0bd73' });
+    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(expected);
+    for (const choice of view.UNSAFE_getByType(ShapeArc).props.choices) {
+      const actual =
+        choice.config.character.bodyColor ??
+        (choice.config.character.selections.color === 'blue'
+          ? '#4778ff'
+          : avatarHex(choice.config));
+      expect(actual).toBe(expected);
+    }
+    view.unmount();
+  });
 
   it.each(['round_inset', 'sleepy_lids', 'dots'])(
     'keeps %s, eyewear, headwear and historical metadata on every body',
@@ -659,9 +610,7 @@ describe('shared original-engine editor catalog', () => {
     const onChange = jest.fn();
     const view = withRuntime(agent, onChange);
     const hero = () =>
-      view
-        .UNSAFE_getAllByType(CharacterAvatar)
-        .find((node) => node.props.size === 162)!;
+      view.UNSAFE_getAllByType(CharacterAvatar).find((node) => node.props.size === 162)!;
     expect(hero().props.workingKey).toBe(0);
     fireEvent.press(view.getByText('Work'));
     expect(hero().props.workingKey).toBe(1);
@@ -824,9 +773,7 @@ it('accepts rapid body, eye, glasses, hat and palette edits while only the initi
   }
   const view = render(<Controlled />);
   fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'cloud');
-  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
-    '#4778ff',
-  );
+  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#4778ff');
   expect(view.getByLabelText('Todd').props.disabled).toBe(false);
   fireEvent.press(view.getByLabelText('Todd'));
   fireEvent(view.UNSAFE_getAllByType(Select)[1]!, 'valueChange', 'monocle');
@@ -846,8 +793,6 @@ it('accepts rapid body, eye, glasses, hat and palette edits while only the initi
       accessory: 'crown',
     },
   });
-  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
-    '#fa70ab',
-  );
+  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#fa70ab');
   expect(view.getByLabelText('Pink avatar').props['aria-pressed']).toBe(true);
 });

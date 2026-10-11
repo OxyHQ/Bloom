@@ -54,8 +54,7 @@ function FlyingAvatar({
         1,
         {
           duration: reduced ? 0 : duration,
-          easing:
-            kind === 'group' ? Easing.bezier(0.22, 1, 0.36, 1) : Easing.linear,
+          easing: kind === 'group' ? Easing.bezier(0.22, 1, 0.36, 1) : Easing.linear,
         },
         (finished) => {
           if (finished) runOnJS(onArrive)(agentId);
@@ -65,12 +64,7 @@ function FlyingAvatar({
     return () => cancelAnimation(progress);
   }, [progress, reduced, delay, duration, kind, onArrive, agentId]);
   const animated = useAnimatedStyle(() => {
-    const point = avatarFlightPoint(
-      from,
-      target,
-      progress.value,
-      kind === 'first',
-    );
+    const point = avatarFlightPoint(from, target, progress.value, kind === 'first');
     const t = progress.value * progress.value * (3 - 2 * progress.value);
     return {
       transform: [
@@ -79,10 +73,7 @@ function FlyingAvatar({
         { scaleX: point.width / from.width },
         { scaleY: point.height / from.height },
       ],
-      opacity:
-        kind === 'first' && !answering && t >= 0.78
-          ? Math.max(0, (1 - t) / 0.22)
-          : 1,
+      opacity: kind === 'first' && !answering && t >= 0.78 ? Math.max(0, (1 - t) / 0.22) : 1,
     };
   }, [from, target, progress, kind, answering]);
   return (
@@ -107,11 +98,7 @@ function FlyingAvatar({
       {avatar.drawing ? (
         <Drawing context={avatar.drawing} size={avatar.from.width} />
       ) : (
-        <AgentAvatar
-          config={avatar.agent.avatar}
-          paused
-          size={avatar.from.width}
-        />
+        <AgentAvatar config={avatar.agent.avatar} paused size={avatar.from.width} />
       )}
     </AnimatedView>
   );
@@ -132,9 +119,7 @@ export function AvatarHandoff({
   onFinish: () => void;
 }) {
   const { FlightHost } = useChatComponents();
-  const [destinations, setDestinations] = useState<Record<string, AvatarRect>>(
-    {},
-  );
+  const [destinations, setDestinations] = useState<Record<string, AvatarRect>>({});
   const { width, height } = useWindowDimensions();
   useEffect(() => {
     let disposed = false,
@@ -146,9 +131,7 @@ export function AvatarHandoff({
           const rect = await measureAvatar(resolveTarget(avatar.agent.id));
           return [
             avatar.agent.id,
-            rect &&
-            handoff.kind === 'first' &&
-            avatar.agent.id !== handoff.responderId
+            rect && handoff.kind === 'first' && avatar.agent.id !== handoff.responderId
               ? profileFlightTarget(rect)
               : rect,
           ] as const;
@@ -156,18 +139,13 @@ export function AvatarHandoff({
       );
       if (disposed) return;
       const next = Object.fromEntries(
-        values.filter(
-          (pair): pair is readonly [string, AvatarRect] => pair[1] !== null,
-        ),
+        values.filter((pair): pair is readonly [string, AvatarRect] => pair[1] !== null),
       );
       setDestinations((previous) =>
         JSON.stringify(previous) === JSON.stringify(next) ? previous : next,
       );
       attempts++;
-      if (
-        Object.keys(next).length !== handoff.avatars.length &&
-        attempts >= 60
-      ) {
+      if (Object.keys(next).length !== handoff.avatars.length && attempts >= 60) {
         onFinish();
         return;
       }
@@ -178,21 +156,12 @@ export function AvatarHandoff({
       disposed = true;
       cancelAnimationFrame(frame);
     };
-  }, [
-    handoff.chatId,
-    handoff.kind,
-    resolveTarget,
-    onFinish,
-    width,
-    height,
-  ]);
+  }, [handoff.chatId, handoff.kind, resolveTarget, onFinish, width, height]);
   const relative = (rect: AvatarRect): AvatarRect =>
     Platform.OS === 'web' || !origin
       ? rect
       : { ...rect, x: rect.x - origin.x, y: rect.y - origin.y };
-  const waiting = handoff.avatars.filter(
-    (a) => a.agent.id !== handoff.responderId,
-  );
+  const waiting = handoff.avatars.filter((a) => a.agent.id !== handoff.responderId);
   return (
     <FlightHost>
       <OverlayRoot testID="avatar-handoff-overlay">
@@ -215,9 +184,7 @@ export function AvatarHandoff({
                     handoff.kind === 'first'
                       ? Math.max(
                           0,
-                          waiting.findIndex(
-                            (a) => a.agent.id === avatar.agent.id,
-                          ),
+                          waiting.findIndex((a) => a.agent.id === avatar.agent.id),
                         )
                       : index
                   }
@@ -238,16 +205,9 @@ export function AvatarHandoff({
                   }}
                 >
                   {avatar.drawing ? (
-                    <Drawing
-                      context={avatar.drawing}
-                      size={avatar.from.width}
-                    />
+                    <Drawing context={avatar.drawing} size={avatar.from.width} />
                   ) : (
-                    <AgentAvatar
-                      config={avatar.agent.avatar}
-                      size={avatar.from.width}
-                      paused
-                    />
+                    <AgentAvatar config={avatar.agent.avatar} size={avatar.from.width} paused />
                   )}
                 </StyledView>
               );

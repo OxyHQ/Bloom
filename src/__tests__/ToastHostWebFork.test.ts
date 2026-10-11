@@ -39,9 +39,7 @@ describe('ToastHost platform split', () => {
     const host = read('toast/ToastHost.tsx');
     // Portaled content sits outside the app-root GHRV, so swipe-to-dismiss
     // would never receive touches without this.
-    expect(host).toMatch(
-      /import \{ GestureHandlerRootView \} from 'react-native-gesture-handler'/,
-    );
+    expect(host).toMatch(/import \{ GestureHandlerRootView \} from 'react-native-gesture-handler'/);
   });
 
   it('web/default host anchors to the viewport through the shared style module (W7)', () => {
@@ -87,11 +85,7 @@ describe('ToastHost platform split', () => {
   });
 
   it('no engine file other than the host reaches for a platform overlay', () => {
-    for (const file of [
-      'toast/Toaster.tsx',
-      'toast/Positioner.tsx',
-      'toast/ToastRow.tsx',
-    ]) {
+    for (const file of ['toast/Toaster.tsx', 'toast/Positioner.tsx', 'toast/ToastRow.tsx']) {
       const source = code(file);
       expect(source).not.toMatch(/from 'react-native-screens'/);
       // Doc comments explain why `fixed` lives in the host; assert no file here
@@ -150,9 +144,7 @@ describe('ToastHost platform split', () => {
       join(REPO_ROOT, 'scripts/generate-platform-exports.mjs'),
       'utf8',
     );
-    const forkedBlock = /const WEB_FORKED_SUBPATHS = new Set\(\[([\s\S]*?)\]\)/.exec(
-      generator,
-    );
+    const forkedBlock = /const WEB_FORKED_SUBPATHS = new Set\(\[([\s\S]*?)\]\)/.exec(generator);
     expect(forkedBlock).not.toBeNull();
     expect(forkedBlock?.[1]).not.toMatch(/^\s*'\.\/toast',/m);
   });

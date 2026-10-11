@@ -9,4 +9,7 @@ export interface NotificationMessages {
   dismiss: string;
 }
 
-export const NOTIFICATION_MESSAGES: MessageCatalog<NotificationMessages> = defineMessages<NotificationMessages>('NOTIFICATION_MESSAGES', { dismiss: 'Dismiss notification' });
+export const NOTIFICATION_MESSAGES: MessageCatalog<NotificationMessages> =
+  defineMessages<NotificationMessages>('NOTIFICATION_MESSAGES', {
+    dismiss: 'Dismiss notification',
+  });

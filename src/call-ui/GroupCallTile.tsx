@@ -86,9 +86,13 @@ function GroupCallTileComponent({
     () => resolveCallPaint(theme, participant.accentColor),
     [theme, participant.accentColor],
   );
-  const { id, name, avatar, avatarVariant, video, muted, speaking, presenting, label } = participant;
+  const { id, name, avatar, avatarVariant, video, muted, speaking, presenting, label } =
+    participant;
   const caption = label ?? name;
-  const avatarSize = Math.max(28, Math.min(prominent ? 112 : 64, Math.floor(Math.min(width, height) * 0.42)));
+  const avatarSize = Math.max(
+    28,
+    Math.min(prominent ? 112 : 64, Math.floor(Math.min(width, height) * 0.42)),
+  );
   const accessibleName = muted === true ? (formatMuted ?? messages.muted)(caption) : caption;
 
   const content = (
@@ -127,9 +131,7 @@ function GroupCallTileComponent({
             paddingLeft: 8,
           }}
         >
-          {presenting === true ? (
-            <RiCastLine width={12} height={12} fill={paint.onStage} />
-          ) : null}
+          {presenting === true ? <RiCastLine width={12} height={12} fill={paint.onStage} /> : null}
           <Text
             variant={prominent ? 'body-2-medium' : 'caption-1-medium'}
             numberOfLines={1}

@@ -10,7 +10,10 @@ import { CHECKOUT_SUMMARY_MESSAGES } from './messages';
  * wants a different one passes `icon`; these exist so the common summary reads
  * correctly with four strings and four handlers.
  */
-export const CHECKOUT_ROW_ICON: Record<'address' | 'delivery' | 'payment' | 'note', BloomIconComponent> = {
+export const CHECKOUT_ROW_ICON: Record<
+  'address' | 'delivery' | 'payment' | 'note',
+  BloomIconComponent
+> = {
   address: RiMapPin2Line,
   delivery: RiTimeLine,
   payment: RiBankCardLine,

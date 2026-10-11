@@ -130,7 +130,6 @@ interface NodeRegistry {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __oxy_so_bloom_media_nodes__: NodeRegistry | undefined;
 }
 
@@ -176,8 +175,7 @@ function makeWrapper(): HTMLDivElement {
   // and load-bearing: a host may sit inside a `pointer-events: none` layer (a
   // poster overlay, a flying surface), and the media inside this wrapper is
   // the one thing in there that a viewer may need to press.
-  wrapper.style.cssText =
-    'position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:auto;';
+  wrapper.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:auto;';
   wrapper.setAttribute('data-bloom-media-node', '');
   return wrapper;
 }
@@ -218,7 +216,11 @@ function topRender(record: MediaNodeRecord): MediaNodeClaim | null {
 function pick(claims: readonly MediaNodeClaim[]): MediaNodeClaim | null {
   let best: MediaNodeClaim | null = null;
   for (const claim of claims) {
-    if (best === null || claim.rank > best.rank || (claim.rank === best.rank && claim.seq > best.seq)) {
+    if (
+      best === null ||
+      claim.rank > best.rank ||
+      (claim.rank === best.rank && claim.seq > best.seq)
+    ) {
       best = claim;
     }
   }
@@ -263,8 +265,7 @@ function moveInto(parent: HTMLElement, child: HTMLElement): void {
   parent.appendChild(child);
 }
 
-const supportsMoveBefore =
-  typeof Element !== 'undefined' && 'moveBefore' in Element.prototype;
+const supportsMoveBefore = typeof Element !== 'undefined' && 'moveBefore' in Element.prototype;
 
 /**
  * Put the wrapper where its top claim says, in ONE synchronous move.
@@ -342,7 +343,9 @@ export function claimMediaNode(
   if (existing !== undefined) {
     const unchanged =
       existing.render === render ||
-      (existing.render !== undefined && render !== undefined && sameRender(existing.render, render));
+      (existing.render !== undefined &&
+        render !== undefined &&
+        sameRender(existing.render, render));
     if (unchanged && record.wrapper.parentElement === topClaim(record)?.el) return;
     existing.render = render;
   } else {

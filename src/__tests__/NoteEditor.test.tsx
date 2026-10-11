@@ -131,7 +131,7 @@ describe('splitToolbarActions', () => {
     expect(split.overflow.map((a) => a.key)).toEqual(['d', 'e']);
   });
 
-  it('never collapses an alwaysVisible action, and keeps the caller\'s order', () => {
+  it("never collapses an alwaysVisible action, and keeps the caller's order", () => {
     const pinned = [
       action('a'),
       action('b', { alwaysVisible: true }),
@@ -228,7 +228,9 @@ describe('the toolbar row', () => {
       />,
     );
     act(() => {
-      byTestId('tb-bold').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      byTestId('tb-bold').dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      );
     });
     expect(onPress).toHaveBeenCalledTimes(1);
 
@@ -241,7 +243,9 @@ describe('the toolbar row', () => {
       />,
     );
     act(() => {
-      byTestId('tb-bold').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      byTestId('tb-bold').dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      );
     });
     expect(onPress).toHaveBeenCalledTimes(1);
   });
@@ -272,7 +276,9 @@ describe('the header', () => {
   });
 
   it('draws only the readings it was given, with a dot between each pair', () => {
-    mount(<NoteEditorHeader title="A" saveState="saved" edited="Edited now" wordCount={3} testID="h" />);
+    mount(
+      <NoteEditorHeader title="A" saveState="saved" edited="Edited now" wordCount={3} testID="h" />,
+    );
     expect(byTestId('h-status').textContent).toBe('Saved·Edited now·3 words');
 
     mount(<NoteEditorHeader title="A" wordCount={1} testID="h" />);
@@ -292,7 +298,9 @@ describe('the header', () => {
       mount(<NoteEditorHeader title="A" saveState={state} testID="h" />);
       expect(byTestId('h-state').textContent).toBe(word);
     }
-    mount(<NoteEditorHeader title="A" saveState="saved" labels={{ saved: 'Gespeichert' }} testID="h" />);
+    mount(
+      <NoteEditorHeader title="A" saveState="saved" labels={{ saved: 'Gespeichert' }} testID="h" />,
+    );
     expect(byTestId('h-state').textContent).toBe('Gespeichert');
   });
 });
@@ -307,8 +315,14 @@ describe('the status line reads on its surface, in both modes', () => {
       for (const state of STATES) {
         const paint = resolveNoteStatusPaint(theme, theme.colors.background, state);
         const where = `${preset} ${mode} ${state ?? 'none'}`;
-        expect([where, contrastRatio(paint.color, theme.colors.background) >= AA_TEXT]).toEqual([where, true]);
-        expect([where, contrastRatio(paint.quiet, theme.colors.background) >= AA_TEXT]).toEqual([where, true]);
+        expect([where, contrastRatio(paint.color, theme.colors.background) >= AA_TEXT]).toEqual([
+          where,
+          true,
+        ]);
+        expect([where, contrastRatio(paint.quiet, theme.colors.background) >= AA_TEXT]).toEqual([
+          where,
+          true,
+        ]);
       }
     }
   });

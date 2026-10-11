@@ -23,14 +23,18 @@ describe('EdgeScrim', () => {
 
   it('edge="bottom" is solid at the bottom and fades upward, with the same stops', () => {
     const top = render(<EdgeScrim color="#1d3b53" />);
-    const topStops = hostNodes(top.toJSON()).filter((n) => n.type === 'Stop').map((n) => n.props);
+    const topStops = hostNodes(top.toJSON())
+      .filter((n) => n.type === 'Stop')
+      .map((n) => n.props);
     top.unmount();
 
     const { toJSON } = render(<EdgeScrim color="#1d3b53" edge="bottom" />);
     const gradient = gradientOf(toJSON());
     expect(gradient.props.y1).toBe('1');
     expect(gradient.props.y2).toBe('0');
-    const stops = hostNodes(toJSON()).filter((n) => n.type === 'Stop').map((n) => n.props);
+    const stops = hostNodes(toJSON())
+      .filter((n) => n.type === 'Stop')
+      .map((n) => n.props);
     expect(stops).toEqual(topStops);
     expect(stops.every((s) => s.stopColor === '#1d3b53')).toBe(true);
   });

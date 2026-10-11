@@ -149,7 +149,13 @@ export const Ring: Story = {
                 72
               </Text>
             </MeterRing>
-            <MeterRing value={72} max={100} size={72} thickness={6} accessibilityLabel="Seventy-two">
+            <MeterRing
+              value={72}
+              max={100}
+              size={72}
+              thickness={6}
+              accessibilityLabel="Seventy-two"
+            >
               <Text variant="headline-semibold" style={{ color: theme.colors.text }}>
                 72
               </Text>
@@ -196,7 +202,14 @@ export const Animated: Story = {
           <Meter value={value} max={100} transitionMs={300} accessibilityLabel="Eased bar" />
         </Section>
         <Section title="transitionMs 400 — the listing quality ring">
-          <MeterRing value={value} max={100} size={72} thickness={6} transitionMs={400} accessibilityLabel="Eased ring">
+          <MeterRing
+            value={value}
+            max={100}
+            size={72}
+            thickness={6}
+            transitionMs={400}
+            accessibilityLabel="Eased ring"
+          >
             <Text variant="headline-semibold" style={{ color: theme.colors.text }}>
               {value}
             </Text>

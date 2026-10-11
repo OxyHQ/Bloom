@@ -62,12 +62,24 @@ it('paints the document for explicit app modes even when the OS prefers the oppo
   const authored = Array.from(document.head.children);
   const originalMarkup = authored.map((element) => element.outerHTML);
 
-  act(() => root.render(<BloomThemeProvider mode="dark" fonts={false}>app</BloomThemeProvider>));
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="dark" fonts={false}>
+        app
+      </BloomThemeProvider>,
+    ),
+  );
   expectDocument('dark', buildScopeVars('oxy', 'dark')['--background']!);
   expect(document.documentElement.classList.contains('dark')).toBe(true);
 
   mockColorScheme = 'dark';
-  act(() => root.render(<BloomThemeProvider mode="light" fonts={false}>app</BloomThemeProvider>));
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="light" fonts={false}>
+        app
+      </BloomThemeProvider>,
+    ),
+  );
   expectDocument('light', buildScopeVars('oxy', 'light')['--background']!);
   expect(document.documentElement.classList.contains('dark')).toBe(false);
   expect(authored[0]?.outerHTML).not.toBe(originalMarkup[0]);
@@ -76,33 +88,66 @@ it('paints the document for explicit app modes even when the OS prefers the oppo
 });
 
 it.each(['system', 'adaptive'] as const)('tracks OS changes in %s mode', (mode) => {
-  act(() => root.render(<BloomThemeProvider mode={mode} fonts={false}>app</BloomThemeProvider>));
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode={mode} fonts={false}>
+        app
+      </BloomThemeProvider>,
+    ),
+  );
   expectDocument('light', buildScopeVars('oxy', 'light')['--background']!);
 
   mockColorScheme = 'dark';
-  act(() => root.render(<BloomThemeProvider mode={mode} fonts={false}>app</BloomThemeProvider>));
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode={mode} fonts={false}>
+        app
+      </BloomThemeProvider>,
+    ),
+  );
   expectDocument('dark', buildScopeVars('oxy', 'dark')['--background']!);
 });
 
 it('follows preset and dynamic seed changes, then restores the preset when the seed clears', () => {
-  act(() => root.render(<BloomThemeProvider mode="dark" colorPreset="blue" fonts={false}>app</BloomThemeProvider>));
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="dark" colorPreset="blue" fonts={false}>
+        app
+      </BloomThemeProvider>,
+    ),
+  );
   expectDocument('dark', buildScopeVars('blue', 'dark')['--background']!);
 
-  act(() => root.render(<BloomThemeProvider mode="dark" colorPreset="pink" seed="#ff0000" fonts={false}>app</BloomThemeProvider>));
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="dark" colorPreset="pink" seed="#ff0000" fonts={false}>
+        app
+      </BloomThemeProvider>,
+    ),
+  );
   expectDocument('dark', buildSeedScopeVars({ seed: '#ff0000', mode: 'dark' })['--background']!);
 
-  act(() => root.render(<BloomThemeProvider mode="dark" colorPreset="pink" fonts={false}>app</BloomThemeProvider>));
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="dark" colorPreset="pink" fonts={false}>
+        app
+      </BloomThemeProvider>,
+    ),
+  );
   expectDocument('dark', buildScopeVars('pink', 'dark')['--background']!);
 });
 
 it('keeps subtree color and seed changes out of the document theme', () => {
-  const renderScopes = (seed: string) => act(() => root.render(
-    <BloomThemeProvider mode="dark" colorPreset="blue" fonts={false}>
-      <BloomColorScope colorPreset="pink">
-        <BloomSeedScope seed={seed}>scoped content</BloomSeedScope>
-      </BloomColorScope>
-    </BloomThemeProvider>,
-  ));
+  const renderScopes = (seed: string) =>
+    act(() =>
+      root.render(
+        <BloomThemeProvider mode="dark" colorPreset="blue" fonts={false}>
+          <BloomColorScope colorPreset="pink">
+            <BloomSeedScope seed={seed}>scoped content</BloomSeedScope>
+          </BloomColorScope>
+        </BloomThemeProvider>,
+      ),
+    );
   renderScopes('#ff0000');
   expectDocument('dark', buildScopeVars('blue', 'dark')['--background']!);
   renderScopes('#00ff00');

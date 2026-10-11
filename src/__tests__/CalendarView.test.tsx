@@ -83,7 +83,10 @@ describe('calendar view: date and event maths', () => {
   });
 
   it('shows the last four of more than three events and counts the rest', () => {
-    expect(visibleEvents(BUSY_DAY.slice(0, 3))).toEqual({ visible: BUSY_DAY.slice(0, 3), hidden: 0 });
+    expect(visibleEvents(BUSY_DAY.slice(0, 3))).toEqual({
+      visible: BUSY_DAY.slice(0, 3),
+      hidden: 0,
+    });
     const { visible, hidden } = visibleEvents(BUSY_DAY);
     expect(hidden).toBe(2);
     expect(visible.map((e) => e.id)).toEqual(['c', 'd', 'e', 'f']);
@@ -104,7 +107,9 @@ describe('calendar view: date and event maths', () => {
     const channels = (color: string) => color.match(/\d+/g)!.slice(0, 3).map(Number);
     const near = (actual: string, expected: { r: number; g: number; b: number }) =>
       channels(actual).forEach((value, index) =>
-        expect(Math.abs(value - [expected.r, expected.g, expected.b][index]!)).toBeLessThanOrEqual(6),
+        expect(Math.abs(value - [expected.r, expected.g, expected.b][index]!)).toBeLessThanOrEqual(
+          6,
+        ),
       );
     const lime = eventChipColors(defaultHue, 'lime', false);
     near(lime.background, tailwind(0.967, 0.067, 122.328)); // lime-100
@@ -128,7 +133,15 @@ describe('CalendarViewMonthGrid', () => {
       <CalendarViewMonthGrid testID="grid" month={AUGUST} events={[]} locale="en-US" />,
     );
     expect(getAllByTestId(/^grid-day-[\d-]+$/)).toHaveLength(42);
-    for (const name of ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']) {
+    for (const name of [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ]) {
       expect(getByLabelText(name).props.role).toBe('columnheader');
     }
   });
@@ -152,7 +165,14 @@ describe('CalendarViewMonthGrid', () => {
       <CalendarViewMonthGrid testID="grid" month={AUGUST} events={BUSY_DAY} />,
     );
     const chip = resolvedStyle(getByTestId('grid-day-2026-7-20-event-d').props.style);
-    expect(chip).toMatchObject({ borderRadius: 6, paddingTop: 2, paddingBottom: 2, paddingLeft: 6, paddingRight: 6, gap: 4 });
+    expect(chip).toMatchObject({
+      borderRadius: 6,
+      paddingTop: 2,
+      paddingBottom: 2,
+      paddingLeft: 6,
+      paddingRight: 6,
+      gap: 4,
+    });
     expect(chip.paddingHorizontal).toBeUndefined();
     const card = cardOf(getByTestId('grid-day-2026-7-20'));
     // 1300px: Tailwind `xl`, so min 128 and radius 12.
@@ -166,7 +186,10 @@ describe('CalendarViewMonthGrid', () => {
         <CalendarViewMonthGrid testID="grid" month={AUGUST} events={BUSY_DAY} />,
       );
       const busy = getByTestId('grid-day-2026-7-20');
-      expect(resolvedStyle(busy.props.style)).toMatchObject({ borderRightWidth: 1, borderBottomWidth: 1 });
+      expect(resolvedStyle(busy.props.style)).toMatchObject({
+        borderRightWidth: 1,
+        borderBottomWidth: 1,
+      });
       // 22 number line + 12 label + 4×16 chips + 4×2 gaps + 4 inset = 110.
       const quiet = cardOf(getByTestId('grid-day-2026-7-3'));
       expect(resolvedStyle(quiet.props.style)).toMatchObject({ borderRadius: 0, minHeight: 110 });
@@ -183,7 +206,12 @@ describe('CalendarViewMonthGrid', () => {
   it('reports the pressed event', () => {
     const onSelectEvent = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <CalendarViewMonthGrid testID="grid" month={AUGUST} events={BUSY_DAY} onSelectEvent={onSelectEvent} />,
+      <CalendarViewMonthGrid
+        testID="grid"
+        month={AUGUST}
+        events={BUSY_DAY}
+        onSelectEvent={onSelectEvent}
+      />,
     );
     pressHost(getByTestId('grid-day-2026-7-20-event-f'));
     expect(onSelectEvent).toHaveBeenCalledWith(BUSY_DAY[5]);
@@ -193,7 +221,10 @@ describe('CalendarViewMonthGrid', () => {
 describe('CalendarViewEventDetails', () => {
   it('shows only the title block for an all-day event', () => {
     const { getByRole, queryByText, queryAllByRole } = renderWithTheme(
-      <CalendarViewEventDetails event={{ id: 'h', date: day(8, 11), title: 'Holidays', color: 'emerald' }} locale="en-US" />,
+      <CalendarViewEventDetails
+        event={{ id: 'h', date: day(8, 11), title: 'Holidays', color: 'emerald' }}
+        locale="en-US"
+      />,
     );
     expect(getByRole('heading').props.children).toBe('Holidays');
     expect(queryByText('Tue, Aug 11')).toBeTruthy();
@@ -296,7 +327,12 @@ describe('CalendarViewMonthSwitcher and header', () => {
   it('owns the month: the chevrons move the title and report the new month', () => {
     const onMonthChange = jest.fn();
     const { getByRole, getByLabelText } = renderWithTheme(
-      <CalendarView defaultMonth={day(8, 17)} events={[]} locale="en-US" onMonthChange={onMonthChange} />,
+      <CalendarView
+        defaultMonth={day(8, 17)}
+        events={[]}
+        locale="en-US"
+        onMonthChange={onMonthChange}
+      />,
     );
     expect(getByRole('heading').props.children).toBe('August 2026');
     pressHost(getByLabelText('Next month'));

@@ -26,13 +26,23 @@ type Story = StoryObj;
 const face = (seed: string) => `https://picsum.photos/seed/${seed}/160/160`;
 
 const CONTACTS: MailRecipientSuggestion[] = [
-  { id: 'mireia', name: 'Mireia Solans', address: 'mireia@vallnit.example', avatar: face('mireia') },
+  {
+    id: 'mireia',
+    name: 'Mireia Solans',
+    address: 'mireia@vallnit.example',
+    avatar: face('mireia'),
+  },
   { id: 'pere', name: 'Pere Aguiló', address: 'pere@vallnit.example', avatar: face('pere') },
   { id: 'nuria', name: 'Nuria Palau', address: 'nuria@vallnit.example', avatar: face('nuria') },
 ];
 
 const TO: MailRecipient[] = [
-  { id: 'mireia', name: 'Mireia Solans', address: 'mireia@vallnit.example', avatar: face('mireia') },
+  {
+    id: 'mireia',
+    name: 'Mireia Solans',
+    address: 'mireia@vallnit.example',
+    avatar: face('mireia'),
+  },
   { id: 'pere', name: 'Pere Aguiló', address: 'pere@vallnit.example', avatar: face('pere') },
 ];
 

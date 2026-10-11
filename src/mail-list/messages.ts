@@ -12,21 +12,22 @@ export interface MailListMessages extends MailStrings {
   list: string;
 }
 
-export const MAIL_LIST_MESSAGES: MessageCatalog<MailListMessages> = defineMessages<MailListMessages>('MAIL_LIST_MESSAGES', {
-  draft: 'Draft:',
-  unread: 'Unread',
-  starred: 'Starred',
-  star: 'Star',
-  attachment: 'Has attachment',
-  select: 'Select',
-  threadCount: (n) => plural('en', n, { one: '{n} message', other: '{n} messages' }),
-  moreLabels: (n) => plural('en', n, { one: '{n} more label', other: '{n} more labels' }),
-  selectedCount: (n) => `${n} selected`,
-  selectAll: 'Select all',
-  clearSelection: 'Clear selection',
-  emptyTitle: 'Nothing here',
-  emptyDescription: 'New mail lands in this folder.',
-  today: 'Today',
-  yesterday: 'Yesterday',
-  list: 'Mail',
-});
+export const MAIL_LIST_MESSAGES: MessageCatalog<MailListMessages> =
+  defineMessages<MailListMessages>('MAIL_LIST_MESSAGES', {
+    draft: 'Draft:',
+    unread: 'Unread',
+    starred: 'Starred',
+    star: 'Star',
+    attachment: 'Has attachment',
+    select: 'Select',
+    threadCount: (n) => plural('en', n, { one: '{n} message', other: '{n} messages' }),
+    moreLabels: (n) => plural('en', n, { one: '{n} more label', other: '{n} more labels' }),
+    selectedCount: (n) => `${n} selected`,
+    selectAll: 'Select all',
+    clearSelection: 'Clear selection',
+    emptyTitle: 'Nothing here',
+    emptyDescription: 'New mail lands in this folder.',
+    today: 'Today',
+    yesterday: 'Yesterday',
+    list: 'Mail',
+  });

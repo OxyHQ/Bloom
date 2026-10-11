@@ -178,14 +178,20 @@ export function StepsCard({
   );
   const svgEase = useSvgEase('steps');
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
 
   const values = useMemo(() => data.map((d) => d.value), [data]);
   const anim = useChartProgress(values);
   const total = values.reduce((sum, v) => sum + v, 0);
   const hovering = activeIndex !== null;
   const point = hovering ? data[activeIndex]! : null;
-  const label = point ? (getPointTitle?.(point, activeIndex!) ?? DAY_FULL[point.label] ?? point.label) : title;
+  const label = point
+    ? (getPointTitle?.(point, activeIndex!) ?? DAY_FULL[point.label] ?? point.label)
+    : title;
 
   const domainMax = useMemo(() => {
     const peak = values.reduce((m, v) => Math.max(m, v), 0);
@@ -195,7 +201,9 @@ export function StepsCard({
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setSize((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
+    setSize((prev) =>
+      prev && prev.width === width && prev.height === height ? prev : { width, height },
+    );
   }, []);
 
   const plotTop = STEPS_MARGIN_TOP;
@@ -221,8 +229,10 @@ export function StepsCard({
           onStartShouldSetResponder: () => true,
           onMoveShouldSetResponder: () => true,
           onResponderTerminationRequest: () => false,
-          onResponderGrant: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
-          onResponderMove: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderGrant: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderMove: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
           onResponderRelease: () => setActiveIndex(null),
           onResponderTerminate: () => setActiveIndex(null),
         }),
@@ -240,7 +250,12 @@ export function StepsCard({
     `${title} bar chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
 
   return (
-    <ChartCardSurface radius="radius-20" height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
+    <ChartCardSurface
+      radius="radius-20"
+      height={MEDICAL_CARD_HEIGHT}
+      style={[MEDICAL_CARD_STYLE, style]}
+      testID={testID}
+    >
       <MedicalHeader>
         <MedicalHeadline
           label={label}
@@ -264,10 +279,16 @@ export function StepsCard({
         {...svgEase}
         style={{ flex: 1, minHeight: 0, marginLeft: -STEPS_BLEED, marginRight: -STEPS_BLEED }}
         onLayout={onLayout}
-        testID={testID ? `${testID}-plot` : undefined}>
+        testID={testID ? `${testID}-plot` : undefined}
+      >
         {size && size.width > 0 && size.height > 0 ? (
           <>
-            <Svg width={size.width} height={size.height} style={StyleSheet.absoluteFill} pointerEvents="none">
+            <Svg
+              width={size.width}
+              height={size.height}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            >
               {bars.map((bar, i) => (
                 <React.Fragment key={`track-${i}`}>
                   <Rect
@@ -322,8 +343,12 @@ export function StepsCard({
                   ...boundedLabelSlot(size.width, (i + 0.5) * band, 'middle', LABEL_SLOT),
                   top: plotBottom + LABEL_TOP,
                   alignItems: 'center',
-                }}>
-                <Text numberOfLines={1} style={[TICK_TYPE, { maxWidth: '100%', color: palette.textSecondary }]}>
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={[TICK_TYPE, { maxWidth: '100%', color: palette.textSecondary }]}
+                >
                   {d.label}
                 </Text>
               </View>

@@ -4,13 +4,7 @@ import type { AvatarConfig } from './model';
 import { Drawing } from './SvgDrawing';
 
 /** Face-only artwork used by the emotion selector. */
-export function AgentFace({
-  config,
-  size = 34,
-}: {
-  config: AvatarConfig;
-  size?: number;
-}) {
+export function AgentFace({ config, size = 34 }: { config: AvatarConfig; size?: number }) {
   const context = new DrawingContext();
   context.translate(100, 100 + (2 * 200) / size);
   // The original emotion chip scales 200px artwork by .36 within its 34px slot.

@@ -2,7 +2,11 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { Platform, View, type ViewProps } from 'react-native';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { Z_INDEX } from '../styles/z-index';
-import { WEB_POSITION_STICKY, webSurfaceStickyTopPlus, type WebCssStyle } from '../styles/web-view-style';
+import {
+  WEB_POSITION_STICKY,
+  webSurfaceStickyTopPlus,
+  type WebCssStyle,
+} from '../styles/web-view-style';
 import { useHeaderDockContext } from './header-dock';
 import { useTopEdgeInset } from './top-edge';
 
@@ -12,7 +16,7 @@ export interface StickySectionProps extends ViewProps {
 }
 
 /** One docking section. Native lists retain ownership of stickyHeaderIndices. */
-export function StickySection({children, offset, style, onLayout, ...props}: StickySectionProps) {
+export function StickySection({ children, offset, style, onLayout, ...props }: StickySectionProps) {
   const dock = useHeaderDockContext();
   const top = useTopEdgeInset();
   const fill = useSurfaceFill();
@@ -41,7 +45,8 @@ export function StickySection({children, offset, style, onLayout, ...props}: Sti
       }
     }
     const stickyTop = Number.parseFloat(getComputedStyle(sticky).top) || top;
-    const measuredOffset = anchor.getBoundingClientRect().top - viewportTop + dock.scrollY.value - stickyTop + top;
+    const measuredOffset =
+      anchor.getBoundingClientRect().top - viewportTop + dock.scrollY.value - stickyTop + top;
     dock.targets.current.set(owner.current, measuredOffset);
     dock.sectionOffset.value = measuredOffset;
   }, [dock, offset, top]);
@@ -49,27 +54,47 @@ export function StickySection({children, offset, style, onLayout, ...props}: Sti
     measure();
     if (Platform.OS !== 'web') return;
     const anchor = marker.current as unknown as HTMLElement | null;
-    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
+    const observer =
+      typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
     // Ancestor size changes cover delayed hero images/fonts without a scroll listener.
-    for (let element = anchor?.parentElement; element; element = element.parentElement) observer?.observe(element);
+    for (let element = anchor?.parentElement; element; element = element.parentElement)
+      observer?.observe(element);
     window.addEventListener('resize', measure);
-    return () => { observer?.disconnect(); window.removeEventListener('resize', measure); };
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
   }, [measure]);
-  useEffect(() => () => {
-    if (!dock) return;
-    dock.targets.current.delete(owner.current);
-    // Virtualized lists may mount a sticky clone alongside the original cell.
-    // Removing that clone must restore the still-mounted original's target.
-    let remaining = Number.POSITIVE_INFINITY;
-    for (const target of dock.targets.current.values()) remaining = target;
-    dock.sectionOffset.value = remaining;
-  }, [dock]);
-  const stickyStyle: WebCssStyle = Platform.OS === 'web'
-    ? {position:WEB_POSITION_STICKY, top:webSurfaceStickyTopPlus(top), zIndex:Z_INDEX.raised}
-    : {zIndex:Z_INDEX.raised};
-  return <>
-    {Platform.OS === 'web' && <View ref={marker} pointerEvents="none" style={{height:0}} />}
-    <View {...props} ref={section} onLayout={event => {measure(); onLayout?.(event);}}
-      style={[stickyStyle, {backgroundColor:fill}, style]}>{children}</View>
-  </>;
+  useEffect(
+    () => () => {
+      if (!dock) return;
+      dock.targets.current.delete(owner.current);
+      // Virtualized lists may mount a sticky clone alongside the original cell.
+      // Removing that clone must restore the still-mounted original's target.
+      let remaining = Number.POSITIVE_INFINITY;
+      for (const target of dock.targets.current.values()) remaining = target;
+      dock.sectionOffset.value = remaining;
+    },
+    [dock],
+  );
+  const stickyStyle: WebCssStyle =
+    Platform.OS === 'web'
+      ? { position: WEB_POSITION_STICKY, top: webSurfaceStickyTopPlus(top), zIndex: Z_INDEX.raised }
+      : { zIndex: Z_INDEX.raised };
+  return (
+    <>
+      {Platform.OS === 'web' && <View ref={marker} pointerEvents="none" style={{ height: 0 }} />}
+      <View
+        {...props}
+        ref={section}
+        onLayout={(event) => {
+          measure();
+          onLayout?.(event);
+        }}
+        style={[stickyStyle, { backgroundColor: fill }, style]}
+      >
+        {children}
+      </View>
+    </>
+  );
 }

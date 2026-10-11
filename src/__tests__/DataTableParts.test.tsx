@@ -62,7 +62,11 @@ describe('DataTableRowActions', () => {
 
   it('names the menu trigger from `menuLabel`', () => {
     const { getByLabelText } = wrap(
-      <DataTableRowActions name="Row" menuLabel="Options" menu={[{ icon: RiEditLine, label: 'Edit' }]} />,
+      <DataTableRowActions
+        name="Row"
+        menuLabel="Options"
+        menu={[{ icon: RiEditLine, label: 'Edit' }]}
+      />,
     );
     expect(getByLabelText('Options for Row')).toBeTruthy();
   });
@@ -74,7 +78,9 @@ describe('DataTableSelect', () => {
       { value: 'in', label: 'Inpatient', icon: MarkIcon },
       { value: 'out', label: 'Outpatient', icon: MarkIcon },
     ];
-    const utils = wrap(<DataTableSelect label="Admission for Ann" value="out" options={options} width={150} />);
+    const utils = wrap(
+      <DataTableSelect label="Admission for Ann" value="out" options={options} width={150} />,
+    );
     expect(utils.getByLabelText('Admission for Ann')).toBeTruthy();
     expect(utils.getByText('Outpatient')).toBeTruthy();
     expect(utils.getAllByTestId('option-icon').length).toBeGreaterThan(0);
@@ -87,7 +93,9 @@ describe('DataTableSelect', () => {
   });
 
   it('starts from `defaultValue` uncontrolled', () => {
-    const { getByText } = wrap(<DataTableSelect label="Purchase" defaultValue="waiting" options={DOT_OPTIONS} width={142} />);
+    const { getByText } = wrap(
+      <DataTableSelect label="Purchase" defaultValue="waiting" options={DOT_OPTIONS} width={142} />,
+    );
     expect(getByText('Waiting')).toBeTruthy();
   });
 });
@@ -109,7 +117,9 @@ describe('DataTableFilter', () => {
 describe('DataTableSearch', () => {
   it('is a labelled input that reports its text', () => {
     const onChangeText = jest.fn();
-    const { UNSAFE_getByType } = wrap(<DataTableSearch label="Search customers" value="" onValueChange={onChangeText} />);
+    const { UNSAFE_getByType } = wrap(
+      <DataTableSearch label="Search customers" value="" onValueChange={onChangeText} />,
+    );
     const input = UNSAFE_getByType(TextInput);
     expect(input.props.placeholder).toBe('Search');
     fireEvent.changeText(input, 'ann');
@@ -142,13 +152,19 @@ describe.each([
       <S.Select value="b">
         <S.SelectTrigger label="Pick">
           <S.SelectValue
-            leading={(item) => (item ? <Text testID={(item as (typeof items)[number]).mark}>•</Text> : null)}
+            leading={(item) =>
+              item ? <Text testID={(item as (typeof items)[number]).mark}>•</Text> : null
+            }
           />
         </S.SelectTrigger>
         <S.SelectContent
           items={items}
           renderItem={(item) => (
-            <S.SelectItem value={item.value} label={item.label} leading={<View testID={`row-${item.value}`} />}>
+            <S.SelectItem
+              value={item.value}
+              label={item.label}
+              leading={<View testID={`row-${item.value}`} />}
+            >
               <S.SelectItemText>{item.label}</S.SelectItemText>
             </S.SelectItem>
           )}

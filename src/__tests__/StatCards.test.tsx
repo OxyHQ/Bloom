@@ -16,7 +16,14 @@ import { resolvedStyle } from './support/rendered-style';
 
 const STATS: StatCardsItem[] = [
   { icon: RiGroupLine, label: 'Customers', value: '14,592', delta: '+5.3%', deltaColor: 'lime' },
-  { icon: RiGroupLine, label: 'Unit sold', value: '385', delta: '-2.1%', deltaColor: 'rose', hint: 'Units' },
+  {
+    icon: RiGroupLine,
+    label: 'Unit sold',
+    value: '385',
+    delta: '-2.1%',
+    deltaColor: 'rose',
+    hint: 'Units',
+  },
   { icon: RiGroupLine, label: 'Orders', value: '1,394', delta: '0.00%', deltaColor: 'neutral' },
 ];
 
@@ -50,7 +57,11 @@ describe('StatCards', () => {
       'dark',
     );
     const theme = buildTheme('teal', 'dark');
-    const surfaces = resolveDashboardSurfaces(theme, resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background }).publishedFill);
+    const surfaces = resolveDashboardSurfaces(
+      theme,
+      resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background })
+        .publishedFill,
+    );
     const band = cardLayout(getByTestId('card-band'));
     expect(band).toMatchObject({
       borderRadius: 12,
@@ -62,7 +73,12 @@ describe('StatCards', () => {
     expect(cardFill(getByTestId('card-band'))).toBe(resolveSurfaceTint(surfaces.inner));
     const pill = resolvedStyle(getByTestId('card-delta').props.style);
     expect(pill.backgroundColor).toBe(statusPair(theme, 'rose', surfaces.inner).background);
-    expect(pill).toMatchObject({ paddingLeft: 4, paddingRight: 8, paddingTop: 2, paddingBottom: 2 });
+    expect(pill).toMatchObject({
+      paddingLeft: 4,
+      paddingRight: 8,
+      paddingTop: 2,
+      paddingBottom: 2,
+    });
     expect(getByText('From last month')).toBeTruthy();
   });
 
@@ -96,11 +112,27 @@ describe('StatCards', () => {
   });
 });
 
-
-it.each(['light', 'dark'] as const)('dashboard chrome and status pairs follow canonical roles in %s', (mode) => {
-  const theme = buildTheme('teal', mode);
-  const c = theme.colors;
-  expect(resolveDashboardSurfaces(theme)).toMatchObject({ secondary: c.card, inner: surfaceFillOn(theme, c.card), primary: c.card, buttonBorder: c.borderLight, textSecondary: c.textSecondary, iconSecondary: c.textSecondary, focusRing: c.primary });
-  expect(statusPair(theme, 'lime', c.card)).toEqual({ background: c.successSubtle, foreground: c.successSubtleForeground });
-  expect(statusPair(theme, 'rose', c.card)).toEqual({ background: c.errorSubtle, foreground: c.errorSubtleForeground });
-});
+it.each(['light', 'dark'] as const)(
+  'dashboard chrome and status pairs follow canonical roles in %s',
+  (mode) => {
+    const theme = buildTheme('teal', mode);
+    const c = theme.colors;
+    expect(resolveDashboardSurfaces(theme)).toMatchObject({
+      secondary: c.card,
+      inner: surfaceFillOn(theme, c.card),
+      primary: c.card,
+      buttonBorder: c.borderLight,
+      textSecondary: c.textSecondary,
+      iconSecondary: c.textSecondary,
+      focusRing: c.primary,
+    });
+    expect(statusPair(theme, 'lime', c.card)).toEqual({
+      background: c.successSubtle,
+      foreground: c.successSubtleForeground,
+    });
+    expect(statusPair(theme, 'rose', c.card)).toEqual({
+      background: c.errorSubtle,
+      foreground: c.errorSubtleForeground,
+    });
+  },
+);

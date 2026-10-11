@@ -3,12 +3,7 @@
  * to react-native primitives so Bloom's BottomSheet / Menu / etc. render
  * statically (without pan support) on web.
  */
-import React, {
-  createElement,
-  forwardRef,
-  type ComponentType,
-  type ReactNode,
-} from 'react';
+import React, { createElement, forwardRef, type ComponentType, type ReactNode } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -19,10 +14,7 @@ import {
   type ViewProps,
 } from 'react-native';
 
-const passthrough = <P extends object>(
-  Component: ComponentType<P>,
-  displayName: string,
-) => {
+const passthrough = <P extends object>(Component: ComponentType<P>, displayName: string) => {
   const Comp = forwardRef<unknown, P>((props, ref) =>
     createElement(Component as ComponentType<P & { ref?: unknown }>, {
       ...props,
@@ -33,10 +25,7 @@ const passthrough = <P extends object>(
   return Comp;
 };
 
-export const GestureHandlerRootView = passthrough<ViewProps>(
-  View,
-  'GestureHandlerRootView',
-);
+export const GestureHandlerRootView = passthrough<ViewProps>(View, 'GestureHandlerRootView');
 export const PanGestureHandler = ({ children }: { children: ReactNode }) =>
   createElement(React.Fragment, null, children);
 export const TapGestureHandler = PanGestureHandler;
@@ -47,20 +36,11 @@ export const ForceTouchGestureHandler = PanGestureHandler;
 export const NativeViewGestureHandler = PanGestureHandler;
 
 export const RectButton = passthrough<PressableProps>(Pressable, 'RectButton');
-export const BorderlessButton = passthrough<PressableProps>(
-  Pressable,
-  'BorderlessButton',
-);
+export const BorderlessButton = passthrough<PressableProps>(Pressable, 'BorderlessButton');
 export const BaseButton = passthrough<PressableProps>(Pressable, 'BaseButton');
 export const RawButton = passthrough<PressableProps>(Pressable, 'RawButton');
-export const TouchableOpacity = passthrough<PressableProps>(
-  Pressable,
-  'GHTouchableOpacity',
-);
-export const TouchableHighlight = passthrough<PressableProps>(
-  Pressable,
-  'GHTouchableHighlight',
-);
+export const TouchableOpacity = passthrough<PressableProps>(Pressable, 'GHTouchableOpacity');
+export const TouchableHighlight = passthrough<PressableProps>(Pressable, 'GHTouchableHighlight');
 export const TouchableWithoutFeedback = passthrough<PressableProps>(
   Pressable,
   'GHTouchableWithoutFeedback',
@@ -125,10 +105,7 @@ export const GestureDetector = ({ children }: { children: ReactNode }) =>
   createElement(React.Fragment, null, children);
 
 export const FlatList = passthrough<ScrollViewProps>(ScrollView, 'GHFlatList');
-export const ScrollView_GH = passthrough<ScrollViewProps>(
-  ScrollView,
-  'GHScrollView',
-);
+export const ScrollView_GH = passthrough<ScrollViewProps>(ScrollView, 'GHScrollView');
 export { ScrollView_GH as ScrollView };
 
 export const State = {

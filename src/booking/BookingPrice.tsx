@@ -40,7 +40,8 @@ export function BookingPrice({
   const { messages } = useMessages(BOOKING_MESSAGES);
   const theme = useTheme();
   const palette = useMemo(() => resolveBookingPalette(theme), [theme]);
-  const name = priceAccessibilityLabel ?? priceAccessibilityName(price, priceUnit, originalPrice, messages);
+  const name =
+    priceAccessibilityLabel ?? priceAccessibilityName(price, priceUnit, originalPrice, messages);
 
   return (
     <View
@@ -48,7 +49,10 @@ export function BookingPrice({
       accessible
       accessibilityLabel={name}
       {...(IS_WEB ? { role: 'img' as const } : null)}
-      style={[{ flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 4 }, style]}
+      style={[
+        { flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 4 },
+        style,
+      ]}
     >
       {originalPrice ? (
         <Text

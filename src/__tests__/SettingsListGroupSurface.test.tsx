@@ -21,7 +21,11 @@ import { OverlayRoot } from '../overlay';
 import { SettingsListGroup, SettingsListItem } from '../settings-list/SettingsList';
 import { SETTINGS_LIST_GROUP_TEST_ID } from '../settings-list/surface';
 import { contrastRatio } from '../styles/color-contrast';
-import { SurfaceLevelProvider, resolveSurfaceLevel, useSurfaceFill } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  resolveSurfaceLevel,
+  useSurfaceFill,
+} from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import type { Theme } from '../theme/types';
@@ -61,8 +65,13 @@ import { resolvedStyle } from './support/rendered-style';
  * a preset change must be able to move every colour without touching this file.
  */
 
-const CaptureBacking = createContext<(kind: 'parent' | 'published', fill: string) => void>(() => {});
-function BackingProbe() { useContext(CaptureBacking)('published', useSurfaceFill()); return null; }
+const CaptureBacking = createContext<(kind: 'parent' | 'published', fill: string) => void>(
+  () => {},
+);
+function BackingProbe() {
+  useContext(CaptureBacking)('published', useSurfaceFill());
+  return null;
+}
 
 const MODES = ['light', 'dark'] as const;
 type Mode = (typeof MODES)[number];
@@ -82,7 +91,10 @@ const FILL_JND = 1.1;
  * background at all, so "the background that is not the container's" would
  * quietly start measuring whichever node happened to be left.
  */
-function paint(mode: Mode, ui: () => React.ReactElement): { fill: string; colors: Theme['colors']; parentFill: string; publishedFill: string } {
+function paint(
+  mode: Mode,
+  ui: () => React.ReactElement,
+): { fill: string; colors: Theme['colors']; parentFill: string; publishedFill: string } {
   const ref: { current?: Theme['colors'] } = {};
   const backing = { parent: '', published: '' };
   function Probe() {
@@ -92,21 +104,39 @@ function paint(mode: Mode, ui: () => React.ReactElement): { fill: string; colors
   const { getByTestId } = render(
     <BloomThemeProvider mode={mode} colorPreset="teal">
       <Probe />
-      <CaptureBacking.Provider value={(kind, fill) => { backing[kind] = fill; }}>{ui()}</CaptureBacking.Provider>
+      <CaptureBacking.Provider
+        value={(kind, fill) => {
+          backing[kind] = fill;
+        }}
+      >
+        {ui()}
+      </CaptureBacking.Provider>
     </BloomThemeProvider>,
   );
   const host = getByTestId(SETTINGS_LIST_GROUP_TEST_ID);
   expect(resolvedStyle(host.props.style).backgroundColor).toBe('transparent');
-  const materials = host.findAll(node => node.props.radius != null && typeof node.props.fill === 'string');
+  const materials = host.findAll(
+    (node) => node.props.radius != null && typeof node.props.fill === 'string',
+  );
   expect(materials).toHaveLength(1);
   const fill = materials[0]!.props.fill as string;
   if (!ref.current) throw new Error('theme probe never ran');
-  return { fill, colors: ref.current, parentFill: backing.parent, publishedFill: backing.published };
+  return {
+    fill,
+    colors: ref.current,
+    parentFill: backing.parent,
+    publishedFill: backing.published,
+  };
 }
 
 function GroupFixture({ variant }: { variant?: 'plain' | 'filled' }) {
   useContext(CaptureBacking)('parent', useSurfaceFill());
-  return <SettingsListGroup variant={variant}><SettingsListItem title="Row" /><BackingProbe /></SettingsListGroup>;
+  return (
+    <SettingsListGroup variant={variant}>
+      <SettingsListItem title="Row" />
+      <BackingProbe />
+    </SettingsListGroup>
+  );
 }
 const group = (variant?: 'plain' | 'filled') => <GroupFixture variant={variant} />;
 
@@ -132,7 +162,9 @@ describe.each(MODES)('the default resolves off the real surface (%s)', (mode) =>
     // The panel paints `card` and publishes that exact colour (#125). The group
     // has to separate from what the panel PAINTED, which in dark is not the rung
     // the panel sits at: `colors.card` and rung 1 are 1.277:1 apart in teal/dark.
-    const { fill, colors, parentFill, publishedFill } = paint(mode, () => <ContentPanel framed>{group()}</ContentPanel>);
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => (
+      <ContentPanel framed>{group()}</ContentPanel>
+    ));
     expect(fill).not.toBe(resolveSurfaceTint(colors.card));
     expect(contrastRatio(publishedFill, parentFill)).toBeGreaterThanOrEqual(FILL_JND);
   });
@@ -145,11 +177,7 @@ describe.each(MODES)('the default resolves off the real surface (%s)', (mode) =>
     // `backgroundSecondary`, which measures 1.121-1.132 against that page in dark
     // — a group drawn on the page in the one colour that nearly matches it.
     const { fill, colors, parentFill, publishedFill } = paint(mode, () => (
-      <ContentPanel
-        framed
-        surfaceClassName="bg-background"
-        surfaceColor={theme.colors.background}
-      >
+      <ContentPanel framed surfaceClassName="bg-background" surfaceColor={theme.colors.background}>
         {group()}
       </ContentPanel>
     ));
@@ -252,7 +280,9 @@ describe.each(MODES)('both ContentPanel forks publish their fill (%s)', (mode) =
   // measures `ContentPanel.tsx` alone. The web fork is named here so it cannot
   // quietly stop publishing while the suite stays green on the other file.
   it('web: a group inside the panel steps off the panel with no prop', () => {
-    const { fill, colors, parentFill, publishedFill } = paint(mode, () => <ContentPanelWeb framed>{group()}</ContentPanelWeb>);
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => (
+      <ContentPanelWeb framed>{group()}</ContentPanelWeb>
+    ));
     expect(fill).not.toBe(resolveSurfaceTint(colors.card));
     expect(contrastRatio(publishedFill, parentFill)).toBeGreaterThanOrEqual(FILL_JND);
   });

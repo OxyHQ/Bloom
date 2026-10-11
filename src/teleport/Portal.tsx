@@ -4,12 +4,12 @@
  *
  * Changed: import paths only, for this flat directory.
  */
-import { useContext, useEffect } from "react";
-import { usePortalManagerContext } from "./portal-manager";
-import ScrollViewContext from "./scroll-view-context/context";
-import PortalView from "./PortalView";
-import useId from "./use-id";
-import type { PortalProps } from "./types";
+import { useContext, useEffect } from 'react';
+import { usePortalManagerContext } from './portal-manager';
+import ScrollViewContext from './scroll-view-context/context';
+import PortalView from './PortalView';
+import useId from './use-id';
+import type { PortalProps } from './types';
 
 /**
  * Portal helps you to render a component in a different place in the view hierarchy.
@@ -65,19 +65,18 @@ const PortalComponent = ({ hostName, name, style, children }: PortalProps) => {
       ? (state.hostScrollViewContexts[hostName] ?? null)
       : sourceScrollViewContext;
 
-  const isRemoved =
-    hostName && name ? state.removed[hostName]?.[name]?.[instanceId] : false;
+  const isRemoved = hostName && name ? state.removed[hostName]?.[name]?.[instanceId] : false;
 
   useEffect(() => {
     if (!hostName || !name) {
       return;
     }
 
-    dispatch({ type: "REGISTER_PORTAL", hostName, name, instanceId });
+    dispatch({ type: 'REGISTER_PORTAL', hostName, name, instanceId });
 
     return () => {
       dispatch({
-        type: "CLEAR_REMOVED_ON_UNMOUNT",
+        type: 'CLEAR_REMOVED_ON_UNMOUNT',
         hostName,
         name,
         instanceId,

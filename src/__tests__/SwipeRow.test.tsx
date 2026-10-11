@@ -29,11 +29,7 @@ import { useTheme } from '../theme/use-theme';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
 import { SwipeRow, useSwipeAvailable } from '../swipe-row';
-import {
-  SWIPE_ACTION_WIDTH,
-  SWIPE_COMMIT_FRACTION,
-  SWIPE_TAP_SLOP,
-} from '../swipe-row/constants';
+import { SWIPE_ACTION_WIDTH, SWIPE_COMMIT_FRACTION, SWIPE_TAP_SLOP } from '../swipe-row/constants';
 import { resolveSwipeRowPaint, swipeActionPaint } from '../swipe-row/shared';
 import type { SwipeRowAction } from '../swipe-row/types';
 
@@ -88,7 +84,8 @@ function maybe(id: string): HTMLElement | null {
  * `rgb(191, 31, 39)`. Comparing the digits is comparing the COLOUR, which is
  * what these assertions are about.
  */
-const sameColor = (a: string, b: string) => expect(a.replace(/[\s,]+/g, ' ')).toBe(b.replace(/[\s,]+/g, ' '));
+const sameColor = (a: string, b: string) =>
+  expect(a.replace(/[\s,]+/g, ' ')).toBe(b.replace(/[\s,]+/g, ' '));
 
 // ---------------------------------------------------------------------------
 //  Driving the pan
@@ -379,5 +376,26 @@ describe('useSwipeAvailable', () => {
     expect((window as { matchMedia?: unknown }).matchMedia).toBeUndefined();
     mount(<Probe />);
     expect(byTestId('probe').textContent).toBe('false');
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  The list stays scrollable on touch web
+// ---------------------------------------------------------------------------
+
+describe('SwipeRow touch-action', () => {
+  // RNGH's web delegate writes `touch-action: <config.touchAction ?? 'none'>`
+  // on the detector's view. `none` tells a touch browser never to pan from that
+  // element, and rows tile the whole list, so the list could not be scrolled by
+  // touch at all while horizontal swipes still worked — the reported bug.
+  // `failOffsetY` cannot rescue it: the browser decides before any JS runs.
+  // The mock copies the detector's props onto the gesture exactly as the real
+  // detector does, so this reads what the web handler will be configured with.
+  it('hands vertical panning to the browser (pan-y), keeping horizontal for the pan', () => {
+    const spy = recordPan();
+    mount(<Row />);
+    const built = spy.mock.results[0]?.value as { __config: Record<string, unknown> } | undefined;
+    expect(built).toBeDefined();
+    expect(built?.__config.touchAction).toBe('pan-y');
   });
 });

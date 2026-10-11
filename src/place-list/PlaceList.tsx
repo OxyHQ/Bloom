@@ -125,7 +125,12 @@ function PlaceListComponent({
 
             {onReorder || onRemove ? (
               <View
-                style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 4 }}
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
               >
                 {onReorder ? (
                   <>

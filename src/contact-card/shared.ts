@@ -84,7 +84,9 @@ export function contactMetaLine(
   props: Pick<ContactProfileCardProps, 'kind' | 'role' | 'company'>,
 ): string {
   const parts = [props.role, props.kind === 'company' ? undefined : props.company];
-  return parts.filter((part): part is string => typeof part === 'string' && part !== '').join(' · ');
+  return parts
+    .filter((part): part is string => typeof part === 'string' && part !== '')
+    .join(' · ');
 }
 
 /** Joins the non-empty parts of an accessible name. */
@@ -92,7 +94,9 @@ export function joinContactName(
   parts: ReadonlyArray<string | false | null | undefined>,
   separator = ', ',
 ): string {
-  return parts.filter((part): part is string => typeof part === 'string' && part !== '').join(separator);
+  return parts
+    .filter((part): part is string => typeof part === 'string' && part !== '')
+    .join(separator);
 }
 
 /**

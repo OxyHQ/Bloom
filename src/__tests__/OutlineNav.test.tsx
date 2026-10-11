@@ -65,7 +65,8 @@ function maybe(id: string): HTMLElement | null {
  */
 function childrenWithRole(el: Element, role: string): HTMLElement[] {
   return Array.from(el.children).filter(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.getAttribute('role') === role,
+    (child): child is HTMLElement =>
+      child instanceof HTMLElement && child.getAttribute('role') === role,
   );
 }
 

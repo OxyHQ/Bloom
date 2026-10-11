@@ -70,7 +70,8 @@ export function HoverCardTrigger({
         disabled,
         'aria-haspopup': HOVER_CARD_TRIGGER_POPUP,
         'aria-expanded': card.open,
-      }}>
+      }}
+    >
       {children}
     </TriggerSlot>
   );
@@ -87,7 +88,8 @@ export function HoverCardContent({ children, label: labelProp, style }: HoverCar
       control={control}
       label={label}
       onClose={onSheetClose}
-      contentStyle={[{ alignItems: 'center' }, style]}>
+      contentStyle={[{ alignItems: 'center' }, style]}
+    >
       {children}
     </SheetShell>
   );

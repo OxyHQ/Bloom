@@ -55,11 +55,20 @@ function Demo() {
     PortalProvider,
     null,
     createElement('button', { 'data-testid': 'send', onClick: () => setHostName('far') }, 'send'),
-    createElement('div', { 'data-testid': 'local' },
-      createElement(Portal, { hostName, name: 'p' },
-        createElement('div', { 'data-testid': 'travelling' }))),
-    createElement('div', { 'data-testid': 'far-wrapper' },
-      createElement(PortalHost, { name: 'far' })),
+    createElement(
+      'div',
+      { 'data-testid': 'local' },
+      createElement(
+        Portal,
+        { hostName, name: 'p' },
+        createElement('div', { 'data-testid': 'travelling' }),
+      ),
+    ),
+    createElement(
+      'div',
+      { 'data-testid': 'far-wrapper' },
+      createElement(PortalHost, { name: 'far' }),
+    ),
   );
 }
 
@@ -100,11 +109,17 @@ describe('the vendored react-native-teleport', () => {
         PortalProvider,
         null,
         show
-          ? createElement(Portal, { hostName: 'far', name: 'p' },
-              createElement('div', { 'data-testid': 'travelling' }))
+          ? createElement(
+              Portal,
+              { hostName: 'far', name: 'p' },
+              createElement('div', { 'data-testid': 'travelling' }),
+            )
           : null,
-        createElement('div', { 'data-testid': 'far-wrapper' },
-          createElement(PortalHost, { name: 'far' })),
+        createElement(
+          'div',
+          { 'data-testid': 'far-wrapper' },
+          createElement(PortalHost, { name: 'far' }),
+        ),
       );
     }
     mount(createElement(Owned, { show: true }));

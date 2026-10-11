@@ -87,11 +87,7 @@ function sourceOver(
  * (`Checkbox`'s `color`, `Radio`'s `color`) can be — a CSS keyword parses to
  * neither.
  */
-export function pressedSurface(
-  colors: ThemeColors,
-  surface: string,
-  layer: string,
-): string {
+export function pressedSurface(colors: ThemeColors, surface: string, layer: string): string {
   const base = parseRgba(surface);
   if (!base || base.a === 0) return colors.contrast50;
   const top = parseRgba(layer);

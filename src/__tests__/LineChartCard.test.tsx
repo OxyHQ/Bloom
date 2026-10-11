@@ -7,7 +7,12 @@ import { resolvedStyle } from './support/rendered-style';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
-import { LineChartCard, closedAreaPath, formatDollarsK, monthTitle } from '../chart-cards/LineChartCard';
+import {
+  LineChartCard,
+  closedAreaPath,
+  formatDollarsK,
+  monthTitle,
+} from '../chart-cards/LineChartCard';
 import type { LinePoint, LineRange } from '../chart-cards/LineChartCard';
 import { PulsingDot } from '../chart-cards/primitives/PulsingDot';
 import { fixedDomainTicks, plotBox, pointX, scaleY } from '../chart-cards/geometry';
@@ -16,12 +21,25 @@ import { chartHueTone } from '../chart-cards/palette';
 // The "weekly" demo period. Every expected pixel below was read off
 // recharts 3.10's SVG for that card at 480 wide (448 × 221 plot).
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const zip = (values: number[]): LinePoint[] => values.map((value, i) => ({ label: MONTHS[i]!, value }));
+const zip = (values: number[]): LinePoint[] =>
+  values.map((value, i) => ({ label: MONTHS[i]!, value }));
 const WEEKLY = zip([1400, 1900, 2600, 2300, 3400, 3100, 2700, 3800, 4600, 4200, 3600, 5200]);
 const RANGES: LineRange[] = [
   { id: 'weekly', label: 'Weekly', headline: 18240, delta: 0.094, data: WEEKLY },
-  { id: 'monthly', label: 'Monthly', headline: 64820, delta: 0.126, data: zip([3200, 4100, 3800, 5200, 6400, 5900, 5100, 6800, 8100, 7600, 8400, 9600]) },
-  { id: 'yearly', label: 'Yearly', headline: 512400, delta: -0.032, data: zip([28000, 34000, 46000, 41000, 52000, 49000, 61000, 55000, 68000, 72000, 64000, 83000]) },
+  {
+    id: 'monthly',
+    label: 'Monthly',
+    headline: 64820,
+    delta: 0.126,
+    data: zip([3200, 4100, 3800, 5200, 6400, 5900, 5100, 6800, 8100, 7600, 8400, 9600]),
+  },
+  {
+    id: 'yearly',
+    label: 'Yearly',
+    headline: 512400,
+    delta: -0.032,
+    data: zip([28000, 34000, 46000, 41000, 52000, 49000, 61000, 55000, 68000, 72000, 64000, 83000]),
+  },
 ];
 
 function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
@@ -34,7 +52,9 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 
 function layoutPlot(getByTestId: (id: string) => unknown, id: string, width = 448, height = 221) {
   act(() => {
-    fireEvent(getByTestId(id) as never, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height } } });
+    fireEvent(getByTestId(id) as never, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width, height } },
+    });
   });
 }
 
@@ -54,9 +74,15 @@ describe('line chart geometry matches recharts', () => {
 
   it('closes the monotone area on the plot base', () => {
     const d = closedAreaPath(pts, box.bottom, 'monotone');
-    expect(d.startsWith('M44,145.231C56.061,140.327,68.121,135.423,80.182,128.885C92.242,122.346,104.303,106,116.364,106')).toBe(true);
+    expect(
+      d.startsWith(
+        'M44,145.231C56.061,140.327,68.121,135.423,80.182,128.885C92.242,122.346,104.303,106,116.364,106',
+      ),
+    ).toBe(true);
     expect(d.endsWith('L442,191L44,191Z')).toBe(true);
-    expect(closedAreaPath(pts.slice(0, 2), 191, 'linear')).toBe('M44,145.231L80.182,128.885L80.182,191L44,191Z');
+    expect(closedAreaPath(pts.slice(0, 2), 191, 'linear')).toBe(
+      'M44,145.231L80.182,128.885L80.182,191L44,191Z',
+    );
   });
 
   it('names months in full', () => {
@@ -82,7 +108,9 @@ describe('LineChartCard', () => {
   });
 
   it('reads the period headline, the delta chip and a Weekly / Monthly / Yearly radio group', () => {
-    const { getByTestId, getByText, getByLabelText } = renderCard(<LineChartCard testID="line" ranges={RANGES} />);
+    const { getByTestId, getByText, getByLabelText } = renderCard(
+      <LineChartCard testID="line" ranges={RANGES} />,
+    );
     expect(getByText('Revenue')).toBeTruthy();
     expect(getByTestId('line-headline').props.children).toBe('$18,240');
     expect(getByText('+9.4%')).toBeTruthy();
@@ -113,7 +141,9 @@ describe('LineChartCard', () => {
     expect(wrap?.props.accessibilityElementsHidden).toBe(true);
 
     for (const label of ['$0', '$2K', '$4K', '$6K']) expect(getByText(label)).toBeTruthy();
-    const cursor = (UNSAFE_getAllByType('Line' as never) as unknown as Node[]).find((l) => l.props.y1 === 4);
+    const cursor = (UNSAFE_getAllByType('Line' as never) as unknown as Node[]).find(
+      (l) => l.props.y1 === 4,
+    );
     expect(cursor?.props.x1).toBeCloseTo(261.091, 3);
     expect(cursor?.props.y2).toBe(191);
     expect(cursor?.props.strokeDasharray).toBe('4 4');
@@ -130,7 +160,9 @@ describe('LineChartCard', () => {
   it('draws the line 2.5px in chart-2-active over a 35% → 0% chart-2 gradient', () => {
     const theme = buildTheme('teal', 'light');
     const tone = chartHueTone(theme, 2);
-    const { getByTestId, UNSAFE_getAllByType } = renderCard(<LineChartCard testID="line" data={WEEKLY} />);
+    const { getByTestId, UNSAFE_getAllByType } = renderCard(
+      <LineChartCard testID="line" data={WEEKLY} />,
+    );
     layoutPlot(getByTestId, 'line-plot');
     const paths = UNSAFE_getAllByType('Path' as never) as unknown as Node[];
     const stroke = paths.find((p) => p.props.strokeWidth === 2.5);
@@ -167,7 +199,9 @@ describe('LineChartCard', () => {
   });
 
   it('headlines the sum without ranges and hides the switcher', () => {
-    const { getByTestId, queryByLabelText } = renderCard(<LineChartCard testID="line" data={WEEKLY} />);
+    const { getByTestId, queryByLabelText } = renderCard(
+      <LineChartCard testID="line" data={WEEKLY} />,
+    );
     expect(getByTestId('line-headline').props.children).toBe('$38,800');
     expect(queryByLabelText('Revenue period')).toBeNull();
   });
@@ -175,6 +209,8 @@ describe('LineChartCard', () => {
   it('paints the dark card from the neutral ramp', () => {
     const { getByTestId } = renderCard(<LineChartCard testID="line" data={WEEKLY} />, 'dark');
     const palette = resolveChartCardPalette(buildTheme('teal', 'dark'));
-    expect(cardFill(getByTestId('line'))).toBe(resolveSurfaceTint(buildTheme('teal', 'dark').colors.card));
+    expect(cardFill(getByTestId('line'))).toBe(
+      resolveSurfaceTint(buildTheme('teal', 'dark').colors.card),
+    );
   });
 });

@@ -5,7 +5,7 @@ import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
-import { BloomScope } from "../appearance";
+import { BloomScope } from '../appearance';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
@@ -31,7 +31,11 @@ const GlassIslandComponent: React.FC<GlassIslandProps> = ({
   const direction = useIsRtl() ? 'rtl' : 'ltr';
   const layer = useSurfaceLayer();
   const customStyle = StyleSheet.flatten(style);
-  const material = resolveSurfaceMaterial({ fill: String(customStyle?.backgroundColor ?? layer.fill), parentFill: layer.parentFill, parentLevel: layer.parentLevel });
+  const material = resolveSurfaceMaterial({
+    fill: String(customStyle?.backgroundColor ?? layer.fill),
+    parentFill: layer.parentFill,
+    parentLevel: layer.parentLevel,
+  });
   const { paintFill: fill, publishedFill: publishedFill } = material;
   const geometry = resolveSurfaceGeometry(radius, style, borderRadius.full, cornerCurve);
   const shape = geometry.shape;
@@ -46,11 +50,17 @@ const GlassIslandComponent: React.FC<GlassIslandProps> = ({
         style={[
           styles.island,
           {
-            ...geometry.style, ...surfaceStyle(shape, direction),
+            ...geometry.style,
+            ...surfaceStyle(shape, direction),
           },
           bloomShadowStyle('glass'),
           style,
-          { backgroundColor: 'transparent', ...material.vars, ...geometry.style, ...surfaceStyle(shape, direction) },
+          {
+            backgroundColor: 'transparent',
+            ...material.vars,
+            ...geometry.style,
+            ...surfaceStyle(shape, direction),
+          },
         ]}
       >
         <SurfacePaint
@@ -61,7 +71,9 @@ const GlassIslandComponent: React.FC<GlassIslandProps> = ({
           sheen={sheen}
           testID={testID ? `${testID}-material` : undefined}
         />
-        <SurfaceLevelProvider level={material.level} fill={publishedFill}>{children}</SurfaceLevelProvider>
+        <SurfaceLevelProvider level={material.level} fill={publishedFill}>
+          {children}
+        </SurfaceLevelProvider>
       </View>
     </BloomScope>
   );

@@ -57,7 +57,16 @@ function WriteReviewPromptComponent({
           paddingRight: onDismiss ? 28 : 0,
         }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flexGrow: 1, flexShrink: 1, flexBasis: 260 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 16,
+            flexGrow: 1,
+            flexShrink: 1,
+            flexBasis: 260,
+          }}
+        >
           {media ?? <IconTile icon={RiBuilding2Line} size={48} iconSize={24} testID={id('icon')} />}
           <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
             <Text
@@ -69,25 +78,37 @@ function WriteReviewPromptComponent({
             >
               {title}
             </Text>
-            <Text variant="body-2-regular" style={{ color: palette.textSecondary }} testID={id('description')}>
+            <Text
+              variant="body-2-regular"
+              style={{ color: palette.textSecondary }}
+              testID={id('description')}
+            >
               {body}
             </Text>
           </View>
         </View>
-        <Button  size="sm" leadingIcon={RiQuillPenLine} onPress={onStart} testID={id('start')} tone="accent" appearance="solid">
+        <Button
+          size="sm"
+          leadingIcon={RiQuillPenLine}
+          onPress={onStart}
+          testID={id('start')}
+          tone="accent"
+          appearance="solid"
+        >
           {actionLabel}
         </Button>
       </View>
       {onDismiss ? (
         <View style={{ position: 'absolute', top: 12, right: 12 }}>
           <Button
-
             size="xs"
             iconOnly
             leadingIcon={RiCloseLine}
             accessibilityLabel={dismissLabel}
             onPress={onDismiss}
-            testID={id('dismiss')} tone="neutral" appearance="outline"
+            testID={id('dismiss')}
+            tone="neutral"
+            appearance="outline"
           />
         </View>
       ) : null}

@@ -150,7 +150,9 @@ function CheckoutSummaryRowComponent({
       }
       onPress={onPress}
       disabled={disabled}
-      accessibilityLabel={accessibilityLabel ?? checkoutRowName(label, chosen ? value : placeholder)}
+      accessibilityLabel={
+        accessibilityLabel ?? checkoutRowName(label, chosen ? value : placeholder)
+      }
       // NATIVE ONLY, and knowingly: react-native-web has no `accessibilityHint`
       // — no mapping at all, not a wrong one — so on web the affordance is the
       // `button` role plus the chevron and this says nothing. Recorded in

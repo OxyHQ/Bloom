@@ -28,7 +28,10 @@ export const PROJECT_BOARD_DEMO_COLUMNS = PROJECT_COLUMNS.map((column) => ({
 export function ProjectBoardTemplate({
   onMenuClick,
   headerActions,
-}: { onMenuClick?: () => void; headerActions?: ReactNode } = {}) {
+}: {
+  onMenuClick?: () => void;
+  headerActions?: ReactNode;
+} = {}) {
   return (
     <ProjectBoard
       onMenuClick={onMenuClick}

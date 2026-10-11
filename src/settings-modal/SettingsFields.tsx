@@ -142,7 +142,11 @@ export function SettingsDateField({
           ]}
         >
           <RiCalendarLine width={18} height={18} fill={palette.iconPrimary} />
-          <Text variant="body-regular" numberOfLines={1} style={[styles.dateText, { color: palette.text }]}>
+          <Text
+            variant="body-regular"
+            numberOfLines={1}
+            style={[styles.dateText, { color: palette.text }]}
+          >
             {text}
           </Text>
         </Pressable>

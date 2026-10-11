@@ -65,7 +65,15 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const scoped = useBloomAppearance({ size: ['xs','sm','md','lg'].includes(sizeProp ?? '') ? sizeProp as import('../appearance').BloomSize : undefined, tone: toneProp ?? (color ? normalizeTagTone(color) : undefined) }, {size: 'md', tone: 'danger'});
+  const scoped = useBloomAppearance(
+    {
+      size: ['xs', 'sm', 'md', 'lg'].includes(sizeProp ?? '')
+        ? (sizeProp as import('../appearance').BloomSize)
+        : undefined,
+      tone: toneProp ?? (color ? normalizeTagTone(color) : undefined),
+    },
+    { size: 'md', tone: 'danger' },
+  );
   const size = sizeProp ?? scoped.size;
   const tone = scoped.tone;
   const variant = appearance ?? variantProp;

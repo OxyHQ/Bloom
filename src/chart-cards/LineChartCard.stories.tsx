@@ -7,15 +7,15 @@ import type { LinePoint, LineRange } from './LineChartCard';
 
 const meta: Meta<typeof LineChartCard> = {
   argTypes: {
-    "shape": { control: 'select', options: ["curved","sharp"] },
-    "title": { control: 'text' },
-    "headline": { control: 'number' },
-    "delta": { control: 'number' },
-    "defaultRange": { control: 'text' },
-    "rangesLabel": { control: 'text' },
-    "color": { control: 'text' },
-    "activeColor": { control: 'text' },
-    "activeIndex": { control: 'number' }
+    shape: { control: 'select', options: ['curved', 'sharp'] },
+    title: { control: 'text' },
+    headline: { control: 'number' },
+    delta: { control: 'number' },
+    defaultRange: { control: 'text' },
+    rangesLabel: { control: 'text' },
+    color: { control: 'text' },
+    activeColor: { control: 'text' },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Line Chart',
   component: LineChartCard,
@@ -27,7 +27,8 @@ type Story = StoryObj<typeof LineChartCard>;
 
 // Demo periods.
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const zip = (values: number[]): LinePoint[] => values.map((value, i) => ({ label: MONTHS[i]!, value }));
+const zip = (values: number[]): LinePoint[] =>
+  values.map((value, i) => ({ label: MONTHS[i]!, value }));
 
 const RANGES: LineRange[] = [
   {
@@ -69,11 +70,25 @@ export const Curved: Story = {
 
 /** Straight segments between the points. */
 export const Sharp: Story = {
-  args: { shape: "sharp" },
-  parameters: { controls: { include: ["shape","title","headline","delta","defaultRange","rangesLabel","color","activeColor","activeIndex"] } },
+  args: { shape: 'sharp' },
+  parameters: {
+    controls: {
+      include: [
+        'shape',
+        'title',
+        'headline',
+        'delta',
+        'defaultRange',
+        'rangesLabel',
+        'color',
+        'activeColor',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <LineChartCard {...args} testID="line"  ranges={RANGES} />
+      <LineChartCard {...args} testID="line" ranges={RANGES} />
     </Frame>
   ),
 };
@@ -95,7 +110,12 @@ export const Variants: Story = {
   render: () => (
     <Frame>
       <LineChartCard ranges={RANGES} defaultRange="yearly" />
-      <LineChartCard title="Signups" data={RANGES[0]!.data} format={(v) => String(Math.round(v))} formatAxisValue={(v) => `${Math.round(v / 1000)}K`} />
+      <LineChartCard
+        title="Signups"
+        data={RANGES[0]!.data}
+        format={(v) => String(Math.round(v))}
+        formatAxisValue={(v) => `${Math.round(v / 1000)}K`}
+      />
     </Frame>
   ),
 };

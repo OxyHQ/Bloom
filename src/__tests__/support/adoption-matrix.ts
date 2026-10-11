@@ -137,7 +137,8 @@ function subpaths(): Map<string, string> {
   for (const [subpath, entry] of Object.entries(pkg.exports)) {
     if (typeof entry === 'string') continue;
     const rn = entry['react-native'];
-    const source = typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
+    const source =
+      typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
     if (typeof source !== 'string') continue;
     const rel = source.replace(/^\.\/src\//, '');
     if (!rel.includes('/')) continue;
@@ -169,7 +170,7 @@ function rootBarrelFamilies(): Set<string> {
  */
 const DOC_ALIASES: Readonly<Record<string, string>> = {
   surfaces: 'alert',
-  'appearance': 'composition',
+  appearance: 'composition',
   field: 'field',
 };
 
@@ -223,7 +224,6 @@ function suiteCounts(): Map<string, number> {
   }
   return out;
 }
-
 
 // ---------------------------------------------------------------------------
 //  The contracts
@@ -412,7 +412,7 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason: SELECTION_ROW,
     },
   },
-  'appearance': {
+  appearance: {
     'phone-input': {
       verdict: 'delegated',
       reason:
@@ -474,7 +474,8 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     },
     'queue-panel': {
       verdict: 'adaptation',
-      reason: 'the panel\u2019s tab keeps its own state seeded from `defaultTab` instead of the shared hook.',
+      reason:
+        'the panel\u2019s tab keeps its own state seeded from `defaultTab` instead of the shared hook.',
     },
     'track-list': {
       verdict: 'adaptation',
@@ -517,7 +518,8 @@ export function matrix(): FamilyRow[] {
     for (const contract of CONTRACTS) {
       if (contract.reads(text)) verdicts[contract.key] = 'reads';
       else if (!contract.applies(text)) verdicts[contract.key] = null;
-      else verdicts[contract.key] = CLASSIFICATION[contract.key]?.[family]?.verdict ?? 'unclassified';
+      else
+        verdicts[contract.key] = CLASSIFICATION[contract.key]?.[family]?.verdict ?? 'unclassified';
     }
     return {
       family,
@@ -593,7 +595,9 @@ export function renderAdoptionMatrix(): string {
   out.push('| --- | --- |');
   out.push('| `reads` | the family imports the contract and applies it itself |');
   out.push('| `delegated` | it hands the decision to a child that reads it |');
-  out.push('| `n/a¹` | the derivation matched something that is not the contract\u2019s subject — the reason is below |');
+  out.push(
+    '| `n/a¹` | the derivation matched something that is not the contract\u2019s subject — the reason is below |',
+  );
   out.push('| `**adaptation**` | a real remaining gap, named rather than hidden |');
   out.push('| blank | the contract does not apply: the family renders nothing it governs |');
   out.push('');
@@ -659,7 +663,15 @@ export function renderAdoptionMatrix(): string {
 
   out.push('## Every family');
   out.push('');
-  const header = ['family', 'import', 'platform', 'doc', 'story', 'suites', ...CONTRACTS.map((c) => c.title)];
+  const header = [
+    'family',
+    'import',
+    'platform',
+    'doc',
+    'story',
+    'suites',
+    ...CONTRACTS.map((c) => c.title),
+  ];
   out.push(`| ${header.join(' | ')} |`);
   out.push(`| ${header.map(() => '---').join(' | ')} |`);
   for (const row of rows) {

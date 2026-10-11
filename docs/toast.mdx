@@ -186,7 +186,10 @@ By default toasts render as the sonner-style **collapsed deck**:
 The newest row sits in front at full size, older ones sit behind it scaled
 down and offset by `stackGap` (8px), and pressing the stack expands it into a
 readable column. Pressing outside collapses it again, and timers pause for as long
-as it is expanded. Measured on a 1280px viewport with three rows, front to back:
+as it is expanded. On web, an outside press also reaches the underlying control
+on that same first click; expanding a notification never adds an invisible
+modal backdrop or an empty tab stop. Native retains its outside-tap collapse
+area. Measured on a 1280px viewport with three rows, front to back:
 `scaleX` 1 / 0.959 / 0.918 at 0 / -8 / -16px, expanding to 1 / 1 / 1.
 Consequences to know about:
 

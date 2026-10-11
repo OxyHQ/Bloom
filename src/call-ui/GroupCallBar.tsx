@@ -227,20 +227,22 @@ function GroupCallBarComponent({
       {joined ? (
         onLeave === undefined ? null : (
           <Button
-
             size="sm"
             onPress={onLeave}
-            testID={testID ? `${testID}-leave` : undefined} tone="danger" appearance="solid"
+            testID={testID ? `${testID}-leave` : undefined}
+            tone="danger"
+            appearance="solid"
           >
             {labels?.leave ?? messages.leave}
           </Button>
         )
       ) : onJoin === undefined ? null : (
         <Button
-
           size="sm"
           onPress={onJoin}
-          testID={testID ? `${testID}-join` : undefined} tone="accent" appearance="solid"
+          testID={testID ? `${testID}-join` : undefined}
+          tone="accent"
+          appearance="solid"
         >
           {labels?.join ?? messages.join}
         </Button>

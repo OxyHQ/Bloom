@@ -74,9 +74,7 @@ function shippedModules(dir: string, out: string[] = []): string[] {
 }
 
 describe('no shipped module imports the icon barrel', () => {
-  const modules = shippedModules(SRC).filter(
-    (file) => !relative(SRC, file).startsWith('icons'),
-  );
+  const modules = shippedModules(SRC).filter((file) => !relative(SRC, file).startsWith('icons'));
 
   it('the scan actually read the source tree', () => {
     // A scan that read nothing reports the same clean pass as a scan that read
@@ -123,12 +121,12 @@ describe('no shipped module imports the icon barrel', () => {
     expect(BARREL_IMPORT.test("import { RiCloseLine } from '../icons/remix/RiCloseLine';")).toBe(
       false,
     );
-    expect(BARREL_IMPORT.test("const { RiCloseLine } = require('../icons/remix/RiCloseLine');")).toBe(
-      false,
-    );
+    expect(
+      BARREL_IMPORT.test("const { RiCloseLine } = require('../icons/remix/RiCloseLine');"),
+    ).toBe(false);
     expect(BARREL_IMPORT.test("const m = await import('../icons/remix/RiCloseLine');")).toBe(false);
-    expect(BARREL_IMPORT.test("import { RiCloseLine } from '@oxy.so/bloom/icons/RiCloseLine';")).toBe(
-      false,
-    );
+    expect(
+      BARREL_IMPORT.test("import { RiCloseLine } from '@oxy.so/bloom/icons/RiCloseLine';"),
+    ).toBe(false);
   });
 });

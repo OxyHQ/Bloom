@@ -40,7 +40,11 @@ const QUESTIONS: QuestionnaireQuestion[] = [
     select: 'single',
     options: [
       { value: 'keep', label: 'Keep existing tests', description: 'Adapt them as we go' },
-      { value: 'rewrite', label: 'Rewrite from scratch', description: 'Start clean with the new stack' },
+      {
+        value: 'rewrite',
+        label: 'Rewrite from scratch',
+        description: 'Start clean with the new stack',
+      },
     ],
     other: true,
   },
@@ -125,7 +129,13 @@ export const Demo: Story = {
           Before I draft the migration plan, a few quick questions.
         </Text>
         {dismissed ? (
-          <Text variant="body-regular" onPress={() => { setDismissed(false); setKey((k) => k + 1); }}>
+          <Text
+            variant="body-regular"
+            onPress={() => {
+              setDismissed(false);
+              setKey((k) => k + 1);
+            }}
+          >
             Questions dismissed — tap to ask again.
           </Text>
         ) : (

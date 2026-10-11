@@ -29,11 +29,7 @@
 import { buildTheme } from '../build-theme';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
 import { APP_COLOR_NAMES, APP_COLOR_PRESETS } from '../color-presets';
-import {
-  resolveAccentColors,
-  type AccentFill,
-  type AccentTone,
-} from '../accent-colors';
+import { resolveAccentColors, type AccentFill, type AccentTone } from '../accent-colors';
 import type { ThemeColors } from '../types';
 
 const AA = 4.5;
@@ -73,7 +69,10 @@ function parse(value: string): Rgba {
   }
   const fn = /^rgba?\(([^)]*)\)$/.exec(value.trim());
   if (!fn?.[1]) throw new Error(`unparseable colour: ${JSON.stringify(value)}`);
-  const parts = fn[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+  const parts = fn[1]
+    .split(/[\s,/]+/)
+    .filter(Boolean)
+    .map(Number);
   if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) {
     throw new Error(`unparseable colour: ${JSON.stringify(value)}`);
   }
@@ -110,8 +109,7 @@ function contrast(a: Rgba, b: Rgba): number {
 function measure(colors: ThemeColors, tone: AccentTone, fill: AccentFill): number {
   const page = parse(colors.background);
   const accent = resolveAccentColors(colors, tone, fill);
-  const surface =
-    accent.background === 'transparent' ? page : over(parse(accent.background), page);
+  const surface = accent.background === 'transparent' ? page : over(parse(accent.background), page);
   return contrast(surface, over(parse(accent.foreground), surface));
 }
 

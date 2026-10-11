@@ -31,19 +31,27 @@ export interface MenuItemMessages {
   options: string;
 }
 
-export const MENU_ITEM_MESSAGES: MessageCatalog<MenuItemMessages> = defineMessages<MenuItemMessages>('MENU_ITEM_MESSAGES', {
-  diets: { vegetarian: 'Vegetarian', vegan: 'Vegan', 'gluten-free': 'Gluten-free', 'dairy-free': 'Dairy-free', halal: 'Halal', kosher: 'Kosher' },
-  spicy: 'Spicy',
-  spiceOf: (label, level, max) => `${label} ${level} of ${max}`,
-  originally: (price, original) => `${price}, originally ${original}`,
-  inBasket: (n) => `${n} in basket`,
-  soldOut: 'Sold out',
-  addItem: (name) => `Add ${name}`,
-  choose: (n) => `Choose ${n}`,
-  chooseRange: (min, max) => `Choose ${min} to ${max}`,
-  upTo: (n) => `Up to ${n}`,
-  optional: 'Optional',
-  quantity: 'Quantity',
-  addToBasket: 'Add to basket',
-  options: 'Options',
-});
+export const MENU_ITEM_MESSAGES: MessageCatalog<MenuItemMessages> =
+  defineMessages<MenuItemMessages>('MENU_ITEM_MESSAGES', {
+    diets: {
+      vegetarian: 'Vegetarian',
+      vegan: 'Vegan',
+      'gluten-free': 'Gluten-free',
+      'dairy-free': 'Dairy-free',
+      halal: 'Halal',
+      kosher: 'Kosher',
+    },
+    spicy: 'Spicy',
+    spiceOf: (label, level, max) => `${label} ${level} of ${max}`,
+    originally: (price, original) => `${price}, originally ${original}`,
+    inBasket: (n) => `${n} in basket`,
+    soldOut: 'Sold out',
+    addItem: (name) => `Add ${name}`,
+    choose: (n) => `Choose ${n}`,
+    chooseRange: (min, max) => `Choose ${min} to ${max}`,
+    upTo: (n) => `Up to ${n}`,
+    optional: 'Optional',
+    quantity: 'Quantity',
+    addToBasket: 'Add to basket',
+    options: 'Options',
+  });

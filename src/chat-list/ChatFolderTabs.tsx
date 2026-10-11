@@ -7,12 +7,7 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import {
-  CHAT_LIST_CSS,
-  CHAT_LIST_STYLE_ID,
-  IS_WEB,
-  resolveChatListPaint,
-} from './shared';
+import { CHAT_LIST_CSS, CHAT_LIST_STYLE_ID, IS_WEB, resolveChatListPaint } from './shared';
 import type { ChatFolderTabsProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CHAT_LIST_MESSAGES } from './messages';
@@ -71,10 +66,7 @@ function ChatFolderTabsComponent({
 
   return (
     <View
-      style={[
-        divider ? { borderBottomWidth: 1, borderBottomColor: paint.divider } : null,
-        style,
-      ]}
+      style={[divider ? { borderBottomWidth: 1, borderBottomColor: paint.divider } : null, style]}
       testID={testID}
     >
       <ScrollView
@@ -89,7 +81,11 @@ function ChatFolderTabsComponent({
           paddingRight: paddingHorizontal,
         }}
       >
-        <View role="tablist" accessibilityLabel={accessibilityLabel} style={{ flexDirection: 'row', gap }}>
+        <View
+          role="tablist"
+          accessibilityLabel={accessibilityLabel}
+          style={{ flexDirection: 'row', gap }}
+        >
           {folders.map((folder) => {
             const active = folder.key === selected;
             const showCount = (folder.unreadCount ?? 0) > 0;
@@ -120,7 +116,9 @@ function ChatFolderTabsComponent({
                 accessibilityState={{ selected: active }}
                 onPress={() => select(folder.key)}
                 onHoverIn={() => setHovered(folder.key)}
-                onHoverOut={() => setHovered((current) => (current === folder.key ? null : current))}
+                onHoverOut={() =>
+                  setHovered((current) => (current === folder.key ? null : current))
+                }
                 style={tabStyle}
                 testID={testID ? `${testID}-tab-${folder.key}` : undefined}
               >

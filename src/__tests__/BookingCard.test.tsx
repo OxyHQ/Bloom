@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { getByText } from '@testing-library/dom';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -15,13 +16,7 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ImageResolverProvider } from '../image-resolver/context';
 import { resolveAccentColors } from '../theme/accent-colors';
-import {
-  BookingBar,
-  BookingCard,
-  PriceBreakdown,
-  TRIP_STATUS,
-  TripCard,
-} from '../booking';
+import { BookingBar, BookingCard, PriceBreakdown, TRIP_STATUS, TripCard } from '../booking';
 import { GuestPicker } from '../stay-search';
 import type { GuestCounts } from '../stay-search';
 import { GuestPickerCloseProvider } from '../stay-search/context';
@@ -129,7 +124,9 @@ describe('booking helpers', () => {
     expect(lightPalette.active).toBe(lightTheme.colors.text);
     expect(darkPalette.surface).not.toBe(lightPalette.surface);
     expect(darkPalette.fieldBorder).not.toBe(lightPalette.fieldBorder);
-    expect(darkPalette.discount).toBe(resolveAccentColors(theme().colors, 'success', 'outlined').foreground);
+    expect(darkPalette.discount).toBe(
+      resolveAccentColors(theme().colors, 'success', 'outlined').foreground,
+    );
   });
 });
 
@@ -146,7 +143,16 @@ describe('BookingCard', () => {
   });
 
   it('without dates: placeholders, "Check availability", no note', () => {
-    mount(<BookingCard testID="card" price="$180" priceUnit="night" guests="1 guest" rating={4.92} reviewCount={128} />);
+    mount(
+      <BookingCard
+        testID="card"
+        price="$180"
+        priceUnit="night"
+        guests="1 guest"
+        rating={4.92}
+        reviewCount={128}
+      />,
+    );
     expect(byTestId('card-reserve').textContent).toBe('Check availability');
     expect(byTestId('card-check-in').getAttribute('aria-label')).toBe('Check-in: Add date');
     expect(byTestId('card-check-out').getAttribute('aria-label')).toBe('Checkout: Add date');
@@ -190,7 +196,15 @@ describe('BookingCard', () => {
   });
 
   it('names the price as one image, with the earlier price spoken', () => {
-    mount(<BookingCard testID="card" price="$162" originalPrice="$180" priceUnit="night" guests="1 guest" />);
+    mount(
+      <BookingCard
+        testID="card"
+        price="$162"
+        originalPrice="$180"
+        priceUnit="night"
+        guests="1 guest"
+      />,
+    );
     const price = byTestId('card-price');
     expect(price.getAttribute('role')).toBe('img');
     expect(price.getAttribute('aria-label')).toBe('$162 per night, originally $180');
@@ -223,7 +237,15 @@ describe('BookingCard', () => {
     const reserve = jest.fn();
     mount(<BookingCard testID="card" price="$180" guests="1 guest" onReserve={reserve} loading />);
     click(byTestId('card-reserve'));
-    mount(<BookingCard testID="card" price="$180" guests="1 guest" onReserve={reserve} reserveDisabled />);
+    mount(
+      <BookingCard
+        testID="card"
+        price="$180"
+        guests="1 guest"
+        onReserve={reserve}
+        reserveDisabled
+      />,
+    );
     click(byTestId('card-reserve'));
     expect(reserve).not.toHaveBeenCalled();
   });
@@ -254,7 +276,12 @@ describe('BookingCard', () => {
 
   it('turns the guests cell into a popover trigger that keeps its name', () => {
     function Harness() {
-      const [counts, setCounts] = useState<GuestCounts>({ adults: 2, children: 0, infants: 0, pets: 0 });
+      const [counts, setCounts] = useState<GuestCounts>({
+        adults: 2,
+        children: 0,
+        infants: 0,
+        pets: 0,
+      });
       return (
         <BookingCard
           testID="card"
@@ -288,7 +315,9 @@ describe('PriceBreakdown', () => {
     const text = byTestId('pb').textContent ?? '';
     expect(text).toContain('−$90');
     expect(text).toContain('Total (USD)');
-    const discount = [...byTestId('pb').querySelectorAll('div')].find((d) => d.textContent === '−$90');
+    const discount = [...byTestId('pb').querySelectorAll('div')].find(
+      (d) => d.textContent === '−$90',
+    );
     expect(discount).toBeDefined();
     expect(getComputedStyle(discount as HTMLElement).color).toBe(
       css(resolveAccentColors(theme().colors, 'success', 'outlined').foreground),
@@ -297,17 +326,29 @@ describe('PriceBreakdown', () => {
 
   it('makes a label with onPressLabel an underlined, named button', () => {
     const onPress = jest.fn();
-    mount(<PriceBreakdown testID="pb" rows={[{ label: 'Service fee', amount: '$20', onPressLabel: onPress }]} />);
+    mount(
+      <PriceBreakdown
+        testID="pb"
+        rows={[{ label: 'Service fee', amount: '$20', onPressLabel: onPress }]}
+      />,
+    );
     const link = byLabel('Service fee');
     expect(link.getAttribute('role')).toBe('button');
     click(link);
     expect(onPress).toHaveBeenCalledTimes(1);
-    const label = [...link.querySelectorAll('div')].find((d) => d.textContent === 'Service fee') ?? link;
-    expect(getComputedStyle(label).textDecorationLine || getComputedStyle(label).textDecoration).toContain('underline');
+    const label = getByText(link, 'Service fee');
+    expect(
+      getComputedStyle(label).textDecorationLine || getComputedStyle(label).textDecoration,
+    ).toContain('underline');
   });
 
   it('makes a label with details a popover trigger', () => {
-    mount(<PriceBreakdown testID="pb" rows={[{ label: 'Service fee', amount: '$20', details: 'Why' }]} />);
+    mount(
+      <PriceBreakdown
+        testID="pb"
+        rows={[{ label: 'Service fee', amount: '$20', details: 'Why' }]}
+      />,
+    );
     const link = byLabel('Service fee');
     expect(link.getAttribute('aria-haspopup')).toBe('dialog');
     expect(link.getAttribute('aria-expanded')).toBe('false');
@@ -321,8 +362,21 @@ describe('PriceBreakdown', () => {
 });
 
 describe('GuestPicker in a booking card', () => {
-  function Harness({ onChange, maxGuests, onClose }: { onChange?: (c: GuestCounts) => void; maxGuests?: number; onClose?: () => void }) {
-    const [counts, setCounts] = useState<GuestCounts>({ adults: 2, children: 1, infants: 0, pets: 0 });
+  function Harness({
+    onChange,
+    maxGuests,
+    onClose,
+  }: {
+    onChange?: (c: GuestCounts) => void;
+    maxGuests?: number;
+    onClose?: () => void;
+  }) {
+    const [counts, setCounts] = useState<GuestCounts>({
+      adults: 2,
+      children: 1,
+      infants: 0,
+      pets: 0,
+    });
     return (
       <GuestPicker
         testID="gs"
@@ -496,7 +550,9 @@ describe('TripCard', () => {
   });
 
   it('passes a URL through and resolves an id', () => {
-    const resolver = jest.fn((id: string, variant?: string) => `https://cdn.test/${id}/${variant ?? 'full'}.jpg`);
+    const resolver = jest.fn(
+      (id: string, variant?: string) => `https://cdn.test/${id}/${variant ?? 'full'}.jpg`,
+    );
     mount(
       <ImageResolverProvider value={resolver}>
         <TripCard testID="a" title="A" image="file-123" imageVariant="medium" />

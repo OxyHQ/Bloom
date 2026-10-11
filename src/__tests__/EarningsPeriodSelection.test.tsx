@@ -6,14 +6,33 @@ import type { EarningsChartCardProps } from '../chart-cards/EarningsChartCard';
 import type { EarningsPeriod } from '../earnings/types';
 
 let chartProps: EarningsChartCardProps;
-jest.mock('../chart-cards', () => ({ EarningsChartCard: (props: EarningsChartCardProps) => { chartProps = props; return null; } }));
+jest.mock('../chart-cards', () => ({
+  EarningsChartCard: (props: EarningsChartCardProps) => {
+    chartProps = props;
+    return null;
+  },
+}));
 
 it('clears the active bar when the parent changes period, including when returning to the old period', () => {
   const periods: EarningsPeriod[] = [
-    { id: 'week', label: 'Week', total: '€100', bars: [{ label: 'Mon', value: 10, amount: '€10' }] },
-    { id: 'month', label: 'Month', total: '€900', bars: [{ label: 'First', value: 90, amount: '€90' }] },
+    {
+      id: 'week',
+      label: 'Week',
+      total: '€100',
+      bars: [{ label: 'Mon', value: 10, amount: '€10' }],
+    },
+    {
+      id: 'month',
+      label: 'Month',
+      total: '€900',
+      bars: [{ label: 'First', value: 90, amount: '€90' }],
+    },
   ];
-  const ui = (period: string) => <BloomThemeProvider mode="light" colorPreset="teal"><EarningsSummary periods={periods} period={period} /></BloomThemeProvider>;
+  const ui = (period: string) => (
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      <EarningsSummary periods={periods} period={period} />
+    </BloomThemeProvider>
+  );
   const screen = render(ui('week'));
   act(() => chartProps.onActiveIndexChange!(0));
   expect(chartProps.activeIndex).toBe(0);

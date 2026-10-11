@@ -9,15 +9,15 @@ import { InputOtp } from './index';
 
 const meta: Meta<typeof InputOtp> = {
   argTypes: {
-    "length": { control: 'number' },
-    "type": { control: 'select', options: ['numeric', 'alphanumeric'] },
-    "value": { control: 'text' },
-    "defaultValue": { control: 'text' },
-    "invalid": { control: 'boolean' },
-    "isDisabled": { control: 'boolean' },
-    "disabled": { control: 'boolean' },
-    "groupEvery": { control: 'number' },
-    "autoFocus": { control: 'boolean' }
+    length: { control: 'number' },
+    type: { control: 'select', options: ['numeric', 'alphanumeric'] },
+    value: { control: 'text' },
+    defaultValue: { control: 'text' },
+    invalid: { control: 'boolean' },
+    isDisabled: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+    groupEvery: { control: 'number' },
+    autoFocus: { control: 'boolean' },
   },
   title: 'Base/Input OTP',
   component: InputOtp,
@@ -48,15 +48,22 @@ export const Matrix: Story = {
   parameters: { controls: { disable: true } },
   render: function MatrixStory() {
     return (
-    <View style={{ backgroundColor: useTheme().colors.background, gap: 16, width: '100%', maxWidth: 400 }}>
-      <InputOtp testID="otp-empty" />
-      <InputOtp defaultValue="123456" />
-      <InputOtp defaultValue="123" groupEvery={3} />
-      <InputOtp defaultValue="12" invalid />
-      <InputOtp defaultValue="12" isDisabled />
-      <InputOtp length={4} defaultValue="4" />
-      <InputOtp type="alphanumeric" length={10} groupEvery={5} defaultValue="7K3QXM9P2T" />
-    </View>
+      <View
+        style={{
+          backgroundColor: useTheme().colors.background,
+          gap: 16,
+          width: '100%',
+          maxWidth: 400,
+        }}
+      >
+        <InputOtp testID="otp-empty" />
+        <InputOtp defaultValue="123456" />
+        <InputOtp defaultValue="123" groupEvery={3} />
+        <InputOtp defaultValue="12" invalid />
+        <InputOtp defaultValue="12" isDisabled />
+        <InputOtp length={4} defaultValue="4" />
+        <InputOtp type="alphanumeric" length={10} groupEvery={5} defaultValue="7K3QXM9P2T" />
+      </View>
     );
   },
 };
@@ -66,7 +73,14 @@ function AlphanumericControlled() {
   const [done, setDone] = useState<string | null>(null);
   return (
     <View style={{ gap: 12 }}>
-      <InputOtp type="alphanumeric" length={10} groupEvery={5} value={code} onChange={setCode} onComplete={setDone} />
+      <InputOtp
+        type="alphanumeric"
+        length={10}
+        groupEvery={5}
+        value={code}
+        onChange={setCode}
+        onComplete={setDone}
+      />
       <Text>{done ? `Complete: ${done}` : `Typed: ${code || '—'} (paste ABCDE-12345)`}</Text>
     </View>
   );
@@ -81,5 +95,8 @@ export const Alphanumeric: Story = {
 /** Edit the props in Controls; interactive state stays in sync. */
 export const Playground: Story = {
   args: { value: '', length: 6, groupEvery: 3, invalid: false, disabled: false },
-  render: function PlaygroundOtp(args) { const [, updateArgs] = useArgs(); return <InputOtp {...args} onChange={(value) => updateArgs({ value })} />; },
+  render: function PlaygroundOtp(args) {
+    const [, updateArgs] = useArgs();
+    return <InputOtp {...args} onChange={(value) => updateArgs({ value })} />;
+  },
 };

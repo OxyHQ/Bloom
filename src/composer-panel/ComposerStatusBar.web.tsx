@@ -13,9 +13,9 @@ import type { ComposerStatusBarProps } from './types';
 export function ComposerStatusBar(props: ComposerStatusBarProps) {
   return (
     <ComposerButtonContext.Provider value={Button}>
-    <ComposerPopoverContext.Provider value={ComposerPopover}>
-      <ComposerStatusBarBase {...props} />
-    </ComposerPopoverContext.Provider>
+      <ComposerPopoverContext.Provider value={ComposerPopover}>
+        <ComposerStatusBarBase {...props} />
+      </ComposerPopoverContext.Provider>
     </ComposerButtonContext.Provider>
   );
 }

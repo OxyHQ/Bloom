@@ -92,7 +92,8 @@ function resolveLocal(fromFile: string, spec: string): string | null {
 function localSpecifiers(text: string): string[] {
   const stripped = text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   const out: string[] = [];
-  const re = /from\s+['"]([^'"]+)['"]|require\(\s*['"]([^'"]+)['"]\s*\)|import\(\s*['"]([^'"]+)['"]\s*\)/g;
+  const re =
+    /from\s+['"]([^'"]+)['"]|require\(\s*['"]([^'"]+)['"]\s*\)|import\(\s*['"]([^'"]+)['"]\s*\)/g;
   for (const match of stripped.matchAll(re)) {
     const spec = match[1] ?? match[2] ?? match[3];
     if (spec?.startsWith('.')) out.push(spec);
@@ -210,7 +211,8 @@ describe('web forks are reachable off Metro', () => {
 
   it('resolves every browser entry back to a real source file', () => {
     const declared = Object.values(exportsMap).filter(
-      (value) => typeof value !== 'string' && (value as Record<string, unknown>).browser !== undefined,
+      (value) =>
+        typeof value !== 'string' && (value as Record<string, unknown>).browser !== undefined,
     ).length;
     expect(entries.length).toBe(declared);
   });
@@ -280,7 +282,10 @@ describe('web-only files name the .web sibling, never the neutral barrel', () =>
   const offenders = pairs
     .map(({ file, spec }) => ({ file, spec, target: reachesNativeFromWeb(file, spec) }))
     .filter((hit) => hit.target !== null)
-    .map((hit) => `${relative(SRC, hit.file)}: '${hit.spec}' -> ${relative(SRC, hit.target as string)}`)
+    .map(
+      (hit) =>
+        `${relative(SRC, hit.file)}: '${hit.spec}' -> ${relative(SRC, hit.target as string)}`,
+    )
     .sort();
 
   it('reads web files, their imports, and the forked targets they could hit', () => {
@@ -289,9 +294,7 @@ describe('web-only files name the .web sibling, never the neutral barrel', () =>
     // returns true all report.
     expect(allWebForks.length).toBeGreaterThanOrEqual(30);
     expect(pairs.length).toBeGreaterThanOrEqual(100);
-    const forkedStems = new Set(
-      allWebForks.map((file) => file.replace(/\.web\.tsx?$/, '')),
-    );
+    const forkedStems = new Set(allWebForks.map((file) => file.replace(/\.web\.tsx?$/, '')));
     expect([...forkedStems].filter(hasWebVariant).length).toBeGreaterThanOrEqual(30);
   });
 

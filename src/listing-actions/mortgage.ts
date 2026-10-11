@@ -19,7 +19,12 @@ function finite(value: number, fallback = 0): number {
  * Nothing is rounded — format for display. An ESTIMATE: no fees, taxes,
  * insurance or rate changes.
  */
-export function computeMortgage({ price, downPayment, years, annualRate }: MortgageInput): MortgageResult {
+export function computeMortgage({
+  price,
+  downPayment,
+  years,
+  annualRate,
+}: MortgageInput): MortgageResult {
   const safePrice = Math.max(0, finite(price));
   const down = Math.min(safePrice, Math.max(0, finite(downPayment)));
   const loanAmount = safePrice - down;
@@ -28,7 +33,8 @@ export function computeMortgage({ price, downPayment, years, annualRate }: Mortg
 
   let monthlyPayment = 0;
   if (payments > 0 && loanAmount > 0) {
-    monthlyPayment = r === 0 ? loanAmount / payments : (loanAmount * r) / (1 - Math.pow(1 + r, -payments));
+    monthlyPayment =
+      r === 0 ? loanAmount / payments : (loanAmount * r) / (1 - Math.pow(1 + r, -payments));
   }
   const totalRepaid = monthlyPayment * payments;
   const totalInterest = payments > 0 ? Math.max(0, totalRepaid - loanAmount) : 0;

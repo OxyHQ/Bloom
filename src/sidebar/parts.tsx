@@ -1,6 +1,20 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
-import { Platform, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
+import {
+  Platform,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+  type SharedValue,
+} from 'react-native-reanimated';
 import Svg, { Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { Avatar } from '../avatar';
@@ -34,9 +48,12 @@ export function useSidebarCollapseProgress(collapsed: boolean): SharedValue<numb
   const local = useSharedValue(collapsed ? 1 : 0);
   useEffect(() => {
     if (!context) {
-      local.value = reducedMotion ? Number(collapsed) : withTiming(Number(collapsed), {
-        duration: MORPH_MS, easing: Easing.bezier(0.4, 0, 0.2, 1),
-      });
+      local.value = reducedMotion
+        ? Number(collapsed)
+        : withTiming(Number(collapsed), {
+            duration: MORPH_MS,
+            easing: Easing.bezier(0.4, 0, 0.2, 1),
+          });
     }
   }, [collapsed, context, local, reducedMotion]);
   return context ?? local;
@@ -74,10 +91,26 @@ export function Collapsible({
 
   return (
     <Animated.View
-      style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden', ...(stretch ? { flex: 1 } : {}) }, style, animated]}
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          minWidth: 0,
+          flexShrink: 1,
+          overflow: 'hidden',
+          ...(stretch ? { flex: 1 } : {}),
+        },
+        style,
+        animated,
+      ]}
     >
       <View
-        style={{ flexDirection: 'row', alignItems: 'center', flexShrink: stretch ? 1 : 0, ...(stretch ? { flex: 1, minWidth: 0 } : {}) }}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          flexShrink: stretch ? 1 : 0,
+          ...(stretch ? { flex: 1, minWidth: 0 } : {}),
+        }}
         onLayout={(event: LayoutChangeEvent) => {
           natural.value = event.nativeEvent.layout.width;
         }}
@@ -135,7 +168,10 @@ let gradientIds = 0;
 export function GradientFill({ from, to, radius }: { from: string; to: string; radius: number }) {
   const id = useMemo(() => `bloom-sidebar-gradient${gradientIds++}`, []);
   return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}>
+    <View
+      pointerEvents="none"
+      style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}
+    >
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">

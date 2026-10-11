@@ -36,7 +36,8 @@ function ConnectBannerComponent({
   const Glyph = DEVICE_GLYPHS[kind];
   // A caller's `label` keeps the "<label> <device>" shape; the catalog's
   // sentence places the device where the language does.
-  const text = label !== undefined ? `${label} ${deviceName}` : messages.listeningOnDevice(deviceName);
+  const text =
+    label !== undefined ? `${label} ${deviceName}` : messages.listeningOnDevice(deviceName);
   const fg = theme.colors.primaryForeground;
   const bg = hovered && onPress ? (theme.isDark ? accent[400] : accent[600]) : accent[500];
 

@@ -125,12 +125,17 @@ export function MultiAxisPlot({
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setSize((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
+    setSize((prev) =>
+      prev && prev.width === width && prev.height === height ? prev : { width, height },
+    );
   }, []);
 
   const count = categories.length;
   const box = useMemo(
-    () => (size ? multiAxisPlotBox(size.width, size.height, axis.width, rightAxis?.width ?? 0, margin) : null),
+    () =>
+      size
+        ? multiAxisPlotBox(size.width, size.height, axis.width, rightAxis?.width ?? 0, margin)
+        : null,
     [size, axis.width, rightAxis?.width, margin],
   );
 
@@ -159,7 +164,10 @@ export function MultiAxisPlot({
     const measured = categories.every((label, i) => labelWidths[`${i}:${label}`] !== undefined);
     if (!measured) return null;
     return placeTicks(
-      categories.map((label, i) => ({ coordinate: labelX(i, box), size: labelWidths[`${i}:${label}`]! })),
+      categories.map((label, i) => ({
+        coordinate: labelX(i, box),
+        size: labelWidths[`${i}:${label}`]!,
+      })),
       size.width,
       xInterval,
     );
@@ -169,7 +177,9 @@ export function MultiAxisPlot({
     (px: number, py: number) => {
       if (!box || count === 0) return;
       if (inPlot(px, py, box)) {
-        onActiveIndexChange(xScale === 'band' ? bandIndex(px, count, box) : nearestPointIndex(px, count, box));
+        onActiveIndexChange(
+          xScale === 'band' ? bandIndex(px, count, box) : nearestPointIndex(px, count, box),
+        );
       } else if (outside === 'clear') {
         onActiveIndexChange(null);
       }
@@ -186,8 +196,10 @@ export function MultiAxisPlot({
           onStartShouldSetResponder: () => true,
           onMoveShouldSetResponder: () => true,
           onResponderTerminationRequest: () => false,
-          onResponderGrant: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
-          onResponderMove: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderGrant: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderMove: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
           onResponderRelease: () => onActiveIndexChange(null),
           onResponderTerminate: () => onActiveIndexChange(null),
         }),
@@ -204,7 +216,12 @@ export function MultiAxisPlot({
               size,
               box,
               x: (i) => labelX(i, box),
-              band: xScale === 'band' ? bandSize(count, box) : count > 1 ? (box.right - box.left) / (count - 1) : 0,
+              band:
+                xScale === 'band'
+                  ? bandSize(count, box)
+                  : count > 1
+                    ? (box.right - box.left) / (count - 1)
+                    : 0,
               y: (v) => scaleY(v, axis.domain, box),
               yRight: (v) => scaleY(v, (rightAxis ?? axis).domain, box),
             })}
@@ -215,10 +232,16 @@ export function MultiAxisPlot({
               pointerEvents="none"
               style={{
                 position: 'absolute',
-                ...boundedLabelSlot(size.width, box.left - TICK_SIZE - Y_TICK_MARGIN, 'end', LABEL_SLOT),
+                ...boundedLabelSlot(
+                  size.width,
+                  box.left - TICK_SIZE - Y_TICK_MARGIN,
+                  'end',
+                  LABEL_SLOT,
+                ),
                 top: tick.y + Y_LABEL_TOP_OFFSET,
                 alignItems: 'flex-end',
-              }}>
+              }}
+            >
               <Text numberOfLines={1} style={[Y_TICK_TYPE, tickColor, { maxWidth: '100%' }]}>
                 {axis.format(tick.value)}
               </Text>
@@ -231,10 +254,16 @@ export function MultiAxisPlot({
                   pointerEvents="none"
                   style={{
                     position: 'absolute',
-                    ...boundedLabelSlot(size.width, box.right + TICK_SIZE + Y_TICK_MARGIN, 'start', LABEL_SLOT),
+                    ...boundedLabelSlot(
+                      size.width,
+                      box.right + TICK_SIZE + Y_TICK_MARGIN,
+                      'start',
+                      LABEL_SLOT,
+                    ),
                     top: tick.y + Y_LABEL_TOP_OFFSET,
-                        alignItems: 'flex-start',
-                  }}>
+                    alignItems: 'flex-start',
+                  }}
+                >
                   <Text numberOfLines={1} style={[Y_TICK_TYPE, tickColor, { maxWidth: '100%' }]}>
                     {rightAxis.format(tick.value)}
                   </Text>
@@ -250,18 +279,25 @@ export function MultiAxisPlot({
                 pointerEvents="none"
                 style={{
                   position: 'absolute',
-                  ...boundedLabelSlot(size.width, placed?.tickCoord ?? size.width / 2, 'middle', LABEL_SLOT),
+                  ...boundedLabelSlot(
+                    size.width,
+                    placed?.tickCoord ?? size.width / 2,
+                    'middle',
+                    LABEL_SLOT,
+                  ),
                   top: box.bottom + X_LABEL_TOP_OFFSET,
-                    alignItems: 'center',
+                  alignItems: 'center',
                   opacity: placed ? 1 : 0,
-                }}>
+                }}
+              >
                 <Text
                   numberOfLines={1}
                   style={[X_TICK_TYPE, tickColor, { maxWidth: '100%' }]}
                   onLayout={(event) => {
                     const w = event.nativeEvent.layout.width;
                     setLabelWidths((prev) => (prev[key] === w ? prev : { ...prev, [key]: w }));
-                  }}>
+                  }}
+                >
                   {label}
                 </Text>
               </View>

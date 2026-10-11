@@ -16,7 +16,8 @@ import type { PaymentStatusState } from './types';
  * English; the components speak `PAYMENT_STATUS_MESSAGES` in the resolved
  * locale.
  */
-export const PAYMENT_STATUS_LABELS: Record<PaymentStatusState, string> = PAYMENT_STATUS_MESSAGES.en.states;
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatusState, string> =
+  PAYMENT_STATUS_MESSAGES.en.states;
 
 /**
  * The tone each state paints.

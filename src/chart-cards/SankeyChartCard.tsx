@@ -204,13 +204,26 @@ export function SankeyChartCard({
 
   const resolvedLinks = useMemo(() => {
     const indexOf = (ref: string | number) =>
-      typeof ref === 'number' ? ref : Math.max(0, nodes.findIndex((n) => n.name === ref));
-    return links.map((l) => ({ source: indexOf(l.source), target: indexOf(l.target), value: l.value }));
+      typeof ref === 'number'
+        ? ref
+        : Math.max(
+            0,
+            nodes.findIndex((n) => n.name === ref),
+          );
+    return links.map((l) => ({
+      source: indexOf(l.source),
+      target: indexOf(l.target),
+      value: l.value,
+    }));
   }, [links, nodes]);
 
   const stats = useMemo(() => {
-    const outflow = nodes.map((_, i) => resolvedLinks.filter((l) => l.source === i).reduce((s, l) => s + l.value, 0));
-    const inflow = nodes.map((_, i) => resolvedLinks.filter((l) => l.target === i).reduce((s, l) => s + l.value, 0));
+    const outflow = nodes.map((_, i) =>
+      resolvedLinks.filter((l) => l.source === i).reduce((s, l) => s + l.value, 0),
+    );
+    const inflow = nodes.map((_, i) =>
+      resolvedLinks.filter((l) => l.target === i).reduce((s, l) => s + l.value, 0),
+    );
     const isSource = nodes.map((_, i) => inflow[i] === 0);
     const isSink = nodes.map((_, i) => outflow[i] === 0);
     const nodeValue = nodes.map((_, i) => Math.max(inflow[i]!, outflow[i]!));
@@ -222,7 +235,9 @@ export function SankeyChartCard({
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height: h } = event.nativeEvent.layout;
-    setSize((prev) => (prev && prev.width === width && prev.height === h ? prev : { width, height: h }));
+    setSize((prev) =>
+      prev && prev.width === width && prev.height === h ? prev : { width, height: h },
+    );
   }, []);
 
   const compact = size !== null && size.width < COMPACT_WIDTH;
@@ -239,27 +254,49 @@ export function SankeyChartCard({
     });
     return [...words.values()];
   }, [nodes, stats]);
-  const longestWord = (source: boolean) => labelWords.filter(word => word.source === source).reduce((width, word) => Math.max(width, wordWidths[word.key] ?? word.word.length * 7), 0);
+  const longestWord = (source: boolean) =>
+    labelWords
+      .filter((word) => word.source === source)
+      .reduce((width, word) => Math.max(width, wordWidths[word.key] ?? word.word.length * 7), 0);
   const plotWidth = size?.width ?? 0;
   const desiredLeft = Math.max(plotWidth * 0.24, longestWord(true) + LABEL_GAP + 1);
   const desiredRight = Math.max(plotWidth * 0.32, longestWord(false) + LABEL_GAP + 1);
   // Let whole words use more than the baseline gutters, but retain two node
   // bars and at least36px of actual ribbon even in an unusually narrow host.
-  const gutterScale = Math.min(1, Math.max(0, plotWidth - NODE_WIDTH * 2 - 36) / (desiredLeft + desiredRight || 1));
+  const gutterScale = Math.min(
+    1,
+    Math.max(0, plotWidth - NODE_WIDTH * 2 - 36) / (desiredLeft + desiredRight || 1),
+  );
   const leftGutter = Math.round(desiredLeft * gutterScale);
   const rightGutter = Math.round(desiredRight * gutterScale);
-  const [measuredLabels, setMeasuredLabels] = useState<Record<number, { key: string; height: number }>>({});
+  const [measuredLabels, setMeasuredLabels] = useState<
+    Record<number, { key: string; height: number }>
+  >({});
   const compactLabels = nodes.map((node, index) => {
     const source = !!stats.isSource[index] && !stats.isSink[index];
     const width = Math.max(1, (source ? leftGutter : rightGutter) - LABEL_GAP);
-    const share = stats.sinkTotal > 0 ? Math.round(((stats.nodeValue[index] ?? 0) / stats.sinkTotal) * 100) : 0;
+    const share =
+      stats.sinkTotal > 0 ? Math.round(((stats.nodeValue[index] ?? 0) / stats.sinkTotal) * 100) : 0;
     const value = `${format(stats.nodeValue[index] ?? 0)}${stats.isSink[index] ? ` · ${share}%` : ''}`;
     const key = `${width}:${node.name}:${value}`;
     // Reserve space before text measurement, then use the actual wrapped height.
-    const estimated = Math.ceil(node.name.length * 7 / width) * 18 + Math.ceil(value.length * 6 / width) * 16 + 2;
-    return { index, source, width, value, key, height: measuredLabels[index]?.key === key ? measuredLabels[index]!.height : estimated };
+    const estimated =
+      Math.ceil((node.name.length * 7) / width) * 18 +
+      Math.ceil((value.length * 6) / width) * 16 +
+      2;
+    return {
+      index,
+      source,
+      width,
+      value,
+      key,
+      height: measuredLabels[index]?.key === key ? measuredLabels[index]!.height : estimated,
+    };
   });
-  const columnHeight = (source: boolean) => compactLabels.filter(label => source ? label.source : stats.isSink[label.index]).reduce((sum, label) => sum + label.height + LABEL_GAP, 0);
+  const columnHeight = (source: boolean) =>
+    compactLabels
+      .filter((label) => (source ? label.source : stats.isSink[label.index]))
+      .reduce((sum, label) => sum + label.height + LABEL_GAP, 0);
   const compactPlotHeight = Math.max(180, height - 128, columnHeight(true), columnHeight(false));
 
   const layout = useMemo<SankeyLayout | null>(
@@ -279,10 +316,31 @@ export function SankeyChartCard({
     [size, nodes.length, resolvedLinks, compact, leftGutter, rightGutter, compactPlotHeight],
   );
 
-  const compactLabelTops = compact && layout ? {
-    ...placeSankeyLabels(layout.nodes.filter(node => compactLabels[node.index]?.source).map(node => ({ index: node.index, center: node.y + node.height / 2, height: compactLabels[node.index]!.height })), compactPlotHeight),
-    ...placeSankeyLabels(layout.nodes.filter(node => stats.isSink[node.index]).map(node => ({ index: node.index, center: node.y + node.height / 2, height: compactLabels[node.index]!.height })), compactPlotHeight),
-  } : {};
+  const compactLabelTops =
+    compact && layout
+      ? {
+          ...placeSankeyLabels(
+            layout.nodes
+              .filter((node) => compactLabels[node.index]?.source)
+              .map((node) => ({
+                index: node.index,
+                center: node.y + node.height / 2,
+                height: compactLabels[node.index]!.height,
+              })),
+            compactPlotHeight,
+          ),
+          ...placeSankeyLabels(
+            layout.nodes
+              .filter((node) => stats.isSink[node.index])
+              .map((node) => ({
+                index: node.index,
+                center: node.y + node.height / 2,
+                height: compactLabels[node.index]!.height,
+              })),
+            compactPlotHeight,
+          ),
+        }
+      : {};
 
   const linkTouches = (li: number, ni: number) => {
     const l = resolvedLinks[li];
@@ -309,7 +367,10 @@ export function SankeyChartCard({
     return tones[(linkColor === 'target' ? l?.target : l?.source) ?? 0] ?? neutral;
   };
 
-  const nodeOpacities = useEasedValues(nodes.map((_, i) => nodeOpacity(i)), 200);
+  const nodeOpacities = useEasedValues(
+    nodes.map((_, i) => nodeOpacity(i)),
+    200,
+  );
   const nodeFills = useEasedValues(
     nodes.map((_, i) => (active?.type === 'node' && active.index === i ? 1 : 0)),
     150,
@@ -348,8 +409,10 @@ export function SankeyChartCard({
           onStartShouldSetResponder: () => true,
           onMoveShouldSetResponder: () => true,
           onResponderTerminationRequest: () => false,
-          onResponderGrant: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
-          onResponderMove: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderGrant: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderMove: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
           onResponderRelease: () => setActive(null),
           onResponderTerminate: () => setActive(null),
         }),
@@ -357,21 +420,51 @@ export function SankeyChartCard({
 
   const label =
     accessibilityLabel ??
-    `${title} flow diagram: ${nodes.filter((_, i) => stats.isSource[i]).map((n) => n.name).join(', ')} to ${nodes
+    `${title} flow diagram: ${nodes
+      .filter((_, i) => stats.isSource[i])
+      .map((n) => n.name)
+      .join(', ')} to ${nodes
       .filter((_, i) => stats.isSink[i] && !stats.isSource[i])
       .map((n) => n.name)
       .join(', ')}`;
 
   return (
     <ChartCardSurface height={compact ? 'auto' : height} style={style} testID={testID}>
-      {compact ? <View pointerEvents="none" accessibilityElementsHidden aria-hidden={true}
-        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 0, overflow: 'hidden', alignItems: 'flex-start' }}>
-        {labelWords.map(word => <Text key={word.key} accessible={false} style={[NAME_TYPE, { flexShrink: 0 }]}
-          onLayout={event => {
-            const width = event.nativeEvent.layout.width;
-            if (width > 0) setWordWidths(previous => previous[word.key] !== undefined && Math.abs(previous[word.key]! - width) < 0.5 ? previous : { ...previous, [word.key]: width });
-          }}>{word.word}</Text>)}
-      </View> : null}
+      {compact ? (
+        <View
+          pointerEvents="none"
+          accessibilityElementsHidden
+          aria-hidden={true}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 0,
+            overflow: 'hidden',
+            alignItems: 'flex-start',
+          }}
+        >
+          {labelWords.map((word) => (
+            <Text
+              key={word.key}
+              accessible={false}
+              style={[NAME_TYPE, { flexShrink: 0 }]}
+              onLayout={(event) => {
+                const width = event.nativeEvent.layout.width;
+                if (width > 0)
+                  setWordWidths((previous) =>
+                    previous[word.key] !== undefined && Math.abs(previous[word.key]! - width) < 0.5
+                      ? previous
+                      : { ...previous, [word.key]: width },
+                  );
+              }}
+            >
+              {word.word}
+            </Text>
+          ))}
+        </View>
+      ) : null}
       <ChartHeader
         label={headerLabel}
         value={headlineValue}
@@ -389,10 +482,29 @@ export function SankeyChartCard({
         testID={testID}
       />
 
-      <View style={compact ? { width: '100%', height: compactPlotHeight, flexShrink: 0, flexGrow: 0, flexBasis: 'auto' } : styles.plot} onLayout={onLayout} testID={testID ? `${testID}-plot` : undefined}>
+      <View
+        style={
+          compact
+            ? {
+                width: '100%',
+                height: compactPlotHeight,
+                flexShrink: 0,
+                flexGrow: 0,
+                flexBasis: 'auto',
+              }
+            : styles.plot
+        }
+        onLayout={onLayout}
+        testID={testID ? `${testID}-plot` : undefined}
+      >
         {size && layout ? (
           <>
-            <Svg width={size.width} height={compact ? compactPlotHeight : size.height} style={StyleSheet.absoluteFill} pointerEvents="none">
+            <Svg
+              width={size.width}
+              height={compact ? compactPlotHeight : size.height}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            >
               <G>
                 {layout.links.map((link) => (
                   <Path
@@ -410,24 +522,50 @@ export function SankeyChartCard({
                   return (
                     <G key={`node-${n.index}`} opacity={nodeOpacities[n.index] ?? 1}>
                       <Path
-                        d={sankeyNodePath(n.x, n.y, n.width, n.height, !!stats.isSource[n.index], !!stats.isSink[n.index])}
-                        fill={t <= 0 ? tone.color : t >= 1 ? tone.activeColor : mixColor(tone.color, tone.activeColor, t)}
+                        d={sankeyNodePath(
+                          n.x,
+                          n.y,
+                          n.width,
+                          n.height,
+                          !!stats.isSource[n.index],
+                          !!stats.isSink[n.index],
+                        )}
+                        fill={
+                          t <= 0
+                            ? tone.color
+                            : t >= 1
+                              ? tone.activeColor
+                              : mixColor(tone.color, tone.activeColor, t)
+                        }
                       />
                     </G>
                   );
                 })}
               </G>
-              {compact ? layout.nodes.map(node => {
-                const label = compactLabels[node.index]!;
-                const top = compactLabelTops[node.index];
-                if (top === undefined) return null;
-                const center = top + label.height / 2;
-                const nodeCenter = node.y + node.height / 2;
-                if (Math.abs(center - nodeCenter) < 2) return null;
-                const start = label.source ? node.x : node.x + node.width;
-                const end = label.source ? node.x - LABEL_GAP + 2 : node.x + node.width + LABEL_GAP - 2;
-                return <Path key={`leader-${node.index}`} d={`M${start},${nodeCenter} L${end},${center}`} fill="none" stroke={palette.textTertiary} strokeWidth={1} strokeOpacity={0.4} />;
-              }) : null}
+              {compact
+                ? layout.nodes.map((node) => {
+                    const label = compactLabels[node.index]!;
+                    const top = compactLabelTops[node.index];
+                    if (top === undefined) return null;
+                    const center = top + label.height / 2;
+                    const nodeCenter = node.y + node.height / 2;
+                    if (Math.abs(center - nodeCenter) < 2) return null;
+                    const start = label.source ? node.x : node.x + node.width;
+                    const end = label.source
+                      ? node.x - LABEL_GAP + 2
+                      : node.x + node.width + LABEL_GAP - 2;
+                    return (
+                      <Path
+                        key={`leader-${node.index}`}
+                        d={`M${start},${nodeCenter} L${end},${center}`}
+                        fill="none"
+                        stroke={palette.textTertiary}
+                        strokeWidth={1}
+                        strokeOpacity={0.4}
+                      />
+                    );
+                  })
+                : null}
             </Svg>
             {layout.nodes.map((n) => {
               const i = n.index;
@@ -437,21 +575,49 @@ export function SankeyChartCard({
               const opacity = nodeOpacities[i] ?? 1;
               if (compact && (stats.isSource[i] || stats.isSink[i])) {
                 const label = compactLabels[i]!;
-                return <View
-                  key={`label-${i}`}
-                  testID={testID ? `${testID}-label-box-${i}` : undefined}
-                  onLayout={event => {
-                    const measuredHeight = event.nativeEvent.layout.height;
-                    if (measuredHeight <= 0) return;
-                    setMeasuredLabels(previous => previous[i]?.key === label.key && Math.abs(previous[i]!.height - measuredHeight) < 0.5
-                      ? previous : { ...previous, [i]: { key: label.key, height: measuredHeight } });
-                  }}
-                  style={{ position: 'absolute', width: label.width, top: compactLabelTops[i] ?? 0,
-                    ...(label.source ? { left: 0 } : { right: 0 }), gap: 2, opacity }}>
-                  <Text testID={testID ? `${testID}-label-${i}` : undefined}
-                    style={[NAME_TYPE, { color: palette.text, textAlign: label.source ? 'right' : 'left' }]}>{node.name}</Text>
-                  <Text style={[VALUE_TYPE, TABULAR, { color: palette.textTertiary, textAlign: label.source ? 'right' : 'left' }]}>{label.value}</Text>
-                </View>;
+                return (
+                  <View
+                    key={`label-${i}`}
+                    testID={testID ? `${testID}-label-box-${i}` : undefined}
+                    onLayout={(event) => {
+                      const measuredHeight = event.nativeEvent.layout.height;
+                      if (measuredHeight <= 0) return;
+                      setMeasuredLabels((previous) =>
+                        previous[i]?.key === label.key &&
+                        Math.abs(previous[i]!.height - measuredHeight) < 0.5
+                          ? previous
+                          : { ...previous, [i]: { key: label.key, height: measuredHeight } },
+                      );
+                    }}
+                    style={{
+                      position: 'absolute',
+                      width: label.width,
+                      top: compactLabelTops[i] ?? 0,
+                      ...(label.source ? { left: 0 } : { right: 0 }),
+                      gap: 2,
+                      opacity,
+                    }}
+                  >
+                    <Text
+                      testID={testID ? `${testID}-label-${i}` : undefined}
+                      style={[
+                        NAME_TYPE,
+                        { color: palette.text, textAlign: label.source ? 'right' : 'left' },
+                      ]}
+                    >
+                      {node.name}
+                    </Text>
+                    <Text
+                      style={[
+                        VALUE_TYPE,
+                        TABULAR,
+                        { color: palette.textTertiary, textAlign: label.source ? 'right' : 'left' },
+                      ]}
+                    >
+                      {label.value}
+                    </Text>
+                  </View>
+                );
               }
               if (stats.isSource[i] && !stats.isSink[i]) {
                 const tall = n.height >= 26;
@@ -460,21 +626,35 @@ export function SankeyChartCard({
                   <React.Fragment key={`label-${i}`}>
                     <Text
                       numberOfLines={1}
-                        testID={testID ? `${testID}-label-${i}` : undefined}
+                      testID={testID ? `${testID}-label-${i}` : undefined}
                       style={[
                         NAME_TYPE,
-                        { position: 'absolute', right, top: textTopForBaseline(midY + (tall ? -2 : 4), NAME_TYPE), color: palette.text, opacity },
-                      ]}>
+                        {
+                          position: 'absolute',
+                          right,
+                          top: textTopForBaseline(midY + (tall ? -2 : 4), NAME_TYPE),
+                          color: palette.text,
+                          opacity,
+                        },
+                      ]}
+                    >
                       {node.name}
                     </Text>
                     {tall ? (
                       <Text
                         numberOfLines={1}
-                            style={[
+                        style={[
                           VALUE_TYPE,
                           TABULAR,
-                          { position: 'absolute', right, top: textTopForBaseline(midY + 14, VALUE_TYPE), color: palette.textTertiary, opacity },
-                        ]}>
+                          {
+                            position: 'absolute',
+                            right,
+                            top: textTopForBaseline(midY + 14, VALUE_TYPE),
+                            color: palette.textTertiary,
+                            opacity,
+                          },
+                        ]}
+                      >
                         {format(stats.nodeValue[i] ?? 0)}
                       </Text>
                     ) : null}
@@ -482,7 +662,10 @@ export function SankeyChartCard({
                 );
               }
               if (stats.isSink[i]) {
-                const share = stats.sinkTotal > 0 ? Math.round(((stats.nodeValue[i] ?? 0) / stats.sinkTotal) * 100) : 0;
+                const share =
+                  stats.sinkTotal > 0
+                    ? Math.round(((stats.nodeValue[i] ?? 0) / stats.sinkTotal) * 100)
+                    : 0;
                 return (
                   <Text
                     key={`label-${i}`}
@@ -497,9 +680,12 @@ export function SankeyChartCard({
                         color: palette.text,
                         opacity,
                       },
-                    ]}>
+                    ]}
+                  >
                     {node.name}
-                    <Text style={[SHARE_TYPE, TABULAR, { color: palette.textTertiary }]}>{` · ${share}%`}</Text>
+                    <Text
+                      style={[SHARE_TYPE, TABULAR, { color: palette.textTertiary }]}
+                    >{` · ${share}%`}</Text>
                   </Text>
                 );
               }
@@ -526,12 +712,16 @@ export function SankeyChartCard({
           </Text>
         </View>
       ) : null}
-
     </ChartCardSurface>
   );
 }
 
 const styles = StyleSheet.create({
   plot: { width: '100%', flex: 1, minHeight: 0 },
-  axisLabels: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 4 },
+  axisLabels: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 4,
+  },
 });

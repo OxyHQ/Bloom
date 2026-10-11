@@ -9,7 +9,13 @@ import * as ReactNative from 'react-native';
 import { render, within } from '@testing-library/react-native';
 
 import { AppShellHeader, NotificationBell, ProOfferCard } from '../app-shell';
-import { type CalendarViewEvent, CalendarViewEventDetails, CalendarViewHeader, CalendarViewMonthGrid, CalendarViewMonthSwitcher } from '../calendar';
+import {
+  type CalendarViewEvent,
+  CalendarViewEventDetails,
+  CalendarViewHeader,
+  CalendarViewMonthGrid,
+  CalendarViewMonthSwitcher,
+} from '../calendar';
 import { DataTable, type DataTableColumn } from '../data-table';
 import { LocaleProvider } from '../locale';
 import { Notification } from '../notification';
@@ -39,9 +45,10 @@ describe('calendar, data-table, notifications, app-shell', () => {
   let viewportWidth = 1300;
   beforeEach(() => {
     viewportWidth = 1300;
-    jest
-      .spyOn(ReactNative, 'useWindowDimensions')
-      .mockImplementation(() => ({ ...ReactNative.Dimensions.get('window'), width: viewportWidth }));
+    jest.spyOn(ReactNative, 'useWindowDimensions').mockImplementation(() => ({
+      ...ReactNative.Dimensions.get('window'),
+      width: viewportWidth,
+    }));
   });
   afterEach(() => jest.restoreAllMocks());
 
@@ -58,7 +65,9 @@ describe('calendar, data-table, notifications, app-shell', () => {
 
   describe('calendar speaks the provider locale', () => {
     it('names the month grid and counts the overflow in Spanish', () => {
-      const screen = renderIn(<CalendarViewMonthGrid testID="grid" month={AUGUST} events={busyDay(6)} />);
+      const screen = renderIn(
+        <CalendarViewMonthGrid testID="grid" month={AUGUST} events={busyDay(6)} />,
+      );
       expect(screen.getByLabelText('Mes')).toBeTruthy();
       expect(within(screen.getByTestId('grid-day-2026-7-20')).getByText('+2 más')).toBeTruthy();
       // Weekday headers follow the provider too, not the runtime.
@@ -66,10 +75,16 @@ describe('calendar, data-table, notifications, app-shell', () => {
     });
 
     it('pluralises the overflow line (French: one / other)', () => {
-      const one = renderIn(<CalendarViewMonthGrid testID="grid" month={AUGUST} events={busyDay(5)} />, 'fr');
+      const one = renderIn(
+        <CalendarViewMonthGrid testID="grid" month={AUGUST} events={busyDay(5)} />,
+        'fr',
+      );
       expect(within(one.getByTestId('grid-day-2026-7-20')).getByText('+1 autre')).toBeTruthy();
       one.unmount();
-      const many = renderIn(<CalendarViewMonthGrid testID="grid" month={AUGUST} events={busyDay(6)} />, 'fr');
+      const many = renderIn(
+        <CalendarViewMonthGrid testID="grid" month={AUGUST} events={busyDay(6)} />,
+        'fr',
+      );
       expect(within(many.getByTestId('grid-day-2026-7-20')).getByText('+2 autres')).toBeTruthy();
     });
 
@@ -97,11 +112,19 @@ describe('calendar, data-table, notifications, app-shell', () => {
 
     it('composes the switcher title name per language', () => {
       const screen = renderIn(
-        <CalendarViewMonthSwitcher testID="switcher" month={AUGUST} onPreviousMonth={() => {}} onNextMonth={() => {}} onSelectDate={() => {}} />,
+        <CalendarViewMonthSwitcher
+          testID="switcher"
+          month={AUGUST}
+          onPreviousMonth={() => {}}
+          onNextMonth={() => {}}
+          onSelectDate={() => {}}
+        />,
       );
       expect(screen.getByLabelText('Mes anterior')).toBeTruthy();
       expect(screen.getByLabelText('Mes siguiente')).toBeTruthy();
-      expect(screen.getByTestId('switcher-title').props.accessibilityLabel).toBe('agosto de 2026, elegir una fecha');
+      expect(screen.getByTestId('switcher-title').props.accessibilityLabel).toBe(
+        'agosto de 2026, elegir una fecha',
+      );
     });
 
     it('lets newEventLabel and the inbox labels win over the catalog', () => {
@@ -132,12 +155,23 @@ describe('calendar, data-table, notifications, app-shell', () => {
   describe('data-table speaks the provider locale', () => {
     it('names the checkboxes and the density control, and formats dates in the locale', () => {
       const screen = renderIn(
-        <DataTable accessibilityLabel="Personas" rows={ROWS} columns={COLUMNS} getRowId={(r) => r.id} selectable showSizeToggle />,
+        <DataTable
+          accessibilityLabel="Personas"
+          rows={ROWS}
+          columns={COLUMNS}
+          getRowId={(r) => r.id}
+          selectable
+          showSizeToggle
+        />,
       );
       expect(screen.getByLabelText('Seleccionar todas las filas de esta página')).toBeTruthy();
       expect(screen.getByLabelText('Seleccionar fila a')).toBeTruthy();
       expect(screen.getByText('Compacta')).toBeTruthy();
-      const expected = new Intl.DateTimeFormat('es', { year: 'numeric', month: 'numeric', day: 'numeric' }).format(ROWS[0]!.joined);
+      const expected = new Intl.DateTimeFormat('es', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      }).format(ROWS[0]!.joined);
       expect(screen.getByText(expected)).toBeTruthy();
     });
 
@@ -161,8 +195,24 @@ describe('calendar, data-table, notifications, app-shell', () => {
   });
 
   const ITEMS: NotificationCenterItem[] = [
-    { id: 'a', category: 'mentions', group: 'Hoy', title: 'Ana', description: 'Hola', timestamp: '2m', unread: true },
-    { id: 'b', category: 'system', group: 'Hoy', title: 'Copia', description: 'Lista', timestamp: '1h', unread: true },
+    {
+      id: 'a',
+      category: 'mentions',
+      group: 'Hoy',
+      title: 'Ana',
+      description: 'Hola',
+      timestamp: '2m',
+      unread: true,
+    },
+    {
+      id: 'b',
+      category: 'system',
+      group: 'Hoy',
+      title: 'Copia',
+      description: 'Lista',
+      timestamp: '1h',
+      unread: true,
+    },
   ];
 
   describe('notification-center speaks the provider locale', () => {
@@ -193,8 +243,14 @@ describe('calendar, data-table, notifications, app-shell', () => {
 
   describe('notification speaks the provider locale', () => {
     it('names the close button, and closeLabel still wins', () => {
-      expect(renderIn(<Notification title="Hola" />).getByLabelText('Descartar notificación')).toBeTruthy();
-      expect(renderIn(<Notification title="Hola" closeLabel="Quitar aviso" />).getByLabelText('Quitar aviso')).toBeTruthy();
+      expect(
+        renderIn(<Notification title="Hola" />).getByLabelText('Descartar notificación'),
+      ).toBeTruthy();
+      expect(
+        renderIn(<Notification title="Hola" closeLabel="Quitar aviso" />).getByLabelText(
+          'Quitar aviso',
+        ),
+      ).toBeTruthy();
     });
   });
 
@@ -205,16 +261,31 @@ describe('calendar, data-table, notifications, app-shell', () => {
       expect(header.getByLabelText('Abrir navegación')).toBeTruthy();
       header.unmount();
       viewportWidth = 1440;
-      expect(renderIn(<NotificationBell testID="bell" notifications={ITEMS} />).getAllByLabelText('Notificaciones').length).toBeGreaterThan(0);
       expect(
-        renderIn(<ProOfferCard testID="offer" title="Pro" description="d" ctaLabel="Obtener Pro" onDismiss={() => {}} />).getByTestId('offer')
-          .props.accessibilityLabel,
+        renderIn(<NotificationBell testID="bell" notifications={ITEMS} />).getAllByLabelText(
+          'Notificaciones',
+        ).length,
+      ).toBeGreaterThan(0);
+      expect(
+        renderIn(
+          <ProOfferCard
+            testID="offer"
+            title="Pro"
+            description="d"
+            ctaLabel="Obtener Pro"
+            onDismiss={() => {}}
+          />,
+        ).getByTestId('offer').props.accessibilityLabel,
       ).toBe('Oferta Pro');
     });
 
     it('lets menuLabel win', () => {
       viewportWidth = 700;
-      expect(renderIn(<AppShellHeader title="Inicio" onMenuPress={() => {}} menuLabel="Menú" />).getByLabelText('Menú')).toBeTruthy();
+      expect(
+        renderIn(
+          <AppShellHeader title="Inicio" onMenuPress={() => {}} menuLabel="Menú" />,
+        ).getByLabelText('Menú'),
+      ).toBeTruthy();
     });
   });
 });

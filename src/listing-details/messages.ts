@@ -33,25 +33,29 @@ export interface ListingDetailsMessages {
   message: string;
 }
 
-export const LISTING_DETAILS_MESSAGES: MessageCatalog<ListingDetailsMessages> = defineMessages<ListingDetailsMessages>('LISTING_DETAILS_MESSAGES', {
-  ratedOutOf5: (r) => `Rated ${r} out of 5`,
-  overallRating: 'Overall rating',
-  unavailable: 'Unavailable',
-  showAllAmenities: (n) => plural('en', n, { one: 'Show {n} amenity', other: 'Show all {n} amenities' }),
-  showAllFeatures: (n) => plural('en', n, { one: 'Show {n} feature', other: 'Show all {n} features' }),
-  propertyFeatures: 'Property features',
-  showAllPhotos: 'Show all photos',
-  listingPhotos: 'Listing photos',
-  photoOf: (p, t) => `Photo ${p} of ${t}`,
-  photoWithAlt: (a, p, t) => `${a}, photo ${p} of ${t}`,
-  floorPlanOf: (a, p, t) => `${a}, floor plan ${p} of ${t}`,
-  landlord: 'Landlord',
-  agent: 'Agent',
-  agency: 'Agency',
-  activeListings: (n) => plural('en', n, { one: '{n} active listing', other: '{n} active listings' }),
-  verified: 'Verified',
-  showPhone: 'Show phone',
-  call: 'Call',
-  messageHost: 'Message host',
-  message: 'Message',
-});
+export const LISTING_DETAILS_MESSAGES: MessageCatalog<ListingDetailsMessages> =
+  defineMessages<ListingDetailsMessages>('LISTING_DETAILS_MESSAGES', {
+    ratedOutOf5: (r) => `Rated ${r} out of 5`,
+    overallRating: 'Overall rating',
+    unavailable: 'Unavailable',
+    showAllAmenities: (n) =>
+      plural('en', n, { one: 'Show {n} amenity', other: 'Show all {n} amenities' }),
+    showAllFeatures: (n) =>
+      plural('en', n, { one: 'Show {n} feature', other: 'Show all {n} features' }),
+    propertyFeatures: 'Property features',
+    showAllPhotos: 'Show all photos',
+    listingPhotos: 'Listing photos',
+    photoOf: (p, t) => `Photo ${p} of ${t}`,
+    photoWithAlt: (a, p, t) => `${a}, photo ${p} of ${t}`,
+    floorPlanOf: (a, p, t) => `${a}, floor plan ${p} of ${t}`,
+    landlord: 'Landlord',
+    agent: 'Agent',
+    agency: 'Agency',
+    activeListings: (n) =>
+      plural('en', n, { one: '{n} active listing', other: '{n} active listings' }),
+    verified: 'Verified',
+    showPhone: 'Show phone',
+    call: 'Call',
+    messageHost: 'Message host',
+    message: 'Message',
+  });

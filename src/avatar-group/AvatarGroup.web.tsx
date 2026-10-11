@@ -8,11 +8,7 @@ import { HoverCardPanel } from '../hover-card/HoverCardPanel';
 import { useHoverIntent } from '../hover-card/use-hover-intent';
 import { useMessages } from '../locale/messages';
 import { UserHoverCard } from '../user-hover-card';
-import {
-  AvatarGroupBase,
-  getItemName,
-  type AvatarGroupCellHoverHandlers,
-} from './AvatarGroupBase';
+import { AvatarGroupBase, getItemName, type AvatarGroupCellHoverHandlers } from './AvatarGroupBase';
 import { AVATAR_GROUP_MESSAGES } from './messages';
 import type { AvatarGroupItem, AvatarGroupProps } from './types';
 
@@ -84,7 +80,8 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
           onDismiss={dismiss}
           onPointerEnter={hold}
           onPointerLeave={hide}
-          label={getItemName(target.item) ?? messages.profile}>
+          label={getItemName(target.item) ?? messages.profile}
+        >
           <UserHoverCard
             avatar={target.item.uri ?? undefined}
             // `UserHoverCardProps.displayName` is contractually an
@@ -93,9 +90,7 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
             // item named the person at all, so there is nothing to show.
             displayName={getItemName(target.item) ?? ''}
             username={target.item.username}
-            onPressProfile={
-              onPressItem ? () => onPressItem(target.item, target.index) : undefined
-            }
+            onPressProfile={onPressItem ? () => onPressItem(target.item, target.index) : undefined}
             action={renderItemAction?.(target.item, target.index)}
           />
         </HoverCardPanel>

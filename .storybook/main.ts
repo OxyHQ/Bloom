@@ -10,10 +10,7 @@ const __dirname = path.dirname(__filename);
 const config: StorybookConfig = {
   // `templates/` holds full-screen templates as stories only: composed
   // from Bloom's components, never published (outside `src`, not in `files`).
-  stories: [
-    '../src/**/*.stories.@(ts|tsx|mdx)',
-    '../templates/**/*.stories.@(ts|tsx)',
-  ],
+  stories: ['../src/**/*.stories.@(ts|tsx|mdx)', '../templates/**/*.stories.@(ts|tsx)'],
   addons: ['@storybook/addon-docs'],
   staticDirs: [{ from: '../assets/character-runtime', to: '/bloom-character' }],
   framework: {
@@ -26,8 +23,7 @@ const config: StorybookConfig = {
       tsconfigPath: path.resolve(__dirname, 'tsconfig.json'),
       shouldExtractLiteralValuesFromEnum: true,
       shouldRemoveUndefinedFromOptional: true,
-      propFilter: (prop) =>
-        prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
+      propFilter: (prop) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
     },
   },
   core: {
@@ -73,19 +69,14 @@ const config: StorybookConfig = {
           // Reload the document so an edited adapter cannot mix with cached
           // engine modules or capability keys from the previous revision.
           configureServer(server: ViteDevServer) {
-            const directory = path.resolve(
-              __dirname,
-              '../assets/character-runtime',
-            );
+            const directory = path.resolve(__dirname, '../assets/character-runtime');
             server.watcher.add(directory);
             const reload = (file: string) => {
               if (file.startsWith(directory + path.sep))
                 server.ws.send({ type: 'full-reload', path: '*' });
             };
             server.watcher.on('change', reload);
-            server.httpServer?.once('close', () =>
-              server.watcher.off('change', reload),
-            );
+            server.httpServer?.once('close', () => server.watcher.off('change', reload));
           },
         },
         {
@@ -114,8 +105,7 @@ const config: StorybookConfig = {
           transformMixedEsModules: true,
           // Resolve only the installed RNW internals; preserve optional-peer
           // try/catch boundaries elsewhere in the graph.
-          ignoreTryCatch: (id: string) =>
-            !id.startsWith('react-native-web/dist/'),
+          ignoreTryCatch: (id: string) => !id.startsWith('react-native-web/dist/'),
         },
       },
       // Agent worktrees each carry a full `node_modules` and `lib/`; watching

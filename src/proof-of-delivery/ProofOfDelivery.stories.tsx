@@ -134,7 +134,11 @@ export const Everything: Story = {
               ...current,
               photos: [
                 ...(current.photos ?? []),
-                { id: `photo-${(current.photos ?? []).length + 1}`, uri: SWATCH, alt: 'Left at the door' },
+                {
+                  id: `photo-${(current.photos ?? []).length + 1}`,
+                  uri: SWATCH,
+                  alt: 'Left at the door',
+                },
               ],
             }))
           }

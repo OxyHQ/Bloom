@@ -16,8 +16,7 @@ export function useTrackEvents(
       if (event.ctrlKey || !onWheel) return;
       event.preventDefault();
       event.stopPropagation();
-      const multiplier =
-        event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 120 : 1;
+      const multiplier = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 120 : 1;
       onWheel(event.deltaX * multiplier, event.deltaY * multiplier);
     };
     const key = (event: KeyboardEvent) => {
@@ -25,8 +24,7 @@ export function useTrackEvents(
     };
     const focus = () => onFocus?.(true);
     const blur = (event: FocusEvent) => {
-      if (!element.contains(event.relatedTarget as Node | null))
-        onFocus?.(false);
+      if (!element.contains(event.relatedTarget as Node | null)) onFocus?.(false);
     };
     element.addEventListener('wheel', wheel, { passive: false });
     element.addEventListener('keydown', key);

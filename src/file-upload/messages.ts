@@ -22,15 +22,16 @@ export interface FileUploadMessages {
   uploadFile: string;
 }
 
-export const FILE_UPLOAD_MESSAGES: MessageCatalog<FileUploadMessages> = defineMessages<FileUploadMessages>('FILE_UPLOAD_MESSAGES', {
-  promptWeb: 'Drag and drop to upload or',
-  promptNative: 'Tap to',
-  selectWeb: 'select',
-  selectNative: 'select a file',
-  uploading: (size) => `Uploading ${size}...`,
-  uploaded: 'Uploaded successfully!',
-  unsupported: (extensions) => `Only ${extensions} files are supported`,
-  tooLarge: (max) => `That file is larger than ${max}`,
-  max: (size) => `(max ${size})`,
-  uploadFile: 'Upload a file',
-});
+export const FILE_UPLOAD_MESSAGES: MessageCatalog<FileUploadMessages> =
+  defineMessages<FileUploadMessages>('FILE_UPLOAD_MESSAGES', {
+    promptWeb: 'Drag and drop to upload or',
+    promptNative: 'Tap to',
+    selectWeb: 'select',
+    selectNative: 'select a file',
+    uploading: (size) => `Uploading ${size}...`,
+    uploaded: 'Uploaded successfully!',
+    unsupported: (extensions) => `Only ${extensions} files are supported`,
+    tooLarge: (max) => `That file is larger than ${max}`,
+    max: (size) => `(max ${size})`,
+    uploadFile: 'Upload a file',
+  });

@@ -8,15 +8,15 @@ import type { BottomSheetRef } from './types';
 
 const meta: Meta<typeof BottomSheet> = {
   argTypes: {
-    "open": { control: 'boolean' },
-    "enablePanDownToClose": { control: 'boolean' },
-    "enableHandlePanningGesture": { control: 'boolean' },
-    "detached": { control: 'boolean' },
-    "showHandle": { control: 'boolean' },
-    "backdropOpacity": { control: 'number' },
-    "scrollable": { control: 'boolean' },
-    "manualActivation": { control: 'boolean' },
-    "dynamicBackdrop": { control: 'boolean' }
+    open: { control: 'boolean' },
+    enablePanDownToClose: { control: 'boolean' },
+    enableHandlePanningGesture: { control: 'boolean' },
+    detached: { control: 'boolean' },
+    showHandle: { control: 'boolean' },
+    backdropOpacity: { control: 'number' },
+    scrollable: { control: 'boolean' },
+    manualActivation: { control: 'boolean' },
+    dynamicBackdrop: { control: 'boolean' },
   },
   title: 'Base/Bottom Sheet',
   component: BottomSheet,
@@ -35,8 +35,8 @@ function BasicSheet() {
         <View style={{ padding: 24, gap: 12 }}>
           <Text style={{ fontSize: 20, fontWeight: '700' }}>Bottom sheet</Text>
           <Text>
-            Pan down to close, or tap the backdrop. This is the default sheet
-            (flush, rounded top corners only).
+            Pan down to close, or tap the backdrop. This is the default sheet (flush, rounded top
+            corners only).
           </Text>
         </View>
       </BottomSheet>
@@ -52,9 +52,7 @@ function DetachedSheet() {
       <BottomSheet ref={ref} detached>
         <View style={{ padding: 24, gap: 12 }}>
           <Text style={{ fontSize: 20, fontWeight: '700' }}>Detached</Text>
-          <Text>
-            Floating card with margins and rounded corners on all sides.
-          </Text>
+          <Text>Floating card with margins and rounded corners on all sides.</Text>
         </View>
       </BottomSheet>
     </>
@@ -68,13 +66,8 @@ function NonScrollableSheet() {
       <Button onPress={() => ref.current?.present()}>Open non-scrollable</Button>
       <BottomSheet ref={ref} scrollable={false}>
         <View style={{ padding: 24, gap: 12 }}>
-          <Text style={{ fontSize: 20, fontWeight: '700' }}>
-            Non-scrollable
-          </Text>
-          <Text>
-            Use when the body owns its own VirtualizedList (FlatList,
-            SectionList, etc.).
-          </Text>
+          <Text style={{ fontSize: 20, fontWeight: '700' }}>Non-scrollable</Text>
+          <Text>Use when the body owns its own VirtualizedList (FlatList, SectionList, etc.).</Text>
         </View>
       </BottomSheet>
     </>
@@ -108,10 +101,30 @@ export const Composition: Story = {
 };
 
 export const Playground: Story = {
-  args: { detached: false, showHandle: true, enablePanDownToClose: true, backdropOpacity: 0.5, scrollable: true },
-  parameters: { controls: { include: ['detached', 'showHandle', 'enablePanDownToClose', 'backdropOpacity', 'scrollable'] } },
+  args: {
+    detached: false,
+    showHandle: true,
+    enablePanDownToClose: true,
+    backdropOpacity: 0.5,
+    scrollable: true,
+  },
+  parameters: {
+    controls: {
+      include: ['detached', 'showHandle', 'enablePanDownToClose', 'backdropOpacity', 'scrollable'],
+    },
+  },
   render: function PlaygroundSheet(args) {
     const ref = useRef<BottomSheetRef>(null);
-    return <><Button onPress={() => ref.current?.present()}>Open sheet</Button><BottomSheet {...args} ref={ref}><View style={{ padding: 24, gap: 12 }}><Text>Configure this sheet in Controls.</Text><Button onPress={() => ref.current?.dismiss()}>Close sheet</Button></View></BottomSheet></>;
+    return (
+      <>
+        <Button onPress={() => ref.current?.present()}>Open sheet</Button>
+        <BottomSheet {...args} ref={ref}>
+          <View style={{ padding: 24, gap: 12 }}>
+            <Text>Configure this sheet in Controls.</Text>
+            <Button onPress={() => ref.current?.dismiss()}>Close sheet</Button>
+          </View>
+        </BottomSheet>
+      </>
+    );
   },
 };

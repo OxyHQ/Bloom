@@ -1,3 +1,1 @@
-export {
-  IconCircle,
-} from './IconCircle';
+export { IconCircle } from './IconCircle';

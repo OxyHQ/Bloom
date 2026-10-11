@@ -368,12 +368,10 @@ function JobCardComponent({
   const actionRow =
     actions != null ? (
       <InteractionBoundary disabled={inert}>{actions}</InteractionBoundary>
-    ) :
-    (!hasOwnActions ? null : (
+    ) : !hasOwnActions ? null : (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} testID={id('actions')}>
         {onPass && !closed ? (
           <Button
-
             size="md"
             iconOnly={!labelled}
             leadingIcon={RiCloseLine}
@@ -381,7 +379,9 @@ function JobCardComponent({
             disabled={disabled}
             hitSlop={JOB_BOARD_GEOMETRY.actionHit}
             accessibilityLabel={`${labels.pass} ${job.load}`}
-            testID={id('pass')} tone="accent" appearance="plain"
+            testID={id('pass')}
+            tone="accent"
+            appearance="plain"
           >
             {labelled ? labels.pass : undefined}
           </Button>
@@ -400,23 +400,23 @@ function JobCardComponent({
           />
         ) : onTake ? (
           <Button
-
             size="md"
             onPress={() => onTake(job.id)}
             disabled={disabled}
             accessibilityLabel={`${labels.take} ${job.load}, ${job.pay}`}
-            testID={id('take')} tone="accent" appearance="solid"
+            testID={id('take')}
+            tone="accent"
+            appearance="solid"
           >
             {labels.take}
           </Button>
         ) : null}
       </View>
-    ));
+    );
 
   return (
     <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
-
         radius="radius-20"
         border={selected ? 'medium' : 'thin'}
         style={[
@@ -425,7 +425,8 @@ function JobCardComponent({
           inert ? { opacity: DISABLED_OPACITY } : null,
           style,
         ]}
-        testID={testID} appearance="outline"
+        testID={testID}
+        appearance="outline"
       >
         <View
           // The card measures ITSELF, not the window: this same card is 358
@@ -546,9 +547,7 @@ function JobCardComponent({
           ) : null}
 
           {actionRow ? (
-            <View
-              style={{ borderTopWidth: 1, borderTopColor: paint.hairline, paddingTop: 12 }}
-            >
+            <View style={{ borderTopWidth: 1, borderTopColor: paint.hairline, paddingTop: 12 }}>
               {actionRow}
             </View>
           ) : null}

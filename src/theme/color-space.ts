@@ -1,6 +1,14 @@
 import { clamp } from '../styles/clamp';
-export interface Oklch { l: number; c: number; h: number } // l 0..1, c 0..~0.4, h deg
-export interface Rgb { r: number; g: number; b: number }   // 0..255 integers
+export interface Oklch {
+  l: number;
+  c: number;
+  h: number;
+} // l 0..1, c 0..~0.4, h deg
+export interface Rgb {
+  r: number;
+  g: number;
+  b: number;
+} // 0..255 integers
 
 const srgbGamma = (x: number) =>
   x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
@@ -13,7 +21,9 @@ export function oklchToSrgb({ l, c, h }: Oklch): Rgb {
   const l_ = l + 0.3963377774 * a + 0.2158037573 * b2;
   const m_ = l - 0.1055613458 * a - 0.0638541728 * b2;
   const s_ = l - 0.0894841775 * a - 1.291485548 * b2;
-  const lc = l_ ** 3, mc = m_ ** 3, sc = s_ ** 3;
+  const lc = l_ ** 3,
+    mc = m_ ** 3,
+    sc = s_ ** 3;
   const lr = +4.0767416621 * lc - 3.3077115913 * mc + 0.2309699292 * sc;
   const lg = -1.2684380046 * lc + 2.6097574011 * mc - 0.3413193965 * sc;
   const lb = -0.0041960863 * lc - 0.7034186147 * mc + 1.707614701 * sc;
@@ -24,8 +34,7 @@ export function oklchToSrgb({ l, c, h }: Oklch): Rgb {
   };
 }
 
-const srgbLinear = (x: number) =>
-  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+const srgbLinear = (x: number) => (x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
 
 /** 0..255 sRGB → OKLCH. The inverse of {@link oklchToSrgb}. Pure. */
 export function srgbToOklch({ r, g, b }: Rgb): Oklch {

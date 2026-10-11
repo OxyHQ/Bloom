@@ -18,7 +18,13 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { ContextMenu, ContextMenuTrigger } from '../context-menu';
 import { LONG_PRESS_MS } from '../floating/LongPressArea';
 
-const RESPONDER_PROPS = ['onStartShouldSetResponder', 'onResponderGrant', 'onMoveShouldSetResponder', 'onPress', 'onLongPress'];
+const RESPONDER_PROPS = [
+  'onStartShouldSetResponder',
+  'onResponderGrant',
+  'onMoveShouldSetResponder',
+  'onPress',
+  'onLongPress',
+];
 
 function mount() {
   const onOpenChange = jest.fn();
@@ -49,16 +55,21 @@ it('claims no touch responder between the trigger and the content', () => {
   }
   expect(chain).toContain(area);
   for (const node of chain.filter((n) => typeof n.type === 'string')) {
-    for (const prop of RESPONDER_PROPS) expect([node.type, prop, node.props[prop]]).toEqual([node.type, prop, undefined]);
+    for (const prop of RESPONDER_PROPS)
+      expect([node.type, prop, node.props[prop]]).toEqual([node.type, prop, undefined]);
   }
 });
 
 it('opens the menu after a hold', () => {
   const { area, onOpenChange } = mount();
   fireEvent(area, 'touchStart', at(100));
-  act(() => { jest.advanceTimersByTime(LONG_PRESS_MS - 1); });
+  act(() => {
+    jest.advanceTimersByTime(LONG_PRESS_MS - 1);
+  });
   expect(onOpenChange).not.toHaveBeenCalled();
-  act(() => { jest.advanceTimersByTime(1); });
+  act(() => {
+    jest.advanceTimersByTime(1);
+  });
   expect(onOpenChange).toHaveBeenCalledWith(true);
 });
 
@@ -68,22 +79,30 @@ it('does not open when the finger drags, lifts early, or a scroller takes the to
   fireEvent(area, 'touchStart', at(100));
   fireEvent(area, 'touchMove', at(104));
   fireEvent(area, 'touchMove', at(130));
-  act(() => { jest.advanceTimersByTime(LONG_PRESS_MS * 2); });
+  act(() => {
+    jest.advanceTimersByTime(LONG_PRESS_MS * 2);
+  });
 
   fireEvent(area, 'touchStart', at(100));
   fireEvent(area, 'touchEnd', at(100));
-  act(() => { jest.advanceTimersByTime(LONG_PRESS_MS * 2); });
+  act(() => {
+    jest.advanceTimersByTime(LONG_PRESS_MS * 2);
+  });
 
   fireEvent(area, 'touchStart', at(100));
   fireEvent(area, 'touchCancel', at(100));
-  act(() => { jest.advanceTimersByTime(LONG_PRESS_MS * 2); });
+  act(() => {
+    jest.advanceTimersByTime(LONG_PRESS_MS * 2);
+  });
 
   expect(onOpenChange).not.toHaveBeenCalled();
 });
 
 it('offers the hold to assistive tech as the longpress action', () => {
   const { area, onOpenChange } = mount();
-  expect(area.props.accessibilityActions).toEqual([{ name: 'longpress', label: 'Message actions' }]);
+  expect(area.props.accessibilityActions).toEqual([
+    { name: 'longpress', label: 'Message actions' },
+  ]);
   fireEvent(area, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
   expect(onOpenChange).toHaveBeenCalledWith(true);
 });

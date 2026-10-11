@@ -138,8 +138,20 @@ export const Sizes: Story = {
         <Badge size="large" color="primary" content="large" />
       </View>
       <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-        <Badge size="label-small" variant="subtle" color="info" icon={KeyIcon} content="label-small" />
-        <Badge size="label-medium" variant="subtle" color="info" icon={KeyIcon} content="label-medium" />
+        <Badge
+          size="label-small"
+          variant="subtle"
+          color="info"
+          icon={KeyIcon}
+          content="label-small"
+        />
+        <Badge
+          size="label-medium"
+          variant="subtle"
+          color="info"
+          icon={KeyIcon}
+          content="label-medium"
+        />
       </View>
     </View>
   ),
@@ -154,7 +166,14 @@ export const WithIcon: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
       {TONES.map((color) => (
-        <Badge key={color} size="label-medium" variant="subtle" color={color} icon={KeyIcon} content={color} />
+        <Badge
+          key={color}
+          size="label-medium"
+          variant="subtle"
+          color={color}
+          icon={KeyIcon}
+          content={color}
+        />
       ))}
     </View>
   ),
@@ -169,15 +188,16 @@ export const WithIcon: Story = {
 export const OnMedia: Story = {
   render: () => (
     <View
-      style={{
-        padding: 16,
-        gap: 8,
-        borderRadius: 16,
-        alignItems: 'flex-start',
-        backgroundColor: '#3f4b5b',
-        backgroundImage:
-          'linear-gradient(135deg, #2b3440 0%, #5c6b7a 50%, #8a99a8 100%)',
-      } as object}
+      style={
+        {
+          padding: 16,
+          gap: 8,
+          borderRadius: 16,
+          alignItems: 'flex-start',
+          backgroundColor: '#3f4b5b',
+          backgroundImage: 'linear-gradient(135deg, #2b3440 0%, #5c6b7a 50%, #8a99a8 100%)',
+        } as object
+      }
     >
       <Badge variant="onMedia" size="label-medium" icon={KeyIcon} content="For rent" />
       <Badge variant="onMedia" size="label-small" content="Reserved" />

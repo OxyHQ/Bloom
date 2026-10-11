@@ -1,7 +1,16 @@
 import type { BloomAppearance, BloomTone, BloomSize } from '../appearance/types';
 import type { BloomIconRenderer } from '../icons/render-icon';
-import type { ReactNode } from 'react';
-import type { GestureResponderEvent, LayoutChangeEvent, ViewProps, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { AriaAttributes, ReactNode } from 'react';
+import type {
+  GestureResponderEvent,
+  FocusEvent as NativeFocusEvent,
+  MouseEvent as NativeMouseEvent,
+  LayoutChangeEvent,
+  ViewProps,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -9,7 +18,18 @@ import type { TypeScaleVariant } from '../typography/scale';
 /** Shared control size; square geometry is expressed with iconOnly. */
 export type ButtonSize = BloomSize;
 
+/** The original platform focus event, without a synthetic cross-platform adapter. */
+export type ButtonFocusEvent = NativeFocusEvent | React.FocusEvent<HTMLElement>;
+/** Native Pressable hover event or the original non-touch web pointer event. */
+export type ButtonHoverEvent = NativeMouseEvent | React.PointerEvent<HTMLElement>;
+
 export interface ButtonProps {
+  /** Focus lifecycle on the interactive host; does not activate the button. */
+  onFocus?: (event: ButtonFocusEvent) => void;
+  onBlur?: (event: ButtonFocusEvent) => void;
+  /** Pointer preview lifecycle. Touch gestures do not synthesize web hover. */
+  onHoverIn?: (event: ButtonHoverEvent) => void;
+  onHoverOut?: (event: ButtonHoverEvent) => void;
   onLayout?: (event: LayoutChangeEvent) => void;
   'aria-hidden'?: boolean;
   accessibilityElementsHidden?: boolean;
@@ -25,6 +45,8 @@ export interface ButtonProps {
   /** Keep an embedded action from also activating its parent. Default false. */
   stopPropagation?: boolean;
   appearance?: BloomAppearance;
+  /** Shared surface paint (default), or a flat semantic fill without sheen, rim or refraction. */
+  material?: 'surface' | 'flat';
   tone?: BloomTone;
   leading?: ReactNode;
   trailing?: ReactNode;
@@ -164,6 +186,9 @@ export interface ButtonProps {
    * and `'reset'` to reset a form.
    */
   type?: 'button' | 'submit' | 'reset';
+  /** Original DOM keyboard event (web only). preventDefault cancels native key behavior. */
+  onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
+  onKeyUp?: React.KeyboardEventHandler<HTMLElement>;
   /**
    * Web click handler. Aliased to the same logical action as `onPress` — either
    * (or both) may be provided; both fire on click. `onPress` is kept for
@@ -193,6 +218,12 @@ export interface ButtonProps {
    * `aria-label` (web only). Falls back to `accessibilityLabel`.
    */
   'aria-label'?: string;
+  /**
+   * Current destination or item in a set. Forwarded to the web host, including
+   * links and asChild. Native announces selected when current is truthy;
+   * an explicit pressed toggle state remains authoritative on native.
+   */
+  'aria-current'?: AriaAttributes['aria-current'];
   /**
    * Whether the surface this button controls is open.
    *

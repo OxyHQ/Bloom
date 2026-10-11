@@ -78,7 +78,9 @@ export function PermissionMenu({
 
   return (
     <>
-      <Button appearance="plain" tone="neutral"
+      <Button
+        appearance="plain"
+        tone="neutral"
         ref={triggerRef}
         testID={testID}
         accessibilityRole="button"
@@ -86,7 +88,9 @@ export function PermissionMenu({
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}
-        style={[COMPOSER_BUTTON_LAYOUT, {
+        style={[
+          COMPOSER_BUTTON_LAYOUT,
+          {
             // At least 30, never exactly: at the largest system font the label
             // is taller than 30 and a fixed height clipped it top and bottom.
             // A long mode name truncates at a width that still reads as a chip.
@@ -103,7 +107,9 @@ export function PermissionMenu({
             paddingLeft: 8,
             paddingRight: 10,
             cursor: 'pointer',
-        }]} >
+          },
+        ]}
+      >
         <View style={current.flip ? [FLIP, { flexShrink: 0 }] : { flexShrink: 0 }}>
           <CurrentIcon width={16} height={16} fill={palette.iconSecondary} />
         </View>
@@ -111,7 +117,8 @@ export function PermissionMenu({
           variant="body-medium"
           numberOfLines={1}
           ellipsizeMode="tail"
-          style={{ flexShrink: 1, minWidth: 0, color: palette.textSecondary }}>
+          style={{ flexShrink: 1, minWidth: 0, color: palette.textSecondary }}
+        >
           {current.label}
         </Text>
       </Button>
@@ -124,20 +131,31 @@ export function PermissionMenu({
         side="top"
         sideOffset={8}
         testID={testID ? `${testID}-panel` : undefined}
-        style={panelStyle}>
+        style={panelStyle}
+      >
         <View style={{ flexDirection: 'column', gap: 6, paddingTop: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: 8, paddingRight: 8 }}>
-            <Text variant="body-medium" style={{ flex: 1, minWidth: 0, color: palette.textTertiary }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              paddingLeft: 8,
+              paddingRight: 8,
+            }}
+          >
+            <Text
+              variant="body-medium"
+              style={{ flex: 1, minWidth: 0, color: palette.textTertiary }}
+            >
               {labels.permissions}
             </Text>
-            {onLearnMore ? (
-              <LearnMore label={labels.learnMore} onPress={onLearnMore} />
-            ) : null}
+            {onLearnMore ? <LearnMore label={labels.learnMore} onPress={onLearnMore} /> : null}
           </View>
           <View
             accessibilityRole="radiogroup"
             accessibilityLabel={labels.permissionMode}
-            style={{ flexDirection: 'column', gap: 4 }}>
+            style={{ flexDirection: 'column', gap: 4 }}
+          >
             {permissions.map((option) => (
               <PermissionRow
                 key={option.id}
@@ -192,7 +210,8 @@ function PermissionRow({
         padding: 8,
         backgroundColor: checked || hovered || focused ? palette.hover : 'transparent',
         cursor: 'pointer',
-      }}>
+      }}
+    >
       <View style={option.flip ? FLIP : undefined}>
         <Icon width={20} height={20} fill={palette.iconSecondary} />
       </View>
@@ -211,7 +230,18 @@ function PermissionRow({
 /** A secondary small `LinkButton`, a step lighter: tertiary, underline on hover. */
 function LearnMore({ label, onPress }: { label: string; onPress: () => void }) {
   const Button = useComposerButton();
-  return <Button appearance="plain" linkTone="text" underline="hover" size="sm"
-    accessibilityRole="link" accessibilityLabel={label} onPress={onPress}
-    style={COMPOSER_BUTTON_LAYOUT}>{label}</Button>;
+  return (
+    <Button
+      appearance="plain"
+      linkTone="text"
+      underline="hover"
+      size="sm"
+      accessibilityRole="link"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={COMPOSER_BUTTON_LAYOUT}
+    >
+      {label}
+    </Button>
+  );
 }

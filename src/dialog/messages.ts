@@ -13,8 +13,11 @@ export interface DialogMessages {
   dismissNamed: (label: string) => string;
 }
 
-export const DIALOG_MESSAGES: MessageCatalog<DialogMessages> = defineMessages<DialogMessages>('DIALOG_MESSAGES', {
-  view: 'View',
-  dismissDialog: 'Dismiss dialog',
-  dismissNamed: (label) => `Dismiss ${label}`,
-});
+export const DIALOG_MESSAGES: MessageCatalog<DialogMessages> = defineMessages<DialogMessages>(
+  'DIALOG_MESSAGES',
+  {
+    view: 'View',
+    dismissDialog: 'Dismiss dialog',
+    dismissNamed: (label) => `Dismiss ${label}`,
+  },
+);

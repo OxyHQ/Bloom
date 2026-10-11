@@ -133,7 +133,11 @@ describe('highlightRuns', () => {
       ['Flat 4B', 'zzz'],
       ['', 'a'],
     ] as const) {
-      expect(highlightRuns(text, query).map((run) => run.text).join('')).toBe(text);
+      expect(
+        highlightRuns(text, query)
+          .map((run) => run.text)
+          .join(''),
+      ).toBe(text);
     }
   });
 });
@@ -387,7 +391,14 @@ describe('ChatListItem accessibility', () => {
   });
 
   it('takes a caller name whole, for a row that says it differently', () => {
-    mount(<ChatListItem name="Ana" accessibilityLabel="Ana, 3 nuevos" onPress={() => undefined} testID="row" />);
+    mount(
+      <ChatListItem
+        name="Ana"
+        accessibilityLabel="Ana, 3 nuevos"
+        onPress={() => undefined}
+        testID="row"
+      />,
+    );
     expect(byTestId('row-link').getAttribute('aria-label')).toBe('Ana, 3 nuevos');
   });
 
@@ -422,7 +433,9 @@ describe('ChatListItem actions', () => {
     mount(
       <ChatListItem
         name="Ana"
-        swipeActions={{ right: [{ key: 'mute', label: 'Mute', icon: RiArchiveLine, onPress: own }] }}
+        swipeActions={{
+          right: [{ key: 'mute', label: 'Mute', icon: RiArchiveLine, onPress: own }],
+        }}
         onAction={row}
         testID="row"
       />,
@@ -480,7 +493,13 @@ describe('GroupAvatar', () => {
   });
 
   it('keeps the cluster inside its declared size', () => {
-    mount(<GroupAvatar size={48} faces={[{ name: 'A' }, { name: 'B' }, { name: 'C' }]} testID="cluster" />);
+    mount(
+      <GroupAvatar
+        size={48}
+        faces={[{ name: 'A' }, { name: 'B' }, { name: 'C' }]}
+        testID="cluster"
+      />,
+    );
     const box = byTestId('cluster');
     expect(parseFloat(getComputedStyle(box).width)).toBe(48);
     expect(parseFloat(getComputedStyle(box).height)).toBe(48);
@@ -490,7 +509,12 @@ describe('GroupAvatar', () => {
     mount(<GroupAvatar size={48} faces={[{ name: 'A' }, { name: 'B' }]} testID="cluster" />);
     expect(byTestId('cluster').getAttribute('aria-hidden')).toBe('true');
     mount(
-      <GroupAvatar size={48} faces={[{ name: 'A' }, { name: 'B' }]} accessibilityLabel="Flat 4B" testID="cluster" />,
+      <GroupAvatar
+        size={48}
+        faces={[{ name: 'A' }, { name: 'B' }]}
+        accessibilityLabel="Flat 4B"
+        testID="cluster"
+      />,
     );
     expect(byTestId('cluster').getAttribute('aria-hidden')).toBeNull();
     expect(byTestId('cluster').getAttribute('aria-label')).toBe('Flat 4B');
@@ -509,7 +533,14 @@ describe('ChatFolderTabs', () => {
   ];
 
   it('is a named tablist of tabs that spell their selection BOTH ways web and native read', () => {
-    mount(<ChatFolderTabs folders={FOLDERS} value="unread" accessibilityLabel="Chat folders" testID="tabs" />);
+    mount(
+      <ChatFolderTabs
+        folders={FOLDERS}
+        value="unread"
+        accessibilityLabel="Chat folders"
+        testID="tabs"
+      />,
+    );
     const list = container.querySelector('[role="tablist"]');
     expect(list?.getAttribute('aria-label')).toBe('Chat folders');
     expect(byTestId('tabs-tab-unread').getAttribute('aria-selected')).toBe('true');
@@ -533,7 +564,14 @@ describe('ChatFolderTabs', () => {
   });
 
   it('underlines the selected tab in the accent and nothing else', () => {
-    mount(<ChatFolderTabs folders={FOLDERS} value="all" accessibilityLabel="Chat folders" testID="tabs" />);
+    mount(
+      <ChatFolderTabs
+        folders={FOLDERS}
+        value="all"
+        accessibilityLabel="Chat folders"
+        testID="tabs"
+      />,
+    );
     expect(normalise(getComputedStyle(byTestId('tabs-tab-all')).borderBottomColor)).toBe(
       normalise(paint().accent),
     );
@@ -700,7 +738,10 @@ describe('ChatList', () => {
   it('renders a section heading and a nested named list per section', () => {
     mount(
       <ChatList
-        sections={[{ key: 'pinned', title: 'Pinned', chats: CHATS.slice(0, 1) }, { key: 'all', title: 'All', chats: CHATS.slice(1) }]}
+        sections={[
+          { key: 'pinned', title: 'Pinned', chats: CHATS.slice(0, 1) },
+          { key: 'all', title: 'All', chats: CHATS.slice(1) },
+        ]}
         testID="list"
       />,
     );

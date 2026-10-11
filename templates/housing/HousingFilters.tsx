@@ -40,7 +40,12 @@ function PriceSection({ mode, value, set }: { mode: HomeSearchMode; value: Filte
     const text = sale ? euroShort(n) : euro(n);
     return n >= bounds.max ? `${text}+` : text;
   };
-  const description = { rent: 'Monthly rent, before bills', buy: 'Asking price', stays: 'Nightly prices before fees and taxes', swap: '' }[mode];
+  const description = {
+    rent: 'Monthly rent, before bills',
+    buy: 'Asking price',
+    stays: 'Nightly prices before fees and taxes',
+    swap: '',
+  }[mode];
   return (
     <FilterSection title={sale ? 'Price' : 'Price range'} description={description}>
       <PriceRangeFilter
@@ -62,9 +67,21 @@ function Rooms({ value, set, beds = false }: { value: Filters; set: Set; beds?: 
   return (
     <FilterSection title="Rooms">
       <View style={{ gap: 24 }}>
-        <CountFilter title="Bedrooms" value={value.bedrooms} onValueChange={(bedrooms) => set({ bedrooms })} max={5} />
-        {beds ? <CountFilter title="Beds" value={value.beds} onValueChange={(n) => set({ beds: n })} /> : null}
-        <CountFilter title="Bathrooms" value={value.bathrooms} onValueChange={(bathrooms) => set({ bathrooms })} max={4} />
+        <CountFilter
+          title="Bedrooms"
+          value={value.bedrooms}
+          onValueChange={(bedrooms) => set({ bedrooms })}
+          max={5}
+        />
+        {beds ? (
+          <CountFilter title="Beds" value={value.beds} onValueChange={(n) => set({ beds: n })} />
+        ) : null}
+        <CountFilter
+          title="Bathrooms"
+          value={value.bathrooms}
+          onValueChange={(bathrooms) => set({ bathrooms })}
+          max={4}
+        />
       </View>
     </FilterSection>
   );
@@ -78,7 +95,11 @@ function FilterSections({ mode, value, set }: { mode: HomeSearchMode; value: Fil
         <>
           <PriceSection mode={mode} value={value} set={set} />
           <FilterSection title="Property type">
-            <PropertyTypeFilter value={value.types} onValueChange={(types) => set({ types })} testID="housing-filter-types" />
+            <PropertyTypeFilter
+              value={value.types}
+              onValueChange={(types) => set({ types })}
+              testID="housing-filter-types"
+            />
           </FilterSection>
           <Rooms value={value} set={set} />
           <FilterSection title="Floor area">
@@ -109,13 +130,22 @@ function FilterSections({ mode, value, set }: { mode: HomeSearchMode; value: Fil
           </FilterSection>
           <Rooms value={value} set={set} />
           <FilterSection title="Floor area">
-            <AreaRangeFilter value={value.area} onValueChange={(area) => set({ area })} max={500} slider />
+            <AreaRangeFilter
+              value={value.area}
+              onValueChange={(area) => set({ area })}
+              max={500}
+              slider
+            />
           </FilterSection>
           <FilterSection title="Energy rating" description="The worst rating you would accept">
             <EnergyRatingFilter value={value.energy} onValueChange={(energy) => set({ energy })} />
           </FilterSection>
           <FilterSection title="Features">
-            <FeatureFilter variant="checkboxes" value={value.features} onValueChange={(features) => set({ features })} />
+            <FeatureFilter
+              variant="checkboxes"
+              value={value.features}
+              onValueChange={(features) => set({ features })}
+            />
           </FilterSection>
           <FilterSection title="Floor" divider={false}>
             <FloorFilter value={value.floors} onValueChange={(floors) => set({ floors })} />
@@ -125,7 +155,10 @@ function FilterSections({ mode, value, set }: { mode: HomeSearchMode; value: Fil
     case 'stays':
       return (
         <>
-          <FilterSection title="Type of place" description="Search rooms, entire homes, or any type of place.">
+          <FilterSection
+            title="Type of place"
+            description="Search rooms, entire homes, or any type of place."
+          >
             <SegmentedFilter
               options={PLACE_TYPES}
               value={value.placeType}
@@ -156,7 +189,10 @@ function FilterSections({ mode, value, set }: { mode: HomeSearchMode; value: Fil
     case 'swap':
       return (
         <>
-          <FilterSection title="Kind of exchange" description="Swap homes at the same time, or stay with guest points.">
+          <FilterSection
+            title="Kind of exchange"
+            description="Swap homes at the same time, or stay with guest points."
+          >
             <SegmentedFilter
               options={SWAP_KINDS}
               value={value.swapKind}
@@ -225,7 +261,10 @@ export function FiltersDialog({ control, mode, applied, onApply }: FiltersDialog
       contentPadding={0}
       testID="housing-filters"
     >
-      <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}>
+      <ScrollView
+        style={{ flexShrink: 1 }}
+        contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}
+      >
         <FilterSections mode={mode} value={draft} set={set} />
       </ScrollView>
       <FilterFooter

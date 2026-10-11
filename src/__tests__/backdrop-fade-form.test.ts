@@ -43,9 +43,9 @@ function resolveLayerStyles(source: string): string[] {
     // An identifier (`layerStyle={BACKDROP_FADE_IN}`) has to be followed home:
     // the animation lived in the constant, not at the call site.
     for (const identifier of expression.matchAll(/\b([A-Za-z_$][\w$]*)\b/g)) {
-      const declaration = new RegExp(
-        `const ${identifier[1]}[^=]*=\\s*([\\s\\S]{0,400}?);\\n`,
-      ).exec(source);
+      const declaration = new RegExp(`const ${identifier[1]}[^=]*=\\s*([\\s\\S]{0,400}?);\\n`).exec(
+        source,
+      );
       if (declaration?.[1]) out.push(declaration[1]);
     }
   }
@@ -68,7 +68,9 @@ describe('backdrop fade form', () => {
       for (const style of resolveLayerStyles(source)) {
         layerStyles += 1;
         if (/\banimation\b/.test(style)) {
-          offenders.push(`${file.slice(SRC.length + 1)}  ${style.replace(/\s+/g, ' ').slice(0, 80)}`);
+          offenders.push(
+            `${file.slice(SRC.length + 1)}  ${style.replace(/\s+/g, ' ').slice(0, 80)}`,
+          );
         }
       }
     }
@@ -84,8 +86,6 @@ describe('backdrop fade form', () => {
   it('multiplies the fade into the dim opacity', () => {
     const overlay = readFileSync(join(SRC, 'overlay', 'Overlay.tsx'), 'utf8');
 
-    expect(overlay).toMatch(
-      /const dimFade[\s\S]{0,200}?progress\.value[\s\S]{0,80}?\* dimOpacity/,
-    );
+    expect(overlay).toMatch(/const dimFade[\s\S]{0,200}?progress\.value[\s\S]{0,80}?\* dimOpacity/);
   });
 });

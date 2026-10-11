@@ -197,7 +197,9 @@ export function HousingToggleButton({
       testID={testID}
       style={style}
     >
-      {ShownIcon ? <ShownIcon width={g.iconSize - 2} height={g.iconSize - 2} fill={foreground} /> : null}
+      {ShownIcon ? (
+        <ShownIcon width={g.iconSize - 2} height={g.iconSize - 2} fill={foreground} />
+      ) : null}
       <Text variant={g.type} numberOfLines={1} style={{ color: foreground }}>
         {label}
       </Text>

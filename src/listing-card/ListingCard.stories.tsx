@@ -24,7 +24,10 @@ const photo = (seed: string) => `https://picsum.photos/seed/${seed}/800/760`;
 const photos = (seed: string, count: number) =>
   Array.from({ length: count }, (_, index) => photo(`${seed}-${index}`));
 
-type Stay = Omit<ListingCardProps, 'favorite' | 'onFavoriteChange'> & { id: string; saved?: boolean };
+type Stay = Omit<ListingCardProps, 'favorite' | 'onFavoriteChange'> & {
+  id: string;
+  saved?: boolean;
+};
 
 const STAYS: Stay[] = [
   {
@@ -135,7 +138,9 @@ function Page({ children, width }: { children: React.ReactNode; width?: number }
   const theme = useTheme();
   return (
     <View style={{ minHeight: '100%', backgroundColor: theme.colors.background, padding: 24 }}>
-      <View style={{ width: width ?? '100%', maxWidth: '100%', alignSelf: 'center' }}>{children}</View>
+      <View style={{ width: width ?? '100%', maxWidth: '100%', alignSelf: 'center' }}>
+        {children}
+      </View>
     </View>
   );
 }
@@ -189,7 +194,13 @@ export const Loading: Story = {
       <StayGrid loading />
       <Page width={420}>
         <View style={{ gap: 20 }}>
-          <ListingCard photos={[]} title="" layout="horizontal" loading testID="skeleton-horizontal" />
+          <ListingCard
+            photos={[]}
+            title=""
+            layout="horizontal"
+            loading
+            testID="skeleton-horizontal"
+          />
           <ListingCard photos={[]} title="" layout="horizontal" loading />
         </View>
       </Page>
@@ -240,14 +251,27 @@ export const Favorite: Story = {
           ].map(({ seed, value, set, id }) => (
             <View
               key={id}
-              style={{ width: 120, height: 120, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 16,
+                overflow: 'hidden',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <Image source={{ uri: photo(seed) }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+              <Image
+                source={{ uri: photo(seed) }}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+              />
               <FavoriteButton favorite={value} onFavoriteChange={set} testID={id} />
             </View>
           ))}
         </View>
-        <Text variant="caption-1-regular" style={{ marginTop: 12, color: theme.colors.textSecondary }}>
+        <Text
+          variant="caption-1-regular"
+          style={{ marginTop: 12, color: theme.colors.textSecondary }}
+        >
           Press to toggle.
         </Text>
       </Page>
@@ -260,10 +284,34 @@ export const Wishlists: Story = {
   render: () => (
     <Page>
       <ListingCardGrid columns={4} columnGap={20} rowGap={32}>
-        <WishlistCard name="Coast weekends" description="12 saved" photos={photos('coast', 4)} onPress={() => undefined} testID="wish-4" />
-        <WishlistCard name="Cabins" description="3 saved" photos={photos('cabin', 3)} onPress={() => undefined} testID="wish-3" />
-        <WishlistCard name="City breaks" description="2 saved" photos={photos('city', 2)} href="#city" testID="wish-2" />
-        <WishlistCard name="Someday" description="1 saved" photos={photos('someday', 1)} onPress={() => undefined} testID="wish-1" />
+        <WishlistCard
+          name="Coast weekends"
+          description="12 saved"
+          photos={photos('coast', 4)}
+          onPress={() => undefined}
+          testID="wish-4"
+        />
+        <WishlistCard
+          name="Cabins"
+          description="3 saved"
+          photos={photos('cabin', 3)}
+          onPress={() => undefined}
+          testID="wish-3"
+        />
+        <WishlistCard
+          name="City breaks"
+          description="2 saved"
+          photos={photos('city', 2)}
+          href="#city"
+          testID="wish-2"
+        />
+        <WishlistCard
+          name="Someday"
+          description="1 saved"
+          photos={photos('someday', 1)}
+          onPress={() => undefined}
+          testID="wish-1"
+        />
       </ListingCardGrid>
     </Page>
   ),

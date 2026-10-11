@@ -16,16 +16,17 @@ export interface NoteEditorMessages {
   toolbar: Required<NoteEditorToolbarLabels>;
 }
 
-export const NOTE_EDITOR_MESSAGES: MessageCatalog<NoteEditorMessages> = defineMessages<NoteEditorMessages>('NOTE_EDITOR_MESSAGES', {
-  header: {
-    saved: 'Saved',
-    saving: 'Saving…',
-    offline: 'Offline — changes are held',
-    error: 'Not saved',
-    words: (n) => plural('en', n, { one: '{n} word', other: '{n} words' }),
-    title: 'Title',
-  },
-  untitled: 'Untitled',
-  note: 'Note',
-  toolbar: { more: 'More formatting', moreMenu: 'More formatting' },
-});
+export const NOTE_EDITOR_MESSAGES: MessageCatalog<NoteEditorMessages> =
+  defineMessages<NoteEditorMessages>('NOTE_EDITOR_MESSAGES', {
+    header: {
+      saved: 'Saved',
+      saving: 'Saving…',
+      offline: 'Offline — changes are held',
+      error: 'Not saved',
+      words: (n) => plural('en', n, { one: '{n} word', other: '{n} words' }),
+      title: 'Title',
+    },
+    untitled: 'Untitled',
+    note: 'Note',
+    toolbar: { more: 'More formatting', moreMenu: 'More formatting' },
+  });

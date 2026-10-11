@@ -155,7 +155,14 @@ export const Migration: Story = {
             return (
               <View
                 key={from}
-                style={{ width: 273, flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
+                style={{
+                  width: 273,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  paddingVertical: 8,
+                }}
+              >
                 {Icon ? (
                   <Icon size="lg" fill={colors.text} />
                 ) : (

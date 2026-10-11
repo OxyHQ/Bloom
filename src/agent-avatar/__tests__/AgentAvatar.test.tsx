@@ -53,28 +53,19 @@ describe('AgentAvatar lifecycle', () => {
         />,
       );
     });
-    expect(
-      renderer.root.findByProps({ accessibilityRole: 'image' }).props
-        .accessibilityLabel,
-    ).toBe('Happy Ember');
+    expect(renderer.root.findByProps({ accessibilityRole: 'image' }).props.accessibilityLabel).toBe(
+      'Happy Ember',
+    );
     expect(JSON.stringify(renderer.toJSON())).not.toBe(before);
     expect(request).not.toHaveBeenCalled();
   });
   it('schedules motion and cancels the pending frame when paused', () => {
     act(() => {
-      renderer = create(
-        <AgentAvatar config={{ ...FOLD_CONFIG, grain: 0 }} entranceKey={1} />,
-      );
+      renderer = create(<AgentAvatar config={{ ...FOLD_CONFIG, grain: 0 }} entranceKey={1} />);
     });
     expect(request).toHaveBeenCalledTimes(1);
     act(() => {
-      renderer.update(
-        <AgentAvatar
-          config={{ ...FOLD_CONFIG, grain: 0 }}
-          entranceKey={1}
-          paused
-        />,
-      );
+      renderer.update(<AgentAvatar config={{ ...FOLD_CONFIG, grain: 0 }} entranceKey={1} paused />);
     });
     expect(cancel).toHaveBeenCalledWith(1);
     expect(request).toHaveBeenCalledTimes(1);
@@ -82,31 +73,20 @@ describe('AgentAvatar lifecycle', () => {
   it('localizes the default accessible name while preserving explicit overrides', () => {
     act(() => {
       renderer = create(
-        <AgentAvatar
-          config={{ ...DEFAULT_CONFIG, grain: 0 }}
-          paused
-          locale="es"
-        />,
+        <AgentAvatar config={{ ...DEFAULT_CONFIG, grain: 0 }} paused locale="es" />,
       );
     });
-    expect(
-      renderer.root.findByProps({ accessibilityRole: 'image' }).props
-        .accessibilityLabel,
-    ).toBe('Avatar del agente');
+    expect(renderer.root.findByProps({ accessibilityRole: 'image' }).props.accessibilityLabel).toBe(
+      'Avatar del agente',
+    );
     act(() => {
       renderer.update(
-        <AgentAvatar
-          config={{ ...DEFAULT_CONFIG, grain: 0 }}
-          paused
-          locale="es"
-          label="Peri"
-        />,
+        <AgentAvatar config={{ ...DEFAULT_CONFIG, grain: 0 }} paused locale="es" label="Peri" />,
       );
     });
-    expect(
-      renderer.root.findByProps({ accessibilityRole: 'image' }).props
-        .accessibilityLabel,
-    ).toBe('Peri');
+    expect(renderer.root.findByProps({ accessibilityRole: 'image' }).props.accessibilityLabel).toBe(
+      'Peri',
+    );
   });
   it('composites the original grain at full recipe opacity between material and face', () => {
     const context = new DrawingContext();
@@ -125,9 +105,11 @@ describe('AgentAvatar lifecycle', () => {
     });
     const views = renderer.root.findAllByType(require('react-native').View);
     expect(views[0]!.props.style.isolation).toBe('isolate');
-    expect(views.slice(1).map((view) => view.props.style.mixBlendMode)).toEqual(
-      ['normal', 'soft-light', 'normal'],
-    );
+    expect(views.slice(1).map((view) => view.props.style.mixBlendMode)).toEqual([
+      'normal',
+      'soft-light',
+      'normal',
+    ]);
     const grainPath = renderer.root
       .findAllByType(require('react-native-svg').Path)
       .find((path) => String(path.props.fill).includes('-grain'))!;
@@ -136,9 +118,7 @@ describe('AgentAvatar lifecycle', () => {
   });
   it('positions emotion chips exactly at the source canvas origin with its optical size', () => {
     act(() => {
-      renderer = create(
-        <AgentFace config={{ ...DEFAULT_CONFIG, eyeSize: 24, eyeGap: 36 }} />,
-      );
+      renderer = create(<AgentFace config={{ ...DEFAULT_CONFIG, eyeSize: 24, eyeGap: 36 }} />);
     });
     const groups = renderer.root.findAllByType(require('react-native-svg').G);
     expect(

@@ -27,13 +27,7 @@ import {
 } from '../theme/color-presets';
 import type { SchemeVariant } from '../theme/color-engine';
 import { getResolvedTokens } from '../theme/token-registry';
-import {
-  BORDER_WIDTH,
-  RADIUS,
-  SPACING,
-  TYPOGRAPHY,
-  type TypeRoleName,
-} from './scales';
+import { BORDER_WIDTH, RADIUS, SPACING, TYPOGRAPHY, type TypeRoleName } from './scales';
 
 /** One DTCG token. `$type` is inherited from the nearest group that declares it. */
 export interface DesignToken {
@@ -105,13 +99,10 @@ const FILE_DESCRIPTION = [
  * passed-through CSS string would end up in a C++ colour table as garbage.
  */
 export function resolvedColorToHex(value: string): string {
-  const channels = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)\s*(?:[,/]\s*([\d.]+%?)\s*)?\)$/.exec(
-    value,
-  );
+  const channels =
+    /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)\s*(?:[,/]\s*([\d.]+%?)\s*)?\)$/.exec(value);
   if (!channels) {
-    throw new Error(
-      `Bloom token value is not an rgb()/rgba() colour: ${JSON.stringify(value)}`,
-    );
+    throw new Error(`Bloom token value is not an rgb()/rgba() colour: ${JSON.stringify(value)}`);
   }
 
   const [, red = '0', green = '0', blue = '0', alpha] = channels;
@@ -120,17 +111,12 @@ export function resolvedColorToHex(value: string): string {
   const hex = `#${byte(red)}${byte(green)}${byte(blue)}`;
 
   if (alpha === undefined) return hex;
-  const fraction = alpha.endsWith('%')
-    ? Number(alpha.slice(0, -1)) / 100
-    : Number(alpha);
+  const fraction = alpha.endsWith('%') ? Number(alpha.slice(0, -1)) / 100 : Number(alpha);
   if (fraction >= 1) return hex;
   return `${hex}${byte(String(fraction * 255))}`;
 }
 
-function schemeTokens(
-  preset: AppColorName,
-  scheme: 'light' | 'dark',
-): Record<string, DesignToken> {
+function schemeTokens(preset: AppColorName, scheme: 'light' | 'dark'): Record<string, DesignToken> {
   const tokens: Record<string, DesignToken> = {};
   for (const [property, value] of Object.entries(getResolvedTokens(preset, scheme))) {
     tokens[property.replace(/^--/, '')] = { $value: resolvedColorToHex(value) };
@@ -214,9 +200,10 @@ function shapeGroup(): BloomDesignTokens['shape'] {
       $extensions: { 'so.oxy.bloom': { curve: shape.curve } },
     };
     if ('radius' in shape) {
-      entry.radius = typeof shape.radius === 'number'
-        ? { $type: 'dimension', $value: `${shape.radius}px` }
-        : dimensionGroup('Logical corner radii; omitted corners are square.', shape.radius);
+      entry.radius =
+        typeof shape.radius === 'number'
+          ? { $type: 'dimension', $value: `${shape.radius}px` }
+          : dimensionGroup('Logical corner radii; omitted corners are square.', shape.radius);
     }
     group[name] = entry;
   }

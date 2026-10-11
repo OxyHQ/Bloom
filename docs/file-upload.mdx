@@ -40,6 +40,8 @@ const [progress, setProgress] = useState(0);
 - `progress` alone (no `file`) keeps the file internal but uses your progress instead of the simulation.
 - `onFileSelected` fires only for files that pass validation; `onReject(message, file)` for the rest.
 
+Inactive status lines remain mounted for their visual transition but are excluded from assistive technology immediately when they start hiding. Only the current upload phase is exposed.
+
 ## Picking files
 
 - **Web:** click / Enter / Space opens a hidden `<input type="file">` restricted to `allowedExtensions`; dropping a file on the zone works too. `file.raw` is the DOM `File`.

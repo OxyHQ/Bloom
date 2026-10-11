@@ -26,10 +26,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 
-const PUPPETEER_PATHS = [
-  '/home/nate/Oxy/Homiio/node_modules/puppeteer-core',
-  'puppeteer-core',
-];
+const PUPPETEER_PATHS = ['/home/nate/Oxy/Homiio/node_modules/puppeteer-core', 'puppeteer-core'];
 
 function loadPuppeteer() {
   for (const candidate of PUPPETEER_PATHS) {
@@ -103,19 +100,21 @@ async function probe(page, id) {
     if (!navigated) return { children: 0, area: 0, text: 0, panel: 'navigation failed twice' };
     // Give the story a moment to mount; a component that throws still resolves
     // the navigation, so waiting on the network says nothing about rendering.
-    await page.waitForFunction(
-      () => {
-        const root = document.querySelector('#storybook-root');
-        return (
-          (root && root.childElementCount > 0) ||
-          (() => {
-            const panel = document.querySelector('#error-message, .sb-errordisplay');
-            return panel != null && panel.getClientRects().length > 0;
-          })()
-        );
-      },
-      { timeout: 15000 },
-    ).catch(() => undefined);
+    await page
+      .waitForFunction(
+        () => {
+          const root = document.querySelector('#storybook-root');
+          return (
+            (root && root.childElementCount > 0) ||
+            (() => {
+              const panel = document.querySelector('#error-message, .sb-errordisplay');
+              return panel != null && panel.getClientRects().length > 0;
+            })()
+          );
+        },
+        { timeout: 15000 },
+      )
+      .catch(() => undefined);
 
     return await page.evaluate(() => {
       const root = document.querySelector('#storybook-root');
@@ -128,7 +127,9 @@ async function probe(page, id) {
       const panelNode = document.querySelector('#error-message, .sb-errordisplay');
       const errorPanel =
         panelNode &&
-        (panelNode.offsetWidth > 0 || panelNode.offsetHeight > 0 || panelNode.getClientRects().length > 0)
+        (panelNode.offsetWidth > 0 ||
+          panelNode.offsetHeight > 0 ||
+          panelNode.getClientRects().length > 0)
           ? panelNode
           : null;
       return {

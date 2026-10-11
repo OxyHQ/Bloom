@@ -50,13 +50,21 @@ function PricePerAreaComparisonComponent({
   const theme = useTheme();
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
   const series = useMemo(
-    () => ({ highlight: chartHueTone(theme, 6).color, rest: resolveChartCardPalette(theme).neutralSeries }),
+    () => ({
+      highlight: chartHueTone(theme, 6).color,
+      rest: resolveChartCardPalette(theme).neutralSeries,
+    }),
     [theme],
   );
   const max = Math.max(0, ...rows.map((r) => r.value));
 
   return (
-    <View role="list" accessibilityLabel={accessibilityLabel} style={[{ width: '100%', gap: 16 }, style]} testID={testID}>
+    <View
+      role="list"
+      accessibilityLabel={accessibilityLabel}
+      style={[{ width: '100%', gap: 16 }, style]}
+      testID={testID}
+    >
       {rows.map((row, index) => (
         <View
           key={`${row.label}-${index}`}
@@ -74,7 +82,10 @@ function PricePerAreaComparisonComponent({
             >
               {row.label}
             </Text>
-            <Text variant="body-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+            <Text
+              variant="body-semibold"
+              style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+            >
               {row.display}
             </Text>
           </View>

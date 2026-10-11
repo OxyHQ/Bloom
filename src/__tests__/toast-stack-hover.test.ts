@@ -31,9 +31,7 @@ describe('stack hover platform split', () => {
   });
 
   it('native returns ONE object identity, so the row box props never churn', () => {
-    const { result, rerender } = renderHook(() =>
-      useStackHoverNative({ enableStacking: true }),
-    );
+    const { result, rerender } = renderHook(() => useStackHoverNative({ enableStacking: true }));
     const first = result.current;
     rerender(undefined);
 

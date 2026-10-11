@@ -18,8 +18,16 @@ export const DEAL_HEALTH: Record<
   DealHealth,
   { tone: AccentTone; label: string; icon: BloomIconComponent }
 > = {
-  'on-track': { tone: 'success', label: PIPELINE_MESSAGES.en.health['on-track'], icon: RiCheckboxCircleLine },
-  'at-risk': { tone: 'warning', label: PIPELINE_MESSAGES.en.health['at-risk'], icon: RiAlarmWarningLine },
+  'on-track': {
+    tone: 'success',
+    label: PIPELINE_MESSAGES.en.health['on-track'],
+    icon: RiCheckboxCircleLine,
+  },
+  'at-risk': {
+    tone: 'warning',
+    label: PIPELINE_MESSAGES.en.health['at-risk'],
+    icon: RiAlarmWarningLine,
+  },
   stalled: { tone: 'error', label: PIPELINE_MESSAGES.en.health.stalled, icon: RiTimeLine },
 };
 

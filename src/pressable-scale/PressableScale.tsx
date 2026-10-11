@@ -40,45 +40,46 @@ const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
  * Honours the OS "reduce motion" setting and disables the effect on non-touch
  * web pointers.
  */
-export const PressableScale = forwardRef<View, PressableScaleProps>(
-  function PressableScale(
-    { targetScale = 0.98, className, style, onPressIn, onPressOut, ...rest },
-    ref,
-  ) {
-    const reducedMotion = useReducedMotion();
-    const animate = SUPPORTS_PRESS_SCALE && !reducedMotion;
+export const PressableScale = forwardRef<View, PressableScaleProps>(function PressableScale(
+  { targetScale = 0.98, className, style, onPressIn, onPressOut, ...rest },
+  ref,
+) {
+  const reducedMotion = useReducedMotion();
+  const animate = SUPPORTS_PRESS_SCALE && !reducedMotion;
 
-    const scale = useSharedValue(1);
+  const scale = useSharedValue(1);
 
-    // `scale` MUST be in the deps array: on web without the worklets Babel
-    // plugin, useAnimatedStyle does not auto-track shared-value reads and would
-    // freeze at frame 1. Native (plugin present) auto-tracks and ignores the dep.
-    const animatedStyle = useAnimatedStyle(() => ({
+  // `scale` MUST be in the deps array: on web without the worklets Babel
+  // plugin, useAnimatedStyle does not auto-track shared-value reads and would
+  // freeze at frame 1. Native (plugin present) auto-tracks and ignores the dep.
+  const animatedStyle = useAnimatedStyle(
+    () => ({
       transform: [{ scale: scale.value }],
-    }), [scale]);
+    }),
+    [scale],
+  );
 
-    return (
-      <AnimatedPressable
-        ref={ref}
-        accessibilityRole="button"
-        onPressIn={(e) => {
-          onPressIn?.(e);
-          if (!animate) return;
-          cancelAnimation(scale);
-          scale.value = withTiming(targetScale, { duration: DURATION });
-        }}
-        onPressOut={(e) => {
-          onPressOut?.(e);
-          if (!animate) return;
-          cancelAnimation(scale);
-          scale.value = withTiming(1, { duration: DURATION });
-        }}
-        className={className}
-        style={[animate ? animatedStyle : null, style]}
-        {...rest}
-      />
-    );
-  },
-);
+  return (
+    <AnimatedPressable
+      ref={ref}
+      accessibilityRole="button"
+      onPressIn={(e) => {
+        onPressIn?.(e);
+        if (!animate) return;
+        cancelAnimation(scale);
+        scale.value = withTiming(targetScale, { duration: DURATION });
+      }}
+      onPressOut={(e) => {
+        onPressOut?.(e);
+        if (!animate) return;
+        cancelAnimation(scale);
+        scale.value = withTiming(1, { duration: DURATION });
+      }}
+      className={className}
+      style={[animate ? animatedStyle : null, style]}
+      {...rest}
+    />
+  );
+});
 
 PressableScale.displayName = 'PressableScale';

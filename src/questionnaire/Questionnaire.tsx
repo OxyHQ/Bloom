@@ -1,7 +1,12 @@
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import { SurfaceLevelProvider, surfaceFillOn, surfaceTextOn, hairlineOn } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  surfaceFillOn,
+  surfaceTextOn,
+  hairlineOn,
+} from '../styles/surface-levels';
 import React, {
   memo,
   useCallback,
@@ -125,24 +130,34 @@ export function resolveQuestionnairePalette(theme: Theme, backing?: string): Que
   const raised = backing === undefined ? c.backgroundSecondary : surfaceFillOn(theme, backing);
   const active = backing === undefined ? c.backgroundTertiary : surfaceFillOn(theme, raised);
   return {
-    surface: c.card, text: c.text, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
-    rowBorder: c.borderLight, rowBorderHover: c.border,
-    rowHover: c.backgroundSecondary, rowActive: c.backgroundTertiary,
-    key: c.backgroundSecondary, keyRaised: c.backgroundTertiary, ring: c.primary,
-    pillSelected: c.primarySubtle, pillHover: c.backgroundSecondary,
+    surface: c.card,
+    text: c.text,
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    rowBorder: c.borderLight,
+    rowBorderHover: c.border,
+    rowHover: c.backgroundSecondary,
+    rowActive: c.backgroundTertiary,
+    key: c.backgroundSecondary,
+    keyRaised: c.backgroundTertiary,
+    ring: c.primary,
+    pillSelected: c.primarySubtle,
+    pillHover: c.backgroundSecondary,
     pillLabelSelected: c.primarySubtleForeground,
     checkbox: resolveCheckboxPaint(theme),
-    ...(backing === undefined ? {} : {
-      surface: backing,
-      ...surfaceTextOn(theme, backing),
-      rowBorder: hairlineOn(theme, backing),
-      rowBorderHover: hairlineOn(theme, raised),
-      rowHover: raised,
-      rowActive: active,
-      key: raised,
-      keyRaised: active,
-      pillHover: raised,
-    }),
+    ...(backing === undefined
+      ? {}
+      : {
+          surface: backing,
+          ...surfaceTextOn(theme, backing),
+          rowBorder: hairlineOn(theme, backing),
+          rowBorderHover: hairlineOn(theme, raised),
+          rowHover: raised,
+          rowActive: active,
+          key: raised,
+          keyRaised: active,
+          pillHover: raised,
+        }),
   };
 }
 
@@ -341,7 +356,15 @@ function CheckboxRow({
       style={rowStyle(palette, pressed ? 'pressed' : hovered ? 'hover' : 'rest')}
     >
       <OptionText label={option.label} description={option.description} palette={palette} />
-      <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', paddingTop: 4, paddingBottom: 4 }}>
+      <View
+        style={{
+          flexShrink: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingTop: 4,
+          paddingBottom: 4,
+        }}
+      >
         <CheckboxGlyph
           size="md"
           checked={checked}
@@ -423,16 +446,22 @@ function OtherToggle({
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       hitSlop={14}
-      style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', paddingTop: 4, paddingBottom: 4 }}
+      style={{
+        flexShrink: 0,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 4,
+        paddingBottom: 4,
+      }}
     >
       <CheckboxGlyph
-          size="md"
-          checked={checked}
-          indeterminate={false}
-          disabled={false}
-          highlighted={hovered}
-          paint={palette.checkbox}
-        />
+        size="md"
+        checked={checked}
+        indeterminate={false}
+        disabled={false}
+        highlighted={hovered}
+        paint={palette.checkbox}
+      />
     </Pressable>
   );
 }
@@ -670,7 +699,13 @@ function StepPills({
       role="group"
       accessibilityLabel={label}
       testID={testID}
-      style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, flexShrink: 1 }}
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 8,
+        flexShrink: 1,
+      }}
     >
       {target ? (
         <Animated.View
@@ -697,7 +732,13 @@ function StepPills({
             const { x: lx, y: ly, width, height } = event.nativeEvent.layout;
             setBoxes((current) => {
               const prev = current[index];
-              if (prev && prev.x === lx && prev.y === ly && prev.width === width && prev.height === height) {
+              if (
+                prev &&
+                prev.x === lx &&
+                prev.y === ly &&
+                prev.width === width &&
+                prev.height === height
+              ) {
                 return current;
               }
               return { ...current, [index]: { x: lx, y: ly, width, height } };
@@ -738,6 +779,7 @@ function SlidingPanel({
   children: React.ReactNode;
 }) {
   const progress = useSharedValue(animate ? 0 : 1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) {
       progress.value = 1;
@@ -749,7 +791,6 @@ function SlidingPanel({
       if (finished && role === 'exit' && onExited) runOnJS(onExited)();
     });
     // Runs once per mount: a panel animates exactly one transition.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -810,9 +851,16 @@ function QuestionnaireComponent({
   const theme = useTheme();
   const surfaceLayer = useSurfaceLayer();
   const customSurface = StyleSheet.flatten(style);
-  const material = resolveSurfaceMaterial({ fill: String(customSurface?.backgroundColor ?? surfaceLayer.fill), parentFill: surfaceLayer.parentFill, parentLevel: surfaceLayer.parentLevel });
+  const material = resolveSurfaceMaterial({
+    fill: String(customSurface?.backgroundColor ?? surfaceLayer.fill),
+    parentFill: surfaceLayer.parentFill,
+    parentLevel: surfaceLayer.parentLevel,
+  });
   const { paintFill: paintFill, publishedFill: surfaceFill } = material;
-  const palette = useMemo(() => resolveQuestionnairePalette(theme, surfaceFill), [theme, surfaceFill]);
+  const palette = useMemo(
+    () => resolveQuestionnairePalette(theme, surfaceFill),
+    [theme, surfaceFill],
+  );
   const reducedMotion = useReducedMotion();
   const headingId = `bloom-questionnaire-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const text: Required<QuestionnaireLabels> = {
@@ -1136,82 +1184,103 @@ function QuestionnaireComponent({
     >
       <SurfacePaint fill={paintFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
       <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-      <Animated.View
-        style={[
-          {
-            position: 'relative',
-            overflow: 'hidden',
-            marginLeft: -CARD_PADDING,
-            marginRight: -CARD_PADDING,
-            marginTop: -VIEWPORT_INSET,
-            marginBottom: -VIEWPORT_INSET,
-            paddingLeft: CARD_PADDING,
-            paddingRight: CARD_PADDING,
-            paddingTop: VIEWPORT_INSET,
-            paddingBottom: VIEWPORT_INSET,
-          },
-          viewportStyle,
-        ]}
-      >
-        {leaving && leavingQuestion ? (
-          <SlidingPanel
-            key={`exit-${leaving.key}`}
-            role="exit"
-            direction={direction}
-            animate={!reducedMotion}
-            onExited={clearLeaving}
-          >
-            {renderQuestion(leavingQuestion, false)}
-          </SlidingPanel>
-        ) : null}
-        <SlidingPanel
-          key={`enter-${question.id}`}
-          role="enter"
-          direction={direction}
-          animate={Boolean(leaving) && !reducedMotion}
-          onLayout={onPanelLayout}
-          panelRef={panelRef}
+        <Animated.View
+          style={[
+            {
+              position: 'relative',
+              overflow: 'hidden',
+              marginLeft: -CARD_PADDING,
+              marginRight: -CARD_PADDING,
+              marginTop: -VIEWPORT_INSET,
+              marginBottom: -VIEWPORT_INSET,
+              paddingLeft: CARD_PADDING,
+              paddingRight: CARD_PADDING,
+              paddingTop: VIEWPORT_INSET,
+              paddingBottom: VIEWPORT_INSET,
+            },
+            viewportStyle,
+          ]}
         >
-          {renderQuestion(question, true)}
-        </SlidingPanel>
-      </Animated.View>
+          {leaving && leavingQuestion ? (
+            <SlidingPanel
+              key={`exit-${leaving.key}`}
+              role="exit"
+              direction={direction}
+              animate={!reducedMotion}
+              onExited={clearLeaving}
+            >
+              {renderQuestion(leavingQuestion, false)}
+            </SlidingPanel>
+          ) : null}
+          <SlidingPanel
+            key={`enter-${question.id}`}
+            role="enter"
+            direction={direction}
+            animate={Boolean(leaving) && !reducedMotion}
+            onLayout={onPanelLayout}
+            panelRef={panelRef}
+          >
+            {renderQuestion(question, true)}
+          </SlidingPanel>
+        </Animated.View>
 
-      {onDismiss ? (
-        <CloseButton
-          size="xs"
-          accessibilityLabel={text.dismiss}
-          onPress={onDismiss}
-          style={{ position: 'absolute', top: CARD_PADDING, right: CARD_PADDING }}
-          testID={testID ? `${testID}-dismiss` : undefined}
-        />
-      ) : null}
+        {onDismiss ? (
+          <CloseButton
+            size="xs"
+            accessibilityLabel={text.dismiss}
+            onPress={onDismiss}
+            style={{ position: 'absolute', top: CARD_PADDING, right: CARD_PADDING }}
+            testID={testID ? `${testID}-dismiss` : undefined}
+          />
+        ) : null}
 
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          gap: 16,
-          paddingTop: 2,
-        }}
-      >
-        <StepPills
-          questions={questions}
-          step={step}
-          onSelect={goTo}
-          label={text.steps}
-          palette={palette}
-          testID={testID ? `${testID}-step` : undefined}
-        />
-        <View style={{ flexDirection: 'row', flexShrink: 0, alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          <Button size="sm" disabled={step === 0} onPress={() => goTo(step - 1)} testID={testID ? `${testID}-previous` : undefined} appearance="subtle" tone="neutral">
-            {text.previous}
-          </Button>
-          <Button size="sm" onPress={() => finish(answersRef.current)} testID={testID ? `${testID}-next` : undefined} appearance="solid" tone="accent">
-            {isLast ? text.complete : text.next}
-          </Button>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 16,
+            paddingTop: 2,
+          }}
+        >
+          <StepPills
+            questions={questions}
+            step={step}
+            onSelect={goTo}
+            label={text.steps}
+            palette={palette}
+            testID={testID ? `${testID}-step` : undefined}
+          />
+          <View
+            style={{
+              flexDirection: 'row',
+              flexShrink: 0,
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: 8,
+            }}
+          >
+            <Button
+              size="sm"
+              disabled={step === 0}
+              onPress={() => goTo(step - 1)}
+              testID={testID ? `${testID}-previous` : undefined}
+              appearance="subtle"
+              tone="neutral"
+            >
+              {text.previous}
+            </Button>
+            <Button
+              size="sm"
+              onPress={() => finish(answersRef.current)}
+              testID={testID ? `${testID}-next` : undefined}
+              appearance="solid"
+              tone="accent"
+            >
+              {isLast ? text.complete : text.next}
+            </Button>
+          </View>
         </View>
-      </View>
       </SurfaceLevelProvider>
     </View>
   );

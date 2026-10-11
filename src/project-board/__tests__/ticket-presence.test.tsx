@@ -5,13 +5,25 @@ import { TicketPresenceList } from '../TicketPresence';
 import type { ProjectTicket } from '../types';
 
 const ticket: ProjectTicket = {
-  id: 'a', code: 'A-1', title: 'Retained ticket', area: 'Product', since: 'Now',
-  priority: 'Low', project: 'Product', assignees: [],
+  id: 'a',
+  code: 'A-1',
+  title: 'Retained ticket',
+  area: 'Product',
+  since: 'Now',
+  priority: 'Low',
+  project: 'Product',
+  assignees: [],
 };
 function Fixture({ tickets, retainId }: { tickets: ProjectTicket[]; retainId?: string }) {
-  return <TicketPresenceList tickets={tickets} retainId={retainId}>
-    {({ ticket: entry, present }) => <View><Text>{`${present ? 'active' : 'ghost'}-${entry.id}`}</Text></View>}
-  </TicketPresenceList>;
+  return (
+    <TicketPresenceList tickets={tickets} retainId={retainId}>
+      {({ ticket: entry, present }) => (
+        <View>
+          <Text>{`${present ? 'active' : 'ghost'}-${entry.id}`}</Text>
+        </View>
+      )}
+    </TicketPresenceList>
+  );
 }
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => jest.useRealTimers());

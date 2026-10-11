@@ -12,7 +12,8 @@ export interface PaginationMessages {
   goToPage: (page: number) => string;
 }
 
-export const PAGINATION_MESSAGES: MessageCatalog<PaginationMessages> = defineMessages<PaginationMessages>('PAGINATION_MESSAGES', {
-  pagination: 'Pagination',
-  goToPage: (page) => `Go to page ${page}`,
-});
+export const PAGINATION_MESSAGES: MessageCatalog<PaginationMessages> =
+  defineMessages<PaginationMessages>('PAGINATION_MESSAGES', {
+    pagination: 'Pagination',
+    goToPage: (page) => `Go to page ${page}`,
+  });

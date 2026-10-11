@@ -74,7 +74,9 @@ export function joinDealName(
   parts: ReadonlyArray<string | false | null | undefined>,
   separator = ', ',
 ): string {
-  return parts.filter((part): part is string => typeof part === 'string' && part !== '').join(separator);
+  return parts
+    .filter((part): part is string => typeof part === 'string' && part !== '')
+    .join(separator);
 }
 
 // ---------------------------------------------------------------------------

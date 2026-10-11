@@ -118,7 +118,10 @@ const EMPTY_CELL: ViewStyle = {
 const daysIn = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
 
 /** The index of the month whose title top is within the threshold of the viewport top. */
-export function currentMonthAt(scrollY: number, monthTops: readonly (number | undefined)[]): number {
+export function currentMonthAt(
+  scrollY: number,
+  monthTops: readonly (number | undefined)[],
+): number {
   let active = 0;
   monthTops.forEach((top, i) => {
     if (top !== undefined && top - scrollY <= CURRENT_THRESHOLD) active = i;
@@ -126,7 +129,13 @@ export function currentMonthAt(scrollY: number, monthTops: readonly (number | un
   return active;
 }
 
-function MiniActivityRings({ fractions, colors }: { fractions: readonly number[] | null; colors: readonly string[] }) {
+function MiniActivityRings({
+  fractions,
+  colors,
+}: {
+  fractions: readonly number[] | null;
+  colors: readonly string[];
+}) {
   return (
     <Svg width={28} height={28} viewBox="0 0 28 28" style={{ flexShrink: 0 }} aria-hidden>
       {RING_RADII.map((radius, index) => {
@@ -136,7 +145,15 @@ function MiniActivityRings({ fractions, colors }: { fractions: readonly number[]
         const color = colors[index]!;
         return (
           <G key={index} transform="rotate(-90 14 14)">
-            <Circle cx={14} cy={14} r={radius} fill="none" stroke={color} strokeWidth={RING_STROKE} opacity={RING_TRACK_OPACITY} />
+            <Circle
+              cx={14}
+              cy={14}
+              r={radius}
+              fill="none"
+              stroke={color}
+              strokeWidth={RING_STROKE}
+              opacity={RING_TRACK_OPACITY}
+            />
             {fractions ? (
               <Circle
                 cx={14}
@@ -189,7 +206,11 @@ const DayCell = memo(function DayCell({
   const { hook, ring } = useChartFocusRing('inset', medical.focusRing);
   const ease: WebCssStyle | null =
     Platform.OS === 'web'
-      ? { transitionProperty: 'background-color, border-color', transitionDuration: '150ms', transitionTimingFunction: 'ease' }
+      ? {
+          transitionProperty: 'background-color, border-color',
+          transitionDuration: '150ms',
+          transitionTimingFunction: 'ease',
+        }
       : null;
   return (
     <Pressable
@@ -215,7 +236,11 @@ const DayCell = memo(function DayCell({
           borderRadius: 10,
           borderWidth: 2,
           borderColor: selected ? medical.buttonBorderHover : 'transparent',
-          backgroundColor: selected ? selectedBackground : hovered ? medical.cellHover : 'transparent',
+          backgroundColor: selected
+            ? selectedBackground
+            : hovered
+              ? medical.cellHover
+              : 'transparent',
           paddingTop: 10,
           paddingBottom: 10,
           paddingLeft: 10,
@@ -223,7 +248,8 @@ const DayCell = memo(function DayCell({
         },
         ease,
         ring,
-      ]}>
+      ]}
+    >
       {/* The 20px number, 10px and the 28px rings overflow the 54px content box by
           4px, centred — as the CSS flex column does. Nothing may shrink. */}
       <Text variant="body-medium" style={{ flexShrink: 0, color: text }}>
@@ -259,17 +285,29 @@ export function MostActiveDaysCard({
   const suffix = suffixProp ?? chartText.totalSteps;
   const pickerText = pickMessages(DATE_PICKER_MESSAGES, chartLocale);
   // The locale's month names; a caller's own list keeps its three-letter titles.
-  const monthNames = useMemo(() => monthNamesProp ?? localMonthNames(chartLocale, 'long'), [monthNamesProp, chartLocale]);
-  const monthTitles = useMemo(
-    () => (monthNamesProp ? monthNamesProp.map((name) => name.slice(0, 3)) : localMonthNames(chartLocale, 'short')),
+  const monthNames = useMemo(
+    () => monthNamesProp ?? localMonthNames(chartLocale, 'long'),
     [monthNamesProp, chartLocale],
   );
-  const getDayLabel = getDayLabelProp ?? ((d: ActivityDay, name: string) => chartText.activityFor(name, d.day));
+  const monthTitles = useMemo(
+    () =>
+      monthNamesProp
+        ? monthNamesProp.map((name) => name.slice(0, 3))
+        : localMonthNames(chartLocale, 'short'),
+    [monthNamesProp, chartLocale],
+  );
+  const getDayLabel =
+    getDayLabelProp ?? ((d: ActivityDay, name: string) => chartText.activityFor(name, d.day));
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const medical = useMedicalPalette();
   const ringColors = useMemo(
-    () => ringColorsProp ?? [chartHueTone(theme, 3).activeColor, chartHueTone(theme, 2).color, chartHueTone(theme, 4).color],
+    () =>
+      ringColorsProp ?? [
+        chartHueTone(theme, 3).activeColor,
+        chartHueTone(theme, 2).color,
+        chartHueTone(theme, 4).color,
+      ],
     [ringColorsProp, theme],
   );
 
@@ -302,9 +340,20 @@ export function MostActiveDaysCard({
   };
 
   return (
-    <ChartCardSurface radius="radius-20" height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
+    <ChartCardSurface
+      radius="radius-20"
+      height={MEDICAL_CARD_HEIGHT}
+      style={[MEDICAL_CARD_STYLE, style]}
+      testID={testID}
+    >
       <MedicalHeader>
-        <MedicalHeadline label={title} value={headline} format={format} suffix={suffix} testID={testID} />
+        <MedicalHeadline
+          label={title}
+          value={headline}
+          format={format}
+          suffix={suffix}
+          testID={testID}
+        />
         <WeekRangePill
           width={128}
           label={monthNames[currentMonth] ?? ''}
@@ -326,14 +375,16 @@ export function MostActiveDaysCard({
           backgroundColor: palette.inner,
           paddingLeft: 10,
           paddingRight: 10,
-        }}>
+        }}
+      >
         <ScrollView
           ref={scrollRef}
           testID={testID ? `${testID}-scroll` : undefined}
           style={SCROLL_STYLE}
           contentContainerStyle={{ paddingTop: 10, paddingBottom: 10, gap: 16 }}
           onScroll={onScroll}
-          scrollEventThrottle={16}>
+          scrollEventThrottle={16}
+        >
           {monthNames.slice(0, 12).map((monthName, month) => {
             const count = daysIn(year, month);
             const weeks: number[][] = [];
@@ -341,7 +392,11 @@ export function MostActiveDaysCard({
               weeks.push(Array.from({ length: Math.min(7, count - d + 1) }, (_, k) => d + k));
             }
             return (
-              <View key={monthName} onLayout={onMonthLayout(month)} style={{ flexDirection: 'column', gap: 10 }}>
+              <View
+                key={monthName}
+                onLayout={onMonthLayout(month)}
+                style={{ flexDirection: 'column', gap: 10 }}
+              >
                 <Text variant="title-3-medium" style={{ paddingLeft: 4, color: palette.text }}>
                   {monthTitles[month]}
                 </Text>

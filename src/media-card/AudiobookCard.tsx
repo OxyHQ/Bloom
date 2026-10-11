@@ -53,13 +53,22 @@ function AudiobookCardComponent({
       testID={testID}
       typeLabel={typeLabel}
       subtitle={author}
-      meta={row ? [joinMeta([narratedBy, duration])].filter(Boolean) : [narratedBy ?? '', duration ?? ''].filter(Boolean)}
+      meta={
+        row
+          ? [joinMeta([narratedBy, duration])].filter(Boolean)
+          : [narratedBy ?? '', duration ?? ''].filter(Boolean)
+      }
       artworkAspectRatio={AUDIOBOOK_ASPECT_RATIO}
       artworkRadius={6}
       placeholderIcon={RiBookOpenFill}
       footer={
         heard > 0 ? (
-          <ListenProgress value={heard} paint={paint} label={messages.progressOf(title)} testID={testID ? `${testID}-progress` : undefined} />
+          <ListenProgress
+            value={heard}
+            paint={paint}
+            label={messages.progressOf(title)}
+            testID={testID ? `${testID}-progress` : undefined}
+          />
         ) : undefined
       }
     />

@@ -68,7 +68,8 @@ function AlbumCell({
   const hidden = Boolean(item.spoiler) && !revealed;
   const isVideo = item.kind === 'video';
   const duration =
-    item.durationLabel ?? (typeof item.duration === 'number' ? formatDuration(item.duration) : undefined);
+    item.durationLabel ??
+    (typeof item.duration === 'number' ? formatDuration(item.duration) : undefined);
 
   const name =
     item.accessibilityLabel ?? (isVideo ? messages.videoOf : messages.photoOf)(index + 1, total);
@@ -155,8 +156,7 @@ function MediaAlbumComponent({
   );
 
   const sending = state === 'sending';
-  const groupName =
-    accessibilityLabel ?? messages.album(items.length);
+  const groupName = accessibilityLabel ?? messages.album(items.length);
 
   return (
     <View style={[{ width }, style ?? null]} testID={testID}>

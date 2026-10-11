@@ -7,15 +7,15 @@ import type { EarningsPoint, EarningsRange } from './EarningsChartCard';
 
 const meta: Meta<typeof EarningsChartCard> = {
   argTypes: {
-    "title": { control: 'text' },
-    "headline": { control: 'number' },
-    "delta": { control: 'number' },
-    "defaultRange": { control: 'text' },
-    "rangesLabel": { control: 'text' },
-    "yMax": { control: 'number' },
-    "color": { control: 'text' },
-    "activeColor": { control: 'text' },
-    "activeIndex": { control: 'number' }
+    title: { control: 'text' },
+    headline: { control: 'number' },
+    delta: { control: 'number' },
+    defaultRange: { control: 'text' },
+    rangesLabel: { control: 'text' },
+    yMax: { control: 'number' },
+    color: { control: 'text' },
+    activeColor: { control: 'text' },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Earnings Chart',
   component: EarningsChartCard,
@@ -27,7 +27,8 @@ type Story = StoryObj<typeof EarningsChartCard>;
 
 // Demo periods and axis ticks.
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const zip = (values: number[]): EarningsPoint[] => values.map((value, i) => ({ label: MONTHS[i]!, value }));
+const zip = (values: number[]): EarningsPoint[] =>
+  values.map((value, i) => ({ label: MONTHS[i]!, value }));
 const Y_TICKS = [0, 3000, 5000, 10000];
 const Y_MAX = 12000;
 
@@ -72,10 +73,23 @@ export const Default: Story = {
 /** June hovered (controlled): the outline around its track, the darker bar, the month in the header. */
 export const Hovered: Story = {
   args: { activeIndex: 5 },
-  parameters: { controls: { include: ["activeIndex","title","headline","delta","defaultRange","rangesLabel","color","activeColor"] } },
+  parameters: {
+    controls: {
+      include: [
+        'activeIndex',
+        'title',
+        'headline',
+        'delta',
+        'defaultRange',
+        'rangesLabel',
+        'color',
+        'activeColor',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <EarningsChartCard {...args} ranges={RANGES} yTicks={Y_TICKS} yMax={Y_MAX}  />
+      <EarningsChartCard {...args} ranges={RANGES} yTicks={Y_TICKS} yMax={Y_MAX} />
     </Frame>
   ),
 };

@@ -8,9 +8,9 @@ import { TextFieldInput } from '../text-field';
 
 const meta: Meta = {
   argTypes: {
-    "error": { control: 'text' },
-    "required": { control: 'boolean' },
-    "disabled": { control: 'boolean' }
+    error: { control: 'text' },
+    required: { control: 'boolean' },
+    disabled: { control: 'boolean' },
   },
   component: Field,
   title: 'Base/Field',
@@ -21,8 +21,14 @@ export default meta;
 type Story = StoryObj;
 
 export const WithInput: Story = {
-  args: { label: 'Username', description: 'Choose a unique handle.', required: true, disabled: false, error: '' },
-  parameters: { controls: { include: ["label","description","required","disabled","error"] } },
+  args: {
+    label: 'Username',
+    description: 'Choose a unique handle.',
+    required: true,
+    disabled: false,
+    error: '',
+  },
+  parameters: { controls: { include: ['label', 'description', 'required', 'disabled', 'error'] } },
   render: (args) => {
     const [v, setV] = useState('');
     return (

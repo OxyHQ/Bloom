@@ -3,10 +3,7 @@ import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
 import { ErrorBoundary } from '../error-boundary';
-import type {
-  ErrorBoundaryFallback,
-  ErrorBoundaryFallbackContext,
-} from '../error-boundary';
+import type { ErrorBoundaryFallback, ErrorBoundaryFallbackContext } from '../error-boundary';
 import { pressHost } from './support/press-host';
 
 /**
@@ -65,7 +62,8 @@ describe('ErrorBoundary', () => {
       <ErrorBoundary
         fallback={({ error, retryCount }) => (
           <Text>{`err:${error.message} count:${retryCount}`}</Text>
-        )}>
+        )}
+      >
         <MaybeThrow shouldThrow message="custom-boom" />
       </ErrorBoundary>,
     );
@@ -79,7 +77,8 @@ describe('ErrorBoundary', () => {
         fallback={(ctx) => {
           captured = ctx;
           return <Text>captured</Text>;
-        }}>
+        }}
+      >
         <MaybeThrow shouldThrow />
       </ErrorBoundary>,
     );
@@ -156,12 +155,7 @@ describe('ErrorBoundary', () => {
   it('accepts both ReactNode and render-prop fallback (compile-time)', () => {
     const _staticFallback: ErrorBoundaryFallback = <Text>static</Text>;
     const _undefinedFallback: ErrorBoundaryFallback = undefined as ReactNode;
-    const _functionFallback: ErrorBoundaryFallback = ({
-      error,
-      errorInfo,
-      retry,
-      retryCount,
-    }) => (
+    const _functionFallback: ErrorBoundaryFallback = ({ error, errorInfo, retry, retryCount }) => (
       <Text>
         {error.message}
         {errorInfo?.componentStack ?? ''}

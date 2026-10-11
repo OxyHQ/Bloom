@@ -61,7 +61,10 @@ export function CalendarView({
   );
 
   return (
-    <View testID={testID} style={[{ width: '100%', maxWidth: 1300, alignSelf: 'center', gap: 10 }, style]}>
+    <View
+      testID={testID}
+      style={[{ width: '100%', maxWidth: 1300, alignSelf: 'center', gap: 10 }, style]}
+    >
       <View
         style={
           dense

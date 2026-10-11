@@ -26,8 +26,20 @@ type Story = StoryObj<typeof StatCards>;
 const PLAIN_STATS: StatCardsItem[] = [
   { icon: RiGroupLine, label: 'Customers', value: '14,592', delta: '+5.3%', deltaColor: 'lime' },
   { icon: RiBox3Line, label: 'Unit sold', value: '385', delta: '-2.1%', deltaColor: 'rose' },
-  { icon: RiShoppingBasketLine, label: 'Orders', value: '1,394', delta: '0.00%', deltaColor: 'neutral' },
-  { icon: RiChatSmile2Line, label: 'Support tickets', value: '708', delta: '+12.8%', deltaColor: 'lime' },
+  {
+    icon: RiShoppingBasketLine,
+    label: 'Orders',
+    value: '1,394',
+    delta: '0.00%',
+    deltaColor: 'neutral',
+  },
+  {
+    icon: RiChatSmile2Line,
+    label: 'Support tickets',
+    value: '708',
+    delta: '+12.8%',
+    deltaColor: 'lime',
+  },
 ];
 
 /** Demo metrics for the footer row. */
@@ -141,9 +153,16 @@ export const Tones: Story = {
 export const Playground: StoryObj<typeof StatCards> = {
   args: { stats: FOOTER_STATS, variant: 'footer', count: 4, columns: 2 },
   parameters: { controls: { disable: false, include: ['variant', 'count', 'columns'] } },
-  argTypes: { variant: { control: 'select', options: ['plain', 'footer'] }, count: { control: 'number' }, columns: { control: 'select', options: [1, 2, 4] } },
+  argTypes: {
+    variant: { control: 'select', options: ['plain', 'footer'] },
+    count: { control: 'number' },
+    columns: { control: 'select', options: [1, 2, 4] },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 960, maxWidth: '100%' }}><StatCards {...args} /></View>;
+    return (
+      <View style={{ width: 960, maxWidth: '100%' }}>
+        <StatCards {...args} />
+      </View>
+    );
   },
 };

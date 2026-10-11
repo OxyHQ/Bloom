@@ -56,7 +56,8 @@ export function ChartCardSurface({
           paddingBottom: 12,
         },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </Card>
   );

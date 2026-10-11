@@ -10,7 +10,13 @@ import type { StyleProp, ViewStyle } from 'react-native';
  * a recipe, it belongs in the dish's own copy where it can be read in full, and
  * a pill that says it in two words is the wrong instrument for it.
  */
-export type MenuItemDiet = 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free' | 'halal' | 'kosher';
+export type MenuItemDiet =
+  | 'vegetarian'
+  | 'vegan'
+  | 'gluten-free'
+  | 'dairy-free'
+  | 'halal'
+  | 'kosher';
 
 /** `comfortable` is the menu's own row; `compact` fits a basket or a sheet. */
 export type MenuItemDensity = 'comfortable' | 'compact';

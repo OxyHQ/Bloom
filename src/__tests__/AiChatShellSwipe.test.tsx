@@ -101,7 +101,8 @@ function renderShell({ mobileSidebar = <Text>nav</Text>, navSwipeEnabled }: Shel
         sidebar={null}
         mobileSidebar={mobileSidebar}
         navSwipeEnabled={navSwipeEnabled}
-        onNavOpenChange={onNavOpenChange}>
+        onNavOpenChange={onNavOpenChange}
+      >
         <Text>{`chat ${tick}`}</Text>
       </AiChatShell>
     </BloomThemeProvider>
@@ -126,7 +127,9 @@ function renderShell({ mobileSidebar = <Text>nav</Text>, navSwipeEnabled }: Shel
      * veil is hidden from assistive tech, so the query has to include it.
      */
     revealed: () => {
-      let node: ReactTestInstance | null = utils.getByLabelText('Close navigation', { includeHiddenElements: true });
+      let node: ReactTestInstance | null = utils.getByLabelText('Close navigation', {
+        includeHiddenElements: true,
+      });
       while (node && resolvedStyle(node.props.style).opacity === undefined) node = node.parent;
       return resolvedStyle(node?.props.style).opacity as number | undefined;
     },

@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type ComponentType,
-  type Ref,
-} from 'react';
+import { useEffect, useId, useRef, useState, type ComponentType, type Ref } from 'react';
 import { Platform, type View, type ViewProps } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -20,16 +13,13 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { FOLD_SHAPES, type AvatarConfig } from '../agent-avatar/model';
 import { useIsRtl } from '../hooks/use-is-rtl';
-import {
-  StyledImage,
-  StyledPressable,
-  StyledView,
-} from '../styles/styled-primitives';
+import { StyledImage, StyledPressable, StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
 import { ShapeSilhouette } from './ShapeSilhouette';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 // RNW supports these listbox properties; native handles equivalent accessibility actions.
 type ListboxViewProps = Omit<ViewProps, 'role'> & {
@@ -43,10 +33,8 @@ interface ArcCssStyle extends WebCssStyle {
   clipPath?: string;
 }
 const trackClip: ArcCssStyle = {
-  maskImage:
-    'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
-  clipPath:
-    'polygon(0 0, 15% 0, 30% 36%, 50% 50%, 70% 36%, 85% 0, 100% 0, 100% 100%, 0 100%)',
+  maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+  clipPath: 'polygon(0 0, 15% 0, 30% 36%, 50% 50%, 70% 36%, 85% 0, 100% 0, 100% 100%, 0 100%)',
 };
 export type ShapeArcChoice = {
   id: string;
@@ -177,9 +165,7 @@ export function ShapeArc({
   const suppressClick = useSharedValue(false);
   const move = (next: number) => {
     target.value = next;
-    position.value = reduced
-      ? next
-      : withSpring(next, { stiffness: 180, damping: 28 });
+    position.value = reduced ? next : withSpring(next, { stiffness: 180, damping: 28 });
   };
   useEffect(() => {
     const selected = choices.findIndex((choice) => choice.id === value);
@@ -216,8 +202,7 @@ export function ShapeArc({
     });
   useTrackEvents(
     ref,
-    (x, y) =>
-      move(target.value + (Math.abs(x) > Math.abs(y) ? x * sign : y) / 110),
+    (x, y) => move(target.value + (Math.abs(x) > Math.abs(y) ? x * sign : y) / 110),
     (key) => {
       const step =
         key === 'ArrowRight'
@@ -230,28 +215,24 @@ export function ShapeArc({
                 ? -1
                 : 0;
       if (!step && key !== 'Home' && key !== 'End') return false;
-      const next = step
-        ? Math.round(target.value) + step
-        : key === 'Home'
-          ? 0
-          : choices.length - 1;
+      const next = step ? Math.round(target.value) + step : key === 'Home' ? 0 : choices.length - 1;
       move(next);
       emit(next);
       return true;
     },
   );
   const slots = Array.from({ length: 9 }, (_, index) => center + index - 4);
-  const selectedSlot = slots.find(
-    (slot) => choices[wrap(slot, choices.length)]?.id === value,
-  );
+  const selectedSlot = slots.find((slot) => choices[wrap(slot, choices.length)]?.id === value);
   return (
-    <GestureDetector gesture={drag}>
+    // `touchAction="pan-y"`, not the `touch-pan-y` class below: RNGH writes an
+    // INLINE `touch-action: none` on this view on web, which beats the class,
+    // so a touch that lands on the arc could never scroll the page. The class
+    // stays for the moment before the handler attaches.
+    <GestureDetector gesture={drag} touchAction="pan-y">
       <ListboxView
         ref={ref}
         role="listbox"
-        aria-activedescendant={
-          selectedSlot === undefined ? undefined : `${id}-${selectedSlot}`
-        }
+        aria-activedescendant={selectedSlot === undefined ? undefined : `${id}-${selectedSlot}`}
         tabIndex={0}
         accessibilityLabel={messages.shape}
         pointerEvents="auto"
@@ -263,8 +244,7 @@ export function ShapeArc({
         ]}
         onAccessibilityAction={(event) => {
           const next =
-            Math.round(target.value) +
-            (event.nativeEvent.actionName === 'increment' ? 1 : -1);
+            Math.round(target.value) + (event.nativeEvent.actionName === 'increment' ? 1 : -1);
           move(next);
           emit(next);
         }}
@@ -289,28 +269,17 @@ export function ShapeArc({
             viewBox="0 0 100 126"
             preserveAspectRatio="none"
             style={{ position: 'absolute', left: 0, top: 0 }}
-            accessible={false}
+            {...svgA11yProps()}
           >
             <Defs>
               <LinearGradient id={`${id}-edge`} x1="0" y1="0" x2="1" y2="0">
                 <Stop offset="0" stopColor={colors.background} />
-                <Stop
-                  offset=".08"
-                  stopColor={colors.background}
-                  stopOpacity={0}
-                />
-                <Stop
-                  offset=".92"
-                  stopColor={colors.background}
-                  stopOpacity={0}
-                />
+                <Stop offset=".08" stopColor={colors.background} stopOpacity={0} />
+                <Stop offset=".92" stopColor={colors.background} stopOpacity={0} />
                 <Stop offset="1" stopColor={colors.background} />
               </LinearGradient>
             </Defs>
-            <Path
-              d="M0 0H100H85L70 45.36L50 63L30 45.36L15 0Z"
-              fill={colors.background}
-            />
+            <Path d="M0 0H100H85L70 45.36L50 63L30 45.36L15 0Z" fill={colors.background} />
             <Rect width={100} height={126} fill={`url(#${id}-edge)`} />
           </Svg>
         )}

@@ -53,7 +53,10 @@ export function normalizeLyricLines(
   }
   if (text && text.trim().length > 0) {
     return {
-      lines: text.replace(/\r\n?/g, '\n').split('\n').map((t) => ({ text: t.trim() })),
+      lines: text
+        .replace(/\r\n?/g, '\n')
+        .split('\n')
+        .map((t) => ({ text: t.trim() })),
       synced: false,
     };
   }
@@ -137,9 +140,6 @@ export function lyricsSizeForWidth(width: number): LyricsSize {
 // ---------------------------------------------------------------------------
 //  Colour
 // ---------------------------------------------------------------------------
-
-
-
 
 /**
  * The smallest alpha (in hundredths) at which `foreground` mixed over

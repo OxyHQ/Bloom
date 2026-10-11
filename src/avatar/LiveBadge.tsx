@@ -35,10 +35,7 @@ const LiveBadgeComponent: React.FC<LiveBadgeProps> = ({
         <Text
           allowFontScaling={false}
           numberOfLines={1}
-          style={[
-            styles.text,
-            { color: textColor, fontSize: variant === 'small' ? 10 : 7 },
-          ]}
+          style={[styles.text, { color: textColor, fontSize: variant === 'small' ? 10 : 7 }]}
         >
           {label}
         </Text>

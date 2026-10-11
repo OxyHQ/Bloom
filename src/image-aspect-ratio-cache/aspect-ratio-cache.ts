@@ -74,7 +74,7 @@ export const fetchAspectRatio = (uri: string): Promise<number> => {
       () => {
         aspectRatioCache.set(uri, DEFAULT_ASPECT_RATIO);
         resolve(DEFAULT_ASPECT_RATIO);
-      }
+      },
     );
   });
 };

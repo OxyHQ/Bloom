@@ -52,7 +52,9 @@ export function ToastIcon({
   }
 
   const Icon = ICON_MAP[variant];
-  return <Icon width={NOTIFICATION_GEOMETRY.icon} height={NOTIFICATION_GEOMETRY.icon} fill={color} />;
+  return (
+    <Icon width={NOTIFICATION_GEOMETRY.icon} height={NOTIFICATION_GEOMETRY.icon} fill={color} />
+  );
 }
 
 ToastIcon.displayName = 'ToastIcon';

@@ -23,9 +23,7 @@ import type { BlockquoteProps, TextProps } from './types';
  * overriding `--bloom-font-*` at any subtree. On native we use the literal
  * family name registered by `expo-font`'s `useFonts(FONT_ASSETS)`.
  */
-function fontFamilyStyle(
-  kind: 'display' | 'sans' | 'mono',
-): { fontFamily: string } {
+function fontFamilyStyle(kind: 'display' | 'sans' | 'mono'): { fontFamily: string } {
   if (Platform.OS === 'web') {
     return { fontFamily: `var(--bloom-font-${kind})` };
   }
@@ -108,9 +106,7 @@ function createHeadingElement({ level }: { level: number }): React.FC<TextProps>
   return function HeadingElement({ style, className, ...rest }: TextProps) {
     const { colors } = useTheme();
     const extraProps: Record<string, unknown> =
-      Platform.OS === 'web'
-        ? { role: 'heading', 'aria-level': level }
-        : {};
+      Platform.OS === 'web' ? { role: 'heading', 'aria-level': level } : {};
 
     // Only the FAMILY survives a caller's `className`: react-native-css merges
     // utilities into `style` first, so keeping `fontSize`/`fontWeight` here
@@ -124,14 +120,7 @@ function createHeadingElement({ level }: { level: number }): React.FC<TextProps>
           ...(level === 2 ? { ...H2_RULE, borderBottomColor: colors.border } : null),
         };
 
-    return (
-      <Text
-        {...extraProps}
-        {...rest}
-        className={className}
-        style={[headingBase, style]}
-      />
-    );
+    return <Text {...extraProps} {...rest} className={className} style={[headingBase, style]} />;
   };
 }
 
@@ -156,19 +145,13 @@ const DEFAULT_PARAGRAPH_TYPOGRAPHY: TextStyle = {
 
 export function P({ style, className, ...rest }: TextProps) {
   const { width } = useWindowDimensions();
-  const extraProps: Record<string, unknown> =
-    Platform.OS === 'web' ? { role: 'paragraph' } : {};
+  const extraProps: Record<string, unknown> = Platform.OS === 'web' ? { role: 'paragraph' } : {};
   const paragraphDefaults = typographyDefaultsWhenNoClassName(className, {
     ...DEFAULT_PARAGRAPH_TYPOGRAPHY,
     marginTop: width >= BREAKPOINTS.sm ? space._2xl : space.md,
   });
   return (
-    <Text
-      {...extraProps}
-      {...rest}
-      className={className}
-      style={[paragraphDefaults, style]}
-    />
+    <Text {...extraProps} {...rest} className={className} style={[paragraphDefaults, style]} />
   );
 }
 P.displayName = 'P';
@@ -272,8 +255,7 @@ export function Blockquote({ children, style, textStyle, testID }: BlockquotePro
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const wide = width >= BREAKPOINTS.sm;
-  const extraProps: Record<string, unknown> =
-    Platform.OS === 'web' ? { role: 'blockquote' } : {};
+  const extraProps: Record<string, unknown> = Platform.OS === 'web' ? { role: 'blockquote' } : {};
 
   return (
     <View
@@ -286,7 +268,8 @@ export function Blockquote({ children, style, textStyle, testID }: BlockquotePro
         { marginTop: wide ? space._2xl : space.lg, paddingLeft: wide ? space._2xl : space.md },
         { borderLeftColor: colors.border },
         style,
-      ]}>
+      ]}
+    >
       <Text style={[styles.blockquoteText, { color: colors.textSecondary }, textStyle]}>
         {children}
       </Text>

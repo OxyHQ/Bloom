@@ -5,16 +5,18 @@ import { Button } from '../button';
 import { Chip } from '../chip';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
-import {
-  TextField,
-  TextFieldHint,
-  TextFieldInput,
-  TextFieldLabel,
-} from '../text-field';
+import { TextField, TextFieldHint, TextFieldInput, TextFieldLabel } from '../text-field';
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
-import { addUnique, formatIsrc, isValidIsrc, normalizeIsrc, pressDataSet, resolveCreatorStudioPaint } from './shared';
+import {
+  addUnique,
+  formatIsrc,
+  isValidIsrc,
+  normalizeIsrc,
+  pressDataSet,
+  resolveCreatorStudioPaint,
+} from './shared';
 import type { ArtistChipsInputProps, IsrcFieldProps } from './types';
 
 /**
@@ -47,7 +49,10 @@ function ArtistChipsInputComponent({
   const addLabel = addLabelProp ?? messages.artists.add;
   // A caller's own `addLabel` keeps the name it always composed; Bloom's own
   // wording is a whole phrase per language.
-  const addName = addLabelProp !== undefined ? `${addLabelProp} ${label.toLowerCase()}` : messages.artists.addTo(label);
+  const addName =
+    addLabelProp !== undefined
+      ? `${addLabelProp} ${label.toLowerCase()}`
+      : messages.artists.addTo(label);
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const [draft, setDraft] = useState('');
@@ -106,13 +111,14 @@ function ArtistChipsInputComponent({
           />
         </TextField>
         <Button
-
           size="md"
           leadingIcon={RiAddLine}
           disabled={blocked || draft.trim() === ''}
           onPress={commit}
           accessibilityLabel={addName}
-          testID={testID ? `${testID}-add` : undefined} tone="neutral" appearance="outline"
+          testID={testID ? `${testID}-add` : undefined}
+          tone="neutral"
+          appearance="outline"
         >
           {addLabel}
         </Button>

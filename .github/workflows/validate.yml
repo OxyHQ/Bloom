@@ -32,6 +32,10 @@ jobs:
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile --ignore-scripts
+      # Biome formatting + lint (config: biome.json), before the slower build.
+      # Call the installed binary by path: a bare `bunx biome` that misses the
+      # local install fetches npm's unrelated `biome` package, which lints nothing.
+      - run: ./node_modules/.bin/biome ci .
       # Includes prebuild generation and postbuild tarball/freshness checks.
       - run: bun run build
       - run: bun run typescript

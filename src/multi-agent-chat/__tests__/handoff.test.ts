@@ -9,13 +9,10 @@ import {
 const from = { x: 20, y: 200, width: 80, height: 80 };
 const to = { x: 300, y: 40, width: 32, height: 32 };
 describe('avatar handoff geometry', () => {
-  it.each([false, true])(
-    'lands at the measured source and destination, curved=%s',
-    (arc) => {
-      expect(avatarFlightPoint(from, to, 0, arc)).toEqual(from);
-      expect(avatarFlightPoint(from, to, 1, arc)).toEqual(to);
-    },
-  );
+  it.each([false, true])('lands at the measured source and destination, curved=%s', (arc) => {
+    expect(avatarFlightPoint(from, to, 0, arc)).toEqual(from);
+    expect(avatarFlightPoint(from, to, 1, arc)).toEqual(to);
+  });
   it('bows the first-message flight above the straight journey and preserves size interpolation', () => {
     const straight = avatarFlightPoint(from, to, 0.5, false);
     const curved = avatarFlightPoint(from, to, 0.5, true);
@@ -32,15 +29,12 @@ describe('avatar handoff geometry', () => {
   it('rejects unmounted or zero-size targets rather than flying to the screen origin', async () => {
     expect(await measureAvatar(undefined)).toBeNull();
     const zero = {
-      measureInWindow: (
-        cb: (x: number, y: number, w: number, h: number) => void,
-      ) => cb(0, 0, 0, 0),
+      measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) => cb(0, 0, 0, 0),
     } as View;
     expect(await measureAvatar(zero)).toBeNull();
     const valid = {
-      measureInWindow: (
-        cb: (x: number, y: number, w: number, h: number) => void,
-      ) => cb(20, 200, 80, 80),
+      measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) =>
+        cb(20, 200, 80, 80),
     } as View;
     expect(await measureAvatar(valid)).toEqual(from);
   });
@@ -53,9 +47,8 @@ describe('committed avatar artwork', () => {
     const { INITIAL_WORKSPACE } = await import('../data');
     const agent = INITIAL_WORKSPACE.agents[0]!;
     const node = {
-      measureInWindow: (
-        cb: (x: number, y: number, w: number, h: number) => void,
-      ) => cb(20, 200, 80, 80),
+      measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) =>
+        cb(20, 200, 80, 80),
     } as View;
     const nodes = new Map([[agent.id, node]]);
     const departure = new DrawingContext();
@@ -69,9 +62,7 @@ describe('committed avatar artwork', () => {
     expect(flight.drawing).toBe(departure);
     expect(Object.isFrozen(flight.drawing)).toBe(true);
     expect(Object.isFrozen(flight.drawing!.nodes)).toBe(true);
-    expect(flight.drawing!.nodes[0]!.path!.toString()).toBe(
-      'M17 19 L41 19 L41 55 L17 55 Z',
-    );
+    expect(flight.drawing!.nodes[0]!.path!.toString()).toBe('M17 19 L41 19 L41 55 L17 55 Z');
     expect((await captureAvatars([agent], nodes))[0]!.drawing).toBeUndefined();
   });
 });

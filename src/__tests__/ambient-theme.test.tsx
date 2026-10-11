@@ -158,11 +158,13 @@ describe('ambient debounce timer handle', () => {
 
   it('unrefs a Node timer handle so a pending debounce holds nothing open', () => {
     const handles: ReturnType<typeof setTimeout>[] = [];
-    jest.spyOn(globalThis, 'setTimeout').mockImplementation((...args: Parameters<typeof setTimeout>) => {
-      const handle = realSetTimeout(...args);
-      handles.push(handle);
-      return handle;
-    });
+    jest
+      .spyOn(globalThis, 'setTimeout')
+      .mockImplementation((...args: Parameters<typeof setTimeout>) => {
+        const handle = realSetTimeout(...args);
+        handles.push(handle);
+        return handle;
+      });
 
     ambientTheme.setAmbient(RED_SEED);
 

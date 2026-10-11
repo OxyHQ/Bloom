@@ -17,10 +17,8 @@ export default meta;
 
 type Story = StoryObj;
 
-const AVATAR =
-  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop';
-const COVER =
-  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&h=200&fit=crop';
+const AVATAR = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop';
+const COVER = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&h=200&fit=crop';
 
 const PROFILE = {
   avatar: AVATAR,
@@ -51,8 +49,10 @@ function FollowButton() {
   return (
     <Button
       size="sm"
-      appearance={following ? 'outline' : 'solid'} tone={following ? 'neutral' : 'accent'}
-      onPress={() => setFollowing((value) => !value)}>
+      appearance={following ? 'outline' : 'solid'}
+      tone={following ? 'neutral' : 'accent'}
+      onPress={() => setFollowing((value) => !value)}
+    >
       {following ? 'Following' : 'Follow'}
     </Button>
   );
@@ -108,9 +108,12 @@ export const LoadOnOpen: Story = {
   render: function LoadOnOpenStory() {
     const [loaded, setLoaded] = React.useState(false);
     const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-    React.useEffect(() => () => {
-      if (timer.current) clearTimeout(timer.current);
-    }, []);
+    React.useEffect(
+      () => () => {
+        if (timer.current) clearTimeout(timer.current);
+      },
+      [],
+    );
     const onOpenChange = (open: boolean) => {
       if (!open || loaded) return;
       timer.current = setTimeout(() => setLoaded(true), 900);

@@ -71,10 +71,7 @@ export function ReplyHeader({
     }),
     [progress],
   );
-  const status = useAnimatedStyle(
-    () => ({ opacity: progress.value }),
-    [progress],
-  );
+  const status = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
   return (
     <StyledPressable
       accessibilityRole="button"
@@ -119,11 +116,7 @@ export function ReplyHeader({
         </AnimatedView>
       </AnimatedView>
       <StyledView style={{ opacity: arriving ? 0 : 1 }}>
-        <AnimatedView
-          aria-hidden={!thinking}
-          role={thinking ? 'status' : undefined}
-          style={status}
-        >
+        <AnimatedView aria-hidden={!thinking} role={thinking ? 'status' : undefined} style={status}>
           <ThinkingLabel variant="body-2-medium" color={colors.textSecondary}>
             {messages.thinking}
           </ThinkingLabel>
@@ -160,10 +153,7 @@ export function ReplyRow({
   useEffect(() => {
     opacity.value = withTiming(show ? 1 : 0, { duration: reduced ? 0 : 150 });
   }, [show, reduced, opacity]);
-  const animated = useAnimatedStyle(
-    () => ({ opacity: opacity.value }),
-    [opacity],
-  );
+  const animated = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
   return (
     <StyledView
       ref={ref}
@@ -178,11 +168,7 @@ export function ReplyRow({
       {children}
       <StyledView className="flex items-center justify-between gap-2 px-3 flex-row">
         {header}
-        {actions && (
-          <AnimatedView style={[{ flexShrink: 0 }, animated]}>
-            {actions}
-          </AnimatedView>
-        )}
+        {actions && <AnimatedView style={[{ flexShrink: 0 }, animated]}>{actions}</AnimatedView>}
       </StyledView>
     </StyledView>
   );

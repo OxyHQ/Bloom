@@ -4,13 +4,13 @@
  *
  * Changed: nothing — byte-for-byte, only its path.
  */
-import { codegenNativeComponent, type ViewProps } from "react-native";
+import { codegenNativeComponent, type ViewProps } from 'react-native';
 
 interface NativeProps extends ViewProps {
   name?: string;
   hostName?: string;
 }
 
-export default codegenNativeComponent<NativeProps>("PortalView", {
+export default codegenNativeComponent<NativeProps>('PortalView', {
   interfaceOnly: true,
 });

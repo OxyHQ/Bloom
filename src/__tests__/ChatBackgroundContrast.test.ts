@@ -61,7 +61,10 @@ const PRESETS = [
 const VARIANTS: ChatBackgroundVariant[] = ['plain', 'pattern', 'gradient', 'image'];
 
 const THEMES = PRESETS.flatMap((preset) =>
-  (['light', 'dark'] as const).map((mode) => ({ id: `${preset}/${mode}`, theme: buildTheme(preset, mode) })),
+  (['light', 'dark'] as const).map((mode) => ({
+    id: `${preset}/${mode}`,
+    theme: buildTheme(preset, mode),
+  })),
 );
 
 const round = (n: number) => Number(n.toFixed(2));
@@ -136,9 +139,9 @@ describe('bubble text over its own fill', () => {
 
 describe('bubble separation from each wallpaper', () => {
   const measured: Record<ChatBackgroundVariant, [min: number, max: number]> = {
-    plain: [1.10, 1.57],
-    pattern: [1.10, 1.57],
-    gradient: [1.10, 1.57],
+    plain: [1.1, 1.57],
+    pattern: [1.1, 1.57],
+    gradient: [1.1, 1.57],
     image: [1.17, 1.65],
   };
 
@@ -176,10 +179,13 @@ describe('bubble separation from each wallpaper', () => {
       const ex = chatBackgroundExtremes(paint, 'image');
       const low = relativeLuminance(ex.darkest)!;
       const high = relativeLuminance(ex.lightest)!;
-      if (chatBackgroundReferenceSurfaces(paint).some(fill => {
-        const value = relativeLuminance(fill)!;
-        return value >= low && value <= high;
-      })) overlappingRanges.push(id);
+      if (
+        chatBackgroundReferenceSurfaces(paint).some((fill) => {
+          const value = relativeLuminance(fill)!;
+          return value >= low && value <= high;
+        })
+      )
+        overlappingRanges.push(id);
       // Keep the photograph visible; a near-opaque overlay would fake the
       // original stronger-than-page assertion by eliminating the image.
       expect(paint.imageDimOpacity).toBe(theme.isDark ? 0.62 : 0.55);
@@ -188,10 +194,22 @@ describe('bubble separation from each wallpaper', () => {
     // Inside this continuous range a photo can equal a bubble's luminance:
     // separation1.00 is possible even when both endpoint samples are >1.
     expect(overlappingRanges).toEqual([
-      'oxy/dark', 'blue/dark', 'teal/dark', 'green/dark', 'yellow/dark',
-      'red/dark', 'purple/dark', 'pink/dark', 'orange/dark', 'mono/dark',
-      'gray/dark', 'navy/dark', 'forest-fire/dark', 'midnight-citrus/dark',
-      'charcoal-lime/dark', 'amethyst-current/dark',
+      'oxy/dark',
+      'blue/dark',
+      'teal/dark',
+      'green/dark',
+      'yellow/dark',
+      'red/dark',
+      'purple/dark',
+      'pink/dark',
+      'orange/dark',
+      'mono/dark',
+      'gray/dark',
+      'navy/dark',
+      'forest-fire/dark',
+      'midnight-citrus/dark',
+      'charcoal-lime/dark',
+      'amethyst-current/dark',
     ]);
   });
 
@@ -203,7 +221,10 @@ describe('bubble separation from each wallpaper', () => {
     // thinks the neutral step is arbitrary.
     let worst = Infinity;
     for (const { theme } of THEMES) {
-      const paint = { ...resolveChatScreenPaint(theme), imageDim: theme.isDark ? '#000000' : '#ffffff' };
+      const paint = {
+        ...resolveChatScreenPaint(theme),
+        imageDim: theme.isDark ? '#000000' : '#ffffff',
+      };
       worst = Math.min(worst, separation(paint, 'image'));
     }
     expect(round(worst)).toBe(1);

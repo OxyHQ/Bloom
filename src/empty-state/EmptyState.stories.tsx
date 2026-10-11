@@ -83,7 +83,11 @@ export const TextOnlyBand: Story = {
   render: () => (
     <Page>
       <Card radius="radius-16">
-        <EmptyState variant="compact" minHeight={160} description="No streams in this period yet." />
+        <EmptyState
+          variant="compact"
+          minHeight={160}
+          description="No streams in this period yet."
+        />
       </Card>
     </Page>
   ),

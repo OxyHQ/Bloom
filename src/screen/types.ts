@@ -29,4 +29,6 @@ export interface ScreenScrollOptions {
   handler?: ScrollHandlerProcessed | null;
 }
 
-export interface ScreenScrollViewProps extends Omit<ScrollViewProps, 'onScroll'>, ScreenScrollOptions {}
+export interface ScreenScrollViewProps
+  extends Omit<ScrollViewProps, 'onScroll'>,
+    ScreenScrollOptions {}

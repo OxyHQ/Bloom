@@ -143,7 +143,10 @@ export interface DashboardSurfaces {
   cardShadow: string;
 }
 
-export function resolveDashboardSurfaces(theme: Theme, fill = theme.colors.card): DashboardSurfaces {
+export function resolveDashboardSurfaces(
+  theme: Theme,
+  fill = theme.colors.card,
+): DashboardSurfaces {
   const c = theme.colors;
   return {
     secondary: fill,

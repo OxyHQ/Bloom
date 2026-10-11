@@ -3,7 +3,8 @@ import { PLACE_CARD_MESSAGES } from './messages';
 import type { PlaceOpenState } from './types';
 
 /** The English state words. The card speaks `PLACE_CARD_MESSAGES` in the app's locale. */
-export const PLACE_OPEN_LABELS: Readonly<Record<PlaceOpenState, string>> = PLACE_CARD_MESSAGES.en.openStates;
+export const PLACE_OPEN_LABELS: Readonly<Record<PlaceOpenState, string>> =
+  PLACE_CARD_MESSAGES.en.openStates;
 
 /**
  * Which tone each state's `Badge` takes. `closing-soon` and `opening-soon` are

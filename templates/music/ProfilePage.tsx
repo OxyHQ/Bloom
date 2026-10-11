@@ -9,8 +9,25 @@ import { ProfileHeader } from '../../src/media-header';
 import { Shelf } from '../../src/media-shelf';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
-import { ALBUM_BY_ID, ARTIST_BY_ID, FOLLOWERS, ME, PLAYLISTS, RECAP, SHOW_BY_ID, TRACK_BY_ID } from './data';
-import { ArtistTile, PageBody, PageScroll, PlaylistTile, SectionTitle, WithPageWidth, useMusicLayout } from './parts';
+import {
+  ALBUM_BY_ID,
+  ARTIST_BY_ID,
+  FOLLOWERS,
+  ME,
+  PLAYLISTS,
+  RECAP,
+  SHOW_BY_ID,
+  TRACK_BY_ID,
+} from './data';
+import {
+  ArtistTile,
+  PageBody,
+  PageScroll,
+  PlaylistTile,
+  SectionTitle,
+  WithPageWidth,
+  useMusicLayout,
+} from './parts';
 import { lyricsOf, playableFromTrack, usePlayer } from './PlayerContext';
 
 /**
@@ -27,7 +44,9 @@ export function ProfilePage() {
   const share = useDialogControl();
   const publicPlaylists = PLAYLISTS.filter((p) => p.mine);
   const track =
-    player.current?.kind === 'track' ? player.current : playableFromTrack(TRACK_BY_ID['lanterns-over-kessel-bay-3']!);
+    player.current?.kind === 'track'
+      ? player.current
+      : playableFromTrack(TRACK_BY_ID['lanterns-over-kessel-bay-3']!);
   const excerpt = (lyricsOf(track) ?? [])
     .filter((l) => l.text)
     .slice(4, 7)
@@ -65,8 +84,20 @@ export function ProfilePage() {
         onMorePress={() => {}}
       />
       <PageBody gap={40}>
-        <Shelf title="Top artists this month" subtitle="Only visible to you" onShowAll={() => {}} contentInset={gutter}>
-          {['lumen-vale', 'odessa-rowe', 'kiko-marenne', 'paper-lanterns', 'arlo-tamsin', 'north-ferry'].map((id) => (
+        <Shelf
+          title="Top artists this month"
+          subtitle="Only visible to you"
+          onShowAll={() => {}}
+          contentInset={gutter}
+        >
+          {[
+            'lumen-vale',
+            'odessa-rowe',
+            'kiko-marenne',
+            'paper-lanterns',
+            'arlo-tamsin',
+            'north-ferry',
+          ].map((id) => (
             <ArtistTile key={id} id={id} size={tileSize} />
           ))}
         </Shelf>
@@ -90,7 +121,8 @@ export function ProfilePage() {
                 size={tileSize}
                 action={
                   <Button
-                    appearance={on ? 'outline' : 'solid'} tone={on ? 'neutral' : 'accent'}
+                    appearance={on ? 'outline' : 'solid'}
+                    tone={on ? 'neutral' : 'accent'}
                     size="xs"
                     accessibilityLabel={`Follow ${person.name}`}
                     aria-pressed={on}
@@ -153,10 +185,11 @@ export function ProfilePage() {
                   <View style={{ gap: 12, width: wide ? 360 : '100%' }}>
                     {shareCard}
                     <Button
-
                       leadingIcon={RiShareForwardLine}
                       onPress={() => share.open()}
-                      style={{ alignSelf: 'flex-start' }} tone="neutral" appearance="outline"
+                      style={{ alignSelf: 'flex-start' }}
+                      tone="neutral"
+                      appearance="outline"
                     >
                       Share this song
                     </Button>

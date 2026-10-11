@@ -10,4 +10,9 @@ export interface ErrorBoundaryMessages {
   retry: string;
 }
 
-export const ERROR_BOUNDARY_MESSAGES: MessageCatalog<ErrorBoundaryMessages> = defineMessages<ErrorBoundaryMessages>('ERROR_BOUNDARY_MESSAGES', { title: 'Something went wrong', message: 'An unexpected error occurred', retry: 'Try Again' });
+export const ERROR_BOUNDARY_MESSAGES: MessageCatalog<ErrorBoundaryMessages> =
+  defineMessages<ErrorBoundaryMessages>('ERROR_BOUNDARY_MESSAGES', {
+    title: 'Something went wrong',
+    message: 'An unexpected error occurred',
+    retry: 'Try Again',
+  });

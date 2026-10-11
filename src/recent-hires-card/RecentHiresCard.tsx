@@ -61,7 +61,10 @@ interface RecentHiresPalette {
   ring: string;
 }
 
-export function resolveRecentHiresPalette(theme: Theme, fill = theme.colors.card): RecentHiresPalette {
+export function resolveRecentHiresPalette(
+  theme: Theme,
+  fill = theme.colors.card,
+): RecentHiresPalette {
   const surfaces = resolveDashboardSurfaces(theme, fill);
   return {
     surface: surfaces.secondary,
@@ -113,7 +116,9 @@ function HireCard({
         { boxShadow: palette.cardShadow } as WebCssStyle,
       ]}
     >
-      <View style={{ width: '100%', minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View
+        style={{ width: '100%', minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}
+      >
         <Avatar
           size="lg"
           source={photo ? hire.avatar : undefined}
@@ -122,10 +127,18 @@ function HireCard({
           color={hire.avatarColor}
         />
         <View style={{ flex: 1, minWidth: 0, justifyContent: 'center', alignItems: 'flex-start' }}>
-          <Text variant="body-medium" numberOfLines={1} style={{ width: '100%', color: palette.text }}>
+          <Text
+            variant="body-medium"
+            numberOfLines={1}
+            style={{ width: '100%', color: palette.text }}
+          >
             {hire.name}
           </Text>
-          <Text variant="body-2-medium" numberOfLines={1} style={{ width: '100%', color: palette.textSecondary }}>
+          <Text
+            variant="body-2-medium"
+            numberOfLines={1}
+            style={{ width: '100%', color: palette.textSecondary }}
+          >
             {hire.joined}
           </Text>
         </View>
@@ -177,7 +190,9 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   const teamHook: WebDataSet = IS_WEB ? { dataSet: { bloomRecentHiresTeam: '' } } : {};
 
   return (
-    <Card radius="radius-16" elevation="none"
+    <Card
+      radius="radius-16"
+      elevation="none"
       testID={testID}
       style={[
         {
@@ -205,7 +220,12 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
           <Text variant="body-medium" style={{ color: palette.textSecondary }}>
             {title}
           </Text>
-          <Text variant="title-1-medium" numberOfLines={1} style={{ color: palette.text }} testID={testID ? `${testID}-count` : undefined}>
+          <Text
+            variant="title-1-medium"
+            numberOfLines={1}
+            style={{ color: palette.text }}
+            testID={testID ? `${testID}-count` : undefined}
+          >
             {count}
           </Text>
         </View>
@@ -236,9 +256,19 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
         ) : null}
       </View>
 
-      <View style={{ marginTop: 11, flex: height === 'auto' ? undefined : 1, minHeight: 0, gap: 8 }}>
+      <View
+        style={{ marginTop: 11, flex: height === 'auto' ? undefined : 1, minHeight: 0, gap: 8 }}
+      >
         {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={{ flex: height === 'auto' ? undefined : 1, minHeight: 0, flexDirection: 'row', gap: 8 }}>
+          <View
+            key={rowIndex}
+            style={{
+              flex: height === 'auto' ? undefined : 1,
+              minHeight: 0,
+              flexDirection: 'row',
+              gap: 8,
+            }}
+          >
             {row.map((hire, index) => (
               <HireCard
                 key={hire.id ?? hire.name}
@@ -252,11 +282,31 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
         ))}
       </View>
 
-      <View style={{ marginTop: 8, width: '100%', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Button size="sm" leadingIcon={RiArrowLeftLine} onPress={onPreviousPress} disabled={previousDisabled} style={{ flex: 1 }} testID={testID ? `${testID}-previous` : undefined} appearance="subtle" tone="neutral">
+      <View
+        style={{ marginTop: 8, width: '100%', flexDirection: 'row', alignItems: 'center', gap: 8 }}
+      >
+        <Button
+          size="sm"
+          leadingIcon={RiArrowLeftLine}
+          onPress={onPreviousPress}
+          disabled={previousDisabled}
+          style={{ flex: 1 }}
+          testID={testID ? `${testID}-previous` : undefined}
+          appearance="subtle"
+          tone="neutral"
+        >
           {previousLabel}
         </Button>
-        <Button size="sm" trailingIcon={RiArrowRightLine} onPress={onNextPress} disabled={nextDisabled} style={{ flex: 1 }} testID={testID ? `${testID}-next` : undefined} appearance="subtle" tone="neutral">
+        <Button
+          size="sm"
+          trailingIcon={RiArrowRightLine}
+          onPress={onNextPress}
+          disabled={nextDisabled}
+          style={{ flex: 1 }}
+          testID={testID ? `${testID}-next` : undefined}
+          appearance="subtle"
+          tone="neutral"
+        >
           {nextLabel}
         </Button>
       </View>

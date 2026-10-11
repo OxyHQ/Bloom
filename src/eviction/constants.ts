@@ -15,7 +15,10 @@ import type { EvictionEventKind, EvictionStatus } from './types';
  * The status badge: tone, fill and English word. The card draws the word in
  * the locale (`EVICTION_MESSAGES`); `label` stays for callers that read it.
  */
-export const EVICTION_STATUS: Record<EvictionStatus, { tone: AccentTone; fill: AccentFill; label: string }> = {
+export const EVICTION_STATUS: Record<
+  EvictionStatus,
+  { tone: AccentTone; fill: AccentFill; label: string }
+> = {
   scheduled: { tone: 'warning', fill: 'subtle', label: EVICTION_MESSAGES.en.status.scheduled },
   postponed: { tone: 'info', fill: 'subtle', label: EVICTION_MESSAGES.en.status.postponed },
   suspended: { tone: 'success', fill: 'subtle', label: EVICTION_MESSAGES.en.status.suspended },

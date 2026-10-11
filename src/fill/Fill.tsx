@@ -8,11 +8,7 @@ const FillComponent = function Fill({
   children?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
-  return (
-    <View style={[fillStyles.base, style]}>
-      {children}
-    </View>
-  );
+  return <View style={[fillStyles.base, style]}>{children}</View>;
 };
 
 export const Fill = memo(FillComponent);

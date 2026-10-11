@@ -165,7 +165,10 @@ export class ColorRole {
       const bgTone2 = bg2(scheme)!.getTone(scheme);
       const upper = Math.max(bgTone1, bgTone2);
       const lower = Math.min(bgTone1, bgTone2);
-      if (ratioOfTones(upper, answer) >= desiredRatio && ratioOfTones(lower, answer) >= desiredRatio) {
+      if (
+        ratioOfTones(upper, answer) >= desiredRatio &&
+        ratioOfTones(lower, answer) >= desiredRatio
+      ) {
         return answer;
       }
       const lightOption = lighter(upper, desiredRatio);

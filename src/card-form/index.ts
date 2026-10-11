@@ -7,7 +7,12 @@ export {
   CardFormPostcode,
   CardFormSecurityCode,
 } from './CardFormParts';
-export { CARD_FORM_EMPTY_VALUE, CARD_FORM_GAP, CARD_FORM_LABELS, CARD_FORM_PLACEHOLDERS } from './constants';
+export {
+  CARD_FORM_EMPTY_VALUE,
+  CARD_FORM_GAP,
+  CARD_FORM_LABELS,
+  CARD_FORM_PLACEHOLDERS,
+} from './constants';
 export {
   DEFAULT_CARD_GROUPS,
   DEFAULT_CARD_LENGTHS,

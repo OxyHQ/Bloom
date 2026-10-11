@@ -50,9 +50,36 @@ whichever end is nearer once the commit fraction is crossed — so a half-hearte
 drag never leaves a row stuck ajar. Under the tap slop the whole thing is a tap
 and the row springs straight back.
 
-Activation is what keeps a list scrollable: the pan claims the touch only past
-12px of HORIZONTAL travel and fails outright past 12px of vertical, so a
-scroll that wanders sideways stays a scroll.
+Activation decides which drags become a SWIPE: the pan claims the touch only
+past 12px of HORIZONTAL travel and fails outright past 12px of vertical, so a
+vertical drag that wanders sideways never opens a pane.
+
+## Touch-action: what actually keeps the list scrollable on web
+
+Activation is not what lets a touch browser scroll the list. On web,
+react-native-gesture-handler writes an inline `touch-action` on the detector's
+view, and its default is `none` — "never pan from this element". Rows tile the
+whole list, so with that default the list could be swiped but not scrolled by
+touch at all, wherever the finger landed. `failOffsetY` cannot help: it is a
+JavaScript decision, and the browser decided whether it may scroll before any
+JavaScript ran. A `touch-pan-y` class on the row cannot help either, because
+the inline style wins.
+
+So the detector passes `touchAction="pan-y"`:
+
+- **Vertical** panning is the browser's. When it starts scrolling it cancels
+  the pointer, and the pan with it, so a scroll never leaves a row half-open.
+- **Horizontal** movement is not something the browser may take, so its
+  pointer moves keep reaching the pan, which activates past 12px as above.
+
+The rule for every gesture in the library, not just this one: a detector that
+sits inside something that scrolls vertically and only wants HORIZONTAL travel
+passes `touchAction="pan-y"`; `none` is only for elements that are not scroll
+content (an overlay, a fixed bar) or whose gesture genuinely needs both axes (a
+2-D drag, a pinch). Native ignores the prop. Each detector's decision, with its
+reason, is pinned by `gesture-detector-touch-action-census.test.ts`, and
+`scripts/verify-swipe-row.mjs` reads the computed `touch-action` off the row
+and scrolls the list with a real touch gesture that starts on a row.
 
 The panes are laid UNDER the row and grow with it. The row is what moves; the
 action underneath is revealed, not pushed in from outside. Each button keeps its

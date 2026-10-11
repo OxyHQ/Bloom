@@ -7,7 +7,11 @@ import { useChartCardPalette } from '../chart-cards/primitives/use-chart-palette
 import { roundedBarPath, singleBarSlot } from '../chart-cards/rounded-bar-geometry';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
@@ -111,7 +115,9 @@ function PlacePopularTimesComponent({
   const hours = current?.hours ?? [];
   const count = hours.length;
   const currentIndex =
-    current?.currentHourIndex != null && current.currentHourIndex >= 0 && current.currentHourIndex < count
+    current?.currentHourIndex != null &&
+    current.currentHourIndex >= 0 &&
+    current.currentHourIndex < count
       ? current.currentHourIndex
       : null;
   const trend = current ? busyTrendLabel(current, messages) : null;
@@ -170,7 +176,9 @@ function PlacePopularTimesComponent({
         <View
           onLayout={onLayout}
           accessible
-          accessibilityLabel={accessibilityLabel ?? (current ? describeBusyChart(current, messages) : undefined)}
+          accessibilityLabel={
+            accessibilityLabel ?? (current ? describeBusyChart(current, messages) : undefined)
+          }
           {...(IS_WEB ? { role: 'img' as const } : null)}
           testID={testID ? `${testID}-chart` : undefined}
         >
@@ -211,7 +219,10 @@ function PlacePopularTimesComponent({
                 {currentIndex != null
                   ? (() => {
                       const left = Math.max(RING_STROKE / 2, currentIndex * band + RING_STROKE / 2);
-                      const right = Math.min(width - RING_STROKE / 2, (currentIndex + 1) * band - RING_STROKE / 2);
+                      const right = Math.min(
+                        width - RING_STROKE / 2,
+                        (currentIndex + 1) * band - RING_STROKE / 2,
+                      );
                       if (right <= left) return null;
                       return (
                         <Path
@@ -241,10 +252,16 @@ function PlacePopularTimesComponent({
                   // Clamped into the plot: the first and last labels are
                   // centred on a band that starts at the edge, and a 40-wide
                   // slot centred there would hang outside the block.
-                  const left = Math.max(0, Math.min((width ?? 0) - LABEL_SLOT, centre - LABEL_SLOT / 2));
+                  const left = Math.max(
+                    0,
+                    Math.min((width ?? 0) - LABEL_SLOT, centre - LABEL_SLOT / 2),
+                  );
                   if (currentIndex != null && index !== currentIndex) {
                     const currentCentre = currentIndex * band + band / 2;
-                    const currentLeft = Math.max(0, Math.min((width ?? 0) - LABEL_SLOT, currentCentre - LABEL_SLOT / 2));
+                    const currentLeft = Math.max(
+                      0,
+                      Math.min((width ?? 0) - LABEL_SLOT, currentCentre - LABEL_SLOT / 2),
+                    );
                     if (Math.abs(left - currentLeft) < LABEL_SLOT) return null;
                   }
                   return (

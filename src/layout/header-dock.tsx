@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type PropsWithChildren,
+} from 'react';
 import { Platform } from 'react-native';
 import { useDerivedValue, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { useScreenContext } from '../screen/context';
@@ -16,7 +23,9 @@ interface HeaderDockState {
   targets: React.MutableRefObject<Map<object, number>>;
 }
 const HeaderDockContext = createContext<HeaderDockState | null>(null);
-export function useHeaderDockContext() { return useContext(HeaderDockContext); }
+export function useHeaderDockContext() {
+  return useContext(HeaderDockContext);
+}
 
 /** Native lists already below an inline header need no additional clearance. */
 export function useHeaderDockInset(): number {
@@ -26,7 +35,10 @@ export function useHeaderDockInset(): number {
 }
 
 /** Pairs one header and its docking section without rendering on scroll frames. */
-export function HeaderDockProvider({ children, scrollY: supplied }: PropsWithChildren<{ scrollY?: SharedValue<number> }>) {
+export function HeaderDockProvider({
+  children,
+  scrollY: supplied,
+}: PropsWithChildren<{ scrollY?: SharedValue<number> }>) {
   const screen = useScreenContext();
   const contextual = useScrollOffset();
   const rest = useSharedValue(0);
@@ -36,7 +48,37 @@ export function HeaderDockProvider({ children, scrollY: supplied }: PropsWithChi
   const [overlaps, setOverlaps] = useState(false);
   const sectionOffset = useSharedValue(Number.POSITIVE_INFINITY);
   const targets = useRef(new Map<object, number>());
-  const progress = useDerivedValue(() => Math.min(1, Math.max(0, (scrollY.value - sectionOffset.value + (Platform.OS === 'web' || overlay.value ? headerHeight.value : 0) + 12) / 12)), [scrollY, sectionOffset, headerHeight, overlay]);
-  const value = useMemo(() => ({scrollY,headerHeight,sectionOffset,progress,targets,overlay,overlaps,setOverlaps}), [scrollY,headerHeight,sectionOffset,progress,overlay,overlaps]);
-  return <TopEdgeProvider><HeaderDockContext.Provider value={value}>{children}</HeaderDockContext.Provider></TopEdgeProvider>;
+  const progress = useDerivedValue(
+    () =>
+      Math.min(
+        1,
+        Math.max(
+          0,
+          (scrollY.value -
+            sectionOffset.value +
+            (Platform.OS === 'web' || overlay.value ? headerHeight.value : 0) +
+            12) /
+            12,
+        ),
+      ),
+    [scrollY, sectionOffset, headerHeight, overlay],
+  );
+  const value = useMemo(
+    () => ({
+      scrollY,
+      headerHeight,
+      sectionOffset,
+      progress,
+      targets,
+      overlay,
+      overlaps,
+      setOverlaps,
+    }),
+    [scrollY, headerHeight, sectionOffset, progress, overlay, overlaps],
+  );
+  return (
+    <TopEdgeProvider>
+      <HeaderDockContext.Provider value={value}>{children}</HeaderDockContext.Provider>
+    </TopEdgeProvider>
+  );
 }

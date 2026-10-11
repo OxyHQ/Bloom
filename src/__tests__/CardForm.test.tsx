@@ -42,7 +42,14 @@ import {
 } from '../card-form';
 import type { CardFormValue, CardScheme } from '../card-form';
 import { Field } from '../field';
-import { byLabel, byTestId, mount, queryTestId, root$, setupHarness } from './support/commerce-harness';
+import {
+  byLabel,
+  byTestId,
+  mount,
+  queryTestId,
+  root$,
+  setupHarness,
+} from './support/commerce-harness';
 
 setupHarness();
 
@@ -103,9 +110,13 @@ describe('the caret rule', () => {
     // A digit deleted from the middle of a full number. Re-grouping here would
     // change the string ahead of the caret and the platform would put the caret
     // at the end.
-    expect(applyCardNumberEdit('7000 1111 2222 3339', '7000 111 2222 3339')).toBe('7000 111 2222 3339');
+    expect(applyCardNumberEdit('7000 1111 2222 3339', '7000 111 2222 3339')).toBe(
+      '7000 111 2222 3339',
+    );
     // …and a digit inserted in the middle.
-    expect(applyCardNumberEdit('7000 1111 2222 3339', '7000 11151 2222 333')).toBe('7000 11151 2222 333');
+    expect(applyCardNumberEdit('7000 1111 2222 3339', '7000 11151 2222 333')).toBe(
+      '7000 11151 2222 333',
+    );
   });
 
   it('refuses an edit past the accepted length instead of truncating it', () => {
@@ -113,10 +124,12 @@ describe('the caret rule', () => {
     // a PASTE: a truncating formatter would land on a different string from the
     // one the box already held, and the caret would jump.
     const full = '7000 1111 2222 3339';
-    expect(applyCardNumberEdit(full, `${full}5`, schemeGroups(AURORA), schemeMaxDigits(AURORA))).toBe(full);
-    expect(applyCardNumberEdit('7000 1111 2222 333', '7000 1111 2222 333999', schemeGroups(AURORA), 16)).toBe(
-      '7000 1111 2222 333',
-    );
+    expect(
+      applyCardNumberEdit(full, `${full}5`, schemeGroups(AURORA), schemeMaxDigits(AURORA)),
+    ).toBe(full);
+    expect(
+      applyCardNumberEdit('7000 1111 2222 333', '7000 1111 2222 333999', schemeGroups(AURORA), 16),
+    ).toBe('7000 1111 2222 333');
   });
 
   it('tidies up only when the box is LEFT', () => {
@@ -124,7 +137,9 @@ describe('the caret rule', () => {
     // Fifteen digits after an interior deletion close up rather than keeping
     // the gap the typing left.
     expect(normaliseCardNumber('7000 111 2222 3339')).toBe('7000 1112 2223 339');
-    expect(normaliseCardNumber('8100 111111 22229', schemeGroups(MERIDIAN))).toBe('8100 111111 22229');
+    expect(normaliseCardNumber('8100 111111 22229', schemeGroups(MERIDIAN))).toBe(
+      '8100 111111 22229',
+    );
   });
 });
 
@@ -168,7 +183,9 @@ describe('the two arithmetic checks, and nothing more', () => {
   });
 
   it('accepts a number only at an accepted length AND with a passing check digit', () => {
-    expect(cardNumberIsWellFormed('7992 7398 7139 5648', AURORA)).toBe(luhnCheck('7992739871395648'));
+    expect(cardNumberIsWellFormed('7992 7398 7139 5648', AURORA)).toBe(
+      luhnCheck('7992739871395648'),
+    );
     // Right check digit, wrong length for the scheme.
     expect(cardNumberIsWellFormed('79927398713', AURORA)).toBe(false);
   });
@@ -223,7 +240,9 @@ function type(input: HTMLInputElement, text: string): void {
 describe('CardFormNumber', () => {
   it('names itself, and lets the caller outrank both the label and a Field', () => {
     mount(<CardFormNumber testID="n" />);
-    expect((byTestId('n-input') as HTMLInputElement).getAttribute('aria-label')).toBe('Card number');
+    expect((byTestId('n-input') as HTMLInputElement).getAttribute('aria-label')).toBe(
+      'Card number',
+    );
 
     mount(
       <Field label="Field label">
@@ -298,13 +317,7 @@ describe('CardForm', () => {
     expect(queryTestId('form-postcode')).toBeNull();
     expect(queryTestId('form-country')).toBeNull();
 
-    mount(
-      <CardForm
-        value={CARD_FORM_EMPTY_VALUE}
-        fields={{ postcode: true }}
-        testID="form"
-      />,
-    );
+    mount(<CardForm value={CARD_FORM_EMPTY_VALUE} fields={{ postcode: true }} testID="form" />);
     expect(queryTestId('form-postcode')).not.toBeNull();
   });
 
@@ -316,13 +329,21 @@ describe('CardForm', () => {
 
   it('shows the detected scheme as the mark’s NAME — text, never artwork', () => {
     mount(
-      <CardForm value={{ ...CARD_FORM_EMPTY_VALUE, number: '7000 1111' }} schemes={SCHEMES} testID="form" />,
+      <CardForm
+        value={{ ...CARD_FORM_EMPTY_VALUE, number: '7000 1111' }}
+        schemes={SCHEMES}
+        testID="form"
+      />,
     );
     expect(byTestId('form-mark-scheme').textContent).toBe('Aurora');
     expect(root$().querySelector('img')).toBeNull();
 
     mount(
-      <CardForm value={{ ...CARD_FORM_EMPTY_VALUE, number: '8100 11' }} schemes={SCHEMES} testID="form" />,
+      <CardForm
+        value={{ ...CARD_FORM_EMPTY_VALUE, number: '8100 11' }}
+        schemes={SCHEMES}
+        testID="form"
+      />,
     );
     expect(byTestId('form-mark-scheme').textContent).toBe('Meridian');
 
@@ -332,12 +353,22 @@ describe('CardForm', () => {
 
   it('takes the security code’s length and its NAME from the detected scheme', () => {
     mount(
-      <CardForm value={{ ...CARD_FORM_EMPTY_VALUE, number: '8100' }} schemes={SCHEMES} testID="form" />,
+      <CardForm
+        value={{ ...CARD_FORM_EMPTY_VALUE, number: '8100' }}
+        schemes={SCHEMES}
+        testID="form"
+      />,
     );
     expect(byLabel('Card code')).not.toBeNull();
     expect((byTestId('form-security-code-input') as HTMLInputElement).maxLength).toBe(4);
 
-    mount(<CardForm value={{ ...CARD_FORM_EMPTY_VALUE, number: '7000' }} schemes={SCHEMES} testID="form" />);
+    mount(
+      <CardForm
+        value={{ ...CARD_FORM_EMPTY_VALUE, number: '7000' }}
+        schemes={SCHEMES}
+        testID="form"
+      />,
+    );
     expect((byTestId('form-security-code-input') as HTMLInputElement).maxLength).toBe(3);
   });
 
@@ -373,13 +404,20 @@ describe('CardForm', () => {
       />,
     );
     const describedBy = byTestId('form-expiry-input').getAttribute('aria-describedby');
-    expect(document.getElementById(describedBy!)?.textContent).toBe('There is no thirteenth month.');
+    expect(document.getElementById(describedBy!)?.textContent).toBe(
+      'There is no thirteenth month.',
+    );
     expect(byTestId('form-number-input').getAttribute('aria-invalid')).toBeNull();
   });
 
   it('disables every box at once', () => {
     mount(<CardForm value={CARD_FORM_EMPTY_VALUE} disabled testID="form" />);
-    for (const id of ['form-number-input', 'form-expiry-input', 'form-security-code-input', 'form-name-input']) {
+    for (const id of [
+      'form-number-input',
+      'form-expiry-input',
+      'form-security-code-input',
+      'form-name-input',
+    ]) {
       expect((byTestId(id) as HTMLInputElement).disabled).toBe(true);
     }
   });
@@ -411,9 +449,16 @@ describe('CardFormExpiry and CardFormSecurityCode stand alone', () => {
   });
 });
 
-
 it('allows deletion until an overlong value fits a newly shorter scheme', () => {
-  expect(cardDigits(applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 9012 3456 78', undefined, 16))).toBe('123456789012345678');
-  expect(applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 9012 3456 7890', undefined, 16)).toBe('1234 5678 9012 3456 789');
-  expect(applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 012 3456 789', undefined, 16)).toBe('1234 5678 012 3456 789');
+  expect(
+    cardDigits(
+      applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 9012 3456 78', undefined, 16),
+    ),
+  ).toBe('123456789012345678');
+  expect(
+    applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 9012 3456 7890', undefined, 16),
+  ).toBe('1234 5678 9012 3456 789');
+  expect(
+    applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 012 3456 789', undefined, 16),
+  ).toBe('1234 5678 012 3456 789');
 });

@@ -11,11 +11,14 @@ const meta: Meta<typeof AgentThinking> = {
   component: AgentThinking,
   args: { variant: 'wave', label: 'Thinking', shimmer: true, showTimer: true },
   argTypes: {
-    "label": { control: 'text' },
-    "shimmer": { control: 'boolean' },
-    "showTimer": { control: 'boolean' },
+    label: { control: 'text' },
+    shimmer: { control: 'boolean' },
+    showTimer: { control: 'boolean' },
     variant: { control: 'inline-radio', options: ['wave', 'spin', 'stars', 'infinity'] },
-    tone: { control: 'inline-radio', options: [undefined, 'subtle', 'default', 'primary', 'accent'] },
+    tone: {
+      control: 'inline-radio',
+      options: [undefined, 'subtle', 'default', 'primary', 'accent'],
+    },
   },
 };
 
@@ -30,7 +33,10 @@ const TONES: AgentThinkingTone[] = ['subtle', 'default', 'primary', 'accent'];
 function Frame({ children, testID }: { children: React.ReactNode; testID?: string }) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ padding: 40, gap: 16, alignItems: 'flex-start', backgroundColor: colors.background }}>
+    <View
+      testID={testID}
+      style={{ padding: 40, gap: 16, alignItems: 'flex-start', backgroundColor: colors.background }}
+    >
       {children}
     </View>
   );

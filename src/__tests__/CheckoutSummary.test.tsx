@@ -22,7 +22,12 @@ import React, { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { CheckoutConfirm, CheckoutSummary, CheckoutSummaryRow, checkoutRowName } from '../checkout-summary';
+import {
+  CheckoutConfirm,
+  CheckoutSummary,
+  CheckoutSummaryRow,
+  checkoutRowName,
+} from '../checkout-summary';
 import { CHECKOUT_ROW_HINT, CHECKOUT_ROW_PLACEHOLDER } from '../checkout-summary/constants';
 import type { PriceLine } from '../price-breakdown';
 import {
@@ -223,7 +228,14 @@ describe('the confirm control', () => {
   });
 
   it('draws a secondary amount under the button, leaving the button one amount', () => {
-    mount(<CheckoutConfirm amount="$53.90" secondaryAmount="≈ 49,62 €" onConfirm={() => {}} testID="confirm" />);
+    mount(
+      <CheckoutConfirm
+        amount="$53.90"
+        secondaryAmount="≈ 49,62 €"
+        onConfirm={() => {}}
+        testID="confirm"
+      />,
+    );
     expect(byTestId('confirm-button').textContent).toBe('Place order · $53.90');
     expect(byTestId('confirm-secondary-amount').textContent).toBe('≈ 49,62 €');
     mount(<CheckoutConfirm amount="$53.90" onConfirm={() => {}} testID="confirm" />);
@@ -297,9 +309,7 @@ describe('the confirm control', () => {
 
 describe('the row on its own', () => {
   it('can be given a leading node of its own, and `null` draws none', () => {
-    mount(
-      <CheckoutSummaryRow label="Pay with" value="Card 4417" leading={null} testID="row" />,
-    );
+    mount(<CheckoutSummaryRow label="Pay with" value="Card 4417" leading={null} testID="row" />);
     expect(queryTestId('row-tile')).toBeNull();
   });
 });

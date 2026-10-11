@@ -16,11 +16,7 @@ import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { Agent } from './data';
-import {
-  previewAvatarGeometry,
-  retainAvatarDrawing,
-  type AvatarNodes,
-} from './handoff';
+import { previewAvatarGeometry, retainAvatarDrawing, type AvatarNodes } from './handoff';
 import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 function PreviewAvatar({
@@ -76,10 +72,7 @@ function PreviewAvatar({
       collapsable={false}
       pointerEvents="none"
       aria-hidden
-      style={[
-        { position: 'absolute', left: 0, top: 0, width: size, height: size },
-        animated,
-      ]}
+      style={[{ position: 'absolute', left: 0, top: 0, width: size, height: size }, animated]}
     >
       <AvatarDrawingObserver.Provider value={observeDrawing}>
         <AgentAvatar config={agent.avatar} size={size} />
@@ -101,18 +94,12 @@ export function SelectedAgentPreview({
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
   const { colors } = useTheme();
   return (
-    <StyledView
-      className="shrink-0 items-center gap-2"
-      style={{ paddingBottom: caption ? 20 : 0 }}
-    >
+    <StyledView className="shrink-0 items-center gap-2" style={{ paddingBottom: caption ? 20 : 0 }}>
       <StyledView
         role="img"
         accessibilityLabel={
           agents.length
-            ? formatChatMessage(
-                messages.selectedAgents,
-                agents.map((a) => a.name).join(', '),
-              )
+            ? formatChatMessage(messages.selectedAgents, agents.map((a) => a.name).join(', '))
             : messages.chooseYourTeammates
         }
         style={{ position: 'relative', width: 160, height: 112 }}

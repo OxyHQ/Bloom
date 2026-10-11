@@ -21,11 +21,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { Field } from '../field';
-import {
-  MailComposeHeader,
-  MailComposeSurface,
-  MailRecipientField,
-} from '../mail-compose';
+import { MailComposeHeader, MailComposeSurface, MailRecipientField } from '../mail-compose';
 import {
   DEFAULT_MAIL_COMPOSE_STRINGS,
   copiesOpen,
@@ -33,7 +29,11 @@ import {
   recipientsInvalid,
 } from '../mail-compose/shared';
 import type { MailRecipient } from '../mail-compose/types';
-import { SurfaceLevelProvider, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  useSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -326,9 +326,7 @@ describe('MailComposeSurface', () => {
     expect(maybe('s-toolbar')).toBeNull();
 
     act(() => root.render(<div />));
-    mount(
-      <MailComposeSurface toolbar={<span data-testid="tb">toolbar</span>} testID="s" />,
-    );
+    mount(<MailComposeSurface toolbar={<span data-testid="tb">toolbar</span>} testID="s" />);
     expect(byTestId('s-toolbar').textContent).toBe('toolbar');
   });
 
@@ -360,9 +358,7 @@ describe('MailComposeSurface', () => {
         testID="s"
       />,
     );
-    expect(byTestId('s-close').getAttribute('aria-label')).toBe(
-      DEFAULT_MAIL_COMPOSE_STRINGS.close,
-    );
+    expect(byTestId('s-close').getAttribute('aria-label')).toBe(DEFAULT_MAIL_COMPOSE_STRINGS.close);
     expect(byTestId('s-expand').getAttribute('aria-label')).toBe(
       DEFAULT_MAIL_COMPOSE_STRINGS.expand,
     );
@@ -392,12 +388,33 @@ describe('MailComposeSurface', () => {
   });
 });
 
-
 it('publishes custom docked backing and preserves sheet depth', () => {
-  function Probe() { return <span data-testid="surface-probe">{useSurfaceFill()}|{useSurfaceLevelValue()}</span>; }
-  mount(<SurfaceLevelProvider level={2} fill="#0000ff"><MailComposeSurface variant="docked" style={{ backgroundColor: 'rgba(255,0,0,.5)' }} testID="s"><Probe /></MailComposeSurface></SurfaceLevelProvider>);
+  function Probe() {
+    return (
+      <span data-testid="surface-probe">
+        {useSurfaceFill()}|{useSurfaceLevelValue()}
+      </span>
+    );
+  }
+  mount(
+    <SurfaceLevelProvider level={2} fill="#0000ff">
+      <MailComposeSurface
+        variant="docked"
+        style={{ backgroundColor: 'rgba(255,0,0,.5)' }}
+        testID="s"
+      >
+        <Probe />
+      </MailComposeSurface>
+    </SurfaceLevelProvider>,
+  );
   expect(byTestId('surface-probe').textContent).toBe('rgb(128, 0, 128)|3');
   expect(byTestId('s').style.getPropertyValue('--bloom-surface')).toBe('rgb(128, 0, 128)');
-  mount(<SurfaceLevelProvider level={2} fill="#0000ff"><MailComposeSurface variant="sheet" testID="s"><Probe /></MailComposeSurface></SurfaceLevelProvider>);
+  mount(
+    <SurfaceLevelProvider level={2} fill="#0000ff">
+      <MailComposeSurface variant="sheet" testID="s">
+        <Probe />
+      </MailComposeSurface>
+    </SurfaceLevelProvider>,
+  );
   expect(byTestId('surface-probe').textContent).toBe('#0000ff|2');
 });

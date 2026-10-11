@@ -43,6 +43,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { Item } from '../item';
 import { useDialogControl } from './context';
+import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { H1, Text } from '../typography';
 import type { DialogHeaderConfig } from './types';
@@ -96,7 +97,8 @@ const LARGE_TITLE_LINE_HEIGHT = 38;
  * the large title's first line is centred on the nav row, level with the ✕,
  * instead of starting below the whole bar.
  */
-export const DIALOG_HEADER_INLINE_CONTENT_TOP = (DIALOG_NAV_BAR_HEIGHT - LARGE_TITLE_LINE_HEIGHT) / 2;
+export const DIALOG_HEADER_INLINE_CONTENT_TOP =
+  (DIALOG_NAV_BAR_HEIGHT - LARGE_TITLE_LINE_HEIGHT) / 2;
 
 /**
  * Space (px) the large title's first line keeps clear at its trailing edge for
@@ -278,10 +280,7 @@ export function useDialogHeaderController(): DialogHeaderController {
   const scrollY = useSharedValue(0);
   const largeTitleHeight = useSharedValue(0);
   const store = useMemo(() => createHeaderStore(), []);
-  return useMemo(
-    () => ({ scrollY, largeTitleHeight, store }),
-    [scrollY, largeTitleHeight, store],
-  );
+  return useMemo(() => ({ scrollY, largeTitleHeight, store }), [scrollY, largeTitleHeight, store]);
 }
 
 const DialogHeaderContext = createContext<DialogHeaderController | null>(null);
@@ -298,11 +297,7 @@ export function DialogHeaderProvider({
   controller: DialogHeaderController;
   children: React.ReactNode;
 }): React.ReactElement {
-  return (
-    <DialogHeaderContext.Provider value={controller}>
-      {children}
-    </DialogHeaderContext.Provider>
-  );
+  return <DialogHeaderContext.Provider value={controller}>{children}</DialogHeaderContext.Provider>;
 }
 
 /**
@@ -344,10 +339,7 @@ export function useDialogHeader(config: DialogHeaderConfig | null | undefined): 
 }
 
 /** Read the merged (base + runtime-override) header config, reactively. */
-function useMergedHeaderConfig(
-  base: DialogHeaderConfig,
-  store: HeaderStore,
-): DialogHeaderConfig {
+function useMergedHeaderConfig(base: DialogHeaderConfig, store: HeaderStore): DialogHeaderConfig {
   const override = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
   return useMemo(() => (override ? { ...base, ...override } : base), [base, override]);
 }
@@ -376,15 +368,12 @@ function HeaderOverflowMenu({
       <PopoverTrigger asChild label={common.more}>
         <FrostedIconButton
           size="sm"
-          icon={(iconProps) => <RiMoreFill {...iconProps}
-              size="md"
-              fill={onImage ? ON_IMAGE_TEXT : undefined}
-            />}
+          icon={(iconProps) => (
+            <RiMoreFill {...iconProps} size="md" fill={onImage ? ON_IMAGE_TEXT : undefined} />
+          )}
         />
       </PopoverTrigger>
-      <PopoverContent
-        label={common.moreActions}
-        align="end">
+      <PopoverContent label={common.moreActions} align="end">
         {items.map((action) => (
           <Item
             key={action.accessibilityLabel}
@@ -520,8 +509,15 @@ function NavScrim({ onImage, surface }: { onImage: boolean; surface: string }): 
   // [offset, opacity] pairs: the dark scrim fades across its whole height; the
   // surface scrim holds solid to the bottom of the nav row first.
   const stops: Array<[number, number]> = onImage
-    ? [[0, ON_IMAGE_SCRIM_OPACITY], [1, 0]]
-    : [[0, 1], [SCRIM_SOLID_UNTIL, 1], [1, 0]];
+    ? [
+        [0, ON_IMAGE_SCRIM_OPACITY],
+        [1, 0],
+      ]
+    : [
+        [0, 1],
+        [SCRIM_SOLID_UNTIL, 1],
+        [1, 0],
+      ];
   return (
     // `width`/`height` beside `absoluteFill`: an `<svg>` is a replaced element
     // and falls back to 300 x 150 on web without them (`svg-absolute-fill-size`).
@@ -554,6 +550,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   header,
   onDismiss,
   collapse = true,
+  flatSurface = false,
   style,
 }: {
   controller: DialogHeaderController;
@@ -566,9 +563,12 @@ export const DialogNavHeader = memo(function DialogNavHeader({
    * collapse): the small title is then always visible — a plain titled nav bar.
    */
   collapse?: boolean;
+  /** Internal propagation of the owning panel material. */
+  flatSurface?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
   const theme = useTheme();
+  const surfaceFill = useSurfaceFill();
   const common = useCommonMessages();
   const config = useMergedHeaderConfig(header, controller.store);
   const { scrollY, largeTitleHeight } = controller;
@@ -585,7 +585,12 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   const scrimStyle = useAnimatedStyle(() => {
     if (!inlineClose) return { opacity: 1 };
     return {
-      opacity: interpolate(scrollY.value, [0, INLINE_SCRIM_FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
+      opacity: interpolate(
+        scrollY.value,
+        [0, INLINE_SCRIM_FADE_DISTANCE],
+        [0, 1],
+        Extrapolation.CLAMP,
+      ),
     };
   }, [scrollY, inlineClose]);
 
@@ -626,22 +631,30 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   // the single primary CTA); else the default close affordance.
   const hasRichTrailing = !config.right && !!(config.actions?.length || config.primaryAction);
 
-  const right = config.right ?? (
-    hasRichTrailing ? (
+  const right =
+    config.right ??
+    (hasRichTrailing ? (
       <View style={styles.trailing}>
         {config.actions?.length ? (
           <HeaderTrailingActions actions={config.actions} onImage={onImage} />
         ) : null}
         {config.primaryAction ? (
-          <Button size="sm" onPress={config.primaryAction.onPress} disabled={config.primaryAction.disabled || config.primaryAction.loading} loading={config.primaryAction.loading} accessibilityLabel={config.primaryAction.label} appearance="solid" tone="accent">
+          <Button
+            size="sm"
+            onPress={config.primaryAction.onPress}
+            disabled={config.primaryAction.disabled || config.primaryAction.loading}
+            loading={config.primaryAction.loading}
+            accessibilityLabel={config.primaryAction.label}
+            appearance="solid"
+            tone="accent"
+          >
             {config.primaryAction.label}
           </Button>
         ) : null}
       </View>
     ) : config.showClose !== false ? (
       closeButton
-    ) : null
-  );
+    ) : null);
 
   // Leading edge: a custom `left` wins; else the back button; else — when the
   // trailing edge is taken by the rich CTA and there is no back — the close
@@ -672,7 +685,11 @@ export const DialogNavHeader = memo(function DialogNavHeader({
           scrimStyle,
         ]}
       >
-        <NavScrim onImage={onImage} surface={theme.colors.background} />
+        {flatSurface && !onImage ? (
+          <View style={{ height: DIALOG_NAV_BAR_HEIGHT, backgroundColor: surfaceFill }} />
+        ) : (
+          <NavScrim onImage={onImage} surface={theme.colors.background} />
+        )}
       </Animated.View>
       <View pointerEvents="box-none" style={styles.navRow}>
         <View style={styles.side}>{left}</View>
@@ -754,7 +771,9 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
           or, inline with the ✕, just centre the first line on the nav row. */}
       <View
         testID="dialog-large-title-inset"
-        style={{ height: inlineClose ? DIALOG_HEADER_INLINE_CONTENT_TOP : DIALOG_HEADER_CONTENT_TOP }}
+        style={{
+          height: inlineClose ? DIALOG_HEADER_INLINE_CONTENT_TOP : DIALOG_HEADER_CONTENT_TOP,
+        }}
       />
       <View onLayout={onLayout} testID="dialog-large-title" style={styles.largeTitleBlock}>
         {hasLargeTitle ? (
@@ -815,7 +834,9 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
           </View>
         ) : null}
         {config.progress ? (
-          <View style={hasLargeTitle || config.search || config.segments ? styles.extraRow : undefined}>
+          <View
+            style={hasLargeTitle || config.search || config.segments ? styles.extraRow : undefined}
+          >
             <HeaderProgressBar
               step={config.progress.step}
               total={config.progress.total}

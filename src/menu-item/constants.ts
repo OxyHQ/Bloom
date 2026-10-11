@@ -15,7 +15,8 @@ export const MENU_ITEM_DIETS: readonly MenuItemDiet[] = [
  * The English words. The row speaks `MENU_ITEM_MESSAGES` in the resolved
  * locale; `dietLabels` still wins.
  */
-export const MENU_ITEM_DIET_LABELS: Readonly<Record<MenuItemDiet, string>> = MENU_ITEM_MESSAGES.en.diets;
+export const MENU_ITEM_DIET_LABELS: Readonly<Record<MenuItemDiet, string>> =
+  MENU_ITEM_MESSAGES.en.diets;
 
 /**
  * The two diets that are about what the dish is MADE OF get a glyph; the other

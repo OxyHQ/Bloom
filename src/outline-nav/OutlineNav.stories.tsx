@@ -77,7 +77,7 @@ export const InALayout: Story = {
           <View style={{ flex: 1, maxWidth: 640, gap: 12 }}>
             <Text variant="title-1-semibold">Harbour walk — what to bring</Text>
             <Divider />
-            <Card  appearance="outline">
+            <Card appearance="outline">
               <CardBody>
                 <Text variant="body-regular">
                   {`The app scrolled to “${current?.label ?? '—'}”. OutlineNav emitted the heading; it did not move anything itself.`}
@@ -85,9 +85,9 @@ export const InALayout: Story = {
               </CardBody>
             </Card>
             <Text variant="body-regular">
-              Slack water is at 06:40, which gives about forty minutes before the channel turns.
-              The line length here is the thing to look at: a column of body text this wide is
-              what the outline sits beside all day.
+              Slack water is at 06:40, which gives about forty minutes before the channel turns. The
+              line length here is the thing to look at: a column of body text this wide is what the
+              outline sits beside all day.
             </Text>
           </View>
           <View style={{ width: 260 }}>
@@ -115,12 +115,7 @@ export const Compact: Story = {
           />
           <Divider />
           <Text variant="caption-1-medium">compactMaxLevel = 1</Text>
-          <OutlineNav
-            headings={HEADINGS}
-            activeId="after"
-            variant="compact"
-            compactMaxLevel={1}
-          />
+          <OutlineNav headings={HEADINGS} activeId="after" variant="compact" compactMaxLevel={1} />
         </View>
       </Page>
     );
@@ -146,7 +141,12 @@ export const Edges: Story = {
         </View>
         <View style={{ width: 240 }}>
           <Text variant="caption-1-medium">no progress, own title</Text>
-          <OutlineNav headings={HEADINGS.slice(0, 5)} activeId="kit" hideProgress title="Sections" />
+          <OutlineNav
+            headings={HEADINGS.slice(0, 5)}
+            activeId="kit"
+            hideProgress
+            title="Sections"
+          />
         </View>
       </View>
     </Page>

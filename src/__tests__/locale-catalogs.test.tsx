@@ -56,7 +56,8 @@ afterEach(() => {
   mounted = [];
 });
 
-const shown = (tree: ReactTestRenderer) => tree.root.findAllByProps({ testID: 'probe' })[0]?.props.children;
+const shown = (tree: ReactTestRenderer) =>
+  tree.root.findAllByProps({ testID: 'probe' })[0]?.props.children;
 
 // Snapshot of what `__mocks__/setup.ts` registered, restored after each test.
 const registered = getBloomTranslations().tables;
@@ -193,7 +194,9 @@ describe('language modules', () => {
     const importers = new Map<string, string[]>();
     for (const file of sources(SRC)) {
       const text = readFileSync(file, 'utf8');
-      for (const match of text.matchAll(/(?:from\s*|import\s*\(\s*)['"]([^'"]*translations\/([a-z]{2}))['"]/g)) {
+      for (const match of text.matchAll(
+        /(?:from\s*|import\s*\(\s*)['"]([^'"]*translations\/([a-z]{2}))['"]/g,
+      )) {
         const language = match[2] ?? '';
         const list = importers.get(language) ?? [];
         list.push(`${relative(SRC, file)} ${match[0].startsWith('from') ? 'static' : 'import()'}`);
@@ -211,9 +214,15 @@ describe('language modules', () => {
   it('link no family module, so loading one cannot pull English strings into it', () => {
     for (const language of TRANSLATED) {
       const text = readFileSync(join(SRC, 'locale', 'translations', `${language}.ts`), 'utf8');
-      const runtime = [...text.matchAll(/^import (?!type )[^;]*from '([^']+)';/gm)].map((match) => match[1] ?? '');
+      const runtime = [...text.matchAll(/^import (?!type )[^;]*from '([^']+)';/gm)].map(
+        (match) => match[1] ?? '',
+      );
       for (const specifier of runtime) {
-        expect({ language, specifier, ok: /^\.\.\/(plural|languages)$|\/message-helpers$/.test(specifier) }).toEqual({
+        expect({
+          language,
+          specifier,
+          ok: /^\.\.\/(plural|languages)$|\/message-helpers$/.test(specifier),
+        }).toEqual({
           language,
           specifier,
           ok: true,

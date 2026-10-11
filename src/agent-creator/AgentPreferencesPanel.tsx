@@ -51,12 +51,7 @@ function PreferenceSelect({
     SelectItemText,
   } = useAgentCreatorBindings();
   return (
-    <Select
-      size="sm"
-      value={value}
-      onValueChange={onChange}
-      disabled={disabled}
-    >
+    <Select size="sm" value={value} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger
         label={label}
         className={className}
@@ -95,9 +90,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
       : voice.id === preferences.voice,
   );
   const selectedVoiceKey =
-    preferences.voice === 'alice'
-      ? (selectedVoice?.id ?? 'system')
-      : preferences.voice || 'off';
+    preferences.voice === 'alice' ? (selectedVoice?.id ?? 'system') : preferences.voice || 'off';
   const choices = voices
     .filter(
       (voice) =>
@@ -105,8 +98,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
         voice.language.toLowerCase().startsWith(preferences.language),
     )
     .slice(0, 12);
-  if (selectedVoice && !choices.includes(selectedVoice))
-    choices.push(selectedVoice);
+  if (selectedVoice && !choices.includes(selectedVoice)) choices.push(selectedVoice);
   const voiceItems = [
     { id: 'off', label: messages.off },
     { id: 'system', label: messages.systemVoice },
@@ -120,10 +112,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
   ];
   return (
     <StyledView className="mt-4 flex flex-col gap-3 pb-3">
-      <SettingsCard
-        className="px-3"
-        style={{ paddingLeft: 12, paddingRight: 12 }}
-      >
+      <SettingsCard className="px-3" style={{ paddingLeft: 12, paddingRight: 12 }}>
         <StyledView
           className="flex min-h-14 items-center justify-between gap-3 border-b border-separator-border py-3 flex-row"
           style={{ borderColor: colors.border }}
@@ -135,19 +124,14 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
               fill={colors.icon}
               aria-hidden
             />
-            <Text
-              variant="body-medium"
-              className="text-body-medium text-text-primary"
-            >
+            <Text variant="body-medium" className="text-body-medium text-text-primary">
               {messages.language}
             </Text>
           </StyledView>
           <PreferenceSelect
             label={messages.languageInput}
             value={preferences.language}
-            onChange={(language) =>
-              update({ language: language as AgentPreferences['language'] })
-            }
+            onChange={(language) => update({ language: language as AgentPreferences['language'] })}
             items={AGENT_LANGUAGES.map((language) => ({
               id: language.id,
               label: messages.languages[language.id],
@@ -162,10 +146,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
             aria-hidden
           />
           <StyledView className="flex min-w-0 flex-1 flex-col gap-1">
-            <Text
-              variant="body-medium"
-              className="text-body-medium text-text-primary"
-            >
+            <Text variant="body-medium" className="text-body-medium text-text-primary">
               {messages.notifications}
             </Text>
             <Text
@@ -201,10 +182,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
               fill={colors.icon}
               aria-hidden
             />
-            <Text
-              variant="body-medium"
-              className="text-body-medium text-text-primary"
-            >
+            <Text variant="body-medium" className="text-body-medium text-text-primary">
               {messages.voice}
             </Text>
           </StyledView>
@@ -225,9 +203,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
               label={messages.voiceInput}
               disabled={!canSelect}
               value={selectedVoiceKey}
-              onChange={(voice) =>
-                update({ voice: voice === 'off' ? '' : voice })
-              }
+              onChange={(voice) => update({ voice: voice === 'off' ? '' : voice })}
               items={voiceItems}
               className="min-w-0 max-w-36"
               popoverWidth={240}
@@ -235,10 +211,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
           </StyledView>
         </StyledView>
         <StyledView className="flex flex-col gap-2">
-          <Text
-            variant="caption-1-regular"
-            className="text-caption-1-regular text-text-secondary"
-          >
+          <Text variant="caption-1-regular" className="text-caption-1-regular text-text-secondary">
             {messages.playbackSpeed}
           </Text>
           <SegmentedControl

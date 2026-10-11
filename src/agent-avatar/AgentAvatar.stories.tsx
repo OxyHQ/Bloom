@@ -3,13 +3,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Button } from '../button/Button';
 import { AgentAvatar } from './AgentAvatar';
-import {
-  DEFAULT_CONFIG,
-  FOLD_CONFIG,
-  FOLD_PRESETS,
-  FOLD_SHAPES,
-  PRESETS,
-} from './model';
+import { DEFAULT_CONFIG, FOLD_CONFIG, FOLD_PRESETS, FOLD_SHAPES, PRESETS } from './model';
 
 const meta: Meta<typeof AgentAvatar> = {
   title: 'Application/Agent Avatar',
@@ -23,12 +17,7 @@ export const Presets: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
       {[...PRESETS, ...FOLD_PRESETS].map((preset) => (
-        <AgentAvatar
-          key={preset.name}
-          label={preset.name}
-          config={preset.config}
-          size={96}
-        />
+        <AgentAvatar key={preset.name} label={preset.name} config={preset.config} size={96} />
       ))}
     </View>
   ),

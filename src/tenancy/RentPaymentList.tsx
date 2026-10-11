@@ -57,14 +57,16 @@ function RentPaymentListComponent({
   const { messages } = useMessages(TENANCY_MESSAGES);
   const paidThisYearLabel = paidThisYearLabelProp ?? messages.paidThisYear;
   const outstandingLabel = outstandingLabelProp ?? messages.outstanding;
-  const receiptLabel = receiptLabelProp ?? ((payment: RentPayment) => messages.downloadReceipt(payment.month));
+  const receiptLabel =
+    receiptLabelProp ?? ((payment: RentPayment) => messages.downloadReceipt(payment.month));
   const formatDueDate = formatDueDateProp ?? messages.dueOn;
   const emptyLabel = emptyLabelProp ?? messages.noPayments;
   const theme = useTheme();
   const palette = useHousingPalette();
   const { width, onLayout } = useContainerWidth();
   const wide =
-    layout === 'wide' || (layout === 'auto' && width != null && width >= RENT_PAYMENT_LIST_WIDE_MIN_WIDTH);
+    layout === 'wide' ||
+    (layout === 'auto' && width != null && width >= RENT_PAYMENT_LIST_WIDE_MIN_WIDTH);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const columns = { ...messages.columns, ...columnLabels };
   const outstandingColor =
@@ -77,13 +79,14 @@ function RentPaymentListComponent({
   const receipt = (payment: RentPayment, index: number) =>
     payment.onDownloadReceipt ? (
       <Button
-
         size="sm"
         iconOnly
         leadingIcon={RiDownload2Line}
         accessibilityLabel={receiptLabel(payment)}
         onPress={payment.onDownloadReceipt}
-        testID={id(`receipt-${index}`)} tone="neutral" appearance="outline"
+        testID={id(`receipt-${index}`)}
+        tone="neutral"
+        appearance="outline"
       />
     ) : hasReceipts ? (
       <View style={{ width: RECEIPT_WIDTH }} />
@@ -93,7 +96,11 @@ function RentPaymentListComponent({
     const info = RENT_PAYMENT_STATUS[payment.status];
     return (
       <Badge
-        content={payment.statusLabel ?? statusLabels?.[payment.status] ?? messages.rentPaymentStatus[payment.status]}
+        content={
+          payment.statusLabel ??
+          statusLabels?.[payment.status] ??
+          messages.rentPaymentStatus[payment.status]
+        }
         color={info.tone}
         variant="subtle"
         size="medium"
@@ -108,9 +115,22 @@ function RentPaymentListComponent({
     <HousingCard padded={false} style={style} testID={testID}>
       <View onLayout={onLayout}>
         {hasSummary ? (
-          <View style={{ paddingTop: 20, paddingBottom: 20, paddingLeft: 20, paddingRight: 20, gap: 12 }}>
+          <View
+            style={{
+              paddingTop: 20,
+              paddingBottom: 20,
+              paddingLeft: 20,
+              paddingRight: 20,
+              gap: 12,
+            }}
+          >
             {title ? (
-              <Text role="heading" aria-level={3} variant="headline-semibold" style={{ color: palette.text }}>
+              <Text
+                role="heading"
+                aria-level={3}
+                variant="headline-semibold"
+                style={{ color: palette.text }}
+              >
                 {title}
               </Text>
             ) : null}
@@ -119,7 +139,10 @@ function RentPaymentListComponent({
                 {paidThisYear != null ? (
                   <View style={{ gap: 2 }} testID={id('paid')}>
                     <FigureLabel>{paidThisYearLabel}</FigureLabel>
-                    <Text variant="title-3-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+                    <Text
+                      variant="title-3-semibold"
+                      style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+                    >
                       {paidThisYear}
                     </Text>
                   </View>
@@ -159,13 +182,21 @@ function RentPaymentListComponent({
               borderTopColor: palette.hairline,
             }}
           >
-            <Text variant="caption-1-medium" style={[secondary, { flex: 1.4 }]}>{columns.month}</Text>
-            <Text variant="caption-1-medium" style={[secondary, { flex: 1 }]}>{columns.dueDate}</Text>
-            <Text variant="caption-1-medium" style={[secondary, { flex: 1.2 }]}>{columns.method}</Text>
+            <Text variant="caption-1-medium" style={[secondary, { flex: 1.4 }]}>
+              {columns.month}
+            </Text>
+            <Text variant="caption-1-medium" style={[secondary, { flex: 1 }]}>
+              {columns.dueDate}
+            </Text>
+            <Text variant="caption-1-medium" style={[secondary, { flex: 1.2 }]}>
+              {columns.method}
+            </Text>
             <Text variant="caption-1-medium" style={[secondary, { flex: 1, textAlign: 'right' }]}>
               {columns.amount}
             </Text>
-            <Text variant="caption-1-medium" style={[secondary, { width: 96 }]}>{columns.status}</Text>
+            <Text variant="caption-1-medium" style={[secondary, { width: 96 }]}>
+              {columns.status}
+            </Text>
             {hasReceipts ? <View style={{ width: RECEIPT_WIDTH }} /> : null}
           </View>
         ) : null}
@@ -202,23 +233,38 @@ function RentPaymentListComponent({
               };
               return wide ? (
                 <View key={payment.id} role="listitem" style={rowStyle} testID={id(`row-${index}`)}>
-                  <Text variant="body-medium" numberOfLines={1} style={{ flex: 1.4, color: palette.text }}>
+                  <Text
+                    variant="body-medium"
+                    numberOfLines={1}
+                    style={{ flex: 1.4, color: palette.text }}
+                  >
                     {payment.month}
                   </Text>
                   <Text variant="body-2-regular" numberOfLines={1} style={[secondary, { flex: 1 }]}>
                     {payment.dueDate}
                   </Text>
-                  <Text variant="body-2-regular" numberOfLines={1} style={[secondary, { flex: 1.2 }]}>
+                  <Text
+                    variant="body-2-regular"
+                    numberOfLines={1}
+                    style={[secondary, { flex: 1.2 }]}
+                  >
                     {payment.method ?? ''}
                   </Text>
                   <Text
                     variant="body-medium"
                     numberOfLines={1}
-                    style={{ flex: 1, color: palette.text, textAlign: 'right', fontVariant: ['tabular-nums'] }}
+                    style={{
+                      flex: 1,
+                      color: palette.text,
+                      textAlign: 'right',
+                      fontVariant: ['tabular-nums'],
+                    }}
                   >
                     {payment.amount}
                   </Text>
-                  <View style={{ width: 96, alignItems: 'flex-start' }}>{badge(payment, index)}</View>
+                  <View style={{ width: 96, alignItems: 'flex-start' }}>
+                    {badge(payment, index)}
+                  </View>
                   {receipt(payment, index)}
                 </View>
               ) : (
@@ -232,7 +278,10 @@ function RentPaymentListComponent({
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                    <Text variant="body-medium" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+                    <Text
+                      variant="body-medium"
+                      style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+                    >
                       {payment.amount}
                     </Text>
                     {badge(payment, index)}

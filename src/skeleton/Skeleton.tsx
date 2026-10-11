@@ -41,13 +41,7 @@ function useShimmer() {
   return opacity;
 }
 
-export function Text({
-  blend,
-  style,
-}: {
-  style?: TextStyle | TextStyle[];
-  blend?: boolean;
-}) {
+export function Text({ blend, style }: { style?: TextStyle | TextStyle[]; blend?: boolean }) {
   const { colors } = useTheme();
   const shimmer = useShimmer();
   const flattened = StyleSheet.flatten(style);
@@ -60,7 +54,8 @@ export function Text({
         styles.textOuter,
         { maxWidth: width as number },
         { paddingVertical: lineHeight * 0.15 },
-      ]}>
+      ]}
+    >
       <Animated.View
         style={[
           styles.textInner,
@@ -101,7 +96,8 @@ export function Circle({
           opacity: Animated.multiply(shimmer, blend ? 0.6 : 1),
         },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </Animated.View>
   );

@@ -13,9 +13,10 @@
  * `PortalOutlet` are still exported on web — they just become harmless no-op
  * fragments so consumers that *do* mount them keep compiling.
  */
-import React, { Fragment, memo, useLayoutEffect, useState } from 'react';
+import React, { Fragment, memo, useContext, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Z_INDEX } from '../styles/z-index';
+import { ThemeScopeContext } from '../theme/color-scope/context';
 
 /**
  * Render children into a stable container appended to `document.body`.
@@ -61,11 +62,15 @@ function getPortalRoot(): HTMLElement | null {
 
 export function Portal({ children }: React.PropsWithChildren<object>) {
   const [root, setRoot] = useState<HTMLElement | null>(null);
+  const scope = useContext(ThemeScopeContext);
   useLayoutEffect(() => {
     setRoot(getPortalRoot());
   }, []);
   if (!root) return null;
-  return createPortal(children, root);
+  return createPortal(
+    <div style={{ ...scope?.vars, display: 'contents', pointerEvents: 'none' }}>{children}</div>,
+    root,
+  );
 }
 
 // Native API parity — on web these are inert. `PortalProvider` mounts its

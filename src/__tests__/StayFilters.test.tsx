@@ -36,7 +36,11 @@ import {
 } from '../stay-filters';
 import { histogramSelection } from '../stay-filters/PriceHistogram';
 import { chartHueTone } from '../chart-cards/palette';
-import { parsePriceInput, priceScaleMapping, PRICE_SCALE_POSITIONS } from '../stay-filters/PriceRangeFilter';
+import {
+  parsePriceInput,
+  priceScaleMapping,
+  PRICE_SCALE_POSITIONS,
+} from '../stay-filters/PriceRangeFilter';
 import { contrastRatio, resolveEnergyRatingPaint } from '../stay-filters/EnergyRatingFilter';
 import { commitRangeField } from '../stay-filters/RangeFields';
 import type { EnergyRating, HousingFeature } from '../stay-filters';
@@ -164,7 +168,17 @@ describe('PriceHistogram', () => {
   it.each(['light', 'dark'] as const)(
     'draws in-range bars in the chart series tone and the rest in neutral, heights proportional (%s)',
     (mode) => {
-      mount(<PriceHistogram buckets={[10, 40, 20, 0]} min={0} max={100} value={[30, 70]} height={80} testID="h" />, mode);
+      mount(
+        <PriceHistogram
+          buckets={[10, 40, 20, 0]}
+          min={0}
+          max={100}
+          value={[30, 70]}
+          height={80}
+          testID="h"
+        />,
+        mode,
+      );
       const h = byTestId('h');
       expect(h.getAttribute('aria-hidden')).toBe('true');
       const bars = [0, 1, 2, 3].map((i) => byTestId(`h-bar-${i}`));
@@ -179,7 +193,16 @@ describe('PriceHistogram', () => {
   );
 
   it('keeps a non-empty bucket at least 2px tall', () => {
-    mount(<PriceHistogram buckets={[1, 1000]} min={0} max={10} value={[0, 10]} height={64} testID="h" />);
+    mount(
+      <PriceHistogram
+        buckets={[1, 1000]}
+        min={0}
+        max={10}
+        value={[0, 10]}
+        height={64}
+        testID="h"
+      />,
+    );
     expect(getComputedStyle(byTestId('h-bar-0')).height).toBe('2px');
   });
 });
@@ -231,7 +254,9 @@ describe('PriceRangeFilter', () => {
     typeInto('p-min', '252');
     expect(onChange).toHaveBeenLastCalledWith([250, 400]);
     expect((byTestId('p-min') as HTMLInputElement).value).toBe('$250');
-    expect(byTestId('p-slider').querySelector('[role="slider"]')?.getAttribute('aria-valuenow')).toBe('250');
+    expect(
+      byTestId('p-slider').querySelector('[role="slider"]')?.getAttribute('aria-valuenow'),
+    ).toBe('250');
     // The maximum can not go under the minimum.
     typeInto('p-max', '90');
     expect(onChange).toHaveBeenLastCalledWith([250, 250]);
@@ -247,7 +272,9 @@ describe('PriceRangeFilter', () => {
   });
 
   it('draws no histogram without buckets, and does not pull the slider up', () => {
-    mount(<PriceRangeFilter min={0} max={10} value={[0, 10]} onValueChange={() => {}} testID="p" />);
+    mount(
+      <PriceRangeFilter min={0} max={10} value={[0, 10]} onValueChange={() => {}} testID="p" />,
+    );
     expect(maybeTestId('p-histogram')).toBeNull();
     expect(getComputedStyle(byTestId('p-slider')).marginTop).not.toBe('-13px');
   });
@@ -287,7 +314,13 @@ describe('SegmentedFilter', () => {
 });
 
 describe('CountFilter', () => {
-  function H({ onChange, initial = null }: { onChange?: (n: number | null) => void; initial?: number | null }) {
+  function H({
+    onChange,
+    initial = null,
+  }: {
+    onChange?: (n: number | null) => void;
+    initial?: number | null;
+  }) {
     const [v, setV] = useState<number | null>(initial);
     return (
       <CountFilter
@@ -307,9 +340,27 @@ describe('CountFilter', () => {
     const group = container.querySelector('[role="radiogroup"]') as HTMLElement;
     expect(group.getAttribute('aria-label')).toBe('Bedrooms');
     const radios = Array.from(group.querySelectorAll('[role="radio"]'));
-    expect(radios.map((r) => r.textContent)).toEqual(['Any', '1', '2', '3', '4', '5', '6', '7', '8+']);
+    expect(radios.map((r) => r.textContent)).toEqual([
+      'Any',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8+',
+    ]);
     expect(radios.map((r) => r.getAttribute('aria-checked'))).toEqual([
-      'true', 'false', 'false', 'false', 'false', 'false', 'false', 'false', 'false',
+      'true',
+      'false',
+      'false',
+      'false',
+      'false',
+      'false',
+      'false',
+      'false',
+      'false',
     ]);
   });
 
@@ -323,20 +374,23 @@ describe('CountFilter', () => {
     expect(byTestId('c-any').getAttribute('aria-checked')).toBe('true');
   });
 
-  it.each(['light', 'dark'] as const)('paints the selected pill inverted, 40 tall and a full pill (%s)', (mode) => {
-    mount(<H initial={2} />, mode);
-    const on = byTestId('c-2');
-    const off = byTestId('c-3');
-    expect(bg(on)).toBe(normaliseBg(theme.colors.text));
-    expect(getComputedStyle(on.querySelector('[dir="auto"]') as HTMLElement).color).toBe(
-      normalise(theme.colors.background),
-    );
-    expect(bg(off)).toBe('rgba(0, 0, 0, 0)');
+  it.each(['light', 'dark'] as const)(
+    'paints the selected pill inverted, 40 tall and a full pill (%s)',
+    (mode) => {
+      mount(<H initial={2} />, mode);
+      const on = byTestId('c-2');
+      const off = byTestId('c-3');
+      expect(bg(on)).toBe(normaliseBg(theme.colors.text));
+      expect(getComputedStyle(on.querySelector('[dir="auto"]') as HTMLElement).color).toBe(
+        normalise(theme.colors.background),
+      );
+      expect(bg(off)).toBe('rgba(0, 0, 0, 0)');
 
-    expect(getComputedStyle(off).borderTopColor).toBe(normalise(theme.colors.border));
-    expect(getComputedStyle(on).height).toBe('40px');
-    expect(getComputedStyle(on).borderTopLeftRadius).toBe('9999px');
-  });
+      expect(getComputedStyle(off).borderTopColor).toBe(normalise(theme.colors.border));
+      expect(getComputedStyle(on).height).toBe('40px');
+      expect(getComputedStyle(on).borderTopLeftRadius).toBe('9999px');
+    },
+  );
 
   it('disabled: every pill says so and presses do nothing', () => {
     const onChange = jest.fn();
@@ -380,7 +434,10 @@ describe('ToggleChipGroup and AmenityFilter', () => {
     expect(byTestId('g-a').querySelector('svg')).not.toBeNull();
     press('g-d');
     press('g-a');
-    expect(onChange.mock.calls.map(([n]) => n)).toEqual([['c', 'd'], ['a', 'c', 'd']]);
+    expect(onChange.mock.calls.map(([n]) => n)).toEqual([
+      ['c', 'd'],
+      ['a', 'c', 'd'],
+    ]);
     press('g-c');
     expect(onChange).toHaveBeenLastCalledWith(['a', 'd']);
     expect(byTestId('g-c').getAttribute('aria-pressed')).toBe('false');
@@ -401,7 +458,10 @@ describe('ToggleChipGroup and AmenityFilter', () => {
       );
     }
     mount(<H />);
-    const labels = () => Array.from(byTestId('am-group').querySelectorAll('[role="button"]')).map((b) => b.textContent);
+    const labels = () =>
+      Array.from(byTestId('am-group').querySelectorAll('[role="button"]')).map(
+        (b) => b.textContent,
+      );
     expect(labels()).toEqual(['A', 'B', 'C', 'H']);
     const toggle = byTestId('am-toggle');
     expect(toggle.textContent).toBe('Show more');
@@ -413,7 +473,15 @@ describe('ToggleChipGroup and AmenityFilter', () => {
   });
 
   it('draws no link when every option fits', () => {
-    mount(<AmenityFilter options={OPTIONS.slice(0, 2)} value={[]} onValueChange={() => {}} accessibilityLabel="A" testID="am" />);
+    mount(
+      <AmenityFilter
+        options={OPTIONS.slice(0, 2)}
+        value={[]}
+        onValueChange={() => {}}
+        accessibilityLabel="A"
+        testID="am"
+      />,
+    );
     expect(maybeTestId('am-toggle')).toBeNull();
   });
 });
@@ -422,7 +490,13 @@ describe('SwitchFilterRow', () => {
   it('names the switch by its title and reports aria-checked', () => {
     const onChange = jest.fn();
     mount(
-      <SwitchFilterRow title="Instant Book" description="No waiting" value onValueChange={onChange} testID="sw" />,
+      <SwitchFilterRow
+        title="Instant Book"
+        description="No waiting"
+        value
+        onValueChange={onChange}
+        testID="sw"
+      />,
     );
     const sw = container.querySelector('[role="switch"]') as HTMLElement;
     expect(sw.getAttribute('aria-label')).toBe('Instant Book');
@@ -435,7 +509,14 @@ describe('FilterFooter', () => {
   it('clears and applies, draws the top hairline, and shows the loading state on the apply button', () => {
     const onClear = jest.fn();
     const onApply = jest.fn();
-    mount(<FilterFooter resultsLabel="Show 1,000+ places" onClear={onClear} onApply={onApply} testID="f" />);
+    mount(
+      <FilterFooter
+        resultsLabel="Show 1,000+ places"
+        onClear={onClear}
+        onApply={onApply}
+        testID="f"
+      />,
+    );
     const footer = byTestId('f');
     expect(getComputedStyle(footer).borderTopWidth).toBe('1px');
     expect(getComputedStyle(footer).paddingLeft).toBe('24px');
@@ -447,7 +528,16 @@ describe('FilterFooter', () => {
     expect(onClear).toHaveBeenCalledTimes(1);
     expect(onApply).toHaveBeenCalledTimes(1);
 
-    mount(<FilterFooter resultsLabel="Show 2 places" loading clearDisabled onClear={onClear} onApply={onApply} testID="f" />);
+    mount(
+      <FilterFooter
+        resultsLabel="Show 2 places"
+        loading
+        clearDisabled
+        onClear={onClear}
+        onApply={onApply}
+        testID="f"
+      />,
+    );
     expect(byTestId('f-apply').getAttribute('aria-busy')).toBe('true');
     expect(byTestId('f-clear').getAttribute('aria-disabled')).toBe('true');
     press('f-clear');
@@ -496,7 +586,16 @@ describe('PriceRangeFilter scale="log"', () => {
     function H() {
       const [v, setV] = useState<[number, number]>([200_000, 800_000]);
       return (
-        <PriceRangeFilter scale="log" step={5000} min={50_000} max={2_000_000} value={v} onValueChange={setV} formatPrice={(n) => `€${n}`} testID="p" />
+        <PriceRangeFilter
+          scale="log"
+          step={5000}
+          min={50_000}
+          max={2_000_000}
+          value={v}
+          onValueChange={setV}
+          formatPrice={(n) => `€${n}`}
+          testID="p"
+        />
       );
     }
     mount(<H />);
@@ -513,7 +612,10 @@ describe('range fields', () => {
   it('snaps and clamps a typed value to its own side, open ends allowed', () => {
     expect(commitRangeField([null, 100], 0, 130, { min: 0, step: 5 })).toEqual([100, 100]);
     expect(commitRangeField([40, null], 1, 22, { min: 0, step: 5 })).toEqual([40, 40]);
-    expect(commitRangeField([null, null], 1, 72, { min: 0, max: 500, step: 5 })).toEqual([null, 70]);
+    expect(commitRangeField([null, null], 1, 72, { min: 0, max: 500, step: 5 })).toEqual([
+      null,
+      70,
+    ]);
   });
 });
 
@@ -568,11 +670,27 @@ describe('PropertyTypeFilter', () => {
 describe('FeatureFilter', () => {
   it('chips: the eleven features as aria-pressed toggles with icons', () => {
     const onChange = jest.fn();
-    mount(<FeatureFilter<HousingFeature> value={['pool']} onValueChange={onChange} labels={{ pets: 'Pet friendly' }} testID="f" />);
+    mount(
+      <FeatureFilter<HousingFeature>
+        value={['pool']}
+        onValueChange={onChange}
+        labels={{ pets: 'Pet friendly' }}
+        testID="f"
+      />,
+    );
     const buttons = Array.from(byTestId('f').querySelectorAll('[role="button"]'));
     expect(buttons.map((b) => b.textContent)).toEqual([
-      'Elevator', 'Parking', 'Terrace', 'Garden', 'Pool', 'Furnished', 'Pet friendly',
-      'Air conditioning', 'Heating', 'Accessible', 'Storage room',
+      'Elevator',
+      'Parking',
+      'Terrace',
+      'Garden',
+      'Pool',
+      'Furnished',
+      'Pet friendly',
+      'Air conditioning',
+      'Heating',
+      'Accessible',
+      'Storage room',
     ]);
     expect(byTestId('f').getAttribute('aria-label')).toBe('Features');
     expect(byTestId('f-pool').getAttribute('aria-pressed')).toBe('true');
@@ -583,7 +701,14 @@ describe('FeatureFilter', () => {
 
   it('checkboxes: checkbox roles with aria-checked, reporting in option order', () => {
     const onChange = jest.fn();
-    mount(<FeatureFilter variant="checkboxes" value={['heating']} onValueChange={onChange} testID="f" />);
+    mount(
+      <FeatureFilter
+        variant="checkboxes"
+        value={['heating']}
+        onValueChange={onChange}
+        testID="f"
+      />,
+    );
     const boxes = Array.from(byTestId('f').querySelectorAll('[role="checkbox"]'));
     expect(boxes).toHaveLength(11);
     const heating = boxes.find((b) => b.getAttribute('aria-checked') === 'true');
@@ -679,9 +804,9 @@ describe('FloorFilter', () => {
     const onChange = jest.fn();
     mount(<FloorFilter value={[]} onValueChange={onChange} testID="fl" />);
     expect(byTestId('fl').getAttribute('aria-label')).toBe('Floor');
-    expect(Array.from(byTestId('fl').querySelectorAll('[role="button"]')).map((b) => b.textContent)).toEqual([
-      'Ground', 'Middle', 'Top', 'With elevator',
-    ]);
+    expect(
+      Array.from(byTestId('fl').querySelectorAll('[role="button"]')).map((b) => b.textContent),
+    ).toEqual(['Ground', 'Middle', 'Top', 'With elevator']);
     press('fl-elevator');
     expect(onChange).toHaveBeenLastCalledWith(['elevator']);
   });

@@ -10,11 +10,7 @@ import { cx } from './constants';
 import { useProjectBoardPlatform } from './context';
 import { PROJECT_BOARD_MESSAGES } from './messages';
 import { PRIORITIES, PropertySelect } from './ProjectBoardControls';
-import {
-  TicketAssigneeIcon,
-  TicketFavoriteIcon,
-  TicketStatusIcon,
-} from './ProjectBoardIcons';
+import { TicketAssigneeIcon, TicketFavoriteIcon, TicketStatusIcon } from './ProjectBoardIcons';
 import {
   SourceAvatar as Avatar,
   SourceChip as Chip,
@@ -32,12 +28,7 @@ import {
   SourceText as Text,
   SourceView as View,
 } from './SourcePrimitives';
-import type {
-  ProjectColumn,
-  ProjectMember,
-  ProjectTicket,
-  TicketPriority,
-} from './types';
+import type { ProjectColumn, ProjectMember, ProjectTicket, TicketPriority } from './types';
 const PRIORITY_STYLES = {
   Low: 'bg-ticket-detail-low-background text-ticket-detail-low-text',
   Medium: 'bg-status-yellow-background text-status-yellow-text',
@@ -50,8 +41,7 @@ const PRIORITY_HOVERS = {
   High: 'group-hover/priority:bg-ticket-detail-high-hover',
   Urgent: 'group-hover/priority:bg-ticket-detail-urgent-hover',
 };
-const TOOL_BUTTON =
-  'size-6 rounded-lg text-foreground-icon-secondary [&>svg]:size-[18px]';
+const TOOL_BUTTON = 'size-6 rounded-lg text-foreground-icon-secondary [&>svg]:size-[18px]';
 export function TicketDetailDialog({
   title: boardTitle,
   ticket,
@@ -113,18 +103,11 @@ export function TicketDetailDialog({
     if (copyResetTimer.current) clearTimeout(copyResetTimer.current);
     try {
       if (kind === 'link' && onCopyTicketLink) await onCopyTicketLink(ticket);
-      else if (kind === 'id' && onCopyTicketId)
-        await onCopyTicketId(ticket.code);
-      else if (
-        Platform.OS === 'web' &&
-        typeof navigator !== 'undefined' &&
-        navigator.clipboard
-      ) {
+      else if (kind === 'id' && onCopyTicketId) await onCopyTicketId(ticket.code);
+      else if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
         const url = new URL(window.location.href);
         url.hash = `ticket=${encodeURIComponent(ticket.id)}`;
-        await navigator.clipboard.writeText(
-          kind === 'id' ? ticket.code : url.toString(),
-        );
+        await navigator.clipboard.writeText(kind === 'id' ? ticket.code : url.toString());
       } else throw new Error('Product clipboard callback required.');
       setCopyMessage(kind === 'id' ? m.idCopied : m.linkCopied);
     } catch {
@@ -140,9 +123,7 @@ export function TicketDetailDialog({
         ...(ticket.comments ?? []),
         {
           id: `${ticket.id}-comment-${Date.now()}-${sequence.current}`,
-          author: currentUserId
-            ? (members[currentUserId]?.name ?? currentUserId)
-            : 'you',
+          author: currentUserId ? (members[currentUserId]?.name ?? currentUserId) : 'you',
           body: comment.trim(),
           time: m.justNow,
         },
@@ -153,9 +134,7 @@ export function TicketDetailDialog({
   const action = (label: string, Icon: typeof RiEditLine, run: () => void) => (
     <DropdownMenuItem className="px-2 py-1.5" onPress={run}>
       <Icon className="size-[18px] shrink-0 text-foreground-icon-secondary" />
-      <Text className="truncate text-body-medium whitespace-nowrap">
-        {label}
-      </Text>
+      <Text className="truncate text-body-medium whitespace-nowrap">{label}</Text>
     </DropdownMenuItem>
   );
   return (
@@ -186,10 +165,7 @@ export function TicketDetailDialog({
         backgroundColor: 'transparent',
       }}
     >
-      <View
-        className="h-full w-full max-w-[609px] outline-none"
-        style={{ flex: 1, minHeight: 0 }}
-      >
+      <View className="h-full w-full max-w-[609px] outline-none" style={{ flex: 1, minHeight: 0 }}>
         <TicketCornerGenieSurface>
           <View
             className="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl bg-ticket-detail-surface outline-none"
@@ -211,9 +187,7 @@ export function TicketDetailDialog({
                   </Text>
                 </View>
                 <View className="flex items-center gap-1.5">
-                  <BoardTooltip
-                    label={ticket.isFavorite ? m.favoriteRemove : m.favoriteAdd}
-                  >
+                  <BoardTooltip label={ticket.isFavorite ? m.favoriteRemove : m.favoriteAdd}>
                     <Button
                       appearance="outline"
                       tone="neutral"
@@ -239,31 +213,18 @@ export function TicketDetailDialog({
                       className={cx(
                         TOOL_BUTTON,
                         '[&>svg]:size-[17px]',
-                        ticket.isFavorite &&
-                          'text-ticket-detail-favorite [&_path]:fill-current',
+                        ticket.isFavorite && 'text-ticket-detail-favorite [&_path]:fill-current',
                       )}
-                      accessibilityLabel={
-                        ticket.isFavorite ? m.favoriteRemove : m.favoriteAdd
-                      }
+                      accessibilityLabel={ticket.isFavorite ? m.favoriteRemove : m.favoriteAdd}
                       pressed={!!ticket.isFavorite}
-                      onPress={() =>
-                        onUpdate({ isFavorite: !ticket.isFavorite })
-                      }
+                      onPress={() => onUpdate({ isFavorite: !ticket.isFavorite })}
                     />
                   </BoardTooltip>
-                  <BoardTooltip
-                    label={
-                      copyMessage === m.linkCopied ? m.linkCopied : m.copyLink
-                    }
-                  >
+                  <BoardTooltip label={copyMessage === m.linkCopied ? m.linkCopied : m.copyLink}>
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={m.copyLink}
-                      className={cx(
-                        'flex items-center justify-center',
-                        TOOL_BUTTON,
-                        'group',
-                      )}
+                      className={cx('flex items-center justify-center', TOOL_BUTTON, 'group')}
                       dataSet={{ copied: String(copyMessage === m.linkCopied) }}
                       onPress={() => {
                         void copy('link');
@@ -315,9 +276,7 @@ export function TicketDetailDialog({
                       )}
                       {action(
                         column.id === 'done' ? m.reopen : m.markDone,
-                        column.id === 'done'
-                          ? RiRestartLine
-                          : RiCheckboxCircleLine,
+                        column.id === 'done' ? RiRestartLine : RiCheckboxCircleLine,
                         () => onMove(column.id === 'done' ? 'todo' : 'done'),
                       )}
                     </DropdownMenuContent>
@@ -339,25 +298,14 @@ export function TicketDetailDialog({
                 accessibilityLabel={m.properties}
                 style={{ flex: 1, minHeight: 0 }}
                 onScroll={(e) =>
-                  setScrollFade(
-                    Math.min(
-                      1,
-                      Math.max(0, e.nativeEvent.contentOffset.y) / 24,
-                    ),
-                  )
+                  setScrollFade(Math.min(1, Math.max(0, e.nativeEvent.contentOffset.y) / 24))
                 }
                 scrollEventThrottle={16}
                 contentContainerStyle={{ flexGrow: 1 }}
               >
-                <View
-                  className="flex min-h-full flex-col"
-                  style={{ flexGrow: 1 }}
-                >
+                <View className="flex min-h-full flex-col" style={{ flexGrow: 1 }}>
                   <View className="flex flex-col gap-5 px-6 max-sm:px-4">
-                    <View
-                      className="flex flex-col gap-3"
-                      accessibilityLabel={m.description}
-                    >
+                    <View className="flex flex-col gap-3" accessibilityLabel={m.description}>
                       {creator && (
                         <View className="flex items-center gap-[13px] text-body-medium">
                           <Text className="text-body-medium text-text-secondary">
@@ -460,9 +408,7 @@ export function TicketDetailDialog({
                           label={m.priority}
                           value={ticket.priority}
                           options={PRIORITIES.map((p) => ({ id: p, label: p }))}
-                          onChange={(p) =>
-                            onUpdate({ priority: p as TicketPriority })
-                          }
+                          onChange={(p) => onUpdate({ priority: p as TicketPriority })}
                           renderValue={
                             <Chip
                               className={cx(
@@ -484,25 +430,23 @@ export function TicketDetailDialog({
                               {ticket.assignees.length ? (
                                 <>
                                   <View className="flex items-center -space-x-1.5">
-                                    {ticket.assignees
-                                      .slice(0, 3)
-                                      .map((id, i) => {
-                                        const p = members[id];
-                                        return (
-                                          p && (
-                                            <Avatar
-                                              key={id}
-                                              source={p.avatar}
-                                              initials={p.initials}
-                                              alt={p.name}
-                                              className={cx(
-                                                'size-[18px] ring-2 ring-ticket-detail-surface',
-                                                i > 0 && '-ms-1.5',
-                                              )}
-                                            />
-                                          )
-                                        );
-                                      })}
+                                    {ticket.assignees.slice(0, 3).map((id, i) => {
+                                      const p = members[id];
+                                      return (
+                                        p && (
+                                          <Avatar
+                                            key={id}
+                                            source={p.avatar}
+                                            initials={p.initials}
+                                            alt={p.name}
+                                            className={cx(
+                                              'size-[18px] ring-2 ring-ticket-detail-surface',
+                                              i > 0 && '-ms-1.5',
+                                            )}
+                                          />
+                                        )
+                                      );
+                                    })}
                                   </View>
                                   <Text className="text-body-medium text-text-primary">
                                     {owner?.name ?? ticket.assignees[0]}
@@ -535,9 +479,7 @@ export function TicketDetailDialog({
                                   onUpdate({
                                     assignees: selected
                                       ? [...ticket.assignees, p.id]
-                                      : ticket.assignees.filter(
-                                          (id) => id !== p.id,
-                                        ),
+                                      : ticket.assignees.filter((id) => id !== p.id),
                                   })
                                 }
                               >
@@ -606,25 +548,16 @@ export function TicketDetailDialog({
                       </View>
                     )}
                     {ticket.tokenUsage && (
-                      <TicketTokenChart
-                        title={m.tokens}
-                        {...ticket.tokenUsage}
-                        plotHeight={190}
-                      />
+                      <TicketTokenChart title={m.tokens} {...ticket.tokenUsage} plotHeight={190} />
                     )}
                   </View>
                   <View
                     accessibilityLabel={m.comments}
                     className="mt-auto flex flex-col gap-2.5 px-3 pb-3"
                   >
-                    <View
-                      className="flex flex-col"
-                      accessibilityLiveRegion="polite"
-                    >
+                    <View className="flex flex-col" accessibilityLiveRegion="polite">
                       {(ticket.comments ?? []).map((entry, index) => {
-                        const author = Object.values(members).find(
-                          (p) => p.name === entry.author,
-                        );
+                        const author = Object.values(members).find((p) => p.name === entry.author);
                         return (
                           <View
                             key={entry.id}
@@ -640,22 +573,14 @@ export function TicketDetailDialog({
                             <View className="flex min-w-0 items-center gap-2">
                               <Avatar
                                 source={author?.avatar}
-                                initials={
-                                  entry.author === 'you'
-                                    ? 'ME'
-                                    : author?.initials
-                                }
-                                alt={
-                                  entry.author === 'you' ? m.you : entry.author
-                                }
+                                initials={entry.author === 'you' ? 'ME' : author?.initials}
+                                alt={entry.author === 'you' ? m.you : entry.author}
                                 className="size-6"
                                 size={24}
                               />
                               <View className="flex min-w-0 flex-wrap items-center gap-x-2">
                                 <Text className="truncate text-body-medium text-text-primary">
-                                  {entry.author === 'you'
-                                    ? m.you
-                                    : entry.author}
+                                  {entry.author === 'you' ? m.you : entry.author}
                                 </Text>
                                 <Text className="shrink-0 text-body-2-medium text-text-tertiary">
                                   {entry.time}

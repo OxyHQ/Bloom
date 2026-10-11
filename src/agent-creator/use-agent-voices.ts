@@ -9,16 +9,10 @@ export function useAgentVoices({
   onPreviewVoice,
 }: Pick<AgentCreatorProps, 'voices' | 'onPreviewVoice'>) {
   const [voices, setVoices] = useState<AgentVoice[]>([]);
-  const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>(
-    [],
-  );
+  const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [canPreview, setCanPreview] = useState(false);
   useEffect(() => {
-    if (
-      Platform.OS !== 'web' ||
-      typeof window === 'undefined' ||
-      !('speechSynthesis' in window)
-    )
+    if (Platform.OS !== 'web' || typeof window === 'undefined' || !('speechSynthesis' in window))
       return;
     const synth = window.speechSynthesis;
     const refresh = () => {
@@ -51,15 +45,11 @@ export function useAgentVoices({
         ? voice.name.toLowerCase() === 'alice'
         : voice.voiceURI === preferences.voice,
     );
-    const utterance = new SpeechSynthesisUtterance(
-      PREVIEW_TEXT[preferences.language],
-    );
+    const utterance = new SpeechSynthesisUtterance(PREVIEW_TEXT[preferences.language]);
     if (voice) utterance.voice = voice;
     utterance.rate = preferences.speed;
     utterance.lang =
-      preferences.language === 'auto'
-        ? (voice?.lang ?? navigator.language)
-        : preferences.language;
+      preferences.language === 'auto' ? (voice?.lang ?? navigator.language) : preferences.language;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   };

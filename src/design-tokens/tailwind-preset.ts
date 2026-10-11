@@ -1,4 +1,10 @@
-import { COMPONENT_SPACING, COMPONENT_CONTAINERS, COMPONENT_COLOR_ROLES, COMPONENT_RADIUS, COMPONENT_SHADOWS } from './component-roles';
+import {
+  COMPONENT_SPACING,
+  COMPONENT_CONTAINERS,
+  COMPONENT_COLOR_ROLES,
+  COMPONENT_RADIUS,
+  COMPONENT_SHADOWS,
+} from './component-roles';
 import { TYPE_SCALE } from '../typography/scale';
 /**
  * The Bloom Tailwind / NativeWind preset — the SINGLE opt-in that gives every
@@ -135,7 +141,22 @@ export const bloomTailwindPreset: TailwindPreset = Object.freeze({
       borderRadius: { ...RADIUS_PX, ...COMPONENT_RADIUS },
       borderWidth: BORDER_WIDTH_PX,
 
-      fontSize: { ...buildFontSize(), ...Object.fromEntries(Object.entries(TYPE_SCALE).map(([name, role]) => [name, [`${role.fontSize}px`, { lineHeight: `${role.lineHeight}px`, fontWeight: String(role.fontWeight), letterSpacing: `${role.letterSpacing}px` }] satisfies FontSizeValue])) },
+      fontSize: {
+        ...buildFontSize(),
+        ...Object.fromEntries(
+          Object.entries(TYPE_SCALE).map(([name, role]) => [
+            name,
+            [
+              `${role.fontSize}px`,
+              {
+                lineHeight: `${role.lineHeight}px`,
+                fontWeight: String(role.fontWeight),
+                letterSpacing: `${role.letterSpacing}px`,
+              },
+            ] satisfies FontSizeValue,
+          ]),
+        ),
+      },
       fontFamily: buildFontFamily(),
 
       boxShadow: { ...COMPONENT_SHADOWS, s: SHADOW_BOX.s, m: SHADOW_BOX.m },

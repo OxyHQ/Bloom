@@ -25,11 +25,7 @@ import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { FloatingAnchor } from '../floating/types';
 import { ContextMenuProvider, useContextMenu } from './context';
-import type {
-  ContextMenuContentProps,
-  ContextMenuProps,
-  ContextMenuTriggerProps,
-} from './types';
+import type { ContextMenuContentProps, ContextMenuProps, ContextMenuTriggerProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CONTEXT_MENU_MESSAGES } from './messages';
 
@@ -118,7 +114,8 @@ export function ContextMenuTrigger({
         accessibilityRole: 'button',
         'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
-      }}>
+      }}
+    >
       {children}
     </TriggerSlot>
   );
@@ -174,7 +171,8 @@ export function ContextMenuContent({
       onDismiss={onDismiss}
       className={cx(MENU_MIN_WIDTH_CLASS, className)}
       style={style}
-      testID={testID}>
+      testID={testID}
+    >
       <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
     </FloatingPanel>
   );

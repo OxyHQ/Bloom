@@ -11,11 +11,19 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
 const Icon = () => <Text>+</Text>;
-function themed(node: React.ReactNode) { return render(<BloomThemeProvider mode="light" colorPreset="teal">{node}</BloomThemeProvider>); }
+function themed(node: React.ReactNode) {
+  return render(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      {node}
+    </BloomThemeProvider>,
+  );
+}
 describe('Fab action primitive', () => {
   it('runs its action and exposes its accessible name', () => {
     const onPress = jest.fn();
-    const view = themed(<Fab icon={Icon} accessibilityLabel="Create" testID="fab" onPress={onPress} />);
+    const view = themed(
+      <Fab icon={Icon} accessibilityLabel="Create" testID="fab" onPress={onPress} />,
+    );
     expect(view.getByTestId('fab').props.accessibilityLabel).toBe('Create');
     pressHost(view.getByTestId('fab'));
     expect(onPress).toHaveBeenCalledTimes(1);
@@ -26,7 +34,11 @@ describe('Fab action primitive', () => {
     expect(view.getByTestId('fab').props.accessibilityLabel).toBe('Compose');
   });
   it('inherits geometry and leaves positioning to its parent', () => {
-    const view = themed(<BloomScope size="sm"><Fab icon={Icon} accessibilityLabel="Create" testID="fab" /></BloomScope>);
+    const view = themed(
+      <BloomScope size="sm">
+        <Fab icon={Icon} accessibilityLabel="Create" testID="fab" />
+      </BloomScope>,
+    );
     const style = resolvedStyle(view.getByTestId('fab').props.style);
     expect(style.height).toBe(48);
     expect(style.width).toBe(48);
@@ -37,29 +49,51 @@ describe('Fab action primitive', () => {
   it.each([
     ['native', Fab],
     ['web', WebFab],
-  ] as const)('%s uses action by default while preserving scope and explicit tone precedence', (platform, Action) => {
-    const view = themed(<Action testID="tone-fab" icon={Icon} accessibilityLabel="Create" />);
-    const fill = () => {
-      const node = platform === 'web' ? view.UNSAFE_root.findByProps({ 'data-testid': 'tone-fab' }) : view.getByTestId('tone-fab');
-      const style = resolvedStyle(node.props.style);
-      if (platform === 'web') return style['--bloom-btn-bg'];
-      // The Button host is transparent; the shared material owns its solid fill.
-      expect(style.backgroundColor).toBe('transparent');
-      const materials = node.findAll(child => child.props.radius != null && typeof child.props.fill === 'string');
-      expect(materials).toHaveLength(1);
-      return materials[0]!.props.fill;
-    };
-    const theme = buildTheme('teal', 'light');
-    expect(fill()).toBe(resolveButtonPalette('solid', theme, 'action').rest.background);
-    view.rerender(<BloomThemeProvider mode="light" colorPreset="teal"><BloomScope tone="support"><Action testID="tone-fab" icon={Icon} accessibilityLabel="Create" /></BloomScope></BloomThemeProvider>);
-    expect(fill()).toBe(resolveButtonPalette('solid', theme, 'support').rest.background);
-    view.rerender(<BloomThemeProvider mode="light" colorPreset="teal"><BloomScope tone="support"><Action testID="tone-fab" tone="neutral" icon={Icon} accessibilityLabel="Create" /></BloomScope></BloomThemeProvider>);
-    const neutral = resolveButtonPalette('solid', theme, 'neutral').rest;
-    expect(fill()).toBe(neutral.background);
-  });
+  ] as const)(
+    '%s uses action by default while preserving scope and explicit tone precedence',
+    (platform, Action) => {
+      const view = themed(<Action testID="tone-fab" icon={Icon} accessibilityLabel="Create" />);
+      const fill = () => {
+        const node =
+          platform === 'web'
+            ? view.UNSAFE_root.findByProps({ 'data-testid': 'tone-fab' })
+            : view.getByTestId('tone-fab');
+        const style = resolvedStyle(node.props.style);
+        if (platform === 'web') return style['--bloom-btn-bg'];
+        // The Button host is transparent; the shared material owns its solid fill.
+        expect(style.backgroundColor).toBe('transparent');
+        const materials = node.findAll(
+          (child) => child.props.radius != null && typeof child.props.fill === 'string',
+        );
+        expect(materials).toHaveLength(1);
+        return materials[0]!.props.fill;
+      };
+      const theme = buildTheme('teal', 'light');
+      expect(fill()).toBe(resolveButtonPalette('solid', theme, 'action').rest.background);
+      view.rerender(
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <BloomScope tone="support">
+            <Action testID="tone-fab" icon={Icon} accessibilityLabel="Create" />
+          </BloomScope>
+        </BloomThemeProvider>,
+      );
+      expect(fill()).toBe(resolveButtonPalette('solid', theme, 'support').rest.background);
+      view.rerender(
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <BloomScope tone="support">
+            <Action testID="tone-fab" tone="neutral" icon={Icon} accessibilityLabel="Create" />
+          </BloomScope>
+        </BloomThemeProvider>,
+      );
+      const neutral = resolveButtonPalette('solid', theme, 'neutral').rest;
+      expect(fill()).toBe(neutral.background);
+    },
+  );
 
   it('keeps action sizing independent of parent placement', () => {
-    const view = themed(<Fab size="sm" tone="support" icon={Icon} label="Compose" testID="legacy-fab" />);
+    const view = themed(
+      <Fab size="sm" tone="support" icon={Icon} label="Compose" testID="legacy-fab" />,
+    );
     const style = resolvedStyle(view.getByTestId('legacy-fab').props.style);
     expect(style.height).toBe(48);
     expect(style.bottom).toBeUndefined();
@@ -69,16 +103,35 @@ describe('Fab action primitive', () => {
 
   it('blocks disabled and loading actions', () => {
     const onPress = jest.fn();
-    const view = themed(<Fab icon={Icon} accessibilityLabel="Create" disabled onPress={onPress} testID="fab" />);
+    const view = themed(
+      <Fab icon={Icon} accessibilityLabel="Create" disabled onPress={onPress} testID="fab" />,
+    );
     expect(view.getByTestId('fab').props.onPress).toBeUndefined();
     expect(onPress).not.toHaveBeenCalled();
   });
 });
 
-it.each([['native', Fab], ['web', WebFab]] as const)('%s keeps the labeled control mounted and named when collapsed', (platform, Action) => {
-  const ui = (collapsed: boolean) => <BloomThemeProvider mode="light"><Action icon={Icon} label="Compose" collapsed={collapsed} size="sm" testID="collapse-fab" style={{ width: '100%' }} /></BloomThemeProvider>;
+it.each([
+  ['native', Fab],
+  ['web', WebFab],
+] as const)('%s keeps the labeled control mounted and named when collapsed', (platform, Action) => {
+  const ui = (collapsed: boolean) => (
+    <BloomThemeProvider mode="light">
+      <Action
+        icon={Icon}
+        label="Compose"
+        collapsed={collapsed}
+        size="sm"
+        testID="collapse-fab"
+        style={{ width: '100%' }}
+      />
+    </BloomThemeProvider>
+  );
   const tree = render(ui(true));
-  const host = () => platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'collapse-fab' }) : tree.getByTestId('collapse-fab');
+  const host = () =>
+    platform === 'web'
+      ? tree.UNSAFE_root.findByProps({ 'data-testid': 'collapse-fab' })
+      : tree.getByTestId('collapse-fab');
   const first = host();
   expect(first.props[platform === 'web' ? 'aria-label' : 'accessibilityLabel']).toBe('Compose');
   expect(resolvedStyle(first.props.style).width).toBe('100%');
@@ -96,36 +149,90 @@ it('honors reduced motion without starting a label timing animation', () => {
   const reduced = jest.spyOn(Reanimated, 'useReducedMotion').mockReturnValue(true);
   const timing = jest.spyOn(Reanimated, 'withTiming');
   try {
-    const ui = (collapsed: boolean) => <BloomThemeProvider><Fab icon={Icon} label="Compose" collapsed={collapsed} /></BloomThemeProvider>;
+    const ui = (collapsed: boolean) => (
+      <BloomThemeProvider>
+        <Fab icon={Icon} label="Compose" collapsed={collapsed} />
+      </BloomThemeProvider>
+    );
     const tree = render(ui(false));
     tree.rerender(ui(true));
     expect(timing).not.toHaveBeenCalled();
     tree.unmount();
-  } finally { reduced.mockRestore(); timing.mockRestore(); }
+  } finally {
+    reduced.mockRestore();
+    timing.mockRestore();
+  }
 });
 
-it.each([['native', Fab], ['web', WebFab]] as const)('%s supports a larger glyph without widening the collapsed circle', (platform, Action) => {
-  const Glyph = (props: { width?: number; height?: number }) => <Text testID="sized-glyph" {...props}>+</Text>;
-  const tree = themed(<Action icon={Glyph} label="Compose" size="md" iconSize={26} collapsed testID="sized-fab" />);
-  const host = platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'sized-fab' }) : tree.getByTestId('sized-fab');
-  const style = resolvedStyle(host.props.style);
-  expect(tree.getByTestId('sized-glyph', { includeHiddenElements: true }).props).toMatchObject({ width: 26, height: 26 });
-  expect(style.height).toBe(50);
-  expect(style.minWidth).toBe(50);
-  expect(Number(style.paddingLeft) + 26 + Number(style.paddingRight)).toBe(50);
-});
+it.each([
+  ['native', Fab],
+  ['web', WebFab],
+] as const)(
+  '%s supports a larger glyph without widening the collapsed circle',
+  (platform, Action) => {
+    const Glyph = (props: { width?: number; height?: number }) => (
+      <Text testID="sized-glyph" {...props}>
+        +
+      </Text>
+    );
+    const tree = themed(
+      <Action icon={Glyph} label="Compose" size="md" iconSize={26} collapsed testID="sized-fab" />,
+    );
+    const host =
+      platform === 'web'
+        ? tree.UNSAFE_root.findByProps({ 'data-testid': 'sized-fab' })
+        : tree.getByTestId('sized-fab');
+    const style = resolvedStyle(host.props.style);
+    expect(tree.getByTestId('sized-glyph', { includeHiddenElements: true }).props).toMatchObject({
+      width: 26,
+      height: 26,
+    });
+    expect(style.height).toBe(50);
+    expect(style.minWidth).toBe(50);
+    expect(Number(style.paddingLeft) + 26 + Number(style.paddingRight)).toBe(50);
+  },
+);
 
-it.each([['native', Fab], ['web', WebFab]] as const)('%s shares the default 50/26 geometry for component icons', (platform, Action) => {
-  const Glyph = (props: { width?: number; height?: number }) => <Text testID="default-glyph" {...props}>+</Text>;
+it.each([
+  ['native', Fab],
+  ['web', WebFab],
+] as const)('%s shares the default 50/26 geometry for component icons', (platform, Action) => {
+  const Glyph = (props: { width?: number; height?: number }) => (
+    <Text testID="default-glyph" {...props}>
+      +
+    </Text>
+  );
   const tree = themed(<Action icon={Glyph} accessibilityLabel="Create" testID="default-fab" />);
-  const host = platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'default-fab' }) : tree.getByTestId('default-fab');
+  const host =
+    platform === 'web'
+      ? tree.UNSAFE_root.findByProps({ 'data-testid': 'default-fab' })
+      : tree.getByTestId('default-fab');
   expect(resolvedStyle(host.props.style)).toMatchObject({ width: 50, height: 50 });
-  expect(tree.getByTestId('default-glyph', { includeHiddenElements: true }).props).toMatchObject({ width: 26, height: 26 });
+  expect(tree.getByTestId('default-glyph', { includeHiddenElements: true }).props).toMatchObject({
+    width: 26,
+    height: 26,
+  });
 });
 
-it.each([['native', Fab], ['web', WebFab]] as const)('%s supplies icon components with the action foreground', (platform, Action) => {
-  const Glyph = (props: { fill?: string }) => <Text testID="painted-glyph" {...props}>+</Text>;
-  const tree = render(<BloomThemeProvider mode="light" colorPreset="teal" fonts={false}><Action icon={Glyph} accessibilityLabel="Create" /></BloomThemeProvider>);
-  const expected = platform === 'web' ? 'currentColor' : resolveButtonPalette('solid', buildTheme('teal', 'light'), 'action').rest.foreground;
-  expect(tree.getByTestId('painted-glyph', { includeHiddenElements: true }).props.fill).toBe(expected);
+it.each([
+  ['native', Fab],
+  ['web', WebFab],
+] as const)('%s supplies icon components with the action foreground', (platform, Action) => {
+  const Glyph = (props: { fill?: string }) => (
+    <Text testID="painted-glyph" {...props}>
+      +
+    </Text>
+  );
+  const tree = render(
+    <BloomThemeProvider mode="light" colorPreset="teal" fonts={false}>
+      <Action icon={Glyph} accessibilityLabel="Create" />
+    </BloomThemeProvider>,
+  );
+  const expected =
+    platform === 'web'
+      ? 'currentColor'
+      : resolveButtonPalette('solid', buildTheme('teal', 'light'), 'action').rest.foreground;
+  expect(tree.getByTestId('painted-glyph', { includeHiddenElements: true }).props.fill).toBe(
+    expected,
+  );
 });

@@ -102,7 +102,9 @@ describe('resolveMeterColors', () => {
     expect(getComputedStyle(byTestId('m-fill')).backgroundColor).toBe(normalise(colors.fill));
     // Three families painted the fill `colors.text` — a near-black bar reading
     // as ink rather than as a measurement. The negative is the assertion.
-    expect(getComputedStyle(byTestId('m-fill')).backgroundColor).not.toBe(normalise(theme.colors.text));
+    expect(getComputedStyle(byTestId('m-fill')).backgroundColor).not.toBe(
+      normalise(theme.colors.text),
+    );
   });
 });
 
@@ -123,7 +125,9 @@ describe('Meter geometry', () => {
     mount(<Meter value={1} max={2} height={8} accessibilityLabel="Capsule" testID="m" />);
     expect(getComputedStyle(byTestId('m')).height).toBe('8px');
     expect(getComputedStyle(byTestId('m')).borderTopLeftRadius).toBe('4px');
-    mount(<Meter value={1} max={2} height={12} radius={2} accessibilityLabel="Square" testID="m" />);
+    mount(
+      <Meter value={1} max={2} height={12} radius={2} accessibilityLabel="Square" testID="m" />,
+    );
     expect(getComputedStyle(byTestId('m')).borderTopLeftRadius).toBe('2px');
   });
 
@@ -139,7 +143,14 @@ describe('Meter geometry', () => {
 
   it('takes an explicit fill and track', () => {
     mount(
-      <Meter value={1} max={2} fill="rgb(255, 0, 0)" track="rgb(0, 0, 255)" accessibilityLabel="Custom" testID="m" />,
+      <Meter
+        value={1}
+        max={2}
+        fill="rgb(255, 0, 0)"
+        track="rgb(0, 0, 255)"
+        accessibilityLabel="Custom"
+        testID="m"
+      />,
     );
     expect(getComputedStyle(byTestId('m-fill')).backgroundColor).toBe('rgb(255, 0, 0)');
     expect(getComputedStyle(byTestId('m')).backgroundColor).toBe('rgb(0, 0, 255)');
@@ -153,7 +164,9 @@ describe('Meter accessibility', () => {
     // for `accessibilityValue` at all, so a bar setting only the object
     // announces its role and no value. React Native folds these back, so
     // native keeps what it had.
-    mount(<Meter value={4} max={5} accessibilityLabel="Cleanliness" valueText="4 of 5" testID="m" />);
+    mount(
+      <Meter value={4} max={5} accessibilityLabel="Cleanliness" valueText="4 of 5" testID="m" />,
+    );
     const bar = byTestId('m');
     expect(bar.getAttribute('role')).toBe('progressbar');
     expect(bar.getAttribute('aria-label')).toBe('Cleanliness');
@@ -181,7 +194,16 @@ describe('Meter accessibility', () => {
 
 describe('MeterRing', () => {
   it('occupies exactly size x size and draws the stroke inside it', () => {
-    mount(<MeterRing value={1} max={2} size={72} thickness={6} accessibilityLabel="Quality" testID="r" />);
+    mount(
+      <MeterRing
+        value={1}
+        max={2}
+        size={72}
+        thickness={6}
+        accessibilityLabel="Quality"
+        testID="r"
+      />,
+    );
     expect(getComputedStyle(byTestId('r')).width).toBe('72px');
     expect(getComputedStyle(byTestId('r')).height).toBe('72px');
     const circles = byTestId('r').querySelectorAll('circle');
@@ -190,7 +212,16 @@ describe('MeterRing', () => {
   });
 
   it('offsets the arc by the MISSING share', () => {
-    mount(<MeterRing value={1} max={4} size={56} thickness={5} accessibilityLabel="Quarter" testID="r" />);
+    mount(
+      <MeterRing
+        value={1}
+        max={4}
+        size={56}
+        thickness={5}
+        accessibilityLabel="Quarter"
+        testID="r"
+      />,
+    );
     const circumference = 2 * Math.PI * ((56 - 5) / 2);
     const arc = byTestId('r').querySelectorAll('circle')[1]!;
     expect(Number(arc.getAttribute('stroke-dashoffset'))).toBeCloseTo(circumference * 0.75, 3);
@@ -198,9 +229,13 @@ describe('MeterRing', () => {
 
   it('drops the round cap at zero, so an empty ring is not a dot', () => {
     mount(<MeterRing value={0} max={4} accessibilityLabel="Empty" testID="r" />);
-    expect(byTestId('r').querySelectorAll('circle')[1]!.getAttribute('stroke-linecap')).toBe('butt');
+    expect(byTestId('r').querySelectorAll('circle')[1]!.getAttribute('stroke-linecap')).toBe(
+      'butt',
+    );
     mount(<MeterRing value={1} max={4} accessibilityLabel="Some" testID="r" />);
-    expect(byTestId('r').querySelectorAll('circle')[1]!.getAttribute('stroke-linecap')).toBe('round');
+    expect(byTestId('r').querySelectorAll('circle')[1]!.getAttribute('stroke-linecap')).toBe(
+      'round',
+    );
   });
 
   it('paints the meter colours and takes overrides', () => {
@@ -210,14 +245,29 @@ describe('MeterRing', () => {
     expect(circles()[0]!.getAttribute('stroke')).toBe(colors.track);
     expect(circles()[1]!.getAttribute('stroke')).toBe(colors.fill);
     mount(
-      <MeterRing value={1} max={2} fill="rgb(255, 0, 0)" track="rgb(0, 0, 255)" accessibilityLabel="Custom" testID="r" />,
+      <MeterRing
+        value={1}
+        max={2}
+        fill="rgb(255, 0, 0)"
+        track="rgb(0, 0, 255)"
+        accessibilityLabel="Custom"
+        testID="r"
+      />,
     );
     expect(circles()[0]!.getAttribute('stroke')).toBe('rgb(0, 0, 255)');
     expect(circles()[1]!.getAttribute('stroke')).toBe('rgb(255, 0, 0)');
   });
 
   it('is a named progressbar with the flat aria-value attributes', () => {
-    mount(<MeterRing value={50} max={100} accessibilityLabel="Listing quality" valueText="50, Good" testID="r" />);
+    mount(
+      <MeterRing
+        value={50}
+        max={100}
+        accessibilityLabel="Listing quality"
+        valueText="50, Good"
+        testID="r"
+      />,
+    );
     const ring = byTestId('r');
     expect(ring.getAttribute('role')).toBe('progressbar');
     expect(ring.getAttribute('aria-label')).toBe('Listing quality');
@@ -252,13 +302,23 @@ describe('the folded call sites keep their geometry', () => {
     // `RatingBar` sizes the bar this way, and `ApplicationChecklist` adds its
     // own `marginTop` — a base that could not be overridden would silently
     // change both.
-    mount(<Meter value={1} max={2} accessibilityLabel="Sized" testID="m" style={{ width: 96, marginTop: 12 }} />);
+    mount(
+      <Meter
+        value={1}
+        max={2}
+        accessibilityLabel="Sized"
+        testID="m"
+        style={{ width: 96, marginTop: 12 }}
+      />,
+    );
     expect(getComputedStyle(byTestId('m')).width).toBe('96px');
     expect(getComputedStyle(byTestId('m')).marginTop).toBe('12px');
   });
 
   it('names the fill separately when a family already published a testID', () => {
-    mount(<Meter value={1} max={2} accessibilityLabel="Named" testID="b-bar" fillTestID="b-fill" />);
+    mount(
+      <Meter value={1} max={2} accessibilityLabel="Named" testID="b-bar" fillTestID="b-fill" />,
+    );
     expect(byTestId('b-bar')).toBeTruthy();
     expect(byTestId('b-fill')).toBeTruthy();
   });

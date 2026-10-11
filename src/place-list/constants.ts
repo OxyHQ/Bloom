@@ -10,11 +10,12 @@ export const PLACE_LIST_VISIBILITY_LABELS: Readonly<Record<PlaceListVisibility, 
   PLACE_LIST_MESSAGES.en.visibility;
 
 /** The glyph each visibility draws on its badge. */
-export const PLACE_LIST_VISIBILITY_ICON: Readonly<Record<PlaceListVisibility, BloomIconComponent>> = {
-  private: RiLockLine,
-  shared: RiGroupLine,
-  public: RiEarthLine,
-};
+export const PLACE_LIST_VISIBILITY_ICON: Readonly<Record<PlaceListVisibility, BloomIconComponent>> =
+  {
+    private: RiLockLine,
+    shared: RiGroupLine,
+    public: RiEarthLine,
+  };
 
 export interface PlaceListGeometry {
   /** The cover strip's height. */

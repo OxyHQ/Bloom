@@ -1,11 +1,6 @@
 import type { TicketPriority } from './types';
 
-export const PRIORITIES: readonly TicketPriority[] = [
-  'Low',
-  'Medium',
-  'High',
-  'Urgent',
-];
+export const PRIORITIES: readonly TicketPriority[] = ['Low', 'Medium', 'High', 'Urgent'];
 export const PRIORITY_STYLES: Record<TicketPriority, string> = {
   Low: 'bg-status-blue-background text-status-blue-text',
   Medium: 'bg-status-yellow-background text-status-yellow-text',

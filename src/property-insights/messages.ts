@@ -44,38 +44,49 @@ export interface PropertyInsightsMessages {
   priceHistoryPeriod: string;
   priceHistory: string;
   /** The chart's summary: "Price history, 1Y: from €360,000 in Mar 2024 to €385,000 in Feb 2026." */
-  priceHistoryTrend: (head: string, from: string, fromWhen: string, to: string, toWhen: string) => string;
+  priceHistoryTrend: (
+    head: string,
+    from: string,
+    fromWhen: string,
+    to: string,
+    toWhen: string,
+  ) => string;
 }
 
-export const PROPERTY_INSIGHTS_MESSAGES: MessageCatalog<PropertyInsightsMessages> = defineMessages<PropertyInsightsMessages>('PROPERTY_INSIGHTS_MESSAGES', {
-  energy: 'Energy',
-  pending: 'Pending',
-  energyRatingClass: (r) => `Energy rating ${r}`,
-  energyRatingStatus: (s) => `Energy rating ${String(s).toLowerCase()}`,
-  energyRating: 'Energy rating',
-  certificateInProgress: 'Certificate in progress',
-  consumption: 'Consumption',
-  emissions: 'Emissions',
-  moreEfficient: 'More efficient',
-  lessEfficient: 'Less efficient',
-  walkTime: (t) => `${t} walk`,
-  scoreOutOf: (d, m) => `${d} out of ${m}`,
-  pricePerSquareMetre: 'Price per square metre',
-  rentHistory: 'Rent history',
-  rentHistoryEmpty: 'No history for this home yet',
-  confidence: { low: 'Low confidence', medium: 'Medium confidence', high: 'High confidence' },
-  aboveEstimate: (p) => `Above estimate by ${p}`,
-  belowEstimate: (p) => `Below estimate by ${p}`,
-  fairPrice: 'Fair price',
-  estimatedPrice: 'Estimated price',
-  asking: 'Asking',
-  noVerdict: 'Not enough data for a verdict',
-  whyThisEstimate: 'Why this estimate',
-  comparables: (n) => plural('en', n, { one: 'Based on {n} comparable home', other: 'Based on {n} comparable homes' }),
-  currentPrice: 'Current price',
-  now: 'Now',
-  noPriceHistory: 'No price history yet',
-  priceHistoryPeriod: 'Price history period',
-  priceHistory: 'Price history',
-  priceHistoryTrend: (head, a, aw, b, bw) => `${head}: from ${a} in ${aw} to ${b} in ${bw}.`,
-});
+export const PROPERTY_INSIGHTS_MESSAGES: MessageCatalog<PropertyInsightsMessages> =
+  defineMessages<PropertyInsightsMessages>('PROPERTY_INSIGHTS_MESSAGES', {
+    energy: 'Energy',
+    pending: 'Pending',
+    energyRatingClass: (r) => `Energy rating ${r}`,
+    energyRatingStatus: (s) => `Energy rating ${String(s).toLowerCase()}`,
+    energyRating: 'Energy rating',
+    certificateInProgress: 'Certificate in progress',
+    consumption: 'Consumption',
+    emissions: 'Emissions',
+    moreEfficient: 'More efficient',
+    lessEfficient: 'Less efficient',
+    walkTime: (t) => `${t} walk`,
+    scoreOutOf: (d, m) => `${d} out of ${m}`,
+    pricePerSquareMetre: 'Price per square metre',
+    rentHistory: 'Rent history',
+    rentHistoryEmpty: 'No history for this home yet',
+    confidence: { low: 'Low confidence', medium: 'Medium confidence', high: 'High confidence' },
+    aboveEstimate: (p) => `Above estimate by ${p}`,
+    belowEstimate: (p) => `Below estimate by ${p}`,
+    fairPrice: 'Fair price',
+    estimatedPrice: 'Estimated price',
+    asking: 'Asking',
+    noVerdict: 'Not enough data for a verdict',
+    whyThisEstimate: 'Why this estimate',
+    comparables: (n) =>
+      plural('en', n, {
+        one: 'Based on {n} comparable home',
+        other: 'Based on {n} comparable homes',
+      }),
+    currentPrice: 'Current price',
+    now: 'Now',
+    noPriceHistory: 'No price history yet',
+    priceHistoryPeriod: 'Price history period',
+    priceHistory: 'Price history',
+    priceHistoryTrend: (head, a, aw, b, bw) => `${head}: from ${a} in ${aw} to ${b} in ${bw}.`,
+  });

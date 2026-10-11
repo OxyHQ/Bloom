@@ -121,7 +121,11 @@ describe('segment presets', () => {
   });
 
   it('fills values and applies per-key overrides', () => {
-    const segments = homeSearchSegments('rent', { budget: '€900' }, { location: { label: 'Area', flex: 2 } });
+    const segments = homeSearchSegments(
+      'rent',
+      { budget: '€900' },
+      { location: { label: 'Area', flex: 2 } },
+    );
     expect(segments.map((s) => [s.key, s.label, s.value, s.flex])).toEqual([
       ['location', 'Area', undefined, 2],
       ['moveIn', 'Move-in', undefined, 1],
@@ -136,7 +140,13 @@ describe('segment presets', () => {
   });
 });
 
-function RentBar({ onChange, panel }: { onChange?: (s: string | null) => void; panel?: React.ReactNode }) {
+function RentBar({
+  onChange,
+  panel,
+}: {
+  onChange?: (s: string | null) => void;
+  panel?: React.ReactNode;
+}) {
   const [segment, setSegment] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   return (
@@ -172,7 +182,9 @@ describe('HomeSearchBar', () => {
     expect(onChange).toHaveBeenLastCalledWith('moveIn');
     expect(byTestId('bar-moveIn').getAttribute('aria-expanded')).toBe('true');
     const palette = resolveStaySearchPalette(theme);
-    expect((byTestId('bar-moveIn').parentElement as HTMLElement).style.backgroundColor).toBe(css(palette.segmentActive));
+    expect((byTestId('bar-moveIn').parentElement as HTMLElement).style.backgroundColor).toBe(
+      css(palette.segmentActive),
+    );
   });
 
   it('puts the search button in the last segment, labelled while open, and aligns the panel', () => {
@@ -234,8 +246,18 @@ describe('SearchModeTabs', () => {
   });
 
   it('honours a subset, order and labels', () => {
-    mount(<SearchModeTabs modes={['buy', 'rent']} labels={{ rent: 'To rent' }} value="rent" onValueChange={() => {}} testID="m" />);
-    expect(Array.from(byTestId('m').querySelectorAll('[role="tab"]')).map((t) => t.textContent)).toEqual(['Buy', 'To rent']);
+    mount(
+      <SearchModeTabs
+        modes={['buy', 'rent']}
+        labels={{ rent: 'To rent' }}
+        value="rent"
+        onValueChange={() => {}}
+        testID="m"
+      />,
+    );
+    expect(
+      Array.from(byTestId('m').querySelectorAll('[role="tab"]')).map((t) => t.textContent),
+    ).toEqual(['Buy', 'To rent']);
   });
 
   it('segmented: a pill SegmentedControl tablist', () => {
@@ -250,7 +272,13 @@ describe('SearchModeTabs', () => {
 });
 
 describe('BudgetPicker', () => {
-  function H({ period, onChange }: { period?: 'month' | 'total'; onChange?: (v: [number | null, number | null]) => void }) {
+  function H({
+    period,
+    onChange,
+  }: {
+    period?: 'month' | 'total';
+    onChange?: (v: [number | null, number | null]) => void;
+  }) {
     const [v, setV] = useState<[number | null, number | null]>([null, null]);
     return (
       <BudgetPicker
@@ -303,7 +331,11 @@ describe('BudgetPicker', () => {
 
 describe('MoveInPicker', () => {
   function H({ onChange }: { onChange: (v: MoveInValue) => void }) {
-    const [v, setV] = useState<MoveInValue>({ timing: 'date', date: new Date(2026, 9, 15), contractLength: 'any' });
+    const [v, setV] = useState<MoveInValue>({
+      timing: 'date',
+      date: new Date(2026, 9, 15),
+      contractLength: 'any',
+    });
     return (
       <MoveInPicker
         value={v}
@@ -323,7 +355,11 @@ describe('MoveInPicker', () => {
     expect(byTestId('m-asap').textContent).toBe('As soon as possible');
     expect(byTestId('m-asap').getAttribute('aria-pressed')).toBe('false');
     click('m-asap');
-    expect(onChange).toHaveBeenLastCalledWith({ timing: 'asap', date: null, contractLength: 'any' });
+    expect(onChange).toHaveBeenLastCalledWith({
+      timing: 'asap',
+      date: null,
+      contractLength: 'any',
+    });
     expect(byTestId('m-asap').getAttribute('aria-pressed')).toBe('true');
     click('m-flexible');
     expect(onChange.mock.lastCall[0].timing).toBe('flexible');

@@ -51,12 +51,18 @@ describe('auth-card and the form fields', () => {
     it('puts the address inside the translated sentence, not between English words', () => {
       const { getByText } = renderIn('es', <AuthCard mode="verify" email="ana@example.com" />);
       expect(getByText('ana@example.com')).toBeTruthy();
-      expect(getByText('Introduce el código que enviamos a ana@example.com para terminar de iniciar sesión.')).toBeTruthy();
+      expect(
+        getByText(
+          'Introduce el código que enviamos a ana@example.com para terminar de iniciar sesión.',
+        ),
+      ).toBeTruthy();
       expect(getByText('Código de verificación')).toBeTruthy();
     });
 
     it('places the address where the language puts it (Japanese leads with it)', () => {
-      expect(messagesIn(AUTH_CARD_MESSAGES, 'ja').codeSentTo('a@b.jp').startsWith('a@b.jp')).toBe(true);
+      expect(messagesIn(AUTH_CARD_MESSAGES, 'ja').codeSentTo('a@b.jp').startsWith('a@b.jp')).toBe(
+        true,
+      );
     });
 
     it('lets the title prop win over the catalog', () => {
@@ -89,11 +95,19 @@ describe('auth-card and the form fields', () => {
 
   describe('tag-field in Spanish', () => {
     it('names each chip’s remove button in the locale, and a labels entry wins', () => {
-      const { getByLabelText } = renderIn('es', <TagField value={['diseño']} onChange={() => {}} label="Etiquetas" />);
+      const { getByLabelText } = renderIn(
+        'es',
+        <TagField value={['diseño']} onChange={() => {}} label="Etiquetas" />,
+      );
       expect(getByLabelText('Quitar diseño')).toBeTruthy();
       const custom = renderIn(
         'es',
-        <TagField value={['diseño']} onChange={() => {}} label="Etiquetas" labels={{ remove: (t) => `Borrar ${t}` }} />,
+        <TagField
+          value={['diseño']}
+          onChange={() => {}}
+          label="Etiquetas"
+          labels={{ remove: (t) => `Borrar ${t}` }}
+        />,
       );
       expect(custom.getByLabelText('Borrar diseño')).toBeTruthy();
     });
@@ -101,8 +115,14 @@ describe('auth-card and the form fields', () => {
 
   describe('label and text-field in Spanish', () => {
     it('announces the asterisk as required in the locale', () => {
-      expect(renderIn('es', <Label required>Nombre</Label>).getByLabelText('obligatorio')).toBeTruthy();
-      expect(renderIn('es', <TextFieldLabel required>Nombre</TextFieldLabel>).getByLabelText('obligatorio')).toBeTruthy();
+      expect(
+        renderIn('es', <Label required>Nombre</Label>).getByLabelText('obligatorio'),
+      ).toBeTruthy();
+      expect(
+        renderIn('es', <TextFieldLabel required>Nombre</TextFieldLabel>).getByLabelText(
+          'obligatorio',
+        ),
+      ).toBeTruthy();
     });
   });
 
@@ -110,7 +130,9 @@ describe('auth-card and the form fields', () => {
     it('names the scroll chevrons in the locale', () => {
       const { getByLabelText } = renderIn(
         'es',
-        <SelectScrollProvider value={{ canScrollUp: true, canScrollDown: true, scrollBy: () => {} }}>
+        <SelectScrollProvider
+          value={{ canScrollUp: true, canScrollDown: true, scrollBy: () => {} }}
+        >
           <SelectScrollUpButton />
           <SelectScrollDownButton />
         </SelectScrollProvider>,
@@ -130,12 +152,20 @@ describe('auth-card and the form fields', () => {
 
   describe('slider in Spanish', () => {
     it('names the range thumbs, and thumbLabels still wins', () => {
-      const { getByLabelText } = renderIn('es', <RangeSlider value={[10, 90]} onValueChange={() => {}} accessibilityLabel="Precio" />);
+      const { getByLabelText } = renderIn(
+        'es',
+        <RangeSlider value={[10, 90]} onValueChange={() => {}} accessibilityLabel="Precio" />,
+      );
       expect(getByLabelText('Mínimo')).toBeTruthy();
       expect(getByLabelText('Máximo')).toBeTruthy();
       const custom = renderIn(
         'es',
-        <RangeSlider value={[10, 90]} onValueChange={() => {}} accessibilityLabel="Precio" thumbLabels={['Desde', 'Hasta']} />,
+        <RangeSlider
+          value={[10, 90]}
+          onValueChange={() => {}}
+          accessibilityLabel="Precio"
+          thumbLabels={['Desde', 'Hasta']}
+        />,
       );
       expect(custom.getByLabelText('Desde')).toBeTruthy();
     });
@@ -143,12 +173,20 @@ describe('auth-card and the form fields', () => {
 
   describe('stepper in Spanish', () => {
     it('names its buttons, and decrementLabel still wins', () => {
-      const { getByLabelText } = renderIn('es', <Stepper value={2} onValueChange={() => {}} accessibilityLabel="Huéspedes" />);
+      const { getByLabelText } = renderIn(
+        'es',
+        <Stepper value={2} onValueChange={() => {}} accessibilityLabel="Huéspedes" />,
+      );
       expect(getByLabelText('Disminuir')).toBeTruthy();
       expect(getByLabelText('Aumentar')).toBeTruthy();
       const custom = renderIn(
         'es',
-        <Stepper value={2} onValueChange={() => {}} accessibilityLabel="Huéspedes" decrementLabel="Menos" />,
+        <Stepper
+          value={2}
+          onValueChange={() => {}}
+          accessibilityLabel="Huéspedes"
+          decrementLabel="Menos"
+        />,
       );
       expect(custom.getByLabelText('Menos')).toBeTruthy();
     });
@@ -165,7 +203,11 @@ describe('auth-card and the form fields', () => {
 
     it('draws "Nuevo" with no rating, and newLabel still wins', () => {
       expect(renderIn('es', <Rating value={null} />).getByText('Nuevo')).toBeTruthy();
-      expect(renderIn('es', <Rating value={null} newLabel="Recién llegado" />).getByText('Recién llegado')).toBeTruthy();
+      expect(
+        renderIn('es', <Rating value={null} newLabel="Recién llegado" />).getByText(
+          'Recién llegado',
+        ),
+      ).toBeTruthy();
     });
 
     it('keeps a preformatted count exactly as given', () => {
@@ -173,7 +215,10 @@ describe('auth-card and the form fields', () => {
     });
 
     it('pluralises the star names per language', () => {
-      const { getByLabelText } = renderIn('ru', <RatingInput value={null} onChange={() => {}} accessibilityLabel="Оценка" />);
+      const { getByLabelText } = renderIn(
+        'ru',
+        <RatingInput value={null} onChange={() => {}} accessibilityLabel="Оценка" />,
+      );
       expect(getByLabelText('1 звезда')).toBeTruthy();
       expect(getByLabelText('2 звезды')).toBeTruthy();
       expect(getByLabelText('5 звёзд')).toBeTruthy();

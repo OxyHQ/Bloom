@@ -56,7 +56,9 @@ function defaultPhotoLabel(
   total: number,
   messages: ListingDetailsMessages = LISTING_DETAILS_MESSAGES.en,
 ): string {
-  return photo.alt ? messages.photoWithAlt(photo.alt, position, total) : messages.photoOf(position, total);
+  return photo.alt
+    ? messages.photoWithAlt(photo.alt, position, total)
+    : messages.photoOf(position, total);
 }
 
 interface PhotoTileProps {
@@ -142,7 +144,9 @@ function ListingPhotoGridComponent({
   const showAllLabel = showAllLabelProp ?? messages.showAllPhotos;
   const accessibilityLabel = accessibilityLabelProp ?? messages.listingPhotos;
   const photoLabel =
-    photoLabelProp ?? ((photo: ListingPhoto, position: number, total: number) => defaultPhotoLabel(photo, position, total, messages));
+    photoLabelProp ??
+    ((photo: ListingPhoto, position: number, total: number) =>
+      defaultPhotoLabel(photo, position, total, messages));
   const theme = useTheme();
   useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);
@@ -195,7 +199,10 @@ function ListingPhotoGridComponent({
           testID={testID ? `${testID}-carousel` : undefined}
         >
           {photos.map((photo, index) => (
-            <CarouselItem key={`${photo.source}-${index}`} accessibilityLabel={photoLabel(photo, index + 1, total)}>
+            <CarouselItem
+              key={`${photo.source}-${index}`}
+              accessibilityLabel={photoLabel(photo, index + 1, total)}
+            >
               {tile(index, { width: '100%', aspectRatio: carouselAspectRatio })}
             </CarouselItem>
           ))}
@@ -220,7 +227,10 @@ function ListingPhotoGridComponent({
               backgroundColor: palette.card,
             }}
           >
-            <Text variant="caption-1-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+            <Text
+              variant="caption-1-semibold"
+              style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+            >
               {counter}
             </Text>
           </View>
@@ -230,7 +240,12 @@ function ListingPhotoGridComponent({
   } else if (total > 0) {
     const fill: ViewStyle = { flex: 1, minWidth: 0, minHeight: 0 };
     const column: ViewStyle = { flex: 1, minWidth: 0, gap: LISTING_PHOTO_GRID_GAP };
-    const row: ViewStyle = { flex: 1, minHeight: 0, flexDirection: 'row', gap: LISTING_PHOTO_GRID_GAP };
+    const row: ViewStyle = {
+      flex: 1,
+      minHeight: 0,
+      flexDirection: 'row',
+      gap: LISTING_PHOTO_GRID_GAP,
+    };
 
     let right: React.ReactNode = null;
     if (total === 2) {
@@ -286,11 +301,12 @@ function ListingPhotoGridComponent({
         {onShowAll ? (
           <View style={{ position: 'absolute', right: 24, bottom: 24 }}>
             <Button
-
               size="sm"
               leadingIcon={RiLayoutGridLine}
               onPress={onShowAll}
-              testID={testID ? `${testID}-show-all` : undefined} tone="neutral" appearance="outline"
+              testID={testID ? `${testID}-show-all` : undefined}
+              tone="neutral"
+              appearance="outline"
             >
               {showAllLabel}
             </Button>

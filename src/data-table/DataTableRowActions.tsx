@@ -47,17 +47,37 @@ export function DataTableRowActions({
   return (
     <View
       testID={testID}
-      style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, alignSelf: 'stretch' }, style]}
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 10,
+          alignSelf: 'stretch',
+        },
+        style,
+      ]}
     >
       {actions.map((action) => (
-        <DataTableRowAction key={action.label} icon={action.icon} label={action.label} onPress={action.onPress} />
+        <DataTableRowAction
+          key={action.label}
+          icon={action.icon}
+          label={action.label}
+          onPress={action.onPress}
+        />
       ))}
       {menu.length > 0 ? (
         <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild label={menuName}>
             <DataTableRowAction icon={RiMore2Fill} label={menuLabel} active={open} />
           </DropdownMenuTrigger>
-          <DropdownMenuContent label={menuName} align="end" minWidth={MENU_WIDTH} maxWidth={MENU_WIDTH} style={MENU_PADDING}>
+          <DropdownMenuContent
+            label={menuName}
+            align="end"
+            minWidth={MENU_WIDTH}
+            maxWidth={MENU_WIDTH}
+            style={MENU_PADDING}
+          >
             <DropdownMenuGroup>
               {menu.map(({ icon: Icon, label, onPress }) => (
                 <DropdownMenuItem
@@ -65,7 +85,13 @@ export function DataTableRowActions({
                   accessibilityLabel={label}
                   className="px-2 py-1.5"
                   onPress={onPress}
-                  leading={<Icon width={MENU_ICON_SIZE} height={MENU_ICON_SIZE} fill={theme.colors.textSecondary} />}
+                  leading={
+                    <Icon
+                      width={MENU_ICON_SIZE}
+                      height={MENU_ICON_SIZE}
+                      fill={theme.colors.textSecondary}
+                    />
+                  }
                 >
                   {label}
                 </DropdownMenuItem>

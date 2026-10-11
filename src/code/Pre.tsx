@@ -16,7 +16,14 @@ import type { PreProps } from './types';
  * when `lineNumbers` is set. Any other child renders as monospace text in the
  * same card.
  */
-const PreComponent = function Pre({ children, containerStyle, style, language, lineNumbers = false, ...rest }: PreProps) {
+const PreComponent = function Pre({
+  children,
+  containerStyle,
+  style,
+  language,
+  lineNumbers = false,
+  ...rest
+}: PreProps) {
   const palette = useCodePalette();
   const metrics = LINE_METRICS.sm;
   const card = {
@@ -32,7 +39,13 @@ const PreComponent = function Pre({ children, containerStyle, style, language, l
   if (typeof children === 'string' && !style && Object.keys(rest).length === 0) {
     return (
       <View style={[card, containerStyle]}>
-        <CodeLines code={children} language={language} lineNumbers={lineNumbers} size="sm" style={padding} />
+        <CodeLines
+          code={children}
+          language={language}
+          lineNumbers={lineNumbers}
+          size="sm"
+          style={padding}
+        />
       </View>
     );
   }
@@ -49,7 +62,8 @@ const PreComponent = function Pre({ children, containerStyle, style, language, l
             color: palette.plain,
           },
           style,
-        ]}>
+        ]}
+      >
         {children}
       </RNText>
     </View>

@@ -36,10 +36,18 @@ export function DateBlock({
         justifyContent: 'center',
       }}
     >
-      <Text variant="caption-2-semibold" numberOfLines={1} style={{ color: paint.accent, textTransform: 'uppercase' }}>
+      <Text
+        variant="caption-2-semibold"
+        numberOfLines={1}
+        style={{ color: paint.accent, textTransform: 'uppercase' }}
+      >
         {month}
       </Text>
-      <Text variant={size >= 56 ? 'title-3-bold' : 'headline-bold'} numberOfLines={1} style={{ color: paint.text, marginTop: -2 }}>
+      <Text
+        variant={size >= 56 ? 'title-3-bold' : 'headline-bold'}
+        numberOfLines={1}
+        style={{ color: paint.text, marginTop: -2 }}
+      >
         {day}
       </Text>
     </View>
@@ -83,7 +91,12 @@ function EventCardComponent({
   const row = layout === 'row';
   const where = joinMeta([venue, city]);
   const status = soldOut ? (
-    <Badge content={soldOutLabel} variant="subtle" color="default" testID={testID ? `${testID}-sold-out` : undefined} />
+    <Badge
+      content={soldOutLabel}
+      variant="subtle"
+      color="default"
+      testID={testID ? `${testID}-sold-out` : undefined}
+    />
   ) : (
     action
   );
@@ -103,15 +116,21 @@ function EventCardComponent({
       meta={time ? [time] : undefined}
       accessibilityLabel={
         rest.accessibilityLabel ??
-        [title, typeLabel, `${month} ${day}`, where || null, time, soldOut ? soldOutLabel : null].filter(Boolean).join(', ')
+        [title, typeLabel, `${month} ${day}`, where || null, time, soldOut ? soldOutLabel : null]
+          .filter(Boolean)
+          .join(', ')
       }
       renderArtwork={
-        row
-          ? () => <DateBlock month={month} day={day} paint={paint} size={56} filled />
-          : undefined
+        row ? () => <DateBlock month={month} day={day} paint={paint} size={56} filled /> : undefined
       }
       trailing={row ? status : undefined}
-      footer={!row && status ? <View style={{ alignItems: 'flex-start' }} pointerEvents="box-none">{status}</View> : undefined}
+      footer={
+        !row && status ? (
+          <View style={{ alignItems: 'flex-start' }} pointerEvents="box-none">
+            {status}
+          </View>
+        ) : undefined
+      }
       artworkOverlay={
         row ? undefined : (
           <View style={{ position: 'absolute', top: 8, left: 8 }}>

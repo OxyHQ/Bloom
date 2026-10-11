@@ -58,7 +58,8 @@ const NOTES: NoteCardProps[] = [
     tone: 'error',
   },
   {
-    title: 'A title that keeps going and going, well past what one line of a preview card can reasonably hold',
+    title:
+      'A title that keeps going and going, well past what one line of a preview card can reasonably hold',
     excerpt:
       'Short body. The point of this one is the title above it, which has to truncate rather than push the excerpt off the bottom of the card.',
     tags: ['long', 'truncation', 'edge case', 'overflow', 'more'],
@@ -109,7 +110,13 @@ export const Rows: Story = {
   render: () => (
     <Column>
       {NOTES.map((note, index) => (
-        <NoteCard key={note.title} {...note} density="row" onPress={() => {}} testID={`row-${index}`} />
+        <NoteCard
+          key={note.title}
+          {...note}
+          density="row"
+          onPress={() => {}}
+          testID={`row-${index}`}
+        />
       ))}
     </Column>
   ),

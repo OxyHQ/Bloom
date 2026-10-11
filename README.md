@@ -139,11 +139,17 @@ const theme = useTheme();
 </td>
 <td valign="top" width="50%">
 
-**Eighteen colour presets**
+**Named colour presets**
 
-`teal`, `blue`, `green`, `yellow`, `red`, `purple`, `pink`, `sky`, `orange`, `mint`, `pumpkin`, `gray`, `brown`, `peach`, `rose`, plus `oxy` and `faircoin`, which are reserved for the accounts whose brands they are, and `mono`, which ships with a subscription.
+`blue`, `orange`, `teal`, `green`, `yellow` and the other names in the public
+`APP_COLOR_NAMES` registry. `COLOR_PRESET_REGISTRY` supplies picker metadata and
+access gates; `FREE_COLOR_NAMES`, `HANDLE_COLOR_NAMES` and `PREMIUM_COLOR_NAMES`
+expose availability groups. See [Theme](./docs/theme.mdx) for defaults,
+controlled app identity, persistence and canonical CSS tokens.
 
-Every palette is generated from a single seed colour by a dependency free colour engine, into the full Material 3 role set for light and dark. A colour a user picks themselves runs through exactly the same path, so a preset is only a fixed seed.
+Presets use the shared colour engine, with authored accent pairings and token
+values where specified, for light and dark. Dynamic seed colours use the same
+role-generation and colour-policy pipeline.
 
 </td>
 </tr>

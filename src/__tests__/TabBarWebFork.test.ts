@@ -65,9 +65,7 @@ const NEUTRAL_AND_WEB_FILES = [
  * a `//` inside a string literal (a URL) survives untouched.
  */
 function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/.*$/gm, '');
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
 }
 
 /** Every module specifier the file actually imports, re-exports or requires. */
@@ -98,7 +96,7 @@ describe('tab-bar platform split', () => {
     // Self-check: if `moduleSpecifiers` breaks, every assertion below would
     // pass vacuously by finding nothing.
     const probe = [
-      "/* a doc comment naming expo-symbols and expo-router */",
+      '/* a doc comment naming expo-symbols and expo-router */',
       "// import { Nope } from 'react-native-screens';",
       "import { A } from 'react-native';",
       "export type { B } from './types';",
@@ -119,7 +117,9 @@ describe('tab-bar platform split', () => {
 
   it('the web progressive blur drops expo-blur for one masked backdrop-filter', () => {
     // Ten stacked BlurViews would be ten composited backdrop passes per frame.
-    expect(moduleSpecifiers(read('progressive-blur/ProgressiveBlur.web.tsx'))).not.toContain('expo-blur');
+    expect(moduleSpecifiers(read('progressive-blur/ProgressiveBlur.web.tsx'))).not.toContain(
+      'expo-blur',
+    );
     expect(moduleSpecifiers(read('progressive-blur/ProgressiveBlur.tsx'))).toContain('expo-blur');
   });
 
@@ -242,7 +242,6 @@ describe('tab-bar published surface', () => {
     expect(listed).not.toContain('./tab-bar/expo-router');
   });
 });
-
 
 it('binds both BottomBar entries to the universal translucent material', () => {
   for (const entry of ['bottom-bar/BottomBar.tsx', 'bottom-bar/BottomBar.web.tsx']) {

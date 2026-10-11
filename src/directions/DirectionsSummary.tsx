@@ -9,18 +9,25 @@ import { AddressRow } from '../address';
 import { RiRouteLine } from '../icons/remix/RiRouteLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { RouteStops } from '../route-stops';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { BloomIconComponent } from '../icons/icon-component';
-import {
-  DIRECTIONS_MODE_ICON,
-  DIRECTIONS_TRAFFIC_TONE,
-} from './constants';
+import { DIRECTIONS_MODE_ICON, DIRECTIONS_TRAFFIC_TONE } from './constants';
 import { DIRECTIONS_MESSAGES } from './messages';
-import { describeRoute, modeLabelFor, resolveDirectionsPaint, trafficLabelFor, type DirectionsPaint } from './shared';
+import {
+  describeRoute,
+  modeLabelFor,
+  resolveDirectionsPaint,
+  trafficLabelFor,
+  type DirectionsPaint,
+} from './shared';
 import { TransitLineBadge } from './TransitLineBadge';
 import type { DirectionsRoute, DirectionsSummaryProps } from './types';
 
@@ -115,7 +122,9 @@ function DirectionsSummaryComponent({
   const alternatesLabel = labels?.alternates ?? messages.otherRoutes;
   const ModeIcon = DIRECTIONS_MODE_ICON[mode];
 
-  const traffic = chosen ? trafficLabelFor(chosen.traffic, chosen.trafficLabel, labels, messages) : null;
+  const traffic = chosen
+    ? trafficLabelFor(chosen.traffic, chosen.trafficLabel, labels, messages)
+    : null;
 
   return (
     <View
@@ -142,7 +151,9 @@ function DirectionsSummaryComponent({
         >
           {modes.map((item) => (
             <SegmentedControlItem key={item} value={item} testID={id(`mode-${item}`)}>
-              <SegmentedControlItemText>{modeLabelFor(item, labels, messages)}</SegmentedControlItemText>
+              <SegmentedControlItemText>
+                {modeLabelFor(item, labels, messages)}
+              </SegmentedControlItemText>
             </SegmentedControlItem>
           ))}
         </SegmentedControl>
@@ -188,10 +199,7 @@ function DirectionsSummaryComponent({
           </View>
 
           {chosen.lines && chosen.lines.length > 0 ? (
-            <View
-              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}
-              testID={id('lines')}
-            >
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }} testID={id('lines')}>
               {chosen.lines.map((line, index) => (
                 <TransitLineBadge
                   key={`${line.name}-${index}`}
@@ -204,7 +212,12 @@ function DirectionsSummaryComponent({
           ) : null}
 
           {chosen.arrival ? (
-            <ReadingLine icon={RiTimeLine} text={chosen.arrival} paint={paint} testID={id('arrival')} />
+            <ReadingLine
+              icon={RiTimeLine}
+              text={chosen.arrival}
+              paint={paint}
+              testID={id('arrival')}
+            />
           ) : null}
           {chosen.via ? (
             <ReadingLine icon={RiRouteLine} text={chosen.via} paint={paint} testID={id('via')} />
@@ -214,11 +227,12 @@ function DirectionsSummaryComponent({
 
       {onStart && chosen ? (
         <Button
-
           size="md"
           leadingIcon={ModeIcon}
           onPress={onStart}
-          testID={id('start')} tone="accent" appearance="solid"
+          testID={id('start')}
+          tone="accent"
+          appearance="solid"
         >
           {labels?.start ?? messages.start}
         </Button>
@@ -231,7 +245,12 @@ function DirectionsSummaryComponent({
           </Text>
           <View role="list" accessibilityLabel={alternatesLabel}>
             {alternates.map((route, index) => {
-              const routeTraffic = trafficLabelFor(route.traffic, route.trafficLabel, labels, messages);
+              const routeTraffic = trafficLabelFor(
+                route.traffic,
+                route.trafficLabel,
+                labels,
+                messages,
+              );
               return (
                 <View key={route.id} role="listitem">
                   <AddressRow
@@ -242,7 +261,8 @@ function DirectionsSummaryComponent({
                     // trailing reading squeezed it until "31 min" truncated to
                     // "31 …" at 390. The badge is what earns the trailing room.
                     subtitle={
-                      [route.via, route.distance, route.arrival].filter(Boolean).join(' · ') || undefined
+                      [route.via, route.distance, route.arrival].filter(Boolean).join(' · ') ||
+                      undefined
                     }
                     icon={DIRECTIONS_MODE_ICON[mode]}
                     badge={

@@ -111,8 +111,14 @@ function JobBoardComponent({
   const emptyDescription = emptyDescriptionProp ?? boardText.emptyDescription;
   const accessibilityLabel = accessibilityLabelProp ?? boardText.list;
   const { messages: vehicleText } = useMessages(VEHICLE_PICKER_MESSAGES);
-  const distanceBands = useMemo(() => distanceBandsProp ?? jobDistanceBands(boardText), [distanceBandsProp, boardText]);
-  const whenBands = useMemo(() => whenBandsProp ?? jobWhenBands(boardText), [whenBandsProp, boardText]);
+  const distanceBands = useMemo(
+    () => distanceBandsProp ?? jobDistanceBands(boardText),
+    [distanceBandsProp, boardText],
+  );
+  const whenBands = useMemo(
+    () => whenBandsProp ?? jobWhenBands(boardText),
+    [whenBandsProp, boardText],
+  );
   const theme = useTheme();
   const ambient = useSurfaceLevel(0);
   const paint = useMemo(
@@ -144,7 +150,10 @@ function JobBoardComponent({
     onChange: onFiltersOpenChange,
   });
 
-  const shown = useMemo(() => sortJobOffers(filterJobOffers(jobs, filter), sort), [jobs, filter, sort]);
+  const shown = useMemo(
+    () => sortJobOffers(filterJobOffers(jobs, filter), sort),
+    [jobs, filter, sort],
+  );
   const active = countActiveJobFilters(filter);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
@@ -250,11 +259,12 @@ function JobBoardComponent({
         {active > 0 ? (
           <View style={{ flexDirection: 'row' }}>
             <Button
-
               size="sm"
               onPress={clear}
               accessibilityLabel={labels.clearFilters}
-              testID={id('clear')} tone="accent" appearance="plain"
+              testID={id('clear')}
+              tone="accent"
+              appearance="plain"
             >
               {labels.clearFilters}
             </Button>
@@ -291,12 +301,9 @@ function JobBoardComponent({
           ) : (
             <View />
           )}
-          <View
-            style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0, gap: 8 }}
-          >
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0, gap: 8 }}>
             {filterRows.length > 0 ? (
               <Button
-
                 size="sm"
                 leadingIcon={RiEqualizerLine}
                 onPress={() => setFiltersOpen(!filtersOpen)}
@@ -311,7 +318,9 @@ function JobBoardComponent({
                     ? `${labels.filtersToggle}, ${labels.filtersActive(active)}`
                     : labels.filtersToggle
                 }
-                testID={id('filters-toggle')} tone="neutral" appearance="outline"
+                testID={id('filters-toggle')}
+                tone="neutral"
+                appearance="outline"
               >
                 {labels.filtersToggle}
               </Button>
@@ -382,10 +391,10 @@ function JobBoardComponent({
         {Array.from({ length: Math.max(1, loadingCount) }, (_unused, index) => (
           <Card
             key={index}
-
             radius="radius-20"
             style={surfaceFillVars(theme.colors.card)}
-            testID={id(`placeholder-${index}`)} appearance="outline"
+            testID={id(`placeholder-${index}`)}
+            appearance="outline"
           >
             <View
               style={{
@@ -448,11 +457,12 @@ function JobBoardComponent({
         {emptyAction ??
           (active > 0 ? (
             <Button
-
               size="md"
               onPress={clear}
               accessibilityLabel={labels.clearFilters}
-              testID={id('empty-clear')} tone="neutral" appearance="outline"
+              testID={id('empty-clear')}
+              tone="neutral"
+              appearance="outline"
             >
               {labels.clearFilters}
             </Button>

@@ -51,7 +51,11 @@ afterEach(() => {
 
 function mount(ui: React.ReactElement) {
   act(() => {
-    root.render(<BloomThemeProvider mode="light" colorPreset="teal">{ui}</BloomThemeProvider>);
+    root.render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {ui}
+      </BloomThemeProvider>,
+    );
   });
 }
 
@@ -87,7 +91,7 @@ describe('ComposerPill — Enter on web', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('leaves an input method\'s Enter to the input method', () => {
+  it("leaves an input method's Enter to the input method", () => {
     const onSubmit = jest.fn();
     mount(<ComposerPill defaultValue="hi" onSubmit={onSubmit} />);
 
@@ -153,7 +157,7 @@ describe('ComposerPill — host slots', () => {
    * because that is where the thumb already is — but only while there is
    * nothing to send, and never over a stop.
    */
-  it('draws the host\'s empty action in place of send on an empty draft', () => {
+  it("draws the host's empty action in place of send on an empty draft", () => {
     mount(<ComposerPill emptyAction={<button type="button" data-testid="call" />} />);
 
     expect(container.querySelector('[data-testid="call"]')).not.toBeNull();
@@ -161,7 +165,9 @@ describe('ComposerPill — host slots', () => {
   });
 
   it('gives the slot back to send once there is something to send', () => {
-    mount(<ComposerPill defaultValue="hi" emptyAction={<button type="button" data-testid="call" />} />);
+    mount(
+      <ComposerPill defaultValue="hi" emptyAction={<button type="button" data-testid="call" />} />,
+    );
 
     expect(container.querySelector('[data-testid="call"]')).toBeNull();
     expect(container.querySelector('[aria-label="Send message"]')).not.toBeNull();
@@ -169,7 +175,11 @@ describe('ComposerPill — host slots', () => {
 
   it('lets a stop win over the empty action', () => {
     mount(
-      <ComposerPill busy onStop={() => {}} emptyAction={<button type="button" data-testid="call" />} />,
+      <ComposerPill
+        busy
+        onStop={() => {}}
+        emptyAction={<button type="button" data-testid="call" />}
+      />,
     );
 
     expect(container.querySelector('[data-testid="call"]')).toBeNull();

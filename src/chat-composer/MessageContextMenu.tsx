@@ -9,4 +9,12 @@ import {
 import { ReactionPicker } from './ReactionPicker';
 import { createMessageContextMenu } from './create-message-context-menu';
 
-export const MessageContextMenu = createMessageContextMenu({ DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, ReactionPicker });
+export const MessageContextMenu = createMessageContextMenu({
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+  ReactionPicker,
+});

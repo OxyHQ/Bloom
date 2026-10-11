@@ -91,7 +91,10 @@ export function filterSuggestions(
   for (const entry of suggestions) {
     const suggestion = toSuggestion(entry);
     if (isDuplicate(committed, suggestion.value)) continue;
-    if (q !== '' && !`${suggestion.value} ${suggestion.label ?? ''}`.toLocaleLowerCase().includes(q)) {
+    if (
+      q !== '' &&
+      !`${suggestion.value} ${suggestion.label ?? ''}`.toLocaleLowerCase().includes(q)
+    ) {
       continue;
     }
     out.push(suggestion);

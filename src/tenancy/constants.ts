@@ -45,7 +45,10 @@ export const RENT_PAYMENT_STATUS: Record<RentPaymentStatus, StatusInfo> = {
 };
 
 /** `MaintenanceRequestCard`'s category icon and word. */
-export const MAINTENANCE_CATEGORY: Record<MaintenanceCategory, { icon: HousingIcon; label: string }> = {
+export const MAINTENANCE_CATEGORY: Record<
+  MaintenanceCategory,
+  { icon: HousingIcon; label: string }
+> = {
   plumbing: { icon: RiDropLine, label: EN.maintenanceCategory.plumbing },
   electrical: { icon: RiFlashlightLine, label: EN.maintenanceCategory.electrical },
   appliances: { icon: RiFridgeLine, label: EN.maintenanceCategory.appliances },
@@ -62,7 +65,12 @@ export const MAINTENANCE_PRIORITY: Record<MaintenancePriority, StatusInfo> = {
 };
 
 /** The stages in order, with the status badge each draws while it is the latest. */
-export const MAINTENANCE_STAGES: readonly MaintenanceStage[] = ['reported', 'acknowledged', 'scheduled', 'resolved'];
+export const MAINTENANCE_STAGES: readonly MaintenanceStage[] = [
+  'reported',
+  'acknowledged',
+  'scheduled',
+  'resolved',
+];
 
 export const MAINTENANCE_STAGE: Record<MaintenanceStage, StatusInfo> = {
   reported: { tone: 'warning', label: EN.maintenanceStage.reported },

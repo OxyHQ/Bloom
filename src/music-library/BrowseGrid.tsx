@@ -54,13 +54,22 @@ function Tile({
   const resolver = useImageResolver();
   const [hovered, setHovered] = useState(false);
   const paint = useMemo(
-    () => browseTilePaint(item.color, { background: libraryPaint.selected, text: libraryPaint.text }),
+    () =>
+      browseTilePaint(item.color, { background: libraryPaint.selected, text: libraryPaint.text }),
     [item.color, libraryPaint],
   );
   const height = Math.round(width / TILE_RATIO);
   const imageSize = Math.round(height * 0.4 * 1.15);
-  const uri = item.image ? (isImageUrl(item.image) ? item.image : resolver?.(item.image) ?? undefined) : undefined;
-  const hoverFill = mixColor(paint.background, paint.text === TILE_LIGHT_TEXT ? '#000000' : '#ffffff', 0.12);
+  const uri = item.image
+    ? isImageUrl(item.image)
+      ? item.image
+      : (resolver?.(item.image) ?? undefined)
+    : undefined;
+  const hoverFill = mixColor(
+    paint.background,
+    paint.text === TILE_LIGHT_TEXT ? '#000000' : '#ffffff',
+    0.12,
+  );
 
   const style: WebCssStyle = {
     width,

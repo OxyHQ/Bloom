@@ -104,12 +104,49 @@ function rowIds(prefix = 'lib'): string[] {
 // ---------------------------------------------------------------------------
 
 const ITEMS: LibraryEntry[] = [
-  { id: 'a', title: 'Night Drive', kind: 'playlist', subtitle: 'Maya', addedAt: 10, lastPlayedAt: 500 },
-  { id: 'b', title: 'Lumen Vale', kind: 'artist', addedAt: 40, lastPlayedAt: 300, downloaded: true },
+  {
+    id: 'a',
+    title: 'Night Drive',
+    kind: 'playlist',
+    subtitle: 'Maya',
+    addedAt: 10,
+    lastPlayedAt: 500,
+  },
+  {
+    id: 'b',
+    title: 'Lumen Vale',
+    kind: 'artist',
+    addedAt: 40,
+    lastPlayedAt: 300,
+    downloaded: true,
+  },
   { id: 'c', title: 'Écho Park', kind: 'album', subtitle: 'Zed Orchard', addedAt: 30 },
-  { id: 'd', title: 'alpine hours', kind: 'podcast', subtitle: 'Ines Marlow', addedAt: 20, lastPlayedAt: 900, downloaded: true },
-  { id: 'e', title: 'Workouts', kind: 'folder', meta: 'Folder · 4 playlists', addedAt: 5, lastPlayedAt: 100, pinned: true },
-  { id: 'f', title: 'The Long Winter Road', kind: 'audiobook', subtitle: 'Oona Beckett', creator: 'Beckett, Oona', addedAt: 50 },
+  {
+    id: 'd',
+    title: 'alpine hours',
+    kind: 'podcast',
+    subtitle: 'Ines Marlow',
+    addedAt: 20,
+    lastPlayedAt: 900,
+    downloaded: true,
+  },
+  {
+    id: 'e',
+    title: 'Workouts',
+    kind: 'folder',
+    meta: 'Folder · 4 playlists',
+    addedAt: 5,
+    lastPlayedAt: 100,
+    pinned: true,
+  },
+  {
+    id: 'f',
+    title: 'The Long Winter Road',
+    kind: 'audiobook',
+    subtitle: 'Oona Beckett',
+    creator: 'Beckett, Oona',
+    addedAt: 50,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -128,8 +165,13 @@ describe('filterLibraryItems', () => {
   });
 
   it('combines the kind filter and Downloaded with AND', () => {
-    expect(filterLibraryItems(ITEMS, { downloadedOnly: true }).map((i) => i.id)).toEqual(['b', 'd']);
-    expect(filterLibraryItems(ITEMS, { filter: 'podcasts', downloadedOnly: true }).map((i) => i.id)).toEqual(['d']);
+    expect(filterLibraryItems(ITEMS, { downloadedOnly: true }).map((i) => i.id)).toEqual([
+      'b',
+      'd',
+    ]);
+    expect(
+      filterLibraryItems(ITEMS, { filter: 'podcasts', downloadedOnly: true }).map((i) => i.id),
+    ).toEqual(['d']);
     expect(filterLibraryItems(ITEMS, { filter: 'albums', downloadedOnly: true })).toEqual([]);
   });
 
@@ -151,11 +193,25 @@ describe('sortLibraryItems', () => {
   });
 
   it('recents: last played first, never played last in input order', () => {
-    expect(sortLibraryItems(ITEMS, 'recents').map((i) => i.id)).toEqual(['e', 'd', 'a', 'b', 'c', 'f']);
+    expect(sortLibraryItems(ITEMS, 'recents').map((i) => i.id)).toEqual([
+      'e',
+      'd',
+      'a',
+      'b',
+      'c',
+      'f',
+    ]);
   });
 
   it('recently added: newest addedAt first', () => {
-    expect(sortLibraryItems(ITEMS, 'recently-added').map((i) => i.id)).toEqual(['e', 'f', 'b', 'c', 'd', 'a']);
+    expect(sortLibraryItems(ITEMS, 'recently-added').map((i) => i.id)).toEqual([
+      'e',
+      'f',
+      'b',
+      'c',
+      'd',
+      'a',
+    ]);
   });
 
   it('alphabetical: case- and accent-insensitive', () => {
@@ -171,7 +227,14 @@ describe('sortLibraryItems', () => {
 
   it('creator: by creator, else subtitle, then title', () => {
     // '' (b) < 'Beckett, Oona' (f) < 'Ines Marlow' (d) < 'Maya' (a) < 'Zed Orchard' (c)
-    expect(sortLibraryItems(ITEMS, 'creator').map((i) => i.id)).toEqual(['e', 'b', 'f', 'd', 'a', 'c']);
+    expect(sortLibraryItems(ITEMS, 'creator').map((i) => i.id)).toEqual([
+      'e',
+      'b',
+      'f',
+      'd',
+      'a',
+      'c',
+    ]);
   });
 
   it('is stable and never mutates its input', () => {
@@ -205,7 +268,17 @@ describe('helpers', () => {
 
   it('gives every browse tile a title that clears 4.5:1', () => {
     const fallback = { background: '#eeeeee', text: '#111111' };
-    for (const color of ['#1f6f5c', '#b8d65a', '#f4c8d8', '#777777', '#767676', '#f2d15c', '#000000', '#ffffff', 'rgb(29, 43, 83)']) {
+    for (const color of [
+      '#1f6f5c',
+      '#b8d65a',
+      '#f4c8d8',
+      '#777777',
+      '#767676',
+      '#f2d15c',
+      '#000000',
+      '#ffffff',
+      'rgb(29, 43, 83)',
+    ]) {
       const paint = browseTilePaint(color, fallback);
       expect([TILE_LIGHT_TEXT, TILE_DARK_TEXT]).toContain(paint.text);
       expect(contrastRatio(paint.background, paint.text)).toBeGreaterThanOrEqual(4.5);
@@ -222,7 +295,14 @@ describe('helpers', () => {
 });
 
 function libraryKind() {
-  return { playlist: 'Playlist', artist: 'Artist', album: 'Album', podcast: 'Podcast', audiobook: 'Audiobook', folder: 'Folder' };
+  return {
+    playlist: 'Playlist',
+    artist: 'Artist',
+    album: 'Album',
+    podcast: 'Podcast',
+    audiobook: 'Audiobook',
+    folder: 'Folder',
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -231,10 +311,18 @@ function libraryKind() {
 
 describe('LibraryItem', () => {
   it('is a button named by the whole row, flags included', () => {
-    mount(<LibraryItem item={{ ...ITEMS[0]!, pinned: true, downloaded: true }} nowPlaying testID="row" />);
+    mount(
+      <LibraryItem
+        item={{ ...ITEMS[0]!, pinned: true, downloaded: true }}
+        nowPlaying
+        testID="row"
+      />,
+    );
     const row = byTestId('row');
     expect(row.getAttribute('role')).toBe('button');
-    expect(row.getAttribute('aria-label')).toBe('Night Drive, Playlist · Maya, Pinned, Downloaded, Now playing');
+    expect(row.getAttribute('aria-label')).toBe(
+      'Night Drive, Playlist · Maya, Pinned, Downloaded, Now playing',
+    );
     expect(container.querySelector('[role="img"][aria-label="Now playing"]')).not.toBeNull();
   });
 
@@ -256,12 +344,16 @@ describe('LibraryItem', () => {
     press('row');
     expect(onPress).toHaveBeenCalledWith(ITEMS[1]);
     mount(<LibraryItem item={ITEMS[0]!} testID="row" />);
-    expect(byTestId('row-cover').style.borderTopLeftRadius || byTestId('row-cover').style.borderRadius).toBe('4px');
+    expect(
+      byTestId('row-cover').style.borderTopLeftRadius || byTestId('row-cover').style.borderRadius,
+    ).toBe('4px');
   });
 
   it('turns the playing title accent', () => {
     mount(<LibraryItem item={ITEMS[0]!} nowPlaying testID="row" />);
-    const title = Array.from(byTestId('row').querySelectorAll('div')).find((el) => el.textContent === 'Night Drive' && el.children.length === 0);
+    const title = Array.from(byTestId('row').querySelectorAll('div')).find(
+      (el) => el.textContent === 'Night Drive' && el.children.length === 0,
+    );
     expect(title?.style.color).toBe(normalise(resolveMusicLibraryPaint(theme).accent));
   });
 });
@@ -305,7 +397,15 @@ describe('LibraryPanel', () => {
 
   it('reports but does not change a controlled filter and sort', () => {
     const onFilterChange = jest.fn();
-    mount(<LibraryPanel items={ITEMS} filter="playlists" onFilterChange={onFilterChange} sort="alphabetical" testID="lib" />);
+    mount(
+      <LibraryPanel
+        items={ITEMS}
+        filter="playlists"
+        onFilterChange={onFilterChange}
+        sort="alphabetical"
+        testID="lib"
+      />,
+    );
     expect(rowIds()).toEqual(['e', 'a']);
     press('lib-filter-albums');
     expect(onFilterChange).toHaveBeenCalledWith('albums');
@@ -362,11 +462,21 @@ describe('LibraryPanel', () => {
 
   it('collapses to a 72 rail of named covers', () => {
     const onCollapsedChange = jest.fn();
-    mount(<LibraryPanel items={ITEMS} collapsed onCollapsedChange={onCollapsedChange} nowPlayingId="a" testID="lib" />);
+    mount(
+      <LibraryPanel
+        items={ITEMS}
+        collapsed
+        onCollapsedChange={onCollapsedChange}
+        nowPlayingId="a"
+        testID="lib"
+      />,
+    );
     expect(byTestId('lib').style.width).toBe('72px');
     expect(query('lib-filter-artists')).toBeNull();
     expect(rowIds()).toEqual(['e', 'd', 'a', 'b', 'c', 'f']);
-    expect(byTestId('lib-item-a').getAttribute('aria-label')).toBe('Night Drive, Playlist · Maya, Now playing');
+    expect(byTestId('lib-item-a').getAttribute('aria-label')).toBe(
+      'Night Drive, Playlist · Maya, Now playing',
+    );
     expect(byTestId('lib-rail-toggle').getAttribute('aria-label')).toBe('Open Your Library');
     press('lib-rail-toggle');
     expect(onCollapsedChange).toHaveBeenCalledWith(false);
@@ -413,12 +523,22 @@ describe('SearchField', () => {
 
   it('draws browse as a toggle with aria-pressed', () => {
     const onBrowsePress = jest.fn();
-    mount(<SearchField value="" onChangeText={() => {}} onBrowsePress={onBrowsePress} testID="s" />);
+    mount(
+      <SearchField value="" onChangeText={() => {}} onBrowsePress={onBrowsePress} testID="s" />,
+    );
     expect(byTestId('s-browse').getAttribute('aria-label')).toBe('Browse');
     expect(byTestId('s-browse').getAttribute('aria-pressed')).toBe('false');
     press('s-browse');
     expect(onBrowsePress).toHaveBeenCalled();
-    mount(<SearchField value="" onChangeText={() => {}} onBrowsePress={onBrowsePress} browseActive testID="s" />);
+    mount(
+      <SearchField
+        value=""
+        onChangeText={() => {}}
+        onBrowsePress={onBrowsePress}
+        browseActive
+        testID="s"
+      />,
+    );
     expect(byTestId('s-browse').getAttribute('aria-pressed')).toBe('true');
   });
 });
@@ -449,11 +569,15 @@ describe('SearchResultTabs', () => {
     expect(onValueChange).toHaveBeenCalledWith('artists');
     act(() => byTestId('t-all').focus());
     act(() => {
-      byTestId('t-all').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      byTestId('t-all').dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      );
     });
     expect(document.activeElement).toBe(byTestId('t-songs'));
     act(() => {
-      byTestId('t-songs').dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+      byTestId('t-songs').dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'End', bubbles: true }),
+      );
     });
     expect(document.activeElement).toBe(byTestId('t-artists'));
   });
@@ -462,13 +586,25 @@ describe('SearchResultTabs', () => {
 describe('TopResultCard', () => {
   it('names the card and its separate play button', () => {
     const onPlayPress = jest.fn();
-    mount(<TopResultCard title="Lumen Vale" kind="artist" subtitle="4.2M monthly listeners" onPlayPress={onPlayPress} testID="top" />);
-    expect(byTestId('top-card').getAttribute('aria-label')).toBe('Lumen Vale, Artist, 4.2M monthly listeners');
+    mount(
+      <TopResultCard
+        title="Lumen Vale"
+        kind="artist"
+        subtitle="4.2M monthly listeners"
+        onPlayPress={onPlayPress}
+        testID="top"
+      />,
+    );
+    expect(byTestId('top-card').getAttribute('aria-label')).toBe(
+      'Lumen Vale, Artist, 4.2M monthly listeners',
+    );
     expect(byTestId('top-play').getAttribute('aria-label')).toBe('Play Lumen Vale');
     expect(byTestId('top-card').contains(byTestId('top-play'))).toBe(false);
     press('top-play');
     expect(onPlayPress).toHaveBeenCalled();
-    expect(byTestId('top-card').style.borderTopLeftRadius || byTestId('top-card').style.borderRadius).toBe('16px');
+    expect(
+      byTestId('top-card').style.borderTopLeftRadius || byTestId('top-card').style.borderRadius,
+    ).toBe('16px');
   });
 
   it('has no play button without onPlayPress, and takes a translated kind', () => {
@@ -488,9 +624,19 @@ describe('RecentSearches', () => {
     const onRemove = jest.fn();
     const onItemPress = jest.fn();
     const onClearAll = jest.fn();
-    mount(<RecentSearches items={RECENTS} onRemove={onRemove} onItemPress={onItemPress} onClearAll={onClearAll} testID="rs" />);
+    mount(
+      <RecentSearches
+        items={RECENTS}
+        onRemove={onRemove}
+        onItemPress={onItemPress}
+        onClearAll={onClearAll}
+        testID="rs"
+      />,
+    );
     expect(container.querySelectorAll('[role="listitem"]')).toHaveLength(2);
-    expect(byTestId('rs-r2-open').getAttribute('aria-label')).toBe('Paper Moons, Album · Lumen Vale');
+    expect(byTestId('rs-r2-open').getAttribute('aria-label')).toBe(
+      'Paper Moons, Album · Lumen Vale',
+    );
     expect(byTestId('rs-r2-remove').getAttribute('aria-label')).toBe('Remove Paper Moons');
     press('rs-r2-remove');
     expect(onRemove).toHaveBeenCalledWith(RECENTS[1]);
@@ -521,7 +667,9 @@ describe('BrowseGrid', () => {
     expect(jazz.getAttribute('aria-label')).toBe('Jazz');
     expect(jazz.style.backgroundColor).toBe(normalise('#f2d15c'));
     expect((jazz.firstElementChild as HTMLElement).style.color).toBe(normalise(TILE_DARK_TEXT));
-    expect((byTestId('bg-sleep').firstElementChild as HTMLElement).style.color).toBe(normalise(TILE_LIGHT_TEXT));
+    expect((byTestId('bg-sleep').firstElementChild as HTMLElement).style.color).toBe(
+      normalise(TILE_LIGHT_TEXT),
+    );
     press('bg-sleep');
     expect(onItemPress).toHaveBeenCalledWith(tiles[1]);
     expect(container.querySelector('[role="heading"]')?.textContent).toBe('Browse all');

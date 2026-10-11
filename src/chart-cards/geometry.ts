@@ -147,14 +147,23 @@ export function barPositions(
   // re-centre what the rounding moved: the first bar stays at the gap.
   if (size > 1) size = Math.round(size);
   size = Math.max(0, size);
-  return Array.from({ length: seriesCount }, (_, i) => ({ offset: offset + i * (size + gap), size }));
+  return Array.from({ length: seriesCount }, (_, i) => ({
+    offset: offset + i * (size + gap),
+    size,
+  }));
 }
 
 /**
  * recharts `Rectangle` path with a `[r, r, 0, 0]` radius — rounded top corners,
  * square base; the radius is clamped to half the bar's width and height.
  */
-export function topRoundedBarPath(x: number, y: number, width: number, height: number, radius: number): string {
+export function topRoundedBarPath(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+): string {
   if (width <= 0 || height <= 0) return '';
   const r = Math.min(radius, width / 2, height / 2);
   const f = (n: number) => clean(n);
@@ -209,12 +218,13 @@ export function monotoneXPath(points: readonly Point[]): string {
     const s0 = (p1.y - p0.y) / (h0 || (h1 < 0 ? -0 : 0));
     const s1 = (p2.y - p1.y) / (h1 || (h0 < 0 ? -0 : 0));
     const p = (s0 * h1 + s1 * h0) / (h0 + h1);
-    tangents[i] = (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
+    tangents[i] =
+      (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
   }
   // d3's `slope2` for the end points.
   const slope2 = (a: Point, b: Point, t: number) => {
     const h = b.x - a.x;
-    return h ? (3 * (b.y - a.y) / h - t) / 2 : t;
+    return h ? ((3 * (b.y - a.y)) / h - t) / 2 : t;
   };
   tangents[0] = slope2(points[0]!, points[1]!, tangents[1]!);
   tangents[n - 1] = slope2(points[n - 2]!, points[n - 1]!, tangents[n - 2]!);
@@ -256,9 +266,18 @@ export interface PlacedTick {
   tickCoord: number;
 }
 
-function isVisible(sign: number, position: number, size: number, start: number, end: number): boolean {
+function isVisible(
+  sign: number,
+  position: number,
+  size: number,
+  start: number,
+  end: number,
+): boolean {
   if (sign * position < sign * start || sign * position > sign * end) return false;
-  return sign * (position - (sign * size) / 2 - start) >= 0 && sign * (position + (sign * size) / 2 - end) <= 0;
+  return (
+    sign * (position - (sign * size) / 2 - start) >= 0 &&
+    sign * (position + (sign * size) / 2 - end) <= 0
+  );
 }
 
 /**
@@ -333,12 +352,18 @@ export type ChartDeltaTone = 'positive' | 'negative' | 'neutral';
  * `describeDelta` for the dashboard chart cards: percent change to
  * one decimal, `+` on a rise, `New` with nothing to compare against.
  */
-export function describeDelta(current: number, previous: number): { label: string; tone: ChartDeltaTone } {
+export function describeDelta(
+  current: number,
+  previous: number,
+): { label: string; tone: ChartDeltaTone } {
   if (previous === 0) return { label: 'New', tone: 'neutral' };
   const change = ((current - previous) / previous) * 100;
   const rounded = Math.round(change * 10) / 10;
   if (rounded === 0) return { label: '0%', tone: 'neutral' };
-  return { label: `${rounded > 0 ? '+' : ''}${rounded}%`, tone: rounded > 0 ? 'positive' : 'negative' };
+  return {
+    label: `${rounded > 0 ? '+' : ''}${rounded}%`,
+    tone: rounded > 0 ? 'positive' : 'negative',
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -351,10 +376,17 @@ function niceStep(roughStep: number, correction: number): number {
   const digits = digitCount(roughStep);
   const digitValue = 10 ** digits;
   const scale = digits !== 1 ? 0.05 : 0.1;
-  return clean(clean((Math.ceil(clean(roughStep / digitValue / scale)) + correction) * scale) * digitValue);
+  return clean(
+    clean((Math.ceil(clean(roughStep / digitValue / scale)) + correction) * scale) * digitValue,
+  );
 }
 
-function calculateStep(min: number, max: number, tickCount: number, correction: number): { step: number; tickMin: number; tickMax: number } {
+function calculateStep(
+  min: number,
+  max: number,
+  tickCount: number,
+  correction: number,
+): { step: number; tickMin: number; tickMax: number } {
   if (!Number.isFinite((max - min) / (tickCount - 1))) return { step: 0, tickMin: 0, tickMax: 0 };
   const step = niceStep((max - min) / (tickCount - 1), correction);
   let middle: number;
@@ -395,7 +427,8 @@ export function niceTicks(min: number, max: number, tickCount: number): number[]
   if (step <= 0) return [lo, hi];
   const values: number[] = [];
   const end = tickMax + 0.1 * step;
-  for (let i = 0, v = tickMin; v < end && i < 100000; i++, v = clean(tickMin + step * i)) values.push(v);
+  for (let i = 0, v = tickMin; v < end && i < 100000; i++, v = clean(tickMin + step * i))
+    values.push(v);
   return values;
 }
 
@@ -423,9 +456,14 @@ export interface StackBand {
  * `stackOrderNone`). `expand` normalises every category to a 0–1 total — the
  * 100% chart. A category whose total is 0 stays at 0.
  */
-export function stackSeries(values: readonly (readonly number[])[], offset: StackOffset = 'none'): StackBand[] {
+export function stackSeries(
+  values: readonly (readonly number[])[],
+  offset: StackOffset = 'none',
+): StackBand[] {
   const count = values.reduce((n, s) => Math.max(n, s.length), 0);
-  const totals = Array.from({ length: count }, (_, i) => values.reduce((sum, s) => sum + (s[i] ?? 0), 0));
+  const totals = Array.from({ length: count }, (_, i) =>
+    values.reduce((sum, s) => sum + (s[i] ?? 0), 0),
+  );
   const running = new Array<number>(count).fill(0);
   return values.map((series) => {
     const lower: number[] = [];
@@ -462,11 +500,17 @@ export function curvePath(points: readonly Point[], shape: CurveShape = 'monoton
  * curve, a straight drop to the base's last point, then the base curve drawn
  * back to the start and closed. A flat base is the plain `monotoneXAreaPath`.
  */
-export function areaBandPath(top: readonly Point[], base: readonly Point[], shape: CurveShape = 'monotone'): string {
+export function areaBandPath(
+  top: readonly Point[],
+  base: readonly Point[],
+  shape: CurveShape = 'monotone',
+): string {
   if (top.length === 0) return '';
   const upper = curvePath(top, shape);
   const reversed = [...base].reverse();
-  const lower = curvePath(reversed, shape).replace(/^M[^A-Za-z]*/, '').replace(/Z$/, '');
+  const lower = curvePath(reversed, shape)
+    .replace(/^M[^A-Za-z]*/, '')
+    .replace(/Z$/, '');
   const last = reversed[0];
   if (!last) return `${upper}Z`;
   return `${upper}L${r3(last.x)},${r3(last.y)}${lower}Z`;

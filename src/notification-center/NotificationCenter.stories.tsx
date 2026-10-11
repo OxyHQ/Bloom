@@ -152,9 +152,16 @@ export const MentionsTab: Story = {
 export const Playground: StoryObj<typeof NotificationCenter> = {
   args: { notifications: DEMO_NOTIFICATIONS, title: 'Notifications', tab: 'all' },
   parameters: { controls: { disable: false, include: ['title', 'tab'] } },
-  argTypes: { title: { control: 'text' }, tab: { control: 'select', options: ['all', 'mentions', 'system'] } },
+  argTypes: {
+    title: { control: 'text' },
+    tab: { control: 'select', options: ['all', 'mentions', 'system'] },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 440, maxWidth: '100%' }}><NotificationCenter {...args} onTabChange={next => updateArgs({ tab: next })} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <NotificationCenter {...args} onTabChange={(next) => updateArgs({ tab: next })} />
+      </View>
+    );
   },
 };

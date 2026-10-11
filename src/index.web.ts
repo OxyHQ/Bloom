@@ -21,6 +21,9 @@
 //       · `./zoomable-media-gallery` and `./media-flight` — both reach
 //         `expo-image` through the shared `media-flight/MediaSurface`.
 //     Gate: `src/__tests__/root-barrel-graph.test.ts`.
+//     `./video-view` links no package, but its DECLARATIONS name the optional
+//     peer `expo-video`'s own types; on this barrel every app's typecheck
+//     would load them, including the apps that never installed it.
 //
 //  2. Its exports are generic, collision-prone names. Those come in as a
 //     NAMESPACE (the same rule that makes `Icons`/`Skeleton`/`Grid` namespaces),
@@ -174,13 +177,22 @@ export {
   useClaimTopEdge,
   useTopEdgeInset,
   ScrollOffsetProvider,
+  ScrollMetricsProvider,
+  useScrollMetricsBinding,
+  useAnimatedScrollMetricsBinding,
+  ScrollArea,
   useScrollOffset,
   ScreenScope,
   HeaderDockProvider,
   useHeaderDockInset,
   StickySection,
 } from './layout';
-export type { StickySectionProps } from './layout';
+export type {
+  StickySectionProps,
+  ScrollMetricsBindingOptions,
+  AnimatedScrollMetricsBindingOptions,
+  ScrollAreaProps,
+} from './layout';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabSize } from './fab/index.web';
 export { FrostedIconButton } from './frosted-icon-button/index.web';
@@ -194,7 +206,14 @@ export type { CarouselProps, CarouselItemProps } from './carousel';
 export { FileUpload, formatFileSize } from './file-upload';
 export type { FileUploadFile, FileUploadLabels, FileUploadProps } from './file-upload';
 export { SocialButton, SOCIAL_PROVIDERS } from './social-button/index.web';
-export type { SocialBrand, SocialBrandConfig, SocialButtonAppearance, SocialButtonProps, SocialButtonSize, SocialProvider } from './social-button/index.web';
+export type {
+  SocialBrand,
+  SocialBrandConfig,
+  SocialButtonAppearance,
+  SocialButtonProps,
+  SocialButtonSize,
+  SocialProvider,
+} from './social-button/index.web';
 export * from './notification';
 export * from './announcement';
 export * from './data-table';
@@ -209,6 +228,7 @@ export * from './patient-info-card';
 export * from './sidebar';
 export * from './app-shell/index.web';
 export * from './page-header';
+export * from './page-footer';
 export * from './notification-center';
 export * from './theme-toggle';
 export * from './settings-modal';
@@ -224,11 +244,13 @@ export * from './task-list';
 export * from './agent-chat/index.web';
 export * from './ai-chat/index.web';
 export * from './radio-indicator';
-export { ErrorBoundary } from './error-boundary';
+export { ErrorBoundary, PanelErrorBoundary } from './error-boundary';
 export type {
   ErrorBoundaryProps,
   ErrorBoundaryFallback,
   ErrorBoundaryFallbackContext,
+  PanelErrorBoundaryOptions,
+  PanelErrorBoundaryProps,
 } from './error-boundary';
 export * as Shapes from './shapes';
 export * from './avatar';
@@ -257,7 +279,12 @@ export { IconCircle } from './icon-circle';
 // up to two actions. A base family — twelve components had each drawn their own
 // version of this block, at five paddings and under six different prop names.
 export { EmptyState } from './empty-state';
-export { EMPTY_STATE_ACTION_GAP, EMPTY_STATE_GEOMETRY, joinEmptyStateName, resolveEmptyStatePaint } from './empty-state';
+export {
+  EMPTY_STATE_ACTION_GAP,
+  EMPTY_STATE_GEOMETRY,
+  joinEmptyStateName,
+  resolveEmptyStatePaint,
+} from './empty-state';
 export type {
   EmptyStateAction,
   EmptyStateGeometry,
@@ -295,7 +322,14 @@ export { SubtleHover } from './subtle-hover';
 export type { SubtleHoverProps } from './subtle-hover';
 
 // Motion presets (Reanimated enter/exit + directional screen transition)
-export { ScaleAndFadeIn, ScaleAndFadeOut, ShrinkAndPop, ScreenTransition, MOTION_RECIPES, animateMotion } from './motion/index.web';
+export {
+  ScaleAndFadeIn,
+  ScaleAndFadeOut,
+  ShrinkAndPop,
+  ScreenTransition,
+  MOTION_RECIPES,
+  animateMotion,
+} from './motion/index.web';
 export type { ScreenTransitionProps, ScreenTransitionDirection, MotionIntent } from './motion/index.web';
 export { AnimatedCheck } from './animated-check';
 export type { AnimatedCheckProps, AnimatedCheckRef } from './animated-check';
@@ -323,7 +357,7 @@ export type { InputGroupProps, InputGroupAddonProps } from './input-group';
 export { RangeSlider, Slider } from './slider';
 export type { RangeSliderProps, SliderProps } from './slider';
 export { Stepper, StepperRow } from './stepper';
-export type { StepperProps, StepperRowProps, StepperSize } from './stepper';
+export type { StepperProps, StepperRowProps, StepperSize, StepperAppearance } from './stepper';
 
 // Bottom sheet
 export { BottomSheet } from './bottom-sheet/index.web';
@@ -332,7 +366,7 @@ export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet/index.web'
 // Data display
 export * from './card';
 export * from './badge';
-export { Rating, RatingBar, RatingInput } from './rating';
+export { Rating, RatingBar, RatingInput } from './rating/index.web';
 export type {
   RatingBarProps,
   RatingCountStyle,
@@ -340,7 +374,7 @@ export type {
   RatingInputSize,
   RatingProps,
   RatingSize,
-} from './rating';
+} from './rating/index.web';
 export {
   ExplicitBadge,
   formatDuration,
@@ -1419,7 +1453,11 @@ export type {
 // thing is, what it costs, where it is going, and the stops on the way. Shared
 // on purpose: a parcel, a food order and a booking are the same four questions.
 export { OrderStatusBar, OrderStatusTimeline } from './order-status';
-export { ORDER_STATUS_GEOMETRY, ORDER_STATUS_STATE_LABELS, resolveOrderStatusPaint } from './order-status';
+export {
+  ORDER_STATUS_GEOMETRY,
+  ORDER_STATUS_STATE_LABELS,
+  resolveOrderStatusPaint,
+} from './order-status';
 export type {
   OrderStatusBarProps,
   OrderStatusBarVariant,
@@ -1433,7 +1471,11 @@ export type {
   OrderStatusTimelineProps,
 } from './order-status';
 export { PriceSummary, PriceSummaryLine } from './price-breakdown';
-export { PRICE_PENDING_PLACEHOLDER, PRICE_STATE_LABELS, resolvePricePaint } from './price-breakdown';
+export {
+  PRICE_PENDING_PLACEHOLDER,
+  PRICE_STATE_LABELS,
+  resolvePricePaint,
+} from './price-breakdown';
 export type {
   PriceLine,
   PriceLineState,
@@ -1967,14 +2009,21 @@ export * from './aspect-ratio';
 export * from './tabs';
 export * from './checkbox';
 export * from './radio';
-export * from './accordion';
+export * from './accordion/index.web';
 export { LinkPreviewCard } from './link-preview';
 export type { LinkPreviewCardProps } from './link-preview';
 
 // Stat / profile widgets
 export { CompositionBar } from './composition-bar';
 export type { CompositionBarProps, CompositionCategory } from './composition-bar';
-export { Meter, MeterRing, StatBar, meterFraction, meterValue, resolveMeterColors } from './stat-bar';
+export {
+  Meter,
+  MeterRing,
+  StatBar,
+  meterFraction,
+  meterValue,
+  resolveMeterColors,
+} from './stat-bar/index.web';
 export type {
   AnyMeterProps,
   MeterColors,
@@ -1985,7 +2034,7 @@ export type {
   StatBarProgressProps,
   StatBarSplitProps,
   StatBarVariant,
-} from './stat-bar';
+} from './stat-bar/index.web';
 export { ActivityHeatmap, bucketByDay } from './activity-heatmap';
 export type { ActivityHeatmapProps, ActivityHeatmapDay } from './activity-heatmap';
 
@@ -2140,3 +2189,7 @@ export * from './agent-avatar';
 export * from './agent-creator/index.web';
 export * from './project-board/index.web';
 export * from './multi-agent-chat/index.web';
+
+export * from './viewport/index.web';
+
+export * from './collapsible/index.web';

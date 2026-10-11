@@ -24,16 +24,28 @@ const CSS = `
 ${surfaceMaterialCss('.bloom-surface--material', 'var(--bloom-surface-fill)')}
 `;
 
-const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponent({
-  children, fill, radius, cornerCurve = SURFACE_SHAPES.panel.curve,
-  style, className, accessibilityLabel, testID, ...hostProps
-}, ref) {
+const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponent(
+  {
+    children,
+    fill,
+    radius,
+    cornerCurve = SURFACE_SHAPES.panel.curve,
+    style,
+    className,
+    accessibilityLabel,
+    testID,
+    ...hostProps
+  },
+  ref,
+) {
   const theme = useTheme();
   const resolvedStyle = StyleSheet.flatten(style);
   const geometry = resolveSurfaceGeometry(radius, style, borderRadius.xl, cornerCurve);
   useInteractiveWebCss('bloom-surface-web-css', CSS);
   const override = fill ?? resolvedStyle?.backgroundColor;
-  const material = useResolvedSurface({ fill: override === undefined ? undefined : String(override) });
+  const material = useResolvedSurface({
+    fill: override === undefined ? undefined : String(override),
+  });
   useSurfaceRefraction(material.painted);
   const optics = resolveSurfaceOptics(theme.isDark);
   const baseStyle: WebCssStyle = {
@@ -47,12 +59,20 @@ const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponen
     <StyledView
       {...hostProps}
       ref={ref}
-      className={['bloom-surface', material.painted ? 'bloom-surface--material' : '', className].filter(Boolean).join(' ')}
+      className={['bloom-surface', material.painted ? 'bloom-surface--material' : '', className]
+        .filter(Boolean)
+        .join(' ')}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
-      style={[baseStyle, style, { backgroundColor: 'transparent', ...material.vars, ...geometry.style }]}
+      style={[
+        baseStyle,
+        style,
+        { backgroundColor: 'transparent', ...material.vars, ...geometry.style },
+      ]}
     >
-      <SurfaceLevelProvider level={material.level} fill={material.publishedFill}>{children}</SurfaceLevelProvider>
+      <SurfaceLevelProvider level={material.level} fill={material.publishedFill}>
+        {children}
+      </SurfaceLevelProvider>
     </StyledView>
   );
 });

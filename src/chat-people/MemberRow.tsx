@@ -68,13 +68,31 @@ function MemberRowComponent({
   const actions = [
     onPromote === undefined
       ? undefined
-      : { key: 'promote', label: l.promote, icon: RiShieldUserLine, onPress: onPromote, destructive: false },
+      : {
+          key: 'promote',
+          label: l.promote,
+          icon: RiShieldUserLine,
+          onPress: onPromote,
+          destructive: false,
+        },
     onRestrict === undefined
       ? undefined
-      : { key: 'restrict', label: l.restrict, icon: RiForbidLine, onPress: onRestrict, destructive: false },
+      : {
+          key: 'restrict',
+          label: l.restrict,
+          icon: RiForbidLine,
+          onPress: onRestrict,
+          destructive: false,
+        },
     onRemove === undefined
       ? undefined
-      : { key: 'remove', label: l.remove, icon: RiUserMinusLine, onPress: onRemove, destructive: true },
+      : {
+          key: 'remove',
+          label: l.remove,
+          icon: RiUserMinusLine,
+          onPress: onRemove,
+          destructive: true,
+        },
   ].filter((action): action is NonNullable<typeof action> => action !== undefined);
 
   const body = (

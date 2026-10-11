@@ -90,15 +90,9 @@ export function TicketGenieSurface({ children }: { children: ReactNode }) {
       const swallow = smoothStep(0.32, 1, progress);
       // The bottom leads, stretching into a funnel while the top stays put.
       // Only then does the top follow the neck down into the offscreen dock.
-      const stretch = Math.max(
-        0.001,
-        ((height + extension) * (1 - swallow)) / height,
-      );
+      const stretch = Math.max(0.001, ((height + extension) * (1 - swallow)) / height);
       displacement.setAttribute('scale', String(width * 0.98 * neck));
-      blurRef.current?.setAttribute(
-        'stdDeviation',
-        String(2 * smoothStep(0.8, 1, progress)),
-      );
+      blurRef.current?.setAttribute('stdDeviation', String(2 * smoothStep(0.8, 1, progress)));
       surface.style.transform = `translateY(${extension}px) scaleY(${stretch})`;
       surface.style.opacity = String(1 - smoothStep(0.94, 1, progress));
       shadow.style.transform = `translateY(${extension}px) scale(${1 - neck * 0.65}, ${1 - swallow * 0.9})`;
@@ -125,12 +119,7 @@ export function TicketGenieSurface({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <svg
-        width="0"
-        height="0"
-        aria-hidden
-        className="pointer-events-none absolute"
-      >
+      <svg width="0" height="0" aria-hidden className="pointer-events-none absolute">
         <defs>
           <filter
             id={id}
@@ -151,12 +140,7 @@ export function TicketGenieSurface({ children }: { children: ReactNode }) {
               preserveAspectRatio="none"
               result="field"
             />
-            <feComposite
-              in="field"
-              in2="neutral"
-              operator="over"
-              result="warp"
-            />
+            <feComposite in="field" in2="neutral" operator="over" result="warp" />
             <feDisplacementMap
               ref={displacementRef}
               in="SourceGraphic"

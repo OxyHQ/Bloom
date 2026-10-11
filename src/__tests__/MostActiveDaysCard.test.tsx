@@ -6,7 +6,11 @@ import { resolvedStyle } from './support/rendered-style';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
-import { MostActiveDaysCard, currentMonthAt, type ActivityDay } from '../chart-cards/MostActiveDaysCard';
+import {
+  MostActiveDaysCard,
+  currentMonthAt,
+  type ActivityDay,
+} from '../chart-cards/MostActiveDaysCard';
 import { chartHueTone } from '../chart-cards/palette';
 
 const TODAY = { month: 6, day: 10 };
@@ -35,24 +39,40 @@ describe('currentMonthAt', () => {
 
 describe('MostActiveDaysCard', () => {
   it('keeps the medical card shell and the inner panel', () => {
-    const { getByTestId, getByText } = renderCard(<MostActiveDaysCard testID="days" year={2026} headline={32459} rings={rings} />);
-    expect(cardLayout(getByTestId('days'))).toMatchObject({ height: 330, borderRadius: 20, paddingTop: 10 });
+    const { getByTestId, getByText } = renderCard(
+      <MostActiveDaysCard testID="days" year={2026} headline={32459} rings={rings} />,
+    );
+    expect(cardLayout(getByTestId('days'))).toMatchObject({
+      height: 330,
+      borderRadius: 20,
+      paddingTop: 10,
+    });
     expect(getByTestId('days-headline').props.children).toBe('32,459');
     expect(getByText('Most active days')).toBeTruthy();
     expect(getByText('total steps')).toBeTruthy();
     const panel = getByTestId('days-scroll').parent!;
     const palette = resolveChartCardPalette(buildTheme('teal', 'light'));
     let node: typeof panel | null = panel;
-    while (node && resolvedStyle(node.props.style).backgroundColor !== palette.inner) node = node.parent;
-    expect(resolvedStyle(node?.props.style)).toMatchObject({ borderRadius: 10, paddingLeft: 10, paddingRight: 10, overflow: 'hidden' });
+    while (node && resolvedStyle(node.props.style).backgroundColor !== palette.inner)
+      node = node.parent;
+    expect(resolvedStyle(node?.props.style)).toMatchObject({
+      borderRadius: 10,
+      paddingLeft: 10,
+      paddingRight: 10,
+      overflow: 'hidden',
+    });
     expect(resolvedStyle(getByTestId('days-month').props.style).width).toBe(128);
   });
 
   it('lays out every day of the year, February by the year', () => {
-    const leap = renderCard(<MostActiveDaysCard testID="days" year={2028} headline={0} rings={rings} />);
+    const leap = renderCard(
+      <MostActiveDaysCard testID="days" year={2028} headline={0} rings={rings} />,
+    );
     expect(leap.getByTestId('days-day-1-29')).toBeTruthy();
     leap.unmount();
-    const { queryByTestId, getByTestId } = renderCard(<MostActiveDaysCard testID="days" year={2026} headline={0} rings={rings} />);
+    const { queryByTestId, getByTestId } = renderCard(
+      <MostActiveDaysCard testID="days" year={2026} headline={0} rings={rings} />,
+    );
     expect(queryByTestId('days-day-1-29')).toBeNull();
     expect(getByTestId('days-day-11-31')).toBeTruthy();
   });
@@ -60,10 +80,21 @@ describe('MostActiveDaysCard', () => {
   it('names each day, marks the selected one both ways and reports presses', () => {
     const onSelectDay = jest.fn();
     const { getByTestId } = renderCard(
-      <MostActiveDaysCard testID="days" year={2026} headline={0} rings={rings} selectedDay={{ month: 6, day: 8 }} onSelectDay={onSelectDay} />,
+      <MostActiveDaysCard
+        testID="days"
+        year={2026}
+        headline={0}
+        rings={rings}
+        selectedDay={{ month: 6, day: 8 }}
+        onSelectDay={onSelectDay}
+      />,
     );
     const selected = getByTestId('days-day-6-8');
-    expect(selected.props).toMatchObject({ role: 'button', 'aria-pressed': true, accessibilityLabel: 'Activity for July 8' });
+    expect(selected.props).toMatchObject({
+      role: 'button',
+      'aria-pressed': true,
+      accessibilityLabel: 'Activity for July 8',
+    });
     expect(selected.props.accessibilityState).toEqual({ selected: true });
     expect(getByTestId('days-day-6-9').props['aria-pressed']).toBe(false);
     const theme = buildTheme('teal', 'light');
@@ -82,7 +113,9 @@ describe('MostActiveDaysCard', () => {
   });
 
   it('draws three rings from 12 o’clock, and tracks only for a day without data', () => {
-    const { getByTestId } = renderCard(<MostActiveDaysCard testID="days" year={2026} headline={0} rings={rings} />);
+    const { getByTestId } = renderCard(
+      <MostActiveDaysCard testID="days" year={2026} headline={0} rings={rings} />,
+    );
     const theme = buildTheme('teal', 'light');
     const circlesOf = (id: string) => {
       const out: Node[] = [];
@@ -119,9 +152,15 @@ describe('MostActiveDaysCard', () => {
     // Give every month a laid-out top: 10px content padding, then 400px per month.
     const months = scroll.props.children as unknown[];
     expect(months).toHaveLength(12);
-    const blocks = scroll.children.filter((n) => typeof n === 'object') as unknown as { props: { onLayout: (e: unknown) => void } }[];
+    const blocks = scroll.children.filter((n) => typeof n === 'object') as unknown as {
+      props: { onLayout: (e: unknown) => void };
+    }[];
     act(() => {
-      blocks.forEach((b, i) => b.props.onLayout({ nativeEvent: { layout: { x: 0, y: 10 + i * 400, width: 320, height: 384 } } }));
+      blocks.forEach((b, i) =>
+        b.props.onLayout({
+          nativeEvent: { layout: { x: 0, y: 10 + i * 400, width: 320, height: 384 } },
+        }),
+      );
     });
     expect(getAllByText('January', { includeHiddenElements: true }).length).toBeGreaterThan(0);
     act(() => {

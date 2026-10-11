@@ -54,101 +54,104 @@ function buildColorsFromPreset(
     tertiarySeed: accents?.tertiaryHex ?? config.tertiaryHex,
   });
 
-  return { chartColors: chartColorsFromTokens(t), colors: {
-    background: g('background'),
-    backgroundSecondary: g('surface'),
-    backgroundTertiary: g('popover'),
+  return {
+    chartColors: chartColorsFromTokens(t),
+    colors: {
+      background: g('background'),
+      backgroundSecondary: g('surface'),
+      backgroundTertiary: g('popover'),
 
-    text: g('foreground'),
-    textSecondary: g('muted-foreground'),
-    // ONE quiet-text colour, not two spellings of a role that disagreed.
-    //
-    // `--color-text-tertiary` has always aliased `--muted-foreground` in
-    // `design-tokens/theme.css`, so `className="text-tertiary"` rendered at
-    // 8.42:1 in light / 11.33:1 in dark, while this field read `r.outline` and
-    // rendered the SAME named role at 4.04:1 / 6.12:1 — below AA for body text
-    // in light. One name, two colours, and only the JS side failed.
-    //
-    // The tie is broken toward the token, because a fixed third grey cannot BE
-    // a third rung: it is measured against one surface and used on all of them.
-    // `neutral-400` is the same mistake one ramp over — it clears AA on the page
-    // and measures 2.42:1 on a chart card. A genuinely quieter rung has to be
-    // asked for against the fill it lands on, which is what
-    // `styles/surface-levels.ts` `surfaceTextOn()` returns and what every family
-    // that wants a caption grey now calls.
-    textTertiary: g('muted-foreground'),
+      text: g('foreground'),
+      textSecondary: g('muted-foreground'),
+      // ONE quiet-text colour, not two spellings of a role that disagreed.
+      //
+      // `--color-text-tertiary` has always aliased `--muted-foreground` in
+      // `design-tokens/theme.css`, so `className="text-tertiary"` rendered at
+      // 8.42:1 in light / 11.33:1 in dark, while this field read `r.outline` and
+      // rendered the SAME named role at 4.04:1 / 6.12:1 — below AA for body text
+      // in light. One name, two colours, and only the JS side failed.
+      //
+      // The tie is broken toward the token, because a fixed third grey cannot BE
+      // a third rung: it is measured against one surface and used on all of them.
+      // `neutral-400` is the same mistake one ramp over — it clears AA on the page
+      // and measures 2.42:1 on a chart card. A genuinely quieter rung has to be
+      // asked for against the fill it lands on, which is what
+      // `styles/surface-levels.ts` `surfaceTextOn()` returns and what every family
+      // that wants a caption grey now calls.
+      textTertiary: g('muted-foreground'),
 
-    border: g('border'),
-    borderLight: g('input'),
+      border: g('border'),
+      borderLight: g('input'),
 
-    primary: g('primary'),
-    primaryForeground: g('primary-foreground'),
-    // Legacy aliases (see types.ts): `primaryLight` is the page surface tint,
-    // `primaryDark` is the page background — retained for downstream consumers.
-    primaryLight: g('surface'),
-    primaryDark: g('background'),
+      primary: g('primary'),
+      primaryForeground: g('primary-foreground'),
+      // Legacy aliases (see types.ts): `primaryLight` is the page surface tint,
+      // `primaryDark` is the page background — retained for downstream consumers.
+      primaryLight: g('surface'),
+      primaryDark: g('background'),
 
-    // The M3 accent trio: secondary is a real contrast colour (engine `secondary`),
-    // and tertiary completes primary/secondary/tertiary.
-    secondary: g('secondary'),
-    secondaryForeground: g('secondary-foreground'),
-    secondarySubtle: g('secondary-subtle'),
-    secondarySubtleForeground: g('secondary-text'),
-    tertiary: g('tertiary'),
-    tertiaryForeground: g('tertiary-foreground'),
-    tertiarySubtle: g('tertiary-subtle'),
-    tertiarySubtleForeground: g('tertiary-text'),
+      // The M3 accent trio: secondary is a real contrast colour (engine `secondary`),
+      // and tertiary completes primary/secondary/tertiary.
+      secondary: g('secondary'),
+      secondaryForeground: g('secondary-foreground'),
+      secondarySubtle: g('secondary-subtle'),
+      secondarySubtleForeground: g('secondary-text'),
+      tertiary: g('tertiary'),
+      tertiaryForeground: g('tertiary-foreground'),
+      tertiarySubtle: g('tertiary-subtle'),
+      tertiarySubtleForeground: g('tertiary-text'),
 
-    tint: g('primary'),
-    icon: g('muted-foreground'),
-    iconActive: g('primary'),
+      tint: g('primary'),
+      icon: g('muted-foreground'),
+      iconActive: g('primary'),
 
-    // The status family is themed per mode and legible, from the same pipeline
-    // as everything else — not four frozen hexes that fail AA under white text.
-    success: g('success'),
-    successForeground: g('success-foreground'),
-    error: g('error'),
-    errorForeground: g('error-foreground'),
-    warning: g('warning'),
-    warningForeground: g('warning-foreground'),
-    info: g('info'),
-    infoForeground: g('info-foreground'),
+      // The status family is themed per mode and legible, from the same pipeline
+      // as everything else — not four frozen hexes that fail AA under white text.
+      success: g('success'),
+      successForeground: g('success-foreground'),
+      error: g('error'),
+      errorForeground: g('error-foreground'),
+      warning: g('warning'),
+      warningForeground: g('warning-foreground'),
+      info: g('info'),
+      infoForeground: g('info-foreground'),
 
-    // The tinted half of the same four families. `-subtle` is the translucent
-    // surface, `-text` the member legible on it — the pair the policy generates
-    // together, so JS consumers get the gated combination instead of hand-tinting
-    // a fill with hex alpha.
-    successSubtle: g('success-subtle'),
-    successSubtleForeground: g('success-text'),
-    errorSubtle: g('error-subtle'),
-    errorSubtleForeground: g('error-text'),
-    warningSubtle: g('warning-subtle'),
-    warningSubtleForeground: g('warning-text'),
-    infoSubtle: g('info-subtle'),
-    infoSubtleForeground: g('info-text'),
+      // The tinted half of the same four families. `-subtle` is the translucent
+      // surface, `-text` the member legible on it — the pair the policy generates
+      // together, so JS consumers get the gated combination instead of hand-tinting
+      // a fill with hex alpha.
+      successSubtle: g('success-subtle'),
+      successSubtleForeground: g('success-text'),
+      errorSubtle: g('error-subtle'),
+      errorSubtleForeground: g('error-text'),
+      warningSubtle: g('warning-subtle'),
+      warningSubtleForeground: g('warning-text'),
+      infoSubtle: g('info-subtle'),
+      infoSubtleForeground: g('info-text'),
 
-    primarySubtle: g('primary-subtle'),
-    // The `-text` member, like every other `*SubtleForeground` above — NOT the
-    // engine's `onPrimaryContainer`. `--primary-subtle` is the policy's
-    // TRANSLUCENT tint and `onPrimaryContainer` is the on-colour of M3's OPAQUE
-    // container, so the two were never a pair: measured over the tint composited
-    // on `--background`, `mono` came out at 1.25 in light and 1.53 in dark (white
-    // text on a near-white pill). The pairs the policy generates together are the
-    // `-subtle`/`-text` ones, and those are what `policy-legibility.test.ts`
-    // gates. The platform palettes in `adaptive-colors.ts` keep
-    // `primaryContainer`/`onPrimaryContainer`, which IS a matched pair.
-    primarySubtleForeground: g('primary-text'),
-    negative: r.error,
-    negativeForeground: r.onError,
-    negativeSubtle: g('error-subtle'),
-    negativeSubtleForeground: g('error-text'),
-    contrast50: g('muted'),
+      primarySubtle: g('primary-subtle'),
+      // The `-text` member, like every other `*SubtleForeground` above — NOT the
+      // engine's `onPrimaryContainer`. `--primary-subtle` is the policy's
+      // TRANSLUCENT tint and `onPrimaryContainer` is the on-colour of M3's OPAQUE
+      // container, so the two were never a pair: measured over the tint composited
+      // on `--background`, `mono` came out at 1.25 in light and 1.53 in dark (white
+      // text on a near-white pill). The pairs the policy generates together are the
+      // `-subtle`/`-text` ones, and those are what `policy-legibility.test.ts`
+      // gates. The platform palettes in `adaptive-colors.ts` keep
+      // `primaryContainer`/`onPrimaryContainer`, which IS a matched pair.
+      primarySubtleForeground: g('primary-text'),
+      negative: r.error,
+      negativeForeground: r.onError,
+      negativeSubtle: g('error-subtle'),
+      negativeSubtleForeground: g('error-text'),
+      contrast50: g('muted'),
 
-    // The FIX: `card` is the lightest surface (engine `surfaceContainerLowest`).
-    card: g('card'),
-    shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
-    overlay: 'rgba(0, 0, 0, 0.5)',
-  } };
+      // The FIX: `card` is the lightest surface (engine `surfaceContainerLowest`).
+      card: g('card'),
+      shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
+      overlay: 'rgba(0, 0, 0, 0.5)',
+    },
+  };
 }
 
 /**

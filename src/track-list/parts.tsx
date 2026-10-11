@@ -162,9 +162,7 @@ export function TrackMenu({
               disabled={item.disabled}
               variant={item.destructive ? 'destructive' : 'default'}
               leading={
-                item.icon ? (
-                  <item.icon width={18} height={18} fill={paint.textMuted} />
-                ) : undefined
+                item.icon ? <item.icon width={18} height={18} fill={paint.textMuted} /> : undefined
               }
             >
               {item.label}

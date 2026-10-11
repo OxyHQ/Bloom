@@ -70,7 +70,6 @@ let hasWarned = false;
 function warnAdaptiveColorsUnavailable(reason: string): void {
   if (process.env.NODE_ENV === 'production' || hasWarned) return;
   hasWarned = true;
-  // eslint-disable-next-line no-console
   console.warn(
     '[Bloom] The adaptive palette fell back to the preset one: `expo-router`’s ' +
       '`Color` proxy could not be read, so platform colours (Material You, iOS ' +

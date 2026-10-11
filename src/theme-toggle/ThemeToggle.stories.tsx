@@ -39,24 +39,31 @@ export const Appearances: Story = {
   render: function AppearancesStory() {
     const { colors } = useTheme();
     return (
-    <View style={{ padding: 40, gap: 24 }}>
-      <Surface>
-        <ThemeToggle testID="sidebar" />
-      </Surface>
-      <Surface width={60}>
-        <ThemeToggle collapsed testID="collapsed" />
-      </Surface>
-      <Surface>
-        <ThemeToggle variant="sidebar-segmented" testID="sidebar-segmented" />
-      </Surface>
-      <View style={{ padding: 12 }}>
-        <ThemeToggle variant="segmented" testID="segmented" />
+      <View style={{ padding: 40, gap: 24 }}>
+        <Surface>
+          <ThemeToggle testID="sidebar" />
+        </Surface>
+        <Surface width={60}>
+          <ThemeToggle collapsed testID="collapsed" />
+        </Surface>
+        <Surface>
+          <ThemeToggle variant="sidebar-segmented" testID="sidebar-segmented" />
+        </Surface>
+        <View style={{ padding: 12 }}>
+          <ThemeToggle variant="segmented" testID="segmented" />
+        </View>
+        <View
+          style={{
+            padding: 12,
+            backgroundColor: colors.backgroundSecondary,
+            borderRadius: 999,
+            alignSelf: 'flex-start',
+          }}
+        >
+          <ThemeToggle variant="glass-segmented" testID="glass" />
+        </View>
       </View>
-      <View style={{ padding: 12, backgroundColor: colors.backgroundSecondary, borderRadius: 999, alignSelf: 'flex-start' }}>
-        <ThemeToggle variant="glass-segmented" testID="glass" />
-      </View>
-    </View>
-  );
+    );
   },
 };
 
@@ -82,7 +89,20 @@ export const Segmented: Story = {
 
 export const Playground: Story = {
   args: { variant: 'sidebar', collapsed: false, transitionDuration: 820 },
-  parameters: { controls: { disable: false, include: ['variant', 'collapsed', 'transitionDuration'] } },
-  argTypes: { variant: { control: 'select', options: ['sidebar', 'segmented', 'sidebar-segmented', 'glass-segmented'] }, collapsed: { control: 'boolean' }, transitionDuration: { control: { type: 'range', min: 0, max: 1600, step: 20 } } },
-  render: args => <Surface><ThemeToggle {...args} /></Surface>,
+  parameters: {
+    controls: { disable: false, include: ['variant', 'collapsed', 'transitionDuration'] },
+  },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['sidebar', 'segmented', 'sidebar-segmented', 'glass-segmented'],
+    },
+    collapsed: { control: 'boolean' },
+    transitionDuration: { control: { type: 'range', min: 0, max: 1600, step: 20 } },
+  },
+  render: (args) => (
+    <Surface>
+      <ThemeToggle {...args} />
+    </Surface>
+  ),
 };

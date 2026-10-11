@@ -59,6 +59,7 @@ export function useCardMotion({
   const onExitedRef = useRef(onExited);
   onExitedRef.current = onExited;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animateIntro) return;
     const animation = Animated.timing(enter, {
@@ -71,7 +72,6 @@ export function useCardMotion({
     animation.start();
     return () => animation.stop();
     // Mount-only, like `initial`/`animate`.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const dismiss = useCallback(() => {
@@ -103,12 +103,20 @@ export function useCardMotion({
     const animated: Record<string, unknown> = {
       opacity: Animated.multiply(lerp(enter, intro.opacity, 1), lerp(leave, 1, exit.opacity)),
       transform: [
-        { translateY: Animated.add(lerp(enter, intro.translateY, 0), lerp(leave, 0, exit.translateY)) },
+        {
+          translateY: Animated.add(
+            lerp(enter, intro.translateY, 0),
+            lerp(leave, 0, exit.translateY),
+          ),
+        },
         { scale: Animated.multiply(lerp(enter, intro.scale, 1), lerp(leave, 1, exit.scale)) },
       ],
     };
     if (IS_WEB) {
-      animated.filter = Animated.add(lerp(enter, intro.blur, 0), lerp(leave, 0, exit.blur)).interpolate({
+      animated.filter = Animated.add(
+        lerp(enter, intro.blur, 0),
+        lerp(leave, 0, exit.blur),
+      ).interpolate({
         inputRange: [0, 10],
         outputRange: ['blur(0px)', 'blur(10px)'],
       });

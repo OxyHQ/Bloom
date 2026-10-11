@@ -90,9 +90,27 @@ export const Intensities: Story = {
 export const Playground: StoryObj<typeof ProgressiveBlur> = {
   args: { direction: 'bottom', intensity: 70 },
   parameters: { controls: { disable: false, include: ['direction', 'intensity'] } },
-  argTypes: { direction: { control: 'select', options: ['top','bottom'] }, intensity: { control: { type: 'range', min: 0, max: 100 } } },
+  argTypes: {
+    direction: { control: 'select', options: ['top', 'bottom'] },
+    intensity: { control: { type: 'range', min: 0, max: 100 } },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 520, maxWidth: '100%' }}><View style={{ height: 260, overflow: 'hidden' }}><Content /><ProgressiveBlur {...args} style={{ position: 'absolute', left: 0, right: 0, ...(args.direction === 'top' ? { top: 0 } : { bottom: 0 }), height: 100 }} /></View></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <View style={{ height: 260, overflow: 'hidden' }}>
+          <Content />
+          <ProgressiveBlur
+            {...args}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              ...(args.direction === 'top' ? { top: 0 } : { bottom: 0 }),
+              height: 100,
+            }}
+          />
+        </View>
+      </View>
+    );
   },
 };

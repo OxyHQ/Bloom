@@ -20,7 +20,11 @@ import { classNamesOn, findHost, resolvedStyle } from './support/rendered-style'
  * reads a resolved class list.
  */
 function renderPanel(ui: React.ReactElement) {
-  return render(<BloomThemeProvider mode="light" colorPreset="teal">{ui}</BloomThemeProvider>);
+  return render(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      {ui}
+    </BloomThemeProvider>,
+  );
 }
 
 // `classNamesOn` returns one array entry per `$$css` descriptor merged into
@@ -70,7 +74,11 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
       </ContentPanel>,
     );
     const tree = toJSON();
-    for (const id of ['content-panel-bleed-mask', 'content-panel-border-frame', 'content-panel-content']) {
+    for (const id of [
+      'content-panel-bleed-mask',
+      'content-panel-border-frame',
+      'content-panel-content',
+    ]) {
       const classes = classesFor(tree, id);
       expect(classes).toContain('web:[grid-area:1/1]');
       expect(classes).not.toContain('web:sticky');
@@ -121,7 +129,9 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
         <Text>content</Text>
       </ContentPanel>,
     );
-    expect(findHost(toJSON(), 'content-panel-bleed-mask')?.props.dataSet).toMatchObject({ bloomPanelMask: 'viewport' });
+    expect(findHost(toJSON(), 'content-panel-bleed-mask')?.props.dataSet).toMatchObject({
+      bloomPanelMask: 'viewport',
+    });
   });
 
   it('still respects showStickyFrame={false} to omit only the border overlay', () => {
@@ -209,7 +219,7 @@ describe('ContentPanel.web overlayInset', () => {
     expect(mask.height).toBeUndefined();
   });
 
-  it('is a no-op in panel mode — that mode already starts at the panel\'s own box', () => {
+  it("is a no-op in panel mode — that mode already starts at the panel's own box", () => {
     const { toJSON } = renderPanel(
       <ContentPanel framed overlaySizing="panel" overlayInset={64}>
         <Text>content</Text>
@@ -257,14 +267,30 @@ describe('chrome', () => {
         <Text>content</Text>
       </ContentPanel>,
     );
-    expect(resolvedStyle(findHost(toJSON(), 'content-panel-border-frame')?.props.style).boxShadow).toBe('0 0 0 2px red');
+    expect(
+      resolvedStyle(findHost(toJSON(), 'content-panel-border-frame')?.props.style).boxShadow,
+    ).toBe('0 0 0 2px red');
   });
 });
 
-it.each([['#80A0C0', 'rgba(128, 160, 192, 0.9)'], ['rgba(128, 160, 192, 0.4)', 'rgba(128, 160, 192, 0.4)']])('delegates %s to paint and publishes the matching body fill', (background, painted) => {
+it.each([
+  ['#80A0C0', 'rgba(128, 160, 192, 0.9)'],
+  ['rgba(128, 160, 192, 0.4)', 'rgba(128, 160, 192, 0.4)'],
+])('delegates %s to paint and publishes the matching body fill', (background, painted) => {
   let fill = '';
-  function Probe() { fill = useSurfaceFill(); return null; }
-  const view = render(<BloomThemeProvider mode="light" colorPreset="teal"><SurfaceLevelProvider level={2} fill="#203040"><ContentPanel framed surfaceStyle={{ backgroundColor: background }}><Probe /></ContentPanel></SurfaceLevelProvider></BloomThemeProvider>);
+  function Probe() {
+    fill = useSurfaceFill();
+    return null;
+  }
+  const view = render(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      <SurfaceLevelProvider level={2} fill="#203040">
+        <ContentPanel framed surfaceStyle={{ backgroundColor: background }}>
+          <Probe />
+        </ContentPanel>
+      </SurfaceLevelProvider>
+    </BloomThemeProvider>,
+  );
   const host = resolvedStyle(findHost(view.toJSON(), 'content-panel-surface')?.props.style);
   expect(host.backgroundColor).toBe('transparent');
   expect(host['--bloom-surface-fill']).toBe(painted);

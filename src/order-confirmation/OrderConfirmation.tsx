@@ -89,7 +89,12 @@ function OrderConfirmationComponent({
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
   const keyFacts = useMemo(
-    () => (facts ?? []).map((fact) => ({ key: fact.id ?? fact.label, label: fact.label, value: fact.value })),
+    () =>
+      (facts ?? []).map((fact) => ({
+        key: fact.id ?? fact.label,
+        label: fact.label,
+        value: fact.value,
+      })),
     [facts],
   );
 

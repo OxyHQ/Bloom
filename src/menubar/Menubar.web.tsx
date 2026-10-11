@@ -85,7 +85,8 @@ export function MenubarContent({
       // `min-w-[12rem]` — a menubar menu is wider than a dropdown.
       className={cx(MENUBAR_MENU_MIN_WIDTH_CLASS, className)}
       style={style}
-      testID={testID}>
+      testID={testID}
+    >
       <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
     </FloatingPanel>
   );

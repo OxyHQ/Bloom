@@ -373,7 +373,9 @@ export const MediaProgressRing = memo(function MediaProgressRing({
           />
         </Svg>
       </Animated.View>
-      {Glyph ? <Glyph width={Math.round(size * 0.4)} height={Math.round(size * 0.4)} fill={color} /> : null}
+      {Glyph ? (
+        <Glyph width={Math.round(size * 0.4)} height={Math.round(size * 0.4)} fill={color} />
+      ) : null}
     </View>
   );
 

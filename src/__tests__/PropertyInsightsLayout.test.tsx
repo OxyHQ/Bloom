@@ -23,7 +23,9 @@ function flat(style: unknown): Record<string, unknown> {
   return style && typeof style === 'object' ? (style as Record<string, unknown>) : {};
 }
 
-const layout = (width: number, height = 200) => ({ nativeEvent: { layout: { x: 0, y: 0, width, height } } });
+const layout = (width: number, height = 200) => ({
+  nativeEvent: { layout: { x: 0, y: 0, width, height } },
+});
 
 const FACTS = Array.from({ length: 6 }, (_, i) => ({ label: `Fact ${i}`, value: String(i) }));
 
@@ -52,7 +54,11 @@ it('FloorPlan auto: one column below 560, two from 560', () => {
 
 it('EnergyLabel with two ratings moves the values into the tags from 560 wide', () => {
   const api = renderWithTheme(
-    <EnergyLabel consumption={{ rating: 'C', value: '112 kWh' }} emissions={{ rating: 'D', value: '24 kg' }} testID="e" />,
+    <EnergyLabel
+      consumption={{ rating: 'C', value: '112 kWh' }}
+      emissions={{ rating: 'D', value: '24 kg' }}
+      testID="e"
+    />,
   );
   const tagText = () => api.getByTestId('e-consumption-tag-body').props.children.props.children;
   act(() => fireEvent(api.getByTestId('e'), 'layout', layout(390)));
@@ -64,7 +70,15 @@ it('EnergyLabel with two ratings moves the values into the tags from 560 wide', 
 });
 
 it('NeighbourhoodScores auto: two columns from 560', () => {
-  const api = renderWithTheme(<NeighbourhoodScores items={[{ label: 'A', value: 5 }, { label: 'B', value: 6 }]} testID="ns" />);
+  const api = renderWithTheme(
+    <NeighbourhoodScores
+      items={[
+        { label: 'A', value: 5 },
+        { label: 'B', value: 6 },
+      ]}
+      testID="ns"
+    />,
+  );
   act(() => fireEvent(api.getByTestId('ns'), 'layout', layout(560)));
   expect(flat(api.getByTestId('ns-item-0').props.style).width).toBe('50%');
 });

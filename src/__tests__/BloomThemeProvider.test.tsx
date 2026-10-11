@@ -74,9 +74,7 @@ describe('BloomThemeProvider', () => {
       </BloomThemeProvider>,
     );
     // Blue preset primary is now engine-derived from the blue seed.
-    expect(getByTestId('primary').props.children).toBe(
-      buildTheme('blue', 'light').colors.primary,
-    );
+    expect(getByTestId('primary').props.children).toBe(buildTheme('blue', 'light').colors.primary);
   });
 
   it('generates different background colors for light and dark modes', () => {
@@ -98,8 +96,15 @@ describe('BloomThemeProvider', () => {
 
   it('renders all color presets without crashing', () => {
     const presets: AppColorName[] = [
-      'teal', 'blue', 'green', 'red',
-      'purple', 'pink', 'sky', 'orange', 'mint',
+      'teal',
+      'blue',
+      'green',
+      'red',
+      'purple',
+      'pink',
+      'sky',
+      'orange',
+      'mint',
     ];
 
     for (const preset of presets) {
@@ -139,9 +144,7 @@ describe('useThemeColor', () => {
       </BloomThemeProvider>,
     );
     // teal preset primary is now engine-derived from the teal seed.
-    expect(getByTestId('color').props.children).toBe(
-      buildTheme('teal', 'light').colors.primary,
-    );
+    expect(getByTestId('color').props.children).toBe(buildTheme('teal', 'light').colors.primary);
   });
 });
 

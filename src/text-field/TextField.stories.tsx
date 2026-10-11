@@ -85,38 +85,22 @@ function FloatingField({
 
 export const Basic: Story = {
   parameters: { controls: { disable: true } },
-  render: () => (
-    <ControlledField label="Username" placeholder="oxylander" />
-  ),
+  render: () => <ControlledField label="Username" placeholder="oxylander" />,
 };
 
 export const WithValue: Story = {
   parameters: { controls: { disable: true } },
-  render: () => (
-    <ControlledField label="Email" initial="nate@oxy.so" />
-  ),
+  render: () => <ControlledField label="Email" initial="nate@oxy.so" />,
 };
 
 export const Error: Story = {
   parameters: { controls: { disable: true } },
-  render: () => (
-    <ControlledField
-      label="Email"
-      initial="not-an-email"
-      invalid
-    />
-  ),
+  render: () => <ControlledField label="Email" initial="not-an-email" invalid />,
 };
 
 export const Disabled: Story = {
   parameters: { controls: { disable: true } },
-  render: () => (
-    <ControlledField
-      label="Username"
-      initial="oxylander"
-      editable={false}
-    />
-  ),
+  render: () => <ControlledField label="Username" initial="oxylander" editable={false} />,
 };
 
 export const Composition: Story = {
@@ -125,11 +109,7 @@ export const Composition: Story = {
     <View style={{ gap: 16 }}>
       <ControlledField label="First name" placeholder="Ada" />
       <ControlledField label="Last name" placeholder="Lovelace" />
-      <ControlledField
-        label="Email"
-        initial="invalid-email"
-        invalid
-      />
+      <ControlledField label="Email" initial="invalid-email" invalid />
     </View>
   ),
 };
@@ -248,25 +228,56 @@ export const Matrix: Story = {
   parameters: { controls: { disable: true } },
   render: function MatrixStory() {
     return (
-    <View style={{ backgroundColor: useTheme().colors.background, gap: 16, padding: 40 }}>
-      <MatrixField label="Email" placeholder="you@oxy.so" hint="We never share it." required tooltip />
-      <MatrixField label="Small" placeholder="Small" size="sm" />
-      <MatrixField label="Icons" placeholder="Search" icons />
-      <MatrixField label="Value" initial="nate@oxy.so" />
-      <MatrixField label="Invalid" placeholder="Invalid" hint="Enter a valid email" invalid />
-      <MatrixField label="Disabled" placeholder="Disabled" hint="Hint" disabled icons />
-      <MatrixField label="Disabled value" initial="nate@oxy.so" disabled />
-    </View>
+      <View style={{ backgroundColor: useTheme().colors.background, gap: 16, padding: 40 }}>
+        <MatrixField
+          label="Email"
+          placeholder="you@oxy.so"
+          hint="We never share it."
+          required
+          tooltip
+        />
+        <MatrixField label="Small" placeholder="Small" size="sm" />
+        <MatrixField label="Icons" placeholder="Search" icons />
+        <MatrixField label="Value" initial="nate@oxy.so" />
+        <MatrixField label="Invalid" placeholder="Invalid" hint="Enter a valid email" invalid />
+        <MatrixField label="Disabled" placeholder="Disabled" hint="Hint" disabled icons />
+        <MatrixField label="Disabled value" initial="nate@oxy.so" disabled />
+      </View>
     );
   },
 };
 
 export const Playground: StoryObj<typeof TextFieldInput> = {
-  args: { label: 'Email address', placeholder: 'you@example.com', value: '', size: 'md', invalid: false, disabled: false, floatingLabel: false },
-  parameters: { controls: { disable: false, include: ['label', 'placeholder', 'value', 'size', 'invalid', 'disabled', 'floatingLabel'] } },
-  argTypes: { label: { control: 'text' }, placeholder: { control: 'text' }, value: { control: 'text' }, size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] }, invalid: { control: 'boolean' }, disabled: { control: 'boolean' }, floatingLabel: { control: 'boolean' } },
+  args: {
+    label: 'Email address',
+    placeholder: 'you@example.com',
+    value: '',
+    size: 'md',
+    invalid: false,
+    disabled: false,
+    floatingLabel: false,
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['label', 'placeholder', 'value', 'size', 'invalid', 'disabled', 'floatingLabel'],
+    },
+  },
+  argTypes: {
+    label: { control: 'text' },
+    placeholder: { control: 'text' },
+    value: { control: 'text' },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
+    invalid: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+    floatingLabel: { control: 'boolean' },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 440, maxWidth: '100%' }}><TextFieldInput {...args} onValueChange={value => updateArgs({ value })} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <TextFieldInput {...args} onValueChange={(value) => updateArgs({ value })} />
+      </View>
+    );
   },
 };

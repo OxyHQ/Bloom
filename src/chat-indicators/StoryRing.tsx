@@ -108,9 +108,7 @@ function StoryRingComponent({
     >
       {ring}
       <View style={{ width: size, height: size }}>{children}</View>
-      {badge ? (
-        <View style={{ position: 'absolute', right: 0, bottom: 0 }}>{badge}</View>
-      ) : null}
+      {badge ? <View style={{ position: 'absolute', right: 0, bottom: 0 }}>{badge}</View> : null}
     </View>
   );
 

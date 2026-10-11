@@ -1,6 +1,12 @@
 import type { ReactNode, Ref } from 'react';
 import type { BloomIconComponent } from '../icons/icon-component';
-import type { StyleProp, ViewStyle, ScrollViewProps, GestureResponderEvent, View } from 'react-native';
+import type {
+  StyleProp,
+  ViewStyle,
+  ScrollViewProps,
+  GestureResponderEvent,
+  View,
+} from 'react-native';
 
 /** A Remix-style icon: `width` / `height` / `fill`. */
 /** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
@@ -123,6 +129,10 @@ export interface SidebarToolbarProps {
 }
 
 export interface SidebarRailItemProps {
+  /** Keep the accessible name while hiding the visual caption. Default visible. */
+  labelVisibility?: 'visible' | 'hidden';
+  /** Selected pill, or emphasis on the glyph alone. Default pill. */
+  selectedAppearance?: 'pill' | 'icon';
   icon: SidebarIcon;
   /** The glyph while selected (e.g. the filled icon); defaults to `icon`. */
   activeIcon?: SidebarIcon;
@@ -151,7 +161,7 @@ export type SidebarVariant = 'panel' | 'rail';
  * page, independent of what it contains. It is the axis two apps differ on
  * most: the same rows read as a different product behind a different edge.
  *
- * - `card` (default) the floating panel: radius 24, a hairline and the panel
+ * - `card` (default) the floating panel: shared panel radius (28 by default), a hairline and the panel
  *   shadow, on the panel fill. A sidebar that sits IN the page.
  * - `plain` no edge at all — no radius, no border, no shadow: the rows sit
  *   straight on the page. The social/reader look, and what a revealed mobile
@@ -311,6 +321,12 @@ export interface SidebarProps {
   };
   /** Defaults to `panel`. */
   variant?: SidebarVariant;
+  /** Rail captions; hidden retains accessible names and native browser tooltips. */
+  railLabels?: 'visible' | 'hidden';
+  /** Rail selection uses an accent pill by default, or only an emphasized icon. */
+  railSelection?: 'pill' | 'icon';
+  /** Rail width, owned by the navigation layout. Default 80, minimum 64. */
+  railWidth?: number;
   /** Primary navigation rows. */
   items?: SidebarNavItem[];
   /**

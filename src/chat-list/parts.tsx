@@ -130,9 +130,7 @@ export function ChatGlyphButton({
     justifyContent: 'center',
     backgroundColor: active ? hoverFill : 'transparent',
     '--bloom-chat-ring': ring,
-    ...(IS_WEB
-      ? { transitionProperty: 'background-color', transitionDuration: '120ms' }
-      : null),
+    ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: '120ms' } : null),
   };
   return (
     <Pressable

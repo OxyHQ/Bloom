@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const root = path.resolve(__dirname, '..');
 function sources(directory: string): string[] {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const filename = path.join(directory, entry.name);
     if (entry.isDirectory()) return entry.name === '__tests__' ? [] : sources(filename);
     return /\.tsx?$/.test(filename) && !/\.(stories|test)\./.test(filename) ? [filename] : [];
@@ -29,13 +29,17 @@ const exceptions = new Set([
 ]);
 
 it('does not recreate neutral UI surfaces from the legacy ramp', () => {
-  const consumers = sources(root).filter(filename => {
-    const source = fs.readFileSync(filename, 'utf8');
-    return /\bneutralRamp\s*\(/.test(source)
-      || /resolveButtonRamps\([^\n;]*\)\.neutral\b/.test(source)
-      || /\{[^{}]*\bneutral\b[^{}]*\}\s*=\s*(?:useMemo\([^;]*?)?resolveButtonRamps\(/.test(source);
-  }).map(filename => path.relative(root, filename).replace(/\\/g, '/'));
-  expect(consumers.filter(filename => !exceptions.has(filename))).toEqual([]);
+  const consumers = sources(root)
+    .filter((filename) => {
+      const source = fs.readFileSync(filename, 'utf8');
+      return (
+        /\bneutralRamp\s*\(/.test(source) ||
+        /resolveButtonRamps\([^\n;]*\)\.neutral\b/.test(source) ||
+        /\{[^{}]*\bneutral\b[^{}]*\}\s*=\s*(?:useMemo\([^;]*?)?resolveButtonRamps\(/.test(source)
+      );
+    })
+    .map((filename) => path.relative(root, filename).replace(/\\/g, '/'));
+  expect(consumers.filter((filename) => !exceptions.has(filename))).toEqual([]);
   // An obsolete exception must be reviewed too, rather than silently surviving.
-  expect([...exceptions].filter(filename => !consumers.includes(filename))).toEqual([]);
+  expect([...exceptions].filter((filename) => !consumers.includes(filename))).toEqual([]);
 });

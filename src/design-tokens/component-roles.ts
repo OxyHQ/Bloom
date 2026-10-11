@@ -62,8 +62,8 @@ export const COMPONENT_COLOR_ROLES = {
 /** Numeric utilities use the authored 4px grid on both platforms, independent of rem. */
 export const COMPONENT_SPACING = Object.fromEntries(
   [
-    0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20,
-    24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96,
+    0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28, 32, 36, 40,
+    44, 48, 52, 56, 60, 64, 72, 80, 96,
   ].map((value) => [String(value), `${value * 4}px`]),
 );
 export const COMPONENT_RADIUS = {

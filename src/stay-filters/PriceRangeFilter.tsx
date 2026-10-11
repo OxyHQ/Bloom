@@ -54,7 +54,12 @@ export interface PriceScaleMapping {
 }
 
 /** The price ↔ slider mapping for a scale. Pure; exported for the tests. */
-export function priceScaleMapping(scale: PriceScale, min: number, max: number, step: number): PriceScaleMapping {
+export function priceScaleMapping(
+  scale: PriceScale,
+  min: number,
+  max: number,
+  step: number,
+): PriceScaleMapping {
   if (scale !== 'log' || max <= min) {
     return { sliderMin: min, sliderMax: max, toPosition: (p) => p, toPrice: (p) => p };
   }
@@ -122,7 +127,10 @@ function PriceRangeFilterComponent({
     [linear, fromPositions, onValueChange],
   );
   const onSlideEnd = useMemo(
-    () => (onValueCommit ? (next: [number, number]) => onValueCommit(linear ? next : fromPositions(next)) : undefined),
+    () =>
+      onValueCommit
+        ? (next: [number, number]) => onValueCommit(linear ? next : fromPositions(next))
+        : undefined,
     [linear, fromPositions, onValueCommit],
   );
 

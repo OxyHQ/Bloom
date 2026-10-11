@@ -21,12 +21,7 @@ import { CallControlButton } from './CallControls';
 import { CallEndGlyph } from './glyphs';
 import { CallStageBackdrop } from './parts';
 import { CALL_UI_MESSAGES } from './messages';
-import {
-  CALL_UI_RADIUS,
-  resolveCallPaint,
-  slideAnswers,
-  type CallPaint,
-} from './shared';
+import { CALL_UI_RADIUS, resolveCallPaint, slideAnswers, type CallPaint } from './shared';
 import type { CallGlyph, IncomingCallScreenProps } from './types';
 
 /**
@@ -79,7 +74,6 @@ function SlideHint({ paint, reduced }: { paint: CallPaint; reduced: boolean }) {
     </Animated.View>
   );
 }
-
 
 /**
  * A quiet text action on the stage.
@@ -347,7 +341,9 @@ function IncomingCallScreenComponent({
       >
         {answer}
         {secondary.length === 0 ? null : (
-          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}
+          >
             {secondary}
           </View>
         )}

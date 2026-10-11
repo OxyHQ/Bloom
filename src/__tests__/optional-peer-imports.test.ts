@@ -80,7 +80,7 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
   {
     peer: 'react-dom',
     file: 'teleport/PortalView.tsx',
-    why: "vendored from react-native-teleport 1.2.0 and deliberately unmodified — their web portal IS `createPortal` into a container it created outside React. Their file layout makes the bare name the web one (`.native` is the fork), so this file is only ever reached by a web bundler, which has react-native-web and therefore react-dom",
+    why: 'vendored from react-native-teleport 1.2.0 and deliberately unmodified — their web portal IS `createPortal` into a container it created outside React. Their file layout makes the bare name the web one (`.native` is the fork), so this file is only ever reached by a web bundler, which has react-native-web and therefore react-dom',
   },
   {
     peer: 'react-dom',
@@ -141,7 +141,8 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     // Stories are development entrypoints excluded by Bob and the package build;
     // their Storybook preview hooks are not consumer runtime dependencies.
-    if (entry === '__tests__' || entry === 'node_modules' || /\.stories\.tsx?$/.test(entry)) continue;
+    if (entry === '__tests__' || entry === 'node_modules' || /\.stories\.tsx?$/.test(entry))
+      continue;
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       sourceFiles(full, out);
@@ -173,7 +174,8 @@ function valueImportSpecifiers(source: ts.SourceFile): { specifier: string; line
 
   for (const statement of source.statements) {
     const isImport = ts.isImportDeclaration(statement);
-    const isExportFrom = ts.isExportDeclaration(statement) && statement.moduleSpecifier !== undefined;
+    const isExportFrom =
+      ts.isExportDeclaration(statement) && statement.moduleSpecifier !== undefined;
     if (!isImport && !isExportFrom) continue;
 
     // `import type … from` / `export type … from` emit nothing at runtime.
@@ -279,7 +281,11 @@ function isMetroOptional(node: ts.Node): boolean {
 
   while (current && statementsCrossed < 3) {
     if (ts.isBlock(current)) {
-      return current.parent !== undefined && ts.isTryStatement(current.parent) && current.parent.tryBlock === current;
+      return (
+        current.parent !== undefined &&
+        ts.isTryStatement(current.parent) &&
+        current.parent.tryBlock === current
+      );
     }
     if (ts.isStatement(current)) statementsCrossed += 1;
     current = current.parent;
@@ -410,7 +416,8 @@ describe('optional peers are loaded through Metro’s optional-dependency form',
       };
 
       for (const { specifier, line } of requireCalls(source)) check(specifier, line, 'requires');
-      for (const { specifier, line } of valueImportSpecifiers(source)) check(specifier, line, 'imports');
+      for (const { specifier, line } of valueImportSpecifiers(source))
+        check(specifier, line, 'imports');
     }
 
     expect([...undeclared].sort()).toEqual([]);
@@ -457,7 +464,8 @@ describe('no require() resolves through a variable specifier', () => {
 
   it('keeps no stale variable-require allowlist entries', () => {
     const stale = VARIABLE_REQUIRE_ALLOWED.filter(
-      (entry) => !requireCalls(parse(join(SRC, entry.file))).some(({ specifier }) => specifier === null),
+      (entry) =>
+        !requireCalls(parse(join(SRC, entry.file))).some(({ specifier }) => specifier === null),
     ).map((entry) => `${entry.file} no longer calls require() with a variable — drop the entry`);
 
     expect(stale).toEqual([]);

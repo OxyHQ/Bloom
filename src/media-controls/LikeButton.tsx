@@ -55,7 +55,10 @@ function LikeButtonComponent({
   style,
   testID,
 }: LikeButtonProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
 
   const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);

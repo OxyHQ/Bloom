@@ -26,7 +26,11 @@ type Story = StoryObj;
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Card appearance="outline" radius="radius-16" style={{ maxWidth: '100%', padding: 16, gap: 10, width: 420 }}>
+    <Card
+      appearance="outline"
+      radius="radius-16"
+      style={{ maxWidth: '100%', padding: 16, gap: 10, width: 420 }}
+    >
       <Text style={{ fontWeight: '600' }}>{title}</Text>
       {children}
     </Card>
@@ -149,12 +153,16 @@ export const Gutters: Story = {
       <View style={{ maxWidth: '100%', gap: 16, width: 420 }}>
         <Panel title="useGutters(['base'])">
           <View style={{ ...gutters, backgroundColor: colors.primarySubtle, borderRadius: 8 }}>
-            <Text>paddingLeft {gutters.paddingLeft} · paddingTop {gutters.paddingTop}</Text>
+            <Text>
+              paddingLeft {gutters.paddingLeft} · paddingTop {gutters.paddingTop}
+            </Text>
           </View>
         </Panel>
         <Panel title="useGutters(['wide'])">
           <View style={{ ...wide, backgroundColor: colors.primarySubtle, borderRadius: 8 }}>
-            <Text>paddingLeft {wide.paddingLeft} · paddingTop {wide.paddingTop}</Text>
+            <Text>
+              paddingLeft {wide.paddingLeft} · paddingTop {wide.paddingTop}
+            </Text>
           </View>
         </Panel>
       </View>

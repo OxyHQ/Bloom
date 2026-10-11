@@ -35,7 +35,10 @@ function Caret({ open, color }: { open: boolean; color: string }) {
     const target = open ? 180 : 0;
     rotation.value = reducedMotion ? target : withTiming(target, { duration: 200, easing: EASE });
   }, [open, reducedMotion, rotation]);
-  const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.value}deg` }] }), [rotation]);
+  const style = useAnimatedStyle(
+    () => ({ transform: [{ rotate: `${rotation.value}deg` }] }),
+    [rotation],
+  );
   return (
     <Animated.View style={[{ width: 16, height: 16, flexShrink: 0 }, style]}>
       <RiArrowDropDownLine width={16} height={16} fill={color} />
@@ -75,14 +78,17 @@ function StatusItem({
     '--bloom-composer-ring': palette.focusRing,
   };
   return (
-    <Button appearance="plain" tone="neutral"
+    <Button
+      appearance="plain"
+      tone="neutral"
       ref={triggerRef}
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
       aria-expanded={expanded}
       onPress={onPress}
-      style={[COMPOSER_BUTTON_LAYOUT, style]}>
+      style={[COMPOSER_BUTTON_LAYOUT, style]}
+    >
       {icon}
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
@@ -108,23 +114,32 @@ function FolderRow({
   const Button = useComposerButton();
 
   return (
-    <Button appearance="plain" tone="neutral"
+    <Button
+      appearance="plain"
+      tone="neutral"
       accessibilityRole="button"
       accessibilityLabel={`${folder.prefix}${folder.name}`}
       pressed={selected}
       onPress={onPress}
-
-      style={[COMPOSER_BUTTON_LAYOUT, {
-        width: '100%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        padding: 8,
-        borderRadius: 10,
-        cursor: 'pointer',
-      }]} >
+      style={[
+        COMPOSER_BUTTON_LAYOUT,
+        {
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          padding: 8,
+          borderRadius: 10,
+          cursor: 'pointer',
+        },
+      ]}
+    >
       <RiFolder2Line width={20} height={20} fill={palette.iconSecondary} />
-      <Text variant="body-medium" numberOfLines={1} style={{ flexShrink: 1, color: palette.textSecondary }}>
+      <Text
+        variant="body-medium"
+        numberOfLines={1}
+        style={{ flexShrink: 1, color: palette.textSecondary }}
+      >
         {folder.prefix}
         <Text variant="body-medium" style={{ color: palette.text }}>
           {folder.name}
@@ -185,7 +200,17 @@ export function ComposerStatusBarBase({
   return (
     <View
       testID={testID}
-      style={[{ width: '100%', minHeight: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, style]}>
+      style={[
+        {
+          width: '100%',
+          minHeight: 26,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        },
+        style,
+      ]}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         {branch !== undefined ? (
           <StatusItem
@@ -228,9 +253,13 @@ export function ComposerStatusBarBase({
                 padding: 10,
                 boxShadow: palette.shadowDropdown,
                 gap: 0,
-              }}>
+              }}
+            >
               <View style={{ width: '100%', flexDirection: 'column', gap: 6, paddingTop: 4 }}>
-                <Text variant="body-medium" style={{ paddingLeft: 8, color: palette.textSecondary }}>
+                <Text
+                  variant="body-medium"
+                  style={{ paddingLeft: 8, color: palette.textSecondary }}
+                >
                   {labels.folders}
                 </Text>
                 <View style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
@@ -276,9 +305,14 @@ export function ComposerStatusBarBase({
               paddingBottom: 4,
               paddingRight: 8,
               paddingLeft: 6,
-            }}>
+            }}
+          >
             <ContextRing pct={context} palette={palette} />
-            <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
+            <Text
+              variant="body-2-medium"
+              numberOfLines={1}
+              style={{ color: palette.textSecondary }}
+            >
               {`${context}%`}
             </Text>
           </View>

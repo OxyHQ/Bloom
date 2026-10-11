@@ -114,9 +114,9 @@ describe('a sold-out window', () => {
     mount(picker());
     expect(byTestId(`${TID}-w3-detail`).textContent).toBe(DELIVERY_SOLD_OUT_LABEL);
     expect(byTestId(`${TID}-w3`).textContent).not.toContain('1 left');
-    expect(windowDetail({ id: 'x', label: 'x', soldOut: true, capacity: '1 left', tier: 'express' })).toBe(
-      DELIVERY_SOLD_OUT_LABEL,
-    );
+    expect(
+      windowDetail({ id: 'x', label: 'x', soldOut: true, capacity: '1 left', tier: 'express' }),
+    ).toBe(DELIVERY_SOLD_OUT_LABEL);
   });
 
   it('announces as unavailable rather than being merely drawn pale', () => {

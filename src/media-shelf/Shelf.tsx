@@ -203,26 +203,31 @@ function ShelfComponent({
             />
           ) : null}
           {showArrows ? (
-            <View {...webDataSet({ bloomShelfArrows: '' })} style={{ flexDirection: 'row', gap: 8 }}>
+            <View
+              {...webDataSet({ bloomShelfArrows: '' })}
+              style={{ flexDirection: 'row', gap: 8 }}
+            >
               <Button
-
                 size="sm"
                 iconOnly
                 leadingIcon={RiArrowLeftSLine}
                 accessibilityLabel={`${previousLabel}: ${title}`}
                 disabled={!overflow.previous}
                 onPress={() => page(-1)}
-                testID={testID ? `${testID}-previous` : undefined} tone="neutral" appearance="outline"
+                testID={testID ? `${testID}-previous` : undefined}
+                tone="neutral"
+                appearance="outline"
               />
               <Button
-
                 size="sm"
                 iconOnly
                 leadingIcon={RiArrowRightSLine}
                 accessibilityLabel={`${nextLabel}: ${title}`}
                 disabled={!overflow.next}
                 onPress={() => page(1)}
-                testID={testID ? `${testID}-next` : undefined} tone="neutral" appearance="outline"
+                testID={testID ? `${testID}-next` : undefined}
+                tone="neutral"
+                appearance="outline"
               />
             </View>
           ) : null}
@@ -233,7 +238,8 @@ function ShelfComponent({
 
   let body: React.ReactNode;
   if (layout === 'grid') {
-    const limit = grid.columns > 0 && Number.isFinite(rows) ? grid.columns * Math.max(1, rows) : items.length;
+    const limit =
+      grid.columns > 0 && Number.isFinite(rows) ? grid.columns * Math.max(1, rows) : items.length;
     body = (
       <View
         onLayout={onGridLayout}
@@ -337,7 +343,11 @@ function ShelfTitle({
     </Text>
   );
   if (!onPress) return heading;
-  const linkStyle: WebCssStyle = { alignSelf: 'flex-start', maxWidth: '100%', '--bloom-shelf-ring': ring };
+  const linkStyle: WebCssStyle = {
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+    '--bloom-shelf-ring': ring,
+  };
   return (
     <Pressable
       {...webDataSet({ bloomShelfLink: '' })}

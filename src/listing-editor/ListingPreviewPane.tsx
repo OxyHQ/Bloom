@@ -7,7 +7,11 @@ import { useImageResolver } from '../image-resolver/context';
 import { ListingCard } from '../listing-card';
 import { resolvePhoto } from '../listing-card/shared';
 import { ListingHeader } from '../listing-details';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
@@ -130,7 +134,9 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
   const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
   const theme = useTheme();
   const resolver = useImageResolver();
-  const cover = listing.photos[0] ? resolvePhoto(listing.photos[0], resolver, listing.photoVariant) : undefined;
+  const cover = listing.photos[0]
+    ? resolvePhoto(listing.photos[0], resolver, listing.photoVariant)
+    : undefined;
   const hairline = theme.colors.border;
 
   return (
@@ -145,19 +151,33 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
         overflow: 'hidden',
       }}
     >
-      <View style={{ width: '100%', aspectRatio: 4 / 3, backgroundColor: theme.colors.backgroundSecondary }}>
+      <View
+        style={{
+          width: '100%',
+          aspectRatio: 4 / 3,
+          backgroundColor: theme.colors.backgroundSecondary,
+        }}
+      >
         {cover ? (
-          <Image source={{ uri: cover }} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
+          <Image
+            source={{ uri: cover }}
+            resizeMode="cover"
+            style={{ width: '100%', height: '100%' }}
+          />
         ) : null}
       </View>
-      <View style={{ gap: 12, paddingTop: 16, paddingBottom: 16, paddingLeft: 16, paddingRight: 16 }}>
+      <View
+        style={{ gap: 12, paddingTop: 16, paddingBottom: 16, paddingLeft: 16, paddingRight: 16 }}
+      >
         <ListingHeader
           title={listing.title}
           size="medium"
           headingLevel={2}
           subtitle={listing.subtitle}
           rating={listing.rating}
-          reviewsLabel={listing.reviewCount != null ? reviewsLabel(messages, listing.reviewCount) : undefined}
+          reviewsLabel={
+            listing.reviewCount != null ? reviewsLabel(messages, listing.reviewCount) : undefined
+          }
           location={listing.location}
         />
         {listing.facts && listing.facts.length > 0 ? (

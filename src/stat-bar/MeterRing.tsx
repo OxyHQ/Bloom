@@ -5,7 +5,13 @@ import Svg, { Circle } from 'react-native-svg';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
-import { METER_DURATION_VAR, adoptMeterStyleSheet, meterFraction, meterValue, resolveMeterColors } from './shared';
+import {
+  METER_DURATION_VAR,
+  adoptMeterStyleSheet,
+  meterFraction,
+  meterValue,
+  resolveMeterColors,
+} from './shared';
 import type { MeterRingProps } from './types';
 
 /**
@@ -101,7 +107,11 @@ function MeterRingComponent({
         </Svg>
       </View>
       {children != null ? (
-        <View aria-hidden importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        <View
+          aria-hidden
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
+        >
           {children}
         </View>
       ) : null}

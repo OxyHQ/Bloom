@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { EvictionReportCard } from './EvictionReportCard';
@@ -25,7 +29,10 @@ const noop = () => undefined;
 //  or a street with no number, never an address.
 // ---------------------------------------------------------------------------
 
-type Report = Omit<EvictionReportCardProps, 'attending' | 'onAttendingChange'> & { id: string; past: boolean };
+type Report = Omit<EvictionReportCardProps, 'attending' | 'onAttendingChange'> & {
+  id: string;
+  past: boolean;
+};
 
 const REPORTS: Report[] = [
   {
@@ -68,7 +75,8 @@ const REPORTS: Report[] = [
     status: 'scheduled',
     area: 'Orcasitas, Madrid',
     household: ['Single-parent family'],
-    description: 'Reported by a neighbour this morning. Waiting for the support group to confirm the details.',
+    description:
+      'Reported by a neighbour this morning. Waiting for the support group to confirm the details.',
     attendeesLabel: '5 people will attend',
   },
   {
@@ -95,7 +103,8 @@ const REPORTS: Report[] = [
     status: 'executed',
     area: 'Usera, Madrid',
     household: ['Elderly couple'],
-    description: 'The eviction went ahead. The support group is helping the couple with temporary accommodation.',
+    description:
+      'The eviction went ahead. The support group is helping the couple with temporary accommodation.',
     attendeesLabel: '36 people attended',
     organisationsLabel: '2 organisations supporting',
     verified: true,
@@ -113,10 +122,32 @@ const REPORTS: Report[] = [
 ];
 
 const HISTORY: EvictionEvent[] = [
-  { kind: 'published', title: 'Report published', date: '2 Sep 2026', source: 'Neighbourhood assembly' },
-  { kind: 'date-set', title: 'Eviction date set for 16 September', date: '4 Sep 2026', source: 'Court notice shared by the family' },
-  { kind: 'mobilisation', title: 'Support call shared', date: '5 Sep 2026', description: 'Three housing groups joined the call.', source: 'Tenants’ union' },
-  { kind: 'postponed', title: 'Postponed to 23 September', date: '15 Sep 2026', description: 'The court accepted a request to review the family’s situation.', source: 'Family’s lawyer' },
+  {
+    kind: 'published',
+    title: 'Report published',
+    date: '2 Sep 2026',
+    source: 'Neighbourhood assembly',
+  },
+  {
+    kind: 'date-set',
+    title: 'Eviction date set for 16 September',
+    date: '4 Sep 2026',
+    source: 'Court notice shared by the family',
+  },
+  {
+    kind: 'mobilisation',
+    title: 'Support call shared',
+    date: '5 Sep 2026',
+    description: 'Three housing groups joined the call.',
+    source: 'Tenants’ union',
+  },
+  {
+    kind: 'postponed',
+    title: 'Postponed to 23 September',
+    date: '15 Sep 2026',
+    description: 'The court accepted a request to review the family’s situation.',
+    source: 'Family’s lawyer',
+  },
   { kind: 'date-set', title: 'Eviction scheduled', date: '23 Sep 2026, 09:00', upcoming: true },
 ];
 
@@ -128,7 +159,14 @@ function Page({ width, children }: { width: number; children: React.ReactNode })
   width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   return (
-    <View style={{ width: '100%', minHeight: '100%', alignItems: 'flex-start', backgroundColor: theme.colors.background }}>
+    <View
+      style={{
+        width: '100%',
+        minHeight: '100%',
+        alignItems: 'flex-start',
+        backgroundColor: theme.colors.background,
+      }}
+    >
       <View
         style={{
           width,
@@ -172,7 +210,12 @@ function EvictionList({ width }: { width: number }) {
   return (
     <Page width={width}>
       <View style={{ gap: 4 }}>
-        <Text role="heading" aria-level={1} variant={columns > 1 ? 'title-1-semibold' : 'title-2-semibold'} style={{ color: theme.colors.text }}>
+        <Text
+          role="heading"
+          aria-level={1}
+          variant={columns > 1 ? 'title-1-semibold' : 'title-2-semibold'}
+          style={{ color: theme.colors.text }}
+        >
           Evictions near you
         </Text>
         <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
@@ -200,7 +243,11 @@ function EvictionList({ width }: { width: number }) {
             <EvictionReportCard
               {...report}
               {...(report.status === 'scheduled' || report.status === 'postponed'
-                ? { ...attend(id), onShare: noop, onContactSupport: report.organisationsLabel ? noop : undefined }
+                ? {
+                    ...attend(id),
+                    onShare: noop,
+                    onContactSupport: report.organisationsLabel ? noop : undefined,
+                  }
                 : { onShare: noop })}
             />
           </View>
@@ -254,7 +301,12 @@ function ReportDetail({ width }: { width: number }) {
   );
   const history = (
     <View style={{ gap: 16 }}>
-      <Text role="heading" aria-level={2} variant="title-3-semibold" style={{ color: theme.colors.text }}>
+      <Text
+        role="heading"
+        aria-level={2}
+        variant="title-3-semibold"
+        style={{ color: theme.colors.text }}
+      >
         Case history
       </Text>
       <EvictionTimeline events={HISTORY} />
@@ -309,7 +361,9 @@ function Statuses() {
             <EvictionReportCard
               date="Tuesday, 23 September"
               time="09:00"
-              relativeLabel={status === 'scheduled' || status === 'postponed' ? 'in 3 days' : '2 days ago'}
+              relativeLabel={
+                status === 'scheduled' || status === 'postponed' ? 'in 3 days' : '2 days ago'
+              }
               status={status}
               area="Carabanchel, Madrid"
             />

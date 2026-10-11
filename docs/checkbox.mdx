@@ -126,3 +126,24 @@ survives only as a deprecated alias of the fallback. See
 Use `checked` for controlled state or `defaultChecked` for an initial uncontrolled state. `onCheckedChange` reports either mode. Size uses `xs`, `sm`, `md`, `lg` and inherits from `BloomScope`.
 
 An explicitly supplied `checked={undefined}` is controlled and reads as false. Omit `checked` to let `defaultChecked` initialize internal state.
+
+## Composed labels
+
+`labelContent` replaces the visible string label with a decorative React node
+inside a `View`. This supports icon rows, counts and multi-line compositions on
+web and native without nesting Views inside Text. The whole existing checkbox
+row remains the press target. `label` still supplies its accessible name when
+its visible text is replaced; `accessibilityLabel` overrides that name. Always
+supply one of these strings, and keep interactive children out of the slot.
+
+```tsx
+<Checkbox label="Four stars and up" checked={selected} onCheckedChange={setSelected}
+  labelContent={<View style={{ flexDirection: 'row', gap: 8 }}>
+    <Rating value={4} showValue={false} /><Text>12 results</Text>
+  </View>} />
+```
+
+The slot is decorative to accessibility: assistive technology announces the
+named checkbox once. `labelStyle` continues to style the built-in string label;
+style the components you put in `labelContent` directly. The separate description,
+indeterminate state, disabled state, focus ring and hit slop keep their defaults.

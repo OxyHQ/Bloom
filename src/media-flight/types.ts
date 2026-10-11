@@ -23,9 +23,7 @@ export interface MeasuredRect {
  * without Bloom naming `View` in its public API.
  */
 export interface MediaFlightAnchorNode {
-  measureInWindow(
-    callback: (x: number, y: number, width: number, height: number) => void,
-  ): void;
+  measureInWindow(callback: (x: number, y: number, width: number, height: number) => void): void;
 }
 
 /** A still image painted into a media surface. */
@@ -37,6 +35,12 @@ export interface MediaSurfaceImage {
   kind?: 'image';
   /** Source URI rendered as the image. */
   uri: string;
+  /**
+   * Already-visible thumbnail, shown immediately while `uri` loads. Use the
+   * same URL as the origin image so its decoded memory-cache entry is reused.
+   * It remains visible if the full image fails; sharing still uses `uri`.
+   */
+  previewUri?: string;
 }
 
 /**
@@ -264,7 +268,9 @@ export interface MediaVideoSlotProps<P extends VideoPlayerLike = VideoPlayerLike
 }
 
 /**
- * Paint the video yourself.
+ * Paint the video yourself — with `VideoView` from `@oxy.so/bloom/video-view`,
+ * which keeps the web element inline (iPhone Safari never starts one that is
+ * not) and takes the slot's `player` as is.
  *
  * Bloom mounts a `VideoView` with the handful of props it knows about, which is
  * enough until a consumer needs something only its OWN element can give it: a

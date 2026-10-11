@@ -108,7 +108,13 @@ const EdgeScrimComponent: React.FC<EdgeScrimProps> = ({ color, edge = 'top', tes
   return (
     <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} testID={testID}>
       <Defs>
-        <LinearGradient id={id} x1="0" y1={fromBottom ? '1' : '0'} x2="0" y2={fromBottom ? '0' : '1'}>
+        <LinearGradient
+          id={id}
+          x1="0"
+          y1={fromBottom ? '1' : '0'}
+          x2="0"
+          y2={fromBottom ? '0' : '1'}
+        >
           {SCRIM_STOPS.map((stop) => (
             <Stop
               key={stop.offset}

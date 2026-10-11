@@ -28,4 +28,6 @@ export function useComposerPopover(): ComponentType<ComposerPopoverProps> {
 
 /** Platform bindings inject their actual Button, including its ref and layout contract. */
 export const ComposerButtonContext = createContext<typeof Button>(Button);
-export function useComposerButton() { return useContext(ComposerButtonContext); }
+export function useComposerButton() {
+  return useContext(ComposerButtonContext);
+}

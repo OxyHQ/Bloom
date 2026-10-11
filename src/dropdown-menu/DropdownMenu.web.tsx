@@ -89,7 +89,8 @@ export function DropdownMenuTrigger({
         accessibilityRole: 'button',
         'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
-      }}>
+      }}
+    >
       {children}
     </TriggerSlot>
   );
@@ -144,7 +145,8 @@ export function DropdownMenuContent({
       // laid-out box, which the class is already part of.
       className={cx(MENU_MIN_WIDTH_CLASS, className)}
       style={style}
-      testID={testID}>
+      testID={testID}
+    >
       <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
     </FloatingPanel>
   );

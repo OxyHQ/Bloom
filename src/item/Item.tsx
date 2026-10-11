@@ -47,10 +47,8 @@ const ItemComponent = function Item({
   testID,
 }: ItemProps) {
   const theme = useTheme();
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
-    useInteractionState();
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } =
-    useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const titleColor = destructive ? theme.colors.error : theme.colors.text;
   const cfg = DENSITY[density];
@@ -97,9 +95,7 @@ const ItemComponent = function Item({
       <View style={styles.textColumn}>
         {title != null ? (
           typeof title === 'string' ? (
-            <Text
-              numberOfLines={1}
-              style={[styles.title, { color: titleColor }, titleStyle]}>
+            <Text numberOfLines={1} style={[styles.title, { color: titleColor }, titleStyle]}>
               {title}
             </Text>
           ) : (
@@ -110,11 +106,8 @@ const ItemComponent = function Item({
           typeof subtitle === 'string' ? (
             <Text
               numberOfLines={2}
-              style={[
-                styles.subtitle,
-                { color: theme.colors.textSecondary },
-                subtitleStyle,
-              ]}>
+              style={[styles.subtitle, { color: theme.colors.textSecondary }, subtitleStyle]}
+            >
               {subtitle}
             </Text>
           ) : (
@@ -173,9 +166,7 @@ const ItemComponent = function Item({
         android_ripple={{ color: theme.colors.border }}
         accessibilityRole={resolvedRole}
         {...(role ? { role } : {})}
-        accessibilityLabel={
-          accessibilityLabel ?? (typeof title === 'string' ? title : undefined)
-        }
+        accessibilityLabel={accessibilityLabel ?? (typeof title === 'string' ? title : undefined)}
         accessibilityHint={accessibilityHint}
         accessibilityState={{ disabled, selected, expanded }}
         // React Native folds `aria-expanded` back into `accessibilityState`,
@@ -183,10 +174,8 @@ const ItemComponent = function Item({
         // setting `accessibilityState.expanded` alone announces nothing on web.
         aria-expanded={expanded}
         {...selectedAria}
-        style={[
-          disabled && styles.disabled,
-          pressed && !disabled && styles.pressed,
-        ]}>
+        style={[disabled && styles.disabled, pressed && !disabled && styles.pressed]}
+      >
         {content}
       </Pressable>
     );
@@ -194,11 +183,11 @@ const ItemComponent = function Item({
 
   return (
     <View
-      accessibilityRole={accessibilityRole ?? (role === 'radio' || role === 'checkbox' ? role : 'none')}
-      {...(role ? { role } : {})}
-      accessibilityLabel={
-        accessibilityLabel ?? (typeof title === 'string' ? title : undefined)
+      accessibilityRole={
+        accessibilityRole ?? (role === 'radio' || role === 'checkbox' ? role : 'none')
       }
+      {...(role ? { role } : {})}
+      accessibilityLabel={accessibilityLabel ?? (typeof title === 'string' ? title : undefined)}
       accessibilityHint={accessibilityHint}
       // A `View` has no `disabled` prop for react-native-web to derive
       // `aria-disabled` from, and it ignores `accessibilityState`, so without
@@ -208,7 +197,8 @@ const ItemComponent = function Item({
       accessibilityState={{ disabled, selected, expanded }}
       aria-expanded={expanded}
       {...selectedAria}
-      style={disabled ? styles.disabled : undefined}>
+      style={disabled ? styles.disabled : undefined}
+    >
       {content}
     </View>
   );

@@ -11,4 +11,7 @@ export interface SurfacesMessages {
   ok: string;
 }
 
-export const SURFACES_MESSAGES: MessageCatalog<SurfacesMessages> = defineMessages<SurfacesMessages>('SURFACES_MESSAGES', { confirm: 'Confirm', ok: 'OK' });
+export const SURFACES_MESSAGES: MessageCatalog<SurfacesMessages> = defineMessages<SurfacesMessages>(
+  'SURFACES_MESSAGES',
+  { confirm: 'Confirm', ok: 'OK' },
+);

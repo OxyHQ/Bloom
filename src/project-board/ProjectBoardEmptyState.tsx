@@ -35,10 +35,7 @@ function EmptyCard({
   useEffect(() => {
     progress.value = reducedMotion
       ? 1
-      : withDelay(
-          delay,
-          withTiming(1, { duration: 320, easing: Easing.inOut(Easing.ease) }),
-        );
+      : withDelay(delay, withTiming(1, { duration: 320, easing: Easing.inOut(Easing.ease) }));
     return () => cancelAnimation(progress);
   }, [delay, reducedMotion, progress]);
   const props = useAnimatedProps(
@@ -66,16 +63,10 @@ function EmptyLine({
   useEffect(() => {
     progress.value = reducedMotion
       ? 1
-      : withDelay(
-          delay,
-          withTiming(1, { duration: 320, easing: Easing.inOut(Easing.ease) }),
-        );
+      : withDelay(delay, withTiming(1, { duration: 320, easing: Easing.inOut(Easing.ease) }));
     return () => cancelAnimation(progress);
   }, [delay, reducedMotion, progress]);
-  const props = useAnimatedProps(
-    () => ({ width: width * progress.value }),
-    [progress, width],
-  );
+  const props = useAnimatedProps(() => ({ width: width * progress.value }), [progress, width]);
   return (
     <AnimatedRect
       animatedProps={props}
@@ -132,12 +123,7 @@ export function ProjectBoardEmptyState() {
               />
             </EmptyCard>
             <EmptyCard delay={0} minimumScale={0.4}>
-              <Rect
-                width={42}
-                height={27}
-                rx={5}
-                fill={tokens['--border'] ?? colors.border}
-              />
+              <Rect width={42} height={27} rx={5} fill={tokens['--border'] ?? colors.border} />
               <EmptyLine
                 width={14}
                 y={10}

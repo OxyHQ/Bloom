@@ -36,35 +36,36 @@ export interface PlaceDetailsMessages {
   towards: (headsign: string) => string;
 }
 
-export const PLACE_DETAILS_MESSAGES: MessageCatalog<PlaceDetailsMessages> = defineMessages<PlaceDetailsMessages>('PLACE_DETAILS_MESSAGES', {
-  infoActions: { call: 'Call', open: 'Open website', directions: 'Directions' },
-  busy: {
-    busier: 'Busier than usual',
-    typical: 'As busy as it usually is',
-    quieter: 'Quieter than usual',
-  },
-  transitModes: {
-    bus: 'Bus stop',
-    metro: 'Metro station',
-    train: 'Train station',
-    tram: 'Tram stop',
-    ferry: 'Ferry terminal',
-  },
-  notAvailable: 'Not available',
-  amenities: 'Amenities',
-  today: 'Today',
-  closed: 'Closed',
-  openingHours: 'Opening hours',
-  day: 'Day',
-  noDataForDay: 'No data for this day',
-  chartNoData: (day) => `${day}, no data`,
-  chartClosed: (day) => `${day}, closed all day`,
-  chartPeak: (day, hour) => `${day}, busiest at ${hour}`,
-  chartNow: (hour) => `now ${hour}`,
-  live: 'live',
-  noDepartures: 'No departures right now',
-  nearbyTransit: 'Nearby transit',
-  lines: 'Lines',
-  line: (name) => `Line ${name}`,
-  towards: (headsign) => `to ${headsign}`,
-});
+export const PLACE_DETAILS_MESSAGES: MessageCatalog<PlaceDetailsMessages> =
+  defineMessages<PlaceDetailsMessages>('PLACE_DETAILS_MESSAGES', {
+    infoActions: { call: 'Call', open: 'Open website', directions: 'Directions' },
+    busy: {
+      busier: 'Busier than usual',
+      typical: 'As busy as it usually is',
+      quieter: 'Quieter than usual',
+    },
+    transitModes: {
+      bus: 'Bus stop',
+      metro: 'Metro station',
+      train: 'Train station',
+      tram: 'Tram stop',
+      ferry: 'Ferry terminal',
+    },
+    notAvailable: 'Not available',
+    amenities: 'Amenities',
+    today: 'Today',
+    closed: 'Closed',
+    openingHours: 'Opening hours',
+    day: 'Day',
+    noDataForDay: 'No data for this day',
+    chartNoData: (day) => `${day}, no data`,
+    chartClosed: (day) => `${day}, closed all day`,
+    chartPeak: (day, hour) => `${day}, busiest at ${hour}`,
+    chartNow: (hour) => `now ${hour}`,
+    live: 'live',
+    noDepartures: 'No departures right now',
+    nearbyTransit: 'Nearby transit',
+    lines: 'Lines',
+    line: (name) => `Line ${name}`,
+    towards: (headsign) => `to ${headsign}`,
+  });

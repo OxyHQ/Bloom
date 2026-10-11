@@ -2,7 +2,14 @@ import { defineMessages, type MessageCatalog } from '../locale/messages';
 import type { SuggestionKind } from './types';
 
 /** The ids of the default attachment menu rows. */
-export type AttachmentMenuItemId = 'gallery' | 'camera' | 'file' | 'location' | 'contact' | 'poll' | 'music';
+export type AttachmentMenuItemId =
+  | 'gallery'
+  | 'camera'
+  | 'file'
+  | 'location'
+  | 'contact'
+  | 'poll'
+  | 'music';
 
 /**
  * Every fixed string the chat-composer family draws or announces, in each Bloom
@@ -56,35 +63,48 @@ export interface ChatComposerMessages {
   attachmentItems: Record<AttachmentMenuItemId, string>;
 }
 
-export const CHAT_COMPOSER_MESSAGES: MessageCatalog<ChatComposerMessages> = defineMessages<ChatComposerMessages>('CHAT_COMPOSER_MESSAGES', {
-  attach: 'Attach',
-  emoji: 'Emoji',
-  camera: 'Camera',
-  mic: 'Record a voice message',
-  message: 'Message',
-  enterHint: 'Enter to send · Shift + Enter for a new line',
-  modEnterHint: '⌘ + Enter to send · Enter for a new line',
-  cancelRecording: 'Cancel recording',
-  sendVoice: 'Send voice message',
-  deleteRecording: 'Delete recording',
-  playRecording: 'Play recording',
-  pauseRecording: 'Pause recording',
-  lockRecording: 'Lock recording',
-  slideToCancel: 'Slide to cancel',
-  recording: 'Recording',
-  searchEmoji: 'Search emoji',
-  noEmoji: 'No emoji found',
-  frequentlyUsed: 'Frequently used',
-  skinTone: 'Skin tone',
-  emojiPicker: 'Emoji picker',
-  moreReactions: 'More reactions',
-  quickReactions: 'Quick reactions',
-  messageActions: 'Message actions',
-  attachments: 'Attachments',
-  removeAttachment: (name) => `Remove ${name}`,
-  suggestions: { mention: 'People', command: 'Commands', emoji: 'Emoji' },
-  suggestionVerified: 'Verified',
-  searchingSuggestions: 'Searching…',
-  noSuggestions: { mention: 'No people found', command: 'No commands found', emoji: 'No emoji found' },
-  attachmentItems: { gallery: 'Gallery', camera: 'Camera', file: 'File', location: 'Location', contact: 'Contact', poll: 'Poll', music: 'Music' },
-});
+export const CHAT_COMPOSER_MESSAGES: MessageCatalog<ChatComposerMessages> =
+  defineMessages<ChatComposerMessages>('CHAT_COMPOSER_MESSAGES', {
+    attach: 'Attach',
+    emoji: 'Emoji',
+    camera: 'Camera',
+    mic: 'Record a voice message',
+    message: 'Message',
+    enterHint: 'Enter to send · Shift + Enter for a new line',
+    modEnterHint: '⌘ + Enter to send · Enter for a new line',
+    cancelRecording: 'Cancel recording',
+    sendVoice: 'Send voice message',
+    deleteRecording: 'Delete recording',
+    playRecording: 'Play recording',
+    pauseRecording: 'Pause recording',
+    lockRecording: 'Lock recording',
+    slideToCancel: 'Slide to cancel',
+    recording: 'Recording',
+    searchEmoji: 'Search emoji',
+    noEmoji: 'No emoji found',
+    frequentlyUsed: 'Frequently used',
+    skinTone: 'Skin tone',
+    emojiPicker: 'Emoji picker',
+    moreReactions: 'More reactions',
+    quickReactions: 'Quick reactions',
+    messageActions: 'Message actions',
+    attachments: 'Attachments',
+    removeAttachment: (name) => `Remove ${name}`,
+    suggestions: { mention: 'People', command: 'Commands', emoji: 'Emoji' },
+    suggestionVerified: 'Verified',
+    searchingSuggestions: 'Searching…',
+    noSuggestions: {
+      mention: 'No people found',
+      command: 'No commands found',
+      emoji: 'No emoji found',
+    },
+    attachmentItems: {
+      gallery: 'Gallery',
+      camera: 'Camera',
+      file: 'File',
+      location: 'Location',
+      contact: 'Contact',
+      poll: 'Poll',
+      music: 'Music',
+    },
+  });

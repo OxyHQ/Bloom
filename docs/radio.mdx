@@ -121,3 +121,85 @@ was a hardcoded `#FFFFFF` — a white halo in dark mode. See
 `Radio` and `RadioCard` use `checked` and `onValueChange`: choosing an option reports its value, never a false toggle. `RadioGroup` accepts controlled `value` or uncontrolled `defaultValue`. The duplicate `selected` and `onSelect` props have been removed.
 
 An explicitly supplied `value={undefined}` is a controlled empty selection. Omit `value` to opt into uncontrolled state with `defaultValue`; callbacks do not commit a controlled selection until its parent updates the prop.
+
+## Composed row labels
+
+A standalone `Radio` accepts `labelContent?: ReactNode` for a decorative layout
+inside a View. It replaces the visible `label`; pass `label` or
+`accessibilityLabel` as the explicit accessible name. Do not put controls inside
+this slot. The existing radio row owns the press target and selected state.
+`labelStyle` still styles the built-in string label; custom content owns its own
+styles. `RadioGroup`'s data-driven options and `RadioCard` keep their string label
+and title contracts.
+
+```tsx
+<Radio value="helpful" checked={order === 'helpful'} onValueChange={setOrder}
+  accessibilityLabel="Most helpful"
+  labelContent={<View><Text>Helpful</Text><Text>By votes</Text></View>} />
+```
+
+A collection of composed rows belongs inside a named `radiogroup`. Space selects
+a focused row on web; choosing an already-selected row remains a no-op. This
+slot does not add arrow-key or roving-focus behavior to a custom collection.
+
+## Group row geometry and keyboard navigation
+
+`RadioGroup optionStyle` styles each option's whole interactive row (including
+card options); `style` continues to style only the group. For example,
+`optionStyle={{ minHeight: 44, paddingVertical: 12 }}` gives full-width choice
+rows without wrapping controls or duplicating their hit targets.
+
+On web the group has one tab stop: the selected enabled option, or the first
+enabled option when there is no enabled selection. Arrow keys focus and select
+the next enabled option, wrapping at each edge. Horizontal arrows respect RTL;
+Home/End reach the first/last enabled option. Disabled options are skipped, and
+a disabled group has no tab stop. Controlled values remain caller-owned.
+Space and Enter activate the focused option once. Native retains its platform
+accessibility focus behavior rather than applying DOM keyboard semantics.
+
+## Composing option bodies
+
+Options accept `labelContent` for decorative layout, with `label` or
+`accessibilityLabel` supplying the control's name. `renderOption(option, control,
+state)` can wrap the owned radio with sibling content. Render `control` exactly
+once, unchanged; `state.checked` and `state.disabled` report group-owned state,
+and `state.controlRef` references the actual focusable host on web and native.
+The group retains selection, disabled behavior and its one keyboard tab stop.
+Interactive siblings keep their own keyboard behavior and do not select a radio.
+
+Use [Collapsible](./collapsible.mdx) with `open={state.checked}` and
+`returnFocusRef={state.controlRef}` for a revealed form. Never place inputs,
+selects or buttons inside `labelContent`. `optionStyle` still styles each owned
+radio, including logical row composition such as `flexDirection: 'row-reverse'`.
+
+## Radio chips
+
+`RadioGroup variant="chip"` renders `RadioChip` controls: pills without a dot,
+with the same controlled/uncontrolled selection, roving focus, RTL arrows,
+Home/End and Space behavior as other radio groups. The default layout is a row
+with wrapping and an 8px gap. The default tone is neutral for chips; row and card
+defaults are unchanged. `size` xs/sm/md/lg gives minimum heights 32/36/40/44px;
+native touch hit slop brings smaller targets to 44px.
+
+```tsx
+<RadioGroup label="Size" variant="chip" value={size} onValueChange={setSize}
+  size="md" tone="neutral" appearance="outline"
+  options={[{ value: 'small', label: 'Small' }, { value: 'large', label: 'Large' }]} />
+```
+
+`appearance` controls selected chip paint (outline by default, also solid,
+subtle or plain). Unselected options retain a quiet neutral outline; plain chips
+have no border and underline the selected label. Neutral outlined selection uses
+the theme's text-colored edge. Selection never promotes a neutral choice to the
+brand tone. Description is an accessibility hint; use a row/card for visible
+secondary descriptions. `labelContent` stays decorative and requires `label` or
+`accessibilityLabel` for its name.
+
+`optionClassName` and `optionLabelClassName` accept a string or a function of
+`{ checked, disabled, controlRef }`, on all three group variants. The option
+class replaces its standard layout and paint; the label class replaces the
+built-in string label typography/color. The group `className` replaces its
+default layout. Explicit `optionStyle`, `labelStyle` and `style` remain last.
+The semantic disabled state and group keyboard handling stay owned by Bloom.
+Standalone `RadioChip` accepts the corresponding `className` and
+`labelClassName` props and the same `checked`/`onValueChange` contract as `Radio`.

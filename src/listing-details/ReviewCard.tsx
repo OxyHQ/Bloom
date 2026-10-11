@@ -40,7 +40,15 @@ import { useCommonMessages } from '../locale/common-messages';
 
 const STAR_SIZE = 10;
 
-function Stars({ rating, palette, testID }: { rating: number; palette: ListingPalette; testID?: string }) {
+function Stars({
+  rating,
+  palette,
+  testID,
+}: {
+  rating: number;
+  palette: ListingPalette;
+  testID?: string;
+}) {
   const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
   const filled = Math.max(0, Math.min(5, Math.round(rating)));
   return (
@@ -107,7 +115,11 @@ function ReviewCardComponent({
   }, []);
   const truncatable = clamps && clampedHeight > 0 && fullHeight > clampedHeight + 1;
 
-  const ring: WebCssStyle = { '--bloom-listing-ring': palette.ring, borderRadius: 4, alignSelf: 'flex-start' };
+  const ring: WebCssStyle = {
+    '--bloom-listing-ring': palette.ring,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  };
 
   return (
     <View style={[{ gap: 12 }, style]} testID={testID}>
@@ -118,7 +130,11 @@ function ReviewCardComponent({
             {name}
           </Text>
           {subtitle ? (
-            <Text variant="body-2-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+            <Text
+              variant="body-2-regular"
+              numberOfLines={1}
+              style={{ color: palette.textSecondary }}
+            >
               {subtitle}
             </Text>
           ) : null}
@@ -128,7 +144,11 @@ function ReviewCardComponent({
       {rating != null || date ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           {rating != null ? (
-            <Stars rating={rating} palette={palette} testID={testID ? `${testID}-stars` : undefined} />
+            <Stars
+              rating={rating}
+              palette={palette}
+              testID={testID ? `${testID}-stars` : undefined}
+            />
           ) : null}
           {rating != null && date ? (
             <Text
@@ -184,7 +204,10 @@ function ReviewCardComponent({
             style={ring}
             testID={testID ? `${testID}-toggle` : undefined}
           >
-            <Text variant="body-semibold" style={{ color: palette.text, textDecorationLine: 'underline' }}>
+            <Text
+              variant="body-semibold"
+              style={{ color: palette.text, textDecorationLine: 'underline' }}
+            >
               {expanded ? showLessLabel : showMoreLabel}
             </Text>
           </Pressable>
@@ -205,7 +228,9 @@ function ReviewCardComponent({
           }}
           testID={testID ? `${testID}-response` : undefined}
         >
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 8 }}>
+          <View
+            style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 8 }}
+          >
             <Text variant="body-2-semibold" style={{ color: palette.text }}>
               {hostResponse.title}
             </Text>

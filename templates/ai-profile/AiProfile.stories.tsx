@@ -13,8 +13,18 @@ import { MONTH_NAMES } from './demo-data';
 const meta: Meta<typeof AiProfileTemplate> = {
   component: AiProfileTemplate,
   args: { initialMonth: 11 },
-  argTypes: { initialMonth: { name: 'Month', control: { type: 'select', labels: Object.fromEntries(MONTH_NAMES.map((name, month) => [month, name])) }, options: Array.from({ length: 12 }, (_, month) => month), description: 'Changing the month restarts the profile demo.' } },
-  render: args => <AiProfileTemplate key={args.initialMonth} {...args} />,
+  argTypes: {
+    initialMonth: {
+      name: 'Month',
+      control: {
+        type: 'select',
+        labels: Object.fromEntries(MONTH_NAMES.map((name, month) => [month, name])),
+      },
+      options: Array.from({ length: 12 }, (_, month) => month),
+      description: 'Changing the month restarts the profile demo.',
+    },
+  },
+  render: (args) => <AiProfileTemplate key={args.initialMonth} {...args} />,
   title: 'Templates/AI Profile',
   parameters: { layout: 'fullscreen' },
 };

@@ -83,13 +83,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     style,
     testID = 'multi-agent-chat',
   } = props;
-  const {
-    Portal,
-    Dialog,
-    ComposerPanel,
-    AgentCreator,
-    Dropdown: D,
-  } = useChatComponents();
+  const { Portal, Dialog, ComposerPanel, AgentCreator, Dropdown: D } = useChatComponents();
   const { colors } = useTheme();
   const directionProps = useDirectionProps();
   const reduced = useReducedMotion();
@@ -109,9 +103,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
       setHandoff((current) => {
         if (!current || current.arrived.includes(id)) return current;
         const arrived = [...current.arrived, id];
-        return arrived.length === current.avatars.length
-          ? null
-          : { ...current, arrived };
+        return arrived.length === current.avatars.length ? null : { ...current, arrived };
       }),
     [],
   );
@@ -146,9 +138,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const scroll = useRef<ScrollView>(null);
   const follow = useRef(true);
   const offsets = useRef<Record<string, number>>({});
-  const chat: Conversation = workspace.chats.find(
-    (c) => c.id === workspace.activeId,
-  ) ??
+  const chat: Conversation = workspace.chats.find((c) => c.id === workspace.activeId) ??
     workspace.chats[0] ?? {
       id: 'draft-chat',
       title: '',
@@ -156,9 +146,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
       messages: [],
     };
   const participants =
-    chat?.agentIds.flatMap(
-      (id) => workspace.agents.find((a) => a.id === id) ?? [],
-    ) ?? [];
+    chat?.agentIds.flatMap((id) => workspace.agents.find((a) => a.id === id) ?? []) ?? [];
   const targetChat = workspace.chats.find((c) => c.id === targetChatId) ?? chat;
   const open = useCallback(
     (next: Panel) => {
@@ -171,10 +159,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   useEffect(() => {
     if (!loaded || restoredEditor.current) return;
     restoredEditor.current = true;
-    setEditor(
-      current.current.agents.find((agent) => agent.id === defaultEditorId) ??
-        null,
-    );
+    setEditor(current.current.agents.find((agent) => agent.id === defaultEditorId) ?? null);
   }, [loaded, current, defaultEditorId]);
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
@@ -236,10 +221,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     }));
     edit(agent);
   };
-  const chooseAgents = (
-    ids: string[] = [],
-    existingId: string | null = null,
-  ) => {
+  const chooseAgents = (ids: string[] = [], existingId: string | null = null) => {
     handoffGeneration.current++;
     setHandoff(null);
     setSelected(ids);
@@ -248,9 +230,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   };
   const startChat = async () => {
     if (starting.current) return;
-    const ids = [...new Set(selected)].filter((id) =>
-      workspace.agents.some((a) => a.id === id),
-    );
+    const ids = [...new Set(selected)].filter((id) => workspace.agents.some((a) => a.id === id));
     if (!ids.length) return;
     if (editingChatId) {
       replies.stop(editingChatId);
@@ -262,9 +242,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     const next = conversationFor(workspace.agents, ids, id);
     const existing =
       ids.length === 1
-        ? workspace.chats.find(
-            (c) => c.agentIds.length === 1 && c.agentIds[0] === ids[0],
-          )
+        ? workspace.chats.find((c) => c.agentIds.length === 1 && c.agentIds[0] === ids[0])
         : undefined;
     if (existing) {
       selectChat(existing.id);
@@ -273,9 +251,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     }
     starting.current = true;
     const generation = ++handoffGeneration.current;
-    const selectedAgents = ids.flatMap(
-      (id) => workspace.agents.find((a) => a.id === id) ?? [],
-    );
+    const selectedAgents = ids.flatMap((id) => workspace.agents.find((a) => a.id === id) ?? []);
     const [avatars, origin] = await Promise.all([
       ids.length > 1 && !reduced
         ? captureAvatars(selectedAgents, pickerAvatars.current)
@@ -285,11 +261,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     starting.current = false;
     if (generation !== handoffGeneration.current) return;
     setFlightOrigin(origin);
-    setHandoff(
-      avatars.length
-        ? { chatId: id, kind: 'group', avatars, arrived: [] }
-        : null,
-    );
+    setHandoff(avatars.length ? { chatId: id, kind: 'group', avatars, arrived: [] } : null);
     setEditor(null);
     update((s) => ({ ...s, chats: [next, ...s.chats], activeId: id }));
     follow.current = true;
@@ -298,11 +270,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const copy = async (text: string, message = messages.copied) => {
     try {
       if (onCopy) await onCopy(text);
-      else if (
-        Platform.OS === 'web' &&
-        typeof navigator !== 'undefined' &&
-        navigator.clipboard
-      )
+      else if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard)
         await navigator.clipboard.writeText(text);
       else await Share.share({ message: text });
       replies.setNotice(message);
@@ -341,8 +309,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     replies.setNotice(messages.chatRemoved);
   };
   const sendMessage = async (text: string) => {
-    if (!chat || !text.trim() || replies.pending[chat.id] || sending.current)
-      return;
+    if (!chat || !text.trim() || replies.pending[chat.id] || sending.current) return;
     sending.current = true;
     const id = chat.id,
       generation = ++handoffGeneration.current;
@@ -425,28 +392,21 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         if (action === 'pin')
           update((s) => ({
             ...s,
-            chats: s.chats.map((c) =>
-              c.id === target.id ? { ...c, pinned: !c.pinned } : c,
-            ),
+            chats: s.chats.map((c) => (c.id === target.id ? { ...c, pinned: !c.pinned } : c)),
           }));
         if (action === 'rename') {
           setRename(target.customTitle || target.title);
           open('rename');
         }
         if (action === 'edit') {
-          if (target.agentIds.length > 1)
-            chooseAgents(target.agentIds, target.id);
+          if (target.agentIds.length > 1) chooseAgents(target.agentIds, target.id);
           else {
-            const agent = workspace.agents.find(
-              (a) => a.id === target.agentIds[0],
-            );
+            const agent = workspace.agents.find((a) => a.id === target.agentIds[0]);
             if (agent) edit(agent);
           }
         }
-        if (action === 'copy')
-          void copy(transcript(target), messages.conversationCopied);
-        if (action === 'copy-id')
-          void copy(target.id, messages.conversationIDCopied);
+        if (action === 'copy') void copy(transcript(target), messages.conversationCopied);
+        if (action === 'copy-id') void copy(target.id, messages.conversationIDCopied);
         if (action === 'remove') removeChat(target.id);
       }}
     />
@@ -476,9 +436,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
           key={value}
           accessibilityRole="button"
           accessibilityLabel={
-            value === 'up'
-              ? messages.helpfulResponse
-              : messages.unhelpfulResponse
+            value === 'up' ? messages.helpfulResponse : messages.unhelpfulResponse
           }
           accessibilityState={{ selected: feedback[id] === value }}
           aria-pressed={feedback[id] === value}
@@ -490,17 +448,13 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
             <RiThumbUpLine
               width={12}
               height={12}
-              fill={
-                feedback[id] === value ? colors.primary : colors.textTertiary
-              }
+              fill={feedback[id] === value ? colors.primary : colors.textTertiary}
             />
           ) : (
             <RiThumbDownLine
               width={12}
               height={12}
-              fill={
-                feedback[id] === value ? colors.primary : colors.textTertiary
-              }
+              fill={feedback[id] === value ? colors.primary : colors.textTertiary}
             />
           )}
         </StyledPressable>
@@ -527,10 +481,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
       testID={testID}
     >
       {!phone && (
-        <StyledView
-          className="me-4 hidden min-h-0 shrink-0 md:block"
-          style={{ width: 260 }}
-        >
+        <StyledView className="me-4 hidden min-h-0 shrink-0 md:block" style={{ width: 260 }}>
           {sidebar}
         </StyledView>
       )}
@@ -556,17 +507,13 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                     : panel === 'picker'
                 }
                 onPress={() =>
-                  participants.length === 1
-                    ? edit(participants[0]!)
-                    : chooseAgents(chat?.agentIds)
+                  participants.length === 1 ? edit(participants[0]!) : chooseAgents(chat?.agentIds)
                 }
               />
             </StyledView>
           </StyledView>
           {phone && (
-            <StyledView
-              style={{ position: 'absolute', top: 12, insetInlineStart: 12 }}
-            >
+            <StyledView style={{ position: 'absolute', top: 12, insetInlineStart: 12 }}>
               <IconButton
                 icon={RiMenuLine}
                 accessibilityLabel={messages.openConversations}
@@ -582,16 +529,10 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
             <StyledPressable
               accessibilityRole="button"
               accessibilityLabel={messages.copyConversation}
-              onPress={() =>
-                chat && void copy(transcript(chat), messages.conversationCopied)
-              }
+              onPress={() => chat && void copy(transcript(chat), messages.conversationCopied)}
               className="rounded p-1 text-foreground-icon-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             >
-              <RiShare2Line
-                width={16}
-                height={16}
-                fill={colors.textSecondary}
-              />
+              <RiShare2Line width={16} height={16} fill={colors.textSecondary} />
             </StyledPressable>
             <D.DropdownMenu>
               <D.DropdownMenuTrigger asChild>
@@ -600,11 +541,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   accessibilityLabel={messages.conversationOptions}
                   className="rounded p-1 text-foreground-icon-secondary"
                 >
-                  <RiMoreFill
-                    width={16}
-                    height={16}
-                    fill={colors.textSecondary}
-                  />
+                  <RiMoreFill width={16} height={16} fill={colors.textSecondary} />
                 </StyledPressable>
               </D.DropdownMenuTrigger>
               <D.DropdownMenuContent
@@ -613,9 +550,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                 className="rounded-[14px] p-1"
                 style={{ borderRadius: 14, padding: 4 }}
               >
-                <D.DropdownMenuLabel>
-                  {messages.inThisConversation}
-                </D.DropdownMenuLabel>
+                <D.DropdownMenuLabel>{messages.inThisConversation}</D.DropdownMenuLabel>
                 {participants.map((agent) => (
                   <D.DropdownMenuItem
                     key={agent.id}
@@ -642,23 +577,17 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
           label={messages.messages}
           className="flex-1"
           contentClassName={
-            chat?.messages.length
-              ? 'pb-4 pt-2'
-              : 'flex items-center justify-center p-4'
+            chat?.messages.length ? 'pb-4 pt-2' : 'flex items-center justify-center p-4'
           }
           contentContainerStyle={{ flexGrow: 1 }}
           scrollEventThrottle={16}
           onScroll={(event) => {
-            const { contentOffset, contentSize, layoutMeasurement } =
-              event.nativeEvent;
-            follow.current =
-              contentSize.height - contentOffset.y - layoutMeasurement.height <
-              100;
+            const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+            follow.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 100;
             if (chat) offsets.current[chat.id] = contentOffset.y;
           }}
           onContentSizeChange={() => {
-            if (follow.current)
-              scroll.current?.scrollToEnd({ animated: false });
+            if (follow.current) scroll.current?.scrollToEnd({ animated: false });
           }}
         >
           {!chat || !chat.messages.length ? (
@@ -675,17 +604,11 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                 }
               />
               <StyledView className="flex flex-col items-center gap-1.5">
-                <Text
-                  variant="title-3-semibold"
-                  style={{ textAlign: 'center' }}
-                >
+                <Text variant="title-3-semibold" style={{ textAlign: 'center' }}>
                   {participants.length > 1
                     ? messages.aFewMindsOneConversation
                     : participants[0]
-                      ? formatChatMessage(
-                          messages.sayHelloTo,
-                          participants[0].name,
-                        )
+                      ? formatChatMessage(messages.sayHelloTo, participants[0].name)
                       : messages.chatWithYourAgents}
                 </Text>
                 <Text
@@ -701,15 +624,10 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                         messages.areHereSendAMessageToGet,
                         participants.map((a) => a.name).join(', '),
                       )
-                    : (participants[0]?.description ??
-                      messages.chooseAnAgentOrCreateYourOwn)}
+                    : (participants[0]?.description ?? messages.chooseAnAgentOrCreateYourOwn)}
                 </Text>
               </StyledView>
-              {!chat && (
-                <Button onPress={() => chooseAgents()}>
-                  {messages.startChat}
-                </Button>
-              )}
+              {!chat && <Button onPress={() => chooseAgents()}>{messages.startChat}</Button>}
             </StyledView>
           ) : (
             <StyledView>
@@ -724,13 +642,9 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
               </StyledView>
               {[
                 ...chat.messages,
-                ...(replies.thinking[chat.id]
-                  ? [replies.thinking[chat.id]!]
-                  : []),
+                ...(replies.thinking[chat.id] ? [replies.thinking[chat.id]!] : []),
               ].map((message) => {
-                const agent = workspace.agents.find(
-                  (a) => a.id === message.agentId,
-                );
+                const agent = workspace.agents.find((a) => a.id === message.agentId);
                 const text = formatDemoReply(message.text);
                 if (message.role === 'user')
                   return (
@@ -788,9 +702,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
           <StyledView className="p-1">
             <ComposerPanel
               value={drafts[chat.id] ?? ''}
-              onValueChange={(value) =>
-                setDrafts((s) => ({ ...s, [chat.id]: value }))
-              }
+              onValueChange={(value) => setDrafts((s) => ({ ...s, [chat.id]: value }))}
               onSubmit={(text) => {
                 void sendMessage(text);
               }}
@@ -822,11 +734,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
               style={{ maxWidth: '100%' }}
             >
               <StyledView className="flex flex-row items-center gap-2">
-                <RiCheckLine
-                  width={16}
-                  height={16}
-                  fill={colors.textSecondary}
-                />
+                <RiCheckLine width={16} height={16} fill={colors.textSecondary} />
                 <Text
                   accessibilityRole="alert"
                   aria-live="polite"
@@ -864,26 +772,14 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
       >
         <ChatDialogFrame
           title={title}
-          mode={
-            panel === 'editor'
-              ? 'editor'
-              : panel === 'navigation'
-                ? 'navigation'
-                : 'center'
-          }
+          mode={panel === 'editor' ? 'editor' : panel === 'navigation' ? 'navigation' : 'center'}
           preview={
             panel === 'picker' ? (
               <SelectedAgentPreview
                 caption
-                agents={selected.flatMap(
-                  (id) => workspace.agents.find((a) => a.id === id) ?? [],
-                )}
+                agents={selected.flatMap((id) => workspace.agents.find((a) => a.id === id) ?? [])}
                 nodes={pickerAvatars.current}
-                hidden={
-                  handoff?.kind === 'group'
-                    ? handoff.avatars.map((a) => a.agent.id)
-                    : []
-                }
+                hidden={handoff?.kind === 'group' ? handoff.avatars.map((a) => a.agent.id) : []}
               />
             ) : undefined
           }
@@ -908,9 +804,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   update((s) => ({
                     ...s,
                     chats: s.chats.map((c) =>
-                      c.id === targetChat?.id
-                        ? { ...c, customTitle: rename.trim() }
-                        : c,
+                      c.id === targetChat?.id ? { ...c, customTitle: rename.trim() } : c,
                     ),
                   }));
                   close();
@@ -935,9 +829,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                 update((s) => ({
                   ...s,
                   chats: s.chats.map((c) =>
-                    c.id === targetChat?.id
-                      ? { ...c, customTitle: rename.trim() }
-                      : c,
+                    c.id === targetChat?.id ? { ...c, customTitle: rename.trim() } : c,
                   ),
                 }));
                 close();
@@ -961,9 +853,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                     pressed={picked}
                     onPress={() =>
                       setSelected((ids) =>
-                        picked
-                          ? ids.filter((id) => id !== agent.id)
-                          : [...ids, agent.id],
+                        picked ? ids.filter((id) => id !== agent.id) : [...ids, agent.id],
                       )
                     }
                     className={`h-10 max-w-full rounded-full border px-2 shadow-none transition-colors hover:bg-background-tertiary-default active:bg-background-tertiary-hover ${picked ? 'border-foreground-icon-secondary bg-background-tertiary-default text-text-primary dark:bg-background-tertiary-hover dark:hover:bg-background-tertiary-hover dark:active:bg-background-tertiary-hover' : 'border-transparent bg-background-secondary-default text-text-secondary'}`}
@@ -972,9 +862,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                       maxWidth: '100%',
                       borderRadius: 999,
                       borderWidth: 1,
-                      borderColor: picked
-                        ? colors.textSecondary
-                        : 'transparent',
+                      borderColor: picked ? colors.textSecondary : 'transparent',
                       backgroundColor: picked
                         ? colors.backgroundTertiary
                         : colors.backgroundSecondary,
@@ -1053,10 +941,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
               <Button
                 appearance="plain"
                 onPress={() => {
-                  void copy(
-                    transcript(targetChat),
-                    messages.conversationCopied,
-                  );
+                  void copy(transcript(targetChat), messages.conversationCopied);
                 }}
               >
                 {messages.copyConversation}
@@ -1069,10 +954,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
               >
                 {messages.copyConversationID}
               </Button>
-              <Button
-                appearance="plain"
-                onPress={() => removeChat(targetChat.id)}
-              >
+              <Button appearance="plain" onPress={() => removeChat(targetChat.id)}>
                 {messages.removeChat}
               </Button>
             </StyledView>
@@ -1109,11 +991,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
             );
             if (existing) selectChat(existing.id);
             else {
-              const created = conversationFor(
-                workspace.agents,
-                [id],
-                chatId('chat'),
-              );
+              const created = conversationFor(workspace.agents, [id], chatId('chat'));
               update((s) => ({
                 ...s,
                 chats: [created, ...s.chats],

@@ -1,3 +1,4 @@
+import { useSurfaceTransition } from '../motion/use-surface-transition';
 import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
@@ -26,12 +27,15 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { ScrollView, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, {
-  Easing,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import {
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import Animated, { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Backdrop, OverlayRoot } from '../overlay';
@@ -66,22 +70,16 @@ import {
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   EASE_OUT,
-  SIDE_SHEET_MIN_GUTTER,
+  resolveSideSheetWidth,
   useResolvedPlacement,
   physicalDialogSide,
   type DialogSidePlacement,
 } from './placement';
-import type {
-  DialogAction,
-  DialogControlProps,
-  DialogInset,
-  DialogProps,
-} from './types';
+import type { DialogAction, DialogControlProps, DialogInset, DialogProps } from './types';
 import { useMessages } from '../locale/messages';
 import { DIALOG_MESSAGES } from './messages';
 
 const FADE_OUT_DURATION = CENTER_FADE_OUT_DURATION;
-
 
 /**
  * The four CSS `animation` shorthands driving the centered card and its backdrop.
@@ -175,6 +173,9 @@ export function Dialog({ placement, ...rest }: DialogProps) {
  * `BottomSheet`).
  */
 function CenterOrSideDialog({
+  material: surfaceMaterial = 'surface',
+  backdrop,
+  transition,
   control,
   open: controlledOpen,
   startOpen,
@@ -188,6 +189,7 @@ function CenterOrSideDialog({
   header,
   placement,
   width = DEFAULT_SIDE_WIDTH,
+  minSideGutter,
   maxWidth = DEFAULT_CENTER_MAX_WIDTH,
   inset,
   dismissOnBackdrop = true,
@@ -211,6 +213,7 @@ function CenterOrSideDialog({
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   // Controlled mode is opt-in: when `open` is a boolean the host owns the
   // visible state; otherwise the legacy imperative `control` path drives it.
+  const motion = useSurfaceTransition(transition);
   const isControlled = controlledOpen !== undefined;
   const resolvedPlacement = placement;
 
@@ -237,19 +240,16 @@ function CenterOrSideDialog({
   // it asks the host to close via `onClose` (the host flips `open`); in
   // imperative mode it starts the exit animation directly. Either way an
   // optional callback runs after the dialog has finished closing.
-  const close = useCallback<DialogControlProps['close']>(
-    (cb) => {
-      if (typeof cb === 'function') {
-        closeCallbacksRef.current.push(cb);
-      }
-      if (isControlledRef.current) {
-        onCloseRef.current?.();
-        return;
-      }
-      setIsClosing(true);
-    },
-    [],
-  );
+  const close = useCallback<DialogControlProps['close']>((cb) => {
+    if (typeof cb === 'function') {
+      closeCallbacksRef.current.push(cb);
+    }
+    if (isControlledRef.current) {
+      onCloseRef.current?.();
+      return;
+    }
+    setIsClosing(true);
+  }, []);
 
   // `onClose` mirrored into a ref so `close` stays referentially stable (the
   // dialog context + imperative handle depend on it).
@@ -269,7 +269,10 @@ function CenterOrSideDialog({
   }, [isControlled, controlledOpen]);
 
   const exitDuration =
-    presentation === 'custom' ? customExitDuration ?? 0 : resolvedPlacement === 'center' ? FADE_OUT_DURATION : ANIMATION_DURATION;
+    presentation === 'custom'
+      ? (customExitDuration ?? 0)
+      : (motion.duration ??
+        (resolvedPlacement === 'center' ? FADE_OUT_DURATION : ANIMATION_DURATION));
 
   useEffect(() => {
     if (!isClosing) return;
@@ -314,20 +317,21 @@ function CenterOrSideDialog({
       return;
     }
     backdropFade.value = isClosing
-      ? withTiming(0, { ...MOTION_RECIPES.dismiss, duration: FADE_OUT_DURATION, easing: Easing.in(Easing.ease) })
-      : withTiming(1, { ...MOTION_RECIPES.present, duration: BACKDROP_FADE_IN_DURATION, easing: Easing.out(Easing.ease) });
-  }, [backdropFade, isOpen, isClosing]);
+      ? withTiming(0, {
+          ...MOTION_RECIPES.dismiss,
+          duration: motion.duration ?? FADE_OUT_DURATION,
+          easing: transition ? motion.easing : Easing.in(Easing.ease),
+        })
+      : withTiming(1, {
+          ...MOTION_RECIPES.present,
+          duration: motion.duration ?? BACKDROP_FADE_IN_DURATION,
+          easing: transition ? motion.easing : Easing.out(Easing.ease),
+        });
+  }, [backdropFade, isOpen, isClosing, motion.duration, motion.easing, !!transition]);
 
-  useImperativeHandle(
-    control?.ref,
-    () => ({ open, close }),
-    [open, close],
-  );
+  useImperativeHandle(control?.ref, () => ({ open, close }), [open, close]);
 
-  const context = useMemo(
-    () => ({ close, isWithinDialog: true, isClosing }),
-    [close, isClosing],
-  );
+  const context = useMemo(() => ({ close, isWithinDialog: true, isClosing }), [close, isClosing]);
 
   if (!isOpen) return null;
 
@@ -359,21 +363,29 @@ function CenterOrSideDialog({
               <Backdrop
                 onPress={() => close()}
                 disabled={!dismissOnBackdrop}
-                accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
+                accessibilityLabel={
+                  label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog
+                }
                 // The fade rides on the LAYERS, never on the press target: an
                 // opacity animation on the blur's ancestor composites the group in
                 // isolation and leaves `backdrop-filter` nothing to sample.
                 progress={backdropFade}
-                dimOpacity={presentation === 'custom' ? 0 : undefined}
-                blurIntensity={presentation === 'custom' ? 0 : undefined}
-                style={[{
-                  position: WEB_POSITION_FIXED,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: presentation === 'custom' ? undefined : 20,
-                }, containerStyle]}
+                {...backdrop}
+                dimOpacity={presentation === 'custom' ? 0 : backdrop?.dimOpacity}
+                blurIntensity={presentation === 'custom' ? 0 : backdrop?.blurIntensity}
+                style={[
+                  {
+                    position: WEB_POSITION_FIXED,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingHorizontal: presentation === 'custom' ? undefined : 20,
+                  },
+                  containerStyle,
+                ]}
               >
                 <DialogPanel
+                  transition={transition}
+                  material={surfaceMaterial}
                   presentation={presentation}
                   panelRef={panelRef}
                   testID={testID}
@@ -406,6 +418,9 @@ function CenterOrSideDialog({
         <ClosingContext.Provider value={isClosing}>
           <RemoveScrollBar />
           <SheetSurface
+            backdrop={backdrop}
+            transition={transition}
+            material={surfaceMaterial}
             panelRef={panelRef}
             testID={testID}
             label={label}
@@ -416,6 +431,7 @@ function CenterOrSideDialog({
             scrollable={scrollable}
             placement={resolvedPlacement}
             shown={!isClosing}
+            minSideGutter={minSideGutter}
             width={width}
             inset={inset}
             dismissOnBackdrop={dismissOnBackdrop}
@@ -436,6 +452,8 @@ function CenterOrSideDialog({
 }
 
 function DialogPanel({
+  material: surfaceMaterial = 'surface',
+  transition,
   presentation,
   panelRef,
   testID,
@@ -453,6 +471,8 @@ function DialogPanel({
   isClosing,
   children,
 }: {
+  material?: DialogProps['material'];
+  transition?: DialogProps['transition'];
   presentation?: DialogProps['presentation'];
   panelRef: React.RefObject<View | null>;
   testID?: string;
@@ -470,6 +490,13 @@ function DialogPanel({
   isClosing: boolean;
   children?: React.ReactNode;
 }) {
+  const motion = useSurfaceTransition(transition);
+  const panelMotion: WebCssStyle | undefined =
+    motion.duration === undefined
+      ? undefined
+      : {
+          animation: `${isClosing ? 'bloomDialogZoomFadeOut' : 'bloomDialogZoomFadeIn'} ${motion.cssEasing} ${motion.duration}ms${isClosing ? ' forwards' : ''}`,
+        };
   const theme = useTheme();
   const { close } = useDialogContext();
   const titleId = useId();
@@ -477,7 +504,12 @@ function DialogPanel({
   const headerController = useDialogHeaderController();
   const { height: viewportHeight } = useWindowDimensions();
   const heightRatio = maxHeightRatio ?? DEFAULT_MAX_HEIGHT_RATIO;
-  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten(style)?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0 });
+  const material = resolveSurfaceMaterial({
+    fill: String(StyleSheet.flatten(style)?.backgroundColor ?? theme.colors.background),
+    parentFill: theme.colors.background,
+    level: 0,
+    paint: surfaceMaterial !== 'flat',
+  });
   const { paintFill, publishedFill: surfaceFill } = material;
 
   // Size morphing across an in-place content swap. The centered card is the one
@@ -503,7 +535,7 @@ function DialogPanel({
           On web a portal keeps React context from where the dialog was
           rendered, so without this a dialog opened from inside a `ContentPanel`
           would tell its content it is sitting on the panel's card. */}
-{children}
+      {children}
     </DialogBody>
   );
 
@@ -553,76 +585,83 @@ function DialogPanel({
           zIndex: Z_INDEX.raised,
         },
         presentation === 'custom' ? undefined : isClosing ? ZOOM_FADE_OUT : ZOOM_FADE_IN,
+        presentation === 'custom' ? undefined : panelMotion,
         // Drives `height` (and `maxWidth`) only while a morph is in flight; at
         // rest it resolves to `height: 'auto'` — the natural sizing above. Placed
         // before `style` so a consumer's explicit size still wins.
         morphState.panelStyle,
         style,
-        { backgroundColor: 'transparent' },
+        { backgroundColor: surfaceMaterial === 'flat' ? paintFill : 'transparent' },
       ]}
     >
-      {presentation !== 'custom' && <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />}
+      {presentation !== 'custom' && surfaceMaterial !== 'flat' && (
+        <SurfacePaint
+          fill={paintFill}
+          shape={{ curve: SURFACE_SHAPES.panel.curve }}
+          radius={StyleSheet.flatten(style)?.borderRadius ?? 20}
+        />
+      )}
       <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-      {header ? (
-        // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large
-        // collapsing title over its own scroll content (see `DialogHeader`). The
-        // bar overlays; the large title + screen body scroll under it, feeding
-        // the shared scroll offset that drives the small-title cross-fade.
-        <>
-          <DialogNavHeader
-            controller={headerController}
-            header={header}
-            onDismiss={close}
-            collapse={scrollable !== false}
-          />
-          {scrollable === false ? (
-            <DialogMorphContent morph={morphState} style={{ flex: 1, minHeight: 0 }}>
-              <DialogNavBarSpacer controller={headerController} header={header} />
-              <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
-            </DialogMorphContent>
-          ) : (
-            <ScrollView
-              style={{ flexShrink: 1 }}
-              contentContainerStyle={{ paddingBottom: contentPadding }}
-              showsVerticalScrollIndicator={false}
-              scrollEventThrottle={16}
-              onScroll={(e) => {
-                headerController.scrollY.value = e.nativeEvent.contentOffset.y;
-              }}
-            >
-              <DialogMorphContent morph={morphState}>
-                <DialogLargeTitle controller={headerController} header={header} />
+        {header ? (
+          // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large
+          // collapsing title over its own scroll content (see `DialogHeader`). The
+          // bar overlays; the large title + screen body scroll under it, feeding
+          // the shared scroll offset that drives the small-title cross-fade.
+          <>
+            <DialogNavHeader
+              flatSurface={surfaceMaterial === 'flat'}
+              controller={headerController}
+              header={header}
+              onDismiss={close}
+              collapse={scrollable !== false}
+            />
+            {scrollable === false ? (
+              <DialogMorphContent morph={morphState} style={{ flex: 1, minHeight: 0 }}>
+                <DialogNavBarSpacer controller={headerController} header={header} />
                 <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
               </DialogMorphContent>
-            </ScrollView>
-          )}
-        </>
-      ) : scrollable === false ? (
-        // The content owns its own scrolling (a FlatList / VirtualizedList or a
-        // nested ScrollView). Render it bare in a bounded flex box — the card's
-        // `maxHeight` + `overflow: hidden` cap it and `flex: 1` + `minHeight: 0`
-        // hand the child a bounded height to scroll into — with NO wrapping
-        // ScrollView, so a VirtualizedList never nests inside one.
-        <DialogMorphContent
-          morph={morphState}
-          style={{ flex: 1, minHeight: 0, padding: contentPadding }}
-        >
-          {body}
-        </DialogMorphContent>
-      ) : (
-        <ScrollView
-          style={{ flexShrink: 1 }}
-          contentContainerStyle={{ padding: contentPadding }}
-          showsVerticalScrollIndicator={false}
-        >
-          <DialogMorphContent morph={morphState}>{body}</DialogMorphContent>
-        </ScrollView>
-      )}
+            ) : (
+              <ScrollView
+                style={{ flexShrink: 1 }}
+                contentContainerStyle={{ paddingBottom: contentPadding }}
+                showsVerticalScrollIndicator={false}
+                scrollEventThrottle={16}
+                onScroll={(e) => {
+                  headerController.scrollY.value = e.nativeEvent.contentOffset.y;
+                }}
+              >
+                <DialogMorphContent morph={morphState}>
+                  <DialogLargeTitle controller={headerController} header={header} />
+                  <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
+                </DialogMorphContent>
+              </ScrollView>
+            )}
+          </>
+        ) : scrollable === false ? (
+          // The content owns its own scrolling (a FlatList / VirtualizedList or a
+          // nested ScrollView). Render it bare in a bounded flex box — the card's
+          // `maxHeight` + `overflow: hidden` cap it and `flex: 1` + `minHeight: 0`
+          // hand the child a bounded height to scroll into — with NO wrapping
+          // ScrollView, so a VirtualizedList never nests inside one.
+          <DialogMorphContent
+            morph={morphState}
+            style={{ flex: 1, minHeight: 0, padding: contentPadding }}
+          >
+            {body}
+          </DialogMorphContent>
+        ) : (
+          <ScrollView
+            style={{ flexShrink: 1 }}
+            contentContainerStyle={{ padding: contentPadding }}
+            showsVerticalScrollIndicator={false}
+          >
+            <DialogMorphContent morph={morphState}>{body}</DialogMorphContent>
+          </ScrollView>
+        )}
       </SurfaceLevelProvider>
     </Animated.View>
   );
 }
-
 
 /**
  * Side-sheet surface for the `left`/`right` placements. Pure CSS transitions:
@@ -634,6 +673,9 @@ function DialogPanel({
  * implementation with native and supports drag-to-dismiss on web.
  */
 function SheetSurface({
+  material: surfaceMaterial = 'surface',
+  backdrop,
+  transition,
   panelRef,
   testID,
   label,
@@ -645,6 +687,7 @@ function SheetSurface({
   placement,
   shown,
   width,
+  minSideGutter,
   inset,
   dismissOnBackdrop,
   contentPadding,
@@ -656,6 +699,9 @@ function SheetSurface({
   style,
   children,
 }: {
+  material?: DialogProps['material'];
+  backdrop?: DialogProps['backdrop'];
+  transition?: DialogProps['transition'];
   panelRef: React.RefObject<View | null>;
   testID?: string;
   label?: string;
@@ -667,6 +713,7 @@ function SheetSurface({
   placement: DialogSidePlacement;
   shown: boolean;
   width: number;
+  minSideGutter?: number;
   inset?: DialogInset;
   dismissOnBackdrop: boolean;
   contentPadding: number;
@@ -678,6 +725,7 @@ function SheetSurface({
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 }) {
+  const motion = useSurfaceTransition(transition);
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   const theme = useTheme();
   const titleId = useId();
@@ -706,19 +754,19 @@ function SheetSurface({
   const panelTransition = useMemo<WebCssStyle>(
     () => ({
       transitionProperty: 'transform, opacity',
-      transitionDuration: `${ANIMATION_DURATION}ms`,
-      transitionTimingFunction: EASE_OUT,
+      transitionDuration: `${motion.duration ?? ANIMATION_DURATION}ms`,
+      transitionTimingFunction: transition ? motion.cssEasing : EASE_OUT,
     }),
-    [],
+    [motion.duration, motion.cssEasing, !!transition],
   );
 
   const backdropTransition = useMemo<WebCssStyle>(
     () => ({
       transitionProperty: 'opacity',
-      transitionDuration: `${ANIMATION_DURATION}ms`,
-      transitionTimingFunction: EASE_OUT,
+      transitionDuration: `${motion.duration ?? ANIMATION_DURATION}ms`,
+      transitionTimingFunction: transition ? motion.cssEasing : EASE_OUT,
     }),
-    [],
+    [motion.duration, motion.cssEasing, !!transition],
   );
 
   const panelGeometry = useMemo<ViewStyle>(() => {
@@ -732,8 +780,13 @@ function SheetSurface({
     const edge = physicalDialogSide(placement, rtl);
     const anchorInset = edge === 'left' ? insetLeft : insetRight;
     const oppositeInset = edge === 'left' ? insetRight : insetLeft;
-    const available = viewportWidth - anchorInset - oppositeInset - SIDE_SHEET_MIN_GUTTER;
-    const cappedWidth = Math.max(0, Math.min(width, available));
+    const cappedWidth = resolveSideSheetWidth(
+      viewportWidth,
+      width,
+      anchorInset,
+      oppositeInset,
+      minSideGutter,
+    );
     const hiddenSign = edge === 'left' ? '-100%' : '100%';
 
     return {
@@ -745,28 +798,41 @@ function SheetSurface({
       transform: [{ translateX: visible ? 0 : hiddenSign }],
       opacity: visible ? 1 : 0,
     };
-  }, [visible, placement, rtl, width, inset, viewportWidth]);
+  }, [visible, placement, rtl, width, inset, viewportWidth, minSideGutter]);
 
   const handleBackdropPress = useCallback(() => {
     if (dismissOnBackdrop) onDismiss();
   }, [dismissOnBackdrop, onDismiss]);
 
-  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0 });
+  const material = resolveSurfaceMaterial({
+    fill: String(
+      StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background,
+    ),
+    parentFill: theme.colors.background,
+    level: 0,
+    paint: surfaceMaterial !== 'flat',
+  });
   const { paintFill, publishedFill: surfaceFill } = material;
 
   // The drawer uses the PAGE token as its tint and nominal surface for its
   // content — see `DialogPanel`'s own wrap for why a portal does not do that on
   // its own.
-  const surfaceChildren = (
-<>{children}</>
-  );
+  const surfaceChildren = <>{children}</>;
 
   return (
     <OverlayRoot style={[sheetStyles.root, containerStyle]} className={containerClassName} modal>
-      <ModalKeyboard panelRef={panelRef} closing={!shown} dismissible={dismissOnBackdrop} dismiss={onDismiss} />
+      <ModalKeyboard
+        panelRef={panelRef}
+        closing={!shown}
+        dismissible={dismissOnBackdrop}
+        dismiss={onDismiss}
+      />
       <Backdrop
+        {...backdrop}
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
-        accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
+        accessibilityLabel={
+          label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog
+        }
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
         // Same reason as the centred dialog: the transition and the opacity it
@@ -809,58 +875,91 @@ function SheetSurface({
           panelTransition,
           panelStyle,
           style,
-          { backgroundColor: 'transparent' },
+          { backgroundColor: surfaceMaterial === 'flat' ? paintFill : 'transparent' },
         ]}
       >
-        <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius} />
-        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-        {header ? (
-          // Nav-header mode on a side drawer: a static titled bar (the drawer
-          // body does not own a Dialog scroll offset to drive a collapse) over
-          // the content, which is inset below the bar.
-          <View style={{ flex: 1, minHeight: 0 }}>
-            <DialogNavHeader
-              controller={headerController}
-              header={header}
-              onDismiss={onDismiss}
-              collapse={false}
-            />
-            <ScrollView
-              style={{ flexShrink: 1 }}
-              contentContainerStyle={{ paddingTop: DIALOG_NAV_BAR_HEIGHT, paddingBottom: contentPadding }}
-              showsVerticalScrollIndicator={false}
-              scrollEventThrottle={16}
-              scrollEnabled={scrollable !== false}
-              onScroll={(e) => {
-                headerController.scrollY.value = e.nativeEvent.contentOffset.y;
-              }}
-            >
-              <DialogHeaderProvider controller={headerController}>
-                <DialogBody
-                  titleId={titleId}
-                  descriptionId={descriptionId}
-                  title={title}
-                  description={description}
-                  actions={actions}
-                >
-                  {surfaceChildren}
-                </DialogBody>
-              </DialogHeaderProvider>
-            </ScrollView>
-          </View>
-        ) : (
-          <View style={{ padding: contentPadding }}>
-            <DialogBody
-              titleId={titleId}
-              descriptionId={descriptionId}
-              title={title}
-              description={description}
-              actions={actions}
-            >
-              {surfaceChildren}
-            </DialogBody>
-          </View>
+        {surfaceMaterial !== 'flat' && (
+          <SurfacePaint
+            fill={paintFill}
+            shape={{ curve: SURFACE_SHAPES.panel.curve }}
+            radius={
+              StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius
+            }
+          />
         )}
+        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
+          {header ? (
+            // Nav-header mode on a side drawer: a static titled bar (the drawer
+            // body does not own a Dialog scroll offset to drive a collapse) over
+            // the content, which is inset below the bar.
+            <View style={{ flex: 1, minHeight: 0 }}>
+              <DialogNavHeader
+                flatSurface={surfaceMaterial === 'flat'}
+                controller={headerController}
+                header={header}
+                onDismiss={onDismiss}
+                collapse={false}
+              />
+              {scrollable === false ? (
+                <View style={{ flex: 1, minHeight: 0, paddingBottom: contentPadding }}>
+                  <DialogNavBarSpacer controller={headerController} header={header} />
+                  <DialogHeaderProvider controller={headerController}>
+                    <DialogBody
+                      titleId={titleId}
+                      descriptionId={descriptionId}
+                      title={title}
+                      description={description}
+                      actions={actions}
+                    >
+                      {surfaceChildren}
+                    </DialogBody>
+                  </DialogHeaderProvider>
+                </View>
+              ) : (
+                <ScrollView
+                  style={{ flexShrink: 1 }}
+                  contentContainerStyle={{
+                    paddingTop: DIALOG_NAV_BAR_HEIGHT,
+                    paddingBottom: contentPadding,
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  scrollEventThrottle={16}
+                  onScroll={(e) => {
+                    headerController.scrollY.value = e.nativeEvent.contentOffset.y;
+                  }}
+                >
+                  <DialogHeaderProvider controller={headerController}>
+                    <DialogBody
+                      titleId={titleId}
+                      descriptionId={descriptionId}
+                      title={title}
+                      description={description}
+                      actions={actions}
+                    >
+                      {surfaceChildren}
+                    </DialogBody>
+                  </DialogHeaderProvider>
+                </ScrollView>
+              )}
+            </View>
+          ) : (
+            <View
+              style={[
+                { padding: contentPadding },
+                scrollable === false && { flex: 1, minHeight: 0 },
+              ]}
+            >
+              <DialogBody
+                titleId={titleId}
+                descriptionId={descriptionId}
+                title={title}
+                description={description}
+                actions={actions}
+              >
+                {surfaceChildren}
+              </DialogBody>
+            </View>
+          )}
         </SurfaceLevelProvider>
       </StyledView>
     </OverlayRoot>
@@ -887,7 +986,6 @@ function cancelFrame(token: FrameToken): void {
   }
   clearTimeout(token.timer);
 }
-
 
 // Annotated rather than cast: a plain object literal widens `position: 'absolute'`
 // to `string`, which is what the three `as ViewStyle` casts here used to silence.

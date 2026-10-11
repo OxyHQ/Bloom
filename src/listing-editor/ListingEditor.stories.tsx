@@ -62,11 +62,27 @@ const TYPE_LABELS: Record<PropertyType, string> = {
 };
 
 const STEPS: WizardStep[] = [
-  { key: 'type', title: 'What kind of home is it?', description: 'Pick the closest match. You can change it later.' },
-  { key: 'address', title: 'Where is it?', description: 'Choose how precisely the listing shows the location.' },
+  {
+    key: 'type',
+    title: 'What kind of home is it?',
+    description: 'Pick the closest match. You can change it later.',
+  },
+  {
+    key: 'address',
+    title: 'Where is it?',
+    description: 'Choose how precisely the listing shows the location.',
+  },
   { key: 'details', title: 'The basics', description: 'Rooms, beds and floor area.' },
-  { key: 'offerings', title: 'How is it offered?', description: 'Pick every way you would like to offer the home.' },
-  { key: 'photos', title: 'Add photos', description: 'Add at least five. The first one is the cover — drag to reorder.' },
+  {
+    key: 'offerings',
+    title: 'How is it offered?',
+    description: 'Pick every way you would like to offer the home.',
+  },
+  {
+    key: 'photos',
+    title: 'Add photos',
+    description: 'Add at least five. The first one is the cover — drag to reorder.',
+  },
   { key: 'description', title: 'Describe the home' },
   { key: 'quality', title: 'Quality check', description: 'Complete listings get more replies.' },
   { key: 'publish', title: 'Ready to publish' },
@@ -122,10 +138,14 @@ const FILLED_DRAFT: Draft = {
 function offeringErrors(value: OfferingValue): OfferingErrors {
   const errors: OfferingErrors = {};
   if (value.kinds.length === 0) errors.kinds = 'Pick at least one way to offer the home.';
-  if (value.kinds.includes('rent') && !value.rent?.amount) errors['rent.amount'] = 'Enter the monthly rent.';
-  if (value.kinds.includes('sale') && !value.sale?.price) errors['sale.price'] = 'Enter the asking price.';
-  if (value.kinds.includes('stay') && !value.stay?.nightlyRate) errors['stay.nightlyRate'] = 'Enter the nightly rate.';
-  if (value.kinds.includes('swap') && !value.swap?.mode) errors['swap.mode'] = 'Choose how you would like to exchange.';
+  if (value.kinds.includes('rent') && !value.rent?.amount)
+    errors['rent.amount'] = 'Enter the monthly rent.';
+  if (value.kinds.includes('sale') && !value.sale?.price)
+    errors['sale.price'] = 'Enter the asking price.';
+  if (value.kinds.includes('stay') && !value.stay?.nightlyRate)
+    errors['stay.nightlyRate'] = 'Enter the nightly rate.';
+  if (value.kinds.includes('swap') && !value.swap?.mode)
+    errors['swap.mode'] = 'Choose how you would like to exchange.';
   return errors;
 }
 
@@ -152,14 +172,21 @@ function qualityItems(draft: Draft, goTo: (step: number) => void): ListingQualit
       done: draft.description.length >= 120,
       onPress: () => goTo(5),
     },
-    { key: 'energy', label: 'Add energy certificate', tip: 'Required to publish a rental in most regions.', done: false },
+    {
+      key: 'energy',
+      label: 'Add energy certificate',
+      tip: 'Required to publish a rental in most regions.',
+      done: false,
+    },
     { key: 'precision', label: 'Choose the map precision', done: true },
   ];
 }
 
 function previewData(draft: Draft): ListingPreviewData {
   const rent = draft.offering.kinds.includes('rent') ? draft.offering.rent?.amount : undefined;
-  const nightly = draft.offering.kinds.includes('stay') ? draft.offering.stay?.nightlyRate : undefined;
+  const nightly = draft.offering.kinds.includes('stay')
+    ? draft.offering.stay?.nightlyRate
+    : undefined;
   const sale = draft.offering.kinds.includes('sale') ? draft.offering.sale?.price : undefined;
   const typeLabel = draft.type ? TYPE_LABELS[draft.type] : 'Home';
   return {
@@ -170,7 +197,10 @@ function previewData(draft: Draft): ListingPreviewData {
     price: rent ? `€${rent}` : nightly ? `€${nightly}` : sale ? `€${sale}` : undefined,
     priceUnit: rent ? 'month' : nightly ? 'night' : undefined,
     badge: draft.offering.kinds.includes('swap') ? 'Open to swaps' : undefined,
-    location: draft.precision === 'approximate' ? 'Near the old harbour, Varnholm' : 'Calle Lirio, Varnholm',
+    location:
+      draft.precision === 'approximate'
+        ? 'Near the old harbour, Varnholm'
+        : 'Calle Lirio, Varnholm',
     facts: [
       { label: `${draft.bedrooms}`, accessibilityLabel: `${draft.bedrooms} bedrooms` },
       { label: `${draft.bathrooms}`, accessibilityLabel: `${draft.bathrooms} baths` },
@@ -187,10 +217,20 @@ function previewData(draft: Draft): ListingPreviewData {
 
 function useWidth() {
   const [width, setWidth] = useState(0);
-  return { width, onLayout: (e: { nativeEvent: { layout: { width: number } } }) => setWidth(e.nativeEvent.layout.width) };
+  return {
+    width,
+    onLayout: (e: { nativeEvent: { layout: { width: number } } }) =>
+      setWidth(e.nativeEvent.layout.width),
+  };
 }
 
-function PublishFlow({ initial = EMPTY_DRAFT, initialStep = 0 }: { initial?: Draft; initialStep?: number }) {
+function PublishFlow({
+  initial = EMPTY_DRAFT,
+  initialStep = 0,
+}: {
+  initial?: Draft;
+  initialStep?: number;
+}) {
   const theme = useTheme();
   const { width, onLayout } = useWidth();
   const wide = width >= 1024;
@@ -210,7 +250,16 @@ function PublishFlow({ initial = EMPTY_DRAFT, initialStep = 0 }: { initial?: Dra
     setStep(next);
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   };
-  const canContinue = [draft.type != null, draft.address.trim().length > 0, true, true, draft.photos.length > 0, draft.title.length > 0, true, true][step];
+  const canContinue = [
+    draft.type != null,
+    draft.address.trim().length > 0,
+    true,
+    true,
+    draft.photos.length > 0,
+    draft.title.length > 0,
+    true,
+    true,
+  ][step];
 
   const onNext = () => {
     if (step === 3 && Object.keys(offeringErrors(draft.offering)).length > 0) {
@@ -234,7 +283,13 @@ function PublishFlow({ initial = EMPTY_DRAFT, initialStep = 0 }: { initial?: Dra
   const body = (() => {
     switch (step) {
       case 0:
-        return <PropertyTypeSelector value={draft.type} onValueChange={(type) => set({ type })} testID="flow-type" />;
+        return (
+          <PropertyTypeSelector
+            value={draft.type}
+            onValueChange={(type) => set({ type })}
+            testID="flow-type"
+          />
+        );
       case 1:
         return (
           <View style={{ gap: 24 }}>
@@ -250,15 +305,38 @@ function PublishFlow({ initial = EMPTY_DRAFT, initialStep = 0 }: { initial?: Dra
                 />
               </TextField>
             </View>
-            <AddressPrecisionPicker value={draft.precision} onValueChange={(precision) => set({ precision })} testID="flow-precision" />
+            <AddressPrecisionPicker
+              value={draft.precision}
+              onValueChange={(precision) => set({ precision })}
+              testID="flow-precision"
+            />
           </View>
         );
       case 2:
         return (
           <View>
-            <StepperRow title="Bedrooms" value={draft.bedrooms} onValueChange={(bedrooms) => set({ bedrooms })} max={12} divider />
-            <StepperRow title="Bathrooms" value={draft.bathrooms} onValueChange={(bathrooms) => set({ bathrooms })} min={1} max={8} divider />
-            <StepperRow title="Beds" value={draft.beds} onValueChange={(beds) => set({ beds })} max={20} divider />
+            <StepperRow
+              title="Bedrooms"
+              value={draft.bedrooms}
+              onValueChange={(bedrooms) => set({ bedrooms })}
+              max={12}
+              divider
+            />
+            <StepperRow
+              title="Bathrooms"
+              value={draft.bathrooms}
+              onValueChange={(bathrooms) => set({ bathrooms })}
+              min={1}
+              max={8}
+              divider
+            />
+            <StepperRow
+              title="Beds"
+              value={draft.beds}
+              onValueChange={(beds) => set({ beds })}
+              max={20}
+              divider
+            />
             <StepperRow
               title="Floor area"
               description="Used to show the price per m²"
@@ -289,7 +367,15 @@ function PublishFlow({ initial = EMPTY_DRAFT, initialStep = 0 }: { initial?: Dra
             onRemove={(id) => set({ photos: draft.photos.filter((p) => p.id !== id) })}
             onAdd={() => {
               uploadCounter.current += 1;
-              set({ photos: [...draft.photos, { id: `added-${uploadCounter.current}`, uri: photo(`orvel-added-${uploadCounter.current}`) }] });
+              set({
+                photos: [
+                  ...draft.photos,
+                  {
+                    id: `added-${uploadCounter.current}`,
+                    uri: photo(`orvel-added-${uploadCounter.current}`),
+                  },
+                ],
+              });
             }}
             maxPhotos={20}
             addHint="JPG or PNG"
@@ -302,7 +388,13 @@ function PublishFlow({ initial = EMPTY_DRAFT, initialStep = 0 }: { initial?: Dra
             <View style={{ gap: 6 }}>
               <TextFieldLabel>Title</TextFieldLabel>
               <TextField>
-                <TextFieldInput label="Title" value={draft.title} onChangeText={(title) => set({ title })} maxLength={60} testID="flow-title" />
+                <TextFieldInput
+                  label="Title"
+                  value={draft.title}
+                  onChangeText={(title) => set({ title })}
+                  maxLength={60}
+                  testID="flow-title"
+                />
               </TextField>
             </View>
             <Textarea
@@ -321,13 +413,18 @@ function PublishFlow({ initial = EMPTY_DRAFT, initialStep = 0 }: { initial?: Dra
         return (
           <ListingQualityMeter
             items={items}
-            tips={['Photos taken in daylight make rooms look larger.', 'Mention the distance to transport.']}
+            tips={[
+              'Photos taken in daylight make rooms look larger.',
+              'Mention the distance to transport.',
+            ]}
             testID="flow-quality"
           />
         );
       default:
         return published ? (
-          <Admonition type="tip">Your listing is live. People can now find it in search.</Admonition>
+          <Admonition type="tip">
+            Your listing is live. People can now find it in search.
+          </Admonition>
         ) : (
           <View style={{ gap: 16 }}>
             <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
@@ -340,7 +437,14 @@ function PublishFlow({ initial = EMPTY_DRAFT, initialStep = 0 }: { initial?: Dra
   })();
 
   return (
-    <View onLayout={onLayout} style={{ alignSelf: 'stretch', height: WEB_VIEWPORT_HEIGHT, backgroundColor: theme.colors.background }}>
+    <View
+      onLayout={onLayout}
+      style={{
+        alignSelf: 'stretch',
+        height: WEB_VIEWPORT_HEIGHT,
+        backgroundColor: theme.colors.background,
+      }}
+    >
       <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
         <View
           style={{
@@ -355,7 +459,12 @@ function PublishFlow({ initial = EMPTY_DRAFT, initialStep = 0 }: { initial?: Dra
           }}
         >
           <View style={{ flex: 1, maxWidth: 680, gap: 32 }}>
-            <WizardProgress steps={STEPS} current={step} currentProgress={published ? 1 : 0.5} testID="flow-progress" />
+            <WizardProgress
+              steps={STEPS}
+              current={step}
+              currentProgress={published ? 1 : 0.5}
+              testID="flow-progress"
+            />
             {width > 0 ? body : null}
           </View>
           {wide ? (
@@ -397,7 +506,17 @@ export const PublishFlowFilled: Story = {
 function Page({ children, width }: { children: React.ReactNode; width?: number }) {
   const theme = useTheme();
   return (
-    <View style={{ alignSelf: 'stretch', alignItems: 'center', paddingTop: 32, paddingBottom: 32, paddingLeft: 16, paddingRight: 16, backgroundColor: theme.colors.background }}>
+    <View
+      style={{
+        alignSelf: 'stretch',
+        alignItems: 'center',
+        paddingTop: 32,
+        paddingBottom: 32,
+        paddingLeft: 16,
+        paddingRight: 16,
+        backgroundColor: theme.colors.background,
+      }}
+    >
       <View style={{ width: '100%', maxWidth: width ?? 720, gap: 16 }}>{children}</View>
     </View>
   );
@@ -418,7 +537,12 @@ export const PropertyTypesError: Story = {
   name: 'Property Types (error)',
   render: () => (
     <Page>
-      <PropertyTypeSelector value={null} onValueChange={() => undefined} error="Choose a property type to continue." testID="types-error" />
+      <PropertyTypeSelector
+        value={null}
+        onValueChange={() => undefined}
+        error="Choose a property type to continue."
+        testID="types-error"
+      />
     </Page>
   ),
 };
@@ -455,7 +579,13 @@ export const OfferingsErrors: Story = {
     const [value, setValue] = useState<OfferingValue>({ kinds: ['rent', 'stay', 'swap'] });
     return (
       <Page>
-        <OfferingEditor value={value} onValueChange={setValue} area={96} errors={offeringErrors(value)} testID="offering-errors" />
+        <OfferingEditor
+          value={value}
+          onValueChange={setValue}
+          area={96}
+          errors={offeringErrors(value)}
+          testID="offering-errors"
+        />
       </Page>
     );
   },
@@ -465,7 +595,12 @@ export const OfferingsNone: Story = {
   name: 'Offerings (nothing picked)',
   render: () => (
     <Page>
-      <OfferingEditor value={{ kinds: [] }} onValueChange={() => undefined} errors={{ kinds: 'Pick at least one way to offer the home.' }} testID="offering-none" />
+      <OfferingEditor
+        value={{ kinds: [] }}
+        onValueChange={() => undefined}
+        errors={{ kinds: 'Pick at least one way to offer the home.' }}
+        testID="offering-none"
+      />
     </Page>
   ),
 };
@@ -483,7 +618,11 @@ export const Photos: Story = {
           photos={photos}
           onReorder={setPhotos}
           onRemove={(id) => setPhotos((list) => list.filter((p) => p.id !== id))}
-          onRetry={(id) => setPhotos((list) => list.map((p) => (p.id === id ? { ...p, status: 'uploading', progress: 10 } : p)))}
+          onRetry={(id) =>
+            setPhotos((list) =>
+              list.map((p) => (p.id === id ? { ...p, status: 'uploading', progress: 10 } : p)),
+            )
+          }
           onAdd={() => undefined}
           testID="photos"
         />
@@ -497,7 +636,15 @@ export const Description: Story = {
     const [text, setText] = useState(FILLED_DRAFT.description);
     return (
       <Page>
-        <Textarea label="Description" value={text} onChangeText={setText} maxLength={500} showCount rows={6} testID="description" />
+        <Textarea
+          label="Description"
+          value={text}
+          onChangeText={setText}
+          maxLength={500}
+          showCount
+          rows={6}
+          testID="description"
+        />
       </Page>
     );
   },
@@ -508,7 +655,10 @@ export const Quality: Story = {
     <Page width={480}>
       <ListingQualityMeter
         items={qualityItems(FILLED_DRAFT, () => undefined)}
-        tips={['Photos taken in daylight make rooms look larger.', 'Mention the distance to transport.']}
+        tips={[
+          'Photos taken in daylight make rooms look larger.',
+          'Mention the distance to transport.',
+        ]}
         testID="quality"
       />
     </Page>
@@ -539,7 +689,11 @@ export const PreviewPage: Story = {
   name: 'Preview (page)',
   render: () => (
     <Page width={400}>
-      <ListingPreviewPane listing={previewData(FILLED_DRAFT)} defaultMode="page" testID="preview-page" />
+      <ListingPreviewPane
+        listing={previewData(FILLED_DRAFT)}
+        defaultMode="page"
+        testID="preview-page"
+      />
     </Page>
   ),
 };
@@ -548,7 +702,10 @@ export const PreviewPage: Story = {
 export const Loading: Story = {
   render: () => (
     <Page width={560}>
-      <ListingPreviewPane listing={{ ...previewData(FILLED_DRAFT), loading: true }} testID="preview-loading" />
+      <ListingPreviewPane
+        listing={{ ...previewData(FILLED_DRAFT), loading: true }}
+        testID="preview-loading"
+      />
       <SortablePhotoGrid
         photos={[
           { id: 'a', uri: photo('orvel-living'), status: 'uploading' },
@@ -557,7 +714,14 @@ export const Loading: Story = {
         onReorder={() => undefined}
         testID="photos-loading"
       />
-      <WizardFooter onBack={() => undefined} onNext={() => undefined} nextLabel="Publish" loading sticky={false} testID="footer-loading" />
+      <WizardFooter
+        onBack={() => undefined}
+        onNext={() => undefined}
+        nextLabel="Publish"
+        loading
+        sticky={false}
+        testID="footer-loading"
+      />
     </Page>
   ),
 };

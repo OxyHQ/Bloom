@@ -28,9 +28,7 @@ describe('MediaInsetBorder', () => {
   });
 
   it('accepts a style override for borderRadius', () => {
-    const { UNSAFE_root } = renderWithTheme(
-      <MediaInsetBorder style={{ borderRadius: 999 }} />,
-    );
+    const { UNSAFE_root } = renderWithTheme(<MediaInsetBorder style={{ borderRadius: 999 }} />);
     expect(UNSAFE_root).toBeTruthy();
   });
 });

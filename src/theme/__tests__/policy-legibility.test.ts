@@ -28,7 +28,15 @@ import { isColourlessSeed } from '../color-policy';
 const AA = 4.5;
 
 /** Families whose fill must carry its own foreground. */
-const FAMILIES = ['primary', 'secondary', 'tertiary', 'success', 'error', 'warning', 'info'] as const;
+const FAMILIES = [
+  'primary',
+  'secondary',
+  'tertiary',
+  'success',
+  'error',
+  'warning',
+  'info',
+] as const;
 
 /** Families that also ship a translucent surface with a text member on it. */
 const TINTED = ['primary', 'secondary', 'tertiary', 'success', 'error', 'warning', 'info'] as const;
@@ -118,7 +126,6 @@ describe('colour policy legibility', () => {
   it('never picks black where white is legible', () => {
     expect(avoidableBlack).toEqual([]);
   });
-
 
   // The regression this exists for has landed twice, both times reported by the
   // user rather than by the suite: a preset rendering the IDENTICAL brand fill in
@@ -265,7 +272,8 @@ describe('colour policy legibility', () => {
     // pins the policy's derivation, and the AA checks above still cover them.
     const chromatic = APP_COLOR_NAMES.filter(
       (name) =>
-        !isColourlessSeed(APP_COLOR_PRESETS[name].hex) && APP_COLOR_PRESETS[name].tokens === undefined,
+        !isColourlessSeed(APP_COLOR_PRESETS[name].hex) &&
+        APP_COLOR_PRESETS[name].tokens === undefined,
     );
     const darkForegrounds = new Set<string>();
     for (const preset of chromatic) {
@@ -287,7 +295,9 @@ describe('colour policy legibility', () => {
     // colours; a blanket foreground would leave the loop above deceptively green.
     expect([...darkForegrounds].sort()).toEqual(['rgb(0 0 0)', 'rgb(255 255 255)']);
 
-    for (const preset of APP_COLOR_NAMES.filter((name) => isColourlessSeed(APP_COLOR_PRESETS[name].hex))) {
+    for (const preset of APP_COLOR_NAMES.filter((name) =>
+      isColourlessSeed(APP_COLOR_PRESETS[name].hex),
+    )) {
       expect(getResolvedTokens(preset, 'light')['--primary-foreground']).toBe('rgb(255 255 255)');
       expect(getResolvedTokens(preset, 'dark')['--primary-foreground']).toBe('rgb(0 0 0)');
     }

@@ -131,7 +131,12 @@ export function NoteEditorHeader({
   }
   if (edited !== undefined) {
     readings.push(
-      <Text key="edited" variant="caption-1-regular" numberOfLines={1} style={{ color: paint.quiet }}>
+      <Text
+        key="edited"
+        variant="caption-1-regular"
+        numberOfLines={1}
+        style={{ color: paint.quiet }}
+      >
         {edited}
       </Text>,
     );
@@ -205,7 +210,13 @@ export function NoteEditorHeader({
       </View>
       {readings.length > 0 ? (
         <View
-          style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, minWidth: 0 }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 6,
+            minWidth: 0,
+          }}
           testID={testID ? `${testID}-status` : undefined}
         >
           {readings.map((reading, index) => (

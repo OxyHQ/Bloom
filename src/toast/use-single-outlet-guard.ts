@@ -44,7 +44,6 @@ export function useSingleOutletGuard(): void {
       hasWarned = true;
       // Internal Bloom diagnostic: the consumer's tree is the only place this
       // can be fixed, so it names the usual cause rather than just the symptom.
-      // eslint-disable-next-line no-console
       console.warn(
         `[Bloom] Toaster: ${mountedOutlets} toast outlets are mounted, so every ` +
           'toast renders once per outlet. The copies overlap almost exactly, so ' +

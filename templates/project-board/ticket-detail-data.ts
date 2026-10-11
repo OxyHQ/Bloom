@@ -151,13 +151,8 @@ export function ticketBrief(ticket: ProjectTicket): TicketBrief {
   );
 }
 
-export function ticketSubtasks(
-  ticket: ProjectTicket,
-  columnId: string,
-): TicketSubtask[] {
-  const count =
-    { backlog: 0, todo: 0, 'in-progress': 1, review: 2, done: 3 }[columnId] ??
-    0;
+export function ticketSubtasks(ticket: ProjectTicket, columnId: string): TicketSubtask[] {
+  const count = { backlog: 0, todo: 0, 'in-progress': 1, review: 2, done: 3 }[columnId] ?? 0;
   return (
     ticket.subtasks ??
     ticketBrief(ticket).tasks.map((title, i) => ({
@@ -209,11 +204,8 @@ export function ticketDemoActivity(ticket: ProjectTicket) {
   const idleStart = 1 + (seed % (series.length - 3));
   series[idleStart]!.value = 0;
   series[idleStart + 1]!.value = 0;
-  const total =
-    Math.round(series.reduce((sum, point) => sum + point.value, 0) * 10) / 10;
-  const previous = series
-    .slice(0, 8)
-    .reduce((sum, point) => sum + point.value, 0);
+  const total = Math.round(series.reduce((sum, point) => sum + point.value, 0) * 10) / 10;
+  const previous = series.slice(0, 8).reduce((sum, point) => sum + point.value, 0);
   const recent = series.slice(8).reduce((sum, point) => sum + point.value, 0);
   const percentage = previous ? ((recent - previous) / previous) * 100 : 0;
   const resourcePool = ticket.code.startsWith('DS-')

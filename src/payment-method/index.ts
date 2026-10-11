@@ -10,7 +10,11 @@ export {
   PAYMENT_METHOD_STATE_TONE,
 } from './constants';
 export type { PaymentMethodGeometry } from './constants';
-export { composePaymentMethodName, paymentMethodStateMessage, resolvePaymentMethodPaint } from './shared';
+export {
+  composePaymentMethodName,
+  paymentMethodStateMessage,
+  resolvePaymentMethodPaint,
+} from './shared';
 export type { PaymentMethodPaint } from './shared';
 export type {
   PaymentMethodDensity,

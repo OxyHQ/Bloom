@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
-import type { BloomAppearanceProps } from './types';
+import type { BloomAppearanceProps, BloomScopeProps } from './types';
 
-export const BloomAppearanceContext = createContext<BloomAppearanceProps>({});
+export const BloomAppearanceContext = createContext<Omit<BloomScopeProps, 'children'>>({});
 
 /** Explicit props override the nearest scope, then the family's defaults. */
 export function useBloomAppearance(
@@ -9,5 +9,8 @@ export function useBloomAppearance(
   defaults: Required<BloomAppearanceProps>,
 ): Required<BloomAppearanceProps> {
   const scope = useContext(BloomAppearanceContext);
-  return { size: props.size ?? scope.size ?? defaults.size, tone: props.tone ?? scope.tone ?? defaults.tone };
+  return {
+    size: props.size ?? scope.size ?? defaults.size,
+    tone: props.tone ?? scope.tone ?? defaults.tone,
+  };
 }

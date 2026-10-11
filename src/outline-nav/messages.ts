@@ -12,4 +12,8 @@ export interface OutlineNavMessages {
   progress: (at: number, of: number) => string;
 }
 
-export const OUTLINE_NAV_MESSAGES: MessageCatalog<OutlineNavMessages> = defineMessages<OutlineNavMessages>('OUTLINE_NAV_MESSAGES', { outline: 'On this page', progress: (at, of) => `Heading ${at} of ${of}` });
+export const OUTLINE_NAV_MESSAGES: MessageCatalog<OutlineNavMessages> =
+  defineMessages<OutlineNavMessages>('OUTLINE_NAV_MESSAGES', {
+    outline: 'On this page',
+    progress: (at, of) => `Heading ${at} of ${of}`,
+  });

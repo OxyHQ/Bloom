@@ -30,7 +30,15 @@ import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createMessageContextMenu({ DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, ReactionPicker }: {
+export function createMessageContextMenu({
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+  ReactionPicker,
+}: {
   DropdownMenu: typeof DropdownMenuComponent;
   DropdownMenuContent: typeof DropdownMenuContentComponent;
   DropdownMenuItem: typeof DropdownMenuItemComponent;
@@ -39,7 +47,6 @@ export function createMessageContextMenu({ DropdownMenu, DropdownMenuContent, Dr
   DropdownMenuTrigger: typeof DropdownMenuTriggerComponent;
   ReactionPicker: typeof ReactionPickerComponent;
 }) {
-
   function MessageContextMenu({
     children,
     open,
@@ -75,7 +82,10 @@ export function createMessageContextMenu({ DropdownMenu, DropdownMenuContent, Dr
                 onMorePress={onMoreReactions}
                 size="sm"
                 surface={false}
-                style={[{ alignSelf: 'stretch', justifyContent: 'space-between' }, reactionBarStyle]}
+                style={[
+                  { alignSelf: 'stretch', justifyContent: 'space-between' },
+                  reactionBarStyle,
+                ]}
                 testID={testID ? `${testID}-reactions` : undefined}
               />
               <View style={{ height: 1, backgroundColor: palette.border, marginTop: 4 }} />
@@ -92,13 +102,20 @@ export function createMessageContextMenu({ DropdownMenu, DropdownMenuContent, Dr
                     <item.icon
                       width={18}
                       height={18}
-                      fill={item.variant === 'destructive' ? palette.destructive : palette.iconSecondary}
+                      fill={
+                        item.variant === 'destructive' ? palette.destructive : palette.iconSecondary
+                      }
                     />
                   ) : undefined
                 }
-                trailing={item.shortcut ? <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut> : undefined}
+                trailing={
+                  item.shortcut ? (
+                    <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>
+                  ) : undefined
+                }
                 onPress={() => onSelect?.(item.id, item)}
-                testID={testID ? `${testID}-${item.id}` : undefined}>
+                testID={testID ? `${testID}-${item.id}` : undefined}
+              >
                 {item.label}
               </DropdownMenuItem>
             </React.Fragment>

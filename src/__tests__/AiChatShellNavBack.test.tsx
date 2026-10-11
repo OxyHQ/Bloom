@@ -25,10 +25,16 @@ beforeEach(() => {
   listeners = [];
   os = ReactNative.Platform.OS;
   ReactNative.Platform.OS = 'android';
-  jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 400, height: 900, scale: 1, fontScale: 1 });
+  jest
+    .spyOn(ReactNative, 'useWindowDimensions')
+    .mockReturnValue({ width: 400, height: 900, scale: 1, fontScale: 1 });
   jest.spyOn(ReactNative.BackHandler, 'addEventListener').mockImplementation((_name, listener) => {
     listeners.push(listener);
-    return { remove: () => { listeners = listeners.filter((l) => l !== listener); } };
+    return {
+      remove: () => {
+        listeners = listeners.filter((l) => l !== listener);
+      },
+    };
   });
 });
 
@@ -40,10 +46,21 @@ afterEach(() => {
 /** What Android does: the newest listener first, until one returns true. */
 const pressBack = (): boolean => [...listeners].reverse().some((listener) => listener() === true);
 
-function Shell({ navOpen, onNavOpenChange }: { navOpen: boolean; onNavOpenChange: (open: boolean) => void }) {
+function Shell({
+  navOpen,
+  onNavOpenChange,
+}: {
+  navOpen: boolean;
+  onNavOpenChange: (open: boolean) => void;
+}) {
   return (
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <AiChatShell sidebar={null} mobileSidebar={<Text>nav</Text>} navOpen={navOpen} onNavOpenChange={onNavOpenChange}>
+      <AiChatShell
+        sidebar={null}
+        mobileSidebar={<Text>nav</Text>}
+        navOpen={navOpen}
+        onNavOpenChange={onNavOpenChange}
+      >
         <Text>chat</Text>
       </AiChatShell>
     </BloomThemeProvider>

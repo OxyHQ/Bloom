@@ -38,8 +38,7 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
   const pressedOpacity = disabled ? 1 : 0.6;
   // Drive press-opacity via state, not Pressable's function-form `style`,
   // which NativeWind v4's css-interop swallows.
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
-    useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   const role = accessibilityRole ?? (onPress ? 'button' : 'none');
   const label = accessibilityLabel ?? title;
@@ -53,9 +52,7 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
       testID="settings-list-item-content"
       data-left-inset={leftInset}
     >
-      {icon ? (
-        <View style={styles.iconContainer}>{icon}</View>
-      ) : null}
+      {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
 
       <View style={styles.textContainer}>
         <Text
@@ -75,19 +72,14 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
       </View>
 
       {value ? (
-        <Text
-          style={[styles.value, { color: theme.colors.textSecondary }]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.value, { color: theme.colors.textSecondary }]} numberOfLines={1}>
           {value}
         </Text>
       ) : null}
 
       {rightElement}
 
-      {hasChevron ? (
-        <ChevronRightIcon size="sm" fill={theme.colors.textTertiary} />
-      ) : null}
+      {hasChevron ? <ChevronRightIcon size="sm" fill={theme.colors.textTertiary} /> : null}
     </View>
   );
 
@@ -98,15 +90,12 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
         onPressIn={disabled ? undefined : onPressIn}
         onPressOut={disabled ? undefined : onPressOut}
         disabled={disabled}
-         android_ripple={{ color: theme.colors.border }}
-         accessibilityRole={role}
-         accessibilityLabel={label}
-         accessibilityHint={accessibilityHint}
+        android_ripple={{ color: theme.colors.border }}
+        accessibilityRole={role}
+        accessibilityLabel={label}
+        accessibilityHint={accessibilityHint}
         accessibilityState={disabled ? { disabled: true } : undefined}
-        style={[
-          disabled && styles.disabled,
-          pressed && { opacity: pressedOpacity },
-        ]}
+        style={[disabled && styles.disabled, pressed && { opacity: pressedOpacity }]}
       >
         {content}
       </Pressable>
@@ -155,9 +144,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
   return (
     <View style={[styles.groupContainer, style]}>
       {title ? (
-        <Text style={[styles.groupTitle, { color: theme.colors.textSecondary }]}>
-          {title}
-        </Text>
+        <Text style={[styles.groupTitle, { color: theme.colors.textSecondary }]}>{title}</Text>
       ) : null}
 
       {/*
@@ -186,17 +173,13 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
         {filteredChildren.map((child, index) => (
           <React.Fragment key={index}>
             {child}
-            {index < filteredChildren.length - 1 ? (
-              <Divider style={styles.divider} />
-            ) : null}
+            {index < filteredChildren.length - 1 ? <Divider style={styles.divider} /> : null}
           </React.Fragment>
         ))}
       </Card>
 
       {footer ? (
-        <Text style={[styles.groupFooter, { color: theme.colors.textTertiary }]}>
-          {footer}
-        </Text>
+        <Text style={[styles.groupFooter, { color: theme.colors.textTertiary }]}>{footer}</Text>
       ) : null}
     </View>
   );
@@ -204,11 +187,11 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
 
 // ── SettingsListDivider ─────────────────────────────────────────
 
-export const SettingsListDivider = memo<SettingsListDividerProps>(
-  function SettingsListDivider({ inset = 52 }) {
-    return <Divider style={[styles.divider, { marginLeft: inset }]} />;
-  }
-);
+export const SettingsListDivider = memo<SettingsListDividerProps>(function SettingsListDivider({
+  inset = 52,
+}) {
+  return <Divider style={[styles.divider, { marginLeft: inset }]} />;
+});
 
 // ── Styles ──────────────────────────────────────────────────────
 

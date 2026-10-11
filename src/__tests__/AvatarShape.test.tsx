@@ -30,9 +30,7 @@ function renderedPaths(tree: ReturnType<typeof renderAvatar>): string[] {
 
 /** The `viewBox` of every `<Svg>` the tree rendered. */
 function renderedViewBoxes(tree: ReturnType<typeof renderAvatar>): string[] {
-  return tree
-    .UNSAFE_queryAllByType('Svg' as never)
-    .map((node) => String(node.props.viewBox ?? ''));
+  return tree.UNSAFE_queryAllByType('Svg' as never).map((node) => String(node.props.viewBox ?? ''));
 }
 
 const URI = 'https://cloud.oxy.so/face.jpg';
@@ -96,9 +94,7 @@ describe('Avatar shape rendering', () => {
 
   it('clips to a caller-supplied outline', () => {
     const custom = 'M0 0H10V10H0Z';
-    const tree = renderAvatar(
-      <Avatar uri={URI} size={48} shape={{ d: custom, viewBox: 10 }} />,
-    );
+    const tree = renderAvatar(<Avatar uri={URI} size={48} shape={{ d: custom, viewBox: 10 }} />);
     expect(renderedPaths(tree)).toContain(custom);
     expect(renderedViewBoxes(tree)).toContain('0 0 10 10');
   });
@@ -117,12 +113,7 @@ describe('Avatar shape rendering', () => {
 describe('Avatar ring follows the avatar outline', () => {
   it('strokes the named outline rather than a circle', () => {
     const tree = renderAvatar(
-      <Avatar
-        uri={URI}
-        size={48}
-        shape="heart"
-        ring={{ colors: '#FF0000', width: 2 }}
-      />,
+      <Avatar uri={URI} size={48} shape="heart" ring={{ colors: '#FF0000', width: 2 }} />,
     );
     expect(renderedPaths(tree)).toContain(PATHS.heart);
   });
@@ -132,12 +123,7 @@ describe('Avatar ring follows the avatar outline', () => {
     // avatar is 2/48 of the box — expressed over a 100-unit space and doubled
     // to survive the viewport clipping half the centered stroke.
     const tree = renderAvatar(
-      <Avatar
-        uri={URI}
-        size={48}
-        shape="heart"
-        ring={{ colors: '#FF0000', width: 2 }}
-      />,
+      <Avatar uri={URI} size={48} shape="heart" ring={{ colors: '#FF0000', width: 2 }} />,
     );
     const ringPath = tree
       .UNSAFE_queryAllByType('Path' as never)
@@ -161,25 +147,13 @@ describe('Avatar ring follows the avatar outline', () => {
 });
 
 describe('Avatar silhouette across source and fallback states', () => {
-  it.each([{ uri: URI }, 42])(
-    'accepts object or local image sources: %p',
-    (source) => {
-      const tree = renderAvatar(
-        <Avatar
-          source={source}
-          uri="https://ignored.example/image"
-          shape="squircle"
-          alt="Ada"
-        />,
-      );
-      expect(tree.UNSAFE_getByType('SvgImage' as never).props.href).toEqual(
-        source,
-      );
-      expect(
-        tree.UNSAFE_getByType('Svg' as never).props.accessibilityLabel,
-      ).toBe('Ada');
-    },
-  );
+  it.each([{ uri: URI }, 42])('accepts object or local image sources: %p', (source) => {
+    const tree = renderAvatar(
+      <Avatar source={source} uri="https://ignored.example/image" shape="squircle" alt="Ada" />,
+    );
+    expect(tree.UNSAFE_getByType('SvgImage' as never).props.href).toEqual(source);
+    expect(tree.UNSAFE_getByType('Svg' as never).props.accessibilityLabel).toBe('Ada');
+  });
 
   it('retains a shaped fill for initials without a photo', () => {
     const tree = renderAvatar(<Avatar name="Ada" shape="heart" />);
@@ -198,9 +172,7 @@ describe('Avatar silhouette across source and fallback states', () => {
     fireEvent(tree.UNSAFE_getByType(Image), 'error', {
       nativeEvent: { error: 'failed' },
     });
-    expect(tree.UNSAFE_getByType('SvgImage' as never).props.href).toEqual(
-      fallback,
-    );
+    expect(tree.UNSAFE_getByType('SvgImage' as never).props.href).toEqual(fallback);
     fireEvent(tree.UNSAFE_getByType(Image), 'error', {
       nativeEvent: { error: 'failed' },
     });
@@ -221,10 +193,7 @@ describe('Avatar silhouette across source and fallback states', () => {
       </BloomThemeProvider>
     );
     const tree = render(wrap(40));
-    const ids = () =>
-      tree
-        .UNSAFE_queryAllByType('ClipPath' as never)
-        .map((node) => node.props.id);
+    const ids = () => tree.UNSAFE_queryAllByType('ClipPath' as never).map((node) => node.props.id);
     const initial = ids();
     expect(new Set(initial).size).toBe(2);
     expect(initial.every((id) => /^[a-zA-Z0-9-]+$/.test(id))).toBe(true);
@@ -241,9 +210,7 @@ describe('Avatar semantic image request identity', () => {
           shape="heart"
           name="Ada"
           source={
-            reversed
-              ? { height: 80, width: 80, uri: URI }
-              : { uri: URI, width: 80, height: 80 }
+            reversed ? { height: 80, width: 80, uri: URI } : { uri: URI, width: 80, height: 80 }
           }
           fallbackSource={{ uri: 'https://example.com/fallback.png' }}
         />

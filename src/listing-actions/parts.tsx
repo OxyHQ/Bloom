@@ -2,7 +2,12 @@ import React, { useEffect, useMemo, type ReactNode } from 'react';
 import { Image, Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { resolveBookingPalette, BOOKING_FIELD_RADIUS, BOOKING_STYLE_ID, BOOKING_WEB_CSS } from '../booking/shared';
+import {
+  resolveBookingPalette,
+  BOOKING_FIELD_RADIUS,
+  BOOKING_STYLE_ID,
+  BOOKING_WEB_CSS,
+} from '../booking/shared';
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import { chartHueTone } from '../chart-cards/palette';
 import { pieSectorAngles, sectorPath } from '../chart-cards/polar-geometry';
@@ -82,10 +87,17 @@ export function FactList({
             borderTopColor: palette.fieldBorder,
           }}
         >
-          <Text variant="body-2-regular" numberOfLines={1} style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}>
+          <Text
+            variant="body-2-regular"
+            numberOfLines={1}
+            style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}
+          >
             {fact.label}
           </Text>
-          <Text variant="body-2-medium" style={{ color: palette.text, textAlign: 'right', flexShrink: 1 }}>
+          <Text
+            variant="body-2-medium"
+            style={{ color: palette.text, textAlign: 'right', flexShrink: 1 }}
+          >
             {fact.value}
           </Text>
         </View>
@@ -239,7 +251,11 @@ export function HomeTile({
     >
       {uri ? null : (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <RiHome4Line width={horizontal ? 24 : 28} height={horizontal ? 24 : 28} fill={palette.textSecondary} />
+          <RiHome4Line
+            width={horizontal ? 24 : 28}
+            height={horizontal ? 24 : 28}
+            fill={palette.textSecondary}
+          />
         </View>
       )}
       {uri ? (
@@ -259,17 +275,28 @@ export function HomeTile({
       accessible
       accessibilityLabel={name}
       {...(IS_WEB ? { role: 'group' as const } : null)}
-      style={[horizontal ? { flexDirection: 'row', alignItems: 'center', gap: 12 } : { gap: 8 }, style]}
+      style={[
+        horizontal ? { flexDirection: 'row', alignItems: 'center', gap: 12 } : { gap: 8 },
+        style,
+      ]}
     >
       {horizontal ? null : (
-        <Text variant="caption-2-bold" numberOfLines={1} style={{ color: palette.textSecondary, textTransform: 'uppercase' }}>
+        <Text
+          variant="caption-2-bold"
+          numberOfLines={1}
+          style={{ color: palette.textSecondary, textTransform: 'uppercase' }}
+        >
           {label}
         </Text>
       )}
       {photo}
       <View style={{ flex: horizontal ? 1 : undefined, minWidth: 0, gap: 2 }}>
         {horizontal ? (
-          <Text variant="caption-2-bold" numberOfLines={1} style={{ color: palette.textSecondary, textTransform: 'uppercase' }}>
+          <Text
+            variant="caption-2-bold"
+            numberOfLines={1}
+            style={{ color: palette.textSecondary, textTransform: 'uppercase' }}
+          >
             {label}
           </Text>
         ) : null}
@@ -277,12 +304,20 @@ export function HomeTile({
           {home.title}
         </Text>
         {home.location ? (
-          <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+          <Text
+            variant="caption-1-regular"
+            numberOfLines={1}
+            style={{ color: palette.textSecondary }}
+          >
             {home.location}
           </Text>
         ) : null}
         {home.details ? (
-          <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+          <Text
+            variant="caption-1-regular"
+            numberOfLines={1}
+            style={{ color: palette.textSecondary }}
+          >
             {home.details}
           </Text>
         ) : null}
@@ -337,7 +372,16 @@ export function PrincipalDonut({
       <Svg width={size} height={size} style={{ position: 'absolute', top: 0, left: 0 }}>
         {angles.length === 0 ? (
           <Path
-            d={sectorPath({ cx: c, cy: c, innerRadius: inner, outerRadius: outer, startAngle: 90, endAngle: -270 }) ?? ''}
+            d={
+              sectorPath({
+                cx: c,
+                cy: c,
+                innerRadius: inner,
+                outerRadius: outer,
+                startAngle: 90,
+                endAngle: -270,
+              }) ?? ''
+            }
             fill={track}
           />
         ) : (
@@ -351,7 +395,14 @@ export function PrincipalDonut({
               endAngle: a.endAngle,
               cornerRadius: 4,
             });
-            return d ? <Path key={i} d={d} fill={colors[i]} testID={testID ? `${testID}-sector-${i}` : undefined} /> : null;
+            return d ? (
+              <Path
+                key={i}
+                d={d}
+                fill={colors[i]}
+                testID={testID ? `${testID}-sector-${i}` : undefined}
+              />
+            ) : null;
           })
         )}
       </Svg>

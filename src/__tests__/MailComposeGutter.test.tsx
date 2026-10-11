@@ -12,7 +12,14 @@ function renderHeader(locale: string) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
       <LocaleProvider locale={locale}>
-        <MailComposeHeader to={[]} onToChange={noop} onCcChange={noop} onBccChange={noop} copiesVisible testID="h" />
+        <MailComposeHeader
+          to={[]}
+          onToChange={noop}
+          onCcChange={noop}
+          onBccChange={noop}
+          copiesVisible
+          testID="h"
+        />
       </LocaleProvider>
     </BloomThemeProvider>,
   );

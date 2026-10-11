@@ -67,13 +67,9 @@ function CharacterLab() {
           ))}
         </View>
         <View style={{ flexDirection: 'row', gap: 12 }}>
-          <Button onPress={() => setPaused(!paused)}>
-            {paused ? 'Resume' : 'Pause'}
-          </Button>
+          <Button onPress={() => setPaused(!paused)}>{paused ? 'Resume' : 'Pause'}</Button>
           <Button onPress={() => setWorking((key) => key + 1)}>Working</Button>
-          <Button onPress={() => setReaction((key) => key + 1)}>
-            Reaction
-          </Button>
+          <Button onPress={() => setReaction((key) => key + 1)}>Reaction</Button>
         </View>
         <View
           style={{
@@ -86,10 +82,7 @@ function CharacterLab() {
           {CHARACTER_SHAPES.map(([shape, label]) => (
             <AgentAvatar
               key={shape}
-              config={createConfigForShape(
-                { ...FOLD_CONFIG, character: { preset } },
-                shape,
-              )}
+              config={createConfigForShape({ ...FOLD_CONFIG, character: { preset } }, shape)}
               portrait
               paused
               size={64}
@@ -109,8 +102,8 @@ function ManyAvatarGallery() {
       <StyledView className="w-full max-w-[1020px] gap-5 p-4">
         <Text variant="title-2-medium">48 avatars sharing one renderer</Text>
         <Text variant="body-regular">
-          Each visible avatar animates independently. Scroll the gallery and use
-          each avatar’s React or Work button.
+          Each visible avatar animates independently. Scroll the gallery and use each avatar’s React
+          or Work button.
         </Text>
         <Button onPress={() => setPaused((value) => !value)}>
           {paused ? 'Resume all' : 'Pause all'}
@@ -154,12 +147,8 @@ function ClippoLab() {
             testID="clippo-preview"
           />
           <StyledView className="flex flex-row gap-3">
-            <Button onPress={() => setReaction((key) => key + 1)}>
-              Reaction
-            </Button>
-            <Button onPress={() => setWorking((key) => key + 1)}>
-              Working
-            </Button>
+            <Button onPress={() => setReaction((key) => key + 1)}>Reaction</Button>
+            <Button onPress={() => setWorking((key) => key + 1)}>Working</Button>
             <Button
               onPress={() => {
                 const saved = JSON.parse(
@@ -175,31 +164,29 @@ function ClippoLab() {
             testID="clippo-shared-eyes"
             className="flex max-w-[480px] flex-row flex-wrap gap-4"
           >
-            {CHARACTER_SHAPES.filter(([id]) => id !== 'clippo').map(
-              ([id, title]) => (
-                <AgentAvatar
-                  key={id}
-                  config={createConfigForShape(
-                    {
-                      ...FOLD_CONFIG,
-                      character: {
-                        preset: 'clippo',
-                        selections: {
-                          eyes: 'clippo',
-                          eyewear: 'none',
-                          accessory: 'none',
-                        },
+            {CHARACTER_SHAPES.filter(([id]) => id !== 'clippo').map(([id, title]) => (
+              <AgentAvatar
+                key={id}
+                config={createConfigForShape(
+                  {
+                    ...FOLD_CONFIG,
+                    character: {
+                      preset: 'clippo',
+                      selections: {
+                        eyes: 'clippo',
+                        eyewear: 'none',
+                        accessory: 'none',
                       },
                     },
-                    id,
-                  )}
-                  size={64}
-                  portrait
-                  paused
-                  label={title}
-                />
-              ),
-            )}
+                  },
+                  id,
+                )}
+                size={64}
+                portrait
+                paused
+                label={title}
+              />
+            ))}
           </StyledView>
         </StyledView>
         <StyledView style={{ width: 360, height: 900 }}>
@@ -211,11 +198,7 @@ function ClippoLab() {
 }
 export const Clippo: Story = { render: () => <ClippoLab /> };
 
-function UniversalCustomizationLab({
-  singleEye = false,
-}: {
-  singleEye?: boolean;
-}) {
+function UniversalCustomizationLab({ singleEye = false }: { singleEye?: boolean }) {
   const [agent, setAgent] = useState<AgentCreatorAgent>({
     id: 'todd-customization',
     name: singleEye ? 'Single eye' : 'Todd',
@@ -233,9 +216,7 @@ function UniversalCustomizationLab({
   const [working, setWorking] = useState(0);
   return (
     <AgentAvatarProvider runtimeUrl={runtimeUrl}>
-      <View
-        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 32, padding: 24 }}
-      >
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 32, padding: 24 }}>
         <View style={{ width: 320, alignItems: 'center', gap: 16 }}>
           <AgentAvatar
             config={agent.avatar}
@@ -247,19 +228,11 @@ function UniversalCustomizationLab({
             testID="universal-avatar-preview"
           />
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Button onPress={() => setReaction((key) => key + 1)}>
-              Reaction
-            </Button>
-            <Button onPress={() => setWorking((key) => key + 1)}>
-              Working
-            </Button>
+            <Button onPress={() => setReaction((key) => key + 1)}>Reaction</Button>
+            <Button onPress={() => setWorking((key) => key + 1)}>Working</Button>
           </View>
           <Text testID="universal-avatar-config">
-            {JSON.stringify(
-              agent.avatar.character ?? { preset: 'bloom' },
-              null,
-              2,
-            )}
+            {JSON.stringify(agent.avatar.character ?? { preset: 'bloom' }, null, 2)}
           </Text>
           {singleEye && (
             <View

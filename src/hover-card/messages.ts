@@ -8,6 +8,7 @@ export interface HoverCardMessages {
   hoverCard: string;
 }
 
-export const HOVER_CARD_MESSAGES: MessageCatalog<HoverCardMessages> = defineMessages<HoverCardMessages>('HOVER_CARD_MESSAGES', {
-  hoverCard: 'Hover card',
-});
+export const HOVER_CARD_MESSAGES: MessageCatalog<HoverCardMessages> =
+  defineMessages<HoverCardMessages>('HOVER_CARD_MESSAGES', {
+    hoverCard: 'Hover card',
+  });

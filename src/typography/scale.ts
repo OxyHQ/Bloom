@@ -10,7 +10,20 @@ import type { TextStyle } from 'react-native';
  * Generated from the stylesheet; values in px. Pair with the `sans`
  * family (Inter) — see `fonts/tokens.ts`.
  */
-export type TypeScaleFamily = 'large-title' | 'display-1' | 'display-2' | 'display-3' | 'display-4' | 'title-1' | 'title-2' | 'title-3' | 'headline' | 'body' | 'body-2' | 'caption-1' | 'caption-2';
+export type TypeScaleFamily =
+  | 'large-title'
+  | 'display-1'
+  | 'display-2'
+  | 'display-3'
+  | 'display-4'
+  | 'title-1'
+  | 'title-2'
+  | 'title-3'
+  | 'headline'
+  | 'body'
+  | 'body-2'
+  | 'caption-1'
+  | 'caption-2';
 export type TypeScaleWeight = 'regular' | 'medium' | 'semibold' | 'bold';
 export type TypeScaleVariant = `${TypeScaleFamily}-${TypeScaleWeight}`;
 

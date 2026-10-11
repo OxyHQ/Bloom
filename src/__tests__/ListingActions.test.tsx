@@ -145,7 +145,14 @@ describe('computeMortgage', () => {
     expect(noTerm.totalInterest).toBe(0);
 
     const junk = computeMortgage({ price: NaN, downPayment: -5, years: Infinity, annualRate: -2 });
-    expect(junk).toEqual({ loanAmount: 0, monthlyPayment: 0, payments: 0, totalRepaid: 0, totalInterest: 0, totalCost: 0 });
+    expect(junk).toEqual({
+      loanAmount: 0,
+      monthlyPayment: 0,
+      payments: 0,
+      totalRepaid: 0,
+      totalInterest: 0,
+      totalCost: 0,
+    });
   });
 
   it('parses and formats the calculator fields', () => {
@@ -168,7 +175,11 @@ describe('the shared action-card chrome', () => {
         <BookingCard testID="booking" price="$180" guests="1 guest" />
         <RentalActionCard testID="rental" price="€1,250" />
         <SaleActionCard testID="sale" price="€385,000" />
-        <ExchangeProposalCard testID="exchange" yourHome={{ title: 'A' }} theirHome={{ title: 'B' }} />
+        <ExchangeProposalCard
+          testID="exchange"
+          yourHome={{ title: 'A' }}
+          theirHome={{ title: 'B' }}
+        />
       </>,
     );
     const reference = getComputedStyle(byTestId('booking'));
@@ -192,7 +203,16 @@ describe('RentalActionCard', () => {
   ];
 
   it('prices per month as one spoken image and draws "/ month", bills and facts', () => {
-    mount(<RentalActionCard testID="r" price="€1,250" billsNote="Bills included" facts={facts} note="Usually responds within a day" onApply={() => undefined} />);
+    mount(
+      <RentalActionCard
+        testID="r"
+        price="€1,250"
+        billsNote="Bills included"
+        facts={facts}
+        note="Usually responds within a day"
+        onApply={() => undefined}
+      />,
+    );
     const price = byTestId('r-price');
     expect(price.getAttribute('role')).toBe('img');
     expect(price.getAttribute('aria-label')).toBe('€1,250 per month');
@@ -208,7 +228,9 @@ describe('RentalActionCard', () => {
   it('calls its handlers, and draws no Apply without onApply', () => {
     const viewing = jest.fn();
     const apply = jest.fn();
-    mount(<RentalActionCard testID="r" price="€1,250" onRequestViewing={viewing} onApply={apply} />);
+    mount(
+      <RentalActionCard testID="r" price="€1,250" onRequestViewing={viewing} onApply={apply} />,
+    );
     click(byTestId('r-request-viewing'));
     click(byTestId('r-apply'));
     expect(viewing).toHaveBeenCalledTimes(1);
@@ -217,29 +239,32 @@ describe('RentalActionCard', () => {
     expect(queryTestId('r-apply')).toBeNull();
   });
 
-  it.each(['reserved', 'rented'] as const)('%s: a badge, the message instead of the note, and disabled actions', (status) => {
-    const viewing = jest.fn();
-    const apply = jest.fn();
-    mount(
-      <RentalActionCard
-        testID="r"
-        price="€1,250"
-        status={status}
-        note="Usually responds within a day"
-        onRequestViewing={viewing}
-        onApply={apply}
-      />,
-    );
-    expect(byTestId('r-status').textContent).toBe(RENTAL_STATUS[status].label);
-    expect(byTestId('r-status-message').textContent).toBe(RENTAL_STATUS[status].message);
-    expect(container.textContent).not.toContain('Usually responds within a day');
-    expect(isDisabled(byTestId('r-request-viewing'))).toBe(true);
-    expect(isDisabled(byTestId('r-apply'))).toBe(true);
-    click(byTestId('r-request-viewing'));
-    click(byTestId('r-apply'));
-    expect(viewing).not.toHaveBeenCalled();
-    expect(apply).not.toHaveBeenCalled();
-  });
+  it.each(['reserved', 'rented'] as const)(
+    '%s: a badge, the message instead of the note, and disabled actions',
+    (status) => {
+      const viewing = jest.fn();
+      const apply = jest.fn();
+      mount(
+        <RentalActionCard
+          testID="r"
+          price="€1,250"
+          status={status}
+          note="Usually responds within a day"
+          onRequestViewing={viewing}
+          onApply={apply}
+        />,
+      );
+      expect(byTestId('r-status').textContent).toBe(RENTAL_STATUS[status].label);
+      expect(byTestId('r-status-message').textContent).toBe(RENTAL_STATUS[status].message);
+      expect(container.textContent).not.toContain('Usually responds within a day');
+      expect(isDisabled(byTestId('r-request-viewing'))).toBe(true);
+      expect(isDisabled(byTestId('r-apply'))).toBe(true);
+      click(byTestId('r-request-viewing'));
+      click(byTestId('r-apply'));
+      expect(viewing).not.toHaveBeenCalled();
+      expect(apply).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe('SaleActionCard', () => {
@@ -274,7 +299,15 @@ describe('SaleActionCard', () => {
   });
 
   it('sold: disables contact, hides the offer link, explains', () => {
-    mount(<SaleActionCard testID="s" price="€385,000" status="sold" onContact={() => undefined} onMakeOffer={() => undefined} />);
+    mount(
+      <SaleActionCard
+        testID="s"
+        price="€385,000"
+        status="sold"
+        onContact={() => undefined}
+        onMakeOffer={() => undefined}
+      />,
+    );
     expect(byTestId('s-status').textContent).toBe('Sold');
     expect(byTestId('s-status-message').textContent).toBe(SALE_STATUS.sold.message);
     expect(isDisabled(byTestId('s-contact'))).toBe(true);
@@ -304,8 +337,12 @@ describe('ExchangeProposalCard', () => {
 
   it('names each home, hides the swap glyph, and labels the cells', () => {
     mount(<Demo />);
-    expect(byTestId('x-your-home').getAttribute('aria-label')).toBe('Your home, Stone house, Porto Lindo, 3 beds · 6 guests');
-    expect(byTestId('x-their-home').getAttribute('aria-label')).toBe('Their home, Farmhouse, Valle Serra');
+    expect(byTestId('x-your-home').getAttribute('aria-label')).toBe(
+      'Your home, Stone house, Porto Lindo, 3 beds · 6 guests',
+    );
+    expect(byTestId('x-their-home').getAttribute('aria-label')).toBe(
+      'Their home, Farmhouse, Valle Serra',
+    );
     expect(byTestId('x-swap-glyph').getAttribute('aria-hidden')).toBe('true');
     expect(byTestId('x-dates').getAttribute('aria-label')).toBe('Dates: Jul 4 – 18');
     expect(byTestId('x-guests').getAttribute('aria-label')).toBe('Guests: 4 guests');
@@ -368,7 +405,11 @@ describe('ViewingScheduler', () => {
   it('is two radio groups with checked and disabled state on web', () => {
     mount(<Demo />);
     const groups = container.querySelectorAll('[role="radiogroup"]');
-    expect([...groups].map((g) => g.getAttribute('aria-label'))).toEqual(['Day', 'Time', 'Viewing type']);
+    expect([...groups].map((g) => g.getAttribute('aria-label'))).toEqual([
+      'Day',
+      'Time',
+      'Viewing type',
+    ]);
     const mon = byTestId('v-day-mon');
     expect(mon.getAttribute('role')).toBe('radio');
     expect(mon.getAttribute('aria-label')).toBe('Mon 14');
@@ -478,7 +519,15 @@ describe('MortgageCalculator', () => {
   });
 
   it('keeps a half-typed rate and recomputes from the typed amount', () => {
-    mount(<MortgageCalculator testID="m" defaultPrice={100000} defaultDownPayment={0} defaultYears={15} defaultAnnualRate={1} />);
+    mount(
+      <MortgageCalculator
+        testID="m"
+        defaultPrice={100000}
+        defaultDownPayment={0}
+        defaultYears={15}
+        defaultAnnualRate={1}
+      />,
+    );
     const input = byTestId('m-rate') as HTMLInputElement;
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
     act(() => {
@@ -501,7 +550,13 @@ describe('ApplicationChecklist', () => {
     { key: 'id', title: 'Proof of identity', status: 'verified', description: 'Passport' },
     { key: 'pay', title: 'Payslips', status: 'uploaded' },
     { key: 'contract', title: 'Employment contract', status: 'missing' },
-    { key: 'bank', title: 'Bank statement', status: 'rejected', description: 'Latest', reason: 'Name cut off' },
+    {
+      key: 'bank',
+      title: 'Bank statement',
+      status: 'rejected',
+      description: 'Latest',
+      reason: 'Name cut off',
+    },
   ];
 
   it('announces progress over uploaded + verified items', () => {
@@ -521,10 +576,14 @@ describe('ApplicationChecklist', () => {
     const onAction = jest.fn();
     mount(<ApplicationChecklist testID="c" items={items} onItemAction={onAction} />);
     for (const item of items) {
-      expect(byTestId(`c-item-${item.key}-status`).textContent).toBe(APPLICATION_ITEM_STATUS[item.status].label);
+      expect(byTestId(`c-item-${item.key}-status`).textContent).toBe(
+        APPLICATION_ITEM_STATUS[item.status].label,
+      );
       const action = byTestId(`c-item-${item.key}-action`);
       expect(action.textContent).toBe(APPLICATION_ITEM_STATUS[item.status].action);
-      expect(action.getAttribute('aria-label')).toBe(`${APPLICATION_ITEM_STATUS[item.status].action} ${item.title}`);
+      expect(action.getAttribute('aria-label')).toBe(
+        `${APPLICATION_ITEM_STATUS[item.status].action} ${item.title}`,
+      );
     }
     click(byTestId('c-item-contract-action'));
     expect(onAction).toHaveBeenCalledWith(items[2]);
@@ -534,12 +593,20 @@ describe('ApplicationChecklist', () => {
     mount(<ApplicationChecklist testID="c" items={items} />);
     const detail = byTestId('c-item-bank-detail');
     expect(detail.textContent).toBe('Name cut off');
-    expect(getComputedStyle(detail).color).toBe(css(resolveAccentColors(theme().colors, 'error', 'outlined').foreground));
+    expect(getComputedStyle(detail).color).toBe(
+      css(resolveAccentColors(theme().colors, 'error', 'outlined').foreground),
+    );
     expect(byTestId('c-item-id-detail').textContent).toBe('Passport');
   });
 
   it('draws no action for a null actionLabel, and a visible track in dark mode', () => {
-    mount(<ApplicationChecklist testID="c" items={[{ key: 'a', title: 'A', status: 'missing', actionLabel: null }]} />, 'dark');
+    mount(
+      <ApplicationChecklist
+        testID="c"
+        items={[{ key: 'a', title: 'A', status: 'missing', actionLabel: null }]}
+      />,
+      'dark',
+    );
     expect(queryTestId('c-item-a-action')).toBeNull();
     const palette = resolveBookingPalette(theme());
     expect(getComputedStyle(byTestId('c-progress')).backgroundColor).not.toBe(css(palette.surface));
@@ -583,7 +650,15 @@ describe('ActionBar', () => {
 
   it('keeps BookingBar as its preset, with the stay testIDs and wording', () => {
     const reserve = jest.fn();
-    mount(<BookingBar testID="bb" price="$180" priceUnit="night" dates="Oct 12 – 17" onReserve={reserve} />);
+    mount(
+      <BookingBar
+        testID="bb"
+        price="$180"
+        priceUnit="night"
+        dates="Oct 12 – 17"
+        onReserve={reserve}
+      />,
+    );
     expect(byTestId('bb-reserve').textContent).toBe('Reserve');
     expect(byTestId('bb-dates').textContent).toBe('Oct 12 – 17');
     expect(queryTestId('bb-secondary')).toBeNull();
@@ -593,7 +668,15 @@ describe('ActionBar', () => {
 
   it('ignores a disabled primary', () => {
     const primary = jest.fn();
-    mount(<ActionBar testID="b" price="€980" primaryLabel="Apply" onPrimary={primary} primaryDisabled />);
+    mount(
+      <ActionBar
+        testID="b"
+        price="€980"
+        primaryLabel="Apply"
+        onPrimary={primary}
+        primaryDisabled
+      />,
+    );
     click(byTestId('b-primary'));
     expect(primary).not.toHaveBeenCalled();
   });

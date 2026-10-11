@@ -1,10 +1,4 @@
-import {
-  dismissAll,
-  dismissToRoot,
-  dismissTop,
-  present,
-  requestDismiss,
-} from './surface-store';
+import { dismissAll, dismissToRoot, dismissTop, present, requestDismiss } from './surface-store';
 import { alert, confirm, prompt } from './prompts';
 import type { PresentOptions, SurfaceRenderFn } from './types';
 

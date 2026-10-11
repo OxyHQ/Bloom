@@ -47,12 +47,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { TYPE_SCALE } from '../typography/scale';
 import { ToastIcon } from './ToastIcon';
 import { useToastColors, type ToastColors } from './use-toast-colors';
-import {
-  isToastAction,
-  type ToastAction,
-  type ToasterProps,
-  type ToastProps,
-} from './types';
+import { isToastAction, type ToastAction, type ToasterProps, type ToastProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 
 export type ToastContentProps = Pick<
@@ -86,7 +81,6 @@ export type ToastContentProps = Pick<
 };
 
 type ToastIcons = NonNullable<ToasterProps['icons']>;
-
 
 const SANS: TextStyle =
   Platform.OS === 'web' ? { fontFamily: 'var(--bloom-font-sans)' } : { fontFamily: 'Inter' };
@@ -139,8 +133,15 @@ export function ToastContent({
   const customSurface = StyleSheet.flatten([styleOverrides?.toast, style]);
   const parentFill = useSurfaceFill();
   const fill = customSurface?.backgroundColor ?? colors.surface;
-  const paintsSurface = !unstyled && !backgroundComponent && typeof fill === 'string' && fill !== 'transparent' && parseRgba(fill)?.a !== 0;
-  const publishedFill = paintsSurface ? resolveSurfaceMaterial({ fill: fill, parentFill: parentFill }).publishedFill : undefined;
+  const paintsSurface =
+    !unstyled &&
+    !backgroundComponent &&
+    typeof fill === 'string' &&
+    fill !== 'transparent' &&
+    parseRgba(fill)?.a !== 0;
+  const publishedFill = paintsSurface
+    ? resolveSurfaceMaterial({ fill: fill, parentFill: parentFill }).publishedFill
+    : undefined;
   const textProps = { allowFontScaling, maxFontSizeMultiplier };
 
   const content = (
@@ -157,7 +158,9 @@ export function ToastContent({
         surfaceFillVars(publishedFill),
       ]}
     >
-      {paintsSurface ? <SurfacePaint fill={fill} radius={customSurface?.borderRadius ?? G.radius} /> : null}
+      {paintsSurface ? (
+        <SurfacePaint fill={fill} radius={customSurface?.borderRadius ?? G.radius} />
+      ) : null}
       {backgroundComponent}
       <View
         style={[
@@ -205,12 +208,7 @@ export function ToastContent({
           ) : null}
 
           {action || cancel ? (
-            <View
-              style={[
-                unstyled ? undefined : styles.buttons,
-                styleOverrides?.buttons,
-              ]}
-            >
+            <View style={[unstyled ? undefined : styles.buttons, styleOverrides?.buttons]}>
               {/* Order: the secondary (cancel) first, the primary after. */}
               {isToastAction(cancel) ? (
                 <ToastActionButton
@@ -257,7 +255,13 @@ export function ToastContent({
       </View>
     </View>
   );
-  return publishedFill ? <SurfaceLevelProvider level={1} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
+  return publishedFill ? (
+    <SurfaceLevelProvider level={1} fill={publishedFill}>
+      {content}
+    </SurfaceLevelProvider>
+  ) : (
+    content
+  );
 }
 
 ToastContent.displayName = 'ToastContent';
@@ -301,7 +305,21 @@ function ToastLeadingVisual({
   if (unstyled) {
     return <>{glyph}</>;
   }
-  return <View style={[styles.disc, { width: size, height: size, borderRadius: size / 2, backgroundColor: colors.iconBackground }]}>{glyph}</View>;
+  return (
+    <View
+      style={[
+        styles.disc,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: colors.iconBackground,
+        },
+      ]}
+    >
+      {glyph}
+    </View>
+  );
 }
 
 function ToastActionButton({
@@ -316,7 +334,14 @@ function ToastActionButton({
   textStyle?: StyleProp<TextStyle>;
 }) {
   return (
-    <Button size="sm" appearance={variant === 'primary' ? 'solid' : 'subtle'} tone={variant === 'primary' ? 'accent' : 'neutral'} onPress={action.onClick} style={buttonStyle} textStyle={textStyle}>
+    <Button
+      size="sm"
+      appearance={variant === 'primary' ? 'solid' : 'subtle'}
+      tone={variant === 'primary' ? 'accent' : 'neutral'}
+      onPress={action.onClick}
+      style={buttonStyle}
+      textStyle={textStyle}
+    >
       {action.label}
     </Button>
   );

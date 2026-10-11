@@ -15,19 +15,47 @@ it('keeps AI template text readable on each tonal surface and filled chip', () =
       const agent = resolveAgentChatPalette(theme);
       const code = resolveCodePalette(theme);
       const pairs: [string, string, string, string[]?][] = [];
-      for (const [name, surface] of Object.entries({ page: chat.full, card: chat.primary, secondary: chat.secondary, tertiary: chat.tertiary, agent: agent.chatSurface })) {
-        for (const [role, foreground] of Object.entries({ text: chat.text, secondary: chat.textSecondary, tertiary: chat.textTertiary })) {
+      for (const [name, surface] of Object.entries({
+        page: chat.full,
+        card: chat.primary,
+        secondary: chat.secondary,
+        tertiary: chat.tertiary,
+        agent: agent.chatSurface,
+      })) {
+        for (const [role, foreground] of Object.entries({
+          text: chat.text,
+          secondary: chat.textSecondary,
+          tertiary: chat.textTertiary,
+        })) {
           pairs.push([`${name}/${role}`, surface, foreground]);
         }
       }
-      for (const [role, foreground] of Object.entries({ plain: code.plain, punctuation: code.punctuation, string: code.string, filename: code.filename, lineNumber: code.lineNumber, addition: code.addition, deletion: code.deletion })) {
+      for (const [role, foreground] of Object.entries({
+        plain: code.plain,
+        punctuation: code.punctuation,
+        string: code.string,
+        filename: code.filename,
+        lineNumber: code.lineNumber,
+        addition: code.addition,
+        deletion: code.deletion,
+      })) {
         pairs.push([`code/${role}`, code.surface, foreground]);
       }
       pairs.push(['code language chip', code.chipBackground, code.chipText, [code.surface]]);
       // User bubbles paint card; assistant messages inherit the shell background.
-      pairs.push(['link chip', chat.linkChipBackground, chat.linkChipText, [chat.primary, chat.full]]);
+      pairs.push([
+        'link chip',
+        chat.linkChipBackground,
+        chat.linkChipText,
+        [chat.primary, chat.full],
+      ]);
       // AiProfileCard is transparent over the template Screen, not its stat tiles.
-      pairs.push(['profile delta', theme.colors.secondarySubtle, theme.colors.secondarySubtleForeground, [theme.colors.background]]);
+      pairs.push([
+        'profile delta',
+        theme.colors.secondarySubtle,
+        theme.colors.secondarySubtleForeground,
+        [theme.colors.background],
+      ]);
       for (const [role, background, foreground, hosts] of pairs) {
         const rgba = parseRgba(background);
         const backdrops = hosts ?? [background];

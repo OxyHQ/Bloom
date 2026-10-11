@@ -363,12 +363,7 @@ function VoiceMessageComponent({
   };
 
   return (
-    <View
-      role="group"
-      accessibilityLabel={name}
-      style={[{ width }, style ?? null]}
-      testID={testID}
-    >
+    <View role="group" accessibilityLabel={name} style={[{ width }, style ?? null]} testID={testID}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
         <PlayButton
           playing={playing}
@@ -467,7 +462,11 @@ function VoiceMessageComponent({
       ) : null}
 
       {state === 'failed' ? (
-        <MediaFailure paint={paint} onRetry={onRetry} testID={testID ? `${testID}-failed` : undefined} />
+        <MediaFailure
+          paint={paint}
+          onRetry={onRetry}
+          testID={testID ? `${testID}-failed` : undefined}
+        />
       ) : null}
     </View>
   );

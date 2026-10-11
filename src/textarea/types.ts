@@ -38,7 +38,7 @@ export type TextareaProps = Omit<
     /** Show the character counter under the field (`12/280` with `maxLength`). */
     showCount?: boolean;
     invalid?: boolean;
-  isInvalid?: boolean;
+    isInvalid?: boolean;
     disabled?: boolean;
     /** Append the required asterisk to the label. */
     required?: boolean;

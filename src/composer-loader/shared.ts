@@ -21,13 +21,21 @@ import type { ComposerLoaderColors } from './types';
 
 /** @deprecated Legacy explicit rainbow override. Component defaults now use resolveComposerLoaderColors(theme). */
 export const DEFAULT_COMPOSER_LOADER_COLORS: ComposerLoaderColors = [
-  '#5eead4', '#46baec', '#e633a4', '#00faa7',
+  '#5eead4',
+  '#46baec',
+  '#e633a4',
+  '#00faa7',
 ];
 
 /** Theme foreground roles keep the moving light legible over the card material. */
 export function resolveComposerLoaderColors(theme: Theme): ComposerLoaderColors {
   const c = theme.colors;
-  return [c.primarySubtleForeground, c.secondarySubtleForeground, c.tertiarySubtleForeground, c.primarySubtleForeground];
+  return [
+    c.primarySubtleForeground,
+    c.secondarySubtleForeground,
+    c.tertiarySubtleForeground,
+    c.primarySubtleForeground,
+  ];
 }
 
 /** The light fades in/out over this long when `active` flips. */
@@ -81,7 +89,18 @@ export interface ComposerLoaderGeometry {
 }
 
 export function composerLoaderGeometry(input: ComposerLoaderGeometryInput): ComposerLoaderGeometry {
-  const { width: w, height: h, arc, line, bloom, bloomStrength, bloomOnly, taper, reverse, offset } = input;
+  const {
+    width: w,
+    height: h,
+    arc,
+    line,
+    bloom,
+    bloomStrength,
+    bloomOnly,
+    taper,
+    reverse,
+    offset,
+  } = input;
   const band = (arc / 360) * 100;
   const rx = input.radius ?? h / 2;
 

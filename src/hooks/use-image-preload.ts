@@ -11,7 +11,7 @@ export function useImagePreload(urls: (string | undefined)[], enabled: boolean =
   // Memoize valid URLs to avoid unnecessary re-runs
   const validUrls = useMemo(() => {
     return urls.filter((url): url is string =>
-      Boolean(url && (url.startsWith('http://') || url.startsWith('https://')))
+      Boolean(url && (url.startsWith('http://') || url.startsWith('https://'))),
     );
   }, [urls]);
 
@@ -34,7 +34,7 @@ export function useImagePreload(urls: (string | undefined)[], enabled: boolean =
     if (preloadedRef.current.size > 1000) {
       const entries = Array.from(preloadedRef.current);
       const toRemove = entries.slice(0, entries.length - 1000);
-      toRemove.forEach(url => preloadedRef.current.delete(url));
+      toRemove.forEach((url) => preloadedRef.current.delete(url));
     }
   }, [validUrls]);
 }

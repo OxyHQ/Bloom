@@ -16,7 +16,14 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { VEHICLE_OPTIONS, VehiclePicker, vehicleOptionName } from '../vehicle-picker';
 import type { VehicleKind, VehicleOption } from '../vehicle-picker';
-import { allByRole, byTestId, click, mount, queryTestId, setupHarness } from './support/commerce-harness';
+import {
+  allByRole,
+  byTestId,
+  click,
+  mount,
+  queryTestId,
+  setupHarness,
+} from './support/commerce-harness';
 
 setupHarness();
 
@@ -127,7 +134,10 @@ describe('every card announces what it draws on four separate lines', () => {
       'Van, Up to 800 kg',
     );
     expect(
-      vehicleOptionName({ label: 'Van', capacity: 'Up to 800 kg', priceFrom: '' }, { from: 'From' }),
+      vehicleOptionName(
+        { label: 'Van', capacity: 'Up to 800 kg', priceFrom: '' },
+        { from: 'From' },
+      ),
     ).toBe('Van, Up to 800 kg');
   });
 });
@@ -144,7 +154,12 @@ describe('one answer, spelled the way both platforms read it', () => {
 
   it('names the group from `accessibilityLabel`', () => {
     mount(
-      <VehiclePicker value={null} onValueChange={noop} options={PRICED} accessibilityLabel="Vehicle for this job" />,
+      <VehiclePicker
+        value={null}
+        onValueChange={noop}
+        options={PRICED}
+        accessibilityLabel="Vehicle for this job"
+      />,
     );
     expect(allByRole('radiogroup')[0]?.getAttribute('aria-label')).toBe('Vehicle for this job');
   });

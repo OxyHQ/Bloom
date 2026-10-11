@@ -96,7 +96,12 @@ const sameCell = (a: HeatmapCell | null, b: HeatmapCell | null) =>
  * `color-mix(in srgb, accent N%, var(--color-chart-track))` with an 8% floor so
  * empty cells still read as cells, 100% at max.
  */
-export function heatmapCellColor(value: number, max: number, accent: string, track: string): string {
+export function heatmapCellColor(
+  value: number,
+  max: number,
+  accent: string,
+  track: string,
+): string {
   const share = Math.max(0, Math.min(1, max > 0 ? value / max : 0));
   const pct = Math.round(8 + share * 92);
   return mixColor(track, accent, pct / 100);
@@ -166,7 +171,8 @@ export function HeatmapChartCard({
 
   const [own, setOwn] = useState<HeatmapCell | null>(null);
   const rawActive = controlled !== undefined ? controlled : own;
-  const active = rawActive && rawActive.row < rows.length && rawActive.col < cols ? rawActive : null;
+  const active =
+    rawActive && rawActive.row < rows.length && rawActive.col < cols ? rawActive : null;
   const activeRef = useRef(active);
   activeRef.current = active;
   const setActive = useCallback(
@@ -207,8 +213,10 @@ export function HeatmapChartCard({
           onStartShouldSetResponder: () => true,
           onMoveShouldSetResponder: () => true,
           onResponderTerminationRequest: () => false,
-          onResponderGrant: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
-          onResponderMove: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderGrant: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderMove: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
           onResponderRelease: () => setActive(null),
           onResponderTerminate: () => setActive(null),
         };
@@ -234,7 +242,11 @@ export function HeatmapChartCard({
         testID={testID}
       />
 
-      <View style={styles.grid} onPointerLeave={() => setActive(null)} testID={testID ? `${testID}-grid` : undefined}>
+      <View
+        style={styles.grid}
+        onPointerLeave={() => setActive(null)}
+        testID={testID ? `${testID}-grid` : undefined}
+      >
         {/* Row labels: an auto-width column, as `grid-template-columns: auto …`. */}
         <View style={styles.labelColumn}>
           {rows.map((row, r) => (
@@ -242,7 +254,8 @@ export function HeatmapChartCard({
               <Text
                 variant="caption-1-medium"
                 numberOfLines={1}
-                style={[labelColor(active?.row === r), labelEase]}>
+                style={[labelColor(active?.row === r), labelEase]}
+              >
                 {row.label}
               </Text>
             </View>
@@ -261,7 +274,12 @@ export function HeatmapChartCard({
                   flexBasis: 0,
                   minWidth: 0,
                   borderRadius: 4,
-                  backgroundColor: heatmapCellColor(v, max, isActive ? tone.activeColor : tone.color, palette.track),
+                  backgroundColor: heatmapCellColor(
+                    v,
+                    max,
+                    isActive ? tone.activeColor : tone.color,
+                    palette.track,
+                  ),
                   boxShadow: isActive ? `0 0 0 2px ${palette.cursor}` : undefined,
                   ...cellEase,
                 };
@@ -280,11 +298,15 @@ export function HeatmapChartCard({
           ))}
           <View style={styles.columnLabels}>
             {columns.map((column, c) => (
-              <View key={`col-${c}-${column}`} style={[styles.columnLabel, { opacity: c % labelEvery === 0 ? 1 : 0 }]}>
+              <View
+                key={`col-${c}-${column}`}
+                style={[styles.columnLabel, { opacity: c % labelEvery === 0 ? 1 : 0 }]}
+              >
                 <Text
                   variant="caption-1-medium"
                   numberOfLines={1}
-                  style={[{ textAlign: 'center' }, labelColor(active?.col === c), labelEase]}>
+                  style={[{ textAlign: 'center' }, labelColor(active?.col === c), labelEase]}
+                >
                   {column}
                 </Text>
               </View>
@@ -300,7 +322,10 @@ export function HeatmapChartCard({
         {LEGEND_STOPS.map((stop) => (
           <View
             key={stop}
-            style={[styles.swatch, { backgroundColor: heatmapCellColor(stop * max, max, tone.color, palette.track) }]}
+            style={[
+              styles.swatch,
+              { backgroundColor: heatmapCellColor(stop * max, max, tone.color, palette.track) },
+            ]}
           />
         ))}
         <Text variant="caption-1-medium" style={{ color: palette.textTertiary }}>
@@ -314,11 +339,25 @@ export function HeatmapChartCard({
 const styles = StyleSheet.create({
   grid: { width: '100%', flex: 1, minHeight: 0, flexDirection: 'row', gap: GAP },
   labelColumn: { flexDirection: 'column', gap: GAP },
-  rowLabel: { flex: 1, flexBasis: 0, minHeight: 0, flexDirection: 'row', alignItems: 'center', paddingRight: 8 },
+  rowLabel: {
+    flex: 1,
+    flexBasis: 0,
+    minHeight: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 8,
+  },
   cells: { flex: 1, minWidth: 0, flexDirection: 'column', gap: GAP },
   row: { flex: 1, flexBasis: 0, minHeight: 0, flexDirection: 'row', gap: GAP },
   columnLabels: { height: COLUMN_LABEL_HEIGHT, flexDirection: 'row', gap: GAP },
   columnLabel: { flex: 1, flexBasis: 0, minWidth: 0, paddingTop: 2 },
-  legend: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6, paddingBottom: 4 },
+  legend: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 6,
+    paddingBottom: 4,
+  },
   swatch: { width: 12, height: 12, borderRadius: 3 },
 });

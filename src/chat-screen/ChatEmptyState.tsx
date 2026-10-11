@@ -65,10 +65,7 @@ function ChatEmptyStateComponent({
           {title}
         </Text>
         {description ? (
-          <Text
-            variant="body-regular"
-            style={{ color: paint.textSecondary, textAlign: 'center' }}
-          >
+          <Text variant="body-regular" style={{ color: paint.textSecondary, textAlign: 'center' }}>
             {description}
           </Text>
         ) : null}
@@ -99,10 +96,7 @@ function ChatEmptyStateComponent({
               <NoticeIcon width={14} height={14} fill={paint.textSecondary} />
             </View>
           ) : null}
-          <Text
-            variant="caption-1-regular"
-            style={{ flexShrink: 1, color: paint.textSecondary }}
-          >
+          <Text variant="caption-1-regular" style={{ flexShrink: 1, color: paint.textSecondary }}>
             {notice}
           </Text>
         </View>

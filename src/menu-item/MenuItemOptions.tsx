@@ -93,7 +93,9 @@ function OptionGroup({
         <Checkbox
           key={option.id}
           checked={chosen.includes(option.id)}
-          onCheckedChange={() => onValueChange(group.id, toggleOptionSelection(chosen, option.id, rule))}
+          onCheckedChange={() =>
+            onValueChange(group.id, toggleOptionSelection(chosen, option.id, rule))
+          }
           label={option.label}
           description={optionSubtitle(option)}
           disabled={disabled || optionDisabled(option, chosen, rule)}
@@ -109,7 +111,9 @@ function OptionGroup({
       // cannot reach on native.
       label={`${group.title}, ${ruleText}`}
       value={chosen[0]}
-      onValueChange={(next: string) => onValueChange(group.id, toggleOptionSelection(chosen, next, rule))}
+      onValueChange={(next: string) =>
+        onValueChange(group.id, toggleOptionSelection(chosen, next, rule))
+      }
       options={group.options.map(
         (option): RadioOption => ({
           value: option.id,
@@ -203,12 +207,13 @@ function MenuItemOptionsComponent({
 
       {onSubmit ? (
         <Button
-
           size="lg"
           fullWidth
           disabled={disabled || submitDisabled}
           onPress={onSubmit}
-          testID={testID ? `${testID}-submit` : undefined} tone="accent" appearance="solid"
+          testID={testID ? `${testID}-submit` : undefined}
+          tone="accent"
+          appearance="solid"
         >
           {total ? `${submitLabel} · ${total}` : submitLabel}
         </Button>

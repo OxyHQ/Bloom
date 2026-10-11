@@ -1,4 +1,8 @@
-import { describeDeltaRatio, formatNumber as chartNumber, groupThousands } from '../chart-cards/primitives/format';
+import {
+  describeDeltaRatio,
+  formatNumber as chartNumber,
+  groupThousands,
+} from '../chart-cards/primitives/format';
 import { formatFileSize as fileUploadSize } from '../file-upload/shared';
 import { formatPlaybackRate } from '../media-player/shared';
 import {
@@ -19,7 +23,7 @@ import {
 const plain = (text: string) => text.replace(/[  ]/g, ' ').replace(/[‎‏]/g, '');
 
 describe('formatNumber / formatInteger', () => {
-  it('groups and marks decimals the locale\'s way', () => {
+  it("groups and marks decimals the locale's way", () => {
     expect(formatNumber(1234567.891, 'en')).toBe('1,234,567.891');
     expect(formatNumber(1234567.891, 'de')).toBe('1.234.567,891');
     expect(plain(formatNumber(1234567.891, 'fr'))).toBe('1 234 567,891');
@@ -62,7 +66,7 @@ describe('percentages', () => {
 });
 
 describe('formatCurrency', () => {
-  it('places the currency symbol the locale\'s way', () => {
+  it("places the currency symbol the locale's way", () => {
     expect(formatCurrency(385000, 'EUR', 'en')).toBe('€385,000');
     expect(plain(formatCurrency(385000, 'EUR', 'es'))).toBe('385.000 €');
     expect(formatCurrency(1299.5, 'USD', 'en', 2)).toBe('$1,299.50');
@@ -79,7 +83,7 @@ describe('formatCurrency', () => {
 });
 
 describe('formatFileSize', () => {
-  it('uses the locale\'s decimal mark and unit symbols', () => {
+  it("uses the locale's decimal mark and unit symbols", () => {
     expect(formatFileSize(2.4 * 1024 ** 2, 'en')).toBe('2.4 MB');
     expect(formatFileSize(2.4 * 1024 ** 2, 'es')).toBe('2,4 MB');
     expect(formatFileSize(2.4 * 1024 ** 2, 'fr')).toBe('2,4 Mo');
@@ -98,8 +102,8 @@ describe('formatClock', () => {
   });
 });
 
-describe('the families\' own helpers now take the locale', () => {
-  it('chart-cards groups and signs the locale\'s way, and keeps English with none', () => {
+describe("the families' own helpers now take the locale", () => {
+  it("chart-cards groups and signs the locale's way, and keeps English with none", () => {
     expect(groupThousands(1234567.8, 'de')).toBe('1.234.568');
     expect(groupThousands(1234567.8)).toBe('1,234,568');
     expect(chartNumber(-0.0001)).toBe('0');

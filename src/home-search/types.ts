@@ -36,7 +36,9 @@ export interface HomeSearchSegmentKeys {
 }
 
 /** Per-key overrides for {@link homeSearchSegments}. */
-export type HomeSearchSegmentOverrides<K extends string> = Partial<Record<K, Partial<Omit<HomeSearchSegment<K>, 'key'>>>>;
+export type HomeSearchSegmentOverrides<K extends string> = Partial<
+  Record<K, Partial<Omit<HomeSearchSegment<K>, 'key'>>>
+>;
 
 export interface HomeSearchBarProps<K extends string = string> {
   /** The segments, left to right. The last one holds the search button. */

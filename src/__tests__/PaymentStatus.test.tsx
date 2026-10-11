@@ -82,11 +82,16 @@ describe('the five states', () => {
 
   it('lets a caller replace one call’s words, or a state’s words everywhere', () => {
     expect(resolvePaymentStatus('pending').words).toBe('Payment pending');
-    expect(resolvePaymentStatus('pending', { status: 'Held for review' }).words).toBe('Held for review');
-    expect(resolvePaymentStatus('pending', { labels: { pending: 'Waiting' } }).words).toBe('Waiting');
+    expect(resolvePaymentStatus('pending', { status: 'Held for review' }).words).toBe(
+      'Held for review',
+    );
+    expect(resolvePaymentStatus('pending', { labels: { pending: 'Waiting' } }).words).toBe(
+      'Waiting',
+    );
     // A whole sentence outranks a translated default.
     expect(
-      resolvePaymentStatus('pending', { status: 'Held for review', labels: { pending: 'Waiting' } }).words,
+      resolvePaymentStatus('pending', { status: 'Held for review', labels: { pending: 'Waiting' } })
+        .words,
     ).toBe('Held for review');
   });
 });
@@ -127,7 +132,11 @@ describe('PaymentStatusBar', () => {
 
   it('carries the caller’s action', () => {
     mount(
-      <PaymentStatusBar state="failed" action={<span data-testid="retry">Retry</span>} testID="bar" />,
+      <PaymentStatusBar
+        state="failed"
+        action={<span data-testid="retry">Retry</span>}
+        testID="bar"
+      />,
     );
     expect(queryTestId('retry')).not.toBeNull();
   });
@@ -143,14 +152,23 @@ describe('PaymentStatusBar', () => {
 
 describe('PaymentStatusBlock', () => {
   it('names itself from its own words, amount and detail', () => {
-    mount(<PaymentStatusBlock state="paid" amount="€48.00" detail="Aurora •••• 4417" testID="block" />);
+    mount(
+      <PaymentStatusBlock state="paid" amount="€48.00" detail="Aurora •••• 4417" testID="block" />,
+    );
     expect(byLabel('Paid, €48.00, Aurora •••• 4417')).not.toBeNull();
     expect(byTestId('block-status').textContent).toBe('Paid');
     expect(byTestId('block-amount').textContent).toBe('€48.00');
   });
 
   it('lets a caller replace that name', () => {
-    mount(<PaymentStatusBlock state="paid" amount="€48.00" accessibilityLabel="Order paid in full" testID="block" />);
+    mount(
+      <PaymentStatusBlock
+        state="paid"
+        amount="€48.00"
+        accessibilityLabel="Order paid in full"
+        testID="block"
+      />,
+    );
     expect(byLabel('Order paid in full')).not.toBeNull();
   });
 
@@ -159,7 +177,14 @@ describe('PaymentStatusBlock', () => {
     expect(byTestId('block-reference').textContent).toBe('8F2K-41QD-7T');
     expect(root$().textContent).toContain('Reference');
 
-    mount(<PaymentStatusBlock state="paid" reference="8F2K-41QD-7T" referenceLabel="Charge id" testID="block" />);
+    mount(
+      <PaymentStatusBlock
+        state="paid"
+        reference="8F2K-41QD-7T"
+        referenceLabel="Charge id"
+        testID="block"
+      />,
+    );
     expect(root$().textContent).toContain('Charge id');
 
     mount(<PaymentStatusBlock state="paid" testID="block" />);
@@ -187,7 +212,13 @@ describe('PaymentStatusBlock', () => {
   });
 
   it('carries the caller’s actions, and draws nothing where there are none', () => {
-    mount(<PaymentStatusBlock state="failed" actions={<span data-testid="retry">Try again</span>} testID="block" />);
+    mount(
+      <PaymentStatusBlock
+        state="failed"
+        actions={<span data-testid="retry">Try again</span>}
+        testID="block"
+      />,
+    );
     expect(queryTestId('retry')).not.toBeNull();
   });
 

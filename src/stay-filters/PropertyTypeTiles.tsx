@@ -12,7 +12,12 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PROPERTY_TYPE_OPTIONS, localizedOptions } from './constants';
-import type { FilterIconComponent, PropertyType, PropertyTypeOption, PropertyTypeTilesProps } from './types';
+import type {
+  FilterIconComponent,
+  PropertyType,
+  PropertyTypeOption,
+  PropertyTypeTilesProps,
+} from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
@@ -56,9 +61,9 @@ const CSS = interactiveWebCss({
   base: '',
   transition: 'background-color 120ms ease, border-color 120ms ease',
   focus: { mode: 'ring' },
-      // The FADE lives in the inline style, not here: it has to apply on native
-      // too, and two sources for one state is how they drift apart.
-      disabled: { opacity: null },
+  // The FADE lives in the inline style, not here: it has to apply on native
+  // too, and two sources for one state is how they drift apart.
+  disabled: { opacity: null },
   extraRules: `@media (prefers-reduced-motion: reduce) {
   ${SELECTOR} { transition: none; }
 }`,
@@ -138,7 +143,8 @@ function Tile({ label, icon: Icon, selected, disabled, size, onPress, testID }: 
   );
 }
 
-export interface PropertyTypeTilesInternalProps<T extends string> extends PropertyTypeTilesProps<T> {
+export interface PropertyTypeTilesInternalProps<T extends string>
+  extends PropertyTypeTilesProps<T> {
   size: TileSize;
 }
 
@@ -182,7 +188,9 @@ export function PropertyTypeTiles<T extends string = PropertyType>({
       testID={testID}
       role="group"
       accessibilityLabel={accessibilityLabel}
-      onLayout={columns == null ? (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width) : undefined}
+      onLayout={
+        columns == null ? (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width) : undefined
+      }
       style={[{ gap: GAP }, style]}
     >
       {rows.map((row, r) => (

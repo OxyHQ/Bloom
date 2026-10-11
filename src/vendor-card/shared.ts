@@ -15,7 +15,12 @@ import type { ListingFact } from '../listing-card/types';
 import { formatRatingValue } from '../rating/Rating';
 import { VENDOR_CUISINE_LIMIT, VENDOR_FACT_ICON, VENDOR_FACT_ORDER } from './constants';
 import { VENDOR_CARD_MESSAGES, type VendorCardMessages } from './messages';
-import type { VendorAvailability, VendorCardDensity, VendorCardProps, VendorFactKey } from './types';
+import type {
+  VendorAvailability,
+  VendorCardDensity,
+  VendorCardProps,
+  VendorFactKey,
+} from './types';
 
 /** The status pill's label, or `null` for a vendor that is taking orders. */
 export function availabilityLabelFor(
@@ -51,7 +56,11 @@ export function vendorFacts(
     const value = values[key];
     if (!value) continue;
     const word = props.factLabels?.[key] ?? messages.facts[key];
-    facts.push({ icon: VENDOR_FACT_ICON[key], label: value, accessibilityLabel: `${word} ${value}` });
+    facts.push({
+      icon: VENDOR_FACT_ICON[key],
+      label: value,
+      accessibilityLabel: `${word} ${value}`,
+    });
   }
   return facts;
 }
@@ -62,7 +71,10 @@ export function vendorCuisines(
   density: VendorCardDensity,
 ): string[] {
   if (!cuisines) return [];
-  return Array.from(new Set(cuisines.filter((c) => c !== ''))).slice(0, VENDOR_CUISINE_LIMIT[density]);
+  return Array.from(new Set(cuisines.filter((c) => c !== ''))).slice(
+    0,
+    VENDOR_CUISINE_LIMIT[density],
+  );
 }
 
 /**
@@ -84,12 +96,15 @@ export function composeVendorName(
   if (props.rating !== undefined) {
     const rated = props.rating !== null && props.rating !== '';
     if (rated) {
-      parts.push(messages.rated(formatRatingValue(props.rating as number | string), props.reviewCount));
+      parts.push(
+        messages.rated(formatRatingValue(props.rating as number | string), props.reviewCount),
+      );
     } else {
       parts.push(props.newLabel ?? messages.new);
     }
   }
-  for (const fact of vendorFacts(props, messages)) parts.push(fact.accessibilityLabel ?? fact.label);
+  for (const fact of vendorFacts(props, messages))
+    parts.push(fact.accessibilityLabel ?? fact.label);
   return parts.join(', ');
 }
 

@@ -19,7 +19,7 @@ Coloured by Bloom's theme through the same ramps as `Button`:
 | text inset      | 4                  | 4       |
 | text            | 14/20 regular      | 14/20 regular |
 | icon            | 20                 | 20      |
-| radius          | 10                 | 10      |
+| radius          | 12                 | 12      |
 
 The shell uses the shared secondary surface with a 2px **inset** ring: transparent at rest, the semantic border under the pointer, and primary while focused. A focused field darkens its placeholder to the text colour.
 
@@ -211,7 +211,7 @@ For a real multiline field — rows, auto-grow, a character counter — use [`Te
 | `invalid?` | `boolean` | Paints the field in the negative palette and exposes it via context. |
 | `disabled?` | `boolean` | Disables the input and paints every part disabled. |
 | `size?` | `'md' \| 'sm'` | 36 or 32 tall. Default `md`. |
-| `radius?` | `number` | Corner radius of the chrome, default `10`. A large value (999) reads as a pill. |
+| `radius?` | `number` | Corner radius of the chrome, default `12`. A large value (999) reads as a pill. |
 | `leadingAddon?` | `React.ReactNode` | A control before the input (the phone input's country code); the shell's left padding becomes 4px. |
 | `style?` | `StyleProp<ViewStyle>` | Override the container style. |
 | `children?` | `React.ReactNode` | The input, plus any icon / suffix / ghost. |
@@ -309,3 +309,18 @@ colour it always had. Gate: `surface-level-adoption.test.ts`.
 ## API migration
 
 Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
+
+## Layout and surface classes
+
+`TextField className` styles the layout host (width, height and padding).
+`chromeClassName` styles the single inset surface (background, border/ring and
+radius). The inset ring occupies no layout space; changing its thickness does
+not change the field's outer dimensions. Both slots preserve their defaults
+when absent. The focus border and disabled/invalid paint retain priority over
+resting classes so field state remains visible. Inside `InputGroup`, the group
+owns the surface and the field's chrome slot is not rendered.
+
+On web, these hosts use base-layer defaults, leaving consumer component and
+utility classes authoritative. A boxless RNW direction carrier preserves the
+logical styles of descendants in RTL. Native resolves each class after that
+host's defaults through the same native CSS compiler as the other primitives.

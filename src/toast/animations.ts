@@ -74,11 +74,7 @@ import {
 
 import { ENTERING_ANIMATION_DURATION, toastDefaults } from './constants';
 import { useToastContext } from './context';
-import type {
-  ToastAnimation,
-  ToastEntryExitAnimation,
-  ToastPosition,
-} from './types';
+import type { ToastAnimation, ToastEntryExitAnimation, ToastPosition } from './types';
 
 /**
  * `Easing.bezier()` (not `bezierFn`) returns an easing *factory*, which is what
@@ -87,7 +83,6 @@ import type {
  * babel plugin too.
  */
 const EASE_OUT_QUART = Easing.bezier(0.165, 0.84, 0.44, 1);
-
 
 export type ToastEnterDriver = 'imperative' | 'layoutAnimation';
 
@@ -124,10 +119,7 @@ export const MAX_CACHED_ANIMATIONS = 32;
 
 const animationCache = new Map<string, ReanimatedKeyframe>();
 
-function cachedAnimation(
-  key: string,
-  build: () => ReanimatedKeyframe,
-): ReanimatedKeyframe {
+function cachedAnimation(key: string, build: () => ReanimatedKeyframe): ReanimatedKeyframe {
   const hit = animationCache.get(key);
   if (hit) {
     return hit;
@@ -152,23 +144,19 @@ export function toastAnimationCacheSize(): number {
 }
 
 /** Native only — on web the same shape is played imperatively by `ToastRow`. */
-export function getToastEnterAnimation(
-  position: ToastPosition,
-): ReanimatedKeyframe {
-  return cachedAnimation(
-    `enter|${position}`,
-    () =>
-      new Keyframe({
-        from: {
-          opacity: 0,
-          transform: [{ translateY: ENTER_TRANSLATE_Y[position] }],
-        },
-        to: {
-          opacity: 1,
-          transform: [{ translateY: 0 }],
-          easing: EASE_OUT_QUART,
-        },
-      }).duration(ENTERING_ANIMATION_DURATION),
+export function getToastEnterAnimation(position: ToastPosition): ReanimatedKeyframe {
+  return cachedAnimation(`enter|${position}`, () =>
+    new Keyframe({
+      from: {
+        opacity: 0,
+        transform: [{ translateY: ENTER_TRANSLATE_Y[position] }],
+      },
+      to: {
+        opacity: 1,
+        transform: [{ translateY: 0 }],
+        easing: EASE_OUT_QUART,
+      },
+    }).duration(ENTERING_ANIMATION_DURATION),
   );
 }
 
@@ -183,35 +171,34 @@ export function getToastExitAnimation({
   isSingle: boolean;
   stackGap: number;
 }): ReanimatedKeyframe {
-  return cachedAnimation(
-    `exit|${position}|${isHiddenByLimit}|${isSingle}|${stackGap}`,
-    () => {
-      // A row culled by `visibleToasts` is buried under the stack; sliding it
-      // would look wrong, so it only fades.
-      if (isHiddenByLimit) {
-        return new Keyframe({
-          from: { opacity: 1 },
-          50: { opacity: 0.35 },
-          to: { opacity: 0 },
-        }).duration(EXIT_DURATION);
-      }
+  return cachedAnimation(`exit|${position}|${isHiddenByLimit}|${isSingle}|${stackGap}`, () => {
+    // A row culled by `visibleToasts` is buried under the stack; sliding it
+    // would look wrong, so it only fades.
+    if (isHiddenByLimit) {
+      return new Keyframe({
+        from: { opacity: 1 },
+        50: { opacity: 0.35 },
+        to: { opacity: 0 },
+      }).duration(EXIT_DURATION);
+    }
 
-      const distance = isSingle ? EXIT_TRANSLATE_Y_SINGLE : Math.min(EXIT_TRANSLATE_Y_SINGLE, Math.max(0, stackGap));
-      const translateY = position === 'top-center' ? -distance : distance;
+    const distance = isSingle
+      ? EXIT_TRANSLATE_Y_SINGLE
+      : Math.min(EXIT_TRANSLATE_Y_SINGLE, Math.max(0, stackGap));
+    const translateY = position === 'top-center' ? -distance : distance;
 
-      return (
-        new Keyframe({
-          from: { opacity: 1, transform: [{ translateY: 0 }] },
-          // Explicit stops keep the deceleration on web too: custom bezier
-          // factories have no recognised CSS easing name without the plugin.
-          50: { opacity: 0.35, transform: [{ translateY: translateY * 0.75 }] },
-          to: { opacity: 0, transform: [{ translateY }] },
-        })
-          // Finishes within the store's 300ms overlay teardown grace period.
-          .duration(EXIT_DURATION)
-      );
-    },
-  );
+    return (
+      new Keyframe({
+        from: { opacity: 1, transform: [{ translateY: 0 }] },
+        // Explicit stops keep the deceleration on web too: custom bezier
+        // factories have no recognised CSS easing name without the plugin.
+        50: { opacity: 0.35, transform: [{ translateY: translateY * 0.75 }] },
+        to: { opacity: 0, transform: [{ translateY }] },
+      })
+        // Finishes within the store's 300ms overlay teardown grace period.
+        .duration(EXIT_DURATION)
+    );
+  });
 }
 
 type ResolvedAnimation = Exclude<ToastEntryExitAnimation, 'default'>;
@@ -276,11 +263,7 @@ export const useToastLayoutAnimations = (
    */
   enterTranslateY: number | undefined;
 } => {
-  const {
-    position: positionCtx,
-    gap,
-    animation: animationCtx,
-  } = useToastContext();
+  const { position: positionCtx, gap, animation: animationCtx } = useToastContext();
   const position = positionProp ?? positionCtx;
   const stackGap = gap ?? toastDefaults.stackGap;
   const reducedMotion = useReducedMotion();
@@ -299,20 +282,13 @@ export const useToastLayoutAnimations = (
   return {
     ...resolveToastEnterAnimation({
       position,
-      enterOverride:
-        animationProp?.enter !== undefined
-          ? animationProp.enter
-          : animationCtx?.enter,
+      enterOverride: animationProp?.enter !== undefined ? animationProp.enter : animationCtx?.enter,
       driver: TOAST_ENTER_DRIVER,
     }),
     // An overflow-culled row always uses Bloom's fade: a consumer's custom exit
     // would animate a row the user cannot even see.
     exiting: isHiddenByLimit
       ? defaultExiting
-      : resolveAnimationField(
-          animationProp?.exit,
-          animationCtx?.exit,
-          defaultExiting,
-        ),
+      : resolveAnimationField(animationProp?.exit, animationCtx?.exit, defaultExiting),
   };
 };

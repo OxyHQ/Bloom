@@ -15,20 +15,20 @@ const meta: Meta<typeof Fab> = {
     onPress: () => {},
   },
   argTypes: {
-    "label": { control: 'text' },
-    "title": { control: 'text' },
-    "value": { control: 'text' },
-    "target": { control: 'text' },
-    "tabIndex": { control: 'number' },
-    "loading": { control: 'boolean' },
-    "appearance": { control: 'select', options: ["solid","subtle","outline","plain"] },
-    "loadingColor": { control: 'text' },
-    "href": { control: 'text' },
-    "rel": { control: 'text' },
-    "type": { control: 'select', options: ["button","submit","reset"] },
-    "asChild": { control: 'boolean' },
-    "name": { control: 'text' },
-    "autoFocus": { control: 'boolean' },
+    label: { control: 'text' },
+    title: { control: 'text' },
+    value: { control: 'text' },
+    target: { control: 'text' },
+    tabIndex: { control: 'number' },
+    loading: { control: 'boolean' },
+    appearance: { control: 'select', options: ['solid', 'subtle', 'outline', 'plain'] },
+    loadingColor: { control: 'text' },
+    href: { control: 'text' },
+    rel: { control: 'text' },
+    type: { control: 'select', options: ['button', 'submit', 'reset'] },
+    asChild: { control: 'boolean' },
+    name: { control: 'text' },
+    autoFocus: { control: 'boolean' },
     tone: {
       control: 'select',
       options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'],
@@ -68,7 +68,8 @@ export const CompactSize: Story = {
 export const InContainerColumn: Story = {
   render: (args) => (
     <View
-      style={{ maxWidth: '100%',
+      style={{
+        maxWidth: '100%',
         alignItems: 'flex-end',
         justifyContent: 'flex-end',
         padding: 16,
@@ -91,9 +92,11 @@ export const ControlledCollapse: Story = {
   render: function ControlledCollapse(args) {
     const [collapsed, setCollapsed] = useState(Boolean(args.collapsed));
     useEffect(() => setCollapsed(Boolean(args.collapsed)), [args.collapsed]);
-    return <View style={{ alignItems: 'flex-start', gap: 24, padding: 24 }}>
-      <Button onPress={() => setCollapsed(value => !value)}>Toggle label</Button>
-      <Fab {...args} collapsed={collapsed} testID="controlled-fab" />
-    </View>;
+    return (
+      <View style={{ alignItems: 'flex-start', gap: 24, padding: 24 }}>
+        <Button onPress={() => setCollapsed((value) => !value)}>Toggle label</Button>
+        <Fab {...args} collapsed={collapsed} testID="controlled-fab" />
+      </View>
+    );
   },
 };

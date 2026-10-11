@@ -34,24 +34,68 @@ const NOW: QueueTrack = {
 
 const QUEUE: QueueTrack[] = [
   { id: 'q1', title: 'Slow Tide', artists: 'The Quiet Coast', cover: cover('tide'), meta: '4:02' },
-  { id: 'q2', title: 'Paper Moons', artists: 'Juno Vale, Oren Fisk', cover: cover('moons'), meta: '2:58', explicit: true },
-  { id: 'q3', title: 'Signal Fires', artists: 'Northwind Choir', cover: cover('fires'), meta: '5:10' },
+  {
+    id: 'q2',
+    title: 'Paper Moons',
+    artists: 'Juno Vale, Oren Fisk',
+    cover: cover('moons'),
+    meta: '2:58',
+    explicit: true,
+  },
+  {
+    id: 'q3',
+    title: 'Signal Fires',
+    artists: 'Northwind Choir',
+    cover: cover('fires'),
+    meta: '5:10',
+  },
 ];
 
 const CONTEXT: QueueTrack[] = [
   { id: 'c1', title: 'Neon Rain', artists: 'Kestrel Park', cover: cover('neon'), meta: '3:25' },
   { id: 'c2', title: 'Overpass', artists: 'Mara Lind', cover: cover('overpass'), meta: '4:44' },
-  { id: 'c3', title: 'After Hours Radio', artists: 'Kestrel Park', cover: cover('radio'), meta: '3:12' },
-  { id: 'c4', title: 'Tail Lights', artists: 'Soft Engines', cover: cover('tail'), meta: '2:49', explicit: true },
+  {
+    id: 'c3',
+    title: 'After Hours Radio',
+    artists: 'Kestrel Park',
+    cover: cover('radio'),
+    meta: '3:12',
+  },
+  {
+    id: 'c4',
+    title: 'Tail Lights',
+    artists: 'Soft Engines',
+    cover: cover('tail'),
+    meta: '2:49',
+    explicit: true,
+  },
   { id: 'c5', title: 'Long Way Home', artists: 'Ilse Marn', cover: cover('home'), meta: '6:03' },
   { id: 'c6', title: 'City in Blue', artists: 'The Quiet Coast', meta: '3:57' },
 ];
 
 const RECENT: QueueTrack[] = [
-  { id: 'r1', title: 'Glasshouse', artists: 'Juno Vale', cover: cover('glass'), meta: '12 min ago' },
-  { id: 'now', title: 'Harbour Lights', artists: 'Ilse Marn', cover: cover('harbour'), meta: 'Now' },
+  {
+    id: 'r1',
+    title: 'Glasshouse',
+    artists: 'Juno Vale',
+    cover: cover('glass'),
+    meta: '12 min ago',
+  },
+  {
+    id: 'now',
+    title: 'Harbour Lights',
+    artists: 'Ilse Marn',
+    cover: cover('harbour'),
+    meta: 'Now',
+  },
   { id: 'r2', title: 'Low Orbit', artists: 'Oren Fisk', cover: cover('orbit'), meta: '1 hour ago' },
-  { id: 'r3', title: 'Morning Ferry', artists: 'Northwind Choir', cover: cover('ferry'), meta: 'Yesterday' },
+  {
+    id: 'r3',
+    title: 'Morning Ferry',
+    artists: 'Northwind Choir',
+    cover: cover('ferry'),
+    meta: 'Yesterday',
+  },
 ];
 
 function Canvas({ children, width }: { children: React.ReactNode; width?: number }) {
@@ -149,7 +193,12 @@ export const States: Story = {
   render: () => (
     <Canvas>
       <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        <QueuePanel style={{ height: 260, maxWidth: '100%' }} nowPlaying={NOW} playing={false} onClose={() => {}} />
+        <QueuePanel
+          style={{ height: 260, maxWidth: '100%' }}
+          nowPlaying={NOW}
+          playing={false}
+          onClose={() => {}}
+        />
         <QueuePanel style={{ height: 300, maxWidth: '100%' }} onClose={() => {}} />
         <QueuePanel
           style={{ height: 300, maxWidth: '100%' }}
@@ -181,8 +230,18 @@ export const Wide: Story = {
   render: function WideStory() {
     const theme = useTheme();
     return (
-      <View style={{ flexDirection: 'row', gap: 8, padding: 8, height: 760, backgroundColor: theme.colors.background }}>
-        <View style={{ flex: 1, borderRadius: 8, backgroundColor: theme.colors.backgroundSecondary }} />
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: 8,
+          padding: 8,
+          height: 760,
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <View
+          style={{ flex: 1, borderRadius: 8, backgroundColor: theme.colors.backgroundSecondary }}
+        />
         <InteractiveQueue height={744} width={380} />
       </View>
     );

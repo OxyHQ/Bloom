@@ -4,7 +4,6 @@ import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react
 
 import type { PresenceStatus } from '../chat-indicators/types';
 
-
 import type { ChatIconComponent } from '../chat-indicators/types';
 export type { ChatIconComponent };
 

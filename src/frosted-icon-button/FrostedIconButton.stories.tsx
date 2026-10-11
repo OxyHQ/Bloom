@@ -14,9 +14,12 @@ const meta: Meta<typeof FrostedIconButton> = {
     onPress: () => {},
   },
   argTypes: {
-    "tone": { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] },
-    "title": { control: 'text' },
-    "type": { control: 'select', options: ["button","submit","reset"] },
+    tone: {
+      control: 'select',
+      options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'],
+    },
+    title: { control: 'text' },
+    type: { control: 'select', options: ['button', 'submit', 'reset'] },
     size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
     checked: { control: 'boolean' },
     disabled: { control: 'boolean' },
@@ -50,7 +53,13 @@ export const OverImage: Story = {
   render: (args) => (
     <ImageBackground
       source={{ uri: 'https://picsum.photos/600/300' }}
-      style={{ maxWidth: '100%', width: 320, height: 180, padding: 16, justifyContent: 'flex-start' }}
+      style={{
+        maxWidth: '100%',
+        width: 320,
+        height: 180,
+        padding: 16,
+        justifyContent: 'flex-start',
+      }}
     >
       <FrostedIconButton {...args} />
     </ImageBackground>
@@ -60,7 +69,9 @@ export const OverImage: Story = {
 /** Both sizes side by side. */
 export const Sizes: Story = {
   render: (args) => (
-    <View style={{ flexDirection: 'row', gap: 12, padding: 40, backgroundColor: 'rgb(11, 11, 15)' }}>
+    <View
+      style={{ flexDirection: 'row', gap: 12, padding: 40, backgroundColor: 'rgb(11, 11, 15)' }}
+    >
       <FrostedIconButton {...args} size="sm" />
       <FrostedIconButton {...args} size="md" />
     </View>

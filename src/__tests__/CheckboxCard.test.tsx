@@ -17,7 +17,12 @@ function renderWithTheme(ui: React.ReactElement) {
 describe('CheckboxCard', () => {
   it('renders its title and description', () => {
     const { getByText } = renderWithTheme(
-      <CheckboxCard title="Weekly digest" description="Every Monday." checked={false} onCheckedChange={() => {}} />,
+      <CheckboxCard
+        title="Weekly digest"
+        description="Every Monday."
+        checked={false}
+        onCheckedChange={() => {}}
+      />,
     );
     expect(getByText('Weekly digest')).toBeTruthy();
     expect(getByText('Every Monday.')).toBeTruthy();
@@ -55,8 +60,12 @@ describe('CheckboxCard', () => {
 
 it('uses the paired dark mark on a bright semantic selection', () => {
   const theme = buildTheme('olive', 'dark');
-  const root = render(<BloomThemeProvider mode="dark" colorPreset="olive"><CheckboxCard title="Selection" checked onCheckedChange={() => {}} /></BloomThemeProvider>);
-  const marks = root.UNSAFE_getAllByType(Path).filter(node => node.props.strokeWidth === 2);
+  const root = render(
+    <BloomThemeProvider mode="dark" colorPreset="olive">
+      <CheckboxCard title="Selection" checked onCheckedChange={() => {}} />
+    </BloomThemeProvider>,
+  );
+  const marks = root.UNSAFE_getAllByType(Path).filter((node) => node.props.strokeWidth === 2);
   expect(marks.length).toBeGreaterThan(0);
   expect(marks[0]!.props.stroke).toBe(theme.colors.primaryForeground);
   expect(theme.colors.primaryForeground).toBe('rgb(0 0 0)');

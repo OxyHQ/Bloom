@@ -11,7 +11,12 @@ export interface LocationPuckMessages {
   facing: (state: string, degrees: number) => string;
 }
 
-export const LOCATION_PUCK_MESSAGES: MessageCatalog<LocationPuckMessages> = defineMessages<LocationPuckMessages>('LOCATION_PUCK_MESSAGES', {
-  states: { locating: 'Finding your location', located: 'Your location', stale: 'Your last known location' },
-  facing: (state, degrees) => `${state}, facing ${degrees} degrees`,
-});
+export const LOCATION_PUCK_MESSAGES: MessageCatalog<LocationPuckMessages> =
+  defineMessages<LocationPuckMessages>('LOCATION_PUCK_MESSAGES', {
+    states: {
+      locating: 'Finding your location',
+      located: 'Your location',
+      stale: 'Your last known location',
+    },
+    facing: (state, degrees) => `${state}, facing ${degrees} degrees`,
+  });

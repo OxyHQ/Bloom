@@ -22,11 +22,11 @@ import type { AudienceBreakdownLabels, AudienceBreakdownProps } from './types';
  */
 
 /** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const AUDIENCE_BREAKDOWN_LABELS: AudienceBreakdownLabels = CREATOR_STUDIO_MESSAGES.en.breakdown;
+export const AUDIENCE_BREAKDOWN_LABELS: AudienceBreakdownLabels =
+  CREATOR_STUDIO_MESSAGES.en.breakdown;
 
 const TWO_COLUMNS_FROM = 720;
 const GAP = 16;
-
 
 function AudienceBreakdownComponent({
   cities,

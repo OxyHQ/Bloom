@@ -53,7 +53,15 @@ const resolver: ImageResolver = (id, variant) =>
       `</svg>`,
   )}`;
 
-function Probe({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
+function Probe({
+  title,
+  note,
+  children,
+}: {
+  title: string;
+  note: string;
+  children: React.ReactNode;
+}) {
   return (
     <Card appearance="outline" radius="radius-16" style={{ padding: 14, gap: 8, width: 230 }}>
       <Text style={{ fontWeight: '600' }}>{title}</Text>
@@ -79,7 +87,10 @@ function ThemeProbe() {
     <Probe title="Theme" note="Storybook mounts a theme provider too, so this survives either way.">
       <View style={{ flexDirection: 'row', gap: 6 }}>
         {[colors.primary, colors.success, colors.warning].map((color) => (
-          <View key={color} style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: color }} />
+          <View
+            key={color}
+            style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: color }}
+          />
         ))}
       </View>
     </Probe>
@@ -110,11 +121,13 @@ function ScrollProbe() {
 function MinimizeDriver() {
   const state = useMinimizeState();
   return (
-    <Button onPress={() => {
+    <Button
+      onPress={() => {
         const next = state.target.value === 1 ? 0 : 1;
         state.target.value = next;
         state.progress.value = withSpring(next);
-      }}>
+      }}
+    >
       Toggle minimize
     </Button>
   );

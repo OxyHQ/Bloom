@@ -1,9 +1,5 @@
 import { FOLD_SHAPES, type AvatarConfig } from '../agent-avatar';
-import {
-  AGENT_LANGUAGES,
-  AGENT_SPEECH_RATES,
-  DEFAULT_AGENT_PREFERENCES,
-} from './constants';
+import { AGENT_LANGUAGES, AGENT_SPEECH_RATES, DEFAULT_AGENT_PREFERENCES } from './constants';
 import type { AgentPreferences } from './types';
 
 export function normalizeAgentPreferences(
@@ -14,24 +10,17 @@ export function normalizeAgentPreferences(
       typeof value?.voice === 'string'
         ? value.voice.slice(0, 200)
         : DEFAULT_AGENT_PREFERENCES.voice,
-    speed: AGENT_SPEECH_RATES.some((rate) => rate === value?.speed)
-      ? value!.speed!
-      : 1,
-    language: AGENT_LANGUAGES.some(
-      (language) => language.id === value?.language,
-    )
+    speed: AGENT_SPEECH_RATES.some((rate) => rate === value?.speed) ? value!.speed! : 1,
+    language: AGENT_LANGUAGES.some((language) => language.id === value?.language)
       ? value!.language!
       : 'auto',
-    notifications:
-      typeof value?.notifications === 'boolean' ? value.notifications : true,
+    notifications: typeof value?.notifications === 'boolean' ? value.notifications : true,
   };
 }
 export { avatarHex } from '../agent-avatar/avatar-color';
 export function hexAppearance(hex: string): Partial<AvatarConfig> | null {
   if (!/^#[0-9a-f]{6}$/i.test(hex)) return null;
-  const [r = 0, g = 0, b = 0] = [1, 3, 5].map(
-    (i) => parseInt(hex.slice(i, i + 2), 16) / 255,
-  );
+  const [r = 0, g = 0, b = 0] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
   const max = Math.max(r, g, b),
     min = Math.min(r, g, b),
     delta = max - min,
@@ -39,11 +28,7 @@ export function hexAppearance(hex: string): Partial<AvatarConfig> | null {
   let hue = 0;
   if (delta)
     hue =
-      max === r
-        ? ((g - b) / delta + 6) % 6
-        : max === g
-          ? (b - r) / delta + 2
-          : (r - g) / delta + 4;
+      max === r ? ((g - b) / delta + 6) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
   return {
     hue: hue * 60,
     saturation: delta ? (delta / (1 - Math.abs(2 * light - 1))) * 100 : 0,
@@ -61,9 +46,7 @@ export type Hsv = { h: number; s: number; v: number };
 export function hexToHsv(hex: string): Hsv | null {
   const match = hex.trim().match(/^#?([0-9a-f]{6})$/i);
   if (!match?.[1]) return null;
-  const [r = 0, g = 0, b = 0] = [0, 2, 4].map(
-    (i) => parseInt(match[1]!.slice(i, i + 2), 16) / 255,
-  );
+  const [r = 0, g = 0, b = 0] = [0, 2, 4].map((i) => parseInt(match[1]!.slice(i, i + 2), 16) / 255);
   const max = Math.max(r, g, b),
     min = Math.min(r, g, b),
     delta = max - min;

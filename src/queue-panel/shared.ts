@@ -43,7 +43,11 @@ export const DEFAULT_QUEUE_PANEL_LABELS: QueuePanelLabels = queuePanelLabels(
  * `customPlay` is the CALLER's word or `undefined` — never the merged label, which
  * cannot tell a caller's "再生" from the catalog's.
  */
-export function queuePlayName(customPlay: string | undefined, title: string, controls: MediaControlsMessages): string {
+export function queuePlayName(
+  customPlay: string | undefined,
+  title: string,
+  controls: MediaControlsMessages,
+): string {
   return customPlay === undefined ? controls.playSubject(title) : `${customPlay} ${title}`;
 }
 
@@ -55,7 +59,6 @@ export const queueDragTarget = dragTarget;
 
 /** @deprecated Use `dragShift` from `@oxy.so/bloom/hooks`; this is a re-export of it. */
 export const queueDragShift = dragShift;
-
 
 export interface QueuePanelPaint {
   surface: string;

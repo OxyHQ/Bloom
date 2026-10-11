@@ -88,6 +88,7 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
 
   const driver = useSharedValue(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (reduce) {
       driver.value = 0;
@@ -100,7 +101,6 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
     );
     // driver is a stable shared-value ref; withRepeat/withTiming/Easing are
     // module-level constants from a static import.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduce]);
 
   const count = Math.max(1, Math.floor(dotCount));
@@ -118,13 +118,7 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
         />
       ))
     : Array.from({ length: count }, (_, i) => (
-        <ShimmerDot
-          key={i}
-          phase={i / count}
-          color={color}
-          size={dotSize}
-          driver={driver}
-        />
+        <ShimmerDot key={i} phase={i / count} color={color} size={dotSize} driver={driver} />
       ));
 
   return (

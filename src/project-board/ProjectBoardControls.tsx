@@ -78,18 +78,12 @@ export function PropertySelect({
       </SelectTrigger>
       <SelectContent
         label={label}
-        className={
-          create ? 'z-[110] w-[220px]' : 'z-[120] w-[220px] rounded-[14px] p-1'
-        }
+        className={create ? 'z-[110] w-[220px]' : 'z-[120] w-[220px] rounded-[14px] p-1'}
         items={options}
         valueExtractor={(item) => item.id}
         width={220}
         renderItem={(item) => (
-          <SelectItem
-            value={item.id}
-            label={item.label}
-            className="px-2 py-1.5 text-body-medium"
-          >
+          <SelectItem value={item.id} label={item.label} className="px-2 py-1.5 text-body-medium">
             {item.icon}
             {!item.hideLabel && <SelectItemText>{item.label}</SelectItemText>}
             <SelectItemIndicator />
@@ -145,12 +139,7 @@ export function ProjectBoardControls({
       </DropdownMenuTrigger>
     </BoardTooltip>
   );
-  const option = (
-    label: string,
-    selected: boolean,
-    run: () => void,
-    key: string,
-  ) => (
+  const option = (label: string, selected: boolean, run: () => void, key: string) => (
     <DropdownMenuItem key={key} onPress={run} className={ROW}>
       <Text className="flex-1 text-body-medium text-text-primary">{label}</Text>
       {selected && <RiCheckLine className="size-4" />}
@@ -159,59 +148,27 @@ export function ProjectBoardControls({
   return (
     <View className="flex items-center gap-2" accessibilityLabel={m.controls}>
       <DropdownMenu>
-        {trigger(
-          m.sortTickets,
-          <RiSortDesc className="size-5" />,
-          sort !== 'manual',
-        )}
-        <DropdownMenuContent
-          label={m.sortTickets}
-          className={MENU}
-          style={{ width: 220 }}
-        >
+        {trigger(m.sortTickets, <RiSortDesc className="size-5" />, sort !== 'manual')}
+        <DropdownMenuContent label={m.sortTickets} className={MENU} style={{ width: 220 }}>
           {(
             [
               { id: 'manual', label: m.manualOrder },
               { id: 'priority', label: m.priority },
               { id: 'title', label: m.title },
             ] as const
-          ).map((o) =>
-            option(o.label, sort === o.id, () => onSort(o.id), o.id),
-          )}
+          ).map((o) => option(o.label, sort === o.id, () => onSort(o.id), o.id))}
         </DropdownMenuContent>
       </DropdownMenu>
       <DropdownMenu>
-        {trigger(
-          m.filterTickets,
-          <RiEqualizerLine className="size-5" />,
-          filtered,
-        )}
-        <DropdownMenuContent
-          label={m.filterTickets}
-          className={MENU}
-          style={{ width: 220 }}
-        >
-          <Text className="px-2 pt-2 pb-1 text-body-2-medium text-text-tertiary">
-            {m.priority}
-          </Text>
+        {trigger(m.filterTickets, <RiEqualizerLine className="size-5" />, filtered)}
+        <DropdownMenuContent label={m.filterTickets} className={MENU} style={{ width: 220 }}>
+          <Text className="px-2 pt-2 pb-1 text-body-2-medium text-text-tertiary">{m.priority}</Text>
           {(['all', ...PRIORITIES] as const).map((v) =>
-            option(
-              v === 'all' ? m.allPriorities : v,
-              priority === v,
-              () => onPriority(v),
-              v,
-            ),
+            option(v === 'all' ? m.allPriorities : v, priority === v, () => onPriority(v), v),
           )}
-          <Text className="px-2 pt-2 pb-1 text-body-2-medium text-text-tertiary">
-            {m.project}
-          </Text>
+          <Text className="px-2 pt-2 pb-1 text-body-2-medium text-text-tertiary">{m.project}</Text>
           {['all', ...projects].map((v) =>
-            option(
-              v === 'all' ? m.allProjects : v,
-              project === v,
-              () => onProject(v),
-              v,
-            ),
+            option(v === 'all' ? m.allProjects : v, project === v, () => onProject(v), v),
           )}
           {filtered && (
             <DropdownMenuItem
@@ -228,16 +185,8 @@ export function ProjectBoardControls({
       </DropdownMenu>
       <DropdownMenu>
         {trigger(m.displayOptions, <RiSideBarLine className="size-5" />)}
-        <DropdownMenuContent
-          label={m.displayOptions}
-          className={MENU}
-          style={{ width: 220 }}
-        >
-          <DropdownMenuCheckboxItem
-            className={ROW}
-            checked={showDone}
-            onCheckedChange={onShowDone}
-          >
+        <DropdownMenuContent label={m.displayOptions} className={MENU} style={{ width: 220 }}>
+          <DropdownMenuCheckboxItem className={ROW} checked={showDone} onCheckedChange={onShowDone}>
             {m.showDone}
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem

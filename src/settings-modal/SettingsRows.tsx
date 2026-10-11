@@ -55,9 +55,15 @@ export function SettingsCard({ children, className, style, testID }: SettingsCar
   const palette = useSettingsPalette();
   const items = flatChildren(children);
   return (
-    <StyledView className={className}
+    <StyledView
+      className={className}
       testID={testID}
-      style={[styles.card, { backgroundColor: palette.secondary }, settingsRingVars(palette), style]}
+      style={[
+        styles.card,
+        { backgroundColor: palette.secondary },
+        settingsRingVars(palette),
+        style,
+      ]}
     >
       {items.map((child, index) => (
         <SettingsRowPositionContext.Provider
@@ -168,7 +174,13 @@ export function SettingsSection({
 }
 
 /** A grey read-only value field — presents a stored value, not an input. */
-export function SettingsValueField({ icon: Icon, children, muted = false, style, testID }: SettingsValueFieldProps) {
+export function SettingsValueField({
+  icon: Icon,
+  children,
+  muted = false,
+  style,
+  testID,
+}: SettingsValueFieldProps) {
   const palette = useSettingsPalette();
   const compact = useSettingsLayout() === 'compact';
   return (

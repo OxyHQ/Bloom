@@ -7,7 +7,15 @@ import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { CodeLines } from './CodeLines';
 import { CODE_MESSAGES } from './messages';
-import { CARD_RADIUS, CONFIRM_MS, dataHook, IS_WEB, MONO_FAMILY, useCodePalette, useCodeWebCss } from './shared';
+import {
+  CARD_RADIUS,
+  CONFIRM_MS,
+  dataHook,
+  IS_WEB,
+  MONO_FAMILY,
+  useCodePalette,
+  useCodeWebCss,
+} from './shared';
 import type { CodeBlockProps } from './types';
 import { writeClipboardText } from '../hooks/clipboard';
 
@@ -77,7 +85,8 @@ function CodeBlockComponent({
 
   const chip = languageLabel ?? language?.toUpperCase();
   const hasDiff = additions !== undefined || deletions !== undefined;
-  const hasHeader = chip !== undefined || filename !== undefined || hasDiff || canCopy || headerAccessory != null;
+  const hasHeader =
+    chip !== undefined || filename !== undefined || hasDiff || canCopy || headerAccessory != null;
 
   const copyStyle: WebCssStyle = {
     width: 24,
@@ -102,7 +111,8 @@ function CodeBlockComponent({
           boxShadow: palette.shadow,
         },
         style,
-      ]}>
+      ]}
+    >
       {hasHeader ? (
         <View
           style={{
@@ -115,8 +125,17 @@ function CodeBlockComponent({
             borderBottomColor: palette.border,
             paddingLeft: 10,
             paddingRight: 10,
-          }}>
-          <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          }}
+        >
+          <View
+            style={{
+              minWidth: 0,
+              flexShrink: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
             {chip ? (
               <View
                 style={{
@@ -130,12 +149,18 @@ function CodeBlockComponent({
                   backgroundColor: palette.chipBackground,
                   paddingLeft: 6,
                   paddingRight: 6,
-                }}>
-                <RNText style={mono(10, 10, { fontWeight: '500', color: palette.chipText })}>{chip}</RNText>
+                }}
+              >
+                <RNText style={mono(10, 10, { fontWeight: '500', color: palette.chipText })}>
+                  {chip}
+                </RNText>
               </View>
             ) : null}
             {filename ? (
-              <RNText numberOfLines={1} style={mono(12, 20, { flexShrink: 1, color: palette.filename })}>
+              <RNText
+                numberOfLines={1}
+                style={mono(12, 20, { flexShrink: 1, color: palette.filename })}
+              >
                 {filename}
               </RNText>
             ) : null}
@@ -145,10 +170,14 @@ function CodeBlockComponent({
             {hasDiff ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 {additions !== undefined ? (
-                  <RNText style={mono(11, 11, { color: palette.addition })}>{`+${additions}`}</RNText>
+                  <RNText
+                    style={mono(11, 11, { color: palette.addition })}
+                  >{`+${additions}`}</RNText>
                 ) : null}
                 {deletions !== undefined ? (
-                  <RNText style={mono(11, 11, { color: palette.deletion })}>{`-${deletions}`}</RNText>
+                  <RNText
+                    style={mono(11, 11, { color: palette.deletion })}
+                  >{`-${deletions}`}</RNText>
                 ) : null}
               </View>
             ) : null}
@@ -161,11 +190,16 @@ function CodeBlockComponent({
                 onPress={() => void copy()}
                 onHoverIn={() => setCopyHovered(true)}
                 onHoverOut={() => setCopyHovered(false)}
-                style={copyStyle}>
+                style={copyStyle}
+              >
                 {copied ? (
                   <RiCheckLine width={14} height={14} fill={palette.confirm} />
                 ) : (
-                  <RiFileCopyLine width={14} height={14} fill={copyHovered ? palette.iconHover : palette.icon} />
+                  <RiFileCopyLine
+                    width={14}
+                    height={14}
+                    fill={copyHovered ? palette.iconHover : palette.icon}
+                  />
                 )}
               </Pressable>
             ) : null}

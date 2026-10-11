@@ -14,7 +14,15 @@ export default meta;
 
 type Story = StoryObj<typeof Pagination>;
 
-function Controlled({ initial, totalPages, width = 620 }: { initial: number; totalPages: number; width?: number }) {
+function Controlled({
+  initial,
+  totalPages,
+  width = 620,
+}: {
+  initial: number;
+  totalPages: number;
+  width?: number;
+}) {
   const [page, setPage] = useState(initial);
   return (
     <View style={{ width, maxWidth: '100%' }}>
@@ -50,9 +58,17 @@ export const Matrix: Story = {
 export const Playground: StoryObj<typeof Pagination> = {
   args: { page: 1, totalPages: 10, siblingCount: 1 },
   parameters: { controls: { disable: false, include: ['page', 'totalPages', 'siblingCount'] } },
-  argTypes: { page: { control: { type: 'number', min: 1 } }, totalPages: { control: { type: 'number', min: 2 } }, siblingCount: { control: { type: 'number', min: 0, max: 3 } } },
+  argTypes: {
+    page: { control: { type: 'number', min: 1 } },
+    totalPages: { control: { type: 'number', min: 2 } },
+    siblingCount: { control: { type: 'number', min: 0, max: 3 } },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 520, maxWidth: '100%' }}><Pagination {...args} onChange={page => updateArgs({ page })} /></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <Pagination {...args} onChange={(page) => updateArgs({ page })} />
+      </View>
+    );
   },
 };

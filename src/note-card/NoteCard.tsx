@@ -16,7 +16,12 @@ import { RiPushpinFill } from '../icons/remix/RiPushpinFill';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
-import { SurfaceLevelProvider, surfaceFillVars, useRingOffsetStyle, useSurfaceFill } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useRingOffsetStyle,
+  useSurfaceFill,
+} from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useMessages } from '../locale/messages';
@@ -250,7 +255,10 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
         </Text>
       ) : null
     ) : (
-      <View style={{ marginTop: geo.gap, gap: row ? 2 : 6 }} testID={testID ? `${testID}-checklist` : undefined}>
+      <View
+        style={{ marginTop: geo.gap, gap: row ? 2 : 6 }}
+        testID={testID ? `${testID}-checklist` : undefined}
+      >
         {shownItems.map((item) => (
           <View
             key={item.id}
@@ -307,7 +315,13 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
         testID={testID ? `${testID}-tags` : undefined}
       >
         {shownTags.map((tag) => (
-          <Chip key={tag} size="small" variant={tagVariant} color={tone ?? 'default'} surface={background}>
+          <Chip
+            key={tag}
+            size="small"
+            variant={tagVariant}
+            color={tone ?? 'default'}
+            surface={background}
+          >
             {tag}
           </Chip>
         ))}
@@ -324,7 +338,12 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
       <MetaEntry key="edited" icon={RiTimeLine} label={meta.edited} color={paint.textTertiary} />
     ) : null,
     meta?.notebook !== undefined ? (
-      <MetaEntry key="notebook" icon={RiFolderLine} label={meta.notebook} color={paint.textTertiary} />
+      <MetaEntry
+        key="notebook"
+        icon={RiFolderLine}
+        label={meta.notebook}
+        color={paint.textTertiary}
+      />
     ) : null,
     meta?.attachments ? (
       <MetaEntry
@@ -359,7 +378,12 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
     ) : null;
 
   const body = (
-    <Card  radius={geo.radius} border={selected ? 'medium' : 'thin'} style={cardStyle} appearance="outline">
+    <Card
+      radius={geo.radius}
+      border={selected ? 'medium' : 'thin'}
+      style={cardStyle}
+      appearance="outline"
+    >
       <SurfaceLevelProvider level={1} fill={background}>
         {checkbox}
         <View style={{ flex: 1, minWidth: 0 }}>

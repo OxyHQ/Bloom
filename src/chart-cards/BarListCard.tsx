@@ -22,7 +22,12 @@ import { resolveTone, type ChartSeriesTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { TABULAR } from './primitives/ChartHeader';
 import { groupThousands } from './primitives/format';
-import { useChartCardSurfacePalette, useChartCardPalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
+import {
+  useChartCardSurfacePalette,
+  useChartCardPalette,
+  useChartTones,
+  useMonoTone,
+} from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useChartFocusRing, useMedicalPalette } from './medical-parts';
 import {
@@ -146,7 +151,9 @@ export function BarListCard({
   const mounted = useMountedAfterDelay();
   // Palette index 1 is chart-6, blue.
   const tone = mono ? monoTone : resolveTone(palettes, 1, color);
-  const lists: readonly BarListTab[] = tabs ?? [{ id: 'list', label: title ?? chartText.titles.breakdown, items: items ?? [] }];
+  const lists: readonly BarListTab[] = tabs ?? [
+    { id: 'list', label: title ?? chartText.titles.breakdown, items: items ?? [] },
+  ];
   const [selectedId, setSelectedId] = useState<string>(defaultTab ?? lists[0]?.id ?? 'list');
   const single = lists.length === 1 && !tabs;
   const current = lists.find((l) => l.id === selectedId) ?? lists[0];
@@ -155,7 +162,14 @@ export function BarListCard({
     <Text
       variant="caption-1-medium"
       numberOfLines={1}
-      style={{ flexShrink: 0, paddingBottom: 10, letterSpacing: CAPTION_TRACKING, textTransform: 'uppercase', color: palette.textTertiary }}>
+      style={{
+        flexShrink: 0,
+        paddingBottom: 10,
+        letterSpacing: CAPTION_TRACKING,
+        textTransform: 'uppercase',
+        color: palette.textTertiary,
+      }}
+    >
       {metricLabel}
     </Text>
   );
@@ -178,13 +192,22 @@ export function BarListCard({
       height="auto"
       gap={12}
       style={[{ width: '100%', paddingTop: 4 }, style]}
-      testID={testID}>
+      testID={testID}
+    >
       {single ? (
         <View style={headerRow} testID={testID ? `${testID}-header` : undefined}>
           <Text
             variant="body-medium"
             numberOfLines={1}
-            style={{ flexShrink: 1, paddingLeft: 10, paddingRight: 10, paddingTop: 8, paddingBottom: 8, color: palette.text }}>
+            style={{
+              flexShrink: 1,
+              paddingLeft: 10,
+              paddingRight: 10,
+              paddingTop: 8,
+              paddingBottom: 8,
+              color: palette.text,
+            }}
+          >
             {current?.label}
           </Text>
           {caption}
@@ -272,7 +295,13 @@ function TabStrip({
 
   return (
     <View ref={hostRef} style={[{ flex: 1, minWidth: 0 }, maskStyle]}>
-      <Tabs variant="underline" value={value} onValueChange={onChange} style={{ borderBottomWidth: 0 }} testID={testID}>
+      <Tabs
+        variant="underline"
+        value={value}
+        onValueChange={onChange}
+        style={{ borderBottomWidth: 0 }}
+        testID={testID}
+      >
         {lists.map((tab) => (
           <TabsTrigger key={tab.id} value={tab.id} label={tab.label} />
         ))}
@@ -334,12 +363,23 @@ function BarRows({
   };
 
   return (
-    <View testID={testID} style={{ position: 'relative', marginLeft: -8, marginRight: -8, marginBottom: -4, flexDirection: 'column' }}>
+    <View
+      testID={testID}
+      style={{
+        position: 'relative',
+        marginLeft: -8,
+        marginRight: -8,
+        marginBottom: -4,
+        flexDirection: 'column',
+      }}
+    >
       <View style={{ flexDirection: 'column', gap: ROW_GAP }}>
         {visible.map((item, i) => row(item, i))}
         {overflow && !expanded ? <BottomFade color={palette.surface} /> : null}
       </View>
-      {overflow ? <RestSpacer expanded={expanded} testID={testID ? `${testID}-rest` : undefined} /> : null}
+      {overflow ? (
+        <RestSpacer expanded={expanded} testID={testID ? `${testID}-rest` : undefined} />
+      ) : null}
       {overflow ? (
         <MoreButton
           expanded={expanded}
@@ -388,16 +428,51 @@ function BarRow({
         borderRadius: 8,
         paddingLeft: 10,
         paddingRight: 10,
-      }}>
+      }}
+    >
       <Animated.View
         testID={testID ? `${testID}-bar` : undefined}
-        style={[{ position: 'absolute', top: 0, bottom: 0, left: 0, width, borderRadius: 8, backgroundColor: tint }, colorEase]}
+        style={[
+          {
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            width,
+            borderRadius: 8,
+            backgroundColor: tint,
+          },
+          colorEase,
+        ]}
       />
-      <View style={{ position: 'relative', minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View
+        style={{
+          position: 'relative',
+          minWidth: 0,
+          flexShrink: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
         {icon ? (
-          <View style={{ width: 16, height: 16, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
+          <View
+            style={{
+              width: 16,
+              height: 16,
+              flexShrink: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {icon}
+          </View>
         ) : null}
-        <Text variant="body-regular" numberOfLines={1} style={{ flexShrink: 1, color: palette.text }}>
+        <Text
+          variant="body-regular"
+          numberOfLines={1}
+          style={{ flexShrink: 1, color: palette.text }}
+        >
           {label}
         </Text>
       </View>
@@ -419,7 +494,10 @@ function BottomFade({ color }: { color: string }) {
   // `useId` yields `«r0»` / `:r0:`, which a `url(#…)` cannot reference.
   const id = `bloom-barlist-fade-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: FADE_HEIGHT }}>
+    <View
+      pointerEvents="none"
+      style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: FADE_HEIGHT }}
+    >
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
@@ -468,7 +546,11 @@ function RestSpacer({ expanded, testID }: { expanded: boolean; testID?: string }
   return (
     <Animated.View
       testID={testID}
-      style={{ overflow: 'hidden', height: progress.interpolate({ inputRange: [0, 1], outputRange: [0, ROW_GAP] }), opacity: progress }}
+      style={{
+        overflow: 'hidden',
+        height: progress.interpolate({ inputRange: [0, 1], outputRange: [0, ROW_GAP] }),
+        opacity: progress,
+      }}
     />
   );
 }
@@ -508,7 +590,10 @@ function MoreButton({
   }, [expanded, reducedMotion, turn]);
 
   const label = expanded ? 'Show fewer' : `Show ${hiddenCount} more`;
-  const rotate = useMemo(() => turn.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }), [turn]);
+  const rotate = useMemo(
+    () => turn.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }),
+    [turn],
+  );
 
   return (
     <Pressable
@@ -538,7 +623,8 @@ function MoreButton({
         },
         colorEase,
         ring,
-      ]}>
+      ]}
+    >
       <Animated.View style={{ width: 14, height: 14, transform: [{ rotate }] }}>
         <RiArrowDownSLine width={14} height={14} fill={palette.textSecondary} />
       </Animated.View>

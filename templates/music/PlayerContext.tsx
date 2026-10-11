@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import type { LyricLine } from '../../src/lyrics';
 import type { PlaybackDevice, RepeatMode, SleepTimerValue } from '../../src/media-player';
@@ -209,7 +217,13 @@ export function useIsContext(contextId: string): { current: boolean; playing: bo
 export interface PlayerProviderProps {
   children: React.ReactNode;
   /** What is loaded on mount. */
-  initial?: { items: Playable[]; index: number; context: PlayContext; position?: number; playing?: boolean };
+  initial?: {
+    items: Playable[];
+    index: number;
+    context: PlayContext;
+    position?: number;
+    playing?: boolean;
+  };
   /** Seed the listener's own queue. */
   initialQueue?: Playable[];
   initialLiked?: string[];
@@ -236,9 +250,13 @@ export function PlayerProvider({
   initialDeviceId = 'this',
   tickMs = 500,
 }: PlayerProviderProps) {
-  const [current, setCurrent] = useState<Playable | null>(initial ? (initial.items[initial.index] ?? null) : null);
+  const [current, setCurrent] = useState<Playable | null>(
+    initial ? (initial.items[initial.index] ?? null) : null,
+  );
   const [context, setContext] = useState<PlayContext | null>(initial?.context ?? null);
-  const [upNext, setUpNext] = useState<Playable[]>(initial ? initial.items.slice(initial.index + 1) : []);
+  const [upNext, setUpNext] = useState<Playable[]>(
+    initial ? initial.items.slice(initial.index + 1) : [],
+  );
   /** The context's list before shuffle, to restore the order. */
   const [ordered, setOrdered] = useState<Playable[]>(initial?.items ?? []);
   const [queue, setQueue] = useState<Playable[]>(initialQueue);
@@ -251,7 +269,9 @@ export function PlayerProvider({
   const [repeat, setRepeat] = useState<RepeatMode>('off');
   const [volume, setVolume] = useState(0.72);
   const [muted, setMuted] = useState(false);
-  const [device, setDevice] = useState<PlaybackDevice>(DEVICES.find((d) => d.id === initialDeviceId) ?? DEVICES[0]!);
+  const [device, setDevice] = useState<PlaybackDevice>(
+    DEVICES.find((d) => d.id === initialDeviceId) ?? DEVICES[0]!,
+  );
   const [rate, setRate] = useState(1);
   const [sleep, setSleep] = useState<SleepTimerValue>('off');
   const [liked, setLikedSet] = useState<ReadonlySet<string>>(() => new Set(initialLiked));
@@ -259,7 +279,9 @@ export function PlayerProvider({
   const load = useCallback((item: Playable, from = 0) => {
     setCurrent((previous) => {
       if (previous && previous.id !== item.id) {
-        setRecentlyPlayed((list) => [previous, ...list.filter((x) => x.id !== previous.id)].slice(0, 30));
+        setRecentlyPlayed((list) =>
+          [previous, ...list.filter((x) => x.id !== previous.id)].slice(0, 30),
+        );
       }
       return item;
     });
@@ -386,7 +408,10 @@ export function PlayerProvider({
     });
   }, []);
 
-  const addToQueue = useCallback((items: Playable[]) => setQueue((list) => [...list, ...items]), []);
+  const addToQueue = useCallback(
+    (items: Playable[]) => setQueue((list) => [...list, ...items]),
+    [],
+  );
 
   const reorder = useCallback((section: QueueSection, from: number, to: number) => {
     if (section === 'queue') setQueue((list) => moveQueueItem(list, from, to));

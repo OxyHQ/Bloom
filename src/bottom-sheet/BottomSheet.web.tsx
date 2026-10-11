@@ -27,9 +27,9 @@ import type { BottomSheetProps, BottomSheetRef, BottomSheetShellProps } from './
  * here.
  */
 function WebShell({ children }: BottomSheetShellProps) {
-    return (
-        <Portal>
-            {/* `OverlayRoot` owns the portal-root pointer-events opt-in (see
+  return (
+    <Portal>
+      {/* `OverlayRoot` owns the portal-root pointer-events opt-in (see
                 `src/overlay`). It used to ride in the style array below as an
                 RN-only box-none value, which never reached the DOM — the whole
                 sheet, backdrop included, was click-through on web. `modal`:
@@ -37,39 +37,39 @@ function WebShell({ children }: BottomSheetShellProps) {
                 `OverlayInertBoundary` makes that page inert while it is open.
                 (Native needs no flag — its shell is an RN `Modal`, a separate
                 window the screen reader is already confined to.) */}
-            <OverlayRoot style={webStyles.rootView} modal>
-                <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-                    {children}
-                </GestureHandlerRootView>
-            </OverlayRoot>
-        </Portal>
-    );
+      <OverlayRoot style={webStyles.rootView} modal>
+        <GestureHandlerRootView style={StyleSheet.absoluteFill}>{children}</GestureHandlerRootView>
+      </OverlayRoot>
+    </Portal>
+  );
 }
 
-const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef<BottomSheetRef>) => (
+const BottomSheet = forwardRef(
+  (props: BottomSheetProps, ref: React.ForwardedRef<BottomSheetRef>) => (
     <BottomSheetBase {...props} ref={ref} Shell={WebShell} />
-));
+  ),
+);
 
 BottomSheet.displayName = 'BottomSheet';
 
 const webStyles = StyleSheet.create({
-    // Fixed, full-viewport box the sheet's `StyleSheet.absoluteFill` body
-    // anchors to. The pointer-events opt-in and the STACKING both live in
-    // `OverlayRoot`.
-    //
-    // This used to also pin `zIndex: Z_INDEX.portalRoot` (999999) here. Inside
-    // the portal root that number does not mean "the portal layer" — it means
-    // "above every other portaled surface", which is how a confirm dialog
-    // opened from inside an open sheet ended up rendering underneath it,
-    // unreachable, no matter which one opened last. Stacking is the overlay
-    // stack's job now (`src/overlay/stack.ts`); do not reintroduce a constant.
-    rootView: {
-        position: WEB_POSITION_FIXED,
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-    },
+  // Fixed, full-viewport box the sheet's `StyleSheet.absoluteFill` body
+  // anchors to. The pointer-events opt-in and the STACKING both live in
+  // `OverlayRoot`.
+  //
+  // This used to also pin `zIndex: Z_INDEX.portalRoot` (999999) here. Inside
+  // the portal root that number does not mean "the portal layer" — it means
+  // "above every other portaled surface", which is how a confirm dialog
+  // opened from inside an open sheet ended up rendering underneath it,
+  // unreachable, no matter which one opened last. Stacking is the overlay
+  // stack's job now (`src/overlay/stack.ts`); do not reintroduce a constant.
+  rootView: {
+    position: WEB_POSITION_FIXED,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
 });
 
 export default BottomSheet;

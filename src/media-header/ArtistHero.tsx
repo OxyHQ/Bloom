@@ -60,7 +60,11 @@ function ArtistHeroComponent({
       coverWidth={(wide) => (onPhoto ? 0 : wide ? 232 : 160)}
       backdrop={
         onPhoto ? (
-          <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={testID ? `${testID}-banner` : undefined}>
+          <View
+            pointerEvents="none"
+            style={StyleSheet.absoluteFill}
+            testID={testID ? `${testID}-banner` : undefined}
+          >
             <Image source={{ uri: bannerUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
             <View style={[StyleSheet.absoluteFill, gradientStyle(SCRIM)]} />
           </View>
@@ -81,12 +85,31 @@ function ArtistHeroComponent({
       }
     >
       {({ wide, textWidth }) => (
-        <View style={{ gap: 4, minHeight: onPhoto ? (wide ? 304 : 220) : undefined, justifyContent: 'flex-end' }}>
+        <View
+          style={{
+            gap: 4,
+            minHeight: onPhoto ? (wide ? 304 : 220) : undefined,
+            justifyContent: 'flex-end',
+          }}
+        >
           {verified ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} testID={testID ? `${testID}-verified` : undefined}>
-              <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+              testID={testID ? `${testID}-verified` : undefined}
+            >
+              <View
+                style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}
+              >
                 {/* The tick is a cut-out; a white disc under it keeps it white on any band or photo. */}
-                <View style={{ position: 'absolute', width: 12, height: 12, borderRadius: 6, backgroundColor: '#ffffff' }} />
+                <View
+                  style={{
+                    position: 'absolute',
+                    width: 12,
+                    height: 12,
+                    borderRadius: 6,
+                    backgroundColor: '#ffffff',
+                  }}
+                />
                 <View style={{ width: 24, height: 24 }}>
                   <RiVerifiedBadgeFill width={24} height={24} fill={paint.accent} />
                 </View>
@@ -106,7 +129,11 @@ function ArtistHeroComponent({
             {name}
           </HeaderTitle>
           {listeners ? (
-            <Text variant="body-medium" style={{ color: fgMuted }} testID={testID ? `${testID}-listeners` : undefined}>
+            <Text
+              variant="body-medium"
+              style={{ color: fgMuted }}
+              testID={testID ? `${testID}-listeners` : undefined}
+            >
               {listeners}
             </Text>
           ) : null}

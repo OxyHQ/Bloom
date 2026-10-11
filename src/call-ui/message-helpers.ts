@@ -6,4 +6,5 @@
 import type { CallPipCorner } from './types';
 
 /** A corner's name, or the raw key for a value outside the four (never thrown on). */
-export const corner = (corners: Record<CallPipCorner, string>, value: CallPipCorner): string => corners[value] ?? String(value);
+export const corner = (corners: Record<CallPipCorner, string>, value: CallPipCorner): string =>
+  corners[value] ?? String(value);

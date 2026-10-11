@@ -30,19 +30,23 @@ import React, { memo, useCallback, useContext, useRef, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
-import { WEB_POSITION_FIXED, WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
+import {
+  WEB_POSITION_FIXED,
+  WEB_POSITION_STICKY,
+  type WebCssStyle,
+} from '../styles/web-view-style';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { Z_INDEX } from '../styles/z-index';
 
 /** The safe-area insets, or zeros outside a `SafeAreaProvider`. */
-export function useShellInsets(): { top: number; bottom: number } {
+export function useShellInsets(): { top: number; right: number; bottom: number; left: number } {
   // `useContext(SafeAreaInsetsContext)` rather than `useSafeAreaInsets()`: the
   // hook THROWS outside a provider, and `AppShell` is mounted at an app's root,
   // where making a previously-optional provider mandatory would be a breaking
   // change for every consumer that never had a bar to inset.
   const insets = useContext(SafeAreaInsetsContext);
-  return { top: insets?.top ?? 0, bottom: insets?.bottom ?? 0 };
+  return insets ?? { top: 0, right: 0, bottom: 0, left: 0 };
 }
 
 /** Pinned to the bottom of the viewport (document scroll) or of the frame. */
@@ -83,15 +87,18 @@ const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
   // the registry here: using its result in this wrapper would feed back into
   // the next measurement. Other edge claims combine with this one by max.
   useClaimBottomEdge(height);
-  const onLayout = useCallback((event: LayoutChangeEvent) => {
-    const rawHeight = event.nativeEvent.layout.height;
-    if (!Number.isFinite(rawHeight)) return;
-    const next = Math.max(0, Math.round(rawHeight));
-    if (measuredHeight.current === next) return;
-    measuredHeight.current = next;
-    setHeight(next);
-    onHeightChange(next);
-  }, [onHeightChange]);
+  const onLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const rawHeight = event.nativeEvent.layout.height;
+      if (!Number.isFinite(rawHeight)) return;
+      const next = Math.max(0, Math.round(rawHeight));
+      if (measuredHeight.current === next) return;
+      measuredHeight.current = next;
+      setHeight(next);
+      onHeightChange(next);
+    },
+    [onHeightChange],
+  );
   return (
     <View
       testID={testID}
@@ -99,7 +106,9 @@ const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
       onLayout={onLayout}
       style={[anchorBottom(doc), { paddingBottom: insets.bottom }]}
     >
-      <BottomBarSlotContext.Provider value={insets.bottom}>{children}</BottomBarSlotContext.Provider>
+      <BottomBarSlotContext.Provider value={insets.bottom}>
+        {children}
+      </BottomBarSlotContext.Provider>
     </View>
   );
 };
@@ -134,7 +143,9 @@ const AppShellFloatingActionComponent: React.FC<AppShellFloatingActionProps> = (
   <View
     testID={testID}
     pointerEvents="box-none"
-    onLayout={(event: LayoutChangeEvent) => onHeightChange(Math.round(event.nativeEvent.layout.height))}
+    onLayout={(event: LayoutChangeEvent) =>
+      onHeightChange(Math.round(event.nativeEvent.layout.height))
+    }
     style={[
       anchorBottom(doc),
       {
@@ -152,6 +163,8 @@ export const AppShellFloatingAction = memo(AppShellFloatingActionComponent);
 AppShellFloatingAction.displayName = 'AppShellFloatingAction';
 
 export interface AppShellTopBarProps {
+  /** The enclosing safe frame may already own the top inset. */
+  insetTop?: number;
   children: React.ReactNode;
   onHeightChange?: (height: number) => void;
   doc: boolean;
@@ -167,11 +180,21 @@ export interface AppShellTopBarProps {
  * only as far as `top: 0`); in `container`/`fixed` and on native it is simply
  * outside the scroller, which pins it by construction.
  */
-const AppShellTopBarComponent: React.FC<AppShellTopBarProps> = ({ children, doc, testID, onHeightChange }) => {
+const AppShellTopBarComponent: React.FC<AppShellTopBarProps> = ({
+  children,
+  doc,
+  testID,
+  onHeightChange,
+  insetTop,
+}) => {
   const insets = useShellInsets();
   const pinned: WebCssStyle = doc ? { position: WEB_POSITION_STICKY, top: 0 } : {};
   return (
-    <View testID={testID} onLayout={event => onHeightChange?.(event.nativeEvent.layout.height)} style={[{ zIndex: Z_INDEX.floating, paddingTop: insets.top }, pinned]}>
+    <View
+      testID={testID}
+      onLayout={(event) => onHeightChange?.(event.nativeEvent.layout.height)}
+      style={[{ zIndex: Z_INDEX.floating, paddingTop: insetTop ?? insets.top }, pinned]}
+    >
       {children}
     </View>
   );

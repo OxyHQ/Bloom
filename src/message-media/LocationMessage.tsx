@@ -39,7 +39,15 @@ const GRID_CELL = 28;
  * slot the app fills. This is what the frame looks like until it does, and it is
  * deliberately abstract: a fake coastline would be a map of somewhere.
  */
-function MapPlaceholder({ width, height, paint }: { width: number; height: number; paint: MessageMediaPaint }) {
+function MapPlaceholder({
+  width,
+  height,
+  paint,
+}: {
+  width: number;
+  height: number;
+  paint: MessageMediaPaint;
+}) {
   const columns = Math.ceil(width / GRID_CELL);
   const rows = Math.ceil(height / GRID_CELL);
   return (
@@ -172,7 +180,8 @@ function LocationMessageComponent({
   const [stopHovered, stopHandlers] = useHovered();
 
   const name =
-    accessibilityLabel ?? fileMetaLine([live ? messages.liveLocation : messages.location, title, address]);
+    accessibilityLabel ??
+    fileMetaLine([live ? messages.liveLocation : messages.location, title, address]);
 
   const frame: WebCssStyle = {
     width,

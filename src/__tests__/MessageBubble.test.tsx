@@ -198,7 +198,14 @@ describe('groupMessages', () => {
       { id: 'b', direction: 'incoming', senderId: 'ana', unreadBefore: true },
       { id: 'c', direction: 'incoming', senderId: 'ana', dateKey: 'd2' },
     ]);
-    expect(entries.map((e) => e.kind)).toEqual(['date', 'group', 'unread', 'group', 'date', 'group']);
+    expect(entries.map((e) => e.kind)).toEqual([
+      'date',
+      'group',
+      'unread',
+      'group',
+      'date',
+      'group',
+    ]);
   });
 
   it('labels a day from dateKey when no dateLabel is given', () => {
@@ -467,12 +474,24 @@ describe('the media slot', () => {
   });
 
   it('draws no bubble at all around a bare block — no fill, border, padding — and floats the time over it', () => {
-    mount(<MessageBubble direction="outgoing" mediaFit="bare" media={<RNView testID="block" />} time="12:41" />);
+    mount(
+      <MessageBubble
+        direction="outgoing"
+        mediaFit="bare"
+        media={<RNView testID="block" />}
+        time="12:41"
+      />,
+    );
     const box = getComputedStyle(bubbleBox('outgoing'));
     // Read raw: `normalise` drops the alpha channel, which is the whole point here.
     expect(box.backgroundColor).toMatch(/^(transparent|rgba\(0, 0, 0, 0\))$/);
     expect(box.borderTopWidth).toBe('0px');
-    expect([box.paddingTop, box.paddingRight, box.paddingBottom, box.paddingLeft]).toEqual(['0px', '0px', '0px', '0px']);
+    expect([box.paddingTop, box.paddingRight, box.paddingBottom, box.paddingLeft]).toEqual([
+      '0px',
+      '0px',
+      '0px',
+      '0px',
+    ]);
     // Not clipped: react-native-web emits the longhands, so read both.
     expect([box.overflowX, box.overflowY]).not.toContain('hidden');
     // The block keeps its own edges: nothing to cancel, so no negative margins.
@@ -482,9 +501,17 @@ describe('the media slot', () => {
 
   it('falls back to bleed when a bare block has text beside it, because the text needs a surface', () => {
     mount(
-      <MessageBubble direction="outgoing" mediaFit="bare" media={<RNView testID="block" />} text="Look" time="12:41" />,
+      <MessageBubble
+        direction="outgoing"
+        mediaFit="bare"
+        media={<RNView testID="block" />}
+        text="Look"
+        time="12:41"
+      />,
     );
-    expect(getComputedStyle(bubbleBox('outgoing')).backgroundColor).not.toMatch(/^(transparent|rgba\(0, 0, 0, 0\))$/);
+    expect(getComputedStyle(bubbleBox('outgoing')).backgroundColor).not.toMatch(
+      /^(transparent|rgba\(0, 0, 0, 0\))$/,
+    );
     expect(margins(mediaWrapper())).toEqual(['-7px', '-12px', '2px', '-12px']);
   });
 
@@ -535,7 +562,9 @@ describe('accessibility', () => {
 
   it('says a message was not sent, and a deleted one that it was deleted', () => {
     mount(<MessageBubble direction="outgoing" text="x" failed status="failed" />);
-    expect(container.querySelector('[aria-label]')?.getAttribute('aria-label')).toContain('Not sent');
+    expect(container.querySelector('[aria-label]')?.getAttribute('aria-label')).toContain(
+      'Not sent',
+    );
     mount(<MessageBubble direction="incoming" deleted />);
     expect(container.querySelector('[aria-label]')?.getAttribute('aria-label')).toBe(
       'This message was deleted',
@@ -692,7 +721,12 @@ describe('MessageGroup', () => {
 
   it('draws the sender name once, in the per-sender hue', () => {
     mount(
-      <MessageGroup direction="incoming" senderName="Ana Restrepo" senderColorSeed="ana" showAvatar={false}>
+      <MessageGroup
+        direction="incoming"
+        senderName="Ana Restrepo"
+        senderColorSeed="ana"
+        showAvatar={false}
+      >
         <MessageBubble direction="incoming" text="one" />
         <MessageBubble direction="incoming" text="two" />
       </MessageGroup>,
@@ -732,8 +766,19 @@ describe('MessageList', () => {
     },
     { id: '2', direction: 'incoming', senderId: 'ana', text: 'two' },
     { id: '3', direction: 'incoming', system: 'Ana Restrepo pinned a message' },
-    { id: '4', direction: 'outgoing', unreadBefore: true, text: 'three', time: '09:01', status: 'sent' },
-    { id: '5', direction: 'outgoing', call: { outcome: 'outgoing', title: 'Outgoing call', duration: '4 min' } },
+    {
+      id: '4',
+      direction: 'outgoing',
+      unreadBefore: true,
+      text: 'three',
+      time: '09:01',
+      status: 'sent',
+    },
+    {
+      id: '5',
+      direction: 'outgoing',
+      call: { outcome: 'outgoing', title: 'Outgoing call', duration: '4 min' },
+    },
   ];
 
   it('renders the separators, the service line, the call row and the runs', () => {
@@ -789,13 +834,27 @@ describe('separators', () => {
   });
 
   it('paints a missed call in the error colour and a connected one quietly', () => {
-    mount(<CallSummaryRow direction="incoming" outcome="missed" title="Missed call" time="09:41" testID="call" />);
+    mount(
+      <CallSummaryRow
+        direction="incoming"
+        outcome="missed"
+        title="Missed call"
+        time="09:41"
+        testID="call"
+      />,
+    );
     expect(normalise(getComputedStyle(leafWithText('call', '09:41')).color)).toBe(
       normalise(paint().failed),
     );
 
     mount(
-      <CallSummaryRow direction="incoming" outcome="incoming" title="Incoming call" duration="4 min" testID="call" />,
+      <CallSummaryRow
+        direction="incoming"
+        outcome="incoming"
+        title="Incoming call"
+        duration="4 min"
+        testID="call"
+      />,
     );
     expect(normalise(getComputedStyle(leafWithText('call', '4 min')).color)).toBe(
       normalise(paint().incoming.meta),

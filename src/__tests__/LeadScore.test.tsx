@@ -142,9 +142,9 @@ describe('the score is a measurement, announced as one', () => {
     expect(LEAD_SCORE_RING_SIZE).toBeGreaterThanOrEqual(120);
     // `display-4-medium` is 32/44 — bigger than the `title-1` verdict beside it.
     expect(getComputedStyle(byTestId('s-score')).fontSize).toBe('32px');
-    expect(
-      Number.parseFloat(getComputedStyle(byTestId('s-score')).fontSize),
-    ).toBeGreaterThan(Number.parseFloat(getComputedStyle(byTestId('s-band')).fontSize));
+    expect(Number.parseFloat(getComputedStyle(byTestId('s-score')).fontSize)).toBeGreaterThan(
+      Number.parseFloat(getComputedStyle(byTestId('s-band')).fontSize),
+    );
   });
 
   it('centres the ring rather than parking it beside the verdict', () => {
@@ -158,7 +158,11 @@ describe('the score is a measurement, announced as one', () => {
 describe('the header is a TINTED panel, and the tint is the band', () => {
   it('washes the panel in the band tone, through the accent PAIR, FLATTENED', () => {
     const washes = new Set<string>();
-    for (const [score, band] of [[21, 'cold'], [55, 'warm'], [91, 'hot']] as const) {
+    for (const [score, band] of [
+      [21, 'cold'],
+      [55, 'warm'],
+      [91, 'hot'],
+    ] as const) {
       mount(<LeadScoreCard score={score} accessibilityLabel="Lead score" testID="s" />);
       const painted = getComputedStyle(byTestId('s-header')).backgroundColor;
       washes.add(painted);
@@ -168,16 +172,20 @@ describe('the header is a TINTED panel, and the tint is the band', () => {
       // itself is `rgba()`, and every reader in `color-contrast.ts` treats a
       // colour as opaque, so painting the raw token means the rungs derived
       // from it are measured against solid emerald.
-      const raw = resolveAccentColors(theme.colors, LEAD_SCORE_BAND[band].tone, 'subtle').background;
+      const raw = resolveAccentColors(
+        theme.colors,
+        LEAD_SCORE_BAND[band].tone,
+        'subtle',
+      ).background;
       expect(raw).toMatch(/rgba|\//);
       expect([band, painted]).not.toEqual([band, normalise(raw)]);
       expect(getComputedStyle(byTestId('s-header')).backgroundColor).not.toContain('rgba');
 
       // And it is a real step off the card, not a wash nobody can see.
-      expect([
+      expect([band, contrastRatio(paintFor(band).header, theme.colors.card) > 1.02]).toEqual([
         band,
-        contrastRatio(paintFor(band).header, theme.colors.card) > 1.02,
-      ]).toEqual([band, true]);
+        true,
+      ]);
     }
     // Three bands, three different washes — the tint IS the band.
     expect(washes.size).toBe(3);
@@ -198,9 +206,10 @@ describe('the header is a TINTED panel, and the tint is the band', () => {
         normalise(paint.headerText.textSecondary),
       ]);
       // And it clears AA on the fill it actually lands on.
-      expect([mode, contrastRatio(paint.headerText.textSecondary, paint.header) >= AA_TEXT]).toEqual(
-        [mode, true],
-      );
+      expect([
+        mode,
+        contrastRatio(paint.headerText.textSecondary, paint.header) >= AA_TEXT,
+      ]).toEqual([mode, true]);
     }
   });
 
@@ -231,7 +240,15 @@ describe('the header is a TINTED panel, and the tint is the band', () => {
   });
 
   it('lets an app with its own thresholds override the band and its word', () => {
-    mount(<LeadScoreCard score={21} band="hot" bandLabel="Priority" accessibilityLabel="Lead score" testID="s" />);
+    mount(
+      <LeadScoreCard
+        score={21}
+        band="hot"
+        bandLabel="Priority"
+        accessibilityLabel="Lead score"
+        testID="s"
+      />,
+    );
     expect(byTestId('s-band').textContent).toBe('Priority');
     // The override moves the WASH too — the tint is the band, not the score.
     expect(getComputedStyle(byTestId('s-header')).backgroundColor).toBe(
@@ -271,7 +288,9 @@ describe('the factors are ROWS on their own panel — there are no bars', () => 
   it('draws exactly ONE progressbar in the whole card: the score', () => {
     // Five bars down a card is a chart pretending to be a measurement, and it
     // announces the same role five more times. The contribution is a NUMBER.
-    mount(<LeadScoreCard score={82} accessibilityLabel="Lead score" factors={FACTORS} testID="s" />);
+    mount(
+      <LeadScoreCard score={82} accessibilityLabel="Lead score" factors={FACTORS} testID="s" />,
+    );
     expect(container.querySelectorAll('[role="progressbar"]').length).toBe(1);
     expect(container.querySelectorAll('[role="progressbar"]')[0]).toBe(byTestId('s-ring'));
   });
@@ -289,15 +308,17 @@ describe('the factors are ROWS on their own panel — there are no bars', () => 
       ]);
       // The panel is NOT the header: two panels, two fills, two sets of rungs.
       expect([mode, paint.panel]).not.toEqual([mode, paint.header]);
-      expect([mode, getComputedStyle(byTestId('s-factor-Fits the ideal profile-points')).color]).toEqual([
+      expect([
         mode,
-        normalise(paint.panelText.text),
-      ]);
+        getComputedStyle(byTestId('s-factor-Fits the ideal profile-points')).color,
+      ]).toEqual([mode, normalise(paint.panelText.text)]);
     }
   });
 
   it('reads the label and its detail as ONE line, right-aligning the number', () => {
-    mount(<LeadScoreCard score={82} accessibilityLabel="Lead score" factors={FACTORS} testID="s" />);
+    mount(
+      <LeadScoreCard score={82} accessibilityLabel="Lead score" factors={FACTORS} testID="s" />,
+    );
     const row = byTestId('s-factor-No decision-maker identified');
     expect(row.textContent).toContain('No decision-maker identified: Only one contact');
     expect(getComputedStyle(row).justifyContent).toBe('space-between');
@@ -316,7 +337,9 @@ describe('the factors are ROWS on their own panel — there are no bars', () => 
         mode,
       );
       const paint = paintFor('hot');
-      const positive = getComputedStyle(byTestId('s-factor-Fits the ideal profile-mark')).backgroundColor;
+      const positive = getComputedStyle(
+        byTestId('s-factor-Fits the ideal profile-mark'),
+      ).backgroundColor;
       const negative = getComputedStyle(
         byTestId('s-factor-No decision-maker identified-mark'),
       ).backgroundColor;

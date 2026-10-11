@@ -8,15 +8,11 @@ it('round-trips optional character selections without changing the procedural fa
     bodyColor: '#03afbc',
   };
   const saved = parsePreset(
-    JSON.parse(
-      JSON.stringify({ name: 'Saved', config: { ...FOLD_CONFIG, character } }),
-    ),
+    JSON.parse(JSON.stringify({ name: 'Saved', config: { ...FOLD_CONFIG, character } })),
   );
   expect(saved.config).toEqual({ ...FOLD_CONFIG, character });
   expect(saved.config.character).not.toBe(character);
-  expect(
-    parsePreset({ name: 'Current', config: FOLD_CONFIG }).config.character,
-  ).toBeUndefined();
+  expect(parsePreset({ name: 'Current', config: FOLD_CONFIG }).config.character).toBeUndefined();
   const parsed = parseCharacterConfig(character);
   character.selections.shape = 'circle';
   expect(parsed.selections?.shape).toBe('heart');
@@ -31,9 +27,7 @@ it.each([
   { preset: 'blue_beret', selections: { shape: '' } },
   { preset: 'blue_beret', state: [0, 255] },
 ])('rejects malformed persisted character data %#', (character) => {
-  expect(() =>
-    parsePreset({ name: 'Invalid', config: { ...FOLD_CONFIG, character } }),
-  ).toThrow();
+  expect(() => parsePreset({ name: 'Invalid', config: { ...FOLD_CONFIG, character } })).toThrow();
 });
 
 it('canonicalizes custom RGB while preserving all legacy recipe settings', () => {
@@ -52,26 +46,17 @@ it('canonicalizes custom RGB while preserving all legacy recipe settings', () =>
     character: { ...input.character, bodyColor: '#aa00ff' },
   });
   expect(input.character.bodyColor).toBe('#Aa00Ff');
-  expect(parseCharacterConfig({ preset: 'blue_beret' })).not.toHaveProperty(
-    'bodyColor',
-  );
+  expect(parseCharacterConfig({ preset: 'blue_beret' })).not.toHaveProperty('bodyColor');
 });
 
-it.each([
-  '#abc',
-  '#12345678',
-  'abcdef',
-  ' #abcdef',
-  '#abcdef\n',
-  '#gg0000',
-  '',
-  null,
-  0,
-])('rejects invalid custom RGB %#', (bodyColor) => {
-  expect(() =>
-    parseCharacterConfig({ preset: 'blue_beret', bodyColor }),
-  ).toThrow('Invalid character body color');
-});
+it.each(['#abc', '#12345678', 'abcdef', ' #abcdef', '#abcdef\n', '#gg0000', '', null, 0])(
+  'rejects invalid custom RGB %#',
+  (bodyColor) => {
+    expect(() => parseCharacterConfig({ preset: 'blue_beret', bodyColor })).toThrow(
+      'Invalid character body color',
+    );
+  },
+);
 
 it('round-trips the named Clippo preset and independently reusable Clippo body and eyes', () => {
   for (const character of [
@@ -96,30 +81,24 @@ it('round-trips the named Clippo preset and independently reusable Clippo body a
   }
 });
 
-it.each([0.5, 1, 1.5])(
-  'round-trips historical eye-spacing metadata %s',
-  (eyeSpacing) => {
-    const character = { preset: 'lime_frog', eyeSpacing };
-    expect(
-      parsePreset({ name: 'Todd', config: { ...FOLD_CONFIG, character } })
-        .config.character,
-    ).toEqual(character);
-  },
-);
+it.each([0.5, 1, 1.5])('round-trips historical eye-spacing metadata %s', (eyeSpacing) => {
+  const character = { preset: 'lime_frog', eyeSpacing };
+  expect(
+    parsePreset({ name: 'Todd', config: { ...FOLD_CONFIG, character } }).config.character,
+  ).toEqual(character);
+});
 
 it.each([0.49, 1.51, NaN, Infinity, -Infinity, '1', null])(
   'rejects invalid historical eye-spacing metadata %#',
   (eyeSpacing) => {
-    expect(() =>
-      parseCharacterConfig({ preset: 'lime_frog', eyeSpacing }),
-    ).toThrow('Invalid character eye spacing');
+    expect(() => parseCharacterConfig({ preset: 'lime_frog', eyeSpacing })).toThrow(
+      'Invalid character eye spacing',
+    );
   },
 );
 
 it('does not add historical eye-spacing metadata to new recipes', () => {
-  expect(parseCharacterConfig({ preset: 'lime_frog' })).not.toHaveProperty(
-    'eyeSpacing',
-  );
+  expect(parseCharacterConfig({ preset: 'lime_frog' })).not.toHaveProperty('eyeSpacing');
 });
 
 it('round-trips an independent single-eye style without introducing a body or discarding paired spacing', () => {
@@ -135,7 +114,5 @@ it('round-trips an independent single-eye style without introducing a body or di
     }),
   );
   expect(parsePreset(saved).config.character).toEqual(character);
-  expect(parsePreset(saved).config.character?.selections).not.toHaveProperty(
-    'shape',
-  );
+  expect(parsePreset(saved).config.character?.selections).not.toHaveProperty('shape');
 });

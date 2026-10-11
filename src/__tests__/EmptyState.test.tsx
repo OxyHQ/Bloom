@@ -23,7 +23,14 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { EmptyState, joinEmptyStateName } from '../empty-state';
 import { EMPTY_STATE_GEOMETRY } from '../empty-state/constants';
 import { RiInbox2Line } from '../icons/remix/RiInbox2Line';
-import { byTestId, click, mount, queryTestId, root$, setupHarness } from './support/commerce-harness';
+import {
+  byTestId,
+  click,
+  mount,
+  queryTestId,
+  root$,
+  setupHarness,
+} from './support/commerce-harness';
 
 setupHarness();
 

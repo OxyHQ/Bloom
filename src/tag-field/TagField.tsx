@@ -122,7 +122,6 @@ const WEB_INPUT_DISABLED_CURSOR: TextStyle | undefined = IS_WEB
   ? ({ cursor: 'not-allowed' } as unknown as TextStyle)
   : undefined;
 
-
 export function TagField({
   value,
   onChange,
@@ -389,7 +388,9 @@ export function TagField({
           role="combobox"
           aria-expanded={listOpen}
           aria-controls={listOpen ? listId : undefined}
-          aria-activedescendant={listOpen && activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
+          aria-activedescendant={
+            listOpen && activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined
+          }
           aria-autocomplete="list"
           style={[
             a.relative,

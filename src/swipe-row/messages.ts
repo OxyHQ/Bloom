@@ -9,6 +9,7 @@ export interface SwipeRowMessages {
   closeActions: string;
 }
 
-export const SWIPE_ROW_MESSAGES: MessageCatalog<SwipeRowMessages> = defineMessages<SwipeRowMessages>('SWIPE_ROW_MESSAGES', {
-  closeActions: 'Close actions',
-});
+export const SWIPE_ROW_MESSAGES: MessageCatalog<SwipeRowMessages> =
+  defineMessages<SwipeRowMessages>('SWIPE_ROW_MESSAGES', {
+    closeActions: 'Close actions',
+  });

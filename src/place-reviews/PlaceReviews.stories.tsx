@@ -60,8 +60,7 @@ const REVIEWS: Review[] = [
       { label: 'Neighbours', value: 5 },
       { label: 'Value for money', value: 4 },
     ],
-    text:
-      'Three good years here. The flats facing the courtyard are very quiet and the neighbours look out for each other — there is a building chat that actually works. Repairs were slow in winter: the boiler took two weeks to be fixed, and we had to chase the agency more than once. The full deposit came back within a month of moving out, with the inventory photos agreed on both sides.',
+    text: 'Three good years here. The flats facing the courtyard are very quiet and the neighbours look out for each other — there is a building chat that actually works. Repairs were slow in winter: the boiler took two weeks to be fixed, and we had to chase the agency more than once. The full deposit came back within a month of moving out, with the inventory photos agreed on both sides.',
     helpfulCount: 12,
   },
   {
@@ -98,7 +97,14 @@ function Page({ width, children }: { width: number; children: React.ReactNode })
   width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   return (
-    <View style={{ width: '100%', minHeight: '100%', alignItems: 'flex-start', backgroundColor: theme.colors.background }}>
+    <View
+      style={{
+        width: '100%',
+        minHeight: '100%',
+        alignItems: 'flex-start',
+        backgroundColor: theme.colors.background,
+      }}
+    >
       <View
         style={{
           width,
@@ -126,7 +132,12 @@ function ReviewsSection({ width }: { width: number }) {
   return (
     <Page width={width}>
       <View style={{ gap: 4 }}>
-        <Text role="heading" aria-level={2} variant={wide ? 'title-2-semibold' : 'title-3-semibold'} style={{ color: theme.colors.text }}>
+        <Text
+          role="heading"
+          aria-level={2}
+          variant={wide ? 'title-2-semibold' : 'title-3-semibold'}
+          style={{ color: theme.colors.text }}
+        >
           What tenants say about Calle del Olmo 14
         </Text>
         <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
@@ -142,11 +153,24 @@ function ReviewsSection({ width }: { width: number }) {
         recommendRate={0.71}
       />
       {!dismissed ? (
-        <WriteReviewPrompt buildingTitle="Calle del Olmo 14" onStart={noop} onDismiss={() => setDismissed(true)} />
+        <WriteReviewPrompt
+          buildingTitle="Calle del Olmo 14"
+          onStart={noop}
+          onDismiss={() => setDismissed(true)}
+        />
       ) : null}
-      <View style={wide ? { flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' } : { gap: 16 }}>
+      <View
+        style={
+          wide
+            ? { flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }
+            : { gap: 16 }
+        }
+      >
         {REVIEWS.map(({ id, ...review }) => (
-          <View key={id} style={wide ? { width: (width - 160 - 24) / 2, maxWidth: '100%' } : undefined}>
+          <View
+            key={id}
+            style={wide ? { width: (width - 160 - 24) / 2, maxWidth: '100%' } : undefined}
+          >
             <PlaceReviewCard
               {...review}
               helpful={helpful[id] ?? false}

@@ -55,9 +55,16 @@ export const WithPhoto: Story = {
 export const Playground: StoryObj<typeof PatientInfoCard> = {
   args: { name: 'Maya Collins', initials: 'MC', details: DETAILS, hideAddPhoto: false },
   parameters: { controls: { disable: false, include: ['name', 'initials', 'hideAddPhoto'] } },
-  argTypes: { name: { control: 'text' }, initials: { control: 'text' }, hideAddPhoto: { control: 'boolean' } },
+  argTypes: {
+    name: { control: 'text' },
+    initials: { control: 'text' },
+    hideAddPhoto: { control: 'boolean' },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 440, maxWidth: '100%' }}><PatientInfoCard {...args} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <PatientInfoCard {...args} />
+      </View>
+    );
   },
 };

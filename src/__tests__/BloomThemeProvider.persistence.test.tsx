@@ -204,12 +204,7 @@ describe('BloomThemeProvider — persistence', () => {
     const storage = createSyncStorage({ mode: 'dark', colorPreset: 'blue' });
 
     const { getByTestId } = render(
-      <BloomThemeProvider
-        persistKey="bloom-theme"
-        storage={storage}
-        mode="light"
-        colorPreset="oxy"
-      >
+      <BloomThemeProvider persistKey="bloom-theme" storage={storage} mode="light" colorPreset="oxy">
         <Display />
       </BloomThemeProvider>,
     );
@@ -246,7 +241,11 @@ describe('BloomThemeProvider — resetTheme', () => {
         defaultMode="system"
         defaultColorPreset="oxy"
       >
-        <Harness onReady={(reset) => { resetFn = reset; }} />
+        <Harness
+          onReady={(reset) => {
+            resetFn = reset;
+          }}
+        />
       </BloomThemeProvider>,
     );
 
@@ -282,7 +281,11 @@ describe('BloomThemeProvider — resetTheme', () => {
         defaultMode="system"
         defaultColorPreset="oxy"
       >
-        <Harness onReady={(reset) => { resetFn = reset; }} />
+        <Harness
+          onReady={(reset) => {
+            resetFn = reset;
+          }}
+        />
       </BloomThemeProvider>,
     );
 
@@ -307,7 +310,11 @@ describe('BloomThemeProvider — resetTheme', () => {
         defaultMode="system"
         defaultColorPreset="oxy"
       >
-        <Harness onReady={(reset) => { resetFn = reset; }} />
+        <Harness
+          onReady={(reset) => {
+            resetFn = reset;
+          }}
+        />
       </BloomThemeProvider>,
     );
 

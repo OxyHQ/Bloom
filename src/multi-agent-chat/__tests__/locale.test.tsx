@@ -43,23 +43,13 @@ describe('multi-agent chat locale', () => {
         'es',
       ),
     );
-    expect(
-      view.getByLabelText(formatChatMessage(messages.selectedAgents, 'Peri')),
-    ).toBeTruthy();
-    expect(
-      view.getByLabelText(formatChatMessage(messages.editAgent, 'Peri')),
-    ).toBeTruthy();
-    expect(
-      view.getByText(messages.chooseWhoSJoiningTheConversation),
-    ).toBeTruthy();
+    expect(view.getByLabelText(formatChatMessage(messages.selectedAgents, 'Peri'))).toBeTruthy();
+    expect(view.getByLabelText(formatChatMessage(messages.editAgent, 'Peri'))).toBeTruthy();
+    expect(view.getByText(messages.chooseWhoSJoiningTheConversation)).toBeTruthy();
     expect(view.queryByLabelText('Edit Peri')).toBeNull();
-    view.rerender(
-      scope(<ReplyHeader agent={agent} thinking onEdit={jest.fn()} />, 'ar'),
-    );
+    view.rerender(scope(<ReplyHeader agent={agent} thinking onEdit={jest.fn()} />, 'ar'));
     const arabic = pickMessages(MULTI_AGENT_CHAT_MESSAGES, 'ar');
-    expect(
-      view.getByLabelText(formatChatMessage(arabic.agentThinking, 'Peri')),
-    ).toBeTruthy();
+    expect(view.getByLabelText(formatChatMessage(arabic.agentThinking, 'Peri'))).toBeTruthy();
     expect(view.getByText(arabic.thinking)).toBeTruthy();
   });
 
@@ -69,13 +59,9 @@ describe('multi-agent chat locale', () => {
       return <Text>{pages.general?.title}</Text>;
     }
     const settings = render(scope(<Titles />, 'es'));
-    expect(
-      settings.getByText(pickMessages(MULTI_AGENT_CHAT_MESSAGES, 'es').general),
-    ).toBeTruthy();
+    expect(settings.getByText(pickMessages(MULTI_AGENT_CHAT_MESSAGES, 'es').general)).toBeTruthy();
     settings.rerender(scope(<Titles />, 'ar'));
-    expect(
-      settings.getByText(pickMessages(MULTI_AGENT_CHAT_MESSAGES, 'ar').general),
-    ).toBeTruthy();
+    expect(settings.getByText(pickMessages(MULTI_AGENT_CHAT_MESSAGES, 'ar').general)).toBeTruthy();
   });
 
   it('formats count-dependent labels with each language’s cardinal forms', () => {

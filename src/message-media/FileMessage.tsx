@@ -111,7 +111,8 @@ function FileMessageComponent({
   );
   const [hovered, handlers] = useHovered();
 
-  const size = sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes, locale) : undefined);
+  const size =
+    sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes, locale) : undefined);
   const type = typeLabel ?? fileTypeLabel(name, mimeType, messages);
   const meta = fileMetaLine([size, type, metaLabel]);
 
@@ -180,7 +181,6 @@ function FileMessageComponent({
           </Text>
         ) : null}
       </View>
-
     </>
   );
 
@@ -235,20 +235,40 @@ function FileMessageComponent({
             role="button"
             accessibilityLabel={rowName}
             onPress={onPress}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, flexGrow: 1, flexShrink: 1, minWidth: 0 }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: space.md,
+              flexGrow: 1,
+              flexShrink: 1,
+              minWidth: 0,
+            }}
             testID={testID ? `${testID}-open` : undefined}
           >
             {identity}
           </Pressable>
         ) : (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, flexGrow: 1, flexShrink: 1, minWidth: 0 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: space.md,
+              flexGrow: 1,
+              flexShrink: 1,
+              minWidth: 0,
+            }}
+          >
             {identity}
           </View>
         )}
         {trailing}
       </View>
       {state === 'failed' ? (
-        <MediaFailure paint={paint} onRetry={onRetry} testID={testID ? `${testID}-failed` : undefined} />
+        <MediaFailure
+          paint={paint}
+          onRetry={onRetry}
+          testID={testID ? `${testID}-failed` : undefined}
+        />
       ) : null}
     </View>
   );

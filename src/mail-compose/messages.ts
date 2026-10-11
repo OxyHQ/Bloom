@@ -9,21 +9,22 @@ import type { MailComposeStrings } from './types';
  */
 export type MailComposeMessages = MailComposeStrings;
 
-export const MAIL_COMPOSE_MESSAGES: MessageCatalog<MailComposeMessages> = defineMessages<MailComposeMessages>('MAIL_COMPOSE_MESSAGES', {
-  to: 'To',
-  cc: 'Cc',
-  bcc: 'Bcc',
-  subject: 'Subject',
-  showCopies: 'Cc Bcc',
-  hideCopies: 'Hide Cc and Bcc',
-  removeRecipient: (name) => `Remove ${name}`,
-  suggestions: 'Contacts',
-  send: COMMON_MESSAGES.en.send,
-  sending: 'Sending',
-  attach: 'Attach a file',
-  discard: 'Discard draft',
-  minimize: 'Minimize',
-  expand: 'Expand',
-  close: COMMON_MESSAGES.en.close,
-  title: 'New message',
-});
+export const MAIL_COMPOSE_MESSAGES: MessageCatalog<MailComposeMessages> =
+  defineMessages<MailComposeMessages>('MAIL_COMPOSE_MESSAGES', {
+    to: 'To',
+    cc: 'Cc',
+    bcc: 'Bcc',
+    subject: 'Subject',
+    showCopies: 'Cc Bcc',
+    hideCopies: 'Hide Cc and Bcc',
+    removeRecipient: (name) => `Remove ${name}`,
+    suggestions: 'Contacts',
+    send: COMMON_MESSAGES.en.send,
+    sending: 'Sending',
+    attach: 'Attach a file',
+    discard: 'Discard draft',
+    minimize: 'Minimize',
+    expand: 'Expand',
+    close: COMMON_MESSAGES.en.close,
+    title: 'New message',
+  });

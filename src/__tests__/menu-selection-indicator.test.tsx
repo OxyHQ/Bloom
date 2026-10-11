@@ -29,11 +29,7 @@ describe('the shared menu selection indicator', () => {
   it.each([
     [
       'checkbox',
-      <DropdownMenuCheckboxItem
-        key="checkbox"
-        checked
-        onCheckedChange={jest.fn()}
-        testID="row">
+      <DropdownMenuCheckboxItem key="checkbox" checked onCheckedChange={jest.fn()} testID="row">
         Grid
       </DropdownMenuCheckboxItem>,
     ],
@@ -45,7 +41,7 @@ describe('the shared menu selection indicator', () => {
         </DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>,
     ],
-  ])('%s keeps Bloom\'s selected mark in the leading gutter by default', (_kind, row) => {
+  ])("%s keeps Bloom's selected mark in the leading gutter by default", (_kind, row) => {
     const rendered = renderRows(row);
     const rowTokens = classTokens(rendered.getByTestId('row').props.style);
 
@@ -69,7 +65,8 @@ describe('the shared menu selection indicator', () => {
         onCheckedChange={jest.fn()}
         indicatorPosition="trailing"
         indicator={<View testID="custom-indicator" />}
-        testID="row">
+        testID="row"
+      >
         Grid
       </DropdownMenuCheckboxItem>,
     ],
@@ -80,7 +77,8 @@ describe('the shared menu selection indicator', () => {
           value="medium"
           indicatorPosition="trailing"
           indicator={<View testID="custom-indicator" />}
-          testID="row">
+          testID="row"
+        >
           Medium
         </DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>,
@@ -104,9 +102,7 @@ describe('the shared menu selection indicator', () => {
     const rendered = renderRows(
       <DropdownMenuRadioGroup value="medium" onValueChange={jest.fn()}>
         <DropdownMenuRadioItem value="medium">Medium</DropdownMenuRadioItem>
-        <DropdownMenuRadioItem
-          value="high"
-          indicator={<View testID="unchecked-indicator" />}>
+        <DropdownMenuRadioItem value="high" indicator={<View testID="unchecked-indicator" />}>
           High
         </DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>,

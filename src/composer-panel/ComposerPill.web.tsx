@@ -13,9 +13,9 @@ import type { ComposerPillProps } from './types';
 export function ComposerPill(props: ComposerPillProps) {
   return (
     <ComposerButtonContext.Provider value={Button}>
-    <ComposerPopoverContext.Provider value={ComposerPopover}>
-      <ComposerPillBase {...props} />
-    </ComposerPopoverContext.Provider>
+      <ComposerPopoverContext.Provider value={ComposerPopover}>
+        <ComposerPillBase {...props} />
+      </ComposerPopoverContext.Provider>
     </ComposerButtonContext.Provider>
   );
 }

@@ -67,7 +67,4 @@ export interface InlineLoadingProps extends BaseLoadingProps {
   spinnerIcon?: ReactNode;
 }
 
-export type LoadingProps =
-  | SpinnerLoadingProps
-  | TopLoadingProps
-  | InlineLoadingProps;
+export type LoadingProps = SpinnerLoadingProps | TopLoadingProps | InlineLoadingProps;

@@ -127,106 +127,107 @@ function PinnedMessageBarComponent({
     : formatPinTitle(safeIndex, pins.length, messages);
   const preview = pin.author ? `${pin.author}: ${pin.preview}` : pin.preview;
   const resolvedDismissLabel =
-    dismissLabel ??
-    (dismissIcon === 'unpin' ? messages.pinnedUnpin : messages.pinnedClose);
+    dismissLabel ?? (dismissIcon === 'unpin' ? messages.pinnedUnpin : messages.pinnedClose);
 
   return (
     <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-    <View
-      testID={testID}
-      style={[
-        {
-          minHeight: BAR_HEIGHT,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          paddingLeft: 12,
-          paddingRight: 8,
-          paddingTop: 8,
-          paddingBottom: 8,
-          backgroundColor: paint.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: paint.border,
-        },
-        style,
-        backing.vars,
-      ]}
-    >
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel ?? `${title}. ${preview}`}
-        onPress={onPressPin ? () => onPressPin(pin, safeIndex) : undefined}
-        disabled={!onPressPin}
-        testID={testID ? `${testID}-jump` : undefined}
-        style={{
-          minWidth: 0,
-          flexGrow: 1,
-          flexShrink: 1,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 10,
-        }}
+      <View
+        testID={testID}
+        style={[
+          {
+            minHeight: BAR_HEIGHT,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingLeft: 12,
+            paddingRight: 8,
+            paddingTop: 8,
+            paddingBottom: 8,
+            backgroundColor: paint.surface,
+            borderBottomWidth: 1,
+            borderBottomColor: paint.border,
+          },
+          style,
+          backing.vars,
+        ]}
       >
-        <PinSegments
-          total={pins.length}
-          index={safeIndex}
-          active={paint.accentColor}
-          inactive={paint.accentTrack}
-          testID={testID ? `${testID}-segment` : undefined}
-        />
-        <View style={{ minWidth: 0, flexGrow: 1, flexShrink: 1 }}>
-          <Text
-            variant="caption-1-semibold"
-            numberOfLines={1}
-            testID={testID ? `${testID}-title` : undefined}
-            style={{ color: paint.accentColor }}
-          >
-            {title}
-          </Text>
-          <Text
-            variant="body-2-regular"
-            numberOfLines={1}
-            testID={testID ? `${testID}-preview` : undefined}
-            style={{ color: paint.textSecondary }}
-          >
-            {preview}
-          </Text>
-        </View>
-        <PinThumbnail source={pin.thumbnail} />
-      </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel ?? `${title}. ${preview}`}
+          onPress={onPressPin ? () => onPressPin(pin, safeIndex) : undefined}
+          disabled={!onPressPin}
+          testID={testID ? `${testID}-jump` : undefined}
+          style={{
+            minWidth: 0,
+            flexGrow: 1,
+            flexShrink: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <PinSegments
+            total={pins.length}
+            index={safeIndex}
+            active={paint.accentColor}
+            inactive={paint.accentTrack}
+            testID={testID ? `${testID}-segment` : undefined}
+          />
+          <View style={{ minWidth: 0, flexGrow: 1, flexShrink: 1 }}>
+            <Text
+              variant="caption-1-semibold"
+              numberOfLines={1}
+              testID={testID ? `${testID}-title` : undefined}
+              style={{ color: paint.accentColor }}
+            >
+              {title}
+            </Text>
+            <Text
+              variant="body-2-regular"
+              numberOfLines={1}
+              testID={testID ? `${testID}-preview` : undefined}
+              style={{ color: paint.textSecondary }}
+            >
+              {preview}
+            </Text>
+          </View>
+          <PinThumbnail source={pin.thumbnail} />
+        </Pressable>
 
-      {onPressList ? (
-        <Button
-
-          size="sm"
-          iconOnly
-          // An ELEMENT: `variant="text"` paints a component icon in the ACCENT,
-          // and two accent glyphs beside an accent title line is three things
-          // competing for the same attention.
-          icon={<RiListUnordered width={18} height={18} fill={paint.textSecondary} />}
-          accessibilityLabel={listLabel}
-          onPress={onPressList}
-          testID={testID ? `${testID}-list` : undefined} tone="accent" appearance="plain"
-        />
-      ) : null}
-      {onDismiss ? (
-        <Button
-
-          size="sm"
-          iconOnly
-          icon={
-            dismissIcon === 'unpin' ? (
-              <RiUnpinLine width={18} height={18} fill={paint.textSecondary} />
-            ) : (
-              <RiCloseLine width={18} height={18} fill={paint.textSecondary} />
-            )
-          }
-          accessibilityLabel={resolvedDismissLabel}
-          onPress={onDismiss}
-          testID={testID ? `${testID}-dismiss` : undefined} tone="accent" appearance="plain"
-        />
-      ) : null}
-    </View>
+        {onPressList ? (
+          <Button
+            size="sm"
+            iconOnly
+            // An ELEMENT: `variant="text"` paints a component icon in the ACCENT,
+            // and two accent glyphs beside an accent title line is three things
+            // competing for the same attention.
+            icon={<RiListUnordered width={18} height={18} fill={paint.textSecondary} />}
+            accessibilityLabel={listLabel}
+            onPress={onPressList}
+            testID={testID ? `${testID}-list` : undefined}
+            tone="accent"
+            appearance="plain"
+          />
+        ) : null}
+        {onDismiss ? (
+          <Button
+            size="sm"
+            iconOnly
+            icon={
+              dismissIcon === 'unpin' ? (
+                <RiUnpinLine width={18} height={18} fill={paint.textSecondary} />
+              ) : (
+                <RiCloseLine width={18} height={18} fill={paint.textSecondary} />
+              )
+            }
+            accessibilityLabel={resolvedDismissLabel}
+            onPress={onDismiss}
+            testID={testID ? `${testID}-dismiss` : undefined}
+            tone="accent"
+            appearance="plain"
+          />
+        ) : null}
+      </View>
     </SurfaceLevelProvider>
   );
 }

@@ -20,7 +20,11 @@ const PANGRAM = 'Sphinx of black quartz, judge my vow.';
 
 function Specimen({ name, stack }: { name: string; stack: string }) {
   return (
-    <Card appearance="outline" radius="radius-16" style={{ maxWidth: '100%', padding: 16, gap: 8, width: 620 }}>
+    <Card
+      appearance="outline"
+      radius="radius-16"
+      style={{ maxWidth: '100%', padding: 16, gap: 8, width: 620 }}
+    >
       <Text style={{ fontSize: 12, opacity: 0.7 }}>
         {name} · var({fontCssVars[name as keyof typeof fontCssVars]})
       </Text>
@@ -98,7 +102,10 @@ export const Weights: Story = {
   render: () => (
     <View style={{ maxWidth: '100%', gap: 8, width: 620 }}>
       {(['400', '500', '600', '700'] as const).map((weight) => (
-        <Text key={weight} style={{ fontFamily: fontFamilies.sans, fontSize: 20, fontWeight: weight }}>
+        <Text
+          key={weight}
+          style={{ fontFamily: fontFamilies.sans, fontSize: 20, fontWeight: weight }}
+        >
           {weight} — {PANGRAM}
         </Text>
       ))}

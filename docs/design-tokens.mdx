@@ -326,22 +326,26 @@ nine pairs on `Theme.chartColors`.
 | `headerBold` | 28 / 34 | 700 | display |
 | `buttonLarge` | 17 / 22 | 600 | sans |
 
-**Line-height tokens are unitless ratios, never px.** `theme.css` ships
-`--text-body--line-height: calc(22 / 15)`, the form Tailwind uses for its own
-scale (`--text-sm--line-height: calc(1.25 / 0.875)`). On the web the two forms
-paint the same 22px. On native they do not. Tailwind v4 emits
-`line-height: var(--tw-leading, var(--text-body--line-height))`,
-react-native-css (3.0.7) compiles it to `lineHeight(var(…))`, and that runtime
-resolver multiplies whatever number arrives by the font-size. A `22px` token
-therefore rendered `text-body` at `{ fontSize: 15, lineHeight: 330 }` on
-Android: every className-styled text row grew about 15× taller, so a pill-shaped
-row became a giant circle. Keep new line-height tokens in this form (`lineHeightRatio()` in
-`design-tokens/theme-css.ts`). `typography-native-line-height.test.tsx` runs
-the real Tailwind → react-native-css pipeline and renders each role.
+**Define type-scale line-height tokens as standard unitless CSS ratios.**
+`theme.css` ships `--text-body--line-height: calc(22 / 15)`, the same form
+Tailwind uses for its scale. The size and ratio yield the intended line box on
+both platforms; for example, an 18px font with a 1.1111111111 ratio has a 20px
+line. Keep independently measured size/line-height pairs as the source of truth.
 
-A related upstream gap: an arbitrary `leading-[22px]` compiled by
-react-native-css resolves to **no** line-height on native. Use a role token. That is a separate
-react-native-css issue; do not rely on the arbitrary form there.
+Bloom 7.28 uses the official `react-native-css@3.1.0-rc.0` release. NativeWind
+consumers should use its matching official `nativewind@5.0.0-rc.0` release.
+The compiler fixes literal pixel declarations, direct static custom-property
+lengths and arbitrary `leading-[20px]` utilities. An upstream limitation remains:
+a pixel-valued `var(--tw-leading, 20px)` fallback is still interpreted as a
+multiplier on native. Tailwind emits that form for pixel-valued type-scale tokens,
+so those tokens must use the standard ratio form above. This is ordinary CSS
+line-height semantics, not a platform-specific metric or inline-style override.
+Preserve one CSS runtime across the app and Bloom; do not override a peer range
+to retain an older NativeWind preview alongside the new compiler.
+
+`typography-native-line-height.test.tsx` runs the real Tailwind →
+react-native-css pipeline and native runtime for every role, absolute and
+variable lengths, unitless ratios and an arbitrary pixel utility.
 
 The test compiles through react-native-css, so Bloom pins `lightningcss` to
 1.30.1 in `package.json#overrides`, as the apps do. react-native-css 3.0.x
@@ -356,3 +360,44 @@ caller-supplied hues, darkened only when their paired labels require it; their
 black/white image ink is intentional. Energy bands remain categorical data
 colors with measured black/white foregrounds. They are not shell backgrounds.
 `media-semantic-palette.test.ts` checks those pairs across all presets and modes.
+
+
+## Exact local color scopes
+
+`BloomColorScope` accepts an optional `mode` (`light` or `dark`) and `tokens`,
+a partial map keyed by `CanonicalToken` without the `--` prefix. These values
+are exact React Native color strings, not seeds: Bloom does not derive or adjust
+them. Supply readable foreground/fill pairs; unspecified tokens inherit the
+selected `colorPreset`, or the parent scope when no preset is supplied.
+
+```tsx
+import { BloomColorScope, type BloomColorScopeTokens } from '@oxy.so/bloom/theme';
+
+const colors = {
+  background: '#5433eb',
+  foreground: '#ffffff',
+  card: 'rgba(255, 255, 255, 0.12)',
+  'card-foreground': '#ffffff',
+} satisfies BloomColorScopeTokens;
+
+<BloomColorScope mode="dark" tokens={colors}>
+  <Content />
+</BloomColorScope>
+```
+
+The scope publishes the same values to canonical CSS variables, their
+`--color-*` utility aliases, native variable context and `useTheme()`.
+Bloom portals carry this scope to their destination, so a dialog or menu
+opened inside it keeps the same colors. Siblings and the app's stored theme,
+document classes and native global color scheme stay unchanged. The setters returned by `useBloomTheme()` still control the app provider;
+change local props to update the scope. Local mode
+selects the token palette and JS theme; it does not redefine a consumer's CSS
+`dark:` selector or change the device color scheme.
+
+Nested mode overrides resolve the parent's original preset or seed at the new
+mode and retain explicit ancestor token overrides. A new `colorPreset` starts
+a fresh palette. Updating or clearing scope props preserves mounted children
+and their state. `asChild` retains its existing single-child style contract.
+An omitted token inherits; an empty color, unknown token, CSS variable reference
+or color that React Native cannot parse is rejected. Resolve app-specific colors
+before passing them; do not restate Bloom's standard palette.

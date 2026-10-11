@@ -9,7 +9,10 @@ import { buildTheme } from '../theme/build-theme';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { resolvedStyle } from './support/rendered-style';
 
-jest.mock('../styles/adopt-style-sheet', () => ({ adoptStyleSheet: jest.fn(), dropStyleSheet: jest.fn() }));
+jest.mock('../styles/adopt-style-sheet', () => ({
+  adoptStyleSheet: jest.fn(),
+  dropStyleSheet: jest.fn(),
+}));
 
 function renderThinking(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   return render(
@@ -27,12 +30,16 @@ describe('AgentThinking', () => {
   it('is a status row: centred, gap 10, label on body-medium', () => {
     const { getByTestId } = renderThinking(<AgentThinking testID="t" label="Searching the docs" />);
     expect(getByTestId('t').props.role).toBe('status');
-    expect(resolvedStyle(getByTestId('t', { includeHiddenElements: true }).props.style)).toMatchObject({
+    expect(
+      resolvedStyle(getByTestId('t', { includeHiddenElements: true }).props.style),
+    ).toMatchObject({
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
     });
-    expect(resolvedStyle(getByTestId('t-label', { includeHiddenElements: true }).props.style)).toMatchObject({
+    expect(
+      resolvedStyle(getByTestId('t-label', { includeHiddenElements: true }).props.style),
+    ).toMatchObject({
       fontSize: 14,
       lineHeight: 20,
       fontWeight: '500',
@@ -69,7 +76,9 @@ describe('AgentThinking', () => {
 
   it('pulls the infinity box in 4px per side, with longhand margins', () => {
     const { getByTestId } = renderThinking(<AgentThinking variant="infinity" />);
-    const box = resolvedStyle(getByTestId('agent-thinking-infinity', { includeHiddenElements: true }).props.style);
+    const box = resolvedStyle(
+      getByTestId('agent-thinking-infinity', { includeHiddenElements: true }).props.style,
+    );
     expect(box).toMatchObject({ width: 32, height: 16, marginLeft: -4, marginRight: -4 });
     expect(box.marginHorizontal).toBeUndefined();
   });
@@ -78,27 +87,37 @@ describe('AgentThinking', () => {
     const theme = buildTheme('teal', 'light');
     const color = (ui: React.ReactElement) => {
       const { getByTestId, unmount } = renderThinking(ui);
-      const value = resolvedStyle(getByTestId('t-label', { includeHiddenElements: true }).props.style).color;
+      const value = resolvedStyle(
+        getByTestId('t-label', { includeHiddenElements: true }).props.style,
+      ).color;
       unmount();
       return value;
     };
     expect(color(<AgentThinking testID="t" />)).toBe(theme.colors.textSecondary);
     expect(color(<AgentThinking testID="t" variant="stars" />)).toBe(theme.colors.textTertiary);
-    expect(color(<AgentThinking testID="t" tone="accent" />)).toBe(theme.colors.primarySubtleForeground);
+    expect(color(<AgentThinking testID="t" tone="accent" />)).toBe(
+      theme.colors.primarySubtleForeground,
+    );
     expect(color(<AgentThinking testID="t" tone="primary" />)).toBe(theme.colors.text);
   });
 
   it('counts elapsed seconds to one decimal, and hides the timer on request', () => {
     jest.useFakeTimers();
     const { getByTestId, queryByTestId, unmount } = renderThinking(<AgentThinking />);
-    expect(getByTestId('agent-thinking-timer', { includeHiddenElements: true }).props.children).toBe('0.0s');
+    expect(
+      getByTestId('agent-thinking-timer', { includeHiddenElements: true }).props.children,
+    ).toBe('0.0s');
     act(() => {
       jest.advanceTimersByTime(1250);
     });
-    expect(getByTestId('agent-thinking-timer', { includeHiddenElements: true }).props.children).toBe('1.2s');
+    expect(
+      getByTestId('agent-thinking-timer', { includeHiddenElements: true }).props.children,
+    ).toBe('1.2s');
     unmount();
     const hidden = renderThinking(<AgentThinking showTimer={false} />);
-    expect(hidden.queryByTestId('agent-thinking-timer', { includeHiddenElements: true })).toBeNull();
+    expect(
+      hidden.queryByTestId('agent-thinking-timer', { includeHiddenElements: true }),
+    ).toBeNull();
     expect(queryByTestId).toBeDefined();
   });
 
@@ -116,7 +135,9 @@ describe('AgentThinking', () => {
         'bloom-agent-thinking-web-css',
         expect.stringContaining('animation: bloom-agent-thinking-shimmer 2.6s linear infinite'),
       );
-      const css = jest.mocked(adoptStyleSheet).mock.calls.find(([id]) => id === 'bloom-agent-thinking-web-css')![1];
+      const css = jest
+        .mocked(adoptStyleSheet)
+        .mock.calls.find(([id]) => id === 'bloom-agent-thinking-web-css')![1];
       expect(css).toContain('color: transparent !important');
       expect(css).toContain('prefers-reduced-motion: reduce');
     } finally {

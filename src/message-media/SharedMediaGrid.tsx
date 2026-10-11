@@ -59,12 +59,12 @@ function SharedMediaGridComponent({
   const widths = useMemo(() => split(width - gap * (cols - 1), cols), [width, gap, cols]);
   const tile = widths[0] ?? 0;
 
-  const visible = maxItems === undefined ? items.length : Math.min(items.length, Math.max(0, maxItems));
+  const visible =
+    maxItems === undefined ? items.length : Math.min(items.length, Math.max(0, maxItems));
   const overflow = items.length - visible;
   const shown = items.slice(0, visible);
 
-  const gridName =
-    accessibilityLabel ?? messages.sharedMedia(items.length);
+  const gridName = accessibilityLabel ?? messages.sharedMedia(items.length);
 
   return (
     <View
@@ -82,7 +82,8 @@ function SharedMediaGridComponent({
           item.durationLabel ??
           (typeof item.duration === 'number' ? formatDuration(item.duration) : undefined);
         const name =
-          item.accessibilityLabel ?? (isVideo ? messages.videoOf : messages.photoOf)(index + 1, items.length);
+          item.accessibilityLabel ??
+          (isVideo ? messages.videoOf : messages.photoOf)(index + 1, items.length);
         const cell: WebCssStyle = {
           width: tileWidth,
           height: tileWidth,

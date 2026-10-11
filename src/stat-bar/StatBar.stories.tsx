@@ -66,9 +66,16 @@ export const Dark: Story = {
 export const Playground: StoryObj<typeof StatBar> = {
   args: { variant: 'progress', label: 'Storage used', value: 60, max: 100 },
   parameters: { controls: { disable: false, include: ['label', 'value', 'max'] } },
-  argTypes: { label: { control: 'text' }, value: { control: 'number' }, max: { control: 'number' } },
+  argTypes: {
+    label: { control: 'text' },
+    value: { control: 'number' },
+    max: { control: 'number' },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 440, maxWidth: '100%' }}><StatBar {...args} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <StatBar {...args} />
+      </View>
+    );
   },
 };

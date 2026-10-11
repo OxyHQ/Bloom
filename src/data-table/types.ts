@@ -155,7 +155,10 @@ export interface DataTableProps<T> {
 export type DataTableIconComponent = BloomIconComponent;
 
 export interface DataTableRowActionProps
-  extends Omit<ButtonProps, 'children' | 'variant' | 'size' | 'iconOnly' | 'icon' | 'leadingIcon' | 'trailingIcon'> {
+  extends Omit<
+    ButtonProps,
+    'children' | 'variant' | 'size' | 'iconOnly' | 'icon' | 'leadingIcon' | 'trailingIcon'
+  > {
   /** The glyph, drawn at 16px. */
   icon: DataTableIconComponent;
   /** Accessible name, and the tooltip's text. */

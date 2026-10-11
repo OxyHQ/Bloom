@@ -23,12 +23,7 @@ declare module 'react-native-css/native-internal' {
    * `rgb(...)` strings from the single canonical token pipeline), but the family
    * is typed against the full descriptor union.
    */
-  type StyleDescriptor =
-    | string
-    | number
-    | boolean
-    | undefined
-    | StyleDescriptor[];
+  type StyleDescriptor = string | number | boolean | undefined | StyleDescriptor[];
 
   /**
    * A media-conditioned predicate guarding a variable value. Bloom never emits

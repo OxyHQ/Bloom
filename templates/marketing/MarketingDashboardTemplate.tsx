@@ -41,10 +41,18 @@ export function MarketingDashboardTemplate() {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   // `var(--color-chart-6)` / `-active`.
-  const roasLine = useMemo<ComboSeries>(() => ({ ...ROAS_LINE, ...chartHueTone(theme, 6) }), [theme]);
+  const roasLine = useMemo<ComboSeries>(
+    () => ({ ...ROAS_LINE, ...chartHueTone(theme, 6) }),
+    [theme],
+  );
 
   return (
-    <DashboardShell selected="marketing" title="Marketing" crumbIcon={RiMegaphoneLine} primaryAction="New campaign">
+    <DashboardShell
+      selected="marketing"
+      title="Marketing"
+      crumbIcon={RiMegaphoneLine}
+      primaryAction="New campaign"
+    >
       {/* One per row on phones (`max-sm:grid-cols-1`) — a 2-up KPI grid at
           390px crushes the values. The shared 2-up from sm, 4-up from lg. */}
       <StatCards stats={MARKETING_STATS} columns={width < BREAKPOINTS.sm ? 1 : 4} />
@@ -66,7 +74,13 @@ export function MarketingDashboardTemplate() {
       </ThreeUpChartRow>
       {/* Both cards carry stat tiles, so they grow together. */}
       <TwoUpChartRow>
-        <ComboChartCard title="Ad spend" bar={SPEND_BAR} line={roasLine} ranges={SPEND_ROAS_RANGES} tiles />
+        <ComboChartCard
+          title="Ad spend"
+          bar={SPEND_BAR}
+          line={roasLine}
+          ranges={SPEND_ROAS_RANGES}
+          tiles
+        />
         <AreaChartCard title="Visitors" series={VISITOR_SERIES} ranges={VISITOR_RANGES} tiles />
       </TwoUpChartRow>
       <CampaignsTable />

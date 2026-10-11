@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo } from 'react';
-import { Platform, View } from 'react-native';
+import { styled } from 'react-native-css';
+import { Animated, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -12,6 +13,7 @@ import {
   resolveMeterColors,
 } from './shared';
 import type { AnyMeterProps } from './types';
+import { useMeterReveal } from './use-meter-reveal';
 
 /**
  * ONE determinate bar. Every progress bar in Bloom is this one.
@@ -35,11 +37,12 @@ import type { AnyMeterProps } from './types';
  * A bar that is one SEGMENT of a larger progressbar passes `decorative` and
  * gets no role at all — two nested progressbars announce the measurement twice.
  */
-function MeterComponent(props: AnyMeterProps) {
+function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle> }) {
   const theme = useTheme();
   const defaults = useMemo(() => resolveMeterColors(theme), [theme]);
   const {
     value,
+    reveal,
     max = 1,
     height = 6,
     radius = height / 2,
@@ -49,6 +52,7 @@ function MeterComponent(props: AnyMeterProps) {
     transitionMs = 0,
     style,
     testID,
+    fillStyle: callerFillStyle,
     fillTestID = testID ? `${testID}-fill` : undefined,
   } = props;
 
@@ -57,6 +61,8 @@ function MeterComponent(props: AnyMeterProps) {
   }, [transitionMs]);
 
   const fraction = meterFraction(value, max);
+  const revealedWidth = useMeterReveal(fraction, reveal);
+  const Fill = reveal ? Animated.View : View;
 
   const fillStyle: WebCssStyle = {
     width: `${fraction * 100}%`,
@@ -67,10 +73,10 @@ function MeterComponent(props: AnyMeterProps) {
   };
 
   const bar = (
-    <View
+    <Fill
       {...(transitionMs > 0 ? webDataSet({ bloomMeterFill: '' }) : null)}
       testID={fillTestID}
-      style={fillStyle}
+      style={[fillStyle, callerFillStyle, { width: reveal ? revealedWidth : fillStyle.width }]}
     />
   );
 
@@ -112,5 +118,7 @@ function MeterComponent(props: AnyMeterProps) {
   );
 }
 
-export const Meter = memo(MeterComponent);
+export const Meter = memo(
+  styled(MeterComponent, { className: 'style', fillClassName: 'fillStyle' }),
+);
 Meter.displayName = 'Meter';

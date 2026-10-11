@@ -99,7 +99,6 @@ export const CENTER_FADE_OUT_DURATION = 150;
 /** CSS approximation of reanimated's `Easing.out(Easing.cubic)`. */
 export const EASE_OUT = 'cubic-bezier(0.33, 1, 0.68, 1)';
 
-
 /** Stable testID for the dimmed backdrop of a side/bottom placement dialog. */
 export const DIALOG_SHEET_BACKDROP_TESTID = 'bloom-dialog-sheet-backdrop';
 
@@ -110,9 +109,23 @@ export const HANDLE_RADIUS = 3;
 
 /**
  * Minimum gutter kept between a wide side-sheet and the opposite viewport edge
- * when capping its width, so the panel never spans the full screen.
+ * when capping its width by default. Callers can opt into a zero gutter.
  */
 export const SIDE_SHEET_MIN_GUTTER = 24;
+
+/** Shared native/web width cap; the gutter is separate from edge insets. */
+export function resolveSideSheetWidth(
+  viewportWidth: number,
+  width: number,
+  anchorInset: number,
+  oppositeInset: number,
+  minSideGutter = SIDE_SHEET_MIN_GUTTER,
+): number {
+  const gutter = Number.isFinite(minSideGutter)
+    ? Math.max(0, minSideGutter)
+    : SIDE_SHEET_MIN_GUTTER;
+  return Math.max(0, Math.min(width, viewportWidth - anchorInset - oppositeInset - gutter));
+}
 
 /**
  * Resolve a (possibly responsive) `placement` to a concrete `DialogPlacement`

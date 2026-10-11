@@ -108,7 +108,6 @@ export function warnHapticsUnavailable(): void {
   hasWarned = true;
   // Internal Bloom diagnostic: only the consumer's package.json can fix this,
   // so it names the package, the install command and the alternative.
-  // eslint-disable-next-line no-console
   console.warn(
     '[Bloom] useHaptics is inert: the optional peer `expo-haptics` could not be ' +
       'loaded, so every haptic in Bloom is a silent no-op. Install it ' +

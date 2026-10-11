@@ -23,7 +23,13 @@ export const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
 export const percent = (n: number) => `${Math.round(n * 10) / 10}%`;
 
 export const FINANCE_STATS: StatCardsItem[] = [
-  { icon: RiWallet3Line, label: 'Total balance', value: '$84,230', delta: '+3.2%', deltaColor: 'lime' },
+  {
+    icon: RiWallet3Line,
+    label: 'Total balance',
+    value: '$84,230',
+    delta: '+3.2%',
+    deltaColor: 'lime',
+  },
   { icon: RiHandCoinLine, label: 'Income', value: '$18,420', delta: '+6.1%', deltaColor: 'lime' },
   { icon: RiBankCard2Line, label: 'Expenses', value: '$9,140', delta: '+2.4%', deltaColor: 'rose' },
   { icon: RiStockLine, label: 'Invested', value: '$32,400', delta: '+8.4%', deltaColor: 'lime' },
@@ -64,9 +70,27 @@ const scaleLinks = (factor: number): SankeyLinkDatum[] =>
   CASH_FLOW_LINKS.map((l) => ({ ...l, value: Math.round(l.value * factor) }));
 
 export const CASH_FLOW_RANGES: SankeyRange[] = [
-  { id: 'month', label: 'This month', nodes: CASH_FLOW_NODES, links: CASH_FLOW_LINKS, delta: 0.061 },
-  { id: 'quarter', label: 'This quarter', nodes: CASH_FLOW_NODES, links: scaleLinks(2.9), delta: 0.043 },
-  { id: 'year', label: 'This year', nodes: CASH_FLOW_NODES, links: scaleLinks(11.6), delta: -0.018 },
+  {
+    id: 'month',
+    label: 'This month',
+    nodes: CASH_FLOW_NODES,
+    links: CASH_FLOW_LINKS,
+    delta: 0.061,
+  },
+  {
+    id: 'quarter',
+    label: 'This quarter',
+    nodes: CASH_FLOW_NODES,
+    links: scaleLinks(2.9),
+    delta: 0.043,
+  },
+  {
+    id: 'year',
+    label: 'This year',
+    nodes: CASH_FLOW_NODES,
+    links: scaleLinks(11.6),
+    delta: -0.018,
+  },
 ];
 
 /* --------------------------------------------------- spending by category */
@@ -80,9 +104,24 @@ const spendingRings = (values: [number, number, number, number, number]) => [
 ];
 
 export const SPENDING_RANGES: RadialRange[] = [
-  { id: 'month', label: 'This month', data: spendingRings([840, 460, 620, 1_240, 2_650]), delta: 0.024 },
-  { id: 'quarter', label: 'This quarter', data: spendingRings([2_430, 1_380, 1_790, 3_620, 7_950]), delta: 0.051 },
-  { id: 'year', label: 'This year', data: spendingRings([9_700, 5_520, 7_180, 14_400, 31_800]), delta: -0.012 },
+  {
+    id: 'month',
+    label: 'This month',
+    data: spendingRings([840, 460, 620, 1_240, 2_650]),
+    delta: 0.024,
+  },
+  {
+    id: 'quarter',
+    label: 'This quarter',
+    data: spendingRings([2_430, 1_380, 1_790, 3_620, 7_950]),
+    delta: 0.051,
+  },
+  {
+    id: 'year',
+    label: 'This year',
+    data: spendingRings([9_700, 5_520, 7_180, 14_400, 31_800]),
+    delta: -0.012,
+  },
 ];
 
 /* --------------------------------------------------------------- holdings */
@@ -147,7 +186,13 @@ const SPENDING_HEAT = heatRows([
 ]);
 
 export const SPENDING_HEAT_RANGES: HeatmapRange[] = [
-  { id: '12w', label: 'Last 12 weeks', rows: SPENDING_HEAT, columns: SPENDING_WEEK_COLUMNS, delta: 0.036 },
+  {
+    id: '12w',
+    label: 'Last 12 weeks',
+    rows: SPENDING_HEAT,
+    columns: SPENDING_WEEK_COLUMNS,
+    delta: 0.036,
+  },
   {
     id: 'prev',
     label: 'Previous 12 weeks',

@@ -40,7 +40,11 @@ import {
   RiUploadCloud2Line,
 } from '../../src/icons/remix';
 import { FilterChips } from '../../src/media-shelf';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../../src/segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../../src/segmented-control';
 import type { SidebarNavItem } from '../../src/sidebar';
 import type { WebCssStyle } from '../../src/styles/web-view-style';
 import { useTheme } from '../../src/theme/use-theme';
@@ -79,7 +83,13 @@ const FRAME: WebCssStyle =
 
 const NAV: SidebarNavItem[] = [
   { key: 'dashboard', label: 'Dashboard', icon: RiDashboardLine, href: '#dashboard' },
-  { key: 'releases', label: 'Releases', icon: RiAlbumLine, badge: STUDIO_RELEASES.length, href: '#releases' },
+  {
+    key: 'releases',
+    label: 'Releases',
+    icon: RiAlbumLine,
+    badge: STUDIO_RELEASES.length,
+    href: '#releases',
+  },
   { key: 'new-release', label: 'New release', icon: RiUploadCloud2Line, href: '#new-release' },
   { key: 'audience', label: 'Audience', icon: RiGroupLine, href: '#audience' },
   { key: 'pitching', label: 'Pitching', icon: RiMegaphoneLine, href: '#pitching' },
@@ -112,7 +122,11 @@ export function StudioApp({ initialPage = 'dashboard' }: { initialPage?: StudioP
   const artist = ARTIST_BY_ID['lumen-vale']!;
 
   const title =
-    page === 'dashboard' ? `Welcome back, ${artist.name}` : page === 'releases' ? 'Releases' : 'New release';
+    page === 'dashboard'
+      ? `Welcome back, ${artist.name}`
+      : page === 'releases'
+        ? 'Releases'
+        : 'New release';
 
   return (
     <View style={FRAME}>
@@ -127,7 +141,8 @@ export function StudioApp({ initialPage = 'dashboard' }: { initialPage?: StudioP
           secondaryItems: SECONDARY,
           selected: page,
           onNavigate: (item) => {
-            if (item.key === 'dashboard' || item.key === 'releases' || item.key === 'new-release') setPage(item.key);
+            if (item.key === 'dashboard' || item.key === 'releases' || item.key === 'new-release')
+              setPage(item.key);
             setNavOpen(false);
           },
           account: { name: artist.name, avatar: { source: artist.photo } },
@@ -135,11 +150,17 @@ export function StudioApp({ initialPage = 'dashboard' }: { initialPage?: StudioP
         title={title}
         actions={
           page === 'new-release' ? (
-            <Button  size="sm" tone="neutral" appearance="outline">
+            <Button size="sm" tone="neutral" appearance="outline">
               Save draft
             </Button>
           ) : (
-            <Button  size="sm" leadingIcon={RiAddFill} onPress={() => setPage('new-release')} tone="accent" appearance="solid">
+            <Button
+              size="sm"
+              leadingIcon={RiAddFill}
+              onPress={() => setPage('new-release')}
+              tone="accent"
+              appearance="solid"
+            >
               New release
             </Button>
           )
@@ -187,8 +208,12 @@ function Columns({
   if (width < from) return <View style={{ gap: 16 }}>{children}</View>;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
-      <View style={{ flexGrow: ratio[0], flexShrink: 1, flexBasis: 0, minWidth: 0 }}>{children[0]}</View>
-      <View style={{ flexGrow: ratio[1], flexShrink: 1, flexBasis: 0, minWidth: 0 }}>{children[1]}</View>
+      <View style={{ flexGrow: ratio[0], flexShrink: 1, flexBasis: 0, minWidth: 0 }}>
+        {children[0]}
+      </View>
+      <View style={{ flexGrow: ratio[1], flexShrink: 1, flexBasis: 0, minWidth: 0 }}>
+        {children[1]}
+      </View>
     </View>
   );
 }
@@ -236,7 +261,11 @@ const RELEASE_ACTIONS: ReleaseAction[] = [
 ];
 
 const RELEASE_FILTERS: { value: string; label: string; statuses: readonly ReleaseStatus[] }[] = [
-  { value: 'all', label: 'All', statuses: ['draft', 'in-review', 'scheduled', 'live', 'rejected', 'takedown'] },
+  {
+    value: 'all',
+    label: 'All',
+    statuses: ['draft', 'in-review', 'scheduled', 'live', 'rejected', 'takedown'],
+  },
   { value: 'live', label: 'Live', statuses: ['live'] },
   { value: 'upcoming', label: 'Upcoming', statuses: ['in-review', 'scheduled'] },
   { value: 'attention', label: 'Needs attention', statuses: ['draft', 'rejected'] },
@@ -282,7 +311,10 @@ function Releases() {
           {rows.map((row, r) => (
             <View key={r} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
               {row.map((release) => (
-                <View key={release.id} style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 }}>
+                <View
+                  key={release.id}
+                  style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 }}
+                >
                   <ReleaseCard release={release} onPress={() => {}} actions={RELEASE_ACTIONS} />
                 </View>
               ))}
@@ -295,7 +327,13 @@ function Releases() {
       ) : (
         <View style={{ gap: 8 }}>
           {shown.map((release) => (
-            <ReleaseCard key={release.id} release={release} layout="row" onPress={() => {}} actions={RELEASE_ACTIONS} />
+            <ReleaseCard
+              key={release.id}
+              release={release}
+              layout="row"
+              onPress={() => {}}
+              actions={RELEASE_ACTIONS}
+            />
           ))}
         </View>
       )}
@@ -337,9 +375,21 @@ interface UploadRow {
 }
 
 const INITIAL_UPLOADS: UploadRow[] = [
-  { id: 'u1', fileName: '01 Winter Ferry.wav', size: 48_200_000, status: 'ready', duration: '3:52' },
+  {
+    id: 'u1',
+    fileName: '01 Winter Ferry.wav',
+    size: 48_200_000,
+    status: 'ready',
+    duration: '3:52',
+  },
   { id: 'u2', fileName: '02 Harbour at Six.wav', size: 52_900_000, status: 'processing' },
-  { id: 'u3', fileName: '03 Soft Static (Reprise).wav', size: 31_400_000, status: 'uploading', progress: 38 },
+  {
+    id: 'u3',
+    fileName: '03 Soft Static (Reprise).wav',
+    size: 31_400_000,
+    status: 'uploading',
+    progress: 38,
+  },
   {
     id: 'u4',
     fileName: '04 Lamp Oil.flac',
@@ -371,7 +421,9 @@ function NewRelease() {
         rows.map((row) => {
           if (row.status === 'uploading') {
             const progress = (row.progress ?? 0) + 4;
-            return progress >= 100 ? { ...row, status: 'processing', progress: 100 } : { ...row, progress };
+            return progress >= 100
+              ? { ...row, status: 'processing', progress: 100 }
+              : { ...row, progress };
           }
           return row;
         }),
@@ -392,7 +444,10 @@ function NewRelease() {
           paddingRight: 12,
         }}
       >
-        <ReleaseTimeline steps={STUDIO_STEPS} orientation={width >= 900 ? 'horizontal' : 'vertical'} />
+        <ReleaseTimeline
+          steps={STUDIO_STEPS}
+          orientation={width >= 900 ? 'horizontal' : 'vertical'}
+        />
       </View>
 
       <Columns from={1100} ratio={[3, 2]}>
@@ -414,7 +469,13 @@ function NewRelease() {
               onFileSelected={(file) =>
                 setUploads((rows) => [
                   ...rows,
-                  { id: `u${rows.length + 1}`, fileName: file.name, size: file.size, status: 'uploading', progress: 0 },
+                  {
+                    id: `u${rows.length + 1}`,
+                    fileName: file.name,
+                    size: file.size,
+                    status: 'uploading',
+                    progress: 0,
+                  },
                 ])
               }
             />
@@ -436,7 +497,9 @@ function NewRelease() {
                   onRetry={() =>
                     setUploads((rows) =>
                       rows.map((r) =>
-                        r.id === row.id ? { ...r, status: 'uploading', progress: 0, error: undefined } : r,
+                        r.id === row.id
+                          ? { ...r, status: 'uploading', progress: 0, error: undefined }
+                          : r,
                       ),
                     )
                   }
@@ -468,10 +531,11 @@ function NewRelease() {
             />
             {artwork ? null : (
               <Button
-
                 size="sm"
                 style={{ alignSelf: 'flex-start' }}
-                onPress={() => setArtwork(ALBUM_BY_ID['blue-hour-ep']!.artwork)} tone="neutral" appearance="outline"
+                onPress={() => setArtwork(ALBUM_BY_ID['blue-hour-ep']!.artwork)}
+                tone="neutral"
+                appearance="outline"
               >
                 Use the draft cover
               </Button>

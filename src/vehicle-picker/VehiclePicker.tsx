@@ -9,11 +9,7 @@ import { useMessages } from '../locale/messages';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import {
-  builtInVehicleOptions,
-  VEHICLE_ICON,
-  VEHICLE_PICKER_GEOMETRY,
-} from './constants';
+import { builtInVehicleOptions, VEHICLE_ICON, VEHICLE_PICKER_GEOMETRY } from './constants';
 import { VEHICLE_PICKER_MESSAGES } from './messages';
 import { vehicleOptionName } from './shared';
 import type { VehicleKind, VehicleOption, VehiclePickerProps } from './types';
@@ -64,13 +60,19 @@ export function VehiclePicker<T extends string = VehicleKind>({
   const { messages } = useMessages(VEHICLE_PICKER_MESSAGES);
   const accessibilityLabel = accessibilityLabelProp ?? messages.vehicle;
   const options = useMemo(
-    () => optionsProp ?? (builtInVehicleOptions(messages) as unknown as readonly VehicleOption<T>[]),
+    () =>
+      optionsProp ?? (builtInVehicleOptions(messages) as unknown as readonly VehicleOption<T>[]),
     [optionsProp, messages],
   );
   const theme = useTheme();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
   const labels = useMemo(
-    () => ({ from: messages.from, fits: messages.fits, unavailable: messages.unavailable, ...labelOverrides }),
+    () => ({
+      from: messages.from,
+      fits: messages.fits,
+      unavailable: messages.unavailable,
+      ...labelOverrides,
+    }),
     [messages, labelOverrides],
   );
   // The picker measures ITSELF: the same component is a full phone column and a
@@ -110,9 +112,11 @@ export function VehiclePicker<T extends string = VehicleKind>({
       >
         {options.map((option) => {
           const blocked = disabled || option.disabled === true;
-          const reason = option.disabled === true ? (option.unavailableReason ?? labels.unavailable) : undefined;
+          const reason =
+            option.disabled === true ? (option.unavailableReason ?? labels.unavailable) : undefined;
           const chips = option.fits ?? [];
-          const hasDetail = chips.length > 0 || option.priceFrom !== undefined || reason !== undefined;
+          const hasDetail =
+            chips.length > 0 || option.priceFrom !== undefined || reason !== undefined;
           const icon =
             option.icon ?? VEHICLE_ICON[option.value as unknown as VehicleKind] ?? undefined;
 

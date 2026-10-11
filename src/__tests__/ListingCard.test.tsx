@@ -192,7 +192,16 @@ describe('pure helpers', () => {
 
 describe('ListingCard', () => {
   it('is ONE named link with a real href, and the heart is its sibling, not its child', () => {
-    mount(<ListingCard {...stay} badge="Guest favourite" href="/stays/alvora" favorite={false} onFavoriteChange={() => {}} testID="c" />);
+    mount(
+      <ListingCard
+        {...stay}
+        badge="Guest favourite"
+        href="/stays/alvora"
+        favorite={false}
+        onFavoriteChange={() => {}}
+        testID="c"
+      />,
+    );
     const link = byTestId('c-link');
     expect(link.tagName).toBe('A');
     expect(link.getAttribute('href')).toBe('/stays/alvora');
@@ -215,7 +224,9 @@ describe('ListingCard', () => {
     expect(text).toContain('12 – 17 Oct');
     expect(text).toContain('€150 €124 night');
     expect(text).toContain('€620 total');
-    expect(byTestId('c-link').getAttribute('aria-label')).toContain('€124 night, originally €150, €620 total');
+    expect(byTestId('c-link').getAttribute('aria-label')).toContain(
+      '€124 night, originally €150, €620 total',
+    );
   });
 
   it('strikes the original price in text-secondary and bolds the price', () => {
@@ -223,9 +234,9 @@ describe('ListingCard', () => {
     const spans = Array.from(byTestId('c-link').querySelectorAll('span')) as HTMLElement[];
     const original = spans.find((s) => s.textContent === '€150') as HTMLElement;
     const price = spans.find((s) => s.textContent === '€124') as HTMLElement;
-    expect(getComputedStyle(original).textDecorationLine || getComputedStyle(original).textDecoration).toContain(
-      'line-through',
-    );
+    expect(
+      getComputedStyle(original).textDecorationLine || getComputedStyle(original).textDecoration,
+    ).toContain('line-through');
     expect(getComputedStyle(original).color).toBe(normalise(theme.colors.textSecondary));
     expect(getComputedStyle(price).fontWeight).toBe('600');
   });
@@ -264,7 +275,9 @@ describe('ListingCard', () => {
     const pill = byTestId('c-badge').firstElementChild as HTMLElement;
     expect(pill.textContent).toBe('Guest favourite');
     expect(getComputedStyle(pill).borderTopLeftRadius).not.toBe('0px');
-    expect(getComputedStyle(pill).backgroundColor).toBe(normalise(resolveListingCardPaint(theme).surface));
+    expect(getComputedStyle(pill).backgroundColor).toBe(
+      normalise(resolveListingCardPaint(theme).surface),
+    );
     mount(<ListingCard {...stay} badge={<span data-testid="custom">x</span>} testID="c" />);
     expect(byTestId('c-badge').contains(byTestId('custom'))).toBe(true);
   });
@@ -296,7 +309,11 @@ describe('ListingCard', () => {
     const next = byTestId('c-next');
     expect(next.getAttribute('aria-label')).toBe('Next photo');
     // Hover-revealed: the wrapper carries the arrow hook the adopted sheet targets.
-    expect(next.closest('[data-bloom-listing-card-arrow]')?.getAttribute('data-bloom-listing-card-arrow')).toBe('next');
+    expect(
+      next
+        .closest('[data-bloom-listing-card-arrow]')
+        ?.getAttribute('data-bloom-listing-card-arrow'),
+    ).toBe('next');
     const activeDots = () => container.querySelectorAll('[data-bloom-listing-card-dot="active"]');
     expect(activeDots()).toHaveLength(1);
     expect(container.querySelectorAll('[data-bloom-listing-card-dot]')).toHaveLength(5);
@@ -346,29 +363,46 @@ describe('ListingCard', () => {
 // ---------------------------------------------------------------------------
 
 describe('FavoriteButton', () => {
-  it.each(['light', 'dark'] as const)('toggles with aria-pressed, a changing name, and colour only (%s)', (mode) => {
-    const onFavoriteChange = jest.fn();
-    mount(<FavoriteButton favorite={false} onFavoriteChange={onFavoriteChange} testID="f" />, mode);
-    const button = byTestId('f');
-    expect(button.getAttribute('role')).toBe('button');
-    expect(button.getAttribute('aria-pressed')).toBe('false');
-    expect(button.getAttribute('aria-label')).toBe('Save to wishlist');
-    const paint = resolveListingCardPaint(theme);
-    const fills = () => Array.from(button.querySelectorAll('path')).map((p) => p.getAttribute('fill'));
-    expect(fills()).toEqual([paint.scrim, paint.onMedia]);
-    expect(getComputedStyle(button).transform === '' || getComputedStyle(button).transform === 'none').toBe(true);
+  it.each(['light', 'dark'] as const)(
+    'toggles with aria-pressed, a changing name, and colour only (%s)',
+    (mode) => {
+      const onFavoriteChange = jest.fn();
+      mount(
+        <FavoriteButton favorite={false} onFavoriteChange={onFavoriteChange} testID="f" />,
+        mode,
+      );
+      const button = byTestId('f');
+      expect(button.getAttribute('role')).toBe('button');
+      expect(button.getAttribute('aria-pressed')).toBe('false');
+      expect(button.getAttribute('aria-label')).toBe('Save to wishlist');
+      const paint = resolveListingCardPaint(theme);
+      const fills = () =>
+        Array.from(button.querySelectorAll('path')).map((p) => p.getAttribute('fill'));
+      expect(fills()).toEqual([paint.scrim, paint.onMedia]);
+      expect(
+        getComputedStyle(button).transform === '' || getComputedStyle(button).transform === 'none',
+      ).toBe(true);
 
-    act(() => button.click());
-    expect(onFavoriteChange).toHaveBeenCalledWith(true);
+      act(() => button.click());
+      expect(onFavoriteChange).toHaveBeenCalledWith(true);
 
-    mount(<FavoriteButton favorite onFavoriteChange={onFavoriteChange} testID="f" />, mode);
-    expect(byTestId('f').getAttribute('aria-pressed')).toBe('true');
-    expect(byTestId('f').getAttribute('aria-label')).toBe('Remove from wishlist');
-    expect(fills()).toEqual([paint.favorite, paint.onMedia]);
-  });
+      mount(<FavoriteButton favorite onFavoriteChange={onFavoriteChange} testID="f" />, mode);
+      expect(byTestId('f').getAttribute('aria-pressed')).toBe('true');
+      expect(byTestId('f').getAttribute('aria-label')).toBe('Remove from wishlist');
+      expect(fills()).toEqual([paint.favorite, paint.onMedia]);
+    },
+  );
 
   it('labels are overridable and the target is at least 32', () => {
-    mount(<FavoriteButton favorite={false} onFavoriteChange={() => {}} saveLabel="Guardar" size={20} testID="f" />);
+    mount(
+      <FavoriteButton
+        favorite={false}
+        onFavoriteChange={() => {}}
+        saveLabel="Guardar"
+        size={20}
+        testID="f"
+      />,
+    );
     expect(byTestId('f').getAttribute('aria-label')).toBe('Guardar');
     expect(getComputedStyle(byTestId('f')).width).toBe('32px');
   });
@@ -376,7 +410,15 @@ describe('FavoriteButton', () => {
   it('inside a card, pressing the heart never presses the card', () => {
     const onPress = jest.fn();
     const onFavoriteChange = jest.fn();
-    mount(<ListingCard {...stay} onPress={onPress} favorite={false} onFavoriteChange={onFavoriteChange} testID="c" />);
+    mount(
+      <ListingCard
+        {...stay}
+        onPress={onPress}
+        favorite={false}
+        onFavoriteChange={onFavoriteChange}
+        testID="c"
+      />,
+    );
     act(() => byTestId('c-favorite').click());
     expect(onFavoriteChange).toHaveBeenCalledWith(true);
     expect(onPress).not.toHaveBeenCalled();
@@ -391,25 +433,30 @@ describe('ListingCardGrid', () => {
     [800, 2, (799 - 24) / 2],
     [1100, 3, (1099 - 48) / 3],
     [1440, 4, (1439 - 72) / 4],
-  ])('at %ipx: %i columns, cells sized from the width (a pixel kept back for rounding) with 24/40 gaps', async (width, columns, cell) => {
-    layoutWidth = width;
-    mount(
-      <ListingCardGrid testID="g">
-        {Array.from({ length: 5 }, (_, i) => (
-          <span key={i}>{i}</span>
-        ))}
-      </ListingCardGrid>,
-    );
-    await flushLayout();
-    const grid = byTestId('g');
-    expect(grid.getAttribute('role')).toBe('list');
-    expect(grid.getAttribute('data-bloom-listing-card-grid')).toBe(String(columns));
-    expect(getComputedStyle(grid).columnGap).toBe('24px');
-    expect(getComputedStyle(grid).rowGap).toBe('40px');
-    const items = grid.querySelectorAll(':scope > [role="listitem"]');
-    expect(items).toHaveLength(5);
-    expect(parseFloat(getComputedStyle(items[0] as HTMLElement).width)).toBe(Math.floor(cell * 100) / 100);
-  });
+  ])(
+    'at %ipx: %i columns, cells sized from the width (a pixel kept back for rounding) with 24/40 gaps',
+    async (width, columns, cell) => {
+      layoutWidth = width;
+      mount(
+        <ListingCardGrid testID="g">
+          {Array.from({ length: 5 }, (_, i) => (
+            <span key={i}>{i}</span>
+          ))}
+        </ListingCardGrid>,
+      );
+      await flushLayout();
+      const grid = byTestId('g');
+      expect(grid.getAttribute('role')).toBe('list');
+      expect(grid.getAttribute('data-bloom-listing-card-grid')).toBe(String(columns));
+      expect(getComputedStyle(grid).columnGap).toBe('24px');
+      expect(getComputedStyle(grid).rowGap).toBe('40px');
+      const items = grid.querySelectorAll(':scope > [role="listitem"]');
+      expect(items).toHaveLength(5);
+      expect(parseFloat(getComputedStyle(items[0] as HTMLElement).width)).toBe(
+        Math.floor(cell * 100) / 100,
+      );
+    },
+  );
 
   it('keeps a row whole when the measured width was rounded UP from a fraction', async () => {
     // A column 591.69px wide (48% of a row) measures 592 on web.
@@ -449,7 +496,15 @@ describe('WishlistCard', () => {
     [6, 4],
   ])('%i photos draw %i tiles in a square radius-16 cover', (count, tiles) => {
     const photos = Array.from({ length: count }, (_, i) => `https://example.test/w${i}.jpg`);
-    mount(<WishlistCard name="Coast weekends" description="12 saved" photos={photos} onPress={() => {}} testID="w" />);
+    mount(
+      <WishlistCard
+        name="Coast weekends"
+        description="12 saved"
+        photos={photos}
+        onPress={() => {}}
+        testID="w"
+      />,
+    );
     const cover = byTestId('w-cover');
     expect(getComputedStyle(cover).aspectRatio).toBe('1');
     expect(getComputedStyle(cover).borderTopLeftRadius).toBe('16px');
@@ -460,7 +515,9 @@ describe('WishlistCard', () => {
 
   it('is a named button with onPress, a real link with href', () => {
     const onPress = jest.fn();
-    mount(<WishlistCard name="Cabins" description="3 saved" photos={[]} onPress={onPress} testID="w" />);
+    mount(
+      <WishlistCard name="Cabins" description="3 saved" photos={[]} onPress={onPress} testID="w" />,
+    );
     const button = byTestId('w');
     expect(button.getAttribute('role')).toBe('button');
     expect(button.getAttribute('aria-label')).toBe('Cabins, 3 saved');
@@ -495,14 +552,16 @@ const home = {
 
 describe('housing helpers', () => {
   it('resolvePriceLines: priceLines win; otherwise the legacy single line; empty without a price', () => {
-    expect(resolvePriceLines({ price: '€124', priceUnit: 'night', originalPrice: '€150' })).toEqual([
-      { price: '€124', unit: 'night', originalPrice: '€150' },
-    ]);
-    expect(resolvePriceLines({ price: '€1', priceLines: [{ price: '€2' }] })).toEqual([{ price: '€2' }]);
-    expect(resolvePriceLines({})).toEqual([]);
-    expect(describePriceLine({ price: '€240,000', secondary: '€3,200/m²', originalPrice: '€255,000' })).toBe(
-      '€240,000, €3,200/m², originally €255,000',
+    expect(resolvePriceLines({ price: '€124', priceUnit: 'night', originalPrice: '€150' })).toEqual(
+      [{ price: '€124', unit: 'night', originalPrice: '€150' }],
     );
+    expect(resolvePriceLines({ price: '€1', priceLines: [{ price: '€2' }] })).toEqual([
+      { price: '€2' },
+    ]);
+    expect(resolvePriceLines({})).toEqual([]);
+    expect(
+      describePriceLine({ price: '€240,000', secondary: '€3,200/m²', originalPrice: '€255,000' }),
+    ).toBe('€240,000, €3,200/m², originally €255,000');
   });
 
   it('locationText and statusLabelFor', () => {
@@ -529,9 +588,9 @@ describe('ListingCard — housing', () => {
     const original = spans.find((el) => el.textContent === '€255,000') as HTMLElement;
     expect(getComputedStyle(secondary).color).toBe(normalise(theme.colors.textSecondary));
     expect(getComputedStyle(amount).fontWeight).toBe('600');
-    expect(getComputedStyle(original).textDecorationLine || getComputedStyle(original).textDecoration).toContain(
-      'line-through',
-    );
+    expect(
+      getComputedStyle(original).textDecorationLine || getComputedStyle(original).textDecoration,
+    ).toContain('line-through');
     // The block sits 4 under the text above it; one line per price.
     expect(getComputedStyle(price).marginTop).toBe('4px');
     expect(price.children).toHaveLength(2);
@@ -563,17 +622,38 @@ describe('ListingCard — housing', () => {
     const location = byTestId('c-location');
     expect(location.textContent).toBe('Talmar Hill · Approximate location');
     expect(location.querySelector('[aria-hidden="true"] svg')).not.toBeNull();
-    mount(<ListingCard {...home} address={undefined} approximateLocation approximateLocationLabel="Zona aproximada" testID="c" />);
+    mount(
+      <ListingCard
+        {...home}
+        address={undefined}
+        approximateLocation
+        approximateLocationLabel="Zona aproximada"
+        testID="c"
+      />,
+    );
     expect(byTestId('c-location').textContent).toBe('Zona aproximada');
   });
 
   it('offerings are onMedia badges in the top-left slot after the badge, outside the link, de-duplicated', () => {
-    mount(<ListingCard {...home} offerings={['sale', 'long_term_rent', 'sale']} badge="New build" testID="c" />);
+    mount(
+      <ListingCard
+        {...home}
+        offerings={['sale', 'long_term_rent', 'sale']}
+        badge="New build"
+        testID="c"
+      />,
+    );
     const slot = byTestId('c-slot');
-    expect(Array.from(slot.children).map((el) => el.textContent)).toEqual(['New build', 'For sale', 'For rent']);
+    expect(Array.from(slot.children).map((el) => el.textContent)).toEqual([
+      'New build',
+      'For sale',
+      'For rent',
+    ]);
     expect(byTestId('c-link').contains(slot)).toBe(false);
     const paint = resolveOfferingBadgePaint(theme, 'sale', 'onMedia');
-    expect(getComputedStyle(byTestId('c-offering-sale')).backgroundColor).toBe(normalise(paint.background));
+    expect(getComputedStyle(byTestId('c-offering-sale')).backgroundColor).toBe(
+      normalise(paint.background),
+    );
     expect(getComputedStyle(slot).flexWrap).toBe('wrap');
     expect(getComputedStyle(slot).top).toBe('12px');
     expect(getComputedStyle(slot).left).toBe('12px');
@@ -592,19 +672,24 @@ describe('ListingCard — housing', () => {
     );
   });
 
-  it.each(['light', 'dark'] as const)('a status washes the photo and draws the inverted pill first (%s)', (mode) => {
-    mount(<ListingCard {...home} status="sold" testID="c" />, mode);
-    const paint = resolveListingCardPaint(theme);
-    const wash = byTestId('c-wash');
-    expect(byTestId('c-photo').contains(wash)).toBe(true);
-    expect(getComputedStyle(wash).backgroundColor).toBe(normalise(theme.colors.background));
-    expect(getComputedStyle(wash).opacity).toBe(String(STATUS_WASH_OPACITY));
-    const pill = byTestId('c-status');
-    expect(pill.textContent).toBe('Sold');
-    expect(byTestId('c-slot').firstElementChild).toBe(pill);
-    expect(getComputedStyle(pill).backgroundColor).toBe(normalise(paint.statusFill));
-    expect(getComputedStyle(pill.querySelector('[dir="auto"]') as HTMLElement).color).toBe(normalise(paint.statusText));
-  });
+  it.each(['light', 'dark'] as const)(
+    'a status washes the photo and draws the inverted pill first (%s)',
+    (mode) => {
+      mount(<ListingCard {...home} status="sold" testID="c" />, mode);
+      const paint = resolveListingCardPaint(theme);
+      const wash = byTestId('c-wash');
+      expect(byTestId('c-photo').contains(wash)).toBe(true);
+      expect(getComputedStyle(wash).backgroundColor).toBe(normalise(theme.colors.background));
+      expect(getComputedStyle(wash).opacity).toBe(String(STATUS_WASH_OPACITY));
+      const pill = byTestId('c-status');
+      expect(pill.textContent).toBe('Sold');
+      expect(byTestId('c-slot').firstElementChild).toBe(pill);
+      expect(getComputedStyle(pill).backgroundColor).toBe(normalise(paint.statusFill));
+      expect(getComputedStyle(pill.querySelector('[dir="auto"]') as HTMLElement).color).toBe(
+        normalise(paint.statusText),
+      );
+    },
+  );
 
   it('available (or no status) draws neither wash nor pill', () => {
     mount(<ListingCard {...home} status="available" testID="c" />);
@@ -625,7 +710,9 @@ describe('ListingCard — compact density', () => {
     expect(photo.borderTopLeftRadius).toBe('12px');
     expect(byTestId('c').getAttribute('data-bloom-listing-card')).toBe('compact');
     // One static photo: no dots, no arrows, no track.
-    expect(container.querySelectorAll('[data-bloom-listing-card-dot], [data-bloom-listing-card-track]')).toHaveLength(0);
+    expect(
+      container.querySelectorAll('[data-bloom-listing-card-dot], [data-bloom-listing-card-track]'),
+    ).toHaveLength(0);
     expect(link.getAttribute('aria-label')).toContain('Townhouse with a patio, For sale, For rent');
   });
 
@@ -633,7 +720,11 @@ describe('ListingCard — compact density', () => {
     mount(<ListingCard {...home} density="compact" status="reserved" testID="c" />);
     const slot = byTestId('c-slot');
     expect(byTestId('c-link').contains(slot)).toBe(true);
-    expect(Array.from(slot.children).map((el) => el.textContent)).toEqual(['Reserved', 'For sale', 'For rent']);
+    expect(Array.from(slot.children).map((el) => el.textContent)).toEqual([
+      'Reserved',
+      'For sale',
+      'For rent',
+    ]);
     const badge = byTestId('c-offering-sale');
     expect(getComputedStyle(badge).height).toBe('20px');
     expect(getComputedStyle(badge).backgroundColor).toBe(
@@ -647,7 +738,16 @@ describe('ListingCard — compact density', () => {
   it('the heart is over the thumbnail, a sibling of the link', () => {
     const onPress = jest.fn();
     const onFavoriteChange = jest.fn();
-    mount(<ListingCard {...home} density="compact" onPress={onPress} favorite={false} onFavoriteChange={onFavoriteChange} testID="c" />);
+    mount(
+      <ListingCard
+        {...home}
+        density="compact"
+        onPress={onPress}
+        favorite={false}
+        onFavoriteChange={onFavoriteChange}
+        testID="c"
+      />,
+    );
     const heart = byTestId('c-favorite');
     expect(byTestId('c-link').contains(heart)).toBe(false);
     expect(getComputedStyle(heart.parentElement as HTMLElement).left).toBe('78px');
@@ -708,12 +808,10 @@ describe('ListingCard — hover zoom', () => {
     expect(LISTING_CARD_CSS).toContain(
       `${zoomed}:hover [data-bloom-listing-card-photo] {\n    transform: scale(${PHOTO_ZOOM_SCALE});`,
     );
-    const hoverBlock = LISTING_CARD_CSS.slice(
-      LISTING_CARD_CSS.indexOf(`${zoomed}:hover`),
+    const hoverBlock = LISTING_CARD_CSS.slice(LISTING_CARD_CSS.indexOf(`${zoomed}:hover`));
+    expect(LISTING_CARD_CSS.slice(0, LISTING_CARD_CSS.indexOf(`${zoomed}:hover`))).toContain(
+      '@media (any-hover: hover)',
     );
-    expect(
-      LISTING_CARD_CSS.slice(0, LISTING_CARD_CSS.indexOf(`${zoomed}:hover`)),
-    ).toContain('@media (any-hover: hover)');
     expect(hoverBlock.length).toBeGreaterThan(0);
     const reduced = LISTING_CARD_CSS.slice(
       LISTING_CARD_CSS.indexOf('@media (prefers-reduced-motion: reduce)'),
@@ -756,7 +854,9 @@ describe('ListingCard — the press shortcut', () => {
     // the long press itself, and driving it with fake timers inside `act`
     // deadlocks the render loop.
     await act(async () => {
-      link.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 }));
+      link.dispatchEvent(
+        new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 }),
+      );
       await new Promise((resolve) => setTimeout(resolve, 700));
     });
     await act(async () => {
@@ -790,7 +890,14 @@ describe('WishlistCard — icon, colour and the empty cover', () => {
   });
 
   it('no icon: nothing is drawn and the name keeps its place', () => {
-    mount(<WishlistCard name="Cabins" photos={['https://example.test/w0.jpg']} onPress={() => {}} testID="w" />);
+    mount(
+      <WishlistCard
+        name="Cabins"
+        photos={['https://example.test/w0.jpg']}
+        onPress={() => {}}
+        testID="w"
+      />,
+    );
     expect(maybe('w-icon')).toBeNull();
     expect(byTestId('w').textContent).toBe('Cabins');
   });
@@ -832,7 +939,12 @@ describe('WishlistCard — icon, colour and the empty cover', () => {
 
   it('with photos there is no empty slot at all', () => {
     mount(
-      <WishlistCard name="Cabins" photos={['https://example.test/w0.jpg']} onPress={() => {}} testID="w" />,
+      <WishlistCard
+        name="Cabins"
+        photos={['https://example.test/w0.jpg']}
+        onPress={() => {}}
+        testID="w"
+      />,
     );
     expect(maybe('w-empty')).toBeNull();
   });

@@ -142,8 +142,17 @@ export function tokensSegments(values: readonly number[]): TokensSegment[] {
 }
 
 /** Point positions: a point scale edge to edge, `[0, nice max]` down from `top` to `bottom`. */
-export function tokensPoints(values: readonly number[], width: number, top: number, bottom: number): Point[] {
-  const ticks = niceTicks(0, values.reduce((m, v) => Math.max(m, v), 0), 5);
+export function tokensPoints(
+  values: readonly number[],
+  width: number,
+  top: number,
+  bottom: number,
+): Point[] {
+  const ticks = niceTicks(
+    0,
+    values.reduce((m, v) => Math.max(m, v), 0),
+    5,
+  );
   const domainMax = ticks[ticks.length - 1] ?? 0;
   const step = values.length > 1 ? width / (values.length - 1) : 0;
   return values.map((v, i) => ({
@@ -166,7 +175,9 @@ function useReveal(skip: boolean): number {
   const [frame, setFrame] = useState({ skip, progress: skip ? 1 : 0 });
   useEffect(() => {
     if (skip || typeof requestAnimationFrame !== 'function') {
-      setFrame((previous) => previous.skip && previous.progress === 1 ? previous : { skip: true, progress: 1 });
+      setFrame((previous) =>
+        previous.skip && previous.progress === 1 ? previous : { skip: true, progress: 1 },
+      );
       return;
     }
     setFrame({ skip: false, progress: 0 });
@@ -207,12 +218,18 @@ export function TokensChartCard({
   const endLabel = endLabelProp ?? chartText.today;
   // The sample range's start (June 14), written the locale's way.
   const startLabel =
-    startLabelProp ?? formatGregorian(new Date(2024, 5, 14), chartLocale, { month: 'short', day: 'numeric' }) ?? '6/14';
+    startLabelProp ??
+    formatGregorian(new Date(2024, 5, 14), chartLocale, { month: 'short', day: 'numeric' }) ??
+    '6/14';
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const reducedMotion = useReducedMotion();
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const reveal = useReveal(reducedMotion || !animate);
 
   const colors = useMemo(() => {
@@ -234,7 +251,9 @@ export function TokensChartCard({
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setSize((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
+    setSize((prev) =>
+      prev && prev.width === width && prev.height === height ? prev : { width, height },
+    );
   }, []);
 
   const top = TOKENS_MARGIN_TOP;
@@ -262,8 +281,10 @@ export function TokensChartCard({
           onStartShouldSetResponder: () => true,
           onMoveShouldSetResponder: () => true,
           onResponderTerminationRequest: () => false,
-          onResponderGrant: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
-          onResponderMove: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderGrant: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderMove: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
           onResponderRelease: () => setActiveIndex(null),
           onResponderTerminate: () => setActiveIndex(null),
         }),
@@ -273,7 +294,8 @@ export function TokensChartCard({
   const id = `bloom-tokens-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const active = activeIndex !== null ? points[activeIndex] : undefined;
   const summary =
-    accessibilityLabel ?? `${title} line chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
+    accessibilityLabel ??
+    `${title} line chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
 
   return (
     <Card
@@ -289,7 +311,8 @@ export function TokensChartCard({
           paddingBottom: 12,
         },
         style,
-      ]}>
+      ]}
+    >
       <View
         style={{
           zIndex: 1,
@@ -299,7 +322,8 @@ export function TokensChartCard({
           paddingLeft: 16,
           paddingRight: 16,
           paddingTop: 4,
-        }}>
+        }}
+      >
         <View style={{ flexDirection: 'column', gap: 2, minWidth: 0 }}>
           <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
             {label}
@@ -310,7 +334,8 @@ export function TokensChartCard({
                 variant="title-2-medium"
                 numberOfLines={1}
                 testID={testID ? `${testID}-headline` : undefined}
-                style={[{ color: palette.text }, TABULAR]}>
+                style={[{ color: palette.text }, TABULAR]}
+              >
                 {format(display)}
               </Text>
             </FadeOnChange>
@@ -319,7 +344,8 @@ export function TokensChartCard({
                 size="md"
                 testID={testID ? `${testID}-delta` : undefined}
                 style={{ alignSelf: 'center', backgroundColor: colors.chip.background }}
-                textStyle={{ color: colors.chip.foreground }}>
+                textStyle={{ color: colors.chip.foreground }}
+              >
                 {delta}
               </Chip>
             ) : null}
@@ -330,17 +356,29 @@ export function TokensChartCard({
       <View
         style={{ width: '100%', height: plotHeight }}
         onLayout={onLayout}
-        testID={testID ? `${testID}-plot` : undefined}>
+        testID={testID ? `${testID}-plot` : undefined}
+      >
         {size && size.width > 0 && size.height > 0 ? (
           <>
-            <Svg width={size.width} height={size.height} style={StyleSheet.absoluteFill} pointerEvents="none">
+            <Svg
+              width={size.width}
+              height={size.height}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            >
               <Defs>
                 <LinearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
                   <Stop offset="0" stopColor={colors.line} stopOpacity={0.32} />
                   <Stop offset="1" stopColor={colors.line} stopOpacity={0} />
                 </LinearGradient>
                 <ClipPath id={`${id}-reveal`}>
-                  <Rect testID={testID ? `${testID}-reveal` : undefined} x={0} y={0} width={size.width * reveal} height={size.height} />
+                  <Rect
+                    testID={testID ? `${testID}-reveal` : undefined}
+                    x={0}
+                    y={0}
+                    width={size.width * reveal}
+                    height={size.height}
+                  />
                 </ClipPath>
               </Defs>
               <G clipPath={`url(#${id}-reveal)`}>
@@ -405,7 +443,8 @@ export function TokensChartCard({
           justifyContent: 'space-between',
           paddingLeft: 16,
           paddingRight: 16,
-        }}>
+        }}
+      >
         <Text variant="caption-2-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
           {startLabel}
         </Text>

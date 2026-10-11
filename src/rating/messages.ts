@@ -19,10 +19,13 @@ export interface RatingMessages {
   star: (value: number, max: number) => string;
 }
 
-export const RATING_MESSAGES: MessageCatalog<RatingMessages> = defineMessages<RatingMessages>('RATING_MESSAGES', {
-  newRating: 'New',
-  reviews: (c) => countForms('en', c, { one: '{n} review', other: '{n} reviews' }),
-  rated: (v) => `Rated ${v} out of 5`,
-  ratedWithReviews: (v, r) => `Rated ${v} out of 5, ${r}`,
-  star: (n) => plural('en', n, { one: '{n} star', other: '{n} stars' }),
-});
+export const RATING_MESSAGES: MessageCatalog<RatingMessages> = defineMessages<RatingMessages>(
+  'RATING_MESSAGES',
+  {
+    newRating: 'New',
+    reviews: (c) => countForms('en', c, { one: '{n} review', other: '{n} reviews' }),
+    rated: (v) => `Rated ${v} out of 5`,
+    ratedWithReviews: (v, r) => `Rated ${v} out of 5, ${r}`,
+    star: (n) => plural('en', n, { one: '{n} star', other: '{n} stars' }),
+  },
+);

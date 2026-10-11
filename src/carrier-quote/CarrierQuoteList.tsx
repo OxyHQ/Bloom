@@ -167,10 +167,10 @@ function CarrierQuoteListComponent({
         {Array.from({ length: Math.max(1, loadingCount) }, (_unused, index) => (
           <Card
             key={index}
-
             radius="radius-20"
             style={surfaceFillVars(theme.colors.card)}
-            testID={id(`placeholder-${index}`)} appearance="outline"
+            testID={id(`placeholder-${index}`)}
+            appearance="outline"
           >
             <View
               style={{
@@ -189,10 +189,7 @@ function CarrierQuoteListComponent({
                 </Skeleton.Col>
                 <Skeleton.Box width={72} height={20} />
               </Skeleton.Row>
-              <Skeleton.Box
-                height={64}
-                borderRadius={CARRIER_QUOTE_GEOMETRY.tileRadius}
-              />
+              <Skeleton.Box height={64} borderRadius={CARRIER_QUOTE_GEOMETRY.tileRadius} />
             </View>
           </Card>
         ))}

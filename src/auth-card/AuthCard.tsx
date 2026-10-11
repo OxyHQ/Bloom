@@ -161,7 +161,8 @@ function AuthLink({
       accessibilityLabel={children}
       {...hoverHandlers}
       {...pressHandlers}
-      style={linkStyle}>
+      style={linkStyle}
+    >
       <Text
         variant="body-medium"
         style={{
@@ -169,7 +170,8 @@ function AuthLink({
           textDecorationLine: hovered ? 'underline' : 'none',
           // `underline-offset-3`.
           ...(IS_WEB ? ({ textUnderlineOffset: 3 } as TextStyle) : null),
-        }}>
+        }}
+      >
         {children}
       </Text>
     </Pressable>
@@ -269,7 +271,10 @@ function AuthCardComponent({
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, AUTH_CARD_WEB_CSS);
   const fill = useCardFill(footnote ? undefined : style);
-  const palette = useMemo(() => ({ ...resolveAuthPalette(theme), mediaSurface: surfaceFillOn(theme, fill) }), [theme, fill]);
+  const palette = useMemo(
+    () => ({ ...resolveAuthPalette(theme), mediaSurface: surfaceFillOn(theme, fill) }),
+    [theme, fill],
+  );
   const { width: viewport } = useWindowDimensions();
   const wide = viewport >= BREAKPOINTS.sm;
   const split = media != null && viewport >= BREAKPOINTS.md;
@@ -311,7 +316,9 @@ function AuthCardComponent({
 
   // The sentence is the language's; the address is cut out of it so it can
   // take the heavier weight wherever the language puts it.
-  const [codeSentBefore = '', codeSentAfter = ''] = messages.codeSentTo(EMAIL_SLOT).split(EMAIL_SLOT);
+  const [codeSentBefore = '', codeSentAfter = ''] = messages
+    .codeSentTo(EMAIL_SLOT)
+    .split(EMAIL_SLOT);
 
   const descriptionNode =
     description ??
@@ -336,7 +343,8 @@ function AuthCardComponent({
           : layout === 'inline'
             ? { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }
             : { flexDirection: 'row', gap: 10 }
-      }>
+      }
+    >
       {providers.map((provider) => (
         <SocialButton
           key={provider}
@@ -361,7 +369,8 @@ function AuthCardComponent({
             marginBottom: 20,
             flexDirection: 'row',
             justifyContent: centered ? 'center' : 'flex-start',
-          }}>
+          }}
+        >
           {mark}
         </View>
       ) : null}
@@ -450,7 +459,8 @@ function AuthCardComponent({
 
         {signup || verify ? null : (
           <View
-            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
             <Checkbox
               size="sm"
               label={messages.rememberMe}
@@ -461,13 +471,21 @@ function AuthCardComponent({
               href={forgotPasswordHref}
               onPress={onForgotPassword}
               onNavigate={onNavigate}
-              palette={palette}>
+              palette={palette}
+            >
               {messages.forgotPassword}
             </AuthLink>
           </View>
         )}
 
-        <Button testID={testID ? `${testID}-submit` : undefined} size="md" style={{ width: "100%" }} onPress={submit} appearance="solid" tone="action">
+        <Button
+          testID={testID ? `${testID}-submit` : undefined}
+          size="md"
+          style={{ width: '100%' }}
+          onPress={submit}
+          appearance="solid"
+          tone="action"
+        >
           {copy.cta}
         </Button>
 
@@ -494,12 +512,17 @@ function AuthCardComponent({
           flexWrap: 'wrap',
           justifyContent: 'center',
           alignItems: 'center',
-        }}>
+        }}
+      >
         <Text variant="body-regular" style={{ color: palette.textSecondary }}>
           {`${copy.switchLead} `}
         </Text>
         {verify ? (
-          <AuthLink onPress={onResend} palette={palette} testID={testID ? `${testID}-resend` : undefined}>
+          <AuthLink
+            onPress={onResend}
+            palette={palette}
+            testID={testID ? `${testID}-resend` : undefined}
+          >
             {copy.switchAction}
           </AuthLink>
         ) : (
@@ -508,7 +531,8 @@ function AuthCardComponent({
             onPress={onSwitch}
             onNavigate={onNavigate}
             palette={palette}
-            testID={testID ? `${testID}-switch` : undefined}>
+            testID={testID ? `${testID}-switch` : undefined}
+          >
             {copy.switchAction}
           </AuthLink>
         )}
@@ -529,7 +553,8 @@ function AuthCardComponent({
         radius="radius-24"
         clipContent
         contentStyle={{ flexDirection: 'row' }}
-        style={[shell, footnote ? null : style]}>
+        style={[shell, footnote ? null : style]}
+      >
         {/* Padding on an inner box: a padded flex item cannot shrink its base
             size below its padding, which made the form column 64px wider than
             the media column instead of the grid's two equal tracks. */}
@@ -539,13 +564,25 @@ function AuthCardComponent({
         {split ? (
           <View
             testID={testID ? `${testID}-media` : undefined}
-            style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, position: 'relative', backgroundColor: palette.mediaSurface }}>
+            style={{
+              flexGrow: 1,
+              flexShrink: 1,
+              flexBasis: 0,
+              minWidth: 0,
+              position: 'relative',
+              backgroundColor: palette.mediaSurface,
+            }}
+          >
             {media}
           </View>
         ) : null}
       </Card>
     ) : (
-      <Card testID={testID} radius="radius-24" style={[shell, { padding }, footnote ? null : style]}>
+      <Card
+        testID={testID}
+        radius="radius-24"
+        style={[shell, { padding }, footnote ? null : style]}
+      >
         {body}
       </Card>
     );
@@ -557,7 +594,10 @@ function AuthCardComponent({
       {card}
       <View style={{ maxWidth: 520 }}>
         {typeof footnote === 'string' || typeof footnote === 'number' ? (
-          <Text variant="caption-1-regular" style={{ color: palette.textTertiary, textAlign: 'center' }}>
+          <Text
+            variant="caption-1-regular"
+            style={{ color: palette.textTertiary, textAlign: 'center' }}
+          >
             {footnote}
           </Text>
         ) : (

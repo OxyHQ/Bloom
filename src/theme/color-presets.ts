@@ -29,8 +29,9 @@ export interface ColorPresetFamilyDefinition {
 export const COLOR_PRESET_FAMILY_REGISTRY: readonly ColorPresetFamilyDefinition[] =
   COLOR_PRESET_FAMILY_SOURCES;
 
-export const COLOR_PRESET_FAMILIES: readonly ColorPresetFamily[] =
-  COLOR_PRESET_FAMILY_REGISTRY.map(({ name }) => name);
+export const COLOR_PRESET_FAMILIES: readonly ColorPresetFamily[] = COLOR_PRESET_FAMILY_REGISTRY.map(
+  ({ name }) => name,
+);
 export type ColorPresetPairing = 'derived' | 'curated';
 
 interface ColorPresetSource {
@@ -158,7 +159,8 @@ const COLOR_PRESET_SOURCES = [
     name: 'oxy',
     displayName: 'Oxy',
     family: 'brand',
-    description: 'Oxy orchid with a magenta support and a terracotta action, reserved for the Oxy account identity.',
+    description:
+      'Oxy orchid with a magenta support and a terracotta action, reserved for the Oxy account identity.',
     hex: '#c46ede',
     secondaryHex: '#8f3987',
     tertiaryHex: '#a0392b',
@@ -857,8 +859,10 @@ export const APP_COLOR_NAMES: readonly AppColorName[] = COLOR_PRESET_REGISTRY.ma
   ({ name }) => name,
 );
 
-export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> =
-  COLOR_PRESET_REGISTRY.reduce<Record<AppColorName, AppColorPreset>>((presets, preset) => {
+export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> = COLOR_PRESET_REGISTRY.reduce<
+  Record<AppColorName, AppColorPreset>
+>(
+  (presets, preset) => {
     // Preserve the historical runtime shape as well as its TypeScript type.
     // Picker metadata belongs to COLOR_PRESET_REGISTRY; adding it invisibly to
     // this older record would change Object.keys()/serialization in consumers.
@@ -873,22 +877,25 @@ export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> =
       ...(preset.tokens !== undefined ? { tokens: preset.tokens } : {}),
     };
     return presets;
-  }, {} as Record<AppColorName, AppColorPreset>);
+  },
+  {} as Record<AppColorName, AppColorPreset>,
+);
 
-export const HEX_TO_APP_COLOR: Record<string, AppColorName> =
-  COLOR_PRESET_REGISTRY.reduce<Record<string, AppColorName>>((names, preset) => {
-    names[preset.hex.toLowerCase()] = preset.name;
-    return names;
-  }, {});
+export const HEX_TO_APP_COLOR: Record<string, AppColorName> = COLOR_PRESET_REGISTRY.reduce<
+  Record<string, AppColorName>
+>((names, preset) => {
+  names[preset.hex.toLowerCase()] = preset.name;
+  return names;
+}, {});
 
 export function hexToAppColorName(hex: string): AppColorName {
   return HEX_TO_APP_COLOR[hex.toLowerCase()] ?? 'teal';
 }
 
 /** The approved paired directions in the permanent Mention playground. */
-export const COLOR_PLAYGROUND_NAMES: readonly AppColorName[] = COLOR_PRESET_REGISTRY
-  .filter(({ featured }) => featured)
-  .map(({ name }) => name);
+export const COLOR_PLAYGROUND_NAMES: readonly AppColorName[] = COLOR_PRESET_REGISTRY.filter(
+  ({ featured }) => featured,
+).map(({ name }) => name);
 
 export interface ColorPresetGroup extends ColorPresetFamilyDefinition {
   presets: readonly ColorPresetRecipe[];

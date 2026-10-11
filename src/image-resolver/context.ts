@@ -11,10 +11,7 @@ import { createContext, useContext } from 'react';
  * as `(id) => …` (ignoring `variant`) remain valid: omitting `variant` yields
  * the full-size rendition.
  */
-export type ImageResolver = (
-  id: string,
-  variant?: string,
-) => string | undefined;
+export type ImageResolver = (id: string, variant?: string) => string | undefined;
 
 const ImageResolverContext = createContext<ImageResolver | null>(null);
 ImageResolverContext.displayName = 'BloomImageResolverContext';
