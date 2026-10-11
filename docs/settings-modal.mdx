@@ -105,20 +105,54 @@ Menus, selects, tooltips and the date popover opened inside a page stack above i
 
 **The hairline stops 12px short of the card's left edge** because the padding lives on the card, not the row — rows must be direct children of `SettingsCard` (fragments are flattened). "Last" is derived from the card's children, since React Native has no `:last-child`.
 
-### Rows outside the dialog
+## Entries
 
-A preference card on a screen or in a sheet imports the lightweight entry:
+Metro does not tree-shake barrel exports, and a web bundler splitting lazy
+chunks hoists any module two lazy chunks share into the common chunk that loads
+at first paint. So importing one name from `@oxy.so/bloom/settings-modal` links
+everything that barrel reaches. Import from the narrowest entry that has what
+you draw:
+
+| Entry | Exports | Does not link |
+| --- | --- | --- |
+| `@oxy.so/bloom/settings-modal` | everything on this page | — |
+| `@oxy.so/bloom/settings-modal/modal` | `SettingsModal`, `SettingsCard`, `SettingsRow`, `SettingsSection`, `SettingsSectionLabel`, `SettingsValueField`, `useSettingsSavedToast` and the modal/nav/page/row prop types | the General/Profile/Tools/Storage pages, `SettingsPlanCard`/`SettingsPlanArt`, the text/date fields — and through them `Select`, `FileUpload`, `Pagination`, `DropdownMenu`, `Checkbox`, `Chip`, `Tooltip`, `EmptyState`, `TextField`, `Popover` and the calendar |
+| `@oxy.so/bloom/settings-modal/fields` | `SettingsTextField`, `SettingsDateField` and their prop types | the modal and every page |
+| `@oxy.so/bloom/settings-modal/rows` | `SettingsCard`, `SettingsRow`, `SettingsSection`, `SettingsSectionLabel`, `SettingsValueField` and their prop types | the modal, every page and the fields |
+
+Every entry hands out the same components (identical references) as the full one,
+so mixing entries in one app is safe.
+
+An app whose pages are its own rows of switches and values — the usual case —
+draws the modal from `modal`, adding `fields` only if it uses the committing
+fields:
+
+```tsx
+import {
+  SettingsCard,
+  SettingsModal,
+  SettingsRow,
+  SettingsSection,
+} from '@oxy.so/bloom/settings-modal/modal';
+import { SettingsTextField } from '@oxy.so/bloom/settings-modal/fields';
+```
+
+Measured in GoWay's web export (Bloom 6.2.1, before `modal` existed): its
+lazily loaded settings modal, drawn from the full entry, reached `Select` through
+the Storage page it never rendered. Another lazy chunk also uses `Select`, so the
+bundler moved it into the first-paint common chunk: +4.7 KB gzip on every page
+load.
+
+A preference card on a screen or in a sheet, outside the dialog, imports `rows`:
 
 ```tsx
 import { SettingsCard, SettingsRow } from '@oxy.so/bloom/settings-modal/rows';
 ```
 
-It carries `SettingsCard`, `SettingsRow`, `SettingsSection`,
-`SettingsSectionLabel` and `SettingsValueField` (and their prop types) — the
-same components — without linking `SettingsModal`, the storage/tools/plan pages
-or `SettingsDateField`'s calendar. Metro does not tree-shake barrel exports, so
-one row imported from `@oxy.so/bloom/settings-modal` put the whole dialog in the
-bundle of the screen that drew it. Gate: `lean-entries.test.ts`.
+Gate: `lean-entries.test.ts` walks each entry's static import graph, with
+`.native` and `.web` forks resolved as each platform's bundler does, and fails if
+`modal` or `fields` reaches a page or a page-only family; a control asserts the
+full entry does reach them.
 
 ## Pages
 
