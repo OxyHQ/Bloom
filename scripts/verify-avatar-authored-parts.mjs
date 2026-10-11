@@ -34,8 +34,7 @@ const clippoIndex = recipes.findIndex(
 );
 assert.ok(clippoIndex >= 0);
 const nativeIndex = recipes.findIndex(
-  (recipe) =>
-    recipe.config.character.selections.shape === 'circle' && !recipe.legacy,
+  (recipe) => recipe.config.character.selections.shape === 'circle' && !recipe.legacy,
 );
 assert.ok(nativeIndex >= 0);
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
@@ -52,13 +51,10 @@ try {
   await page.route('**/__authored.html', (route) =>
     route.fulfill({ contentType: 'text/html', body: '<!doctype html><body>' }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__authored.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__authored.html`);
   await page.evaluate(async (recipes) => {
     const runtime = await import('/bloom-character/runtime.mjs');
-    const { authoredAssemblyRecords } =
-      await import('/bloom-character/authored-parts.mjs');
+    const { authoredAssemblyRecords } = await import('/bloom-character/authored-parts.mjs');
     window.gate = {
       runtime,
       controls: [],
@@ -91,8 +87,7 @@ try {
       }
     };
     const grid = document.createElement('div');
-    grid.style.cssText =
-      'display:grid;grid-template-columns:repeat(7,120px);gap:12px';
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,120px);gap:12px';
     document.body.append(grid);
     for (let i = 0; i < recipes.length; i++) {
       const canvas = document.createElement('canvas');
@@ -112,8 +107,7 @@ try {
       gate.controls.push(
         await runtime.createAvatar(canvas, props, {
           onError: (error) => gate.errors.push(`${i}:${error}`),
-          onCapabilities: (capabilities) =>
-            (gate.capabilities[i] = capabilities),
+          onCapabilities: (capabilities) => (gate.capabilities[i] = capabilities),
         }),
       );
     }
@@ -138,8 +132,7 @@ try {
           hash = 0,
           newLowerWhite = 0,
           newLowerBlue = 0;
-        const base =
-          gate.workBase?.index === index ? gate.workBase.data : undefined;
+        const base = gate.workBase?.index === index ? gate.workBase.data : undefined;
         for (let i = 0; i < data.length; i += 4) {
           if (data[i + 3] > 32) {
             alpha++;
@@ -152,30 +145,17 @@ try {
               (data[i] > data[i + 1] + 25 && data[i + 2] > data[i + 1] + 25)
             )
               cyan++;
-            if (
-              base &&
-              Math.floor(i / 4 / 64) >= 38 &&
-              (i / 4) % 64 >= 16 &&
-              (i / 4) % 64 <= 56
-            ) {
+            if (base && Math.floor(i / 4 / 64) >= 38 && (i / 4) % 64 >= 16 && (i / 4) % 64 <= 56) {
               if (
                 Math.min(data[i], data[i + 1], data[i + 2]) > 180 &&
-                !(
-                  base[i + 3] > 32 &&
-                  Math.min(base[i], base[i + 1], base[i + 2]) > 180
-                )
+                !(base[i + 3] > 32 && Math.min(base[i], base[i + 1], base[i + 2]) > 180)
               )
                 newLowerWhite++;
-              if (
-                data[i + 2] > data[i] + 25 &&
-                data[i + 2] > data[i + 1] + 10 &&
-                base[i + 3] <= 32
-              )
+              if (data[i + 2] > data[i] + 25 && data[i + 2] > data[i + 1] + 10 && base[i + 3] <= 32)
                 newLowerBlue++;
             }
           }
-          hash =
-            (Math.imul(hash, 31) + data[i] + data[i + 1] + data[i + 2]) | 0;
+          hash = (Math.imul(hash, 31) + data[i] + data[i + 1] + data[i + 2]) | 0;
         }
         return { alpha, white, dark, cyan, hash, newLowerWhite, newLowerBlue };
       });
@@ -183,9 +163,7 @@ try {
   await page.waitForFunction(
     () =>
       gate.errors.length ||
-      gate.controls.every(
-        (c) => c.diagnostics()?.ready && !c.diagnostics()?.pending,
-      ),
+      gate.controls.every((c) => c.diagnostics()?.ready && !c.diagnostics()?.pending),
     {},
     { timeout: 240000 },
   );
@@ -229,23 +207,14 @@ try {
     assemblies: gate.assemblies,
   }));
   await page.screenshot({ path: '/tmp/bloom-authored-all-shapes.png' });
-  fs.writeFileSync(
-    '/tmp/bloom-authored-all-shapes-metrics.json',
-    JSON.stringify(first, null, 2),
-  );
+  fs.writeFileSync('/tmp/bloom-authored-all-shapes-metrics.json', JSON.stringify(first, null, 2));
   assert.equal(first.stats.surface.contexts, 1);
   assert.equal(first.stats.legacy.sharedModules, 1);
   assert.equal(first.pixels.length, recipes.length);
   for (let i = 0; i < recipes.length; i++) {
     assert.ok(first.pixels[i].alpha > 300, `Shape ${i} must paint a body`);
-    assert.ok(
-      first.whiteSeen[i] > 2,
-      `Shape ${i} must paint Todd's authored white eye rims`,
-    );
-    assert.ok(
-      first.pixels[i].dark > 8,
-      `Shape ${i} must paint the pupils and Felipe hat`,
-    );
+    assert.ok(first.whiteSeen[i] > 2, `Shape ${i} must paint Todd's authored white eye rims`);
+    assert.ok(first.pixels[i].dark > 8, `Shape ${i} must paint the pupils and Felipe hat`);
     assert.equal(first.caps[i].selected.eyes, 'todd');
     assert.equal(first.caps[i].selected.accessory, 'felipe_beret');
     assert.equal(first.caps[i].available['eyes:todd'], true);
@@ -300,10 +269,7 @@ try {
       const pixels = gate.pixels();
       pixels.forEach(
         (pixel, index) =>
-          (gate.clippoWhiteSeen[index] = Math.max(
-            gate.clippoWhiteSeen[index],
-            pixel.white,
-          )),
+          (gate.clippoWhiteSeen[index] = Math.max(gate.clippoWhiteSeen[index], pixel.white)),
       );
       return gate.errors.length || gate.clippoWhiteSeen.every((n) => n > 2);
     },
@@ -324,10 +290,7 @@ try {
   );
   assert.deepEqual(await page.evaluate(() => gate.errors), []);
   for (let i = 0; i < recipes.length; i++) {
-    assert.ok(
-      clippoEyes.pixels[i].alpha > 300,
-      `Clippo eyes on shape ${i} must retain the body`,
-    );
+    assert.ok(clippoEyes.pixels[i].alpha > 300, `Clippo eyes on shape ${i} must retain the body`);
     assert.ok(
       clippoEyes.whiteSeen[i] > 2,
       `Clippo eyes on shape ${i} must paint the white eye rims`,
@@ -374,8 +337,7 @@ try {
         !gate.errors.length &&
         !(control.diagnostics()?.ready && !control.diagnostics()?.pending)
       ) {
-        if (performance.now() - started > 60000)
-          throw Error('Authored preset case did not settle');
+        if (performance.now() - started > 60000) throw Error('Authored preset case did not settle');
         await new Promise((resolve) => setTimeout(resolve, 25));
       }
       results.push({
@@ -390,9 +352,7 @@ try {
   for (const item of inherited) {
     assert.ok(item.pixels.alpha > 300);
     assert.equal(
-      item.capabilities.selected[
-        item.character.preset === 'lime_frog' ? 'eyes' : 'accessory'
-      ],
+      item.capabilities.selected[item.character.preset === 'lime_frog' ? 'eyes' : 'accessory'],
       item.character.preset === 'lime_frog' ? 'todd' : 'felipe_beret',
     );
   }
@@ -460,9 +420,7 @@ try {
       gate.controls[index].update(gate.props[index]);
     }, index);
     await page.waitForFunction(
-      (index) =>
-        gate.errors.length ||
-        gate.controls[index].diagnostics()?.lastReaction === 0,
+      (index) => gate.errors.length || gate.controls[index].diagnostics()?.lastReaction === 0,
       index,
       { timeout: 60000 },
     );

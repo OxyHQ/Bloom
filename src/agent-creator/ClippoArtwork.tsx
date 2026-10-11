@@ -1,14 +1,9 @@
 import Svg, { Circle, Path } from 'react-native-svg';
+import { svgA11yProps } from '../styles/svg-a11y';
 import { CHARACTER_COLORS } from './constants';
 
 /** Selector artwork only. The avatar itself uses Clippo's actual 3D meshes. */
-export function ClippoArtwork({
-  kind,
-  opacity = 1,
-}: {
-  kind: 'shape' | 'eyes';
-  opacity?: number;
-}) {
+export function ClippoArtwork({ kind, opacity = 1 }: { kind: 'shape' | 'eyes'; opacity?: number }) {
   const eyes = kind === 'eyes';
   return (
     <Svg
@@ -17,7 +12,7 @@ export function ClippoArtwork({
       viewBox={eyes ? '0 0 104 100' : '0 -4 90 170'}
       preserveAspectRatio="xMidYMid meet"
       opacity={opacity}
-      accessible={false}
+      {...svgA11yProps()}
       pointerEvents="none"
     >
       {eyes ? (

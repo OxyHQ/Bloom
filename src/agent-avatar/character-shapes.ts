@@ -27,10 +27,7 @@ export const MIGRATED_CHARACTER_SHAPES = [
   ['pebble', 'Pebble'],
   ['squircle', 'Squircle'],
 ] as const;
-export const CHARACTER_SHAPES = [
-  ...NATIVE_CHARACTER_SHAPES,
-  ...MIGRATED_CHARACTER_SHAPES,
-] as const;
+export const CHARACTER_SHAPES = [...NATIVE_CHARACTER_SHAPES, ...MIGRATED_CHARACTER_SHAPES] as const;
 
 export function isMigratedCharacterShape(id: string | undefined): boolean {
   return MIGRATED_CHARACTER_SHAPES.some(([shape]) => shape === id);
@@ -38,8 +35,7 @@ export function isMigratedCharacterShape(id: string | undefined): boolean {
 
 /** The saved paper/blob fields remain readable; canonical shape IDs own new edits. */
 export function currentCharacterShape(config: AvatarConfig): string {
-  if (config.character?.selections?.shape)
-    return config.character.selections.shape;
+  if (config.character?.selections?.shape) return config.character.selections.shape;
   const shape = config.family === 'fold' ? config.foldShape : config.shape;
   const equivalent: Partial<Record<string, string>> = {
     triangle: 'rounded_triangle',
@@ -93,8 +89,7 @@ export function materializeCharacter(
   // These virtual parts are absent from the backing native catalog.
   if (!defaults.eyes && saved.preset === 'clippo') defaults.eyes = 'clippo';
   if (!defaults.eyes && saved.preset === 'lime_frog') defaults.eyes = 'todd';
-  if (!defaults.accessory && saved.preset === 'blue_beret')
-    defaults.accessory = 'felipe_beret';
+  if (!defaults.accessory && saved.preset === 'blue_beret') defaults.accessory = 'felipe_beret';
   return { ...saved, selections: { ...defaults, ...saved.selections } };
 }
 
@@ -106,8 +101,7 @@ export function createConfigForShape(
   shape: string,
   selected: Readonly<Record<string, string>> = {},
 ): AvatarConfig {
-  if (!CHARACTER_SHAPES.some(([id]) => id === shape))
-    throw new Error('Unknown character shape.');
+  if (!CHARACTER_SHAPES.some(([id]) => id === shape)) throw new Error('Unknown character shape.');
   const character = materializeCharacter(config, selected);
   if (!character.bodyColor && !character.selections?.color) {
     if (character.preset === 'clippo') character.bodyColor = '#999b9d';

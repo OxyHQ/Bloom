@@ -55,9 +55,7 @@ try {
       body: '<!doctype html><body style="display:grid;grid-template-columns:repeat(4,240px);gap:12px;background:#ececec;font:13px sans-serif">',
     }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__todd-visibility.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__todd-visibility.html`);
   await page.evaluate(async (cases) => {
     const runtime = await import('/bloom-character/runtime.mjs');
     window.gate = {
@@ -85,9 +83,7 @@ try {
     }
     gate.pixels = () =>
       gate.canvases.map((canvas) => {
-        const data = canvas
-          .getContext('2d')
-          .getImageData(0, 0, canvas.width, canvas.height).data;
+        const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
         let painted = 0;
         const eyes = [0, 0];
         for (let y = 0; y < canvas.height; y++)
@@ -113,8 +109,7 @@ try {
       () =>
         gate.errors.length ||
         gate.controls.every(
-          (control) =>
-            control.diagnostics().ready && !control.diagnostics().pending,
+          (control) => control.diagnostics().ready && !control.diagnostics().pending,
         ),
       null,
       { timeout: 180000 },
@@ -143,17 +138,11 @@ try {
         withFrames.pixels[index].eyes[side] >= 20,
         `${eyes[index]} side${side}: actual dark eye pixels remain visible outside Todd's blue body`,
       );
-  await page.evaluate(() =>
-    gate.controls.forEach((control) => control.dispose()),
-  );
+  await page.evaluate(() => gate.controls.forEach((control) => control.dispose()));
   await page.waitForFunction(
     () => {
       const stats = gate.runtime.runtimeStats();
-      return (
-        stats.legacy.characters === 0 &&
-        stats.surface.surfaces === 0 &&
-        !stats.scheduled
-      );
+      return stats.legacy.characters === 0 && stats.surface.surfaces === 0 && !stats.scheduled;
     },
     null,
     { timeout: 30000 },

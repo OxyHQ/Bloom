@@ -92,9 +92,7 @@ try {
       body: '<!doctype html><body style="display:grid;grid-template-columns:repeat(4,240px);gap:12px;background:#ececec;font:13px sans-serif">',
     }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__face-fitting.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__face-fitting.html`);
   await page.evaluate(async (cases) => {
     const runtime = await import('/bloom-character/runtime.mjs');
     window.gate = {
@@ -122,9 +120,7 @@ try {
     }
     gate.pixels = () =>
       gate.canvases.map((canvas) => {
-        const data = canvas
-          .getContext('2d')
-          .getImageData(0, 0, canvas.width, canvas.height).data;
+        const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
         let painted = 0,
           dark = 0;
         for (let i = 0; i < data.length; i += 4)
@@ -140,8 +136,7 @@ try {
       () =>
         gate.errors.length ||
         gate.controls.every(
-          (control) =>
-            control.diagnostics().ready && !control.diagnostics().pending,
+          (control) => control.diagnostics().ready && !control.diagnostics().pending,
         ),
       null,
       { timeout: 180000 },
@@ -188,17 +183,11 @@ try {
       withFrames.pixels[index].dark > withoutFrames.pixels[index].dark + 10,
       `case ${index} paints real dark frame/lens pixels, not merely an enabled selection`,
     );
-  await page.evaluate(() =>
-    gate.controls.forEach((control) => control.dispose()),
-  );
+  await page.evaluate(() => gate.controls.forEach((control) => control.dispose()));
   await page.waitForFunction(
     () => {
       const stats = gate.runtime.runtimeStats();
-      return (
-        stats.legacy.characters === 0 &&
-        stats.surface.surfaces === 0 &&
-        !stats.scheduled
-      );
+      return stats.legacy.characters === 0 && stats.surface.surfaces === 0 && !stats.scheduled;
     },
     null,
     { timeout: 30000 },

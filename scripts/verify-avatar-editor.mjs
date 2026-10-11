@@ -15,9 +15,7 @@ const expectedPortraits = JSON.parse(
   ),
 );
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const base = process.argv[2] || 'http://localhost:6006';
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 try {
@@ -28,10 +26,7 @@ try {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('response', (response) => {
-    if (
-      response.status() >= 400 &&
-      response.url().includes('/bloom-character/')
-    )
+    if (response.status() >= 400 && response.url().includes('/bloom-character/'))
       errors.push(`${response.status()} ${response.url()}`);
   });
   await page.goto(
@@ -53,14 +48,9 @@ try {
   const todd = page.getByRole('button', { name: 'Todd', exact: true });
   assert.equal(await clippo.getAttribute('aria-pressed'), 'true');
   assert.equal(await clippo.isEnabled(), true);
-  assert.equal(
-    await clippo.locator('svg').count(),
-    1,
-    'Clippo eye chip uses static artwork',
-  );
+  assert.equal(await clippo.locator('svg').count(), 1, 'Clippo eye chip uses static artwork');
   await page.evaluate(async () => {
-    window.editorRuntime =
-      await import('/bloom-character/runtime.mjs?v=unified-shapes-4');
+    window.editorRuntime = await import('/bloom-character/runtime.mjs?v=unified-shapes-4');
   });
   const settle = async () => {
     await page.waitForTimeout(500);
@@ -77,19 +67,12 @@ try {
       {},
       { timeout: 180000 },
     );
-    assert.equal(
-      await page.getByText('Avatar unavailable', { exact: true }).count(),
-      0,
-    );
+    assert.equal(await page.getByText('Avatar unavailable', { exact: true }).count(), 0);
   };
   await settle();
   await page.waitForFunction(
     (expectedPortraits) => {
-      const canvases = [
-        ...document.querySelectorAll(
-          '[data-testid="clippo-shared-eyes"] canvas',
-        ),
-      ];
+      const canvases = [...document.querySelectorAll('[data-testid="clippo-shared-eyes"] canvas')];
       return (
         canvases.length === expectedPortraits &&
         canvases.every((canvas) =>
@@ -108,9 +91,7 @@ try {
     fullPage: true,
   });
   assert.equal(
-    await page
-      .getByRole('slider', { name: 'Eye spacing', exact: true })
-      .count(),
+    await page.getByRole('slider', { name: 'Eye spacing', exact: true }).count(),
     0,
     'Paired eyes use shape-owned placement without an editor slider',
   );
@@ -124,9 +105,8 @@ try {
   await todd.click();
   await page.waitForFunction(
     () =>
-      document
-        .querySelector('[aria-label="Todd"][aria-pressed]')
-        ?.getAttribute('aria-pressed') === 'true',
+      document.querySelector('[aria-label="Todd"][aria-pressed]')?.getAttribute('aria-pressed') ===
+      'true',
   );
   await settle();
   const shapes = page.getByRole('listbox', {
@@ -153,9 +133,7 @@ try {
         .querySelector('[aria-label="Clippo"][aria-pressed]')
         ?.getAttribute('aria-pressed') === 'true',
   );
-  await page
-    .getByRole('button', { name: 'Reload saved avatar', exact: true })
-    .click();
+  await page.getByRole('button', { name: 'Reload saved avatar', exact: true }).click();
   assert.equal(
     await clippo.getAttribute('aria-pressed'),
     'true',
@@ -172,11 +150,7 @@ try {
   );
   await page.waitForFunction(
     () => {
-      const canvases = [
-        ...document.querySelectorAll(
-          '[data-testid="cyclops-shared-eyes"] canvas',
-        ),
-      ];
+      const canvases = [...document.querySelectorAll('[data-testid="cyclops-shared-eyes"] canvas')];
       return (
         canvases.length === 21 &&
         canvases.every((canvas) =>
@@ -190,22 +164,14 @@ try {
     {},
     { timeout: 180000 },
   );
-  assert.equal(
-    await page.getByText('Avatar unavailable', { exact: true }).count(),
-    0,
-  );
+  assert.equal(await page.getByText('Avatar unavailable', { exact: true }).count(), 0);
   assert.equal(
     await page
       .getByRole('button', { name: 'Single eye', exact: true })
       .getAttribute('aria-pressed'),
     'true',
   );
-  assert.equal(
-    await page
-      .getByRole('slider', { name: 'Eye spacing', exact: true })
-      .count(),
-    0,
-  );
+  assert.equal(await page.getByRole('slider', { name: 'Eye spacing', exact: true }).count(), 0);
   assert.deepEqual(errors, []);
   await page.screenshot({
     path: '/tmp/bloom-story-single-eye.png',

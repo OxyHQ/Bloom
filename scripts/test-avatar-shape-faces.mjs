@@ -56,17 +56,13 @@ test('replacement styles use the same shape centers and diameter even when donor
     for (const [i, t] of transforms.entries()) {
       assert.ok(
         Math.abs(
-          (t.scale *
-            (donor.records[i + 1].bounds.max[1] -
-              donor.records[i + 1].bounds.min[1])) /
+          (t.scale * (donor.records[i + 1].bounds.max[1] - donor.records[i + 1].bounds.min[1])) /
             2 -
             layout.radius,
         ) < 1e-10,
       );
       for (let k = 0; k < 2; k++)
-        assert.ok(
-          Math.abs(t.origin[k] + t.translate[k] - layout.centers[i][k]) < 1e-10,
-        );
+        assert.ok(Math.abs(t.origin[k] + t.translate[k] - layout.centers[i][k]) < 1e-10);
     }
   }
 });
@@ -130,8 +126,5 @@ test('a genuinely custom contour derives its face from its own geometry instead 
     ],
   });
   assert.ok(two.radius < one.radius);
-  assert.ok(
-    two.centers[1][0] - two.centers[0][0] <
-      one.centers[1][0] - one.centers[0][0],
-  );
+  assert.ok(two.centers[1][0] - two.centers[0][0] < one.centers[1][0] - one.centers[0][0]);
 });

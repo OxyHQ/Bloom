@@ -217,11 +217,7 @@ test('shared context admission serializes preparation and retains all 48 moving 
   for (let i = 0; i < 48; i++) h.add();
   await h.frame();
   await h.frame();
-  assert.equal(
-    h.live(),
-    1,
-    'A second cold preparation waits for actual pixels',
-  );
+  assert.equal(h.live(), 1, 'A second cold preparation waits for actual pixels');
   for (let i = 0; i < 100; i++) {
     for (const item of h.items) if (item.starts) item.lease.painted();
     await h.frame();

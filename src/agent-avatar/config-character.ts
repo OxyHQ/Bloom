@@ -1,6 +1,5 @@
 /** Catalog parts extend the existing avatar recipe without discarding its shape or expression fields. */
-export type AvatarCharacterCategory =
-  'shape' | 'color' | 'eyes' | 'eyewear' | 'accessory';
+export type AvatarCharacterCategory = 'shape' | 'color' | 'eyes' | 'eyewear' | 'accessory';
 
 export type AvatarCharacterConfig = {
   /** Named catalog preset, including Clippo (`clippo`), or a saved renderer ID. */
@@ -58,16 +57,12 @@ export function parseCharacterConfig(value: unknown): AvatarCharacterConfig {
       throw new Error('Invalid character selections.');
     const selections: NonNullable<AvatarCharacterConfig['selections']> = {};
     for (const [category, id] of Object.entries(candidate.selections)) {
-      if (
-        !categories.includes(category as AvatarCharacterCategory) ||
-        !validId(id)
-      )
+      if (!categories.includes(category as AvatarCharacterCategory) || !validId(id))
         throw new Error('Invalid character selection.');
       selections[category as AvatarCharacterCategory] = id;
     }
     result.selections = selections;
   }
-  if ('state' in candidate)
-    throw new Error('Opaque character state is not supported.');
+  if ('state' in candidate) throw new Error('Opaque character state is not supported.');
   return result;
 }

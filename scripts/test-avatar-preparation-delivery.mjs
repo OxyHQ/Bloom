@@ -52,28 +52,20 @@ async function fixture() {
   source = source.replace(
     /(['"])\.\/character-recipe\.mjs\1/,
     JSON.stringify(
-      new URL(
-        '../assets/character-runtime/character-recipe.mjs',
-        import.meta.url,
-      ).href,
+      new URL('../assets/character-runtime/character-recipe.mjs', import.meta.url).href,
     ),
   );
   source = source
     .replace(
       /(['"])\.\/controller-mode\.mjs\1/,
       JSON.stringify(
-        new URL(
-          '../assets/character-runtime/controller-mode.mjs',
-          import.meta.url,
-        ).href,
+        new URL('../assets/character-runtime/controller-mode.mjs', import.meta.url).href,
       ),
     )
     .replace(
       /(['"])\.\/orbit-characters\.mjs\1/,
       JSON.stringify(
-        data(
-          'export default ()=>Promise.resolve(globalThis.__bloomDeliveryFixture.module);',
-        ),
+        data('export default ()=>Promise.resolve(globalThis.__bloomDeliveryFixture.module);'),
       ),
     )
     .replace(
@@ -87,22 +79,14 @@ async function fixture() {
     .replace(
       /(['"])\.\/preparation-cache\.mjs\1/,
       JSON.stringify(
-        new URL(
-          '../assets/character-runtime/preparation-cache.mjs',
-          import.meta.url,
-        ).href,
+        new URL('../assets/character-runtime/preparation-cache.mjs', import.meta.url).href,
       ),
     );
   source = source.replace(
     /(['"])\.\/legacy-worker\.mjs\1/,
-    JSON.stringify(
-      new URL('../assets/character-runtime/legacy-worker.mjs', import.meta.url)
-        .href,
-    ),
+    JSON.stringify(new URL('../assets/character-runtime/legacy-worker.mjs', import.meta.url).href),
   );
-  const engine = await import(
-    data(source + '\n// test namespace ' + namespace++)
-  );
+  const engine = await import(data(source + '\n// test namespace ' + namespace++));
   const lease = await engine.acquireLegacyEngine([
     [1, 0],
     [0, 1],
@@ -181,11 +165,7 @@ test('cached completion is asynchronous, respects the GPU boundary and avoids an
     const second = await f.engine.acquireCharacterPreparation();
     const b = new f.lease.module.Character();
     b.render();
-    assert.equal(
-      f.completed.length,
-      1,
-      'cached bytes must not complete reentrantly inside render',
-    );
+    assert.equal(f.completed.length, 1, 'cached bytes must not complete reentrantly inside render');
     await flush();
     assert.equal(f.requests.length, 1);
     assert.equal(f.completed.length, 1);
@@ -251,10 +231,7 @@ test('authored Clippo/Todd/Felipe scopes normalize ordering and stay independent
           );
         }
     assert.equal(new Set(combinations).size, 11);
-    await assert.rejects(
-      f.engine.getCharacterEngine({ shape: 'circle' }),
-      /Unsupported authored/,
-    );
+    await assert.rejects(f.engine.getCharacterEngine({ shape: 'circle' }), /Unsupported authored/);
     await assert.rejects(
       f.engine.getCharacterEngine({ eyes: 'unknown-eye' }),
       /Unsupported authored/,

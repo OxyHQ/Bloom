@@ -14,10 +14,7 @@ const originalBytes = await readFile(
 test('HTTP fallback hashes padding boundaries and original WASM against independent SHA-256', () => {
   for (const length of [0, 1, 55, 56, 63, 64, 65, 127, 128, 129, 1024]) {
     const bytes = randomBytes(length);
-    assert.equal(
-      sha256Bytes(bytes),
-      createHash('sha256').update(bytes).digest('hex'),
-    );
+    assert.equal(sha256Bytes(bytes), createHash('sha256').update(bytes).digest('hex'));
   }
   assert.equal(sha256Bytes(originalBytes), CONTROLLER_WASM_SHA256);
 });
@@ -32,12 +29,9 @@ test('guarded controller toggle rejects corrupt bytes before instantiation and f
     return { instance: { exports: { Vd: memory } } };
   };
   try {
-    globalThis.fetch = async () =>
-      new Response(new Uint8Array([0, 97, 115, 109]));
+    globalThis.fetch = async () => new Response(new Uint8Array([0, 97, 115, 109]));
     const corrupt = createControllerModeAdapter('original.wasm');
-    corrupt.instantiateWasm({}, () =>
-      assert.fail('corrupt bytes instantiated'),
-    );
+    corrupt.instantiateWasm({}, () => assert.fail('corrupt bytes instantiated'));
     await assert.rejects(corrupt.failure, /integrity mismatch/);
     assert.equal(instantiations, 0);
 
@@ -88,15 +82,9 @@ test('guarded controller toggle rejects corrupt bytes before instantiation and f
     assert.throws(() => adapter.controllerMode(character, false), /deleted/);
     deleted = false;
     adapter.unregister(character);
-    assert.throws(
-      () => adapter.controllerMode(character, false),
-      /unsupported/,
-    );
+    assert.throws(() => adapter.controllerMode(character, false), /unsupported/);
     adapter.register(character, false);
-    assert.throws(
-      () => adapter.controllerMode(character, false),
-      /unsupported/,
-    );
+    assert.throws(() => adapter.controllerMode(character, false), /unsupported/);
   } finally {
     globalThis.fetch = previousFetch;
     WebAssembly.instantiate = previousInstantiate;
@@ -131,9 +119,7 @@ test('signature identity borrows native literals synchronously and restores owni
       Uint8Array.from([65, 66, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2]),
       Uint8Array.from([0, 128, 0, 0, 12, 0, 0, 0, 16, 0, 0, 128]),
     ];
-    offsets.forEach((offset, i) =>
-      new Uint8Array(memory.buffer, impl + offset, 12).set(saved[i]),
-    );
+    offsets.forEach((offset, i) => new Uint8Array(memory.buffer, impl + offset, 12).set(saved[i]));
     let calls = 0;
     const character = {
       $$: { ptr: handle },
@@ -153,10 +139,7 @@ test('signature identity borrows native literals synchronously and restores owni
     adapter.controllerMode(character, false);
     const restored = () =>
       offsets.forEach((offset, i) =>
-        assert.deepEqual(
-          new Uint8Array(memory.buffer, impl + offset, 12),
-          saved[i],
-        ),
+        assert.deepEqual(new Uint8Array(memory.buffer, impl + offset, 12), saved[i]),
       );
     assert.equal(adapter.controllerSignature(character, 'purple_heart'), 0);
     assert.equal(calls, 1);
@@ -172,17 +155,11 @@ test('signature identity borrows native literals synchronously and restores owni
     restored();
     view = new DataView(memory.buffer);
     assert.throws(
-      () =>
-        adapter.controllerWithSignature(character, 'purple_heart', () =>
-          Promise.resolve(),
-        ),
+      () => adapter.controllerWithSignature(character, 'purple_heart', () => Promise.resolve()),
       /synchronous/,
     );
     restored();
-    assert.throws(
-      () => adapter.controllerSignature(character, 'unknown'),
-      /original body/,
-    );
+    assert.throws(() => adapter.controllerSignature(character, 'unknown'), /original body/);
     restored();
     view.setUint8(4922, 0);
     assert.throws(

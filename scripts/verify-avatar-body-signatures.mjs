@@ -18,10 +18,7 @@ try {
     new URL('../assets/character-runtime/controller-mode.mjs', import.meta.url),
     'utf8',
   );
-  assert.ok(
-    source.includes('const result = operation();'),
-    'instrument exact synchronous scope',
-  );
+  assert.ok(source.includes('const result = operation();'), 'instrument exact synchronous scope');
   await page.route('**/controller-mode.mjs', (r) =>
     r.fulfill({
       contentType: 'application/javascript',
@@ -38,9 +35,7 @@ try {
       body: '<body style="display:flex;background:#eee">',
     }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__signatures.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__signatures.html`);
   await page.evaluate(async () => {
     const runtime = await import('/bloom-character/runtime.mjs');
     window.gate = {
@@ -98,9 +93,7 @@ try {
   await page.waitForFunction(
     () =>
       gate.errors.length ||
-      gate.controls.every(
-        (c) => c.diagnostics()?.ready && !c.diagnostics()?.pending,
-      ),
+      gate.controls.every((c) => c.diagnostics()?.ready && !c.diagnostics()?.pending),
     {},
     { timeout: 180000 },
   );
@@ -122,8 +115,7 @@ try {
     await page.waitForFunction(
       (count) =>
         gate.errors.length ||
-        __signatureTrace.filter((t) => t.result === 0 && t.kind === 2).length >=
-          count,
+        __signatureTrace.filter((t) => t.result === 0 && t.kind === 2).length >= count,
       index + 1,
       { timeout: 60000 },
     );
@@ -155,10 +147,7 @@ try {
     .nth(1)
     .click({ position: { x: 120, y: 120 } });
   await page.waitForFunction(
-    () =>
-      __signatureTrace.some(
-        (t) => t.result === 0 && t.kind === 2 && t.profile === 4,
-      ),
+    () => __signatureTrace.some((t) => t.result === 0 && t.kind === 2 && t.profile === 4),
     {},
     { timeout: 15000 },
   );
@@ -168,15 +157,8 @@ try {
   }));
   assert.equal(tap.diagnostics.lastReactionKind, 2);
   assert.equal(tap.diagnostics.lastReaction, 0);
-  assert.equal(
-    tap.diagnostics.queuedReaction,
-    false,
-    'one physical tap starts one signature',
-  );
-  assert.ok(
-    !tap.trace.some((t) => t.kind === 1),
-    'pointer path never starts generic Wave',
-  );
+  assert.equal(tap.diagnostics.queuedReaction, false, 'one physical tap starts one signature');
+  assert.ok(!tap.trace.some((t) => t.kind === 1), 'pointer path never starts generic Wave');
   assert.deepEqual(await page.evaluate(() => gate.errors), []);
   assert.deepEqual(errors, []);
   await page.evaluate(() => gate.controls.forEach((c) => c.dispose()));
@@ -200,10 +182,7 @@ try {
     tap,
     after: await page.evaluate(() => gate.runtime.runtimeStats()),
   };
-  fs.writeFileSync(
-    '/tmp/bloom-body-signatures.json',
-    JSON.stringify(result, null, 2),
-  );
+  fs.writeFileSync('/tmp/bloom-body-signatures.json', JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result));
 } finally {
   await browser.close();

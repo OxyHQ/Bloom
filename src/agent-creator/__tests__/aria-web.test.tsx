@@ -85,10 +85,7 @@ it('offers eye styles without an eye-placement control, including saved spacing 
       value={{
         runtimeUrl: '/runtime.mjs',
         capabilitiesByKey: new Map([
-          [
-            key,
-            { key, available: {}, selected: { eyes: 'todd', shape: 'todd' } },
-          ],
+          [key, { key, available: {}, selected: { eyes: 'todd', shape: 'todd' } }],
         ]),
       }}
     >
@@ -96,11 +93,7 @@ it('offers eye styles without an eye-placement control, including saved spacing 
     </CharacterRuntimeFixture>,
   );
   expect(container.querySelector('[aria-label="Eye spacing"]')).toBeNull();
-  expect(
-    container
-      .querySelector('[aria-label="Todd"]')
-      ?.getAttribute('aria-pressed'),
-  ).toBe('true');
+  expect(container.querySelector('[aria-label="Todd"]')?.getAttribute('aria-pressed')).toBe('true');
   expect(onChange).not.toHaveBeenCalled();
 });
 

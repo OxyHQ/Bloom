@@ -1,4 +1,5 @@
 import Svg, { Path } from 'react-native-svg';
+import { svgA11yProps } from '../styles/svg-a11y';
 import { CHARACTER_COLORS } from './constants';
 
 /** Static Todd body outline: 128 projected triangle intersections from the
@@ -12,7 +13,7 @@ export function ToddArtwork() {
       height={56}
       viewBox="-1.04785 -0.86450 2.09611 1.69982"
       preserveAspectRatio="xMidYMid meet"
-      accessible={false}
+      {...svgA11yProps()}
       pointerEvents="none"
     >
       <Path

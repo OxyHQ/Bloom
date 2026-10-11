@@ -10,26 +10,17 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { compatibleShaderSource } from '../assets/character-runtime/shared-programs.mjs';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const parameter = 'float felipeLTC(vec3 p,mat3 transform,vec3 rect[4]) {';
 const declaration =
   'vec3 rect[4]=vec3[4](light+right-up,light-right-up,light-right+up,light+right+up);';
-assert.equal(
-  compatibleShaderSource(parameter),
-  parameter.replace('vec3 rect', 'highp vec3 rect'),
-);
+assert.equal(compatibleShaderSource(parameter), parameter.replace('vec3 rect', 'highp vec3 rect'));
 assert.equal(
   compatibleShaderSource(declaration),
   'highp vec3 rect[4];rect[0]=light+right-up;rect[1]=light-right-up;rect[2]=light-right+up;rect[3]=light+right+up;',
 );
 const unrelated = 'vec3 rect[4]=vec3[4](vec3(1,2,3),a,b,c);';
-assert.equal(
-  compatibleShaderSource(unrelated),
-  unrelated,
-  'Do not parse arbitrary GLSL commas',
-);
+assert.equal(compatibleShaderSource(unrelated), unrelated, 'Do not parse arbitrary GLSL commas');
 assert.equal(
   compatibleShaderSource(compatibleShaderSource(parameter + declaration)),
   compatibleShaderSource(parameter + declaration),
@@ -42,12 +33,9 @@ try {
   await page.route('**/__bloom_shared_programs.html', (route) =>
     route.fulfill({ contentType: 'text/html', body: '<!doctype html><body>' }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__bloom_shared_programs.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__bloom_shared_programs.html`);
   const aliases = await page.evaluate(async () => {
-    const { createSharedProgramPool } =
-      await import('/bloom-character/shared-programs.mjs');
+    const { createSharedProgramPool } = await import('/bloom-character/shared-programs.mjs');
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 4;
     const real = canvas.getContext('webgl2');
@@ -71,18 +59,12 @@ try {
         const s = gl.createShader(type);
         gl.shaderSource(s, source);
         gl.compileShader(s);
-        assert(
-          gl.getShaderParameter(s, gl.COMPILE_STATUS),
-          gl.getShaderInfoLog(s),
-        );
+        assert(gl.getShaderParameter(s, gl.COMPILE_STATUS), gl.getShaderInfoLog(s));
         gl.attachShader(p, s);
         gl.deleteShader(s);
       }
       gl.linkProgram(p);
-      assert(
-        gl.getProgramParameter(p, gl.LINK_STATUS),
-        gl.getProgramInfoLog(p),
-      );
+      assert(gl.getProgramParameter(p, gl.LINK_STATUS), gl.getProgramInfoLog(p));
       return p;
     }
     const a = make(7),
@@ -91,10 +73,7 @@ try {
       a.name === 7 && b.name === 9 && a.uniformLocsById !== b.uniformLocsById,
       'metadata leaked',
     );
-    assert(
-      pool.stats().programs === 1 && pool.stats().shaders === 2,
-      'not shared',
-    );
+    assert(pool.stats().programs === 1 && pool.stats().shaders === 2, 'not shared');
     function draw(p) {
       gl.useProgram(p);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -105,64 +84,37 @@ try {
     }
     gl.useProgram(a);
     gl.uniform4f(gl.getUniformLocation(a, 'tint'), 1, 0, 0, 1);
-    gl.uniform1fv(
-      gl.getUniformLocation(a, 'factors'),
-      new Float32Array([1, 0]),
-    );
+    gl.uniform1fv(gl.getUniformLocation(a, 'factors'), new Float32Array([1, 0]));
     const red = draw(a);
     const defaults = draw(b);
-    gl.uniform4fv(
-      gl.getUniformLocation(b, 'tint'),
-      new Float32Array([0, 1, 0, 1]),
-    );
+    gl.uniform4fv(gl.getUniformLocation(b, 'tint'), new Float32Array([0, 1, 0, 1]));
     gl.uniform1f(gl.getUniformLocation(b, 'factors[0]'), 0.5);
-    gl.uniform1fv(
-      gl.getUniformLocation(b, 'factors[1]'),
-      new Float32Array([99, 0.2, 99]),
-      1,
-      1,
-    );
+    gl.uniform1fv(gl.getUniformLocation(b, 'factors[1]'), new Float32Array([99, 0.2, 99]), 1, 1);
     const green = draw(b);
     for (let i = 0; i < 20; i++) {
-      assert(
-        JSON.stringify(draw(a)) === JSON.stringify(red),
-        'red alias corrupt',
-      );
-      assert(
-        JSON.stringify(draw(b)) === JSON.stringify(green),
-        'green alias corrupt',
-      );
+      assert(JSON.stringify(draw(a)) === JSON.stringify(red), 'red alias corrupt');
+      assert(JSON.stringify(draw(b)) === JSON.stringify(green), 'green alias corrupt');
     }
     assert(JSON.stringify(red) === '[255,0,0,255]', 'unexpected red');
     assert(
       defaults.every((x) => x === 0),
       'nonzero initial uniforms',
     );
-    assert(
-      Math.abs(green[0] - 51) < 2 && Math.abs(green[1] - 179) < 2,
-      'array write wrong',
-    );
+    assert(Math.abs(green[0] - 51) < 2 && Math.abs(green[1] - 179) < 2, 'array write wrong');
     // A third alias with identical complete values needs no physical upload.
     const c = make(11);
     gl.useProgram(c);
     gl.uniform4f(gl.getUniformLocation(c, 'tint'), 1, 0, 0, 1);
-    gl.uniform1fv(
-      gl.getUniformLocation(c, 'factors'),
-      new Float32Array([1, 0]),
-    );
+    gl.uniform1fv(gl.getUniformLocation(c, 'factors'), new Float32Array([1, 0]));
     const identicalBefore = pool.stats();
-    assert(
-      JSON.stringify(draw(a)) === JSON.stringify(red),
-      'identical alias corrupted',
-    );
+    assert(JSON.stringify(draw(a)) === JSON.stringify(red), 'identical alias corrupted');
     const identicalAfter = pool.stats();
     assert(
       identicalAfter.uniformReplays === identicalBefore.uniformReplays,
       'identical uniforms replayed',
     );
     assert(
-      identicalAfter.uniformReplaySkips - identicalBefore.uniformReplaySkips ===
-        2,
+      identicalAfter.uniformReplaySkips - identicalBefore.uniformReplaySkips === 2,
       'both complete uniforms must be skipped',
     );
     // A cached physical program must still reset this alias's defaults on relink.
@@ -196,30 +148,15 @@ try {
       ri = gl.getUniformBlockIndex(right, 'Paint');
     gl.uniformBlockBinding(left, li, 1);
     gl.uniformBlockBinding(right, ri, 2);
-    assert(
-      JSON.stringify(draw(left)) === '[255,0,0,255]',
-      'left block binding',
-    );
-    assert(
-      JSON.stringify(draw(right)) === '[0,255,0,255]',
-      'right block binding',
-    );
+    assert(JSON.stringify(draw(left)) === '[255,0,0,255]', 'left block binding');
+    assert(JSON.stringify(draw(right)) === '[0,255,0,255]', 'right block binding');
     // Updating an inactive alias must not change the live alias's physical state.
     gl.uniformBlockBinding(left, li, 3);
-    assert(
-      JSON.stringify(draw(right)) === '[0,255,0,255]',
-      'inactive block update leaked',
-    );
-    assert(
-      JSON.stringify(draw(left)) === '[0,0,255,255]',
-      'inactive block update lost',
-    );
+    assert(JSON.stringify(draw(right)) === '[0,255,0,255]', 'inactive block update leaked');
+    assert(JSON.stringify(draw(left)) === '[0,0,255,255]', 'inactive block update lost');
     gl.uniformBlockBinding(right, ri, 3);
     const blockBefore = pool.stats();
-    assert(
-      JSON.stringify(draw(right)) === '[0,0,255,255]',
-      'identical block state lost',
-    );
+    assert(JSON.stringify(draw(right)) === '[0,0,255,255]', 'identical block state lost');
     const blockAfter = pool.stats();
     assert(
       blockAfter.blockReplays === blockBefore.blockReplays &&
@@ -240,10 +177,8 @@ try {
     };
   });
   const pixels = await page.evaluate(async () => {
-    const { createPoseTransition } =
-      await import('/bloom-character/pose-transition.mjs');
-    const { createSharedProgramPool } =
-      await import('/bloom-character/shared-programs.mjs');
+    const { createPoseTransition } = await import('/bloom-character/pose-transition.mjs');
+    const { createSharedProgramPool } = await import('/bloom-character/shared-programs.mjs');
     const source = document.createElement('canvas'),
       dest = document.createElement('canvas');
     source.id = 'raw';
@@ -261,14 +196,9 @@ try {
     let physicalUniformCalls = 0,
       nativeUniformCalls = 0;
     const uniformMethods = new Set();
-    for (
-      let prototype = physical;
-      prototype;
-      prototype = Object.getPrototypeOf(prototype)
-    )
+    for (let prototype = physical; prototype; prototype = Object.getPrototypeOf(prototype))
       for (const key of Object.getOwnPropertyNames(prototype))
-        if (/^uniform(?:[1-4]|Matrix|BlockBinding)/.test(key))
-          uniformMethods.add(key);
+        if (/^uniform(?:[1-4]|Matrix|BlockBinding)/.test(key)) uniformMethods.add(key);
     for (const key of uniformMethods) {
       const method = physical[key];
       physical[key] = (...args) => {
@@ -296,22 +226,15 @@ try {
             if (uniformMethods.has(k)) nativeUniformCalls++;
             const original = value.apply(target, args);
             const copy = pooled[k](...args.map(mapped));
-            if (
-              original &&
-              typeof original === 'object' &&
-              copy &&
-              typeof copy === 'object'
-            )
+            if (original && typeof original === 'object' && copy && typeof copy === 'object')
               mapping.set(original, copy);
             return original;
           });
         return bound.get(k);
       },
     });
-    source.getContext = (type, ...args) =>
-      type === 'webgl2' ? tee : get(type, ...args);
-    const factory = (await import('/bloom-character/orbit-characters.mjs'))
-        .default,
+    source.getContext = (type, ...args) => (type === 'webgl2' ? tee : get(type, ...args));
+    const factory = (await import('/bloom-character/orbit-characters.mjs')).default,
       m = await factory({ locateFile: (f) => '/bloom-character/' + f });
     const chars = [];
     for (const name of ['blue_beret', 'purple_heart', 'lime_frog', 'alfred']) {
@@ -347,10 +270,7 @@ try {
           perCharacter[index].frames++;
           let painted = 0;
           for (let j = 3; j < a.length; j += 4) if (a[j] > 24) painted++;
-          perCharacter[index].painted = Math.max(
-            perCharacter[index].painted,
-            painted,
-          );
+          perCharacter[index].painted = Math.max(perCharacter[index].painted, painted);
           for (let i = 0; i < a.length; i++) {
             const d = Math.abs(a[i] - b[i]);
             if (d) {
@@ -382,28 +302,18 @@ try {
   });
   assert.ok(pixels.comparisons >= 100, 'Measure submitted native frames');
   assert.ok(
-    pixels.perCharacter.every(
-      (item) => item.frames >= 20 && item.painted > 500,
-    ),
+    pixels.perCharacter.every((item) => item.frames >= 20 && item.painted > 500),
     'Every original must paint',
   );
-  assert.equal(
-    pixels.channels,
-    0,
-    'Pooled native frames must match original pixels exactly',
-  );
+  assert.equal(pixels.channels, 0, 'Pooled native frames must match original pixels exactly');
   assert.equal(pixels.max, 0);
   assert.deepEqual(pixels.errors, []);
   assert.deepEqual(pixels.glErrors, [0, 0]);
   assert.equal(pixels.before.logicalPrograms, 36);
   assert.equal(pixels.before.programs, 9);
   assert.equal(pixels.before.shaders, 14);
-  const avoided =
-    pixels.before.uniformReplaySkips + pixels.before.blockReplaySkips;
-  assert.ok(
-    pixels.physicalUniformCalls > 0,
-    'Instrument physical uniform calls',
-  );
+  const avoided = pixels.before.uniformReplaySkips + pixels.before.blockReplaySkips;
+  assert.ok(pixels.physicalUniformCalls > 0, 'Instrument physical uniform calls');
   assert.ok(
     pixels.before.uniformReplays > 0 && pixels.before.blockReplays > 0,
     'Different and unknown states still replay',
@@ -412,12 +322,7 @@ try {
     avoided > 3 * pixels.physicalUniformCalls,
     "Skip at least 75% of the prior replay path's uniform calls",
   );
-  for (const key of [
-    'logicalPrograms',
-    'logicalShaders',
-    'programs',
-    'shaders',
-  ])
+  for (const key of ['logicalPrograms', 'logicalShaders', 'programs', 'shaders'])
     assert.equal(pixels.after[key], 0, `Dispose ${key}`);
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ aliases, pixels }, null, 2));

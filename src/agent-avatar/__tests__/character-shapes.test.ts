@@ -1,10 +1,6 @@
 import { avatarHex } from '../avatar-color';
 import { CHARACTER_COLORS } from '../character-colors';
-import {
-  CHARACTER_SHAPES,
-  createConfigForShape,
-  materializeCharacter,
-} from '../character-shapes';
+import { CHARACTER_SHAPES, createConfigForShape, materializeCharacter } from '../character-shapes';
 import { legacyCharacterRecipe, legacyRecipe } from '../legacy-recipe';
 import { FOLD_CONFIG, type AvatarConfig } from '../model';
 

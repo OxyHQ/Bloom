@@ -22,8 +22,9 @@ try {
   await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__fit.html`);
   await page.evaluate(async () => {
     const runtime = await import('/bloom-character/runtime.mjs');
-    const { authoredAssemblyRecords, authoredEyeRecords, hasAuthoredLabel } =
-      await import('/bloom-character/authored-parts.mjs');
+    const { authoredAssemblyRecords, authoredEyeRecords, hasAuthoredLabel } = await import(
+      '/bloom-character/authored-parts.mjs'
+    );
     window.gate = {
       runtime,
       controls: [],
@@ -47,10 +48,8 @@ try {
                 (p) => Math.sign(p.bounds.min[0] + p.bounds.max[0]) === sign,
               );
               return (
-                parts.reduce(
-                  (n, p) => n + (p.bounds.min[0] + p.bounds.max[0]) / 2,
-                  0,
-                ) / parts.length
+                parts.reduce((n, p) => n + (p.bounds.min[0] + p.bounds.max[0]) / 2, 0) /
+                parts.length
               );
             };
             gate.assemblies.push({
@@ -59,9 +58,7 @@ try {
               gap: center(1) - center(-1),
               body: info.body.bounds,
               frameWidths: info.records
-                .filter((p) =>
-                  hasAuthoredLabel(info.bytes, p, 'tall_oval_frames'),
-                )
+                .filter((p) => hasAuthoredLabel(info.bytes, p, 'tall_oval_frames'))
                 .map((p) => p.bounds.max[0] - p.bounds.min[0]),
             });
           }
@@ -125,10 +122,8 @@ try {
         if (pixels[i + 3] > 32) {
           painted++;
           if (
-            (pixels[i + 2] > pixels[i] + 25 &&
-              pixels[i + 2] > pixels[i + 1] + 15) ||
-            (pixels[i] > pixels[i + 1] + 25 &&
-              pixels[i + 2] > pixels[i + 1] + 25)
+            (pixels[i + 2] > pixels[i] + 25 && pixels[i + 2] > pixels[i + 1] + 15) ||
+            (pixels[i] > pixels[i + 1] + 25 && pixels[i + 2] > pixels[i + 1] + 25)
           )
             panel++;
         }
@@ -139,9 +134,7 @@ try {
   await page.waitForFunction(
     () =>
       gate.errors.length ||
-      gate.controls.every(
-        (c) => c.diagnostics()?.ready && !c.diagnostics()?.pending,
-      ),
+      gate.controls.every((c) => c.diagnostics()?.ready && !c.diagnostics()?.pending),
     {},
     { timeout: 240000 },
   );
@@ -151,16 +144,10 @@ try {
     pixels: gate.controls.map((_, i) => gate.hash(i)),
   }));
   for (const p of initial.pixels) assert.ok(p.painted > 100);
-  const framed = initial.assemblies.filter(
-    (a) => a.parts.eyewear === 'tall_oval_frames',
-  );
+  const framed = initial.assemblies.filter((a) => a.parts.eyewear === 'tall_oval_frames');
   assert.ok(framed.length > 0, 'worker prepares the framed face');
   for (const sample of framed) {
-    assert.equal(
-      sample.spacing,
-      1,
-      'historical spacing does not reach preparation',
-    );
+    assert.equal(sample.spacing, 1, 'historical spacing does not reach preparation');
     assert.equal(sample.frameWidths.length, 2);
     assert.ok(sample.gap > 0, 'shape retains distinct eye anchors');
   }
@@ -181,9 +168,7 @@ try {
       gate.controls[index].update(gate.props[index]);
     }, index);
     await page.waitForFunction(
-      (i) =>
-        gate.errors.length ||
-        gate.controls[i].diagnostics()?.lastActivityResult === 0,
+      (i) => gate.errors.length || gate.controls[i].diagnostics()?.lastActivityResult === 0,
       index,
       { timeout: 60000 },
     );
@@ -192,15 +177,10 @@ try {
       await page.waitForTimeout(180);
       hashes.push(await page.evaluate((i) => gate.hash(i).hash, index));
     }
-    assert.ok(
-      new Set(hashes).size > 2,
-      'fitted attachments retain native Work motion',
-    );
-    await page.waitForFunction(
-      (i) => gate.errors.length || gate.hash(i).panel > 6,
-      index,
-      { timeout: 30000 },
-    );
+    assert.ok(new Set(hashes).size > 2, 'fitted attachments retain native Work motion');
+    await page.waitForFunction((i) => gate.errors.length || gate.hash(i).panel > 6, index, {
+      timeout: 30000,
+    });
     await page.screenshot({
       path: `/tmp/bloom-attachment-fit-work-${index}.png`,
     });
@@ -209,9 +189,7 @@ try {
       gate.controls[index].update(gate.props[index]);
     }, index);
     await page.waitForFunction(
-      (i) =>
-        gate.errors.length ||
-        gate.controls[i].diagnostics()?.lastReaction === 0,
+      (i) => gate.errors.length || gate.controls[i].diagnostics()?.lastReaction === 0,
       index,
       { timeout: 60000 },
     );
@@ -229,20 +207,12 @@ try {
   await page.waitForFunction(
     () => {
       const s = gate.runtime.runtimeStats();
-      return (
-        !s.instances &&
-        !s.surface.contexts &&
-        !s.legacy.pending &&
-        !s.legacy.characters
-      );
+      return !s.instances && !s.surface.contexts && !s.legacy.pending && !s.legacy.characters;
     },
     {},
     { timeout: 60000 },
   );
-  fs.writeFileSync(
-    '/tmp/bloom-attachment-fit-gate.json',
-    JSON.stringify(initial, null, 2),
-  );
+  fs.writeFileSync('/tmp/bloom-attachment-fit-gate.json', JSON.stringify(initial, null, 2));
   console.log(
     'PASS: nine fitted accessories, identical geometry for legacy spacing values, native Work/React, no errors and full cleanup.',
   );

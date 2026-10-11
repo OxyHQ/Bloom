@@ -3,9 +3,7 @@ import test from 'node:test';
 
 let namespace = 0;
 async function freshEngine() {
-  return import(
-    `../assets/character-runtime/legacy-engine.mjs?test=${namespace++}`
-  );
+  return import(`../assets/character-runtime/legacy-engine.mjs?test=${namespace++}`);
 }
 
 test('preparation leases admit FIFO and double release cannot skip an owner', async () => {

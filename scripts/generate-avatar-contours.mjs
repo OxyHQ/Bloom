@@ -39,10 +39,7 @@ export function sourceFaces() {
 }
 if (process.argv[1] && new URL(import.meta.url).pathname === process.argv[1]) {
   fs.writeFileSync(
-    new URL(
-      '../assets/character-runtime/migrated-contours.mjs',
-      import.meta.url,
-    ),
+    new URL('../assets/character-runtime/migrated-contours.mjs', import.meta.url),
     '// Generated from the original Bloom geometry; regenerate with scripts/generate-avatar-contours.mjs.\nexport const MIGRATED_CONTOURS=Object.freeze(' +
       JSON.stringify(sourceContours()) +
       ');\n',

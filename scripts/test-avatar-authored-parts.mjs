@@ -27,15 +27,12 @@ function fixture(
   const bytes = new Uint8Array(end + 160 + activityBytes);
   const view = new DataView(bytes.buffer);
   view.setUint32(0, 1, true);
-  for (let k = 0; k < 6; k++)
-    view.setFloat32(start + k * 4, k < 3 ? -1 : 1, true);
+  for (let k = 0; k < 6; k++) view.setFloat32(start + k * 4, k < 3 ? -1 : 1, true);
   view.setUint32(nameOffset - 4, name.length, true);
   bytes.set(name, nameOffset);
   view.setUint32(vertices - 4, 3, true);
   view.setUint32(vertices + 3 * 96, 3, true);
-  [0, 1, 2].forEach((value, i) =>
-    view.setUint32(vertices + 3 * 96 + 4 + i * 4, value, true),
-  );
+  [0, 1, 2].forEach((value, i) => view.setUint32(vertices + 3 * 96 + 4 + i * 4, value, true));
   bytes[flags + 6] = 1;
   view.setUint32(fur - 4, 1, true);
   view.setUint32(geometryEnd, 3, true);
@@ -84,9 +81,7 @@ test('malformed descriptors and bounds fail before reaching native rendering', (
 test('fitted records move the native deformation anchor with geometry and retain other fields', async () => {
   const f = fixture(0, 72);
   f.view.setUint32(f.start + 24, 1, true);
-  [0.4, 0.5, 0.6].forEach((value, k) =>
-    f.view.setFloat32(f.start + 40 + k * 4, value, true),
-  );
+  [0.4, 0.5, 0.6].forEach((value, k) => f.view.setFloat32(f.start + 40 + k * 4, value, true));
   f.view.setFloat32(f.vertices + 12, 0.7, true); // source normal, untouched
   f.view.setFloat32(f.vertices + 24, 0.25, true); // source morph delta, untouched
   const original = f.bytes.slice(),
@@ -99,10 +94,7 @@ test('fitted records move the native deformation anchor with geometry and retain
       view.getFloat32(40 + k * 4, true),
       Math.fround(f.view.getFloat32(f.start + 40 + k * 4, true) + translate[k]),
     );
-    assert.equal(
-      view.getFloat32(f.vertices - f.start + k * 4, true),
-      Math.fround(translate[k]),
-    );
+    assert.equal(view.getFloat32(f.vertices - f.start + k * 4, true), Math.fround(translate[k]));
   }
   assert.equal(
     view.getFloat32(f.vertices - f.start + 12, true),
@@ -122,38 +114,22 @@ test('recognized beret attachment centers follow the fitted geometry', async () 
   const f = fixture(0, 120);
   f.view.setUint32(f.start + 24, 1, true);
   for (const offset of [40, 96])
-    [0.4, 0.5, 0.6].forEach((value, k) =>
-      f.view.setFloat32(f.start + offset + k * 4, value, true),
-    );
+    [0.4, 0.5, 0.6].forEach((value, k) => f.view.setFloat32(f.start + offset + k * 4, value, true));
   f.view.setUint32(f.start + 108, 5, true);
   f.bytes.set(new TextEncoder().encode('beret'), f.start + 112);
   f.bytes.set([1, 1, 7, 0], f.start + 92);
   const source = authoredAssemblyRecords(f.bytes).body;
-  const result = await translateAuthoredRecord(
-    f.bytes,
-    source,
-    [0.2, 0.3, 0.4],
-  );
+  const result = await translateAuthoredRecord(f.bytes, source, [0.2, 0.3, 0.4]);
   const view = new DataView(result.bytes.buffer);
   for (let k = 0; k < 3; k++)
-    assert.equal(
-      view.getFloat32(96 + k * 4, true),
-      view.getFloat32(40 + k * 4, true),
-    );
+    assert.equal(view.getFloat32(96 + k * 4, true), view.getFloat32(40 + k * 4, true));
   // Generic hat centers need not match their attachment pivot.
   f.view.setFloat32(f.start + 96, 7, true);
   const other = await translateAuthoredRecord(f.bytes, source, [0.2, 0.3, 0.4]);
-  assert.equal(
-    new DataView(other.bytes.buffer).getFloat32(96, true),
-    Math.fround(7.2),
-  );
+  assert.equal(new DataView(other.bytes.buffer).getFloat32(96, true), Math.fround(7.2));
   // A different optional-field layout is not rewritten merely by position.
   f.bytes[f.start + 94] = 0;
-  const unknown = await translateAuthoredRecord(
-    f.bytes,
-    source,
-    [0.2, 0.3, 0.4],
-  );
+  const unknown = await translateAuthoredRecord(f.bytes, source, [0.2, 0.3, 0.4]);
   assert.equal(new DataView(unknown.bytes.buffer).getFloat32(96, true), 7);
 });
 
@@ -184,9 +160,7 @@ test('native eyewear frame pivots move without rewriting classification flags', 
 test('uniform fitting scales pose deltas and bounds while retaining normals and material values', async () => {
   const f = fixture(0, 120);
   f.view.setUint32(f.start + 24, 1, true);
-  [0.4, 0.5, 0.6].forEach((v, k) =>
-    f.view.setFloat32(f.start + 40 + k * 4, v, true),
-  );
+  [0.4, 0.5, 0.6].forEach((v, k) => f.view.setFloat32(f.start + 40 + k * 4, v, true));
   f.view.setFloat32(f.start + 28, 0.27, true);
   f.view.setFloat32(f.vertices + 12, 0.8, true);
   f.view.setFloat32(f.vertices + 24, 0.25, true);
@@ -202,21 +176,12 @@ test('uniform fitting scales pose deltas and bounds while retaining normals and 
     at = f.vertices - f.start;
   assert.equal(view.getFloat32(at + 24, true), 0.125);
   assert.equal(view.getFloat32(at + 48, true), -0.25);
-  assert.equal(
-    view.getFloat32(at + 12, true),
-    f.view.getFloat32(f.vertices + 12, true),
-  );
-  assert.equal(
-    view.getFloat32(28, true),
-    f.view.getFloat32(f.start + 28, true),
-  );
+  assert.equal(view.getFloat32(at + 12, true), f.view.getFloat32(f.vertices + 12, true));
+  assert.equal(view.getFloat32(28, true), f.view.getFloat32(f.start + 28, true));
   assert.equal(view.getFloat32(at + 4, true), Math.fround(0.8));
   assert.equal(view.getFloat32(44, true), Math.fround(1.05));
   assert.deepEqual(f.bytes, original);
-  assert.notEqual(
-    fitted.name,
-    (await transformAuthoredRecord(f.bytes, part, { scale: 0.6 })).name,
-  );
+  assert.notEqual(fitted.name, (await transformAuthoredRecord(f.bytes, part, { scale: 0.6 })).name);
   for (const scale of [0, -1, NaN, Infinity])
     await assert.rejects(transformAuthoredRecord(f.bytes, part, { scale }));
 });
@@ -270,9 +235,7 @@ test('eyewear fits the final single eye without losing paired lenses or burying 
       [1, -1, 0.95],
       [0, 1, 0.95],
     ].forEach((xyz, i) =>
-      xyz.forEach((v, k) =>
-        bodyView.setFloat32(1000 + i * 96 + k * 4, v, true),
-      ),
+      xyz.forEach((v, k) => bodyView.setFloat32(1000 + i * 96 + k * 4, v, true)),
     );
     bodyView.setUint32(1288, 3, true);
     [0, 1, 2].forEach((v, i) => bodyView.setUint32(1292 + i * 4, v, true));
@@ -288,25 +251,17 @@ test('eyewear fits the final single eye without losing paired lenses or burying 
       'eyes',
       'oval',
     )) {
-      assert.equal(
-        scale,
-        1,
-        'equal body size retains native eye width and depth',
-      );
+      assert.equal(scale, 1, 'equal body size retains native eye width and depth');
       if (part.bounds.max[2] === 0.9)
         assert.ok(
-          (part.bounds.max[2] - origin[2]) * scale + origin[2] + translate[2] >
-            0.95,
+          (part.bounds.max[2] - origin[2]) * scale + origin[2] + translate[2] > 0.95,
           'shallow native eye front remains outside the actual body surface',
         );
       const x =
         ((part.bounds.min[0] + part.bounds.max[0]) / 2 - origin[0]) * scale +
         origin[0] +
         translate[0];
-      assert.ok(
-        Math.abs(Math.abs(x) - targetGap / 2) < 1e-8,
-        'gap changes centers only',
-      );
+      assert.ok(Math.abs(Math.abs(x) - targetGap / 2) < 1e-8, 'gap changes centers only');
     }
   }
   for (const eyewear of ['monocle', 'tall_oval_frames', 'round_sunglasses']) {
@@ -314,12 +269,7 @@ test('eyewear fits the final single eye without losing paired lenses or burying 
       eyewear === 'monocle'
         ? [['monocle', bounds(0.25, 0.32, 0.9)]]
         : eyewear === 'round_sunglasses'
-          ? [
-              [
-                'round_sunglasses',
-                { min: [-0.6, -0.2, -0.3], max: [0.6, 0.2, 1] },
-              ],
-            ]
+          ? [['round_sunglasses', { min: [-0.6, -0.2, -0.3], max: [0.6, 0.2, 1] }]]
           : [
               ['tall_oval_frames', bounds(-0.25, 0.32, 0.9)],
               ['tall_oval_frames', bounds(0.25, 0.32, 0.9)],
@@ -334,20 +284,14 @@ test('eyewear fits the final single eye without losing paired lenses or burying 
     const fitted = fitCatalogPartRecords(target, donor, 'eyewear', eyewear, {
       singleEye: true,
     });
-    assert.equal(
-      fitted.length,
-      frames.length,
-      'every original eyewear mesh retained',
-    );
+    assert.equal(fitted.length, frames.length, 'every original eyewear mesh retained');
     for (const { part, scale, origin, translate } of fitted) {
       const x =
         ((part.bounds.min[0] + part.bounds.max[0]) / 2 - origin[0]) * scale +
         origin[0] +
         translate[0];
       const front =
-        ((eyewear === 'round_sunglasses'
-          ? part.bounds.max[2] - 0.05
-          : part.bounds.min[2]) -
+        ((eyewear === 'round_sunglasses' ? part.bounds.max[2] - 0.05 : part.bounds.min[2]) -
           origin[2]) *
           scale +
         origin[2] +
@@ -359,8 +303,7 @@ test('eyewear fits the final single eye without losing paired lenses or burying 
       assert.ok(translate.every(Number.isFinite));
       if (eyewear === 'round_sunglasses')
         assert.ok(
-          Math.abs((part.bounds.max[0] - part.bounds.min[0]) * scale - 1.18) <
-            1e-8,
+          Math.abs((part.bounds.max[0] - part.bounds.min[0]) * scale - 1.18) < 1e-8,
           'whole-frame width follows final face width, not the old eye gap',
         );
     }
@@ -389,16 +332,10 @@ test('headwear clears final eyes with one rigid translation and retains opaque a
       f.view.setFloat32(f.start + k * 4, b.min[k], true);
       f.view.setFloat32(f.start + 12 + k * 4, b.max[k], true);
       for (let v = 0; v < 3; v++)
-        f.view.setFloat32(
-          f.vertices + v * 96 + k * 4,
-          v === 0 ? b.min[k] : b.max[k],
-          true,
-        );
+        f.view.setFloat32(f.vertices + v * 96 + k * 4, v === 0 ? b.min[k] : b.max[k], true);
     }
   }
-  const bytes = new Uint8Array(
-    4 + parts.reduce((n, p) => n + p.end - p.start, 0) + 160,
-  );
+  const bytes = new Uint8Array(4 + parts.reduce((n, p) => n + p.end - p.start, 0) + 160);
   new DataView(bytes.buffer).setUint32(0, 3, true);
   let at = 4;
   for (const f of parts) {
@@ -412,10 +349,7 @@ test('headwear clears final eyes with one rigid translation and retains opaque a
     }),
     after = authoredAssemblyRecords(result);
   assert.equal(after.records.length, 3);
-  assert.ok(
-    after.records[2].bounds.min[1] > 0.8,
-    'brim clears the real final eye top',
-  );
+  assert.ok(after.records[2].bounds.min[1] > 0.8, 'brim clears the real final eye top');
   for (const part of before.records.slice(0, 2)) {
     const fitted = after.records[part.part];
     assert.deepEqual(

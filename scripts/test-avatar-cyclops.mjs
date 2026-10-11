@@ -33,10 +33,7 @@ test('occluded original eyes can use body bounds without inventing paired eye an
 });
 test('missing wire anchors or non-finite face geometry is rejected', () => {
   assert.throws(() => cyclopsPlacement(body, [], true), /face bounds/);
-  assert.throws(
-    () => cyclopsPlacement({ ...body, max: [Infinity, 1, 1] }, eyes),
-    /face bounds/,
-  );
+  assert.throws(() => cyclopsPlacement({ ...body, max: [Infinity, 1, 1] }, eyes), /face bounds/);
 });
 test('unselected recipes retain exact original assembly bytes without preparing a donor', async () => {
   const bytes = Uint8Array.from([1, 2, 3]);

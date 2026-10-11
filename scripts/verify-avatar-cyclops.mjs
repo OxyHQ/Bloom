@@ -25,8 +25,7 @@ try {
     browserErrors = [];
   page.on('pageerror', (e) => browserErrors.push(e.message));
   page.on('console', (m) => {
-    if (/GL_INVALID|GL ERROR|too many active webgl/i.test(m.text()))
-      browserErrors.push(m.text());
+    if (/GL_INVALID|GL ERROR|too many active webgl/i.test(m.text())) browserErrors.push(m.text());
   });
   await page.route('**/__cyclops-gate.html', (r) =>
     r.fulfill({
@@ -34,9 +33,7 @@ try {
       body: '<body style="background:#4d97ff;display:grid;grid-template-columns:repeat(3,340px);gap:12px">',
     }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__cyclops-gate.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__cyclops-gate.html`);
   await page.evaluate(async (migrated) => {
     const runtime = await import('/bloom-character/runtime.mjs');
     const characters = [
@@ -115,13 +112,10 @@ try {
               teal++;
             if (Math.max(data[i], data[i + 1], data[i + 2]) < 70) dark++;
             if (Math.min(data[i], data[i + 1], data[i + 2]) > 180) white++;
-            if (data[i] > data[i + 2] * 1.4 && data[i] > data[i + 1] * 1.4)
-              red++;
-            if (data[i + 2] > data[i] * 1.4 && data[i + 2] > data[i + 1] * 1.2)
-              blue++;
+            if (data[i] > data[i + 2] * 1.4 && data[i] > data[i + 1] * 1.4) red++;
+            if (data[i + 2] > data[i] * 1.4 && data[i + 2] > data[i + 1] * 1.2) blue++;
           }
-          hash =
-            (Math.imul(hash, 31) + data[i] + data[i + 1] + data[i + 2]) | 0;
+          hash = (Math.imul(hash, 31) + data[i] + data[i + 1] + data[i + 2]) | 0;
         }
         return { painted, white, red, blue, teal, dark, hash };
       });
@@ -129,9 +123,7 @@ try {
   await page.waitForFunction(
     () =>
       gate.errors.length ||
-      gate.controls.every(
-        (c) => c.diagnostics()?.ready && !c.diagnostics()?.pending,
-      ),
+      gate.controls.every((c) => c.diagnostics()?.ready && !c.diagnostics()?.pending),
     {},
     { timeout: 180000 },
   );
@@ -159,15 +151,11 @@ try {
     gate.controls[0].update(gate.props[0]);
   });
   await page.waitForFunction(
-    () =>
-      gate.errors.length || gate.controls[0].diagnostics()?.lastReaction === 0,
+    () => gate.errors.length || gate.controls[0].diagnostics()?.lastReaction === 0,
     {},
     { timeout: 60000 },
   );
-  assert.equal(
-    await page.evaluate(() => gate.runtime.runtimeStats().surface.contexts),
-    1,
-  );
+  assert.equal(await page.evaluate(() => gate.runtime.runtimeStats().surface.contexts), 1);
   const motion = [];
   for (let i = 0; i < 8; i++) {
     await page.waitForTimeout(140);
@@ -194,10 +182,7 @@ try {
     await page.waitForTimeout(220);
     work.push(await page.evaluate(() => gate.pixels()[0]));
   }
-  assert.ok(
-    new Set(work.map((p) => p.hash)).size > 3,
-    'native Work changes rendered 3D scene',
-  );
+  assert.ok(new Set(work.map((p) => p.hash)).size > 3, 'native Work changes rendered 3D scene');
   assert.deepEqual(await page.evaluate(() => gate.errors), []);
   assert.deepEqual(browserErrors, []);
   await page.screenshot({ path: '/tmp/bloom-cyclops-work.png' });
@@ -205,12 +190,7 @@ try {
   await page.waitForFunction(
     () => {
       const s = gate.runtime.runtimeStats();
-      return (
-        !s.instances &&
-        !s.surface.contexts &&
-        !s.legacy.characters &&
-        !s.legacy.pending
-      );
+      return !s.instances && !s.surface.contexts && !s.legacy.characters && !s.legacy.pending;
     },
     {},
     { timeout: 60000 },

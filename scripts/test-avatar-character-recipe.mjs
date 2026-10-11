@@ -35,14 +35,13 @@ test('Clippo independently accepts shape, eye, accessory and color overrides', (
     accessory: 'felipe_beret',
   });
   assert.equal(
-    characterRecipe(props({ ...p.config.character, bodyColor: '#123456' }))
-      .bodyColor,
+    characterRecipe(props({ ...p.config.character, bodyColor: '#123456' })).bodyColor,
     '#123456',
   );
-  assert.deepEqual(
-    authoredPartsFor(props({ preset: 'clippo', selections: { eyes: 'oval' } })),
-    { shape: 'clippo', eyes: 'oval' },
-  );
+  assert.deepEqual(authoredPartsFor(props({ preset: 'clippo', selections: { eyes: 'oval' } })), {
+    shape: 'clippo',
+    eyes: 'oval',
+  });
 });
 test('all authored parts compose on migrated and native shapes without leaking the preset body', () => {
   const selections = { eyes: 'clippo', accessory: 'felipe_beret' };
@@ -65,19 +64,14 @@ test('intact Todd and Felipe keep their original preset and edited variants keep
     assert.equal(characterRecipe(p), p.config.character);
     assert.deepEqual(authoredPartsFor(p), {});
   }
+  assert.deepEqual(authoredPartsFor(props({ preset: 'lime_frog', bodyColor: '#123456' })), {
+    faceShape: 'rounded_head_two_ears',
+    eyes: 'todd',
+    eyewear: 'none',
+    accessory: 'bow',
+  });
   assert.deepEqual(
-    authoredPartsFor(props({ preset: 'lime_frog', bodyColor: '#123456' })),
-    {
-      faceShape: 'rounded_head_two_ears',
-      eyes: 'todd',
-      eyewear: 'none',
-      accessory: 'bow',
-    },
-  );
-  assert.deepEqual(
-    authoredPartsFor(
-      props({ preset: 'blue_beret', selections: { shape: 'clippo' } }),
-    ),
+    authoredPartsFor(props({ preset: 'blue_beret', selections: { shape: 'clippo' } })),
     {
       shape: 'clippo',
       eyes: 'oval',
@@ -173,9 +167,7 @@ test('signature identity follows the actual body independently of preset seed an
   for (const preset of Object.values(shapes)) {
     assert.equal(bodySignatureFor(props({ preset })), preset);
     assert.equal(
-      bodySignatureFor(
-        props({ preset, selections: { eyes: 'dots' }, bodyColor: '#123456' }),
-      ),
+      bodySignatureFor(props({ preset, selections: { eyes: 'dots' }, bodyColor: '#123456' })),
       preset,
     );
   }

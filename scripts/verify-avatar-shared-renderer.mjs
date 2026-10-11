@@ -7,9 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const recipes = JSON.parse(
   execFileSync(
     'bun',
@@ -51,9 +49,7 @@ try {
         body: '<!doctype html><body>',
       }),
     );
-    await page.goto(
-      `${process.argv[2] || 'http://localhost:6006'}/__bloom_shared.html`,
-    );
+    await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__bloom_shared.html`);
     await page.evaluate(
       async ({ count, recipes }) => {
         window.gate = {
@@ -80,8 +76,7 @@ try {
         };
         gate.runtime = await import('/bloom-character/runtime.mjs');
         gate.grid = document.createElement('div');
-        gate.grid.style.cssText =
-          'display:grid;grid-template-columns:repeat(8,64px);gap:8px';
+        gate.grid.style.cssText = 'display:grid;grid-template-columns:repeat(8,64px);gap:8px';
         document.body.append(gate.grid);
         const presets = [
           'blue_beret',
@@ -154,9 +149,7 @@ try {
         gate.errors.length ||
         (gate.ready.size === count &&
           gate.runtime.runtimeStats().instances === count &&
-          gate.controls.every(
-            (c) => c.diagnostics()?.ready && !c.diagnostics()?.pending,
-          )),
+          gate.controls.every((c) => c.diagnostics()?.ready && !c.diagnostics()?.pending)),
       count,
       { timeout: 240000 },
     );
@@ -183,9 +176,7 @@ try {
       running = false;
       const elapsed = performance.now() - started;
       const percentile = (values, p) =>
-        values.sort((a, b) => a - b)[
-          Math.min(values.length - 1, Math.floor(values.length * p))
-        ];
+        values.sort((a, b) => a - b)[Math.min(values.length - 1, Math.floor(values.length * p))];
       return {
         elapsed,
         changed: hashes.map((s) => s.size),
@@ -218,9 +209,7 @@ try {
     assert.ok(metrics.painted.every((n) => n > 50));
     await page.locator('#avatar-0').click();
     await page.waitForFunction(
-      () =>
-        gate.controls[0].diagnostics()?.lastReaction === 0 ||
-        gate.errors.length,
+      () => gate.controls[0].diagnostics()?.lastReaction === 0 || gate.errors.length,
       {},
       { timeout: 30000 },
     );
@@ -233,10 +222,7 @@ try {
         const d = gate.controls[1].diagnostics();
         return (
           gate.errors.length ||
-          (d?.activityMode &&
-            d?.ready &&
-            !d?.pending &&
-            d?.lastActivityResult === 0)
+          (d?.activityMode && d?.ready && !d?.pending && d?.lastActivityResult === 0)
         );
       },
       {},
@@ -279,6 +265,4 @@ try {
 } finally {
   await browser.close();
 }
-console.log(
-  'PASS: 24/48 mixed avatars animate with one context, react/work, and release cleanly.',
-);
+console.log('PASS: 24/48 mixed avatars animate with one context, react/work, and release cleanly.');

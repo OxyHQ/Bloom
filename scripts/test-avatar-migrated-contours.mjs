@@ -84,8 +84,5 @@ test('contour face centers and sizes equal the original shape-owned source defau
     MIGRATED_FACES.slender.centers[1][0] - MIGRATED_FACES.slender.centers[0][0],
     (42 * 0.86) / 83,
   );
-  assert.notDeepEqual(
-    MIGRATED_FACES.petal.centers,
-    MIGRATED_FACES.cloud.centers,
-  );
+  assert.notDeepEqual(MIGRATED_FACES.petal.centers, MIGRATED_FACES.cloud.centers);
 });

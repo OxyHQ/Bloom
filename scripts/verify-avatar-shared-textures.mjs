@@ -5,9 +5,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 try {
   const page = await browser.newPage(),
@@ -16,12 +14,9 @@ try {
   await page.route('**/__bloom_texture_pool.html', (r) =>
     r.fulfill({ contentType: 'text/html', body: '<!doctype html><body>' }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__bloom_texture_pool.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__bloom_texture_pool.html`);
   const aliases = await page.evaluate(async () => {
-    const { createSharedTexturePool } =
-      await import('/bloom-character/shared-textures.mjs');
+    const { createSharedTexturePool } = await import('/bloom-character/shared-textures.mjs');
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 4;
     const real = canvas.getContext('webgl2'),
@@ -44,10 +39,7 @@ try {
       const s = gl.createShader(type);
       gl.shaderSource(s, source);
       gl.compileShader(s);
-      assert(
-        gl.getShaderParameter(s, gl.COMPILE_STATUS),
-        gl.getShaderInfoLog(s),
-      );
+      assert(gl.getShaderParameter(s, gl.COMPILE_STATUS), gl.getShaderInfoLog(s));
       gl.attachShader(program, s);
       gl.deleteShader(s);
     }
@@ -62,26 +54,11 @@ try {
       const t = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, t);
       gl.texStorage2D(gl.TEXTURE_2D, 10, gl.RGBA8, 512, 512);
-      gl.texParameteri(
-        gl.TEXTURE_2D,
-        gl.TEXTURE_MIN_FILTER,
-        gl.LINEAR_MIPMAP_LINEAR,
-      );
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-      gl.texSubImage2D(
-        gl.TEXTURE_2D,
-        0,
-        0,
-        0,
-        512,
-        512,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        data,
-        12,
-      );
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 512, 512, gl.RGBA, gl.UNSIGNED_BYTE, data, 12);
       gl.generateMipmap(gl.TEXTURE_2D);
       return t;
     }
@@ -90,10 +67,7 @@ try {
     const b = texture();
     b.name = 7;
     assert(a.name === 3 && b.name === 7, 'metadata');
-    assert(
-      pool.stats().physicalTextures === 1,
-      'identical textures not shared',
-    );
+    assert(pool.stats().physicalTextures === 1, 'identical textures not shared');
     function draw(unit, level = 0) {
       gl.uniform1i(gl.getUniformLocation(program, 'tex'), unit);
       gl.uniform1i(gl.getUniformLocation(program, 'level'), level);
@@ -109,33 +83,16 @@ try {
     gl.bindTexture(gl.TEXTURE_2D, a);
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, b);
-    assert(
-      JSON.stringify(draw(0, 9)) === red && JSON.stringify(draw(1, 9)) === red,
-      'shared mips',
-    );
+    assert(JSON.stringify(draw(0, 9)) === red && JSON.stringify(draw(1, 9)) === red, 'shared mips');
     // Same mutable source pointer, different contents: mutation must not leak.
     for (let i = 12; i < data.length; i += 4) {
       data[i] = 0;
       data[i + 2] = 255;
     }
     assert(JSON.stringify(draw(0)) === red, 'retained source pointer');
-    gl.texSubImage2D(
-      gl.TEXTURE_2D,
-      0,
-      0,
-      0,
-      512,
-      512,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      data,
-      12,
-    );
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 512, 512, gl.RGBA, gl.UNSIGNED_BYTE, data, 12);
     gl.generateMipmap(gl.TEXTURE_2D);
-    assert(
-      pool.stats().physicalTextures === 2 && pool.stats().copies === 1,
-      'copy on upload',
-    );
+    assert(pool.stats().physicalTextures === 2 && pool.stats().copies === 1, 'copy on upload');
     assert(
       JSON.stringify(draw(0, 9)) === red && JSON.stringify(draw(1, 9)) === blue,
       'COW mip or units leaked',
@@ -156,13 +113,7 @@ try {
     gl.bindTexture(gl.TEXTURE_2D, a);
     const fb = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D,
-      d,
-      0,
-    );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, d, 0);
     assert(
       gl.getFramebufferAttachmentParameter(
         gl.FRAMEBUFFER,
@@ -171,14 +122,8 @@ try {
       ) === d,
       'attachment identity',
     );
-    assert(
-      gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE,
-      'FBO incomplete',
-    );
-    assert(
-      gl.getParameter(gl.TEXTURE_BINDING_2D) === a,
-      'FBO COW changed unrelated binding',
-    );
+    assert(gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE, 'FBO incomplete');
+    assert(gl.getParameter(gl.TEXTURE_BINDING_2D) === a, 'FBO COW changed unrelated binding');
     gl.clearColor(0, 1, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -201,35 +146,15 @@ try {
       gl.UNSIGNED_BYTE,
       new Uint8Array([255, 255, 0, 255, 0, 0, 0, 0]),
     );
-    assert(
-      gl.getParameter(gl.UNPACK_ROW_LENGTH) === 2,
-      'unpack state not restored',
-    );
+    assert(gl.getParameter(gl.UNPACK_ROW_LENGTH) === 2, 'unpack state not restored');
     assert(JSON.stringify(draw(1)) === '[255,255,0,255]', 'partial COW pixel');
     gl.pixelStorei(gl.UNPACK_ROW_LENGTH, 0);
     const f = texture(),
       pbo = gl.createBuffer();
     gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, pbo);
-    gl.bufferData(
-      gl.PIXEL_UNPACK_BUFFER,
-      new Uint8Array([255, 0, 255, 255]),
-      gl.STATIC_DRAW,
-    );
-    gl.texSubImage2D(
-      gl.TEXTURE_2D,
-      0,
-      256,
-      256,
-      1,
-      1,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      0,
-    );
-    assert(
-      gl.getParameter(gl.PIXEL_UNPACK_BUFFER_BINDING) === pbo,
-      'unpack buffer not restored',
-    );
+    gl.bufferData(gl.PIXEL_UNPACK_BUFFER, new Uint8Array([255, 0, 255, 255]), gl.STATIC_DRAW);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 256, 256, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, 0);
+    assert(gl.getParameter(gl.PIXEL_UNPACK_BUFFER_BINDING) === pbo, 'unpack buffer not restored');
     assert(JSON.stringify(draw(1)) === '[255,0,255,255]', 'PBO COW pixel');
     gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, null);
     gl.deleteBuffer(pbo);
@@ -251,26 +176,13 @@ try {
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, 576, 960);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texSubImage2D(
-        gl.TEXTURE_2D,
-        0,
-        0,
-        0,
-        576,
-        960,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        atlasData,
-      );
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 576, 960, gl.RGBA, gl.UNSIGNED_BYTE, atlasData);
       return texture;
     }
     const atlasA = atlas(),
       atlasB = atlas();
     assert(pool.stats().physicalTextures === 1, 'NPOT atlas not shared');
-    assert(
-      pool.stats().mipBytesSaved === 576 * 960 * 4,
-      'NPOT allocation accounting',
-    );
+    assert(pool.stats().mipBytesSaved === 576 * 960 * 4, 'NPOT allocation accounting');
     assert(JSON.stringify(draw(1)) === red, 'NPOT shared pixels');
     gl.texSubImage2D(
       gl.TEXTURE_2D,
@@ -283,14 +195,8 @@ try {
       gl.UNSIGNED_BYTE,
       new Uint8Array([0, 255, 0, 255]),
     );
-    assert(
-      pool.stats().physicalTextures === 2,
-      'NPOT partial upload must split',
-    );
-    assert(
-      JSON.stringify(draw(1)) === '[0,255,0,255]',
-      'NPOT partial upload lost',
-    );
+    assert(pool.stats().physicalTextures === 2, 'NPOT partial upload must split');
+    assert(JSON.stringify(draw(1)) === '[0,255,0,255]', 'NPOT partial upload lost');
     gl.bindTexture(gl.TEXTURE_2D, atlasA);
     assert(JSON.stringify(draw(1)) === red, 'NPOT partial upload leaked');
     gl.deleteTexture(atlasA);
@@ -298,9 +204,7 @@ try {
     gl.deleteProgram(program);
     const after = pool.stats();
     assert(
-      after.physicalTextures === 0 &&
-        after.logicalTextures === 0 &&
-        after.pooledTextures === 0,
+      after.physicalTextures === 0 && after.logicalTextures === 0 && after.pooledTextures === 0,
       'leak',
     );
     pool.dispose();
@@ -308,10 +212,8 @@ try {
     return { before, after, glError: real.getError() };
   });
   const pixels = await page.evaluate(async () => {
-    const { createPoseTransition } =
-      await import('/bloom-character/pose-transition.mjs');
-    const { createSharedTexturePool } =
-      await import('/bloom-character/shared-textures.mjs');
+    const { createPoseTransition } = await import('/bloom-character/pose-transition.mjs');
+    const { createSharedTexturePool } = await import('/bloom-character/shared-textures.mjs');
     const source = document.createElement('canvas'),
       dest = document.createElement('canvas');
     source.id = 'raw';
@@ -345,22 +247,15 @@ try {
           bound.set(k, (...args) => {
             const original = value.apply(target, args);
             const copy = pooled[k](...args.map(mapped));
-            if (
-              original &&
-              typeof original === 'object' &&
-              copy &&
-              typeof copy === 'object'
-            )
+            if (original && typeof original === 'object' && copy && typeof copy === 'object')
               mapping.set(original, copy);
             return original;
           });
         return bound.get(k);
       },
     });
-    source.getContext = (type, ...args) =>
-      type === 'webgl2' ? tee : get(type, ...args);
-    const factory = (await import('/bloom-character/orbit-characters.mjs'))
-        .default,
+    source.getContext = (type, ...args) => (type === 'webgl2' ? tee : get(type, ...args));
+    const factory = (await import('/bloom-character/orbit-characters.mjs')).default,
       m = await factory({ locateFile: (f) => '/bloom-character/' + f });
     const chars = [];
     for (const name of ['blue_beret', 'purple_heart', 'lime_frog', 'alfred']) {
@@ -396,10 +291,7 @@ try {
           perCharacter[index].frames++;
           let painted = 0;
           for (let j = 3; j < a.length; j += 4) if (a[j] > 24) painted++;
-          perCharacter[index].painted = Math.max(
-            perCharacter[index].painted,
-            painted,
-          );
+          perCharacter[index].painted = Math.max(perCharacter[index].painted, painted);
           for (let i = 0; i < a.length; i++) {
             const d = Math.abs(a[i] - b[i]);
             if (d) {
@@ -429,11 +321,7 @@ try {
   });
   assert.deepEqual(errors, []);
   assert.ok(pixels.comparisons >= 100);
-  assert.ok(
-    pixels.perCharacter.every(
-      (item) => item.frames >= 20 && item.painted > 500,
-    ),
-  );
+  assert.ok(pixels.perCharacter.every((item) => item.frames >= 20 && item.painted > 500));
   assert.equal(pixels.channels, 0);
   assert.equal(pixels.max, 0);
   assert.deepEqual(pixels.errors, []);
@@ -443,12 +331,7 @@ try {
   assert.equal(pixels.before.pooledTextures, 3);
   assert.equal(pixels.before.hits, 9);
   assert.equal(pixels.before.mipBytesSaved, 6 * 1398100 + 3 * 576 * 960 * 4);
-  for (const key of [
-    'logicalTextures',
-    'physicalTextures',
-    'pooledTextures',
-    'mipBytesSaved',
-  ])
+  for (const key of ['logicalTextures', 'physicalTextures', 'pooledTextures', 'mipBytesSaved'])
     assert.equal(pixels.after[key], 0, `Dispose ${key}`);
   console.log(JSON.stringify({ aliases, pixels }, null, 2));
 } finally {

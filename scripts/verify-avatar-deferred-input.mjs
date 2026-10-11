@@ -2,9 +2,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 try {
   const page = await browser.newPage();
@@ -16,9 +14,7 @@ try {
       body: '<!doctype html><body>',
     }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__deferred_input.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__deferred_input.html`);
   await page.evaluate(async () => {
     const wait = WebGL2RenderingContext.prototype.clientWaitSync;
     window.holdUntil = 0;
@@ -63,9 +59,7 @@ try {
     }
   });
   await page.waitForFunction(
-    () =>
-      gate.ready.size === 2 &&
-      gate.controls.every((c) => !c.diagnostics().pending),
+    () => gate.ready.size === 2 && gate.controls.every((c) => !c.diagnostics().pending),
   );
   await page.evaluate(() => {
     holdUntil = performance.now() + 700;
@@ -80,9 +74,7 @@ try {
     true,
     'Pointer down/up must both precede GPU completion',
   );
-  await page.waitForFunction(
-    () => gate.controls[0].diagnostics().lastReaction === 0,
-  );
+  await page.waitForFunction(() => gate.controls[0].diagnostics().lastReaction === 0);
   assert.ok(
     await page.evaluate(() => gate.captures > 0),
     'Real pointer capture must happen during the physical press',
@@ -107,8 +99,7 @@ try {
     gate.before = gate.paints[1];
   });
   await page.waitForFunction(
-    () =>
-      runtime.runtimeStats().instances === 1 && gate.paints[1] > gate.before,
+    () => runtime.runtimeStats().instances === 1 && gate.paints[1] > gate.before,
   );
   assert.deepEqual(await page.evaluate(() => gate.errors), []);
   await page.evaluate(() => {
@@ -117,9 +108,7 @@ try {
   await page.waitForFunction(() => surface.sharedRenderPending());
   await page.evaluate(() => gate.controls[1].dispose());
   await page.waitForFunction(
-    () =>
-      runtime.runtimeStats().surface.contexts === 0 &&
-      !runtime.runtimeStats().legacy.worker,
+    () => runtime.runtimeStats().surface.contexts === 0 && !runtime.runtimeStats().legacy.worker,
   );
   assert.deepEqual(failures, []);
   console.log(

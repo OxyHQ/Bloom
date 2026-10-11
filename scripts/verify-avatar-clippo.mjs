@@ -13,8 +13,7 @@ try {
     browserErrors = [];
   page.on('pageerror', (e) => browserErrors.push(e.message));
   page.on('console', (m) => {
-    if (/GL_INVALID|GL ERROR|too many active webgl/i.test(m.text()))
-      browserErrors.push(m.text());
+    if (/GL_INVALID|GL ERROR|too many active webgl/i.test(m.text())) browserErrors.push(m.text());
   });
   await page.route('**/__clippo-gate.html', (r) =>
     r.fulfill({
@@ -22,9 +21,7 @@ try {
       body: '<body style="background:#4d97ff;display:grid;grid-template-columns:repeat(3,340px);gap:12px">',
     }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__clippo-gate.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__clippo-gate.html`);
   await page.evaluate(async () => {
     const runtime = await import('/bloom-character/runtime.mjs');
     const characters = [
@@ -90,13 +87,10 @@ try {
           if (data[i + 3] > 32) {
             painted++;
             if (Math.min(data[i], data[i + 1], data[i + 2]) > 180) white++;
-            if (data[i] > data[i + 2] * 1.4 && data[i] > data[i + 1] * 1.4)
-              red++;
-            if (data[i + 2] > data[i] * 1.4 && data[i + 2] > data[i + 1] * 1.2)
-              blue++;
+            if (data[i] > data[i + 2] * 1.4 && data[i] > data[i + 1] * 1.4) red++;
+            if (data[i + 2] > data[i] * 1.4 && data[i + 2] > data[i + 1] * 1.2) blue++;
           }
-          hash =
-            (Math.imul(hash, 31) + data[i] + data[i + 1] + data[i + 2]) | 0;
+          hash = (Math.imul(hash, 31) + data[i] + data[i + 1] + data[i + 2]) | 0;
         }
         return { painted, white, red, blue, hash };
       });
@@ -104,9 +98,7 @@ try {
   await page.waitForFunction(
     () =>
       gate.errors.length ||
-      gate.controls.every(
-        (c) => c.diagnostics()?.ready && !c.diagnostics()?.pending,
-      ),
+      gate.controls.every((c) => c.diagnostics()?.ready && !c.diagnostics()?.pending),
     {},
     { timeout: 180000 },
   );
@@ -121,14 +113,8 @@ try {
     assert.ok(p.painted > 700, `case ${i} paints actual geometry`);
   for (const i of [0, 1, 2, 3, 4])
     assert.ok(initial.pixels[i].white > 50, `case ${i} paints bulging whites`);
-  assert.ok(
-    initial.pixels[1].red > 500,
-    'red Clippo retains separate material',
-  );
-  assert.ok(
-    initial.pixels[2].blue > 500,
-    'blue Clippo retains separate material',
-  );
+  assert.ok(initial.pixels[1].red > 500, 'red Clippo retains separate material');
+  assert.ok(initial.pixels[2].blue > 500, 'blue Clippo retains separate material');
   assert.equal(initial.caps[3].selected.eyes, 'todd');
   assert.equal(initial.caps[3].selected.accessory, 'felipe_beret');
   assert.equal(initial.caps[4].selected.shape, 'circle');
@@ -139,15 +125,11 @@ try {
     gate.controls[0].update(gate.props[0]);
   });
   await page.waitForFunction(
-    () =>
-      gate.errors.length || gate.controls[0].diagnostics()?.lastReaction === 0,
+    () => gate.errors.length || gate.controls[0].diagnostics()?.lastReaction === 0,
     {},
     { timeout: 60000 },
   );
-  assert.equal(
-    await page.evaluate(() => gate.runtime.runtimeStats().surface.contexts),
-    1,
-  );
+  assert.equal(await page.evaluate(() => gate.runtime.runtimeStats().surface.contexts), 1);
   const motion = [];
   for (let i = 0; i < 8; i++) {
     await page.waitForTimeout(140);
@@ -174,10 +156,7 @@ try {
     await page.waitForTimeout(220);
     work.push(await page.evaluate(() => gate.pixels()[0]));
   }
-  assert.ok(
-    new Set(work.map((p) => p.hash)).size > 3,
-    'native Work changes rendered 3D scene',
-  );
+  assert.ok(new Set(work.map((p) => p.hash)).size > 3, 'native Work changes rendered 3D scene');
   assert.deepEqual(await page.evaluate(() => gate.errors), []);
   assert.deepEqual(browserErrors, []);
   await page.screenshot({ path: '/tmp/bloom-clippo-work.png' });
@@ -185,12 +164,7 @@ try {
   await page.waitForFunction(
     () => {
       const s = gate.runtime.runtimeStats();
-      return (
-        !s.instances &&
-        !s.surface.contexts &&
-        !s.legacy.characters &&
-        !s.legacy.pending
-      );
+      return !s.instances && !s.surface.contexts && !s.legacy.characters && !s.legacy.pending;
     },
     {},
     { timeout: 60000 },

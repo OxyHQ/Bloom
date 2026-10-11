@@ -18,15 +18,12 @@ try {
     `${process.argv.find((v) => v.startsWith('http')) || 'http://localhost:6006'}/__catalog.html`,
   );
   const result = await page.evaluate(async (facesOnly) => {
-    const m = await (
-      await import('/bloom-character/orbit-characters.mjs')
-    ).default({ locateFile: (f) => '/bloom-character/' + f });
-    const { encodeAppearance } =
-      await import('/bloom-character/appearance-codec.mjs');
-    const { NATIVE_PARTS } =
-      await import('/bloom-character/character-recipe.mjs');
-    const { MIGRATED_CONTOURS } =
-      await import('/bloom-character/migrated-contours.mjs');
+    const m = await (await import('/bloom-character/orbit-characters.mjs')).default({
+      locateFile: (f) => '/bloom-character/' + f,
+    });
+    const { encodeAppearance } = await import('/bloom-character/appearance-codec.mjs');
+    const { NATIVE_PARTS } = await import('/bloom-character/character-recipe.mjs');
+    const { MIGRATED_CONTOURS } = await import('/bloom-character/migrated-contours.mjs');
     const {
       composePresetBody,
       composeCatalogParts,
@@ -41,12 +38,9 @@ try {
       fitAuthoredHeadwear,
       shapeFaceLayout,
     } = await import('/bloom-character/authored-parts.mjs');
-    const { deformLegacyAssembly } =
-      await import('/bloom-character/legacy-geometry.mjs');
-    const { composeClippoAssembly } =
-      await import('/bloom-character/clippo-geometry.mjs');
-    const { composeCyclopsAssembly } =
-      await import('/bloom-character/cyclops-geometry.mjs');
+    const { deformLegacyAssembly } = await import('/bloom-character/legacy-geometry.mjs');
+    const { composeClippoAssembly } = await import('/bloom-character/clippo-geometry.mjs');
+    const { composeCyclopsAssembly } = await import('/bloom-character/cyclops-geometry.mjs');
     const { sha256 } = await import('/bloom-character/sha256.mjs');
     const shapes = [
       ...m.catalog(0).map((x) => ({ id: x.id, shape: x.id })),
@@ -111,12 +105,7 @@ try {
           rig: null,
           hereCharacter: null,
         });
-        const r = m.orbitPrepareAssembly(
-          appearance,
-          0,
-          'matrix-base-' + body.id,
-          false,
-        );
+        const r = m.orbitPrepareAssembly(appearance, 0, 'matrix-base-' + body.id, false);
         if (!r.bytes || r.error) continue;
         const info = authoredAssemblyRecords(r.bytes.slice());
         if (!authoredEyeRecords(info).length) continue;
@@ -131,9 +120,7 @@ try {
         try {
           const parts = {
             ...body.parts,
-            ...(body.id !== 'todd' && body.id !== 'clippo'
-              ? { faceShape: body.id }
-              : {}),
+            ...(body.id !== 'todd' && body.id !== 'clippo' ? { faceShape: body.id } : {}),
             eyes: job.eyes,
             ...(job.eyewear ? { eyewear: job.eyewear } : {}),
             ...(job.accessory ? { accessory: job.accessory } : {}),
@@ -151,16 +138,10 @@ try {
             bytes = deformLegacyAssembly(bytes, {
               points: body.points,
               geometryKey: await sha256(
-                new TextEncoder().encode(
-                  JSON.stringify([body.id, body.points]),
-                ),
+                new TextEncoder().encode(JSON.stringify([body.id, body.points])),
               ),
             });
-          request.faceLayout = shapeFaceLayout(
-            authoredAssemblyRecords(bytes),
-            request,
-            m,
-          );
+          request.faceLayout = shapeFaceLayout(authoredAssemblyRecords(bytes), request, m);
           if (parts.shape === 'clippo' || parts.eyes === 'clippo')
             bytes = await composeClippoAssembly(m, bytes, request);
           const before = authoredAssemblyRecords(bytes),
@@ -168,12 +149,8 @@ try {
               before.body.vertexOffset,
               before.body.vertexOffset + before.body.vertexCount * 96,
             );
-          bytes = await composeCatalogParts(m, bytes, request, [
-            'eyes',
-            'accessory',
-          ]);
-          if (parts.eyes === 'cyclops')
-            bytes = await composeCyclopsAssembly(m, bytes, request);
+          bytes = await composeCatalogParts(m, bytes, request, ['eyes', 'accessory']);
+          if (parts.eyes === 'cyclops') bytes = await composeCyclopsAssembly(m, bytes, request);
           bytes = await composeCatalogParts(m, bytes, request, ['eyewear']);
           bytes = await fitAuthoredEyeSpacing(bytes, request);
           bytes = await fitAuthoredHeadwear(bytes, request);
@@ -182,17 +159,10 @@ try {
               out.body.vertexOffset,
               out.body.vertexOffset + out.body.vertexCount * 96,
             );
-          if (
-            actual.length !== expected.length ||
-            !actual.every((v, i) => v === expected[i])
-          )
+          if (actual.length !== expected.length || !actual.every((v, i) => v === expected[i]))
             throw Error('body vertices changed during part edit');
-          const matching = (id) =>
-            out.records.slice(1).filter((p) => recordHasLabel(out, p, id));
-          if (
-            NATIVE_PARTS.eyes.includes(job.eyes) &&
-            !matching(job.eyes).length
-          )
+          const matching = (id) => out.records.slice(1).filter((p) => recordHasLabel(out, p, id));
+          if (NATIVE_PARTS.eyes.includes(job.eyes) && !matching(job.eyes).length)
             throw Error('requested native eye geometry missing');
           if (!NATIVE_PARTS.eyes.includes(job.eyes)) {
             const count = authoredEyeRecords(out).length,
@@ -206,40 +176,26 @@ try {
               job.eyes === 'cyclops'
                 ? [face]
                 : [-1, 1].map((sign) =>
-                    face.filter(
-                      (p) =>
-                        Math.sign((p.bounds.min[0] + p.bounds.max[0]) / 2) ===
-                        sign,
-                    ),
+                    face.filter((p) => Math.sign((p.bounds.min[0] + p.bounds.max[0]) / 2) === sign),
                   );
             for (const [i, group] of groups.entries()) {
               if (!group.length) throw Error('missing intrinsic face group');
               const bounds = {
-                min: [0, 1].map((k) =>
-                  Math.min(...group.map((p) => p.bounds.min[k])),
-                ),
-                max: [0, 1].map((k) =>
-                  Math.max(...group.map((p) => p.bounds.max[k])),
-                ),
+                min: [0, 1].map((k) => Math.min(...group.map((p) => p.bounds.min[k]))),
+                max: [0, 1].map((k) => Math.max(...group.map((p) => p.bounds.max[k]))),
               };
               const radius =
                 job.eyes === 'cyclops'
                   ? (bounds.max[0] - bounds.min[0]) / 2
-                  : Math.max(
-                      bounds.max[0] - bounds.min[0],
-                      bounds.max[1] - bounds.min[1],
-                    ) / 2;
-              const expectedRadius =
-                request.faceLayout.radius * (job.eyes === 'cyclops' ? 2 : 1);
+                  : Math.max(bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1]) / 2;
+              const expectedRadius = request.faceLayout.radius * (job.eyes === 'cyclops' ? 2 : 1);
               if (Math.abs(radius - expectedRadius) > 0.005)
                 throw Error('eye style changed shape-owned size');
               for (let k = 0; k < 2; k++) {
                 const center = (bounds.min[k] + bounds.max[k]) / 2;
                 const desired =
                   job.eyes === 'cyclops'
-                    ? (request.faceLayout.centers[0][k] +
-                        request.faceLayout.centers[1][k]) /
-                      2
+                    ? (request.faceLayout.centers[0][k] + request.faceLayout.centers[1][k]) / 2
                     : request.faceLayout.centers[i][k];
                 if (Math.abs(center - desired) > 0.005)
                   throw Error('eye style moved shape-owned center');
@@ -276,10 +232,7 @@ try {
       jobs: jobs.length,
     };
   }, facesOnly);
-  fs.writeFileSync(
-    '/tmp/bloom-catalog-matrix.json',
-    JSON.stringify(result, null, 2),
-  );
+  fs.writeFileSync('/tmp/bloom-catalog-matrix.json', JSON.stringify(result, null, 2));
   const summary = {
     rows: result.rows.length,
     errors: result.errors,
@@ -296,9 +249,7 @@ try {
   assert.ok(result.cache.bytes <= result.cache.maximumBytes);
   assert.equal(
     new Set(
-      result.rows.map((r) =>
-        JSON.stringify([r.body, r.kind, r.eyes, r.eyewear, r.accessory]),
-      ),
+      result.rows.map((r) => JSON.stringify([r.body, r.kind, r.eyes, r.eyewear, r.accessory])),
     ).size,
     result.rows.length,
   );

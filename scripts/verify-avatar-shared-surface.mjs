@@ -2,9 +2,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 try {
   const page = await browser.newPage();
@@ -13,9 +11,7 @@ try {
   await page.route('**/__bloom_surface.html', (r) =>
     r.fulfill({ contentType: 'text/html', body: '<!doctype html><body>' }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__bloom_surface.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__bloom_surface.html`);
   const result = await page.evaluate(async () => {
     const {
       acquireSharedSurface,
@@ -44,7 +40,12 @@ try {
       'blitFramebuffer',
       'readPixels',
       'clear',
-    ].every((name) => first[name] === first[name]);
+    ].every((name) => {
+      // Two reads of the same property: the surface must hand out one cached
+      // wrapper, not a fresh bind per access.
+      const once = first[name];
+      return once === first[name];
+    });
     const output = document.createElement('canvas');
     output.width = output.height = 100;
     const ctx = output.getContext('2d', { willReadFrequently: true });
@@ -74,13 +75,7 @@ try {
       renderbuffer = first.createRenderbuffer();
     first.bindFramebuffer(first.FRAMEBUFFER, framebuffer);
     first.bindRenderbuffer(first.RENDERBUFFER, renderbuffer);
-    first.renderbufferStorageMultisample(
-      first.RENDERBUFFER,
-      samples,
-      first.RGBA8,
-      80,
-      60,
-    );
+    first.renderbufferStorageMultisample(first.RENDERBUFFER, samples, first.RGBA8, 80, 60);
     first.framebufferRenderbuffer(
       first.FRAMEBUFFER,
       first.COLOR_ATTACHMENT0,
@@ -90,18 +85,7 @@ try {
     first.clearColor(0, 0, 1, 1);
     first.clear(first.COLOR_BUFFER_BIT);
     first.bindFramebuffer(first.DRAW_FRAMEBUFFER, null);
-    first.blitFramebuffer(
-      0,
-      0,
-      80,
-      60,
-      0,
-      0,
-      80,
-      60,
-      first.COLOR_BUFFER_BIT,
-      first.NEAREST,
-    );
+    first.blitFramebuffer(0, 0, 80, 60, 0, 0, 80, 60, first.COLOR_BUFFER_BIT, first.NEAREST);
     ctx.clearRect(0, 0, 100, 100);
     a.copy(ctx);
     const resolved = pixel(40, 30);
@@ -113,10 +97,7 @@ try {
     first.deleteRenderbuffer(renderbuffer);
     b.canvas.width = 100;
     b.canvas.height = 100;
-    const liveDimensions = [
-      second.drawingBufferWidth,
-      second.drawingBufferHeight,
-    ];
+    const liveDimensions = [second.drawingBufferWidth, second.drawingBufferHeight];
     paint(first, [1, 0, 0, 1]);
     paint(second, [0, 1, 0, 1]);
     first.getExtension('WEBGL_lose_context').loseContext();
@@ -176,9 +157,7 @@ try {
     } catch {
       blockedResize = true;
     }
-    const waiter = waitForSharedRender().then(() =>
-      deferredOrder.push('waiter'),
-    );
+    const waiter = waitForSharedRender().then(() => deferredOrder.push('waiter'));
     await completion;
     await waiter;
     const deferredPixel = pixel(50, 50);
@@ -209,9 +188,7 @@ try {
     b.release();
     const getParameter = WebGL2RenderingContext.prototype.getParameter;
     WebGL2RenderingContext.prototype.getParameter = function (name) {
-      return name === this.MAX_RENDERBUFFER_SIZE
-        ? 128
-        : getParameter.call(this, name);
+      return name === this.MAX_RENDERBUFFER_SIZE ? 128 : getParameter.call(this, name);
     };
     const small = acquireSharedSurface(document.body);
     paint(small.canvas.getContext('webgl2'), [1, 0, 0, 1]);

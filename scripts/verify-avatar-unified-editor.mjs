@@ -27,8 +27,7 @@ const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
 try {
   await page.route('**/bloom-character/runtime.mjs?*', (route) => {
-    if (route.request().url().includes('unified-editor-core'))
-      return route.continue();
+    if (route.request().url().includes('unified-editor-core')) return route.continue();
     return route.fulfill({
       contentType: 'text/javascript',
       body: `
@@ -54,9 +53,7 @@ try {
     `${process.argv[2] || 'http://localhost:6006'}/iframe.html?id=application-agent-avatar-characters--editor&viewMode=story`,
   );
   const settle = async (expected = {}) => {
-    await page
-      .locator('[data-testid="universal-avatar-preview"]')
-      .scrollIntoViewIfNeeded();
+    await page.locator('[data-testid="universal-avatar-preview"]').scrollIntoViewIfNeeded();
     await page.waitForFunction(
       (expected) => {
         const gate = window.unifiedGate;
@@ -68,8 +65,7 @@ try {
           e?.paints &&
           e.paintedKey === JSON.stringify(e.props.config.character) &&
           Object.entries(expected).every(
-            ([key, value]) =>
-              e.props.config.character.selections?.[key] === value,
+            ([key, value]) => e.props.config.character.selections?.[key] === value,
           )
         );
       },
@@ -110,9 +106,7 @@ try {
   };
   await settle();
   assert.equal(
-    await page
-      .getByRole('slider', { name: 'Eye spacing', exact: true })
-      .count(),
+    await page.getByRole('slider', { name: 'Eye spacing', exact: true }).count(),
     0,
     'Eye placement belongs to the shape, not an editor control',
   );
@@ -134,11 +128,7 @@ try {
   assert.equal(await shapeWheel.locator('canvas').count(), 0);
   const rows = [];
   const verify = (state, id, eyes = 'todd') => {
-    assert.equal(
-      state.character.preset,
-      'lime_frog',
-      'Body choices retain preset defaults',
-    );
+    assert.equal(state.character.preset, 'lime_frog', 'Body choices retain preset defaults');
     assert.equal(state.character.selections.shape, id);
     assert.equal(state.selected.shape, id);
     assert.equal(state.selected.eyes, eyes);
@@ -149,11 +139,7 @@ try {
       state.blue > 80 && state.blue > state.painted * 0.12,
       `${id} paints selected blue, never procedural peach`,
     );
-    assert.equal(
-      state.mounts,
-      mounts,
-      'Switching shape retains the mounted renderer',
-    );
+    assert.equal(state.mounts, mounts, 'Switching shape retains the mounted renderer');
     assert.ok(state.contextsAtPaint <= 1);
     assert.ok(state.contexts <= 1);
     rows.push({ id, ...state });
@@ -174,17 +160,9 @@ try {
   await shapeWheel.focus();
   await page.keyboard.press('End');
   const single = page.getByRole('button', { name: 'Single eye', exact: true });
-  assert.equal(
-    await single.isEnabled(),
-    true,
-    'Known eyes remain available during preparation',
-  );
+  assert.equal(await single.isEnabled(), true, 'Known eyes remain available during preparation');
   await single.click();
-  verify(
-    await settle({ shape: shapes.at(-1)[0], eyes: 'cyclops' }),
-    shapes.at(-1)[0],
-    'cyclops',
-  );
+  verify(await settle({ shape: shapes.at(-1)[0], eyes: 'cyclops' }), shapes.at(-1)[0], 'cyclops');
   assert.equal(Math.max(...rows.map((row) => row.contextsAtPaint)), 1);
   await page.screenshot({
     path: '/tmp/bloom-unified-editor.png',
@@ -192,10 +170,7 @@ try {
   });
   assert.deepEqual(errors, []);
   assert.deepEqual(await page.evaluate(() => unifiedGate.errors), []);
-  fs.writeFileSync(
-    '/tmp/bloom-unified-editor.json',
-    JSON.stringify(rows, null, 2),
-  );
+  fs.writeFileSync('/tmp/bloom-unified-editor.json', JSON.stringify(rows, null, 2));
   console.log(
     `PASS: ${rows.length} real edits preserve recipe, blue paint, eyes, hat, eyewear and canvas; pending eye choice accepted.`,
   );

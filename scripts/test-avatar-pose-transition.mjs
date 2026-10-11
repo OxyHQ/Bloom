@@ -8,8 +8,7 @@ import {
   blendFramePose,
   createPoseTransition,
 } from '../assets/character-runtime/pose-transition.mjs';
-const identity = () =>
-  Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+const identity = () => Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 const close = (a, b) => assert(Math.abs(a - b) < 1e-5, `${a} != ${b}`);
 const draw = () => {
   const x = new Float32Array(92);
@@ -29,8 +28,7 @@ test('quaternion pose interpolation preserves rigid lengths and endpoints', () =
   close(m[0], Math.SQRT1_2);
   close(m[1], Math.SQRT1_2);
   close(m[12], 2);
-  for (let c = 0; c < 3; c++)
-    close(Math.hypot(...m.slice(c * 4, c * 4 + 3)), 1);
+  for (let c = 0; c < 3; c++) close(Math.hypot(...m.slice(c * 4, c * 4 + 3)), 1);
   assert.deepEqual([...interpolateTransform(a, b, 0)], [...a]);
   assert.deepEqual([...interpolateTransform(a, b, 1)], [...b]);
   const shear = identity();
@@ -48,18 +46,8 @@ test('draw blending preserves all material/discrete bytes and coherent inverse-t
   b[26] = 0.25;
   for (let i = 32; i < 92; i++) b[i] = i + 0.125;
   const mixed = blendDrawPose(a, b, 0.5),
-    allowed = new Set([
-      ...Array.from({ length: 32 }, (_, i) => i),
-      37,
-      38,
-      39,
-      88,
-      89,
-      90,
-      91,
-    ]);
-  for (let i = 0; i < 92; i++)
-    if (!allowed.has(i)) assert.equal(mixed[i], b[i]);
+    allowed = new Set([...Array.from({ length: 32 }, (_, i) => i), 37, 38, 39, 88, 89, 90, 91]);
+  for (let i = 0; i < 92; i++) if (!allowed.has(i)) assert.equal(mixed[i], b[i]);
   close(mixed[0], 1.5);
   close(mixed[16], 1 / 1.5);
   close(mixed[37], b[37] / 2);
@@ -80,8 +68,7 @@ test('camera interpolation retains inverse projection and never changes lights o
   assert(mixed);
   const product = multiplyMatrix(mixed.slice(0, 16), mixed.slice(16, 32));
   product.forEach((v, i) => close(v, identity()[i]));
-  for (let i = 32; i < 116; i++)
-    if (i < 48 || i > 50) assert.equal(mixed[i], b[i]);
+  for (let i = 32; i < 116; i++) if (i < 48 || i > 50) assert.equal(mixed[i], b[i]);
   assert.deepEqual([...blendFramePose(a, b, 1)], [...b]);
 });
 test('only reflected UBO poses change; heap offsets, native intro hold and added geometry stay isolated', () => {

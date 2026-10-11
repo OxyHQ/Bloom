@@ -6,9 +6,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 (async () => {
   const b = await chromium.launch({ args: ['--no-sandbox'] });
   try {
@@ -67,9 +65,7 @@ const { chromium } = require(
       }
     });
     await p.waitForFunction(
-      () =>
-        gate.ready.size === 2 &&
-        gate.runtime.runtimeStats().legacy.pending === 0,
+      () => gate.ready.size === 2 && gate.runtime.runtimeStats().legacy.pending === 0,
       undefined,
       { timeout: 60000 },
     );
@@ -103,10 +99,7 @@ const { chromium } = require(
       );
     for (let i = 0; i < 2; i++)
       if (!failed.errors.some((e) => e.i === i))
-        assert(
-          later.paints[i] > failed.before[i],
-          'Unaffected character must keep animating',
-        );
+        assert(later.paints[i] > failed.before[i], 'Unaffected character must keep animating');
     await p.evaluate(() => gate.controls.forEach((c) => c.dispose()));
     await p.waitForFunction(
       () =>

@@ -95,6 +95,74 @@ function CharacterLab() {
   );
 }
 export const Playground: Story = { render: () => <CharacterLab /> };
+
+// Alternate each original preset with the same preset refitted to a shape, so
+// the gallery exercises both catalog bodies and the shared shape geometry.
+const stressCharacters = Array.from({ length: 48 }, (_, index) => {
+  const variant = Math.floor(index / 2);
+  const [preset, name] = characters[variant % characters.length] ?? characters[0];
+  const [shape, shapeName] =
+    CHARACTER_SHAPES[variant % CHARACTER_SHAPES.length] ?? CHARACTER_SHAPES[0];
+  const reshaped = index % 2 === 1;
+  const config = { ...FOLD_CONFIG, character: { preset } };
+  return {
+    id: `stress-avatar-${index + 1}`,
+    name: reshaped ? `${name} ${shapeName}` : name,
+    kind: reshaped ? 'Reshaped' : 'Original',
+    config: reshaped ? createConfigForShape(config, shape) : config,
+  };
+});
+
+function StressAvatar({
+  item,
+  paused,
+}: {
+  item: (typeof stressCharacters)[number];
+  paused: boolean;
+}) {
+  const [workingKey, setWorking] = useState(0);
+  const [reactionKey, setReaction] = useState(0);
+  return (
+    <StyledView
+      testID={item.id}
+      className="w-[148px] items-center gap-2 rounded-2xl border border-border-button-default p-3"
+      style={{ width: 148 }}
+    >
+      <AgentAvatar
+        config={item.config}
+        size={96}
+        paused={paused}
+        interactive
+        workingKey={workingKey}
+        reactionKey={reactionKey}
+        label={`${item.kind} ${item.name}`}
+      />
+      <Text variant="body-medium" numberOfLines={1}>
+        {item.name}
+      </Text>
+      <Text variant="caption-2-regular">{item.kind}</Text>
+      <StyledView className="flex-row gap-2">
+        <Button
+          size="xs"
+          disabled={paused}
+          accessibilityLabel={`React ${item.id}`}
+          onPress={() => setReaction((key) => key + 1)}
+        >
+          React
+        </Button>
+        <Button
+          size="xs"
+          disabled={paused}
+          accessibilityLabel={`Work ${item.id}`}
+          onPress={() => setWorking((key) => key + 1)}
+        >
+          Work
+        </Button>
+      </StyledView>
+    </StyledView>
+  );
+}
+
 function ManyAvatarGallery() {
   const [paused, setPaused] = useState(false);
   return (

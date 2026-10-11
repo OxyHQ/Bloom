@@ -35,31 +35,20 @@ test('Clippo is a finite outward rounded tube at both native quality levels', ()
     assert.ok(mesh.indices.every((i) => i < count));
     assert.ok(mesh.vertices.every(Number.isFinite));
     for (let i = 0; i < mesh.vertices.length; i += 24) {
-      assert.ok(
-        Math.abs(Math.hypot(...mesh.vertices.subarray(i + 3, i + 6)) - 1) <
-          1e-6,
-      );
+      assert.ok(Math.abs(Math.hypot(...mesh.vertices.subarray(i + 3, i + 6)) - 1) < 1e-6);
       for (const delta of [6, 12])
-        assert.deepEqual(
-          Array.from(mesh.vertices.subarray(i + delta, i + delta + 3)),
-          [0, 0, 0],
-        );
+        assert.deepEqual(Array.from(mesh.vertices.subarray(i + delta, i + delta + 3)), [0, 0, 0]);
     }
     let faces = 0;
     for (let i = 0; i < mesh.indices.length; i += 3) {
       const ids = Array.from(mesh.indices.subarray(i, i + 3)),
-        p = ids.map((n) =>
-          Array.from(mesh.vertices.subarray(n * 24, n * 24 + 3)),
-        );
+        p = ids.map((n) => Array.from(mesh.vertices.subarray(n * 24, n * 24 + 3)));
       const n = cross(sub(p[1], p[0]), sub(p[2], p[0]));
       if (Math.hypot(...n) < 1e-10) continue;
       const smooth = [0, 1, 2].map((k) =>
         ids.reduce((s, id) => s + mesh.vertices[id * 24 + 3 + k], 0),
       );
-      assert.ok(
-        n.reduce((s, v, k) => s + v * smooth[k], 0) > 0,
-        'outward winding',
-      );
+      assert.ok(n.reduce((s, v, k) => s + v * smooth[k], 0) > 0, 'outward winding');
       faces++;
     }
     assert.ok(faces > 1000);
@@ -125,10 +114,7 @@ test('Clippo white eye size and depth do not collapse with narrow native eye spa
     const fit = clippoFaceEyeFit(body, anchor);
     assert.deepEqual(fit.radius, [0.2, 0.21, 0.14]);
     assert.ok(Math.abs(fit.center[0] - center) < 1e-12);
-    assert.ok(
-      fit.center[2] + fit.radius[2] > 1.05,
-      'white-eye front remains beyond backing face',
-    );
+    assert.ok(fit.center[2] + fit.radius[2] > 1.05, 'white-eye front remains beyond backing face');
     assert.ok(
       Math.abs(fit.center[2] - fit.radius[2] - anchor.min[2]) < 1e-12,
       'eye remains attached at original back surface',

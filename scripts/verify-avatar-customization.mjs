@@ -31,8 +31,7 @@ try {
   // The editor still calls the real runtime; only its public callbacks and
   // update props are observed. No production source or control is mocked.
   await page.route('**/bloom-character/runtime.mjs?*', (route) => {
-    if (route.request().url().includes('customization-core'))
-      return route.continue();
+    if (route.request().url().includes('customization-core')) return route.continue();
     return route.fulfill({
       contentType: 'text/javascript',
       body: `
@@ -64,20 +63,12 @@ try {
       );
       if (!entry) return null;
       const canvas = entry.canvas;
-      const data = canvas
-        .getContext('2d')
-        .getImageData(0, 0, canvas.width, canvas.height).data;
+      const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
       let painted = 0,
         hash = 0;
       for (let i = 0; i < data.length; i += 4) {
         if (data[i + 3] > 24) painted++;
-        hash =
-          (Math.imul(hash, 31) +
-            data[i] +
-            data[i + 1] +
-            data[i + 2] +
-            data[i + 3]) |
-          0;
+        hash = (Math.imul(hash, 31) + data[i] + data[i + 1] + data[i + 2] + data[i + 3]) | 0;
       }
       return {
         paints: entry.paints,
@@ -89,9 +80,7 @@ try {
       };
     });
   const settle = async (previous = -1) => {
-    await page
-      .locator('[data-testid="clippo-preview"]')
-      .scrollIntoViewIfNeeded();
+    await page.locator('[data-testid="clippo-preview"]').scrollIntoViewIfNeeded();
     try {
       await page.waitForFunction(
         (previous) => {
@@ -114,9 +103,7 @@ try {
         await page.evaluate(() => ({
           gate: window.customizationGate?.entries.map((e) => ({
             connected: e.canvas.isConnected,
-            host: e.canvas
-              .closest('[data-testid]')
-              ?.getAttribute('data-testid'),
+            host: e.canvas.closest('[data-testid]')?.getAttribute('data-testid'),
             props: e.props,
             paints: e.paints,
             paintedKey: e.paintedKey,
@@ -134,21 +121,14 @@ try {
     const state = await snapshot();
     console.log('Painted', state.character);
     assert.ok(state.painted > 300, 'Selected recipe must paint actual pixels');
-    assert.equal(
-      await page.getByText('Avatar unavailable', { exact: true }).count(),
-      0,
-    );
+    assert.equal(await page.getByText('Avatar unavailable', { exact: true }).count(), 0);
     return state;
   };
   await settle();
   const choose = async (label, title) => {
     await page.getByRole('button', { name: label, exact: true }).click();
     const item = page.getByRole('radio', { name: title, exact: true });
-    assert.equal(
-      await item.isEnabled(),
-      true,
-      `${label}: ${title} must be available`,
-    );
+    assert.equal(await item.isEnabled(), true, `${label}: ${title} must be available`);
     await item.click();
   };
   const initial = await snapshot();
@@ -164,17 +144,9 @@ try {
     await chip.click();
     state = await settle(before.paints);
     assert.equal(state.capabilities.selected.eyes, id);
-    assert.equal(
-      state.capabilities.selected.shape,
-      toddShape,
-      'Eye changes retain Todd body',
-    );
+    assert.equal(state.capabilities.selected.shape, toddShape, 'Eye changes retain Todd body');
     assert.equal(state.character.preset, 'lime_frog');
-    assert.notEqual(
-      state.hash,
-      before.hash,
-      `${id} must change visible eye geometry`,
-    );
+    assert.notEqual(state.hash, before.hash, `${id} must change visible eye geometry`);
     results.push({
       eyes: id,
       shape: toddShape,
@@ -185,9 +157,7 @@ try {
   await page.getByRole('button', { name: 'Todd', exact: true }).click();
   state = await settle(state.paints);
   assert.equal(
-    await page
-      .getByRole('slider', { name: 'Eye spacing', exact: true })
-      .count(),
+    await page.getByRole('slider', { name: 'Eye spacing', exact: true }).count(),
     0,
     'Each shape supplies its own eye layout',
   );
@@ -199,11 +169,7 @@ try {
   await shape.focus();
   await page.keyboard.press('ArrowRight');
   state = await settle(state.paints);
-  assert.equal(
-    state.capabilities.selected.eyes,
-    'todd',
-    'Shape changes keep the selected eyes',
-  );
+  assert.equal(state.capabilities.selected.eyes, 'todd', 'Shape changes keep the selected eyes');
   assert.equal(
     state.character.eyeSpacing,
     undefined,
@@ -223,10 +189,7 @@ try {
   }
   assert.deepEqual(errors, []);
   assert.deepEqual(await page.evaluate(() => customizationGate.errors), []);
-  fs.writeFileSync(
-    '/tmp/bloom-customization-editor.json',
-    JSON.stringify(results, null, 2),
-  );
+  fs.writeFileSync('/tmp/bloom-customization-editor.json', JSON.stringify(results, null, 2));
   console.log(
     'PASS: Todd body accepts every eye through the editor, shape-owned eye placement has no editor slider, shape changes preserve choices, and Clippo accessories paint.',
   );

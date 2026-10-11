@@ -21,24 +21,18 @@ try {
       body: '<!doctype html><body style="display:grid;grid-template-columns:repeat(6,150px);gap:12px;background:#ddd;font:12px sans-serif">',
     }),
   );
-  await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__preset-paint.html`,
-  );
+  await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__preset-paint.html`);
   await page.evaluate(async () => {
     const runtime = await import('/bloom-character/runtime.mjs');
-    const { ORIGINAL_PRESETS } =
-      await import('/bloom-character/character-recipe.mjs');
-    const { authoredAssemblyRecords } =
-      await import('/bloom-character/authored-parts.mjs');
-    const module = await (
-      await import('/bloom-character/orbit-characters.mjs')
-    ).default({ locateFile: (file) => '/bloom-character/' + file });
+    const { ORIGINAL_PRESETS } = await import('/bloom-character/character-recipe.mjs');
+    const { authoredAssemblyRecords } = await import('/bloom-character/authored-parts.mjs');
+    const module = await (await import('/bloom-character/orbit-characters.mjs')).default({
+      locateFile: (file) => '/bloom-character/' + file,
+    });
     const rgb = (bytes) => {
       const info = authoredAssemblyRecords(bytes),
         view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-      return [0, 1, 2].map((k) =>
-        view.getFloat32(info.body.start + 28 + k * 4, true),
-      );
+      return [0, 1, 2].map((k) => view.getFloat32(info.body.start + 28 + k * 4, true));
     };
     window.gate = {
       runtime,
@@ -57,11 +51,9 @@ try {
         'paint-original:' + preset,
         false,
       );
-      if (!source.bytes || source.error)
-        throw Error(source.error || 'missing source');
+      if (!source.bytes || source.error) throw Error(source.error || 'missing source');
       const expected = rgb(source.bytes);
-      for (const shape of ['circle', 'cloud', 'todd'])
-        gate.cases.push({ preset, shape, expected });
+      for (const shape of ['circle', 'cloud', 'todd']) gate.cases.push({ preset, shape, expected });
     }
     gate.cases.push(
       {
@@ -83,8 +75,7 @@ try {
         super(...args);
         this.addEventListener('message', ({ data }) => {
           const index = gate.requests.get(data.id);
-          if (index !== undefined && data.bytes)
-            gate.materials[index] = rgb(data.bytes);
+          if (index !== undefined && data.bytes) gate.materials[index] = rgb(data.bytes);
         });
       }
       postMessage(data, ...args) {
@@ -119,8 +110,7 @@ try {
             paused: true,
           },
           {
-            onError: (error) =>
-              gate.errors.push({ index, error: String(error) }),
+            onError: (error) => gate.errors.push({ index, error: String(error) }),
           },
         ),
       );
@@ -132,8 +122,7 @@ try {
     await page.waitForFunction(
       (index) =>
         gate.errors.some((e) => e.index === index) ||
-        (gate.controls[index].diagnostics().ready &&
-          !gate.controls[index].diagnostics().pending),
+        (gate.controls[index].diagnostics().ready && !gate.controls[index].diagnostics().pending),
       index,
       { timeout: 90000 },
     );
@@ -147,40 +136,27 @@ try {
     materials: gate.materials,
     errors: gate.errors,
     pixels: gate.canvases.map((canvas) => {
-      const data = canvas
-        .getContext('2d')
-        .getImageData(0, 0, canvas.width, canvas.height).data;
+      const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
       let count = 0;
       for (let i = 3; i < data.length; i += 4) if (data[i] > 100) count++;
       return count;
     }),
   }));
-  fs.writeFileSync(
-    '/tmp/bloom-preset-paint.json',
-    JSON.stringify(result, null, 2),
-  );
+  fs.writeFileSync('/tmp/bloom-preset-paint.json', JSON.stringify(result, null, 2));
   assert.deepEqual(result.errors, []);
   assert.deepEqual(pageErrors, []);
   for (let index = 0; index < count; index++) {
     const label = `${result.cases[index].preset}/${result.cases[index].shape}`;
-    assert.equal(
-      result.materials[index]?.length,
-      3,
-      `${label} captured actual prepared material`,
-    );
+    assert.equal(result.materials[index]?.length, 3, `${label} captured actual prepared material`);
     for (let component = 0; component < 3; component++)
       assert.ok(
-        Math.abs(
-          result.materials[index][component] -
-            result.cases[index].expected[component],
-        ) < 1e-6,
+        Math.abs(result.materials[index][component] - result.cases[index].expected[component]) <
+          1e-6,
         `${label} RGB component ${component} matches original material`,
       );
     assert.ok(result.pixels[index] > 300, `${label} actually rendered`);
   }
-  await page.evaluate(() =>
-    gate.controls.forEach((control) => control.dispose()),
-  );
+  await page.evaluate(() => gate.controls.forEach((control) => control.dispose()));
   await page.waitForFunction(
     () => {
       const s = gate.runtime.runtimeStats();

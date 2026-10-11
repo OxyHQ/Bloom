@@ -2,9 +2,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 (async () => {
   const b = await chromium.launch({ args: ['--no-sandbox'] });
   try {
@@ -15,10 +13,10 @@ const { chromium } = require(
     );
     await p.goto('http://localhost:6006/__pose.html');
     const result = await p.evaluate(async () => {
-      const { acquireSharedSurface } =
-        await import('/bloom-character/shared-surface.mjs');
-      const { getCharacterEngine, acquireCharacterPreparation } =
-        await import('/bloom-character/legacy-engine.mjs');
+      const { acquireSharedSurface } = await import('/bloom-character/shared-surface.mjs');
+      const { getCharacterEngine, acquireCharacterPreparation } = await import(
+        '/bloom-character/legacy-engine.mjs'
+      );
       const m = await getCharacterEngine();
       const release = await acquireCharacterPreparation();
       const s = acquireSharedSurface(document.body);

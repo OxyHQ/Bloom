@@ -54,32 +54,21 @@ async function fixture() {
   const url = (value) => 'data:text/javascript,' + encodeURIComponent(value);
   const source = (
     await readFile(
-      new URL(
-        '../assets/character-runtime/managed-avatar.mjs',
-        import.meta.url,
-      ),
+      new URL('../assets/character-runtime/managed-avatar.mjs', import.meta.url),
       'utf8',
     )
   )
     .replace(
       "'./render-budget.mjs'",
       JSON.stringify(
-        url(
-          'export const renderBudget=globalThis.__managedCommandBudget; // fixture ' +
-            namespace,
-        ),
+        url('export const renderBudget=globalThis.__managedCommandBudget; // fixture ' + namespace),
       ),
     )
     .replace(
       "'./resolution.mjs'",
-      JSON.stringify(
-        new URL('../assets/character-runtime/resolution.mjs', import.meta.url)
-          .href,
-      ),
+      JSON.stringify(new URL('../assets/character-runtime/resolution.mjs', import.meta.url).href),
     );
-  const { createManagedAvatar } = await import(
-    url(source + '\n// fixture ' + namespace++)
-  );
+  const { createManagedAvatar } = await import(url(source + '\n// fixture ' + namespace++));
   let callbacks;
   const state = { ready: true, pending: false };
   let previousWork = 0,
@@ -90,8 +79,7 @@ async function fixture() {
       events.push({ kind: 'update', silent, props });
       if (!silent) {
         if (props.workingKey !== previousWork) events.push({ kind: 'work' });
-        if (props.reactionKey !== previousReaction)
-          events.push({ kind: 'react' });
+        if (props.reactionKey !== previousReaction) events.push({ kind: 'react' });
       }
       previousWork = props.workingKey;
       previousReaction = props.reactionKey;
@@ -124,15 +112,10 @@ async function fixture() {
     reactionKey: 0,
     interactive: true,
   };
-  const managed = createManagedAvatar(
-    canvas,
-    props,
-    {},
-    async (_, initial, nextCallbacks) => {
-      callbacks = nextCallbacks;
-      return controller;
-    },
-  );
+  const managed = createManagedAvatar(canvas, props, {}, async (_, initial, nextCallbacks) => {
+    callbacks = nextCallbacks;
+    return controller;
+  });
   const lease = leases[0];
   lease.value = await lease.options.start();
   callbacks.onReady();

@@ -8,9 +8,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const boxes = {};
 await (async () => {
   const browser = await chromium.launch({ args: ['--no-sandbox'] });
@@ -24,10 +22,7 @@ await (async () => {
         body: '<!doctype html><body>',
       }),
     );
-    await page.goto(
-      (process.argv[2] || 'http://localhost:6006') +
-        '/__bloom_preparation.html',
-    );
+    await page.goto((process.argv[2] || 'http://localhost:6006') + '/__bloom_preparation.html');
     await page.exposeFunction('capture', async (name) => {
       const png = await page.screenshot({
         path: '/tmp/bloom-preparation-' + name + '.png',
@@ -42,12 +37,7 @@ await (async () => {
         canvas.height = image.height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(image, 0, 0);
-        const { data, width, height } = ctx.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height,
-        );
+        const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
         let minX = width,
           minY = height,
           maxX = -1,
@@ -66,8 +56,7 @@ await (async () => {
       }, png.toString('base64'));
     });
     const result = await page.evaluate(async () => {
-      document.body.innerHTML =
-        '<canvas id="shared" style="width:320px;height:320px"></canvas>';
+      document.body.innerHTML = '<canvas id="shared" style="width:320px;height:320px"></canvas>';
       const contexts = new Set(),
         get = HTMLCanvasElement.prototype.getContext;
       HTMLCanvasElement.prototype.getContext = function (type, ...args) {
@@ -88,8 +77,7 @@ await (async () => {
         }
       };
       const adapter = await import('/bloom-character/legacy-engine.mjs');
-      const { encodeAppearance } =
-        await import('/bloom-character/appearance-codec.mjs');
+      const { encodeAppearance } = await import('/bloom-character/appearance-codec.mjs');
       const points = (x, y) =>
         Array.from({ length: 64 }, (_, i) => {
           const a = (i * Math.PI * 2) / 64;
@@ -120,27 +108,21 @@ await (async () => {
         });
       const firstTurn = await adapter.acquireCharacterPreparation();
       const cancelled = new AbortController();
-      const cancelledTurn = adapter
-        .acquireCharacterPreparation(cancelled.signal)
-        .then(
-          () => {
-            throw new Error('Cancelled waiter was admitted');
-          },
-          (error) => error.name,
-        );
+      const cancelledTurn = adapter.acquireCharacterPreparation(cancelled.signal).then(
+        () => {
+          throw new Error('Cancelled waiter was admitted');
+        },
+        (error) => error.name,
+      );
       const order = [];
-      const secondTurn = adapter
-        .acquireCharacterPreparation()
-        .then((release) => {
-          order.push('second');
-          return release;
-        });
-      const thirdTurn = adapter
-        .acquireCharacterPreparation()
-        .then((release) => {
-          order.push('third');
-          return release;
-        });
+      const secondTurn = adapter.acquireCharacterPreparation().then((release) => {
+        order.push('second');
+        return release;
+      });
+      const thirdTurn = adapter.acquireCharacterPreparation().then((release) => {
+        order.push('third');
+        return release;
+      });
       cancelled.abort();
       firstTurn();
       (await secondTurn)();
@@ -163,11 +145,7 @@ await (async () => {
         for (let i = 0; i < 240; i++) {
           character.render(performance.now() / 1000);
           await new Promise((r) => setTimeout(r, 20));
-          if (
-            i > 10 &&
-            !character.preparationStats().pending &&
-            !character.hasPendingUpdate()
-          )
+          if (i > 10 && !character.preparationStats().pending && !character.hasPendingUpdate())
             break;
         }
         characters.push({ name, character, restore });
@@ -175,15 +153,13 @@ await (async () => {
       }
       const before = adapter.legacyEngineStats();
       for (let i = 0; i < 240; i++) {
-        for (const { character } of characters)
-          character.render(performance.now() / 1000);
+        for (const { character } of characters) character.render(performance.now() / 1000);
         await new Promise((r) => setTimeout(r, 20));
         if (
           i > 10 &&
           characters.every(
             ({ character }) =>
-              !character.preparationStats().pending &&
-              !character.hasPendingUpdate(),
+              !character.preparationStats().pending && !character.hasPendingUpdate(),
           )
         )
           break;
@@ -226,19 +202,14 @@ await (async () => {
       tri.release();
       for (let i = 0; i < 100; i++) {
         await new Promise((r) => setTimeout(r, 20));
-        if (
-          !adapter.legacyEngineStats().pending &&
-          !adapter.legacyEngineStats().worker
-        )
-          break;
+        if (!adapter.legacyEngineStats().pending && !adapter.legacyEngineStats().worker) break;
       }
       return {
         order,
         cancelledResult,
         requests,
         contexts: contexts.size,
-        sameFS:
-          original.FS === ellipse.module.FS && original.FS === tri.module.FS,
+        sameFS: original.FS === ellipse.module.FS && original.FS === tri.module.FS,
         before,
         retained,
         blockedWhileNativePending,
@@ -248,11 +219,7 @@ await (async () => {
     });
     fs.writeFileSync(
       '/tmp/bloom-shared-engine-gate.json',
-      JSON.stringify(
-        result,
-        (k, v) => (typeof v === 'bigint' ? v.toString() : v),
-        2,
-      ),
+      JSON.stringify(result, (k, v) => (typeof v === 'bigint' ? v.toString() : v), 2),
     );
     assert.equal(result.contexts, 1);
     assert.equal(result.sameFS, true);

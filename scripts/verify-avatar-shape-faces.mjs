@@ -19,21 +19,13 @@ try {
       body: '<body style="background:#ddd;display:grid;grid-template-columns:repeat(6,150px);gap:12px;font:12px sans-serif">',
     }),
   );
-  await page.goto(
-    (process.argv[2] || 'http://localhost:6006') + '/__shape-faces.html',
-  );
+  await page.goto((process.argv[2] || 'http://localhost:6006') + '/__shape-faces.html');
   await page.evaluate(async (full) => {
     const runtime = await import('/bloom-character/runtime.mjs');
-    const { authoredAssemblyRecords, authoredEyeRecords } =
-      await import('/bloom-character/authored-parts.mjs');
-    const rows = [
-      'circle',
-      'todd',
-      'cloud',
-      'slender',
-      'clippo',
-      'rounded_cube',
-    ].flatMap((shape) =>
+    const { authoredAssemblyRecords, authoredEyeRecords } = await import(
+      '/bloom-character/authored-parts.mjs'
+    );
+    const rows = ['circle', 'todd', 'cloud', 'slender', 'clippo', 'rounded_cube'].flatMap((shape) =>
       ['oval', 'todd', 'clippo', 'cyclops'].map((eyes) => ({
         shape,
         eyes,
@@ -101,13 +93,7 @@ try {
             gate.rows[index].eyes === 'cyclops'
               ? [middle(union(eyes))]
               : [-1, 1].map((sign) =>
-                  middle(
-                    union(
-                      eyes.filter(
-                        (p) => Math.sign(middle(p.bounds)[0]) === sign,
-                      ),
-                    ),
-                  ),
+                  middle(union(eyes.filter((p) => Math.sign(middle(p.bounds)[0]) === sign))),
                 );
         });
       }
@@ -156,8 +142,7 @@ try {
     await page.waitForFunction(
       (i) =>
         gate.errors.some((e) => e.index === i) ||
-        (gate.controls[i].diagnostics().ready &&
-          !gate.controls[i].diagnostics().pending),
+        (gate.controls[i].diagnostics().ready && !gate.controls[i].diagnostics().pending),
       index,
       { timeout: 90000 },
     );
@@ -190,10 +175,7 @@ try {
       return { alpha, face };
     }),
   }));
-  fs.writeFileSync(
-    '/tmp/bloom-shape-faces.json',
-    JSON.stringify(result, null, 2),
-  );
+  fs.writeFileSync('/tmp/bloom-shape-faces.json', JSON.stringify(result, null, 2));
   assert.deepEqual(errors, []);
   assert.deepEqual(result.errors, []);
   for (const [i, p] of result.pixels.entries()) {
@@ -207,8 +189,7 @@ try {
           for (let k = 0; k < 2; k++)
             assert.ok(
               Math.abs(
-                result.geometry[shape * 4][side][k] -
-                  result.geometry[shape * 4 + style][side][k],
+                result.geometry[shape * 4][side][k] - result.geometry[shape * 4 + style][side][k],
               ) < 0.005,
               'shape-owned centers ' + shape + '/' + style,
             );
@@ -217,9 +198,7 @@ try {
       for (let side = 0; side < 2; side++)
         for (let k = 0; k < 2; k++)
           assert.ok(
-            Math.abs(
-              result.geometry[0][side][k] - result.geometry[i][side][k],
-            ) < 0.005,
+            Math.abs(result.geometry[0][side][k] - result.geometry[i][side][k]) < 0.005,
             'seed-invariant circle anchors',
           );
   await page.evaluate(() => gate.controls.forEach((c) => c.dispose()));
