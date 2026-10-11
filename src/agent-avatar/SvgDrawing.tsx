@@ -20,6 +20,7 @@ import {
   type DrawingPaint,
 } from './drawing';
 import { GRAIN_URI } from './grain';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 /** Native SVG stops require a separate alpha; alpha-bearing colors silently lose it. */
 export function splitPaint(value: string): { color: string; opacity: number } {
@@ -154,7 +155,7 @@ function DrawingLayer({ nodes, size }: { nodes: DrawingNode[]; size: number }) {
     return <G key={id}>{result}</G>;
   });
   return (
-    <Svg width={size} height={size} viewBox="0 0 200 200" accessible={false} aria-hidden={true}>
+    <Svg width={size} height={size} viewBox="0 0 200 200" {...svgA11yProps()}>
       <Defs>{definitions}</Defs>
       {artwork}
     </Svg>

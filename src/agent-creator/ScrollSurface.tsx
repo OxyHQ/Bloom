@@ -5,6 +5,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 const ScrollSurfaceBase: ComponentType<Pick<ScrollViewProps, 'style' | 'contentContainerStyle'>> =
   ScrollView;
@@ -90,7 +91,7 @@ export function ScrollSurface({
             />
           </>
         ) : (
-          <Svg width="100%" height={24} accessible={false} opacity={opacity}>
+          <Svg width="100%" height={24} {...svgA11yProps()} opacity={opacity}>
             <Defs>
               <LinearGradient
                 id={`${id}-${bottom ? 'bottom' : 'top'}`}

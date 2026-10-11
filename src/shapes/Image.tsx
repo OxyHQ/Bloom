@@ -5,6 +5,7 @@ import { resolve } from './resolve';
 import { assertSize, assertImageSource } from './validation';
 import { useSvgId } from './use-svg-id';
 import type { ImageProps } from './types';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 /** Clips an image on every platform. SVG cannot clip arbitrary React Native views. */
 export function Image({ shape = 'circle', source, size, alt, onError }: ImageProps) {
@@ -40,11 +41,7 @@ export function Image({ shape = 'circle', source, size, alt, onError }: ImagePro
         width={size}
         height={size}
         viewBox={`0 0 ${outline.viewBox} ${outline.viewBox}`}
-        accessible={Boolean(alt)}
-        accessibilityRole={alt ? 'image' : undefined}
-        accessibilityLabel={alt}
-        aria-label={alt}
-        aria-hidden={!alt}
+        {...svgA11yProps(alt)}
       >
         <Defs>
           <ClipPath id={clipId}>

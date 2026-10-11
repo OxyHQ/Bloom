@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 import { Border, Fill, Image, resolve } from '../shapes';
 import { assertImageSource } from '../shapes/validation';
 import { svgColor } from '../shapes/svg-color';
@@ -62,7 +63,37 @@ describe('Shared Shapes', () => {
   it('keeps images source-compatible for local assets', () => {
     const tree = render(<Image size={40} shape="heart" source={23} alt="Portrait" />);
     expect(tree.UNSAFE_getByType('SvgImage' as never).props.href).toBe(23);
-    expect(tree.UNSAFE_getByType('Svg' as never).props['aria-label']).toBe('Portrait');
+    expect(tree.UNSAFE_getByType('Svg' as never).props.accessibilityLabel).toBe('Portrait');
+  });
+
+  // react-native-svg's web `<svg>` spreads unknown props onto the DOM, where
+  // `accessible` is an invalid attribute and React logs it from every app.
+  describe('on web', () => {
+    const RN_A11Y = ['accessible', 'accessibilityRole', 'accessibilityLabel'];
+    beforeEach(() => {
+      Platform.OS = 'web';
+    });
+    afterEach(() => {
+      Platform.OS = 'ios';
+    });
+
+    it('names an image with ARIA, never with React Native props', () => {
+      const svg = render(
+        <Image size={40} shape="heart" source={23} alt="Portrait" />,
+      ).UNSAFE_getByType('Svg' as never);
+      expect(svg.props).toMatchObject({ role: 'img', 'aria-label': 'Portrait' });
+      for (const prop of RN_A11Y) expect(svg.props).not.toHaveProperty(prop);
+    });
+
+    it.each([
+      ['an unnamed image', <Image key="i" size={40} shape="heart" source={23} />],
+      ['a fill', <Fill key="f" size={40} shape="heart" color="red" />],
+      ['a border', <Border key="b" size={40} shape="heart" width={2} colors="red" />],
+    ])('hides %s with aria-hidden alone', (_name, element) => {
+      const svg = render(element).UNSAFE_getByType('Svg' as never);
+      expect(svg.props['aria-hidden']).toBe(true);
+      for (const prop of RN_A11Y) expect(svg.props).not.toHaveProperty(prop);
+    });
   });
 });
 

@@ -19,6 +19,7 @@ import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
 import { ShapeSilhouette } from './ShapeSilhouette';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 // RNW supports these listbox properties; native handles equivalent accessibility actions.
 type ListboxViewProps = Omit<ViewProps, 'role'> & {
@@ -268,7 +269,7 @@ export function ShapeArc({
             viewBox="0 0 100 126"
             preserveAspectRatio="none"
             style={{ position: 'absolute', left: 0, top: 0 }}
-            accessible={false}
+            {...svgA11yProps()}
           >
             <Defs>
               <LinearGradient id={`${id}-edge`} x1="0" y1="0" x2="1" y2="0">

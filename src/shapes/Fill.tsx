@@ -4,6 +4,7 @@ import Svg, { Path } from 'react-native-svg';
 import { resolve } from './resolve';
 import { assertSize } from './validation';
 import type { FillProps } from './types';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 /** Draws only a background; does not mask arbitrary React Native children. */
 export function Fill({ shape = 'circle', size, color }: FillProps) {
@@ -24,8 +25,7 @@ export function Fill({ shape = 'circle', size, color }: FillProps) {
   return (
     <Svg
       pointerEvents="none"
-      accessible={false}
-      aria-hidden
+      {...svgA11yProps()}
       width={size}
       height={size}
       viewBox={`0 0 ${outline.viewBox} ${outline.viewBox}`}

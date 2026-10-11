@@ -10,6 +10,7 @@ import { useAgentCreatorMessages } from './context';
 import { GlossArt } from './GlossArt';
 import { hexToHsv, hsvToHex, type Hsv } from './shared';
 import { useTrackEvents } from './use-track-events';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 const StyledTextInput: ComponentType<TextInputProps> = styled(TextInput, {
   className: 'style',
@@ -187,7 +188,7 @@ export function CustomColorPicker({
           <Svg
             width="100%"
             height="100%"
-            accessible={false}
+            {...svgA11yProps()}
             style={{ position: 'absolute', left: 0, top: 0 }}
           >
             <Defs>
@@ -254,7 +255,7 @@ export function CustomColorPicker({
           <Svg
             width="100%"
             height={12}
-            accessible={false}
+            {...svgA11yProps()}
             style={{ position: 'absolute', left: 0, top: 0 }}
           >
             <Defs>

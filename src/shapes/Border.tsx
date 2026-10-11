@@ -6,6 +6,7 @@ import { assertSize, assertWidth } from './validation';
 import { useSvgId } from './use-svg-id';
 import { svgColor } from './svg-color';
 import type { BorderProps } from './types';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 /** A border contained inside the outline. A shape clip removes the outer stroke half. */
 export function Border({
@@ -41,8 +42,7 @@ export function Border({
   return (
     <Svg
       pointerEvents="none"
-      accessible={false}
-      aria-hidden
+      {...svgA11yProps()}
       width={size}
       height={size}
       viewBox={`0 0 ${span} ${span}`}
