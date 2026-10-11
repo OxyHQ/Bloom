@@ -4,6 +4,7 @@ import { legacyContours } from '../agent-avatar/legacy-contours';
 import { radialContour } from '../agent-avatar/legacy-recipe';
 import type { AvatarConfig } from '../agent-avatar/model';
 import { CHARACTER_COLORS } from './constants';
+import { svgA11yProps } from '../styles/svg-a11y';
 
 const silhouettes = new Map<string, { path: string; viewBox: string }>();
 
@@ -48,7 +49,7 @@ export const ShapeSilhouette = memo(function ShapeSilhouette({ config }: { confi
       height={56}
       viewBox={viewBox}
       preserveAspectRatio="xMidYMid meet"
-      accessible={false}
+      {...svgA11yProps()}
       pointerEvents="none"
     >
       <Path d={path} fill={CHARACTER_COLORS.pink} />
