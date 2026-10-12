@@ -25,17 +25,20 @@
  * The numbers below are exactly what those class strings resolved to, and each
  * one is named beside the utility it came from.
  *
- * The `image` prop is a plain absolute URL (e.g. a `cloud.oxy.so` OG image) and
- * is rendered directly with the RN `Image` primitive — NOT through
- * `ImageResolver` / `Avatar`, which resolve bare Oxy file IDs.
+ * The `image` prop is an absolute URL, or the same image at several widths, and
+ * is rendered with `expo-image` (which picks among the widths by the cover's
+ * laid-out size) — NOT through `ImageResolver` / `Avatar`, which resolve bare
+ * Oxy file IDs.
  */
-import React, { memo, useCallback, useMemo } from 'react';
-import { Image, Linking, StyleSheet, Text, View } from 'react-native';
+import type React from 'react';
+import { memo, useCallback, useMemo } from 'react';
+import { Image } from 'expo-image';
+import { Linking, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../card';
 import { useTheme } from '../theme/use-theme';
 import { fontSize, space } from '../styles/tokens';
-import type { LinkPreviewCardProps } from './types';
+import type { LinkPreviewCardProps, LinkPreviewImageSource } from './types';
 
 /** Height (px) of the optional cover image at the top of the card. */
 const COVER_IMAGE_HEIGHT = 160;
@@ -65,6 +68,18 @@ function hostnameOf(url: string): string | undefined {
   }
 }
 
+/**
+ * `image` as `expo-image` takes it, or `undefined` when there is nothing to
+ * show. An empty list counts as no image, so the card never reserves a blank
+ * cover.
+ */
+function coverSource(
+  image: string | readonly LinkPreviewImageSource[] | undefined,
+): string | LinkPreviewImageSource[] | undefined {
+  if (typeof image === 'string') return image || undefined;
+  return image && image.length > 0 ? [...image] : undefined;
+}
+
 const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
   url,
   title,
@@ -85,6 +100,11 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
       displayTitle: title ?? host ?? url,
     };
   }, [url, siteName, title]);
+
+  const cover = useMemo(() => coverSource(image), [image]);
+  // Stable across re-renders and rendition lists alike: recycled list cells
+  // must not flash the previous card's image while the next one loads.
+  const coverKey = typeof cover === 'string' ? cover : cover?.[0]?.uri;
 
   const handlePress = useCallback(() => {
     if (onPress) {
@@ -109,10 +129,12 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
       accessibilityRole="link"
       accessibilityLabel={displayTitle}
     >
-      {image ? (
+      {cover ? (
         <Image
-          source={{ uri: image }}
-          resizeMode="cover"
+          source={cover}
+          recyclingKey={coverKey}
+          contentFit="cover"
+          cachePolicy="memory-disk"
           style={[
             styles.cover,
             // Fill-height mode: flex into the card's bounding height (supplied

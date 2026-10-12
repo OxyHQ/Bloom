@@ -1,6 +1,16 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 
 /**
+ * One rendition of the cover image and the pixel width it was rendered at —
+ * the shape `@oxy.so/utils/image` `contentImageSources` returns. Given several,
+ * the card loads the smallest one that covers the space it is laid out in.
+ */
+export interface LinkPreviewImageSource {
+  uri: string;
+  width: number;
+}
+
+/**
  * Props for {@link LinkPreviewCard}.
  *
  * Structural by design — Bloom does NOT depend on `@oxy.so/contracts`. The shape
@@ -16,11 +26,14 @@ export interface LinkPreviewCardProps {
   /** OpenGraph / meta description. */
   description?: string;
   /**
-   * Absolute cover-image URL (e.g. a `cloud.oxy.so` OG image). Rendered directly
-   * with the RN `Image` primitive — NOT through `ImageResolver` / `Avatar`, which
-   * are for bare Oxy file IDs.
+   * The cover image: one absolute URL, or the same image at several widths
+   * (e.g. `contentImageSources(url)` from `@oxy.so/utils/image`). With several,
+   * `expo-image` loads the smallest that covers the cover's rendered size — a
+   * `srcset` on web, the view's size × pixel ratio on native — so a card in a
+   * narrow row never downloads the full-width rendition. Rendered directly, NOT
+   * through `ImageResolver` / `Avatar`, which are for bare Oxy file IDs.
    */
-  image?: string;
+  image?: string | readonly LinkPreviewImageSource[];
   /** Site / brand name shown above the title. Falls back to the URL hostname. */
   siteName?: string;
   /**
