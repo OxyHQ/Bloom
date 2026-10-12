@@ -40,10 +40,9 @@ describe('avatar handoff geometry', () => {
   });
 });
 
-describe('committed avatar artwork', () => {
-  it('retains the exact departure frame after later frames and preview unmount', async () => {
-    const { captureAvatars, retainAvatarDrawing } = await import('../handoff');
-    const { DrawingContext } = await import('../../agent-avatar/drawing');
+describe('on-demand avatar snapshots', () => {
+  it('captures once at departure and keeps that image after unmount', async () => {
+    const { captureAvatars, retainAvatarSnapshotCapture } = await import('../handoff');
     const { INITIAL_WORKSPACE } = await import('../data');
     const agent = INITIAL_WORKSPACE.agents[0]!;
     const node = {
@@ -51,19 +50,36 @@ describe('committed avatar artwork', () => {
         cb(20, 200, 80, 80),
     } as View;
     const nodes = new Map([[agent.id, node]]);
-    const departure = new DrawingContext();
-    departure.fillRect(17, 19, 24, 36);
-    retainAvatarDrawing(nodes, agent.id, departure);
+    const capture = jest.fn(async () => ({
+      uri: 'data:image/png;base64,departure',
+    }));
+    retainAvatarSnapshotCapture(nodes, agent.id, capture);
+    expect(capture).not.toHaveBeenCalled();
     const flight = (await captureAvatars([agent], nodes))[0]!;
-    const nextFrame = new DrawingContext();
-    nextFrame.fillRect(18, 20, 24, 36);
-    retainAvatarDrawing(nodes, agent.id, nextFrame);
-    retainAvatarDrawing(nodes, agent.id, null);
-    expect(flight.drawing).toBe(departure);
-    expect(Object.isFrozen(flight.drawing)).toBe(true);
-    expect(Object.isFrozen(flight.drawing!.nodes)).toBe(true);
-    expect(flight.drawing!.nodes[0]!.path!.toString()).toBe('M17 19 L41 19 L41 55 L17 55 Z');
-    expect((await captureAvatars([agent], nodes))[0]!.drawing).toBeUndefined();
+    expect(capture).toHaveBeenCalledTimes(1);
+    retainAvatarSnapshotCapture(nodes, agent.id, async () => ({
+      uri: 'next-frame',
+    }));
+    retainAvatarSnapshotCapture(nodes, agent.id, null);
+    expect(flight.snapshot?.uri).toBe('data:image/png;base64,departure');
+    expect(Object.isFrozen(flight.snapshot)).toBe(true);
+    expect((await captureAvatars([agent], nodes))[0]!.snapshot).toBeUndefined();
+  });
+  it('keeps the flight usable when pixel capture fails', async () => {
+    const { captureAvatars, retainAvatarSnapshotCapture } = await import('../handoff');
+    const { INITIAL_WORKSPACE } = await import('../data');
+    const agent = INITIAL_WORKSPACE.agents[0]!;
+    const node = {
+      measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) =>
+        cb(20, 200, 80, 80),
+    } as View;
+    const nodes = new Map([[agent.id, node]]);
+    retainAvatarSnapshotCapture(nodes, agent.id, async () => {
+      throw Error('unavailable');
+    });
+    const flight = (await captureAvatars([agent], nodes))[0]!;
+    expect(flight.from).toEqual(from);
+    expect(flight.snapshot).toBeUndefined();
   });
 });
 

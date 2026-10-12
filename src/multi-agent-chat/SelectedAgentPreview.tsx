@@ -8,15 +8,15 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
-import { AvatarDrawingObserver } from '../agent-avatar/context';
-import type { DrawingContext } from '../agent-avatar/drawing';
+import { AvatarSnapshotObserver } from '../agent-avatar/context';
+import type { CaptureAvatarSnapshot } from '../agent-avatar/context';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { useMessages } from '../locale/messages';
 import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { Agent } from './data';
-import { previewAvatarGeometry, retainAvatarDrawing, type AvatarNodes } from './handoff';
+import { previewAvatarGeometry, retainAvatarSnapshotCapture, type AvatarNodes } from './handoff';
 import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 function PreviewAvatar({
@@ -32,8 +32,9 @@ function PreviewAvatar({
   hidden: boolean;
   nodes: AvatarNodes;
 }) {
-  const observeDrawing = useCallback(
-    (drawing: DrawingContext) => retainAvatarDrawing(nodes, agent.id, drawing),
+  const observeSnapshot = useCallback(
+    (capture: CaptureAvatarSnapshot | null) =>
+      retainAvatarSnapshotCapture(nodes, agent.id, capture),
     [nodes, agent.id],
   );
   const captureNode = useCallback(
@@ -41,7 +42,7 @@ function PreviewAvatar({
       if (node) nodes.set(agent.id, node);
       else {
         nodes.delete(agent.id);
-        retainAvatarDrawing(nodes, agent.id, null);
+        retainAvatarSnapshotCapture(nodes, agent.id, null);
       }
     },
     [nodes, agent.id],
@@ -74,9 +75,9 @@ function PreviewAvatar({
       aria-hidden
       style={[{ position: 'absolute', left: 0, top: 0, width: size, height: size }, animated]}
     >
-      <AvatarDrawingObserver.Provider value={observeDrawing}>
+      <AvatarSnapshotObserver.Provider value={observeSnapshot}>
         <AgentAvatar config={agent.avatar} size={size} />
-      </AvatarDrawingObserver.Provider>
+      </AvatarSnapshotObserver.Provider>
     </AnimatedView>
   );
 }

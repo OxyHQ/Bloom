@@ -60,7 +60,7 @@ export const LOOKS = [
 ] as const;
 
 export type AvatarConfig = {
-  /** Optional compiled character renderer; the procedural recipe remains the fallback. */
+  /** Catalog identity and customization. Saved silhouette fields remain readable. */
   character?: AvatarCharacterConfig;
   family: AvatarFamily;
   foldShape: (typeof FOLD_SHAPES)[number];

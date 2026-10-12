@@ -1,3 +1,4 @@
+import { assertAvatarRuntimeShips } from './verify-avatar-cutover.mjs';
 // @ts-check
 /**
  * Assert that every file `package.json#exports` points at actually ships.
@@ -467,6 +468,7 @@ function main() {
     );
   }
   problems.push(...assertPatternsExpand(groups, files));
+  problems.push(...assertAvatarRuntimeShips(files, REPO_ROOT));
   problems.push(...assertDocsShip(files));
   problems.push(...assertNodeLoadable(NODE_LOADABLE_SUBPATHS, NODE_ESM_UNRESOLVABLE_SUBPATHS));
 

@@ -11,9 +11,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
-import { Drawing } from '../agent-avatar/SvgDrawing';
 import { OverlayRoot } from '../overlay';
-import { StyledView } from '../styles/styled-primitives';
+import { StyledImage, StyledView } from '../styles/styled-primitives';
 import { useChatComponents } from './context';
 import {
   avatarFlightPoint,
@@ -42,7 +41,7 @@ function FlyingAvatar({
   const reduced = useReducedMotion(),
     progress = useSharedValue(0);
   // Only plain geometry and the id cross into the native UI runtime.
-  // The committed DrawingContext stays on the JS side for SVG rendering.
+  // The captured image stays on the JS side; UI worklets only move its layout.
   const from = avatar.from;
   const agentId = avatar.agent.id;
   const duration = kind === 'group' ? 700 : answering ? 800 : 950,
@@ -95,8 +94,13 @@ function FlyingAvatar({
         animated,
       ]}
     >
-      {avatar.drawing ? (
-        <Drawing context={avatar.drawing} size={avatar.from.width} />
+      {avatar.snapshot ? (
+        <StyledImage
+          source={avatar.snapshot}
+          accessible={false}
+          resizeMode="contain"
+          style={{ width: avatar.from.width, height: avatar.from.height }}
+        />
       ) : (
         <AgentAvatar config={avatar.agent.avatar} paused size={avatar.from.width} />
       )}
@@ -204,8 +208,16 @@ export function AvatarHandoff({
                     height: avatar.from.height,
                   }}
                 >
-                  {avatar.drawing ? (
-                    <Drawing context={avatar.drawing} size={avatar.from.width} />
+                  {avatar.snapshot ? (
+                    <StyledImage
+                      source={avatar.snapshot}
+                      accessible={false}
+                      resizeMode="contain"
+                      style={{
+                        width: avatar.from.width,
+                        height: avatar.from.height,
+                      }}
+                    />
                   ) : (
                     <AgentAvatar config={avatar.agent.avatar} size={avatar.from.width} paused />
                   )}

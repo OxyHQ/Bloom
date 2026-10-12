@@ -1,0 +1,525 @@
+{
+  "date": "2026-10-11",
+  "scope": "Fidelity integration: eight idle/reaction presets and original blue Computer; independent 3D renderer, not feature-complete parity.",
+  "actions": {
+    "alfred": {
+      "idle": {
+        "nativeStart": 3.683333333333333,
+        "nativeEnd": 9.633333333333333,
+        "seamError": 0,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 2.2172927856445312e-5
+      },
+      "reaction": {
+        "nativeStart": 3,
+        "nativeEnd": 5.433333333333334,
+        "exactIdleTailSeconds": 2.5666666666666664,
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
+      }
+    },
+    "purple_heart": {
+      "idle": {
+        "nativeStart": 3.683333333333333,
+        "nativeEnd": 9.633333333333333,
+        "seamError": 0,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 2.2172927856445312e-5
+      },
+      "reaction": {
+        "nativeStart": 3,
+        "nativeEnd": 5.633333333333334,
+        "exactIdleTailSeconds": 2.3666666666666663,
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
+      }
+    },
+    "lime_frog": {
+      "idle": {
+        "nativeStart": 3.683333333333333,
+        "nativeEnd": 9.633333333333333,
+        "seamError": 0,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 1
+      },
+      "reaction": {
+        "nativeStart": 3,
+        "nativeEnd": 5.733333333333333,
+        "exactIdleTailSeconds": 2.2666666666666666,
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
+      }
+    },
+    "coral_monocle": {
+      "idle": {
+        "nativeStart": 3.683333333333333,
+        "nativeEnd": 9.633333333333333,
+        "seamError": 0,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 1
+      },
+      "reaction": {
+        "nativeStart": 3,
+        "nativeEnd": 5.733333333333333,
+        "exactIdleTailSeconds": 2.2666666666666666,
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
+      }
+    },
+    "gus": {
+      "idle": {
+        "nativeStart": 3.683333333333333,
+        "nativeEnd": 9.633333333333333,
+        "seamError": 0,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 2.2172927856445312e-5
+      },
+      "reaction": {
+        "nativeStart": 3,
+        "nativeEnd": 5.833333333333333,
+        "exactIdleTailSeconds": 2.166666666666667,
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
+      }
+    },
+    "blue_spectacles": {
+      "idle": {
+        "nativeStart": 3.683333333333333,
+        "nativeEnd": 9.633333333333333,
+        "seamError": 0,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 1
+      },
+      "reaction": {
+        "nativeStart": 3,
+        "nativeEnd": 5.833333333333333,
+        "exactIdleTailSeconds": 2.166666666666667,
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
+      }
+    },
+    "lime_headphones": {
+      "idle": {
+        "nativeStart": 3.683333333333333,
+        "nativeEnd": 9.633333333333333,
+        "seamError": 0,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 2.2172927856445312e-5
+      },
+      "reaction": {
+        "nativeStart": 3,
+        "nativeEnd": 5.333333333333333,
+        "exactIdleTailSeconds": 2.666666666666667,
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
+      }
+    }
+  },
+  "browserActions": {
+    "presets": [
+      {
+        "preset": "blue_beret",
+        "selected": 55197,
+        "neighbor": 0,
+        "end": "reaction"
+      },
+      {
+        "preset": "alfred",
+        "selected": 53439,
+        "neighbor": 0,
+        "end": "idle"
+      },
+      {
+        "preset": "purple_heart",
+        "selected": 56490,
+        "neighbor": 0,
+        "end": "idle"
+      },
+      {
+        "preset": "lime_frog",
+        "selected": 47812,
+        "neighbor": 0,
+        "end": "idle"
+      },
+      {
+        "preset": "coral_monocle",
+        "selected": 51867,
+        "neighbor": 0,
+        "end": "idle"
+      },
+      {
+        "preset": "gus",
+        "selected": 28498,
+        "neighbor": 0,
+        "end": "idle"
+      },
+      {
+        "preset": "blue_spectacles",
+        "selected": 41116,
+        "neighbor": 0,
+        "end": "idle"
+      },
+      {
+        "preset": "lime_headphones",
+        "selected": 27692,
+        "neighbor": 0,
+        "end": "idle"
+      }
+    ],
+    "originalRequests": [],
+    "errors": []
+  },
+  "computer": {
+    "purpose": "Paired original Computer geometry, semantic matrices/material/camera tracks and rendered pixels at captured keyframes; no performance claim.",
+    "cases": [
+      {
+        "count": 1,
+        "index": 0,
+        "changedNeighborPixels": null,
+        "time": 0,
+        "observation": 1,
+        "foregroundMeanRGBAError": 0.975348471465196,
+        "foregroundCompositedRGBError": 0.5566056553823517,
+        "foregroundAlphaError": 0.19029665855182368,
+        "maxChannelError": 255,
+        "bounds": [
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 280,
+            "maxY": 291
+          },
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 280,
+            "maxY": 291
+          }
+        ],
+        "stats": {
+          "contexts": 1,
+          "count": 1,
+          "drawCalls": 16,
+          "resources": {
+            "geometries": 9,
+            "textures": 18,
+            "programs": 7
+          }
+        }
+      },
+      {
+        "count": 1,
+        "index": 0,
+        "changedNeighborPixels": null,
+        "time": 2,
+        "observation": 3,
+        "foregroundMeanRGBAError": 2.5482966444827104,
+        "foregroundCompositedRGBError": 0.5145571528125681,
+        "foregroundAlphaError": 0.27558523758551684,
+        "maxChannelError": 255,
+        "bounds": [
+          {
+            "minX": 37,
+            "minY": 67,
+            "maxX": 296,
+            "maxY": 298
+          },
+          {
+            "minX": 37,
+            "minY": 67,
+            "maxX": 297,
+            "maxY": 298
+          }
+        ],
+        "stats": {
+          "contexts": 1,
+          "count": 1,
+          "drawCalls": 27,
+          "resources": {
+            "geometries": 18,
+            "textures": 28,
+            "programs": 8
+          }
+        }
+      },
+      {
+        "count": 1,
+        "index": 0,
+        "changedNeighborPixels": null,
+        "time": 5,
+        "observation": 6,
+        "foregroundMeanRGBAError": 1.0328330206378986,
+        "foregroundCompositedRGBError": 0.5551825198389351,
+        "foregroundAlphaError": 0.18742317396648767,
+        "maxChannelError": 255,
+        "bounds": [
+          {
+            "minX": 41,
+            "minY": 29,
+            "maxX": 280,
+            "maxY": 290
+          },
+          {
+            "minX": 41,
+            "minY": 29,
+            "maxX": 280,
+            "maxY": 290
+          }
+        ],
+        "stats": {
+          "contexts": 1,
+          "count": 1,
+          "drawCalls": 16,
+          "resources": {
+            "geometries": 18,
+            "textures": 28,
+            "programs": 8
+          }
+        }
+      },
+      {
+        "count": 2,
+        "index": 0,
+        "changedNeighborPixels": 0,
+        "time": 2,
+        "observation": 3,
+        "foregroundMeanRGBAError": 2.5482850095406526,
+        "foregroundCompositedRGBError": 0.5145744607394466,
+        "foregroundAlphaError": 0.2756085074696328,
+        "maxChannelError": 255,
+        "bounds": [
+          {
+            "minX": 37,
+            "minY": 67,
+            "maxX": 296,
+            "maxY": 298
+          },
+          {
+            "minX": 37,
+            "minY": 67,
+            "maxX": 297,
+            "maxY": 298
+          }
+        ],
+        "stats": {
+          "contexts": 1,
+          "count": 2,
+          "drawCalls": 16,
+          "resources": {
+            "geometries": 18,
+            "textures": 28,
+            "programs": 8
+          }
+        }
+      },
+      {
+        "count": 2,
+        "index": 1,
+        "changedNeighborPixels": 0,
+        "time": 2,
+        "observation": 3,
+        "foregroundMeanRGBAError": 2.583207288127705,
+        "foregroundCompositedRGBError": 0.5606582913334593,
+        "foregroundAlphaError": 0.2756317773537488,
+        "maxChannelError": 255,
+        "bounds": [
+          {
+            "minX": 37,
+            "minY": 67,
+            "maxX": 296,
+            "maxY": 298
+          },
+          {
+            "minX": 37,
+            "minY": 67,
+            "maxX": 297,
+            "maxY": 298
+          }
+        ],
+        "stats": {
+          "contexts": 1,
+          "count": 2,
+          "drawCalls": 16,
+          "resources": {
+            "geometries": 18,
+            "textures": 28,
+            "programs": 8
+          }
+        }
+      }
+    ],
+    "ui": {
+      "stats": {
+        "contexts": 1,
+        "count": 1,
+        "drawCalls": 16,
+        "states": [
+          {
+            "index": 0,
+            "phase": 0,
+            "motion": "work",
+            "motionTime": 7.033100000000009,
+            "preset": "blue_beret",
+            "pigment": [1, 1, 1],
+            "look": [0, 0]
+          }
+        ]
+      },
+      "visibleComputerParts": 0,
+      "glError": 0
+    },
+    "errors": [],
+    "warnings": [
+      "[.WebGL-0x1b44001ce200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1b44001ce200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1b44001ce200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1b44001ce200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ],
+    "glError": 0,
+    "forbidden": []
+  },
+  "hardwareIdle": {
+    "frameRateLimit": 60,
+    "scenario": "Eight presets, all using recovered original idle cycles",
+    "caveat": "Original small-avatar meshes/materials with recovered idle cycles for all eight models. This scenario does not measure simultaneous Computer/reaction episodes or prove complete interaction parity, laptop power or thermal behavior. Consult webglRenderer and GPU evidence for the actual backend. Draw calls include depth, AO, color and presentation.",
+    "requestedSampleMilliseconds": 5000,
+    "cssPixelsPerAvatar": 112,
+    "cases": [
+      {
+        "count": 8,
+        "readyMilliseconds": 2274,
+        "sampleMilliseconds": 5001.399999976158,
+        "renderedFrames": 300,
+        "measuredFramesPerSecond": 59.98320470296919,
+        "engineReportedFramesPerSecond": 59.58904628225243,
+        "mainThreadSeconds": 0.623202,
+        "cpuSampleMilliseconds": 5004.272000049241,
+        "drawCalls": 121,
+        "triangles": 189812,
+        "resources": {
+          "geometries": 66,
+          "textures": 75,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 112,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 8,
+        "uniquePhases": 8,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true
+      },
+      {
+        "count": 48,
+        "readyMilliseconds": 1372,
+        "sampleMilliseconds": 5002.099999904633,
+        "renderedFrames": 300,
+        "measuredFramesPerSecond": 59.97481058070004,
+        "engineReportedFramesPerSecond": 59.671241132144566,
+        "mainThreadSeconds": 0.644595,
+        "cpuSampleMilliseconds": 5004.506999976002,
+        "drawCalls": 121,
+        "triangles": 1139596,
+        "resources": {
+          "geometries": 66,
+          "textures": 75,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 560,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 48,
+        "uniquePhases": 48,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true
+      },
+      {
+        "count": 200,
+        "readyMilliseconds": 1466,
+        "sampleMilliseconds": 5010.100000023842,
+        "renderedFrames": 301,
+        "measuredFramesPerSecond": 60.07864114460143,
+        "engineReportedFramesPerSecond": 59.671559844163376,
+        "mainThreadSeconds": 2.424036,
+        "cpuSampleMilliseconds": 5015.814000042155,
+        "drawCalls": 121,
+        "triangles": 4748304,
+        "resources": {
+          "geometries": 66,
+          "textures": 75,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 2240,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 200,
+        "uniquePhases": 200,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true
+      }
+    ],
+    "nonRenderingErrors": [
+      {
+        "url": "http://localhost:6006/favicon.ico",
+        "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      }
+    ],
+    "gpu": [
+      {
+        "vendorId": 4318,
+        "deviceId": 11141,
+        "subSysId": 2313359427,
+        "revision": 161,
+        "vendorString": "",
+        "deviceString": "NVIDIA GeForce RTX 5090",
+        "driverVendor": "NVIDIA",
+        "driverVersion": "32.0.16.1692"
+      },
+      {
+        "vendorId": 5140,
+        "deviceId": 140,
+        "subSysId": 0,
+        "revision": 0,
+        "vendorString": "",
+        "deviceString": "Microsoft Basic Render Driver",
+        "driverVendor": "",
+        "driverVersion": "10.0.26100.9549"
+      }
+    ],
+    "webglRenderer": {
+      "vendor": "Google Inc. (NVIDIA)",
+      "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    }
+  },
+  "verification": {
+    "nodeTests": 29,
+    "typescript": "passed",
+    "reviewComparisons": 48
+  },
+  "limitations": [
+    "Computer is implemented only for blue_beret. Its observed episode removes every prop and holds its final pose; a phase-correct continuous idle continuation is unresolved.",
+    "The seven custom reactions return to an exactly paired idle phase, but their entry uses the recorded pose. Arbitrary-phase entry and interruption fidelity remain unverified.",
+    "Breathing loop seams match every observed part exactly. Independent eyelid events are retained in each captured segment, not claimed to reproduce future stochastic blink timing.",
+    "Computer comparison retains a pinned one-pixel right-edge shortfall. These results are not pixel identity.",
+    "The hardware scenario measures 112 CSS px avatars at DPR1 on RTX5090; it does not establish laptop power/thermal behavior or simultaneous mixed-activity throughput.",
+    "Free part customization, native gaze/drag controllers and remaining activities are still incomplete."
+  ]
+}

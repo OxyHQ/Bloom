@@ -1,0 +1,715 @@
+{
+  "status": "experimental-motion-checkpoint-not-complete-parity",
+  "date": "2026-10-11",
+  "scope": "Offline observation and semantic TRS export. This report contains no performance benchmark.",
+  "source": {
+    "runtime.mjs": "24208ac2ba538f2c10fc4b3e0bf12caa6abfac0d971adf821f45681c03f4e4f5",
+    "legacy-engine.mjs": "c67a047816a1181a0be79b23cfaeac9b1a7b5adfe06fb5a55efb7dc2fd1a3514",
+    "controller-mode.mjs": "57c52edd7e83a9dfef19c52c71c01ace3f78781f27e72b86b44b71f85c645d5d",
+    "orbit-characters.mjs": "f3ba670dadba954df1618af83fa314641a4cfddd3597aca93a191c264374eed7",
+    "orbit-characters.wasm": "c15f3692305c1385a12524e877199ba279b8d53e6bd37a9e533d626f12fcb94b",
+    "orbit-characters.data": "ffefb69b44f815cccb5f07b4d951d479e527dbabdca68ad9986cf695f9b9c440"
+  },
+  "tools": [
+    "scripts/capture-avatar-runtime-motion.mjs",
+    "scripts/build-avatar-motion-assets.mjs",
+    "scripts/test-avatar-motion.mjs",
+    "scripts/verify-avatar-authored-motion.mjs"
+  ],
+  "method": {
+    "nativeReference": "Existing runtime.mjs and its existing controller adapters observed offline. Public Character.render/pointer/activity method arguments and public WebGL uniform buffers are recorded. No original runtime, WASM or instrumentation is imported by the replacement engine.",
+    "identity": "Seven additional presets mapped by exact SHA256 of original vertex/fur buffers to exported geometry IDs. Legacy blue capture uses verified topology counts and stable buffer IDs.",
+    "fixedStep": "Optional AVATAR_FIXED_STEP=60 advances the public native render argument in1/60s increments after first paint, remaps public pointer timestamps, and schedules command updates in simulation time. This is not a claim of60real-time FPS. Fixed-step Work is unsupported because its adapter uses wall-clock timers.",
+    "seamRule": "Exact equality of every DrawBlock field at endpoints plus neighboring quiet samples; candidate lag search7.5\u201310seconds. Failure does not prove absence of a natural period. Near-recurrences are diagnostic candidates, not identified periods or approval to blend or loop.",
+    "samplingLimit": "Irregular real-time samples are interpolated. Maximum gaps are reported; no claim that fast blink peaks or unobserved intermediate poses match. Fixed60sampling verifies density, not all future idle variants."
+  },
+  "presets": {
+    "blue_beret": {
+      "integrated": true,
+      "idle": {
+        "sampling": {
+          "observedFrames": 171,
+          "minimumGapSeconds": 0.05006599999999972,
+          "maximumGapSeconds": 0.11659999999999826,
+          "meanSamplesPerSecond": 14.266189985705276,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "exactQuietSeam": true,
+        "minimumQuietSeamError": 0,
+        "nearRecurrence": {
+          "candidateLagSeconds": 8.799663999999998,
+          "maxDrawBlockEndpointDifference": 0
+        },
+        "unsupportedAnimatedFields": {}
+      },
+      "reaction": {
+        "sampling": {
+          "observedFrames": 56,
+          "minimumGapSeconds": 0.06653400000000032,
+          "maximumGapSeconds": 0.08340000000000014,
+          "meanSamplesPerSecond": 14.411351323590912,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "terminalResolved": true,
+        "lastObservedTime": 3.8164359999999995
+      },
+      "export": {
+        "idle": {
+          "selectedCount": 129,
+          "start": 3.2952,
+          "end": 12.028227999999999,
+          "maxTrsError": 4.956001509182073e-8,
+          "maxNormalError": 1.1275305311642114e-6,
+          "rawSha256": "5a17826d62b9af354e30c03736bfb83860a3ced8e4e2dc5238dd193646658a2b"
+        },
+        "reaction": {
+          "selectedCount": 41,
+          "start": 3.535364,
+          "end": 6.3351999999999995,
+          "maxTrsError": 5.5718471836385675e-8,
+          "maxNormalError": 1.3997408139232448e-6,
+          "rawSha256": "3fd43742ac1dfa86c63ef6416d5e0972e07665592777b78809a5df277840b2fd"
+        }
+      }
+    },
+    "alfred": {
+      "integrated": false,
+      "idle": {
+        "sampling": {
+          "observedFrames": 159,
+          "minimumGapSeconds": 0.06659999999999933,
+          "maximumGapSeconds": 0.09999999999999964,
+          "meanSamplesPerSecond": 13.222310556927068,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "exactQuietSeam": false,
+        "minimumQuietSeamError": 0.00017726421356201172,
+        "nearRecurrence": {
+          "candidateLagSeconds": 7.5331,
+          "maxDrawBlockEndpointDifference": 8.702278137207031e-6
+        },
+        "unsupportedAnimatedFields": {}
+      },
+      "reaction": {
+        "sampling": {
+          "observedFrames": 105,
+          "minimumGapSeconds": 0.0666000000000011,
+          "maximumGapSeconds": 0.14999999999999947,
+          "meanSamplesPerSecond": 13.000442015028511,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "terminalResolved": false,
+        "lastObservedTime": 7.999727999999999
+      }
+    },
+    "purple_heart": {
+      "integrated": false,
+      "idle": {
+        "sampling": {
+          "observedFrames": 180,
+          "minimumGapSeconds": 0.04999800000000043,
+          "maximumGapSeconds": 0.08340000000000014,
+          "meanSamplesPerSecond": 14.958800621751266,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "exactQuietSeam": false,
+        "minimumQuietSeamError": 0.0001462697982788086,
+        "nearRecurrence": {
+          "candidateLagSeconds": 8.766364,
+          "maxDrawBlockEndpointDifference": 1.430511474609375e-6
+        },
+        "unsupportedAnimatedFields": {}
+      },
+      "reaction": {
+        "sampling": {
+          "observedFrames": 119,
+          "minimumGapSeconds": 0.05006599999999928,
+          "maximumGapSeconds": 0.08340000000000014,
+          "meanSamplesPerSecond": 14.812397223303163,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "terminalResolved": false,
+        "lastObservedTime": 7.9663
+      }
+    },
+    "lime_frog": {
+      "integrated": false,
+      "idle": {
+        "sampling": {
+          "observedFrames": 173,
+          "minimumGapSeconds": 0.05000000000000071,
+          "maximumGapSeconds": 0.09999999999999964,
+          "meanSamplesPerSecond": 14.373829201470276,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "exactQuietSeam": false,
+        "minimumQuietSeamError": 0.00016927719116210938,
+        "nearRecurrence": {
+          "candidateLagSeconds": 8.7996,
+          "maxDrawBlockEndpointDifference": 1.3649463653564453e-5
+        },
+        "unsupportedAnimatedFields": {
+          "colorRoughness": {
+            "partIds": ["mesh:1", "mesh:2", "mesh:3", "mesh:4"],
+            "maximumObservedChannelChange": 0.9235987663269043
+          },
+          "paletteClosure": {
+            "partIds": ["mesh:1", "mesh:3"],
+            "maximumObservedChannelChange": 1
+          }
+        }
+      },
+      "reaction": {
+        "sampling": {
+          "observedFrames": 117,
+          "minimumGapSeconds": 0.06650600000000217,
+          "maximumGapSeconds": 0.08333600000000008,
+          "meanSamplesPerSecond": 14.561156858806989,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "terminalResolved": false,
+        "lastObservedTime": 7.9664
+      }
+    },
+    "coral_monocle": {
+      "integrated": false,
+      "idle": {
+        "sampling": {
+          "observedFrames": 175,
+          "minimumGapSeconds": 0.06653599999999926,
+          "maximumGapSeconds": 0.08340000000000103,
+          "meanSamplesPerSecond": 14.581657280772324,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "exactQuietSeam": false,
+        "minimumQuietSeamError": 0.0001659393310546875,
+        "nearRecurrence": {
+          "candidateLagSeconds": 7.616336,
+          "maxDrawBlockEndpointDifference": 1.7762184143066406e-5
+        },
+        "unsupportedAnimatedFields": {
+          "colorRoughness": {
+            "partIds": ["mesh:1", "mesh:2", "mesh:3", "mesh:4"],
+            "maximumObservedChannelChange": 0.9235987663269043
+          },
+          "paletteClosure": {
+            "partIds": ["mesh:3", "mesh:4"],
+            "maximumObservedChannelChange": 1
+          }
+        }
+      },
+      "reaction": {
+        "sampling": {
+          "observedFrames": 116,
+          "minimumGapSeconds": 0.049965999999999955,
+          "maximumGapSeconds": 0.08340000000000103,
+          "meanSamplesPerSecond": 14.46602019909269,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "terminalResolved": false,
+        "lastObservedTime": 7.949664000000001
+      }
+    },
+    "gus": {
+      "integrated": false,
+      "idle": {
+        "sampling": {
+          "observedFrames": 199,
+          "minimumGapSeconds": 0.049997999999998655,
+          "maximumGapSeconds": 0.08337200000000022,
+          "meanSamplesPerSecond": 16.569681031966425,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "exactQuietSeam": false,
+        "minimumQuietSeamError": 0.00013875961303710938,
+        "nearRecurrence": {
+          "candidateLagSeconds": 8.2164,
+          "maxDrawBlockEndpointDifference": 1.1920928955078125e-6
+        },
+        "unsupportedAnimatedFields": {}
+      },
+      "reaction": {
+        "sampling": {
+          "observedFrames": 131,
+          "minimumGapSeconds": 0.049997999999998655,
+          "maximumGapSeconds": 0.08333000000000013,
+          "meanSamplesPerSecond": 16.318742703639078,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "terminalResolved": false,
+        "lastObservedTime": 7.9663
+      },
+      "furIdentitiesVerifiedBySha256": ["fur:0", "fur:2"]
+    },
+    "blue_spectacles": {
+      "integrated": false,
+      "idle": {
+        "sampling": {
+          "observedFrames": 156,
+          "minimumGapSeconds": 0.06666399999999761,
+          "maximumGapSeconds": 0.10003600000000112,
+          "meanSamplesPerSecond": 12.971151990603195,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "exactQuietSeam": false,
+        "minimumQuietSeamError": 0.0002104043960571289,
+        "nearRecurrence": {
+          "candidateLagSeconds": 9.48294,
+          "maxDrawBlockEndpointDifference": 2.6746420189738274e-8
+        },
+        "unsupportedAnimatedFields": {
+          "colorRoughness": {
+            "partIds": ["mesh:1", "mesh:2", "mesh:3", "mesh:4"],
+            "maximumObservedChannelChange": 0.9235987663269043
+          },
+          "paletteClosure": {
+            "partIds": ["mesh:1", "mesh:3"],
+            "maximumObservedChannelChange": 1
+          }
+        }
+      },
+      "reaction": {
+        "sampling": {
+          "observedFrames": 104,
+          "minimumGapSeconds": 0.06659999999999933,
+          "maximumGapSeconds": 0.09999999999999964,
+          "meanSamplesPerSecond": 13.011023747771073,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "terminalResolved": false,
+        "lastObservedTime": 7.916364
+      },
+      "furIdentitiesVerifiedBySha256": ["fur:0", "fur:8"]
+    },
+    "lime_headphones": {
+      "integrated": false,
+      "idle": {
+        "sampling": {
+          "observedFrames": 165,
+          "minimumGapSeconds": 0.0666000000000011,
+          "maximumGapSeconds": 0.09993600000000136,
+          "meanSamplesPerSecond": 13.705155311165523,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "exactQuietSeam": false,
+        "minimumQuietSeamError": 0.00016498565673828125,
+        "nearRecurrence": {
+          "candidateLagSeconds": 8.933,
+          "maxDrawBlockEndpointDifference": 1.7881393432617188e-7
+        },
+        "unsupportedAnimatedFields": {}
+      },
+      "reaction": {
+        "sampling": {
+          "observedFrames": 106,
+          "minimumGapSeconds": 0.06666399999999761,
+          "maximumGapSeconds": 0.09999999999999964,
+          "meanSamplesPerSecond": 13.235910310446386,
+          "nativeRenderClock": true,
+          "fixedStep": null
+        },
+        "terminalResolved": false,
+        "lastObservedTime": 7.932964
+      }
+    }
+  },
+  "remaining": [
+    "Resolve natural idle periods or reconstruct continuous controller behavior without forced loop seams.",
+    "Identify reaction completion and return-to-idle semantics; seven non-blue captures keep submitting after the command.",
+    "Support animated colorRoughness and paletteClosure before exporting frog, monocle or spectacles eye animation.",
+    "Export and validate continuous gaze, drag, Work, interruptions, all preset signatures and arbitrary customization.",
+    "Compare temporal rendered frames against matching original active crop and capture timestamps."
+  ],
+  "alfredExtended20Seconds": {
+    "idle": {
+      "sampling": {
+        "observedFrames": 283,
+        "minimumGapSeconds": 0.06653599999999926,
+        "maximumGapSeconds": 0.08340000000000103,
+        "meanSamplesPerSecond": 14.124152300433742,
+        "nativeRenderClock": true,
+        "fixedStep": null
+      },
+      "unsupportedAnimatedFields": [],
+      "initialCopy": {
+        "args": [49.7, 55.7, 219.60000000000002, 219.60000000000002, 0, 0, 320, 320],
+        "width": 320,
+        "height": 320,
+        "cssWidth": 320,
+        "cssHeight": 320,
+        "sourceWidth": 512,
+        "sourceHeight": 320,
+        "renderTime": 1.1052
+      },
+      "bestEndpointMatch": {
+        "start": 6.6551,
+        "end": 14.5048,
+        "period": 7.8496999999999995,
+        "error": 2.1457672119140625e-6
+      },
+      "minimumQuietSeamError": 0.0001499652862548828,
+      "rejected": true,
+      "reason": "No exact quiet idle loop seam in observations; capture longer instead of blending"
+    },
+    "reaction": {
+      "sampling": {
+        "observedFrames": 282,
+        "minimumGapSeconds": 0.05000000000000071,
+        "maximumGapSeconds": 0.08340000000000103,
+        "meanSamplesPerSecond": 14.085777875804546,
+        "nativeRenderClock": true,
+        "fixedStep": null
+      },
+      "unsupportedAnimatedFields": [],
+      "initialCopy": {
+        "args": [49.7, 55.7, 219.60000000000002, 219.60000000000002, 0, 0, 320, 320],
+        "width": 320,
+        "height": 320,
+        "cssWidth": 320,
+        "cssHeight": 320,
+        "sourceWidth": 512,
+        "sourceHeight": 320,
+        "renderTime": 1.2825
+      },
+      "rejected": true,
+      "reason": "Reaction still submits frames at capture end; terminal semantics unresolved"
+    }
+  },
+  "alfredFixed60": {
+    "idle": {
+      "sampling": {
+        "observedFrames": 721,
+        "minimumGapSeconds": 0.01666666666666572,
+        "maximumGapSeconds": 0.016666666666667496,
+        "meanSamplesPerSecond": 60,
+        "nativeRenderClock": true,
+        "fixedStep": 60
+      },
+      "unsupportedAnimatedFields": [],
+      "initialCopy": {
+        "args": [49.7, 55.7, 219.60000000000002, 219.60000000000002, 0, 0, 320, 320],
+        "width": 320,
+        "height": 320,
+        "cssWidth": 320,
+        "cssHeight": 320,
+        "sourceWidth": 512,
+        "sourceHeight": 320,
+        "renderTime": 0
+      },
+      "bestEndpointMatch": {
+        "start": 2.783333333333333,
+        "end": 10.933333333333334,
+        "period": 8.15,
+        "error": 4.76837158203125e-7
+      },
+      "minimumQuietSeamError": 3.2901763916015625e-5,
+      "rejected": true,
+      "reason": "No exact quiet idle loop seam in observations; capture longer instead of blending"
+    },
+    "exactSubmittedFrames": 721,
+    "simulationSeconds": 12,
+    "runtimeAssetExported": false,
+    "checkpointFrames": [0, 60, 180, 360],
+    "originalActiveCrop": {
+      "args": [49.7, 55.7, 219.60000000000002, 219.60000000000002, 0, 0, 320, 320],
+      "width": 320,
+      "height": 320,
+      "cssWidth": 320,
+      "cssHeight": 320,
+      "sourceWidth": 512,
+      "sourceHeight": 320,
+      "renderTime": 0
+    }
+  },
+  "blueIntegrationGate": {
+    "uploadedParts": 14,
+    "numeric": {
+      "checkedParts": 14,
+      "maxWorldError": 2.516782682260299e-8,
+      "maxNormalError": 2.9724724237567557e-8,
+      "maxFieldError": 0
+    },
+    "changedSelectedAvatarPixels": 55197,
+    "changedOtherAvatarPixels": 0,
+    "originalEngineRequests": 0,
+    "errors": []
+  },
+  "workControllerAudit": {
+    "status": "Source audit only; no Work controller or approximate motion shipped",
+    "cleanJavaScriptPolicy": [
+      {
+        "source": "assets/character-runtime/runtime.mjs:294",
+        "finding": "Start/Stop commands carry monotonically increasing sequence and episode identity. Working is activity 1; neutral Stop is command 2."
+      },
+      {
+        "source": "assets/character-runtime/runtime.mjs:458",
+        "finding": "A 2200 ms \u00d7 clamp(workingCycles, 1, 10) wall timer starts after the first prepared Work paint, not at request time. It requests Stop; this timer does not establish outro duration."
+      },
+      {
+        "source": "assets/character-runtime/runtime.mjs:567",
+        "finding": "A busy reaction keeps one latest request queued. React during Work requests Stop and waits for the outro; a newer Work invalidates stale Stop requests and clears queued reaction."
+      },
+      {
+        "source": "assets/character-runtime/runtime.mjs:974",
+        "finding": "Pointer coordinates are mapped through the actual alpha-fit crop to native normalized coordinates. A primary pointer release within 6 CSS pixels is a tap reaction. Work uses setReadyGaze; reactive mode uses pointer phases."
+      },
+      {
+        "source": "assets/character-runtime/pose-transition.mjs:137",
+        "finding": "Authored adapter transition math is available as ordinary JS: TRS decomposition, shortest-path quaternion slerp, inverse-transpose normals, camera interpolation. Runtime selects 180 ms; pose-transition.mjs:331 applies smoothstep. These transitions blend native target poses; they do not generate Work paths, props, or action completion."
+      }
+    ],
+    "nativeOnlyRequirements": [
+      {
+        "source": "assets/character-runtime/controller-mode.mjs:127",
+        "finding": "Actual outro completion reads native phase/activity/episode through a hash-pinned private ABI. Public copyActivityRestore reports the requested Stop immediately and is insufficient. This ABI adapter is not eligible for the replacement runtime."
+      },
+      {
+        "source": "assets/character-runtime/authored-parts.mjs:60",
+        "finding": "Activity-enabled assemblies append hands/panel data after the ordinary character records. The existing parser explicitly preserves this footer as opaque bytes. Static exported character meshes therefore do not yet supply semantically identified Work props or skin tracks."
+      },
+      {
+        "source": "scripts/export-avatar-geometry.mjs:295",
+        "finding": "Current geometry exports call public orbitPrepareAssembly with activities=false. A future offline export must identify and validate activity geometry, skinning and independent prop transforms before implementing Work."
+      }
+    ],
+    "publicProtocol": {
+      "source": "assets/character-runtime/orbit-characters.mjs:8",
+      "pointerPhases": ["Down", "Move", "Up", "Cancel"],
+      "reactions": ["Wave", "Signature"],
+      "reactionResults": ["Accepted", "Busy", "Unsupported", "Unavailable"],
+      "activityKinds": [
+        "None",
+        "Working",
+        "Searching",
+        "Creating",
+        "Payment",
+        "Thinking",
+        "NeedsInput",
+        "Ready",
+        "Paused",
+        "Error"
+      ],
+      "activityCommands": ["Start", "Stop", "Restore"],
+      "outcomes": ["Neutral", "ArtifactReady", "PaymentPaid", "InputReceived", "ThinkingResolved"],
+      "entries": ["Start", "Sustained"],
+      "limitation": "These exported enums define API vocabulary, not deterministic kinematic source or clip data. Only Working is initiated by the current app adapter."
+    },
+    "nextEvidenceNeeded": [
+      "Offline semantic identities for all Work meshes/props and skin joints, with exact source geometry hashes.",
+      "Entry, sustained motion and outro observations including public command times, world/morph/material/skin channels and camera changes.",
+      "Tests for Work retrigger, reaction interruption, gaze during activity and completion. A fixed-duration clip cannot establish these semantics."
+    ]
+  },
+  "materialMotionAudit": {
+    "supportedAnimatedFields": [
+      "parameters",
+      "signatureDeform",
+      "colorRoughness",
+      "paletteClosure"
+    ],
+    "rendererProtocol": "7 RGBA texels per part/avatar: 3 normal columns, parameters, signatureDeform, colorRoughness, paletteClosure.",
+    "shaderVariantEvidence": "All 16 existing idle/reaction recordings (8 presets) retain identical vertex/fragment #define strings for every original source vertex-buffer identity. Frog, coral_monocle and blue_spectacles eyes retain FELIPE_MATERIAL=1/FELIPE_KIND=0 while colorRoughness and paletteClosure change.",
+    "shaderLimit": "Per-frame full shader sources and texture bindings are not retained in these observations. Stable defines do not alone prove complete shader-state equivalence. The exporter rejects any observed define transition.",
+    "shaderBehavior": "Original felipeMaterial reads colorRoughness. paletteClosure affects the universal material branch, not the FELIPE_MATERIAL branch; preserving closure data does not imply a visible closure change for these authored materials.",
+    "finiteObservationExport": {
+      "flag": "AVATAR_MOTION_DIAGNOSTIC=1",
+      "schema": "bloom.avatar.motion-observations",
+      "destination": ".local/avatar-motion-observations",
+      "runtimeCatalogCompatible": false,
+      "endSemantics": "observation-boundary",
+      "limitation": "Finite observations are not validated idle loops or completed reactions. No additional production motion asset is generated."
+    },
+    "tests": {
+      "command": "node --test scripts/test-avatar-motion.mjs",
+      "passed": 7,
+      "includes": [
+        "Exact material field values at sampled keyframes",
+        "Reject unsupported emissiveMetallic animation",
+        "Reject shader define transition in runtime and diagnostic modes",
+        "Finite observations cannot claim natural loop or terminal reaction"
+      ]
+    },
+    "finiteObservationResults": {
+      "blue_beret": {
+        "idle": {
+          "frames": 171,
+          "maxTrsError": 4.956001509182073e-8,
+          "maxNormalError": 1.1275305311642114e-6,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 10.578263999999999
+          }
+        },
+        "reaction": {
+          "frames": 56,
+          "maxTrsError": 5.5718471836385675e-8,
+          "maxNormalError": 1.3997408139232448e-6,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 4.368600000000001
+          }
+        }
+      },
+      "alfred": {
+        "idle": {
+          "frames": 159,
+          "maxTrsError": 6.397905177868424e-9,
+          "maxNormalError": 8.125793415914018e-8,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 5.8416999999999994
+          }
+        },
+        "reaction": {
+          "error": "Sheared matrices cannot be exported as lossless TRS",
+          "maxTrsError": 1.4372665401767015e-5,
+          "maxNormalError": 1.4948864296741686e-5,
+          "maxTrsErrorLocation": {
+            "id": "mesh:6",
+            "renderTime": 3.75653
+          }
+        }
+      },
+      "purple_heart": {
+        "idle": {
+          "frames": 180,
+          "maxTrsError": 7.3062691730019225e-9,
+          "maxNormalError": 8.17110836770496e-8,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 12.988700000000001
+          }
+        },
+        "reaction": {
+          "error": "Sheared matrices cannot be exported as lossless TRS",
+          "maxTrsError": 1.249051676747992e-5,
+          "maxNormalError": 1.3311602558956082e-5,
+          "maxTrsErrorLocation": {
+            "id": "mesh:1",
+            "renderTime": 3.6286
+          }
+        }
+      },
+      "lime_frog": {
+        "idle": {
+          "frames": 173,
+          "maxTrsError": 6.397905177868424e-9,
+          "maxNormalError": 8.333998491316663e-8,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 4.4606
+          }
+        },
+        "reaction": {
+          "error": "Sheared matrices cannot be exported as lossless TRS",
+          "maxTrsError": 1.7708047897538326e-6,
+          "maxNormalError": 1.7703631231000619e-6,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 3.7755
+          }
+        }
+      },
+      "coral_monocle": {
+        "idle": {
+          "frames": 175,
+          "maxTrsError": 1.0505221775813922e-8,
+          "maxNormalError": 8.396797412935086e-8,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 11.128
+          }
+        },
+        "reaction": {
+          "error": "Sheared matrices cannot be exported as lossless TRS",
+          "maxTrsError": 2.4043630154025816e-6,
+          "maxNormalError": 2.403573718882078e-6,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 3.6971999999999996
+          }
+        }
+      },
+      "gus": {
+        "idle": {
+          "frames": 199,
+          "maxTrsError": 1.0505221803569498e-8,
+          "maxNormalError": 8.324202382947732e-8,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 11.9366
+          }
+        },
+        "reaction": {
+          "error": "Sheared matrices cannot be exported as lossless TRS",
+          "maxTrsError": 3.993124600312585e-6,
+          "maxNormalError": 3.991392145592104e-6,
+          "maxTrsErrorLocation": {
+            "id": "mesh:1",
+            "renderTime": 3.824728
+          }
+        }
+      },
+      "blue_spectacles": {
+        "idle": {
+          "frames": 156,
+          "maxTrsError": 6.397905177868424e-9,
+          "maxNormalError": 8.386352445821643e-8,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 5.7258000000000004
+          }
+        },
+        "reaction": {
+          "error": "Sheared matrices cannot be exported as lossless TRS",
+          "maxTrsError": 1.1073019089520228e-6,
+          "maxNormalError": 1.1055554407518207e-6,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 3.688896
+          }
+        }
+      },
+      "lime_headphones": {
+        "idle": {
+          "frames": 165,
+          "maxTrsError": 7.306269200757498e-9,
+          "maxNormalError": 8.56944393223813e-8,
+          "maxTrsErrorLocation": {
+            "id": "mesh:0",
+            "renderTime": 6.930194
+          }
+        },
+        "reaction": {
+          "error": "Sheared matrices cannot be exported as lossless TRS",
+          "maxTrsError": 9.542818832482258e-6,
+          "maxNormalError": 9.52657717334833e-6,
+          "maxTrsErrorLocation": {
+            "id": "mesh:3",
+            "renderTime": 3.7549
+          }
+        }
+      }
+    }
+  },
+  "affineRepresentationUpdate": {
+    "schemaVersion": 2,
+    "status": "The earlier TRS-only rejection is resolved by signed-scale QR shear channels and a named 3x3 normal-basis correction. Runtime motion catalog remains unchanged.",
+    "evidence": "avatar-motion-review-checkpoint.json"
+  }
+}

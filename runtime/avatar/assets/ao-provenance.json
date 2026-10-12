@@ -1,0 +1,17 @@
+{
+  "transformation": "Remove GLSL version; replace FrameBlock UBO. Preserve sampling/resolve equations in each avatar camera space: per-avatar projected units, pixel budgets and noise phase; reject samples from other cells of the shared depth atlas.",
+  "shaders": [
+    {
+      "file": "ao.vert.glsl",
+      "sha256": "79caddb6db01590ba816bfefff0af74cfea344b7ab646f56b4589eaa2d964652",
+      "sourceFile": "10-vertex.glsl",
+      "sourceSha256": "0f9d44a621504d8702b9b2673368b14e789a86599a87f0d96bf076b18979c235"
+    },
+    {
+      "file": "ao.frag.glsl",
+      "sha256": "ef0ee35a3bc5a3f01a13c8295a884e5c356a7f2903453d3d4f4356f5b9a5b417",
+      "sourceFile": "11-fragment.glsl",
+      "sourceSha256": "01c2cc1cf1d46f8fe0fe37a5c2729a3cefc83820ad9746a49f3ed3da2620d21d"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ export type AgentAvatarProps = {
   paused?: boolean;
   label?: string;
   locale?: string;
-  /** Enables pointer and touch reactions when a 3D runtime provider is available. */
+  /** Enables pointer and touch reactions in the character renderer. */
   interactive?: boolean;
   /** Uses a cached still portrait for optional character previews, avoiding a live renderer per thumbnail. */
   portrait?: boolean;
@@ -24,9 +24,13 @@ export type AgentAvatarProps = {
 };
 export type AvatarProps = AgentAvatarProps;
 
-export type { AvatarCharacterConfig, AvatarCharacterCategory } from './config-character';
+export type {
+  AvatarCharacterConfig,
+  AvatarCharacterCategory,
+} from './config-character';
 
 export type AgentAvatarProviderProps = {
-  runtimeUrl: string;
+  /** Defaults to /bloom-character/runtime.mjs on web; native requires an absolute hosted URL. */
+  runtimeUrl?: string;
   children: ReactNode;
 };

@@ -1,8 +1,10 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 import type { AgentAvatarProviderProps } from './types';
 import {
   type CharacterCapabilities,
   CharacterRuntimeContext,
+  DEFAULT_CHARACTER_RUNTIME_URL,
   CharacterCapabilitiesContext,
 } from './context';
 
@@ -12,8 +14,11 @@ function sameRecord<T>(left: Record<string, T>, right: Record<string, T>) {
   return keys.length === Object.keys(right).length && keys.every((key) => left[key] === right[key]);
 }
 
-/** Enables the optional character engine without fetching it until an avatar needs it. */
-export function AgentAvatarProvider({ runtimeUrl, children }: AgentAvatarProviderProps) {
+/** Enables the character engine without fetching it until an avatar needs it. */
+export function AgentAvatarProvider({
+  runtimeUrl = Platform.OS === 'web' ? DEFAULT_CHARACTER_RUNTIME_URL : undefined,
+  children,
+}: AgentAvatarProviderProps) {
   const [cache, setCapabilities] = useState(() => ({
     runtimeUrl,
     entries: EMPTY_CAPABILITIES,

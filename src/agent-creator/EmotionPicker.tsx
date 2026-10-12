@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, type View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -11,10 +11,9 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { EYES, type AvatarConfig } from '../agent-avatar';
-import { AgentFace } from '../agent-avatar/AgentFace';
-import { ClippoArtwork } from './ClippoArtwork';
-import { CyclopsArtwork } from './CyclopsArtwork';
-import { StyledImage, StyledPressable, StyledView } from '../styles/styled-primitives';
+import { CharacterAvatar } from '../agent-avatar/CharacterAvatar';
+import { createConfigForShape } from '../agent-avatar/character-shapes';
+import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
@@ -25,8 +24,6 @@ export type EmotionChoice = {
   label: string;
   config: AvatarConfig;
   disabled?: boolean;
-  thumbnail?: string;
-  artwork?: 'clippo' | 'cyclops';
 };
 function Emotion({
   config,
@@ -49,6 +46,27 @@ function Emotion({
 }) {
   const messages = useAgentCreatorMessages();
   const { colors } = useTheme();
+  const eyeConfig = useMemo<AvatarConfig>(() => {
+    const circle = createConfigForShape(choice.config, 'circle');
+    return {
+      ...circle,
+      face: true,
+      lookAt: 'center',
+      motion: 0,
+      idle: false,
+      character: {
+        ...circle.character!,
+        selections: {
+          ...circle.character!.selections,
+          ...(choice.config.family === 'alien' && !choice.config.character
+            ? { eyes: 'alien' }
+            : {}),
+          eyewear: 'none',
+          accessory: 'none',
+        },
+      },
+    };
+  }, [choice.config]);
   const angle = (index * 360) / count;
   const counterRotation = useAnimatedStyle(
     () => ({ transform: [{ rotate: `${-rotation.value - angle}deg` }] }),
@@ -76,7 +94,9 @@ function Emotion({
           accessibilityState={{ selected: active, disabled: choice.disabled }}
           aria-disabled={choice.disabled}
           disabled={choice.disabled}
-          onPress={() => onChange(choice.id)}
+          onPress={() => {
+            if (!choice.disabled) onChange(choice.id);
+          }}
           pointerEvents="auto"
           className={`pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring ${active ? 'border-foreground-icon-secondary' : 'border-transparent'}`}
           style={{
@@ -86,34 +106,15 @@ function Emotion({
             borderColor: active ? colors.icon : 'transparent',
           }}
         >
-          {choice.artwork === 'cyclops' ? (
-            <CyclopsArtwork opacity={choice.disabled ? 0.35 : 1} />
-          ) : choice.artwork === 'clippo' ? (
-            <ClippoArtwork kind="eyes" opacity={choice.disabled ? 0.35 : 1} />
-          ) : choice.thumbnail ? (
-            <StyledImage
-              source={{ uri: choice.thumbnail }}
-              resizeMode="contain"
-              accessible={false}
-              style={{
-                width: 27,
-                height: 27,
-                opacity: choice.disabled ? 0.35 : 1,
-              }}
-            />
-          ) : (
-            <AgentFace
-              config={{
-                ...choice.config,
-                eyeSize: 24,
-                eyeGap: 36,
-                lookAt: 'center',
-                motion: 0,
-                idle: false,
-              }}
-              size={34}
-            />
-          )}
+          <CharacterAvatar
+            previewPart="eyes"
+            config={eyeConfig}
+            portrait
+            paused
+            interactive={false}
+            size={34}
+            style={{ opacity: choice.disabled ? 0.35 : 1 }}
+          />
         </StyledPressable>
       </AnimatedView>
     </StyledView>

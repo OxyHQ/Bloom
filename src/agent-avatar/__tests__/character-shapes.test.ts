@@ -29,10 +29,13 @@ describe('one character across all body shapes', () => {
           const first = createConfigForShape(original, from);
           const second = createConfigForShape(first, to);
           expect(second.character).toEqual({
-            ...original.character,
+            ...Object.fromEntries(
+              Object.entries(original.character!).filter(([key]) => key !== 'preset'),
+            ),
             selections: { ...original.character!.selections, shape: to },
           });
           expect(legacyCharacterRecipe(second)).toBe(second.character);
+          expect(second.character).not.toHaveProperty('preset');
         }
       expect(JSON.stringify(original)).toBe(before);
     }
@@ -53,7 +56,6 @@ describe('one character across all body shapes', () => {
     for (const [id] of CHARACTER_SHAPES) {
       const changed = createConfigForShape(old, id);
       expect(changed.character).toEqual({
-        preset: 'legacy',
         bodyColor: avatarHex(old),
         eyeSpacing: 0.82,
         selections: {
@@ -88,17 +90,17 @@ describe('one character across all body shapes', () => {
     [{ color: 'blue' }, { selections: { color: 'blue' } }],
     [{ bodyColor: '#f0bd73' }, { bodyColor: '#f0bd73' }],
   ])(
-    'copies actual resolved default paint to every body without replacing its preset %#',
+    'copies actual resolved default paint to every body while removing its template reference %#',
     (selected, expected) => {
       const original = { ...FOLD_CONFIG, character: { preset: 'gus' } };
       for (const [shape] of CHARACTER_SHAPES) {
         const next = createConfigForShape(original, shape, selected);
-        expect(next.character).toMatchObject({ preset: 'gus', ...expected });
+        expect(next.character).toMatchObject(expected);
       }
     },
   );
 
-  it('keeps explicit RGB ahead of named/default paint and keeps a preset unchanged when metadata is still pending', () => {
+  it('keeps explicit RGB ahead of named/default paint and materializes default parts while metadata is still pending', () => {
     const original = customized({ bodyColor: '#123456' });
     expect(
       createConfigForShape(original, 'todd', {
@@ -108,8 +110,13 @@ describe('one character across all body shapes', () => {
     ).toBe('#123456');
     const pending = { ...FOLD_CONFIG, character: { preset: 'alfred' } };
     expect(createConfigForShape(pending, 'cloud').character).toEqual({
-      preset: 'alfred',
-      selections: { shape: 'cloud' },
+      selections: {
+        shape: 'cloud',
+        eyes: 'sleepy_lids',
+        eyewear: 'tall_oval_frames',
+        accessory: 'bow',
+        color: 'yellow',
+      },
     });
     expect(materializeCharacter(pending)).not.toHaveProperty('bodyColor');
   });
@@ -122,7 +129,6 @@ describe('one character across all body shapes', () => {
         { color: 'blue' },
       );
       expect(next.character).toMatchObject({
-        preset: 'clippo',
         bodyColor: '#999b9d',
         selections: { eyes: 'clippo', shape },
       });

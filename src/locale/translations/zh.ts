@@ -2742,7 +2742,11 @@ const translations: Translations = {
   },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: '智能体头像', unavailable: '头像不可用' },
+  AGENT_AVATAR_MESSAGES: {
+    runtimeRequired: '请使用托管运行时的 URL 配置 AgentAvatarProvider。',
+    label: '智能体头像',
+    unavailable: '头像不可用',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

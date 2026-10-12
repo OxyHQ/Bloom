@@ -48,6 +48,12 @@ it('announces selected avatar colors and profile fields through real react-nativ
           saturation: 85,
           eyes: 'happy',
           foldShape: 'diamond',
+          // Palette identity is saved explicitly by the shared engine; the
+          // historical HSL fields are not the named Blue swatch's RGB.
+          character: {
+            preset: 'blue_beret',
+            selections: { color: 'blue', shape: 'rounded_diamond' },
+          },
         },
       }}
       onChange={() => {}}
@@ -191,8 +197,13 @@ it('announces a custom beta body color and returns to a named color through the 
     avatar: {
       ...agent.avatar,
       character: {
-        preset: 'blue_beret',
-        selections: { eyes: 'oval', color: 'blue', accessory: 'felipe_beret' },
+        selections: {
+          shape: 'six_lobed_flower',
+          eyewear: 'none',
+          eyes: 'oval',
+          color: 'blue',
+          accessory: 'felipe_beret',
+        },
       },
     },
   });

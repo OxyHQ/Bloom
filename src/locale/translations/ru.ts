@@ -3193,7 +3193,11 @@ const translations: Translations = {
   },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: 'Аватар агента', unavailable: 'Аватар недоступен' },
+  AGENT_AVATAR_MESSAGES: {
+    runtimeRequired: 'Настройте AgentAvatarProvider, указав URL размещённого движка.',
+    label: 'Аватар агента',
+    unavailable: 'Аватар недоступен',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

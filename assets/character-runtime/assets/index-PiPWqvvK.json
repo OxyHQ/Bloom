@@ -1,0 +1,2530 @@
+{
+  "schema": "bloom.avatar.catalog-library",
+  "version": 1,
+  "complete": true,
+  "sourceHashes": {
+    "orbit-characters.mjs": "f3ba670dadba954df1618af83fa314641a4cfddd3597aca93a191c264374eed7",
+    "orbit-characters.data": "ffefb69b44f815cccb5f07b4d951d479e527dbabdca68ad9986cf695f9b9c440",
+    "orbit-characters.wasm": "c15f3692305c1385a12524e877199ba279b8d53e6bd37a9e533d626f12fcb94b"
+  },
+  "donors": {
+    "body": {
+      "circle": {
+        "low": "body/circle/low",
+        "lowMetadata": {
+          "path": "body/circle/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/circle/high",
+        "highMetadata": {
+          "path": "body/circle/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "clippo": {
+        "low": "body/clippo/low",
+        "lowMetadata": {
+          "path": "body/clippo/low",
+          "selectedPartIds": [0],
+          "face": {
+            "centers": [[-0.425, 0.5625, 0.03], [0.19166666666666668, 0.3875, 0.03]],
+            "radius": 0.265
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1000896
+        },
+        "high": "body/clippo/high",
+        "highMetadata": {
+          "path": "body/clippo/high",
+          "selectedPartIds": [0],
+          "face": {
+            "centers": [[-0.425, 0.5625, 0.03], [0.19166666666666668, 0.3875, 0.03]],
+            "radius": 0.265
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1146624
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "centers": [[-0.425, 0.5625, 0.03], [0.19166666666666668, 0.3875, 0.03]],
+            "radius": 0.265
+          },
+          "high": {
+            "centers": [[-0.425, 0.5625, 0.03], [0.19166666666666668, 0.3875, 0.03]],
+            "radius": 0.265
+          }
+        },
+        "signaturePreset": "lime_frog",
+        "construction": {
+          "low": {
+            "kind": "clippo-special",
+            "eyes": [
+              {
+                "center": [-0.425, 0.5625, 0.17],
+                "radius": [0.255, 0.265, 0.14]
+              },
+              {
+                "center": [0.19166666666666668, 0.3875, 0.17],
+                "radius": [0.255, 0.265, 0.14]
+              }
+            ]
+          },
+          "high": {
+            "kind": "clippo-special",
+            "eyes": [
+              {
+                "center": [-0.425, 0.5625, 0.17],
+                "radius": [0.255, 0.265, 0.14]
+              },
+              {
+                "center": [0.19166666666666668, 0.3875, 0.17],
+                "radius": [0.255, 0.265, 0.14]
+              }
+            ]
+          }
+        }
+      },
+      "todd": {
+        "low": "body/todd/low",
+        "lowMetadata": {
+          "path": "body/todd/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.17231734842061996,
+            "centers": [
+              [-0.46064695715904236, 0.4764087647199631, 0.48578952293323324],
+              [0.46120212972164154, 0.4764087647199631, 0.48596686249928683]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1703288
+        },
+        "high": "body/todd/high",
+        "highMetadata": {
+          "path": "body/todd/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.17231735587120056,
+            "centers": [
+              [-0.46064694225788116, 0.4764087498188019, 0.4865044356262541],
+              [0.46120212972164154, 0.4764087349176407, 0.4865735056416324]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 2032688
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.17231734842061996,
+            "centers": [
+              [-0.46064695715904236, 0.4764087647199631, 0.48578952293323324],
+              [0.46120212972164154, 0.4764087647199631, 0.48596686249928683]
+            ]
+          },
+          "high": {
+            "radius": 0.17231735587120056,
+            "centers": [
+              [-0.46064694225788116, 0.4764087498188019, 0.4865044356262541],
+              [0.46120212972164154, 0.4764087349176407, 0.4865735056416324]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "rounded_triangle": {
+        "low": "body/rounded_triangle/low",
+        "lowMetadata": {
+          "path": "body/rounded_triangle/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1501188650727272,
+            "centers": [
+              [-0.20945600792790114, 0.17781896889209747, 0.6558892115751981],
+              [0.20949104055786788, 0.17781832814216614, 0.6552937043691983]
+            ]
+          },
+          "signaturePreset": "alfred",
+          "parts": 3,
+          "bytes": 867224
+        },
+        "high": "body/rounded_triangle/high",
+        "highMetadata": {
+          "path": "body/rounded_triangle/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1499965712428093,
+            "centers": [
+              [-0.20932802930498795, 0.1780543029308319, 0.6560784065604147],
+              [0.2093518860640593, 0.17805366218090057, 0.6561940825570598]
+            ]
+          },
+          "signaturePreset": "alfred",
+          "parts": 3,
+          "bytes": 1112816
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.1501188650727272,
+            "centers": [
+              [-0.20945600792790114, 0.17781896889209747, 0.6558892115751981],
+              [0.20949104055786788, 0.17781832814216614, 0.6552937043691983]
+            ]
+          },
+          "high": {
+            "radius": 0.1499965712428093,
+            "centers": [
+              [-0.20932802930498795, 0.1780543029308319, 0.6560784065604147],
+              [0.2093518860640593, 0.17805366218090057, 0.6561940825570598]
+            ]
+          }
+        },
+        "signaturePreset": "alfred"
+      },
+      "capsule": {
+        "low": "body/capsule/low",
+        "lowMetadata": {
+          "path": "body/capsule/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14999880641698837,
+            "centers": [
+              [-0.2026773467662482, 0.13685736060142517, 0.5653039994913953],
+              [0.20267733186508702, 0.13685671985149384, 0.5653000450160878]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/capsule/high",
+        "highMetadata": {
+          "path": "body/capsule/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14999880641698837,
+            "centers": [
+              [-0.20266649872089912, 0.13685733079910278, 0.5675723083859813],
+              [0.20266648381973792, 0.13685669004917145, 0.5675702818957973]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.14999880641698837,
+            "centers": [
+              [-0.2026773467662482, 0.13685736060142517, 0.5653039994913953],
+              [0.20267733186508702, 0.13685671985149384, 0.5653000450160878]
+            ]
+          },
+          "high": {
+            "radius": 0.14999880641698837,
+            "centers": [
+              [-0.20266649872089912, 0.13685733079910278, 0.5675723083859813],
+              [0.20266648381973792, 0.13685669004917145, 0.5675702818957973]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "rounded_head_two_ears": {
+        "low": "body/rounded_head_two_ears/low",
+        "lowMetadata": {
+          "path": "body/rounded_head_two_ears/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.17231734842061996,
+            "centers": [
+              [-0.46064695715904236, 0.4764087647199631, 0.48801182932193027],
+              [0.46120212972164154, 0.4764087647199631, 0.4882591842393241]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1754456
+        },
+        "high": "body/rounded_head_two_ears/high",
+        "highMetadata": {
+          "path": "body/rounded_head_two_ears/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.17231735587120056,
+            "centers": [
+              [-0.46064694225788116, 0.4764087498188019, 0.4876614031750438],
+              [0.46120212972164154, 0.4764087349176407, 0.4880139452919213]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 2425136
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.17231734842061996,
+            "centers": [
+              [-0.46064695715904236, 0.4764087647199631, 0.48801182932193027],
+              [0.46120212972164154, 0.4764087647199631, 0.4882591842393241]
+            ]
+          },
+          "high": {
+            "radius": 0.17231735587120056,
+            "centers": [
+              [-0.46064694225788116, 0.4764087498188019, 0.4876614031750438],
+              [0.46120212972164154, 0.4764087349176407, 0.4880139452919213]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "six_lobed_flower": {
+        "low": "body/six_lobed_flower/low",
+        "lowMetadata": {
+          "path": "body/six_lobed_flower/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.24,
+            "centers": [
+              [-0.25175699931383133, 0.18286219984292984, 0.71407650064734],
+              [0.2522430006861687, 0.1828615590929985, 0.7158940708988796]
+            ]
+          },
+          "signaturePreset": "blue_beret",
+          "parts": 3,
+          "bytes": 867224
+        },
+        "high": "body/six_lobed_flower/high",
+        "highMetadata": {
+          "path": "body/six_lobed_flower/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.24,
+            "centers": [
+              [-0.25175232407450676, 0.18298832327127457, 0.7146158752779694],
+              [0.25224767592549324, 0.18298768997192383, 0.7159888209087227]
+            ]
+          },
+          "signaturePreset": "blue_beret",
+          "parts": 3,
+          "bytes": 1112816
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.24,
+            "centers": [
+              [-0.25175699931383133, 0.18286219984292984, 0.71407650064734],
+              [0.2522430006861687, 0.1828615590929985, 0.7158940708988796]
+            ]
+          },
+          "high": {
+            "radius": 0.24,
+            "centers": [
+              [-0.25175232407450676, 0.18298832327127457, 0.7146158752779694],
+              [0.25224767592549324, 0.18298768997192383, 0.7159888209087227]
+            ]
+          }
+        },
+        "signaturePreset": "blue_beret"
+      },
+      "heart": {
+        "low": "body/heart/low",
+        "lowMetadata": {
+          "path": "body/heart/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.15006422251462936,
+            "centers": [
+              [-0.20436761155749647, 0.18409502506256104, 0.7266347695597645],
+              [0.20421911403561918, 0.1840943843126297, 0.7264890632841365]
+            ]
+          },
+          "signaturePreset": "purple_heart",
+          "parts": 3,
+          "bytes": 867224
+        },
+        "high": "body/heart/high",
+        "highMetadata": {
+          "path": "body/heart/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14999913424253464,
+            "centers": [
+              [-0.20420848578239775, 0.18428149819374084, 0.7272037767706822],
+              [0.2042122557761798, 0.1842808574438095, 0.7265778796806642]
+            ]
+          },
+          "signaturePreset": "purple_heart",
+          "parts": 3,
+          "bytes": 1112816
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.15006422251462936,
+            "centers": [
+              [-0.20436761155749647, 0.18409502506256104, 0.7266347695597645],
+              [0.20421911403561918, 0.1840943843126297, 0.7264890632841365]
+            ]
+          },
+          "high": {
+            "radius": 0.14999913424253464,
+            "centers": [
+              [-0.20420848578239775, 0.18428149819374084, 0.7272037767706822],
+              [0.2042122557761798, 0.1842808574438095, 0.7265778796806642]
+            ]
+          }
+        },
+        "signaturePreset": "purple_heart"
+      },
+      "four_lobed_butterfly": {
+        "low": "body/four_lobed_butterfly/low",
+        "lowMetadata": {
+          "path": "body/four_lobed_butterfly/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14996223524212837,
+            "centers": [
+              [-0.20567540079379615, 0.154081791639328, 0.618837461122656],
+              [0.2056753039362484, 0.15408115833997726, 0.6188325230536013]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 865064
+        },
+        "high": "body/four_lobed_butterfly/high",
+        "highMetadata": {
+          "path": "body/four_lobed_butterfly/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1498829945921898,
+            "centers": [
+              [-0.20557314902567836, 0.15401244908571243, 0.6189943876280104],
+              [0.20557296276116344, 0.1540118232369423, 0.6189916139009066]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1125992
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.14996223524212837,
+            "centers": [
+              [-0.20567540079379615, 0.154081791639328, 0.618837461122656],
+              [0.2056753039362484, 0.15408115833997726, 0.6188325230536013]
+            ]
+          },
+          "high": {
+            "radius": 0.1498829945921898,
+            "centers": [
+              [-0.20557314902567836, 0.15401244908571243, 0.6189943876280104],
+              [0.20557296276116344, 0.1540118232369423, 0.6189916139009066]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "circle_two_ears": {
+        "low": "body/circle_two_ears/low",
+        "lowMetadata": {
+          "path": "body/circle_two_ears/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.11298810318112373,
+            "centers": [
+              [-0.15721648558991952, -0.2396913766860962, 0.5765557457756254],
+              [0.15420928969996972, -0.2396918460726738, 0.5771946431274337]
+            ]
+          },
+          "signaturePreset": "lime_headphones",
+          "parts": 3,
+          "bytes": 867224
+        },
+        "high": "body/circle_two_ears/high",
+        "highMetadata": {
+          "path": "body/circle_two_ears/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.11294186115264893,
+            "centers": [
+              [-0.15563754737395422, -0.23992891609668732, 0.5771687640262304],
+              [0.1557295992972292, -0.23992939293384552, 0.5769987460389063]
+            ]
+          },
+          "signaturePreset": "lime_headphones",
+          "parts": 3,
+          "bytes": 1112816
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.11298810318112373,
+            "centers": [
+              [-0.15721648558991952, -0.2396913766860962, 0.5765557457756254],
+              [0.15420928969996972, -0.2396918460726738, 0.5771946431274337]
+            ]
+          },
+          "high": {
+            "radius": 0.11294186115264893,
+            "centers": [
+              [-0.15563754737395422, -0.23992891609668732, 0.5771687640262304],
+              [0.1557295992972292, -0.23992939293384552, 0.5769987460389063]
+            ]
+          }
+        },
+        "signaturePreset": "lime_headphones"
+      },
+      "twelve_scalloped_rosette": {
+        "low": "body/twelve_scalloped_rosette/low",
+        "lowMetadata": {
+          "path": "body/twelve_scalloped_rosette/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1498367041349411,
+            "centers": [
+              [-0.20397646352673893, 0.19715193659067154, 0.7715078319997406],
+              [0.20396475866462116, 0.1971512958407402, 0.7725984893248529]
+            ]
+          },
+          "signaturePreset": "coral_monocle",
+          "parts": 3,
+          "bytes": 867224
+        },
+        "high": "body/twelve_scalloped_rosette/high",
+        "highMetadata": {
+          "path": "body/twelve_scalloped_rosette/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1499989554286003,
+            "centers": [
+              [-0.20424151048088204, 0.1970004215836525, 0.7722314725339838],
+              [0.2042297758164419, 0.19699979573488235, 0.7721816118272625]
+            ]
+          },
+          "signaturePreset": "coral_monocle",
+          "parts": 3,
+          "bytes": 1112816
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.1498367041349411,
+            "centers": [
+              [-0.20397646352673893, 0.19715193659067154, 0.7715078319997406],
+              [0.20396475866462116, 0.1971512958407402, 0.7725984893248529]
+            ]
+          },
+          "high": {
+            "radius": 0.1499989554286003,
+            "centers": [
+              [-0.20424151048088204, 0.1970004215836525, 0.7722314725339838],
+              [0.2042297758164419, 0.19699979573488235, 0.7721816118272625]
+            ]
+          }
+        },
+        "signaturePreset": "coral_monocle"
+      },
+      "rounded_cube": {
+        "low": "body/rounded_cube/low",
+        "lowMetadata": {
+          "path": "body/rounded_cube/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14275144040584564,
+            "centers": [
+              [-0.1950788125398045, 0.16012419760227203, 0.715280448737558],
+              [0.1961253434421902, 0.16012360155582428, 0.714403787612654]
+            ]
+          },
+          "signaturePreset": "blue_spectacles",
+          "parts": 3,
+          "bytes": 867224
+        },
+        "high": "body/rounded_cube/high",
+        "highMetadata": {
+          "path": "body/rounded_cube/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14282141998410225,
+            "centers": [
+              [-0.19572663679743393, 0.16010118275880814, 0.7146030275123862],
+              [0.19570505991602524, 0.1601005643606186, 0.714604391077125]
+            ]
+          },
+          "signaturePreset": "blue_spectacles",
+          "parts": 3,
+          "bytes": 1112816
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.14275144040584564,
+            "centers": [
+              [-0.1950788125398045, 0.16012419760227203, 0.715280448737558],
+              [0.1961253434421902, 0.16012360155582428, 0.714403787612654]
+            ]
+          },
+          "high": {
+            "radius": 0.14282141998410225,
+            "centers": [
+              [-0.19572663679743393, 0.16010118275880814, 0.7146030275123862],
+              [0.19570505991602524, 0.1601005643606186, 0.714604391077125]
+            ]
+          }
+        },
+        "signaturePreset": "blue_spectacles"
+      },
+      "rounded_diamond": {
+        "low": "body/rounded_diamond/low",
+        "lowMetadata": {
+          "path": "body/rounded_diamond/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14999878406524658,
+            "centers": [
+              [-0.20656722039008, 0.1951923370361328, 0.7181697028384539],
+              [0.2065858617427335, 0.19519171118736267, 0.7187464790951638]
+            ]
+          },
+          "signaturePreset": "gus",
+          "parts": 3,
+          "bytes": 867224
+        },
+        "high": "body/rounded_diamond/high",
+        "highMetadata": {
+          "path": "body/rounded_diamond/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.14999878406524658,
+            "centers": [
+              [-0.2065686509015546, 0.19500023126602173, 0.717997507994559],
+              [0.20657212287211277, 0.1949996054172516, 0.7183496334178889]
+            ]
+          },
+          "signaturePreset": "gus",
+          "parts": 3,
+          "bytes": 1112816
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.14999878406524658,
+            "centers": [
+              [-0.20656722039008, 0.1951923370361328, 0.7181697028384539],
+              [0.2065858617427335, 0.19519171118736267, 0.7187464790951638]
+            ]
+          },
+          "high": {
+            "radius": 0.14999878406524658,
+            "centers": [
+              [-0.2065686509015546, 0.19500023126602173, 0.717997507994559],
+              [0.20657212287211277, 0.1949996054172516, 0.7183496334178889]
+            ]
+          }
+        },
+        "signaturePreset": "gus"
+      },
+      "slender": {
+        "low": "body/slender/low",
+        "lowMetadata": {
+          "path": "body/slender/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1740722891566265,
+            "centers": [
+              [-0.3419277108433735, 0.04819277108433735, 0.7565635532914473],
+              [0.09325301204819275, 0.04819277108433735, 0.8188072288857756]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/slender/high",
+        "highMetadata": {
+          "path": "body/slender/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1740722891566265,
+            "centers": [
+              [-0.3419277108433735, 0.04819277108433735, 0.7569060245999114],
+              [0.09325301204819275, 0.04819277108433735, 0.8218067378509538]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.1740722891566265,
+            "centers": [
+              [-0.3419277108433735, 0.04819277108433735, 0.7565635532914473],
+              [0.09325301204819275, 0.04819277108433735, 0.8188072288857756]
+            ]
+          },
+          "high": {
+            "radius": 0.1740722891566265,
+            "centers": [
+              [-0.3419277108433735, 0.04819277108433735, 0.7569060245999114],
+              [0.09325301204819275, 0.04819277108433735, 0.8218067378509538]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "pocket": {
+        "low": "body/pocket/low",
+        "lowMetadata": {
+          "path": "body/pocket/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3975903614457831, 0.04819277108433735, 0.7467296241201365],
+              [0.10843373493975902, 0.04819277108433735, 0.8099194319870171]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/pocket/high",
+        "highMetadata": {
+          "path": "body/pocket/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3975903614457831, 0.04819277108433735, 0.7471913292386997],
+              [0.10843373493975902, 0.04819277108433735, 0.8130523732297866]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3975903614457831, 0.04819277108433735, 0.7467296241201365],
+              [0.10843373493975902, 0.04819277108433735, 0.8099194319870171]
+            ]
+          },
+          "high": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3975903614457831, 0.04819277108433735, 0.7471913292386997],
+              [0.10843373493975902, 0.04819277108433735, 0.8130523732297866]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "petal": {
+        "low": "body/petal/low",
+        "lowMetadata": {
+          "path": "body/petal/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3012048192771084, 0.04819277108433735, 0.7624738013944561],
+              [0.20481927710843373, 0.04819277108433735, 0.7989701334541988]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/petal/high",
+        "highMetadata": {
+          "path": "body/petal/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3012048192771084, 0.04819277108433735, 0.7636685045564036],
+              [0.20481927710843373, 0.04819277108433735, 0.7982214711445352]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3012048192771084, 0.04819277108433735, 0.7624738013944561],
+              [0.20481927710843373, 0.04819277108433735, 0.7989701334541988]
+            ]
+          },
+          "high": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3012048192771084, 0.04819277108433735, 0.7636685045564036],
+              [0.20481927710843373, 0.04819277108433735, 0.7982214711445352]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "star": {
+        "low": "body/star/low",
+        "lowMetadata": {
+          "path": "body/star/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, -0.024096385542168676, 0.7415438274589817],
+              [0.18072289156626503, -0.024096385542168676, 0.7898133473112386]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/star/high",
+        "highMetadata": {
+          "path": "body/star/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, -0.024096385542168676, 0.7423595783955363],
+              [0.18072289156626503, -0.024096385542168676, 0.7922161297958444]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, -0.024096385542168676, 0.7415438274589817],
+              [0.18072289156626503, -0.024096385542168676, 0.7898133473112386]
+            ]
+          },
+          "high": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, -0.024096385542168676, 0.7423595783955363],
+              [0.18072289156626503, -0.024096385542168676, 0.7922161297958444]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "cloud": {
+        "low": "body/cloud/low",
+        "lowMetadata": {
+          "path": "body/cloud/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, -0.0963855421686747, 0.7792060800327146],
+              [0.18072289156626503, -0.0963855421686747, 0.8040663244113564]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/cloud/high",
+        "highMetadata": {
+          "path": "body/cloud/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, -0.0963855421686747, 0.7824999897650574],
+              [0.18072289156626503, -0.0963855421686747, 0.8038928882706059]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, -0.0963855421686747, 0.7792060800327146],
+              [0.18072289156626503, -0.0963855421686747, 0.8040663244113564]
+            ]
+          },
+          "high": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, -0.0963855421686747, 0.7824999897650574],
+              [0.18072289156626503, -0.0963855421686747, 0.8038928882706059]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "shield": {
+        "low": "body/shield/low",
+        "lowMetadata": {
+          "path": "body/shield/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, 0.04819277108433735, 0.7651535367579841],
+              [0.18072289156626503, 0.04819277108433735, 0.8031967110221698]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/shield/high",
+        "highMetadata": {
+          "path": "body/shield/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, 0.04819277108433735, 0.7666845439736366],
+              [0.18072289156626503, 0.04819277108433735, 0.8021212896239003]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, 0.04819277108433735, 0.7651535367579841],
+              [0.18072289156626503, 0.04819277108433735, 0.8031967110221698]
+            ]
+          },
+          "high": {
+            "radius": 0.20240963855421687,
+            "centers": [
+              [-0.3253012048192771, 0.04819277108433735, 0.7666845439736366],
+              [0.18072289156626503, 0.04819277108433735, 0.8021212896239003]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "pebble": {
+        "low": "body/pebble/low",
+        "lowMetadata": {
+          "path": "body/pebble/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1927710843373494,
+            "centers": [
+              [-0.24096385542168675, 0, 0.7910726709068832],
+              [0.24096385542168675, 0, 0.7977374326848768]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/pebble/high",
+        "highMetadata": {
+          "path": "body/pebble/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1927710843373494,
+            "centers": [
+              [-0.24096385542168675, 0, 0.7940356185014594],
+              [0.24096385542168675, 0, 0.7984060201060936]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.1927710843373494,
+            "centers": [
+              [-0.24096385542168675, 0, 0.7910726709068832],
+              [0.24096385542168675, 0, 0.7977374326848768]
+            ]
+          },
+          "high": {
+            "radius": 0.1927710843373494,
+            "centers": [
+              [-0.24096385542168675, 0, 0.7940356185014594],
+              [0.24096385542168675, 0, 0.7984060201060936]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "squircle": {
+        "low": "body/squircle/low",
+        "lowMetadata": {
+          "path": "body/squircle/low",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1927710843373494,
+            "centers": [
+              [-0.24096385542168675, 0, 0.7921622342027155],
+              [0.24096385542168675, 0, 0.792162234202624]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "body/squircle/high",
+        "highMetadata": {
+          "path": "body/squircle/high",
+          "selectedPartIds": [0],
+          "face": {
+            "radius": 0.1927710843373494,
+            "centers": [
+              [-0.24096385542168675, 0, 0.7947500981549301],
+              [0.24096385542168675, 0, 0.7947500981547826]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [0],
+        "face": {
+          "low": {
+            "radius": 0.1927710843373494,
+            "centers": [
+              [-0.24096385542168675, 0, 0.7921622342027155],
+              [0.24096385542168675, 0, 0.792162234202624]
+            ]
+          },
+          "high": {
+            "radius": 0.1927710843373494,
+            "centers": [
+              [-0.24096385542168675, 0, 0.7947500981549301],
+              [0.24096385542168675, 0, 0.7947500981547826]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      }
+    },
+    "eyes": {
+      "swept_lids": {
+        "low": "eyes/swept_lids/low",
+        "lowMetadata": {
+          "path": "eyes/swept_lids/low",
+          "selectedPartIds": [1, 2],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1239392
+        },
+        "high": "eyes/swept_lids/high",
+        "highMetadata": {
+          "path": "eyes/swept_lids/high",
+          "selectedPartIds": [1, 2],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1343720
+        },
+        "selectedPartIds": [1, 2],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "oval": {
+        "low": "eyes/oval/low",
+        "lowMetadata": {
+          "path": "eyes/oval/low",
+          "selectedPartIds": [1, 2],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "eyes/oval/high",
+        "highMetadata": {
+          "path": "eyes/oval/high",
+          "selectedPartIds": [1, 2],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [1, 2],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "sparkle_capsules": {
+        "low": "eyes/sparkle_capsules/low",
+        "lowMetadata": {
+          "path": "eyes/sparkle_capsules/low",
+          "selectedPartIds": [1, 2, 3, 4, 5, 6],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1218992
+        },
+        "high": "eyes/sparkle_capsules/high",
+        "highMetadata": {
+          "path": "eyes/sparkle_capsules/high",
+          "selectedPartIds": [1, 2, 3, 4, 5, 6],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1799924
+        },
+        "selectedPartIds": [1, 2, 3, 4, 5, 6],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "highlight_capsules": {
+        "low": "eyes/highlight_capsules/low",
+        "lowMetadata": {
+          "path": "eyes/highlight_capsules/low",
+          "selectedPartIds": [1, 2, 3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1008008
+        },
+        "high": "eyes/highlight_capsules/high",
+        "highMetadata": {
+          "path": "eyes/highlight_capsules/high",
+          "selectedPartIds": [1, 2, 3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1374776
+        },
+        "selectedPartIds": [1, 2, 3, 4],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "dots": {
+        "low": "eyes/dots/low",
+        "lowMetadata": {
+          "path": "eyes/dots/low",
+          "selectedPartIds": [1, 2],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 822944
+        },
+        "high": "eyes/dots/high",
+        "highMetadata": {
+          "path": "eyes/dots/high",
+          "selectedPartIds": [1, 2],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1061408
+        },
+        "selectedPartIds": [1, 2],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "double_highlights": {
+        "low": "eyes/double_highlights/low",
+        "lowMetadata": {
+          "path": "eyes/double_highlights/low",
+          "selectedPartIds": [1, 2, 3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1095488
+        },
+        "high": "eyes/double_highlights/high",
+        "highMetadata": {
+          "path": "eyes/double_highlights/high",
+          "selectedPartIds": [1, 2, 3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1479104
+        },
+        "selectedPartIds": [1, 2, 3, 4],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "round_inset": {
+        "low": "eyes/round_inset/low",
+        "lowMetadata": {
+          "path": "eyes/round_inset/low",
+          "selectedPartIds": [1, 2, 3, 4, 5, 6],
+          "face": {
+            "radius": 0.17231734842061996,
+            "centers": [
+              [-0.46064695715904236, 0.4764087647199631, 0.48801182932193027],
+              [0.46120212972164154, 0.4764087647199631, 0.4882591842393241]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1754456
+        },
+        "high": "eyes/round_inset/high",
+        "highMetadata": {
+          "path": "eyes/round_inset/high",
+          "selectedPartIds": [1, 2, 3, 4, 5, 6],
+          "face": {
+            "radius": 0.17231735587120056,
+            "centers": [
+              [-0.46064694225788116, 0.4764087498188019, 0.4876614031750438],
+              [0.46120212972164154, 0.4764087349176407, 0.4880139452919213]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 2425136
+        },
+        "selectedPartIds": [1, 2, 3, 4, 5, 6],
+        "face": {
+          "low": {
+            "radius": 0.17231734842061996,
+            "centers": [
+              [-0.46064695715904236, 0.4764087647199631, 0.48801182932193027],
+              [0.46120212972164154, 0.4764087647199631, 0.4882591842393241]
+            ]
+          },
+          "high": {
+            "radius": 0.17231735587120056,
+            "centers": [
+              [-0.46064694225788116, 0.4764087498188019, 0.4876614031750438],
+              [0.46120212972164154, 0.4764087349176407, 0.4880139452919213]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "crescent_inset": {
+        "low": "eyes/crescent_inset/low",
+        "lowMetadata": {
+          "path": "eyes/crescent_inset/low",
+          "selectedPartIds": [1, 2, 3, 4, 5, 6, 7, 8],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 9,
+          "bytes": 2358560
+        },
+        "high": "eyes/crescent_inset/high",
+        "highMetadata": {
+          "path": "eyes/crescent_inset/high",
+          "selectedPartIds": [1, 2, 3, 4, 5, 6, 7, 8],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 9,
+          "bytes": 2100872
+        },
+        "selectedPartIds": [1, 2, 3, 4, 5, 6, 7, 8],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "sleepy_lids": {
+        "low": "eyes/sleepy_lids/low",
+        "lowMetadata": {
+          "path": "eyes/sleepy_lids/low",
+          "selectedPartIds": [1, 2, 3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1072808
+        },
+        "high": "eyes/sleepy_lids/high",
+        "highMetadata": {
+          "path": "eyes/sleepy_lids/high",
+          "selectedPartIds": [1, 2, 3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1503944
+        },
+        "selectedPartIds": [1, 2, 3, 4],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "todd": {
+        "low": "eyes/todd/low",
+        "lowMetadata": {
+          "path": "eyes/todd/low",
+          "selectedPartIds": [1, 2, 3, 4],
+          "face": {
+            "radius": 0.17231734842061996,
+            "centers": [
+              [-0.46064695715904236, 0.4764087647199631, 0.48578952293323324],
+              [0.46120212972164154, 0.4764087647199631, 0.48596686249928683]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1703288
+        },
+        "high": "eyes/todd/high",
+        "highMetadata": {
+          "path": "eyes/todd/high",
+          "selectedPartIds": [1, 2, 3, 4],
+          "face": {
+            "radius": 0.17231735587120056,
+            "centers": [
+              [-0.46064694225788116, 0.4764087498188019, 0.4865044356262541],
+              [0.46120212972164154, 0.4764087349176407, 0.4865735056416324]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 2032688
+        },
+        "selectedPartIds": [1, 2, 3, 4],
+        "face": {
+          "low": {
+            "radius": 0.17231734842061996,
+            "centers": [
+              [-0.46064695715904236, 0.4764087647199631, 0.48578952293323324],
+              [0.46120212972164154, 0.4764087647199631, 0.48596686249928683]
+            ]
+          },
+          "high": {
+            "radius": 0.17231735587120056,
+            "centers": [
+              [-0.46064694225788116, 0.4764087498188019, 0.4865044356262541],
+              [0.46120212972164154, 0.4764087349176407, 0.4865735056416324]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "clippo": {
+        "low": "eyes/clippo/low",
+        "lowMetadata": {
+          "path": "eyes/clippo/low",
+          "selectedPartIds": [1, 2, 3, 4, 5, 6],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1567616
+        },
+        "high": "eyes/clippo/high",
+        "highMetadata": {
+          "path": "eyes/clippo/high",
+          "selectedPartIds": [1, 2, 3, 4, 5, 6],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 7,
+          "bytes": 1716224
+        },
+        "selectedPartIds": [1, 2, 3, 4, 5, 6],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog",
+        "construction": {
+          "low": {
+            "kind": "clippo-face",
+            "eyes": [
+              {
+                "eyeScale": 0.9997919201850891,
+                "center": [-0.20533062517642975, 0.19991866499185562, 0.9198482930660248],
+                "radius": [0.19995838403701782, 0.2099563032388687, 0.13997086882591248]
+              },
+              {
+                "eyeScale": 0.9997919201850891,
+                "center": [0.20533010363578796, 0.19991802424192429, 0.9198531806468964],
+                "radius": [0.19995838403701782, 0.2099563032388687, 0.13997086882591248]
+              }
+            ]
+          },
+          "high": {
+            "kind": "clippo-face",
+            "eyes": [
+              {
+                "eyeScale": 0.9997919201850891,
+                "center": [-0.20530472323298454, 0.19991866499185562, 0.9228878319263458],
+                "radius": [0.19995838403701782, 0.2099563032388687, 0.13997086882591248]
+              },
+              {
+                "eyeScale": 0.9997919201850891,
+                "center": [0.20530403032898903, 0.19991802424192429, 0.9228933751583099],
+                "radius": [0.19995838403701782, 0.2099563032388687, 0.13997086882591248]
+              }
+            ]
+          }
+        }
+      },
+      "cyclops": {
+        "low": "eyes/cyclops/low",
+        "lowMetadata": {
+          "path": "eyes/cyclops/low",
+          "selectedPartIds": [1, 2, 3, 4, 5],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 6,
+          "bytes": 1326560
+        },
+        "high": "eyes/cyclops/high",
+        "highMetadata": {
+          "path": "eyes/cyclops/high",
+          "selectedPartIds": [1, 2, 3, 4, 5],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 6,
+          "bytes": 1475168
+        },
+        "selectedPartIds": [1, 2, 3, 4, 5],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog",
+        "construction": {
+          "low": {
+            "kind": "cyclops",
+            "radius": 0.5398876368999481,
+            "center": [0, 0.23990212440490732, 0.7828202205896377]
+          },
+          "high": {
+            "kind": "cyclops",
+            "radius": 0.5398876368999481,
+            "center": [0, 0.23990212440490732, 0.7828202205896377]
+          }
+        }
+      }
+    },
+    "eyewear": {
+      "none": {
+        "low": "eyewear/none/low",
+        "lowMetadata": {
+          "path": "eyewear/none/low",
+          "selectedPartIds": [],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "eyewear/none/high",
+        "highMetadata": {
+          "path": "eyewear/none/high",
+          "selectedPartIds": [],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "monocle": {
+        "low": "eyewear/monocle/low",
+        "lowMetadata": {
+          "path": "eyewear/monocle/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1154828
+        },
+        "high": "eyewear/monocle/high",
+        "highMetadata": {
+          "path": "eyewear/monocle/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1769780
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "tall_oval_frames": {
+        "low": "eyewear/tall_oval_frames/low",
+        "lowMetadata": {
+          "path": "eyewear/tall_oval_frames/low",
+          "selectedPartIds": [3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1242416
+        },
+        "high": "eyewear/tall_oval_frames/high",
+        "highMetadata": {
+          "path": "eyewear/tall_oval_frames/high",
+          "selectedPartIds": [3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1801424
+        },
+        "selectedPartIds": [3, 4],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "separate_trapezoid_lenses": {
+        "low": "eyewear/separate_trapezoid_lenses/low",
+        "lowMetadata": {
+          "path": "eyewear/separate_trapezoid_lenses/low",
+          "selectedPartIds": [3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1111688
+        },
+        "high": "eyewear/separate_trapezoid_lenses/high",
+        "highMetadata": {
+          "path": "eyewear/separate_trapezoid_lenses/high",
+          "selectedPartIds": [3, 4],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 5,
+          "bytes": 1563560
+        },
+        "selectedPartIds": [3, 4],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "classic_sunglasses": {
+        "low": "eyewear/classic_sunglasses/low",
+        "lowMetadata": {
+          "path": "eyewear/classic_sunglasses/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1094648
+        },
+        "high": "eyewear/classic_sunglasses/high",
+        "highMetadata": {
+          "path": "eyewear/classic_sunglasses/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1825808
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "round_sunglasses": {
+        "low": "eyewear/round_sunglasses/low",
+        "lowMetadata": {
+          "path": "eyewear/round_sunglasses/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1184072
+        },
+        "high": "eyewear/round_sunglasses/high",
+        "highMetadata": {
+          "path": "eyewear/round_sunglasses/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1929920
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      }
+    },
+    "accessory": {
+      "none": {
+        "low": "accessory/none/low",
+        "lowMetadata": {
+          "path": "accessory/none/low",
+          "selectedPartIds": [],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 861824
+        },
+        "high": "accessory/none/high",
+        "highMetadata": {
+          "path": "accessory/none/high",
+          "selectedPartIds": [],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 3,
+          "bytes": 1121024
+        },
+        "selectedPartIds": [],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "headphones": {
+        "low": "accessory/headphones/low",
+        "lowMetadata": {
+          "path": "accessory/headphones/low",
+          "selectedPartIds": [3, 4, 5],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 6,
+          "bytes": 921800
+        },
+        "high": "accessory/headphones/high",
+        "highMetadata": {
+          "path": "accessory/headphones/high",
+          "selectedPartIds": [3, 4, 5],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 6,
+          "bytes": 1274528
+        },
+        "selectedPartIds": [3, 4, 5],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "bow": {
+        "low": "accessory/bow/low",
+        "lowMetadata": {
+          "path": "accessory/bow/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1073456
+        },
+        "high": "accessory/bow/high",
+        "highMetadata": {
+          "path": "accessory/bow/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1909592
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "beanie": {
+        "low": "accessory/beanie/low",
+        "lowMetadata": {
+          "path": "accessory/beanie/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 982976
+        },
+        "high": "accessory/beanie/high",
+        "highMetadata": {
+          "path": "accessory/beanie/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1487552
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "hat": {
+        "low": "accessory/hat/low",
+        "lowMetadata": {
+          "path": "accessory/hat/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1003712
+        },
+        "high": "accessory/hat/high",
+        "highMetadata": {
+          "path": "accessory/hat/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1570496
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "beret": {
+        "low": "accessory/beret/low",
+        "lowMetadata": {
+          "path": "accessory/beret/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 965696
+        },
+        "high": "accessory/beret/high",
+        "highMetadata": {
+          "path": "accessory/beret/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1425344
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "orb": {
+        "low": "accessory/orb/low",
+        "lowMetadata": {
+          "path": "accessory/orb/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1398400
+        },
+        "high": "accessory/orb/high",
+        "highMetadata": {
+          "path": "accessory/orb/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1697344
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "three_lobe": {
+        "low": "accessory/three_lobe/low",
+        "lowMetadata": {
+          "path": "accessory/three_lobe/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1483504
+        },
+        "high": "accessory/three_lobe/high",
+        "highMetadata": {
+          "path": "accessory/three_lobe/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1818304
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "crown": {
+        "low": "accessory/crown/low",
+        "lowMetadata": {
+          "path": "accessory/crown/low",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 1320608
+        },
+        "high": "accessory/crown/high",
+        "highMetadata": {
+          "path": "accessory/crown/high",
+          "selectedPartIds": [3],
+          "face": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          },
+          "signaturePreset": "lime_frog",
+          "parts": 4,
+          "bytes": 2007488
+        },
+        "selectedPartIds": [3],
+        "face": {
+          "low": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.2053306251766797, 0.19991866499185562, 0.7935739044473884],
+              [0.2053301036360379, 0.19991802424192429, 0.7935730255288431]
+            ]
+          },
+          "high": {
+            "radius": 0.14996759593486786,
+            "centers": [
+              [-0.20530472323323448, 0.19991866499185562, 0.7966331574912492],
+              [0.20530403032923897, 0.19991802424192429, 0.7966329093963692]
+            ]
+          }
+        },
+        "signaturePreset": "lime_frog"
+      },
+      "felipe_beret": {
+        "low": "accessory/felipe_beret/low",
+        "lowMetadata": {
+          "path": "accessory/felipe_beret/low",
+          "selectedPartIds": [3, 4, 5],
+          "face": {
+            "radius": 0.24,
+            "centers": [
+              [-0.25175699931383133, 0.18286219984292984, 0.5182129504029497],
+              [0.2522430006861687, 0.1828615590929985, 0.5189244175452109]
+            ]
+          },
+          "signaturePreset": "blue_beret",
+          "parts": 6,
+          "bytes": 1033040
+        },
+        "high": "accessory/felipe_beret/high",
+        "highMetadata": {
+          "path": "accessory/felipe_beret/high",
+          "selectedPartIds": [3, 4, 5],
+          "face": {
+            "radius": 0.24,
+            "centers": [
+              [-0.25175232407450676, 0.18298832327127457, 0.5177897366578248],
+              [0.25224767592549324, 0.18298768997192383, 0.5192889369491814]
+            ]
+          },
+          "signaturePreset": "blue_beret",
+          "parts": 6,
+          "bytes": 1540208
+        },
+        "selectedPartIds": [3, 4, 5],
+        "face": {
+          "low": {
+            "radius": 0.24,
+            "centers": [
+              [-0.25175699931383133, 0.18286219984292984, 0.5182129504029497],
+              [0.2522430006861687, 0.1828615590929985, 0.5189244175452109]
+            ]
+          },
+          "high": {
+            "radius": 0.24,
+            "centers": [
+              [-0.25175232407450676, 0.18298832327127457, 0.5177897366578248],
+              [0.25224767592549324, 0.18298768997192383, 0.5192889369491814]
+            ]
+          }
+        },
+        "signaturePreset": "blue_beret"
+      }
+    }
+  }
+}

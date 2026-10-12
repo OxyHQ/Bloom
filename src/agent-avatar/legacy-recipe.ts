@@ -1,7 +1,7 @@
 import { CHARACTER_COLORS } from './character-colors';
 import { characterShapeGeometry, isMigratedCharacterShape } from './character-shapes';
 import { avatarHex } from './avatar-color';
-import { legacyContours } from './legacy-contours';
+import { avatarContours } from './avatar-contours';
 import type { AvatarConfig } from './model';
 import type { AvatarCharacterConfig } from './config-character';
 
@@ -16,12 +16,6 @@ export type LegacyRecipe = {
   patch: { bodyColor: string };
 };
 
-/** Saved unsupported artwork stays readable without pretending it was migrated. */
-export function legacyRecipeUnsupported(config: AvatarConfig): boolean {
-  if (isMigratedCharacterShape(config.character?.selections?.shape)) return false;
-  return config.family === 'alien' || config.family === 'mascot' || !config.face;
-}
-
 /** Reuse actual beta geometry for equivalent shapes, per the unified catalog. */
 export function legacyNativeShape(config: AvatarConfig): string | undefined {
   const shared: Partial<Record<AvatarConfig['shape'] | AvatarConfig['foldShape'], string>> = {
@@ -33,7 +27,7 @@ export function legacyNativeShape(config: AvatarConfig): string | undefined {
   };
   return config.family === 'fold'
     ? shared[config.foldShape]
-    : config.family === 'blob'
+    : config.family === 'blob' || config.family === 'mascot'
       ? shared[config.shape]
       : undefined;
 }
@@ -68,7 +62,7 @@ export function radialContour(polygons: Point[][], samples = 256): Point[] {
   });
 }
 
-/** Shared capability identity for the editor and the legacy engine adapter. */
+/** Shared capability identity for the editor and the saved-recipe adapter. */
 export function legacyCharacterRecipe(config: AvatarConfig) {
   if (config.character && config.character.preset !== 'bloom') return config.character;
   const customization = config.character?.preset === 'bloom' ? config.character : undefined;
@@ -76,7 +70,9 @@ export function legacyCharacterRecipe(config: AvatarConfig) {
     preset: 'legacy',
     selections: {
       shape: legacyNativeShape(config) ?? 'circle',
-      eyes: customization?.selections?.eyes ?? 'oval',
+      eyes: !config.face
+        ? 'none'
+        : (customization?.selections?.eyes ?? (config.family === 'alien' ? 'alien' : 'oval')),
       ...(customization?.selections?.eyewear ? { eyewear: customization.selections.eyewear } : {}),
       ...(customization?.selections?.accessory
         ? { accessory: customization.selections.accessory }
@@ -90,12 +86,10 @@ export function legacyCharacterRecipe(config: AvatarConfig) {
   };
 }
 
-/** Legacy recipes contribute their body only; eyes are the original 3D catalog.
- * Historical expression, spacing and tilt fields remain readable but no longer
- * alter the migrated face. The engine owns eye geometry and animation.
+/** Saved silhouettes become catalog geometry. Alien expressions, size and tilt
+ * are constructed by the shared renderer; explicit eyeSpacing stays recipe data.
  */
 export function legacyRecipe(config: AvatarConfig, samples = 256): LegacyRecipe {
-  if (legacyRecipeUnsupported(config)) throw new Error('Unsupported legacy 3D recipe');
   const geometry = characterShapeGeometry(config);
   const canonical = config.character && config.character.preset !== 'bloom';
   const selectedShape = canonical ? config.character?.selections?.shape : undefined;
@@ -105,8 +99,10 @@ export function legacyRecipe(config: AvatarConfig, samples = 256): LegacyRecipe 
   const recipe = legacyCharacterRecipe(config);
   const { eyewear, accessory } = recipe.selections ?? {};
   return {
-    ...(shape ? { shape } : { points: radialContour(legacyContours(geometry), samples) }),
-    eyes: recipe.selections?.eyes ?? 'oval',
+    ...(shape ? { shape } : { points: radialContour(avatarContours(geometry), samples) }),
+    eyes: !config.face
+      ? 'none'
+      : (recipe.selections?.eyes ?? (config.family === 'alien' ? 'alien' : 'oval')),
     ...(recipe.eyeSpacing !== undefined ? { eyeSpacing: recipe.eyeSpacing } : {}),
     ...(eyewear || accessory
       ? {

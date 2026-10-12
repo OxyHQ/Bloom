@@ -1,3 +1,4 @@
+import type { AvatarCharacterConfig } from '../agent-avatar/config-character';
 import { NATIVE_CHARACTER_SHAPES } from '../agent-avatar/character-shapes';
 import type { AgentLanguage, AgentPreferences } from './types';
 export const AGENT_LANGUAGES = [
@@ -118,3 +119,64 @@ export const CHARACTER_OPTIONS = {
 } as const;
 
 export { CHARACTER_COLORS } from '../agent-avatar/character-colors';
+
+/** Creation choices only: saved template references retain their historical defaults. */
+export function createCharacterPreset(preset: string): AvatarCharacterConfig {
+  if (preset === 'blue_beret')
+    return {
+      selections: {
+        eyes: 'sleepy_lids',
+        eyewear: 'none',
+        accessory: 'felipe_beret',
+        shape: 'six_lobed_flower',
+        color: 'blue',
+      },
+      bodyColor: '#ff9547',
+    };
+  if (preset === 'lime_frog')
+    return {
+      preset,
+      selections: {
+        eyes: 'clippo',
+        eyewear: 'none',
+        accessory: 'bow',
+        color: 'coral',
+      },
+    };
+  if (preset === 'alfred')
+    return {
+      preset,
+      selections: {
+        eyes: 'cyclops',
+        eyewear: 'monocle',
+        accessory: 'bow',
+        color: 'cyan',
+      },
+    };
+  if (preset === 'coral_monocle')
+    return {
+      preset,
+      selections: {
+        eyes: 'clippo',
+        eyewear: 'round_sunglasses',
+        accessory: 'none',
+      },
+    };
+  return { preset };
+}
+
+/** Match a complete creation template without persisting a hidden template ID. */
+export function characterPresetChoice(character: AvatarCharacterConfig): string {
+  if (character.preset) return character.preset;
+  const template = createCharacterPreset('blue_beret');
+  const keys = Object.keys(character).sort();
+  const selections = character.selections ?? {};
+  return keys.join(',') === Object.keys(template).sort().join(',') &&
+    character.bodyColor === template.bodyColor &&
+    Object.keys(selections).length === Object.keys(template.selections!).length &&
+    Object.entries(template.selections!).every(
+      ([key, value]) => selections[key as keyof typeof selections] === value,
+    )
+    ? 'blue_beret'
+    : 'custom';
+}

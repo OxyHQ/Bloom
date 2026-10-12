@@ -1,21 +1,26 @@
 import { createContext } from 'react';
-import type { DrawingContext } from './drawing';
+import { Platform } from 'react-native';
 
-/** Internal frame observer. A preview can retain its committed artwork for a handoff. */
-export const AvatarDrawingObserver = createContext<((drawing: DrawingContext) => void) | null>(
-  null,
-);
+export type AvatarSnapshot = Readonly<{ uri: string }>;
+export type CaptureAvatarSnapshot = () => Promise<AvatarSnapshot | null>;
+/** Registers an on-demand capture; no pixel reads occur during animation. */
+export const AvatarSnapshotObserver = createContext<
+  ((capture: CaptureAvatarSnapshot | null) => void) | null
+>(null);
+export const DEFAULT_CHARACTER_RUNTIME_URL = '/bloom-character/runtime.mjs';
 
 export type CharacterCapabilities = {
   key: string;
   available: Record<string, boolean>;
   selected: Record<string, string>;
 };
-/** The application hosts the optional renderer assets at this module URL. */
+/** The application hosts the renderer assets at this module URL. */
 export const CharacterRuntimeContext = createContext<{
   runtimeUrl?: string;
   reportCapabilities?: (value: CharacterCapabilities) => void;
-}>({});
+}>({
+  runtimeUrl: Platform.OS === 'web' ? DEFAULT_CHARACTER_RUNTIME_URL : undefined,
+});
 
 /** Only editors subscribe to catalog updates; renderer input stays stable. */
 export const CharacterCapabilitiesContext = createContext<{

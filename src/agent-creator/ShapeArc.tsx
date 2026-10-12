@@ -13,7 +13,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { FOLD_SHAPES, type AvatarConfig } from '../agent-avatar/model';
 import { useIsRtl } from '../hooks/use-is-rtl';
-import { StyledImage, StyledPressable, StyledView } from '../styles/styled-primitives';
+import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
@@ -40,7 +40,6 @@ export type ShapeArcChoice = {
   id: string;
   label: string;
   config: AvatarConfig;
-  thumbnail?: string;
 };
 const wrap = (slot: number, count: number) => ((slot % count) + count) % count;
 function ShapeSlot({
@@ -101,16 +100,7 @@ function ShapeSlot({
           backgroundColor: active ? colors.backgroundSecondary : 'transparent',
         }}
       >
-        {choice.thumbnail ? (
-          <StyledImage
-            source={{ uri: choice.thumbnail }}
-            resizeMode="contain"
-            accessible={false}
-            style={{ width: 56, height: 56 }}
-          />
-        ) : (
-          <ShapeSilhouette config={choice.config} />
-        )}
+        <ShapeSilhouette config={choice.config} />
       </StyledPressable>
     </AnimatedView>
   );

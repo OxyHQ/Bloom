@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -3565,7 +3565,7 @@
     "generate:theme-golden": "bun scripts/generate-theme-golden.ts",
     "generate:tokens-json": "bun scripts/generate-design-tokens-json.ts",
     "generate:adoption-matrix": "bun scripts/generate-adoption-matrix.ts",
-    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts",
+    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts && bun run build:avatar-runtime",
     "build": "bob build",
     "postbuild": "node scripts/verify-package.mjs && node scripts/verify-build-freshness.mjs --worktree",
     "verify:package": "node scripts/verify-package.mjs",
@@ -3581,7 +3581,8 @@
     "prepare": "[ -n \"$BLOOM_VERIFY_PACKAGE_RUNNING\" ] || bun run build || true",
     "release": "rm -rf lib && bun run build && release-it",
     "storybook": "storybook dev -p 6006 --no-open",
-    "storybook:build": "storybook build -o storybook-static"
+    "storybook:build": "storybook build -o storybook-static",
+    "build:avatar-runtime": "node scripts/build-avatar-runtime.mjs"
   },
   "release-it": {
     "git": {
@@ -3611,6 +3612,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/react-native": "*",
     "@types/react-test-renderer": "^19.1.0",
+    "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "^6.0.2",
     "expo-blur": "~56.0.3",
     "expo-font": "^56.0.5",
@@ -3638,6 +3640,7 @@
     "release-it": "^19.0.6",
     "storybook": "^10",
     "tailwindcss": "4.3.2",
+    "three": "^0.186.1",
     "ts-jest": "^29.4.6",
     "typescript": "~5.9.2",
     "vite": "^7"

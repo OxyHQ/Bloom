@@ -2921,7 +2921,11 @@ const translations: Translations = {
   },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: 'Avatar do agente', unavailable: 'Avatar indisponível' },
+  AGENT_AVATAR_MESSAGES: {
+    runtimeRequired: 'Configure AgentAvatarProvider com a URL do motor hospedado.',
+    label: 'Avatar do agente',
+    unavailable: 'Avatar indisponível',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

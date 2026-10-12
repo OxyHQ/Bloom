@@ -1,6 +1,5 @@
 import type { RefObject } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { WORKING_SECONDS } from '../agent-avatar/working';
 import { useMessages } from '../locale/messages';
 import { demoReply, type Conversation, type Message, type Workspace } from './data';
 import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
@@ -105,7 +104,7 @@ export function useReplies(
                     demoReply(agent, history.filter((m) => m.role === 'user').length - 1),
                   ),
               waitForReply(
-                WORKING_SECONDS * 2000 + 350 + (agent.id === participants[0]?.id ? arrivalMs : 0),
+                2300 + 350 + (agent.id === participants[0]?.id ? arrivalMs : 0),
                 controller.signal,
               ),
             ]);

@@ -1,6 +1,18 @@
 import { parseCharacterConfig } from '../config-character';
 import { FOLD_CONFIG, parsePreset } from '../model';
 
+it('round-trips a fully customized avatar without a preset reference', () => {
+  const character = {
+    selections: { shape: 'heart', eyes: 'clippo', eyewear: 'none', accessory: 'bow' },
+    bodyColor: '#000000',
+  };
+  expect(parseCharacterConfig(character)).toEqual(character);
+  expect(
+    parsePreset({ name: 'Custom', config: { ...FOLD_CONFIG, character } }).config.character,
+  ).toEqual(character);
+  expect(() => parseCharacterConfig({ selections: { eyes: 'clippo' } })).toThrow('complete parts');
+});
+
 it('round-trips optional character selections without changing the procedural fallback', () => {
   const character = {
     preset: 'blue_beret',

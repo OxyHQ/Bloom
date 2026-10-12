@@ -2922,7 +2922,11 @@ const translations: Translations = {
   },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: 'Avatar de l’agent', unavailable: 'Avatar indisponible' },
+  AGENT_AVATAR_MESSAGES: {
+    runtimeRequired: 'Configurez AgentAvatarProvider avec l’URL du moteur hébergé.',
+    label: 'Avatar de l’agent',
+    unavailable: 'Avatar indisponible',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

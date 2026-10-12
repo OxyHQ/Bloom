@@ -6,16 +6,12 @@ import { StyledImage } from '../../styles/styled-primitives';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { ShapeArc, type ShapeArcChoice } from '../ShapeArc';
 import { ShapeSilhouette } from '../ShapeSilhouette';
-import { Path } from 'react-native-svg';
-import { CHARACTER_COLORS } from '../constants';
 
 jest.mock('../../agent-avatar/AgentAvatar', () => ({
-  AgentAvatar: jest.fn(() => {
-    throw new Error('The shape selector must not start an avatar renderer');
-  }),
+  AgentAvatar: jest.fn(() => null),
 }));
 
-it('shows all migrated contours without rendering avatars and preserves catalog PNGs and selection', () => {
+it('uses frozen previews from the one renderer and renders every body without PNGs and preserves selection', () => {
   const choices: ShapeArcChoice[] = [
     ...(['slender', 'pocket', 'petal', 'star', 'cloud', 'shield'] as const).map((foldShape) => ({
       id: foldShape,
@@ -31,7 +27,6 @@ it('shows all migrated contours without rendering avatars and preserves catalog 
       id: 'circle',
       label: 'circle',
       config: DEFAULT_CONFIG,
-      thumbnail: '/thumbnails/shapes/circle.png',
     },
   ];
   const onSelect = jest.fn();
@@ -48,32 +43,97 @@ it('shows all migrated contours without rendering avatars and preserves catalog 
       </BloomThemeProvider>
     </CharacterRuntimeContext.Provider>,
   );
-  expect(AgentAvatar).not.toHaveBeenCalled();
-  expect(
-    view.UNSAFE_getAllByType(Path).filter((path) => path.props.fill === CHARACTER_COLORS.pink),
-  ).toHaveLength(8);
-  expect(view.UNSAFE_getByType(StyledImage).props.source).toEqual({
-    uri: '/thumbnails/shapes/circle.png',
-  });
+  expect(view.UNSAFE_getAllByType(AgentAvatar)).toHaveLength(9);
+  for (const preview of view.UNSAFE_getAllByType(AgentAvatar))
+    expect(preview.props).toMatchObject({
+      portrait: true,
+      paused: true,
+      interactive: false,
+    });
+  expect(view.UNSAFE_queryAllByType(StyledImage)).toHaveLength(0);
+  for (const preview of view.UNSAFE_getAllByType(AgentAvatar)) {
+    expect(preview.props.config.face).toBe(false);
+    expect(preview.props.config.character.selections).toMatchObject({
+      eyes: 'none',
+      eyewear: 'none',
+      accessory: 'none',
+    });
+  }
   fireEvent.press(view.getByLabelText('cloud shape'));
   expect(onSelect).toHaveBeenCalledWith('cloud');
 });
 
-it('uses the source Todd body mesh outline for the independently selectable body without loading an avatar', () => {
+it('preserves Todd geometry while excluding its face and accessories from the preview', () => {
   const view = render(
     <ShapeSilhouette
       config={{
         ...FOLD_CONFIG,
         character: {
           preset: 'blue_beret',
-          selections: { shape: 'todd', eyes: 'cyclops' },
+          bodyColor: '#cc5533',
+          selections: {
+            shape: 'todd',
+            eyes: 'cyclops',
+            eyewear: 'monocle',
+            accessory: 'three_lobe',
+          },
         },
       }}
     />,
   );
-  const path = view.UNSAFE_getByType(Path).props;
-  expect(path.fill).toBe(CHARACTER_COLORS.pink);
-  expect(path.d).toContain('L0.9686 -0.0476');
-  expect(path.d.match(/L/g)).toHaveLength(127);
-  expect(AgentAvatar).not.toHaveBeenCalled();
+  const avatar = view.UNSAFE_getByType(AgentAvatar).props;
+  expect(avatar.config.character.selections).toEqual({
+    shape: 'todd',
+    eyes: 'none',
+    eyewear: 'none',
+    accessory: 'none',
+  });
+  expect(avatar.config.face).toBe(false);
+  expect(avatar.config.character.bodyColor).toBe('#cc5533');
+  expect(avatar).toMatchObject({
+    portrait: true,
+    paused: true,
+    interactive: false,
+  });
+});
+
+it('recolors the body preview without changing the input recipe, seed or parts', () => {
+  const config = {
+    ...FOLD_CONFIG,
+    seed: 83,
+    character: {
+      preset: 'lime_frog',
+      bodyColor: '#dd3322',
+      selections: {
+        shape: 'heart',
+        eyes: 'todd',
+        eyewear: 'monocle',
+        accessory: 'crown',
+      },
+    },
+  };
+  const snapshot = JSON.stringify(config);
+  const view = render(<ShapeSilhouette config={config} />);
+  const first = view.UNSAFE_getByType(AgentAvatar).props.config;
+  expect(first).toMatchObject({
+    seed: 83,
+    face: false,
+    character: {
+      bodyColor: '#dd3322',
+      selections: {
+        shape: 'heart',
+        eyes: 'none',
+        eyewear: 'none',
+        accessory: 'none',
+      },
+    },
+  });
+  const next = {
+    ...config,
+    character: { ...config.character, bodyColor: '#2255dd' },
+  };
+  view.rerender(<ShapeSilhouette config={next} />);
+  expect(view.UNSAFE_getByType(AgentAvatar).props.config.character.bodyColor).toBe('#2255dd');
+  expect(JSON.stringify(config)).toBe(snapshot);
+  expect(next.character.selections).toEqual(config.character.selections);
 });

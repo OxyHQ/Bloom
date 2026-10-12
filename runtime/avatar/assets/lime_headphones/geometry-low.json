@@ -1,0 +1,860 @@
+{
+  "schema": "bloom.avatar.original-geometry",
+  "version": 1,
+  "byteOrder": "little-endian",
+  "buffer": {
+    "uri": "geometry-low.bin",
+    "byteLength": 1094000,
+    "sha256": "d52dcc2c590a055d276eaf686ca44de761dd904b7181f064fdafc1e0b404aac7"
+  },
+  "parts": [
+    {
+      "id": 0,
+      "material": {
+        "label": "body",
+        "base": {
+          "color": [0.9803921580314636, 0.43921568989753723, 0.6705882549285889],
+          "roughness": 0.7799999713897705,
+          "reflectance": 0.23408909142017365
+        },
+        "alternateColor": [0.9920454621315002, 0.5646532773971558, 0.6391111612319946],
+        "unresolvedAlternateScalars": [0.7799999713897705, 0.23408909142017365],
+        "nativeFixedPupilFlag": false,
+        "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
+        "evidence": {
+          "color": "catalog-parts.mjs originalBodyColor/composePresetBody; cyclops-geometry.mjs",
+          "roughnessAndReflectance": "Public material API single-field perturbation test",
+          "alternateColor": "catalog-parts.mjs composePresetBody and clippo-geometry.mjs smoothPrefix",
+          "fixedPupil": "cyclops-geometry.mjs eyeRecord"
+        }
+      },
+      "pose": {
+        "deformationCenter": [0, -0.24707502126693726, 0],
+        "attachmentLabel": "",
+        "attachmentCenter": null,
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        "normalBasisOffset": 120,
+        "worldMatrix": null,
+        "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
+        "evidence": "authored-parts.mjs transformAuthoredRecord; clippo-geometry.mjs eyePrefix (material label followed by 3x3 normal basis)"
+      },
+      "sourceName": "825a707fd5f0d487da9381c9fdf9a922773f85aa01e3f39ae5f1d8e95a207002:body:no-shadow:studio-fur-v6:79:607d191be48021d13ee7deb78bb38d2cbeaa09f4a7823cb5ce74e186ec7743cd:surface:shadow:79:9a8433a6e1e0ddfc7d1ae98703eff5273d4feb2e6b3a99a4af3494809694eb42:surface:shadow:79:67d72c2543900b0aa1a9251313b2a1f1b198f2d96bc9c02db230e86ec8df5734:surface:shadow:79:a6f9eeddac0937bab42483a0f9422bd0fbe388cbfbd55f4867459dc1be1d3292:surface:shadow:79:5635d1e1d6114d5e07d89711b1b579543d88aac086c7a3cdaad2d1651b2a8703:surface:shadow:79:48f174bdd3498e39d92390dcbcb9f44e7b3bb32de0b5b276e7dccf18ce512675:surface:shadow:79:a8f8446c3662ae05ccfd78abd0ef5356bd171e09526f41514ba0f5899bcb08e6:surface:shadow",
+      "bounds": {
+        "min": [-0.7547160983085632, -0.9990570545196533, -0.6250996589660645],
+        "max": [0.7518039345741272, 0.9992732405662537, 0.6247232556343079]
+      },
+      "normals": {
+        "minLength": 0.9999998555191781,
+        "maxLength": 1.000000136411899
+      },
+      "vertices": {
+        "byteOffset": 15000,
+        "byteLength": 120192,
+        "sha256": "a7aff3fe2f93f2cf98aa0ba87084608b5869621651b2c8c12178712e9f8bada7",
+        "count": 1252,
+        "byteStride": 96,
+        "componentType": "float32",
+        "sourceOffset": 985,
+        "attributes": {
+          "position": {
+            "byteOffset": 0,
+            "components": 3
+          },
+          "normal": {
+            "byteOffset": 12,
+            "components": 3
+          },
+          "positionDelta0": {
+            "byteOffset": 24,
+            "components": 3
+          },
+          "normalTarget0": {
+            "byteOffset": 36,
+            "components": 3
+          },
+          "positionDelta1": {
+            "byteOffset": 48,
+            "components": 3
+          },
+          "normalTarget1": {
+            "byteOffset": 60,
+            "components": 3
+          },
+          "authoredResponse": {
+            "byteOffset": 72,
+            "components": 2
+          },
+          "paletteGeometry": {
+            "byteOffset": 80,
+            "components": 4
+          }
+        }
+      },
+      "indices": [
+        {
+          "byteOffset": 0,
+          "byteLength": 15000,
+          "sha256": "ee7d6d00d2e627d2bf80195d8ebadf2fe243cc4cd12602ed77da6ffdbad05307",
+          "count": 7500,
+          "componentType": "uint16",
+          "sourceOffset": 121185
+        }
+      ],
+      "fur": {
+        "byteOffset": 135192,
+        "byteLength": 524288,
+        "sha256": "baf2089f341b74da357c7aa48b4999169f7876ceed1a0ca4e410c734dc2ad4d1",
+        "count": 8192,
+        "byteStride": 64,
+        "sourceOffset": 136196,
+        "semantics": "16 original float32 seed values; field meanings not exported"
+      },
+      "sourceRange": {
+        "start": 4,
+        "end": 660511
+      },
+      "unresolvedMaterialAndPosePrefixHex": "133541bf34c27fbf880620bf3976403f5fd07f3fdded1f3f01000000fbfa7a3fe1e0e03eacab2b3f000000003c017dbe0000008014ae473f0db56f3eb1f67d3f1e8d103fca9c233f14ae473f0db56f3e010000000000000000010000000100000000000000000000000000000000000004000000626f64790000803f0000000000000000000000000000803f0000000000000000000000000000803f0000cdcccc3d295c0f3ecdcc4c3db81e853d00000000000000005c8fc23d00000000000000000000000000000000000000000000000000000000000000000000803f0000803f00000000000000000000803f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+      "unresolvedDescriptorHex": "e40400004c1d000000000000dabeba00b0e23894ed293f611b003f"
+    },
+    {
+      "id": 1,
+      "material": {
+        "label": "eyelid-left-continuous-u-and-lash-m0",
+        "base": {
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
+          "roughness": 0.8199999928474426,
+          "reflectance": 0.1599999964237213
+        },
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
+        "nativeFixedPupilFlag": true,
+        "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
+        "evidence": {
+          "color": "catalog-parts.mjs originalBodyColor/composePresetBody; cyclops-geometry.mjs",
+          "roughnessAndReflectance": "Public material API single-field perturbation test",
+          "alternateColor": "catalog-parts.mjs composePresetBody and clippo-geometry.mjs smoothPrefix",
+          "fixedPupil": "cyclops-geometry.mjs eyeRecord"
+        }
+      },
+      "pose": {
+        "deformationCenter": [-0.3329812288284302, -0.07841390371322632, 0.49655792117118835],
+        "attachmentLabel": "",
+        "attachmentCenter": null,
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        "normalBasisOffset": 152,
+        "worldMatrix": null,
+        "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
+        "evidence": "authored-parts.mjs transformAuthoredRecord; clippo-geometry.mjs eyePrefix (material label followed by 3x3 normal basis)"
+      },
+      "sourceName": "607d191be48021d13ee7deb78bb38d2cbeaa09f4a7823cb5ce74e186ec7743cd:surface:shadow",
+      "bounds": {
+        "min": [-0.5535838603973389, -0.27577832341194153, 0.3635883629322052],
+        "max": [-0.11237861216068268, 0.1183246374130249, 0.6463742256164551]
+      },
+      "normals": {
+        "minLength": 0.9999999611800072,
+        "maxLength": 1.0000000413128598
+      },
+      "vertices": {
+        "byteOffset": 667880,
+        "byteLength": 69120,
+        "sha256": "ba2505b4b9f124ccd8fe29cfa2ae2f15e11f61b50576ae68ab46feba561d3490",
+        "count": 720,
+        "byteStride": 96,
+        "componentType": "float32",
+        "sourceOffset": 660946,
+        "attributes": {
+          "position": {
+            "byteOffset": 0,
+            "components": 3
+          },
+          "normal": {
+            "byteOffset": 12,
+            "components": 3
+          },
+          "positionDelta0": {
+            "byteOffset": 24,
+            "components": 3
+          },
+          "normalTarget0": {
+            "byteOffset": 36,
+            "components": 3
+          },
+          "positionDelta1": {
+            "byteOffset": 48,
+            "components": 3
+          },
+          "normalTarget1": {
+            "byteOffset": 60,
+            "components": 3
+          },
+          "authoredResponse": {
+            "byteOffset": 72,
+            "components": 2
+          },
+          "paletteGeometry": {
+            "byteOffset": 80,
+            "components": 4
+          }
+        }
+      },
+      "indices": [
+        {
+          "byteOffset": 659480,
+          "byteLength": 8400,
+          "sha256": "47087c0ddd7224162543927d6408a052d88411601ae8d6ca6eec61149af27b1f",
+          "count": 4200,
+          "componentType": "uint16",
+          "sourceOffset": 730074
+        }
+      ],
+      "fur": null,
+      "sourceRange": {
+        "start": 660511,
+        "end": 738508
+      },
+      "unresolvedMaterialAndPosePrefixHex": "acb70dbfd1328dbe93efb43e5701e6bd3054f23dc878253f010000008fc2f53d8fc2f53d8fc2f53d847caabe7897a0bdd73cfe3e85eb513f0ad7233ea9a8a83dbfc0c03db9b8b83d8fc2353fb7e6873e0100000000000000010000000101000000000000000000000000000000000000240000006579656c69642d6c6566742d636f6e74696e756f75732d752d616e642d6c6173682d6d300000803f0000000000000000000000000000803f0000000000000000000000000000803f0500a8e5613eee204a3ecdcc4c3db81e853d00000000000000006c78123e00000000000000000000000000000000000000000000000000000000000000003333b33e3333b33e00000000000000000000803f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011000000736f757263655f73776570745f6c69647301",
+      "unresolvedDescriptorHex": "d0020000681000000100012a73aabe7faea0bda50e114080e8c740"
+    },
+    {
+      "id": 2,
+      "material": {
+        "label": "eyelid-right-continuous-u-and-lash-m0",
+        "base": {
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
+          "roughness": 0.8199999928474426,
+          "reflectance": 0.1599999964237213
+        },
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
+        "nativeFixedPupilFlag": true,
+        "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
+        "evidence": {
+          "color": "catalog-parts.mjs originalBodyColor/composePresetBody; cyclops-geometry.mjs",
+          "roughnessAndReflectance": "Public material API single-field perturbation test",
+          "alternateColor": "catalog-parts.mjs composePresetBody and clippo-geometry.mjs smoothPrefix",
+          "fixedPupil": "cyclops-geometry.mjs eyeRecord"
+        }
+      },
+      "pose": {
+        "deformationCenter": [0.23228435218334198, -0.0753689706325531, 0.5453407764434814],
+        "attachmentLabel": "",
+        "attachmentCenter": null,
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        "normalBasisOffset": 153,
+        "worldMatrix": null,
+        "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
+        "evidence": "authored-parts.mjs transformAuthoredRecord; clippo-geometry.mjs eyePrefix (material label followed by 3x3 normal basis)"
+      },
+      "sourceName": "9a8433a6e1e0ddfc7d1ae98703eff5273d4feb2e6b3a99a4af3494809694eb42:surface:shadow",
+      "bounds": {
+        "min": [0.014229238033294678, -0.27111679315567017, 0.4463304877281189],
+        "max": [0.4503394365310669, 0.11953529715538025, 0.657581627368927]
+      },
+      "normals": {
+        "minLength": 0.9999999608672006,
+        "maxLength": 1.0000000390078099
+      },
+      "vertices": {
+        "byteOffset": 749000,
+        "byteLength": 97056,
+        "sha256": "1cdc46d7d3807f0a1dbbc156676fe85c41206b224d46b6725aa083b13154fe4a",
+        "count": 1011,
+        "byteStride": 96,
+        "componentType": "float32",
+        "sourceOffset": 738944,
+        "attributes": {
+          "position": {
+            "byteOffset": 0,
+            "components": 3
+          },
+          "normal": {
+            "byteOffset": 12,
+            "components": 3
+          },
+          "positionDelta0": {
+            "byteOffset": 24,
+            "components": 3
+          },
+          "normalTarget0": {
+            "byteOffset": 36,
+            "components": 3
+          },
+          "positionDelta1": {
+            "byteOffset": 48,
+            "components": 3
+          },
+          "normalTarget1": {
+            "byteOffset": 60,
+            "components": 3
+          },
+          "authoredResponse": {
+            "byteOffset": 72,
+            "components": 2
+          },
+          "paletteGeometry": {
+            "byteOffset": 80,
+            "components": 4
+          }
+        }
+      },
+      "indices": [
+        {
+          "byteOffset": 737000,
+          "byteLength": 12000,
+          "sha256": "f0d14e1a7ae760df485576578970174e7604d29795233c57b06fcd9025827c1a",
+          "count": 6000,
+          "componentType": "uint16",
+          "sourceOffset": 836008
+        }
+      ],
+      "fur": null,
+      "sourceRange": {
+        "start": 738508,
+        "end": 848042
+      },
+      "unresolvedMaterialAndPosePrefixHex": "015e683cd2cf8abef406e03ee492e63eeccef43d4557283f010000008fc2f53d8fc2f53d8fc2f53df3db6d3e0c5b9abd749b0b3f85eb513f0ad7233ea9a8a83dbfc0c03db9b8b83d8fc2353fb7e6873e0100000000000000010000000101000000000000000000000000000000000000250000006579656c69642d72696768742d636f6e74696e756f75732d752d616e642d6c6173682d6d300000803f0000000000000000000000000000803f0000000000000000000000000000803f0501d6495f3eda85483ecdcc4c3db81e853d00000000000000004ca6dc3d00000000000000000000000000000000000000000000000000000000000000003333b33e3333b33e00000000000000000000803f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011000000736f757263655f73776570745f6c69647301",
+      "unresolvedDescriptorHex": "f303000070170000010001b5cf6d3ee9189abd7dc01240c8b9bc40"
+    },
+    {
+      "id": 3,
+      "material": {
+        "label": "headphones-1-outer-ear-cup-m0",
+        "base": {
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
+          "roughness": 0.8199999928474426,
+          "reflectance": 0.1599999964237213
+        },
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
+        "nativeFixedPupilFlag": false,
+        "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
+        "evidence": {
+          "color": "catalog-parts.mjs originalBodyColor/composePresetBody; cyclops-geometry.mjs",
+          "roughnessAndReflectance": "Public material API single-field perturbation test",
+          "alternateColor": "catalog-parts.mjs composePresetBody and clippo-geometry.mjs smoothPrefix",
+          "fixedPupil": "cyclops-geometry.mjs eyeRecord"
+        }
+      },
+      "pose": {
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "attachmentLabel": "headphones",
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        "normalBasisOffset": 155,
+        "worldMatrix": null,
+        "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
+        "evidence": "authored-parts.mjs transformAuthoredRecord; clippo-geometry.mjs eyePrefix (material label followed by 3x3 normal basis)"
+      },
+      "sourceName": "67d72c2543900b0aa1a9251313b2a1f1b198f2d96bc9c02db230e86ec8df5734:surface:shadow",
+      "bounds": {
+        "min": [0.6924293637275696, -0.47917598485946655, -0.023186156526207924],
+        "max": [0.9948740005493164, 0.07845743000507355, 0.3541405498981476]
+      },
+      "normals": {
+        "minLength": 0.9999998977571946,
+        "maxLength": 1.0000001047382698
+      },
+      "vertices": {
+        "byteOffset": 851456,
+        "byteLength": 43392,
+        "sha256": "8eb35b55ababaddd8e44d91a78e6ac66ed3db48332a6a03b8fd17d6e96c8d4f3",
+        "count": 452,
+        "byteStride": 96,
+        "componentType": "float32",
+        "sourceOffset": 848463,
+        "attributes": {
+          "position": {
+            "byteOffset": 0,
+            "components": 3
+          },
+          "normal": {
+            "byteOffset": 12,
+            "components": 3
+          },
+          "positionDelta0": {
+            "byteOffset": 24,
+            "components": 3
+          },
+          "normalTarget0": {
+            "byteOffset": 36,
+            "components": 3
+          },
+          "positionDelta1": {
+            "byteOffset": 48,
+            "components": 3
+          },
+          "normalTarget1": {
+            "byteOffset": 60,
+            "components": 3
+          },
+          "authoredResponse": {
+            "byteOffset": 72,
+            "components": 2
+          },
+          "paletteGeometry": {
+            "byteOffset": 80,
+            "components": 4
+          }
+        }
+      },
+      "indices": [
+        {
+          "byteOffset": 846056,
+          "byteLength": 5400,
+          "sha256": "62c84349bdcb034f912d947813f99c2b1bfcab3ad6a0282d7ddfb96aba9d5e68",
+          "count": 2700,
+          "componentType": "uint16",
+          "sourceOffset": 891863
+        }
+      ],
+      "fur": null,
+      "sourceRange": {
+        "start": 848042,
+        "end": 897297
+      },
+      "unresolvedMaterialAndPosePrefixHex": "0d43313f8e56f5bee5f0bdbc10b07e3f4aaea03de951b53e010000008fc2f53d8fc2f53d8fc2f53d000000004025fe3d0abe0e3e85eb513f0ad7233ea9a8a83dbfc0c03db9b8b83d8fc2353fb7e6873e01000000000000000000000001010300000000004025fe3d0abe0e3e0a0000006865616470686f6e65731d0000006865616470686f6e65732d312d6f757465722d6561722d6375702d6d300000803f0000000000000000000000000000803f0000000000000000000000000000803f0000cdcccc3d295c0f3ecdcc4c3db81e853d00000000000000005c8fc23d00000000000000000000000000000000000000000000000000000000000000000000803f0000803f00000000000000000000803f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+      "unresolvedDescriptorHex": "c40100008c0a00000000008ef9573ffc2a4dbee69b53409f8ae53f"
+    },
+    {
+      "id": 4,
+      "material": {
+        "label": "headphones-1-soft-inner-cushion-m0",
+        "base": {
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
+          "roughness": 0.8199999928474426,
+          "reflectance": 0.1599999964237213
+        },
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
+        "nativeFixedPupilFlag": false,
+        "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
+        "evidence": {
+          "color": "catalog-parts.mjs originalBodyColor/composePresetBody; cyclops-geometry.mjs",
+          "roughnessAndReflectance": "Public material API single-field perturbation test",
+          "alternateColor": "catalog-parts.mjs composePresetBody and clippo-geometry.mjs smoothPrefix",
+          "fixedPupil": "cyclops-geometry.mjs eyeRecord"
+        }
+      },
+      "pose": {
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "attachmentLabel": "headphones",
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        "normalBasisOffset": 160,
+        "worldMatrix": null,
+        "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
+        "evidence": "authored-parts.mjs transformAuthoredRecord; clippo-geometry.mjs eyePrefix (material label followed by 3x3 normal basis)"
+      },
+      "sourceName": "a6f9eeddac0937bab42483a0f9422bd0fbe388cbfbd55f4867459dc1be1d3292:surface:shadow",
+      "bounds": {
+        "min": [0.6892046928405762, -0.4128141701221466, -0.07534554600715637],
+        "max": [0.8481844663619995, 0.012114660814404488, 0.31707078218460083]
+      },
+      "normals": {
+        "minLength": 0.9999998987111193,
+        "maxLength": 1.0000001044510014
+      },
+      "vertices": {
+        "byteOffset": 899036,
+        "byteLength": 33696,
+        "sha256": "13559b63505601f8e379316daf461d42d3421efe538efd31c8ea85427c3df5f9",
+        "count": 351,
+        "byteStride": 96,
+        "componentType": "float32",
+        "sourceOffset": 897723,
+        "attributes": {
+          "position": {
+            "byteOffset": 0,
+            "components": 3
+          },
+          "normal": {
+            "byteOffset": 12,
+            "components": 3
+          },
+          "positionDelta0": {
+            "byteOffset": 24,
+            "components": 3
+          },
+          "normalTarget0": {
+            "byteOffset": 36,
+            "components": 3
+          },
+          "positionDelta1": {
+            "byteOffset": 48,
+            "components": 3
+          },
+          "normalTarget1": {
+            "byteOffset": 60,
+            "components": 3
+          },
+          "authoredResponse": {
+            "byteOffset": 72,
+            "components": 2
+          },
+          "paletteGeometry": {
+            "byteOffset": 80,
+            "components": 4
+          }
+        }
+      },
+      "indices": [
+        {
+          "byteOffset": 894848,
+          "byteLength": 4188,
+          "sha256": "824cc924bd9298be7836dfb2f69bf989033161cb4c054bcfd06cca51c859b2e9",
+          "count": 2094,
+          "componentType": "uint16",
+          "sourceOffset": 931427
+        }
+      ],
+      "fur": null,
+      "sourceRange": {
+        "start": 897297,
+        "end": 935649
+      },
+      "unresolvedMaterialAndPosePrefixHex": "b86f303f615cd3bec44e9abd9e22593f927c463c1a57a23e010000008fc2f53d8fc2f53d8fc2f53d000000004025fe3d0abe0e3e85eb513f0ad7233ea9a8a83dbfc0c03db9b8b83d8fc2353fb7e6873e01000000000000000000000001010300000000004025fe3d0abe0e3e0a0000006865616470686f6e6573220000006865616470686f6e65732d312d736f66742d696e6e65722d63757368696f6e2d6d300000803f0000000000000000000000000000803f0000000000000000000000000000803f0000cdcccc3d295c0f3ecdcc4c3db81e853d00000000000000005c8fc23d00000000000000000000000000000000000000000000000000000000000000000000803f0000803f00000000000000000000803f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+      "unresolvedDescriptorHex": "5f0100002e0800000000002bc9443f7c284dbe9148c9400b9d1640"
+    },
+    {
+      "id": 5,
+      "material": {
+        "label": "headphones-minus1-outer-ear-cup-m0",
+        "base": {
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
+          "roughness": 0.8199999928474426,
+          "reflectance": 0.1599999964237213
+        },
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
+        "nativeFixedPupilFlag": false,
+        "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
+        "evidence": {
+          "color": "catalog-parts.mjs originalBodyColor/composePresetBody; cyclops-geometry.mjs",
+          "roughnessAndReflectance": "Public material API single-field perturbation test",
+          "alternateColor": "catalog-parts.mjs composePresetBody and clippo-geometry.mjs smoothPrefix",
+          "fixedPupil": "cyclops-geometry.mjs eyeRecord"
+        }
+      },
+      "pose": {
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "attachmentLabel": "headphones",
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        "normalBasisOffset": 160,
+        "worldMatrix": null,
+        "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
+        "evidence": "authored-parts.mjs transformAuthoredRecord; clippo-geometry.mjs eyePrefix (material label followed by 3x3 normal basis)"
+      },
+      "sourceName": "5635d1e1d6114d5e07d89711b1b579543d88aac086c7a3cdaad2d1651b2a8703:surface:shadow",
+      "bounds": {
+        "min": [-0.9948740005493164, -0.47917598485946655, -0.023186158388853073],
+        "max": [-0.6928991079330444, 0.07801391184329987, 0.3547244966030121]
+      },
+      "normals": {
+        "minLength": 0.9999998920590505,
+        "maxLength": 1.0000000893174459
+      },
+      "vertices": {
+        "byteOffset": 938132,
+        "byteLength": 43392,
+        "sha256": "2d10893e6a5904a8505321fa4a9a991129aed90594baf782cbaa207ae57ed1b3",
+        "count": 452,
+        "byteStride": 96,
+        "componentType": "float32",
+        "sourceOffset": 936075,
+        "attributes": {
+          "position": {
+            "byteOffset": 0,
+            "components": 3
+          },
+          "normal": {
+            "byteOffset": 12,
+            "components": 3
+          },
+          "positionDelta0": {
+            "byteOffset": 24,
+            "components": 3
+          },
+          "normalTarget0": {
+            "byteOffset": 36,
+            "components": 3
+          },
+          "positionDelta1": {
+            "byteOffset": 48,
+            "components": 3
+          },
+          "normalTarget1": {
+            "byteOffset": 60,
+            "components": 3
+          },
+          "authoredResponse": {
+            "byteOffset": 72,
+            "components": 2
+          },
+          "paletteGeometry": {
+            "byteOffset": 80,
+            "components": 4
+          }
+        }
+      },
+      "indices": [
+        {
+          "byteOffset": 932732,
+          "byteLength": 5400,
+          "sha256": "26fad2c0eecb4ec809404c25a876ab9c5ad5ce1509784c606949debbb0f53b9a",
+          "count": 2700,
+          "componentType": "uint16",
+          "sourceOffset": 979475
+        }
+      ],
+      "fur": null,
+      "sourceRange": {
+        "start": 935649,
+        "end": 984909
+      },
+      "unresolvedMaterialAndPosePrefixHex": "10b07ebf8e56f5bee6f0bdbcd66131bfc2c59f3d739eb53e010000008fc2f53d8fc2f53d8fc2f53d000000004025fe3d0abe0e3e85eb513f0ad7233ea9a8a83dbfc0c03db9b8b83d8fc2353fb7e6873e01000000000000000000000001010300000000004025fe3d0abe0e3e0a0000006865616470686f6e6573220000006865616470686f6e65732d6d696e7573312d6f757465722d6561722d6375702d6d300000803f0000000000000000000000000000803f0000000000000000000000000000803f0000cdcccc3d295c0f3ecdcc4c3db81e853d00000000000000005c8fc23d00000000000000000000000000000000000000000000000000000000000000000000803f0000803f00000000000000000000803f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+      "unresolvedDescriptorHex": "c40100008c0a0000000000f30858bf1e654dbe2bf0534065b9e53f"
+    },
+    {
+      "id": 6,
+      "material": {
+        "label": "headphones-minus1-soft-inner-cushion-m0",
+        "base": {
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
+          "roughness": 0.8199999928474426,
+          "reflectance": 0.1599999964237213
+        },
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
+        "nativeFixedPupilFlag": false,
+        "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
+        "evidence": {
+          "color": "catalog-parts.mjs originalBodyColor/composePresetBody; cyclops-geometry.mjs",
+          "roughnessAndReflectance": "Public material API single-field perturbation test",
+          "alternateColor": "catalog-parts.mjs composePresetBody and clippo-geometry.mjs smoothPrefix",
+          "fixedPupil": "cyclops-geometry.mjs eyeRecord"
+        }
+      },
+      "pose": {
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "attachmentLabel": "headphones",
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        "normalBasisOffset": 165,
+        "worldMatrix": null,
+        "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
+        "evidence": "authored-parts.mjs transformAuthoredRecord; clippo-geometry.mjs eyePrefix (material label followed by 3x3 normal basis)"
+      },
+      "sourceName": "48f174bdd3498e39d92390dcbcb9f44e7b3bb32de0b5b276e7dccf18ce512675:surface:shadow",
+      "bounds": {
+        "min": [-0.847938060760498, -0.4128141701221466, -0.07564930617809296],
+        "max": [-0.6892046928405762, 0.012114660814404488, 0.3167681097984314]
+      },
+      "normals": {
+        "minLength": 0.9999999015509267,
+        "maxLength": 1.000000085559397
+      },
+      "vertices": {
+        "byteOffset": 985712,
+        "byteLength": 33696,
+        "sha256": "488e3fe91faa22c7e12f6c79aa1e4745b0ce1686c79f62f6e6025b9228c04e9f",
+        "count": 351,
+        "byteStride": 96,
+        "componentType": "float32",
+        "sourceOffset": 985340,
+        "attributes": {
+          "position": {
+            "byteOffset": 0,
+            "components": 3
+          },
+          "normal": {
+            "byteOffset": 12,
+            "components": 3
+          },
+          "positionDelta0": {
+            "byteOffset": 24,
+            "components": 3
+          },
+          "normalTarget0": {
+            "byteOffset": 36,
+            "components": 3
+          },
+          "positionDelta1": {
+            "byteOffset": 48,
+            "components": 3
+          },
+          "normalTarget1": {
+            "byteOffset": 60,
+            "components": 3
+          },
+          "authoredResponse": {
+            "byteOffset": 72,
+            "components": 2
+          },
+          "paletteGeometry": {
+            "byteOffset": 80,
+            "components": 4
+          }
+        }
+      },
+      "indices": [
+        {
+          "byteOffset": 981524,
+          "byteLength": 4188,
+          "sha256": "d9b7a1d37d7cc656c5a802634d4749507adebdf6f6f9e033506682c237728a67",
+          "count": 2094,
+          "componentType": "uint16",
+          "sourceOffset": 1019044
+        }
+      ],
+      "fur": null,
+      "sourceRange": {
+        "start": 984909,
+        "end": 1023266
+      },
+      "unresolvedMaterialAndPosePrefixHex": "781259bf615cd3be06ee9abdb86f30bf927c463c6e2fa23e010000008fc2f53d8fc2f53d8fc2f53d000000004025fe3d0abe0e3e85eb513f0ad7233ea9a8a83dbfc0c03db9b8b83d8fc2353fb7e6873e01000000000000000000000001010300000000004025fe3d0abe0e3e0a0000006865616470686f6e6573270000006865616470686f6e65732d6d696e7573312d736f66742d696e6e65722d63757368696f6e2d6d300000803f0000000000000000000000000000803f0000000000000000000000000000803f0000cdcccc3d295c0f3ecdcc4c3db81e853d00000000000000005c8fc23d00000000000000000000000000000000000000000000000000000000000000000000803f0000803f00000000000000000000803f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+      "unresolvedDescriptorHex": "5f0100002e08000000000018c144bf7c284dbe8e98c9400b9d1640"
+    },
+    {
+      "id": 7,
+      "material": {
+        "label": "headphones-rounded-headband-m0",
+        "base": {
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
+          "roughness": 0.8199999928474426,
+          "reflectance": 0.1599999964237213
+        },
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
+        "nativeFixedPupilFlag": false,
+        "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
+        "evidence": {
+          "color": "catalog-parts.mjs originalBodyColor/composePresetBody; cyclops-geometry.mjs",
+          "roughnessAndReflectance": "Public material API single-field perturbation test",
+          "alternateColor": "catalog-parts.mjs composePresetBody and clippo-geometry.mjs smoothPrefix",
+          "fixedPupil": "cyclops-geometry.mjs eyeRecord"
+        }
+      },
+      "pose": {
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "attachmentLabel": "headphones",
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        "normalBasisOffset": 156,
+        "worldMatrix": null,
+        "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
+        "evidence": "authored-parts.mjs transformAuthoredRecord; clippo-geometry.mjs eyePrefix (material label followed by 3x3 normal basis)"
+      },
+      "sourceName": "a8f8446c3662ae05ccfd78abd0ef5356bd171e09526f41514ba0f5899bcb08e6:surface:shadow",
+      "bounds": {
+        "min": [-0.880001425743103, -0.11197954416275024, 0.22303485870361328],
+        "max": [0.880001425743103, 0.7271202802658081, 0.2893425524234772]
+      },
+      "normals": {
+        "minLength": 0.9999998926755483,
+        "maxLength": 1.0000001008328379
+      },
+      "vertices": {
+        "byteOffset": 1026608,
+        "byteLength": 67392,
+        "sha256": "fc6e67426c9367d8e1635fba5be4f163d61a0e32657d44b56325a85c2b79fbfb",
+        "count": 702,
+        "byteStride": 96,
+        "componentType": "float32",
+        "sourceOffset": 1023688,
+        "attributes": {
+          "position": {
+            "byteOffset": 0,
+            "components": 3
+          },
+          "normal": {
+            "byteOffset": 12,
+            "components": 3
+          },
+          "positionDelta0": {
+            "byteOffset": 24,
+            "components": 3
+          },
+          "normalTarget0": {
+            "byteOffset": 36,
+            "components": 3
+          },
+          "positionDelta1": {
+            "byteOffset": 48,
+            "components": 3
+          },
+          "normalTarget1": {
+            "byteOffset": 60,
+            "components": 3
+          },
+          "authoredResponse": {
+            "byteOffset": 72,
+            "components": 2
+          },
+          "paletteGeometry": {
+            "byteOffset": 80,
+            "components": 4
+          }
+        }
+      },
+      "indices": [
+        {
+          "byteOffset": 1019408,
+          "byteLength": 7200,
+          "sha256": "bb5c26b6221d797bfe80aeec0f624064b52ebcf0d9627fbc5859fe60ad646531",
+          "count": 3600,
+          "componentType": "uint16",
+          "sourceOffset": 1091088
+        }
+      ],
+      "fur": null,
+      "sourceRange": {
+        "start": 1023266,
+        "end": 1098322
+      },
+      "unresolvedMaterialAndPosePrefixHex": "c64761bf8855e5bd4063643ec647613f8e243a3fb524943e010000008fc2f53d8fc2f53d8fc2f53d000000004025fe3d0abe0e3e85eb513f0ad7233ea9a8a83dbfc0c03db9b8b83d8fc2353fb7e6873e01000000000000000000000001010200000000004025fe3d0abe0e3e0a0000006865616470686f6e65731e0000006865616470686f6e65732d726f756e6465642d6865616462616e642d6d300000803f0000000000000000000000000000803f0000000000000000000000000000803f0000cdcccc3d295c0f3ecdcc4c3db81e853d00000000000000005c8fc23d00000000000000000000000000000000000000000000000000000000000000000000803f0000803f00000000000000000000803f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+      "unresolvedDescriptorHex": "be020000100e000000000000000000dd799d3e4e74113f5f8b983f"
+    }
+  ],
+  "sourceAssembly": {
+    "byteLength": 1098496,
+    "sha256": "a5cee6982f00e37b9a3b60eb050ba12cf57e47d2dc8590e0ae34c99213690a2d",
+    "parsedRenderableEnd": 1098322,
+    "unresolvedFooterBytes": 174,
+    "unresolvedFooterHex": "10b07ebf34c27fbf880620bf10b07e3f5fd07f3f4557283f01000000133541bf34c27fbf880620bf3976403f5fd07f3fdded1f3f0100000010b07ebf34c27fbf880620bf10b07e3f5fd07f3f4557283f0100000000000000000000000000000000000000000000000000000000000000c3f5e83fc3f5e83f000000000100000000000000250000006f66666c696e652d67656f6d657472792d76313a6c696d655f6865616470686f6e65733a3000"
+  },
+  "limitations": [
+    "Original vertex/index/morph data, not a finished renderer or animation controller.",
+    "Material, world/attachment pose, lighting and fur shader interpretation remain incomplete; no visual parity claim.",
+    "Morph normals are absolute targets; standard glTF normal deltas require subtracting the base normal.",
+    "No animation clips, skin palettes, activities or interaction behavior are exported.",
+    "Every geometry payload is preserved exactly; opaque prefix/footer bytes are retained as evidence, not semantically decoded."
+  ],
+  "preset": "lime_headphones",
+  "quality": 0,
+  "activities": false,
+  "sourceHashes": {
+    "orbit-characters.mjs": "f3ba670dadba954df1618af83fa314641a4cfddd3597aca93a191c264374eed7",
+    "orbit-characters.data": "ffefb69b44f815cccb5f07b4d951d479e527dbabdca68ad9986cf695f9b9c440",
+    "orbit-characters.wasm": "c15f3692305c1385a12524e877199ba279b8d53e6bd37a9e533d626f12fcb94b"
+  },
+  "appearance": {
+    "version": 1,
+    "shape": "circle_two_ears",
+    "color": "pink",
+    "eyes": "swept_lids",
+    "eyewear": "none",
+    "accessories": ["headphones"],
+    "accessoryColors": {},
+    "constrained": 0,
+    "depth": 0.5,
+    "model": null,
+    "rig": null,
+    "hereCharacter": {
+      "id": "lime_headphones",
+      "name": "Iggy"
+    }
+  },
+  "appearanceSha256": "61cc2b12b2d21d3beee6ec7c5aec1dfc4a7efeb9de09d2e5d33d601f7f51d9ab"
+}

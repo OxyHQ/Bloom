@@ -2817,6 +2817,7 @@ const translations: Translations = {
 
   AGENT_CREATOR_MESSAGES,
   AGENT_AVATAR_MESSAGES: {
+    runtimeRequired: 'ホストされているランタイムの URL を AgentAvatarProvider に設定してください。',
     label: 'エージェントのアバター',
     unavailable: 'アバターを表示できません',
   },

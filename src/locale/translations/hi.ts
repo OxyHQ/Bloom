@@ -2801,7 +2801,11 @@ const translations: Translations = {
   },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: 'एजेंट अवतार', unavailable: 'अवतार उपलब्ध नहीं है' },
+  AGENT_AVATAR_MESSAGES: {
+    runtimeRequired: 'होस्ट किए गए रनटाइम URL के साथ AgentAvatarProvider कॉन्फ़िगर करें।',
+    label: 'एजेंट अवतार',
+    unavailable: 'अवतार उपलब्ध नहीं है',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,
