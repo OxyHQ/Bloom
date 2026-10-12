@@ -11,6 +11,8 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { EYES, type AvatarConfig } from '../agent-avatar';
+import { avatarHex } from '../agent-avatar/avatar-color';
+import { bodyPigmentHex } from '../agent-avatar/body-pigment';
 import { CharacterAvatar } from '../agent-avatar/CharacterAvatar';
 import { createConfigForShape } from '../agent-avatar/character-shapes';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
@@ -26,7 +28,6 @@ export type EmotionChoice = {
   disabled?: boolean;
 };
 function Emotion({
-  config,
   choice,
   backgroundColor,
   active,
@@ -35,16 +36,14 @@ function Emotion({
   rotation,
   onChange,
 }: {
-  config: AvatarConfig;
   choice: EmotionChoice;
-  backgroundColor?: string;
+  backgroundColor: string;
   active: boolean;
   count: number;
   index: number;
   rotation: SharedValue<number>;
   onChange: (id: string) => void;
 }) {
-  const messages = useAgentCreatorMessages();
   const { colors } = useTheme();
   const eyeConfig = useMemo<AvatarConfig>(() => {
     const circle = createConfigForShape(choice.config, 'circle');
@@ -100,9 +99,7 @@ function Emotion({
           pointerEvents="auto"
           className={`pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring ${active ? 'border-foreground-icon-secondary' : 'border-transparent'}`}
           style={{
-            backgroundColor:
-              backgroundColor ??
-              `hsl(${config.hue}, ${config.saturation}%, ${config.lightness ?? 80}%)`,
+            backgroundColor,
             borderColor: active ? colors.icon : 'transparent',
           }}
         >
@@ -138,6 +135,7 @@ export function EmotionPicker({
   onChange: (eyes: AvatarConfig['eyes']) => void;
 }) {
   const messages = useAgentCreatorMessages();
+  const previewBackground = bodyPigmentHex(backgroundColor ?? avatarHex(config));
   const choices =
     choicesProp ??
     EYES.map((eyes) => ({
@@ -232,9 +230,8 @@ export function EmotionPicker({
           {choices.map((choice, index) => (
             <Emotion
               key={choice.id}
-              config={config}
               choice={choice}
-              backgroundColor={backgroundColor}
+              backgroundColor={previewBackground}
               active={value === choice.id}
               count={choices.length}
               index={index}

@@ -1,7 +1,7 @@
 /** Original authored assets and material equations, rendered by an independent
  * Three scene. Captured semantic clips are separate from the fixed reference fixture. */
 import * as THREE from 'three';
-import { boundBodyPigment } from './body-pigment';
+import { boundBodyPigment } from '../../src/agent-avatar/body-pigment';
 import type { AuthoredMotionPose, AuthoredMotionSampler } from './motion';
 import { loadAuthoredMotion, type MotionKind, type MotionSamplers } from './motion-catalog';
 import { prepareCanonicalTuft } from './canonical-tuft';
