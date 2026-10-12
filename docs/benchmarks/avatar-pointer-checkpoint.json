@@ -1,0 +1,299 @@
+{
+  "date": "2026-10-11",
+  "scope": "Fidelity idle pointer/ocular reconstruction and activity-mode pointer suppression. Reaction hover integration is now recorded in avatar-reaction-gaze-checkpoint.json; drag-driven reaction deformation and Computer interruption remain open.",
+  "nativeBlue": {
+    "sources": [
+      {
+        "path": ".local/avatar-pointer-source/blue_beret/idle-raw.json",
+        "sha256": "a49210e4039ad00f8707f2353cc0b4c09e497b5999b837d95bc54e3b26cef4d2",
+        "frames": 361
+      },
+      {
+        "path": ".local/avatar-pointer-source/blue_beret/drag-horizontal-raw.json",
+        "sha256": "b1acda8184336d96d5759b3b4b3006830fab42cffb436095d27cf917affabad6",
+        "frames": 361
+      },
+      {
+        "path": ".local/avatar-pointer-source/blue_beret/drag-vertical-raw.json",
+        "sha256": "36adaac3005b7e8fb9f6dbd64a4efff6bcfae37dc108937afeaed2b73664ac9b",
+        "frames": 361
+      },
+      {
+        "path": ".local/avatar-pointer-source/blue_beret/drag-diagonal-raw.json",
+        "sha256": "e775ae752127a544888e31d8d2bdec08cfe90814b0327809a0c8ac2d5412f5b4",
+        "frames": 361
+      },
+      {
+        "path": ".local/avatar-pointer-validation/blue_beret/idle-raw.json",
+        "sha256": "5c822c815edbe38d16acccfdada76f361dc280ba172280ebdb0b0df5fe32b796",
+        "frames": 121
+      },
+      {
+        "path": ".local/avatar-pointer-validation/blue_beret/pointer-raw.json",
+        "sha256": "05777553cf677391d8fbfd45ffc5c4185c732a74239540f3eeb1b271ae85a22e",
+        "frames": 121
+      }
+    ],
+    "worldMaxAbsoluteBound": 2.46e-07,
+    "normalRelativeBound": 2.94e-07,
+    "normalMaxAbsoluteBound": 3.08e-06,
+    "normalRelativeDenominator": "max(1, largest absolute baseline normal matrix element)",
+    "materialCameraSkin": "exact",
+    "adapterUnpressedHoverExactFrames": 481
+  },
+  "browser": {
+    "changedPixels": [
+      107136,
+      0
+    ],
+    "releasePixelsExact": true,
+    "cutoffPixelsExact": [
+      {
+        "preset": "blue_beret",
+        "kind": "reference",
+        "angles": 4
+      },
+      {
+        "preset": "blue_beret",
+        "kind": "work",
+        "angles": 4
+      },
+      {
+        "preset": "blue_beret",
+        "kind": "reaction",
+        "angles": 4
+      },
+      {
+        "preset": "alfred",
+        "kind": "reference",
+        "angles": 4
+      },
+      {
+        "preset": "alfred",
+        "kind": "work",
+        "angles": 4
+      },
+      {
+        "preset": "alfred",
+        "kind": "reaction",
+        "angles": 4
+      },
+      {
+        "preset": "purple_heart",
+        "kind": "reference",
+        "angles": 4
+      },
+      {
+        "preset": "purple_heart",
+        "kind": "work",
+        "angles": 4
+      },
+      {
+        "preset": "purple_heart",
+        "kind": "reaction",
+        "angles": 4
+      },
+      {
+        "preset": "lime_frog",
+        "kind": "reference",
+        "angles": 4
+      },
+      {
+        "preset": "lime_frog",
+        "kind": "work",
+        "angles": 4
+      },
+      {
+        "preset": "lime_frog",
+        "kind": "reaction",
+        "angles": 4
+      },
+      {
+        "preset": "coral_monocle",
+        "kind": "reference",
+        "angles": 4
+      },
+      {
+        "preset": "coral_monocle",
+        "kind": "work",
+        "angles": 4
+      },
+      {
+        "preset": "coral_monocle",
+        "kind": "reaction",
+        "angles": 4
+      },
+      {
+        "preset": "gus",
+        "kind": "reference",
+        "angles": 4
+      },
+      {
+        "preset": "gus",
+        "kind": "work",
+        "angles": 4
+      },
+      {
+        "preset": "gus",
+        "kind": "reaction",
+        "angles": 4
+      },
+      {
+        "preset": "blue_spectacles",
+        "kind": "reference",
+        "angles": 4
+      },
+      {
+        "preset": "blue_spectacles",
+        "kind": "work",
+        "angles": 4
+      },
+      {
+        "preset": "blue_spectacles",
+        "kind": "reaction",
+        "angles": 4
+      },
+      {
+        "preset": "lime_headphones",
+        "kind": "reference",
+        "angles": 4
+      },
+      {
+        "preset": "lime_headphones",
+        "kind": "work",
+        "angles": 4
+      },
+      {
+        "preset": "lime_headphones",
+        "kind": "reaction",
+        "angles": 4
+      }
+    ],
+    "quiescent": true,
+    "captureIsolation": true,
+    "cancel": true,
+    "blur": true,
+    "tapVsDrag": true,
+    "originalRequests": [],
+    "errors": []
+  },
+  "validation": {
+    "existingNodeTests": 73,
+    "pointerNodeTests": 5,
+    "customGazeBodyNodeTests": 8,
+    "fidelityUI": "pass including real DOM drag",
+    "actionReturnTransitions": 45,
+    "lifecycle": "offscreen, context loss/recovery, exact restored pixels, disposal",
+    "mixedCatalog": "eight references, GPU buffer lifetime, selection isolation, disposal",
+    "storybookTypecheck": "pass after semantic pose rebinding",
+    "quiescentActionWake": {
+      "beforeFixFirstReactionTime": 0.8666,
+      "inactiveWaitSeconds": 0.8,
+      "afterFixFirstReactionTime": 0,
+      "afterFixFirstWorkTime": 0,
+      "browserErrors": []
+    },
+    "customGazeAttachmentsNodeTests": 7,
+    "ocularNodeTests": 20,
+    "combinedNodeTests": 113,
+    "finalBrowserRegressions": [
+      "activity-gaze (40 exact Work poses and reaction-first hidden blink recovery)",
+      "motion-returns (45 transitions)",
+      "pointer (real drag, isolation, 96 cutoff cases)",
+      "fidelity-ui (autoplay, DOM drag, reset)",
+      "lifecycle (offscreen, context loss/recovery, disposal)",
+      "mixed-catalog (8 references, buffers, async replacement)",
+      "quiescent-actions (reaction/work first presentation at zero)"
+    ],
+    "nativeRuntimeFiles": "unchanged",
+    "reactionActivityObservationTests": 12,
+    "totalNodeTests": 125
+  },
+  "limits": [
+    "Idle body/eye gaze and drag are integrated for every custom preset; blue retains native no-op hover.",
+    "Reaction gaze transitions and drag composition remain incomplete; a whole-character weighted rotation does not reproduce all native per-part entry translations.",
+    "Headphones hidden blink is a finite, native-time-aligned idle channel; it does not prove a new native periodicity.",
+    "Whole-image gaze evidence compares two pose paths in the independent renderer, not complete native versus rebuilt rendering.",
+    "Cutoff pixel evidence samples three poses per preset and four angle sign combinations at 512px, not every possible pose/color/backing.",
+    "Repeated Work cycles, early Stop, reaction interruptions and arbitrary-phase action entry remain incomplete.",
+    "No new FPS or laptop-performance measurement."
+  ],
+  "workControllerResearch": {
+    "captures": 6,
+    "cycles2AddsScreenGeometryAt": 2.35,
+    "stopToIdleSeconds": 1.05,
+    "alfredStopToReactionAcceptanceSeconds": 0.8166667,
+    "phaseDependentOutro": true,
+    "runtimeIntegrated": false,
+    "extendedObservation": {
+      "cycles": 6,
+      "frames": 1081,
+      "nativeStart": 3,
+      "nativeStop": 16.216666666666665,
+      "maximumSimultaneousDraws": 19,
+      "newGeometryBeyondCycles2": 0,
+      "path": ".local/avatar-work-controller/alfred/cycles6/work-raw.json",
+      "runtimeIntegrated": false
+    }
+  },
+  "gazeBrowser": {
+    "112": {
+      "poses": 35,
+      "presets": [
+        "alfred",
+        "blue_spectacles",
+        "coral_monocle",
+        "gus",
+        "lime_frog",
+        "lime_headphones",
+        "purple_heart"
+      ],
+      "wholeImageComparisons": 35,
+      "worldMax": 1.1920928955078125e-07,
+      "normalRelativeMax": 1.7881393432617188e-07,
+      "maximumMeanAbsoluteChannelError": 1.992984693877551e-05,
+      "maximumChannelDifference": 1,
+      "maximumChangedPixels": 1,
+      "neighborChangedPixels": 0,
+      "originalRuntimeRequests": [],
+      "errors": []
+    },
+    "320": {
+      "poses": 20,
+      "presets": [
+        "blue_spectacles",
+        "coral_monocle",
+        "lime_frog",
+        "lime_headphones"
+      ],
+      "wholeImageComparisons": 20,
+      "worldMax": 1.1920928955078125e-07,
+      "normalRelativeMax": 1.1920928955078125e-07,
+      "maximumMeanAbsoluteChannelError": 3.173828125e-05,
+      "maximumChannelDifference": 1,
+      "maximumChangedPixels": 13,
+      "neighborChangedPixels": 0,
+      "originalRuntimeRequests": [],
+      "errors": []
+    },
+    "claim": "Same independent renderer with reconstructed versus captured-native pose matrices; not a comparison of the two complete renderers"
+  },
+  "activityPointerBrowser": {
+    "poses": 40,
+    "presets": 8,
+    "gesture": "down, move, up, hover",
+    "uploadedMatricesAndMaterialFields": "exact",
+    "wholeImages": "exact",
+    "evidence": ".local/avatar-activity-gaze-browser/report.json"
+  },
+  "hiddenHeadphonesBlink": {
+    "samples": 358,
+    "duration": 5.949999999999999,
+    "observedFrames": 481,
+    "maxWorldError": 8.466432453637512e-08,
+    "sourcePhaseExact": true,
+    "runtime": "Only its own preset binary; semantic body eyeBlink channel, not a dependency on Frog at runtime",
+    "limit": "Idle finite interval only. Reaction and Computer do not inherit this channel.",
+    "additionalPackedBytes": 4552
+  }
+}

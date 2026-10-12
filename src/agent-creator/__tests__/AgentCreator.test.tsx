@@ -123,7 +123,19 @@ describe('optional character editor', () => {
     fireEvent(preset, 'valueChange', 'blue_beret');
     expect(onChange).toHaveBeenLastCalledWith({
       ...agent,
-      avatar: { ...agent.avatar, character: { preset: 'blue_beret' } },
+      avatar: {
+        ...agent.avatar,
+        character: {
+          selections: {
+            eyes: 'sleepy_lids',
+            eyewear: 'none',
+            accessory: 'felipe_beret',
+            shape: 'six_lobed_flower',
+            color: 'blue',
+          },
+          bodyColor: '#ff9547',
+        },
+      },
     });
   });
   it('retains explicit eye style when changing shape while awaiting engine compatibility', () => {
@@ -160,9 +172,9 @@ describe('optional character editor', () => {
       avatar: {
         ...configured.avatar,
         character: {
-          preset: 'blue_beret',
           selections: {
             eyes: 'round_inset',
+            eyewear: 'none',
             color: 'pink',
             shape: 'heart',
             accessory: 'felipe_beret',
@@ -223,7 +235,10 @@ it('edits custom beta body RGB through the existing picker and retains the entir
     avatar: {
       ...configured.avatar,
       ...hexAppearance('#Ab1234'),
-      character: { ...character, bodyColor: '#ab1234' },
+      character: {
+        bodyColor: '#ab1234',
+        selections: { ...character.selections, eyewear: 'none' },
+      },
     },
   });
   fireEvent.press(view.getByLabelText('Blue avatar'));
@@ -232,8 +247,7 @@ it('edits custom beta body RGB through the existing picker and retains the entir
     avatar: {
       ...configured.avatar,
       character: {
-        preset: 'blue_beret',
-        selections: { ...character.selections, color: 'blue' },
+        selections: { ...character.selections, eyewear: 'none', color: 'blue' },
       },
     },
   });
@@ -283,6 +297,9 @@ describe('shared original-engine editor catalog', () => {
     for (const configured of kinds) {
       const view = withRuntime(configured);
       const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
+      expect(
+        choices.every((choice: { thumbnail?: string }) => choice.thumbnail === undefined),
+      ).toBe(true);
       expect(choices).toHaveLength(21);
       expect(new Set(choices.map((choice: { id: string }) => choice.id)).size).toBe(21);
       expect(choices.map((choice: { id: string }) => choice.id)).toEqual(
@@ -307,7 +324,7 @@ describe('shared original-engine editor catalog', () => {
     }
   });
 
-  it('offers Clippo static artwork and retains its independent eyes across every body', () => {
+  it('offers Clippo eyes from the shared renderer and retains them across every body', () => {
     const configured = {
       ...agent,
       avatar: {
@@ -322,12 +339,20 @@ describe('shared original-engine editor catalog', () => {
       view.UNSAFE_getAllByType(GlossArt).find((node) => node.props.active)?.props,
     ).toMatchObject({ center: '#999b9d', edge: '#999b9d', rainbow: false });
     const eyes = view.UNSAFE_getByType(EmotionPicker).props.choices;
+    expect(
+      eyes.every(
+        (choice: { thumbnail?: string; artwork?: string }) => !choice.thumbnail && !choice.artwork,
+      ),
+    ).toBe(true);
     expect(eyes.find((choice: { id: string }) => choice.id === 'clippo')).toMatchObject({
-      artwork: 'clippo',
+      id: 'clippo',
       disabled: false,
     });
     expect(eyes.find((choice: { id: string }) => choice.id === 'clippo').thumbnail).toBeUndefined();
     const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
+    expect(choices.every((choice: { thumbnail?: string }) => choice.thumbnail === undefined)).toBe(
+      true,
+    );
     expect(
       choices.find((choice: { id: string }) => choice.id === 'clippo').thumbnail,
     ).toBeUndefined();
@@ -350,11 +375,19 @@ describe('shared original-engine editor catalog', () => {
     };
     const view = withRuntime(configured);
     const eyes = view.UNSAFE_getByType(EmotionPicker).props.choices;
+    expect(
+      eyes.every(
+        (choice: { thumbnail?: string; artwork?: string }) => !choice.thumbnail && !choice.artwork,
+      ),
+    ).toBe(true);
     expect(eyes.find((choice: { id: string }) => choice.id === 'todd')).toMatchObject({
-      thumbnail: '/thumbnails/eyes/todd.png',
+      id: 'todd',
       disabled: false,
     });
     const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
+    expect(choices.every((choice: { thumbnail?: string }) => choice.thumbnail === undefined)).toBe(
+      true,
+    );
     for (const choice of choices) {
       expect(choice.config.character.selections).toMatchObject({
         eyes: 'todd',
@@ -376,9 +409,9 @@ describe('shared original-engine editor catalog', () => {
     });
     fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'todd');
     expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-      preset: 'blue_beret',
       selections: {
         shape: 'todd',
+        eyewear: 'none',
         color: 'blue',
         eyes: 'oval',
         accessory: 'felipe_beret',
@@ -386,8 +419,13 @@ describe('shared original-engine editor catalog', () => {
     });
     fireEvent.press(view.getByLabelText('Single eye'));
     expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-      preset: 'blue_beret',
-      selections: { eyes: 'cyclops', accessory: 'felipe_beret' },
+      selections: {
+        shape: 'circle',
+        eyes: 'cyclops',
+        eyewear: 'none',
+        accessory: 'felipe_beret',
+        color: 'blue',
+      },
     });
     view.unmount();
   });
@@ -424,6 +462,22 @@ describe('shared original-engine editor catalog', () => {
           : avatarHex(choice.config));
       expect(actual).toBe(expected);
     }
+    const silhouettes = view
+      .UNSAFE_getAllByType(CharacterAvatar)
+      .filter((node) => node.props.config.face === false);
+    expect(silhouettes).toHaveLength(9);
+    for (const preview of silhouettes) {
+      const config = preview.props.config;
+      expect(config.character.selections).toMatchObject({
+        eyes: 'none',
+        eyewear: 'none',
+        accessory: 'none',
+      });
+      expect(
+        config.character.bodyColor ??
+          (config.character.selections.color === 'blue' ? '#4778ff' : avatarHex(config)),
+      ).toBe(expected);
+    }
     view.unmount();
   });
 
@@ -452,7 +506,7 @@ describe('shared original-engine editor catalog', () => {
     },
   );
 
-  it('edits every eye style on Todd without replacing its authored body preset', () => {
+  it('materializes every Todd eye edit with explicit body and paint', () => {
     const configured = {
       ...agent,
       avatar: { ...agent.avatar, character: { preset: 'lime_frog' } },
@@ -468,15 +522,20 @@ describe('shared original-engine editor catalog', () => {
       expect(view.getByLabelText(title).props.disabled).toBe(false);
       fireEvent.press(view.getByLabelText(title));
       expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-        preset: 'lime_frog',
-        selections: { eyes: id, eyewear: 'none', accessory: 'none' },
+        selections: {
+          shape: 'todd',
+          color: 'lime',
+          eyes: id,
+          eyewear: 'none',
+          accessory: 'none',
+        },
       });
     }
     expect(view.queryByLabelText('Eye spacing')).toBeNull();
     view.unmount();
   });
 
-  it('uses static single-eye artwork on every body and preserves historical recipe metadata', () => {
+  it('uses shared-renderer single eyes on every body and preserves historical recipe metadata', () => {
     const configured = {
       ...agent,
       avatar: {
@@ -494,7 +553,7 @@ describe('shared original-engine editor catalog', () => {
       .UNSAFE_getByType(EmotionPicker)
       .props.choices.find((choice: { id: string }) => choice.id === 'cyclops');
     expect(single).toMatchObject({
-      artwork: 'cyclops',
+      id: 'cyclops',
       label: 'Single eye',
       disabled: false,
     });
@@ -529,9 +588,13 @@ describe('shared original-engine editor catalog', () => {
         family: 'fold',
         foldShape: 'cloud',
         character: {
-          preset: 'blue_beret',
           bodyColor: '#123456',
-          selections: { eyes: 'dots', accessory: 'bow', shape: 'cloud' },
+          selections: {
+            eyes: 'dots',
+            eyewear: 'none',
+            accessory: 'bow',
+            shape: 'cloud',
+          },
         },
       },
     });
@@ -558,7 +621,6 @@ describe('shared original-engine editor catalog', () => {
       avatar: {
         ...configured.avatar,
         character: {
-          preset: 'legacy',
           bodyColor: '#123456',
           eyeSpacing: 0.78,
           selections: {
@@ -593,7 +655,6 @@ describe('shared original-engine editor catalog', () => {
       avatar: {
         ...configured.avatar,
         character: {
-          preset: 'legacy',
           selections: {
             shape: 'slender',
             color: 'blue',
@@ -676,7 +737,6 @@ it('edits migrated accessories, eyewear, eyes and color while preserving the ori
     avatar: {
       ...initial.avatar,
       character: {
-        preset: 'legacy',
         bodyColor: avatarHex(initial.avatar),
         selections: {
           shape: 'cloud',
@@ -695,7 +755,6 @@ it('edits migrated accessories, eyewear, eyes and color while preserving the ori
   fireEvent.press(view.getByLabelText('Blue avatar'));
   let updated = onChange.mock.lastCall![0] as AgentCreatorAgent;
   expect(updated.avatar.character).toEqual({
-    preset: 'legacy',
     selections: {
       shape: 'cloud',
       color: 'blue',
@@ -772,7 +831,11 @@ it('accepts rapid body, eye, glasses, hat and palette edits while only the initi
     );
   }
   const view = render(<Controlled />);
+  const palette = view.getByTestId('agent-avatar-color-selector');
   fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'cloud');
+  expect(view.getByTestId('agent-avatar-color-selector')).toBe(palette);
+  for (const [, title] of CHARACTER_OPTIONS.color)
+    expect(view.getByLabelText(`${title} avatar`).props.disabled).toBe(false);
   expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#4778ff');
   expect(view.getByLabelText('Todd').props.disabled).toBe(false);
   fireEvent.press(view.getByLabelText('Todd'));
@@ -782,9 +845,9 @@ it('accepts rapid body, eye, glasses, hat and palette edits while only the initi
   fireEvent.press(view.getByLabelText('Pink avatar'));
   fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'todd');
   fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'slender');
+  expect(view.getByTestId('agent-avatar-color-selector')).toBe(palette);
   expect(onChange).toHaveBeenCalledTimes(7);
   expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-    preset: 'blue_beret',
     selections: {
       shape: 'slender',
       color: 'pink',
@@ -795,4 +858,107 @@ it('accepts rapid body, eye, glasses, hat and palette edits while only the initi
   });
   expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#fa70ab');
   expect(view.getByLabelText('Pink avatar').props['aria-pressed']).toBe(true);
+});
+
+it.each([
+  [
+    'lime_frog',
+    { eyes: 'clippo', eyewear: 'none', accessory: 'bow', color: 'coral' },
+    'rounded_head_two_ears',
+    'coral',
+  ],
+  [
+    'alfred',
+    { eyes: 'cyclops', eyewear: 'monocle', accessory: 'bow', color: 'cyan' },
+    'rounded_triangle',
+    'cyan',
+  ],
+  [
+    'coral_monocle',
+    { eyes: 'clippo', eyewear: 'round_sunglasses', accessory: 'none' },
+    'twelve_scalloped_rosette',
+    'coral',
+  ],
+] as const)(
+  'creates %s as an exact template, then removes its reference on an accessory edit without losing parts or paint',
+  (preset, selections, shape, color) => {
+    const onChange = jest.fn();
+    function Controlled() {
+      const [value, setValue] = useState(agent);
+      return (
+        <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
+          <BloomThemeProvider>
+            <AgentCreator
+              agent={value}
+              onChange={(next) => {
+                setValue(next);
+                onChange(next);
+              }}
+            />
+          </BloomThemeProvider>
+        </CharacterRuntimeFixture>
+      );
+    }
+    const view = render(<Controlled />);
+    fireEvent(view.UNSAFE_getAllByType(Select)[0]!, 'valueChange', preset);
+    const saved = onChange.mock.lastCall![0];
+    expect(saved.avatar.character).toEqual({ preset, selections });
+    fireEvent(view.UNSAFE_getAllByType(Select)[2]!, 'valueChange', 'crown');
+    const custom = onChange.mock.lastCall![0].avatar.character;
+    expect(custom).toEqual({
+      selections: { ...selections, shape, color, accessory: 'crown' },
+    });
+    expect(view.UNSAFE_getAllByType(Select)[0]!.props.value).toBe('custom');
+    expect(saved.avatar.character).toEqual({ preset, selections });
+    fireEvent.press(view.getByLabelText('Blue avatar'));
+    expect(onChange.mock.lastCall![0].avatar.character).toEqual({
+      selections: { ...custom.selections, color: 'blue' },
+    });
+  },
+);
+
+it('recognizes exact Felipe creation without saving a preset, then displays Custom after an edit', () => {
+  const onChange = jest.fn();
+  function Controlled() {
+    const [value, setValue] = useState(agent);
+    return (
+      <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
+        <BloomThemeProvider>
+          <AgentCreator
+            agent={value}
+            onChange={(next) => {
+              setValue(next);
+              onChange(next);
+            }}
+          />
+        </BloomThemeProvider>
+      </CharacterRuntimeFixture>
+    );
+  }
+  const view = render(<Controlled />);
+  fireEvent(view.UNSAFE_getAllByType(Select)[0]!, 'valueChange', 'blue_beret');
+  expect(onChange.mock.lastCall![0].avatar.character).toEqual({
+    selections: {
+      eyes: 'sleepy_lids',
+      eyewear: 'none',
+      accessory: 'felipe_beret',
+      shape: 'six_lobed_flower',
+      color: 'blue',
+    },
+    bodyColor: '#ff9547',
+  });
+  expect(view.UNSAFE_getAllByType(Select)[0]!.props.value).toBe('blue_beret');
+  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#ff9547');
+  fireEvent(view.UNSAFE_getAllByType(Select)[2]!, 'valueChange', 'crown');
+  expect(view.UNSAFE_getAllByType(Select)[0]!.props.value).toBe('custom');
+  expect(onChange.mock.lastCall![0].avatar.character).toEqual({
+    selections: {
+      eyes: 'sleepy_lids',
+      eyewear: 'none',
+      accessory: 'crown',
+      shape: 'six_lobed_flower',
+      color: 'blue',
+    },
+    bodyColor: '#ff9547',
+  });
 });

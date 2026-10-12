@@ -1,0 +1,917 @@
+[
+  {
+    "patch": {
+      "family": "blob",
+      "shape": "pebble"
+    },
+    "sha256": "ec5baac1c5eca1062d545fcc2786f75309847ab179506efcc284d2f2760b6abe"
+  },
+  {
+    "patch": {
+      "family": "blob",
+      "shape": "circle"
+    },
+    "sha256": "da063d95269b938985403f0ef19b65faaee3ab4d9970c61014d714366cfdef78"
+  },
+  {
+    "patch": {
+      "family": "blob",
+      "shape": "squircle"
+    },
+    "sha256": "a72c4b4ae2e191fb8c9d68d556f29179e64a446532effdaf54697e8eac20415b"
+  },
+  {
+    "patch": {
+      "family": "blob",
+      "shape": "triangle"
+    },
+    "sha256": "60a30e54a2abf60b59b818adfb9dc60180ed0b038e4e9a3794dd328af08e441a"
+  },
+  {
+    "patch": {
+      "family": "blob",
+      "shape": "flower"
+    },
+    "sha256": "611856dca48772d606400b828b91174fe3a21922105e35d7fdf01f1e745c06c3"
+  },
+  {
+    "patch": {
+      "family": "blob",
+      "shape": "diamond"
+    },
+    "sha256": "7b6ecbb502a42ea0339bbea5905f7ccbd37eb036f2e316c4dc5f8804c2f0e529"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "left",
+      "foldDepth": 0
+    },
+    "sha256": "a902b72426c2da52be82c75e784b5a6829c6d638dc9c54f75595bb782830c755"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "left",
+      "foldDepth": 15
+    },
+    "sha256": "78ecdca82bdbf0131daaef8a4e4c9fb07627f24f8238ce7208223e8df6472043"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "left",
+      "foldDepth": 45
+    },
+    "sha256": "11a2f72f226808b757b9024caae42a52c3a79fa1fb31417f0f2818ea152918e2"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "left",
+      "foldDepth": 70
+    },
+    "sha256": "6ee989c6c2e2d71457f85af7d318805316d02142edea2d751da2cc2612265ea3"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "left",
+      "foldDepth": 100
+    },
+    "sha256": "9ddc0b8799542ceaada87711ab9fddfba97eda654928d64768055e3a614be634"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "right",
+      "foldDepth": 0
+    },
+    "sha256": "45fc9ed455314c2e0ad0e376832f9ec5d592c6e971d1295eea82af43efb56258"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "right",
+      "foldDepth": 15
+    },
+    "sha256": "c5e8f3b1fb69e7ede9c0c788943b85d11f4d9adaeaee1a7427f334c06ed51f13"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "right",
+      "foldDepth": 45
+    },
+    "sha256": "f9e2c8029d3d30bd9238f05561249a1132566090e00d56eb8aad22f3a30b5b09"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "right",
+      "foldDepth": 70
+    },
+    "sha256": "77b9d04c3454007c4ad53f5fb90872f502b8e45918733fce0ec8eadb45256ddc"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "slender",
+      "foldDirection": "right",
+      "foldDepth": 100
+    },
+    "sha256": "69327938fcdb2c936e2d718a1af614ed03dbf54e88817c20320d6f50ab960eda"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "left",
+      "foldDepth": 0
+    },
+    "sha256": "d72873112b88ad874d8dba9ac13da7e2d43f0e47d1f47165ec1ebe1d9c23854b"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "left",
+      "foldDepth": 15
+    },
+    "sha256": "d840da249f89eb954f523db5608878996b94aa55b9f4bef86f579882a6af6b50"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "left",
+      "foldDepth": 45
+    },
+    "sha256": "77f6f17cb5d766648bc8971271a08ae72dfc4cce95dcbacc4c9bd43cd476ba3b"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "left",
+      "foldDepth": 70
+    },
+    "sha256": "6b69cbda3f5ca2e13fdad594d3bd31f78b105e783c4215a874c78ac5bdfe2267"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "left",
+      "foldDepth": 100
+    },
+    "sha256": "56ab820868292490d1e1e3f98d845a9f8c9a83df3b37641ed48280da809e518b"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "right",
+      "foldDepth": 0
+    },
+    "sha256": "428ffbee378152ec0f23860a79bb658d9af1abc0ca274b396f6e65d7521d9047"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "right",
+      "foldDepth": 15
+    },
+    "sha256": "1d46d6f1e02e6e7069a62b8f70d2d9770a8dc39fa7532a08b2fc84d5f7c7e2fa"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "right",
+      "foldDepth": 45
+    },
+    "sha256": "2ac742cf5a7c41c6fa129ce731f89e35695c17acc3f656ebbfd1cef4b382b5c2"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "right",
+      "foldDepth": 70
+    },
+    "sha256": "22fdf14632366d998a5749e077494102e60f2e97086ab8ab377a29f76672299c"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "pocket",
+      "foldDirection": "right",
+      "foldDepth": 100
+    },
+    "sha256": "3cd110309122a56c39e0ebf9f6fe84362a8e6df22571e2f84d049b3eecf962fc"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "left",
+      "foldDepth": 0
+    },
+    "sha256": "0b8e34fb0ef046bfc3aae2149d550d28adbafea057861ce386460f8314797592"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "left",
+      "foldDepth": 15
+    },
+    "sha256": "27c1331769db5c8ff856a77075387d1dc4b583196aee5c5ad1843c5f122ca1bc"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "left",
+      "foldDepth": 45
+    },
+    "sha256": "77b3f252244f87f8b68fdaeedabfce939b4d95c6a8bcd347cfc41131b8045844"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "left",
+      "foldDepth": 70
+    },
+    "sha256": "eb85edaddb1d480081425277805d2e07f8a1ecb23b3d469837247c8ae5656f5b"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "left",
+      "foldDepth": 100
+    },
+    "sha256": "a3979b24203606c08fbc4aeae03614ad5c1aea1c0e30084cb8a1225daa189072"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "right",
+      "foldDepth": 0
+    },
+    "sha256": "2ef45f21757bc0938662cde3f48f0758208584b20abd35386ac43806e552e8e3"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "right",
+      "foldDepth": 15
+    },
+    "sha256": "8e9362752c9f5afea10ec6f46a70f5e8ab6bf5b8933340216e5b18941559046d"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "right",
+      "foldDepth": 45
+    },
+    "sha256": "6585856ac4fc899b41d12091d4573f2fcd89e3d34339f5b133a6bd893f50d98c"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "right",
+      "foldDepth": 70
+    },
+    "sha256": "4511f3950e9bbc94beaba9d188d6e1df5a7f8013a52c5b1b9d350d394088c6c9"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "petal",
+      "foldDirection": "right",
+      "foldDepth": 100
+    },
+    "sha256": "247ba7ac1fc3662774457a97b032b6ace7d5916db2ce5354520053404b8c31d8"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "left",
+      "foldDepth": 0
+    },
+    "sha256": "c7fe557c45ab0a4da80ef1c0fe8e2b210882d94b5684adf6c91ff4d0d87ea45d"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "left",
+      "foldDepth": 15
+    },
+    "sha256": "a791b32c0f81c97c981954603c80bf8b54e776bf4989d2062a3ba8668306aa90"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "left",
+      "foldDepth": 45
+    },
+    "sha256": "50b0413c8216f5cbf3db91b7757100eb4c8c1ed31f1f437b8bf3b32f5d78625d"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "left",
+      "foldDepth": 70
+    },
+    "sha256": "33ea569f07313561c4ca65a52d37c904375920e45a63ad82db1fcc948a80feb9"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "left",
+      "foldDepth": 100
+    },
+    "sha256": "2bfc12550c2bb5b5930a2c50f732eecc91c4d03ddec3f86e8e48c832e3e3e99f"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "right",
+      "foldDepth": 0
+    },
+    "sha256": "25171c2e5525786d5593cfefcfcd05d7744da24952b4c87f4736978866067f51"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "right",
+      "foldDepth": 15
+    },
+    "sha256": "fd30055315b98763a1d5384627d942b6840a97178c3eacd39bb3237bda6101a4"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "right",
+      "foldDepth": 45
+    },
+    "sha256": "5bba34afd569af533fe162060ea07343f68886ddf5a8e46cb4140f077251e706"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "right",
+      "foldDepth": 70
+    },
+    "sha256": "56e1601f8445823a7ef8c1a5fbd0ed6bb617d7ce50840e3102106c65f4688dc1"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "flower",
+      "foldDirection": "right",
+      "foldDepth": 100
+    },
+    "sha256": "f4338d8f4c1eb8c024e68f188d51558ba3e5f53ff7c06cbf3d19a6514c80a066"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "left",
+      "foldDepth": 0
+    },
+    "sha256": "87160d45889a87b444d7d8464930f4c169d6d14723bdb551e22cb7edb13f6c6d"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "left",
+      "foldDepth": 15
+    },
+    "sha256": "59aa0b8c7af22ade2c4a35b9fab34e50c32e52f2d72f92166de7f0923d889238"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "left",
+      "foldDepth": 45
+    },
+    "sha256": "34436ae24c0c2eb19e4701a0541686380384138583020791ccd7aff0bcab184f"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "left",
+      "foldDepth": 70
+    },
+    "sha256": "58511f2c7e70eb78273bad803421feca971568190aa07ba8b2ad322cf06e8211"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "left",
+      "foldDepth": 100
+    },
+    "sha256": "cdabc084ec6a3aa4334e123c1dd0cd67f890a24b21f1d0f8cabdca4f5e716273"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "right",
+      "foldDepth": 0
+    },
+    "sha256": "56f894c75369ce3524cee2e725dc117ad4b0d03e54b4ccfa833e93324a7f9a3c"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "right",
+      "foldDepth": 15
+    },
+    "sha256": "c799be0912bacf4b9c1bd9c4057eb7a50e2a2e214331288380389a41d9a4b94d"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "right",
+      "foldDepth": 45
+    },
+    "sha256": "dfc601ca1fb362bf54ba9deb9eb9929656e7f69fd61b5e0bb2c2e061e5ab446d"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "right",
+      "foldDepth": 70
+    },
+    "sha256": "22e1507f8f1f37b51109500bdb03df5536efd4466326da4200db5fc0bfdc4106"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "star",
+      "foldDirection": "right",
+      "foldDepth": 100
+    },
+    "sha256": "4abb1599bdcea6d9e842fb81a1dfa75054c6186fb33f9569d021262987360485"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "left",
+      "foldDepth": 0
+    },
+    "sha256": "ce271f368cbed870d663bc83d946352e207bb129f5898d563420b758ecbe777f"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "left",
+      "foldDepth": 15
+    },
+    "sha256": "0cfe1bb39d65a21d63c34791032cdd7961772b79b370e5b6a870432b3c681c5b"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "left",
+      "foldDepth": 45
+    },
+    "sha256": "3eadcb1d57877198adf65b05a7e5bc70703b4d0b0c53181a70782f0a1961a954"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "left",
+      "foldDepth": 70
+    },
+    "sha256": "ba3b9bb421744315f2a4a6eb942212041df72556108f3be39b8a63c7468cdff6"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "left",
+      "foldDepth": 100
+    },
+    "sha256": "3750db482d3e326c280685bfa0c2e64283064b7314f5c7784025a7416824d02e"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "right",
+      "foldDepth": 0
+    },
+    "sha256": "cce0f9175d21d372ca45feb70740116017d70def7934727cd4dfb00f15d50714"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "right",
+      "foldDepth": 15
+    },
+    "sha256": "b0138fe514f634130da67ceefbbc7b55113042c1e4fc334e9b0673b6e8760f78"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "right",
+      "foldDepth": 45
+    },
+    "sha256": "5022b40547b232a175283153fd994bf692cc4d502ad6ef28e2ba8d65669a9672"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "right",
+      "foldDepth": 70
+    },
+    "sha256": "750000c2e75626a6479ae01aa9cae7fdf5302a49962784c9ea835386a74a4289"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "heart",
+      "foldDirection": "right",
+      "foldDepth": 100
+    },
+    "sha256": "04a3a4b4c42ca3981d6b30c263813cb35d678f995f387d3a7615dee3aa8bf35c"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "left",
+      "foldDepth": 0
+    },
+    "sha256": "67c3c6e1e1600830c513c548aa1e6a6b50a34d5278ece00c2076fac8c0dacd08"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "left",
+      "foldDepth": 15
+    },
+    "sha256": "3ef4a46245d6d62283a4c9de1370ff8afe841929ca71568060696b006d441922"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "left",
+      "foldDepth": 45
+    },
+    "sha256": "7c907f48d35c42d4b8900561be26d69b2b9194b3e39a96f0e49a402414bf9dd1"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "left",
+      "foldDepth": 70
+    },
+    "sha256": "c77bf57ceab8f6d76faf06cbd4c985c1e6a56bd86b93ff67f85d151d5cdee2ac"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "left",
+      "foldDepth": 100
+    },
+    "sha256": "4aba60468509f0dd87e9d03c38c76675aa2d06661a1bfceb70c7d3e2b2412ca5"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "right",
+      "foldDepth": 0
+    },
+    "sha256": "5a7061a2d18508216969ed9f69b8b95fccc9bcae93e63ac052696343e22553fe"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "right",
+      "foldDepth": 15
+    },
+    "sha256": "aec95bdeece0c0c6d6f698136dc2f44ed45df9fedbbf97d1fbcc1c52ebf71d43"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "right",
+      "foldDepth": 45
+    },
+    "sha256": "953d6f0b79e26fe6ca1337b92255fdaacbb48aca5c296fc654c9d38137510ee4"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "right",
+      "foldDepth": 70
+    },
+    "sha256": "31980e0c185580fadce8b1b9e46dc96d9e960342b0c4fe729c4ec3bb9843d7ea"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "cloud",
+      "foldDirection": "right",
+      "foldDepth": 100
+    },
+    "sha256": "ee807eed6d14b7df4432a285f3f8e9a62c577a2dc6412a8964423bb11f12997f"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "left",
+      "foldDepth": 0
+    },
+    "sha256": "ac6a695845c42cf6f32e50623808d5837f98b6f7acc114ca8010fd011cd660c9"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "left",
+      "foldDepth": 15
+    },
+    "sha256": "3cff9699a9bdcabc671f825de67d8bac255983f50ba7d07d379ac515006a2598"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "left",
+      "foldDepth": 45
+    },
+    "sha256": "2df97a6dded6926c944342382aa8cf75180c4ff366614f3140b7f6038f6b1a99"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "left",
+      "foldDepth": 70
+    },
+    "sha256": "f89d509c9c2488f9b6b99e6ade909051c0dba74e40f62fb20a1accec0d1d8896"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "left",
+      "foldDepth": 100
+    },
+    "sha256": "3d289e70b800174a4259becb6c664a173646dd2bf67cdcdef4ac0c563d539f01"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "right",
+      "foldDepth": 0
+    },
+    "sha256": "912e2c9da1e3342c93b2605176697a64841b1729b083b2ecce83b6e8e849ead1"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "right",
+      "foldDepth": 15
+    },
+    "sha256": "fd5f0aa2fbc3afd5f9b9b380788b70cc78b38fc8fe4e038a00c284748dae4759"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "right",
+      "foldDepth": 45
+    },
+    "sha256": "8781a9805f43d5fc770961d6cfa8e48de384a3e3f0e4f0e8a89b711f4dd7f346"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "right",
+      "foldDepth": 70
+    },
+    "sha256": "dfca05c66edcb1dd1e405f522b9b6bc797516bba2079d4183ca73d4912723c77"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "diamond",
+      "foldDirection": "right",
+      "foldDepth": 100
+    },
+    "sha256": "10c5865480c6af4e8a15584c02613a213fbed56812a314203fd6b35a7ad625bf"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "left",
+      "foldDepth": 0
+    },
+    "sha256": "847a48a3c29fc7cf54a1943be97c3de3f721afbe2f0c456bd0c38bd30d0c1739"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "left",
+      "foldDepth": 15
+    },
+    "sha256": "ec82a739111929ca731452c6d40b863857e7adbc7b4bc30b09e3655e2a109003"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "left",
+      "foldDepth": 45
+    },
+    "sha256": "1c4ac8b642bbd126b04342284d68a238badbef4187e867c65f24f3ca99e8f603"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "left",
+      "foldDepth": 70
+    },
+    "sha256": "ae63cb087538a4f928df8ee826dd672c528a21fd776419a25981b72553531a10"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "left",
+      "foldDepth": 100
+    },
+    "sha256": "8238a3b905d0e2a37b11691394a38bc057c9f34d1e85cbc38bf89d7ab76faf46"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "right",
+      "foldDepth": 0
+    },
+    "sha256": "2571dde8275fe65e60c574d5537df59538b529c2bf25f9a00111b66ca9e4a396"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "right",
+      "foldDepth": 15
+    },
+    "sha256": "eef62932bfdea427c4cf39ee5cce9b759f1b7e5fa8df2bf311ccc8df13de3d1a"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "right",
+      "foldDepth": 45
+    },
+    "sha256": "c5189a14c00cd4a5bce31a0de711fe10f1c9c0b77963fe4bbda787468d075655"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "right",
+      "foldDepth": 70
+    },
+    "sha256": "6938ab1a765fc3ecbf03070b73df3ebfcb6f7aefd6600e03901f197cb5864ef8"
+  },
+  {
+    "patch": {
+      "family": "fold",
+      "foldShape": "shield",
+      "foldDirection": "right",
+      "foldDepth": 100
+    },
+    "sha256": "c0f3a23523196e94adbd5260154b1ea48045a2e82418bd3b96c95a21e673617c"
+  },
+  {
+    "patch": {
+      "family": "alien",
+      "alienShape": "classic"
+    },
+    "sha256": "62600720ad1aa4dd034edd627c2bb85e16dc3c7f7a96cfa4919019bc27761d2a"
+  },
+  {
+    "patch": {
+      "family": "alien",
+      "alienShape": "round"
+    },
+    "sha256": "06cc084deab4366e7e95564ef95001b15a0e2ee4cfea2c0566657994fb51d87e"
+  },
+  {
+    "patch": {
+      "family": "alien",
+      "alienShape": "long"
+    },
+    "sha256": "d2b3c294dcf92e779291b574075c744fa743a3a5cee37fd47df9ef6ad8d3b9fb"
+  },
+  {
+    "patch": {
+      "family": "mascot",
+      "shape": "pebble"
+    },
+    "sha256": "ec5baac1c5eca1062d545fcc2786f75309847ab179506efcc284d2f2760b6abe"
+  },
+  {
+    "patch": {
+      "family": "mascot",
+      "shape": "circle"
+    },
+    "sha256": "da063d95269b938985403f0ef19b65faaee3ab4d9970c61014d714366cfdef78"
+  },
+  {
+    "patch": {
+      "family": "mascot",
+      "shape": "squircle"
+    },
+    "sha256": "a72c4b4ae2e191fb8c9d68d556f29179e64a446532effdaf54697e8eac20415b"
+  },
+  {
+    "patch": {
+      "family": "mascot",
+      "shape": "triangle"
+    },
+    "sha256": "60a30e54a2abf60b59b818adfb9dc60180ed0b038e4e9a3794dd328af08e441a"
+  },
+  {
+    "patch": {
+      "family": "mascot",
+      "shape": "flower"
+    },
+    "sha256": "611856dca48772d606400b828b91174fe3a21922105e35d7fdf01f1e745c06c3"
+  },
+  {
+    "patch": {
+      "family": "mascot",
+      "shape": "diamond"
+    },
+    "sha256": "7b6ecbb502a42ea0339bbea5905f7ccbd37eb036f2e316c4dc5f8804c2f0e529"
+  }
+]

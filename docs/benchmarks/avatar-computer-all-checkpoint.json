@@ -1,0 +1,711 @@
+{
+  "date": "2026-10-11",
+  "scope": "Original Computer episode for all eight presets and per-instance body/hand color in Fidelity. Full controller parity remains incomplete.",
+  "exports": [
+    {
+      "preset": "blue_beret",
+      "baseMeshes": 6,
+      "computerMeshes": 9,
+      "furIds": [
+        0
+      ],
+      "parts": 16,
+      "frames": 421,
+      "duration": 7,
+      "stop": 2.216666666666667,
+      "geometryBytes": 2089496,
+      "geometrySHA256": "a9feb6447f132f76c6dbf892573e3969033acd8fb4e4ea2a5dd465beb00bde50",
+      "maxAffineError": 7.771561172376096e-16,
+      "maxNormalError": 1.6543612251060553e-24,
+      "dynamicFields": [
+        "parameters",
+        "camera",
+        "referencePose",
+        "coverage",
+        "eyeCurveOriginAmount",
+        "eyeCurveRightWidth"
+      ],
+      "nativeEnd": {
+        "activityMode": false,
+        "stoppingWork": false
+      }
+    },
+    {
+      "preset": "alfred",
+      "baseMeshes": 8,
+      "computerMeshes": 9,
+      "furIds": [
+        0
+      ],
+      "parts": 18,
+      "frames": 421,
+      "duration": 7,
+      "stop": 2.216666666666667,
+      "geometryBytes": 2139512,
+      "geometrySHA256": "43ad8757781f930dcb0240f0ad387fd05dede79437410e6376f89e8bb2f9d0d8",
+      "maxAffineError": 7.771561172376096e-16,
+      "maxNormalError": 8.271806125530277e-25,
+      "dynamicFields": [
+        "camera",
+        "referencePose",
+        "coverage",
+        "eyeCurveOriginAmount",
+        "eyeCurveRightWidth",
+        "parameters"
+      ],
+      "nativeEnd": {
+        "activityMode": false,
+        "stoppingWork": false
+      }
+    },
+    {
+      "preset": "purple_heart",
+      "baseMeshes": 6,
+      "computerMeshes": 9,
+      "furIds": [
+        0
+      ],
+      "parts": 16,
+      "frames": 421,
+      "duration": 7,
+      "stop": 2.216666666666667,
+      "geometryBytes": 1879400,
+      "geometrySHA256": "b049f9d7380a5a178e659b970264f6b5e29d25ef121b0329a401be5814911149",
+      "maxAffineError": 5.551115123125783e-16,
+      "maxNormalError": 6.617444900424222e-24,
+      "dynamicFields": [
+        "camera",
+        "referencePose",
+        "coverage",
+        "eyeCurveOriginAmount",
+        "eyeCurveRightWidth",
+        "parameters"
+      ],
+      "nativeEnd": {
+        "activityMode": false,
+        "stoppingWork": false
+      }
+    },
+    {
+      "preset": "lime_frog",
+      "baseMeshes": 7,
+      "computerMeshes": 9,
+      "furIds": [
+        0
+      ],
+      "parts": 17,
+      "frames": 421,
+      "duration": 7,
+      "stop": 2.216666666666667,
+      "geometryBytes": 2581976,
+      "geometrySHA256": "f1d9fc81cc63cfc099dda4f895d54a5db43ce4ddf8f01d02497d13991f45ec96",
+      "maxAffineError": 5.551115123125783e-16,
+      "maxNormalError": 2.6469779601696886e-23,
+      "dynamicFields": [
+        "camera",
+        "colorRoughness",
+        "parameters",
+        "paletteClosure",
+        "referencePose",
+        "coverage",
+        "eyeCurveOriginAmount",
+        "eyeCurveRightWidth"
+      ],
+      "nativeEnd": {
+        "activityMode": false,
+        "stoppingWork": false
+      }
+    },
+    {
+      "preset": "coral_monocle",
+      "baseMeshes": 7,
+      "computerMeshes": 9,
+      "furIds": [
+        0
+      ],
+      "parts": 17,
+      "frames": 421,
+      "duration": 7,
+      "stop": 2.216666666666667,
+      "geometryBytes": 1846376,
+      "geometrySHA256": "c23357da7f5c7213fc0e04d68bd6b90279172dde73d5488ae0b94e7b65406882",
+      "maxAffineError": 6.661338147750939e-16,
+      "maxNormalError": 8.271806125530277e-25,
+      "dynamicFields": [
+        "camera",
+        "colorRoughness",
+        "parameters",
+        "paletteClosure",
+        "referencePose",
+        "coverage",
+        "eyeCurveOriginAmount",
+        "eyeCurveRightWidth"
+      ],
+      "nativeEnd": {
+        "activityMode": false,
+        "stoppingWork": false
+      }
+    },
+    {
+      "preset": "gus",
+      "baseMeshes": 3,
+      "computerMeshes": 9,
+      "furIds": [
+        0,
+        2
+      ],
+      "parts": 14,
+      "frames": 421,
+      "duration": 7,
+      "stop": 2.216666666666667,
+      "geometryBytes": 2656840,
+      "geometrySHA256": "6b774d8d22f954bd6508914fbd6d1cea753eaf6ed904325d2f91fc1205efa576",
+      "maxAffineError": 6.661338147750939e-16,
+      "maxNormalError": 4.1359030627651384e-25,
+      "dynamicFields": [
+        "camera",
+        "referencePose",
+        "coverage",
+        "eyeCurveOriginAmount",
+        "eyeCurveRightWidth",
+        "parameters"
+      ],
+      "nativeEnd": {
+        "activityMode": false,
+        "stoppingWork": false
+      }
+    },
+    {
+      "preset": "blue_spectacles",
+      "baseMeshes": 9,
+      "computerMeshes": 9,
+      "furIds": [
+        0,
+        8
+      ],
+      "parts": 20,
+      "frames": 421,
+      "duration": 7,
+      "stop": 2.216666666666667,
+      "geometryBytes": 2825896,
+      "geometrySHA256": "e63dc30066274b28430f2fd2e4edeaf82197d340e7c406ff149afb5139ffa393",
+      "maxAffineError": 5.551115123125783e-16,
+      "maxNormalError": 5.293955920339377e-23,
+      "dynamicFields": [
+        "camera",
+        "colorRoughness",
+        "parameters",
+        "paletteClosure",
+        "referencePose",
+        "coverage",
+        "eyeCurveOriginAmount",
+        "eyeCurveRightWidth"
+      ],
+      "nativeEnd": {
+        "activityMode": false,
+        "stoppingWork": false
+      }
+    },
+    {
+      "preset": "lime_headphones",
+      "baseMeshes": 8,
+      "computerMeshes": 9,
+      "furIds": [
+        0
+      ],
+      "parts": 18,
+      "frames": 421,
+      "duration": 7,
+      "stop": 2.216666666666667,
+      "geometryBytes": 2132096,
+      "geometrySHA256": "036efa0c420a9bff524a4cfd62479bdea235eb25cb058fe20514681b8226e8a5",
+      "maxAffineError": 6.661338147750939e-16,
+      "maxNormalError": 8.271806125530277e-25,
+      "dynamicFields": [
+        "camera",
+        "parameters",
+        "referencePose",
+        "coverage",
+        "eyeCurveOriginAmount",
+        "eyeCurveRightWidth"
+      ],
+      "nativeEnd": {
+        "activityMode": false,
+        "stoppingWork": false
+      }
+    }
+  ],
+  "validation": {
+    "nodeTests": 43,
+    "storybookTypeScript": "pass",
+    "ui": {
+      "individualComputerPresets": [
+        "blue_beret",
+        "alfred",
+        "purple_heart",
+        "lime_frog",
+        "coral_monocle",
+        "gus",
+        "blue_spectacles",
+        "lime_headphones"
+      ],
+      "allEightWorking": true,
+      "mixedActions": [
+        "work",
+        "reaction",
+        "idle",
+        "work",
+        "reaction",
+        "idle",
+        "work",
+        "reaction"
+      ],
+      "errors": [],
+      "forbiddenRequests": []
+    },
+    "handColors": {
+      "presets": [
+        {
+          "preset": "blue_beret",
+          "mode": "hands",
+          "selected": 3073,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "blue_beret",
+          "mode": "props",
+          "selected": 0,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "alfred",
+          "mode": "hands",
+          "selected": 3407,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "alfred",
+          "mode": "props",
+          "selected": 0,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "purple_heart",
+          "mode": "hands",
+          "selected": 2740,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "purple_heart",
+          "mode": "props",
+          "selected": 0,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "lime_frog",
+          "mode": "hands",
+          "selected": 3443,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "lime_frog",
+          "mode": "props",
+          "selected": 0,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "coral_monocle",
+          "mode": "hands",
+          "selected": 3307,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "coral_monocle",
+          "mode": "props",
+          "selected": 0,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "gus",
+          "mode": "hands",
+          "selected": 1965,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "gus",
+          "mode": "props",
+          "selected": 0,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "blue_spectacles",
+          "mode": "hands",
+          "selected": 3172,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "blue_spectacles",
+          "mode": "props",
+          "selected": 0,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "lime_headphones",
+          "mode": "hands",
+          "selected": 2286,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        },
+        {
+          "preset": "lime_headphones",
+          "mode": "props",
+          "selected": 0,
+          "neighbor": 0,
+          "resetPixelIdentical": true
+        }
+      ],
+      "errors": [],
+      "originalRequests": [],
+      "glError": 0
+    },
+    "pixels": {
+      "cases": 40,
+      "foregroundCompositedRGBErrorRange": [
+        0.46720492633168187,
+        0.798281188919822
+      ],
+      "maximumAlphaError": 0.33733126698560295,
+      "exactBounds": 32,
+      "pinnedRasterDifferences": [
+        {
+          "preset": "blue_beret",
+          "time": 2,
+          "count": 1,
+          "index": 0,
+          "bounds": [
+            {
+              "minX": 37,
+              "minY": 67,
+              "maxX": 296,
+              "maxY": 298
+            },
+            {
+              "minX": 37,
+              "minY": 67,
+              "maxX": 297,
+              "maxY": 298
+            }
+          ]
+        },
+        {
+          "preset": "blue_beret",
+          "time": 2,
+          "count": 2,
+          "index": 0,
+          "bounds": [
+            {
+              "minX": 37,
+              "minY": 67,
+              "maxX": 296,
+              "maxY": 298
+            },
+            {
+              "minX": 37,
+              "minY": 67,
+              "maxX": 297,
+              "maxY": 298
+            }
+          ]
+        },
+        {
+          "preset": "blue_beret",
+          "time": 2,
+          "count": 2,
+          "index": 1,
+          "bounds": [
+            {
+              "minX": 37,
+              "minY": 67,
+              "maxX": 296,
+              "maxY": 298
+            },
+            {
+              "minX": 37,
+              "minY": 67,
+              "maxX": 297,
+              "maxY": 298
+            }
+          ]
+        },
+        {
+          "preset": "purple_heart",
+          "time": 0,
+          "count": 1,
+          "index": 0,
+          "bounds": [
+            {
+              "minX": 29,
+              "minY": 38,
+              "maxX": 292,
+              "maxY": 282
+            },
+            {
+              "minX": 29,
+              "minY": 39,
+              "maxX": 292,
+              "maxY": 282
+            }
+          ]
+        },
+        {
+          "preset": "purple_heart",
+          "time": 2,
+          "count": 1,
+          "index": 0,
+          "bounds": [
+            {
+              "minX": 29,
+              "minY": 54,
+              "maxX": 291,
+              "maxY": 271
+            },
+            {
+              "minX": 29,
+              "minY": 55,
+              "maxX": 291,
+              "maxY": 271
+            }
+          ]
+        },
+        {
+          "preset": "purple_heart",
+          "time": 2,
+          "count": 2,
+          "index": 0,
+          "bounds": [
+            {
+              "minX": 29,
+              "minY": 54,
+              "maxX": 291,
+              "maxY": 271
+            },
+            {
+              "minX": 29,
+              "minY": 55,
+              "maxX": 291,
+              "maxY": 271
+            }
+          ]
+        },
+        {
+          "preset": "purple_heart",
+          "time": 2,
+          "count": 2,
+          "index": 1,
+          "bounds": [
+            {
+              "minX": 29,
+              "minY": 54,
+              "maxX": 291,
+              "maxY": 271
+            },
+            {
+              "minX": 29,
+              "minY": 55,
+              "maxX": 291,
+              "maxY": 271
+            }
+          ]
+        },
+        {
+          "preset": "lime_headphones",
+          "time": 5,
+          "count": 1,
+          "index": 0,
+          "bounds": [
+            {
+              "minX": 35,
+              "minY": 29,
+              "maxX": 285,
+              "maxY": 290
+            },
+            {
+              "minX": 35,
+              "minY": 29,
+              "maxX": 285,
+              "maxY": 291
+            }
+          ]
+        }
+      ],
+      "neighborChecks": 16,
+      "maximumChangedNeighborPixels": 0,
+      "errors": [],
+      "glError": 0,
+      "forbiddenRequests": []
+    },
+    "reactionRegression": {
+      "report": ".local/avatar-action-validation/report.json",
+      "status": "pass"
+    }
+  },
+  "hardware": {
+    "frameRateLimit": 60,
+    "scenario": "Eight presets using recovered original work animation",
+    "caveat": "Original small-avatar meshes/materials. Work samples the first two seconds of simultaneous Computer episodes; idle samples five seconds. This does not prove complete interaction parity, laptop power or thermal behavior. Consult webglRenderer and GPU evidence for the actual backend. Draw calls include depth, AO, color and presentation.",
+    "activity": "work",
+    "requestedSampleMilliseconds": 2000,
+    "cssPixelsPerAvatar": 112,
+    "nonRenderingErrors": [
+      {
+        "url": "http://localhost:6006/favicon.ico",
+        "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      }
+    ],
+    "gpu": [
+      {
+        "vendorId": 4318,
+        "deviceId": 11141,
+        "subSysId": 2313359427,
+        "revision": 161,
+        "vendorString": "",
+        "deviceString": "NVIDIA GeForce RTX 5090",
+        "driverVendor": "NVIDIA",
+        "driverVersion": "32.0.16.1692"
+      },
+      {
+        "vendorId": 5140,
+        "deviceId": 140,
+        "subSysId": 0,
+        "revision": 0,
+        "vendorString": "",
+        "deviceString": "Microsoft Basic Render Driver",
+        "driverVendor": "",
+        "driverVersion": "10.0.26100.9549"
+      }
+    ],
+    "webglRenderer": {
+      "vendor": "Google Inc. (NVIDIA)",
+      "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    "cases": [
+      {
+        "count": 8,
+        "readyMilliseconds": 1930,
+        "sampleMilliseconds": 2003.3999999761581,
+        "renderedFrames": 113,
+        "measuredFramesPerSecond": 56.404113008557836,
+        "engineReportedFramesPerSecond": 56.49194590816394,
+        "mainThreadSeconds": 0.7919130000000001,
+        "cpuSampleMilliseconds": 2012.0840000454336,
+        "drawCalls": 209,
+        "triangles": 336016,
+        "resources": {
+          "geometries": 138,
+          "textures": 148,
+          "programs": 8
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 112,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 8,
+        "uniquePhases": 8,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true
+      },
+      {
+        "count": 48,
+        "readyMilliseconds": 1966,
+        "sampleMilliseconds": 2004.7000000476837,
+        "renderedFrames": 113,
+        "measuredFramesPerSecond": 56.3675362883784,
+        "engineReportedFramesPerSecond": 56.299060609960165,
+        "mainThreadSeconds": 1.0982999999999998,
+        "cpuSampleMilliseconds": 2012.0650000171736,
+        "drawCalls": 209,
+        "triangles": 2016076,
+        "resources": {
+          "geometries": 138,
+          "textures": 148,
+          "programs": 8
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 560,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 48,
+        "uniquePhases": 48,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true
+      },
+      {
+        "count": 200,
+        "readyMilliseconds": 2057,
+        "sampleMilliseconds": 2014.799999952316,
+        "renderedFrames": 115,
+        "measuredFramesPerSecond": 57.077625572127104,
+        "engineReportedFramesPerSecond": 56.562005082455535,
+        "mainThreadSeconds": 1.581989,
+        "cpuSampleMilliseconds": 2044.564999989234,
+        "drawCalls": 209,
+        "triangles": 8400304,
+        "resources": {
+          "geometries": 138,
+          "textures": 148,
+          "programs": 8
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 2240,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 200,
+        "uniquePhases": 200,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true
+      }
+    ]
+  },
+  "hardwareCaveat": "Warmed retry. The first attempt ended on the idle draw count, invalidating its intended active Computer sample. Cold startup, laptop power and thermal performance remain unestablished.",
+  "limitations": [
+    "Default workingCycles=1 finite episode; arbitrary working cycles, interruptions and exact phase-dependent entry are not established.",
+    "Computer holds observed final pose; continuous native-equivalent return-to-idle phase is unresolved.",
+    "Other activities and arbitrary catalog part combinations are outstanding.",
+    "Small named raster-edge differences remain; no pixel-perfect claim."
+  ],
+  "localEvidence": {
+    "pixels": ".local/avatar-computer-pixels-all/report.json",
+    "ui": ".local/avatar-computer-ui-all/report.json",
+    "hands": ".local/avatar-hand-colors/report.json",
+    "hardware": ".local/avatar-hardware-computer/report.json"
+  }
+}

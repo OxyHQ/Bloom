@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "status": "Idle body/ocular controllers validated; reaction neutral-frame composition validated for seven presets and measured blink phases. Runtime integration and arbitrary-command behavior have separate gates.",
+  "source": {
+    "captureScript": "scripts/capture-avatar-controller-sequences.mjs",
+    "captureDirectory": ".local/avatar-pointer-validation/<preset>",
+    "sourceHashProvenance": "Each preset's report.json pins the original binary source hashes",
+    "sampleRate": 30,
+    "secondsPerScenario": 4,
+    "pairedScenarios": ["idle", "pointer"],
+    "presets": [
+      "blue_beret",
+      "alfred",
+      "purple_heart",
+      "lime_frog",
+      "coral_monocle",
+      "gus",
+      "blue_spectacles",
+      "lime_headphones"
+    ],
+    "events": [
+      {
+        "at": 0.2,
+        "kind": "move",
+        "x": 0.1,
+        "y": 0.9
+      },
+      {
+        "at": 0.4,
+        "kind": "down",
+        "x": 0.5,
+        "y": 0.5
+      },
+      {
+        "at": 0.5,
+        "kind": "move",
+        "x": 0.57,
+        "y": 0.43
+      },
+      {
+        "at": 0.9,
+        "kind": "move",
+        "x": 0.85,
+        "y": 0.15
+      },
+      {
+        "at": 1.1,
+        "kind": "move",
+        "x": 0.42,
+        "y": 0.59
+      },
+      {
+        "at": 1.3,
+        "kind": "up",
+        "x": 0.42,
+        "y": 0.59
+      },
+      {
+        "at": 1.5,
+        "kind": "down",
+        "x": 0.4,
+        "y": 0.6
+      },
+      {
+        "at": 1.6,
+        "kind": "move",
+        "x": 0.48,
+        "y": 0.52
+      },
+      {
+        "at": 1.8,
+        "kind": "cancel",
+        "x": 0.48,
+        "y": 0.52
+      },
+      {
+        "at": 2,
+        "kind": "move",
+        "x": 0.95,
+        "y": 0.05
+      }
+    ]
+  },
+  "body": {
+    "module": ".storybook/avatar-engine-next/gaze-controller.ts",
+    "test": "node --test scripts/test-avatar-gaze.mjs",
+    "passingTests": 8,
+    "scope": "Seven non-blue presets, neutral idle plus pointer events; not reaction/Computer activity",
+    "blue": "No hover response in paired native data; separate rigid drag controller",
+    "coordinateSpace": "Normalized original uncropped viewport, NOT fitted DOM cell",
+    "yawTarget": "(clamp(float32(x), 0, 1) - 0.5) * 0.11",
+    "pitchTarget": "(clamp(float32(y), 0, 1) - 0.5) * 0.07",
+    "spring": {
+      "type": "critically damped",
+      "omega": 22,
+      "displacement": "d = position - target",
+      "impulse": "j = velocity + omega * d",
+      "positionAfterDt": "target + (d + j * dt) * exp(-omega * dt)",
+      "velocityAfterDt": "(velocity - omega * j * dt) * exp(-omega * dt)"
+    },
+    "composition": "B * Ry(dragYaw + gazeYaw) * Rx(dragPitch + gazePitch) * inverse(B), B = Ry(8 degrees)",
+    "pivot": "Preserve paired idle body translation; custom rotation does not rotate the breathing translation about world origin",
+    "presentationOrder": "Compare current hover state; advance spring by frame dt; process observed input events. Hover has one additional presentation latency relative to direct drag.",
+    "maximumWorldElementError": 1.0957352680751598e-7,
+    "maximumNormalRelativeElementError": 1.8590396196257747e-7,
+    "comparisonTolerances": {
+      "world": 1e-6,
+      "normalRelative": 3e-7
+    },
+    "unchangedChannels": "Every part: DrawBlock fields 32 onward, complete FrameBlock and SkinBlock are exactly equal to paired idle",
+    "claimLimit": "Numeric body-transform agreement in this observation window, not whole-avatar pixel parity or proof for arbitrary input/activity"
+  },
+  "eyes": {
+    "status": "Implemented and integrated for neutral idle; reaction expression composition is separately gated",
+    "responseOmega": 55,
+    "observedAngularGains": {
+      "lime_frog": {
+        "yaw": 0.042,
+        "pitch": 0.028
+      },
+      "blue_spectacles": {
+        "yaw": 0.042,
+        "pitch": 0.028
+      },
+      "lime_headphones": {
+        "yaw": 0.238,
+        "pitch": 0.112
+      }
+    },
+    "projectedLinearMatrixRows": [
+      ["cos(yaw)", "sin(yaw)*sin(pitch)", "sin(yaw)*cos(pitch)"],
+      [0, "cos(pitch)", "-sin(pitch)"],
+      [0, 0, 1]
+    ],
+    "affectedParts": {
+      "lime_frog": [1, 2, 3, 4],
+      "blue_spectacles": [1, 2, 3, 4],
+      "lime_headphones": [1, 2],
+      "coral_monocle": [3, 4]
+    },
+    "notObservedBeyondBodyRigidTransform": ["alfred", "purple_heart", "gus"],
+    "unresolved": [
+      "Input arbitration and drag-driven reaction deformation need their own native controller; neither a rigid overlay nor suppressing drag reproduces it",
+      "Reactive-to-activity handoff and arbitrary action interruption remain separate from pose composition",
+      "The finite observed blink channels do not establish future stochastic blink timing"
+    ],
+    "module": ".storybook/avatar-engine-next/eye-gaze-controller.ts",
+    "profiles": ".storybook/avatar-engine-next/assets/eye-gaze-profiles.json",
+    "builder": "scripts/build-avatar-eye-gaze-profiles.mjs",
+    "test": "node --test scripts/test-avatar-eye-gaze.mjs",
+    "passingTests": 20,
+    "validatedInputs": [
+      "Separate horizontal and vertical 60 Hz observations for all four ocular presets",
+      "Mixed hover and drag at 30 Hz",
+      "High geometry diagonal held-out captures at 60 Hz",
+      "Frog coordinates outside [0,1], clamped before spring",
+      "Headphones eight-second constant gaze including hidden blinks"
+    ],
+    "geometryMapping": {
+      "0": "native quality 1, geometry-low.json",
+      "1": "native quality 2, geometry.json"
+    },
+    "profileDerivation": "Anchor from exported deformationCenter; half-size from existing authored-parts eye-effect parser. Headphones dimensions differ between LODs and must not be shared.",
+    "composition": "T(anchor + offsetXY) * projectedRotation * T(-anchor); postmultiply idle eye world, inverse-transpose the same correction for normals. Original depth/morph retained.",
+    "translationGains": {
+      "lime_frog": [0.07, -0.042],
+      "blue_spectacles": [0.07, -0.042],
+      "lime_headphones": [0.252, -0.14],
+      "coral_monocle": [0.098, -0.035]
+    },
+    "blink": "Frog/Spectacles invert smoothstep morph half-channels; Coral linear closure multiplied by 6 before smoothstep; Headphones external scalar. Openness multiplies angular and translation response.",
+    "headphonesHiddenBlink": {
+      "builder": "scripts/build-avatar-eye-blink.mjs",
+      "samples": 358,
+      "nativeStart": 3.683333333333333,
+      "nativeEnd": 9.633333333333333,
+      "runtime": "Independent eyeBlink channel on Headphones idle body; no runtime Frog dependency",
+      "evidence": "Every Frog source parameter equals direct observation at same nativeTime; Headphones ocular prediction over 481 frames independently validates closure",
+      "limit": "This proves the observed idle window; no arbitrary reaction or work blink phase inferred"
+    },
+    "maximumWorldElementError": 1.38e-7,
+    "maximumNormalRelativeElementError": 2.05e-7
+  },
+  "computerControllerRemaining": {
+    "evidence": ".local/avatar-work-controller/<preset>/{analysis,material-outro,outro-channels}.json",
+    "verified": [
+      "workingCycles delays Stop; it does not restart the Start clip",
+      "Alfred alternate Stop at 0.5/1.2/3.4 seconds and cycles2 all return to paired idle at Stop + 1.05 seconds",
+      "FrameBlock camera, keyboard referencePose/coverage and screen referencePose.x share exact Stop-relative curves across observed alternate Stops, including blue Stop1.2",
+      "Reaction interruption is accepted at Stop + 0.8166667 seconds before Computer visual return"
+    ],
+    "unresolved": [
+      "Longer work introduces another real screen row mesh; no full-state periodic work loop was established",
+      "Full alternate-Stop DrawBlocks do not match a shifted fixed outro; working phase and body/hand/eye transforms remain significant",
+      "Blue body x differs from the reusable Alfred outro candidate, so a universal body translation curve is unsupported",
+      "Do not repeat the finite seven-second clip or blend arbitrary stops and claim native equivalence"
+    ]
+  },
+  "activityInput": {
+    "test": "node --test scripts/test-avatar-eye-activities.mjs",
+    "passingTests": 12,
+    "work": "Headphones activities:true constructor ignores hover, down/move/up/cancel exactly in all Draw/Frame/Skin blocks before, during, and after Start/Stop within this activity-mode instance. Does not prove cross-mode handoff.",
+    "reactions": {
+      "source": ".local/avatar-eye-activities/<preset>/{reaction-baseline,reaction-gaze}-raw.json",
+      "sampleRate": 30,
+      "commandTime": 0.5,
+      "allSevenCore": "All block fields, defines, and vertex attributes exactly equal paired no-input reaction during suppression core",
+      "headphonesModel": "Superseded by the neutral-frame helper and hidden-blink contract above; older Headphones tests remain a discriminator for open-blink windows.",
+      "headphonesError": {
+        "world": 1.1818e-7,
+        "normalRelative": 1.8833e-7
+      },
+      "rejectedGeneralization": "Applying weighted rigid gaze around current body pivot fails Frog/Coral/Spectacles by 2.5e-5..5.1e-5 in world elements. Fixed initial pivot still fails up to 2.1e-5. No approximate controller was integrated.",
+      "timingLimit": "Observed direct public Character commands at nativeTime 2.5. Runtime clips were captured with native command 3 and have adapter presentation offsets. The measured 2.1-second core must be aligned to first post-command presentation, never by blindly subtracting from a runtime clip duration.",
+      "headphones60HzError": {
+        "world": 1.5133792952148895e-7,
+        "normalRelative": 2.8586644340578005e-7
+      },
+      "hiddenBlinkLimit": "Headphones incoming/outgoing hidden blink now validated with an additional command at native3 during active blink. Long-term stochastic recurrence is still not inferred.",
+      "drag": {
+        "alreadyHeld": "Reaction2 command at t0.5 returns3 when pointer down0 remains held after move0.1; no reaction starts.",
+        "acceptedThenDragged": "Reaction2 at0.5 returns0; down1, move1.1, up1.3. All blocks identical until t1.1; first differences t1.1166667 include world/normal and body signatureDeform index89. By1.4 indices89,90,91 differ. Neither suppressing drag nor applying a pure rigid delta preserves this observed reaction.",
+        "source": ".local/avatar-eye-activities/lime_headphones/reaction-input"
+      },
+      "composition": {
+        "module": ".storybook/avatar-engine-next/reaction-gaze.ts",
+        "test": "node --test scripts/test-avatar-reaction-gaze.mjs",
+        "passingTests": 10,
+        "scope": "All seven presets at30Hz with horizontal gaze; Headphones60Hz with target reversal during core and a separate command during active blink",
+        "neutralFrame": "T(weightedBreathingTranslation) * Ry(8deg) * S(currentSampledBodyScale)",
+        "breathingTranslation": "Frozen incoming idle translation multiplied by suppression strength during entry; contemporaneous paired idle translation multiplied by release strength during exit. Reaction translation is not the pivot.",
+        "body": "T(neutralTranslation) * B * Ry(weightedYaw) * Rx(weightedPitch) * inverse(B) * T(-neutralTranslation)",
+        "eyes": "E=inverse(neutralFrame)*originalEyeWorld; postmultiply E^-1*C*E, where C is the authored projected gaze correction. Inverse-transpose the resulting linear correction for normals.",
+        "maximumWorldElementError": 1.5133720054905098e-7,
+        "maximumNormalRelativeElementError": 2.8586644340578005e-7,
+        "unchanged": "Every original DrawBlock field32 onward, FrameBlock, SkinBlock, defines and vertex attributes remain equal to paired no-input reaction",
+        "remainingScope": "Direct capture numerical agreement. Does not alone prove runtime source command-phase parity, arbitrary action interruption, or whole-avatar rendered pixel equivalence."
+      },
+      "timingMetadata": {
+        "builder": "scripts/build-avatar-reaction-gaze-metadata.mjs",
+        "output": ".local/avatar-eye-activities/runtime-reaction-gaze-timing.json",
+        "sourceCommand": 3,
+        "frozenIdleNativeTime": 3.0166666666666666,
+        "transitionOriginNativeTime": 3.033333333333333,
+        "proof": "Detect first repeated breathing translation differing from contemporaneous idle. Headphones full entry/exit breathing envelope matches original translation within4.63e-11. Neighbor presentation offsets produce worse expression orientation alignment for all7; that comparison selects timing and is not expression parity across command phases."
+      },
+      "headphonesHiddenBlink": {
+        "capture": ".local/avatar-eye-activities/lime_headphones/reaction-phase3",
+        "commandNativeTime": 3,
+        "formula": "Entry closure = frozen incoming idle closure * suppression strength. Exit closure = live idle closure * release strength. Core gaze strength0.",
+        "worldMaximumError": 1.1751974138274335e-7,
+        "normalRelativeMaximumError": 2.2376052510875155e-7,
+        "runtimeChannelAlignment": "141 Frog idle frames native3..5.333 exactly match direct Frog parameters used to identify the Headphones scalar. Runtime freeze is3.0167, while the direct control freezes3.0; exporter must use source metadata, not copy direct timing.",
+        "regressionHazard": "closure0 was valid only in the earlier command2.5 observation. At source native3 the shared blink is active and must be represented.",
+        "sourceSha256": {
+          ".local/avatar-eye-activities/lime_headphones/reaction-phase3/reaction-baseline-raw.json": "7c216ac44db59f738dbbc644a11b434102b2af235dabb39e932f9ee65db3d799",
+          ".local/avatar-eye-activities/lime_headphones/reaction-phase3/reaction-gaze-raw.json": "3df7af9dc140f262b243551a8eb18a7986809ed72dd2793e9b36e114b769adeb",
+          ".local/avatar-gaze-extended/lime_frog/idle-raw.json": "4b0b04999adcd2ed7512f01b4ff04cad60b810c4c94b9c08890777bf2a99f700"
+        }
+      }
+    },
+    "sourceHashes": {
+      "orbit-characters.mjs": "f3ba670dadba954df1618af83fa314641a4cfddd3597aca93a191c264374eed7",
+      "orbit-characters.data": "ffefb69b44f815cccb5f07b4d951d479e527dbabdca68ad9986cf695f9b9c440",
+      "orbit-characters.wasm": "c15f3692305c1385a12524e877199ba279b8d53e6bd37a9e533d626f12fcb94b"
+    },
+    "reproduction": [
+      "Set BLOOM_PUPPETEER_MODULE=/home/nate/Oxy/Homiio/node_modules/puppeteer-core and CHROME_PATH=/home/nate/.cache/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell; Storybook runtime on6006.",
+      "AVATAR_EYE_PRESETS=alfred,purple_heart,lime_frog,coral_monocle,gus,blue_spectacles,lime_headphones AVATAR_SCENARIOS=reaction-baseline,reaction-gaze node scripts/capture-avatar-eye-activities.mjs",
+      "AVATAR_EYE_PRESETS=lime_headphones AVATAR_SAMPLE_RATE=60 AVATAR_EYE_REACTION_POINTER=1 node scripts/capture-avatar-eye-activities.mjs",
+      "node scripts/analyze-avatar-reaction-input.mjs",
+      "AVATAR_EYE_PRESETS=lime_headphones AVATAR_EYE_REACTION_PHASE3=1 node scripts/capture-avatar-eye-activities.mjs",
+      "node --test scripts/test-avatar-eye-activities.mjs",
+      "node scripts/build-avatar-reaction-gaze-metadata.mjs",
+      "node --test scripts/test-avatar-reaction-gaze.mjs"
+    ]
+  }
+}

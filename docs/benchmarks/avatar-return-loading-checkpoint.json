@@ -1,0 +1,720 @@
+{
+  "date": "2026-10-11",
+  "scope": "Exact observed action-to-idle handoff and lossless runtime motion packaging; full controller parity is still incomplete.",
+  "sourceHashes": {
+    ".storybook/avatar-engine-next/motion-controller.ts": "57120ffdfbe1827e199f291b025a724a329dfeeecdffb98e1b480ec5f225ab90",
+    ".storybook/avatar-engine-next/motion-catalog.ts": "eba6384f098bd6a8d0211579017e1d6d19bea493ef50602b0643f5504c9717ba",
+    ".storybook/avatar-engine-next/motion-binary.ts": "0d70ccf30ad3021d600fb7287ae31fa306c3f444a1f34a29daa6f3f3c17d86b6",
+    ".storybook/avatar-engine-next/motion.ts": "916a31c307cab120244063ba5c178215a3c5dd6e0116ba7f9331b11278d35ec2",
+    ".storybook/avatar-engine-next/authored-engine.ts": "2b79df1da246aca457654e9178e14bc0662ce016d513f49e4542f1a3f45264e6",
+    ".storybook/avatar-engine-next/assets/motion/computer-returns.json": "ce715a5dec85780f76a5fc1ba7ba80f28603c41069b49ae70228871a93b579cc"
+  },
+  "validation": {
+    "nodeTests": 73,
+    "nodeFailures": 0,
+    "storybookTypecheck": "pass",
+    "storybookHttp": 200
+  },
+  "returnEvidence": {
+    "schema": "bloom.avatar.computer-returns",
+    "version": 1,
+    "limitations": [
+      "Observed single-cycle Work episodes at native command time 3. Arbitrary command-phase entry and different workingCycles are not proven by these fixtures.",
+      "Exact full-block paired tail proves the native handoff, not unobserved future idle behavior."
+    ],
+    "presets": {
+      "blue_beret": {
+        "nativeStart": 3,
+        "nativeStop": 5.216666666666667,
+        "nativeReturn": 6.266666666666667,
+        "returnTime": 3.2666666666666666,
+        "nativeEnd": 10,
+        "exactTailFrames": 225,
+        "previousNonmatchingTime": 6.25,
+        "compared": [
+          "geometry-sha256 identity",
+          "draw method",
+          "shader defines",
+          "entire DrawBlock",
+          "entire FrameBlock",
+          "entire SkinBlock"
+        ],
+        "excludedChannels": [],
+        "idleTime": 4.083333333333334,
+        "idleNativeStart": 2.183333333333333,
+        "sampler": {
+          "matrixMax": 0,
+          "normalMax": 0,
+          "fieldMax": 0,
+          "baseParts": 7
+        },
+        "sources": {
+          "work": {
+            "path": ".local/avatar-computer-source/blue_beret/work-raw.json",
+            "sha256": "e528d835551e0faf7f8c5ffd445a17003c347debb103e77e35d83b9dd2598392"
+          },
+          "idle": {
+            "path": ".local/avatar-return-source/blue_beret/idle-raw.json",
+            "sha256": "bf0fd476dc6974678b2df560c662fc9b36068ffaaeb6ea303541a34187101000"
+          },
+          "motion": {
+            "path": ".storybook/avatar-engine-next/assets/motion/blue_beret.json",
+            "sha256": "d62023e031e37f2bf1ed6b1ea49965c59abda1d7ea27cf1d0bde213009607cbe"
+          },
+          "computer": {
+            "path": ".storybook/avatar-engine-next/assets/blue_beret/computer-motion.json",
+            "sha256": "3b3fe2c9eebd8dbb3dd44433c9e21c7110862fb80f5ee1ad1d05f7e2c3144389"
+          }
+        }
+      },
+      "alfred": {
+        "nativeStart": 3,
+        "nativeStop": 5.216666666666667,
+        "nativeReturn": 6.266666666666667,
+        "returnTime": 3.2666666666666666,
+        "nativeEnd": 10,
+        "exactTailFrames": 225,
+        "previousNonmatchingTime": 6.25,
+        "compared": [
+          "geometry-sha256 identity",
+          "draw method",
+          "shader defines",
+          "entire DrawBlock",
+          "entire FrameBlock",
+          "entire SkinBlock"
+        ],
+        "excludedChannels": [],
+        "idleTime": 2.5833333333333335,
+        "idleNativeStart": 3.683333333333333,
+        "sampler": {
+          "matrixMax": 1.0842021724855044e-19,
+          "normalMax": 0,
+          "fieldMax": 0,
+          "baseParts": 9
+        },
+        "sources": {
+          "work": {
+            "path": ".local/avatar-computer-source/alfred/work-raw.json",
+            "sha256": "9023bd872f0817a290ff29be4b983f3ebf123416bf456d629d7164c9cb0acc01"
+          },
+          "idle": {
+            "path": ".local/avatar-runtime-motion-actions/alfred/idle-raw.json",
+            "sha256": "239bbb065fd8f5481c2592f88eceb991b0f94c8c1ed0dcc73f5bd0ebd558b792"
+          },
+          "motion": {
+            "path": ".storybook/avatar-engine-next/assets/motion/alfred.json",
+            "sha256": "97390b7bde431f42dd5d0fe2200afba81cc16de5f3757fef6f16c9377cece4d7"
+          },
+          "computer": {
+            "path": ".storybook/avatar-engine-next/assets/alfred/computer-motion.json",
+            "sha256": "1f43a5a5209fe50f1eb56a4966d02ad06ead79b0ba2c6a03cd9bbad94b225232"
+          }
+        }
+      },
+      "purple_heart": {
+        "nativeStart": 3,
+        "nativeStop": 5.216666666666667,
+        "nativeReturn": 6.266666666666667,
+        "returnTime": 3.2666666666666666,
+        "nativeEnd": 10,
+        "exactTailFrames": 225,
+        "previousNonmatchingTime": 6.25,
+        "compared": [
+          "geometry-sha256 identity",
+          "draw method",
+          "shader defines",
+          "entire DrawBlock",
+          "entire FrameBlock",
+          "entire SkinBlock"
+        ],
+        "excludedChannels": [],
+        "idleTime": 2.5833333333333335,
+        "idleNativeStart": 3.683333333333333,
+        "sampler": {
+          "matrixMax": 1.0842021724855044e-19,
+          "normalMax": 0,
+          "fieldMax": 0,
+          "baseParts": 7
+        },
+        "sources": {
+          "work": {
+            "path": ".local/avatar-computer-source/purple_heart/work-raw.json",
+            "sha256": "febc9157e16fa79025d8e4c0c6119e81763670bf1f6fbfcc6f73166822728bb1"
+          },
+          "idle": {
+            "path": ".local/avatar-runtime-motion-actions/purple_heart/idle-raw.json",
+            "sha256": "c6ac8afc4e3c15de4531d6ae44b7d352f2c8dcbde628b2f8c689ff2a77dfcdf9"
+          },
+          "motion": {
+            "path": ".storybook/avatar-engine-next/assets/motion/purple_heart.json",
+            "sha256": "bc112b89b31df40905f9c29e78f3f49c299e2be1e8ca1c6009e486a031528b45"
+          },
+          "computer": {
+            "path": ".storybook/avatar-engine-next/assets/purple_heart/computer-motion.json",
+            "sha256": "b9ccd37d2c1cb9bcb6b9c54e366a5638b51614e6f54bb9af194b67b48499eb83"
+          }
+        }
+      },
+      "lime_frog": {
+        "nativeStart": 3,
+        "nativeStop": 5.216666666666667,
+        "nativeReturn": 6.266666666666667,
+        "returnTime": 3.2666666666666666,
+        "nativeEnd": 10,
+        "exactTailFrames": 225,
+        "previousNonmatchingTime": 6.25,
+        "compared": [
+          "geometry-sha256 identity",
+          "draw method",
+          "shader defines",
+          "entire DrawBlock",
+          "entire FrameBlock",
+          "entire SkinBlock"
+        ],
+        "excludedChannels": [],
+        "idleTime": 2.5833333333333335,
+        "idleNativeStart": 3.683333333333333,
+        "sampler": {
+          "matrixMax": 1.0842021724855044e-19,
+          "normalMax": 0,
+          "fieldMax": 0,
+          "baseParts": 8
+        },
+        "sources": {
+          "work": {
+            "path": ".local/avatar-computer-source/lime_frog/work-raw.json",
+            "sha256": "8bc0ef22272eda4f2af037edf98438be66f37d0da9ac61220af2b193ff47b1a2"
+          },
+          "idle": {
+            "path": ".local/avatar-runtime-motion-actions/lime_frog/idle-raw.json",
+            "sha256": "8fa85285775d5556d0f5ba94d19bb28cc0298f01c84eb0e4b311da64990844bb"
+          },
+          "motion": {
+            "path": ".storybook/avatar-engine-next/assets/motion/lime_frog.json",
+            "sha256": "9887b3d29bc89c2359ac7d3b76ba29e3af5682d5d11323515c8ba46f321f4d79"
+          },
+          "computer": {
+            "path": ".storybook/avatar-engine-next/assets/lime_frog/computer-motion.json",
+            "sha256": "fcae5c17ad61246972dc8ee687f18e07f92666513ef72558fee951ce2904ebfc"
+          }
+        }
+      },
+      "coral_monocle": {
+        "nativeStart": 3,
+        "nativeStop": 5.216666666666667,
+        "nativeReturn": 6.266666666666667,
+        "returnTime": 3.2666666666666666,
+        "nativeEnd": 10,
+        "exactTailFrames": 225,
+        "previousNonmatchingTime": 6.25,
+        "compared": [
+          "geometry-sha256 identity",
+          "draw method",
+          "shader defines",
+          "entire DrawBlock",
+          "entire FrameBlock",
+          "entire SkinBlock"
+        ],
+        "excludedChannels": [],
+        "idleTime": 2.5833333333333335,
+        "idleNativeStart": 3.683333333333333,
+        "sampler": {
+          "matrixMax": 1.0842021724855044e-19,
+          "normalMax": 0,
+          "fieldMax": 0,
+          "baseParts": 8
+        },
+        "sources": {
+          "work": {
+            "path": ".local/avatar-computer-source/coral_monocle/work-raw.json",
+            "sha256": "3b8217db1059da9c61e75f7c7f03453b3315b31d67379cde7b116dc425838740"
+          },
+          "idle": {
+            "path": ".local/avatar-runtime-motion-actions/coral_monocle/idle-raw.json",
+            "sha256": "65a8938bc8e4a2c38001e2057f24b06e0245c3f5dff4bf79c41efb5fe666a74c"
+          },
+          "motion": {
+            "path": ".storybook/avatar-engine-next/assets/motion/coral_monocle.json",
+            "sha256": "654af990773962a866808cb8b831fb7e4c87d50ea7ef53455203534ead76c55c"
+          },
+          "computer": {
+            "path": ".storybook/avatar-engine-next/assets/coral_monocle/computer-motion.json",
+            "sha256": "605815e4a8d5d4c9817a68158eb30e237466d7a899525fafeb3805a582f95af6"
+          }
+        }
+      },
+      "gus": {
+        "nativeStart": 3,
+        "nativeStop": 5.216666666666667,
+        "nativeReturn": 6.266666666666667,
+        "returnTime": 3.2666666666666666,
+        "nativeEnd": 10,
+        "exactTailFrames": 225,
+        "previousNonmatchingTime": 6.25,
+        "compared": [
+          "geometry-sha256 identity",
+          "draw method",
+          "shader defines",
+          "entire DrawBlock",
+          "entire FrameBlock",
+          "entire SkinBlock"
+        ],
+        "excludedChannels": [],
+        "idleTime": 2.5833333333333335,
+        "idleNativeStart": 3.683333333333333,
+        "sampler": {
+          "matrixMax": 1.0842021724855044e-19,
+          "normalMax": 0,
+          "fieldMax": 0,
+          "baseParts": 5
+        },
+        "sources": {
+          "work": {
+            "path": ".local/avatar-computer-source/gus/work-raw.json",
+            "sha256": "fe497560be31bcb34dbed0589adf23a75b08e30aaa5ae603c1ba0839442dd8b6"
+          },
+          "idle": {
+            "path": ".local/avatar-runtime-motion-actions/gus/idle-raw.json",
+            "sha256": "367484324cd18606d19080b0a8c399b4a9bca4edd7e5d02a0d5af75f2dcda02d"
+          },
+          "motion": {
+            "path": ".storybook/avatar-engine-next/assets/motion/gus.json",
+            "sha256": "e0032cc30e1cc14cdbcdd203f64c12d96428a2a84237d372d48175c4c0cadcb0"
+          },
+          "computer": {
+            "path": ".storybook/avatar-engine-next/assets/gus/computer-motion.json",
+            "sha256": "0db66ca70959fd582a79826311b79af263627c970959ee0f56be41d4dd3a5bed"
+          }
+        }
+      },
+      "blue_spectacles": {
+        "nativeStart": 3,
+        "nativeStop": 5.216666666666667,
+        "nativeReturn": 6.266666666666667,
+        "returnTime": 3.2666666666666666,
+        "nativeEnd": 10,
+        "exactTailFrames": 225,
+        "previousNonmatchingTime": 6.25,
+        "compared": [
+          "geometry-sha256 identity",
+          "draw method",
+          "shader defines",
+          "entire DrawBlock",
+          "entire FrameBlock",
+          "entire SkinBlock"
+        ],
+        "excludedChannels": [],
+        "idleTime": 2.5833333333333335,
+        "idleNativeStart": 3.683333333333333,
+        "sampler": {
+          "matrixMax": 1.0842021724855044e-19,
+          "normalMax": 0,
+          "fieldMax": 0,
+          "baseParts": 11
+        },
+        "sources": {
+          "work": {
+            "path": ".local/avatar-computer-source/blue_spectacles/work-raw.json",
+            "sha256": "64da7947bcdbb3b2c70fcf211dc6b7ac2a14551daa4f3e5067dee586882c101c"
+          },
+          "idle": {
+            "path": ".local/avatar-runtime-motion-actions/blue_spectacles/idle-raw.json",
+            "sha256": "36c91794e7dae8fb8206b0c324e808c2857921b5efaa1fa15f4ae6ab18d95a3d"
+          },
+          "motion": {
+            "path": ".storybook/avatar-engine-next/assets/motion/blue_spectacles.json",
+            "sha256": "fd690c0731b5356c243229ca803de89bd81e09aa4f269bddf1f93b062fe36970"
+          },
+          "computer": {
+            "path": ".storybook/avatar-engine-next/assets/blue_spectacles/computer-motion.json",
+            "sha256": "85d740ad5b43cb32770fbfc3e4e982099232c7b5fdb5c50a80dacd0119d8954e"
+          }
+        }
+      },
+      "lime_headphones": {
+        "nativeStart": 3,
+        "nativeStop": 5.216666666666667,
+        "nativeReturn": 6.266666666666667,
+        "returnTime": 3.2666666666666666,
+        "nativeEnd": 10,
+        "exactTailFrames": 225,
+        "previousNonmatchingTime": 6.25,
+        "compared": [
+          "geometry-sha256 identity",
+          "draw method",
+          "shader defines",
+          "entire DrawBlock",
+          "entire FrameBlock",
+          "entire SkinBlock"
+        ],
+        "excludedChannels": [],
+        "idleTime": 2.5833333333333335,
+        "idleNativeStart": 3.683333333333333,
+        "sampler": {
+          "matrixMax": 1.0842021724855044e-19,
+          "normalMax": 0,
+          "fieldMax": 0,
+          "baseParts": 9
+        },
+        "sources": {
+          "work": {
+            "path": ".local/avatar-computer-source/lime_headphones/work-raw.json",
+            "sha256": "ffaefea0a5352ee9d88e88c7476cab5a395776f4a50cae999756ff9401aa14d6"
+          },
+          "idle": {
+            "path": ".local/avatar-runtime-motion-actions/lime_headphones/idle-raw.json",
+            "sha256": "e1ad361161685f4247714b9231ef5dbbd7d1839c40995b8889dd4825da5575cd"
+          },
+          "motion": {
+            "path": ".storybook/avatar-engine-next/assets/motion/lime_headphones.json",
+            "sha256": "1211c5167eca9a1e01bb282f408adbccc754dc53783baefc1d92727ee33e4c4d"
+          },
+          "computer": {
+            "path": ".storybook/avatar-engine-next/assets/lime_headphones/computer-motion.json",
+            "sha256": "92da9e788e108a5849cbff9cc8a6e0b233409771bbed11fd8476fe2938a4564b"
+          }
+        }
+      }
+    }
+  },
+  "returnBrowser": {
+    "cases": [
+      {
+        "preset": "blue_beret",
+        "kind": "work",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "alfred",
+        "kind": "work",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "alfred",
+        "kind": "reaction",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 4
+      },
+      {
+        "preset": "purple_heart",
+        "kind": "work",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "purple_heart",
+        "kind": "reaction",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "lime_frog",
+        "kind": "work",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "lime_frog",
+        "kind": "reaction",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "coral_monocle",
+        "kind": "work",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "coral_monocle",
+        "kind": "reaction",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "gus",
+        "kind": "work",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "gus",
+        "kind": "reaction",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "blue_spectacles",
+        "kind": "work",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "blue_spectacles",
+        "kind": "reaction",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "lime_headphones",
+        "kind": "work",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      },
+      {
+        "preset": "lime_headphones",
+        "kind": "reaction",
+        "cycles": 3,
+        "exactEndpointPixels": true,
+        "neighborPixelsChanged": 0,
+        "resumedFrames": 3
+      }
+    ],
+    "errors": [],
+    "forbidden": [],
+    "binaryLoads": 8
+  },
+  "packedMotion": {
+    "originalBytes": 37699679,
+    "binaryBytes": 9521040,
+    "originalGzipBytes": 8144801,
+    "binaryGzipBytes": 1570778,
+    "originalToBinaryReduction": 0.7474503695376292,
+    "gzipReduction": 0.8071434771702832,
+    "sampledPoseComparisons": 984,
+    "everyNumericValueCheckedWithObjectIs": true,
+    "bundles": [
+      {
+        "preset": "blue_beret",
+        "originalBytes": 4825164,
+        "binaryBytes": 1453072,
+        "originalGzipBytes": 921144,
+        "binaryGzipBytes": 273863,
+        "sha256": "a015cb009adf4679b460735d620fcfd6775cc31e52fcf6e600174b34eeb0ae00"
+      },
+      {
+        "preset": "alfred",
+        "originalBytes": 4721569,
+        "binaryBytes": 1119464,
+        "originalGzipBytes": 1082683,
+        "binaryGzipBytes": 189956,
+        "sha256": "438092c2e92525575853a409c326fc9bd9007021c9ba130bf5427265c864e5b0"
+      },
+      {
+        "preset": "purple_heart",
+        "originalBytes": 4111116,
+        "binaryBytes": 998520,
+        "originalGzipBytes": 891092,
+        "binaryGzipBytes": 152795,
+        "sha256": "7527ae54660eeee0b8368108ce05467e9e74412b84c80de07cd270559b05f36a"
+      },
+      {
+        "preset": "lime_frog",
+        "originalBytes": 4980991,
+        "binaryBytes": 1264568,
+        "originalGzipBytes": 1047681,
+        "binaryGzipBytes": 201605,
+        "sha256": "f2aed6c9cd189e178c2765d34c2d5f80685ef644bea954cc546ccaff17f6443a"
+      },
+      {
+        "preset": "coral_monocle",
+        "originalBytes": 4914176,
+        "binaryBytes": 1237280,
+        "originalGzipBytes": 1054453,
+        "binaryGzipBytes": 191705,
+        "sha256": "8b265a9b1297c48a1d04ed5a56f5431776c1fa27e00ea0a53a3db13c1e13f058"
+      },
+      {
+        "preset": "gus",
+        "originalBytes": 3490391,
+        "binaryBytes": 997384,
+        "originalGzipBytes": 656464,
+        "binaryGzipBytes": 147821,
+        "sha256": "9ccf67432983201a3fc289c7835a9128fb9dac84fc7488ba0a8b3b7e1ebc2007"
+      },
+      {
+        "preset": "blue_spectacles",
+        "originalBytes": 5899244,
+        "binaryBytes": 1278608,
+        "originalGzipBytes": 1418567,
+        "binaryGzipBytes": 204115,
+        "sha256": "56133d15455ecea5a7e4888e2b63abbe611ecafb7bc13b797b0c63203d38ddcc"
+      },
+      {
+        "preset": "lime_headphones",
+        "originalBytes": 4757028,
+        "binaryBytes": 1172144,
+        "originalGzipBytes": 1072717,
+        "binaryGzipBytes": 208918,
+        "sha256": "56e4b04e36cdb2933000b4ae5697746d861bf3df329211b20eafe723f82035a0"
+      }
+    ]
+  },
+  "regression": {
+    "computerImageCases": 40,
+    "computerUiReturns": [
+      {
+        "preset": "blue_beret",
+        "motion": "idle",
+        "visibleComputerParts": 0
+      },
+      {
+        "preset": "alfred",
+        "motion": "idle",
+        "visibleComputerParts": 0
+      },
+      {
+        "preset": "purple_heart",
+        "motion": "idle",
+        "visibleComputerParts": 0
+      },
+      {
+        "preset": "lime_frog",
+        "motion": "idle",
+        "visibleComputerParts": 0
+      },
+      {
+        "preset": "coral_monocle",
+        "motion": "idle",
+        "visibleComputerParts": 0
+      },
+      {
+        "preset": "gus",
+        "motion": "idle",
+        "visibleComputerParts": 0
+      },
+      {
+        "preset": "blue_spectacles",
+        "motion": "idle",
+        "visibleComputerParts": 0
+      },
+      {
+        "preset": "lime_headphones",
+        "motion": "idle",
+        "visibleComputerParts": 0
+      }
+    ],
+    "mixedComputer": true,
+    "mixedActions": true,
+    "computerErrors": [],
+    "originalRequests": [],
+    "reactionPresets": 8,
+    "handColorCases": 16,
+    "lifecycle": {
+      "offscreenFramesStable": true,
+      "resume": true,
+      "contextRestoredPixelsIdentical": true,
+      "resources": {
+        "geometries": 9,
+        "textures": 18,
+        "programs": 7
+      },
+      "disposal": true,
+      "errors": []
+    }
+  },
+  "hardware": {
+    "renderer": {
+      "vendor": "Google Inc. (NVIDIA)",
+      "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    "scenario": "Eight presets using recovered original work animation",
+    "caveat": "Original small-avatar meshes/materials. Work samples the first two seconds of simultaneous Computer episodes; idle samples five seconds. This does not prove complete interaction parity, laptop power or thermal behavior. Consult webglRenderer and GPU evidence for the actual backend. Draw calls include depth, AO, color and presentation.",
+    "cssPixelsPerAvatar": 112,
+    "frameRateLimit": 60,
+    "cases": [
+      {
+        "count": 8,
+        "sampleMilliseconds": 2001.9999999999998,
+        "renderedFrames": 117,
+        "measuredFramesPerSecond": 58.44155844155845,
+        "drawCalls": 209,
+        "resources": {
+          "geometries": 138,
+          "textures": 148,
+          "programs": 8
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true
+      },
+      {
+        "count": 48,
+        "sampleMilliseconds": 2008.2000000476837,
+        "renderedFrames": 121,
+        "measuredFramesPerSecond": 60.25296285087487,
+        "drawCalls": 209,
+        "resources": {
+          "geometries": 138,
+          "textures": 148,
+          "programs": 8
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true
+      },
+      {
+        "count": 200,
+        "sampleMilliseconds": 2018.7000000476835,
+        "renderedFrames": 114,
+        "measuredFramesPerSecond": 56.47198692094279,
+        "drawCalls": 209,
+        "resources": {
+          "geometries": 138,
+          "textures": 148,
+          "programs": 8
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true
+      }
+    ]
+  },
+  "limitations": [
+    "Computer entry from arbitrary phases, early Stop, workingCycles and interruptions are not yet native-equivalent.",
+    "Blue reaction intentionally holds its original terminal pose; it does not return to idle.",
+    "Existing small Computer raster residuals remain; whole-engine pixel equality is not claimed.",
+    "Gaze/drag and freely mixed parts remain pending.",
+    "Binary/gzip byte reductions do not establish cold-start latency, laptop performance, battery use or a statistically significant FPS gain.",
+    "Hardware samples are warmed, local, approximately two seconds on an RTX 5090 at 112 CSS pixels and DPR1."
+  ]
+}

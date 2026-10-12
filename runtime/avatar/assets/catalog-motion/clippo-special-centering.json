@@ -1,0 +1,37 @@
+{
+  "schema": "bloom.avatar.catalog-construction-centering",
+  "version": 1,
+  "construction": "clippo-special",
+  "detail": "high",
+  "referenceEyes": "todd",
+  "centerDelta": [
+    -0.00627657791421716,
+    0
+  ],
+  "application": "Add to the target-minus-baseline scene center before applying the existing native body and contact-shadow centering envelopes.",
+  "evidence": {
+    "frames": 241,
+    "nativeTimeRange": [
+      3,
+      7
+    ],
+    "worldXMax": 2.704210381592213e-8,
+    "contactShadowMax": 4.413544429926475e-8,
+    "otherPropMax": 0,
+    "derivationTime": 6.016666666666667,
+    "sources": [
+      {
+        "path": ".local/avatar-catalog-clippo-special/work-raw.json",
+        "sha256": "e6146a69ddcae8b2507b9cce42c8004f3ed9955dc4ab3525051a5282e8f2ae7f"
+      },
+      {
+        "path": ".local/avatar-catalog-computer/clippo/work-raw.json",
+        "sha256": "d0721381b1a5db83646baeeda6d3dc06d5f2eccb23b5f679840ee2a28b304ac4"
+      }
+    ]
+  },
+  "limitations": [
+    "Body and both contact shadows validated for all sampled frames; all other prop fields unchanged.",
+    "High-detail source; low-detail body-ground and scene bounds are a distinct native observation."
+  ]
+}

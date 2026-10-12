@@ -18,7 +18,10 @@ const shapes = JSON.parse(
     { cwd: new URL('..', import.meta.url), encoding: 'utf8' },
   ),
 );
-const browser = await chromium.launch({ args: ['--no-sandbox'] });
+const browser = await chromium.launch({
+  executablePath: process.env.CHROME_PATH,
+  args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
+});
 const page = await browser.newPage({
   viewport: { width: 1400, height: 1200 },
   reducedMotion: 'reduce',
@@ -104,7 +107,22 @@ try {
     assert.equal(await option.isEnabled(), true);
     await option.click();
   };
-  await settle();
+  // The default Todd now mounts the new backend; the cross-part selection
+  // below deliberately enters compatibility before exercising all 21 shapes.
+  await page.waitForFunction(
+    () => {
+      const c = document.querySelector(
+        '[data-testid="universal-avatar-preview"] canvas[data-avatar-engine="new"]',
+      );
+      if (!c || c.width < 2) return false;
+      return c
+        .getContext('2d')
+        .getImageData(0, 0, c.width, c.height)
+        .data.some((v, i) => i % 4 === 3 && v > 32);
+    },
+    undefined,
+    { timeout: 90000 },
+  );
   assert.equal(
     await page.getByRole('slider', { name: 'Eye spacing', exact: true }).count(),
     0,

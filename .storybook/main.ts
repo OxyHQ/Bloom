@@ -10,7 +10,11 @@ const __dirname = path.dirname(__filename);
 const config: StorybookConfig = {
   // `templates/` holds full-screen templates as stories only: composed
   // from Bloom's components, never published (outside `src`, not in `files`).
-  stories: ['../src/**/*.stories.@(ts|tsx|mdx)', '../templates/**/*.stories.@(ts|tsx)'],
+  stories: [
+    './AvatarEngineNext.stories.tsx',
+    '../src/**/*.stories.@(ts|tsx|mdx)',
+    '../templates/**/*.stories.@(ts|tsx)',
+  ],
   addons: ['@storybook/addon-docs'],
   staticDirs: [{ from: '../assets/character-runtime', to: '/bloom-character' }],
   framework: {
@@ -65,7 +69,7 @@ const config: StorybookConfig = {
         tailwindcss(),
         {
           name: 'bloom-character-runtime-reload',
-          // Static ESM/WASM assets do not participate in React Fast Refresh.
+          // Generated ESM assets do not participate in React Fast Refresh.
           // Reload the document so an edited adapter cannot mix with cached
           // engine modules or capability keys from the previous revision.
           configureServer(server: ViteDevServer) {

@@ -1,11 +1,6 @@
 import { avatarHex } from '../avatar-color';
-import { legacyContours } from '../legacy-contours';
-import {
-  legacyCharacterRecipe,
-  legacyRecipe,
-  legacyRecipeUnsupported,
-  radialContour,
-} from '../legacy-recipe';
+import { avatarContours } from '../avatar-contours';
+import { legacyCharacterRecipe, legacyRecipe, radialContour } from '../legacy-recipe';
 import { DEFAULT_CONFIG, EYES, FOLD_CONFIG, type AvatarConfig } from '../model';
 
 const recipe = (patch: Partial<AvatarConfig> = {}) => ({
@@ -32,16 +27,15 @@ describe('legacy appearance migration', () => {
   });
 
   it.each([{ family: 'alien' }, { family: 'mascot' }, { face: false }] as Partial<AvatarConfig>[])(
-    'keeps unsupported appearances on their existing renderer: %p',
+    'normalizes every saved appearance to the one renderer: %p',
     (patch) => {
-      expect(legacyRecipeUnsupported(recipe(patch))).toBe(true);
+      expect(() => legacyRecipe(recipe(patch))).not.toThrow();
     },
   );
 
   it('accepts ordinary expressions without changing the saved appearance', () => {
     const config = Object.freeze(recipe({ eyes: 'wink', expression: 100 }));
     const before = JSON.stringify(config);
-    expect(legacyRecipeUnsupported(config)).toBe(false);
     const migrated = legacyRecipe(config);
     expect(JSON.stringify(config)).toBe(before);
     expect(migrated.patch.bodyColor).toBe(avatarHex(config));
@@ -110,7 +104,7 @@ describe('legacy appearance migration', () => {
   });
 
   it('samples the circular contour from positive X without rotation or scaling', () => {
-    const sampled = radialContour(legacyContours(recipe({ shape: 'circle' })), 180);
+    const sampled = radialContour(avatarContours(recipe({ shape: 'circle' })), 180);
     sampled.forEach(([x, y], i) => {
       const angle = (i * Math.PI * 2) / 180;
       expect(x).toBeCloseTo(Math.cos(angle), 10);
@@ -229,4 +223,15 @@ describe('legacy appearance migration', () => {
       });
     },
   );
+});
+
+it('retains Alien contours and explicit faceless identity without changing saved data', () => {
+  for (const alienShape of ['classic', 'round', 'long'] as const) {
+    const config = recipe({ family: 'alien', alienShape });
+    const before = JSON.stringify(config);
+    expect(legacyRecipe(config)).toMatchObject({ eyes: 'alien' });
+    expect(legacyRecipe(config).points).toHaveLength(256);
+    expect(JSON.stringify(config)).toBe(before);
+  }
+  expect(legacyRecipe(recipe({ face: false })).eyes).toBe('none');
 });

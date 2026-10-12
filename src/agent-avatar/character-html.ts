@@ -9,6 +9,7 @@ export function characterHtml(runtimeUrl: string, props: unknown) {
   return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}canvas{display:block;width:100%;height:100%;touch-action:none}</style></head><body><canvas id="avatar"></canvas><script type="module">
 let controller, latest=${scriptJson(props)};
 const report = type => window.ReactNativeWebView.postMessage(type);
+window.captureAvatar = id => { let uri=null; try { if(controller) uri=document.querySelector('canvas').toDataURL('image/png'); } catch {} report('snapshot:'+JSON.stringify({id,uri})); };
 window.updateCharacter = value => { latest=value; try { controller?.update(value); } catch { report('error'); } };
 try {
  const {createAvatar}=await import(${scriptJson(runtimeUrl)});

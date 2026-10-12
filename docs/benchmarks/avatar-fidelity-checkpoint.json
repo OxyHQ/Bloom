@@ -1,0 +1,784 @@
+{
+  "status": "experimental-not-complete-parity",
+  "visual": {
+    "stats": {
+      "ready": true,
+      "renderer": "original-assets-three",
+      "parity": false,
+      "missing": [
+        "original animation controllers",
+        "remaining presets"
+      ],
+      "count": 1,
+      "frames": 1,
+      "observedFrameRate": 0,
+      "columns": 1,
+      "rows": 1,
+      "width": 320,
+      "height": 320,
+      "requiredHeight": 320,
+      "pixelRatio": 1,
+      "resources": {
+        "geometries": 9,
+        "textures": 9,
+        "programs": 7
+      },
+      "contexts": 1,
+      "drawCalls": 16,
+      "triangles": 47792
+    },
+    "comparison": {
+      "width": 320,
+      "height": 320,
+      "meanAbsoluteChannelError": 0.232041015625,
+      "foregroundMeanAbsoluteChannelError": 0.5462298344112003,
+      "foregroundPixels": 42213,
+      "maxChannelError": 40,
+      "changedPixels": 30808,
+      "bounds": [
+        {
+          "minX": 57,
+          "minY": 29,
+          "maxX": 264,
+          "maxY": 291
+        },
+        {
+          "minX": 57,
+          "minY": 29,
+          "maxX": 264,
+          "maxY": 291
+        }
+      ]
+    },
+    "errors": []
+  },
+  "crowd": {
+    "caveat": "Headless software rendering (SwiftShader), not hardware GPU or power validation. Authored meshes/materials with prototype motion; this gate does not establish full animation/interaction parity. Draw calls include depth, AO, color and presentation.",
+    "requestedSampleMilliseconds": 5000,
+    "cssPixelsPerAvatar": 112,
+    "cases": [
+      {
+        "count": 1,
+        "readyMilliseconds": 1820,
+        "sampleMilliseconds": 5017.89999999851,
+        "renderedFrames": 301,
+        "measuredFramesPerSecond": 59.98525279501174,
+        "engineReportedFramesPerSecond": 54.68276606121492,
+        "mainThreadSeconds": 4.457886,
+        "cpuSampleMilliseconds": 5048.963000001095,
+        "drawCalls": 16,
+        "triangles": 39400,
+        "resources": {
+          "geometries": 9,
+          "textures": 9,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 112,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 1,
+        "uniquePhases": 1,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true,
+        "paintedPixelsPerAvatar": {
+          "min": 5286,
+          "max": 5286
+        }
+      },
+      {
+        "count": 24,
+        "readyMilliseconds": 3639,
+        "sampleMilliseconds": 5097.30000000447,
+        "renderedFrames": 21,
+        "measuredFramesPerSecond": 4.119828144308082,
+        "engineReportedFramesPerSecond": 3.860478341944406,
+        "mainThreadSeconds": 5.580208000000001,
+        "cpuSampleMilliseconds": 5580.774999994901,
+        "drawCalls": 16,
+        "triangles": 945508,
+        "resources": {
+          "geometries": 9,
+          "textures": 9,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 336,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 24,
+        "uniquePhases": 24,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true,
+        "paintedPixelsPerAvatar": {
+          "min": 5250,
+          "max": 5295
+        }
+      },
+      {
+        "count": 48,
+        "readyMilliseconds": 5542,
+        "sampleMilliseconds": 5254.5,
+        "renderedFrames": 11,
+        "measuredFramesPerSecond": 2.0934437149110288,
+        "engineReportedFramesPerSecond": 1.9799934574129234,
+        "mainThreadSeconds": 6.201201,
+        "cpuSampleMilliseconds": 6201.561999994738,
+        "drawCalls": 16,
+        "triangles": 1891012,
+        "resources": {
+          "geometries": 9,
+          "textures": 9,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 560,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 48,
+        "uniquePhases": 48,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true,
+        "paintedPixelsPerAvatar": {
+          "min": 5250,
+          "max": 5296
+        }
+      },
+      {
+        "count": 100,
+        "readyMilliseconds": 9650,
+        "sampleMilliseconds": 5902.5,
+        "renderedFrames": 6,
+        "measuredFramesPerSecond": 1.0165184243964422,
+        "engineReportedFramesPerSecond": 0.9770488916414847,
+        "mainThreadSeconds": 7.859285999999999,
+        "cpuSampleMilliseconds": 7859.464000001026,
+        "drawCalls": 16,
+        "triangles": 3939604,
+        "resources": {
+          "geometries": 9,
+          "textures": 9,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 1120,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 100,
+        "uniquePhases": 100,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true,
+        "paintedPixelsPerAvatar": {
+          "min": 5244,
+          "max": 5296
+        }
+      }
+    ],
+    "gpu": [
+      {
+        "vendorId": 65535,
+        "deviceId": 65535,
+        "vendorString": "Google Inc. (Google)",
+        "deviceString": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)",
+        "driverVendor": "SwANGLE",
+        "driverVersion": "5.0.0"
+      }
+    ],
+    "isolation": "Second complete run after closing the concurrent UI browser and restarting Storybook; no concurrent Chrome or HMR during this run."
+  },
+  "mixedCatalog": {
+    "comparisons": [
+      {
+        "preset": "blue_beret",
+        "foregroundMeanAbsoluteChannelError": 0.5599775740490686,
+        "maxError": 15,
+        "bounds": [
+          {
+            "minX": 57,
+            "minY": 29,
+            "maxX": 264,
+            "maxY": 291
+          },
+          {
+            "minX": 57,
+            "minY": 29,
+            "maxX": 264,
+            "maxY": 291
+          }
+        ]
+      },
+      {
+        "preset": "alfred",
+        "foregroundMeanAbsoluteChannelError": 0.7909520534268155,
+        "maxError": 24,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 34,
+            "maxX": 290,
+            "maxY": 287
+          },
+          {
+            "minX": 30,
+            "minY": 34,
+            "maxX": 290,
+            "maxY": 287
+          }
+        ]
+      },
+      {
+        "preset": "purple_heart",
+        "foregroundMeanAbsoluteChannelError": 0.6561973917127272,
+        "maxError": 17,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 38,
+            "maxX": 291,
+            "maxY": 282
+          },
+          {
+            "minX": 30,
+            "minY": 38,
+            "maxX": 291,
+            "maxY": 282
+          }
+        ]
+      },
+      {
+        "preset": "lime_frog",
+        "foregroundMeanAbsoluteChannelError": 0.6365287317335142,
+        "maxError": 38,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 43,
+            "maxX": 291,
+            "maxY": 278
+          },
+          {
+            "minX": 30,
+            "minY": 43,
+            "maxX": 291,
+            "maxY": 278
+          }
+        ]
+      },
+      {
+        "preset": "coral_monocle",
+        "foregroundMeanAbsoluteChannelError": 0.5530015035421878,
+        "maxError": 14,
+        "bounds": [
+          {
+            "minX": 31,
+            "minY": 31,
+            "maxX": 290,
+            "maxY": 289
+          },
+          {
+            "minX": 31,
+            "minY": 31,
+            "maxX": 290,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "gus",
+        "foregroundMeanAbsoluteChannelError": 0.5616621674626797,
+        "maxError": 18,
+        "bounds": [
+          {
+            "minX": 61,
+            "minY": 29,
+            "maxX": 260,
+            "maxY": 290
+          },
+          {
+            "minX": 61,
+            "minY": 29,
+            "maxX": 260,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_spectacles",
+        "foregroundMeanAbsoluteChannelError": 0.8328838053377288,
+        "maxError": 30,
+        "bounds": [
+          {
+            "minX": 55,
+            "minY": 29,
+            "maxX": 265,
+            "maxY": 290
+          },
+          {
+            "minX": 55,
+            "minY": 29,
+            "maxX": 265,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "lime_headphones",
+        "foregroundMeanAbsoluteChannelError": 0.7997155049786628,
+        "maxError": 43,
+        "bounds": [
+          {
+            "minX": 36,
+            "minY": 30,
+            "maxX": 285,
+            "maxY": 290
+          },
+          {
+            "minX": 36,
+            "minY": 30,
+            "maxX": 285,
+            "maxY": 290
+          }
+        ]
+      }
+    ],
+    "initial": {
+      "buffers": 443,
+      "resources": {
+        "geometries": 66,
+        "textures": 17,
+        "programs": 11
+      },
+      "drawCalls": 121,
+      "detail": "high"
+    },
+    "warmed": {
+      "buffers": 817,
+      "resources": {
+        "geometries": 130,
+        "textures": 24,
+        "programs": 11
+      },
+      "drawCalls": 121,
+      "detail": "low"
+    },
+    "cleanup": {
+      "buffers": 0,
+      "resources": {
+        "geometries": 0,
+        "textures": 0,
+        "programs": 0
+      },
+      "drawCalls": 108,
+      "detail": "low"
+    },
+    "errors": [],
+    "forbidden": [],
+    "note": "Eight presets at320CSS/DPR1; stable resources after warming original small/large mesh levels. 8/24/48 instance changes at112CSS. Functional gate, not a mixed-geometry throughput measurement."
+  },
+  "lifecycle": {
+    "offscreenFramesStable": true,
+    "resume": true,
+    "contextRestoredPixelsIdentical": true,
+    "resources": {
+      "geometries": 9,
+      "textures": 17,
+      "programs": 7
+    },
+    "disposal": true,
+    "errors": []
+  },
+  "currentCrowd": {
+    "caveat": "Isolated SwiftShader run. Original small-avatar meshes at112CSS/DPR1, recovered blue idle clip with independent phases/colors. Not a hardware GPU/battery result, mixed-model/action result, or full animation-parity proof.",
+    "requestedSampleMilliseconds": 5000,
+    "cssPixelsPerAvatar": 112,
+    "cases": [
+      {
+        "count": 1,
+        "readyMilliseconds": 1727,
+        "sampleMilliseconds": 5002.79999999702,
+        "renderedFrames": 300,
+        "measuredFramesPerSecond": 59.96641880550466,
+        "engineReportedFramesPerSecond": 55.04090471607297,
+        "mainThreadSeconds": 2.9597719999999996,
+        "cpuSampleMilliseconds": 5004.516000000876,
+        "drawCalls": 16,
+        "triangles": 20616,
+        "resources": {
+          "geometries": 9,
+          "textures": 17,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 112,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 1,
+        "uniquePhases": 1,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true,
+        "paintedPixelsPerAvatarRange": [
+          5303,
+          5303
+        ]
+      },
+      {
+        "count": 24,
+        "readyMilliseconds": 2699,
+        "sampleMilliseconds": 5050.70000000298,
+        "renderedFrames": 39,
+        "measuredFramesPerSecond": 7.721701942300472,
+        "engineReportedFramesPerSecond": 7.210609278457505,
+        "mainThreadSeconds": 5.311047,
+        "cpuSampleMilliseconds": 5311.921999993501,
+        "drawCalls": 16,
+        "triangles": 494692,
+        "resources": {
+          "geometries": 9,
+          "textures": 17,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 336,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 24,
+        "uniquePhases": 24,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true,
+        "paintedPixelsPerAvatarRange": [
+          5274,
+          5317
+        ]
+      },
+      {
+        "count": 48,
+        "readyMilliseconds": 3631,
+        "sampleMilliseconds": 5018.29999999702,
+        "renderedFrames": 20,
+        "measuredFramesPerSecond": 3.9854133870059334,
+        "engineReportedFramesPerSecond": 3.7502122279192616,
+        "mainThreadSeconds": 5.517593000000001,
+        "cpuSampleMilliseconds": 5518.071999998938,
+        "drawCalls": 16,
+        "triangles": 989380,
+        "resources": {
+          "geometries": 9,
+          "textures": 17,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 560,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 48,
+        "uniquePhases": 48,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true,
+        "paintedPixelsPerAvatarRange": [
+          5273,
+          5317
+        ]
+      },
+      {
+        "count": 100,
+        "readyMilliseconds": 5334,
+        "sampleMilliseconds": 5185.60000000149,
+        "renderedFrames": 10,
+        "measuredFramesPerSecond": 1.9284171551984584,
+        "engineReportedFramesPerSecond": 1.821161901293025,
+        "mainThreadSeconds": 6.232848000000001,
+        "cpuSampleMilliseconds": 6233.073999996122,
+        "drawCalls": 16,
+        "triangles": 2061204,
+        "resources": {
+          "geometries": 9,
+          "textures": 17,
+          "programs": 7
+        },
+        "canvas": {
+          "width": 1120,
+          "height": 1120,
+          "pixelRatio": 1
+        },
+        "contexts": {
+          "created": 1,
+          "lost": 0
+        },
+        "uniquePigments": 100,
+        "uniquePhases": 100,
+        "pauseFramesAndPixelsStable": true,
+        "actualContextReleased": true,
+        "paintedPixelsPerAvatarRange": [
+          5271,
+          5317
+        ]
+      }
+    ],
+    "gpu": [
+      {
+        "vendorId": 65535,
+        "deviceId": 65535,
+        "vendorString": "Google Inc. (Google)",
+        "deviceString": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)",
+        "driverVendor": "SwANGLE",
+        "driverVersion": "5.0.0"
+      }
+    ]
+  },
+  "resolutionFixtures": {
+    "320cssDpr2": {
+      "stats": {
+        "ready": true,
+        "renderer": "original-assets-three",
+        "parity": false,
+        "missing": [
+          "original animation controllers",
+          "catalog part mixing beyond the eight presets"
+        ],
+        "presets": [
+          "blue_beret"
+        ],
+        "count": 1,
+        "frames": 1,
+        "suspended": false,
+        "observedFrameRate": 0,
+        "columns": 1,
+        "rows": 1,
+        "width": 320,
+        "height": 320,
+        "requiredHeight": 320,
+        "pixelRatio": 1.6,
+        "backingPixelsPerAvatar": 512,
+        "cachedFits": 2,
+        "resources": {
+          "geometries": 9,
+          "textures": 10,
+          "programs": 7
+        },
+        "contexts": 1,
+        "drawCalls": 16,
+        "triangles": 63616
+      },
+      "comparison": {
+        "width": 640,
+        "height": 640,
+        "meanAbsoluteChannelError": 0.23075602213541666,
+        "foregroundMeanAbsoluteChannelError": 0.5362611505232844,
+        "foregroundPixels": 170844,
+        "maxChannelError": 21,
+        "changedPixels": 123495,
+        "bounds": [
+          {
+            "minX": 105,
+            "minY": 58,
+            "maxX": 537,
+            "maxY": 581
+          },
+          {
+            "minX": 105,
+            "minY": 58,
+            "maxX": 537,
+            "maxY": 581
+          }
+        ]
+      },
+      "errors": [],
+      "note": "Renderer comparison using paired original DrawBlock pose observations at this size/DPR. Native startup pose varies; this verifies materials/geometry/crop, not controller parity."
+    },
+    "112cssDpr2": {
+      "stats": {
+        "ready": true,
+        "renderer": "original-assets-three",
+        "parity": false,
+        "missing": [
+          "full animation controllers and transitions",
+          "motion for seven presets",
+          "catalog part mixing beyond the eight presets"
+        ],
+        "presets": [
+          "blue_beret"
+        ],
+        "detail": "low",
+        "motionPresets": [
+          "blue_beret"
+        ],
+        "count": 1,
+        "frames": 1,
+        "suspended": false,
+        "observedFrameRate": 0,
+        "columns": 1,
+        "rows": 1,
+        "width": 112,
+        "height": 112,
+        "requiredHeight": 112,
+        "pixelRatio": 1.5,
+        "backingPixelsPerAvatar": 168,
+        "cachedFits": 1,
+        "resources": {
+          "geometries": 9,
+          "textures": 17,
+          "programs": 7
+        },
+        "contexts": 1,
+        "drawCalls": 16,
+        "triangles": 22204
+      },
+      "comparison": {
+        "width": 224,
+        "height": 224,
+        "meanAbsoluteChannelError": 0.3067535607993197,
+        "foregroundMeanAbsoluteChannelError": 0.7161335008537096,
+        "foregroundPixels": 20694,
+        "maxChannelError": 27,
+        "changedPixels": 15888,
+        "bounds": [
+          {
+            "minX": 38,
+            "minY": 20,
+            "maxX": 188,
+            "maxY": 203
+          },
+          {
+            "minX": 38,
+            "minY": 20,
+            "maxX": 188,
+            "maxY": 203
+          }
+        ]
+      },
+      "errors": [],
+      "note": "Renderer comparison using paired original DrawBlock pose observations at this size/DPR. Native startup pose varies; this verifies materials/geometry/crop, not controller parity."
+    }
+  },
+  "motion": {
+    "purpose": "Numeric upload/pose independence and rendered changes; no performance or full animation-parity claim.",
+    "cases": [
+      {
+        "name": "independent-held-poses",
+        "changedFirst": 55197,
+        "changedSecond": 0,
+        "stats": {
+          "ready": true,
+          "renderer": "original-assets-three",
+          "parity": false,
+          "missing": [
+            "full animation controllers and transitions",
+            "motion for seven presets",
+            "catalog part mixing beyond the eight presets"
+          ],
+          "presets": [
+            "blue_beret"
+          ],
+          "detail": "high",
+          "motionPresets": [
+            "blue_beret"
+          ],
+          "count": 2,
+          "frames": 4,
+          "suspended": false,
+          "observedFrameRate": 0,
+          "columns": 2,
+          "rows": 1,
+          "width": 640,
+          "height": 320,
+          "requiredHeight": 320,
+          "pixelRatio": 1,
+          "backingPixelsPerAvatar": 320,
+          "cachedFits": 1,
+          "resources": {
+            "geometries": 9,
+            "textures": 17,
+            "programs": 7
+          },
+          "states": [
+            {
+              "index": 0,
+              "phase": 0,
+              "motion": "reaction",
+              "motionTime": 0.7,
+              "preset": "blue_beret",
+              "pigment": [
+                1,
+                1,
+                1
+              ],
+              "look": [
+                0,
+                0
+              ]
+            },
+            {
+              "index": 1,
+              "phase": 2.399,
+              "motion": "idle",
+              "motionTime": 0,
+              "preset": "blue_beret",
+              "pigment": [
+                1,
+                1,
+                1
+              ],
+              "look": [
+                0,
+                0
+              ]
+            }
+          ],
+          "contexts": 1,
+          "drawCalls": 16,
+          "triangles": 95580
+        }
+      }
+    ],
+    "numeric": {
+      "checkedParts": 14,
+      "maxWorldError": 2.516782682260299e-08,
+      "maxNormalError": 2.9724724237567557e-08,
+      "maxFieldError": 0
+    },
+    "materialChannels": {
+      "purpose": "Synthetic upload and pixel independence check; not native motion parity",
+      "materialFirst": 49420,
+      "materialSecond": 0,
+      "maxError": 2.384185793236071e-08,
+      "checked": 7
+    },
+    "errors": [],
+    "forbiddenRequests": []
+  }
+}

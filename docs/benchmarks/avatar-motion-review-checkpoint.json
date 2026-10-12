@@ -1,0 +1,1547 @@
+{
+  "date": "2026-10-11",
+  "scope": "Finite local observation review, not complete runtime controllers. 8 presets \u00d7 idle/reaction \u00d7 3 exact-time PNG checkpoints.",
+  "sampling": "Native render timestamps at 1/60s offline; 4-second observation window. Blue reaction has missing native presentations, which are not filled.",
+  "visual": {
+    "limitation": "Synchronized captured keyframe pixels only; not full animation/controller parity.",
+    "cases": [
+      {
+        "preset": "blue_beret",
+        "name": "idle",
+        "time": 0,
+        "meanForegroundError": 0.5595297574505307,
+        "max": 18,
+        "bounds": [
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          },
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_beret",
+        "name": "idle",
+        "time": 1,
+        "meanForegroundError": 0.558638431418799,
+        "max": 18,
+        "bounds": [
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          },
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_beret",
+        "name": "idle",
+        "time": 3,
+        "meanForegroundError": 0.5399041887512812,
+        "max": 14.062745098039215,
+        "bounds": [
+          {
+            "minX": 50,
+            "minY": 0,
+            "maxX": 263,
+            "maxY": 283
+          },
+          {
+            "minX": 50,
+            "minY": 0,
+            "maxX": 263,
+            "maxY": 283
+          }
+        ]
+      },
+      {
+        "preset": "blue_beret",
+        "name": "reaction",
+        "time": 0,
+        "meanForegroundError": 0.5595297574505307,
+        "max": 18,
+        "bounds": [
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          },
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_beret",
+        "name": "reaction",
+        "time": 1,
+        "meanForegroundError": 0.558638431418799,
+        "max": 18,
+        "bounds": [
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          },
+          {
+            "minX": 40,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_beret",
+        "name": "reaction",
+        "time": 3,
+        "meanForegroundError": 0.5578981588202304,
+        "max": 18,
+        "bounds": [
+          {
+            "minX": 42,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          },
+          {
+            "minX": 42,
+            "minY": 29,
+            "maxX": 279,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "alfred",
+        "name": "idle",
+        "time": 0,
+        "meanForegroundError": 0.6415164756450165,
+        "max": 19.200000000000003,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 34,
+            "maxX": 290,
+            "maxY": 287
+          },
+          {
+            "minX": 30,
+            "minY": 34,
+            "maxX": 290,
+            "maxY": 287
+          }
+        ]
+      },
+      {
+        "preset": "alfred",
+        "name": "idle",
+        "time": 1,
+        "meanForegroundError": 0.6423028055864569,
+        "max": 17.188235294117646,
+        "bounds": [
+          {
+            "minX": 29,
+            "minY": 35,
+            "maxX": 290,
+            "maxY": 286
+          },
+          {
+            "minX": 29,
+            "minY": 35,
+            "maxX": 290,
+            "maxY": 286
+          }
+        ]
+      },
+      {
+        "preset": "alfred",
+        "name": "idle",
+        "time": 3,
+        "meanForegroundError": 0.6440332173160139,
+        "max": 17.188235294117646,
+        "bounds": [
+          {
+            "minX": 29,
+            "minY": 35,
+            "maxX": 290,
+            "maxY": 286
+          },
+          {
+            "minX": 29,
+            "minY": 35,
+            "maxX": 290,
+            "maxY": 286
+          }
+        ]
+      },
+      {
+        "preset": "alfred",
+        "name": "reaction",
+        "time": 0,
+        "meanForegroundError": 0.6415164756450165,
+        "max": 19.200000000000003,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 34,
+            "maxX": 290,
+            "maxY": 287
+          },
+          {
+            "minX": 30,
+            "minY": 34,
+            "maxX": 290,
+            "maxY": 287
+          }
+        ]
+      },
+      {
+        "preset": "alfred",
+        "name": "reaction",
+        "time": 1,
+        "meanForegroundError": 0.6423028055864569,
+        "max": 17.188235294117646,
+        "bounds": [
+          {
+            "minX": 29,
+            "minY": 35,
+            "maxX": 290,
+            "maxY": 286
+          },
+          {
+            "minX": 29,
+            "minY": 35,
+            "maxX": 290,
+            "maxY": 286
+          }
+        ]
+      },
+      {
+        "preset": "alfred",
+        "name": "reaction",
+        "time": 3,
+        "meanForegroundError": 0.6427665346585589,
+        "max": 19.294117647058826,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 35,
+            "maxX": 290,
+            "maxY": 287
+          },
+          {
+            "minX": 30,
+            "minY": 35,
+            "maxX": 290,
+            "maxY": 287
+          }
+        ]
+      },
+      {
+        "preset": "purple_heart",
+        "name": "idle",
+        "time": 0,
+        "meanForegroundError": 0.5447858000384382,
+        "max": 12,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          },
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          }
+        ]
+      },
+      {
+        "preset": "purple_heart",
+        "name": "idle",
+        "time": 1,
+        "meanForegroundError": 0.5448707019039555,
+        "max": 11,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          },
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          }
+        ]
+      },
+      {
+        "preset": "purple_heart",
+        "name": "idle",
+        "time": 3,
+        "meanForegroundError": 0.5453486996351611,
+        "max": 11,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          },
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          }
+        ]
+      },
+      {
+        "preset": "purple_heart",
+        "name": "reaction",
+        "time": 0,
+        "meanForegroundError": 0.5447858000384382,
+        "max": 12,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          },
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          }
+        ]
+      },
+      {
+        "preset": "purple_heart",
+        "name": "reaction",
+        "time": 1,
+        "meanForegroundError": 0.5448707019039555,
+        "max": 11,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          },
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          }
+        ]
+      },
+      {
+        "preset": "purple_heart",
+        "name": "reaction",
+        "time": 3,
+        "meanForegroundError": 0.5425618622315119,
+        "max": 12,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          },
+          {
+            "minX": 30,
+            "minY": 39,
+            "maxX": 291,
+            "maxY": 282
+          }
+        ]
+      },
+      {
+        "preset": "lime_frog",
+        "name": "idle",
+        "time": 0,
+        "meanForegroundError": 0.5721326103370177,
+        "max": 15.799999999999997,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          },
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          }
+        ]
+      },
+      {
+        "preset": "lime_frog",
+        "name": "idle",
+        "time": 1,
+        "meanForegroundError": 0.5676663622557045,
+        "max": 16,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          },
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          }
+        ]
+      },
+      {
+        "preset": "lime_frog",
+        "name": "idle",
+        "time": 3,
+        "meanForegroundError": 0.5709783708871599,
+        "max": 14.329411764705881,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          },
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          }
+        ]
+      },
+      {
+        "preset": "lime_frog",
+        "name": "reaction",
+        "time": 0,
+        "meanForegroundError": 0.5721326103370177,
+        "max": 15.799999999999997,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          },
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          }
+        ]
+      },
+      {
+        "preset": "lime_frog",
+        "name": "reaction",
+        "time": 1,
+        "meanForegroundError": 0.5676663622557045,
+        "max": 16,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          },
+          {
+            "minX": 30,
+            "minY": 44,
+            "maxX": 291,
+            "maxY": 277
+          }
+        ]
+      },
+      {
+        "preset": "lime_frog",
+        "name": "reaction",
+        "time": 3,
+        "meanForegroundError": 0.5683790394302626,
+        "max": 15.996078431372553,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 45,
+            "maxX": 291,
+            "maxY": 283
+          },
+          {
+            "minX": 30,
+            "minY": 45,
+            "maxX": 291,
+            "maxY": 282
+          }
+        ]
+      },
+      {
+        "preset": "coral_monocle",
+        "name": "idle",
+        "time": 0,
+        "meanForegroundError": 0.558958294275489,
+        "max": 34,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 31,
+            "maxX": 291,
+            "maxY": 289
+          },
+          {
+            "minX": 30,
+            "minY": 31,
+            "maxX": 290,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "coral_monocle",
+        "name": "idle",
+        "time": 1,
+        "meanForegroundError": 0.5590517993623618,
+        "max": 16,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 32,
+            "maxX": 291,
+            "maxY": 289
+          },
+          {
+            "minX": 30,
+            "minY": 32,
+            "maxX": 291,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "coral_monocle",
+        "name": "idle",
+        "time": 3,
+        "meanForegroundError": 0.5581780828187575,
+        "max": 13,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 32,
+            "maxX": 291,
+            "maxY": 289
+          },
+          {
+            "minX": 30,
+            "minY": 32,
+            "maxX": 291,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "coral_monocle",
+        "name": "reaction",
+        "time": 0,
+        "meanForegroundError": 0.558958294275489,
+        "max": 34,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 31,
+            "maxX": 291,
+            "maxY": 289
+          },
+          {
+            "minX": 30,
+            "minY": 31,
+            "maxX": 290,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "coral_monocle",
+        "name": "reaction",
+        "time": 1,
+        "meanForegroundError": 0.5590517993623618,
+        "max": 16,
+        "bounds": [
+          {
+            "minX": 30,
+            "minY": 32,
+            "maxX": 291,
+            "maxY": 289
+          },
+          {
+            "minX": 30,
+            "minY": 32,
+            "maxX": 291,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "coral_monocle",
+        "name": "reaction",
+        "time": 3,
+        "meanForegroundError": 0.5544314720687862,
+        "max": 16,
+        "bounds": [
+          {
+            "minX": 29,
+            "minY": 32,
+            "maxX": 289,
+            "maxY": 289
+          },
+          {
+            "minX": 29,
+            "minY": 32,
+            "maxX": 289,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "gus",
+        "name": "idle",
+        "time": 0,
+        "meanForegroundError": 0.5268798515793811,
+        "max": 12.498039215686248,
+        "bounds": [
+          {
+            "minX": 61,
+            "minY": 29,
+            "maxX": 260,
+            "maxY": 290
+          },
+          {
+            "minX": 61,
+            "minY": 29,
+            "maxX": 260,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "gus",
+        "name": "idle",
+        "time": 1,
+        "meanForegroundError": 0.5316004069150172,
+        "max": 13,
+        "bounds": [
+          {
+            "minX": 61,
+            "minY": 30,
+            "maxX": 260,
+            "maxY": 290
+          },
+          {
+            "minX": 61,
+            "minY": 30,
+            "maxX": 260,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "gus",
+        "name": "idle",
+        "time": 3,
+        "meanForegroundError": 0.5322601211059376,
+        "max": 13,
+        "bounds": [
+          {
+            "minX": 61,
+            "minY": 30,
+            "maxX": 260,
+            "maxY": 290
+          },
+          {
+            "minX": 61,
+            "minY": 30,
+            "maxX": 260,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "gus",
+        "name": "reaction",
+        "time": 0,
+        "meanForegroundError": 0.5268798515793811,
+        "max": 12.498039215686248,
+        "bounds": [
+          {
+            "minX": 61,
+            "minY": 29,
+            "maxX": 260,
+            "maxY": 290
+          },
+          {
+            "minX": 61,
+            "minY": 29,
+            "maxX": 260,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "gus",
+        "name": "reaction",
+        "time": 1,
+        "meanForegroundError": 0.5316004069150172,
+        "max": 13,
+        "bounds": [
+          {
+            "minX": 61,
+            "minY": 30,
+            "maxX": 260,
+            "maxY": 290
+          },
+          {
+            "minX": 61,
+            "minY": 30,
+            "maxX": 260,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "gus",
+        "name": "reaction",
+        "time": 3,
+        "meanForegroundError": 0.5291204375660279,
+        "max": 13,
+        "bounds": [
+          {
+            "minX": 61,
+            "minY": 30,
+            "maxX": 260,
+            "maxY": 290
+          },
+          {
+            "minX": 61,
+            "minY": 30,
+            "maxX": 260,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_spectacles",
+        "name": "idle",
+        "time": 0,
+        "meanForegroundError": 0.6471114155568872,
+        "max": 17,
+        "bounds": [
+          {
+            "minX": 55,
+            "minY": 30,
+            "maxX": 266,
+            "maxY": 290
+          },
+          {
+            "minX": 55,
+            "minY": 30,
+            "maxX": 265,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_spectacles",
+        "name": "idle",
+        "time": 1,
+        "meanForegroundError": 0.6495997936826146,
+        "max": 14,
+        "bounds": [
+          {
+            "minX": 55,
+            "minY": 31,
+            "maxX": 266,
+            "maxY": 290
+          },
+          {
+            "minX": 55,
+            "minY": 31,
+            "maxX": 266,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_spectacles",
+        "name": "idle",
+        "time": 3,
+        "meanForegroundError": 0.6509749603947713,
+        "max": 14,
+        "bounds": [
+          {
+            "minX": 55,
+            "minY": 30,
+            "maxX": 266,
+            "maxY": 290
+          },
+          {
+            "minX": 55,
+            "minY": 30,
+            "maxX": 266,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_spectacles",
+        "name": "reaction",
+        "time": 0,
+        "meanForegroundError": 0.6471114155568872,
+        "max": 17,
+        "bounds": [
+          {
+            "minX": 55,
+            "minY": 30,
+            "maxX": 266,
+            "maxY": 290
+          },
+          {
+            "minX": 55,
+            "minY": 30,
+            "maxX": 265,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_spectacles",
+        "name": "reaction",
+        "time": 1,
+        "meanForegroundError": 0.6495997936826146,
+        "max": 14,
+        "bounds": [
+          {
+            "minX": 55,
+            "minY": 31,
+            "maxX": 266,
+            "maxY": 290
+          },
+          {
+            "minX": 55,
+            "minY": 31,
+            "maxX": 266,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "blue_spectacles",
+        "name": "reaction",
+        "time": 3,
+        "meanForegroundError": 0.6538988097860144,
+        "max": 13,
+        "bounds": [
+          {
+            "minX": 57,
+            "minY": 29,
+            "maxX": 270,
+            "maxY": 290
+          },
+          {
+            "minX": 57,
+            "minY": 29,
+            "maxX": 270,
+            "maxY": 290
+          }
+        ]
+      },
+      {
+        "preset": "lime_headphones",
+        "name": "idle",
+        "time": 0,
+        "meanForegroundError": 0.6639352031484673,
+        "max": 17,
+        "bounds": [
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          },
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "lime_headphones",
+        "name": "idle",
+        "time": 1,
+        "meanForegroundError": 0.6634511930039508,
+        "max": 15,
+        "bounds": [
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          },
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "lime_headphones",
+        "name": "idle",
+        "time": 3,
+        "meanForegroundError": 0.6636195713381411,
+        "max": 15,
+        "bounds": [
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          },
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "lime_headphones",
+        "name": "reaction",
+        "time": 0,
+        "meanForegroundError": 0.6639352031484673,
+        "max": 17,
+        "bounds": [
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          },
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "lime_headphones",
+        "name": "reaction",
+        "time": 1,
+        "meanForegroundError": 0.6634511930039508,
+        "max": 15,
+        "bounds": [
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          },
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          }
+        ]
+      },
+      {
+        "preset": "lime_headphones",
+        "name": "reaction",
+        "time": 3,
+        "meanForegroundError": 0.662578280249228,
+        "max": 15.07058823529411,
+        "bounds": [
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          },
+          {
+            "minX": 35,
+            "minY": 31,
+            "maxX": 285,
+            "maxY": 289
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "forbiddenRequests": []
+  },
+  "pairedReactions": {
+    "schema": "bloom.avatar.paired-reaction-observation",
+    "version": 1,
+    "method": "Compare exact native render timestamps and full DrawBlock/SkinBlock/FrameBlock values. Parts are mapped by SHA256 of original geometry buffers, never draw order. Tail length is only the observed uninterrupted return to phase-matched idle.",
+    "limitations": [
+      "A finite exact-match tail is evidence of return to the paired idle path for this input and phase; it does not prove all future behavior, arbitrary interruptions, or an idle period.",
+      "Reported onset/end are observation bounds at 60Hz, not hidden native state transitions. Missing presentations are not filled or treated as completed animation."
+    ],
+    "presets": {
+      "blue_beret": {
+        "rawSha256": {
+          "idle": "0cf27ae57b0b247eaae28da1c83816aecca42d29a220c1774dda55a6e85a9d45",
+          "reaction": "21d6a452f45474e58319c1f7583e4eed27de70a87af3e27c6e8e9b947c4ac3e5"
+        },
+        "nativeCommandTime": 3,
+        "commandObservationTime": 1,
+        "acceptedReactionKind": 2,
+        "beforeCommand": {
+          "matchedFrames": 61,
+          "exact": true
+        },
+        "pairedFrames": 218,
+        "missingIdleTimestamps": [],
+        "missingReactionTimestamps": [
+          5.633333333333334,
+          5.65,
+          5.666666666666667,
+          5.683333333333334,
+          5.7,
+          5.716666666666667,
+          5.733333333333333,
+          5.75,
+          5.766666666666667,
+          5.783333333333333,
+          5.8,
+          5.816666666666666,
+          5.833333333333333,
+          5.85,
+          5.866666666666666,
+          5.883333333333334,
+          5.9,
+          5.916666666666667,
+          5.933333333333334,
+          5.95,
+          5.966666666666667,
+          5.983333333333333,
+          6
+        ],
+        "firstDifference": {
+          "nativeTime": 3.033333333333333,
+          "observationTime": 1.0333333333333332,
+          "secondsAfterCommand": 0.033333333333333215
+        },
+        "lastDifference": {
+          "nativeTime": 5.616666666666666,
+          "observationTime": 3.6166666666666663,
+          "secondsAfterCommand": 2.6166666666666663
+        },
+        "exactReturnTail": null,
+        "changedPartFields": {
+          "mesh:0/parameters": 0.26591090857982635,
+          "mesh:0/signatureDeform": 1.8298810720443726,
+          "mesh:1/parameters": 0.3400000035762787,
+          "mesh:2/parameters": 0.3400000035762787,
+          "mesh:3/parameters": 0.3400000035762787,
+          "mesh:4/parameters": 0.3400000035762787,
+          "mesh:5/parameters": 0.3400000035762787,
+          "fur:0/parameters": 0.26591090857982635,
+          "fur:0/signatureDeform": 1.8298810720443726,
+          "mesh:0/world": 2.019001841545105,
+          "mesh:0/normalMatrix": 2.073169469833374,
+          "mesh:1/world": 0.9458673521876335,
+          "mesh:1/normalMatrix": 17.18181610107422,
+          "mesh:2/world": 0.9458673521876335,
+          "mesh:2/normalMatrix": 17.18181610107422,
+          "mesh:3/world": 0.5101249068975449,
+          "mesh:3/normalMatrix": 0.5101250261068344,
+          "mesh:4/world": 0.5101249068975449,
+          "mesh:4/normalMatrix": 0.5101250261068344,
+          "mesh:5/world": 0.5101249068975449,
+          "mesh:5/normalMatrix": 0.5101250261068344,
+          "fur:0/world": 2.019001841545105,
+          "fur:0/normalMatrix": 2.073169469833374
+        },
+        "maximumBlockDifference": {
+          "DrawBlock": 17.18181610107422,
+          "SkinBlock": 0,
+          "FrameBlock": 0
+        }
+      },
+      "alfred": {
+        "rawSha256": {
+          "idle": "51d5e29d48ff922a48cfc0d57253e524d0717c8ea9d5ee055042eb7228b3eb80",
+          "reaction": "e2a2f77dc1cdc035e37ca7566a9aa984bb36b72a6684ec12f9766cb63428dc9d"
+        },
+        "nativeCommandTime": 3,
+        "commandObservationTime": 1,
+        "acceptedReactionKind": 2,
+        "beforeCommand": {
+          "matchedFrames": 61,
+          "exact": true
+        },
+        "pairedFrames": 241,
+        "missingIdleTimestamps": [],
+        "missingReactionTimestamps": [],
+        "firstDifference": {
+          "nativeTime": 3.033333333333333,
+          "observationTime": 1.0333333333333332,
+          "secondsAfterCommand": 0.033333333333333215
+        },
+        "lastDifference": {
+          "nativeTime": 5.416666666666667,
+          "observationTime": 3.416666666666667,
+          "secondsAfterCommand": 2.416666666666667
+        },
+        "exactReturnTail": {
+          "firstNativeTime": 5.433333333333334,
+          "firstObservationTime": 3.4333333333333336,
+          "secondsAfterCommand": 2.4333333333333336,
+          "lastNativeTime": 6,
+          "frames": 35,
+          "observedDurationSeconds": 0.5666666666666664
+        },
+        "changedPartFields": {
+          "mesh:0/world": 0.2507434032158926,
+          "mesh:0/normalMatrix": 0.1956372857093811,
+          "mesh:0/signatureDeform": 1.7805213928222656,
+          "mesh:1/world": 0.2788262516260147,
+          "mesh:1/normalMatrix": 0.19396498799324036,
+          "mesh:2/world": 0.29676806926727295,
+          "mesh:2/normalMatrix": 0.19396501779556274,
+          "mesh:3/world": 0.27809412695933133,
+          "mesh:3/normalMatrix": 0.19396498799324036,
+          "mesh:4/world": 0.27809412695933133,
+          "mesh:4/normalMatrix": 0.19396498799324036,
+          "mesh:5/world": 0.27809412695933133,
+          "mesh:5/normalMatrix": 0.19396498799324036,
+          "mesh:6/world": 0.2515096366405487,
+          "mesh:6/normalMatrix": 0.2515096068382263,
+          "mesh:7/world": 0.2515096366405487,
+          "mesh:7/normalMatrix": 0.2515096068382263,
+          "fur:0/world": 0.2507434032158926,
+          "fur:0/normalMatrix": 0.1956372857093811,
+          "fur:0/signatureDeform": 1.7805213928222656,
+          "mesh:1/parameters": 1,
+          "mesh:2/parameters": 1
+        },
+        "maximumBlockDifference": {
+          "DrawBlock": 1.7805213928222656,
+          "SkinBlock": 0,
+          "FrameBlock": 0
+        }
+      },
+      "purple_heart": {
+        "rawSha256": {
+          "idle": "27c328bba5ae43b12d3ac27651b14ef40e43d77e6f1ded604608c938d92a74ab",
+          "reaction": "4aab7b03b4616f61bf7d28ac6310fec9b5e5f7a530ecfb717dd199fb640e2297"
+        },
+        "nativeCommandTime": 3,
+        "commandObservationTime": 1,
+        "acceptedReactionKind": 2,
+        "beforeCommand": {
+          "matchedFrames": 61,
+          "exact": true
+        },
+        "pairedFrames": 241,
+        "missingIdleTimestamps": [],
+        "missingReactionTimestamps": [],
+        "firstDifference": {
+          "nativeTime": 3.033333333333333,
+          "observationTime": 1.0333333333333332,
+          "secondsAfterCommand": 0.033333333333333215
+        },
+        "lastDifference": {
+          "nativeTime": 5.616666666666666,
+          "observationTime": 3.6166666666666663,
+          "secondsAfterCommand": 2.6166666666666663
+        },
+        "exactReturnTail": {
+          "firstNativeTime": 5.633333333333334,
+          "firstObservationTime": 3.6333333333333337,
+          "secondsAfterCommand": 2.6333333333333337,
+          "lastNativeTime": 6,
+          "frames": 23,
+          "observedDurationSeconds": 0.36666666666666625
+        },
+        "changedPartFields": {
+          "mesh:0/world": 1.9699082374572754,
+          "mesh:0/normalMatrix": 1.9937413334846497,
+          "mesh:0/signatureDeform": 1.8410478830337524,
+          "mesh:1/world": 1.9832215905189514,
+          "mesh:1/normalMatrix": 1.980246663093567,
+          "mesh:2/world": 1.9832215905189514,
+          "mesh:2/normalMatrix": 1.980246663093567,
+          "mesh:3/world": 1.9832215905189514,
+          "mesh:3/normalMatrix": 1.980246663093567,
+          "mesh:4/world": 1.9832215905189514,
+          "mesh:4/normalMatrix": 1.980246663093567,
+          "mesh:5/world": 1.9832215905189514,
+          "mesh:5/normalMatrix": 1.980246663093567,
+          "fur:0/world": 1.9699082374572754,
+          "fur:0/normalMatrix": 1.9937413334846497,
+          "fur:0/signatureDeform": 1.8410478830337524
+        },
+        "maximumBlockDifference": {
+          "DrawBlock": 1.9937413334846497,
+          "SkinBlock": 0,
+          "FrameBlock": 0
+        }
+      },
+      "lime_frog": {
+        "rawSha256": {
+          "idle": "c30dd1150b4a5c8491fdfdfbf6dbed1db1cdff73ec56d79fb1953a5b70273dff",
+          "reaction": "2403d0c95af800b089266a8ca250d7a032ee782d9cd370c76a18a4864537545a"
+        },
+        "nativeCommandTime": 3,
+        "commandObservationTime": 1,
+        "acceptedReactionKind": 2,
+        "beforeCommand": {
+          "matchedFrames": 61,
+          "exact": true
+        },
+        "pairedFrames": 241,
+        "missingIdleTimestamps": [],
+        "missingReactionTimestamps": [],
+        "firstDifference": {
+          "nativeTime": 3.033333333333333,
+          "observationTime": 1.0333333333333332,
+          "secondsAfterCommand": 0.033333333333333215
+        },
+        "lastDifference": {
+          "nativeTime": 5.716666666666667,
+          "observationTime": 3.716666666666667,
+          "secondsAfterCommand": 2.716666666666667
+        },
+        "exactReturnTail": {
+          "firstNativeTime": 5.733333333333333,
+          "firstObservationTime": 3.7333333333333334,
+          "secondsAfterCommand": 2.7333333333333334,
+          "lastNativeTime": 6,
+          "frames": 17,
+          "observedDurationSeconds": 0.2666666666666666
+        },
+        "changedPartFields": {
+          "mesh:0/world": 0.20316700637340546,
+          "mesh:0/normalMatrix": 0.20358267426490784,
+          "mesh:0/signatureDeform": 1.600008249282837,
+          "mesh:1/world": 0.8781729489564896,
+          "mesh:1/normalMatrix": 7.325072884559631,
+          "mesh:1/parameters": 0.5657957541116048,
+          "mesh:2/world": 0.8781729489564896,
+          "mesh:2/normalMatrix": 7.325072884559631,
+          "mesh:2/parameters": 0.5657957541116048,
+          "mesh:3/world": 0.8781729489564896,
+          "mesh:3/normalMatrix": 7.325072884559631,
+          "mesh:3/parameters": 0.5657957541116048,
+          "mesh:4/world": 0.8781729489564896,
+          "mesh:4/normalMatrix": 7.325072884559631,
+          "mesh:4/parameters": 0.5657957541116048,
+          "mesh:5/world": 0.20316700637340546,
+          "mesh:5/normalMatrix": 0.20358267426490784,
+          "mesh:6/world": 0.20316700637340546,
+          "mesh:6/normalMatrix": 0.20358267426490784,
+          "fur:0/world": 0.20316700637340546,
+          "fur:0/normalMatrix": 0.20358267426490784,
+          "fur:0/signatureDeform": 1.600008249282837
+        },
+        "maximumBlockDifference": {
+          "DrawBlock": 7.325072884559631,
+          "SkinBlock": 0,
+          "FrameBlock": 0
+        }
+      },
+      "coral_monocle": {
+        "rawSha256": {
+          "idle": "c05ffe142dea3b44becd95f76bba5b1d9a4898d41cfa3f2985edacc8c8bc65aa",
+          "reaction": "81e760217faea50987a2f71a40663669c957705ff5d3834c435a574d51fb119a"
+        },
+        "nativeCommandTime": 3,
+        "commandObservationTime": 1,
+        "acceptedReactionKind": 2,
+        "beforeCommand": {
+          "matchedFrames": 61,
+          "exact": true
+        },
+        "pairedFrames": 241,
+        "missingIdleTimestamps": [],
+        "missingReactionTimestamps": [],
+        "firstDifference": {
+          "nativeTime": 3.033333333333333,
+          "observationTime": 1.0333333333333332,
+          "secondsAfterCommand": 0.033333333333333215
+        },
+        "lastDifference": {
+          "nativeTime": 5.716666666666667,
+          "observationTime": 3.716666666666667,
+          "secondsAfterCommand": 2.716666666666667
+        },
+        "exactReturnTail": {
+          "firstNativeTime": 5.733333333333333,
+          "firstObservationTime": 3.7333333333333334,
+          "secondsAfterCommand": 2.7333333333333334,
+          "lastNativeTime": 6,
+          "frames": 17,
+          "observedDurationSeconds": 0.2666666666666666
+        },
+        "changedPartFields": {
+          "mesh:0/world": 0.08977660536766052,
+          "mesh:0/normalMatrix": 0.0893586091697216,
+          "mesh:0/signatureDeform": 1.9700019359588623,
+          "mesh:1/world": 0.8772938549518585,
+          "mesh:1/normalMatrix": 7.30991530418396,
+          "mesh:1/parameters": 0.5336456298828125,
+          "mesh:2/world": 0.08977660536766052,
+          "mesh:2/normalMatrix": 0.0893586091697216,
+          "mesh:2/parameters": 0.5336456298828125,
+          "mesh:3/world": 0.8772938549518585,
+          "mesh:3/normalMatrix": 7.30991530418396,
+          "mesh:3/parameters": 0.5336456298828125,
+          "mesh:4/world": 0.08977660536766052,
+          "mesh:4/normalMatrix": 0.0893586091697216,
+          "mesh:4/parameters": 0.5336456298828125,
+          "mesh:5/world": 0.08981184661388397,
+          "mesh:5/normalMatrix": 0.08939384296536446,
+          "mesh:6/world": 0.08981184661388397,
+          "mesh:6/normalMatrix": 0.08939384296536446,
+          "fur:0/world": 0.08977660536766052,
+          "fur:0/normalMatrix": 0.0893586091697216,
+          "fur:0/signatureDeform": 1.9700019359588623
+        },
+        "maximumBlockDifference": {
+          "DrawBlock": 7.30991530418396,
+          "SkinBlock": 0,
+          "FrameBlock": 0
+        }
+      },
+      "gus": {
+        "rawSha256": {
+          "idle": "0869cbd3d4a650ff307dfd43f6da1ae9f028a26053822e1d79fadcc5650f777f",
+          "reaction": "eb88b1c1fd38d9e6fece0db3083f30400622bc348c9f9521cf555c362bd35cd4"
+        },
+        "nativeCommandTime": 3,
+        "commandObservationTime": 1,
+        "acceptedReactionKind": 2,
+        "beforeCommand": {
+          "matchedFrames": 61,
+          "exact": true
+        },
+        "pairedFrames": 241,
+        "missingIdleTimestamps": [],
+        "missingReactionTimestamps": [],
+        "firstDifference": {
+          "nativeTime": 3.033333333333333,
+          "observationTime": 1.0333333333333332,
+          "secondsAfterCommand": 0.033333333333333215
+        },
+        "lastDifference": {
+          "nativeTime": 5.816666666666666,
+          "observationTime": 3.8166666666666664,
+          "secondsAfterCommand": 2.8166666666666664
+        },
+        "exactReturnTail": {
+          "firstNativeTime": 5.833333333333333,
+          "firstObservationTime": 3.833333333333333,
+          "secondsAfterCommand": 2.833333333333333,
+          "lastNativeTime": 6,
+          "frames": 11,
+          "observedDurationSeconds": 0.16666666666666696
+        },
+        "changedPartFields": {
+          "mesh:0/world": 0.024987071752548218,
+          "mesh:0/normalMatrix": 0.024987071752548218,
+          "mesh:0/signatureDeform": 1.9499998092651367,
+          "mesh:1/world": 0.6409841629792936,
+          "mesh:1/normalMatrix": 0.02106403186917305,
+          "mesh:2/world": 0.024987071752548218,
+          "mesh:2/normalMatrix": 0.024987071752548218,
+          "fur:0/world": 0.024987071752548218,
+          "fur:0/normalMatrix": 0.024987071752548218,
+          "fur:0/signatureDeform": 1.9499998092651367,
+          "fur:2/world": 0.024987071752548218,
+          "fur:2/normalMatrix": 0.024987071752548218
+        },
+        "maximumBlockDifference": {
+          "DrawBlock": 1.9499998092651367,
+          "SkinBlock": 0,
+          "FrameBlock": 0
+        }
+      },
+      "blue_spectacles": {
+        "rawSha256": {
+          "idle": "71411ab6e1746135433bb4f9b3cd191e6f25be2633cbce60137671fba0c7c0e1",
+          "reaction": "0bb3a461db5dd10e29099744baaabd6fd1b77ce088a5a7e4fbb0984bc3f51706"
+        },
+        "nativeCommandTime": 3,
+        "commandObservationTime": 1,
+        "acceptedReactionKind": 2,
+        "beforeCommand": {
+          "matchedFrames": 61,
+          "exact": true
+        },
+        "pairedFrames": 241,
+        "missingIdleTimestamps": [],
+        "missingReactionTimestamps": [],
+        "firstDifference": {
+          "nativeTime": 3.033333333333333,
+          "observationTime": 1.0333333333333332,
+          "secondsAfterCommand": 0.033333333333333215
+        },
+        "lastDifference": {
+          "nativeTime": 5.816666666666666,
+          "observationTime": 3.8166666666666664,
+          "secondsAfterCommand": 2.8166666666666664
+        },
+        "exactReturnTail": {
+          "firstNativeTime": 5.833333333333333,
+          "firstObservationTime": 3.833333333333333,
+          "secondsAfterCommand": 2.833333333333333,
+          "lastNativeTime": 6,
+          "frames": 11,
+          "observedDurationSeconds": 0.16666666666666696
+        },
+        "changedPartFields": {
+          "mesh:0/world": 0.0698629766702652,
+          "mesh:0/normalMatrix": 0.06950844824314117,
+          "mesh:0/signatureDeform": 1.6873068809509277,
+          "mesh:1/world": 0.0698629766702652,
+          "mesh:1/normalMatrix": 0.06950844824314117,
+          "mesh:1/parameters": 0.5657957541116048,
+          "mesh:2/world": 0.0698629766702652,
+          "mesh:2/normalMatrix": 0.06950844824314117,
+          "mesh:2/parameters": 0.5657957541116048,
+          "mesh:3/world": 0.0698629766702652,
+          "mesh:3/normalMatrix": 0.06950844824314117,
+          "mesh:3/parameters": 0.5657957541116048,
+          "mesh:4/world": 0.0698629766702652,
+          "mesh:4/normalMatrix": 0.06950844824314117,
+          "mesh:4/parameters": 0.5657957541116048,
+          "mesh:5/world": 0.0698009505867958,
+          "mesh:5/normalMatrix": 0.06944642215967178,
+          "mesh:6/world": 0.0698009505867958,
+          "mesh:6/normalMatrix": 0.06944642215967178,
+          "mesh:7/world": 0.0698009505867958,
+          "mesh:7/normalMatrix": 0.06944642215967178,
+          "mesh:8/world": 0.0698629766702652,
+          "mesh:8/normalMatrix": 0.06950844824314117,
+          "fur:0/world": 0.0698629766702652,
+          "fur:0/normalMatrix": 0.06950844824314117,
+          "fur:0/signatureDeform": 1.6873068809509277,
+          "fur:8/world": 0.0698629766702652,
+          "fur:8/normalMatrix": 0.06950844824314117
+        },
+        "maximumBlockDifference": {
+          "DrawBlock": 1.6873068809509277,
+          "SkinBlock": 0,
+          "FrameBlock": 0
+        }
+      },
+      "lime_headphones": {
+        "rawSha256": {
+          "idle": "8fa3ba28ae2341503890fe7f7b1d3feed7d75e018805c82bed059a17a64f25b8",
+          "reaction": "0961504a12597d4ad5df2de83cd79be3935b940d37d17afeafa159d768f3f639"
+        },
+        "nativeCommandTime": 3,
+        "commandObservationTime": 1,
+        "acceptedReactionKind": 2,
+        "beforeCommand": {
+          "matchedFrames": 61,
+          "exact": true
+        },
+        "pairedFrames": 241,
+        "missingIdleTimestamps": [],
+        "missingReactionTimestamps": [],
+        "firstDifference": {
+          "nativeTime": 3.033333333333333,
+          "observationTime": 1.0333333333333332,
+          "secondsAfterCommand": 0.033333333333333215
+        },
+        "lastDifference": {
+          "nativeTime": 5.316666666666666,
+          "observationTime": 3.3166666666666664,
+          "secondsAfterCommand": 2.3166666666666664
+        },
+        "exactReturnTail": {
+          "firstNativeTime": 5.333333333333333,
+          "firstObservationTime": 3.333333333333333,
+          "secondsAfterCommand": 2.333333333333333,
+          "lastNativeTime": 6,
+          "frames": 41,
+          "observedDurationSeconds": 0.666666666666667
+        },
+        "changedPartFields": {
+          "mesh:0/world": 0.003000020980834961,
+          "mesh:0/normalMatrix": 0.0030090808868408203,
+          "mesh:0/signatureDeform": 2.0004849433898926,
+          "mesh:1/world": 0.0873224139213562,
+          "mesh:1/normalMatrix": 0.0873224139213562,
+          "mesh:2/world": 0.0876101478934288,
+          "mesh:2/normalMatrix": 0.0876101404428482,
+          "mesh:3/world": 0.10644198954105377,
+          "mesh:3/normalMatrix": 0.10644200444221497,
+          "mesh:4/world": 0.10644198954105377,
+          "mesh:4/normalMatrix": 0.10644200444221497,
+          "mesh:5/world": 0.10644198954105377,
+          "mesh:5/normalMatrix": 0.10644200444221497,
+          "mesh:6/world": 0.10644198954105377,
+          "mesh:6/normalMatrix": 0.10644200444221497,
+          "mesh:7/world": 0.10644198954105377,
+          "mesh:7/normalMatrix": 0.10644200444221497,
+          "fur:0/world": 0.003000020980834961,
+          "fur:0/normalMatrix": 0.0030090808868408203,
+          "fur:0/signatureDeform": 2.0004849433898926
+        },
+        "maximumBlockDifference": {
+          "DrawBlock": 2.0004849433898926,
+          "SkinBlock": 0,
+          "FrameBlock": 0
+        }
+      }
+    }
+  },
+  "verification": {
+    "nodeTests": 19,
+    "ui": "All eight presets, synchronized comparison controls, real playback/pause, finite ending, context replacement and disposal.",
+    "poseOwnership": "Reusing caller sampling memory preserves independent poses; altering only avatar1 changes41915 pixels and0 in avatar0.",
+    "runtime": "Independent geometry/shader renderer; no original WASM/module requests in review or pixel gates."
+  }
+}

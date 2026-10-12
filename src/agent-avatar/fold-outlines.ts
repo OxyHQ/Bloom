@@ -64,7 +64,7 @@ const outlines: Record<'heart' | 'cloud' | 'diamond' | 'shield', Outline> = {
 
 export type PaperSymbol = keyof typeof outlines;
 export const isPaperSymbol = (shape: string): shape is PaperSymbol =>
-  Object.prototype.hasOwnProperty.call(outlines, shape);
+  Object.hasOwn(outlines, shape);
 
 /** Same contour drives the front, tucked sheet, and connecting turn surfaces. */
 export function paperSymbolPoint(shape: PaperSymbol, angle: number): Point {

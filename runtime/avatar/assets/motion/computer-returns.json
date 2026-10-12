@@ -1,0 +1,362 @@
+{
+  "schema": "bloom.avatar.computer-returns",
+  "version": 1,
+  "limitations": [
+    "Observed single-cycle Work episodes at native command time 3. Arbitrary command-phase entry and different workingCycles are not proven by these fixtures.",
+    "Exact full-block paired tail proves the native handoff, not unobserved future idle behavior."
+  ],
+  "presets": {
+    "blue_beret": {
+      "nativeStart": 3,
+      "nativeStop": 5.216666666666667,
+      "nativeReturn": 6.266666666666667,
+      "returnTime": 3.2666666666666666,
+      "nativeEnd": 10,
+      "exactTailFrames": 225,
+      "previousNonmatchingTime": 6.25,
+      "compared": [
+        "geometry-sha256 identity",
+        "draw method",
+        "shader defines",
+        "entire DrawBlock",
+        "entire FrameBlock",
+        "entire SkinBlock"
+      ],
+      "excludedChannels": [],
+      "idleTime": 4.083333333333334,
+      "idleNativeStart": 2.183333333333333,
+      "sampler": {
+        "matrixMax": 0,
+        "normalMax": 0,
+        "fieldMax": 0,
+        "baseParts": 7
+      },
+      "sources": {
+        "work": {
+          "path": ".local/avatar-computer-source/blue_beret/work-raw.json",
+          "sha256": "e528d835551e0faf7f8c5ffd445a17003c347debb103e77e35d83b9dd2598392"
+        },
+        "idle": {
+          "path": ".local/avatar-return-source/blue_beret/idle-raw.json",
+          "sha256": "bf0fd476dc6974678b2df560c662fc9b36068ffaaeb6ea303541a34187101000"
+        },
+        "motion": {
+          "path": "runtime/avatar/assets/motion/blue_beret.json",
+          "sha256": "d62023e031e37f2bf1ed6b1ea49965c59abda1d7ea27cf1d0bde213009607cbe"
+        },
+        "computer": {
+          "path": "runtime/avatar/assets/blue_beret/computer-motion.json",
+          "sha256": "3b3fe2c9eebd8dbb3dd44433c9e21c7110862fb80f5ee1ad1d05f7e2c3144389"
+        }
+      }
+    },
+    "alfred": {
+      "nativeStart": 3,
+      "nativeStop": 5.216666666666667,
+      "nativeReturn": 6.266666666666667,
+      "returnTime": 3.2666666666666666,
+      "nativeEnd": 10,
+      "exactTailFrames": 225,
+      "previousNonmatchingTime": 6.25,
+      "compared": [
+        "geometry-sha256 identity",
+        "draw method",
+        "shader defines",
+        "entire DrawBlock",
+        "entire FrameBlock",
+        "entire SkinBlock"
+      ],
+      "excludedChannels": [],
+      "idleTime": 2.5833333333333335,
+      "idleNativeStart": 3.683333333333333,
+      "sampler": {
+        "matrixMax": 0,
+        "normalMax": 0,
+        "fieldMax": 0,
+        "baseParts": 9
+      },
+      "sources": {
+        "work": {
+          "path": ".local/avatar-computer-source/alfred/work-raw.json",
+          "sha256": "9023bd872f0817a290ff29be4b983f3ebf123416bf456d629d7164c9cb0acc01"
+        },
+        "idle": {
+          "path": ".local/avatar-runtime-motion-actions/alfred/idle-raw.json",
+          "sha256": "239bbb065fd8f5481c2592f88eceb991b0f94c8c1ed0dcc73f5bd0ebd558b792"
+        },
+        "motion": {
+          "path": "runtime/avatar/assets/motion/alfred.json",
+          "sha256": "97390b7bde431f42dd5d0fe2200afba81cc16de5f3757fef6f16c9377cece4d7"
+        },
+        "computer": {
+          "path": "runtime/avatar/assets/alfred/computer-motion.json",
+          "sha256": "1f43a5a5209fe50f1eb56a4966d02ad06ead79b0ba2c6a03cd9bbad94b225232"
+        }
+      }
+    },
+    "purple_heart": {
+      "nativeStart": 3,
+      "nativeStop": 5.216666666666667,
+      "nativeReturn": 6.266666666666667,
+      "returnTime": 3.2666666666666666,
+      "nativeEnd": 10,
+      "exactTailFrames": 225,
+      "previousNonmatchingTime": 6.25,
+      "compared": [
+        "geometry-sha256 identity",
+        "draw method",
+        "shader defines",
+        "entire DrawBlock",
+        "entire FrameBlock",
+        "entire SkinBlock"
+      ],
+      "excludedChannels": [],
+      "idleTime": 2.5833333333333335,
+      "idleNativeStart": 3.683333333333333,
+      "sampler": {
+        "matrixMax": 0,
+        "normalMax": 0,
+        "fieldMax": 0,
+        "baseParts": 7
+      },
+      "sources": {
+        "work": {
+          "path": ".local/avatar-computer-source/purple_heart/work-raw.json",
+          "sha256": "febc9157e16fa79025d8e4c0c6119e81763670bf1f6fbfcc6f73166822728bb1"
+        },
+        "idle": {
+          "path": ".local/avatar-runtime-motion-actions/purple_heart/idle-raw.json",
+          "sha256": "c6ac8afc4e3c15de4531d6ae44b7d352f2c8dcbde628b2f8c689ff2a77dfcdf9"
+        },
+        "motion": {
+          "path": "runtime/avatar/assets/motion/purple_heart.json",
+          "sha256": "bc112b89b31df40905f9c29e78f3f49c299e2be1e8ca1c6009e486a031528b45"
+        },
+        "computer": {
+          "path": "runtime/avatar/assets/purple_heart/computer-motion.json",
+          "sha256": "b9ccd37d2c1cb9bcb6b9c54e366a5638b51614e6f54bb9af194b67b48499eb83"
+        }
+      }
+    },
+    "lime_frog": {
+      "nativeStart": 3,
+      "nativeStop": 5.216666666666667,
+      "nativeReturn": 6.266666666666667,
+      "returnTime": 3.2666666666666666,
+      "nativeEnd": 10,
+      "exactTailFrames": 225,
+      "previousNonmatchingTime": 6.25,
+      "compared": [
+        "geometry-sha256 identity",
+        "draw method",
+        "shader defines",
+        "entire DrawBlock",
+        "entire FrameBlock",
+        "entire SkinBlock"
+      ],
+      "excludedChannels": [],
+      "idleTime": 2.5833333333333335,
+      "idleNativeStart": 3.683333333333333,
+      "sampler": {
+        "matrixMax": 0,
+        "normalMax": 0,
+        "fieldMax": 0,
+        "baseParts": 8
+      },
+      "sources": {
+        "work": {
+          "path": ".local/avatar-computer-source/lime_frog/work-raw.json",
+          "sha256": "8bc0ef22272eda4f2af037edf98438be66f37d0da9ac61220af2b193ff47b1a2"
+        },
+        "idle": {
+          "path": ".local/avatar-runtime-motion-actions/lime_frog/idle-raw.json",
+          "sha256": "8fa85285775d5556d0f5ba94d19bb28cc0298f01c84eb0e4b311da64990844bb"
+        },
+        "motion": {
+          "path": "runtime/avatar/assets/motion/lime_frog.json",
+          "sha256": "9887b3d29bc89c2359ac7d3b76ba29e3af5682d5d11323515c8ba46f321f4d79"
+        },
+        "computer": {
+          "path": "runtime/avatar/assets/lime_frog/computer-motion.json",
+          "sha256": "fcae5c17ad61246972dc8ee687f18e07f92666513ef72558fee951ce2904ebfc"
+        }
+      }
+    },
+    "coral_monocle": {
+      "nativeStart": 3,
+      "nativeStop": 5.216666666666667,
+      "nativeReturn": 6.266666666666667,
+      "returnTime": 3.2666666666666666,
+      "nativeEnd": 10,
+      "exactTailFrames": 225,
+      "previousNonmatchingTime": 6.25,
+      "compared": [
+        "geometry-sha256 identity",
+        "draw method",
+        "shader defines",
+        "entire DrawBlock",
+        "entire FrameBlock",
+        "entire SkinBlock"
+      ],
+      "excludedChannels": [],
+      "idleTime": 2.5833333333333335,
+      "idleNativeStart": 3.683333333333333,
+      "sampler": {
+        "matrixMax": 0,
+        "normalMax": 0,
+        "fieldMax": 0,
+        "baseParts": 8
+      },
+      "sources": {
+        "work": {
+          "path": ".local/avatar-computer-source/coral_monocle/work-raw.json",
+          "sha256": "3b8217db1059da9c61e75f7c7f03453b3315b31d67379cde7b116dc425838740"
+        },
+        "idle": {
+          "path": ".local/avatar-runtime-motion-actions/coral_monocle/idle-raw.json",
+          "sha256": "65a8938bc8e4a2c38001e2057f24b06e0245c3f5dff4bf79c41efb5fe666a74c"
+        },
+        "motion": {
+          "path": "runtime/avatar/assets/motion/coral_monocle.json",
+          "sha256": "654af990773962a866808cb8b831fb7e4c87d50ea7ef53455203534ead76c55c"
+        },
+        "computer": {
+          "path": "runtime/avatar/assets/coral_monocle/computer-motion.json",
+          "sha256": "605815e4a8d5d4c9817a68158eb30e237466d7a899525fafeb3805a582f95af6"
+        }
+      }
+    },
+    "gus": {
+      "nativeStart": 3,
+      "nativeStop": 5.216666666666667,
+      "nativeReturn": 6.266666666666667,
+      "returnTime": 3.2666666666666666,
+      "nativeEnd": 10,
+      "exactTailFrames": 225,
+      "previousNonmatchingTime": 6.25,
+      "compared": [
+        "geometry-sha256 identity",
+        "draw method",
+        "shader defines",
+        "entire DrawBlock",
+        "entire FrameBlock",
+        "entire SkinBlock"
+      ],
+      "excludedChannels": [],
+      "idleTime": 2.5833333333333335,
+      "idleNativeStart": 3.683333333333333,
+      "sampler": {
+        "matrixMax": 0,
+        "normalMax": 0,
+        "fieldMax": 0,
+        "baseParts": 5
+      },
+      "sources": {
+        "work": {
+          "path": ".local/avatar-computer-source/gus/work-raw.json",
+          "sha256": "fe497560be31bcb34dbed0589adf23a75b08e30aaa5ae603c1ba0839442dd8b6"
+        },
+        "idle": {
+          "path": ".local/avatar-runtime-motion-actions/gus/idle-raw.json",
+          "sha256": "367484324cd18606d19080b0a8c399b4a9bca4edd7e5d02a0d5af75f2dcda02d"
+        },
+        "motion": {
+          "path": "runtime/avatar/assets/motion/gus.json",
+          "sha256": "e0032cc30e1cc14cdbcdd203f64c12d96428a2a84237d372d48175c4c0cadcb0"
+        },
+        "computer": {
+          "path": "runtime/avatar/assets/gus/computer-motion.json",
+          "sha256": "0db66ca70959fd582a79826311b79af263627c970959ee0f56be41d4dd3a5bed"
+        }
+      }
+    },
+    "blue_spectacles": {
+      "nativeStart": 3,
+      "nativeStop": 5.216666666666667,
+      "nativeReturn": 6.266666666666667,
+      "returnTime": 3.2666666666666666,
+      "nativeEnd": 10,
+      "exactTailFrames": 225,
+      "previousNonmatchingTime": 6.25,
+      "compared": [
+        "geometry-sha256 identity",
+        "draw method",
+        "shader defines",
+        "entire DrawBlock",
+        "entire FrameBlock",
+        "entire SkinBlock"
+      ],
+      "excludedChannels": [],
+      "idleTime": 2.5833333333333335,
+      "idleNativeStart": 3.683333333333333,
+      "sampler": {
+        "matrixMax": 0,
+        "normalMax": 0,
+        "fieldMax": 0,
+        "baseParts": 11
+      },
+      "sources": {
+        "work": {
+          "path": ".local/avatar-computer-source/blue_spectacles/work-raw.json",
+          "sha256": "64da7947bcdbb3b2c70fcf211dc6b7ac2a14551daa4f3e5067dee586882c101c"
+        },
+        "idle": {
+          "path": ".local/avatar-runtime-motion-actions/blue_spectacles/idle-raw.json",
+          "sha256": "36c91794e7dae8fb8206b0c324e808c2857921b5efaa1fa15f4ae6ab18d95a3d"
+        },
+        "motion": {
+          "path": "runtime/avatar/assets/motion/blue_spectacles.json",
+          "sha256": "fd690c0731b5356c243229ca803de89bd81e09aa4f269bddf1f93b062fe36970"
+        },
+        "computer": {
+          "path": "runtime/avatar/assets/blue_spectacles/computer-motion.json",
+          "sha256": "85d740ad5b43cb32770fbfc3e4e982099232c7b5fdb5c50a80dacd0119d8954e"
+        }
+      }
+    },
+    "lime_headphones": {
+      "nativeStart": 3,
+      "nativeStop": 5.216666666666667,
+      "nativeReturn": 6.266666666666667,
+      "returnTime": 3.2666666666666666,
+      "nativeEnd": 10,
+      "exactTailFrames": 225,
+      "previousNonmatchingTime": 6.25,
+      "compared": [
+        "geometry-sha256 identity",
+        "draw method",
+        "shader defines",
+        "entire DrawBlock",
+        "entire FrameBlock",
+        "entire SkinBlock"
+      ],
+      "excludedChannels": [],
+      "idleTime": 2.5833333333333335,
+      "idleNativeStart": 3.683333333333333,
+      "sampler": {
+        "matrixMax": 0,
+        "normalMax": 0,
+        "fieldMax": 0,
+        "baseParts": 9
+      },
+      "sources": {
+        "work": {
+          "path": ".local/avatar-computer-source/lime_headphones/work-raw.json",
+          "sha256": "ffaefea0a5352ee9d88e88c7476cab5a395776f4a50cae999756ff9401aa14d6"
+        },
+        "idle": {
+          "path": ".local/avatar-runtime-motion-actions/lime_headphones/idle-raw.json",
+          "sha256": "e1ad361161685f4247714b9231ef5dbbd7d1839c40995b8889dd4825da5575cd"
+        },
+        "motion": {
+          "path": "runtime/avatar/assets/motion/lime_headphones.json",
+          "sha256": "1211c5167eca9a1e01bb282f408adbccc754dc53783baefc1d92727ee33e4c4d"
+        },
+        "computer": {
+          "path": "runtime/avatar/assets/lime_headphones/computer-motion.json",
+          "sha256": "92da9e788e108a5849cbff9cc8a6e0b233409771bbed11fd8476fe2938a4564b"
+        }
+      }
+    }
+  }
+}

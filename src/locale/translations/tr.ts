@@ -2834,7 +2834,12 @@ const translations: Translations = {
   },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: 'Ajan avatarı', unavailable: 'Avatar kullanılamıyor' },
+  AGENT_AVATAR_MESSAGES: {
+    runtimeRequired:
+      'AgentAvatarProvider bileşenini barındırılan çalışma ortamının URL’siyle yapılandırın.',
+    label: 'Ajan avatarı',
+    unavailable: 'Avatar kullanılamıyor',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

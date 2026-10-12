@@ -2863,7 +2863,11 @@ const translations: Translations = {
   },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: 'Avatar agen', unavailable: 'Avatar tidak tersedia' },
+  AGENT_AVATAR_MESSAGES: {
+    runtimeRequired: 'Konfigurasikan AgentAvatarProvider dengan URL runtime yang dihosting.',
+    label: 'Avatar agen',
+    unavailable: 'Avatar tidak tersedia',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

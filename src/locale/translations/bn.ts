@@ -2783,7 +2783,11 @@ const translations: Translations = {
   },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: 'এজেন্টের অবতার', unavailable: 'অবতার উপলব্ধ নেই' },
+  AGENT_AVATAR_MESSAGES: {
+    runtimeRequired: 'হোস্ট করা রানটাইম URL দিয়ে AgentAvatarProvider কনফিগার করুন।',
+    label: 'এজেন্টের অবতার',
+    unavailable: 'অবতার উপলব্ধ নেই',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

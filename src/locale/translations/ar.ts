@@ -3257,7 +3257,11 @@ const translations: Translations = {
   },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: 'صورة الوكيل', unavailable: 'الصورة الرمزية غير متاحة' },
+  AGENT_AVATAR_MESSAGES: {
+    runtimeRequired: 'اضبط AgentAvatarProvider باستخدام عنوان URL لمحرك العرض المستضاف.',
+    label: 'صورة الوكيل',
+    unavailable: 'الصورة الرمزية غير متاحة',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

@@ -1,0 +1,519 @@
+{
+  "date": "2026-10-11",
+  "conditions": "Windows Chrome 155 headless, ANGLE D3D11 RTX 5090; 112 CSS px per cell, DPR 1, all cells visible, 5 second samples after preparation. Dedicated browser, no concurrent browser checks. Not a laptop, thermal, battery or full-controller test.",
+  "scenarios": {
+    "singlePresetUncapped": {
+      "caveat": "Original small-avatar meshes/materials with recovered blue idle motion; no full animation/interaction parity, laptop power or thermal claim. Consult webglRenderer and GPU evidence for the actual backend. Draw calls include depth, AO, color and presentation.",
+      "requestedSampleMilliseconds": 5000,
+      "cssPixelsPerAvatar": 112,
+      "cases": [
+        {
+          "count": 1,
+          "readyMilliseconds": 1480,
+          "sampleMilliseconds": 5004.600000023842,
+          "renderedFrames": 600,
+          "measuredFramesPerSecond": 119.88970147407217,
+          "engineReportedFramesPerSecond": 116.31632914637228,
+          "mainThreadSeconds": 0.669032,
+          "cpuSampleMilliseconds": 5008.239999995567,
+          "drawCalls": 16,
+          "triangles": 20616,
+          "resources": {
+            "geometries": 9,
+            "textures": 17,
+            "programs": 7
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 112,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 1,
+          "uniquePhases": 1,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 5299,
+            "maximum": 5299,
+            "cells": 1
+          }
+        },
+        {
+          "count": 24,
+          "readyMilliseconds": 1354,
+          "sampleMilliseconds": 5003,
+          "renderedFrames": 600,
+          "measuredFramesPerSecond": 119.92804317409554,
+          "engineReportedFramesPerSecond": 116.93261838620028,
+          "mainThreadSeconds": 0.342877,
+          "cpuSampleMilliseconds": 5005.98799996078,
+          "drawCalls": 16,
+          "triangles": 494692,
+          "resources": {
+            "geometries": 9,
+            "textures": 17,
+            "programs": 7
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 336,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 24,
+          "uniquePhases": 24,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 5267,
+            "maximum": 5309,
+            "cells": 24
+          }
+        },
+        {
+          "count": 48,
+          "readyMilliseconds": 1451,
+          "sampleMilliseconds": 5008.700000047684,
+          "renderedFrames": 601,
+          "measuredFramesPerSecond": 119.99121528426106,
+          "engineReportedFramesPerSecond": 116.01187246672795,
+          "mainThreadSeconds": 0.848105,
+          "cpuSampleMilliseconds": 5016.641000052914,
+          "drawCalls": 16,
+          "triangles": 989380,
+          "resources": {
+            "geometries": 9,
+            "textures": 17,
+            "programs": 7
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 560,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 48,
+          "uniquePhases": 48,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 5267,
+            "maximum": 5309,
+            "cells": 48
+          }
+        },
+        {
+          "count": 100,
+          "readyMilliseconds": 1287,
+          "sampleMilliseconds": 5006,
+          "renderedFrames": 601,
+          "measuredFramesPerSecond": 120.05593288054334,
+          "engineReportedFramesPerSecond": 117.7241897844018,
+          "mainThreadSeconds": 1.274596,
+          "cpuSampleMilliseconds": 5010.918000014499,
+          "drawCalls": 16,
+          "triangles": 2061204,
+          "resources": {
+            "geometries": 9,
+            "textures": 17,
+            "programs": 7
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 1120,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 100,
+          "uniquePhases": 100,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 5263,
+            "maximum": 5309,
+            "cells": 100
+          }
+        },
+        {
+          "count": 200,
+          "readyMilliseconds": 1541,
+          "sampleMilliseconds": 5005.600000023842,
+          "renderedFrames": 601,
+          "measuredFramesPerSecond": 120.06552660962471,
+          "engineReportedFramesPerSecond": 115.73047938699214,
+          "mainThreadSeconds": 2.008445,
+          "cpuSampleMilliseconds": 5010.886000003666,
+          "drawCalls": 16,
+          "triangles": 4122404,
+          "resources": {
+            "geometries": 9,
+            "textures": 17,
+            "programs": 7
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 2240,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 200,
+          "uniquePhases": 200,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 5263,
+            "maximum": 5310,
+            "cells": 200
+          }
+        }
+      ],
+      "nonRenderingErrors": [
+        {
+          "url": "http://localhost:6006/favicon.ico",
+          "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "gpu": [
+        {
+          "vendorId": 4318,
+          "deviceId": 11141,
+          "subSysId": 2313359427,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA GeForce RTX 5090",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.16.1692"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9549"
+        }
+      ],
+      "webglRenderer": {
+        "vendor": "Google Inc. (NVIDIA)",
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "rawReport": ".local/avatar-crowd-windows-gpu/report.json",
+      "frameRateLimit": null,
+      "motionCaveat": "Blue recovered idle; the other seven presets use provisional motion, so this is not a mixed native action benchmark."
+    },
+    "eightPresetsUncapped": {
+      "scenario": "Eight presets, blue recovered idle and seven provisional motions",
+      "caveat": "Original small-avatar meshes/materials with recovered blue idle motion; no full animation/interaction parity, laptop power or thermal claim. Consult webglRenderer and GPU evidence for the actual backend. Draw calls include depth, AO, color and presentation.",
+      "requestedSampleMilliseconds": 5000,
+      "cssPixelsPerAvatar": 112,
+      "cases": [
+        {
+          "count": 8,
+          "readyMilliseconds": 1332,
+          "sampleMilliseconds": 5002.699999928474,
+          "renderedFrames": 601,
+          "measuredFramesPerSecond": 120.13512703312067,
+          "engineReportedFramesPerSecond": 118.20099073029522,
+          "mainThreadSeconds": 0.57326,
+          "cpuSampleMilliseconds": 5004.64199995622,
+          "drawCalls": 121,
+          "triangles": 189884,
+          "resources": {
+            "geometries": 66,
+            "textures": 17,
+            "programs": 11
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 112,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 8,
+          "uniquePhases": 8,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 3621,
+            "maximum": 6598,
+            "cells": 8
+          }
+        },
+        {
+          "count": 24,
+          "readyMilliseconds": 1359,
+          "sampleMilliseconds": 5002.399999976158,
+          "renderedFrames": 600,
+          "measuredFramesPerSecond": 119.94242763530698,
+          "engineReportedFramesPerSecond": 118.04081632653015,
+          "mainThreadSeconds": 0.60753,
+          "cpuSampleMilliseconds": 5003.98999999743,
+          "drawCalls": 121,
+          "triangles": 569644,
+          "resources": {
+            "geometries": 66,
+            "textures": 17,
+            "programs": 11
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 336,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 24,
+          "uniquePhases": 24,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 3605,
+            "maximum": 6598,
+            "cells": 24
+          }
+        },
+        {
+          "count": 48,
+          "readyMilliseconds": 1348,
+          "sampleMilliseconds": 5003,
+          "renderedFrames": 600,
+          "measuredFramesPerSecond": 119.92804317409554,
+          "engineReportedFramesPerSecond": 118.20099073029532,
+          "mainThreadSeconds": 0.64569,
+          "cpuSampleMilliseconds": 5005.283999955282,
+          "drawCalls": 121,
+          "triangles": 1139284,
+          "resources": {
+            "geometries": 66,
+            "textures": 17,
+            "programs": 11
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 560,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 48,
+          "uniquePhases": 48,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 3598,
+            "maximum": 6598,
+            "cells": 48
+          }
+        },
+        {
+          "count": 100,
+          "readyMilliseconds": 1372,
+          "sampleMilliseconds": 5003.099999904633,
+          "renderedFrames": 601,
+          "measuredFramesPerSecond": 120.12552217854052,
+          "engineReportedFramesPerSecond": 118.20408163265272,
+          "mainThreadSeconds": 0.7875420000000001,
+          "cpuSampleMilliseconds": 5005.321000004187,
+          "drawCalls": 121,
+          "triangles": 2381556,
+          "resources": {
+            "geometries": 66,
+            "textures": 17,
+            "programs": 11
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 1120,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 100,
+          "uniquePhases": 100,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 3583,
+            "maximum": 6598,
+            "cells": 100
+          }
+        },
+        {
+          "count": 200,
+          "readyMilliseconds": 1373,
+          "sampleMilliseconds": 5004.399999976158,
+          "renderedFrames": 601,
+          "measuredFramesPerSecond": 120.09431700161123,
+          "engineReportedFramesPerSecond": 118.20396584101259,
+          "mainThreadSeconds": 0.642834,
+          "cpuSampleMilliseconds": 5007.298999931663,
+          "drawCalls": 121,
+          "triangles": 4747004,
+          "resources": {
+            "geometries": 66,
+            "textures": 17,
+            "programs": 11
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 2240,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 200,
+          "uniquePhases": 200,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 3583,
+            "maximum": 6598,
+            "cells": 200
+          }
+        }
+      ],
+      "nonRenderingErrors": [
+        {
+          "url": "http://localhost:6006/favicon.ico",
+          "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "gpu": [
+        {
+          "vendorId": 4318,
+          "deviceId": 11141,
+          "subSysId": 2313359427,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA GeForce RTX 5090",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.16.1692"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9549"
+        }
+      ],
+      "webglRenderer": {
+        "vendor": "Google Inc. (NVIDIA)",
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "rawReport": ".local/avatar-crowd-windows-mixed/report.json",
+      "frameRateLimit": null,
+      "motionCaveat": "Blue recovered idle; the other seven presets use provisional motion, so this is not a mixed native action benchmark."
+    },
+    "eightPresets60fps": {
+      "frameRateLimit": 60,
+      "scenario": "Eight presets, blue recovered idle and seven provisional motions",
+      "caveat": "Original small-avatar meshes/materials with recovered blue idle motion; no full animation/interaction parity, laptop power or thermal claim. Consult webglRenderer and GPU evidence for the actual backend. Draw calls include depth, AO, color and presentation.",
+      "requestedSampleMilliseconds": 5000,
+      "cssPixelsPerAvatar": 112,
+      "cases": [
+        {
+          "count": 200,
+          "readyMilliseconds": 1764,
+          "sampleMilliseconds": 5005.800000071526,
+          "renderedFrames": 300,
+          "measuredFramesPerSecond": 59.93048064159843,
+          "engineReportedFramesPerSecond": 58.017880920677065,
+          "mainThreadSeconds": 1.198238,
+          "cpuSampleMilliseconds": 5014.671999961138,
+          "drawCalls": 121,
+          "triangles": 4747004,
+          "resources": {
+            "geometries": 66,
+            "textures": 17,
+            "programs": 11
+          },
+          "canvas": {
+            "width": 1120,
+            "height": 2240,
+            "pixelRatio": 1
+          },
+          "contexts": {
+            "created": 1,
+            "lost": 0
+          },
+          "uniquePigments": 200,
+          "uniquePhases": 200,
+          "pauseFramesAndPixelsStable": true,
+          "actualContextReleased": true,
+          "visibleInkRange": {
+            "minimum": 3583,
+            "maximum": 6598,
+            "cells": 200
+          }
+        }
+      ],
+      "nonRenderingErrors": [
+        {
+          "url": "http://localhost:6006/favicon.ico",
+          "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "gpu": [
+        {
+          "vendorId": 4318,
+          "deviceId": 11141,
+          "subSysId": 2313359427,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA GeForce RTX 5090",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.16.1692"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9549"
+        }
+      ],
+      "webglRenderer": {
+        "vendor": "Google Inc. (NVIDIA)",
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "rawReport": ".local/avatar-crowd-windows-mixed-60/report.json",
+      "motionCaveat": "Blue recovered idle; the other seven presets use provisional motion, so this is not a mixed native action benchmark."
+    }
+  }
+}

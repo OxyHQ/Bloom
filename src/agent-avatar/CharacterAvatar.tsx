@@ -2,9 +2,13 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, AppState, Platform, type View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useMessages } from '../locale/messages';
-import { StyledView } from '../styles/styled-primitives';
-import { Text } from '../typography';
-import { type CharacterCapabilities, CharacterRuntimeContext } from './context';
+import { StyledView, StyledText } from '../styles/styled-primitives';
+import {
+  type CharacterCapabilities,
+  CharacterRuntimeContext,
+  AvatarSnapshotObserver,
+  type AvatarSnapshot,
+} from './context';
 import { characterHtml, scriptJson } from './character-html';
 import { loadCharacterRuntime } from './character-runtime-module';
 import { characterWebView, type CharacterWebViewHandle } from './character-webview';
@@ -23,7 +27,7 @@ type RenderProps = Pick<
   | 'interactive'
   | 'reactionKey'
   | 'entranceKey'
-> & { reduced: boolean; legacy?: ReturnType<typeof legacyRecipe> };
+> & { reduced: boolean; legacy?: ReturnType<typeof legacyRecipe>; previewPart?: 'eyes' };
 type Controller = { update(props: RenderProps): void; dispose(): void };
 type RuntimeModule = {
   createAvatar(
@@ -45,10 +49,12 @@ function WebCharacter({
   onError(): void;
 }) {
   const { reportCapabilities } = useContext(CharacterRuntimeContext);
+  const observeSnapshot = useContext(AvatarSnapshotObserver);
   const report = useRef(reportCapabilities);
   report.current = reportCapabilities;
   const host = useRef<View>(null),
     controller = useRef<Controller | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const latest = useRef(value);
   latest.current = value;
   const fail = useRef(onError);
@@ -67,6 +73,7 @@ function WebCharacter({
       touchAction: 'none',
     });
     element.appendChild(canvas);
+    canvasRef.current = canvas;
     const start = async () => {
       if (started || stopped) return;
       started = true;
@@ -95,9 +102,22 @@ function WebCharacter({
       observer.disconnect();
       controller.current?.dispose();
       controller.current = null;
+      if (canvasRef.current === canvas) canvasRef.current = null;
       canvas.remove();
     };
   }, [runtimeUrl]);
+  useEffect(() => {
+    observeSnapshot?.(async () => {
+      const canvas = canvasRef.current;
+      if (!controller.current || !canvas?.width || !canvas.height) return null;
+      try {
+        return { uri: canvas.toDataURL('image/png') };
+      } catch {
+        return null;
+      }
+    });
+    return () => observeSnapshot?.(null);
+  }, [observeSnapshot]);
   useEffect(() => {
     try {
       controller.current?.update(value);
@@ -117,8 +137,42 @@ function NativeCharacter({
   onError(): void;
 }) {
   const { reportCapabilities } = useContext(CharacterRuntimeContext);
+  const observeSnapshot = useContext(AvatarSnapshotObserver);
   const WebView = characterWebView();
   const ref = useRef<CharacterWebViewHandle>(null);
+  const captures = useRef(new Map<number, (snapshot: AvatarSnapshot | null) => void>());
+  const nextCapture = useRef(0);
+  useEffect(() => {
+    observeSnapshot?.(
+      () =>
+        new Promise((resolve) => {
+          if (!ref.current) {
+            resolve(null);
+            return;
+          }
+          const id = ++nextCapture.current;
+          const timer = setTimeout(() => {
+            captures.current.delete(id);
+            resolve(null);
+          }, 1000);
+          captures.current.set(id, (snapshot) => {
+            clearTimeout(timer);
+            resolve(snapshot);
+          });
+          try {
+            ref.current.injectJavaScript(`window.captureAvatar?.(${id}); true;`);
+          } catch {
+            captures.current.get(id)?.(null);
+            captures.current.delete(id);
+          }
+        }),
+    );
+    return () => {
+      observeSnapshot?.(null);
+      for (const finish of captures.current.values()) finish(null);
+      captures.current.clear();
+    };
+  }, [observeSnapshot, runtimeUrl]);
   const initial = useRef(value);
   const source = useMemo(
     () => ({
@@ -143,7 +197,17 @@ function NativeCharacter({
       javaScriptEnabled
       originWhitelist={['*']}
       onMessage={(event) => {
-        if (event.nativeEvent.data.startsWith('capabilities:')) {
+        if (event.nativeEvent.data.startsWith('snapshot:')) {
+          try {
+            const { id, uri } = JSON.parse(event.nativeEvent.data.slice(9));
+            captures.current.get(id)?.(
+              typeof uri === 'string' && uri.startsWith('data:image/png;base64,') ? { uri } : null,
+            );
+            captures.current.delete(id);
+          } catch {
+            /* Invalid capture must not break the live avatar. */
+          }
+        } else if (event.nativeEvent.data.startsWith('capabilities:')) {
           try {
             reportCapabilities?.(JSON.parse(event.nativeEvent.data.slice(13)));
           } catch {
@@ -156,8 +220,8 @@ function NativeCharacter({
   );
 }
 
-/** Optional binary-backed renderer; the application supplies the hosted runtime URL. */
-export function CharacterAvatar(props: AgentAvatarProps) {
+/** Single character renderer. Web defaults to the hosted module; native uses its configured URL. */
+export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes' }) {
   const { runtimeUrl } = useContext(CharacterRuntimeContext);
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
   const initialReduced = useReducedMotion();
@@ -205,6 +269,7 @@ export function CharacterAvatar(props: AgentAvatarProps) {
       legacy,
       paused: paused || !active,
       portrait,
+      previewPart: props.previewPart,
       workingKey,
       reactionKey,
       entranceKey,
@@ -217,6 +282,7 @@ export function CharacterAvatar(props: AgentAvatarProps) {
       legacy,
       paused,
       portrait,
+      props.previewPart,
       active,
       workingKey,
       reactionKey,
@@ -240,9 +306,9 @@ export function CharacterAvatar(props: AgentAvatarProps) {
       {runtimeUrl && !failed ? (
         <Renderer runtimeUrl={runtimeUrl} value={value} onError={fail} />
       ) : (
-        <Text numberOfLines={2} style={{ fontSize: 10 }}>
-          {messages.unavailable}
-        </Text>
+        <StyledText numberOfLines={2} style={{ fontSize: 10 }}>
+          {!runtimeUrl ? messages.runtimeRequired : messages.unavailable}
+        </StyledText>
       )}
     </StyledView>
   );

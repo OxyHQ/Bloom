@@ -6,17 +6,26 @@ import type {
 } from '../agent-avatar/config-character';
 import { StyledView } from '../styles/styled-primitives';
 import { Text } from '../typography';
-import { CHARACTER_OPTIONS, CHARACTER_PRESETS } from './constants';
+import { materializeCharacter } from '../agent-avatar/character-shapes';
+import { FOLD_CONFIG, type AvatarConfig } from '../agent-avatar/model';
+import {
+  CHARACTER_OPTIONS,
+  CHARACTER_PRESETS,
+  createCharacterPreset,
+  characterPresetChoice,
+} from './constants';
 import { useAgentCreatorBindings, useAgentCreatorMessages } from './context';
 
 /** Preset and accessory controls share Bloom Select; shapes, eyes and colors use the existing pickers. */
 export function CharacterControls({
   character,
+  config,
   capabilitiesKey,
   selected,
   onChange,
 }: {
   character?: AvatarCharacterConfig;
+  config?: AvatarConfig;
   capabilitiesKey?: string;
   selected?: Readonly<Record<string, string>>;
   onChange: (character: AvatarCharacterConfig | undefined) => void;
@@ -82,12 +91,20 @@ export function CharacterControls({
   );
   const presets = [
     { id: 'bloom', title: messages.proceduralAvatar },
+    ...(character && !character.preset
+      ? [
+          {
+            id: 'custom',
+            title: messages.characterOption('preset', 'custom', 'Custom'),
+          },
+        ]
+      : []),
     ...CHARACTER_PRESETS.map((item) => ({
       id: item.id,
       title: messages.characterOption('preset', item.id, item.title),
     })),
   ];
-  if (character && !presets.some((item) => item.id === character.preset))
+  if (character?.preset && !presets.some((item) => item.id === character.preset))
     presets.push({
       id: character.preset,
       title:
@@ -109,9 +126,11 @@ export function CharacterControls({
     >
       {row(
         messages.avatarStyle,
-        character?.preset ?? 'bloom',
+        character ? characterPresetChoice(character) : 'bloom',
         presets,
-        (id) => onChange(id === 'bloom' ? undefined : { preset: id }),
+        (id) => {
+          if (id !== 'custom') onChange(id === 'bloom' ? undefined : createCharacterPreset(id));
+        },
         messages.betaPreset,
       )}
       {character &&
@@ -128,19 +147,13 @@ export function CharacterControls({
               disabled: false,
             })),
             (id) => {
+              const materialized = materializeCharacter(
+                config ?? { ...FOLD_CONFIG, character },
+                resolved.selected,
+              );
               onChange({
-                ...character,
-                selections: {
-                  ...(['eyes', 'eyewear', 'accessory'] as const).reduce(
-                    (parts, part) => ({
-                      ...parts,
-                      ...(resolved?.selected[part] ? { [part]: resolved.selected[part] } : {}),
-                    }),
-                    {},
-                  ),
-                  ...character.selections,
-                  [category]: id,
-                },
+                ...materialized,
+                selections: { ...materialized.selections, [category]: id },
               });
             },
             labels[category],

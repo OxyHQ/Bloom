@@ -1,0 +1,99 @@
+{
+  "baseRevision": "796fdfe5",
+  "environment": [
+    {
+      "vendorId": 65535,
+      "deviceId": 65535,
+      "vendorString": "Google Inc. (Google)",
+      "deviceString": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)",
+      "driverVendor": "SwANGLE",
+      "driverVersion": "5.0.0"
+    }
+  ],
+  "fixture": "96 CSS pixels, DPR1, four original presets. 24 case uses 24 different RGB recipes over those four presets. Existing compact-mesh policy unchanged. Instrumented headless SwiftShader; not laptop GPU, energy or visual parity validation.",
+  "cases": [
+    {
+      "count": 1,
+      "readyMilliseconds": 1065,
+      "sampleMilliseconds": 5002,
+      "paintsPerAvatar": [
+        151
+      ],
+      "contexts": 1,
+      "physicalPrograms": 9,
+      "bufferObjects": 101,
+      "textureObjects": 13,
+      "framebufferObjects": 5,
+      "submittedTriangles": 3042664,
+      "uploadedBufferBytes": 3679200,
+      "lastBatchCpuMilliseconds": 0,
+      "lastBatchWaitMilliseconds": 0,
+      "drawImageCpuMilliseconds": 54.50000002980232,
+      "steadyLongTasks": []
+    },
+    {
+      "count": 4,
+      "readyMilliseconds": 1712,
+      "sampleMilliseconds": 5002,
+      "paintsPerAvatar": [
+        101,
+        101,
+        101,
+        101
+      ],
+      "contexts": 1,
+      "physicalPrograms": 9,
+      "bufferObjects": 410,
+      "textureObjects": 40,
+      "framebufferObjects": 17,
+      "submittedTriangles": 10183780,
+      "uploadedBufferBytes": 9964800,
+      "lastBatchCpuMilliseconds": 2.2999999970197678,
+      "lastBatchWaitMilliseconds": 41.600000001490116,
+      "drawImageCpuMilliseconds": 46.799999974668026,
+      "steadyLongTasks": []
+    },
+    {
+      "count": 24,
+      "readyMilliseconds": 33433,
+      "sampleMilliseconds": 5007,
+      "paintsPerAvatar": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "contexts": 1,
+      "physicalPrograms": 9,
+      "bufferObjects": 2424,
+      "textureObjects": 220,
+      "framebufferObjects": 97,
+      "submittedTriangles": 4180408,
+      "uploadedBufferBytes": 2943360,
+      "lastBatchCpuMilliseconds": 3.899999998509884,
+      "lastBatchWaitMilliseconds": 313.79999999701977,
+      "drawImageCpuMilliseconds": 18.700000002980232,
+      "steadyLongTasks": []
+    }
+  ]
+}

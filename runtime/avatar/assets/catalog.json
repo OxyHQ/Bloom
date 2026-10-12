@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "presets": [
+    "blue_beret",
+    "alfred",
+    "purple_heart",
+    "lime_frog",
+    "coral_monocle",
+    "gus",
+    "blue_spectacles",
+    "lime_headphones"
+  ]
+}

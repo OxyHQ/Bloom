@@ -1,5 +1,5 @@
 import type { View } from 'react-native';
-import type { DrawingContext } from '../agent-avatar/drawing';
+import type { AvatarSnapshot, CaptureAvatarSnapshot } from '../agent-avatar/context';
 import type { Agent } from './data';
 export interface AvatarRect {
   x: number;
@@ -11,27 +11,25 @@ export type AvatarNodes = Map<string, View>;
 export interface TravelingAvatar {
   agent: Agent;
   from: AvatarRect;
-  drawing?: DrawingContext;
+  snapshot?: AvatarSnapshot;
 }
-const committedDrawings = new WeakMap<AvatarNodes, Map<string, DrawingContext>>();
-/** Each rendered frame is a new command stream; retaining it freezes the exact pose. */
-export function retainAvatarDrawing(
+const snapshotCaptures = new WeakMap<AvatarNodes, Map<string, CaptureAvatarSnapshot>>();
+/** Capture only when a flight starts; the animation loop never reads pixels. */
+export function retainAvatarSnapshotCapture(
   nodes: AvatarNodes,
   id: string,
-  drawing: DrawingContext | null,
+  capture: CaptureAvatarSnapshot | null,
 ) {
-  if (!drawing) {
-    committedDrawings.get(nodes)?.delete(id);
+  if (!capture) {
+    snapshotCaptures.get(nodes)?.delete(id);
     return;
   }
-  let frames = committedDrawings.get(nodes);
-  if (!frames) {
-    frames = new Map();
-    committedDrawings.set(nodes, frames);
+  let captures = snapshotCaptures.get(nodes);
+  if (!captures) {
+    captures = new Map();
+    snapshotCaptures.set(nodes, captures);
   }
-  Object.freeze(drawing.nodes);
-  Object.freeze(drawing);
-  frames.set(id, drawing);
+  captures.set(id, capture);
 }
 export interface AvatarHandoffState {
   chatId: string;
@@ -73,12 +71,20 @@ export async function captureAvatars(
   return (
     await Promise.all(
       agents.map(async (agent): Promise<TravelingAvatar | null> => {
-        const from = await measureAvatar(nodes.get(agent.id));
+        const capture = snapshotCaptures.get(nodes)?.get(agent.id);
+        const [from, snapshot] = await Promise.all([
+          measureAvatar(nodes.get(agent.id)),
+          capture
+            ? Promise.resolve()
+                .then(capture)
+                .catch(() => null)
+            : null,
+        ]);
         return from
           ? {
               agent,
               from,
-              drawing: committedDrawings.get(nodes)?.get(agent.id),
+              ...(snapshot ? { snapshot: Object.freeze({ ...snapshot }) } : {}),
             }
           : null;
       }),

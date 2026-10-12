@@ -3,9 +3,7 @@ import { Platform } from 'react-native';
 import { AgentAvatar, type AvatarConfig } from '../agent-avatar';
 import {
   CHARACTER_SHAPES,
-  NATIVE_CHARACTER_SHAPES,
   createConfigForShape,
-  currentCharacterShape,
   materializeCharacter,
 } from '../agent-avatar/character-shapes';
 import type { AvatarCharacterCategory } from '../agent-avatar/config-character';
@@ -65,41 +63,16 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     selected: retained.current.selected,
     available: {},
   };
-  const betaColor = c.character?.selections?.color ?? capabilities?.selected.color;
-  const betaBodyColor =
-    c.character?.bodyColor ??
-    (c.character?.preset === 'clippo' && !c.character.selections?.color ? '#999b9d' : undefined) ??
-    (!betaColor ? capabilities?.selected.bodyColor : undefined);
-  const customColorValue = beta
-    ? (betaBodyColor ??
-      (c.character?.selections?.color
-        ? CHARACTER_COLORS[c.character.selections.color as keyof typeof CHARACTER_COLORS]
-        : undefined) ??
-      capabilities?.selected.bodyColor ??
-      CHARACTER_COLORS[betaColor as keyof typeof CHARACTER_COLORS] ??
-      avatarHex(c))
-    : (c.character?.bodyColor ??
-      CHARACTER_COLORS[c.character?.selections?.color as keyof typeof CHARACTER_COLORS] ??
-      avatarHex(c));
-  const selectedEyes =
-    c.character?.selections?.eyes ??
-    capabilities?.selected.eyes ??
-    (c.character?.preset === 'clippo'
-      ? 'clippo'
-      : c.character?.preset === 'lime_frog'
-        ? 'todd'
-        : 'oval');
-  const selectedEyewear = c.character?.selections?.eyewear ?? capabilities?.selected.eyewear;
-  const selectedAccessory = c.character?.selections?.accessory ?? capabilities?.selected.accessory;
+  const effective = materializeCharacter(c, capabilities.selected);
+  const betaColor = effective.selections?.color;
+  const betaBodyColor = effective.bodyColor;
+  const customColorValue =
+    betaBodyColor ?? CHARACTER_COLORS[betaColor as keyof typeof CHARACTER_COLORS] ?? avatarHex(c);
+  const selectedEyes = effective.selections?.eyes ?? 'oval';
   const selectedParts = {
-    ...(c.character?.selections?.eyes ||
-    capabilities.selected.eyes ||
-    c.character?.preset === 'clippo' ||
-    c.character?.preset === 'lime_frog'
-      ? { eyes: selectedEyes }
-      : {}),
-    ...(selectedEyewear ? { eyewear: selectedEyewear } : {}),
-    ...(selectedAccessory ? { accessory: selectedAccessory } : {}),
+    eyes: selectedEyes,
+    eyewear: effective.selections?.eyewear ?? 'none',
+    accessory: effective.selections?.accessory ?? 'none',
   };
   const characterConfig = (category: AvatarCharacterCategory, id: string): AvatarConfig => {
     if (category === 'shape') return createConfigForShape(c, id, capabilities.selected);
@@ -120,7 +93,6 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   };
   const selectCharacter = (category: AvatarCharacterCategory, id: string) =>
     onChange({ ...agent, avatar: characterConfig(category, id) });
-  const thumbnailBase = runtimeUrl ? runtimeUrl.slice(0, runtimeUrl.lastIndexOf('/') + 1) : '';
   const eyeBackground = customColorValue;
   const shapeChoices = runtimeUrl
     ? CHARACTER_SHAPES.map(([id, title]) => ({
@@ -130,27 +102,15 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
             ? messages.shapes[id as keyof typeof messages.shapes]
             : messages.characterOption('shape', id, title),
         config: createConfigForShape(c, id, capabilities.selected),
-        ...(NATIVE_CHARACTER_SHAPES.some(([shape]) => shape === id) &&
-        id !== 'clippo' &&
-        id !== 'todd'
-          ? { thumbnail: `${thumbnailBase}thumbnails/shapes/${id}.png` }
-          : {}),
       }))
     : undefined;
-  const shapeValue =
-    c.character?.selections?.shape ??
-    (beta
-      ? (capabilities.selected.shape ?? (c.character?.preset === 'clippo' ? 'clippo' : undefined))
-      : currentCharacterShape(c));
+  const shapeValue = effective.selections?.shape;
   const selectShape = (id: string) => selectCharacter('shape', id);
   const eyeChoices = runtimeUrl
     ? CHARACTER_OPTIONS.eyes.map(([id, title]) => ({
         id,
         label: messages.characterOption('eyes', id, title),
         config: characterConfig('eyes', id),
-        ...(id === 'clippo' || id === 'cyclops'
-          ? { artwork: id }
-          : { thumbnail: `${thumbnailBase}thumbnails/eyes/${id}.png` }),
         disabled: false,
       }))
     : undefined;
@@ -286,25 +246,14 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               </Button>
             </StyledView>
           )}
-          <CharacterControls
-            character={
-              runtimeUrl
-                ? beta
-                  ? c.character
-                  : materializeCharacter(c, capabilities.selected)
-                : c.character
-            }
-            capabilitiesKey={key}
-            selected={capabilities.selected}
-            onChange={(character) => {
-              if (character) onChange({ ...agent, avatar: { ...c, character } });
-              else appearance({});
-            }}
-          />
-          <StyledView className="mt-[15px] flex flex-row justify-center">
+          <StyledView
+            className="mt-[15px] flex shrink-0 flex-row justify-center"
+            style={{ flexShrink: 0 }}
+          >
             <StyledView
               role="group"
               accessibilityLabel={messages.color}
+              testID="agent-avatar-color-selector"
               className="flex h-[38px] shrink-0 items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default p-[5px] shadow-xs flex-row"
               style={{
                 backgroundColor: colors.card,
@@ -408,6 +357,22 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               </Popover>
             </StyledView>
           </StyledView>
+          <CharacterControls
+            config={c}
+            character={
+              runtimeUrl
+                ? beta
+                  ? c.character
+                  : materializeCharacter(c, capabilities.selected)
+                : c.character
+            }
+            capabilitiesKey={key}
+            selected={capabilities.selected}
+            onChange={(character) => {
+              if (character) onChange({ ...agent, avatar: { ...c, character } });
+              else appearance({});
+            }}
+          />
           <StyledView
             className="mt-[15px] overflow-hidden rounded-2xl bg-background-secondary-default ps-3"
             style={{ backgroundColor: colors.backgroundSecondary }}

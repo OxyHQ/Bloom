@@ -1,3 +1,4 @@
+import { CHARACTER_PRESET_DEFAULTS } from './character-preset-defaults';
 import { avatarHex } from './avatar-color';
 import type { AvatarCharacterConfig } from './config-character';
 import type { AvatarConfig } from './model';
@@ -66,31 +67,36 @@ export function materializeCharacter(
   selected: Readonly<Record<string, string>> = {},
 ): AvatarCharacterConfig {
   const saved = config.character;
-  if (!saved || saved.preset === 'bloom')
-    return {
-      ...saved,
-      preset: 'legacy',
-      ...(saved?.bodyColor
-        ? { bodyColor: saved.bodyColor }
-        : !saved?.selections?.color
-          ? { bodyColor: avatarHex(config) }
-          : {}),
-      selections: {
-        shape: currentCharacterShape(config),
-        eyes: 'oval',
-        eyewear: 'none',
-        accessory: 'none',
-        ...saved?.selections,
-      },
-    };
-  const defaults: NonNullable<AvatarCharacterConfig['selections']> = {};
-  for (const part of ['eyes', 'eyewear', 'accessory'] as const)
-    if (selected[part]) defaults[part] = selected[part];
-  // These virtual parts are absent from the backing native catalog.
-  if (!defaults.eyes && saved.preset === 'clippo') defaults.eyes = 'clippo';
-  if (!defaults.eyes && saved.preset === 'lime_frog') defaults.eyes = 'todd';
-  if (!defaults.accessory && saved.preset === 'blue_beret') defaults.accessory = 'felipe_beret';
-  return { ...saved, selections: { ...defaults, ...saved.selections } };
+  const { preset: _preset, ...rest } = saved ?? {};
+  const legacy = !saved || saved.preset === 'bloom' || saved.preset === 'legacy';
+  const base = !legacy && saved.preset ? CHARACTER_PRESET_DEFAULTS[saved.preset] : undefined;
+  const selections: NonNullable<AvatarCharacterConfig['selections']> = {
+    shape: base?.shape ?? currentCharacterShape(config),
+    eyes:
+      config.face === false
+        ? 'none'
+        : (base?.eyes ?? (config.family === 'alien' ? 'alien' : 'oval')),
+    eyewear: base?.eyewear ?? 'none',
+    accessory: base?.accessory ?? 'none',
+  };
+  for (const part of ['shape', 'eyes', 'eyewear', 'accessory'] as const)
+    if (selected[part] && !(legacy && part === 'shape')) selections[part] = selected[part];
+  Object.assign(selections, saved?.selections);
+  const bodyColor =
+    saved?.bodyColor ??
+    (!saved?.selections?.color
+      ? ((saved?.preset === 'clippo' ? base?.bodyColor : undefined) ??
+        selected.bodyColor ??
+        (!selected.color ? base?.bodyColor : undefined))
+      : undefined);
+  const namedColor =
+    saved?.selections?.color ?? (!bodyColor ? (selected.color ?? base?.color) : undefined);
+  if (namedColor) selections.color = namedColor;
+  return {
+    ...rest,
+    ...(bodyColor ? { bodyColor } : !namedColor ? { bodyColor: avatarHex(config) } : {}),
+    selections,
+  };
 }
 
 /** All 21 bodies change the same character recipe. Named paint and explicit RGB
@@ -103,12 +109,6 @@ export function createConfigForShape(
 ): AvatarConfig {
   if (!CHARACTER_SHAPES.some(([id]) => id === shape)) throw new Error('Unknown character shape.');
   const character = materializeCharacter(config, selected);
-  if (!character.bodyColor && !character.selections?.color) {
-    if (character.preset === 'clippo') character.bodyColor = '#999b9d';
-    else if (selected.color)
-      character.selections = { ...character.selections, color: selected.color };
-    else if (selected.bodyColor) character.bodyColor = selected.bodyColor;
-  }
   return characterShapeGeometry({
     ...config,
     character: { ...character, selections: { ...character.selections, shape } },

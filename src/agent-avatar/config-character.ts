@@ -2,13 +2,13 @@
 export type AvatarCharacterCategory = 'shape' | 'color' | 'eyes' | 'eyewear' | 'accessory';
 
 export type AvatarCharacterConfig = {
-  /** Named catalog preset, including Clippo (`clippo`), or a saved renderer ID. */
-  preset: string;
+  /** Optional template reference. Personalized avatars store complete parts and paint instead. */
+  preset?: string;
   /** Clippo's open wire body and ring eyes are independently selectable with ID `clippo`. */
   selections?: Partial<Record<AvatarCharacterCategory, string>>;
-  /** Custom body RGB accepted by the original renderer, stored as lowercase #RRGGBB. */
+  /** Custom body RGB accepted by the renderer, stored as lowercase #RRGGBB. */
   bodyColor?: string;
-  /** @deprecated Retained when reading saved recipes; ignored by the renderer. Each shape owns its eye layout. */
+  /** Multiplier (0.5–1.5) for the shape's eye separation; eye size is unchanged. */
   eyeSpacing?: number;
 };
 
@@ -22,13 +22,15 @@ const categories: readonly AvatarCharacterCategory[] = [
 const validId = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0 && value.length <= 63;
 
-/** Validate the JSON boundary before passing saved configuration to the optional renderer. */
+/** Validate the JSON boundary before passing saved configuration to the renderer. */
 export function parseCharacterConfig(value: unknown): AvatarCharacterConfig {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw new Error('Invalid character configuration.');
   const candidate = value as Record<string, unknown>;
-  if (!validId(candidate.preset)) throw new Error('Invalid character preset.');
-  const result: AvatarCharacterConfig = { preset: candidate.preset };
+  if (candidate.preset !== undefined && !validId(candidate.preset))
+    throw new Error('Invalid character preset.');
+  const result: AvatarCharacterConfig =
+    candidate.preset === undefined ? {} : { preset: candidate.preset as string };
   if (candidate.eyeSpacing !== undefined) {
     if (
       typeof candidate.eyeSpacing !== 'number' ||
@@ -64,5 +66,13 @@ export function parseCharacterConfig(value: unknown): AvatarCharacterConfig {
     result.selections = selections;
   }
   if ('state' in candidate) throw new Error('Opaque character state is not supported.');
+  if (
+    !result.preset &&
+    (['shape', 'eyes', 'eyewear', 'accessory'].some(
+      (part) => !result.selections?.[part as AvatarCharacterCategory],
+    ) ||
+      (!result.bodyColor && !result.selections?.color))
+  )
+    throw new Error('A custom character requires complete parts and a body color.');
   return result;
 }

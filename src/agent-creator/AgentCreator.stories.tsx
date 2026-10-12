@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { FOLD_CONFIG } from '../agent-avatar';
+import { createCharacterPreset } from './constants';
 import { AgentCreator } from './AgentCreator.web';
 import type { AgentCreatorAgent } from './types';
 
@@ -17,7 +18,7 @@ function ControlledCreator() {
     name: 'Landing page designer',
     label: 'Design',
     description: 'Clear layouts, thoughtful hierarchy, and a little personality.',
-    avatar: { ...FOLD_CONFIG, hue: 157, saturation: 37, eyes: 'curious' },
+    avatar: { ...FOLD_CONFIG, character: createCharacterPreset('lime_frog') },
   });
   return (
     <View style={{ width: 360, height: 800 }}>
