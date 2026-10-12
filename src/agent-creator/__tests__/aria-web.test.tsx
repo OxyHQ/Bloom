@@ -208,3 +208,42 @@ it('announces a custom beta body color and returns to a named color through the 
     },
   });
 });
+
+it.each([
+  ['#000000', 'rgb(126, 126, 126)'],
+  ['#ffffff', 'rgb(215, 215, 215)'],
+  ['#080019', 'rgb(127, 126, 128)'],
+  ['#0000ff', 'rgb(108, 108, 255)'],
+  ['#4778ff', 'rgb(71, 120, 255)'],
+])('uses engine-bounded eye-wheel paint while retaining saved %s', (bodyColor, background) => {
+  const agent = {
+    id: 'color-preview',
+    name: 'Preview',
+    label: '',
+    description: '',
+    avatar: {
+      ...FOLD_CONFIG,
+      character: { preset: 'lime_frog', bodyColor, selections: { eyes: 'todd' } },
+    },
+  };
+  const onChange = jest.fn();
+  render(
+    <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
+      <AgentCreator agent={agent} onChange={onChange} />
+    </CharacterRuntimeFixture>,
+  );
+  const eye = container.querySelector<HTMLElement>('[role="button"][aria-label="Clippo"]')!;
+  expect(getComputedStyle(eye).backgroundColor).toBe(background);
+  expect(agent.avatar.character.bodyColor).toBe(bodyColor);
+  act(() => eye.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+  expect(onChange).toHaveBeenCalledWith(
+    expect.objectContaining({
+      avatar: expect.objectContaining({
+        character: expect.objectContaining({
+          bodyColor,
+          selections: expect.objectContaining({ eyes: 'clippo' }),
+        }),
+      }),
+    }),
+  );
+});
