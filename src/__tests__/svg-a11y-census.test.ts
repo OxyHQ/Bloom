@@ -83,17 +83,30 @@ describe('Svg accessibility props', () => {
   const tags = sourceFiles(SRC).flatMap((file) =>
     svgOpeningTags(readFileSync(file, 'utf8')).map((tag) => ({
       ...tag,
+      file: relative(SRC, file),
       where: `${relative(SRC, file)}:${tag.line}`,
     })),
   );
 
   it('finds the <Svg> elements it audits', () => {
-    // The scan must keep seeing them: the shapes and the agent art alone are ten,
-    // each spreading the helper.
+    // The retired avatar renderer no longer contributes SVGs. Pin the remaining
+    // helper users by name so removing one cannot hide behind a numeric floor.
     expect(tags.length).toBeGreaterThanOrEqual(20);
     expect(
-      tags.filter((tag) => tag.raw.includes('...svgA11yProps(')).length,
-    ).toBeGreaterThanOrEqual(10);
+      [
+        ...new Set(
+          tags.filter((tag) => tag.raw.includes('...svgA11yProps(')).map((tag) => tag.file),
+        ),
+      ].sort(),
+    ).toEqual([
+      'agent-creator/CustomColorPicker.tsx',
+      'agent-creator/GlossArt.tsx',
+      'agent-creator/ScrollSurface.tsx',
+      'agent-creator/ShapeArc.tsx',
+      'shapes/Border.tsx',
+      'shapes/Fill.tsx',
+      'shapes/Image.tsx',
+    ]);
   });
 
   it("gives no <Svg> React Native's accessibility props of its own", () => {
