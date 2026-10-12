@@ -1,0 +1,248 @@
+{
+  "schema": "bloom.avatar.catalog-material",
+  "version": 1,
+  "id": "pocket",
+  "category": "body",
+  "signaturePreset": "lime_frog",
+  "selectedPartIds": [0],
+  "face": {
+    "radius": 0.20240963855421687,
+    "centers": [
+      [-0.3975903614457831, 0.04819277108433735, 0.7467296241201365],
+      [0.10843373493975902, 0.04819277108433735, 0.8099194319870171]
+    ]
+  },
+  "crop": [0.14700000000000002, 0.1579375, 0.709125, 0.709125],
+  "copy": {
+    "args": [
+      47.040000000000006, 50.540000000000006, 226.92000000000002, 226.92000000000002, 0, 0, 320, 320
+    ]
+  },
+  "parts": [
+    {
+      "id": 0,
+      "category": "body",
+      "label": "",
+      "attachment": "",
+      "pivot": [0, 0, 0],
+      "attachmentPivot": null,
+      "bounds": {
+        "min": [-1.0101392269134521, -0.9692797660827637, -0.8799999952316284],
+        "max": [1.037520408630371, 0.859355628490448, 0.8799999952316284]
+      },
+      "materialKind": 1,
+      "universal": false,
+      "fields": {
+        "world": [
+          0.9988173842430115, 0, 0, 0, 0, 1.0023694038391113, 0, 0, 0, 0, 0.9988173246383667, 0, 0,
+          0.0007897873292677104, 0, 1
+        ],
+        "normalMatrix": [
+          1.0011839866638184, 0, 0, 0, 0, 0.9976361989974976, 0, 0, 0, 0, 1.001184105873108, 0, 0,
+          0, 0, 1
+        ],
+        "colorRoughness": [0.06301002949476242, 0.18782076239585876, 1, 0.7799999713897705],
+        "parameters": [0.23408909142017365, 0, 0, 0],
+        "referencePose": [64, 0.7799999713897705, 0.23408909142017365, -23],
+        "emissiveMetallic": [0, 0, 0, 0],
+        "coverage": [1, 1, 0, 1],
+        "eyeCurveOriginAmount": [0, 0, 0, 0],
+        "eyeCurveRightWidth": [0, 0, 0, 0],
+        "eyeCurveUp": [0, 0, 0, 0],
+        "paletteBounds": [0, 0, 0.5001040697097778, 0.5002039670944214],
+        "paletteClosure": [0, 0, 0, 0],
+        "paletteReference": [0, 0, 0, 0],
+        "fur": [0.035985317081213, 1.9991843700408936, 1.8181817531585693, 0.054999999701976776],
+        "furEye0": [
+          -0.20533062517642975, 0.19991865754127502, 0.1239752247929573, 0.17296446859836578
+        ],
+        "furEye1": [
+          0.20533010363578796, 0.19991803169250488, 0.12397652119398117, 0.17296424508094788
+        ],
+        "signatureDeform": [0, 0, 0, 0]
+      },
+      "fur": true,
+      "transparent": false,
+      "depthWrite": true,
+      "depthTest": true,
+      "doubleSided": false,
+      "renderOrder": 0,
+      "furRenderOrder": 3,
+      "neutralBodyRelativeWorld": [
+        1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1.0842021724855044e-19, 0, 1
+      ],
+      "neutralBodyRelativeNormal": [
+        0.9999999999999999, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.9999999999999999, 0, 0, 0, 0, 1
+      ]
+    },
+    {
+      "id": 1,
+      "category": "eyes",
+      "label": "",
+      "attachment": "",
+      "pivot": [-0.20533064007759094, 0.19991865754127502, 0.8407061100006104],
+      "attachmentPivot": null,
+      "bounds": {
+        "min": [-0.3053092658519745, 0.04995097219944, 0.7798774242401123],
+        "max": [-0.10535198450088501, 0.34988635778427124, 0.9015347957611084]
+      },
+      "materialKind": 0,
+      "universal": true,
+      "fields": {
+        "world": [
+          0.9988173842430115, 0, 0, 0, 0, 1.0023694038391113, 0, 0, 0, 0, 0.9988173246383667, 0, 0,
+          0.0007897913455963135, 0, 1
+        ],
+        "normalMatrix": [
+          1.0011839866638184, 0, 0, 0, 0, 0.9976361989974976, 0, 0, 0, 0, 1.001184105873108, 0, 0,
+          0, 0, 1
+        ],
+        "colorRoughness": [
+          0.013411746360361576, 0.013411746360361576, 0.013411746360361576, 0.8199999928474426
+        ],
+        "parameters": [0.1599999964237213, 0, 0, 0],
+        "referencePose": [0, 0, 0, 0],
+        "emissiveMetallic": [0, 0, 0, 0],
+        "coverage": [1, 0, 0, 1],
+        "eyeCurveOriginAmount": [0, 0, 0, 0],
+        "eyeCurveRightWidth": [0, 0, 0, 0],
+        "eyeCurveUp": [0, 0, 0, 0],
+        "paletteBounds": [0, 0, 0, 0],
+        "paletteClosure": [0, 0, 0, 0],
+        "paletteReference": [0, 0, 0, 0],
+        "fur": [0, 0, 0, 0],
+        "furEye0": [0, 0, 0, 0],
+        "furEye1": [0, 0, 0, 0],
+        "signatureDeform": [0, 0, 0, 0]
+      },
+      "fur": false,
+      "transparent": false,
+      "depthWrite": true,
+      "depthTest": true,
+      "doubleSided": false,
+      "renderOrder": 1,
+      "furRenderOrder": -1,
+      "neutralBodyRelativeWorld": [
+        1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 4.006834793211095e-9, 0, 1
+      ],
+      "neutralBodyRelativeNormal": [
+        0.9999999999999999, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.9999999999999999, 0, 0, 0, 0, 1
+      ]
+    },
+    {
+      "id": 2,
+      "category": "eyes",
+      "label": "",
+      "attachment": "",
+      "pivot": [0.20533010363578796, 0.19991803169250488, 0.8407040238380432],
+      "attachmentPivot": null,
+      "bounds": {
+        "min": [0.10535034537315369, 0.04995052516460419, 0.7798823118209839],
+        "max": [0.30530986189842224, 0.3498855233192444, 0.9015257358551025]
+      },
+      "materialKind": 0,
+      "universal": true,
+      "fields": {
+        "world": [
+          0.9988173842430115, 0, 0, 0, 0, 1.0023694038391113, 0, 0, 0, 0, 0.9988173246383667, 0, 0,
+          0.0007897913455963135, 0, 1
+        ],
+        "normalMatrix": [
+          1.0011839866638184, 0, 0, 0, 0, 0.9976361989974976, 0, 0, 0, 0, 1.001184105873108, 0, 0,
+          0, 0, 1
+        ],
+        "colorRoughness": [
+          0.013411746360361576, 0.013411746360361576, 0.013411746360361576, 0.8199999928474426
+        ],
+        "parameters": [0.1599999964237213, 0, 0, 0],
+        "referencePose": [0, 0, 0, 0],
+        "emissiveMetallic": [0, 0, 0, 0],
+        "coverage": [1, 0, 0, 1],
+        "eyeCurveOriginAmount": [0, 0, 0, 0],
+        "eyeCurveRightWidth": [0, 0, 0, 0],
+        "eyeCurveUp": [0, 0, 0, 0],
+        "paletteBounds": [0, 0, 0, 0],
+        "paletteClosure": [0, 0, 0, 0],
+        "paletteReference": [0, 0, 0, 0],
+        "fur": [0, 0, 0, 0],
+        "furEye0": [0, 0, 0, 0],
+        "furEye1": [0, 0, 0, 0],
+        "signatureDeform": [0, 0, 0, 0]
+      },
+      "fur": false,
+      "transparent": false,
+      "depthWrite": true,
+      "depthTest": true,
+      "doubleSided": false,
+      "renderOrder": 2,
+      "furRenderOrder": -1,
+      "neutralBodyRelativeWorld": [
+        1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 4.006834793211095e-9, 0, 1
+      ],
+      "neutralBodyRelativeNormal": [
+        0.9999999999999999, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.9999999999999999, 0, 0, 0, 0, 1
+      ]
+    }
+  ],
+  "frame": {
+    "viewProjection": [
+      0.5494505167007446, 0, 0, 0, 0, 0.5494505167007446, 0, 0, 0, 0, -0.10050251334905624, 0, 0, 0,
+      -0.6080402135848999, 1
+    ],
+    "inverseViewProjection": [
+      1.8200000524520874, 0, 0, 0, 0, 1.8200000524520874, 0, 0, 0, 0, -9.949999809265137, 0, 0, 0,
+      -6.050000190734863, 1
+    ],
+    "lightViewProjection": [
+      0.35728874802589417, 0.12126781046390533, 0.08570991456508636, 0, 0, 0.3435921370983124,
+      -0.11427989602088928, 0, 0.21437321603298187, -0.20211303234100342, -0.142849862575531, 0,
+      4.967053612858763e-8, 0, -0.010100960731506348, 1
+    ],
+    "cameraPosition": [0, 0, 4, 0],
+    "keyDirectionIntensity": [-0.6000000238418579, 0.800000011920929, 1, 74000],
+    "fillDirectionIntensity": [0.8500000238418579, 0.20000000298023224, 0.699999988079071, 12000],
+    "ambientExposure": [45000, 0.00002604166729724966, 0.6399999856948853, 0.699999988079071],
+    "viewport": [320, 320, 0.0031250000465661287, 0.0031250000465661287],
+    "effects": [0, 0.5, 1.100000023841858, 0.2199999988079071],
+    "studioParameters": [1, 1.0499999523162842, 0, 0.18000000715255737],
+    "errorBodyBounds": [0, 0, 0, 0],
+    "characterStudio": [0.5, 2, 1, 0.6499999761581421],
+    "shadowParameters": [
+      0.3499999940395355, 4.800000190734863, 9.899999618530273, 0.6499999761581421
+    ],
+    "searchLensCenterRadius": [0, 0, 0, 0],
+    "searchLensRight": [0, 0, 0, 0],
+    "searchLensUp": [0, 0, 0, 0],
+    "searchLensStyle": [0, 0, 0, 0],
+    "searchLensOptics": [0, 0, 0, 0],
+    "thinkingLightPositionStrength": [0, 0, 0, 0],
+    "thinkingLightColorRadius": [0, 0, 0, 0]
+  },
+  "source": {
+    "hashes": {
+      "orbit-characters.mjs": "f3ba670dadba954df1618af83fa314641a4cfddd3597aca93a191c264374eed7",
+      "orbit-characters.data": "ffefb69b44f815cccb5f07b4d951d479e527dbabdca68ad9986cf695f9b9c440",
+      "orbit-characters.wasm": "c15f3692305c1385a12524e877199ba279b8d53e6bd37a9e533d626f12fcb94b"
+    },
+    "appearanceSha256": "0814be12782c49d0c69fed640b1535e9d6db88ddde7c79600561ae3fe3011511",
+    "assemblySha256": "9b63b337527397955882406e712657fb1b01631eb2772e8ffc183de03082b2d6",
+    "clock": 0,
+    "mode": "public Character render(0), active preparation"
+  },
+  "limitations": [
+    "Observed neutral pose is a public Character preparation frame; not an animation clip.",
+    "Geometry, material channels, original pivots and labels are exported; runtime composition must preserve donor-local pose."
+  ],
+  "sceneBounds": {
+    "min": [-0.9997919201850891, -0.9995921850204468, -0.8799999952316284],
+    "max": [0.9997919201850891, 0.9995921850204468, 0.9015347957611084]
+  },
+  "referenceBounds": {
+    "min": [-0.9997919201850891, -0.9995921850204468, -0.8799999952316284],
+    "max": [0.9997919201850891, 0.9995921850204468, 0.8799999952316284]
+  },
+  "aggregateBounds": {
+    "min": [-0.9997919201850891, -0.9995921850204468, -0.8799999952316284],
+    "max": [0.9997919201850891, 0.9995921850204468, 0.9015347957611084]
+  }
+}

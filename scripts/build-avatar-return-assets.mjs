@@ -20,9 +20,7 @@ const read = async (path) => JSON.parse(await readFile(path, 'utf8'));
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 
 export function semanticFrames(raw) {
-  const identities = new Map(
-    raw.vertexBuffers.map((buffer) => [buffer.id, buffer.sha256]),
-  );
+  const identities = new Map(raw.vertexBuffers.map((buffer) => [buffer.id, buffer.sha256]));
   return raw.frames.map((frame) => {
     const parts = frame.draws
       .map((draw) => {
@@ -38,9 +36,7 @@ export function semanticFrames(raw) {
         };
       })
       .sort(
-        (a, b) =>
-          a.id.localeCompare(b.id) ||
-          JSON.stringify(a).localeCompare(JSON.stringify(b)),
+        (a, b) => a.id.localeCompare(b.id) || JSON.stringify(a).localeCompare(JSON.stringify(b)),
       );
     // Repeated geometry (the two hands) remains a full semantic multiset;
     // no draw is dropped or paired by an unstable draw ordinal.
@@ -49,12 +45,8 @@ export function semanticFrames(raw) {
 }
 
 export function proveReturn(work, idle) {
-  const start = work.calls.filter(
-    (c) => c.method === 'applyActivity' && c.args[0].command === 1,
-  );
-  const stop = work.calls.filter(
-    (c) => c.method === 'applyActivity' && c.args[0].command === 2,
-  );
+  const start = work.calls.filter((c) => c.method === 'applyActivity' && c.args[0].command === 1);
+  const stop = work.calls.filter((c) => c.method === 'applyActivity' && c.args[0].command === 2);
   assert.equal(start.length, 1);
   assert.equal(stop.length, 1);
   assert.equal(work.fixedStep, 60);
@@ -64,26 +56,14 @@ export function proveReturn(work, idle) {
   const frames = semanticFrames(work),
     reference = new Map(semanticFrames(idle).map((f) => [f.time, f.signature]));
   let first = frames.length;
-  while (
-    first > 0 &&
-    reference.get(frames[first - 1].time) === frames[first - 1].signature
-  )
+  while (first > 0 && reference.get(frames[first - 1].time) === frames[first - 1].signature)
     first--;
   if (first === frames.length) return null;
   const tail = frames.slice(first);
-  assert(
-    tail.length >= 60,
-    'Need at least one second of sustained exact native continuation',
-  );
-  assert(
-    tail[0].time > stop[0].renderTime,
-    'Return must follow this episode Stop',
-  );
+  assert(tail.length >= 60, 'Need at least one second of sustained exact native continuation');
+  assert(tail[0].time > stop[0].renderTime, 'Return must follow this episode Stop');
   for (let i = 1; i < tail.length; i++)
-    assert(
-      Math.abs(tail[i].time - tail[i - 1].time - 1 / 60) < 1e-12,
-      'No missing tail samples',
-    );
+    assert(Math.abs(tail[i].time - tail[i - 1].time - 1 / 60) < 1e-12, 'No missing tail samples');
   assert(
     first > 0 && reference.has(frames[first - 1].time),
     'Need paired preceding non-return frame',
@@ -112,30 +92,19 @@ export async function importSampler() {
   const directory = await mkdtemp('.local/return-sampler-');
   await writeFile(
     `${directory}/motion.mjs`,
-    ts.transpileModule(
-      await readFile('runtime/avatar/motion.ts', 'utf8'),
-      {
-        compilerOptions: {
-          target: ts.ScriptTarget.ES2022,
-          module: ts.ModuleKind.ES2022,
-        },
+    ts.transpileModule(await readFile('runtime/avatar/motion.ts', 'utf8'), {
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.ES2022,
       },
-    ).outputText,
+    }).outputText,
   );
-  const module = await import(
-    pathToFileURL(`${process.cwd()}/${directory}/motion.mjs`)
-  );
+  const module = await import(pathToFileURL(`${process.cwd()}/${directory}/motion.mjs`));
   await rm(directory, { recursive: true, force: true });
   return module.AuthoredMotionSampler;
 }
 
-export function compareSampledReturn(
-  Sampler,
-  work,
-  idle,
-  returnTime,
-  idleTime,
-) {
+export function compareSampledReturn(Sampler, work, idle, returnTime, idleTime) {
   const a = new Sampler(work),
     b = new Sampler(idle),
     ap = a.createPose(),
@@ -143,15 +112,9 @@ export function compareSampledReturn(
   a.sample(returnTime, ap);
   b.sample(idleTime, bp);
   const active = new Map(
-    ap
-      .filter((p) => !p.fields.camera || p.fields.camera[3] === 1)
-      .map((p) => [p.id, p]),
+    ap.filter((p) => !p.fields.camera || p.fields.camera[3] === 1).map((p) => [p.id, p]),
   );
-  assert.equal(
-    active.size,
-    bp.length,
-    'All props gone and all base parts present',
-  );
+  assert.equal(active.size, bp.length, 'All props gone and all base parts present');
   let matrixMax = 0,
     normalMax = 0,
     fieldMax = 0;
@@ -159,24 +122,16 @@ export function compareSampledReturn(
     const left = active.get(right.id);
     assert(left, `Missing ${right.id}`);
     for (let k = 0; k < 16; k++) {
-      matrixMax = Math.max(
-        matrixMax,
-        Math.abs(left.world.elements[k] - right.world.elements[k]),
-      );
+      matrixMax = Math.max(matrixMax, Math.abs(left.world.elements[k] - right.world.elements[k]));
       normalMax = Math.max(
         normalMax,
-        Math.abs(
-          left.normalMatrix.elements[k] - right.normalMatrix.elements[k],
-        ),
+        Math.abs(left.normalMatrix.elements[k] - right.normalMatrix.elements[k]),
       );
     }
     for (const [name, values] of Object.entries(right.fields)) {
       assert(left.fields[name], `Missing shared field ${name}`);
       for (let k = 0; k < values.length; k++)
-        fieldMax = Math.max(
-          fieldMax,
-          Math.abs(left.fields[name][k] - values[k]),
-        );
+        fieldMax = Math.max(fieldMax, Math.abs(left.fields[name][k] - values[k]));
     }
     assert.deepEqual(
       left.fields.camera,
@@ -191,8 +146,7 @@ export function compareSampledReturn(
   return { matrixMax, normalMax, fieldMax, baseParts: bp.length };
 }
 
-export const canonicalReturnPath =
-  'runtime/avatar/assets/motion/computer-returns.json';
+export const canonicalReturnPath = 'runtime/avatar/assets/motion/computer-returns.json';
 
 /** A diagnostic subset must never replace the application's complete return index. */
 export function returnDestination(selected, requested) {
@@ -207,10 +161,7 @@ export function returnDestination(selected, requested) {
   const complete = selected.length === presets.length;
   const destination = resolve(requested || canonicalReturnPath);
   if (!complete) {
-    assert(
-      requested,
-      'Filtered return export requires explicit AVATAR_RETURN_OUTPUT',
-    );
+    assert(requested, 'Filtered return export requires explicit AVATAR_RETURN_OUTPUT');
     assert.notEqual(
       destination,
       resolve(canonicalReturnPath),
@@ -222,10 +173,7 @@ export function returnDestination(selected, requested) {
 
 export async function build() {
   const selected = process.env.AVATAR_PRESET?.split(',') || presets;
-  const destination = returnDestination(
-    selected,
-    process.env.AVATAR_RETURN_OUTPUT,
-  );
+  const destination = returnDestination(selected, process.env.AVATAR_RETURN_OUTPUT);
   const Sampler = await importSampler(),
     entries = {};
   for (const preset of selected) {
@@ -244,10 +192,7 @@ export async function build() {
     const motion = await read(motionPath),
       computer = await read(computerPath);
     const idleNativeStart = motion.evidence?.idle?.nativeStart;
-    assert(
-      Number.isFinite(idleNativeStart),
-      `${preset}: idle phase evidence missing`,
-    );
+    assert(Number.isFinite(idleNativeStart), `${preset}: idle phase evidence missing`);
     const idleTime = proof.nativeReturn - idleNativeStart;
     assert(
       idleTime >= 0 && idleTime <= motion.clips.idle.duration,
@@ -291,5 +236,4 @@ export async function build() {
   await writeFile(destination, JSON.stringify(output, null, 2) + '\n');
   return output;
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
-  await build();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await build();

@@ -9,35 +9,24 @@ import * as THREE from 'three';
 const temporary = await mkdtemp('.local/motion-contract-');
 await writeFile(
   `${temporary}/motion.mjs`,
-  ts.transpileModule(
-    await readFile('runtime/avatar/motion.ts', 'utf8'),
-    {
-      compilerOptions: {
-        target: ts.ScriptTarget.ES2022,
-        module: ts.ModuleKind.ES2022,
-      },
+  ts.transpileModule(await readFile('runtime/avatar/motion.ts', 'utf8'), {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2022,
+      module: ts.ModuleKind.ES2022,
     },
-  ).outputText,
+  }).outputText,
 );
 const { AuthoredMotionSampler } = await import(
   pathToFileURL(`${process.cwd()}/${temporary}/motion.mjs`).href
 );
-const asset = JSON.parse(
-  await readFile(
-    'runtime/avatar/assets/motion/blue_beret.json',
-    'utf8',
-  ),
-);
+const asset = JSON.parse(await readFile('runtime/avatar/assets/motion/blue_beret.json', 'utf8'));
 const source =
   process.env.AVATAR_MOTION_SOURCE ||
   asset.evidence?.source ||
   '.local/avatar-runtime-motion/blue_beret';
 const evidence = asset.evidence
   ? Object.fromEntries(
-      ['idle', 'reaction'].map((kind) => [
-        kind,
-        { start: asset.evidence[kind].nativeStart },
-      ]),
+      ['idle', 'reaction'].map((kind) => [kind, { start: asset.evidence[kind].nativeStart }]),
     )
   : JSON.parse(await readFile(`${source}/semantic-validation.json`, 'utf8'));
 test.after(async () => {
@@ -45,15 +34,11 @@ test.after(async () => {
 });
 for (const name of ['idle', 'reaction'])
   test(`${name}: sampled keyframes reproduce observed part matrices and normals`, async () => {
-    const { frames } = JSON.parse(
-      await readFile(`${source}/${name}-raw.json`, 'utf8'),
-    );
+    const { frames } = JSON.parse(await readFile(`${source}/${name}-raw.json`, 'utf8'));
     const sampler = new AuthoredMotionSampler(asset.clips[name]),
       pose = sampler.createPose();
     for (const time of sampler.clip.times) {
-      const frame = frames.find(
-        (f) => Math.abs(f.renderTime - evidence[name].start - time) < 1e-8,
-      );
+      const frame = frames.find((f) => Math.abs(f.renderTime - evidence[name].start - time) < 1e-8);
       assert(frame, `Missing observed keyframe ${time}`);
       sampler.sample(time, pose);
       for (let i = 0; i < pose.length; i++) {
@@ -64,15 +49,9 @@ for (const name of ['idle', 'reaction'])
             `${name} ${time} ${i} matrix[${k}]`,
           );
         for (const k of [0, 1, 2, 4, 5, 6, 8, 9, 10])
-          assert(
-            Math.abs(pose[i].normalMatrix.elements[k] - original[16 + k]) <
-              5e-5,
-          );
+          assert(Math.abs(pose[i].normalMatrix.elements[k] - original[16 + k]) < 5e-5);
         for (let k = 0; k < 4; k++)
-          assert(
-            Math.abs(pose[i].fields.signatureDeform[k] - original[88 + k]) <
-              1e-8,
-          );
+          assert(Math.abs(pose[i].fields.signatureDeform[k] - original[88 + k]) < 1e-8);
       }
     }
   });
@@ -112,31 +91,21 @@ test('invalid topology, timestamps and channel lengths fail explicitly', () => {
 
 test('export rejects an animated field that the seven-texel renderer cannot upload', async () => {
   const raw = JSON.parse(await readFile(`${source}/idle-raw.json`, 'utf8'));
-  raw.frames[Math.floor(raw.frames.length / 2)].draws[0].blocks.DrawBlock[44] +=
-    0.25;
+  raw.frames[Math.floor(raw.frames.length / 2)].draws[0].blocks.DrawBlock[44] += 0.25;
   await writeFile(`${temporary}/idle-raw.json`, JSON.stringify(raw));
   for (const file of ['reaction-raw.json', 'report.json'])
-    await writeFile(
-      `${temporary}/${file}`,
-      await readFile(`${source}/${file}`),
-    );
-  const run = spawnSync(
-    process.execPath,
-    ['scripts/build-avatar-motion-assets.mjs'],
-    {
-      env: {
-        ...process.env,
-        AVATAR_PRESET: 'blue_beret',
-        AVATAR_MOTION_SOURCE: temporary,
-        AVATAR_MOTION_DESTINATION: `${temporary}/output`,
-      },
-      encoding: 'utf8',
+    await writeFile(`${temporary}/${file}`, await readFile(`${source}/${file}`));
+  const run = spawnSync(process.execPath, ['scripts/build-avatar-motion-assets.mjs'], {
+    env: {
+      ...process.env,
+      AVATAR_PRESET: 'blue_beret',
+      AVATAR_MOTION_SOURCE: temporary,
+      AVATAR_MOTION_DESTINATION: `${temporary}/output`,
     },
-  );
+    encoding: 'utf8',
+  });
   assert.equal(run.status, 1, run.stderr);
-  const diagnostic = JSON.parse(
-    await readFile(`${temporary}/semantic-validation.json`, 'utf8'),
-  );
+  const diagnostic = JSON.parse(await readFile(`${temporary}/semantic-validation.json`, 'utf8'));
   assert.equal(diagnostic.idle.rejected, true);
   assert.match(diagnostic.idle.reason, /emissiveMetallic/);
   await assert.rejects(readFile(`${temporary}/output/blue_beret.json`), {
@@ -150,31 +119,22 @@ test('finite observations retain animated color/closure without claiming an idle
   raw.frames[index].draws[0].blocks.DrawBlock[32] += 0.125;
   raw.frames[index].draws[0].blocks.DrawBlock[68] += 0.25;
   await writeFile(`${temporary}/idle-raw.json`, JSON.stringify(raw));
-  const reaction = JSON.parse(
-    await readFile(`${source}/reaction-raw.json`, 'utf8'),
-  );
+  const reaction = JSON.parse(await readFile(`${source}/reaction-raw.json`, 'utf8'));
   // A recording ending immediately after a submitted frame is expressly NOT
   // evidence that the reaction finished, but is a valid diagnostic interval.
   reaction.finishedAt = reaction.frames.at(-1).presentedAt;
   await writeFile(`${temporary}/reaction-raw.json`, JSON.stringify(reaction));
-  await writeFile(
-    `${temporary}/report.json`,
-    await readFile(`${source}/report.json`),
-  );
-  const run = spawnSync(
-    process.execPath,
-    ['scripts/build-avatar-motion-assets.mjs'],
-    {
-      env: {
-        ...process.env,
-        AVATAR_PRESET: 'blue_beret',
-        AVATAR_MOTION_DIAGNOSTIC: '1',
-        AVATAR_MOTION_SOURCE: temporary,
-        AVATAR_MOTION_DESTINATION: `${temporary}/observations`,
-      },
-      encoding: 'utf8',
+  await writeFile(`${temporary}/report.json`, await readFile(`${source}/report.json`));
+  const run = spawnSync(process.execPath, ['scripts/build-avatar-motion-assets.mjs'], {
+    env: {
+      ...process.env,
+      AVATAR_PRESET: 'blue_beret',
+      AVATAR_MOTION_DIAGNOSTIC: '1',
+      AVATAR_MOTION_SOURCE: temporary,
+      AVATAR_MOTION_DESTINATION: `${temporary}/observations`,
     },
-  );
+    encoding: 'utf8',
+  });
   assert.equal(run.status, 0, run.stdout + run.stderr);
   const observation = JSON.parse(
     await readFile(`${temporary}/observations/blue_beret.json`, 'utf8'),
@@ -203,28 +163,22 @@ test('finite observations retain animated color/closure without claiming an idle
 
 test('shader variant changes reject finite observations as well as runtime clips', async () => {
   for (const name of ['idle', 'reaction']) {
-    const raw = JSON.parse(
-      await readFile(`${source}/${name}-raw.json`, 'utf8'),
-    );
+    const raw = JSON.parse(await readFile(`${source}/${name}-raw.json`, 'utf8'));
     raw.frames[Math.floor(raw.frames.length / 2)].draws[0].defines[1] +=
       '\n#define UNREPRESENTED_VARIANT 1';
     await writeFile(`${temporary}/${name}-raw.json`, JSON.stringify(raw));
   }
   for (const diagnostic of [false, true]) {
-    const run = spawnSync(
-      process.execPath,
-      ['scripts/build-avatar-motion-assets.mjs'],
-      {
-        env: {
-          ...process.env,
-          AVATAR_PRESET: 'blue_beret',
-          AVATAR_MOTION_DIAGNOSTIC: diagnostic ? '1' : '0',
-          AVATAR_MOTION_SOURCE: temporary,
-          AVATAR_MOTION_DESTINATION: `${temporary}/rejected`,
-        },
-        encoding: 'utf8',
+    const run = spawnSync(process.execPath, ['scripts/build-avatar-motion-assets.mjs'], {
+      env: {
+        ...process.env,
+        AVATAR_PRESET: 'blue_beret',
+        AVATAR_MOTION_DIAGNOSTIC: diagnostic ? '1' : '0',
+        AVATAR_MOTION_SOURCE: temporary,
+        AVATAR_MOTION_DESTINATION: `${temporary}/rejected`,
       },
-    );
+      encoding: 'utf8',
+    });
     assert.equal(run.status, 1, run.stdout + run.stderr);
     const report = JSON.parse(
       await readFile(
@@ -263,36 +217,12 @@ function affineFixture() {
 function expectedAffine(time) {
   const clip = affineFixture(),
     part = clip.parts[0];
-  const position = new THREE.Vector3(1, 2, 3).lerp(
-    new THREE.Vector3(-2, 4, 5),
-    time,
-  );
-  const rotation = new THREE.Quaternion().slerp(
-    new THREE.Quaternion(0, 1, 0, 0),
-    time,
-  );
+  const position = new THREE.Vector3(1, 2, 3).lerp(new THREE.Vector3(-2, 4, 5), time);
+  const rotation = new THREE.Quaternion().slerp(new THREE.Quaternion(0, 1, 0, 0), time);
   const [xy, xz, yz] = [0, 1, 2].map(
-    (k) =>
-      part.shear.samples[k] * (1 - time) + part.shear.samples[3 + k] * time,
+    (k) => part.shear.samples[k] * (1 - time) + part.shear.samples[3 + k] * time,
   );
-  const stretch = new THREE.Matrix4().set(
-    1,
-    xy,
-    xz,
-    0,
-    0,
-    2,
-    yz,
-    0,
-    0,
-    0,
-    -0.5,
-    0,
-    0,
-    0,
-    0,
-    1,
-  );
+  const stretch = new THREE.Matrix4().set(1, xy, xz, 0, 0, 2, yz, 0, 0, 0, -0.5, 0, 0, 0, 0, 1);
   const world = new THREE.Matrix4()
     .makeTranslation(position)
     .multiply(new THREE.Matrix4().makeRotationFromQuaternion(rotation))
@@ -324,8 +254,7 @@ test('affine interpolation retains shear and reflection without singularities th
     assertMatrixNear(pose[0].normalMatrix, expected.normal);
     assert(Math.abs(pose[0].world.determinant() + 1) < 1e-12);
     if (previous)
-      for (let k = 0; k < 16; k++)
-        assert(Math.abs(previous[k] - pose[0].world.elements[k]) < 0.02);
+      for (let k = 0; k < 16; k++) assert(Math.abs(previous[k] - pose[0].world.elements[k]) < 0.02);
     previous = [...pose[0].world.elements];
   }
 });
@@ -349,13 +278,8 @@ test('sampler rejects singular scales, orientation crossings, malformed shear an
 test('offline exporter preserves reflected affine source matrices and rejects singular or orientation-changing sources', async () => {
   const folder = `${temporary}/affine`;
   await (await import('node:fs/promises')).mkdir(folder);
-  await writeFile(
-    `${folder}/report.json`,
-    await readFile(`${source}/report.json`),
-  );
-  const original = JSON.parse(
-    await readFile(`${source}/idle-raw.json`, 'utf8'),
-  );
+  await writeFile(`${folder}/report.json`, await readFile(`${source}/report.json`));
+  const original = JSON.parse(await readFile(`${source}/idle-raw.json`, 'utf8'));
   original.frames = original.frames.slice(0, 3);
   for (let i = 0; i < original.frames.length; i++) {
     const expected = expectedAffine(i / 2),
@@ -369,25 +293,19 @@ test('offline exporter preserves reflected affine source matrices and rejects si
     if (mode === 'singular') data[0] = data[1] = data[2] = 0;
     if (mode === 'orientation') for (let k = 8; k < 11; k++) data[k] = -data[k];
     await writeFile(`${folder}/idle-raw.json`, JSON.stringify(raw));
-    const run = spawnSync(
-      process.execPath,
-      ['scripts/build-avatar-motion-assets.mjs'],
-      {
-        env: {
-          ...process.env,
-          AVATAR_PRESET: 'blue_beret',
-          AVATAR_MOTION_SOURCE: folder,
-          AVATAR_MOTION_DESTINATION: `${folder}/${mode}`,
-          AVATAR_MOTION_DIAGNOSTIC: '1',
-        },
-        encoding: 'utf8',
+    const run = spawnSync(process.execPath, ['scripts/build-avatar-motion-assets.mjs'], {
+      env: {
+        ...process.env,
+        AVATAR_PRESET: 'blue_beret',
+        AVATAR_MOTION_SOURCE: folder,
+        AVATAR_MOTION_DESTINATION: `${folder}/${mode}`,
+        AVATAR_MOTION_DIAGNOSTIC: '1',
       },
-    );
+      encoding: 'utf8',
+    });
     if (mode === 'valid') {
       assert.equal(run.status, 0, run.stdout + run.stderr);
-      const output = JSON.parse(
-        await readFile(`${folder}/${mode}/blue_beret.json`, 'utf8'),
-      );
+      const output = JSON.parse(await readFile(`${folder}/${mode}/blue_beret.json`, 'utf8'));
       assert.equal(output.version, 2);
       const clip = output.observations.idle,
         sampler = new AuthoredMotionSampler(clip),
@@ -399,13 +317,8 @@ test('offline exporter preserves reflected affine source matrices and rejects si
       }
     } else {
       assert.equal(run.status, 1, run.stdout + run.stderr);
-      const report = JSON.parse(
-        await readFile(`${folder}/observation-validation.json`, 'utf8'),
-      );
-      assert.match(
-        report.idle.reason,
-        mode === 'singular' ? /Singular/ : /orientation/,
-      );
+      const report = JSON.parse(await readFile(`${folder}/observation-validation.json`, 'utf8'));
+      assert.match(report.idle.reason, mode === 'singular' ? /Singular/ : /orientation/);
     }
   }
 });
@@ -422,17 +335,11 @@ test('all sixteen finite observations preserve every captured affine world and n
     'lime_headphones',
   ]) {
     const exported = JSON.parse(
-      await readFile(
-        `.local/avatar-motion-observations/${preset}.json`,
-        'utf8',
-      ),
+      await readFile(`.local/avatar-motion-observations/${preset}.json`, 'utf8'),
     );
     assert.equal(exported.version, 2);
     const geometry = JSON.parse(
-      await readFile(
-        `.local/avatar-original-geometry/${preset}/geometry.json`,
-        'utf8',
-      ),
+      await readFile(`.local/avatar-original-geometry/${preset}/geometry.json`, 'utf8'),
     );
     const hashes = new Map(
       geometry.parts.flatMap((part) => [
@@ -442,16 +349,10 @@ test('all sixteen finite observations preserve every captured affine world and n
     );
     for (const name of ['idle', 'reaction']) {
       const raw = JSON.parse(
-        await readFile(
-          `.local/avatar-runtime-motion/${preset}/${name}-raw.json`,
-          'utf8',
-        ),
+        await readFile(`.local/avatar-runtime-motion/${preset}/${name}-raw.json`, 'utf8'),
       );
       const identities = new Map(
-        (raw.vertexBuffers || []).map((buffer) => [
-          buffer.id,
-          hashes.get(buffer.sha256),
-        ]),
+        (raw.vertexBuffers || []).map((buffer) => [buffer.id, hashes.get(buffer.sha256)]),
       );
       const clip = exported.observations[name],
         sampler = new AuthoredMotionSampler(clip),
@@ -464,26 +365,15 @@ test('all sixteen finite observations preserve every captured affine world and n
         const mapped = new Map(
           raw.frames[frame].draws.map((draw, index) => [
             raw.vertexBuffers
-              ? identities.get(
-                  draw.vertexAttributes.find((a) => a.name === 'position')
-                    .bufferId,
-                )
+              ? identities.get(draw.vertexAttributes.find((a) => a.name === 'position').bufferId)
               : pose[index].id,
             draw,
           ]),
         );
         for (const part of pose) {
           const data = mapped.get(part.id).blocks.DrawBlock;
-          assertMatrixNear(
-            part.world,
-            new THREE.Matrix4().fromArray(data),
-            1e-12,
-          );
-          assertMatrixNear(
-            part.normalMatrix,
-            new THREE.Matrix4().fromArray(data, 16),
-            1e-10,
-          );
+          assertMatrixNear(part.world, new THREE.Matrix4().fromArray(data), 1e-12);
+          assertMatrixNear(part.normalMatrix, new THREE.Matrix4().fromArray(data, 16), 1e-10);
         }
       }
     }
@@ -508,11 +398,7 @@ test('blue reaction hold is observed natively while render clock continues; idle
 
 test('Exact endpoint sampling retains near-singular eyelid scale and normal basis', () => {
   const tiny = 1.0000001e-9;
-  assert.notEqual(
-    1 + (tiny - 1),
-    tiny,
-    'Fixture must distinguish interpolation cancellation',
-  );
+  assert.notEqual(1 + (tiny - 1), tiny, 'Fixture must distinguish interpolation cancellation');
   const sampler = new AuthoredMotionSampler({
     duration: 1,
     loop: false,

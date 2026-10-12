@@ -17,11 +17,8 @@ for (const name of ['motion', 'catalog-retarget', 'catalog-accessory-material'])
       })
       .outputText.replace("'./motion'", "'./motion.mjs'"),
   );
-const load = (name) =>
-  import(pathToFileURL(`${process.cwd()}/${temp}/${name}.mjs`));
-const { preserveCatalogAccessoryMaterial } = await load(
-  'catalog-accessory-material',
-);
+const load = (name) => import(pathToFileURL(`${process.cwd()}/${temp}/${name}.mjs`));
+const { preserveCatalogAccessoryMaterial } = await load('catalog-accessory-material');
 const { CatalogRetargetSampler } = await load('catalog-retarget');
 const { AuthoredMotionSampler } = await load('motion');
 test.after(() => rm(temp, { recursive: true, force: true }));
@@ -37,9 +34,7 @@ for (const detail of ['low', 'high']) {
   );
   for (const kind of ['idle', 'reaction', 'work'])
     test(`${detail} ${kind}: three Felipe beret parts keep original shader, RGB, roughness and reflectance through retarget`, () => {
-      for (const source of donor.parts.filter(
-        (p) => p.category === 'accessory',
-      )) {
+      for (const source of donor.parts.filter((p) => p.category === 'accessory')) {
         const before = JSON.stringify(source);
         const fields = structuredClone(source.fields);
         const binding = {
@@ -51,11 +46,7 @@ for (const detail of ['low', 'high']) {
         preserveCatalogAccessoryMaterial(binding);
         assert.equal(binding.part.universal, false);
         assert.equal(binding.preserveMaterial, true);
-        assert.deepEqual(binding.preserveFields, [
-          'coverage',
-          'colorRoughness',
-          'parameters',
-        ]);
+        assert.deepEqual(binding.preserveFields, ['coverage', 'colorRoughness', 'parameters']);
         const native = reference.parts.find((p) => p.label === source.label);
         for (const field of ['colorRoughness', 'parameters'])
           assert.deepEqual(fields[field], native.fields[field]);
@@ -114,14 +105,8 @@ for (const detail of ['low', 'high']) {
         const pose = sampler.createPose();
         sampler.sample(0.5, pose);
         for (const field of ['colorRoughness', 'parameters'])
-          assert.deepEqual(
-            Array.from(pose[1].fields[field]),
-            native.fields[field],
-          );
-        assert.deepEqual(
-          Array.from(pose[1].fields.signatureDeform),
-          [0.5, 1, 1.5, 2],
-        );
+          assert.deepEqual(Array.from(pose[1].fields[field]), native.fields[field]);
+        assert.deepEqual(Array.from(pose[1].fields.signatureDeform), [0.5, 1, 1.5, 2]);
         assert.equal(JSON.stringify(source), before);
       }
     });
@@ -146,8 +131,6 @@ test('Felipe donor uses the original mesh, vertex normals, morph targets and ind
   const donor = await readFile(
     'runtime/avatar/assets/catalog-library/accessory/felipe_beret/high/geometry.bin',
   );
-  const original = await readFile(
-    'runtime/avatar/assets/blue_beret/geometry.bin',
-  );
+  const original = await readFile('runtime/avatar/assets/blue_beret/geometry.bin');
   assert.equal(donor.equals(original), true);
 });

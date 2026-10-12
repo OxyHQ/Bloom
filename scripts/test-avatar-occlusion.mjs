@@ -8,18 +8,12 @@ import * as THREE from 'three';
 
 await mkdir('.local', { recursive: true });
 const temporary = await mkdtemp('.local/occlusion-contract-');
-let source = await readFile(
-  'runtime/avatar/occlusion.ts',
-  'utf8',
-);
+let source = await readFile('runtime/avatar/occlusion.ts', 'utf8');
 for (const [name, file] of [
   ['vertexShader', 'ao.vert.glsl'],
   ['fragmentShader', 'ao.frag.glsl'],
 ]) {
-  const shader = await readFile(
-    `runtime/avatar/assets/${file}`,
-    'utf8',
-  );
+  const shader = await readFile(`runtime/avatar/assets/${file}`, 'utf8');
   source = source.replace(
     new RegExp(`import ${name} from [^;]+;`),
     `const ${name} = ${JSON.stringify(shader)};`,
@@ -37,12 +31,7 @@ await writeFile(
 const { AuthoredOcclusion } = await import(
   pathToFileURL(`${process.cwd()}/${temporary}/occlusion.mjs`).href
 );
-const fixture = JSON.parse(
-  await readFile(
-    'runtime/avatar/assets/reference-pose.json',
-    'utf8',
-  ),
-);
+const fixture = JSON.parse(await readFile('runtime/avatar/assets/reference-pose.json', 'utf8'));
 function harness() {
   const original = new THREE.WebGLRenderTarget(73, 91);
   const draws = [];
@@ -81,10 +70,7 @@ await test('two live passes reuse target textures and resize in physical pixels'
   assert.deepEqual([draws[1].target.width, draws[1].target.height], [321, 245]);
   assert.equal(draws[0].material.defines.ORBIT_ORTHOGRAPHIC_AO, 1);
   assert.equal(draws[1].material.defines.ORBIT_RESOLVE_AO, 1);
-  assert.equal(
-    draws[1].material.uniforms.ambientOcclusion.value,
-    draws[0].target.texture,
-  );
+  assert.equal(draws[1].material.uniforms.ambientOcclusion.value, draws[0].target.texture);
   assert.equal(ao.render(depth, projection, 321, 245), output);
   assert.equal(ao.render(depth, projection, 640, 480), output);
   assert.equal(draws[0].target, draws[4].target);
@@ -103,10 +89,7 @@ await test('two live passes reuse target textures and resize in physical pixels'
 await test('render failure restores renderer state and disposal is idempotent', () => {
   const { ao, renderer, original } = harness();
   renderer.fail = true;
-  assert.throws(
-    () => ao.render(new THREE.Texture(), projection, 320, 320),
-    /injected/,
-  );
+  assert.throws(() => ao.render(new THREE.Texture(), projection, 320, 320), /injected/);
   assert.equal(renderer.target, original);
   assert.equal(renderer.autoClear, true);
   assert.equal(renderer.xr.enabled, true);
@@ -119,13 +102,7 @@ await test('perspective, singular matrices and invalid dimensions are rejected',
   const { ao, original } = harness();
   const depth = new THREE.Texture();
   assert.throws(
-    () =>
-      ao.render(
-        depth,
-        new THREE.PerspectiveCamera().projectionMatrix,
-        320,
-        320,
-      ),
+    () => ao.render(depth, new THREE.PerspectiveCamera().projectionMatrix, 320, 320),
     /orthographic/,
   );
   assert.throws(

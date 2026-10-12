@@ -23,9 +23,7 @@ try {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = 'display:block;width:320px;height:320px';
     document.body.append(canvas);
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     window.engine = new AuthoredAvatarEngine(canvas);
     await window.engine.loaded;
     window.engine.setPaused(false);

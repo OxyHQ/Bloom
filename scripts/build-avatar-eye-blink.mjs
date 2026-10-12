@@ -9,8 +9,7 @@ import {
   eyeClosureFromMorph,
 } from '../runtime/avatar/eye-gaze-controller.ts';
 const output =
-  process.env.AVATAR_BLINK_OUTPUT ||
-  'runtime/avatar/assets/motion/lime-headphones-eye-blink.json';
+  process.env.AVATAR_BLINK_OUTPUT || 'runtime/avatar/assets/motion/lime-headphones-eye-blink.json';
 const sources = {};
 async function read(path) {
   const bytes = await readFile(path);

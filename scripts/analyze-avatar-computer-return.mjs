@@ -12,17 +12,14 @@ const presets = process.env.AVATAR_PRESET?.split(',') || [
   'lime_headphones',
 ];
 const read = async (f) => JSON.parse(await readFile(f, 'utf8'));
-const hash = (v) =>
-  createHash('sha256').update(JSON.stringify(v)).digest('hex');
+const hash = (v) => createHash('sha256').update(JSON.stringify(v)).digest('hex');
 const report = [];
 function frames(raw) {
   const identities = new Map(raw.vertexBuffers.map((b) => [b.id, b.sha256]));
   return raw.frames.map((frame) => {
     const parts = frame.draws
       .map((draw) => ({
-        id: identities.get(
-          draw.vertexAttributes.find((a) => a.name === 'position').bufferId,
-        ),
+        id: identities.get(draw.vertexAttributes.find((a) => a.name === 'position').bufferId),
         method: draw.method,
         defines: draw.defines,
         blocks: draw.blocks,
@@ -33,8 +30,7 @@ function frames(raw) {
 }
 for (const preset of presets) {
   const work = await read(
-    process.env.AVATAR_RETURN_WORK ||
-      `.local/avatar-computer-source/${preset}/work-raw.json`,
+    process.env.AVATAR_RETURN_WORK || `.local/avatar-computer-source/${preset}/work-raw.json`,
   );
   const idlePath =
     process.env.AVATAR_RETURN_IDLE ||
@@ -88,8 +84,7 @@ for (const preset of presets) {
           }
         }
       }
-    if (error < closest.error)
-      closest = { error, idleTime: candidate.time, worst };
+    if (error < closest.error) closest = { error, idleTime: candidate.time, worst };
   }
   const result = {
     preset,
@@ -115,7 +110,6 @@ for (const preset of presets) {
   );
 }
 await writeFile(
-  process.env.AVATAR_RETURN_REPORT ||
-    '.local/avatar-computer-return-analysis.json',
+  process.env.AVATAR_RETURN_REPORT || '.local/avatar-computer-return-analysis.json',
   JSON.stringify(report, null, 2),
 );

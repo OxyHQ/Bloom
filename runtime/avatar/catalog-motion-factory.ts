@@ -1,10 +1,7 @@
 import { preserveCatalogAccessoryMaterial } from './catalog-accessory-material';
 import { AuthoredMotionSampler, type AuthoredMotionClip } from './motion';
 import { decodeMotionBinary } from './motion-binary';
-import {
-  CatalogRetargetSampler,
-  type CatalogLocalBinding,
-} from './catalog-retarget';
+import { CatalogRetargetSampler, type CatalogLocalBinding } from './catalog-retarget';
 import { loadCatalogDonor } from './catalog-library';
 import type { ComposedCatalog } from './catalog-compose';
 import type { MotionSamplers } from './motion-catalog';
@@ -73,22 +70,16 @@ async function library(preset: string) {
 function partId(fur: boolean, id: number) {
   return `${fur ? 'fur' : 'mesh'}:${id}`;
 }
-async function recipeLibrary(
-  composed: ComposedCatalog,
-  detail: 'low' | 'high',
-) {
+async function recipeLibrary(composed: ComposedCatalog, detail: 'low' | 'high') {
   const data = await library(composed.body.signaturePreset);
   const asymmetric = composed.bindings.some(
     ({ part, sourcePart }) =>
       part.category === 'eyes' &&
       !sourcePart.selection &&
-      (composed.body.body.attachment === 'metal' ||
-        composed.body.body.label === 'metal'),
+      (composed.body.body.attachment === 'metal' || composed.body.body.label === 'metal'),
   );
   if (!asymmetric) return data;
-  const special = await library(
-    detail === 'high' ? 'clippo-special' : 'clippo-special-low',
-  );
+  const special = await library(detail === 'high' ? 'clippo-special' : 'clippo-special-low');
   if (composed.body.signaturePreset !== 'lime_frog')
     throw Error('Unobserved asymmetric Clippo signature');
   return { ...data, rigs: [...data.rigs, ...special.rigs] };
@@ -115,11 +106,8 @@ async function prepare(composed: ComposedCatalog, data: Library) {
     const clippoConstruction =
       !sourcePart.selection &&
       part.category === 'eyes' &&
-      (composed.body.body.attachment === 'metal' ||
-        composed.body.body.label === 'metal');
-    const selection = clippoConstruction
-      ? 'clippo-special'
-      : sourcePart.selection;
+      (composed.body.body.attachment === 'metal' || composed.body.body.label === 'metal');
+    const selection = clippoConstruction ? 'clippo-special' : sourcePart.selection;
     let rig = 0,
       record = data.rigs[0]!.parts[0]!;
     if (!isBody) {
@@ -146,9 +134,7 @@ async function prepare(composed: ComposedCatalog, data: Library) {
     const sourceId = partId(!!part.fur, record.id),
       mergedId = isBody ? sourceId : `${sourceId}@${rig}`;
     selected.push({ rig, id: sourceId, merged: mergedId });
-    const nativePart = data.rigs[rig]!.idle.parts.find(
-      (p) => p.id === sourceId,
-    );
+    const nativePart = data.rigs[rig]!.idle.parts.find((p) => p.id === sourceId);
     if (!nativePart) throw Error('Missing catalog material observation');
     // Editing a named eye recipe changes its native shader branch. Set static
     // material fields before the renderer compiles or measures the alpha fit.
@@ -159,11 +145,8 @@ async function prepare(composed: ComposedCatalog, data: Library) {
         part.fields[name] = Array.from(values.slice(0, 4));
       }
     }
-    if (!binding.preserveMaterial)
-      part.universal = data.rigs[rig]!.render[sourceId]!.universal;
-    const description = composed.source.material.parts.find(
-      (p) => p.id === part.id,
-    );
+    if (!binding.preserveMaterial) part.universal = data.rigs[rig]!.render[sourceId]!.universal;
+    const description = composed.source.material.parts.find((p) => p.id === part.id);
     if (description) {
       description.fields = part.fields;
       description.universal = part.universal;
@@ -184,9 +167,7 @@ async function prepare(composed: ComposedCatalog, data: Library) {
       sourceParentId: rig ? `mesh:parent${rig}` : 'mesh:0',
       eyeHeightRatio: clippoConstruction ? 1 : undefined,
       attachmentAnchor:
-        part.category === 'accessory'
-          ? (part.attachmentPivot ?? undefined)
-          : undefined,
+        part.category === 'accessory' ? (part.attachmentPivot ?? undefined) : undefined,
       sourceSceneCenter: data.rigs[rig]!.sceneCenter,
       targetId: partId(!!part.fur, part.id),
       category: part.category,
@@ -195,17 +176,14 @@ async function prepare(composed: ComposedCatalog, data: Library) {
       geometryTransform: binding.transform,
       fields: part.fields,
       preserveFields: binding.preserveFields,
-      sceneCenterDelta: data.rigs[rig]!.sceneCenter.map(
-        (v, k) => v - center[k]!,
-      ),
+      sceneCenterDelta: data.rigs[rig]!.sceneCenter.map((v, k) => v - center[k]!),
     });
   }
   // The Tuft is continuous body tissue. Its donor rig may have a zero color
   // channel (Josh red=0), so a multiplicative correction cannot match the coat.
   // Establish the actual body RGB before material compilation/alpha fitting.
-  const bodyPaint = composed.source.parts.find(
-    (part) => part.id === 0 && !part.fur,
-  )!.fields.colorRoughness!;
+  const bodyPaint = composed.source.parts.find((part) => part.id === 0 && !part.fur)!.fields
+    .colorRoughness!;
   for (const { part } of composed.bindings)
     if (part.attachment === 'three_lobe') {
       const paint = part.fields.colorRoughness!;
@@ -231,8 +209,7 @@ async function prepare(composed: ComposedCatalog, data: Library) {
       if (!parent) throw Error('Missing catalog rig parent');
       parts.push({ ...parent, id: `mesh:parent${rig}` });
     }
-    if (!parts.some((p) => p.id === 'mesh:0'))
-      throw Error('Missing catalog parent frame');
+    if (!parts.some((p) => p.id === 'mesh:0')) throw Error('Missing catalog parent frame');
     return new AuthoredMotionSampler({ ...first, parts });
   };
   return {
@@ -244,8 +221,7 @@ async function prepare(composed: ComposedCatalog, data: Library) {
     },
     destination: {
       ground: composed.body.body.bounds.min[1]!,
-      height:
-        composed.body.body.bounds.max[1]! - composed.body.body.bounds.min[1]!,
+      height: composed.body.body.bounds.max[1]! - composed.body.body.bounds.min[1]!,
     },
   };
 }
@@ -261,10 +237,7 @@ export async function createCatalogMotion(
 }> {
   const data = await recipeLibrary(composed, detail);
   const setup = await prepare(composed, data);
-  const make = (
-    kind: 'idle' | 'reaction' | 'work',
-    base?: AuthoredMotionSampler,
-  ) =>
+  const make = (kind: 'idle' | 'reaction' | 'work', base?: AuthoredMotionSampler) =>
     new CatalogRetargetSampler(
       setup.merge(kind),
       setup.bindings,
@@ -276,8 +249,7 @@ export async function createCatalogMotion(
     reaction = make('reaction'),
     work = make('work', baseWork);
   const phase = (native: number) =>
-    (((native - data.idleNativeStart) % idle.clip.duration) +
-      idle.clip.duration) %
+    (((native - data.idleNativeStart) % idle.clip.duration) + idle.clip.duration) %
     idle.clip.duration;
   return {
     samplers: {

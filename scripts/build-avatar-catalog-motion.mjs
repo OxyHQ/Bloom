@@ -13,10 +13,7 @@ import { encodeMotionBinary } from './build-avatar-motion-binary.mjs';
 // independent of Node's optional TypeScript syntax flags.
 const samplerSource = ts
   .transpileModule(
-    await readFile(
-      new URL('../runtime/avatar/motion.ts', import.meta.url),
-      'utf8',
-    ),
+    await readFile(new URL('../runtime/avatar/motion.ts', import.meta.url), 'utf8'),
     {
       compilerOptions: {
         target: ts.ScriptTarget.ES2022,
@@ -24,10 +21,7 @@ const samplerSource = ts
       },
     },
   )
-  .outputText.replace(
-    /(['"])three\1/g,
-    JSON.stringify(import.meta.resolve('three')),
-  );
+  .outputText.replace(/(['"])three\1/g, JSON.stringify(import.meta.resolve('three')));
 const { AuthoredMotionSampler } = await import(
   `data:text/javascript;base64,${Buffer.from(samplerSource).toString('base64')}`
 );
@@ -101,10 +95,7 @@ export function affineChannels(world, normal) {
     scale: [sx, sy, sz],
     shear,
     normalCorrection: [0, 1, 2].flatMap((col) =>
-      [0, 1, 2].map(
-        (row) =>
-          normal.elements[col * 4 + row] - inverseTranspose[col * 4 + row],
-      ),
+      [0, 1, 2].map((row) => normal.elements[col * 4 + row] - inverseTranspose[col * 4 + row]),
     ),
   };
 }
@@ -127,26 +118,18 @@ export function catalogObservation(raw, geometry, manifest, options = {}) {
       ['fur', part.fur],
     ]) {
       if (!buffer) continue;
-      assert(
-        !identities.has(buffer.sha256),
-        'Ambiguous catalog geometry identity',
-      );
+      assert(!identities.has(buffer.sha256), 'Ambiguous catalog geometry identity');
       identities.set(buffer.sha256, `${suffix}:${part.id}`);
     }
   }
   const buffers = new Map(
-    raw.vertexBuffers.map((buffer) => [
-      buffer.id,
-      identities.get(buffer.sha256),
-    ]),
+    raw.vertexBuffers.map((buffer) => [buffer.id, identities.get(buffer.sha256)]),
   );
   const ids = [...identities.values()];
   const frames = raw.frames.map((frame) => {
     const draws = new Map();
     for (const draw of frame.draws) {
-      const id = buffers.get(
-        draw.vertexAttributes.find((a) => a.name === 'position')?.bufferId,
-      );
+      const id = buffers.get(draw.vertexAttributes.find((a) => a.name === 'position')?.bufferId);
       if (!id && options.ignoreActivityProps === true) continue;
       assert(id, 'Unknown catalog geometry in observation');
       assert(!draws.has(id), 'Duplicate catalog draw identity');
@@ -158,8 +141,7 @@ export function catalogObservation(raw, geometry, manifest, options = {}) {
     return { time: frame.renderTime, draws };
   });
   assert(frames.length > 1);
-  for (let k = 1; k < frames.length; k++)
-    assert(frames[k].time > frames[k - 1].time);
+  for (let k = 1; k < frames.length; k++) assert(frames[k].time > frames[k - 1].time);
   const start = frames[0].time;
   const times = frames.map((frame) => frame.time - start);
   const dynamicFields = {};
@@ -177,18 +159,12 @@ export function catalogObservation(raw, geometry, manifest, options = {}) {
       );
     }
     const transforms = values.map((data) =>
-      affineChannels(
-        new Matrix4().fromArray(data),
-        new Matrix4().fromArray(data, 16),
-      ),
+      affineChannels(new Matrix4().fromArray(data), new Matrix4().fromArray(data, 16)),
     );
     // Quaternion sign is representational; keep adjacent rotations on one sheet.
     for (let k = 1; k < transforms.length; k++)
       if (
-        transforms[k].rotation.reduce(
-          (sum, v, j) => sum + v * transforms[k - 1].rotation[j],
-          0,
-        ) < 0
+        transforms[k].rotation.reduce((sum, v, j) => sum + v * transforms[k - 1].rotation[j], 0) < 0
       )
         transforms[k].rotation = transforms[k].rotation.map((v) => -v);
     const fields = Object.fromEntries(
@@ -203,9 +179,10 @@ export function catalogObservation(raw, geometry, manifest, options = {}) {
     clip.parts.push({
       id,
       ...Object.fromEntries(
-        ['translation', 'rotation', 'scale', 'shear', 'normalCorrection'].map(
-          (name) => [name, channel(transforms.map((t) => t[name]))],
-        ),
+        ['translation', 'rotation', 'scale', 'shear', 'normalCorrection'].map((name) => [
+          name,
+          channel(transforms.map((t) => t[name])),
+        ]),
       ),
       fields,
     });
@@ -220,27 +197,18 @@ export function catalogObservation(raw, geometry, manifest, options = {}) {
       const native = frames[f].draws.get(part.id).blocks.DrawBlock;
       const magnitude = Math.max(1, ...native.slice(16, 32).map(Math.abs));
       for (let k = 0; k < 16; k++) {
-        worldMax = Math.max(
-          worldMax,
-          Math.abs(part.world.elements[k] - native[k]),
-        );
+        worldMax = Math.max(worldMax, Math.abs(part.world.elements[k] - native[k]));
         normalRelativeMax = Math.max(
           normalRelativeMax,
           Math.abs(part.normalMatrix.elements[k] - native[16 + k]) / magnitude,
         );
       }
       for (const [index, name] of catalogDrawFields.entries())
-        assert.deepEqual(
-          part.fields[name],
-          native.slice(32 + index * 4, 36 + index * 4),
-        );
+        assert.deepEqual(part.fields[name], native.slice(32 + index * 4, 36 + index * 4));
     }
   }
   assert(worldMax < 2e-12, `Catalog affine reconstruction ${worldMax}`);
-  assert(
-    normalRelativeMax < 2e-12,
-    `Catalog native normal reconstruction ${normalRelativeMax}`,
-  );
+  assert(normalRelativeMax < 2e-12, `Catalog native normal reconstruction ${normalRelativeMax}`);
   return {
     schema: 'bloom.avatar.catalog-motion-observation',
     version: 1,
@@ -274,19 +242,15 @@ export function catalogObservation(raw, geometry, manifest, options = {}) {
 }
 
 export async function buildCatalogObservations() {
-  const root =
-    process.env.AVATAR_CATALOG_MOTION_SOURCE || '.local/avatar-catalog-rig';
+  const root = process.env.AVATAR_CATALOG_MOTION_SOURCE || '.local/avatar-catalog-rig';
   const output =
-    process.env.AVATAR_CATALOG_MOTION_DESTINATION ||
-    '.local/avatar-catalog-motion-channels';
+    process.env.AVATAR_CATALOG_MOTION_DESTINATION || '.local/avatar-catalog-motion-channels';
   const groups = (process.env.AVATAR_CATALOG_RIG_GROUPS || '0,1').split(',');
   const presets = (
     process.env.AVATAR_PRESETS ||
     'blue_beret,alfred,purple_heart,lime_frog,coral_monocle,gus,blue_spectacles,lime_headphones'
   ).split(',');
-  const scenarios = (
-    process.env.AVATAR_SCENARIOS || 'idle,reaction,gaze'
-  ).split(',');
+  const scenarios = (process.env.AVATAR_SCENARIOS || 'idle,reaction,gaze').split(',');
   const report = [];
   for (const group of groups) {
     const source = `${root}/rig${group}`;
@@ -316,10 +280,7 @@ export async function buildCatalogObservations() {
           sha256: hash(packed),
           ...data.evidence,
         };
-        await writeFile(
-          `${dir}/${scenario}-report.json`,
-          JSON.stringify(result, null, 2),
-        );
+        await writeFile(`${dir}/${scenario}-report.json`, JSON.stringify(result, null, 2));
         report.push(result);
         console.log(JSON.stringify({ ...result, dynamicFields: undefined }));
       }

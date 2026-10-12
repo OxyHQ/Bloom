@@ -23,11 +23,7 @@ try {
     const { composeCatalog } = await import('/runtime/avatar/catalog-compose.ts');
     let out = [];
     const shapes = Object.keys(
-      (
-        await (
-          await fetch('/runtime/avatar/assets/catalog-library/index.json')
-        ).json()
-      ).donors.body,
+      (await (await fetch('/runtime/avatar/assets/catalog-library/index.json')).json()).donors.body,
     );
     const cases = [
       ...shapes.map((shape) => ({ shape, accessory: 'none' })),

@@ -38,13 +38,20 @@ for (const rig of [0, 1]) {
 const toddId = rigs[1].manifest.parts.find((p) => p.selection === 'todd' && p.sourcePart === 1).id;
 const output = [];
 function solve(rows) {
- const a = Array.from({length:5}, (_, i) => Array.from({length:6}, (_, j) => rows.reduce((s,r) => s+r[i]*r[j],0)));
- for(let k=0;k<5;k++) {
-  const pivot=a[k][k]; if(Math.abs(pivot)<1e-14)throw Error('Underdetermined gaze surface');
-  for(let j=k;j<6;j++)a[k][j]/=pivot;
-  for(let i=0;i<5;i++)if(i!==k){const v=a[i][k];for(let j=k;j<6;j++)a[i][j]-=v*a[k][j];}
- }
- return a.map(r=>r[5]);
+  const a = Array.from({ length: 5 }, (_, i) =>
+    Array.from({ length: 6 }, (_, j) => rows.reduce((s, r) => s + r[i] * r[j], 0)),
+  );
+  for (let k = 0; k < 5; k++) {
+    const pivot = a[k][k];
+    if (Math.abs(pivot) < 1e-14) throw Error('Underdetermined gaze surface');
+    for (let j = k; j < 6; j++) a[k][j] /= pivot;
+    for (let i = 0; i < 5; i++)
+      if (i !== k) {
+        const v = a[i][k];
+        for (let j = k; j < 6; j++) a[i][j] -= v * a[k][j];
+      }
+  }
+  return a.map((r) => r[5]);
 }
 for (const rig of rigs)
   for (const p of rig.manifest.parts.filter((p) => p.category === 'eyes')) {
@@ -93,32 +100,49 @@ for (const rig of rigs)
         : {}),
     };
     if (effect === 3) {
-      const dx = h[12], dy = v[13];
-      const ax = -h[2] / dx, ay = -v[6] / dy;
+      const dx = h[12],
+        dy = v[13];
+      const ax = -h[2] / dx,
+        ay = -v[6] / dy;
       profile.angularGain = [0, 0];
       profile.surface = {
         curvature: [ax, ay],
         crossCurvature: (-h[6] / dx - v[2] / dy) / 2,
         slope: [
-          (h[14] + h[2] * anchor[0] + h[6] * anchor[1] + ax * dx * dx / 2) / dx,
-          (v[14] + v[2] * anchor[0] + v[6] * anchor[1] + ay * dy * dy / 2) / dy,
+          (h[14] + h[2] * anchor[0] + h[6] * anchor[1] + (ax * dx * dx) / 2) / dx,
+          (v[14] + v[2] * anchor[0] + v[6] * anchor[1] + (ay * dy * dy) / 2) / dy,
         ],
       };
-      const input = new AvatarEyeGazeController(), rows=[];
-      for(let index=0;index<rig.gaze.length;index++) {
-        const frame=rig.gaze[index];
-        const closure=eyeClosureFromMorph(rigs[1].idle[index].draws.get(toddId).blocks.DrawBlock.slice(36,40),'integrated');
-        const c=Math.max(0,Math.min(1,closure*6)), openness=1-c*c*(3-2*c);
-        const x=input.x*openness,y=input.y*openness;
-        if(index%2===0&&(Math.abs(x)+Math.abs(y)>1e-5)) {
-          const m=correction(index).elements;
-          rows.push([x,y,x*x,y*y,x*y,m[14]+m[2]*anchor[0]+m[6]*anchor[1]]);
+      const input = new AvatarEyeGazeController(),
+        rows = [];
+      for (let index = 0; index < rig.gaze.length; index++) {
+        const frame = rig.gaze[index];
+        const closure = eyeClosureFromMorph(
+          rigs[1].idle[index].draws.get(toddId).blocks.DrawBlock.slice(36, 40),
+          'integrated',
+        );
+        const c = Math.max(0, Math.min(1, closure * 6)),
+          openness = 1 - c * c * (3 - 2 * c);
+        const x = input.x * openness,
+          y = input.y * openness;
+        if (index % 2 === 0 && Math.abs(x) + Math.abs(y) > 1e-5) {
+          const m = correction(index).elements;
+          rows.push([x, y, x * x, y * y, x * y, m[14] + m[2] * anchor[0] + m[6] * anchor[1]]);
         }
-        input.advance(index?frame.renderTime-rig.gaze[index-1].renderTime:0);
-        for(const call of rig.calls.filter(c=>c.method==='pointer'&&Math.abs(c.renderTime-frame.renderTime)<1e-8))input.point(call.args[2],call.args[3]);
+        input.advance(index ? frame.renderTime - rig.gaze[index - 1].renderTime : 0);
+        for (const call of rig.calls.filter(
+          (c) => c.method === 'pointer' && Math.abs(c.renderTime - frame.renderTime) < 1e-8,
+        ))
+          input.point(call.args[2], call.args[3]);
       }
-      const q=solve(rows),tx=halfSize[0]*translationGain[0],ty=halfSize[1]*translationGain[1];
-      profile.surface.depth={slope:[q[0]/tx,q[1]/ty],curvature:[-2*q[2]/(tx*tx),-2*q[3]/(ty*ty)],crossCurvature:-q[4]/(tx*ty)};
+      const q = solve(rows),
+        tx = halfSize[0] * translationGain[0],
+        ty = halfSize[1] * translationGain[1];
+      profile.surface.depth = {
+        slope: [q[0] / tx, q[1] / ty],
+        curvature: [(-2 * q[2]) / (tx * tx), (-2 * q[3]) / (ty * ty)],
+        crossCurvature: -q[4] / (tx * ty),
+      };
     } else if (!surface) {
       profile.angularGain = [0.042, 0.028];
       profile.translationGain = [0.07, -0.042];

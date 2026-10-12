@@ -9,15 +9,12 @@ for (const name of ['motion', 'catalog-retarget'])
   await writeFile(
     `${temp}/${name}.mjs`,
     ts
-      .transpileModule(
-        await readFile(`runtime/avatar/${name}.ts`, 'utf8'),
-        {
-          compilerOptions: {
-            target: ts.ScriptTarget.ES2022,
-            module: ts.ModuleKind.ES2022,
-          },
+      .transpileModule(await readFile(`runtime/avatar/${name}.ts`, 'utf8'), {
+        compilerOptions: {
+          target: ts.ScriptTarget.ES2022,
+          module: ts.ModuleKind.ES2022,
         },
-      )
+      })
       .outputText.replace("'./motion'", "'./motion.mjs'"),
   );
 const { AuthoredMotionSampler } = await import(
@@ -30,17 +27,7 @@ test.after(() => rm(temp, { recursive: true, force: true }));
 const part = (id, move) => ({
   id,
   translation: {
-    samples: [
-      0,
-      0,
-      0,
-      move,
-      move * 0.3,
-      move * -0.7,
-      move * 0.2,
-      move * 0.5,
-      move,
-    ],
+    samples: [0, 0, 0, move, move * 0.3, move * -0.7, move * 0.2, move * 0.5, move],
   },
   rotation: {
     samples: [
@@ -85,9 +72,7 @@ for (const kind of ['idle', 'reaction', 'work'])
         category: 'accessory',
         sourceSceneCenter: [0.2, -0.4],
         sceneCenterDelta: [0.5, 0.3],
-        geometryTransform: new Matrix4()
-          .makeScale(1.3, 1.3, 1.3)
-          .setPosition(0.2, 0.7, -0.1),
+        geometryTransform: new Matrix4().makeScale(1.3, 1.3, 1.3).setPosition(0.2, 0.7, -0.1),
       },
       anchor = [0.17, 0.83, -0.23],
       dims = { ground: -1, height: 2 };
@@ -102,22 +87,12 @@ for (const kind of ['idle', 'reaction', 'work'])
         dims,
         base,
       ),
-      free = new CatalogRetargetSampler(
-        observed,
-        [bodyBinding, binding],
-        dims,
-        dims,
-        base,
-      ),
+      free = new CatalogRetargetSampler(observed, [bodyBinding, binding], dims, dims, base),
       pose = fixed.createPose(),
       freePose = free.createPose(),
       neighbor = fixed.createPose(),
       neighborBefore = JSON.stringify(neighbor),
-      refs = pose.map((p) => [
-        p.world,
-        p.normalMatrix,
-        ...Object.values(p.fields),
-      ]);
+      refs = pose.map((p) => [p.world, p.normalMatrix, ...Object.values(p.fields)]);
     let freeDetach = 0;
     for (let step = 0; step <= 120; step++) {
       const time = step / 60;
@@ -131,16 +106,10 @@ for (const kind of ['idle', 'reaction', 'work'])
       assert(actual.distanceTo(expected) < 2e-15);
       for (const k of [0, 1, 2, 4, 5, 6, 8, 9, 10])
         assert.equal(accessory.world.elements[k], native.world.elements[k]);
-      assert.deepEqual(
-        accessory.normalMatrix.elements,
-        native.normalMatrix.elements,
-      );
+      assert.deepEqual(accessory.normalMatrix.elements, native.normalMatrix.elements);
       freeDetach = Math.max(
         freeDetach,
-        new Vector3()
-          .fromArray(anchor)
-          .applyMatrix4(native.world)
-          .distanceTo(expected),
+        new Vector3().fromArray(anchor).applyMatrix4(native.world).distanceTo(expected),
       );
       for (let p = 0; p < pose.length; p++) {
         assert.equal(pose[p].world, refs[p][0]);
@@ -148,10 +117,7 @@ for (const kind of ['idle', 'reaction', 'work'])
         assert.equal(pose[p].fields.catalogCenterWeight, refs[p][2]);
       }
     }
-    assert(
-      freeDetach > 0.5,
-      'Discriminator must detect the prior separated accessory',
-    );
+    assert(freeDetach > 0.5, 'Discriminator must detect the prior separated accessory');
     assert.equal(JSON.stringify(neighbor), neighborBefore);
   });
 
@@ -205,22 +171,12 @@ test('rotated accessory animation conjugates normals with geometry and retains t
   let moved = 0;
   for (let i = 0; i <= 120; i++) {
     sampler.sample(i / 60, pose);
-    const expected = pose[1].world
-      .clone()
-      .setPosition(0, 0, 0)
-      .invert()
-      .transpose();
+    const expected = pose[1].world.clone().setPosition(0, 0, 0).invert().transpose();
     for (const k of [0, 1, 2, 4, 5, 6, 8, 9, 10])
-      assert(
-        Math.abs(expected.elements[k] - pose[1].normalMatrix.elements[k]) <
-          2e-14,
-      );
+      assert(Math.abs(expected.elements[k] - pose[1].normalMatrix.elements[k]) < 2e-14);
     const root = new Vector3().fromArray(anchor);
     assert(
-      root
-        .clone()
-        .applyMatrix4(pose[0].world)
-        .distanceTo(root.applyMatrix4(pose[1].world)) < 2e-15,
+      root.clone().applyMatrix4(pose[0].world).distanceTo(root.applyMatrix4(pose[1].world)) < 2e-15,
     );
     moved = Math.max(moved, Math.abs(pose[1].normalMatrix.elements[4]));
   }
@@ -248,19 +204,13 @@ for (const kind of ['idle', 'reaction', 'work'])
       geometryTransform: new Matrix4(),
       fields: {
         colorRoughness:
-          i === 0
-            ? [0.063, 0.188, 1, 0.78]
-            : i === 1
-              ? [0, 0.44, 1, 0.7]
-              : [0.8, 0.2, 0.3, 0.4],
+          i === 0 ? [0.063, 0.188, 1, 0.78] : i === 1 ? [0, 0.44, 1, 0.7] : [0.8, 0.2, 0.3, 0.4],
       },
     }));
     const activity = structuredClone(observation);
     activity.parts = [activity.parts[0]];
     activity.parts[0].fields.colorRoughness = {
-      samples: [
-        0.46, 0.68, 0.003, 0.78, 0.5, 0.7, 0.1, 0.78, 0.4, 0.6, 0.2, 0.78,
-      ],
+      samples: [0.46, 0.68, 0.003, 0.78, 0.5, 0.7, 0.1, 0.78, 0.4, 0.6, 0.2, 0.78],
     };
     const sourceBefore = JSON.stringify(observation),
       bindingsBefore = JSON.stringify(bindings);
@@ -278,24 +228,13 @@ for (const kind of ['idle', 'reaction', 'work'])
     const arrays = pose.map((part) => part.fields.colorRoughness);
     for (const time of [0, 0.25, 0.5, 1, 1.5, 2]) {
       sampler.sample(time, pose);
-      const [body, tuft, accessory] = pose.map(
-        (part) => part.fields.colorRoughness,
-      );
+      const [body, tuft, accessory] = pose.map((part) => part.fields.colorRoughness);
       assert.ok(body[0] > 0, 'destination coat has red absent from donor');
       assert.deepEqual(tuft.slice(0, 3), body.slice(0, 3));
-      assert.ok(
-        Math.abs(tuft[3] - (0.7 + time * 0.1)) < 1e-14,
-        'retain Tuft animated roughness',
-      );
-      assert.deepEqual(
-        accessory,
-        [0.8, 0.2, 0.3, 0.4],
-        'other accessories retain their pigment',
-      );
+      assert.ok(Math.abs(tuft[3] - (0.7 + time * 0.1)) < 1e-14, 'retain Tuft animated roughness');
+      assert.deepEqual(accessory, [0.8, 0.2, 0.3, 0.4], 'other accessories retain their pigment');
       assert.equal(JSON.stringify(neighbor), untouched);
-      pose.forEach((part, i) =>
-        assert.strictEqual(part.fields.colorRoughness, arrays[i]),
-      );
+      pose.forEach((part, i) => assert.strictEqual(part.fields.colorRoughness, arrays[i]));
     }
     assert.equal(JSON.stringify(observation), sourceBefore);
     assert.equal(JSON.stringify(bindings), bindingsBefore);

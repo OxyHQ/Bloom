@@ -9,10 +9,7 @@ import {
   AvatarEyeGazeController,
   eyeClosureFromMorph,
 } from '../runtime/avatar/eye-gaze-controller.ts';
-import {
-  ReactionGazeComposer,
-  reactionGazeEnvelope,
-} from '../runtime/avatar/reaction-gaze.ts';
+import { ReactionGazeComposer, reactionGazeEnvelope } from '../runtime/avatar/reaction-gaze.ts';
 const require = createRequire(import.meta.url),
   puppeteer = require(process.env.BLOOM_PUPPETEER_MODULE || 'puppeteer-core'),
   { PNG } = require('pngjs');
@@ -26,9 +23,7 @@ const cores = {
   blue_spectacles: 2.6,
   lime_headphones: 2.1,
 };
-const profiles = (
-  await read('runtime/avatar/assets/eye-gaze-profiles.json')
-).presets;
+const profiles = (await read('runtime/avatar/assets/eye-gaze-profiles.json')).presets;
 const cell = 112,
   pixelShortfalls = [],
   report = [],
@@ -43,8 +38,7 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('request', (r) => {
-    if (/character-runtime|\.wasm(?:\?|$)/.test(r.url()))
-      forbidden.push(r.url());
+    if (/character-runtime|\.wasm(?:\?|$)/.test(r.url())) forbidden.push(r.url());
   });
   await page.setViewport({
     width: cell * 2,
@@ -60,9 +54,7 @@ try {
       requestId: e.requestId,
       responseCode: 200,
       responseHeaders: [{ name: 'Content-Type', value: 'text/html' }],
-      body: Buffer.from('<!doctype html><html><body></body></html>').toString(
-        'base64',
-      ),
+      body: Buffer.from('<!doctype html><html><body></body></html>').toString('base64'),
     }),
   );
   await page.goto('http://localhost:6006/avatar-reaction-gaze-check.html');
@@ -72,12 +64,8 @@ try {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = `display:block;width:${cell * 2}px;height:${cell}px`;
     document.body.append(canvas);
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
-    const { loadAuthoredAsset } = await import(
-      '/runtime/avatar/catalog.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
+    const { loadAuthoredAsset } = await import('/runtime/avatar/catalog.ts');
     window.engine = new AuthoredAvatarEngine(canvas, {
       count: 2,
       size: cell,
@@ -111,22 +99,14 @@ try {
           id: `${p.source.fur ? 'fur' : 'mesh'}:${p.source.id}`,
           world: new Matrix4().fromArray(b),
           normalMatrix: new Matrix4().fromArray(b.slice(16, 32)),
-          fields: Object.fromEntries(
-            names.map((n, k) => [n, b.slice(32 + k * 4, 36 + k * 4)]),
-          ),
+          fields: Object.fromEntries(names.map((n, k) => [n, b.slice(32 + k * 4, 36 + k * 4)])),
         };
       });
   }, cell);
   const settle = () =>
-    page.evaluate(
-      () =>
-        new Promise((r) =>
-          requestAnimationFrame(() => requestAnimationFrame(r)),
-        ),
-    );
+    page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const canvas = await page.$('canvas');
-  const snap = async () =>
-    PNG.sync.read(Buffer.from(await canvas.screenshot()));
+  const snap = async () => PNG.sync.read(Buffer.from(await canvas.screenshot()));
   async function compare(c) {
     await page.evaluate((c) => {
       const e = window.engine;
@@ -169,14 +149,10 @@ try {
       normalRelativeMax = 0;
     uploads.forEach((p, i) => {
       const d = c.target.draws[i].blocks.DrawBlock;
-      for (let k = 0; k < 16; k++)
-        worldMax = Math.max(worldMax, Math.abs(p.world[k] - d[k]));
+      for (let k = 0; k < 16; k++) worldMax = Math.max(worldMax, Math.abs(p.world[k] - d[k]));
       const scale = Math.max(1, ...d.slice(16, 32).map(Math.abs));
       for (let k = 0; k < 12; k++)
-        normalRelativeMax = Math.max(
-          normalRelativeMax,
-          Math.abs(p.normal[k] - d[k + 16]) / scale,
-        );
+        normalRelativeMax = Math.max(normalRelativeMax, Math.abs(p.normal[k] - d[k + 16]) / scale);
     });
     assert(worldMax < 1e-6, `${c.label} world ${worldMax}`);
     assert(normalRelativeMax < 3e-7, `${c.label} normal ${normalRelativeMax}`);
@@ -227,11 +203,7 @@ try {
       pixels,
     });
   }
-  for (const key of [
-    ...Object.keys(cores),
-    'lime_headphones60',
-    'lime_headphones_phase3',
-  ]) {
+  for (const key of [...Object.keys(cores), 'lime_headphones60', 'lime_headphones_phase3']) {
     const phase3 = key.endsWith('_phase3'),
       sixty = key.endsWith('60') || phase3,
       preset = sixty ? 'lime_headphones' : key;
@@ -243,20 +215,12 @@ try {
       idle = await read(
         `.local/${sixty ? 'avatar-gaze-extended' : 'avatar-pointer-validation'}/${preset}/idle-raw.json`,
       ),
-      blink = phase3
-        ? await read('.local/avatar-gaze-extended/lime_frog/idle-raw.json')
-        : null;
+      blink = phase3 ? await read('.local/avatar-gaze-extended/lime_frog/idle-raw.json') : null;
     const command = phase3 ? 1 : 0.5,
       dt = frames[1].time,
       entry = command + dt,
       exit = entry + cores[preset];
-    const wanted = [
-      entry + dt,
-      entry + 3 * dt,
-      entry + 0.25,
-      exit + dt,
-      exit + 3 * dt,
-    ];
+    const wanted = [entry + dt, entry + 3 * dt, entry + 0.25, exit + dt, exit + 3 * dt];
     const picks = new Set(wanted.map((t) => Math.round(t / dt)));
     const gaze = new AvatarGazeController(),
       eyes = new AvatarEyeGazeController();
@@ -282,9 +246,7 @@ try {
         };
       if (picks.has(i)) {
         const envelope = reactionGazeEnvelope(t - entry, cores[preset]);
-        const idleFrame = idle.find(
-          (v) => Math.abs(v.renderTime - b.renderTime) < 1e-8,
-        );
+        const idleFrame = idle.find((v) => Math.abs(v.renderTime - b.renderTime) < 1e-8);
         const source = t < exit ? frozen.base : idleFrame;
         const translation = source.draws[0].blocks.DrawBlock.slice(12, 15).map(
             (v) => v * envelope.strength,
@@ -323,10 +285,7 @@ try {
         });
         if (
           !sixty &&
-          [
-            Math.round((entry + 3 * dt) / dt),
-            Math.round((exit + 3 * dt) / dt),
-          ].includes(i)
+          [Math.round((entry + 3 * dt) / dt), Math.round((exit + 3 * dt) / dt)].includes(i)
         ) {
           const xy = { yaw: 0.031, pitch: -0.023, x: 0.28, y: -0.31 },
             target = structuredClone(b),
@@ -371,12 +330,7 @@ try {
               out.multiply(c);
               outN.multiply(cn);
             }
-            target.draws[j].blocks.DrawBlock.splice(
-              0,
-              32,
-              ...out.elements,
-              ...outN.elements,
-            );
+            target.draws[j].blocks.DrawBlock.splice(0, 32, ...out.elements, ...outN.elements);
           }
           await compare({
             ...common,
@@ -384,8 +338,7 @@ try {
             live: xy,
             target,
             label: `${key}@${t}/XY`,
-            evidence:
-              'synthetic XY helper integration; NOT independent native input observation',
+            evidence: 'synthetic XY helper integration; NOT independent native input observation',
           });
         }
       }
@@ -418,9 +371,7 @@ try {
           const s = e.states[0],
             samplers = e.asset(s.preset).samplers,
             timing = samplers.reactionGaze;
-          const seconds =
-            timing.entryTime +
-            (phase === 'entry' ? 0.1 : timing.coreSeconds + 0.1);
+          const seconds = timing.entryTime + (phase === 'entry' ? 0.1 : timing.coreSeconds + 0.1);
           const pose = samplers.reaction.createPose();
           samplers.reaction.sample(seconds, pose);
           e.setMotionFrame(0, 'reaction', seconds);
@@ -502,23 +453,16 @@ try {
           n.multiply(cn);
         }
         upload.world.forEach(
-          (v, k) =>
-            (worldMax = Math.max(worldMax, Math.abs(v - w.elements[k]))),
+          (v, k) => (worldMax = Math.max(worldMax, Math.abs(v - w.elements[k]))),
         );
         const scale = Math.max(1, ...n.elements.map(Math.abs));
         upload.normal.forEach(
           (v, k) =>
-            (normalRelativeMax = Math.max(
-              normalRelativeMax,
-              Math.abs(v - n.elements[k]) / scale,
-            )),
+            (normalRelativeMax = Math.max(normalRelativeMax, Math.abs(v - n.elements[k]) / scale)),
         );
       });
       assert(worldMax < 1e-6, `${preset} packed ${phase} world ${worldMax}`);
-      assert(
-        normalRelativeMax < 3e-7,
-        `${preset} packed ${phase} normal ${normalRelativeMax}`,
-      );
+      assert(normalRelativeMax < 3e-7, `${preset} packed ${phase} normal ${normalRelativeMax}`);
       report.push({
         label: `${preset}/packed/${phase}`,
         evidence:
@@ -552,9 +496,7 @@ try {
     s.eyes.x = s.eyes.targetX = -0.25;
     s.eyes.y = s.eyes.targetY = 0.2;
     s.motion.held = 0.08;
-    await new Promise((r) =>
-      requestAnimationFrame(() => requestAnimationFrame(r)),
-    );
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     const after = {
       yaw: s.reactionGaze.yaw,
       pitch: s.reactionGaze.pitch,

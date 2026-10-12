@@ -7,10 +7,10 @@
       {
         "label": "alfred@0.5666666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 4.126195563003421e-08,
-        "normalRelativeMax": 1.1913478599937525e-07,
+        "worldMax": 4.126195563003421e-8,
+        "normalRelativeMax": 1.1913478599937525e-7,
         "pixels": {
-          "meanAbsoluteChannelError": 1.992984693877551e-05,
+          "meanAbsoluteChannelError": 1.992984693877551e-5,
           "max": 1,
           "changed": 1,
           "neighbor": 0
@@ -19,8 +19,8 @@
       {
         "label": "alfred@0.6333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 1.1920928955078125e-07,
-        "normalRelativeMax": 2.384185791015625e-07,
+        "worldMax": 1.1920928955078125e-7,
+        "normalRelativeMax": 2.384185791015625e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -31,8 +31,8 @@
       {
         "label": "alfred@0.6333333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.9163250037100852e-08,
-        "normalRelativeMax": 2.6578491518769454e-08,
+        "worldMax": 2.9163250037100852e-8,
+        "normalRelativeMax": 2.6578491518769454e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -55,8 +55,8 @@
       {
         "label": "alfred@2.7666666666666666",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1919542137011799e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1919542137011799e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0.0001793686224489796,
           "max": 1,
@@ -67,8 +67,8 @@
       {
         "label": "alfred@2.8333333333333335",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 5.9522335637403264e-08,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 5.9522335637403264e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -79,8 +79,8 @@
       {
         "label": "alfred@2.8333333333333335/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 6.930486629030952e-09,
-        "normalRelativeMax": 3.439637166628817e-08,
+        "worldMax": 6.930486629030952e-9,
+        "normalRelativeMax": 3.439637166628817e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -91,8 +91,8 @@
       {
         "label": "purple_heart@0.5666666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 3.7667632568627596e-08,
-        "normalRelativeMax": 5.957058661777748e-08,
+        "worldMax": 3.7667632568627596e-8,
+        "normalRelativeMax": 5.957058661777748e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -103,8 +103,8 @@
       {
         "label": "purple_heart@0.6333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1920091994501976e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1920091994501976e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -115,8 +115,8 @@
       {
         "label": "purple_heart@0.6333333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.8237894911242734e-08,
-        "normalRelativeMax": 2.7092691198590812e-08,
+        "worldMax": 2.8237894911242734e-8,
+        "normalRelativeMax": 2.7092691198590812e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -139,8 +139,8 @@
       {
         "label": "purple_heart@2.966666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 1.4901161193847656e-08,
-        "normalRelativeMax": 2.9799707819824768e-08,
+        "worldMax": 1.4901161193847656e-8,
+        "normalRelativeMax": 2.9799707819824768e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -151,8 +151,8 @@
       {
         "label": "purple_heart@3.033333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 1.4901161193847656e-08,
-        "normalRelativeMax": 5.954672792516453e-08,
+        "worldMax": 1.4901161193847656e-8,
+        "normalRelativeMax": 5.954672792516453e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -163,8 +163,8 @@
       {
         "label": "purple_heart@3.033333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.5027190653226228e-08,
-        "normalRelativeMax": 4.5238029238129003e-08,
+        "worldMax": 2.5027190653226228e-8,
+        "normalRelativeMax": 4.5238029238129003e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -175,8 +175,8 @@
       {
         "label": "lime_frog@0.5666666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 5.957058661777748e-08,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 5.957058661777748e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -187,8 +187,8 @@
       {
         "label": "lime_frog@0.6333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1918114449414696e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1918114449414696e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -199,8 +199,8 @@
       {
         "label": "lime_frog@0.6333333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.6485048265634248e-08,
-        "normalRelativeMax": 4.771696885198601e-08,
+        "worldMax": 2.6485048265634248e-8,
+        "normalRelativeMax": 4.771696885198601e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -223,8 +223,8 @@
       {
         "label": "lime_frog@3.066666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 8.981442078948021e-08,
-        "normalRelativeMax": 5.96005239124454e-08,
+        "worldMax": 8.981442078948021e-8,
+        "normalRelativeMax": 5.96005239124454e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -235,8 +235,8 @@
       {
         "label": "lime_frog@3.1333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 5.956144668559609e-08,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 5.956144668559609e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -247,8 +247,8 @@
       {
         "label": "lime_frog@3.1333333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.596928505571583e-08,
-        "normalRelativeMax": 1.9721470269967204e-08,
+        "worldMax": 2.596928505571583e-8,
+        "normalRelativeMax": 1.9721470269967204e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -259,8 +259,8 @@
       {
         "label": "coral_monocle@0.5666666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 7.025664672255516e-08,
-        "normalRelativeMax": 5.957058661777748e-08,
+        "worldMax": 7.025664672255516e-8,
+        "normalRelativeMax": 5.957058661777748e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -271,10 +271,10 @@
       {
         "label": "coral_monocle@0.6333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 5.959073559519107e-08,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 5.959073559519107e-8,
         "pixels": {
-          "meanAbsoluteChannelError": 1.992984693877551e-05,
+          "meanAbsoluteChannelError": 1.992984693877551e-5,
           "max": 1,
           "changed": 1,
           "neighbor": 0
@@ -283,8 +283,8 @@
       {
         "label": "coral_monocle@0.6333333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.5185451613118914e-08,
-        "normalRelativeMax": 3.722996112486115e-08,
+        "worldMax": 2.5185451613118914e-8,
+        "normalRelativeMax": 3.722996112486115e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -307,8 +307,8 @@
       {
         "label": "coral_monocle@3.066666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 2.3501343093812466e-08,
-        "normalRelativeMax": 1.1920097678048412e-07,
+        "worldMax": 2.3501343093812466e-8,
+        "normalRelativeMax": 1.1920097678048412e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -319,8 +319,8 @@
       {
         "label": "coral_monocle@3.1333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 6.920890882611275e-08,
-        "normalRelativeMax": 5.956143959046507e-08,
+        "worldMax": 6.920890882611275e-8,
+        "normalRelativeMax": 5.956143959046507e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -331,8 +331,8 @@
       {
         "label": "coral_monocle@3.1333333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.4826526279220218e-08,
-        "normalRelativeMax": 2.2294935473880422e-08,
+        "worldMax": 2.4826526279220218e-8,
+        "normalRelativeMax": 2.2294935473880422e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -343,8 +343,8 @@
       {
         "label": "gus@0.5666666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 4.195453584543429e-08,
-        "normalRelativeMax": 5.957058661777748e-08,
+        "worldMax": 4.195453584543429e-8,
+        "normalRelativeMax": 5.957058661777748e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -355,8 +355,8 @@
       {
         "label": "gus@0.6333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1918152800730154e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1918152800730154e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -367,8 +367,8 @@
       {
         "label": "gus@0.6333333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 1.2502574198158811e-08,
-        "normalRelativeMax": 2.7906529975396213e-08,
+        "worldMax": 1.2502574198158811e-8,
+        "normalRelativeMax": 2.7906529975396213e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -392,7 +392,7 @@
         "label": "gus@3.1666666666666665",
         "evidence": "native-observed matrices; same-renderer pixels",
         "worldMax": 0,
-        "normalRelativeMax": 1.4900416937506579e-08,
+        "normalRelativeMax": 1.4900416937506579e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -403,8 +403,8 @@
       {
         "label": "gus@3.2333333333333334",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 1.4901161193847656e-08,
-        "normalRelativeMax": 5.957733692401971e-08,
+        "worldMax": 1.4901161193847656e-8,
+        "normalRelativeMax": 5.957733692401971e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -415,8 +415,8 @@
       {
         "label": "gus@3.2333333333333334/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.6738999792108586e-08,
-        "normalRelativeMax": 2.2602503470643575e-08,
+        "worldMax": 2.6738999792108586e-8,
+        "normalRelativeMax": 2.2602503470643575e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -427,8 +427,8 @@
       {
         "label": "blue_spectacles@0.5666666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1914117323555497e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1914117323555497e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -439,10 +439,10 @@
       {
         "label": "blue_spectacles@0.6333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 9.240466170012951e-08,
-        "normalRelativeMax": 1.1918113029000344e-07,
+        "worldMax": 9.240466170012951e-8,
+        "normalRelativeMax": 1.1918113029000344e-7,
         "pixels": {
-          "meanAbsoluteChannelError": 5.978954081632653e-05,
+          "meanAbsoluteChannelError": 5.978954081632653e-5,
           "max": 1,
           "changed": 3,
           "neighbor": 0
@@ -451,8 +451,8 @@
       {
         "label": "blue_spectacles@0.6333333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.9774976262331165e-08,
-        "normalRelativeMax": 3.7877720168679174e-08,
+        "worldMax": 2.9774976262331165e-8,
+        "normalRelativeMax": 3.7877720168679174e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -475,8 +475,8 @@
       {
         "label": "blue_spectacles@3.1666666666666665",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 5.9601667750026317e-08,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 5.9601667750026317e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -487,8 +487,8 @@
       {
         "label": "blue_spectacles@3.2333333333333334",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 5.957733692401971e-08,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 5.957733692401971e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -499,8 +499,8 @@
       {
         "label": "blue_spectacles@3.2333333333333334/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.6809235609270843e-08,
-        "normalRelativeMax": 4.364044901031477e-08,
+        "worldMax": 2.6809235609270843e-8,
+        "normalRelativeMax": 4.364044901031477e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -511,8 +511,8 @@
       {
         "label": "lime_headphones@0.5666666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 6.28642737865448e-08,
-        "normalRelativeMax": 5.957058661777748e-08,
+        "worldMax": 6.28642737865448e-8,
+        "normalRelativeMax": 5.957058661777748e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -523,10 +523,10 @@
       {
         "label": "lime_headphones@0.6333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.7878936003063735e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.7878936003063735e-7,
         "pixels": {
-          "meanAbsoluteChannelError": 5.978954081632653e-05,
+          "meanAbsoluteChannelError": 5.978954081632653e-5,
           "max": 1,
           "changed": 3,
           "neighbor": 0
@@ -535,8 +535,8 @@
       {
         "label": "lime_headphones@0.6333333333333333/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.9246225774492984e-08,
-        "normalRelativeMax": 2.9000716916977432e-08,
+        "worldMax": 2.9246225774492984e-8,
+        "normalRelativeMax": 2.9000716916977432e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -559,8 +559,8 @@
       {
         "label": "lime_headphones@2.6666666666666665",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1919424215526075e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1919424215526075e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -571,8 +571,8 @@
       {
         "label": "lime_headphones@2.7333333333333334",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.190263218378902e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.190263218378902e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -583,8 +583,8 @@
       {
         "label": "lime_headphones@2.7333333333333334/XY",
         "evidence": "synthetic XY helper integration; NOT independent native input observation",
-        "worldMax": 2.885456840129308e-08,
-        "normalRelativeMax": 5.7276528526434576e-08,
+        "worldMax": 2.885456840129308e-8,
+        "normalRelativeMax": 5.7276528526434576e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -595,8 +595,8 @@
       {
         "label": "lime_headphones60@0.5333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 5.9565015750777115e-08,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 5.9565015750777115e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -607,8 +607,8 @@
       {
         "label": "lime_headphones60@0.5666666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1914030737007899e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1914030737007899e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -631,8 +631,8 @@
       {
         "label": "lime_headphones60@2.6333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.192070726986717e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.192070726986717e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -643,8 +643,8 @@
       {
         "label": "lime_headphones60@2.6666666666666665",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1916813491739563e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1916813491739563e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -655,8 +655,8 @@
       {
         "label": "lime_headphones_phase3@1.0333333333333334",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1892696481022467e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1892696481022467e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -667,8 +667,8 @@
       {
         "label": "lime_headphones_phase3@1.0666666666666667",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 5.960464477539063e-08,
-        "normalRelativeMax": 1.1896343825274115e-07,
+        "worldMax": 5.960464477539063e-8,
+        "normalRelativeMax": 1.1896343825274115e-7,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -691,8 +691,8 @@
       {
         "label": "lime_headphones_phase3@3.1333333333333333",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 8.329516276717186e-08,
-        "normalRelativeMax": 5.960418292619107e-08,
+        "worldMax": 8.329516276717186e-8,
+        "normalRelativeMax": 5.960418292619107e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -703,8 +703,8 @@
       {
         "label": "lime_headphones_phase3@3.1666666666666665",
         "evidence": "native-observed matrices; same-renderer pixels",
-        "worldMax": 2.8638169169425964e-08,
-        "normalRelativeMax": 5.959673038033918e-08,
+        "worldMax": 2.8638169169425964e-8,
+        "normalRelativeMax": 5.959673038033918e-8,
         "pixels": {
           "meanAbsoluteChannelError": 0,
           "max": 0,
@@ -715,99 +715,99 @@
       {
         "label": "alfred/packed/entry",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 2.9573186677289698e-08,
-        "normalRelativeMax": 5.2562261373517884e-08,
+        "worldMax": 2.9573186677289698e-8,
+        "normalRelativeMax": 5.2562261373517884e-8,
         "pixels": null
       },
       {
         "label": "alfred/packed/exit",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 1.9443793020101907e-08,
-        "normalRelativeMax": 4.052366311010359e-08,
+        "worldMax": 1.9443793020101907e-8,
+        "normalRelativeMax": 4.052366311010359e-8,
         "pixels": null
       },
       {
         "label": "purple_heart/packed/entry",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 2.7786131062690345e-08,
-        "normalRelativeMax": 4.144084855678129e-08,
+        "worldMax": 2.7786131062690345e-8,
+        "normalRelativeMax": 4.144084855678129e-8,
         "pixels": null
       },
       {
         "label": "purple_heart/packed/exit",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 5.442999539972959e-08,
-        "normalRelativeMax": 2.0933372257836425e-08,
+        "worldMax": 5.442999539972959e-8,
+        "normalRelativeMax": 2.0933372257836425e-8,
         "pixels": null
       },
       {
         "label": "lime_frog/packed/entry",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 2.9090015729593688e-08,
-        "normalRelativeMax": 4.129025634419982e-08,
+        "worldMax": 2.9090015729593688e-8,
+        "normalRelativeMax": 4.129025634419982e-8,
         "pixels": null
       },
       {
         "label": "lime_frog/packed/exit",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 4.228241112791409e-08,
-        "normalRelativeMax": 2.782984376281661e-08,
+        "worldMax": 4.228241112791409e-8,
+        "normalRelativeMax": 2.782984376281661e-8,
         "pixels": null
       },
       {
         "label": "coral_monocle/packed/entry",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 2.8597689771814316e-08,
-        "normalRelativeMax": 4.258584789610119e-08,
+        "worldMax": 2.8597689771814316e-8,
+        "normalRelativeMax": 4.258584789610119e-8,
         "pixels": null
       },
       {
         "label": "coral_monocle/packed/exit",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 3.290316485937694e-08,
-        "normalRelativeMax": 2.630310780293854e-08,
+        "worldMax": 3.290316485937694e-8,
+        "normalRelativeMax": 2.630310780293854e-8,
         "pixels": null
       },
       {
         "label": "gus/packed/entry",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 2.7380425815515252e-08,
-        "normalRelativeMax": 4.132364857792959e-08,
+        "worldMax": 2.7380425815515252e-8,
+        "normalRelativeMax": 4.132364857792959e-8,
         "pixels": null
       },
       {
         "label": "gus/packed/exit",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 1.8364564313699816e-08,
-        "normalRelativeMax": 1.3367691731325237e-08,
+        "worldMax": 1.8364564313699816e-8,
+        "normalRelativeMax": 1.3367691731325237e-8,
         "pixels": null
       },
       {
         "label": "blue_spectacles/packed/entry",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 2.5386808877314593e-08,
-        "normalRelativeMax": 5.8507527444939884e-08,
+        "worldMax": 2.5386808877314593e-8,
+        "normalRelativeMax": 5.8507527444939884e-8,
         "pixels": null
       },
       {
         "label": "blue_spectacles/packed/exit",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 2.644951557773112e-08,
-        "normalRelativeMax": 2.7871369212562058e-08,
+        "worldMax": 2.644951557773112e-8,
+        "normalRelativeMax": 2.7871369212562058e-8,
         "pixels": null
       },
       {
         "label": "lime_headphones/packed/entry",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 2.5375557544116134e-08,
-        "normalRelativeMax": 4.2537819949213144e-08,
+        "worldMax": 2.5375557544116134e-8,
+        "normalRelativeMax": 4.2537819949213144e-8,
         "pixels": null
       },
       {
         "label": "lime_headphones/packed/exit",
         "evidence": "Real packed loader and public setMotionFrame; numeric helper comparison, not original PNG parity",
-        "worldMax": 2.8572392563042115e-08,
-        "normalRelativeMax": 5.611437368478886e-08,
+        "worldMax": 2.8572392563042115e-8,
+        "normalRelativeMax": 5.611437368478886e-8,
         "pixels": null
       }
     ],
@@ -872,8 +872,8 @@
       "18": 120
     },
     "bodyBreathing": {
-      "worldMaximum": 2.442098133714765e-07,
-      "normalRelativeMaximum": 2.8576390228573434e-07
+      "worldMaximum": 2.442098133714765e-7,
+      "normalRelativeMaximum": 2.8576390228573434e-7
     },
     "limitation": "Native finite observation. Does not establish a periodic body/idle clock, arbitrary-phase Stop, or a runtime controller.",
     "sha256": {

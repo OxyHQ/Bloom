@@ -40,9 +40,7 @@ try {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = `display:block;width:${size * 2}px;height:${size}px`;
     document.body.append(canvas);
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     const { AuthoredMotionSampler } = await import('/runtime/avatar/motion.ts');
     const { AVATAR_PRESETS } = await import('/runtime/avatar/catalog.ts');
     window.Sampler = AuthoredMotionSampler;

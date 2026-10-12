@@ -8,9 +8,7 @@ const targetPath = '.local/avatar-catalog-clippo-special/work-raw.json',
   basePath = '.local/avatar-catalog-computer/clippo/work-raw.json';
 const target = await read(targetPath),
   base = await read(basePath),
-  env = await read(
-    'runtime/avatar/assets/catalog-computer/centering.json',
-  );
+  env = await read('runtime/avatar/assets/catalog-computer/centering.json');
 const at = (raw, t) => {
   const frame = raw.frames.find((f) => Math.abs(f.renderTime - t) < 1e-9);
   assert(frame);
@@ -31,8 +29,7 @@ for (let i = 0; i < env.times.length; i++) {
     b = at(base, time);
   maximum = Math.max(maximum, Math.abs(a[12] - b[12] + delta * env.body[i]));
   assert.equal(a[13], b[13], 'Unexpected Y centering');
-  for (let k = 0; k < 12; k++)
-    assert.equal(a[k], b[k], 'Unexpected body rotation/scale');
+  for (let k = 0; k < 12; k++) assert.equal(a[k], b[k], 'Unexpected body rotation/scale');
   values++;
   const get = (raw) =>
     raw.frames
@@ -47,8 +44,7 @@ for (let i = 0; i < env.times.length; i++) {
       b = propsB[p].blocks.DrawBlock;
     const contact = a[43] === -16 && shadow++ < 2;
     for (let k = 0; k < 92; k++) {
-      const predicted =
-          b[k] - (contact && k === 12 ? delta * env.shadow[i] : 0),
+      const predicted = b[k] - (contact && k === 12 ? delta * env.shadow[i] : 0),
         error = Math.abs(a[k] - predicted);
       if (contact) shadowMaximum = Math.max(shadowMaximum, error);
       else otherMaximum = Math.max(otherMaximum, error);

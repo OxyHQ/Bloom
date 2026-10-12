@@ -122,9 +122,7 @@ try {
         const canvas = document.createElement('canvas');
         canvas.style.cssText = `width:1120px;height:${height}px;display:block`;
         document.body.append(canvas);
-        const { AuthoredAvatarEngine } = await import(
-          '/runtime/avatar/authored-engine.ts'
-        );
+        const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
         const engine = (window.authoredEngine = new AuthoredAvatarEngine(canvas, {
           count,
           size: 112,
@@ -205,7 +203,17 @@ try {
     assert.equal(after.stats.contexts, 1);
     assert.equal(after.contexts.created, 1, 'One actual WebGL context');
     assert.equal(after.contexts.lost, 0);
-    console.log(JSON.stringify({phase:'measurement', count, elapsed:after.timestamp-before.timestamp, before:before.stats.states[0], after:after.stats.states[0], frames:after.stats.frames-before.stats.frames, drawCalls:after.stats.drawCalls}));
+    console.log(
+      JSON.stringify({
+        phase: 'measurement',
+        count,
+        elapsed: after.timestamp - before.timestamp,
+        before: before.stats.states[0],
+        after: after.stats.states[0],
+        frames: after.stats.frames - before.stats.frames,
+        drawCalls: after.stats.drawCalls,
+      }),
+    );
     assert.equal(
       after.stats.drawCalls,
       3 +

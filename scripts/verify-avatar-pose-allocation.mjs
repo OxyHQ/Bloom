@@ -24,9 +24,7 @@ try {
   );
   await page.goto('http://localhost:6006/avatar-pose-check.html');
   const result = await page.evaluate(async () => {
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     const canvas = document.querySelector('canvas');
     canvas.style.width = canvas.style.height = '48px';
     const engine = new AuthoredAvatarEngine(canvas, { count: 1, size: 48 });

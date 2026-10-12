@@ -9,15 +9,12 @@ async function load(name) {
   const file = `${temporary}/${name}.mjs`;
   await writeFile(
     file,
-    ts.transpileModule(
-      await readFile(`runtime/avatar/${name}.ts`, 'utf8'),
-      {
-        compilerOptions: {
-          target: ts.ScriptTarget.ES2022,
-          module: ts.ModuleKind.ES2022,
-        },
+    ts.transpileModule(await readFile(`runtime/avatar/${name}.ts`, 'utf8'), {
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.ES2022,
       },
-    ).outputText,
+    }).outputText,
   );
   return import(pathToFileURL(`${process.cwd()}/${file}`));
 }
@@ -30,12 +27,9 @@ const presets = (
 ).split(',');
 for (const preset of presets)
   test(`${preset}: native body hover + drag, including reversals and cancellation`, async () => {
-    const root =
-      process.env.AVATAR_GAZE_SOURCE || '.local/avatar-pointer-validation';
+    const root = process.env.AVATAR_GAZE_SOURCE || '.local/avatar-pointer-validation';
     const frames = JSON.parse(
-      await readFile(
-        `${root}/${preset}/${process.env.AVATAR_GAZE_NAME || 'pointer'}-raw.json`,
-      ),
+      await readFile(`${root}/${preset}/${process.env.AVATAR_GAZE_NAME || 'pointer'}-raw.json`),
     );
     const idle = JSON.parse(await readFile(`${root}/${preset}/idle-raw.json`));
     const baseline = new Map(idle.map((f) => [f.time, f]));
@@ -62,15 +56,9 @@ for (const preset of presets)
       for (const offset of [0, 16]) {
         const expected = rotation
           .clone()
-          .multiply(
-            new THREE.Matrix4().fromArray(original.slice(offset, offset + 16)),
-          );
-        if (offset === 0)
-          expected.setPosition(original[12], original[13], original[14]);
-        const magnitude = Math.max(
-          1,
-          ...original.slice(offset, offset + 16).map(Math.abs),
-        );
+          .multiply(new THREE.Matrix4().fromArray(original.slice(offset, offset + 16)));
+        if (offset === 0) expected.setPosition(original[12], original[13], original[14]);
+        const magnitude = Math.max(1, ...original.slice(offset, offset + 16).map(Math.abs));
         for (let k = 0; k < 16; k++) {
           const error = Math.abs(expected.elements[k] - actual[offset + k]);
           if (offset === 0 && error > worldMax) {
@@ -84,8 +72,7 @@ for (const preset of presets)
               pitch: gaze.pitch,
             };
           }
-          if (offset === 16)
-            normalRelativeMax = Math.max(normalRelativeMax, error / magnitude);
+          if (offset === 16) normalRelativeMax = Math.max(normalRelativeMax, error / magnitude);
         }
       }
       for (let p = 0; p < frame.draws.length; p++) {
@@ -93,26 +80,18 @@ for (const preset of presets)
           frame.draws[p].blocks.DrawBlock.slice(32),
           reference.draws[p].blocks.DrawBlock.slice(32),
         );
-        assert.deepEqual(
-          frame.draws[p].blocks.FrameBlock,
-          reference.draws[p].blocks.FrameBlock,
-        );
-        assert.deepEqual(
-          frame.draws[p].blocks.SkinBlock,
-          reference.draws[p].blocks.SkinBlock,
-        );
+        assert.deepEqual(frame.draws[p].blocks.FrameBlock, reference.draws[p].blocks.FrameBlock);
+        assert.deepEqual(frame.draws[p].blocks.SkinBlock, reference.draws[p].blocks.SkinBlock);
       }
       // Native presents the existing hover state, advances the spring, then updates input.
       gaze.advance(frame.time - previous);
       previous = frame.time;
       for (const event of frame.events) {
-        if (event.kind === 'pointer-down')
-          pointer.down(event.x, event.y, frame.time);
+        if (event.kind === 'pointer-down') pointer.down(event.x, event.y, frame.time);
         else if (event.kind === 'pointer') pointer.move(event.x, event.y);
         else if (event.kind === 'pointer-up' || event.kind === 'pointer-cancel')
           pointer.up(frame.time);
-        if (event.kind.startsWith('pointer') && event.x !== undefined)
-          gaze.point(event.x, event.y);
+        if (event.kind.startsWith('pointer') && event.x !== undefined) gaze.point(event.x, event.y);
       }
     }
     console.log(preset, { worldMax, normalRelativeMax, worst });

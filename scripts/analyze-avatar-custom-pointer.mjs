@@ -6,11 +6,8 @@ const presets = (
   process.env.AVATAR_POINTER_PRESETS ||
   'blue_beret,alfred,purple_heart,lime_frog,coral_monocle,gus,blue_spectacles,lime_headphones'
 ).split(',');
-const root =
-  process.env.AVATAR_POINTER_SOURCE || '.local/avatar-pointer-validation';
-const output =
-  process.env.AVATAR_POINTER_ANALYSIS ||
-  '.local/avatar-custom-pointer-analysis.json';
+const root = process.env.AVATAR_POINTER_SOURCE || '.local/avatar-pointer-validation';
+const output = process.env.AVATAR_POINTER_ANALYSIS || '.local/avatar-custom-pointer-analysis.json';
 const reports = [];
 const basis = new THREE.Matrix4().makeRotationY((8 * Math.PI) / 180),
   inverse = basis.clone().invert();
@@ -19,9 +16,7 @@ for (const preset of presets) {
   try {
     idle = JSON.parse(await readFile(`${root}/${preset}/idle-raw.json`));
     frames = JSON.parse(
-      await readFile(
-        `${root}/${preset}/${process.env.AVATAR_POINTER_NAME || 'pointer'}-raw.json`,
-      ),
+      await readFile(`${root}/${preset}/${process.env.AVATAR_POINTER_NAME || 'pointer'}-raw.json`),
     );
   } catch (e) {
     if (e.code === 'ENOENT') continue;
@@ -45,9 +40,7 @@ for (const preset of presets) {
     assert.equal(frame.draws.length, ref.draws.length);
     const delta = new THREE.Matrix4()
       .fromArray(frame.draws[0].blocks.DrawBlock)
-      .multiply(
-        new THREE.Matrix4().fromArray(ref.draws[0].blocks.DrawBlock).invert(),
-      );
+      .multiply(new THREE.Matrix4().fromArray(ref.draws[0].blocks.DrawBlock).invert());
     const local = inverse.clone().multiply(delta).multiply(basis),
       rotation = new THREE.Euler().setFromRotationMatrix(local, 'YXZ');
     const reconstructed = basis
@@ -66,18 +59,14 @@ for (const preset of presets) {
     for (let p = 0; p < frame.draws.length; p++) {
       const a = frame.draws[p].blocks,
         b = ref.draws[p].blocks;
-      const expected = delta
-        .clone()
-        .multiply(new THREE.Matrix4().fromArray(b.DrawBlock));
+      const expected = delta.clone().multiply(new THREE.Matrix4().fromArray(b.DrawBlock));
       result.worldRigidMax = Math.max(
         result.worldRigidMax,
         ...expected.elements.map((v, k) => Math.abs(v - a.DrawBlock[k])),
       );
       result.materialMax = Math.max(
         result.materialMax,
-        ...a.DrawBlock.slice(32).map((v, k) =>
-          Math.abs(v - b.DrawBlock[k + 32]),
-        ),
+        ...a.DrawBlock.slice(32).map((v, k) => Math.abs(v - b.DrawBlock[k + 32])),
       );
       result.cameraMax = Math.max(
         result.cameraMax,
@@ -103,9 +92,7 @@ for (const preset of presets) {
       samples: result.samples.filter(
         (f) =>
           f.events.length ||
-          [0.3, 0.6, 1, 1.4, 1.9, 2.5, 3, 4].some(
-            (t) => Math.abs(f.time - t) < 1e-9,
-          ),
+          [0.3, 0.6, 1, 1.4, 1.9, 2.5, 3, 4].some((t) => Math.abs(f.time - t) < 1e-9),
       ),
     }),
   );

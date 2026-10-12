@@ -3,10 +3,7 @@ import type { CatalogPiece } from './catalog-fitting';
 import { tuftSurface } from './tuft-surface';
 import { integrateCatalogTuft } from './catalog-tuft';
 
-const prepared = new WeakMap<
-  AuthoredPart[],
-  ReadonlyMap<number, readonly number[]>
->();
+const prepared = new WeakMap<AuthoredPart[], ReadonlyMap<number, readonly number[]>>();
 /** Run once after decoding a canonical asset, before alpha-fit and GPU upload.
  * Cached binary arrays remain immutable; only owned geometry clones are changed.
  * Returns the body-local attachment point for each tuft surface numeric ID. */
@@ -17,11 +14,8 @@ export function prepareCanonicalTuft(
   const existing = prepared.get(parts);
   if (existing) return existing;
   const bodySource = parts.filter((p) => p.id === 0 && !p.activity);
-  const tuftSource = parts.filter(
-    (p) => p.attachment === 'three_lobe' && !p.activity,
-  );
-  if (!bodySource.some((p) => !p.fur) || !tuftSource.some((p) => !p.fur))
-    return anchors;
+  const tuftSource = parts.filter((p) => p.attachment === 'three_lobe' && !p.activity);
+  if (!bodySource.some((p) => !p.fur) || !tuftSource.some((p) => !p.fur)) return anchors;
   const decorated = [...bodySource, ...tuftSource].map((part): CatalogPiece => {
     const geometry = part.geometry.clone();
     geometry.computeBoundingBox();
@@ -42,9 +36,7 @@ export function prepareCanonicalTuft(
       tuft = decorated.filter((p) => p.category === 'accessory'),
       surface = tuft.find((p) => !p.fur)!,
       coat = body.find((p) => !p.fur)!;
-    const center = [0, 1, 2].map(
-      (k) => (surface.bounds.min[k]! + surface.bounds.max[k]!) / 2,
-    );
+    const center = [0, 1, 2].map((k) => (surface.bounds.min[k]! + surface.bounds.max[k]!) / 2);
     const root = tuftSurface(coat.geometry, center).point;
     for (const part of tuft) {
       part.attachmentPivot = root;

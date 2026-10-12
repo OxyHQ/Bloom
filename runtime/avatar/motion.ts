@@ -67,10 +67,8 @@ export class AuthoredMotionSampler {
     )
       throw Error('Invalid authored motion duration');
     for (let i = 1; i < clip.times.length; i++)
-      if (clip.times[i]! <= clip.times[i - 1]!)
-        throw Error('Motion keyframes must increase');
-    if (!clip.times.every(Number.isFinite))
-      throw Error('Invalid motion timestamps');
+      if (clip.times[i]! <= clip.times[i - 1]!) throw Error('Motion keyframes must increase');
+    if (!clip.times.every(Number.isFinite)) throw Error('Invalid motion timestamps');
     this.fieldEntries = clip.parts.map((part) => Object.entries(part.fields));
     const ids = new Set<string>();
     for (const part of clip.parts) {
@@ -86,14 +84,12 @@ export class AuthoredMotionSampler {
       ] as [MotionChannel, number][]) {
         const values = 'value' in channel ? channel.value : channel.samples;
         if (
-          values.length !==
-            width * ('value' in channel ? 1 : clip.times.length) ||
+          values.length !== width * ('value' in channel ? 1 : clip.times.length) ||
           !values.every(Number.isFinite)
         )
           throw Error('Invalid motion channel');
       }
-      const scales =
-        'value' in part.scale ? part.scale.value : part.scale.samples;
+      const scales = 'value' in part.scale ? part.scale.value : part.scale.samples;
       for (let k = 0; k < scales.length; k++) {
         if (Math.abs(scales[k]!) <= 1e-10) throw Error('Singular motion scale');
         if (Math.sign(scales[k]!) !== Math.sign(scales[k % 3]!))
@@ -101,8 +97,7 @@ export class AuthoredMotionSampler {
         if (part.shear && k % 3 < 2 && scales[k]! < 0)
           throw Error('Affine QR requires positive first two scales');
       }
-      const rotations =
-        'value' in part.rotation ? part.rotation.value : part.rotation.samples;
+      const rotations = 'value' in part.rotation ? part.rotation.value : part.rotation.samples;
       for (let k = 0; k < rotations.length; k += 4)
         if (Math.abs(Math.hypot(...rotations.slice(k, k + 4)) - 1) > 1e-6)
           throw Error('Motion rotation must be a unit quaternion');
@@ -114,9 +109,7 @@ export class AuthoredMotionSampler {
       id: part.id,
       world: new THREE.Matrix4(),
       normalMatrix: new THREE.Matrix4(),
-      fields: Object.fromEntries(
-        Object.keys(part.fields).map((key) => [key, [0, 0, 0, 0]]),
-      ),
+      fields: Object.fromEntries(Object.keys(part.fields).map((key) => [key, [0, 0, 0, 0]])),
     }));
   }
 
@@ -139,9 +132,7 @@ export class AuthoredMotionSampler {
     const lowerTime = clip.times[lo]!,
       upperTime = clip.times[hi]!;
     const tolerance =
-      8 *
-      Number.EPSILON *
-      Math.max(1, Math.abs(time), Math.abs(lowerTime), Math.abs(upperTime));
+      8 * Number.EPSILON * Math.max(1, Math.abs(time), Math.abs(lowerTime), Math.abs(upperTime));
     const alpha =
       time - lowerTime <= tolerance
         ? 0
@@ -156,8 +147,7 @@ export class AuthoredMotionSampler {
       this.position.fromArray(this.scratch);
       interpolate(part.scale, 3, this.scratch, lo, hi, alpha);
       this.scale.fromArray(this.scratch);
-      if ('value' in part.rotation)
-        this.rotation.fromArray(part.rotation.value);
+      if ('value' in part.rotation) this.rotation.fromArray(part.rotation.value);
       else {
         this.rotation.fromArray(part.rotation.samples, lo * 4);
         this.nextRotation.fromArray(part.rotation.samples, hi * 4);
@@ -166,9 +156,7 @@ export class AuthoredMotionSampler {
       }
       if (part.shear) {
         interpolate(part.shear, 3, this.shear, lo, hi, alpha);
-        target.world
-          .makeRotationFromQuaternion(this.rotation)
-          .setPosition(this.position);
+        target.world.makeRotationFromQuaternion(this.rotation).setPosition(this.position);
         const e = target.world.elements;
         for (let row = 0; row < 3; row++) {
           const x = e[row]!,
@@ -176,26 +164,17 @@ export class AuthoredMotionSampler {
             z = e[8 + row]!;
           e[row] = x * this.scale.x;
           e[4 + row] = x * this.shear[0]! + y * this.scale.y;
-          e[8 + row] =
-            x * this.shear[1]! + y * this.shear[2]! + z * this.scale.z;
+          e[8 + row] = x * this.shear[1]! + y * this.shear[2]! + z * this.scale.z;
         }
       } else target.world.compose(this.position, this.rotation, this.scale);
       // Nonuniform eye squash requires inverse transpose, not a rigid delta.
       target.normalMatrix.copy(target.world).invert().transpose();
       if (part.normalCorrection) {
-        interpolate(
-          part.normalCorrection,
-          9,
-          this.normalCorrection,
-          lo,
-          hi,
-          alpha,
-        );
+        interpolate(part.normalCorrection, 9, this.normalCorrection, lo, hi, alpha);
         const e = target.normalMatrix.elements;
         for (let column = 0; column < 3; column++)
           for (let row = 0; row < 3; row++)
-            e[column * 4 + row] =
-              e[column * 4 + row]! + this.normalCorrection[column * 3 + row]!;
+            e[column * 4 + row] = e[column * 4 + row]! + this.normalCorrection[column * 3 + row]!;
         // Native normal bases are homogeneous direction transforms. Translation
         // contributes to inverse-transpose(mat4)'s last row, but not to normals.
         e[3] = e[7] = e[11] = e[12] = e[13] = e[14] = 0;

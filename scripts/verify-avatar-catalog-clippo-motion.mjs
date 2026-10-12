@@ -12,19 +12,12 @@ for (const detail of ['low', 'high'])
       `.local/avatar-catalog-clippo-special/${detail === 'low' ? 'low/' : ''}${kind}-raw.json`,
     );
     const start = kind === 'idle' ? 3.683333333333333 : 3,
-      end =
-        kind === 'idle'
-          ? 9.633333333333333
-          : kind === 'reaction'
-            ? 5.733333333333333
-            : 7;
+      end = kind === 'idle' ? 9.633333333333333 : kind === 'reaction' ? 5.733333333333333 : 7;
     cases.push({
       detail,
       kind,
       frames: raw.frames
-        .filter(
-          (f) => f.renderTime >= start - 1e-9 && f.renderTime <= end + 1e-9,
-        )
+        .filter((f) => f.renderTime >= start - 1e-9 && f.renderTime <= end + 1e-9)
         .map((f) => ({
           time: f.renderTime - start,
           draws: f.draws.slice(0, 7).map((d) => d.blocks.DrawBlock),
@@ -44,8 +37,7 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', (e) => report.errors.push(e.message));
   page.on('request', (r) => {
-    if (/orbit-characters|\/bloom-character\/.*\.mjs/.test(r.url()))
-      report.forbidden.push(r.url());
+    if (/orbit-characters|\/bloom-character\/.*\.mjs/.test(r.url())) report.forbidden.push(r.url());
   });
   const cdp = await page.createCDPSession();
   await cdp.send('Fetch.enable', {
@@ -64,15 +56,9 @@ try {
   for (const detail of ['low', 'high']) {
     const result = await page.evaluate(
       async ({ detail, cases, names }) => {
-        const { composeCatalog } = await import(
-          '/runtime/avatar/catalog-compose.ts'
-        );
-        const { attachCatalogComputer } = await import(
-          '/runtime/avatar/catalog-computer.ts'
-        );
-        const { createCatalogMotion } = await import(
-          '/runtime/avatar/catalog-motion-factory.ts'
-        );
+        const { composeCatalog } = await import('/runtime/avatar/catalog-compose.ts');
+        const { attachCatalogComputer } = await import('/runtime/avatar/catalog-computer.ts');
+        const { createCatalogMotion } = await import('/runtime/avatar/catalog-motion-factory.ts');
         const c = await composeCatalog(
           {
             shape: 'clippo',
@@ -110,9 +96,7 @@ try {
                 inverse.copy(body.world).invert();
                 nativeInverse.fromArray(frame.draws[0]).invert();
                 local.copy(inverse).multiply(p.world);
-                nativeLocal
-                  .copy(nativeInverse)
-                  .multiply(new Matrix4().fromArray(d));
+                nativeLocal.copy(nativeInverse).multiply(new Matrix4().fromArray(d));
                 for (let k = 0; k < 16; k++)
                   localWorld = Math.max(
                     localWorld,
@@ -121,9 +105,7 @@ try {
                 inverse.copy(body.normalMatrix).invert();
                 nativeInverse.fromArray(frame.draws[0], 16).invert();
                 local.copy(inverse).multiply(p.normalMatrix);
-                nativeLocal
-                  .copy(nativeInverse)
-                  .multiply(new Matrix4().fromArray(d, 16));
+                nativeLocal.copy(nativeInverse).multiply(new Matrix4().fromArray(d, 16));
                 for (let k = 0; k < 16; k++)
                   localNormal = Math.max(
                     localNormal,
@@ -146,10 +128,7 @@ try {
               if (id > 0)
                 for (let n = 0; n < names.length; n++)
                   for (let k = 0; k < 4; k++)
-                    fields = Math.max(
-                      fields,
-                      Math.abs(p.fields[names[n]][k] - d[32 + 4 * n + k]),
-                    );
+                    fields = Math.max(fields, Math.abs(p.fields[names[n]][k] - d[32 + 4 * n + k]));
             }
           }
           results.push({

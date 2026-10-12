@@ -7,19 +7,15 @@
         "nativeStart": 3.683333333333333,
         "nativeEnd": 9.633333333333333,
         "seamError": 0,
-        "bodyCycleRms": 6.631428995520351e-06,
-        "bodyCycleMax": 2.2172927856445312e-05,
-        "completeCycleMax": 2.2172927856445312e-05
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 2.2172927856445312e-5
       },
       "reaction": {
         "nativeStart": 3,
         "nativeEnd": 5.433333333333334,
         "exactIdleTailSeconds": 2.5666666666666664,
-        "comparedBlocks": [
-          "DrawBlock",
-          "FrameBlock",
-          "SkinBlock"
-        ]
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
       }
     },
     "purple_heart": {
@@ -27,19 +23,15 @@
         "nativeStart": 3.683333333333333,
         "nativeEnd": 9.633333333333333,
         "seamError": 0,
-        "bodyCycleRms": 6.631428995520351e-06,
-        "bodyCycleMax": 2.2172927856445312e-05,
-        "completeCycleMax": 2.2172927856445312e-05
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 2.2172927856445312e-5
       },
       "reaction": {
         "nativeStart": 3,
         "nativeEnd": 5.633333333333334,
         "exactIdleTailSeconds": 2.3666666666666663,
-        "comparedBlocks": [
-          "DrawBlock",
-          "FrameBlock",
-          "SkinBlock"
-        ]
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
       }
     },
     "lime_frog": {
@@ -47,19 +39,15 @@
         "nativeStart": 3.683333333333333,
         "nativeEnd": 9.633333333333333,
         "seamError": 0,
-        "bodyCycleRms": 6.631428995520351e-06,
-        "bodyCycleMax": 2.2172927856445312e-05,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
         "completeCycleMax": 1
       },
       "reaction": {
         "nativeStart": 3,
         "nativeEnd": 5.733333333333333,
         "exactIdleTailSeconds": 2.2666666666666666,
-        "comparedBlocks": [
-          "DrawBlock",
-          "FrameBlock",
-          "SkinBlock"
-        ]
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
       }
     },
     "coral_monocle": {
@@ -67,19 +55,15 @@
         "nativeStart": 3.683333333333333,
         "nativeEnd": 9.633333333333333,
         "seamError": 0,
-        "bodyCycleRms": 6.631428995520351e-06,
-        "bodyCycleMax": 2.2172927856445312e-05,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
         "completeCycleMax": 1
       },
       "reaction": {
         "nativeStart": 3,
         "nativeEnd": 5.733333333333333,
         "exactIdleTailSeconds": 2.2666666666666666,
-        "comparedBlocks": [
-          "DrawBlock",
-          "FrameBlock",
-          "SkinBlock"
-        ]
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
       }
     },
     "gus": {
@@ -87,19 +71,15 @@
         "nativeStart": 3.683333333333333,
         "nativeEnd": 9.633333333333333,
         "seamError": 0,
-        "bodyCycleRms": 6.631428995520351e-06,
-        "bodyCycleMax": 2.2172927856445312e-05,
-        "completeCycleMax": 2.2172927856445312e-05
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 2.2172927856445312e-5
       },
       "reaction": {
         "nativeStart": 3,
         "nativeEnd": 5.833333333333333,
         "exactIdleTailSeconds": 2.166666666666667,
-        "comparedBlocks": [
-          "DrawBlock",
-          "FrameBlock",
-          "SkinBlock"
-        ]
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
       }
     },
     "blue_spectacles": {
@@ -107,19 +87,15 @@
         "nativeStart": 3.683333333333333,
         "nativeEnd": 9.633333333333333,
         "seamError": 0,
-        "bodyCycleRms": 6.631428995520351e-06,
-        "bodyCycleMax": 2.2172927856445312e-05,
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
         "completeCycleMax": 1
       },
       "reaction": {
         "nativeStart": 3,
         "nativeEnd": 5.833333333333333,
         "exactIdleTailSeconds": 2.166666666666667,
-        "comparedBlocks": [
-          "DrawBlock",
-          "FrameBlock",
-          "SkinBlock"
-        ]
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
       }
     },
     "lime_headphones": {
@@ -127,19 +103,15 @@
         "nativeStart": 3.683333333333333,
         "nativeEnd": 9.633333333333333,
         "seamError": 0,
-        "bodyCycleRms": 6.631428995520351e-06,
-        "bodyCycleMax": 2.2172927856445312e-05,
-        "completeCycleMax": 2.2172927856445312e-05
+        "bodyCycleRms": 6.631428995520351e-6,
+        "bodyCycleMax": 2.2172927856445312e-5,
+        "completeCycleMax": 2.2172927856445312e-5
       },
       "reaction": {
         "nativeStart": 3,
         "nativeEnd": 5.333333333333333,
         "exactIdleTailSeconds": 2.666666666666667,
-        "comparedBlocks": [
-          "DrawBlock",
-          "FrameBlock",
-          "SkinBlock"
-        ]
+        "comparedBlocks": ["DrawBlock", "FrameBlock", "SkinBlock"]
       }
     }
   },
@@ -388,15 +360,8 @@
             "motion": "work",
             "motionTime": 7.033100000000009,
             "preset": "blue_beret",
-            "pigment": [
-              1,
-              1,
-              1
-            ],
-            "look": [
-              0,
-              0
-            ]
+            "pigment": [1, 1, 1],
+            "look": [0, 0]
           }
         ]
       },

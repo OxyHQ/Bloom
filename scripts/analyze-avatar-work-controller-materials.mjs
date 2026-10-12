@@ -2,18 +2,11 @@
 import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
 const preset = process.env.AVATAR_PRESET || 'alfred',
-  root =
-    process.env.AVATAR_WORK_CONTROLLER_OUTPUT ||
-    `.local/avatar-work-controller/${preset}`;
+  root = process.env.AVATAR_WORK_CONTROLLER_OUTPUT || `.local/avatar-work-controller/${preset}`;
 const read = async (p) => JSON.parse(await readFile(p, 'utf8'));
-const geometry = await read(
-  `.local/avatar-original-geometry/${preset}/geometry.json`,
-);
+const geometry = await read(`.local/avatar-original-geometry/${preset}/geometry.json`);
 const baseHashes = new Set(
-  geometry.parts.flatMap((p) => [
-    p.vertices.sha256,
-    ...(p.fur ? [p.fur.sha256] : []),
-  ]),
+  geometry.parts.flatMap((p) => [p.vertices.sha256, ...(p.fur ? [p.fur.sha256] : [])]),
 );
 const names = [
   'colorRoughness',
@@ -34,14 +27,7 @@ const names = [
 ];
 const cases = [],
   loaded = [];
-for (const name of [
-  'cycles1',
-  'cycles2',
-  'stop0_5',
-  'stop1_2',
-  'stop3_4',
-  'interrupt1_2',
-]) {
+for (const name of ['cycles1', 'cycles2', 'stop0_5', 'stop1_2', 'stop3_4', 'interrupt1_2']) {
   let raw;
   try {
     raw = await read(
@@ -63,9 +49,7 @@ for (const name of [
   );
   for (const frame of frames)
     for (const draw of frame.draws) {
-      const id = draw.vertexAttributes.find(
-          (a) => a.name === 'position',
-        ).bufferId,
+      const id = draw.vertexAttributes.find((a) => a.name === 'position').bufferId,
         hash = buffers.get(id);
       assert(hash);
       if (baseHashes.has(hash)) continue;
@@ -91,10 +75,7 @@ for (const name of [
           part.fields[names[k]] = {
             initial,
             last: current,
-            maxAbsoluteDelta: Math.max(
-              delta,
-              part.fields[names[k]]?.maxAbsoluteDelta || 0,
-            ),
+            maxAbsoluteDelta: Math.max(delta, part.fields[names[k]]?.maxAbsoluteDelta || 0),
           };
       }
     }
@@ -114,13 +95,9 @@ const selectors = {
   camera: (f) => f.draws[0].blocks.FrameBlock,
   bodyX: (f) => [f.draws[0].blocks.DrawBlock[12]],
   keyboardReference: (f) =>
-    f.draws
-      .find((d) => d.blocks.DrawBlock[43] === -4)
-      ?.blocks.DrawBlock.slice(40, 44),
+    f.draws.find((d) => d.blocks.DrawBlock[43] === -4)?.blocks.DrawBlock.slice(40, 44),
   keyboardCoverage: (f) =>
-    f.draws
-      .find((d) => d.blocks.DrawBlock[43] === -4)
-      ?.blocks.DrawBlock.slice(48, 52),
+    f.draws.find((d) => d.blocks.DrawBlock[43] === -4)?.blocks.DrawBlock.slice(48, 52),
   screenReferenceX: (f) => {
     const d = f.draws.find((d) => d.blocks.DrawBlock[43] === -24);
     return d ? [d.blocks.DrawBlock[40]] : undefined;
@@ -129,9 +106,7 @@ const selectors = {
 const comparisons = [],
   base = loaded[0];
 for (const item of loaded.slice(1)) {
-  const byTime = new Map(
-    item.frames.map((f) => [Math.round((f.renderTime - item.stop) * 60), f]),
-  );
+  const byTime = new Map(item.frames.map((f) => [Math.round((f.renderTime - item.stop) * 60), f]));
   const channels = {};
   for (const [name, select] of Object.entries(selectors)) {
     let count = 0,
@@ -156,12 +131,7 @@ for (const item of loaded.slice(1)) {
   comparisons.push({ reference: base.name, case: item.name, channels });
 }
 const sharedChannels = {};
-for (const name of [
-  'camera',
-  'keyboardReference',
-  'keyboardCoverage',
-  'screenReferenceX',
-]) {
+for (const name of ['camera', 'keyboardReference', 'keyboardCoverage', 'screenReferenceX']) {
   assert(
     comparisons.every((comparison) => comparison.channels[name].max === 0),
     `${name}: not proven identical across Stops`,

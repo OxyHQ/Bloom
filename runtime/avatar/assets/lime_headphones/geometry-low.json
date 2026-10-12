@@ -13,23 +13,12 @@
       "material": {
         "label": "body",
         "base": {
-          "color": [
-            0.9803921580314636,
-            0.43921568989753723,
-            0.6705882549285889
-          ],
+          "color": [0.9803921580314636, 0.43921568989753723, 0.6705882549285889],
           "roughness": 0.7799999713897705,
           "reflectance": 0.23408909142017365
         },
-        "alternateColor": [
-          0.9920454621315002,
-          0.5646532773971558,
-          0.6391111612319946
-        ],
-        "unresolvedAlternateScalars": [
-          0.7799999713897705,
-          0.23408909142017365
-        ],
+        "alternateColor": [0.9920454621315002, 0.5646532773971558, 0.6391111612319946],
+        "unresolvedAlternateScalars": [0.7799999713897705, 0.23408909142017365],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -40,24 +29,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          0,
-          -0.24707502126693726,
-          0
-        ],
+        "deformationCenter": [0, -0.24707502126693726, 0],
         "attachmentLabel": "",
         "attachmentCenter": null,
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 120,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -65,16 +40,8 @@
       },
       "sourceName": "825a707fd5f0d487da9381c9fdf9a922773f85aa01e3f39ae5f1d8e95a207002:body:no-shadow:studio-fur-v6:79:607d191be48021d13ee7deb78bb38d2cbeaa09f4a7823cb5ce74e186ec7743cd:surface:shadow:79:9a8433a6e1e0ddfc7d1ae98703eff5273d4feb2e6b3a99a4af3494809694eb42:surface:shadow:79:67d72c2543900b0aa1a9251313b2a1f1b198f2d96bc9c02db230e86ec8df5734:surface:shadow:79:a6f9eeddac0937bab42483a0f9422bd0fbe388cbfbd55f4867459dc1be1d3292:surface:shadow:79:5635d1e1d6114d5e07d89711b1b579543d88aac086c7a3cdaad2d1651b2a8703:surface:shadow:79:48f174bdd3498e39d92390dcbcb9f44e7b3bb32de0b5b276e7dccf18ce512675:surface:shadow:79:a8f8446c3662ae05ccfd78abd0ef5356bd171e09526f41514ba0f5899bcb08e6:surface:shadow",
       "bounds": {
-        "min": [
-          -0.7547160983085632,
-          -0.9990570545196533,
-          -0.6250996589660645
-        ],
-        "max": [
-          0.7518039345741272,
-          0.9992732405662537,
-          0.6247232556343079
-        ]
+        "min": [-0.7547160983085632, -0.9990570545196533, -0.6250996589660645],
+        "max": [0.7518039345741272, 0.9992732405662537, 0.6247232556343079]
       },
       "normals": {
         "minLength": 0.9999998555191781,
@@ -154,23 +121,12 @@
       "material": {
         "label": "eyelid-left-continuous-u-and-lash-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": true,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -181,24 +137,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          -0.3329812288284302,
-          -0.07841390371322632,
-          0.49655792117118835
-        ],
+        "deformationCenter": [-0.3329812288284302, -0.07841390371322632, 0.49655792117118835],
         "attachmentLabel": "",
         "attachmentCenter": null,
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 152,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -206,16 +148,8 @@
       },
       "sourceName": "607d191be48021d13ee7deb78bb38d2cbeaa09f4a7823cb5ce74e186ec7743cd:surface:shadow",
       "bounds": {
-        "min": [
-          -0.5535838603973389,
-          -0.27577832341194153,
-          0.3635883629322052
-        ],
-        "max": [
-          -0.11237861216068268,
-          0.1183246374130249,
-          0.6463742256164551
-        ]
+        "min": [-0.5535838603973389, -0.27577832341194153, 0.3635883629322052],
+        "max": [-0.11237861216068268, 0.1183246374130249, 0.6463742256164551]
       },
       "normals": {
         "minLength": 0.9999999611800072,
@@ -287,23 +221,12 @@
       "material": {
         "label": "eyelid-right-continuous-u-and-lash-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": true,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -314,24 +237,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          0.23228435218334198,
-          -0.0753689706325531,
-          0.5453407764434814
-        ],
+        "deformationCenter": [0.23228435218334198, -0.0753689706325531, 0.5453407764434814],
         "attachmentLabel": "",
         "attachmentCenter": null,
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 153,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -339,16 +248,8 @@
       },
       "sourceName": "9a8433a6e1e0ddfc7d1ae98703eff5273d4feb2e6b3a99a4af3494809694eb42:surface:shadow",
       "bounds": {
-        "min": [
-          0.014229238033294678,
-          -0.27111679315567017,
-          0.4463304877281189
-        ],
-        "max": [
-          0.4503394365310669,
-          0.11953529715538025,
-          0.657581627368927
-        ]
+        "min": [0.014229238033294678, -0.27111679315567017, 0.4463304877281189],
+        "max": [0.4503394365310669, 0.11953529715538025, 0.657581627368927]
       },
       "normals": {
         "minLength": 0.9999999608672006,
@@ -420,23 +321,12 @@
       "material": {
         "label": "headphones-1-outer-ear-cup-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -447,28 +337,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
         "attachmentLabel": "headphones",
-        "attachmentCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 155,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -476,16 +348,8 @@
       },
       "sourceName": "67d72c2543900b0aa1a9251313b2a1f1b198f2d96bc9c02db230e86ec8df5734:surface:shadow",
       "bounds": {
-        "min": [
-          0.6924293637275696,
-          -0.47917598485946655,
-          -0.023186156526207924
-        ],
-        "max": [
-          0.9948740005493164,
-          0.07845743000507355,
-          0.3541405498981476
-        ]
+        "min": [0.6924293637275696, -0.47917598485946655, -0.023186156526207924],
+        "max": [0.9948740005493164, 0.07845743000507355, 0.3541405498981476]
       },
       "normals": {
         "minLength": 0.9999998977571946,
@@ -557,23 +421,12 @@
       "material": {
         "label": "headphones-1-soft-inner-cushion-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -584,28 +437,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
         "attachmentLabel": "headphones",
-        "attachmentCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 160,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -613,16 +448,8 @@
       },
       "sourceName": "a6f9eeddac0937bab42483a0f9422bd0fbe388cbfbd55f4867459dc1be1d3292:surface:shadow",
       "bounds": {
-        "min": [
-          0.6892046928405762,
-          -0.4128141701221466,
-          -0.07534554600715637
-        ],
-        "max": [
-          0.8481844663619995,
-          0.012114660814404488,
-          0.31707078218460083
-        ]
+        "min": [0.6892046928405762, -0.4128141701221466, -0.07534554600715637],
+        "max": [0.8481844663619995, 0.012114660814404488, 0.31707078218460083]
       },
       "normals": {
         "minLength": 0.9999998987111193,
@@ -694,23 +521,12 @@
       "material": {
         "label": "headphones-minus1-outer-ear-cup-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -721,28 +537,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
         "attachmentLabel": "headphones",
-        "attachmentCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 160,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -750,16 +548,8 @@
       },
       "sourceName": "5635d1e1d6114d5e07d89711b1b579543d88aac086c7a3cdaad2d1651b2a8703:surface:shadow",
       "bounds": {
-        "min": [
-          -0.9948740005493164,
-          -0.47917598485946655,
-          -0.023186158388853073
-        ],
-        "max": [
-          -0.6928991079330444,
-          0.07801391184329987,
-          0.3547244966030121
-        ]
+        "min": [-0.9948740005493164, -0.47917598485946655, -0.023186158388853073],
+        "max": [-0.6928991079330444, 0.07801391184329987, 0.3547244966030121]
       },
       "normals": {
         "minLength": 0.9999998920590505,
@@ -831,23 +621,12 @@
       "material": {
         "label": "headphones-minus1-soft-inner-cushion-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -858,28 +637,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
         "attachmentLabel": "headphones",
-        "attachmentCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 165,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -887,16 +648,8 @@
       },
       "sourceName": "48f174bdd3498e39d92390dcbcb9f44e7b3bb32de0b5b276e7dccf18ce512675:surface:shadow",
       "bounds": {
-        "min": [
-          -0.847938060760498,
-          -0.4128141701221466,
-          -0.07564930617809296
-        ],
-        "max": [
-          -0.6892046928405762,
-          0.012114660814404488,
-          0.3167681097984314
-        ]
+        "min": [-0.847938060760498, -0.4128141701221466, -0.07564930617809296],
+        "max": [-0.6892046928405762, 0.012114660814404488, 0.3167681097984314]
       },
       "normals": {
         "minLength": 0.9999999015509267,
@@ -968,23 +721,12 @@
       "material": {
         "label": "headphones-rounded-headband-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -995,28 +737,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
+        "deformationCenter": [0, 0.12409448623657227, 0.1393968164920807],
         "attachmentLabel": "headphones",
-        "attachmentCenter": [
-          0,
-          0.12409448623657227,
-          0.1393968164920807
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [0, 0.12409448623657227, 0.1393968164920807],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 156,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -1024,16 +748,8 @@
       },
       "sourceName": "a8f8446c3662ae05ccfd78abd0ef5356bd171e09526f41514ba0f5899bcb08e6:surface:shadow",
       "bounds": {
-        "min": [
-          -0.880001425743103,
-          -0.11197954416275024,
-          0.22303485870361328
-        ],
-        "max": [
-          0.880001425743103,
-          0.7271202802658081,
-          0.2893425524234772
-        ]
+        "min": [-0.880001425743103, -0.11197954416275024, 0.22303485870361328],
+        "max": [0.880001425743103, 0.7271202802658081, 0.2893425524234772]
       },
       "normals": {
         "minLength": 0.9999998926755483,
@@ -1129,9 +845,7 @@
     "color": "pink",
     "eyes": "swept_lids",
     "eyewear": "none",
-    "accessories": [
-      "headphones"
-    ],
+    "accessories": ["headphones"],
     "accessoryColors": {},
     "constrained": 0,
     "depth": 0.5,

@@ -5,8 +5,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 const destination =
-  process.env.AVATAR_EYE_PROFILE_OUTPUT ||
-  'runtime/avatar/assets/eye-gaze-profiles.json';
+  process.env.AVATAR_EYE_PROFILE_OUTPUT || 'runtime/avatar/assets/eye-gaze-profiles.json';
 const recipes = {
   lime_frog: {
     pattern: /^todd-.*integrated-eye/,
@@ -64,29 +63,19 @@ for (const [preset, recipe] of Object.entries(recipes)) {
   for (const lod of [0, 1]) {
     const path = `runtime/avatar/assets/${preset}/geometry${lod === 0 ? '-low' : ''}.json`;
     const bytes = await readFile(path);
-    result.provenance.sourceGeometrySha256[`${preset}:${lod}`] = createHash(
-      'sha256',
-    )
+    result.provenance.sourceGeometrySha256[`${preset}:${lod}`] = createHash('sha256')
       .update(bytes)
       .digest('hex');
     const geometry = JSON.parse(bytes);
     assert.equal(geometry.quality, lod);
     const parts = {};
-    for (const part of geometry.parts.filter((p) =>
-      recipe.pattern.test(p.material.label),
-    )) {
-      const prefix = Buffer.from(
-        part.unresolvedMaterialAndPosePrefixHex,
-        'hex',
-      );
+    for (const part of geometry.parts.filter((p) => recipe.pattern.test(p.material.label))) {
+      const prefix = Buffer.from(part.unresolvedMaterialAndPosePrefixHex, 'hex');
       assert.equal(prefix.readUInt32LE(24), 1, 'Native material prefix');
       assert.equal(prefix.readUInt32LE(108), 0, 'Native eye attachment layout');
       const effectAt = 116 + prefix.readUInt32LE(112) + 36;
       assert.equal(prefix[effectAt], preset === 'coral_monocle' ? 3 : 5);
-      const halfSize = [
-        prefix.readFloatLE(effectAt + 2),
-        prefix.readFloatLE(effectAt + 6),
-      ];
+      const halfSize = [prefix.readFloatLE(effectAt + 2), prefix.readFloatLE(effectAt + 6)];
       assert(halfSize.every((v) => Number.isFinite(v) && v > 0));
       const anchor = [0, 1, 2].map((k) => prefix.readFloatLE(40 + 4 * k));
       assert.deepEqual(anchor, part.pose.deformationCenter);
@@ -99,11 +88,7 @@ for (const [preset, recipe] of Object.entries(recipes)) {
         blinkMultiplier: recipe.blinkMultiplier,
       };
     }
-    assert.equal(
-      Object.keys(parts).length,
-      recipe.expected,
-      `${preset}: expected eye parts`,
-    );
+    assert.equal(Object.keys(parts).length, recipe.expected, `${preset}: expected eye parts`);
     lods[lod] = parts;
   }
   result.presets[preset] = lods;

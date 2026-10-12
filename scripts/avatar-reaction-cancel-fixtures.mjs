@@ -57,21 +57,20 @@ export async function reactionCancellationFixtures(preset, scenario = 'core') {
       : 1.1;
   const frozenIndex = Math.round(command * 30);
   const firstIndex = frozenIndex + 1;
-  const [active, baseline, idle, geometry, material, allProfiles] =
-    await Promise.all([
-      read(
-        scenario === 'core'
-          ? `.local/avatar-reaction-pointer/${preset}/interrupt/reaction-drag-raw.json`
-          : scenario === 'entry-gaze'
-            ? `.local/avatar-reaction-pointer/${preset}/entry-gaze/entry-gaze-raw.json`
-            : `.local/avatar-reaction-pointer/${preset}/entry-exit/${scenario}-drag-raw.json`,
-      ),
-      read(`.local/avatar-eye-activities/${preset}/reaction-baseline-raw.json`),
-      read(`.local/avatar-pointer-validation/${preset}/idle-raw.json`),
-      read(`runtime/avatar/assets/${preset}/geometry-low.json`),
-      read(`runtime/avatar/assets/${preset}/material.json`),
-      read('runtime/avatar/assets/eye-gaze-profiles.json'),
-    ]);
+  const [active, baseline, idle, geometry, material, allProfiles] = await Promise.all([
+    read(
+      scenario === 'core'
+        ? `.local/avatar-reaction-pointer/${preset}/interrupt/reaction-drag-raw.json`
+        : scenario === 'entry-gaze'
+          ? `.local/avatar-reaction-pointer/${preset}/entry-gaze/entry-gaze-raw.json`
+          : `.local/avatar-reaction-pointer/${preset}/entry-exit/${scenario}-drag-raw.json`,
+    ),
+    read(`.local/avatar-eye-activities/${preset}/reaction-baseline-raw.json`),
+    read(`.local/avatar-pointer-validation/${preset}/idle-raw.json`),
+    read(`runtime/avatar/assets/${preset}/geometry-low.json`),
+    read(`runtime/avatar/assets/${preset}/material.json`),
+    read('runtime/avatar/assets/eye-gaze-profiles.json'),
+  ]);
   const descriptions = [
     ...material.parts.map((p) => ({ ...p, isFur: false })),
     ...material.parts.filter((p) => p.fur).map((p) => ({ ...p, isFur: true })),
@@ -82,10 +81,7 @@ export async function reactionCancellationFixtures(preset, scenario = 'core') {
       world: new Matrix4().fromArray(d.blocks.DrawBlock),
       normalMatrix: new Matrix4().fromArray(d.blocks.DrawBlock.slice(16, 32)),
       fields: Object.fromEntries(
-        fields.map((name, j) => [
-          name,
-          d.blocks.DrawBlock.slice(32 + j * 4, 36 + j * 4),
-        ]),
+        fields.map((name, j) => [name, d.blocks.DrawBlock.slice(32 + j * 4, 36 + j * 4)]),
       ),
     }));
   const frozen = pose(baseline[frozenIndex]);
@@ -94,9 +90,7 @@ export async function reactionCancellationFixtures(preset, scenario = 'core') {
     const strength = scenario.startsWith('entry')
       ? 1 - smooth((command - (0.5 + 1 / 30)) / 0.18)
       : smooth((command - (0.5 + 1 / 30 + coreSeconds)) / 0.18);
-    const b =
-      idle[scenario.startsWith('entry') ? 15 : frozenIndex].draws[0].blocks
-        .DrawBlock;
+    const b = idle[scenario.startsWith('entry') ? 15 : frozenIndex].draws[0].blocks.DrawBlock;
     const v = new Vector3();
     new Matrix4().fromArray(b).decompose(new Vector3(), new Quaternion(), v);
     neutral = {
@@ -108,9 +102,7 @@ export async function reactionCancellationFixtures(preset, scenario = 'core') {
     frozen,
     {
       groundY: geometry.parts.find((p) => p.id === 0).bounds.min[1],
-      pivots: Object.fromEntries(
-        geometry.parts.map((p) => [p.id, p.pose.deformationCenter]),
-      ),
+      pivots: Object.fromEntries(geometry.parts.map((p) => [p.id, p.pose.deformationCenter])),
     },
     neutral,
   );
@@ -131,21 +123,16 @@ export async function reactionCancellationFixtures(preset, scenario = 'core') {
     if (k >= firstIndex && k <= firstIndex + 6) {
       const u = smooth((t - firstIndex / 30) / 0.18),
         target = pose(idle[k]);
-      const predicted =
-          scenario === 'exit' ? pose(baseline[k]) : model.sample(target, u),
+      const predicted = scenario === 'exit' ? pose(baseline[k]) : model.sample(target, u),
         draws = structuredClone(frame.draws),
         delta = new Matrix4(),
         normal = new Matrix4();
-      const gate =
-        scenario === 'exit'
-          ? smooth((t - (0.5 + 1 / 30 + coreSeconds)) / 0.18)
-          : u;
+      const gate = scenario === 'exit' ? smooth((t - (0.5 + 1 / 30 + coreSeconds)) / 0.18) : u;
       const neutralTranslation =
         scenario === 'exit'
           ? idle[k].draws[0].blocks.DrawBlock.slice(12, 15).map((v) => v * gate)
           : model.body.neutralTranslation.toArray();
-      const frozenWeight =
-        scenario === 'entry-gaze' ? entryStrength * (1 - u) : 0;
+      const frozenWeight = scenario === 'entry-gaze' ? entryStrength * (1 - u) : 0;
       composedEyes.x = frozenGaze.x * frozenWeight + eyes.x * gate;
       composedEyes.y = frozenGaze.y * frozenWeight + eyes.y * gate;
       composer.writeBodyCorrection(
@@ -194,9 +181,7 @@ export async function reactionCancellationFixtures(preset, scenario = 'core') {
         }
         const b = draws[p].blocks.DrawBlock;
         b.splice(0, 32, ...out.world.elements, ...out.normalMatrix.elements);
-        fields.forEach((name, j) =>
-          b.splice(32 + j * 4, 4, ...out.fields[name]),
-        );
+        fields.forEach((name, j) => b.splice(32 + j * 4, 4, ...out.fields[name]));
         const expected = frame.draws[p].blocks.DrawBlock,
           magnitude = Math.max(1, ...expected.slice(16, 32).map(Math.abs));
         worldError = Math.max(
@@ -204,9 +189,7 @@ export async function reactionCancellationFixtures(preset, scenario = 'core') {
           ...b.slice(0, 16).map((v, i) => Math.abs(v - expected[i])),
         );
         const ne =
-          Math.max(
-            ...b.slice(16, 32).map((v, i) => Math.abs(v - expected[16 + i])),
-          ) / magnitude;
+          Math.max(...b.slice(16, 32).map((v, i) => Math.abs(v - expected[16 + i]))) / magnitude;
         normalError = Math.max(normalError, ne);
         if (ne >= 3e-7) normalShortfalls.push({ part: out.id, error: ne });
         fieldError = Math.max(
@@ -234,8 +217,7 @@ export async function reactionCancellationFixtures(preset, scenario = 'core') {
     for (const e of frame.events) {
       if (e.kind === 'pointer-down') pointer.down(e.x, e.y, t);
       else if (e.kind === 'pointer') pointer.move(e.x, e.y);
-      else if (e.kind === 'pointer-up' || e.kind === 'pointer-cancel')
-        pointer.up(t);
+      else if (e.kind === 'pointer-up' || e.kind === 'pointer-cancel') pointer.up(t);
       if (e.kind.startsWith('pointer')) {
         gaze.point(e.x, e.y);
         eyes.point(e.x, e.y);

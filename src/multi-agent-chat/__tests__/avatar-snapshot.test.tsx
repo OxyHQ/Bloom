@@ -1,10 +1,7 @@
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { AgentAvatar } from '../../agent-avatar/AgentAvatar';
 import { AgentAvatarProvider } from '../../agent-avatar/AgentAvatarProvider';
-import {
-  AvatarSnapshotObserver,
-  type CaptureAvatarSnapshot,
-} from '../../agent-avatar/context';
+import { AvatarSnapshotObserver, type CaptureAvatarSnapshot } from '../../agent-avatar/context';
 import { FOLD_CONFIG } from '../../agent-avatar/model';
 const mockInject = jest.fn();
 jest.mock('../../agent-avatar/character-webview', () => {
@@ -33,16 +30,12 @@ it('captures the displayed WebView frame on demand and clears pending requests o
     );
   });
   expect(capture).not.toBeNull();
-  expect(
-    mockInject.mock.calls.filter(([code]) => code.includes('captureAvatar')),
-  ).toHaveLength(0);
+  expect(mockInject.mock.calls.filter(([code]) => code.includes('captureAvatar'))).toHaveLength(0);
   let result!: ReturnType<CaptureAvatarSnapshot>;
   act(() => {
     result = capture!();
   });
-  const code = mockInject.mock.calls.find(([code]) =>
-    code.includes('captureAvatar'),
-  )![0];
+  const code = mockInject.mock.calls.find(([code]) => code.includes('captureAvatar'))![0];
   const id = Number(code.match(/\((\d+)\)/)![1]);
   const host = view!.root.findAll((node) => !!node.props.onMessage)[0]!;
   act(() =>

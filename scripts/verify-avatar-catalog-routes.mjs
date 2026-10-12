@@ -19,15 +19,9 @@ try {
   );
   await page.goto('http://localhost:6006/catalog-check.html');
   const result = await page.evaluate(async () => {
-    const { resolveCompleteEditorRecipe } = await import(
-      '/runtime/avatar/recipe.ts'
-    );
-    const { createCatalogAssetResolver } = await import(
-      '/runtime/avatar/catalog-assets.ts'
-    );
-    const { createCatalogMotion } = await import(
-      '/runtime/avatar/catalog-motion-factory.ts'
-    );
+    const { resolveCompleteEditorRecipe } = await import('/runtime/avatar/recipe.ts');
+    const { createCatalogAssetResolver } = await import('/runtime/avatar/catalog-assets.ts');
+    const { createCatalogMotion } = await import('/runtime/avatar/catalog-motion-factory.ts');
     const { CHARACTER_SHAPES, createConfigForShape } = await import(
       '/src/agent-avatar/character-shapes.ts'
     );

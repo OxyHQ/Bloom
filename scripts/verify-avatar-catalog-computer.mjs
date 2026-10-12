@@ -60,12 +60,8 @@ try {
       }));
     const result = await page.evaluate(
       async ({ c, frames }) => {
-        const { composeCatalog } = await import(
-          '/runtime/avatar/catalog-compose.ts'
-        );
-        const { attachCatalogComputer } = await import(
-          '/runtime/avatar/catalog-computer.ts'
-        );
+        const { composeCatalog } = await import('/runtime/avatar/catalog-compose.ts');
+        const { attachCatalogComputer } = await import('/runtime/avatar/catalog-computer.ts');
         const composition = await composeCatalog(
           { shape: c.shape, eyes: 'todd', eyewear: 'none', accessory: c.accessory },
           'high',

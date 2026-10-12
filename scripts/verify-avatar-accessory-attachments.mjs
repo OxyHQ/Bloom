@@ -31,15 +31,9 @@ try {
   );
   await page.goto('http://localhost:6006/attachment-check.html');
   await page.evaluate(async () => {
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
-    const { createCatalogAssetResolver } = await import(
-      '/runtime/avatar/catalog-assets.ts'
-    );
-    const { createCatalogMotion } = await import(
-      '/runtime/avatar/catalog-motion-factory.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
+    const { createCatalogAssetResolver } = await import('/runtime/avatar/catalog-assets.ts');
+    const { createCatalogMotion } = await import('/runtime/avatar/catalog-motion-factory.ts');
     const recipes = ['crown', 'three_lobe'].flatMap((accessory) =>
       ['rounded_head_two_ears', 'circle', 'heart'].map((shape) => ({
         shape,

@@ -76,9 +76,7 @@ try {
       const canvas = document.createElement('canvas');
       canvas.style.cssText = `display:block;width:${cssSize}px;height:${cssSize}px`;
       document.body.append(canvas);
-      const { AuthoredAvatarEngine } = await import(
-        '/runtime/avatar/authored-engine.ts'
-      );
+      const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
       window.engine = new AuthoredAvatarEngine(canvas, { preset, size: cssSize });
       await window.engine.loaded;
     },

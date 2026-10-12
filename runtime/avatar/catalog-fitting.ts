@@ -34,9 +34,7 @@ const union = (parts: { bounds: Bounds }[]): Bounds => ({
   max: [0, 1, 2].map((k) => Math.max(...parts.map((p) => p.bounds.max[k]!))),
 });
 const eyePieces = (a: CatalogAssembly) =>
-  a.pieces.filter(
-    (p) => p.category === 'eyes' && p.attachment !== 'brows' && !p.fur,
-  );
+  a.pieces.filter((p) => p.category === 'eyes' && p.attachment !== 'brows' && !p.fur);
 function eyeCenters(a: CatalogAssembly): Bounds[] {
   const eyes = eyePieces(a);
   const sides = [-1, 1].map((sign) =>
@@ -57,16 +55,12 @@ export function bodyFront(a: CatalogAssembly, x: number, y: number): number {
       return [position.getX(index), position.getY(index), position.getZ(index)];
     });
     const [a, b, c] = points as [number[], number[], number[]];
-    const det =
-      (b[1]! - c[1]!) * (a[0]! - c[0]!) + (c[0]! - b[0]!) * (a[1]! - c[1]!);
+    const det = (b[1]! - c[1]!) * (a[0]! - c[0]!) + (c[0]! - b[0]!) * (a[1]! - c[1]!);
     if (Math.abs(det) < 1e-12) continue;
-    const u =
-      ((b[1]! - c[1]!) * (x - c[0]!) + (c[0]! - b[0]!) * (y - c[1]!)) / det;
-    const v =
-      ((c[1]! - a[1]!) * (x - c[0]!) + (a[0]! - c[0]!) * (y - c[1]!)) / det;
+    const u = ((b[1]! - c[1]!) * (x - c[0]!) + (c[0]! - b[0]!) * (y - c[1]!)) / det;
+    const v = ((c[1]! - a[1]!) * (x - c[0]!) + (a[0]! - c[0]!) * (y - c[1]!)) / det;
     const w = 1 - u - v;
-    if (Math.min(u, v, w) >= -1e-6)
-      front = Math.max(front, u * a[2]! + v * b[2]! + w * c[2]!);
+    if (Math.min(u, v, w) >= -1e-6) front = Math.max(front, u * a[2]! + v * b[2]! + w * c[2]!);
   }
   return front;
 }
@@ -88,12 +82,9 @@ export function fitCatalogPieces(
   const selected =
     category === 'eyes'
       ? eyePieces(donor)
-      : donor.pieces.filter(
-          (p) => p.category === category && p.selection === id && !p.fur,
-        );
+      : donor.pieces.filter((p) => p.category === category && p.selection === id && !p.fur);
   if (!selected.length) fail(`missing catalog ${category}:${id}`);
-  const bodyWidth = (info: CatalogAssembly) =>
-    info.body.bounds.max[0]! - info.body.bounds.min[0]!;
+  const bodyWidth = (info: CatalogAssembly) => info.body.bounds.max[0]! - info.body.bounds.min[0]!;
   if (category === 'eyes' || category === 'eyewear') {
     // A Cyclops face has one actual eye, not a collapsed left/right pair.
     // Monocles surround its full eye. Two-lens styles retain both native lenses,
@@ -115,38 +106,27 @@ export function fitCatalogPieces(
               const [x, y, z] = center as [number, number, number];
               return {
                 min: [x - faceLayout.radius, y - faceLayout.radius, z],
-                max: [
-                  x + faceLayout.radius,
-                  y + faceLayout.radius,
-                  z + faceLayout.radius,
-                ],
+                max: [x + faceLayout.radius, y + faceLayout.radius, z + faceLayout.radius],
               };
             })
           : eyeCenters(target),
       src = eyeCenters(donor);
-    const gap = (a: Bounds[]) =>
-      Math.abs(midpoint(a[1]!, 0) - midpoint(a[0]!, 0));
+    const gap = (a: Bounds[]) => Math.abs(midpoint(a[1]!, 0) - midpoint(a[0]!, 0));
     // Eye diameter follows the body, not the spacing of the old eye pair.
     // Todd's stalks have over twice the neutral face gap on the same size body.
-    const clippo =
-      target.body.attachment === 'metal' || target.body.label === 'metal';
+    const clippo = target.body.attachment === 'metal' || target.body.label === 'metal';
     const scale =
       category === 'eyes'
         ? faceLayout
           ? faceLayout.radius /
             (src.reduce(
-              (sum, b) =>
-                sum +
-                Math.max(b.max[0]! - b.min[0]!, b.max[1]! - b.min[1]!) / 2,
+              (sum, b) => sum + Math.max(b.max[0]! - b.min[0]!, b.max[1]! - b.min[1]!) / 2,
               0,
             ) /
               2)
           : clippo
             ? 1
-            : Math.max(
-                0.65,
-                Math.min(1.2, bodyWidth(target) / bodyWidth(donor)),
-              )
+            : Math.max(0.65, Math.min(1.2, bodyWidth(target) / bodyWidth(donor)))
         : Math.max(0.25, Math.min(2, gap(dst) / gap(src)));
     if (category === 'eyes') {
       const fronts = dst.map((bounds) =>
@@ -155,26 +135,18 @@ export function fitCatalogPieces(
       return selected.map((part) => {
         const side = midpoint(part.bounds, 0) < 0 ? 0 : 1;
         const origin = [0, 1, 2].map((k) => midpoint(src[side]!, k));
-        const translate = [0, 1].map(
-          (k) => midpoint(dst[side]!, k) - origin[k]!,
-        );
+        const translate = [0, 1].map((k) => midpoint(dst[side]!, k) - origin[k]!);
         const depth = (src[side]!.max[2]! - src[side]!.min[2]!) * scale;
         const front = fronts[side]!;
         // Keep some embedding, while the majority of a shallow native eye
         // remains outside the real face. Open Clippo holes return no surface.
         const back = Math.max(dst[side]!.min[2]!, front - depth * 0.35);
-        translate.push(
-          back - (src[side]!.min[2]! - origin[2]!) * scale - origin[2]!,
-        );
+        translate.push(back - (src[side]!.min[2]! - origin[2]!) * scale - origin[2]!);
         return { part, scale, origin, translate };
       });
     }
-    const middle = [0, 1, 2].map(
-      (k) => (midpoint(src[0]!, k) + midpoint(src[1]!, k)) / 2,
-    );
-    const destination = [0, 1, 2].map(
-      (k) => (midpoint(dst[0]!, k) + midpoint(dst[1]!, k)) / 2,
-    );
+    const middle = [0, 1, 2].map((k) => (midpoint(src[0]!, k) + midpoint(src[1]!, k)) / 2);
+    const destination = [0, 1, 2].map((k) => (midpoint(dst[0]!, k) + midpoint(dst[1]!, k)) / 2);
     const sideParts = [0, 1].map((side) =>
       selected.filter(
         (p) =>
@@ -190,9 +162,7 @@ export function fitCatalogPieces(
     // Sunglasses can be a single centered mesh, including both temples.
     // Its full minimum Z is the rear of the temples, not the front lens plane.
     // Use the same frontmost 0.05-unit band as the separate-lens classifier.
-    const separateFronts = frontBounds.filter(
-      (bounds): bounds is Bounds => bounds !== null,
-    );
+    const separateFronts = frontBounds.filter((bounds): bounds is Bounds => bounds !== null);
     const frontZ = separateFronts.length
       ? Math.min(...separateFronts.map((bounds) => bounds.min[2]!))
       : Math.max(...selected.map((part) => part.bounds.max[2]!)) - 0.05;
@@ -205,8 +175,7 @@ export function fitCatalogPieces(
           0.25,
           Math.min(
             2,
-            ((Math.max(...dst.map((b) => b.max[0]!)) -
-              Math.min(...dst.map((b) => b.min[0]!))) *
+            ((Math.max(...dst.map((b) => b.max[0]!)) - Math.min(...dst.map((b) => b.min[0]!))) *
               1.18) /
               (Math.max(...selected.map((p) => p.bounds.max[0]!)) -
                 Math.min(...selected.map((p) => p.bounds.min[0]!))),
@@ -233,28 +202,22 @@ export function fitCatalogPieces(
         singleEye && id === 'monocle' ? 4 : 2,
         Math.max(
           Math.min(scale, 1.2),
-          ((dst[side]!.max[0]! - dst[side]!.min[0]!) * 1.08) /
-            (front!.max[0]! - front!.min[0]!),
+          ((dst[side]!.max[0]! - dst[side]!.min[0]!) * 1.08) / (front!.max[0]! - front!.min[0]!),
         ),
       );
       const origin = [0, 1, 2].map((k) => midpoint(src[side]!, k));
       const translate = [0, 1].map((k) => midpoint(dst[side]!, k) - origin[k]!);
       translate.push(
-        dst[side]!.max[2]! +
-          0.012 -
-          ((front!.min[2]! - origin[2]!) * lensScale + origin[2]!),
+        dst[side]!.max[2]! + 0.012 - ((front!.min[2]! - origin[2]!) * lensScale + origin[2]!),
       );
       return { part, scale: lensScale, origin, translate };
     });
   }
   if (category !== 'accessory') fail('unknown catalog fitting category');
   // Clippo's crown is narrower than its full curved-wire silhouette.
-  const clippo =
-    target.body.attachment === 'metal' || target.body.label === 'metal';
+  const clippo = target.body.attachment === 'metal' || target.body.label === 'metal';
   const scale =
-    (clippo
-      ? 0.56
-      : Math.max(0.35, Math.min(1.5, bodyWidth(target) / bodyWidth(donor)))) *
+    (clippo ? 0.56 : Math.max(0.35, Math.min(1.5, bodyWidth(target) / bodyWidth(donor)))) *
     (id === 'three_lobe' ? (tuftLayout?.scale ?? 1) : 1);
   const origin = [
     midpoint(donor.body.bounds, 0),
@@ -305,15 +268,9 @@ export function catalogPieceMatrix({
     return new Matrix4()
       .makeScale(scale, scale, scale)
       .setPosition(
-        ...(origin.map((v, k) => v * (1 - scale) + translate[k]!) as [
-          number,
-          number,
-          number,
-        ]),
+        ...(origin.map((v, k) => v * (1 - scale) + translate[k]!) as [number, number, number]),
       );
-  const matrix = new Matrix4()
-    .makeRotationZ(rotationZ)
-    .scale(new Vector3(scale, scale, scale));
+  const matrix = new Matrix4().makeRotationZ(rotationZ).scale(new Vector3(scale, scale, scale));
   const offset = new Vector3()
     .fromArray(origin)
     .applyMatrix4(matrix)
@@ -340,18 +297,13 @@ export function transformCatalogPiece(
   // Palette UVs and eye/activity fields are polymorphic shader coordinates.
   // Tuft's FELIPE branch ignores those UVs; other rotations require an explicit
   // material contract instead of silently reinterpreting these packed fields.
-  if (
-    rotationZ !== 0 &&
-    (part.attachment !== 'three_lobe' || part.universal === true)
-  )
+  if (rotationZ !== 0 && (part.attachment !== 'three_lobe' || part.universal === true))
     fail('rotation currently requires a FELIPE Tuft material');
   const c = Math.cos(rotationZ),
     s = Math.sin(rotationZ);
   const point = (p: number[]) =>
     rotationZ === 0
-      ? p.map((v, k) =>
-          Math.fround((v - origin[k]!) * scale + origin[k]! + translate[k]!),
-        )
+      ? p.map((v, k) => Math.fround((v - origin[k]!) * scale + origin[k]! + translate[k]!))
       : [
           Math.fround(
             c * (p[0]! - origin[0]!) * scale -
@@ -365,9 +317,7 @@ export function transformCatalogPiece(
               origin[1]! +
               translate[1]!,
           ),
-          Math.fround(
-            (p[2]! - origin[2]!) * scale + origin[2]! + translate[2]!,
-          ),
+          Math.fround((p[2]! - origin[2]!) * scale + origin[2]! + translate[2]!),
         ];
   const geometry = part.geometry.clone();
   const position = geometry.getAttribute('position');
@@ -388,14 +338,10 @@ export function transformCatalogPiece(
           attr.setXYZ(
             i,
             Math.fround(
-              (rotationZ === 0
-                ? attr.getX(i)
-                : c * attr.getX(i) - s * attr.getY(i)) * scale,
+              (rotationZ === 0 ? attr.getX(i) : c * attr.getX(i) - s * attr.getY(i)) * scale,
             ),
             Math.fround(
-              (rotationZ === 0
-                ? attr.getY(i)
-                : s * attr.getX(i) + c * attr.getY(i)) * scale,
+              (rotationZ === 0 ? attr.getY(i) : s * attr.getX(i) + c * attr.getY(i)) * scale,
             ),
             Math.fround(attr.getZ(i) * scale),
           );
@@ -423,9 +369,7 @@ export function transformCatalogPiece(
     geometry.computeBoundingBox();
     geometry.computeBoundingSphere();
   }
-  const fields = Object.fromEntries(
-    Object.entries(part.fields).map(([k, v]) => [k, [...v]]),
-  );
+  const fields = Object.fromEntries(Object.entries(part.fields).map(([k, v]) => [k, [...v]]));
   const palette = fields.paletteBounds;
   if (palette && (palette[2] || palette[3])) {
     const at = point([palette[0]!, palette[1]!, 0]);
@@ -446,18 +390,13 @@ export function transformCatalogPiece(
             max: geometry.boundingBox!.max.toArray(),
           },
     pivot: point(part.pivot),
-    attachmentPivot: part.attachmentPivot
-      ? point(part.attachmentPivot)
-      : part.attachmentPivot,
+    attachmentPivot: part.attachmentPivot ? point(part.attachmentPivot) : part.attachmentPivot,
   };
 }
 
 /** Closest point on the actual body, including concave and open silhouettes.
  * Called once while composing a recipe, never in the animation loop. */
-export function closestBodySurface(
-  body: CatalogPiece,
-  point: readonly number[],
-): number[] {
+export function closestBodySurface(body: CatalogPiece, point: readonly number[]): number[] {
   const positions = body.geometry.getAttribute('position');
   const indices = body.geometry.getIndex();
   if (!indices) fail('body attachment surface has no triangles');
@@ -482,12 +421,7 @@ export function closestBodySurface(
 }
 
 /** Vertical triangle intersection in body coordinates. */
-function verticalSurface(
-  part: CatalogPiece,
-  x: number,
-  z: number,
-  top: boolean,
-) {
+function verticalSurface(part: CatalogPiece, x: number, z: number, top: boolean) {
   const p = part.geometry.getAttribute('position'),
     indices = part.geometry.getIndex();
   let result = top ? -Infinity : Infinity;
@@ -515,32 +449,19 @@ function verticalSurface(
 }
 /** A rigid hat rests on its underside, not on a center point that may sit
  * inside a notch between ears. The sampled contact is on both actual meshes. */
-function headwearContact(
-  target: CatalogAssembly,
-  placements: PieceTransform[],
-) {
+function headwearContact(target: CatalogAssembly, placements: PieceTransform[]) {
   const first = placements[0]!;
   const projected = (value: number, k: number) =>
-    (value - first.origin[k]!) * first.scale +
-    first.origin[k]! +
-    first.translate[k]!;
+    (value - first.origin[k]!) * first.scale + first.origin[k]! + first.translate[k]!;
   const bounds = union(placements.map((p) => ({ bounds: p.part.bounds })));
-  const min = [0, 2].map((k) =>
-    Math.max(target.body.bounds.min[k]!, projected(bounds.min[k]!, k)),
-  );
-  const max = [0, 2].map((k) =>
-    Math.min(target.body.bounds.max[k]!, projected(bounds.max[k]!, k)),
-  );
+  const min = [0, 2].map((k) => Math.max(target.body.bounds.min[k]!, projected(bounds.min[k]!, k)));
+  const max = [0, 2].map((k) => Math.min(target.body.bounds.max[k]!, projected(bounds.max[k]!, k)));
   let shift = -Infinity,
     root: number[] | undefined;
   const sample = (x: number, z: number) => {
     const bodyY = verticalSurface(target.body, x, z, true);
-    const localX =
-      (x - first.origin[0]! - first.translate[0]!) / first.scale +
-      first.origin[0]!;
-    const localZ =
-      (z - first.origin[2]! - first.translate[2]!) / first.scale +
-      first.origin[2]!;
+    const localX = (x - first.origin[0]! - first.translate[0]!) / first.scale + first.origin[0]!;
+    const localZ = (z - first.origin[2]! - first.translate[2]!) / first.scale + first.origin[2]!;
     const localY = Math.min(
       ...placements.map((p) => verticalSurface(p.part, localX, localZ, false)),
     );
@@ -552,17 +473,10 @@ function headwearContact(
   };
   for (let x = 0; x <= 12; x++)
     for (let z = 0; z <= 12; z++)
-      sample(
-        min[0]! + ((max[0]! - min[0]!) * x) / 12,
-        min[1]! + ((max[1]! - min[1]!) * z) / 12,
-      );
+      sample(min[0]! + ((max[0]! - min[0]!) * x) / 12, min[1]! + ((max[1]! - min[1]!) * z) / 12);
   // Include narrow wires/lobes that can fall between grid rays.
   const points = target.body.geometry.getAttribute('position');
-  for (
-    let i = 0;
-    i < points.count;
-    i += Math.max(1, Math.floor(points.count / 128))
-  )
+  for (let i = 0; i < points.count; i += Math.max(1, Math.floor(points.count / 128)))
     sample(points.getX(i), points.getZ(i));
   return root ? { shift, root } : undefined;
 }
@@ -579,8 +493,7 @@ export function seatCatalogAccessories(
 ): PieceTransform[] {
   if (!placements.length) return placements;
   const first = placements[0]!;
-  const anchor =
-    selection === 'bow' ? first.part.pivot : first.part.attachmentPivot;
+  const anchor = selection === 'bow' ? first.part.pivot : first.part.attachmentPivot;
   if (!anchor) fail(`missing ${selection} attachment anchor`);
   const project = (point: readonly number[]) => {
     const delta = point.map((v, k) => (v - first.origin[k]!) * first.scale);
@@ -595,9 +508,7 @@ export function seatCatalogAccessories(
   };
   let shift: number[];
   let root: number[];
-  const support = ['felipe_beret', 'beret', 'beanie', 'hat', 'crown'].includes(
-    selection,
-  )
+  const support = ['felipe_beret', 'beret', 'beanie', 'hat', 'crown'].includes(selection)
     ? headwearContact(target, placements)
     : undefined;
   if (support) {
@@ -607,12 +518,16 @@ export function seatCatalogAccessories(
     const authoredSupport = headwearContact(
       donor,
       placements.map(({ part }) => ({
-        part, scale: 1, origin: [0, 0, 0], translate: [0, 0, 0],
+        part,
+        scale: 1,
+        origin: [0, 0, 0],
+        translate: [0, 0, 0],
       })),
     );
     shift = [
       0,
-      support.shift - Math.max(0, authoredSupport?.shift ?? 0) * first.scale -
+      support.shift -
+        Math.max(0, authoredSupport?.shift ?? 0) * first.scale -
         (target.body.bounds.max[1]! - target.body.bounds.min[1]!) * 0.004,
       0,
     ];
@@ -638,13 +553,10 @@ export function seatCatalogAccessories(
         ? [
             tuftLayout
               ? midpoint(target.body.bounds, 0) +
-                (target.body.bounds.max[0]! - target.body.bounds.min[0]!) *
-                  tuftLayout.x
+                (target.body.bounds.max[0]! - target.body.bounds.min[0]!) * tuftLayout.x
               : current[0]!,
             target.body.bounds.max[1]! +
-              (first.part.bounds.max[1]! - first.part.bounds.min[1]!) *
-                first.scale *
-                0.5,
+              (first.part.bounds.max[1]! - first.part.bounds.min[1]!) * first.scale * 0.5,
             current[2]!,
           ]
         : current;
@@ -657,9 +569,7 @@ export function seatCatalogAccessories(
       selection === 'headphones'
         ? closestBodySurface(
             target.body,
-            project(placement.part.attachmentPivot!).map(
-              (v, k) => v + shift[k]!,
-            ),
+            project(placement.part.attachmentPivot!).map((v, k) => v + shift[k]!),
           )
         : root;
     return { ...placement, translate, attachmentRoot };

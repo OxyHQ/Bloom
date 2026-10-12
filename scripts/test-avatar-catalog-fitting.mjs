@@ -219,15 +219,34 @@ test('Tuft seats on a real upper crest, preserves donor-side preference and leav
 });
 
 test('a soft beret retains its authored insertion rather than floating above the head', () => {
-  const piece = geometry => {
+  const piece = (geometry) => {
     geometry.computeBoundingBox();
-    return {geometry,bounds:{min:geometry.boundingBox.min.toArray(),max:geometry.boundingBox.max.toArray()}};
+    return {
+      geometry,
+      bounds: { min: geometry.boundingBox.min.toArray(), max: geometry.boundingBox.max.toArray() },
+    };
   };
-  const body=piece(new THREE.BoxGeometry(2,2,2));
+  const body = piece(new THREE.BoxGeometry(2, 2, 2));
   // Band bottom is 0.7: the original overlaps the head (top 1) by 0.3.
-  const hat={...piece(new THREE.BoxGeometry(1.5,.4,1.5).translate(0,.9,0)),attachmentPivot:[0,1,0],pivot:[0,1,0]};
-  const assembly={body,pieces:[body,hat]};
-  const fitted=seatCatalogAccessories(assembly,assembly,[{part:hat,scale:1,origin:[0,0,0],translate:[0,0,0]}],'felipe_beret');
-  assert(Math.abs(fitted[0].translate[1])<.01,'Do not raise the authored band by its 0.3 insertion');
-  assert.deepEqual(fitted[0].attachmentRoot,[fitted[0].attachmentRoot[0],1,fitted[0].attachmentRoot[2]]);
+  const hat = {
+    ...piece(new THREE.BoxGeometry(1.5, 0.4, 1.5).translate(0, 0.9, 0)),
+    attachmentPivot: [0, 1, 0],
+    pivot: [0, 1, 0],
+  };
+  const assembly = { body, pieces: [body, hat] };
+  const fitted = seatCatalogAccessories(
+    assembly,
+    assembly,
+    [{ part: hat, scale: 1, origin: [0, 0, 0], translate: [0, 0, 0] }],
+    'felipe_beret',
+  );
+  assert(
+    Math.abs(fitted[0].translate[1]) < 0.01,
+    'Do not raise the authored band by its 0.3 insertion',
+  );
+  assert.deepEqual(fitted[0].attachmentRoot, [
+    fitted[0].attachmentRoot[0],
+    1,
+    fitted[0].attachmentRoot[2],
+  ]);
 });

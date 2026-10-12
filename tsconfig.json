@@ -18,13 +18,6 @@
     "noUncheckedIndexedAccess": true,
     "paths": {}
   },
-  "include": [
-    "src",
-    "runtime"
-  ],
-  "exclude": [
-    "lib",
-    "node_modules",
-    "example"
-  ]
+  "include": ["src", "runtime"],
+  "exclude": ["lib", "node_modules", "example"]
 }

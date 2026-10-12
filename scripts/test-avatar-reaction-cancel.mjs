@@ -27,12 +27,8 @@ for (const preset of [
     const baseline = await read(
       `.local/avatar-eye-activities/${preset}/reaction-baseline-raw.json`,
     );
-    const idle = await read(
-      `.local/avatar-pointer-validation/${preset}/idle-raw.json`,
-    );
-    const geometry = await read(
-      `runtime/avatar/assets/${preset}/geometry-low.json`,
-    );
+    const idle = await read(`.local/avatar-pointer-validation/${preset}/idle-raw.json`);
+    const geometry = await read(`runtime/avatar/assets/${preset}/geometry-low.json`);
     const body = new ReactionCancellationBody(
       new Matrix4().fromArray(baseline[33].draws[0].blocks.DrawBlock),
       geometry.parts.find((p) => p.id === 0).bounds.min[1],
@@ -53,10 +49,7 @@ for (const preset of [
         const paired = idle.find((f) => f.renderTime === frame.renderTime);
         assert(paired);
         const u = smooth((t - 34 / 30) / 0.18);
-        body.sample(
-          new Matrix4().fromArray(paired.draws[0].blocks.DrawBlock),
-          u,
-        );
+        body.sample(new Matrix4().fromArray(paired.draws[0].blocks.DrawBlock), u);
         compose.writeBodyCorrection(
           pointer.yaw + gaze.yaw * u,
           pointer.pitch + gaze.pitch * u,
@@ -67,10 +60,7 @@ for (const preset of [
         const w = delta.clone().multiply(body.world),
           n = normal.clone().multiply(body.normal),
           actual = frame.draws[0].blocks.DrawBlock;
-        maxWorld = Math.max(
-          maxWorld,
-          ...w.elements.map((v, i) => Math.abs(v - actual[i])),
-        );
+        maxWorld = Math.max(maxWorld, ...w.elements.map((v, i) => Math.abs(v - actual[i])));
         const magnitude = Math.max(1, ...actual.slice(16, 32).map(Math.abs));
         maxNormal = Math.max(
           maxNormal,
@@ -83,8 +73,7 @@ for (const preset of [
       for (const event of frame.events) {
         if (event.kind === 'pointer-down') pointer.down(event.x, event.y, t);
         else if (event.kind === 'pointer') pointer.move(event.x, event.y);
-        else if (event.kind === 'pointer-up' || event.kind === 'pointer-cancel')
-          pointer.up(t);
+        else if (event.kind === 'pointer-up' || event.kind === 'pointer-cancel') pointer.up(t);
         if (event.kind.startsWith('pointer')) gaze.point(event.x, event.y);
       }
     }
@@ -100,10 +89,7 @@ test('invalid reflected, singular and non-core affine snapshots reject', () => {
     new Matrix4().makeShear(0.1, 0, 0, 0, 0, 0),
   ])
     assert.throws(() => new ReactionCancellationBody(m, -1));
-  const body = new ReactionCancellationBody(
-    new Matrix4().makeRotationY((8 * Math.PI) / 180),
-    -1,
-  );
+  const body = new ReactionCancellationBody(new Matrix4().makeRotationY((8 * Math.PI) / 180), -1);
   assert.throws(() => body.sample(new Matrix4(), NaN));
   assert.throws(() => body.sample(new Matrix4(), 1.1));
 });
@@ -118,24 +104,13 @@ for (const preset of [
   'lime_headphones',
 ]) {
   test(`${preset}: complete cancellation pose matches every native world, normal and material channel`, async () => {
-    const { reactionCancellationFixtures } = await import(
-      './avatar-reaction-cancel-fixtures.mjs'
-    );
+    const { reactionCancellationFixtures } = await import('./avatar-reaction-cancel-fixtures.mjs');
     const cases = await reactionCancellationFixtures(preset);
     assert.equal(cases.length, 7);
     for (const c of cases) {
-      assert(
-        c.metrics.worldError < 3e-7,
-        `${preset}@${c.time} world ${c.metrics.worldError}`,
-      );
-      assert(
-        c.metrics.normalError < 3e-7,
-        `${preset}@${c.time} normal ${c.metrics.normalError}`,
-      );
-      assert(
-        c.metrics.fieldError < 3e-7,
-        `${preset}@${c.time} fields ${c.metrics.fieldError}`,
-      );
+      assert(c.metrics.worldError < 3e-7, `${preset}@${c.time} world ${c.metrics.worldError}`);
+      assert(c.metrics.normalError < 3e-7, `${preset}@${c.time} normal ${c.metrics.normalError}`);
+      assert(c.metrics.fieldError < 3e-7, `${preset}@${c.time} fields ${c.metrics.fieldError}`);
     }
   });
 }
@@ -157,30 +132,16 @@ for (const preset of [
       const cases = await reactionCancellationFixtures(preset, scenario);
       assert.equal(cases.length, 7);
       for (const c of cases) {
-        assert(
-          c.metrics.worldError < 3e-7,
-          `${scenario} world ${c.metrics.worldError}`,
-        );
-        assert(
-          c.metrics.normalError < 3e-7,
-          `${scenario} normal ${c.metrics.normalError}`,
-        );
-        assert(
-          c.metrics.fieldError < 3e-7,
-          `${scenario} fields ${c.metrics.fieldError}`,
-        );
+        assert(c.metrics.worldError < 3e-7, `${scenario} world ${c.metrics.worldError}`);
+        assert(c.metrics.normalError < 3e-7, `${scenario} normal ${c.metrics.normalError}`);
+        assert(c.metrics.fieldError < 3e-7, `${scenario} fields ${c.metrics.fieldError}`);
       }
     });
 }
 
 test('Headphones entry cancellation preserves incoming XY gaze and does not restart on a second move', async () => {
-  const { reactionCancellationFixtures } = await import(
-    './avatar-reaction-cancel-fixtures.mjs'
-  );
-  const cases = await reactionCancellationFixtures(
-    'lime_headphones',
-    'entry-gaze',
-  );
+  const { reactionCancellationFixtures } = await import('./avatar-reaction-cancel-fixtures.mjs');
+  const cases = await reactionCancellationFixtures('lime_headphones', 'entry-gaze');
   assert.equal(cases.length, 7);
   for (const c of cases) {
     assert(c.metrics.worldError < 3e-7, `world ${c.metrics.worldError}`);
@@ -190,9 +151,7 @@ test('Headphones entry cancellation preserves incoming XY gaze and does not rest
 });
 
 test('sampling reuses output storage and never clones matrices or enumerates fields', async () => {
-  const { ReactionCancellationPose } = await import(
-    '../runtime/avatar/reaction-cancel.ts'
-  );
+  const { ReactionCancellationPose } = await import('../runtime/avatar/reaction-cancel.ts');
   const world = new Matrix4().makeRotationY((8 * Math.PI) / 180);
   const pose = [0, 1].map((id) => ({
     id: `mesh:${id}`,

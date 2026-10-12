@@ -13,23 +13,12 @@
       "material": {
         "label": "body",
         "base": {
-          "color": [
-            1,
-            0.800000011920929,
-            0.21960784494876862
-          ],
+          "color": [1, 0.800000011920929, 0.21960784494876862],
           "roughness": 0.7799999713897705,
           "reflectance": 0.23408909142017365
         },
-        "alternateColor": [
-          0.9999999403953552,
-          0.8360311985015869,
-          0.16594752669334412
-        ],
-        "unresolvedAlternateScalars": [
-          0.7799999713897705,
-          0.23408909142017365
-        ],
+        "alternateColor": [0.9999999403953552, 0.8360311985015869, 0.16594752669334412],
+        "unresolvedAlternateScalars": [0.7799999713897705, 0.23408909142017365],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -40,24 +29,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          -2.384853985404334e-7,
-          0.000013265749657875858,
-          0
-        ],
+        "deformationCenter": [-2.384853985404334e-7, 0.000013265749657875858, 0],
         "attachmentLabel": "",
         "attachmentCenter": null,
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 120,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -65,16 +40,8 @@
       },
       "sourceName": "e4f8ea1549b5a7a88223ef1bb438bc83363943aeb26a4b4b221d6799fcdc56f3:body:no-shadow:studio-fur-v6:79:0e171fb67cfe6de1c75b0b108e9dc6c8a14bd694eacb6c1c12599428ff47f7d8:surface:shadow:79:4e43395f5859ce77951985464643fe51edc53d349a26e21f5ee1d88be489ffae:surface:shadow:79:6bd688fe51373962d828d455cb6bbbaf8fb4ef56b54e6e110a731bc23a83f31b:surface:shadow:79:e0e0d326c7a914516922cbd4e33f42e80fd27e57834822fe618a5067511c6288:surface:shadow:79:612cb35ae0ea42d7b46d7cc65810dfdb843493dd77c929f2bce17e928970b5c9:surface:shadow:79:650b91c8f5ece94f4e7e47545de7401432ea9c2c4adaba78deff5b1886793839:surface:shadow:79:a6cb87b2caf70878833217ed5be7eaa911c6e24db03daf62a74ac61fb6c4c3b3:surface:shadow",
       "bounds": {
-        "min": [
-          -0.9999851584434509,
-          -0.8902587890625,
-          -0.6001108288764954
-        ],
-        "max": [
-          0.9999850392341614,
-          0.8902626037597656,
-          0.6002375483512878
-        ]
+        "min": [-0.9999851584434509, -0.8902587890625, -0.6001108288764954],
+        "max": [0.9999850392341614, 0.8902626037597656, 0.6002375483512878]
       },
       "normals": {
         "minLength": 0.9999998769636327,
@@ -154,23 +121,12 @@
       "material": {
         "label": "eye-relaxed-1-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.0627450942993164,
-          0.07450980693101883,
-          0.07450980693101883
-        ],
-        "unresolvedAlternateScalars": [
-          0.44999998807907104,
-          0.3064945638179779
-        ],
+        "alternateColor": [0.0627450942993164, 0.07450980693101883, 0.07450980693101883],
+        "unresolvedAlternateScalars": [0.44999998807907104, 0.3064945638179779],
         "nativeFixedPupilFlag": true,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -181,24 +137,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          -0.021006135269999504,
-          0.22924870252609253,
-          0.6296147704124451
-        ],
+        "deformationCenter": [-0.021006135269999504, 0.22924870252609253, 0.6296147704124451],
         "attachmentLabel": "",
         "attachmentCenter": null,
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 132,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -206,16 +148,8 @@
       },
       "sourceName": "0e171fb67cfe6de1c75b0b108e9dc6c8a14bd694eacb6c1c12599428ff47f7d8:surface:shadow",
       "bounds": {
-        "min": [
-          -0.1285810023546219,
-          0.19061826169490814,
-          0.5944675803184509
-        ],
-        "max": [
-          0.08656874299049377,
-          0.2678791284561157,
-          0.6647618412971497
-        ]
+        "min": [-0.1285810023546219, 0.19061826169490814, 0.5944675803184509],
+        "max": [0.08656874299049377, 0.2678791284561157, 0.6647618412971497]
       },
       "normals": {
         "minLength": 0.9999999271190174,
@@ -287,23 +221,12 @@
       "material": {
         "label": "eye-relaxed-minus1-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.0627450942993164,
-          0.07450980693101883,
-          0.07450980693101883
-        ],
-        "unresolvedAlternateScalars": [
-          0.44999998807907104,
-          0.3064945638179779
-        ],
+        "alternateColor": [0.0627450942993164, 0.07450980693101883, 0.07450980693101883],
+        "unresolvedAlternateScalars": [0.44999998807907104, 0.3064945638179779],
         "nativeFixedPupilFlag": true,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -314,24 +237,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          -0.5321493148803711,
-          0.2672593295574188,
-          0.5577782988548279
-        ],
+        "deformationCenter": [-0.5321493148803711, 0.2672593295574188, 0.5577782988548279],
         "attachmentLabel": "",
         "attachmentCenter": null,
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 137,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -339,16 +248,8 @@
       },
       "sourceName": "4e43395f5859ce77951985464643fe51edc53d349a26e21f5ee1d88be489ffae:surface:shadow",
       "bounds": {
-        "min": [
-          -0.6397242546081543,
-          0.2286289632320404,
-          0.5226311087608337
-        ],
-        "max": [
-          -0.42457452416419983,
-          0.3058897852897644,
-          0.5929254293441772
-        ]
+        "min": [-0.6397242546081543, 0.2286289632320404, 0.5226311087608337],
+        "max": [-0.42457452416419983, 0.3058897852897644, 0.5929254293441772]
       },
       "normals": {
         "minLength": 0.9999999210974556,
@@ -420,23 +321,12 @@
       "material": {
         "label": "glasses-oval-1-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -447,28 +337,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          -0.19750498235225677,
-          0.26408734917640686,
-          0.6282215714454651
-        ],
+        "deformationCenter": [-0.19750498235225677, 0.26408734917640686, 0.6282215714454651],
         "attachmentLabel": "tall_oval_frames",
-        "attachmentCenter": [
-          -0.19750498235225677,
-          0.26408734917640686,
-          0.6282215714454651
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [-0.19750498235225677, 0.26408734917640686, 0.6282215714454651],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 149,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -476,16 +348,8 @@
       },
       "sourceName": "6bd688fe51373962d828d455cb6bbbaf8fb4ef56b54e6e110a731bc23a83f31b:surface:shadow",
       "bounds": {
-        "min": [
-          -0.26595866680145264,
-          -0.1172175258398056,
-          0.5929649472236633
-        ],
-        "max": [
-          0.2239461988210678,
-          0.607381284236908,
-          0.7162789702415466
-        ]
+        "min": [-0.26595866680145264, -0.1172175258398056, 0.5929649472236633],
+        "max": [0.2239461988210678, 0.607381284236908, 0.7162789702415466]
       },
       "normals": {
         "minLength": 0.9999998756304966,
@@ -557,23 +421,12 @@
       "material": {
         "label": "glasses-oval-minus1-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -584,28 +437,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          -0.19750498235225677,
-          0.26408734917640686,
-          0.6282215714454651
-        ],
+        "deformationCenter": [-0.19750498235225677, 0.26408734917640686, 0.6282215714454651],
         "attachmentLabel": "tall_oval_frames",
-        "attachmentCenter": [
-          -0.19750498235225677,
-          0.26408734917640686,
-          0.6282215714454651
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [-0.19750498235225677, 0.26408734917640686, 0.6282215714454651],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 154,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -613,16 +448,8 @@
       },
       "sourceName": "e0e0d326c7a914516922cbd4e33f42e80fd27e57834822fe618a5067511c6288:surface:shadow",
       "bounds": {
-        "min": [
-          -0.7600988745689392,
-          -0.07920709997415543,
-          0.5235486030578613
-        ],
-        "max": [
-          -0.30419930815696716,
-          0.6453922986984253,
-          0.6420460939407349
-        ]
+        "min": [-0.7600988745689392, -0.07920709997415543, 0.5235486030578613],
+        "max": [-0.30419930815696716, 0.6453922986984253, 0.6420460939407349]
       },
       "normals": {
         "minLength": 0.9999998991285416,
@@ -694,23 +521,12 @@
       "material": {
         "label": "glasses-right-temple-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -721,28 +537,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          -0.19750498235225677,
-          0.26408734917640686,
-          0.6282215714454651
-        ],
+        "deformationCenter": [-0.19750498235225677, 0.26408734917640686, 0.6282215714454651],
         "attachmentLabel": "tall_oval_frames",
-        "attachmentCenter": [
-          -0.19750498235225677,
-          0.26408734917640686,
-          0.6282215714454651
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [-0.19750498235225677, 0.26408734917640686, 0.6282215714454651],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 155,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -750,16 +548,8 @@
       },
       "sourceName": "612cb35ae0ea42d7b46d7cc65810dfdb843493dd77c929f2bce17e928970b5c9:surface:shadow",
       "bounds": {
-        "min": [
-          0.16404855251312256,
-          0.20418018102645874,
-          0.6566055417060852
-        ],
-        "max": [
-          0.3650718033313751,
-          0.2729800343513489,
-          0.7329093217849731
-        ]
+        "min": [0.16404855251312256, 0.20418018102645874, 0.6566055417060852],
+        "max": [0.3650718033313751, 0.2729800343513489, 0.7329093217849731]
       },
       "normals": {
         "minLength": 0.9999999152108747,
@@ -831,23 +621,12 @@
       "material": {
         "label": "bow-tie-left-padded-lobe-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -858,28 +637,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          -0.20305711030960083,
-          -0.8611109852790833,
-          0.49369168281555176
-        ],
+        "deformationCenter": [-0.20305711030960083, -0.8611109852790833, 0.49369168281555176],
         "attachmentLabel": "bow",
-        "attachmentCenter": [
-          -0.20305711030960083,
-          -0.8611109852790833,
-          0.49369168281555176
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [-0.20305711030960083, -0.8611109852790833, 0.49369168281555176],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 146,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -887,16 +648,8 @@
       },
       "sourceName": "650b91c8f5ece94f4e7e47545de7401432ea9c2c4adaba78deff5b1886793839:surface:shadow",
       "bounds": {
-        "min": [
-          -0.6829569339752197,
-          -1.0490673780441284,
-          0.38967254757881165
-        ],
-        "max": [
-          -0.20301631093025208,
-          -0.6732727289199829,
-          0.5978031754493713
-        ]
+        "min": [-0.6829569339752197, -1.0490673780441284, 0.38967254757881165],
+        "max": [-0.20301631093025208, -0.6732727289199829, 0.5978031754493713]
       },
       "normals": {
         "minLength": 0.9999999023196195,
@@ -968,23 +721,12 @@
       "material": {
         "label": "bow-tie-right-padded-lobe-m0",
         "base": {
-          "color": [
-            0.11999999731779099,
-            0.11999999731779099,
-            0.11999999731779099
-          ],
+          "color": [0.11999999731779099, 0.11999999731779099, 0.11999999731779099],
           "roughness": 0.8199999928474426,
           "reflectance": 0.1599999964237213
         },
-        "alternateColor": [
-          0.08235294371843338,
-          0.09411763399839401,
-          0.09019608050584793
-        ],
-        "unresolvedAlternateScalars": [
-          0.7099999785423279,
-          0.26543208956718445
-        ],
+        "alternateColor": [0.08235294371843338, 0.09411763399839401, 0.09019608050584793],
+        "unresolvedAlternateScalars": [0.7099999785423279, 0.26543208956718445],
         "nativeFixedPupilFlag": false,
         "renderSelection": "Not resolved: native shader may select alternate color or fixed pupil treatment.",
         "evidence": {
@@ -995,28 +737,10 @@
         }
       },
       "pose": {
-        "deformationCenter": [
-          -0.20305711030960083,
-          -0.8611109852790833,
-          0.49369168281555176
-        ],
+        "deformationCenter": [-0.20305711030960083, -0.8611109852790833, 0.49369168281555176],
         "attachmentLabel": "bow",
-        "attachmentCenter": [
-          -0.20305711030960083,
-          -0.8611109852790833,
-          0.49369168281555176
-        ],
-        "normalBasis": [
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
+        "attachmentCenter": [-0.20305711030960083, -0.8611109852790833, 0.49369168281555176],
+        "normalBasis": [1, 0, 0, 0, 1, 0, 0, 0, 1],
         "normalBasisOffset": 147,
         "worldMatrix": null,
         "worldMatrixStatus": "Not serialized as a proven world transform in the decoded prefix; do not use deformationCenter as a mesh translation.",
@@ -1024,16 +748,8 @@
       },
       "sourceName": "a6cb87b2caf70878833217ed5be7eaa911c6e24db03daf62a74ac61fb6c4c3b3:surface:shadow",
       "bounds": {
-        "min": [
-          -0.20308765769004822,
-          -1.0490671396255493,
-          0.3896277844905853
-        ],
-        "max": [
-          0.27687332034111023,
-          -0.6732730269432068,
-          0.5976846218109131
-        ]
+        "min": [-0.20308765769004822, -1.0490671396255493, 0.3896277844905853],
+        "max": [0.27687332034111023, -0.6732730269432068, 0.5976846218109131]
       },
       "normals": {
         "minLength": 0.9999998974616268,
@@ -1129,9 +845,7 @@
     "color": "yellow",
     "eyes": "sleepy_lids",
     "eyewear": "tall_oval_frames",
-    "accessories": [
-      "bow"
-    ],
+    "accessories": ["bow"],
     "accessoryColors": {},
     "constrained": 0,
     "depth": 0.5,

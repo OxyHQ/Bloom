@@ -62,19 +62,13 @@ export function extendComputerShader(source, vertex) {
   if (vertex) {
     const helper = `vec4 computerProjection(vec3 world) {\n#ifdef AUTHORED_COMPUTER\n    if(avatarComputerCamera.w<=0.) return vec4(2,2,2,1);\n    world.xy=world.xy*avatarComputerCamera.xy+vec2(0,avatarComputerCamera.z);\n#endif\n    return crowdProjection*vec4(world.xy+instanceOffset,world.z,1);\n}\n`;
     source = source.replace('void main() {', `${helper}void main() {`);
-    assert(
-      source.includes(
-        'gl_Position=crowdProjection*vec4(world.xy+instanceOffset,world.z,1);',
-      ),
-    );
+    assert(source.includes('gl_Position=crowdProjection*vec4(world.xy+instanceOffset,world.z,1);'));
     source = source.replace(
       'gl_Position=crowdProjection*vec4(world.xy+instanceOffset,world.z,1);',
       'gl_Position=computerProjection(world);',
     );
     assert(
-      source.includes(
-        'gl_Position = crowdProjection*vec4(world.xy+instanceOffset,world.zw);',
-      ),
+      source.includes('gl_Position = crowdProjection*vec4(world.xy+instanceOffset,world.zw);'),
     );
     source = source.replace(
       'gl_Position = crowdProjection*vec4(world.xy+instanceOffset,world.zw);',
@@ -87,11 +81,7 @@ function tintComputerHands(source, vertex) {
   const marker = '// AUTHORED_COMPUTER_HAND_PIGMENT_V1';
   if (vertex || source.includes(marker)) return source;
   const original = 'vec3 albedo = avatarColorRoughness.xyz;';
-  assert.equal(
-    source.split(original).length,
-    2,
-    'Exactly one universal albedo initialization',
-  );
+  assert.equal(source.split(original).length, 2, 'Exactly one universal albedo initialization');
   // -40 is the original authored hand semantic. Apply the body's relative
   // pigment only to its albedo; retain captured roughness, reflectance and lighting.
   return source.replace(
@@ -144,15 +134,9 @@ function extendComputerOcclusion(source, vertex) {
   return source;
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
-) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   for (const suffix of ['vert', 'frag']) {
     const path = `runtime/avatar/assets/authored.${suffix}.glsl`;
-    await writeFile(
-      path,
-      extendComputerShader(await readFile(path, 'utf8'), suffix === 'vert'),
-    );
+    await writeFile(path, extendComputerShader(await readFile(path, 'utf8'), suffix === 'vert'));
   }
 }

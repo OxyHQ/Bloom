@@ -124,8 +124,7 @@ export class AvatarEyeGazeController {
       const xy = sx * sy;
       const zx = cx * (bx - ax * ox - cross * oy) - bx;
       const zy = xy * (bx - ax * ox - cross * oy) + cy * (by - ay * oy - cross * ox) - by;
-      const depth = bx * ox + by * oy -
-        (ax * ox * ox + ay * oy * oy + 2 * cross * ox * oy) / 2;
+      const depth = bx * ox + by * oy - (ax * ox * ox + ay * oy * oy + 2 * cross * ox * oy) / 2;
       world.set(
         cx,
         xy,

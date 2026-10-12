@@ -60,16 +60,16 @@
           "selectedCount": 129,
           "start": 3.2952,
           "end": 12.028227999999999,
-          "maxTrsError": 4.956001509182073e-08,
-          "maxNormalError": 1.1275305311642114e-06,
+          "maxTrsError": 4.956001509182073e-8,
+          "maxNormalError": 1.1275305311642114e-6,
           "rawSha256": "5a17826d62b9af354e30c03736bfb83860a3ced8e4e2dc5238dd193646658a2b"
         },
         "reaction": {
           "selectedCount": 41,
           "start": 3.535364,
           "end": 6.3351999999999995,
-          "maxTrsError": 5.5718471836385675e-08,
-          "maxNormalError": 1.3997408139232448e-06,
+          "maxTrsError": 5.5718471836385675e-8,
+          "maxNormalError": 1.3997408139232448e-6,
           "rawSha256": "3fd43742ac1dfa86c63ef6416d5e0972e07665592777b78809a5df277840b2fd"
         }
       }
@@ -89,7 +89,7 @@
         "minimumQuietSeamError": 0.00017726421356201172,
         "nearRecurrence": {
           "candidateLagSeconds": 7.5331,
-          "maxDrawBlockEndpointDifference": 8.702278137207031e-06
+          "maxDrawBlockEndpointDifference": 8.702278137207031e-6
         },
         "unsupportedAnimatedFields": {}
       },
@@ -121,7 +121,7 @@
         "minimumQuietSeamError": 0.0001462697982788086,
         "nearRecurrence": {
           "candidateLagSeconds": 8.766364,
-          "maxDrawBlockEndpointDifference": 1.430511474609375e-06
+          "maxDrawBlockEndpointDifference": 1.430511474609375e-6
         },
         "unsupportedAnimatedFields": {}
       },
@@ -153,23 +153,15 @@
         "minimumQuietSeamError": 0.00016927719116210938,
         "nearRecurrence": {
           "candidateLagSeconds": 8.7996,
-          "maxDrawBlockEndpointDifference": 1.3649463653564453e-05
+          "maxDrawBlockEndpointDifference": 1.3649463653564453e-5
         },
         "unsupportedAnimatedFields": {
           "colorRoughness": {
-            "partIds": [
-              "mesh:1",
-              "mesh:2",
-              "mesh:3",
-              "mesh:4"
-            ],
+            "partIds": ["mesh:1", "mesh:2", "mesh:3", "mesh:4"],
             "maximumObservedChannelChange": 0.9235987663269043
           },
           "paletteClosure": {
-            "partIds": [
-              "mesh:1",
-              "mesh:3"
-            ],
+            "partIds": ["mesh:1", "mesh:3"],
             "maximumObservedChannelChange": 1
           }
         }
@@ -202,23 +194,15 @@
         "minimumQuietSeamError": 0.0001659393310546875,
         "nearRecurrence": {
           "candidateLagSeconds": 7.616336,
-          "maxDrawBlockEndpointDifference": 1.7762184143066406e-05
+          "maxDrawBlockEndpointDifference": 1.7762184143066406e-5
         },
         "unsupportedAnimatedFields": {
           "colorRoughness": {
-            "partIds": [
-              "mesh:1",
-              "mesh:2",
-              "mesh:3",
-              "mesh:4"
-            ],
+            "partIds": ["mesh:1", "mesh:2", "mesh:3", "mesh:4"],
             "maximumObservedChannelChange": 0.9235987663269043
           },
           "paletteClosure": {
-            "partIds": [
-              "mesh:3",
-              "mesh:4"
-            ],
+            "partIds": ["mesh:3", "mesh:4"],
             "maximumObservedChannelChange": 1
           }
         }
@@ -251,7 +235,7 @@
         "minimumQuietSeamError": 0.00013875961303710938,
         "nearRecurrence": {
           "candidateLagSeconds": 8.2164,
-          "maxDrawBlockEndpointDifference": 1.1920928955078125e-06
+          "maxDrawBlockEndpointDifference": 1.1920928955078125e-6
         },
         "unsupportedAnimatedFields": {}
       },
@@ -267,10 +251,7 @@
         "terminalResolved": false,
         "lastObservedTime": 7.9663
       },
-      "furIdentitiesVerifiedBySha256": [
-        "fur:0",
-        "fur:2"
-      ]
+      "furIdentitiesVerifiedBySha256": ["fur:0", "fur:2"]
     },
     "blue_spectacles": {
       "integrated": false,
@@ -287,23 +268,15 @@
         "minimumQuietSeamError": 0.0002104043960571289,
         "nearRecurrence": {
           "candidateLagSeconds": 9.48294,
-          "maxDrawBlockEndpointDifference": 2.6746420189738274e-08
+          "maxDrawBlockEndpointDifference": 2.6746420189738274e-8
         },
         "unsupportedAnimatedFields": {
           "colorRoughness": {
-            "partIds": [
-              "mesh:1",
-              "mesh:2",
-              "mesh:3",
-              "mesh:4"
-            ],
+            "partIds": ["mesh:1", "mesh:2", "mesh:3", "mesh:4"],
             "maximumObservedChannelChange": 0.9235987663269043
           },
           "paletteClosure": {
-            "partIds": [
-              "mesh:1",
-              "mesh:3"
-            ],
+            "partIds": ["mesh:1", "mesh:3"],
             "maximumObservedChannelChange": 1
           }
         }
@@ -320,10 +293,7 @@
         "terminalResolved": false,
         "lastObservedTime": 7.916364
       },
-      "furIdentitiesVerifiedBySha256": [
-        "fur:0",
-        "fur:8"
-      ]
+      "furIdentitiesVerifiedBySha256": ["fur:0", "fur:8"]
     },
     "lime_headphones": {
       "integrated": false,
@@ -340,7 +310,7 @@
         "minimumQuietSeamError": 0.00016498565673828125,
         "nearRecurrence": {
           "candidateLagSeconds": 8.933,
-          "maxDrawBlockEndpointDifference": 1.7881393432617188e-07
+          "maxDrawBlockEndpointDifference": 1.7881393432617188e-7
         },
         "unsupportedAnimatedFields": {}
       },
@@ -377,16 +347,7 @@
       },
       "unsupportedAnimatedFields": [],
       "initialCopy": {
-        "args": [
-          49.7,
-          55.7,
-          219.60000000000002,
-          219.60000000000002,
-          0,
-          0,
-          320,
-          320
-        ],
+        "args": [49.7, 55.7, 219.60000000000002, 219.60000000000002, 0, 0, 320, 320],
         "width": 320,
         "height": 320,
         "cssWidth": 320,
@@ -399,7 +360,7 @@
         "start": 6.6551,
         "end": 14.5048,
         "period": 7.8496999999999995,
-        "error": 2.1457672119140625e-06
+        "error": 2.1457672119140625e-6
       },
       "minimumQuietSeamError": 0.0001499652862548828,
       "rejected": true,
@@ -416,16 +377,7 @@
       },
       "unsupportedAnimatedFields": [],
       "initialCopy": {
-        "args": [
-          49.7,
-          55.7,
-          219.60000000000002,
-          219.60000000000002,
-          0,
-          0,
-          320,
-          320
-        ],
+        "args": [49.7, 55.7, 219.60000000000002, 219.60000000000002, 0, 0, 320, 320],
         "width": 320,
         "height": 320,
         "cssWidth": 320,
@@ -450,16 +402,7 @@
       },
       "unsupportedAnimatedFields": [],
       "initialCopy": {
-        "args": [
-          49.7,
-          55.7,
-          219.60000000000002,
-          219.60000000000002,
-          0,
-          0,
-          320,
-          320
-        ],
+        "args": [49.7, 55.7, 219.60000000000002, 219.60000000000002, 0, 0, 320, 320],
         "width": 320,
         "height": 320,
         "cssWidth": 320,
@@ -472,32 +415,18 @@
         "start": 2.783333333333333,
         "end": 10.933333333333334,
         "period": 8.15,
-        "error": 4.76837158203125e-07
+        "error": 4.76837158203125e-7
       },
-      "minimumQuietSeamError": 3.2901763916015625e-05,
+      "minimumQuietSeamError": 3.2901763916015625e-5,
       "rejected": true,
       "reason": "No exact quiet idle loop seam in observations; capture longer instead of blending"
     },
     "exactSubmittedFrames": 721,
     "simulationSeconds": 12,
     "runtimeAssetExported": false,
-    "checkpointFrames": [
-      0,
-      60,
-      180,
-      360
-    ],
+    "checkpointFrames": [0, 60, 180, 360],
     "originalActiveCrop": {
-      "args": [
-        49.7,
-        55.7,
-        219.60000000000002,
-        219.60000000000002,
-        0,
-        0,
-        320,
-        320
-      ],
+      "args": [49.7, 55.7, 219.60000000000002, 219.60000000000002, 0, 0, 320, 320],
       "width": 320,
       "height": 320,
       "cssWidth": 320,
@@ -511,8 +440,8 @@
     "uploadedParts": 14,
     "numeric": {
       "checkedParts": 14,
-      "maxWorldError": 2.516782682260299e-08,
-      "maxNormalError": 2.9724724237567557e-08,
+      "maxWorldError": 2.516782682260299e-8,
+      "maxNormalError": 2.9724724237567557e-8,
       "maxFieldError": 0
     },
     "changedSelectedAvatarPixels": 55197,
@@ -560,22 +489,9 @@
     ],
     "publicProtocol": {
       "source": "assets/character-runtime/orbit-characters.mjs:8",
-      "pointerPhases": [
-        "Down",
-        "Move",
-        "Up",
-        "Cancel"
-      ],
-      "reactions": [
-        "Wave",
-        "Signature"
-      ],
-      "reactionResults": [
-        "Accepted",
-        "Busy",
-        "Unsupported",
-        "Unavailable"
-      ],
+      "pointerPhases": ["Down", "Move", "Up", "Cancel"],
+      "reactions": ["Wave", "Signature"],
+      "reactionResults": ["Accepted", "Busy", "Unsupported", "Unavailable"],
       "activityKinds": [
         "None",
         "Working",
@@ -588,22 +504,9 @@
         "Paused",
         "Error"
       ],
-      "activityCommands": [
-        "Start",
-        "Stop",
-        "Restore"
-      ],
-      "outcomes": [
-        "Neutral",
-        "ArtifactReady",
-        "PaymentPaid",
-        "InputReceived",
-        "ThinkingResolved"
-      ],
-      "entries": [
-        "Start",
-        "Sustained"
-      ],
+      "activityCommands": ["Start", "Stop", "Restore"],
+      "outcomes": ["Neutral", "ArtifactReady", "PaymentPaid", "InputReceived", "ThinkingResolved"],
+      "entries": ["Start", "Sustained"],
       "limitation": "These exported enums define API vocabulary, not deterministic kinematic source or clip data. Only Working is initiated by the current app adapter."
     },
     "nextEvidenceNeeded": [
@@ -645,8 +548,8 @@
       "blue_beret": {
         "idle": {
           "frames": 171,
-          "maxTrsError": 4.956001509182073e-08,
-          "maxNormalError": 1.1275305311642114e-06,
+          "maxTrsError": 4.956001509182073e-8,
+          "maxNormalError": 1.1275305311642114e-6,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 10.578263999999999
@@ -654,8 +557,8 @@
         },
         "reaction": {
           "frames": 56,
-          "maxTrsError": 5.5718471836385675e-08,
-          "maxNormalError": 1.3997408139232448e-06,
+          "maxTrsError": 5.5718471836385675e-8,
+          "maxNormalError": 1.3997408139232448e-6,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 4.368600000000001
@@ -665,8 +568,8 @@
       "alfred": {
         "idle": {
           "frames": 159,
-          "maxTrsError": 6.397905177868424e-09,
-          "maxNormalError": 8.125793415914018e-08,
+          "maxTrsError": 6.397905177868424e-9,
+          "maxNormalError": 8.125793415914018e-8,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 5.8416999999999994
@@ -674,8 +577,8 @@
         },
         "reaction": {
           "error": "Sheared matrices cannot be exported as lossless TRS",
-          "maxTrsError": 1.4372665401767015e-05,
-          "maxNormalError": 1.4948864296741686e-05,
+          "maxTrsError": 1.4372665401767015e-5,
+          "maxNormalError": 1.4948864296741686e-5,
           "maxTrsErrorLocation": {
             "id": "mesh:6",
             "renderTime": 3.75653
@@ -685,8 +588,8 @@
       "purple_heart": {
         "idle": {
           "frames": 180,
-          "maxTrsError": 7.3062691730019225e-09,
-          "maxNormalError": 8.17110836770496e-08,
+          "maxTrsError": 7.3062691730019225e-9,
+          "maxNormalError": 8.17110836770496e-8,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 12.988700000000001
@@ -694,8 +597,8 @@
         },
         "reaction": {
           "error": "Sheared matrices cannot be exported as lossless TRS",
-          "maxTrsError": 1.249051676747992e-05,
-          "maxNormalError": 1.3311602558956082e-05,
+          "maxTrsError": 1.249051676747992e-5,
+          "maxNormalError": 1.3311602558956082e-5,
           "maxTrsErrorLocation": {
             "id": "mesh:1",
             "renderTime": 3.6286
@@ -705,8 +608,8 @@
       "lime_frog": {
         "idle": {
           "frames": 173,
-          "maxTrsError": 6.397905177868424e-09,
-          "maxNormalError": 8.333998491316663e-08,
+          "maxTrsError": 6.397905177868424e-9,
+          "maxNormalError": 8.333998491316663e-8,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 4.4606
@@ -714,8 +617,8 @@
         },
         "reaction": {
           "error": "Sheared matrices cannot be exported as lossless TRS",
-          "maxTrsError": 1.7708047897538326e-06,
-          "maxNormalError": 1.7703631231000619e-06,
+          "maxTrsError": 1.7708047897538326e-6,
+          "maxNormalError": 1.7703631231000619e-6,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 3.7755
@@ -725,8 +628,8 @@
       "coral_monocle": {
         "idle": {
           "frames": 175,
-          "maxTrsError": 1.0505221775813922e-08,
-          "maxNormalError": 8.396797412935086e-08,
+          "maxTrsError": 1.0505221775813922e-8,
+          "maxNormalError": 8.396797412935086e-8,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 11.128
@@ -734,8 +637,8 @@
         },
         "reaction": {
           "error": "Sheared matrices cannot be exported as lossless TRS",
-          "maxTrsError": 2.4043630154025816e-06,
-          "maxNormalError": 2.403573718882078e-06,
+          "maxTrsError": 2.4043630154025816e-6,
+          "maxNormalError": 2.403573718882078e-6,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 3.6971999999999996
@@ -745,8 +648,8 @@
       "gus": {
         "idle": {
           "frames": 199,
-          "maxTrsError": 1.0505221803569498e-08,
-          "maxNormalError": 8.324202382947732e-08,
+          "maxTrsError": 1.0505221803569498e-8,
+          "maxNormalError": 8.324202382947732e-8,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 11.9366
@@ -754,8 +657,8 @@
         },
         "reaction": {
           "error": "Sheared matrices cannot be exported as lossless TRS",
-          "maxTrsError": 3.993124600312585e-06,
-          "maxNormalError": 3.991392145592104e-06,
+          "maxTrsError": 3.993124600312585e-6,
+          "maxNormalError": 3.991392145592104e-6,
           "maxTrsErrorLocation": {
             "id": "mesh:1",
             "renderTime": 3.824728
@@ -765,8 +668,8 @@
       "blue_spectacles": {
         "idle": {
           "frames": 156,
-          "maxTrsError": 6.397905177868424e-09,
-          "maxNormalError": 8.386352445821643e-08,
+          "maxTrsError": 6.397905177868424e-9,
+          "maxNormalError": 8.386352445821643e-8,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 5.7258000000000004
@@ -774,8 +677,8 @@
         },
         "reaction": {
           "error": "Sheared matrices cannot be exported as lossless TRS",
-          "maxTrsError": 1.1073019089520228e-06,
-          "maxNormalError": 1.1055554407518207e-06,
+          "maxTrsError": 1.1073019089520228e-6,
+          "maxNormalError": 1.1055554407518207e-6,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 3.688896
@@ -785,8 +688,8 @@
       "lime_headphones": {
         "idle": {
           "frames": 165,
-          "maxTrsError": 7.306269200757498e-09,
-          "maxNormalError": 8.56944393223813e-08,
+          "maxTrsError": 7.306269200757498e-9,
+          "maxNormalError": 8.56944393223813e-8,
           "maxTrsErrorLocation": {
             "id": "mesh:0",
             "renderTime": 6.930194
@@ -794,8 +697,8 @@
         },
         "reaction": {
           "error": "Sheared matrices cannot be exported as lossless TRS",
-          "maxTrsError": 9.542818832482258e-06,
-          "maxNormalError": 9.52657717334833e-06,
+          "maxTrsError": 9.542818832482258e-6,
+          "maxNormalError": 9.52657717334833e-6,
           "maxTrsErrorLocation": {
             "id": "mesh:3",
             "renderTime": 3.7549

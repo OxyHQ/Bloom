@@ -5,9 +5,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { semanticFrames, proveReturn } from './build-avatar-return-assets.mjs';
 const preset = process.env.AVATAR_PRESET || 'alfred';
-const root =
-  process.env.AVATAR_WORK_CONTROLLER_OUTPUT ||
-  `.local/avatar-work-controller/${preset}`;
+const root = process.env.AVATAR_WORK_CONTROLLER_OUTPUT || `.local/avatar-work-controller/${preset}`;
 const read = async (path) => JSON.parse(await readFile(path, 'utf8'));
 const baselinePath = `.local/avatar-computer-source/${preset}/work-raw.json`;
 const idlePath =
@@ -16,12 +14,8 @@ const idlePath =
     : `.local/avatar-runtime-motion-actions/${preset}/idle-raw.json`;
 const idle = await read(idlePath),
   baseline = await read(baselinePath);
-const provenance = (
-  await read(`.local/avatar-computer-source/${preset}/report.json`)
-).provenance;
-const originalHashes = new Set(
-  baseline.vertexBuffers.map((buffer) => buffer.sha256),
-);
+const provenance = (await read(`.local/avatar-computer-source/${preset}/report.json`)).provenance;
+const originalHashes = new Set(baseline.vertexBuffers.map((buffer) => buffer.sha256));
 const report = {
   preset,
   provenance,
@@ -41,8 +35,7 @@ for (const name of [
     'interrupt1_2',
   ]),
 ]) {
-  const path =
-    name === 'cycles1' ? baselinePath : `${root}/${name}/work-raw.json`;
+  const path = name === 'cycles1' ? baselinePath : `${root}/${name}/work-raw.json`;
   let raw;
   try {
     raw = name === 'cycles1' ? baseline : await read(path);
@@ -75,12 +68,8 @@ for (const name of [
     stop,
     stopAfter: stop - start,
     frames: frames.length,
-    newGeometry: raw.vertexBuffers.filter(
-      (buffer) => !originalHashes.has(buffer.sha256),
-    ),
-    reactionCommands: raw.calls.filter(
-      (call) => call.method === 'playReaction',
-    ),
+    newGeometry: raw.vertexBuffers.filter((buffer) => !originalHashes.has(buffer.sha256)),
+    reactionCommands: raw.calls.filter((call) => call.method === 'playReaction'),
     return: proof,
     workTimerEvidence: raw.workTimerEvidence || null,
     diagnostic: raw.diagnostic,
@@ -89,9 +78,7 @@ for (const name of [
   report.cases.push(entry);
 }
 function compare(a, b, shift = 0, lower = -Infinity, upper = Infinity) {
-  const reference = new Map(
-    b.frames.map((f) => [f.time.toFixed(9), f.signature]),
-  );
+  const reference = new Map(b.frames.map((f) => [f.time.toFixed(9), f.signature]));
   const samples = a.frames
     .filter((f) => f.time >= lower && f.time <= upper)
     .map((f) => ({
@@ -189,35 +176,20 @@ if (long) {
   // the full-state mismatch instead of silently dropping those components.
   const buffers = new Map(long.raw.vertexBuffers.map((b) => [b.id, b.sha256]));
   const rawFrames = long.raw.frames
-    .filter(
-      (f) =>
-        f.renderTime >= long.entry.start + 1 && f.renderTime < long.entry.stop,
-    )
+    .filter((f) => f.renderTime >= long.entry.start + 1 && f.renderTime < long.entry.stop)
     .map((f) => ({
       time: f.renderTime,
       draws: f.draws
         .map((d) => ({
-          id: buffers.get(
-            d.vertexAttributes.find((a) => a.name === 'position').bufferId,
-          ),
-          values: [
-            ...d.blocks.DrawBlock,
-            ...d.blocks.FrameBlock,
-            ...d.blocks.SkinBlock,
-          ],
+          id: buffers.get(d.vertexAttributes.find((a) => a.name === 'position').bufferId),
+          values: [...d.blocks.DrawBlock, ...d.blocks.FrameBlock, ...d.blocks.SkinBlock],
         }))
-        .sort(
-          (a, b) => a.id.localeCompare(b.id) || a.values[12] - b.values[12],
-        ),
+        .sort((a, b) => a.id.localeCompare(b.id) || a.values[12] - b.values[12]),
     }));
   const topology = (frame) => frame.draws.map((draw) => draw.id).join(':');
   const lastTopology = topology(rawFrames.at(-1));
   let stableStart = rawFrames.length - 1;
-  while (
-    stableStart > 0 &&
-    topology(rawFrames[stableStart - 1]) === lastTopology
-  )
-    stableStart--;
+  while (stableStart > 0 && topology(rawFrames[stableStart - 1]) === lastTopology) stableStart--;
   rawFrames.splice(0, stableStart);
   report.steadyWork.stableTopologyStart = rawFrames[0].time;
   report.steadyWork.stableTopologyFrames = rawFrames.length;
@@ -251,9 +223,7 @@ if (long) {
         comparedValues: count,
       });
   }
-  report.steadyWork.candidatePeriodDiagnostics = periods
-    .sort((a, b) => a.rms - b.rms)
-    .slice(0, 8);
+  report.steadyWork.candidatePeriodDiagnostics = periods.sort((a, b) => a.rms - b.rms).slice(0, 8);
 }
 await writeFile(`${root}/analysis.json`, JSON.stringify(report, null, 2));
 console.log(

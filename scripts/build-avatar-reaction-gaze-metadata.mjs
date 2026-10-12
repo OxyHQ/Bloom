@@ -38,40 +38,24 @@ for (const [preset, coreSeconds] of Object.entries(cores)) {
     it = await readFile(`${path}/idle-raw.json`);
   const reaction = JSON.parse(rt),
     idle = JSON.parse(it);
-  const command = reaction.calls.find(
-    (c) => c.method === 'playReaction' && c.result === 0,
-  );
+  const command = reaction.calls.find((c) => c.method === 'playReaction' && c.result === 0);
   assert(command);
-  const after = reaction.frames.filter(
-    (f) => f.renderTime > command.renderTime + 1e-8,
-  );
+  const after = reaction.frames.filter((f) => f.renderTime > command.renderTime + 1e-8);
   const entryIndex = after.findIndex((frame, index) => {
     if (index === 0) return false;
-    const matchedIdle = idle.frames.find(
-      (f) => Math.abs(f.renderTime - frame.renderTime) < 1e-8,
-    );
+    const matchedIdle = idle.frames.find((f) => Math.abs(f.renderTime - frame.renderTime) < 1e-8);
     return (
       matchedIdle &&
-      frame.draws[0].blocks.DrawBlock[13] ===
-        after[index - 1].draws[0].blocks.DrawBlock[13] &&
-      frame.draws[0].blocks.DrawBlock[13] !==
-        matchedIdle.draws[0].blocks.DrawBlock[13]
+      frame.draws[0].blocks.DrawBlock[13] === after[index - 1].draws[0].blocks.DrawBlock[13] &&
+      frame.draws[0].blocks.DrawBlock[13] !== matchedIdle.draws[0].blocks.DrawBlock[13]
     );
   });
-  assert(
-    entryIndex > 0,
-    `${preset} missing observed frozen breathing presentation`,
-  );
+  assert(entryIndex > 0, `${preset} missing observed frozen breathing presentation`);
   const frozen = after[entryIndex - 1],
     entry = after[entryIndex];
-  const idleFrozen = idle.frames.find(
-    (f) => Math.abs(f.renderTime - frozen.renderTime) < 1e-8,
-  );
+  const idleFrozen = idle.frames.find((f) => Math.abs(f.renderTime - frozen.renderTime) < 1e-8);
   assert(idleFrozen);
-  assert.equal(
-    entry.draws[0].blocks.DrawBlock[13],
-    idleFrozen.draws[0].blocks.DrawBlock[13],
-  );
+  assert.equal(entry.draws[0].blocks.DrawBlock[13], idleFrozen.draws[0].blocks.DrawBlock[13]);
   const exit = entry.renderTime + coreSeconds;
   const directBytes = await readFile(
     `.local/avatar-eye-activities/${preset}/reaction-baseline-raw.json`,
@@ -79,9 +63,7 @@ for (const [preset, coreSeconds] of Object.entries(cores)) {
   const direct = JSON.parse(directBytes);
   const rotation = (f) => {
     const q = new Quaternion();
-    new Matrix4()
-      .fromArray(f.draws[0].blocks.DrawBlock)
-      .decompose(new Vector3(), q, new Vector3());
+    new Matrix4().fromArray(f.draws[0].blocks.DrawBlock).decompose(new Vector3(), q, new Vector3());
     return new Matrix4().makeRotationFromQuaternion(q).elements;
   };
   let rotationMax = 0,
@@ -89,14 +71,11 @@ for (const [preset, coreSeconds] of Object.entries(cores)) {
   for (const d of direct) {
     const target = entry.renderTime + (d.time - (0.5 + 1 / 30));
     if (target < entry.renderTime || target > exit + 0.18) continue;
-    const f = reaction.frames.find(
-      (f) => Math.abs(f.renderTime - target) < 1e-8,
-    );
+    const f = reaction.frames.find((f) => Math.abs(f.renderTime - target) < 1e-8);
     assert(f);
     const dr = rotation(d),
       fr = rotation(f);
-    for (let j = 0; j < 16; j++)
-      rotationMax = Math.max(rotationMax, Math.abs(dr[j] - fr[j]));
+    for (let j = 0; j < 16; j++) rotationMax = Math.max(rotationMax, Math.abs(dr[j] - fr[j]));
     rotationFrames++;
   }
   assert(rotationFrames > 60);
@@ -108,14 +87,11 @@ for (const [preset, coreSeconds] of Object.entries(cores)) {
     for (const d of direct) {
       const target = entry.renderTime + (d.time - (0.5 + 1 / 30)) + shift;
       if (target < entry.renderTime || target > exit + 0.18) continue;
-      const f = reaction.frames.find(
-        (f) => Math.abs(f.renderTime - target) < 1e-8,
-      );
+      const f = reaction.frames.find((f) => Math.abs(f.renderTime - target) < 1e-8);
       assert(f);
       const dr = rotation(d),
         fr = rotation(f);
-      for (let j = 0; j < 16; j++)
-        maximum = Math.max(maximum, Math.abs(dr[j] - fr[j]));
+      for (let j = 0; j < 16; j++) maximum = Math.max(maximum, Math.abs(dr[j] - fr[j]));
     }
     alternatives.push(maximum);
   }
@@ -139,22 +115,15 @@ for (const [preset, coreSeconds] of Object.entries(cores)) {
     const nativeScale = scale(f),
       sourceScale = scale(source);
     for (let j = 0; j < 3; j++)
-      scaleMax = Math.max(
-        scaleMax,
-        Math.abs(nativeScale[j] - (1 + (sourceScale[j] - 1) * weight)),
-      );
+      scaleMax = Math.max(scaleMax, Math.abs(nativeScale[j] - (1 + (sourceScale[j] - 1) * weight)));
     if (preset === 'lime_headphones')
       headphonesTranslationMax = Math.max(
         headphonesTranslationMax,
-        Math.abs(
-          f.draws[0].blocks.DrawBlock[13] -
-            source.draws[0].blocks.DrawBlock[13] * weight,
-        ),
+        Math.abs(f.draws[0].blocks.DrawBlock[13] - source.draws[0].blocks.DrawBlock[13] * weight),
       );
     count++;
   }
-  if (preset === 'lime_headphones')
-    assert(scaleMax < 3e-7, `${preset} scale residual ${scaleMax}`);
+  if (preset === 'lime_headphones') assert(scaleMax < 3e-7, `${preset} scale residual ${scaleMax}`);
   assert(headphonesTranslationMax < 1e-9);
   report.presets[preset] = {
     nativeCommand: command.renderTime,

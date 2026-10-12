@@ -64,9 +64,7 @@ try {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = `display:block;width:${cell * 2}px;height:${cell}px`;
     document.body.append(canvas);
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     const { loadAuthoredAsset } = await import('/runtime/avatar/catalog.ts');
     window.engine = new AuthoredAvatarEngine(canvas, {
       count: 2,

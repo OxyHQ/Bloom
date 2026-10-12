@@ -4,24 +4,15 @@ import type { CatalogPiece } from './catalog-fitting';
 
 /** Grow a C2 shoulder from the coat into the tuft and bury its roots in it.
  * This runs once on owned recipe geometry, never in the animation frame. */
-export function integrateCatalogTuft(
-  body: CatalogPiece[],
-  tuft: CatalogPiece[],
-) {
+export function integrateCatalogTuft(body: CatalogPiece[], tuft: CatalogPiece[]) {
   const surface = tuft.find((p) => !p.fur);
   const coat = body.find((p) => !p.fur);
   if (!surface?.attachmentPivot || !coat) return;
   const root = new Vector3().fromArray(surface.attachmentPivot);
-  const normal = new Vector3().fromArray(
-    tuftSurface(coat.geometry, root.toArray()).normal,
-  );
+  const normal = new Vector3().fromArray(tuftSurface(coat.geometry, root.toArray()).normal);
   const height = surface.bounds.max[1]! - surface.bounds.min[1]!;
   const width = surface.bounds.max[0]! - surface.bounds.min[0]!;
-  if (
-    !(height > 0 && width > 0) ||
-    !Number.isFinite(height + width) ||
-    normal.lengthSq() === 0
-  )
+  if (!(height > 0 && width > 0) || !Number.isFinite(height + width) || normal.lengthSq() === 0)
     throw Error('Invalid tuft attachment dimensions');
   const radius = width * 0.48,
     lift = height * 0.08,
@@ -41,8 +32,7 @@ export function integrateCatalogTuft(
     const s = p.clone().sub(root).dot(normal),
       u = Math.max(0, Math.min(1, s / band));
     const smooth = u * u * u * (10 + u * (-15 + 6 * u));
-    const derivative =
-      s > 0 && s < band ? (30 * u * u * (1 - u) * (1 - u)) / band : 0;
+    const derivative = s > 0 && s < band ? (30 * u * u * (1 - u) * (1 - u)) / band : 0;
     return {
       value: -burial * (1 - smooth),
       gradient: normal.clone().multiplyScalar(burial * derivative),
@@ -72,13 +62,9 @@ export function integrateCatalogTuft(
     for (let i = 0; i < positions.count; i++) {
       const p = read('position', i);
       const target0 =
-        !part.fur && geometry.hasAttribute('delta0')
-          ? p.clone().add(read('delta0', i))
-          : p;
+        !part.fur && geometry.hasAttribute('delta0') ? p.clone().add(read('delta0', i)) : p;
       const target1 =
-        !part.fur && geometry.hasAttribute('delta1')
-          ? p.clone().add(read('delta1', i))
-          : p;
+        !part.fur && geometry.hasAttribute('delta1') ? p.clone().add(read('delta1', i)) : p;
       if (
         deformation(p, grow).value === 0 &&
         deformation(target0, grow).value === 0 &&
@@ -101,21 +87,17 @@ export function integrateCatalogTuft(
           write('delta1', i, bend);
         }
       } else {
-        if (geometry.hasAttribute('delta0'))
-          write('delta0', i, map(target0, grow).sub(mapped));
-        if (geometry.hasAttribute('delta1'))
-          write('delta1', i, map(target1, grow).sub(mapped));
+        if (geometry.hasAttribute('delta0')) write('delta0', i, map(target0, grow).sub(mapped));
+        if (geometry.hasAttribute('delta1')) write('delta1', i, map(target1, grow).sub(mapped));
         for (const [name, point] of [
           ['normal', p],
           ['normal0', target0],
           ['normal1', target1],
         ] as const)
-          if (geometry.hasAttribute(name))
-            write(name, i, deformNormal(read(name, i), point, grow));
+          if (geometry.hasAttribute(name)) write(name, i, deformNormal(read(name, i), point, grow));
         const palette = geometry.getAttribute('paletteGeometry');
         if (palette) {
-          const point =
-            (part.fields.paletteReference?.[0] ?? 0) > 0.5 ? target1 : p;
+          const point = (part.fields.paletteReference?.[0] ?? 0) > 0.5 ? target1 : p;
           const n = deformNormal(
             new Vector3(palette.getY(i), palette.getZ(i), palette.getW(i)),
             point,
@@ -128,8 +110,7 @@ export function integrateCatalogTuft(
       }
       write('position', i, mapped);
     }
-    for (const attribute of Object.values(geometry.attributes))
-      attribute.needsUpdate = true;
+    for (const attribute of Object.values(geometry.attributes)) attribute.needsUpdate = true;
     geometry.computeBoundingBox();
     geometry.computeBoundingSphere();
     part.bounds = {

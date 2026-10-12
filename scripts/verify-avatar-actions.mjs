@@ -40,9 +40,7 @@ try {
   await cdp.send('Fetch.disable');
   await cdp.detach();
   await page.evaluate(async () => {
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     window.engine = new AuthoredAvatarEngine(document.querySelector('canvas'), {
       count: 2,
       size: 320,

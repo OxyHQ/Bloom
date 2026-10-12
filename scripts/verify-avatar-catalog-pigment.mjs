@@ -4,8 +4,7 @@ import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
 const require = createRequire(import.meta.url);
 const puppeteer = require(
-  process.env.BLOOM_PUPPETEER_MODULE ||
-    '/home/nate/Oxy/Homiio/node_modules/puppeteer-core',
+  process.env.BLOOM_PUPPETEER_MODULE || '/home/nate/Oxy/Homiio/node_modules/puppeteer-core',
 );
 const browser = await puppeteer.launch({
   executablePath:
@@ -20,18 +19,14 @@ try {
   page.on('pageerror', (error) => errors.push(error.message));
   const cdp = await page.createCDPSession();
   await cdp.send('Fetch.enable', {
-    patterns: [
-      { urlPattern: '*/avatar-pigment-proof.html', requestStage: 'Request' },
-    ],
+    patterns: [{ urlPattern: '*/avatar-pigment-proof.html', requestStage: 'Request' }],
   });
   cdp.on('Fetch.requestPaused', (event) =>
     cdp.send('Fetch.fulfillRequest', {
       requestId: event.requestId,
       responseCode: 200,
       responseHeaders: [{ name: 'Content-Type', value: 'text/html' }],
-      body: Buffer.from(
-        '<!doctype html><title>Catalog pigment proof</title>',
-      ).toString('base64'),
+      body: Buffer.from('<!doctype html><title>Catalog pigment proof</title>').toString('base64'),
     }),
   );
   await page.goto(
@@ -39,12 +34,8 @@ try {
   );
   await cdp.send('Fetch.disable');
   const rows = await page.evaluate(async () => {
-    const { createCatalogAssetResolver } = await import(
-      '/runtime/avatar/catalog-assets.ts'
-    );
-    const { createCatalogMotion } = await import(
-      '/runtime/avatar/catalog-motion-factory.ts'
-    );
+    const { createCatalogAssetResolver } = await import('/runtime/avatar/catalog-assets.ts');
+    const { createCatalogMotion } = await import('/runtime/avatar/catalog-motion-factory.ts');
     const resolve = createCatalogAssetResolver(createCatalogMotion),
       rows = [];
     for (const detail of ['low', 'high'])
@@ -53,23 +44,15 @@ try {
           `catalog:${JSON.stringify({ shape, eyes: 'todd', eyewear: 'none', accessory: 'three_lobe' })}`,
           detail,
         );
-        const body = asset.source.parts.find(
-          (part) => part.id === 0 && !part.fur,
-        );
-        const tufts = asset.source.parts.filter(
-          (part) => part.attachment === 'three_lobe',
-        );
+        const body = asset.source.parts.find((part) => part.id === 0 && !part.fur);
+        const tufts = asset.source.parts.filter((part) => part.attachment === 'three_lobe');
         const base = body.fields.colorRoughness;
         const staticMatches = tufts.every((part) =>
           part.fields.colorRoughness.slice(0, 3).every((v, k) => v === base[k]),
         );
         const materialMatches = asset.source.material.parts
           .filter((part) => part.attachment === 'three_lobe')
-          .every((part) =>
-            part.fields.colorRoughness
-              .slice(0, 3)
-              .every((v, k) => v === base[k]),
-          );
+          .every((part) => part.fields.colorRoughness.slice(0, 3).every((v, k) => v === base[k]));
         if (!tufts.length || !staticMatches || !materialMatches)
           throw Error(`${shape}/${detail} static pigment mismatch`);
         for (const kind of ['idle', 'reaction', 'work']) {
@@ -77,25 +60,18 @@ try {
             pose = sampler.createPose();
           for (const fraction of [0, 0.1, 0.5, 0.9, 1]) {
             sampler.sample(sampler.clip.duration * fraction, pose);
-            const bodyPaint = pose.find((part) => part.id === 'mesh:0').fields
-              .colorRoughness;
+            const bodyPaint = pose.find((part) => part.id === 'mesh:0').fields.colorRoughness;
             const parts = tufts.map((part) =>
-              pose.find(
-                (p) => p.id === `${part.fur ? 'fur' : 'mesh'}:${part.id}`,
-              ),
+              pose.find((p) => p.id === `${part.fur ? 'fur' : 'mesh'}:${part.id}`),
             );
             if (
               parts.some(
                 (part) =>
                   !part ||
-                  !part.fields.colorRoughness
-                    .slice(0, 3)
-                    .every((v, k) => v === bodyPaint[k]),
+                  !part.fields.colorRoughness.slice(0, 3).every((v, k) => v === bodyPaint[k]),
               )
             )
-              throw Error(
-                `${shape}/${detail}/${kind}/${fraction}: animated pigment mismatch`,
-              );
+              throw Error(`${shape}/${detail}/${kind}/${fraction}: animated pigment mismatch`);
             rows.push({
               shape,
               detail,
@@ -117,9 +93,7 @@ try {
     '.local/avatar-catalog-pigment/report.json',
     JSON.stringify({ rows, errors }, null, 2),
   );
-  console.log(
-    `PASS ${rows.length} real catalog material/pose cases; no renderer or GPU required`,
-  );
+  console.log(`PASS ${rows.length} real catalog material/pose cases; no renderer or GPU required`);
 } finally {
   await browser.close();
 }

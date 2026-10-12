@@ -6,18 +6,14 @@ import { channel } from './build-avatar-catalog-motion.mjs';
 const read = async (p) => JSON.parse(await readFile(p, 'utf8'));
 const mapFrames = (raw, geometry) => {
   const hashes = new Map(geometry.parts.map((p) => [p.vertices.sha256, p.id])),
-    buffers = new Map(
-      raw.vertexBuffers.map((b) => [b.id, hashes.get(b.sha256)]),
-    );
+    buffers = new Map(raw.vertexBuffers.map((b) => [b.id, hashes.get(b.sha256)]));
   return raw.frames
     .filter((f) => f.renderTime >= 3)
     .map(
       (f) =>
         new Map(
           f.draws.map((d) => [
-            buffers.get(
-              d.vertexAttributes.find((a) => a.name === 'position')?.bufferId,
-            ),
+            buffers.get(d.vertexAttributes.find((a) => a.name === 'position')?.bufferId),
             d.blocks.DrawBlock,
           ]),
         ),
@@ -37,9 +33,7 @@ for (const g of [0, 1]) {
     parts = {};
   let linear = 0,
     normal = 0;
-  const count = Math.ceil(
-    manifest.parts.filter((p) => p.category === 'eyes').length / 9,
-  );
+  const count = Math.ceil(manifest.parts.filter((p) => p.category === 'eyes').length / 9);
   for (let group = 0; group < count; group++) {
     const base = `${dir}/work-anchors-${group}`;
     let raw;
@@ -65,24 +59,18 @@ for (const g of [0, 1]) {
         const s = f.get(c.baseId),
           t = f.get(c.id);
         assert(s && t);
-        for (let k = 0; k < 12; k++)
-          linear = Math.max(linear, Math.abs(s[k] - t[k]));
-        for (let k = 16; k < 32; k++)
-          normal = Math.max(normal, Math.abs(s[k] - t[k]));
+        for (let k = 0; k < 12; k++) linear = Math.max(linear, Math.abs(s[k] - t[k]));
+        for (let k = 16; k < 32; k++) normal = Math.max(normal, Math.abs(s[k] - t[k]));
         return [0, 1, 2].map((k) => (t[k + 12] - s[k + 12]) / delta).concat(0);
       });
-      (parts[`mesh:${c.sourceId}`] ??= {})[`catalogAnchor${'XYZ'[c.axis]}`] =
-        channel(rows);
+      (parts[`mesh:${c.sourceId}`] ??= {})[`catalogAnchor${'XYZ'[c.axis]}`] = channel(rows);
     }
   }
   assert.equal(linear, 0, 'Anchor translation changed native linear frame');
   assert.equal(normal, 0, 'Anchor translation changed native normal frame');
   document.rigs.push({ parts, linearMax: linear, normalMax: normal });
 }
-await writeFile(
-  '.local/avatar-catalog-anchor-response.json',
-  JSON.stringify(document),
-);
+await writeFile('.local/avatar-catalog-anchor-response.json', JSON.stringify(document));
 console.log(
   document.rigs.map((r) => ({
     parts: Object.keys(r.parts).length,

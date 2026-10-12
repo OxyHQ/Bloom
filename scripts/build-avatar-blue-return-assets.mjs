@@ -5,49 +5,36 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 const source = '.local/avatar-return-source/blue_beret',
   destination = '.local/avatar-return-observations';
-const result = spawnSync(
-  process.execPath,
-  ['scripts/build-avatar-motion-assets.mjs'],
-  {
-    env: {
-      ...process.env,
-      AVATAR_PRESET: 'blue_beret',
-      AVATAR_MOTION_SOURCE: source,
-      AVATAR_MOTION_DESTINATION: destination,
-      AVATAR_MOTION_DIAGNOSTIC: '1',
-    },
-    encoding: 'utf8',
+const result = spawnSync(process.execPath, ['scripts/build-avatar-motion-assets.mjs'], {
+  env: {
+    ...process.env,
+    AVATAR_PRESET: 'blue_beret',
+    AVATAR_MOTION_SOURCE: source,
+    AVATAR_MOTION_DESTINATION: destination,
+    AVATAR_MOTION_DIAGNOSTIC: '1',
   },
-);
+  encoding: 'utf8',
+});
 assert.equal(result.status, 0, result.stdout + result.stderr);
 const read = async (p) => JSON.parse(await readFile(p, 'utf8'));
 const observations = await read(`${destination}/blue_beret.json`),
   idle = await read(`${source}/idle-raw.json`),
   reaction = await read(`${source}/reaction-raw.json`);
-const geometry = await read(
-  '.local/avatar-original-geometry/blue_beret/geometry.json',
-);
+const geometry = await read('.local/avatar-original-geometry/blue_beret/geometry.json');
 function canonical(raw) {
   const identity = new Map(raw.vertexBuffers.map((b) => [b.id, b.sha256]));
   return raw.frames.map((frame) => {
     const draws = frame.draws
       .map((d) => ({
-        id: identity.get(
-          d.vertexAttributes.find((a) => a.name === 'position').bufferId,
-        ),
-        values: [
-          ...d.blocks.DrawBlock,
-          ...d.blocks.FrameBlock,
-          ...d.blocks.SkinBlock,
-        ],
+        id: identity.get(d.vertexAttributes.find((a) => a.name === 'position').bufferId),
+        values: [...d.blocks.DrawBlock, ...d.blocks.FrameBlock, ...d.blocks.SkinBlock],
         defines: d.defines,
       }))
       .sort((a, b) => a.id.localeCompare(b.id));
     return {
       time: frame.renderTime,
       values: draws.flatMap((d) => d.values),
-      body: draws.find((d) => d.id === geometry.parts[0].vertices.sha256)
-        .values,
+      body: draws.find((d) => d.id === geometry.parts[0].vertices.sha256).values,
       key: createHash('sha256').update(JSON.stringify(draws)).digest('hex'),
     };
   });
@@ -55,10 +42,7 @@ function canonical(raw) {
 const frames = canonical(idle),
   quiet = frames
     .map((f, i) =>
-      i > 0 &&
-      i + 1 < frames.length &&
-      f.key === frames[i - 1].key &&
-      f.key === frames[i + 1].key
+      i > 0 && i + 1 < frames.length && f.key === frames[i - 1].key && f.key === frames[i + 1].key
         ? i
         : -1,
     )
@@ -66,12 +50,7 @@ const frames = canonical(idle),
   pairs = new Map();
 for (const a of quiet)
   for (const b of quiet)
-    if (
-      b - a >= 180 &&
-      b - a <= 720 &&
-      frames[a].key === frames[b].key &&
-      !pairs.has(b - a)
-    )
+    if (b - a >= 180 && b - a <= 720 && frames[a].key === frames[b].key && !pairs.has(b - a))
       pairs.set(b - a, [a, b]);
 assert(pairs.size, 'Need exact quiet full-state seam');
 const varying = frames[0].body
@@ -99,24 +78,13 @@ assert(
 let fullMax = 0;
 for (let i = 0; i + best.step < frames.length; i++)
   for (let k = 0; k < frames[i].values.length; k++)
-    fullMax = Math.max(
-      fullMax,
-      Math.abs(frames[i].values[k] - frames[i + best.step].values[k]),
-    );
-assert(
-  fullMax < 1e-12,
-  'Full native idle cycle must recur, including material/eye channels',
-);
-const command = reaction.calls.find(
-  (c) => c.method === 'playReaction' && c.result === 0,
-);
+    fullMax = Math.max(fullMax, Math.abs(frames[i].values[k] - frames[i + best.step].values[k]));
+assert(fullMax < 1e-12, 'Full native idle cycle must recur, including material/eye channels');
+const command = reaction.calls.find((c) => c.method === 'playReaction' && c.result === 0);
 assert(command);
-const start = reaction.frames.findLastIndex(
-    (f) => f.renderTime <= command.renderTime,
-  ),
+const start = reaction.frames.findLastIndex((f) => f.renderTime <= command.renderTime),
   end = reaction.frames.length - 1;
-const heldSeconds =
-  reaction.finishedRenderTime - reaction.frames[end].renderTime;
+const heldSeconds = reaction.finishedRenderTime - reaction.frames[end].renderTime;
 assert(heldSeconds >= 1, 'No native terminal hold observed');
 assert.equal(reaction.diagnostic.ready, true);
 assert.equal(reaction.diagnostic.pending, false);
@@ -148,9 +116,7 @@ function trim(clip, a, b, loop) {
       scale: channel(p.scale, 3),
       shear: channel(p.shear, 3),
       normalCorrection: channel(p.normalCorrection, 9),
-      fields: Object.fromEntries(
-        Object.entries(p.fields).map(([k, v]) => [k, channel(v, 4)]),
-      ),
+      fields: Object.fromEntries(Object.entries(p.fields).map(([k, v]) => [k, channel(v, 4)])),
     })),
   };
 }
@@ -192,8 +158,7 @@ const asset = {
   ],
 };
 await writeFile(
-  process.env.AVATAR_BLUE_MOTION_OUTPUT ||
-    'runtime/avatar/assets/motion/blue_beret.json',
+  process.env.AVATAR_BLUE_MOTION_OUTPUT || 'runtime/avatar/assets/motion/blue_beret.json',
   JSON.stringify(asset),
 );
 console.log(JSON.stringify(asset.evidence, null, 2));

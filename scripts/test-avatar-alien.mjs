@@ -30,10 +30,7 @@ test.after(() => rm(temp, { recursive: true, force: true }));
 const geometry = new InstancedBufferGeometry();
 geometry.setAttribute(
   'position',
-  new BufferAttribute(
-    new Float32Array([-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0]),
-    3,
-  ),
+  new BufferAttribute(new Float32Array([-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0]), 3),
 );
 geometry.setIndex([0, 1, 2, 0, 2, 3]);
 const identity = new Matrix4().toArray();
@@ -78,9 +75,7 @@ for (const eyes of expressions) {
     for (const name of ['normal', 'normal0']) {
       const a = part.geometry.getAttribute(name);
       for (let i = 0; i < a.count; i++)
-        assert.ok(
-          Math.abs(Math.hypot(a.getX(i), a.getY(i), a.getZ(i)) - 1) < 2e-6,
-        );
+        assert.ok(Math.abs(Math.hypot(a.getX(i), a.getY(i), a.getZ(i)) - 1) < 2e-6);
     }
     const angle = -(rig.leftAngle + 0.08 + 0.4 + rig.headTilt),
       c = Math.cos(angle),

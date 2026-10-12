@@ -5,10 +5,7 @@
       "ready": true,
       "renderer": "original-assets-three",
       "parity": false,
-      "missing": [
-        "original animation controllers",
-        "remaining presets"
-      ],
+      "missing": ["original animation controllers", "remaining presets"],
       "count": 1,
       "frames": 1,
       "observedFrameRate": 0,
@@ -441,10 +438,7 @@
         "uniquePhases": 1,
         "pauseFramesAndPixelsStable": true,
         "actualContextReleased": true,
-        "paintedPixelsPerAvatarRange": [
-          5303,
-          5303
-        ]
+        "paintedPixelsPerAvatarRange": [5303, 5303]
       },
       {
         "count": 24,
@@ -475,10 +469,7 @@
         "uniquePhases": 24,
         "pauseFramesAndPixelsStable": true,
         "actualContextReleased": true,
-        "paintedPixelsPerAvatarRange": [
-          5274,
-          5317
-        ]
+        "paintedPixelsPerAvatarRange": [5274, 5317]
       },
       {
         "count": 48,
@@ -509,10 +500,7 @@
         "uniquePhases": 48,
         "pauseFramesAndPixelsStable": true,
         "actualContextReleased": true,
-        "paintedPixelsPerAvatarRange": [
-          5273,
-          5317
-        ]
+        "paintedPixelsPerAvatarRange": [5273, 5317]
       },
       {
         "count": 100,
@@ -543,10 +531,7 @@
         "uniquePhases": 100,
         "pauseFramesAndPixelsStable": true,
         "actualContextReleased": true,
-        "paintedPixelsPerAvatarRange": [
-          5271,
-          5317
-        ]
+        "paintedPixelsPerAvatarRange": [5271, 5317]
       }
     ],
     "gpu": [
@@ -570,9 +555,7 @@
           "original animation controllers",
           "catalog part mixing beyond the eight presets"
         ],
-        "presets": [
-          "blue_beret"
-        ],
+        "presets": ["blue_beret"],
         "count": 1,
         "frames": 1,
         "suspended": false,
@@ -630,13 +613,9 @@
           "motion for seven presets",
           "catalog part mixing beyond the eight presets"
         ],
-        "presets": [
-          "blue_beret"
-        ],
+        "presets": ["blue_beret"],
         "detail": "low",
-        "motionPresets": [
-          "blue_beret"
-        ],
+        "motionPresets": ["blue_beret"],
         "count": 1,
         "frames": 1,
         "suspended": false,
@@ -701,13 +680,9 @@
             "motion for seven presets",
             "catalog part mixing beyond the eight presets"
           ],
-          "presets": [
-            "blue_beret"
-          ],
+          "presets": ["blue_beret"],
           "detail": "high",
-          "motionPresets": [
-            "blue_beret"
-          ],
+          "motionPresets": ["blue_beret"],
           "count": 2,
           "frames": 4,
           "suspended": false,
@@ -732,15 +707,8 @@
               "motion": "reaction",
               "motionTime": 0.7,
               "preset": "blue_beret",
-              "pigment": [
-                1,
-                1,
-                1
-              ],
-              "look": [
-                0,
-                0
-              ]
+              "pigment": [1, 1, 1],
+              "look": [0, 0]
             },
             {
               "index": 1,
@@ -748,15 +716,8 @@
               "motion": "idle",
               "motionTime": 0,
               "preset": "blue_beret",
-              "pigment": [
-                1,
-                1,
-                1
-              ],
-              "look": [
-                0,
-                0
-              ]
+              "pigment": [1, 1, 1],
+              "look": [0, 0]
             }
           ],
           "contexts": 1,
@@ -767,15 +728,15 @@
     ],
     "numeric": {
       "checkedParts": 14,
-      "maxWorldError": 2.516782682260299e-08,
-      "maxNormalError": 2.9724724237567557e-08,
+      "maxWorldError": 2.516782682260299e-8,
+      "maxNormalError": 2.9724724237567557e-8,
       "maxFieldError": 0
     },
     "materialChannels": {
       "purpose": "Synthetic upload and pixel independence check; not native motion parity",
       "materialFirst": 49420,
       "materialSecond": 0,
-      "maxError": 2.384185793236071e-08,
+      "maxError": 2.384185793236071e-8,
       "checked": 7
     },
     "errors": [],

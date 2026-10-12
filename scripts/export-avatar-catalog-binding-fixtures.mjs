@@ -1,9 +1,7 @@
 /** Read-only composed semantic anchors for native motion verification. */
 import { createRequire } from 'node:module';
 import { readFile, writeFile } from 'node:fs/promises';
-const p = createRequire(import.meta.url)(
-  process.env.BLOOM_PUPPETEER_MODULE || 'puppeteer-core',
-);
+const p = createRequire(import.meta.url)(process.env.BLOOM_PUPPETEER_MODULE || 'puppeteer-core');
 const browser = await p.launch({
   executablePath: process.env.CHROME_PATH,
   headless: true,
@@ -22,15 +20,10 @@ try {
   );
   await page.goto('http://localhost:6006/bindings.html');
   const index = JSON.parse(
-    await readFile(
-      'runtime/avatar/assets/catalog-library/index.json',
-      'utf8',
-    ),
+    await readFile('runtime/avatar/assets/catalog-library/index.json', 'utf8'),
   );
   const result = await page.evaluate(async (styles) => {
-    const { composeCatalog } = await import(
-      '/runtime/avatar/catalog-compose.ts'
-    );
+    const { composeCatalog } = await import('/runtime/avatar/catalog-compose.ts');
     const out = {};
     for (const eyes of styles) {
       const c = await composeCatalog(
@@ -52,10 +45,7 @@ try {
     }
     return out;
   }, Object.keys(index.donors.eyes));
-  await writeFile(
-    '.local/avatar-catalog-binding-fixtures.json',
-    JSON.stringify(result),
-  );
+  await writeFile('.local/avatar-catalog-binding-fixtures.json', JSON.stringify(result));
 } finally {
   await browser.close();
 }

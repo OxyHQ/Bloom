@@ -4,8 +4,7 @@ import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
 const require = createRequire(import.meta.url);
 const puppeteer = require(
-  process.env.BLOOM_PUPPETEER_MODULE ||
-    '/home/nate/Oxy/Homiio/node_modules/puppeteer-core',
+  process.env.BLOOM_PUPPETEER_MODULE || '/home/nate/Oxy/Homiio/node_modules/puppeteer-core',
 );
 const browser = await puppeteer.launch({
   executablePath:
@@ -21,18 +20,14 @@ try {
   page.on('pageerror', (error) => errors.push(error.message));
   const cdp = await page.createCDPSession();
   await cdp.send('Fetch.enable', {
-    patterns: [
-      { urlPattern: '*/avatar-pigment-proof.html', requestStage: 'Request' },
-    ],
+    patterns: [{ urlPattern: '*/avatar-pigment-proof.html', requestStage: 'Request' }],
   });
   cdp.on('Fetch.requestPaused', (event) =>
     cdp.send('Fetch.fulfillRequest', {
       requestId: event.requestId,
       responseCode: 200,
       responseHeaders: [{ name: 'Content-Type', value: 'text/html' }],
-      body: Buffer.from(
-        '<!doctype html><title>Catalog pigment proof</title>',
-      ).toString('base64'),
+      body: Buffer.from('<!doctype html><title>Catalog pigment proof</title>').toString('base64'),
     }),
   );
   await page.goto(
@@ -40,15 +35,9 @@ try {
   );
   await cdp.send('Fetch.disable');
   const rows = await page.evaluate(async () => {
-    const { createCatalogAssetResolver } = await import(
-      '/runtime/avatar/catalog-assets.ts'
-    );
-    const { createCatalogMotion } = await import(
-      '/runtime/avatar/catalog-motion-factory.ts'
-    );
-    const { resolveCompleteEditorRecipe } = await import(
-      '/runtime/avatar/recipe.ts'
-    );
+    const { createCatalogAssetResolver } = await import('/runtime/avatar/catalog-assets.ts');
+    const { createCatalogMotion } = await import('/runtime/avatar/catalog-motion-factory.ts');
+    const { resolveCompleteEditorRecipe } = await import('/runtime/avatar/recipe.ts');
     const { DEFAULT_CONFIG } = await import('/src/agent-avatar/model.ts');
     const { legacyRecipe } = await import('/src/agent-avatar/legacy-recipe.ts');
     const resolve = createCatalogAssetResolver(createCatalogMotion),
@@ -66,15 +55,9 @@ try {
           reduced: false,
         });
         const asset = await resolve(recipe.preset, detail);
-        const eyeParts = asset.source.parts.filter(
-          (p) => p.label === 'Alien almond eye',
-        );
-        if (eyeParts.length !== (eyes === 'alien' ? 2 : 0))
-          throw Error('Wrong Alien eye count');
-        if (
-          eyes === 'none' &&
-          asset.source.parts.some((p) => p.category === 'eyes')
-        )
+        const eyeParts = asset.source.parts.filter((p) => p.label === 'Alien almond eye');
+        if (eyeParts.length !== (eyes === 'alien' ? 2 : 0)) throw Error('Wrong Alien eye count');
+        if (eyes === 'none' && asset.source.parts.some((p) => p.category === 'eyes'))
           throw Error('Faceless recipe still has eyes');
         for (const kind of ['idle', 'reaction', 'work']) {
           const sampler = asset.samplers[kind],
@@ -93,11 +76,7 @@ try {
               throw Error('Non-finite animation');
             for (const eye of eyeParts) {
               const actual = pose.find((p) => p.id === `mesh:${eye.id}`);
-              if (
-                !actual.fields.colorRoughness.every(
-                  (v, k) => v === eye.fields.colorRoughness[k],
-                )
-              )
+              if (!actual.fields.colorRoughness.every((v, k) => v === eye.fields.colorRoughness[k]))
                 throw Error('Alien material overwritten by motion');
             }
           }
@@ -116,29 +95,19 @@ try {
           const xs = parts.map((p) => (p.bounds.min[0] + p.bounds.max[0]) / 2);
           return Math.max(...xs) - Math.min(...xs);
         };
-        if (!(gap(assets[1]) > gap(assets[0])))
-          throw Error('Eye spacing was ignored');
+        if (!(gap(assets[1]) > gap(assets[0]))) throw Error('Eye spacing was ignored');
         rows.push({ detail, shape, gaps: assets.map(gap) });
-        for (const asset of assets)
-          for (const part of asset.source.parts) part.geometry.dispose();
+        for (const asset of assets) for (const part of asset.source.parts) part.geometry.dispose();
       }
     }
     return rows;
   });
   await page.setViewport({ width: 960, height: 340, deviceScaleFactor: 1 });
   const render = await page.evaluate(async () => {
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
-    const { createCatalogAssetResolver } = await import(
-      '/runtime/avatar/catalog-assets.ts'
-    );
-    const { createCatalogMotion } = await import(
-      '/runtime/avatar/catalog-motion-factory.ts'
-    );
-    const { resolveCompleteEditorRecipe } = await import(
-      '/runtime/avatar/recipe.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
+    const { createCatalogAssetResolver } = await import('/runtime/avatar/catalog-assets.ts');
+    const { createCatalogMotion } = await import('/runtime/avatar/catalog-motion-factory.ts');
+    const { resolveCompleteEditorRecipe } = await import('/runtime/avatar/recipe.ts');
     const { ALIEN_CONFIG } = await import('/src/agent-avatar/model.ts');
     const { legacyRecipe } = await import('/src/agent-avatar/legacy-recipe.ts');
     document.body.style.cssText = 'margin:0;display:flex;background:#d9ddd8';
@@ -180,11 +149,7 @@ try {
         dark = 0;
       for (let i = 0; i < pixels.length; i += 4) {
         if (pixels[i + 3] > 100) painted++;
-        if (
-          pixels[i + 3] > 100 &&
-          Math.max(pixels[i], pixels[i + 1], pixels[i + 2]) < 50
-        )
-          dark++;
+        if (pixels[i + 3] > 100 && Math.max(pixels[i], pixels[i + 1], pixels[i + 2]) < 50) dark++;
       }
       result.push({
         name,
@@ -199,9 +164,7 @@ try {
   await page.screenshot({
     path: '.local/avatar-catalog-special-eyes/preview.png',
   });
-  await page.evaluate(() =>
-    window.specialEyeEngines.forEach((engine) => engine.dispose()),
-  );
+  await page.evaluate(() => window.specialEyeEngines.forEach((engine) => engine.dispose()));
   for (const row of render) {
     assert.ok(row.painted > 1000, JSON.stringify(row));
     assert.equal(row.glError, 0);

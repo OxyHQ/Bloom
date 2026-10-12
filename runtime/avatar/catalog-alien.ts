@@ -1,9 +1,5 @@
 import { BufferAttribute, InstancedBufferGeometry, IntType } from 'three';
-import {
-  bodyFront,
-  type CatalogAssembly,
-  type CatalogPiece,
-} from './catalog-fitting';
+import { bodyFront, type CatalogAssembly, type CatalogPiece } from './catalog-fitting';
 import type { FaceRig } from '../../src/agent-avatar/expression-rig';
 
 /** Saved Alien face parameters. Geometry is built once, with two native blink
@@ -23,12 +19,8 @@ export function constructAlienEye(
   side: -1 | 1,
 ): CatalogPiece {
   const rig = face.rig;
-  const halfWidth =
-    Math.min(face.size * 1.06 * (rig.width / 0.45) ** 0.25, face.gap * 0.43) /
-    83;
-  const height =
-    Math.max(1.2, face.size * 0.6 * (side < 0 ? rig.leftOpen : rig.rightOpen)) /
-    83;
+  const halfWidth = Math.min(face.size * 1.06 * (rig.width / 0.45) ** 0.25, face.gap * 0.43) / 83;
+  const height = Math.max(1.2, face.size * 0.6 * (side < 0 ? rig.leftOpen : rig.rightOpen)) / 83;
   const angle = -(
     (side < 0 ? rig.leftAngle : rig.rightAngle) +
     0.08 -
@@ -36,10 +28,7 @@ export function constructAlienEye(
     face.tilt +
     rig.headTilt
   );
-  const center = [
-    (side * face.gap) / 166 + rig.lookX / 83,
-    (9 - rig.lookY) / 83,
-  ];
+  const center = [(side * face.gap) / 166 + rig.lookX / 83, (9 - rig.lookY) / 83];
   const c = Math.cos(angle),
     s = Math.sin(angle);
   const front = bodyFront(body, center[0]!, center[1]!);
@@ -67,9 +56,7 @@ export function constructAlienEye(
         [
           atX,
           atY,
-          (Number.isFinite(surface) ? surface : fallback) +
-            0.012 +
-            (index === 0 ? 0.028 : 0),
+          (Number.isFinite(surface) ? surface : fallback) + 0.012 + (index === 0 ? 0.028 : 0),
         ],
         index * 3,
       );
@@ -81,8 +68,7 @@ export function constructAlienEye(
     shut = positions(1);
   const geometry = new InstancedBufferGeometry();
   const indices: number[] = [];
-  for (let i = 1; i < outline.length; i++)
-    indices.push(0, i === outline.length - 1 ? 1 : i + 1, i);
+  for (let i = 1; i < outline.length; i++) indices.push(0, i === outline.length - 1 ? 1 : i + 1, i);
   geometry.setIndex(indices);
   const normals = (values: Float32Array) => {
     geometry.setAttribute('position', new BufferAttribute(values, 3));
@@ -105,24 +91,15 @@ export function constructAlienEye(
   }))
     geometry.setAttribute(name, new BufferAttribute(array, 3));
   const count = outline.length;
-  geometry.setAttribute(
-    'authoredResponse',
-    new BufferAttribute(new Float32Array(count * 2), 2),
-  );
+  geometry.setAttribute('authoredResponse', new BufferAttribute(new Float32Array(count * 2), 2));
   const palette = new Float32Array(count * 4);
   for (let i = 0; i < count; i++)
-    palette.set(
-      [0, normal[i * 3]!, normal[i * 3 + 1]!, normal[i * 3 + 2]!],
-      i * 4,
-    );
+    palette.set([0, normal[i * 3]!, normal[i * 3 + 1]!, normal[i * 3 + 2]!], i * 4);
   geometry.setAttribute('paletteGeometry', new BufferAttribute(palette, 4));
   const joints = new BufferAttribute(new Uint16Array(count * 4), 4);
   joints.gpuType = IntType;
   geometry.setAttribute('skinJoints', joints);
-  geometry.setAttribute(
-    'skinWeights',
-    new BufferAttribute(new Float32Array(count * 4), 4),
-  );
+  geometry.setAttribute('skinWeights', new BufferAttribute(new Float32Array(count * 4), 4));
   geometry.computeBoundingBox();
   const box = geometry.boundingBox!;
   const rgb = face.light ? [0.975, 0.968, 0.951] : [0.005, 0.005, 0.009];

@@ -3,10 +3,7 @@ import type { BufferGeometry } from 'three';
 
 /** Closest point on the actual triangles, with the authored smooth normal.
  * Concavities and wire bodies cannot use a radius from the bounding-box center. */
-export function tuftSurface(
-  geometry: BufferGeometry,
-  point: readonly number[],
-) {
+export function tuftSurface(geometry: BufferGeometry, point: readonly number[]) {
   const positions = geometry.getAttribute('position'),
     normals = geometry.getAttribute('normal'),
     indices = geometry.getIndex();
@@ -43,7 +40,6 @@ export function tuftSurface(
     bestPoint.copy(candidate);
     bestNormal.copy(normal).normalize();
   }
-  if (!Number.isFinite(nearest))
-    throw Error('Tuft requires a nondegenerate body surface');
+  if (!Number.isFinite(nearest)) throw Error('Tuft requires a nondegenerate body surface');
   return { point: bestPoint.toArray(), normal: bestNormal.toArray() };
 }

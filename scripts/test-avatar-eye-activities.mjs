@@ -18,19 +18,12 @@ for (const [label, file] of [
     const frames = await read(`${root}/${file}-raw.json`);
     assert.equal(frames.length, 151);
     assert.equal(frames.length, baselineWork.length);
-    assert(
-      frames.some((f) =>
-        f.events.some((e) => e.kind === 'activity-start' && e.result === 0),
-      ),
-    );
+    assert(frames.some((f) => f.events.some((e) => e.kind === 'activity-start' && e.result === 0)));
     for (let k = 0; k < frames.length; k++) {
       assert.equal(frames[k].renderTime, baselineWork[k].renderTime);
       assert.equal(frames[k].draws.length, baselineWork[k].draws.length);
       for (let p = 0; p < frames[k].draws.length; p++) {
-        assert.deepEqual(
-          frames[k].draws[p].defines,
-          baselineWork[k].draws[p].defines,
-        );
+        assert.deepEqual(frames[k].draws[p].defines, baselineWork[k].draws[p].defines);
         assert.deepEqual(
           frames[k].draws[p].vertexAttributes,
           baselineWork[k].draws[p].vertexAttributes,
@@ -56,9 +49,9 @@ for (const observation of [
     const root = `.local/avatar-eye-activities/${preset}${observation.suffix}`;
     const a = await read(`${root}/${observation.name}-raw.json`),
       b = await read(`${root}/reaction-baseline-raw.json`);
-    const profiles = (
-      await read('runtime/avatar/assets/eye-gaze-profiles.json')
-    ).presets[preset][0];
+    const profiles = (await read('runtime/avatar/assets/eye-gaze-profiles.json')).presets[
+      preset
+    ][0];
     const body = new AvatarGazeController(),
       eyes = new AvatarEyeGazeController(),
       poseEyes = new AvatarEyeGazeController();
@@ -109,16 +102,11 @@ for (const observation of [
         .multiply(new Matrix4().makeRotationY(yaw))
         .multiply(new Matrix4().makeRotationX(pitch))
         .multiply(inverse);
-      const center = new Vector3().fromArray(
-        base.draws[0].blocks.DrawBlock,
-        12,
-      );
+      const center = new Vector3().fromArray(base.draws[0].blocks.DrawBlock, 12);
       const delta = new Matrix4()
         .makeTranslation(...center.toArray())
         .multiply(rotation)
-        .multiply(
-          new Matrix4().makeTranslation(-center.x, -center.y, -center.z),
-        );
+        .multiply(new Matrix4().makeTranslation(-center.x, -center.y, -center.z));
       if (strength === 0) {
         coreFrames++;
         for (let p = 0; p < frame.draws.length; p++)
@@ -137,29 +125,14 @@ for (const observation of [
           const closure =
             profile.blink === 'external'
               ? 0
-              : eyeClosureFromMorph(
-                  base.draws[p].blocks.DrawBlock.slice(36, 40),
-                  profile.blink,
-                );
-          poseEyes.writeBeforePoseCorrection(
-            profile,
-            closure,
-            E,
-            c,
-            n,
-            strength,
-          );
+              : eyeClosureFromMorph(base.draws[p].blocks.DrawBlock.slice(36, 40), profile.blink);
+          poseEyes.writeBeforePoseCorrection(profile, closure, E, c, n, strength);
           expected.multiply(c);
           expectedN.multiply(n);
         }
-        const scale = Math.max(
-          1,
-          ...base.draws[p].blocks.DrawBlock.slice(16, 32).map(Math.abs),
-        );
+        const scale = Math.max(1, ...base.draws[p].blocks.DrawBlock.slice(16, 32).map(Math.abs));
         for (let j = 0; j < 16; j++) {
-          const error = Math.abs(
-            expected.elements[j] - frame.draws[p].blocks.DrawBlock[j],
-          );
+          const error = Math.abs(expected.elements[j] - frame.draws[p].blocks.DrawBlock[j]);
           perPart[p] = Math.max(perPart[p] || 0, error);
           if (error > worldMax) {
             worldMax = error;
@@ -167,9 +140,7 @@ for (const observation of [
           }
           normalRelativeMax = Math.max(
             normalRelativeMax,
-            Math.abs(
-              expectedN.elements[j] - frame.draws[p].blocks.DrawBlock[16 + j],
-            ) / scale,
+            Math.abs(expectedN.elements[j] - frame.draws[p].blocks.DrawBlock[16 + j]) / scale,
           );
         }
         assert.deepEqual(
@@ -212,16 +183,11 @@ for (const preset of [
     const path = `.local/avatar-eye-activities/${preset}`;
     const a = await read(`${path}/reaction-gaze-raw.json`),
       b = await read(`${path}/reaction-baseline-raw.json`);
-    const duration = (
-      await read(`runtime/avatar/assets/motion/${preset}.json`)
-    ).clips.reaction.duration;
+    const duration = (await read(`runtime/avatar/assets/motion/${preset}.json`)).clips.reaction
+      .duration;
     let checked = 0;
     for (let i = 0; i < a.length; i++) {
-      if (
-        a[i].time < 0.5 + 1 / 30 + 0.18 ||
-        a[i].time > 0.5 + duration - 0.2 - 1e-9
-      )
-        continue;
+      if (a[i].time < 0.5 + 1 / 30 + 0.18 || a[i].time > 0.5 + duration - 0.2 - 1e-9) continue;
       assert.equal(a[i].renderTime, b[i].renderTime);
       assert.equal(a[i].draws.length, b[i].draws.length);
       for (let p = 0; p < a[i].draws.length; p++) {
@@ -231,10 +197,7 @@ for (const preset of [
           `${preset} frame${i} part${p}`,
         );
         assert.deepEqual(a[i].draws[p].defines, b[i].draws[p].defines);
-        assert.deepEqual(
-          a[i].draws[p].vertexAttributes,
-          b[i].draws[p].vertexAttributes,
-        );
+        assert.deepEqual(a[i].draws[p].vertexAttributes, b[i].draws[p].vertexAttributes);
       }
       checked++;
     }
@@ -244,16 +207,10 @@ for (const preset of [
 test('native reaction rejects an already held pointer, but accepted reaction responds to later drag with deformation', async () => {
   const root = '.local/avatar-eye-activities/lime_headphones/reaction-input';
   const held = await read(`${root}/reaction-pointer-raw.json`);
-  assert.equal(
-    held.flatMap((f) => f.events).find((e) => e.kind === 'reaction').result,
-    3,
-  );
+  assert.equal(held.flatMap((f) => f.events).find((e) => e.kind === 'reaction').result, 3);
   const active = await read(`${root}/reaction-active-pointer-raw.json`),
     base = await read(`${root}/reaction-baseline-raw.json`);
-  assert.equal(
-    active.flatMap((f) => f.events).find((e) => e.kind === 'reaction').result,
-    0,
-  );
+  assert.equal(active.flatMap((f) => f.events).find((e) => e.kind === 'reaction').result, 0);
   for (let i = 0; i <= 66; i++)
     assert.deepEqual(
       active[i].draws.map((d) => d.blocks),
@@ -264,14 +221,8 @@ test('native reaction rejects an already held pointer, but accepted reaction res
     active[67].draws[0].blocks.DrawBlock.slice(0, 32),
     base[67].draws[0].blocks.DrawBlock.slice(0, 32),
   );
-  assert.notEqual(
-    active[67].draws[0].blocks.DrawBlock[89],
-    base[67].draws[0].blocks.DrawBlock[89],
-  );
+  assert.notEqual(active[67].draws[0].blocks.DrawBlock[89], base[67].draws[0].blocks.DrawBlock[89]);
   // Signature deformation disproves a purely rigid overlay or Work-style ignore.
   for (const j of [89, 90, 91])
-    assert.notEqual(
-      active[84].draws[0].blocks.DrawBlock[j],
-      base[84].draws[0].blocks.DrawBlock[j],
-    );
+    assert.notEqual(active[84].draws[0].blocks.DrawBlock[j], base[84].draws[0].blocks.DrawBlock[j]);
 });

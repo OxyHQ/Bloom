@@ -34,18 +34,15 @@
         "frames": 121
       }
     ],
-    "worldMaxAbsoluteBound": 2.46e-07,
-    "normalRelativeBound": 2.94e-07,
-    "normalMaxAbsoluteBound": 3.08e-06,
+    "worldMaxAbsoluteBound": 2.46e-7,
+    "normalRelativeBound": 2.94e-7,
+    "normalMaxAbsoluteBound": 3.08e-6,
     "normalRelativeDenominator": "max(1, largest absolute baseline normal matrix element)",
     "materialCameraSkin": "exact",
     "adapterUnpressedHoverExactFrames": 481
   },
   "browser": {
-    "changedPixels": [
-      107136,
-      0
-    ],
+    "changedPixels": [107136, 0],
     "releasePixelsExact": true,
     "cutoffPixelsExact": [
       {
@@ -249,9 +246,9 @@
         "purple_heart"
       ],
       "wholeImageComparisons": 35,
-      "worldMax": 1.1920928955078125e-07,
-      "normalRelativeMax": 1.7881393432617188e-07,
-      "maximumMeanAbsoluteChannelError": 1.992984693877551e-05,
+      "worldMax": 1.1920928955078125e-7,
+      "normalRelativeMax": 1.7881393432617188e-7,
+      "maximumMeanAbsoluteChannelError": 1.992984693877551e-5,
       "maximumChannelDifference": 1,
       "maximumChangedPixels": 1,
       "neighborChangedPixels": 0,
@@ -260,16 +257,11 @@
     },
     "320": {
       "poses": 20,
-      "presets": [
-        "blue_spectacles",
-        "coral_monocle",
-        "lime_frog",
-        "lime_headphones"
-      ],
+      "presets": ["blue_spectacles", "coral_monocle", "lime_frog", "lime_headphones"],
       "wholeImageComparisons": 20,
-      "worldMax": 1.1920928955078125e-07,
-      "normalRelativeMax": 1.1920928955078125e-07,
-      "maximumMeanAbsoluteChannelError": 3.173828125e-05,
+      "worldMax": 1.1920928955078125e-7,
+      "normalRelativeMax": 1.1920928955078125e-7,
+      "maximumMeanAbsoluteChannelError": 3.173828125e-5,
       "maximumChannelDifference": 1,
       "maximumChangedPixels": 13,
       "neighborChangedPixels": 0,
@@ -290,7 +282,7 @@
     "samples": 358,
     "duration": 5.949999999999999,
     "observedFrames": 481,
-    "maxWorldError": 8.466432453637512e-08,
+    "maxWorldError": 8.466432453637512e-8,
     "sourcePhaseExact": true,
     "runtime": "Only its own preset binary; semantic body eyeBlink channel, not a dependency on Frog at runtime",
     "limit": "Idle finite interval only. Reaction and Computer do not inherit this channel.",

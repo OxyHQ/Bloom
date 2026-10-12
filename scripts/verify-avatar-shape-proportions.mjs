@@ -18,18 +18,14 @@ try {
   await page.setViewport({ width: 1400, height: 1250 });
   page.on('pageerror', (e) => report.errors.push(e.message));
   page.on('console', (m) => {
-    if (/GL_INVALID|GL_OUT_OF_MEMORY/.test(m.text()))
-      report.errors.push(m.text());
+    if (/GL_INVALID|GL_OUT_OF_MEMORY/.test(m.text())) report.errors.push(m.text());
   });
   await page.goto(
     'http://localhost:6006/iframe.html?id=application-agent-avatar-characters--shape-proportions&viewMode=story',
   );
-  await page.waitForSelector(
-    '[data-testid="shape-proportions-circle"] canvas',
-    {
-      timeout: 120000,
-    },
-  );
+  await page.waitForSelector('[data-testid="shape-proportions-circle"] canvas', {
+    timeout: 120000,
+  });
   await page.evaluate(() => {
     window.galleryDiagnostics = () =>
       globalThis[Symbol.for('bloom.character.runtimes')]
@@ -46,20 +42,14 @@ try {
           states.length === 20 &&
           states.filter((s) => s.preset.includes(`"eyes":"${eyes}"`)).length ===
             (eyes === 'clippo' ? 20 : 19) &&
-          [
-            ...document.querySelectorAll(
-              '[data-testid^="shape-proportions-"] canvas',
-            ),
-          ].length === 20
+          [...document.querySelectorAll('[data-testid^="shape-proportions-"] canvas')].length === 20
         );
       },
       { timeout: 180000 },
       eyes,
     );
     assert.equal(
-      await page.evaluate(() =>
-        document.body.textContent.includes('Avatar unavailable'),
-      ),
+      await page.evaluate(() => document.body.textContent.includes('Avatar unavailable')),
       false,
     );
   };
@@ -92,9 +82,7 @@ try {
       const pools = await galleryDiagnostics();
       return (
         pools.every((p) => p.pending === 0) &&
-        pools
-          .flatMap((p) => p.stats.states)
-          .every((s) => s.preset.includes('monocle'))
+        pools.flatMap((p) => p.stats.states).every((s) => s.preset.includes('monocle'))
       );
     },
     { timeout: 180000 },
@@ -123,25 +111,19 @@ try {
   await page.waitForFunction(
     () =>
       observedGalleryAvatars.size === 20 &&
-      [...observedGalleryAvatars.values()].every((motions) =>
-        motions.has('reaction'),
-      ),
+      [...observedGalleryAvatars.values()].every((motions) => motions.has('reaction')),
     { timeout: 30000 },
   );
   await click('Computer');
   await page.waitForFunction(
     () =>
       observedGalleryAvatars.size === 20 &&
-      [...observedGalleryAvatars.values()].every((motions) =>
-        motions.has('work'),
-      ),
+      [...observedGalleryAvatars.values()].every((motions) => motions.has('work')),
     { timeout: 30000 },
   );
   await page.waitForFunction(
     async () =>
-      (await galleryDiagnostics()).every((p) =>
-        p.stats.states.every((s) => s.motion === 'idle'),
-      ),
+      (await galleryDiagnostics()).every((p) => p.stats.states.every((s) => s.motion === 'idle')),
     { timeout: 30000 },
   );
   await page.evaluate(() => {

@@ -35,9 +35,7 @@ try {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = 'width:640px;height:320px;display:block';
     document.body.append(canvas);
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     window.motionEngine = new AuthoredAvatarEngine(canvas, {
       count: 2,
       size: 320,
@@ -89,9 +87,7 @@ try {
   const numeric = await page.evaluate(async () => {
     const engine = window.motionEngine;
     const { AuthoredMotionSampler } = await import('/runtime/avatar/motion.ts');
-    const { default: asset } = await import(
-      '/runtime/avatar/assets/motion/blue_beret.json'
-    );
+    const { default: asset } = await import('/runtime/avatar/assets/motion/blue_beret.json');
     const inputs = [
       ['reaction', 0.7],
       ['idle', 0],

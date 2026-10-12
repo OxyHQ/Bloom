@@ -113,7 +113,12 @@ try {
     timeout: 30000,
   });
   assert.equal(await page.evaluate(() => editorPixels().backend), 'new');
-  assert.equal((await page.evaluate(() => editorDiagnostics())).filter((p) => p.cell === 320).reduce((n,p) => n+p.avatars,0), 2);
+  assert.equal(
+    (await page.evaluate(() => editorDiagnostics()))
+      .filter((p) => p.cell === 320)
+      .reduce((n, p) => n + p.avatars, 0),
+    2,
+  );
   report.cases.push({ name: 'color-picker-updates-both-new-engine-previews' });
   await page.screenshot({ path: `${output}/new-engine-editor.png` });
   const choose = async (label, title) => {
@@ -182,7 +187,10 @@ try {
       (await editorDiagnostics()).some((p) => p.avatars === 2),
     { timeout: 90000 },
   );
-  assert.equal((await page.evaluate(() => editorDiagnostics())).filter((p) => p.cell === 320).length, 1);
+  assert.equal(
+    (await page.evaluate(() => editorDiagnostics())).filter((p) => p.cell === 320).length,
+    1,
+  );
   report.cases.push({ name: 'preset-change-keeps-shared-engine' });
   await page.goto(
     'http://localhost:6006/iframe.html?id=application-agent-creator--basic&viewMode=story',

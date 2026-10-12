@@ -37,9 +37,7 @@ try {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = 'display:block;width:1024px;height:512px;touch-action:none';
     document.body.append(canvas);
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     const { bindAvatarPointer } = await import('/runtime/avatar/bind-pointer.ts');
     window.engine = new AuthoredAvatarEngine(canvas, { count: 2, size: 512 });
     await window.engine.loaded;

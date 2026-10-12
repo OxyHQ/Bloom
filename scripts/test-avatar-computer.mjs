@@ -23,19 +23,14 @@ const hash = (b) => createHash('sha256').update(b).digest('hex');
 const tmp = await mkdtemp('.local/computer-contract-');
 await writeFile(
   `${tmp}/motion.mjs`,
-  ts.transpileModule(
-    await readFile('runtime/avatar/motion.ts', 'utf8'),
-    {
-      compilerOptions: {
-        target: ts.ScriptTarget.ES2022,
-        module: ts.ModuleKind.ES2022,
-      },
+  ts.transpileModule(await readFile('runtime/avatar/motion.ts', 'utf8'), {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2022,
+      module: ts.ModuleKind.ES2022,
     },
-  ).outputText,
+  }).outputText,
 );
-const { AuthoredMotionSampler } = await import(
-  pathToFileURL(`${process.cwd()}/${tmp}/motion.mjs`)
-);
+const { AuthoredMotionSampler } = await import(pathToFileURL(`${process.cwd()}/${tmp}/motion.mjs`));
 test.after(() => rm(tmp, { recursive: true, force: true }));
 for (const preset of presets) {
   const base = `runtime/avatar/assets/${preset}`;
@@ -52,9 +47,7 @@ for (const preset of presets) {
       ...(p.fur ? [[p.fur.sha256, `fur:${p.id}`]] : []),
     ]),
   );
-  const buffers = new Map(
-    raw.geometryBuffers.map((b) => [b.id, Buffer.from(b.bytes)]),
-  );
+  const buffers = new Map(raw.geometryBuffers.map((b) => [b.id, Buffer.from(b.bytes)]));
   const physical = new Map();
   const baseMeshCount = geometry.baseMeshCount;
   assert(Number.isInteger(baseMeshCount) && baseMeshCount > 0);
@@ -67,8 +60,7 @@ for (const preset of presets) {
         const match = identity.get(hash(buffers.get(attr.exportBufferId)));
         physical.set(
           attr.bufferId,
-          match?.startsWith('fur:') ||
-            Number(match?.split(':')[1]) < baseMeshCount
+          match?.startsWith('fur:') || Number(match?.split(':')[1]) < baseMeshCount
             ? match
             : `mesh:${nextId++}`,
         );
@@ -80,19 +72,14 @@ for (const preset of presets) {
     for (const frame of raw.frames)
       for (const draw of frame.draws) {
         const vertex = buffers.get(
-            draw.vertexAttributes.find((a) => a.name === 'position')
-              .exportBufferId,
+            draw.vertexAttributes.find((a) => a.name === 'position').exportBufferId,
           ),
-          id = physical.get(
-            draw.vertexAttributes.find((a) => a.name === 'position').bufferId,
-          );
+          id = physical.get(draw.vertexAttributes.find((a) => a.name === 'position').bufferId);
         assert(id, 'Original geometry has exact exported identity');
         const p = geometry.parts[Number(id.split(':')[1])],
           range = id.startsWith('fur:') ? p.fur : p.vertices;
         assert(
-          binary
-            .subarray(range.byteOffset, range.byteOffset + range.byteLength)
-            .equals(vertex),
+          binary.subarray(range.byteOffset, range.byteOffset + range.byteLength).equals(vertex),
         );
         if (!id.startsWith('fur:')) {
           const range = p.indices[0];
@@ -120,16 +107,12 @@ for (const preset of presets) {
       (c) => c.method === 'applyActivity' && c.args[0].command === 1,
     ).renderTime;
     for (const time of motion.clip.times) {
-      const frame = raw.frames.find(
-        (f) => Math.abs(f.renderTime - start - time) < 1e-8,
-      );
+      const frame = raw.frames.find((f) => Math.abs(f.renderTime - start - time) < 1e-8);
       assert(frame);
       sampler.sample(time, pose);
       const visible = new Map(
         frame.draws.map((draw) => [
-          physical.get(
-            draw.vertexAttributes.find((a) => a.name === 'position').bufferId,
-          ),
+          physical.get(draw.vertexAttributes.find((a) => a.name === 'position').bufferId),
           draw,
         ]),
       );
@@ -141,11 +124,7 @@ for (const preset of presets) {
       }
       for (const p of pose) {
         const draw = visible.get(p.id);
-        assert.equal(
-          p.fields.camera[3],
-          draw ? 1 : 0,
-          `${time} ${p.id} visibility`,
-        );
+        assert.equal(p.fields.camera[3], draw ? 1 : 0, `${time} ${p.id} visibility`);
         if (!draw) continue;
         let at = 0;
         for (const [name, value] of Object.entries(material.parts[0].fields)) {
@@ -159,8 +138,7 @@ for (const preset of presets) {
                 : p.fields[name];
           for (let k = 0; k < value.length; k++)
             assert(
-              Math.abs(actual[k] - original[k]) <
-                (name === 'normalMatrix' ? 5e-5 : 1e-6),
+              Math.abs(actual[k] - original[k]) < (name === 'normalMatrix' ? 5e-5 : 1e-6),
               `${time} ${p.id} ${name}[${k}]`,
             );
         }
@@ -172,10 +150,7 @@ for (const preset of presets) {
 }
 test('Computer shader extension is idempotent and projection helper is declared before fur', async () => {
   for (const suffix of ['vert', 'frag']) {
-    const source = await readFile(
-      `runtime/avatar/assets/authored.${suffix}.glsl`,
-      'utf8',
-    );
+    const source = await readFile(`runtime/avatar/assets/authored.${suffix}.glsl`, 'utf8');
     assert.equal(extendComputerShader(source, suffix === 'vert'), source);
     if (suffix === 'vert') {
       assert(
@@ -186,18 +161,12 @@ test('Computer shader extension is idempotent and projection helper is declared 
     } else {
       const handPatch =
         '\n    // AUTHORED_COMPUTER_HAND_PIGMENT_V1\n    if (avatarComputerReference.w == -40.0) albedo *= pigment;';
-      assert.equal(
-        source.split(handPatch).length,
-        2,
-        'Exactly one explicit authored hand tint',
-      );
+      assert.equal(source.split(handPatch).length, 2, 'Exactly one explicit authored hand tint');
       const untinted = source.replace(handPatch, '');
       // Regenerating an existing port changes only this input assignment.
       // The rest of the original material, including roughness/specular, is identical.
       assert.equal(extendComputerShader(untinted, false), source);
-      assert(
-        source.includes('vec3 albedo = avatarColorRoughness.xyz;' + handPatch),
-      );
+      assert(source.includes('vec3 albedo = avatarColorRoughness.xyz;' + handPatch));
     }
   }
 });

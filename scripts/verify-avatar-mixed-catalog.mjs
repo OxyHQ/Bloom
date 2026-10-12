@@ -46,9 +46,7 @@ try {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = 'display:block;width:1280px;height:640px';
     document.body.append(canvas);
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     const { AVATAR_PRESETS } = await import('/runtime/avatar/catalog.ts');
     window.presets = AVATAR_PRESETS;
     window.engine = new AuthoredAvatarEngine(canvas, { count: 8, size: 320 });
@@ -65,9 +63,7 @@ try {
   const presets = await page.evaluate(() => window.presets);
   const comparisons = [];
   for (const [i, preset] of presets.entries()) {
-    const original = PNG.sync.read(
-      await readFile(`runtime/avatar/assets/${preset}/reference.png`),
-    );
+    const original = PNG.sync.read(await readFile(`runtime/avatar/assets/${preset}/reference.png`));
     let error = 0,
       foreground = 0,
       maxError = 0;

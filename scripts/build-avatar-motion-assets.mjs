@@ -8,16 +8,13 @@ import * as THREE from 'three';
 
 const preset = process.env.AVATAR_PRESET || 'blue_beret';
 assert(/^[a-z0-9_]+$/.test(preset));
-const source =
-  process.env.AVATAR_MOTION_SOURCE || `.local/avatar-runtime-motion/${preset}`;
+const source = process.env.AVATAR_MOTION_SOURCE || `.local/avatar-runtime-motion/${preset}`;
 // Diagnostic observations cannot be loaded by the runtime motion catalog. Their
 // last sample is a recording boundary, not evidence that an action has finished.
 const diagnostic = process.env.AVATAR_MOTION_DIAGNOSTIC === '1';
 const destination =
   process.env.AVATAR_MOTION_DESTINATION ||
-  (diagnostic
-    ? '.local/avatar-motion-observations'
-    : 'runtime/avatar/assets/motion');
+  (diagnostic ? '.local/avatar-motion-observations' : 'runtime/avatar/assets/motion');
 if (diagnostic)
   assert(
     resolve(destination).startsWith(`${resolve('.local')}${sep}`),
@@ -26,10 +23,7 @@ if (diagnostic)
 const evidence = JSON.parse(await readFile(`${source}/report.json`, 'utf8'));
 assert.equal(evidence.preset, preset);
 const geometry = JSON.parse(
-  await readFile(
-    `.local/avatar-original-geometry/${preset}/geometry.json`,
-    'utf8',
-  ),
+  await readFile(`.local/avatar-original-geometry/${preset}/geometry.json`, 'utf8'),
 );
 const fields = [
   'colorRoughness',
@@ -86,9 +80,7 @@ assert.equal(
 );
 const clipEvidence = {};
 const asset = {
-  schema: diagnostic
-    ? 'bloom.avatar.motion-observations'
-    : 'bloom.avatar.semantic-motion',
+  schema: diagnostic ? 'bloom.avatar.motion-observations' : 'bloom.avatar.semantic-motion',
   version: 2,
   preset: evidence.preset,
   provenance: evidence.provenance,
@@ -107,8 +99,7 @@ if (diagnostic)
     'Interpolation reproduces observed keyframes; unsampled blink peaks and stochastic or input-dependent behavior remain unverified.',
     'Shader define stability is checked per original geometry identity. Full per-frame shader source and texture bindings were not recorded, so this is not proof of complete rendering-state equivalence.',
   ];
-const maxDifference = (a, b) =>
-  Math.max(...a.map((x, i) => Math.abs(x - b[i])));
+const maxDifference = (a, b) => Math.max(...a.map((x, i) => Math.abs(x - b[i])));
 const allFields = (frame) => frame.draws.flatMap((d) => d.blocks.DrawBlock);
 function channel(samples) {
   return samples.every((v) => maxDifference(samples[0], v) === 0)
@@ -120,11 +111,7 @@ function channel(samples) {
  * These are ordinary affine transform channels, not a GPU command recording. */
 function affineChannels(matrix) {
   const e = matrix.elements;
-  assert.deepEqual(
-    [e[3], e[7], e[11], e[15]],
-    [0, 0, 0, 1],
-    'Affine world matrix required',
-  );
+  assert.deepEqual([e[3], e[7], e[11], e[15]], [0, 0, 0, 1], 'Affine world matrix required');
   const x = new THREE.Vector3(e[0], e[1], e[2]);
   const y = new THREE.Vector3(e[4], e[5], e[6]);
   const z = new THREE.Vector3(e[8], e[9], e[10]);
@@ -144,10 +131,7 @@ function affineChannels(matrix) {
   y.divideScalar(sy);
   const axisZ = new THREE.Vector3().crossVectors(x, y).normalize();
   const sz = axisZ.dot(z);
-  assert(
-    Math.abs(sz) > minimum,
-    'Singular or ill-conditioned affine transform',
-  );
+  assert(Math.abs(sz) > minimum, 'Singular or ill-conditioned affine transform');
   const rotation = new THREE.Quaternion()
     .setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, axisZ))
     .normalize();
@@ -159,9 +143,7 @@ function affineChannels(matrix) {
   };
 }
 function composeAffine({ position, rotation, scale, shear }) {
-  const matrix = new THREE.Matrix4()
-    .makeRotationFromQuaternion(rotation)
-    .setPosition(position);
+  const matrix = new THREE.Matrix4().makeRotationFromQuaternion(rotation).setPosition(position);
   const e = matrix.elements;
   for (let row = 0; row < 3; row++) {
     const x = e[row],
@@ -177,18 +159,14 @@ for (const name of ['idle', 'reaction']) {
   try {
     const rawBytes = await readFile(`${source}/${name}-raw.json`),
       raw = JSON.parse(rawBytes);
-    let frames = raw.frames.filter(
-      (f, i, a) => i === 0 || f.renderTime > a[i - 1].renderTime,
-    );
+    let frames = raw.frames.filter((f, i, a) => i === 0 || f.renderTime > a[i - 1].renderTime);
     const bufferIdentities = new Map(
       (raw.vertexBuffers || []).map((b) => [b.id, sourceHashes.get(b.sha256)]),
     );
     frames = frames.map((frame) => {
       const mapped = new Map(
         frame.draws.map((draw, index) => {
-          const bufferId = draw.vertexAttributes.find(
-            (a) => a.name === 'position',
-          )?.bufferId;
+          const bufferId = draw.vertexAttributes.find((a) => a.name === 'position')?.bufferId;
           const id = raw.vertexBuffers
             ? bufferIdentities.get(bufferId)
             : preset === 'blue_beret' && bufferId === index
@@ -211,35 +189,25 @@ for (const name of ['idle', 'reaction']) {
         }),
       };
     });
-    const gaps = frames
-      .slice(1)
-      .map((f, i) => f.renderTime - frames[i].renderTime);
+    const gaps = frames.slice(1).map((f, i) => f.renderTime - frames[i].renderTime);
     const unsupportedAnimatedFields = [];
     for (let i = 0; i < ids.length; i++)
-      for (const field of fields.filter(
-        (f) => !supportedAnimatedFields.has(f),
-      )) {
+      for (const field of fields.filter((f) => !supportedAnimatedFields.has(f))) {
         const at = 32 + fields.indexOf(field) * 4;
         const maxChange = Math.max(
           ...[0, 1, 2, 3].map(
             (k) =>
-              Math.max(
-                ...frames.map((f) => f.draws[i].blocks.DrawBlock[at + k]),
-              ) -
-              Math.min(
-                ...frames.map((f) => f.draws[i].blocks.DrawBlock[at + k]),
-              ),
+              Math.max(...frames.map((f) => f.draws[i].blocks.DrawBlock[at + k])) -
+              Math.min(...frames.map((f) => f.draws[i].blocks.DrawBlock[at + k])),
           ),
         );
-        if (maxChange)
-          unsupportedAnimatedFields.push({ id: ids[i], field, maxChange });
+        if (maxChange) unsupportedAnimatedFields.push({ id: ids[i], field, maxChange });
       }
     const sampling = {
       observedFrames: frames.length,
       minimumGapSeconds: Math.min(...gaps),
       maximumGapSeconds: Math.max(...gaps),
-      meanSamplesPerSecond:
-        (frames.length - 1) / (frames.at(-1).renderTime - frames[0].renderTime),
+      meanSamplesPerSecond: (frames.length - 1) / (frames.at(-1).renderTime - frames[0].renderTime),
       nativeRenderClock: true,
       fixedStep: raw.fixedStep || null,
     };
@@ -307,16 +275,9 @@ for (const name of ['idle', 'reaction']) {
       start = frames[0].renderTime;
       end = frames.at(-1).renderTime;
     } else if (name === 'reaction') {
-      const command = raw.calls.find(
-        (c) => c.method === 'playReaction' && c.result === 0,
-      );
-      assert(
-        command,
-        'Reaction must have been accepted by the original controller',
-      );
-      const index = frames.findLastIndex(
-        (f) => f.renderTime <= command.renderTime,
-      );
+      const command = raw.calls.find((c) => c.method === 'playReaction' && c.result === 0);
+      assert(command, 'Reaction must have been accepted by the original controller');
+      const index = frames.findLastIndex((f) => f.renderTime <= command.renderTime);
       assert(index >= 0, 'Reaction requires a pre-command reference pose');
       // Preserve the complete observation (including its pre-command context)
       // in diagnostic mode. Production reactions begin at the command boundary.
@@ -349,16 +310,11 @@ for (const name of ['idle', 'reaction']) {
         if (i < geometry.parts.length)
           assert.equal(
             draw.args[1],
-            geometry.parts[i].indices.reduce(
-              (sum, range) => sum + range.count,
-              0,
-            ),
+            geometry.parts[i].indices.reduce((sum, range) => sum + range.count, 0),
             'Mesh topology differs from exported original asset',
           );
         else assert.equal(draw.method, 'drawArraysInstanced');
-        for (const field of fields.filter(
-          (f) => !supportedAnimatedFields.has(f),
-        )) {
+        for (const field of fields.filter((f) => !supportedAnimatedFields.has(f))) {
           const at = 32 + fields.indexOf(field) * 4;
           assert.deepEqual(
             draw.blocks.DrawBlock.slice(at, at + 4),
@@ -399,11 +355,7 @@ for (const name of ['idle', 'reaction']) {
         // Keep the old TRS residual as diagnostic evidence. It is no longer
         // discarded or accepted by weakening the previous 1e-6 tolerance.
         matrix.decompose(position, rotation, scale);
-        const legacyTrs = new THREE.Matrix4().compose(
-          position,
-          rotation,
-          scale,
-        );
+        const legacyTrs = new THREE.Matrix4().compose(position, rotation, scale);
         const trsError = maxDifference(data.slice(0, 16), legacyTrs.elements);
         if (trsError > maxTrsError) {
           maxTrsError = trsError;
@@ -412,9 +364,7 @@ for (const name of ['idle', 'reaction']) {
         const affine = affineChannels(matrix);
         if (
           rotations.length &&
-          affine.rotation.dot(
-            new THREE.Quaternion().fromArray(rotations.at(-1)),
-          ) < 0
+          affine.rotation.dot(new THREE.Quaternion().fromArray(rotations.at(-1))) < 0
         )
           affine.rotation.set(
             -affine.rotation.x,
@@ -442,10 +392,7 @@ for (const name of ['idle', 'reaction']) {
         const correction = [0, 1, 2, 4, 5, 6, 8, 9, 10].map(
           (k) => data[16 + k] - normal.elements[k],
         );
-        maxNormalCorrection = Math.max(
-          maxNormalCorrection,
-          ...correction.map(Math.abs),
-        );
+        maxNormalCorrection = Math.max(maxNormalCorrection, ...correction.map(Math.abs));
         for (const [j, k] of [0, 1, 2, 4, 5, 6, 8, 9, 10].entries())
           maxNormalError = Math.max(
             maxNormalError,
@@ -480,14 +427,8 @@ for (const name of ['idle', 'reaction']) {
       maxNormalError,
       maxTrsErrorLocation,
     });
-    assert(
-      maxAffineError < 1e-6,
-      'Affine reconstruction differs from observed matrix',
-    );
-    assert(
-      maxNormalError < 5e-5,
-      'Recomputed normals do not match original shader matrices',
-    );
+    assert(maxAffineError < 1e-6, 'Affine reconstruction differs from observed matrix');
+    assert(maxNormalError < 5e-5, 'Recomputed normals do not match original shader matrices');
     asset.clips[name] = {
       sampling,
       transformEncoding: 'affine-qr-v1',
@@ -549,5 +490,4 @@ await writeFile(
   JSON.stringify(clipEvidence, null, 2),
 );
 console.log(JSON.stringify(clipEvidence, null, 2));
-if (diagnostic ? !Object.keys(asset.clips).length : !asset.clips.idle)
-  process.exitCode = 1;
+if (diagnostic ? !Object.keys(asset.clips).length : !asset.clips.idle) process.exitCode = 1;

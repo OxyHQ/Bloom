@@ -21,15 +21,9 @@ for (const [source, name] of [
   }).outputText;
   code = code
     .replace("'../../src/agent-avatar/character-preset-defaults'", "'./preset-defaults.mjs'")
-    .replace(
-      "'../../src/agent-avatar/expression-rig'",
-      "'./expression-rig.mjs'",
-    )
+    .replace("'../../src/agent-avatar/expression-rig'", "'./expression-rig.mjs'")
     .replace("'../../src/agent-avatar/character-colors'", "'./colors.mjs'")
-    .replace(
-      /import catalog from .*;/,
-      `const catalog=${JSON.stringify(library)};`,
-    );
+    .replace(/import catalog from .*;/, `const catalog=${JSON.stringify(library)};`);
   await writeFile(`${tmp}/${name}.mjs`, code);
 }
 const { resolveCompleteEditorRecipe: resolve } = await import(
@@ -53,10 +47,7 @@ test('all catalog combinations have distinct complete geometry identities and pr
           assert(recipe.catalog);
           for (const [k, v] of Object.entries(selections))
             assert.equal(recipe.capabilities.selected[k], v);
-          assert.equal(
-            recipe.catalog.shape,
-            shape === 'todd' ? 'rounded_head_two_ears' : shape,
-          );
+          assert.equal(recipe.catalog.shape, shape === 'todd' ? 'rounded_head_two_ears' : shape);
           assert.equal(recipe.color, '#b6d80b');
           keys.add(recipe.preset);
         }
@@ -91,14 +82,14 @@ test('isolated eyes have a separate asset identity without changing the saved co
 });
 test('personalized configuration has no preset dependency and keeps its exact saved color', () => {
   const character = {
-    selections: {shape:'heart',eyes:'clippo',eyewear:'monocle',accessory:'bow'},
-    bodyColor:'#000000',
+    selections: { shape: 'heart', eyes: 'clippo', eyewear: 'monocle', accessory: 'bow' },
+    bodyColor: '#000000',
   };
-  const result=resolve(props(character));
-  assert.deepEqual(result.catalog,character.selections);
-  assert.equal(result.color,'#000000');
-  assert.deepEqual(result.capabilities.selected,{...character.selections,bodyColor:'#000000'});
-  assert.throws(()=>resolve(props({selections:{eyes:'clippo'}})), /complete parts/);
+  const result = resolve(props(character));
+  assert.deepEqual(result.catalog, character.selections);
+  assert.equal(result.color, '#000000');
+  assert.deepEqual(result.capabilities.selected, { ...character.selections, bodyColor: '#000000' });
+  assert.throws(() => resolve(props({ selections: { eyes: 'clippo' } })), /complete parts/);
 });
 test('saved contours retain every point and participate in cache identity', () => {
   const points = Array.from({ length: 16 }, (_, i) => [
@@ -117,10 +108,7 @@ test('saved contours retain every point and participate in cache identity', () =
   assert.equal(a.catalog.accessory, 'hat');
   const other = structuredClone(legacy);
   other.points[0][0] = 1.1;
-  assert.notEqual(
-    a.preset,
-    resolve(props(undefined, { legacy: other })).preset,
-  );
+  assert.notEqual(a.preset, resolve(props(undefined, { legacy: other })).preset);
 });
 test('actions and gaze retain geometry; invalid selections throw instead of switching engines', () => {
   const character = { preset: 'clippo', selections: { eyes: 'clippo' } };
@@ -135,19 +123,9 @@ test('actions and gaze retain geometry; invalid selections throw instead of swit
       }),
     ).preset,
   );
-  for (const selections of [
-    { shape: 'missing' },
-    { eyes: 'missing' },
-    { color: 'missing' },
-  ])
-    assert.throws(
-      () => resolve(props({ preset: 'alfred', selections })),
-      /Unknown avatar/,
-    );
-  assert.throws(
-    () => resolve(props({ preset: '__proto__' })),
-    /Unknown avatar preset/,
-  );
+  for (const selections of [{ shape: 'missing' }, { eyes: 'missing' }, { color: 'missing' }])
+    assert.throws(() => resolve(props({ preset: 'alfred', selections })), /Unknown avatar/);
+  assert.throws(() => resolve(props({ preset: '__proto__' })), /Unknown avatar preset/);
 });
 
 test('face false removes named preset eyes without losing its selected accessories', () => {
@@ -188,10 +166,7 @@ test('Alien keeps expression, tilt, size, spacing and light-eye material in asse
   assert.equal(value.catalog.alienFace.gap, 61 * 1.2);
   assert.equal(value.catalog.alienFace.light, true);
   assert.equal(value.catalog.alienFace.tilt, (13 * Math.PI) / 180);
-  assert.ok(
-    value.catalog.alienFace.rig.rightOpen <
-      value.catalog.alienFace.rig.leftOpen,
-  );
+  assert.ok(value.catalog.alienFace.rig.rightOpen < value.catalog.alienFace.rig.leftOpen);
   assert.notEqual(
     value.preset,
     resolve({ ...input, config: { ...config, eyes: 'neutral' } }).preset,

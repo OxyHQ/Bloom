@@ -13,22 +13,14 @@ import {
   canonicalReturnPath,
 } from './build-avatar-return-assets.mjs';
 const read = async (p) => JSON.parse(await readFile(p, 'utf8'));
-const manifest = await read(
-  'runtime/avatar/assets/motion/computer-returns.json',
-);
+const manifest = await read('runtime/avatar/assets/motion/computer-returns.json');
 test('canonical return index contains all eight presets', () => {
   assert.equal(presets.length, 8);
   assert.deepEqual(Object.keys(manifest.presets).sort(), [...presets].sort());
 });
 test('filtered diagnostics cannot overwrite the canonical runtime return index', () => {
-  assert.throws(
-    () => returnDestination(['blue_beret']),
-    /explicit AVATAR_RETURN_OUTPUT/,
-  );
-  assert.throws(
-    () => returnDestination(['blue_beret'], canonicalReturnPath),
-    /canonical index/,
-  );
+  assert.throws(() => returnDestination(['blue_beret']), /explicit AVATAR_RETURN_OUTPUT/);
+  assert.throws(() => returnDestination(['blue_beret'], canonicalReturnPath), /canonical index/);
   assert.throws(
     () => returnDestination(['blue_beret'], resolve(canonicalReturnPath)),
     /canonical index/,
@@ -37,10 +29,7 @@ test('filtered diagnostics cannot overwrite the canonical runtime return index',
     () => returnDestination(['blue_beret', 'blue_beret'], '.local/subset.json'),
     /unique/,
   );
-  assert.throws(
-    () => returnDestination(['unknown'], '.local/subset.json'),
-    /Unknown/,
-  );
+  assert.throws(() => returnDestination(['unknown'], '.local/subset.json'), /Unknown/);
   assert.equal(
     returnDestination(['blue_beret'], '.local/subset.json'),
     resolve('.local/subset.json'),
@@ -74,18 +63,9 @@ for (const [preset, entry] of Object.entries(manifest.presets)) {
       assert.equal(proof[key], entry[key], key);
     const work = await read(entry.sources.computer.path),
       idle = await read(entry.sources.motion.path);
-    assert.equal(
-      entry.idleTime,
-      entry.nativeReturn - idle.evidence.idle.nativeStart,
-    );
+    assert.equal(entry.idleTime, entry.nativeReturn - idle.evidence.idle.nativeStart);
     assert.deepEqual(
-      compareSampledReturn(
-        Sampler,
-        work.clip,
-        idle.clips.idle,
-        entry.returnTime,
-        entry.idleTime,
-      ),
+      compareSampledReturn(Sampler, work.clip, idle.clips.idle, entry.returnTime, entry.idleTime),
       entry.sampler,
     );
   });

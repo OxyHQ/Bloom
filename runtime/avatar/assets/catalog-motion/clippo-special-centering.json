@@ -4,17 +4,11 @@
   "construction": "clippo-special",
   "detail": "high",
   "referenceEyes": "todd",
-  "centerDelta": [
-    -0.00627657791421716,
-    0
-  ],
+  "centerDelta": [-0.00627657791421716, 0],
   "application": "Add to the target-minus-baseline scene center before applying the existing native body and contact-shadow centering envelopes.",
   "evidence": {
     "frames": 241,
-    "nativeTimeRange": [
-      3,
-      7
-    ],
+    "nativeTimeRange": [3, 7],
     "worldXMax": 2.704210381592213e-8,
     "contactShadowMax": 4.413544429926475e-8,
     "otherPropMax": 0,

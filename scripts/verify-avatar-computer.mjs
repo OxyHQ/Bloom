@@ -159,9 +159,7 @@ try {
       await writeFile(`${output}/work-${label}.png`, bytes);
       const actual = PNG.sync.read(bytes),
         reference = PNG.sync.read(
-          await readFile(
-            `runtime/avatar/assets/${preset}/computer-reference-${observation}s.png`,
-          ),
+          await readFile(`runtime/avatar/assets/${preset}/computer-reference-${observation}s.png`),
         );
       assert.equal(actual.width, reference.width);
       assert.equal(actual.height, reference.height);

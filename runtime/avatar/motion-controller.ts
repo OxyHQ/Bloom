@@ -30,15 +30,9 @@ export function advanceMotion(
   )
     return motion;
   const duration =
-    motion.kind === 'work'
-      ? samplers.workReturn?.time
-      : samplers.reaction?.clip.duration;
+    motion.kind === 'work' ? samplers.workReturn?.time : samplers.reaction?.clip.duration;
   if (duration === undefined || now < motion.started + duration) return motion;
-  if (
-    motion.kind === 'work' &&
-    (motion.remainingCycles ?? 1) > 1 &&
-    duration > 0
-  ) {
+  if (motion.kind === 'work' && (motion.remainingCycles ?? 1) > 1 && duration > 0) {
     const completed = Math.min(
       motion.remainingCycles!,
       Math.floor((now - motion.started) / duration),
@@ -59,10 +53,6 @@ export function advanceMotion(
   if (motion.kind === 'reaction' && motion.queuedReaction)
     return advanceMotion({ kind: 'reaction', started: end }, samplers, now);
   const idleTime =
-    motion.kind === 'work'
-      ? samplers.workReturn?.idleTime
-      : samplers.reactionReturnTime;
-  return idleTime === undefined
-    ? motion
-    : { kind: 'idle', started: end - idleTime };
+    motion.kind === 'work' ? samplers.workReturn?.idleTime : samplers.reactionReturnTime;
+  return idleTime === undefined ? motion : { kind: 'idle', started: end - idleTime };
 }

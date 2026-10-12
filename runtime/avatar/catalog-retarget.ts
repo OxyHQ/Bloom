@@ -1,22 +1,8 @@
 import { Matrix4, Vector3 } from 'three';
-import {
-  AuthoredMotionSampler,
-  type AuthoredMotionClip,
-  type AuthoredMotionPose,
-} from './motion';
+import { AuthoredMotionSampler, type AuthoredMotionClip, type AuthoredMotionPose } from './motion';
 
-const sizeLinearFields = [
-  'catalogSizeL0',
-  'catalogSizeL1',
-  'catalogSizeL2',
-  'catalogSizeL3',
-];
-const sizeQuadraticFields = [
-  'catalogSizeQ0',
-  'catalogSizeQ1',
-  'catalogSizeQ2',
-  'catalogSizeQ3',
-];
+const sizeLinearFields = ['catalogSizeL0', 'catalogSizeL1', 'catalogSizeL2', 'catalogSizeL3'];
+const sizeQuadraticFields = ['catalogSizeQ0', 'catalogSizeQ1', 'catalogSizeQ2', 'catalogSizeQ3'];
 
 export type CatalogLocalBinding = {
   sourceId: string;
@@ -97,8 +83,7 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
     private base?: AuthoredMotionSampler,
   ) {
     const body = observed.clip.parts.find((p) => p.id === 'mesh:0');
-    if (!body)
-      throw Error('Catalog observations require an explicit body frame');
+    if (!body) throw Error('Catalog observations require an explicit body frame');
     const templateParts = bindings.map((binding) => ({
       id: binding.targetId,
       translation: { value: [0, 0, 0] },
@@ -121,8 +106,7 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
     }
     // Camera is the original per-avatar projection shared by all of its parts.
     if (base?.clip.parts.some((p) => 'camera' in p.fields))
-      for (const part of templateParts)
-        part.fields.camera ??= { value: [1, 1, 0, 1] };
+      for (const part of templateParts) part.fields.camera ??= { value: [1, 1, 0, 1] };
     const clock = base?.clip ?? observed.clip;
     super({ ...clock, parts: templateParts } as AuthoredMotionClip);
     for (const dimensions of [sourceDimensions, destinationDimensions])
@@ -137,16 +121,13 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
     this.targetBodyIndex = this.clip.parts.findIndex((p) => p.id === 'mesh:0');
     this.bodyPigmentTargets = bindings
       .filter((binding) => binding.inheritBodyPigment)
-      .map((binding) =>
-        this.clip.parts.findIndex((p) => p.id === binding.targetId),
-      );
+      .map((binding) => this.clip.parts.findIndex((p) => p.id === binding.targetId));
     if (
       this.bodyPigmentTargets.length &&
       (this.targetBodyIndex < 0 ||
         !this.clip.parts[this.targetBodyIndex]!.fields.colorRoughness ||
         this.bodyPigmentTargets.some(
-          (index) =>
-            index < 0 || !this.clip.parts[index]!.fields.colorRoughness,
+          (index) => index < 0 || !this.clip.parts[index]!.fields.colorRoughness,
         ))
     )
       throw Error('Body pigment inheritance requires explicit RGB channels');
@@ -155,20 +136,14 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
     this.basePose = base?.createPose();
     if (this.basePose) {
       this.baseBodyIndex = this.basePose.findIndex((p) => p.id === 'mesh:0');
-      if (this.baseBodyIndex < 0)
-        throw Error('Catalog activity requires its captured body frame');
+      if (this.baseBodyIndex < 0) throw Error('Catalog activity requires its captured body frame');
       if (base!.clip.duration > observed.clip.duration + 1e-9)
         throw Error('Catalog activity exceeds observed attachment timeline');
     }
     this.mappings = bindings.map((binding) => {
-      const source = this.sourcePose.findIndex(
-        (p) => p.id === binding.sourceId,
-      );
-      const target = this.clip.parts.findIndex(
-        (p) => p.id === binding.targetId,
-      );
-      if (source < 0 || target < 0)
-        throw Error('Missing observed catalog motion binding');
+      const source = this.sourcePose.findIndex((p) => p.id === binding.sourceId);
+      const target = this.clip.parts.findIndex((p) => p.id === binding.targetId);
+      if (source < 0 || target < 0) throw Error('Missing observed catalog motion binding');
       if (
         binding.sourcePivot.length !== 3 ||
         binding.targetPivot.length !== 3 ||
@@ -177,8 +152,7 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
         throw Error('Invalid catalog motion pivot');
       const pivot = new Vector3().fromArray(binding.sourcePivot);
       const rotated =
-        binding.geometryTransform.elements[1] !== 0 ||
-        binding.geometryTransform.elements[4] !== 0;
+        binding.geometryTransform.elements[1] !== 0 || binding.geometryTransform.elements[4] !== 0;
       const normalFit = rotated
         ? binding.geometryTransform.clone().setPosition(0, 0, 0)
         : undefined;
@@ -191,9 +165,7 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
         throw Error('Invalid catalog attachment anchor');
       return {
         source,
-        parent: this.sourcePose.findIndex(
-          (p) => p.id === (binding.sourceParentId ?? 'mesh:0'),
-        ),
+        parent: this.sourcePose.findIndex((p) => p.id === (binding.sourceParentId ?? 'mesh:0')),
         sourceSceneCenter: binding.sourceSceneCenter ?? [0, 0],
         target,
         category: binding.category,
@@ -209,9 +181,7 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
         normalFit,
         inverseNormalFit: normalFit?.clone().invert(),
         sceneCenterDelta: binding.sceneCenterDelta ?? [0, 0],
-        defaults: Object.entries(binding.fields).filter(
-          ([, values]) => values.length === 4,
-        ),
+        defaults: Object.entries(binding.fields).filter(([, values]) => values.length === 4),
         animated: Object.entries(observed.clip.parts[source]!.fields)
           .filter(
             ([name, channel]) =>
@@ -263,32 +233,18 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
         this.sourceNormalInverse.copy(sourceParent.normalMatrix).invert();
         const centerWeight = input.fields.catalogCenterWeight?.[0] ?? 0;
         this.local.copy(input.world);
-        this.local.elements[12]! +=
-          mapping.sourceSceneCenter[0]! * centerWeight;
-        this.local.elements[13]! +=
-          mapping.sourceSceneCenter[1]! * centerWeight;
+        this.local.elements[12]! += mapping.sourceSceneCenter[0]! * centerWeight;
+        this.local.elements[13]! += mapping.sourceSceneCenter[1]! * centerWeight;
         this.local.premultiply(this.sourceInverse);
-        this.localNormal
-          .copy(this.sourceNormalInverse)
-          .multiply(input.normalMatrix);
-        if (
-          mapping.category === 'eyes' &&
-          this.base &&
-          input.fields.catalogAnchorX
-        ) {
+        this.localNormal.copy(this.sourceNormalInverse).multiply(input.normalMatrix);
+        if (mapping.category === 'eyes' && this.base && input.fields.catalogAnchorX) {
           const x = input.fields.catalogAnchorX!,
             y = input.fields.catalogAnchorY!,
             z = input.fields.catalogAnchorZ!;
           this.displacement.set(
-            x[0]! * mapping.shift.x +
-              y[0]! * mapping.shift.y +
-              z[0]! * mapping.shift.z,
-            x[1]! * mapping.shift.x +
-              y[1]! * mapping.shift.y +
-              z[1]! * mapping.shift.z,
-            x[2]! * mapping.shift.x +
-              y[2]! * mapping.shift.y +
-              z[2]! * mapping.shift.z,
+            x[0]! * mapping.shift.x + y[0]! * mapping.shift.y + z[0]! * mapping.shift.z,
+            x[1]! * mapping.shift.x + y[1]! * mapping.shift.y + z[1]! * mapping.shift.z,
+            x[2]! * mapping.shift.x + y[2]! * mapping.shift.y + z[2]! * mapping.shift.z,
           );
           if (input.fields.catalogSizeL0 && mapping.sizeDelta !== 0) {
             const delta = this.sizeDelta.elements,
@@ -331,9 +287,7 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
               .transpose()
               .multiply(this.linear);
           }
-          this.displacement.applyMatrix4(
-            this.linear.copy(this.sourceInverse).setPosition(0, 0, 0),
-          );
+          this.displacement.applyMatrix4(this.linear.copy(this.sourceInverse).setPosition(0, 0, 0));
           const e = this.local.elements;
           e[12]! += this.displacement.x;
           e[13]! += this.displacement.y;
@@ -349,31 +303,21 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
           this.displacement.copy(mapping.shift);
           const e = this.local.elements;
           e[12]! +=
-            this.semantic.x * (mapping.eyeHeightRatio - 1) +
-            mapping.shift.x -
-            this.transformed.x;
+            this.semantic.x * (mapping.eyeHeightRatio - 1) + mapping.shift.x - this.transformed.x;
           e[13]! +=
-            this.semantic.y * (mapping.eyeHeightRatio - 1) +
-            mapping.shift.y -
-            this.transformed.y;
+            this.semantic.y * (mapping.eyeHeightRatio - 1) + mapping.shift.y - this.transformed.y;
           e[14]! += this.displacement.z - this.transformed.z;
         } else {
           this.local.premultiply(mapping.fit).multiply(mapping.inverseFit);
           if (mapping.normalFit)
-            this.localNormal
-              .premultiply(mapping.normalFit)
-              .multiply(mapping.inverseNormalFit!);
+            this.localNormal.premultiply(mapping.normalFit).multiply(mapping.inverseNormalFit!);
         }
         if (mapping.attachmentAnchor) {
           // Retain native local rotation/scale (and its normal transform), but
           // enforce the editor's attached-accessory contract at every pose.
           this.linear.copy(this.local).setPosition(0, 0, 0);
-          this.transformed
-            .copy(mapping.attachmentAnchor)
-            .applyMatrix4(this.linear);
-          this.displacement
-            .copy(mapping.attachmentAnchor)
-            .sub(this.transformed);
+          this.transformed.copy(mapping.attachmentAnchor).applyMatrix4(this.linear);
+          this.displacement.copy(mapping.attachmentAnchor).sub(this.transformed);
           this.local.setPosition(this.displacement);
         }
         output.world.copy(this.body).multiply(this.local);
@@ -404,8 +348,7 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
         output.world.copy(source.world);
         output.normalMatrix.copy(source.normalMatrix);
         for (const name of mapping.fields)
-          for (let k = 0; k < 4; k++)
-            output.fields[name]![k] = source.fields[name]![k]!;
+          for (let k = 0; k < 4; k++) output.fields[name]![k] = source.fields[name]![k]!;
       }
       const camera = this.basePose[this.baseBodyIndex]!.fields.camera;
       if (camera)

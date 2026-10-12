@@ -15,8 +15,7 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', (e) => report.errors.push(e.message));
   page.on('console', (m) => {
-    if (/GL_INVALID|GL_OUT_OF_MEMORY/.test(m.text()))
-      report.errors.push(m.text());
+    if (/GL_INVALID|GL_OUT_OF_MEMORY/.test(m.text())) report.errors.push(m.text());
   });
   const cdp = await page.createCDPSession();
   await cdp.send('Fetch.enable', {
@@ -40,9 +39,7 @@ try {
   await page.goto('http://localhost:6006/avatar-action-presentation.html');
   await cdp.send('Fetch.disable');
   await page.evaluate(async () => {
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     window.firstPresentations = {};
     window.presentationKind = null;
     window.engine = new AuthoredAvatarEngine(document.querySelector('canvas'), {
@@ -86,11 +83,7 @@ try {
         ),
       kind,
     );
-    await page.waitForFunction(
-      (kind) => !!firstPresentations[kind],
-      { timeout: 30000 },
-      kind,
-    );
+    await page.waitForFunction((kind) => !!firstPresentations[kind], { timeout: 30000 }, kind);
     const first = await page.evaluate((kind) => {
       presentationKind = null;
       return firstPresentations[kind];
@@ -98,11 +91,7 @@ try {
     report.cases.push({ kind, before, first });
     if (kind !== 'entrance') {
       assert.equal(first.states[0].motion, kind);
-      assert.equal(
-        first.states[0].motionTime,
-        0,
-        'The first presented action sample is t=0',
-      );
+      assert.equal(first.states[0].motionTime, 0, 'The first presented action sample is t=0');
     } else
       assert.ok(
         Math.abs(Math.hypot(...first.matrix.slice(0, 3)) - 0.1) < 1e-12,
@@ -116,14 +105,9 @@ try {
   }
   await page.evaluate(() => engine.dispose());
   assert.deepEqual(report.errors, []);
-  console.log(
-    'PASS three delayed commands; first frame visible, neighbor clock preserved',
-  );
+  console.log('PASS three delayed commands; first frame visible, neighbor clock preserved');
 } finally {
   await mkdir('.local/avatar-action-presentation', { recursive: true });
-  await writeFile(
-    '.local/avatar-action-presentation/report.json',
-    JSON.stringify(report, null, 2),
-  );
+  await writeFile('.local/avatar-action-presentation/report.json', JSON.stringify(report, null, 2));
   await browser.close();
 }

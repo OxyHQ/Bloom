@@ -16,9 +16,7 @@ const presets = [
   'blue_spectacles',
   'lime_headphones',
 ];
-const out =
-  process.env.AVATAR_CATALOG_MOTION_DESTINATION ||
-  '.local/avatar-catalog-motion-library';
+const out = process.env.AVATAR_CATALOG_MOTION_DESTINATION || '.local/avatar-catalog-motion-library';
 const start = 3.683333333333333,
   end = 9.633333333333333;
 const centering = await read('.local/avatar-catalog-eye-centering.json');
@@ -26,9 +24,7 @@ const anchors = await read('.local/avatar-catalog-anchor-response.json');
 const sizes = await read('.local/avatar-catalog-scale-response.json');
 const equal = (a, b) => a.length === b.length && a.every((v, k) => v === b[k]);
 function trim(raw, a, b) {
-  const frames = raw.frames.filter(
-    (f) => f.renderTime >= a - 1e-8 && f.renderTime <= b + 1e-8,
-  );
+  const frames = raw.frames.filter((f) => f.renderTime >= a - 1e-8 && f.renderTime <= b + 1e-8);
   assert(Math.abs(frames[0].renderTime - a) < 1e-8);
   assert(Math.abs(frames.at(-1).renderTime - b) < 1e-8);
   return { ...raw, frames };
@@ -38,26 +34,23 @@ for (const preset of presets) {
   const rigs = [];
   for (const g of [0, 1]) {
     const base = `.local/avatar-catalog-rig/rig${g}`;
-    const [manifest, geometry, shared, idle, reaction, work, wgeom, wmanifest] =
-      await Promise.all([
-        read(`${base}/manifest.json`),
-        read(`${base}/combined-geometry.json`),
-        read(`${base}/shared-idle/idle-raw.json`),
-        read(`${base}/${preset}/idle-raw.json`),
-        read(`${base}/${preset}/reaction-raw.json`),
-        read(`${base}/work/work-raw.json`),
-        read(`${base}/combined-work-geometry.json`),
-        read(`${base}/work-manifest.json`),
-      ]);
+    const [manifest, geometry, shared, idle, reaction, work, wgeom, wmanifest] = await Promise.all([
+      read(`${base}/manifest.json`),
+      read(`${base}/combined-geometry.json`),
+      read(`${base}/shared-idle/idle-raw.json`),
+      read(`${base}/${preset}/idle-raw.json`),
+      read(`${base}/${preset}/reaction-raw.json`),
+      read(`${base}/work/work-raw.json`),
+      read(`${base}/combined-work-geometry.json`),
+      read(`${base}/work-manifest.json`),
+    ]);
     const longIdle = structuredClone(shared);
     // Signature identity is constant in idle; all other fields and transforms
     // must agree with the independently observed profile at matching clocks.
     for (let p = 0; p < idle.frames[0].draws.length; p++)
       for (let k = 0; k < 92; k++) {
         const v = idle.frames[0].draws[p].blocks.DrawBlock[k];
-        const constant = idle.frames.every(
-          (f) => f.draws[p].blocks.DrawBlock[k] === v,
-        );
+        const constant = idle.frames.every((f) => f.draws[p].blocks.DrawBlock[k] === v);
         if (constant && k >= 32)
           for (const f of longIdle.frames) f.draws[p].blocks.DrawBlock[k] = v;
         else
@@ -81,11 +74,7 @@ for (const preset of presets) {
     for (let i = 0; i < reaction.frames.length; i++)
       if (
         reaction.frames[i].draws.some(
-          (d, p) =>
-            !equal(
-              d.blocks.DrawBlock,
-              idle.frames[i].draws[p].blocks.DrawBlock,
-            ),
+          (d, p) => !equal(d.blocks.DrawBlock, idle.frames[i].draws[p].blocks.DrawBlock),
         )
       )
         lastDifferent = i;
@@ -96,19 +85,13 @@ for (const preset of presets) {
     const returnTime = reaction.frames[lastDifferent + 1].renderTime;
     const i = catalogObservation(idleRaw, geometry, manifest);
     i.clip.loop = true;
-    const r = catalogObservation(
-      trim(reaction, 3, returnTime),
-      geometry,
-      manifest,
-    );
+    const r = catalogObservation(trim(reaction, 3, returnTime), geometry, manifest);
     const w = catalogObservation(trim(work, 3, 7), wgeom, wmanifest, {
       ignoreActivityProps: true,
     });
     const calibration = [];
     for (const observation of [i, r, w])
-      calibration.push(
-        await calibrateCatalogMaterials(observation, idle, manifest),
-      );
+      calibration.push(await calibrateCatalogMaterials(observation, idle, manifest));
     for (const part of w.clip.parts) {
       const center = centering.rigs[g].parts[part.id];
       assert(center);
@@ -129,8 +112,7 @@ for (const preset of presets) {
       work: w.clip,
       returnNativeTime: returnTime,
       sourceGround: geometry.parts[0].bounds.min[1],
-      sourceHeight:
-        geometry.parts[0].bounds.max[1] - geometry.parts[0].bounds.min[1],
+      sourceHeight: geometry.parts[0].bounds.max[1] - geometry.parts[0].bounds.min[1],
     });
   }
   assert.equal(rigs[0].returnNativeTime, rigs[1].returnNativeTime);

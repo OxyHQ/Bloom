@@ -7,15 +7,12 @@ import ts from 'typescript';
 const temporary = await mkdtemp('.local/motion-controller-test-');
 await writeFile(
   `${temporary}/controller.mjs`,
-  ts.transpileModule(
-    await readFile('runtime/avatar/motion-controller.ts', 'utf8'),
-    {
-      compilerOptions: {
-        target: ts.ScriptTarget.ES2022,
-        module: ts.ModuleKind.ES2022,
-      },
+  ts.transpileModule(await readFile('runtime/avatar/motion-controller.ts', 'utf8'), {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2022,
+      module: ts.ModuleKind.ES2022,
     },
-  ).outputText,
+  }).outputText,
 );
 const { advanceMotion } = await import(
   pathToFileURL(`${process.cwd()}/${temporary}/controller.mjs`)
@@ -36,11 +33,7 @@ test('Computer completes at its verified return, retaining overshoot in the idle
   assert.deepEqual(exact, { kind: 'idle', started: 100.75 });
   const late = advanceMotion(work, samplers, 104);
   assert.equal(104 - late.started, 3.25);
-  assert.equal(
-    advanceMotion(late, samplers, 200),
-    late,
-    'Do not repeatedly reset idle',
-  );
+  assert.equal(advanceMotion(late, samplers, 200), late, 'Do not repeatedly reset idle');
 });
 
 test('held editor frames remain inspectable beyond both action endpoints', () => {
@@ -54,13 +47,10 @@ test('continuous Computer survives the short episode return and many complete cy
   const continuous = { kind: 'work', started: 100, continuous: true };
   for (const time of [100, 103.25, 107, 113, 700])
     assert.equal(advanceMotion(continuous, samplers, time), continuous);
-  assert.deepEqual(
-    advanceMotion({ kind: 'work', started: 100 }, samplers, 107),
-    {
-      kind: 'idle',
-      started: 100.75,
-    },
-  );
+  assert.deepEqual(advanceMotion({ kind: 'work', started: 100 }, samplers, 107), {
+    kind: 'idle',
+    started: 100.75,
+  });
 });
 
 test('a queued reaction runs once and returns at the correct phase', () => {
@@ -81,11 +71,7 @@ test('a queued reaction runs once and returns at the correct phase', () => {
 
 test('a delayed frame crossing both reactions consumes the bounded queue in one update', () => {
   assert.deepEqual(
-    advanceMotion(
-      { kind: 'reaction', started: 10, queuedReaction: true },
-      samplers,
-      20,
-    ),
+    advanceMotion({ kind: 'reaction', started: 10, queuedReaction: true }, samplers, 20),
     { kind: 'idle', started: 13.25 },
   );
 });

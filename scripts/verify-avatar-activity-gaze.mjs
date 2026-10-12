@@ -37,9 +37,7 @@ try {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = 'display:block;width:224px;height:112px';
     document.body.append(canvas);
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     window.engine = new AuthoredAvatarEngine(canvas, { count: 2, size: 112 });
     await window.engine.loaded;
     window.uploads = () =>
@@ -100,10 +98,7 @@ try {
     }
   }
   const blink = JSON.parse(
-    await readFile(
-      'runtime/avatar/assets/motion/lime-headphones-eye-blink.json',
-      'utf8',
-    ),
+    await readFile('runtime/avatar/assets/motion/lime-headphones-eye-blink.json', 'utf8'),
   ).clips.idle;
   const index = blink.samples.findIndex((v) => v > 0.5);
   assert(index >= 0, 'Observed blink must include a closed-eye frame');

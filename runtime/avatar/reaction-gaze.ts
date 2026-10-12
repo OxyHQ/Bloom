@@ -1,8 +1,5 @@
 import { Matrix4 } from 'three';
-import type {
-  AvatarEyeGazeController,
-  EyeGazeProfile,
-} from './eye-gaze-controller';
+import type { AvatarEyeGazeController, EyeGazeProfile } from './eye-gaze-controller';
 
 export type ReactionNeutralVector = ArrayLike<number>;
 const smooth = (value: number) => {
@@ -14,29 +11,19 @@ const smooth = (value: number) => {
  * Runtime adapter and direct Character captures have different presentation
  * offsets. The caller must supply the metadata for its source clip. */
 export function reactionGazeEnvelope(seconds: number, coreSeconds: number) {
-  if (
-    !Number.isFinite(seconds) ||
-    !Number.isFinite(coreSeconds) ||
-    coreSeconds < 0.18
-  )
+  if (!Number.isFinite(seconds) || !Number.isFinite(coreSeconds) || coreSeconds < 0.18)
     throw new Error('Invalid reaction gaze interval');
   return {
     frozen: seconds < coreSeconds,
     strength:
-      seconds < coreSeconds
-        ? 1 - smooth(seconds / 0.18)
-        : smooth((seconds - coreSeconds) / 0.18),
+      seconds < coreSeconds ? 1 - smooth(seconds / 0.18) : smooth((seconds - coreSeconds) / 0.18),
   };
 }
 
 function vector(values: ReactionNeutralVector, positive = false) {
   for (let index = 0; index < 3; index++) {
     const value = values[index];
-    if (
-      typeof value !== 'number' ||
-      !Number.isFinite(value) ||
-      (positive && value <= 0)
-    )
+    if (typeof value !== 'number' || !Number.isFinite(value) || (positive && value <= 0))
       throw new Error('Invalid reaction neutral frame');
   }
 }
@@ -87,18 +74,8 @@ export class ReactionGazeComposer {
     vector(neutralScale, true);
     output
       .copy(this.basis)
-      .multiply(
-        this.scratch.makeScale(
-          neutralScale[0]!,
-          neutralScale[1]!,
-          neutralScale[2]!,
-        ),
-      );
-    output.setPosition(
-      neutralTranslation[0]!,
-      neutralTranslation[1]!,
-      neutralTranslation[2]!,
-    );
+      .multiply(this.scratch.makeScale(neutralScale[0]!, neutralScale[1]!, neutralScale[2]!));
+    output.setPosition(neutralTranslation[0]!, neutralTranslation[1]!, neutralTranslation[2]!);
   }
 
   writeEyeCorrection(
@@ -114,13 +91,6 @@ export class ReactionGazeComposer {
   ) {
     this.writeNeutralFrame(neutralTranslation, neutralScale, this.relativeEye);
     this.relativeEye.invert().multiply(originalPartWorld);
-    eyes.writeBeforePoseCorrection(
-      profile,
-      closure,
-      this.relativeEye,
-      world,
-      normal,
-      strength,
-    );
+    eyes.writeBeforePoseCorrection(profile, closure, this.relativeEye, world, normal, strength);
   }
 }

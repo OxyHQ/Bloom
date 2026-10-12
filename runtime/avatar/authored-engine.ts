@@ -779,13 +779,17 @@ export class AuthoredAvatarEngine {
     return true;
   }
   canReact(index: number) {
-    return !!this.asset(this.states[index]?.preset!)?.samplers?.reaction;
+    const state = this.states[index];
+    return !!state && !!this.asset(state.preset)?.samplers?.reaction;
   }
   canIdle(index: number) {
-    return !!this.asset(this.states[index]?.preset!)?.samplers?.idle;
+    const state = this.states[index];
+    return !!state && !!this.asset(state.preset)?.samplers?.idle;
   }
   canWork(index: number) {
-    const asset = this.asset(this.states[index]?.preset!);
+    const state = this.states[index];
+    if (!state) return false;
+    const asset = this.asset(state.preset);
     return (
       !!asset?.samplers?.work && asset.parts.some((part) => part.source.activity === 'computer')
     );

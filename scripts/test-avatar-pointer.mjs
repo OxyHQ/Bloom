@@ -7,10 +7,9 @@ import * as THREE from 'three';
 const temporary = await mkdtemp('.local/pointer-contract-');
 await writeFile(
   `${temporary}/pointer.mjs`,
-  ts.transpileModule(
-    await readFile('runtime/avatar/pointer-controller.ts', 'utf8'),
-    { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } },
-  ).outputText,
+  ts.transpileModule(await readFile('runtime/avatar/pointer-controller.ts', 'utf8'), {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+  }).outputText,
 );
 const { AvatarPointerController } = await import(
   pathToFileURL(`${process.cwd()}/${temporary}/pointer.mjs`)

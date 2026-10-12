@@ -6,9 +6,7 @@
       "preset": "blue_beret",
       "baseMeshes": 6,
       "computerMeshes": 9,
-      "furIds": [
-        0
-      ],
+      "furIds": [0],
       "parts": 16,
       "frames": 421,
       "duration": 7,
@@ -34,9 +32,7 @@
       "preset": "alfred",
       "baseMeshes": 8,
       "computerMeshes": 9,
-      "furIds": [
-        0
-      ],
+      "furIds": [0],
       "parts": 18,
       "frames": 421,
       "duration": 7,
@@ -62,9 +58,7 @@
       "preset": "purple_heart",
       "baseMeshes": 6,
       "computerMeshes": 9,
-      "furIds": [
-        0
-      ],
+      "furIds": [0],
       "parts": 16,
       "frames": 421,
       "duration": 7,
@@ -90,9 +84,7 @@
       "preset": "lime_frog",
       "baseMeshes": 7,
       "computerMeshes": 9,
-      "furIds": [
-        0
-      ],
+      "furIds": [0],
       "parts": 17,
       "frames": 421,
       "duration": 7,
@@ -120,9 +112,7 @@
       "preset": "coral_monocle",
       "baseMeshes": 7,
       "computerMeshes": 9,
-      "furIds": [
-        0
-      ],
+      "furIds": [0],
       "parts": 17,
       "frames": 421,
       "duration": 7,
@@ -150,10 +140,7 @@
       "preset": "gus",
       "baseMeshes": 3,
       "computerMeshes": 9,
-      "furIds": [
-        0,
-        2
-      ],
+      "furIds": [0, 2],
       "parts": 14,
       "frames": 421,
       "duration": 7,
@@ -179,10 +166,7 @@
       "preset": "blue_spectacles",
       "baseMeshes": 9,
       "computerMeshes": 9,
-      "furIds": [
-        0,
-        8
-      ],
+      "furIds": [0, 8],
       "parts": 20,
       "frames": 421,
       "duration": 7,
@@ -210,9 +194,7 @@
       "preset": "lime_headphones",
       "baseMeshes": 8,
       "computerMeshes": 9,
-      "furIds": [
-        0
-      ],
+      "furIds": [0],
       "parts": 18,
       "frames": 421,
       "duration": 7,
@@ -250,16 +232,7 @@
         "lime_headphones"
       ],
       "allEightWorking": true,
-      "mixedActions": [
-        "work",
-        "reaction",
-        "idle",
-        "work",
-        "reaction",
-        "idle",
-        "work",
-        "reaction"
-      ],
+      "mixedActions": ["work", "reaction", "idle", "work", "reaction", "idle", "work", "reaction"],
       "errors": [],
       "forbiddenRequests": []
     },
@@ -384,10 +357,7 @@
     },
     "pixels": {
       "cases": 40,
-      "foregroundCompositedRGBErrorRange": [
-        0.46720492633168187,
-        0.798281188919822
-      ],
+      "foregroundCompositedRGBErrorRange": [0.46720492633168187, 0.798281188919822],
       "maximumAlphaError": 0.33733126698560295,
       "exactBounds": 32,
       "pinnedRasterDifferences": [

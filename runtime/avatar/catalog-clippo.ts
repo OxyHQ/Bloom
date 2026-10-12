@@ -1,8 +1,4 @@
-import type {
-  CatalogAssembly,
-  CatalogPiece,
-  PieceTransform,
-} from './catalog-fitting';
+import type { CatalogAssembly, CatalogPiece, PieceTransform } from './catalog-fitting';
 
 /** Construction data exported from the source Clippo generator, before Float32
  * vertex storage. Bounds of a tessellated eye are not its mathematical radius. */
@@ -25,12 +21,10 @@ export function fitClippoEyes<T extends CatalogAssembly>(
   donor: T,
   construction?: ClippoConstruction,
 ): ClippoPlacement<T>[] {
-  const special =
-    target.body.attachment === 'metal' || target.body.label === 'metal';
+  const special = target.body.attachment === 'metal' || target.body.label === 'metal';
   const source = special ? target : donor;
   const parts = source.pieces.filter((p) => p.category === 'eyes' && !p.fur);
-  if (parts.length !== 6)
-    throw Error('Clippo requires two eyes, two pupils and two brows');
+  if (parts.length !== 6) throw Error('Clippo requires two eyes, two pupils and two brows');
   if (special)
     return parts.map((part) => ({
       donor: source,
@@ -47,9 +41,7 @@ export function fitClippoEyes<T extends CatalogAssembly>(
     const anchor = construction.eyes[side]!;
     if (!(anchor.eyeScale > 0) || anchor.center.length !== 3)
       throw Error('Invalid Clippo source eye scale');
-    const center = face.centers[side]!.map(
-      (v, k) => v + (k === 2 ? 0.14 * eyeScale : 0),
-    );
+    const center = face.centers[side]!.map((v, k) => v + (k === 2 ? 0.14 * eyeScale : 0));
     return {
       donor,
       placement: {

@@ -31,9 +31,7 @@ for (const preset of [...presets, 'blue_beret']) {
       assert(events.some((e) => e.kind === 'pointer-down'));
       assert(
         events.some(
-          (e) =>
-            e.kind ===
-            (scenario === 'drag-cancel' ? 'pointer-cancel' : 'pointer-up'),
+          (e) => e.kind === (scenario === 'drag-cancel' ? 'pointer-cancel' : 'pointer-up'),
         ),
       );
     }
@@ -71,33 +69,22 @@ for (const preset of presets) {
         const expected = rotation
           .clone()
           .multiply(new Matrix4().fromArray(source.slice(offset, offset + 16)));
-        const scale = offset
-          ? Math.max(1, ...actual.slice(16, 32).map(Math.abs))
-          : 1;
+        const scale = offset ? Math.max(1, ...actual.slice(16, 32).map(Math.abs)) : 1;
         const error =
-          Math.max(
-            ...expected.elements.map((v, i) =>
-              Math.abs(v - actual[offset + i]),
-            ),
-          ) / scale;
+          Math.max(...expected.elements.map((v, i) => Math.abs(v - actual[offset + i]))) / scale;
         if (offset) normalRelativeError = Math.max(normalRelativeError, error);
         else worldError = Math.max(worldError, error);
       }
     }
     assert(worldError < 3e-7, `${preset}: world ${worldError}`);
-    assert(
-      normalRelativeError < 3e-7,
-      `${preset}: normal ${normalRelativeError}`,
-    );
+    assert(normalRelativeError < 3e-7, `${preset}: normal ${normalRelativeError}`);
   });
 }
 test('Headphones60 cancellation reaches the exact paired pointer-only controller, not the remaining reaction', async () => {
   const active = await read(
     '.local/avatar-eye-activities/lime_headphones/reaction-input/reaction-active-pointer-raw.json',
   );
-  const control = await read(
-    '.local/avatar-reaction-drag/lime_headphones/pointer-only-raw.json',
-  );
+  const control = await read('.local/avatar-reaction-drag/lime_headphones/pointer-only-raw.json');
   let count = 0;
   for (const frame of active.filter((f) => f.time >= 1.3166666666666667)) {
     const paired = control.find((f) => f.renderTime === frame.renderTime);

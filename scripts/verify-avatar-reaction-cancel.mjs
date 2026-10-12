@@ -23,8 +23,7 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('request', (r) => {
-    if (/character-runtime|\.wasm(?:\?|$)/.test(r.url()))
-      forbidden.push(r.url());
+    if (/character-runtime|\.wasm(?:\?|$)/.test(r.url())) forbidden.push(r.url());
   });
   await page.setViewport({
     width: cell * 2,
@@ -40,9 +39,7 @@ try {
       requestId: e.requestId,
       responseCode: 200,
       responseHeaders: [{ name: 'Content-Type', value: 'text/html' }],
-      body: Buffer.from('<!doctype html><html><body></body></html>').toString(
-        'base64',
-      ),
+      body: Buffer.from('<!doctype html><html><body></body></html>').toString('base64'),
     }),
   );
   await page.goto('http://localhost:6006/avatar-reaction-cancel-check.html');
@@ -52,12 +49,8 @@ try {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = `display:block;width:${2 * cell}px;height:${cell}px`;
     document.body.append(canvas);
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
-    const { loadAuthoredAsset } = await import(
-      '/runtime/avatar/catalog.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
+    const { loadAuthoredAsset } = await import('/runtime/avatar/catalog.ts');
     window.engine = new AuthoredAvatarEngine(canvas, {
       count: 2,
       size: cell,
@@ -91,22 +84,14 @@ try {
           id: `${p.source.fur ? 'fur' : 'mesh'}:${p.source.id}`,
           world: new Matrix4().fromArray(b),
           normalMatrix: new Matrix4().fromArray(b.slice(16, 32)),
-          fields: Object.fromEntries(
-            names.map((n, k) => [n, b.slice(32 + k * 4, 36 + k * 4)]),
-          ),
+          fields: Object.fromEntries(names.map((n, k) => [n, b.slice(32 + k * 4, 36 + k * 4)])),
         };
       });
   }, cell);
   const settle = () =>
-    page.evaluate(
-      () =>
-        new Promise((r) =>
-          requestAnimationFrame(() => requestAnimationFrame(r)),
-        ),
-    );
+    page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const canvas = await page.$('canvas');
-  const snap = async () =>
-    PNG.sync.read(Buffer.from(await canvas.screenshot()));
+  const snap = async () => PNG.sync.read(Buffer.from(await canvas.screenshot()));
   for (const preset of CANCEL_PRESETS) {
     await page.evaluate(async (preset) => {
       window.engine.resetAppearance();
@@ -115,10 +100,7 @@ try {
     }, preset);
     await settle();
     for (const scenario of ['core', 'entry', 'exit']) {
-      for (const fixture of await reactionCancellationFixtures(
-        preset,
-        scenario,
-      )) {
+      for (const fixture of await reactionCancellationFixtures(preset, scenario)) {
         assert(fixture.metrics.worldError < 3e-7);
         assert(fixture.metrics.normalError < 3e-7);
         assert(fixture.metrics.fieldError < 3e-7);
@@ -153,9 +135,7 @@ try {
             const at = (y * cell * 2 + x) * 4;
             for (let c = 0; c < 4; c++) {
               if (x < cell) {
-                const d = Math.abs(
-                  predicted.data[at + c] - observed.data[at + c],
-                );
+                const d = Math.abs(predicted.data[at + c] - observed.data[at + c]);
                 sum += d;
                 max = Math.max(max, d);
                 differs ||= d > 0;
@@ -186,24 +166,13 @@ try {
         // Pinned numerical raster shortfall: Heart entry cancellation's first
         // u=1 frame changes this 3x3 interior lighting patch. This is not a
         // blanket pixel tolerance and does not claim original-image parity.
-        if (
-          preset === 'purple_heart' &&
-          scenario === 'entry' &&
-          fixture.frameIndex === 25
-        ) {
-          assert.deepEqual(
-            { max, changed, sum },
-            { max: 31, changed: 9, sum: 210 },
-          );
+        if (preset === 'purple_heart' && scenario === 'entry' && fixture.frameIndex === 25) {
+          assert.deepEqual({ max, changed, sum }, { max: 31, changed: 9, sum: 210 });
           const locations = [];
           for (let y = 0; y < cell; y++)
             for (let x = 0; x < cell; x++) {
               const at = (y * cell * 2 + x) * 4;
-              if (
-                [0, 1, 2, 3].some(
-                  (c) => predicted.data[at + c] !== observed.data[at + c],
-                )
-              )
+              if ([0, 1, 2, 3].some((c) => predicted.data[at + c] !== observed.data[at + c]))
                 locations.push([x, y]);
             }
           assert.deepEqual(locations, [
@@ -219,10 +188,7 @@ try {
           ]);
         } else {
           assert(max <= 1, `${preset}/${scenario}@${fixture.time} max ${max}`);
-          assert(
-            sum / (cell * cell * 4) < 0.001,
-            `${preset}/${scenario}@${fixture.time} mean`,
-          );
+          assert(sum / (cell * cell * 4) < 0.001, `${preset}/${scenario}@${fixture.time} mean`);
         }
         report.push({
           preset,

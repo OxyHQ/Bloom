@@ -41,9 +41,7 @@ try {
   await cdp.send('Fetch.disable');
   await cdp.detach();
   await page.evaluate(async () => {
-    const { AuthoredAvatarEngine } = await import(
-      '/runtime/avatar/authored-engine.ts'
-    );
+    const { AuthoredAvatarEngine } = await import('/runtime/avatar/authored-engine.ts');
     window.engine = new AuthoredAvatarEngine(document.querySelector('canvas'), {
       count: 2,
       size: 320,
@@ -93,17 +91,22 @@ try {
         const sampled = sampler.createPose();
         sampler.sample(2, sampled);
         const sources = asset.source.parts;
-        const ids = new Set(sources.map(s => `${s.fur ? 'fur' : 'mesh'}:${s.id}`));
-        const pose = sampled.filter(p => ids.has(p.id));
+        const ids = new Set(sources.map((s) => `${s.fur ? 'fur' : 'mesh'}:${s.id}`));
+        const pose = sampled.filter((p) => ids.has(p.id));
         // Some work-loop-only props have no one-shot work track. Match the
         // engine's hidden reference state for those extra renderable parts.
         const Matrix4 = pose[0].world.constructor;
         for (const source of sources) {
           const id = `${source.fur ? 'fur' : 'mesh'}:${source.id}`;
-          if (pose.some(p => p.id === id)) continue;
+          if (pose.some((p) => p.id === id)) continue;
           if (!source.activity) throw Error(`Missing body motion ${id}`);
           const world = new Matrix4().fromArray(source.fields.world);
-          pose.push({id,world,normalMatrix:world.clone().invert().transpose(),fields:{...source.fields,camera:[1,1,0,0]}});
+          pose.push({
+            id,
+            world,
+            normalMatrix: world.clone().invert().transpose(),
+            fields: { ...source.fields, camera: [1, 1, 0, 0] },
+          });
         }
         for (const p of pose) {
           const source = sources.find((s) => `${s.fur ? 'fur' : 'mesh'}:${s.id}` === p.id);

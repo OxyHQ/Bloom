@@ -63,8 +63,5 @@ const output = {
   shadow,
   verification: { bodyError, shadowError, independentError },
 };
-await writeFile(
-  'runtime/avatar/assets/catalog-computer/centering.json',
-  JSON.stringify(output),
-);
+await writeFile('runtime/avatar/assets/catalog-computer/centering.json', JSON.stringify(output));
 console.log(output.verification);
