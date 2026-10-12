@@ -34,7 +34,7 @@ const FORBIDDEN: Record<string, string> = {
   // Reached from BOTH families: `media-flight/MediaSurface.tsx` is the one
   // renderer the gallery and the flight layer share, and it is what names
   // `expo-image`. Either subpath entering the root barrel re-links it.
-  'expo-image': '@oxy.so/bloom/zoomable-media-gallery (and ./media-flight)',
+  'expo-image': '@oxy.so/bloom/zoomable-media-gallery (and ./media-flight, ./link-preview)',
   // The optional video peer. It is loaded through an optional `require`, which
   // this scan deliberately ignores — listed so the intent is recorded, and
   // caught here the day somebody turns it into a static import.

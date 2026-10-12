@@ -1,2 +1,2 @@
 export { LinkPreviewCard } from './LinkPreviewCard';
-export type { LinkPreviewCardProps } from './types';
+export type { LinkPreviewCardProps, LinkPreviewImageSource } from './types';
