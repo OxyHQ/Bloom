@@ -5,7 +5,7 @@
 //  1. Importing it would add a package to this barrel's module graph. Metro
 //     does not tree-shake, so `import { Button } from '@oxy.so/bloom'` links
 //     everything this file can reach — and an unmet REQUIRED peer is a build
-//     failure, not a degradation. Measured today exactly three families fail
+//     failure, not a degradation. Measured today exactly four families fail
 //     this, and each is reachable only through its own subpath:
 //       · `./tab-bar` — statically imports `expo-glass-effect` + `expo-symbols`
 //         from its `.native` files. Both ship Apple-only native modules, and the
@@ -15,6 +15,9 @@
 //         router restoration is supplied explicitly.
 //       · `./zoomable-media-gallery` and `./media-flight` — both reach
 //         `expo-image` through the shared `media-flight/MediaSurface`.
+//       · `./link-preview` — `LinkPreviewCard` renders its cover with
+//         `expo-image`, which picks among the cover's renditions by its laid-out
+//         size (Bloom 8.0.0 took it off this barrel for that).
 //     Gate: `src/__tests__/root-barrel-graph.test.ts`.
 //     `./video-view` links no package, but its DECLARATIONS name the optional
 //     peer `expo-video`'s own types; on this barrel every app's typecheck
@@ -2005,8 +2008,6 @@ export * from './tabs';
 export * from './checkbox';
 export * from './radio';
 export * from './accordion';
-export { LinkPreviewCard } from './link-preview';
-export type { LinkPreviewCardProps } from './link-preview';
 
 // Stat / profile widgets
 export { CompositionBar } from './composition-bar';

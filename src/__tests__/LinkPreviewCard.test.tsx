@@ -1,5 +1,6 @@
-import React from 'react';
-import { Image, Linking } from 'react-native';
+import type React from 'react';
+import { Linking } from 'react-native';
+import { Image } from 'expo-image';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -91,6 +92,39 @@ describe('LinkPreviewCard', () => {
     const imageStyle = resolvedStyle(UNSAFE_getByType(Image).props.style);
     expect(imageStyle.flex).toBe(1);
     expect(imageStyle.height).toBeUndefined();
+  });
+
+  it('hands expo-image every rendition so it loads the one the cover needs', () => {
+    const sources = [
+      { uri: 'https://api.clarity.surf/images/documents/d/v?variant=w320', width: 320 },
+      { uri: 'https://api.clarity.surf/images/documents/d/v?variant=w640', width: 640 },
+      { uri: 'https://api.clarity.surf/images/documents/d/v?variant=w1280', width: 1280 },
+    ];
+    const { UNSAFE_getByType } = renderWithTheme(
+      <LinkPreviewCard url="https://example.com" title="Sized" image={sources} />,
+    );
+    const image = UNSAFE_getByType(Image);
+    expect(image.props.source).toEqual(sources);
+    expect(image.props.contentFit).toBe('cover');
+    expect(image.props.recyclingKey).toBe(sources[0]?.uri);
+  });
+
+  it('passes a single URL through unchanged', () => {
+    const { UNSAFE_getByType } = renderWithTheme(
+      <LinkPreviewCard
+        url="https://example.com"
+        title="One"
+        image="https://cdn.example.com/og.png"
+      />,
+    );
+    expect(UNSAFE_getByType(Image).props.source).toBe('https://cdn.example.com/og.png');
+  });
+
+  it('reserves no cover for an empty rendition list', () => {
+    const { UNSAFE_queryByType } = renderWithTheme(
+      <LinkPreviewCard url="https://example.com" title="None" image={[]} />,
+    );
+    expect(UNSAFE_queryByType(Image)).toBeNull();
   });
 
   /**

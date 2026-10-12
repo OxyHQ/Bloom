@@ -46,9 +46,26 @@ The props mirror the platform's `LinkPreview` DTO but are declared
 independently, so Bloom does not depend on `@oxy.so/contracts`. If the DTO gains
 a field, map it at the call site.
 
-## `image` is a plain URL, not a file id
+## `image` is a URL — or the same image at several widths
 
-It is rendered directly with the RN `Image` primitive, **not** through
+Pass one absolute URL, or every rendition the image host serves, each with its
+pixel width:
+
+```tsx
+import { contentImageSources } from '@oxy.so/utils/image';
+
+<LinkPreviewCard url={doc.url} title={doc.title} image={contentImageSources(doc.imageUrl)} />
+```
+
+The cover is an `expo-image`, which loads the smallest rendition that covers
+the space the card is laid out in — a `srcset` on web, the view's size times
+the pixel ratio on native. So the same card loads a 640px rendition in a
+280px-wide row and a 1280px one at full width, without the caller measuring
+anything. That is also why the card is only on its own subpath
+(`@oxy.so/bloom/link-preview`): `expo-image` must stay out of the root barrel's
+module graph.
+
+It is rendered directly, **not** through
 [`ImageResolver`](/docs/bloom/main/image-resolver) — an OG image comes from
 whatever host the linked page uses, so there is no Oxy file id to resolve.
 
