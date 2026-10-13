@@ -1,0 +1,104 @@
+---
+title: Building AI interfaces
+description: Which Bloom component draws which part of an AI chat, how a streamed turn maps onto them, and the mistakes that cost the most.
+order: 99
+---
+
+# Building AI interfaces
+
+Bloom draws AI interfaces. It does not run them: there is no model, transport, storage or message state anywhere in it. Every component takes data and callbacks, and **you own the state** (the messages, the stream status, which thread is open). That is why the same pieces work with the AI SDK's `useChat`, a WebSocket or a mock.
+
+## Which component for which job
+
+| You are building | Use | Not |
+| --- | --- | --- |
+| A whole agent chat: transcript, composer, history rail | [`AgentChat`](./agent-chat.mdx) | Assembling the parts yourself unless you need a layout it does not have |
+| A chat workspace with a sidebar, a resizable side panel and image generation | [`AiChat`](./ai-chat.mdx) (`AiChatShell`, `AiChatContainer`, `AiChatThread`) | `AgentChat`: it has no shell, panels or image frame |
+| A group of agents, a creator and a library | [`MultiAgentChat`](./multi-agent-chat.mdx) | |
+| A person-to-person messaging screen | [`chat-screen`](./chat-screen.mdx) and [`chat-list`](./chat-list.mdx) | The AI components: those are for model turns |
+| The message box | [`ComposerPill`](./composer-panel.mdx) (one line, grows) or `ComposerPanel` (two rows, large) | A `TextField`: it has no send/stop, attachments, voice or busy state |
+| "The model is working" | `AiChatContainer`'s `working` / `workingLabel`, or [`AgentThinking`](./agent-thinking.mdx) alone | Both at once |
+| The model's reasoning, folded | `AgentThinking` **with children** | A local disclosure |
+| Steps the agent narrates, tool calls | [`AgentLog`](./agent-log.mdx) (`AgentLogToolCall`, `AgentLogToolCalls`), [`TaskList`](./task-list.mdx), [`WebSearch`](./web-search.mdx) | Cards with borders: the log is plain text on a guide |
+| Progress through steps, or a plan to approve | [`AgentProgress`](./agent-progress.mdx), `AgentProgressPlan` | |
+| A reply's text | [`Markdown`](./markdown.mdx) (`AgentChat` uses it when a message sets `markdown`) | A third-party Markdown renderer with a Bloom code block patched in |
+| Voice | [`VoiceOverlay`, `VoiceControls`, `AudioWaveVisualizer`](./voice.mdx) | |
+| The empty state with first prompts | [`EmptyState`](./empty-state.mdx) with `suggestions` | A list of buttons |
+| Usage and limits | [`AgentLimitsCard`](./agent-limits-card.mdx) | |
+
+## The parts of a turn, in order
+
+An assistant turn is drawn top to bottom, and each part has one owner:
+
+1. **The agent** it was delegated to: avatar and name (`AgentChat` message `agent`).
+2. **Its reasoning**: `AgentThinking` as a disclosure ("Thought for 12 s"), open while the model reasons and shut when it stops.
+3. **Its tool calls**: `AgentLogToolCalls`, one `AgentLogToolCall` per call, each `running`, `done` or `error`, pressable to open the result.
+4. **Its text**: plain paragraphs, or `Markdown` while it streams.
+5. **Its actions**: copy, read aloud, timestamp (hidden while it streams).
+
+`AgentChat` takes all of that as one message:
+
+```tsx
+<AgentChat
+  messages={[
+    {
+      id: 'a1',
+      role: 'assistant',
+      agent: { name: 'Researcher' },
+      reasoning: { text: thought, durationMs: 9000, streaming: false },
+      toolCalls: [
+        { id: 't1', name: 'web_search', label: 'Searching the web', status: 'done', onPress: openResult },
+      ],
+      markdown: true,
+      text: reply,
+    },
+  ]}
+  onLinkPress={openLink}
+  /* …status, onSubmit, onStop */
+/>
+```
+
+Building the thread yourself with `AiChatThread`, put the same parts in the same order.
+
+## A streamed turn, end to end
+
+The status words are the AI SDK's, so `useChat().status` goes straight in:
+
+| Phase | `status` | What the UI should show |
+| --- | --- | --- |
+| Idle | `ready` | Composer with send; no thinking row |
+| Sent, nothing back yet | `submitted` | Busy composer (stop, light band); `working` on the container |
+| Tokens arriving | `streaming` | The reply growing; actions hidden; `Markdown streaming`; reasoning open while `reasoning.streaming` |
+| Failed | `error` | The `role="alert"` line; send enabled again |
+
+Mapping an AI SDK message onto Bloom: its `text` parts joined become `text`; a `reasoning` part becomes `reasoning.text`; each tool part becomes a `toolCalls` entry (`input-streaming` / `input-available` → `running`, `output-available` → `done`, `output-error` → `error`). Bloom never reads the SDK; the mapping is yours and is the only glue you write.
+
+The states mean the same thing everywhere: `running`/`thinking` is live work, `done` is finished, `error`/`failed` is a failure that is also announced as words. Components that show a status never rely on colour alone: a screen reader hears "Running", "Done" or "Failed" from a live region.
+
+## The composer
+
+- `ComposerPill` and `ComposerPanel` share one contract: `attachments` + `onRemoveAttachment` + `onAttachmentRetry`, `voiceState` (`'idle' | 'recording' | 'transcribing'`), `error`, per-row `disabled` in the add menu, `busy` + `onStop` while a turn runs.
+- A picture with no caption is a turn: with at least one attachment the trailing slot is send even when the field is empty. Set `disabled` while a tile is uploading or failed; the composer does not block on tile state.
+- Entering `transcribing` is yours to do, after the recorder stops; the mic then shows a busy state and is disabled.
+- A standalone `ComposerPanel` fills the width you give it. `AgentChat`'s column is 768 wide; cap yours the same to match.
+
+## Mistakes that cost the most
+
+1. **Hand-building a reasoning disclosure.** Local `isOpen`, a one-second interval for the duration and a timer to auto-close all exist in `AgentThinking` already: `thinking`, `durationMs`, `children`, `open`/`onOpenChange`.
+2. **`key={label}` on `AgentThinking`.** It remounts on every label change and restarts the elapsed timer. Change the `label` prop instead.
+3. **`AgentThinking` under the thread *and* `working` on the container.** `AiChatContainer` draws the thinking row for you while `working`; adding another doubles it.
+4. **Re-implementing a tool-call row** from `Item` + `Chip` + local open state. `AgentLogToolCall` has `status`, `detail`, `error`, `durationMs`, `onPress` and an inline body (`children`, `expanded`, `onExpandedChange`).
+5. **Holding the plan decision inside the card.** `AgentProgressPlan` is controlled: you set `decision`; a failed send simply leaves it `pending`.
+6. **Letting `TaskList` or `WebSearch` run their demo ticker** in production. Drive `revealed` from real events (and `working={false}` once done).
+7. **Stale prop names.** `listening`/`onListeningChange` → `voiceState`/`onVoiceStateChange`; `glass` → `frosted`; `small`/`medium`/`large` → `sm`/`md`/`lg`; `visible`/`onClose` → `open`/`onOpenChange` on `AlertDialog` and `Command`. Build with type checking on, or these fail silently at runtime. See [Migrating to 9.0](./migrating-to-9.0.mdx).
+8. **Two copies of Bloom.** Every Bloom context (theme, surfaces, overlays) is per copy. A package that pins one Bloom and an app that installs another splits them; keep a single resolution.
+
+## Accessibility and performance
+
+- Status text (`Running`, `Done`, `Failed`, "Thinking") lives in live regions that exist from the first render, so a change is announced. Mount them early; do not render them only after the change.
+- A streaming reply changes many times a second. Bloom softens each *line* in once and never re-animates what is already shown; do not remount the message per token (give it a stable `key` such as the message id).
+- Everything respects reduced motion: shimmer, reveals, the wave and the collapse settle without animating.
+
+## Where each one is documented
+
+[`AgentChat`](./agent-chat.mdx) · [`AiChat`](./ai-chat.mdx) · [`ComposerPill` / `ComposerPanel`](./composer-panel.mdx) · [`AgentThinking`](./agent-thinking.mdx) · [`AgentLog`](./agent-log.mdx) · [`AgentProgress`](./agent-progress.mdx) · [`TaskList`](./task-list.mdx) · [`WebSearch`](./web-search.mdx) · [`Markdown`](./markdown.mdx) · [`Voice`](./voice.mdx) · [`EmptyState`](./empty-state.mdx) · [`AgentLimitsCard`](./agent-limits-card.mdx) · [`MultiAgentChat`](./multi-agent-chat.mdx)

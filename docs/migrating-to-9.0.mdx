@@ -69,6 +69,22 @@ Content-density types keep their words: `MediaCard`, `Lyrics`, `ListingHeader`, 
 
 `onOpenChange` is called with `false` on every close. `Dialog`, `SettingsModal` and `BottomSheet` keep their imperative `control` / ref contract: a controlled boolean races the exit animation there (`docs/dialog.mdx`).
 
+## If you built these yourself
+
+Apps on Bloom 8 wrote local versions of several pieces that 9.0 now ships. Each one can go; the left column is what to look for.
+
+| Your local copy | Replace with |
+|---|---|
+| A reasoning disclosure with its own open state, duration timer and auto-close | `AgentThinking` with `thinking`, `durationMs`, `children`, `open` / `onOpenChange` |
+| A tool-call row from `Item` + `Chip` + open state, or bullets with a `Pressable` | `AgentLogToolCalls` of `AgentLogToolCall` (`status`, `detail`, `error`, `durationMs`, `onPress`, inline `children`) |
+| A plan-preview card with Approve / Reject | `AgentProgressPlan` (`steps`, `decision`, `onApprove`, `onReject`) |
+| An attachment strip mounted above `ComposerPill` | `ComposerPill` `attachments`, `onRemoveAttachment`, `onAttachmentRetry` |
+| A greeting built from `Item` rows | `EmptyState` `suggestions` |
+| A Markdown renderer with Bloom's code block patched in | `Markdown` (`streaming`, `onLinkPress`) |
+| A wave, a control row and a full-screen overlay for voice | `AudioWaveVisualizer`, `VoiceControls`, `VoiceOverlay` |
+
+See [Building AI interfaces](./ai-overview.mdx) for which component draws which part of a turn.
+
 ## Composer
 
 `ComposerPill` and `ComposerPanel` share one voice contract. The `listening` boolean is replaced by a three-state `voiceState`, so a recording that is being transcribed is no longer indistinguishable from one still running.
