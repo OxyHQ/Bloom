@@ -946,6 +946,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'メニューバー',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: '実行中',
+  done: '完了',
+  failed: '失敗',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '考え中' };
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: '完了',
@@ -2906,6 +2912,7 @@ const translations: Translations = {
   REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

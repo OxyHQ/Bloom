@@ -1,0 +1,63 @@
+---
+title: ToolCall
+description: A tool call inside an assistant reply — running, done or failed, optionally pressable to open its result or expandable to show it inline.
+order: 141
+---
+
+# ToolCall
+
+One tool call in an assistant reply: what ran, whether it is still running, finished or failed, and the way into its result. `ToolCallList` stacks several with list semantics. [TaskList](./task-list.mdx) is a different thing — an agent's narrated working log with no per-step status, press or error.
+
+```tsx
+import { ToolCall, ToolCallList } from '@oxy.so/bloom/tool-call';
+import { RiSearchLine } from '@oxy.so/bloom/icons';
+
+<ToolCallList accessibilityLabel="Tool calls">
+  <ToolCall
+    name="web_search"
+    label="Searching the web"
+    status="done"
+    detail="bloom ui kit release notes"
+    durationMs={1840}
+    icon={RiSearchLine}
+    onPress={() => openResult(call.id)}
+  />
+  <ToolCall name="read_file" status="running" detail="src/index.ts" />
+  <ToolCall name="run_tests" status="error" error="2 tests failed" />
+</ToolCallList>
+```
+
+## Props
+
+| Prop | |
+| --- | --- |
+| `name` | The tool's identifier. Titles the row when there is no `label`. |
+| `label` | Human title. |
+| `status` | `'running'`, `'done'` or `'error'`. |
+| `detail` | One-line argument or result summary. |
+| `error` | Shown instead of `detail` in the `error` state, in the danger colour, up to two lines. |
+| `durationMs` | `420ms` under a second, `2.4s` above, in mono. |
+| `icon` | The tool's glyph. A wrench by default. |
+| `onPress` | Makes the whole row a button that opens the result, with a chevron. |
+| `children` | An inline result body revealed under the row with [Collapsible](./collapsible.mdx)'s motion. |
+| `expanded` / `defaultExpanded` / `onExpandedChange` | The body's open state, controlled or not. |
+| `size` | `'sm'`, `'md'` (default) or `'lg'`. |
+
+With `children` the row is a disclosure (`aria-expanded`, a chevron that turns). With both `onPress` and `children`, one press does both: it calls `onPress` and toggles the body. With neither the row is plain content and is not a button.
+
+## Status
+
+Status is never colour alone. It is drawn three ways: the indicator (a spinner, a check, a warning glyph), the colour (a failed row also takes the danger border and message) and a word — `Running`, `Done`, `Failed`, in every Bloom language — kept visually hidden inside a live region. The region is `polite`, and `assertive` for a failure, so a tool finishing while the reply streams is announced without interrupting the reader. A region is announced only when it changes, so a call that mounts already `done` stays quiet. A running row also carries `aria-busy`.
+
+## Motion
+
+The running spinner turns forever, so under reduced motion it rests as a still glyph. The body's reveal follows `Collapsible`, which settles immediately.
+
+## Lists
+
+`ToolCallList` is `role="list"` and each `ToolCall` inside it is a `listitem`; a `ToolCall` on its own carries no list role. Calls sit 6px apart.
+
+## Platform notes
+
+- The keyboard focus ring is web-only and comes from the shared interactive recipe (`:focus-visible`, never `:focus`).
+- Under RTL the row mirrors and the press chevron flips.

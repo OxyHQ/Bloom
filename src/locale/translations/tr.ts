@@ -955,6 +955,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Menü çubuğu',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: 'Çalışıyor',
+  done: 'Tamamlandı',
+  failed: 'Başarısız',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Düşünüyor' };
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'Tamamlandı',
@@ -2925,6 +2931,7 @@ const translations: Translations = {
   REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

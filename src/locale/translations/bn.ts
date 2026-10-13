@@ -949,6 +949,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'মেনু বার',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: 'চলছে',
+  done: 'সম্পন্ন',
+  failed: 'ব্যর্থ',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'ভাবছে' };
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'সম্পন্ন',
@@ -2873,6 +2879,7 @@ const translations: Translations = {
   REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

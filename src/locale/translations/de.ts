@@ -989,6 +989,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Menüleiste',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: 'Läuft',
+  done: 'Fertig',
+  failed: 'Fehlgeschlagen',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Denkt nach' };
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'Erledigt',
@@ -3002,6 +3008,7 @@ const translations: Translations = {
   REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
