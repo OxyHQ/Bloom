@@ -915,6 +915,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'اقتراحات',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'رسالة',
   add: 'إضافة مرفق',
@@ -925,6 +929,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'الإدخال الصوتي',
   send: 'إرسال الرسالة',
   stop: 'إيقاف الإنشاء',
+  transcribing: 'جارٍ النسخ',
   permissionTrigger: (mode) => `الأذونات: ${mode}`,
   removeFile: (name) => `إزالة ${name}`,
   retryFile: (name) => `إعادة محاولة ${name}`,
@@ -3390,6 +3395,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
 };
 
 export default translations;

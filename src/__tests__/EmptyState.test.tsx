@@ -163,6 +163,53 @@ describe('the actions', () => {
   });
 });
 
+describe('suggestions', () => {
+  it('draws pills as one named group of buttons under the description, in order', () => {
+    const calls: string[] = [];
+    mount(
+      block({
+        suggestions: [
+          { id: 'a', label: 'Plan my week', onPress: () => calls.push('a') },
+          { id: 'b', label: 'Translate', icon: RiInbox2Line, onPress: () => calls.push('b') },
+        ],
+      }),
+    );
+    const group = byTestId(`${TID}-suggestions`);
+    expect(group.getAttribute('role')).toBe('group');
+    expect(group.getAttribute('aria-label')).toBe('Suggestions');
+    const pills = Array.from(group.querySelectorAll('[role="button"]')) as HTMLElement[];
+    expect(pills.map((p) => p.textContent)).toEqual(['Plan my week', 'Translate']);
+    // Real buttons are tab stops; a `tabindex="-1"` would take them out of the order.
+    for (const pill of pills) expect(pill.getAttribute('tabindex')).not.toBe('-1');
+    click(pills[1]!);
+    click(pills[0]!);
+    expect(calls).toEqual(['b', 'a']);
+    const description = byTestId(`${TID}-description`);
+    expect(
+      description.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('centres and wraps the row, and lets a caller rename the group', () => {
+    mount(
+      block({
+        suggestionsLabel: 'Try asking',
+        suggestions: [{ id: 'a', label: 'One', onPress: () => {} }],
+      }),
+    );
+    const group = byTestId(`${TID}-suggestions`);
+    expect(group.getAttribute('aria-label')).toBe('Try asking');
+    const style = getComputedStyle(group);
+    expect(style.flexWrap).toBe('wrap');
+    expect(style.justifyContent).toBe('center');
+  });
+
+  it('draws no group for an empty list', () => {
+    mount(block({ suggestions: [] }));
+    expect(queryTestId(`${TID}-suggestions`)).toBeNull();
+  });
+});
+
 describe('the slots between and below', () => {
   it('stretches `children` to the block width rather than centring it', () => {
     mount(block({ children: <div data-testid="strip" /> }));

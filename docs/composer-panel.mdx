@@ -146,7 +146,7 @@ interface ModelPickerProvider {
 
 ## State
 
-Everything is controllable and works uncontrolled: `value`/`defaultValue`, `permission`/`defaultPermission`, `model`/`defaultModel`, `effort`/`defaultEffort`, `listening`/`defaultListening`. Enter submits on web (Shift+Enter breaks the line; IME composition is respected) unless `busy`; on native the send button submits. An uncontrolled draft clears after submit.
+Everything is controllable and works uncontrolled: `value`/`defaultValue`, `permission`/`defaultPermission`, `model`/`defaultModel`, `effort`/`defaultEffort`, `voiceState`/`defaultVoiceState`. Enter submits on web (Shift+Enter breaks the line; IME composition is respected) unless `busy`; on native the send button submits. An uncontrolled draft clears after submit.
 
 ## Colours
 
@@ -196,7 +196,7 @@ The English defaults below — strings, placeholders, and the default permission
 | `effort` / `defaultEffort` | `number \| null` | `1` | Index into `effortLevels`; `null` is "no stop chosen". |
 | `onEffortChange` | `(effort: number) => void` | — | Only ever a stop a reader chose. |
 | `effortLevels` | `string[]` | the default six | `[]` drops the effort axis. |
-| `listening` / `defaultListening` / `onListeningChange` | `boolean` | `false` | Voice input toggle. |
+| `voiceState` / `defaultVoiceState` / `onVoiceStateChange` | `'idle' \| 'recording' \| 'transcribing'` | `'idle'` | Voice input. `recording` swaps the mic to equalizer bars and the next press stops; `transcribing` makes it busy and disabled, named `labels.transcribing` and announced in a polite live region. A press reports `recording` from `idle` and `idle` from `recording`; entering `transcribing` is yours. |
 | `attachments` / `onRemoveAttachment` | `ComposerPanelAttachment[]` / `(id) => void` | — | |
 | `onAttachmentRetry` | `(id) => void` | — | Draws a retry button on every failed (`error`) tile. |
 | `status` | `ReactNode` | — | Usually `<ComposerPanelStatusTab />`. |
@@ -204,7 +204,7 @@ The English defaults below — strings, placeholders, and the default permission
 | `labels`, `modelPickerLabels` | objects | the locale's | Your own wording; a key here wins over Bloom's. |
 | `style`, `testID` | | | |
 
-`ComposerPill` takes the same draft, add-menu, voice and `onStop` / `busy` props, plus `models` (`string | { id, name }` entries), `model` / `defaultModel` / `onModelChange` (by **id**), the effort trio, `effortLevels`, `compactPlaceholder`, `surface`, `glass` and `maxLines`.
+`ComposerPill` takes the same draft, add-menu, voice and `onStop` / `busy` props, plus `models` (`string | { id, name }` entries), `model` / `defaultModel` / `onModelChange` (by **id**), the effort trio, `effortLevels`, `compactPlaceholder`, `surface`, `frosted`, `maxLines`, the attachment trio (`attachments`, `onRemoveAttachment`, `onAttachmentRetry`) and `error`.
 
 ### The pill grows
 
@@ -227,13 +227,54 @@ without it. The pill used to take react-native-web's `onContentSizeChange`,
 which never reports shrinking, so it stayed tall after the draft was deleted
 or sent.
 
+### Attachments in the pill
+
+`ComposerPill` takes the panel's attachment contract unchanged — the same
+`ComposerPanelAttachment`, the same `AttachmentStrip`, the same `progress` /
+`error` / retry behaviour. The strip sits INSIDE the capsule, above the field's
+row, collapsing in and out over 250ms as the panel's does; the 52px row keeps
+its geometry and the corners square off to 26 while a strip is showing, for the
+reason they do on a grown draft.
+
+A lone attachment gives the trailing slot back to send: both composers ask
+`isComposerEmpty(text, attachments)`, so `emptyAction` (a voice button) never
+sits where a picture's send should be. Neither composer blocks send on an
+attachment that is still uploading or has failed — upload state is the host's,
+so set `disabled` while any tile has `progress` below 100 or an `error`, and
+the pill and the panel agree.
+
+### Error
+
+`error` is `string | boolean`. Either marks the pill: a 1px ring in the error
+tone outside the box (nothing shifts) and `aria-invalid` on the field (web). A
+string is also drawn under the field with a warning glyph, as the reason, and
+announced assertively (`role="alert"`). It is controlled — the pill never
+clears it, so a host that wants it gone on the next keystroke clears it in
+`onValueChange`.
+
+### Voice
+
+`voiceState` is `'idle' | 'recording' | 'transcribing'` (with `defaultVoiceState`
+and `onVoiceStateChange`) on the pill and the panel. A press moves `idle` to
+`recording` and back; entering `transcribing` is the host's, once its recorder
+has finished. While transcribing the mic is busy (spinner, `aria-busy`),
+disabled, named `labels.transcribing`, and "Transcribing" is announced in a
+polite live region — a name that changes under a disabled control is not read
+out by itself.
+
+### Add-menu rows
+
+A `ComposerPanelAddMenuRow` with `disabled` is dimmed, announced as disabled
+(`aria-disabled` / the native `disabled` attribute), out of the tab order, and
+pressing it neither selects nor closes the menu. Its `description` is the place
+to say why; it is part of the row's accessible name.
+
 ### Three slots for the host
 
-`emptyAction` is drawn where send would be, while the draft is empty and no
-turn is in flight — an assistant with a voice mode puts its call button there,
-in the slot the thumb is already over. A stop always wins over it.
-`ComposerPanel` takes the same prop; there "nothing to send" also means no
-attachment, since a picture with no caption is a turn.
+`emptyAction` is drawn where send would be, while there is nothing to send (no
+draft and no attachment) and no turn is in flight — an assistant with a voice
+mode puts its call button there, in the slot the thumb is already over. A stop
+always wins over it. `ComposerPanel` takes the same prop.
 
 `onKeyPress` (on both the pill and the panel) sees the field's keys BEFORE the composer's own Enter rule;
 calling `preventDefault()` takes the key. That is what a suggestion list over

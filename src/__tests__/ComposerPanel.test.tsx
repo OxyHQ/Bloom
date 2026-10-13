@@ -217,12 +217,12 @@ describe('ComposerPanel', () => {
   });
 
   it('toggles voice input with both pressed spellings', () => {
-    const onListeningChange = jest.fn();
-    const { getByLabelText } = renderIn(<ComposerPanel onListeningChange={onListeningChange} />);
+    const onVoiceStateChange = jest.fn();
+    const { getByLabelText } = renderIn(<ComposerPanel onVoiceStateChange={onVoiceStateChange} />);
     const mic = getByLabelText('Voice input');
     expect(mic.props['aria-pressed']).toBe(false);
     pressHost(mic);
-    expect(onListeningChange).toHaveBeenCalledWith(true);
+    expect(onVoiceStateChange).toHaveBeenCalledWith('recording');
     expect(getByLabelText('Voice input').props['aria-pressed']).toBe(true);
   });
 
@@ -574,15 +574,20 @@ describe('ComposerAttachments', () => {
   });
 });
 
+/** The pill's row of controls, which holds the 52px: the capsule around it also holds the strip and the reason. */
+function pillRow(pill: ReturnType<ReturnType<typeof renderIn>['getByTestId']>) {
+  const row = pill.findAll((node) => {
+    const style = resolvedStyle(node.props.style);
+    return style.flexDirection === 'row' && style.padding === 8 && style.gap === 10;
+  })[0];
+  return resolvedStyle(row!.props.style);
+}
+
 describe('ComposerPill', () => {
   it('draws the 52px pill with the surface and shadow, and drops both inside a loader', () => {
     const { getByTestId, rerender } = renderIn(<ComposerPill testID="pill" />);
-    expect(resolvedStyle(getByTestId('pill').props.style)).toMatchObject({
-      height: 52,
-      borderRadius: 9999,
-      padding: 8,
-      gap: 10,
-    });
+    expect(resolvedStyle(getByTestId('pill').props.style)).toMatchObject({ borderRadius: 9999 });
+    expect(pillRow(getByTestId('pill'))).toMatchObject({ height: 52, padding: 8, gap: 10 });
     expect(resolvedStyle(getByTestId('pill').props.style).boxShadow).toBeTruthy();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
@@ -628,24 +633,24 @@ describe('ComposerPill', () => {
     const { getByLabelText, getByTestId } = renderIn(<ComposerPill testID="pill" maxLines={3} />);
     const field = getByLabelText('Message');
 
-    const heightAtRest = Number(resolvedStyle(getByTestId('pill').props.style).height);
+    const heightAtRest = Number(pillRow(getByTestId('pill')).height);
 
     act(() => {
       fireEvent(field, 'contentSizeChange', { nativeEvent: { contentSize: { height: 40 } } });
     });
-    const heightAtTwo = Number(resolvedStyle(getByTestId('pill').props.style).height);
+    const heightAtTwo = Number(pillRow(getByTestId('pill')).height);
     expect(heightAtTwo).toBeGreaterThan(heightAtRest);
 
     // Past the cap the box stops and the field scrolls instead.
     act(() => {
       fireEvent(field, 'contentSizeChange', { nativeEvent: { contentSize: { height: 400 } } });
     });
-    const heightAtCap = Number(resolvedStyle(getByTestId('pill').props.style).height);
+    const heightAtCap = Number(pillRow(getByTestId('pill')).height);
 
     act(() => {
       fireEvent(field, 'contentSizeChange', { nativeEvent: { contentSize: { height: 4000 } } });
     });
-    expect(Number(resolvedStyle(getByTestId('pill').props.style).height)).toBe(heightAtCap);
+    expect(Number(pillRow(getByTestId('pill')).height)).toBe(heightAtCap);
   });
 
   it('shows the model button only with models, and picks a model from its panel', () => {
@@ -714,10 +719,10 @@ describe('ComposerPill', () => {
   });
 
   it('toggles voice input on the mic', () => {
-    const onListeningChange = jest.fn();
-    const { getByLabelText } = renderIn(<ComposerPill onListeningChange={onListeningChange} />);
+    const onVoiceStateChange = jest.fn();
+    const { getByLabelText } = renderIn(<ComposerPill onVoiceStateChange={onVoiceStateChange} />);
     pressHost(getByLabelText('Voice input'));
-    expect(onListeningChange).toHaveBeenCalledWith(true);
+    expect(onVoiceStateChange).toHaveBeenCalledWith('recording');
   });
 });
 

@@ -2,12 +2,15 @@ import React, { memo, useMemo, type ComponentType, type ReactNode } from 'react'
 import { View } from 'react-native';
 
 import { Button } from '../button';
+import { Chip } from '../chip';
 import { IconCircle } from '../icon-circle';
 import type { Props as IconProps } from '../icons/shared';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { EMPTY_STATE_ACTION_GAP, EMPTY_STATE_GEOMETRY } from './constants';
+import { EMPTY_STATE_MESSAGES } from './messages';
 import { joinEmptyStateName, resolveEmptyStatePaint } from './shared';
 import type { EmptyStateAction, EmptyStateProps } from './types';
 
@@ -21,6 +24,7 @@ import type { EmptyStateAction, EmptyStateProps } from './types';
  *   title     headline-semibold (panel: body-medium), `heading` level 3
  *   line      body-regular secondary (panel: body-2-regular), capped at 360 so
  *             a centred paragraph does not run the width of a 1440 page
+ *   pills     `suggestions`, centred and wrapping, one named `group`
  *   children  stretched full width, laid out by whatever was passed
  *   actions   up to two, primary then secondary, wrapping
  *   footer    centred, under the actions
@@ -42,6 +46,8 @@ function EmptyStateComponent({
   illustration,
   title,
   description,
+  suggestions,
+  suggestionsLabel,
   action,
   secondaryAction,
   children,
@@ -53,6 +59,7 @@ function EmptyStateComponent({
   testID,
 }: EmptyStateProps) {
   const theme = useTheme();
+  const { messages } = useMessages(EMPTY_STATE_MESSAGES);
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveEmptyStatePaint(theme, surface), [theme, surface]);
   const g = EMPTY_STATE_GEOMETRY[variant];
@@ -143,6 +150,35 @@ function EmptyStateComponent({
               {description}
             </Text>
           ) : null}
+        </View>
+      ) : null}
+
+      {suggestions && suggestions.length > 0 ? (
+        <View
+          testID={id('suggestions')}
+          role="group"
+          accessibilityLabel={suggestionsLabel ?? messages.suggestions}
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: EMPTY_STATE_ACTION_GAP,
+          }}
+        >
+          {suggestions.map((suggestion) => (
+            <Chip
+              key={suggestion.id}
+              appearance="outline"
+              tone="neutral"
+              size={variant === 'compact' ? 'sm' : 'md'}
+              leadingIcon={suggestion.icon}
+              onPress={suggestion.onPress}
+              testID={id(`suggestion-${suggestion.id}`)}
+            >
+              {suggestion.label}
+            </Chip>
+          ))}
         </View>
       ) : null}
 

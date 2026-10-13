@@ -7,6 +7,9 @@ import { Chip, ChipRow } from '../chip';
 import { RiInbox2Line } from '../icons/remix/RiInbox2Line';
 import { RiMapPin2Line } from '../icons/remix/RiMapPin2Line';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
+import { RiSparklingFill } from '../icons/remix/RiSparklingFill';
+import { RiTranslate2 } from '../icons/remix/RiTranslate2';
+import { RiLightbulbLine } from '../icons/remix/RiLightbulbLine';
 import { RiShoppingBag3Line } from '../icons/remix/RiShoppingBag3Line';
 import { Text } from '../typography';
 import { EmptyState } from './EmptyState';
@@ -117,6 +120,27 @@ export const WithSuggestions: Story = {
           </Chip>
         </ChipRow>
       </EmptyState>
+    </Page>
+  ),
+};
+
+/** A branded greeting: the mark, a hello, and the first prompts as pills. */
+export const BrandedGreeting: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Page>
+      <EmptyState
+        icon={RiSparklingFill}
+        media="circle"
+        title="Good evening, Nate"
+        description="Ask me anything, or start from one of these."
+        suggestions={[
+          { id: 'plan', label: 'Plan my week', icon: RiLightbulbLine, onPress: () => {} },
+          { id: 'translate', label: 'Translate a message', icon: RiTranslate2, onPress: () => {} },
+          { id: 'summarise', label: 'Summarise this document', onPress: () => {} },
+          { id: 'ideas', label: 'Give me ten ideas', onPress: () => {} },
+        ]}
+      />
     </Page>
   ),
 };

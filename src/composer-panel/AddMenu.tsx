@@ -165,6 +165,7 @@ function AddMenuRow({
       accessibilityLabel={row.description ? `${row.label} ${row.description}` : row.label}
       onPress={onPress}
       pressed={row.checked}
+      disabled={row.disabled}
       style={[
         COMPOSER_BUTTON_LAYOUT,
         {

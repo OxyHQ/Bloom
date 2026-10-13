@@ -58,3 +58,17 @@ Content-density types keep their words: `MediaCard`, `Lyrics`, `ListingHeader`, 
 | `Command` | `visible` + `onClose()` | `open` + `onOpenChange(open)` |
 
 `onOpenChange` is called with `false` on every close. `Dialog`, `SettingsModal` and `BottomSheet` keep their imperative `control` / ref contract: a controlled boolean races the exit animation there (`docs/dialog.mdx`).
+
+## Composer
+
+`ComposerPill` and `ComposerPanel` share one voice contract. The `listening` boolean is replaced by a three-state `voiceState`, so a recording that is being transcribed is no longer indistinguishable from one still running.
+
+| Before | After |
+|---|---|
+| `listening` | `voiceState` (`'idle'` \| `'recording'` \| `'transcribing'`) |
+| `defaultListening` | `defaultVoiceState` (default `'idle'`) |
+| `onListeningChange(listening)` | `onVoiceStateChange(voiceState)` — reports `'recording'` or `'idle'` |
+
+`listening={true}` becomes `voiceState="recording"`; `onListeningChange={(on) => ...}` becomes `onVoiceStateChange={(s) => ... s === 'recording'}`. Entering `'transcribing'` is yours to do, after the recorder stops. `MicButton`'s internal `listening` prop is `state` with a required `transcribingLabel`; it is not part of the public API.
+
+Additions, not breaks: `ComposerPill` takes `attachments`, `onRemoveAttachment`, `onAttachmentRetry` and `error`; add-menu rows take `disabled`; `labels` gains `transcribing` (and `remove`, `retry` on the pill); `EmptyState` takes `suggestions` and `suggestionsLabel`.

@@ -26,6 +26,7 @@ import type { Theme } from '../theme/types';
 import { COMPOSER_PANEL_MESSAGES, type ComposerPanelMessages } from './messages';
 import type {
   ComposerPanelAddMenuGroup,
+  ComposerPanelAttachment,
   ComposerPanelAttachmentKind,
   ComposerPanelPermissionOption,
 } from './types';
@@ -73,6 +74,8 @@ export interface ComposerPalette {
   /** A failed tile: the error subtle surface and its paired foreground. */
   errorSurface: string;
   errorText: string;
+  /** The error tone's fill, drawn as the pill's ring while it is in error. */
+  error: string;
   /** `shadow-xs`, `shadow-dropdown` and the card's raw Figma shadow. */
   shadowXs: string;
   shadowDropdown: string;
@@ -114,12 +117,25 @@ export function resolveComposerPalette(theme: Theme): ComposerPalette {
     focusRing: c.primary,
     errorSurface: c.errorSubtle,
     errorText: c.errorSubtleForeground,
+    error: c.error,
     shadowXs: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     shadowDropdown: dark ? MENU_SHADOW.dark : MENU_SHADOW.light,
     shadowCard: '0 1px 0.5px 0 rgba(0, 0, 0, 0.02), 0 4px 2px 0 rgba(0, 0, 0, 0.02)',
     shadowPicker: '0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 4px 8px 0 rgba(0, 0, 0, 0.02)',
     logo: dark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
   };
+}
+
+/**
+ * Nothing to send: no draft and no attachment. A picture with no caption is a
+ * turn, so a lone attachment gives the trailing slot back to send. The panel
+ * and the pill both ask this, so the two cannot disagree about it.
+ */
+export function isComposerEmpty(
+  text: string,
+  attachments: ReadonlyArray<ComposerPanelAttachment> | undefined,
+): boolean {
+  return text.trim() === '' && !attachments?.length;
 }
 
 // ---------------------------------------------------------------------------

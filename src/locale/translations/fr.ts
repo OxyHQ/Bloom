@@ -837,6 +837,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'Propositions',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'Message',
   add: 'Ajouter une pièce jointe',
@@ -847,6 +851,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'Saisie vocale',
   send: 'Envoyer le message',
   stop: 'Arrêter la génération',
+  transcribing: 'Transcription en cours',
   permissionTrigger: (mode) => `Autorisation : ${mode}`,
   removeFile: (name) => `Retirer ${name}`,
   retryFile: (name) => `Réessayer ${name}`,
@@ -3055,6 +3060,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
 };
 
 export default translations;

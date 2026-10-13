@@ -789,6 +789,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: '候補',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'メッセージ',
   add: '添付ファイルを追加',
@@ -799,6 +803,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: '音声入力',
   send: 'メッセージを送信',
   stop: '生成を停止',
+  transcribing: '文字起こし中',
   permissionTrigger: (mode) => `権限: ${mode}`,
   removeFile: (name) => `${name}を削除`,
   retryFile: (name) => `${name}を再試行`,
@@ -2949,6 +2954,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
 };
 
 export default translations;

@@ -780,6 +780,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: '建议',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: '消息',
   add: '添加附件',
@@ -790,6 +794,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: '语音输入',
   send: '发送消息',
   stop: '停止生成',
+  transcribing: '正在转录',
   permissionTrigger: (mode) => `权限：${mode}`,
   removeFile: (name) => `移除 ${name}`,
   retryFile: (name) => `重试 ${name}`,
@@ -2875,6 +2880,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
 };
 
 export default translations;
