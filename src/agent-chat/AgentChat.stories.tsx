@@ -537,3 +537,42 @@ export const Messages: Story = {
     </Pad>
   ),
 };
+
+/** A delegated agent, its reasoning, tool calls (one pressable, one failed) and a Markdown reply. */
+export const Parts: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Pad width={640} testID="agent-chat-parts">
+      <AgentChatMessage role="user" text="Compare the two quarterly reports" />
+      <AgentChatMessage
+        testID="parts-reply"
+        role="assistant"
+        agent={{ name: 'Researcher' }}
+        reasoning={{ text: 'Q3 grew faster, but Q2 had the better margin.', durationMs: 9000 }}
+        toolCalls={[
+          {
+            id: 'search',
+            name: 'web_search',
+            label: 'Searching the web',
+            status: 'done',
+            detail: 'quarterly report Q2 Q3',
+            onPress: () => {},
+          },
+          {
+            id: 'read',
+            name: 'read_file',
+            label: 'Reading q3.pdf',
+            status: 'error',
+            error: 'File not found',
+          },
+          { id: 'calc', name: 'calculator', label: 'Comparing margins', status: 'running' },
+        ]}
+        markdown
+        text={
+          '**Q3** grew faster:\n\n- Revenue: up 12%\n- Margin: down 1.4 pts\n\nSee the [full table](https://example.com).'
+        }
+        at={NOW - MIN}
+      />
+    </Pad>
+  ),
+};

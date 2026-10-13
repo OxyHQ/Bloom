@@ -121,6 +121,54 @@ describe('AgentChatMessage', () => {
     expect(queryByText('')).toBeNull();
   });
 
+  it('renders the agent notice, reasoning and tool calls above the text, in that order', () => {
+    const onPress = jest.fn();
+    const { getByText, getByTestId, toJSON } = renderIn(
+      <AgentChatMessage
+        testID="m"
+        role="assistant"
+        text="Here is the answer."
+        agent={{ name: 'Researcher' }}
+        reasoning={{ text: 'Weighing the options', durationMs: 12_000 }}
+        toolCalls={[
+          { id: 't1', name: 'web_search', label: 'Searching the web', status: 'done', onPress },
+          { id: 't2', name: 'read_file', status: 'error', error: 'Not found' },
+        ]}
+      />,
+    );
+    const rendered = JSON.stringify(toJSON());
+    const order = [
+      'Researcher',
+      'Thought for 12 s',
+      'Searching the web',
+      'Here is the answer.',
+    ].map((needle) => rendered.indexOf(needle));
+    expect(order.every((index) => index >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(getByText('Not found')).toBeTruthy();
+    expect(getByTestId('m')).toBeTruthy();
+  });
+
+  it('renders a turn that has only tool calls (no text yet)', () => {
+    const { getByText } = renderIn(
+      <AgentChatMessage
+        role="assistant"
+        text=""
+        toolCalls={[{ id: 't1', name: 'web_search', label: 'Searching', status: 'running' }]}
+      />,
+    );
+    expect(getByText('Searching')).toBeTruthy();
+  });
+
+  it('sets the text as Markdown only when asked', () => {
+    const plain = renderIn(<AgentChatMessage role="assistant" text="**bold**" />);
+    expect(plain.getByText('**bold**')).toBeTruthy();
+    plain.unmount();
+    const formatted = renderIn(<AgentChatMessage role="assistant" text="**bold**" markdown />);
+    expect(formatted.queryByText('**bold**')).toBeNull();
+    expect(formatted.getByText('bold')).toBeTruthy();
+  });
+
   it('renders nothing for an empty message', () => {
     const { queryByTestId } = renderIn(<AgentChatMessage testID="m" role="assistant" text="" />);
     expect(queryByTestId('m')).toBeNull();

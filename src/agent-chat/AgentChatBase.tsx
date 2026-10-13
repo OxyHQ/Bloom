@@ -182,6 +182,7 @@ export function AgentChatBase({
   onExport,
   onCopyMessage,
   onReadAloud,
+  onLinkPress,
   threads,
   activeThreadId,
   onSelectThread,
@@ -383,6 +384,11 @@ export function AgentChatBase({
                       role={message.role}
                       text={message.text}
                       at={message.at}
+                      agent={message.agent}
+                      reasoning={message.reasoning}
+                      toolCalls={message.toolCalls}
+                      markdown={message.markdown}
+                      onLinkPress={onLinkPress}
                       streaming={busy && index === messages.length - 1}
                       onCopy={onCopyMessage}
                       onReadAloud={onReadAloud}

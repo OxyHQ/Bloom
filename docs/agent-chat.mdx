@@ -46,7 +46,7 @@ Give it a sized parent — it fills it (`flex: 1`); a 12px page frame on `backgr
 
 Bloom wires none of the AI SDK (`useChat`), `localStorage`, or a `/api/chat` route into this component. Everything it needs from them is a prop:
 
-- **`messages`** — `{ id, role, text, at? }`. Text only: fold reasoning and tool parts into `text` or drop them.
+- **`messages`** — `{ id, role, text, at?, agent?, reasoning?, toolCalls?, markdown? }`. An assistant turn renders its parts in this order: the delegated `agent` (avatar + name), the `reasoning` block (`{ text, durationMs?, streaming? }`, a collapsible "Thought for N s"), the `toolCalls` (`{ id, name, label?, status: 'running' | 'done' | 'error', detail?, error?, durationMs?, icon?, onPress? }`, a `ToolCallList`), then the text. `markdown: true` sets the text with `Markdown` (streaming-aware) instead of plain paragraphs; `onLinkPress` receives its links.
 - **`status`** — `'ready' | 'submitted' | 'streaming' | 'error'`, the AI SDK's own values. `submitted` and `streaming` are *busy*: the composer shows stop and lights its `ComposerLoader` band, the rail is disabled (switching mid-stream would strand the reply), and suggestions and Enter are refused.
 - **`threads`** — `{ id, title, updatedAt, unread? }`, in the order you want them listed. Ordering, persistence, title derivation and "reading a chat marks it read" are the consumer's.
 - **Every action** — `onSubmit` (trimmed, non-empty), `onStop`, `onAttach`, `onShare`, `onExport`, `onCopyMessage`, `onReadAloud`, and the thread callbacks.
@@ -70,7 +70,7 @@ While busy and the last reply has no text yet, `AgentThinking` (wave, "Thinking"
 ### AgentChatMessage
 
 - **User** — right-aligned bubble, max 75%, radius 16, `px 12 / py 11`, `background-primary`, `shadow-card`.
-- **Assistant** — the reply split into its non-empty lines, 12px apart. Each line softens in **once** as it first appears (opacity, 5px blur on web, 4px lift, 420ms `cubic-bezier(0.22, 0.61, 0.36, 1)`) and then only grows, so a streamed reply never re-animates what is already on screen. Line-level, not word-level: a token arrives as a fragment and a per-word blur stutters as the fragment mutates. Reduced motion mounts lines settled.
+- **Assistant** — the optional agent notice, reasoning and tool calls, then the reply split into its non-empty lines, 12px apart. Each line softens in **once** as it first appears (opacity, 5px blur on web, 4px lift, 420ms `cubic-bezier(0.22, 0.61, 0.36, 1)`) and then only grows, so a streamed reply never re-animates what is already on screen. Line-level, not word-level: a token arrives as a fragment and a per-word blur stutters as the fragment mutates. Reduced motion mounts lines settled.
 - **Action row** — copy and read aloud (28px circles, 16px glyphs) and the timestamp (`"3 minutes ago"`, `formatTime`). Mounted at all times so it is reachable by keyboard and never shifts layout; hidden and inert while `streaming`.
 
 ### AgentChatComposer
