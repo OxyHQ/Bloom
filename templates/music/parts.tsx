@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { Button } from '../../src/button';
-import { mixColor } from '../../src/button/shared';
+import { mixColors } from '../../src/styles/color-contrast';
 import { RiArrowLeftSLine } from '../../src/icons/remix';
 import {
   AlbumCard,
@@ -83,7 +83,7 @@ export function useMusicLayout(): MusicLayout {
  */
 export function usePaneSurface(): string {
   const theme = useTheme();
-  return mixColor(theme.colors.background, theme.colors.text, theme.isDark ? 0.05 : 0.03);
+  return mixColors(theme.colors.background, theme.colors.text, theme.isDark ? 0.05 : 0.03);
 }
 
 /** Room the phone layout keeps under a page for the mini player and the tab bar. */

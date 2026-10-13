@@ -71,7 +71,7 @@ function cardProps(home: Home) {
   } = home;
   return {
     ...card,
-    badge: energy ? <EnergyBadge rating={energy} size="small" /> : label,
+    badge: energy ? <EnergyBadge rating={energy} size="sm" /> : label,
   };
 }
 
