@@ -48,7 +48,7 @@ import type { MENUBAR_MESSAGES } from '../../menubar/messages';
 import type { AGENT_THINKING_MESSAGES } from '../../agent-thinking/messages';
 import type { AGENT_PLAN_MESSAGES } from '../../agent-plan/messages';
 import type { MARKDOWN_MESSAGES } from '../../markdown/messages';
-import type { TOOL_CALL_MESSAGES } from '../../tool-call/messages';
+import type { AGENT_LOG_MESSAGES } from '../../agent-log/messages';
 import type { AI_CHAT_MESSAGES } from '../../ai-chat/messages';
 import type { COMMAND_MESSAGES } from '../../command/messages';
 import type { MUSIC_LIBRARY_MESSAGES } from '../../music-library/messages';
@@ -186,7 +186,7 @@ export interface Translations {
   readonly AGENT_THINKING_MESSAGES: CatalogMessages<typeof AGENT_THINKING_MESSAGES>;
   readonly AGENT_PLAN_MESSAGES: CatalogMessages<typeof AGENT_PLAN_MESSAGES>;
   readonly MARKDOWN_MESSAGES: CatalogMessages<typeof MARKDOWN_MESSAGES>;
-  readonly TOOL_CALL_MESSAGES: CatalogMessages<typeof TOOL_CALL_MESSAGES>;
+  readonly AGENT_LOG_MESSAGES: CatalogMessages<typeof AGENT_LOG_MESSAGES>;
   readonly AI_CHAT_MESSAGES: CatalogMessages<typeof AI_CHAT_MESSAGES>;
   readonly COMMAND_MESSAGES: CatalogMessages<typeof COMMAND_MESSAGES>;
   readonly MUSIC_LIBRARY_MESSAGES: CatalogMessages<typeof MUSIC_LIBRARY_MESSAGES>;

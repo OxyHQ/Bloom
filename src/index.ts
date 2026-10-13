@@ -242,7 +242,6 @@ export * from './composer-panel';
 export * from './questionnaire';
 export * from './web-search';
 export * from './task-list';
-export * from './tool-call';
 export * from './agent-chat';
 export * from './ai-chat';
 export * from './radio-indicator';

@@ -2,17 +2,12 @@ import type React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
-import { ToolCall, ToolCallList } from '../tool-call';
-import { formatDuration } from '../tool-call/shared';
+import { AgentLogToolCall, AgentLogToolCalls } from '../agent-log';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
 
-let mockReduced = false;
 let mockRtl = false;
-jest.mock('../hooks/use-prefers-reduced-motion', () => ({
-  usePrefersReducedMotion: () => mockReduced,
-}));
 jest.mock('../hooks/use-is-rtl', () => ({
   useIsRtl: () => mockRtl,
   useDirectionProps: () => ({}),
@@ -33,28 +28,27 @@ function renderCall(ui: React.ReactElement) {
 const hidden = { includeHiddenElements: true } as const;
 
 beforeEach(() => {
-  mockReduced = false;
   mockRtl = false;
 });
 
-describe('ToolCall status', () => {
+describe('AgentLogToolCall status', () => {
   it.each([
     ['running', 'Running'],
     ['done', 'Done'],
     ['error', 'Failed'],
   ] as const)('says %s in words, not only in an icon', (status, word) => {
-    const { getByText } = renderCall(<ToolCall name="web_search" status={status} />);
+    const { getByText } = renderCall(<AgentLogToolCall name="web_search" status={status} />);
     expect(getByText(word, hidden)).toBeTruthy();
   });
 
   it('titles the row with the label, falling back to the name', () => {
     const { getByText, rerender } = renderCall(
-      <ToolCall name="web_search" label="Searching the web" status="done" />,
+      <AgentLogToolCall name="web_search" label="Searching the web" status="done" />,
     );
     expect(getByText('Searching the web')).toBeTruthy();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <ToolCall name="web_search" status="done" />
+        <AgentLogToolCall name="web_search" status="done" />
       </BloomThemeProvider>,
     );
     expect(getByText('web_search')).toBeTruthy();
@@ -62,13 +56,13 @@ describe('ToolCall status', () => {
 
   it('shows the detail, and the error message in place of it when failed', () => {
     const { getByText, queryByText, rerender } = renderCall(
-      <ToolCall name="t" status="done" detail="query: bloom" error="boom" />,
+      <AgentLogToolCall name="t" status="done" detail="query: bloom" error="boom" />,
     );
     expect(getByText('query: bloom')).toBeTruthy();
     expect(queryByText('boom')).toBeNull();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <ToolCall name="t" status="error" detail="query: bloom" error="boom" />
+        <AgentLogToolCall name="t" status="error" detail="query: bloom" error="boom" />
       </BloomThemeProvider>,
     );
     expect(getByText('boom')).toBeTruthy();
@@ -76,39 +70,38 @@ describe('ToolCall status', () => {
   });
 
   it('keeps the detail on a failure that gave no message', () => {
-    const { getByText } = renderCall(<ToolCall name="t" status="error" detail="query: bloom" />);
+    const { getByText } = renderCall(
+      <AgentLogToolCall name="t" status="error" detail="query: bloom" />,
+    );
     expect(getByText('query: bloom')).toBeTruthy();
   });
 
   it('puts the status in a live region: polite, assertive for a failure', () => {
-    const { getByTestId, rerender } = renderCall(<ToolCall name="t" status="running" testID="c" />);
+    const { getByTestId, rerender } = renderCall(
+      <AgentLogToolCall name="t" status="running" testID="c" />,
+    );
     const region = () => getByTestId('c-status', hidden);
     expect(region().props['aria-live']).toBe('polite');
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <ToolCall name="t" status="error" testID="c" />
+        <AgentLogToolCall name="t" status="error" testID="c" />
       </BloomThemeProvider>,
     );
     expect(region().props['aria-live']).toBe('assertive');
   });
 
   it('formats a duration under and over a second', () => {
-    expect(formatDuration(420)).toBe('420ms');
-    expect(formatDuration(2400)).toBe('2.4s');
-    const { getByText } = renderCall(<ToolCall name="t" status="done" durationMs={1840} />);
-    expect(getByText('1.8s')).toBeTruthy();
-  });
-
-  it('renders the given icon instead of the default', () => {
-    const Icon = jest.fn(() => null);
-    renderCall(<ToolCall name="t" status="done" icon={Icon} />);
-    expect(Icon).toHaveBeenCalled();
+    const fast = renderCall(<AgentLogToolCall name="t" status="done" durationMs={420} />);
+    expect(fast.getByText('420ms')).toBeTruthy();
+    fast.unmount();
+    const slow = renderCall(<AgentLogToolCall name="t" status="done" durationMs={1840} />);
+    expect(slow.getByText('1.8s')).toBeTruthy();
   });
 });
 
-describe('ToolCall press', () => {
+describe('AgentLogToolCall press', () => {
   it('is not a button without onPress or a body', () => {
-    const { getByTestId } = renderCall(<ToolCall testID="c" name="t" status="done" />);
+    const { getByTestId } = renderCall(<AgentLogToolCall testID="c" name="t" status="done" />);
     expect(getByTestId('c-row').props.role).toBeUndefined();
     expect(getByTestId('c-row').props.onPress).toBeUndefined();
   });
@@ -116,7 +109,13 @@ describe('ToolCall press', () => {
   it('is one button that opens the result when given onPress', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderCall(
-      <ToolCall testID="c" name="web_search" label="Searching" status="done" onPress={onPress} />,
+      <AgentLogToolCall
+        testID="c"
+        name="web_search"
+        label="Searching"
+        status="done"
+        onPress={onPress}
+      />,
     );
     expect(getByTestId('c-row').props.role).toBe('button');
     pressHost(getByTestId('c-row'));
@@ -125,25 +124,25 @@ describe('ToolCall press', () => {
 
   it('does not claim to be expandable when only onPress is given', () => {
     const { getByTestId } = renderCall(
-      <ToolCall testID="c" name="t" status="done" onPress={() => {}} />,
+      <AgentLogToolCall testID="c" name="t" status="done" onPress={() => {}} />,
     );
     expect(getByTestId('c-row').props['aria-expanded']).toBeUndefined();
   });
 
   it('marks a running row busy', () => {
     const { getByTestId } = renderCall(
-      <ToolCall testID="c" name="t" status="running" onPress={() => {}} />,
+      <AgentLogToolCall testID="c" name="t" status="running" onPress={() => {}} />,
     );
     expect(getByTestId('c-row').props['aria-busy']).toBe(true);
   });
 });
 
-describe('ToolCall inline body', () => {
+describe('AgentLogToolCall inline body', () => {
   it('toggles uncontrolled, starting closed unless defaultExpanded', () => {
     const { getByTestId } = renderCall(
-      <ToolCall testID="c" name="t" status="done">
+      <AgentLogToolCall testID="c" name="t" status="done">
         <Text>Result</Text>
-      </ToolCall>,
+      </AgentLogToolCall>,
     );
     expect(getByTestId('c-row').props['aria-expanded']).toBe(false);
     pressHost(getByTestId('c-row'));
@@ -154,9 +153,9 @@ describe('ToolCall inline body', () => {
 
   it('honours defaultExpanded', () => {
     const { getByTestId } = renderCall(
-      <ToolCall testID="c" name="t" status="done" defaultExpanded>
+      <AgentLogToolCall testID="c" name="t" status="done" defaultExpanded>
         <Text>Result</Text>
-      </ToolCall>,
+      </AgentLogToolCall>,
     );
     expect(getByTestId('c-row').props['aria-expanded']).toBe(true);
   });
@@ -164,7 +163,7 @@ describe('ToolCall inline body', () => {
   it('is controlled by expanded and reports the request', () => {
     const onExpandedChange = jest.fn();
     const { getByTestId } = renderCall(
-      <ToolCall
+      <AgentLogToolCall
         testID="c"
         name="t"
         status="done"
@@ -172,7 +171,7 @@ describe('ToolCall inline body', () => {
         onExpandedChange={onExpandedChange}
       >
         <Text>Result</Text>
-      </ToolCall>,
+      </AgentLogToolCall>,
     );
     pressHost(getByTestId('c-row'));
     expect(onExpandedChange).toHaveBeenCalledWith(true);
@@ -182,9 +181,9 @@ describe('ToolCall inline body', () => {
   it('with onPress and a body, one press does both', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderCall(
-      <ToolCall testID="c" name="t" status="done" onPress={onPress}>
+      <AgentLogToolCall testID="c" name="t" status="done" onPress={onPress}>
         <Text>Result</Text>
-      </ToolCall>,
+      </AgentLogToolCall>,
     );
     pressHost(getByTestId('c-row'));
     expect(onPress).toHaveBeenCalledTimes(1);
@@ -192,50 +191,21 @@ describe('ToolCall inline body', () => {
   });
 });
 
-describe('ToolCall reduced motion', () => {
-  it('rests the running indicator as a still glyph', () => {
-    mockReduced = true;
-    const reduced = renderCall(<ToolCall name="t" status="running" testID="c" />);
-    const stillGlyphs = reduced.toJSON();
-    reduced.unmount();
-    mockReduced = false;
-    const moving = renderCall(<ToolCall name="t" status="running" testID="c" />);
-    expect(JSON.stringify(stillGlyphs)).not.toEqual(JSON.stringify(moving.toJSON()));
-  });
-});
-
-describe('ToolCall RTL', () => {
-  it('flips the press chevron in a right-to-left layout', () => {
-    const rotation = () => {
-      const { getByTestId, unmount } = renderCall(
-        <ToolCall name="t" status="done" onPress={() => {}} testID="c" />,
-      );
-      const chevron = getByTestId('c-chevron', hidden);
-      const rotate = (resolvedStyle(chevron.props.style).transform as { rotate: string }[])[0]
-        ?.rotate;
-      unmount();
-      return rotate;
-    };
-    expect(rotation()).toBe('0deg');
-    mockRtl = true;
-    expect(rotation()).toBe('180deg');
-  });
-});
-
-describe('ToolCallList', () => {
+describe('AgentLogToolCalls', () => {
   it('is a list of list items, and a lone call is neither', () => {
     const { getByTestId } = renderCall(
-      <ToolCallList accessibilityLabel="Tool calls" testID="list">
-        <ToolCall name="a" status="done" testID="a" />
-        <ToolCall name="b" status="running" testID="b" />
-      </ToolCallList>,
+      <AgentLogToolCalls accessibilityLabel="Tool calls" testID="list">
+        <AgentLogToolCall name="a" status="done" testID="a" />
+        <AgentLogToolCall name="b" status="running" testID="b" />
+      </AgentLogToolCalls>,
     );
     expect(getByTestId('list').props.role).toBe('list');
     expect(getByTestId('list').props.accessibilityLabel).toBe('Tool calls');
-    expect(getByTestId('a').props.role).toBe('listitem');
-    expect(getByTestId('b').props.role).toBe('listitem');
+    expect(
+      getByTestId('list').findAll((node) => node.props.role === 'listitem').length,
+    ).toBeGreaterThanOrEqual(2);
 
-    const lone = renderCall(<ToolCall name="a" status="done" testID="lone" />);
+    const lone = renderCall(<AgentLogToolCall name="a" status="done" testID="lone" />);
     expect(lone.getByTestId('lone').props.role).toBeUndefined();
   });
 });

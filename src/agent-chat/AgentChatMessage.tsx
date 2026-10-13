@@ -11,7 +11,7 @@ import Animated, {
 import { Avatar } from '../avatar';
 import { Markdown } from '../markdown';
 import { AgentThinking } from '../agent-thinking';
-import { ToolCall, ToolCallList } from '../tool-call';
+import { AgentLogToolCall, AgentLogToolCalls } from '../agent-log';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiVolumeMuteLine } from '../icons/remix/RiVolumeMuteLine';
@@ -319,11 +319,11 @@ export function AgentChatMessage({
         </AgentThinking>
       ) : null}
       {toolCalls?.length ? (
-        <ToolCallList>
+        <AgentLogToolCalls>
           {toolCalls.map(({ id, ...call }) => (
-            <ToolCall key={id} {...call} />
+            <AgentLogToolCall key={id} {...call} />
           ))}
-        </ToolCallList>
+        </AgentLogToolCalls>
       ) : null}
       {text ? (
         markdown ? (

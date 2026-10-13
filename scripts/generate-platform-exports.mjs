@@ -134,7 +134,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./questionnaire', 'questionnaire/index.ts'],
   ['./web-search', 'web-search/index.ts'],
   ['./task-list', 'task-list/index.ts'],
-  ['./tool-call', 'tool-call/index.ts'],
   ['./agent-chat', 'agent-chat/index.ts'],
   ['./ai-chat', 'ai-chat/index.ts'],
   ['./radio-indicator', 'radio-indicator/index.ts'],

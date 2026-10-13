@@ -88,8 +88,8 @@ const CAST_EXEMPTIONS = [
   'agent-progress/AgentProgressLoadingText.tsx',
   'web-search/WebSearch.tsx',
   'task-list/TaskList.tsx',
-  // The same `dataSet` hook, for the pressable row's `:focus-visible` ring.
-  'tool-call/ToolCall.tsx',
+  // The same `dataSet` hook, for the pressable rows' `:focus-visible` ring.
+  'agent-log/AgentLogToolCall.tsx',
   'tooltip/Tooltip.web.tsx',
   // The same, for the dots' reduced-motion media query.
   'connection-dots/ConnectionDots.web.tsx',

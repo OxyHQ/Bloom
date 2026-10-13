@@ -47,6 +47,8 @@ function Steps({ steps }: { steps: string[] }) {
 | `AgentLogRowConnector` | The curved branch + trunk for one row. Rendered by `AgentLogRow`; exported for rows that build their own. |
 | `AgentLogGuideBridge` | Drops from a parent row's glyph into a nested list's trunk. |
 | `AgentLogWorkingRow` | The tail indicator while the log runs: `AgentThinking variant="stars"`, 4px above and below, off the guide. |
+| `AgentLogToolCall` | One tool call as a log line (see below). Put it in an `AgentLogRow`, or let `AgentLogToolCalls` do that. |
+| `AgentLogToolCalls` | A column of `AgentLogToolCall`s hung off the guide: each child is one row, announced as a list. |
 | `AgentLogShimmerText` | A line still in progress. Nests inside your row's `Text`. |
 | `useAgentLogRevealTicker(options)` | Paces units, returns how many are revealed. |
 | `useAgentLogMotion()` | The system reduced-motion flag, read once for a whole log. |
@@ -56,6 +58,29 @@ function Steps({ steps }: { steps: string[] }) {
 | `AGENT_LOG_ROW_INDENT` | `16` — the row's left inset. |
 
 Every component takes an optional `reduce`; omitted, it reads the system setting. Pass it once from the log root so every unit agrees.
+
+## Tool calls
+
+`AgentLogToolCall` is a step of the log that knows its own state. It draws as every other step does, plain `body-regular` text-secondary on the guide, so a tool call sits in a transcript beside the prose steps without a card or a border.
+
+```tsx
+<AgentLogToolCalls accessibilityLabel="Tool calls">
+  <AgentLogToolCall name="web_search" label="Searching the web" status="running" />
+  <AgentLogToolCall name="read_file" label="Reading q3.pdf" status="done" detail="q3.pdf" durationMs={420} onPress={openResult} />
+  <AgentLogToolCall name="calc" label="Comparing margins" status="error" error="Divide by zero" />
+</AgentLogToolCalls>
+```
+
+| Prop | | |
+| --- | --- | --- |
+| `name`, `label` | | `label` titles the row, falling back to `name`. |
+| `status` | `'running' \| 'done' \| 'error'` | Running shimmers the label. Error turns it to the danger pair behind a warning glyph. |
+| `detail`, `error` | `string` | After the label, in text-tertiary. `error` replaces `detail` in the danger colour. |
+| `durationMs` | `number` | `420ms` under a second, `2.4s` above, mono and tabular. |
+| `onPress` | `() => void` | The row becomes a button that opens the result, with a chevron. |
+| `children`, `expanded`, `defaultExpanded`, `onExpandedChange` | | An inline result under the row. Makes the row a disclosure; with `onPress` as well, one press does both. |
+
+The status is carried three ways at once (shimmer or glyph, colour, and a word `Running` / `Done` / `Failed` in a live region: polite, assertive on a failure), so no one of them is load-bearing. A pressable row is a real `<button>` on web with `aria-expanded` and the shared focus ring. Inside `AgentChat`, a message's `toolCalls` render this way.
 
 ## The reveal
 

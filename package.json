@@ -1115,20 +1115,6 @@
         "default": "./lib/commonjs/task-list/index.js"
       }
     },
-    "./tool-call": {
-      "react-native": {
-        "types": "./lib/typescript/module/tool-call/index.d.ts",
-        "default": "./src/tool-call/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/tool-call/index.d.ts",
-        "default": "./lib/module/tool-call/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/tool-call/index.d.ts",
-        "default": "./lib/commonjs/tool-call/index.js"
-      }
-    },
     "./agent-chat": {
       "react-native": {
         "types": "./lib/typescript/module/agent-chat/index.d.ts",
@@ -4015,9 +4001,6 @@
       ],
       "task-list": [
         "./lib/typescript/module/task-list/index.d.ts"
-      ],
-      "tool-call": [
-        "./lib/typescript/module/tool-call/index.d.ts"
       ],
       "agent-chat": [
         "./lib/typescript/module/agent-chat/index.d.ts"
