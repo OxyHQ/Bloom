@@ -140,7 +140,11 @@ const NAMED_BY_SPREAD = ['pressable-scale/PressableScale.tsx <AnimatedPressable 
  * `ToastCloseButton` (a lone glyph, `role="button"`, no name) survived beside
  * the action button it sits next to.
  */
-const NAMED_BY_CONTENTS = ['accordion/Accordion.tsx <Pressable role="button">'];
+const NAMED_BY_CONTENTS = [
+  'accordion/Accordion.tsx <Pressable role="button">',
+  // A Markdown link is its label: the nodes inside it are the text.
+  'markdown/MarkdownInline.tsx <Text role="link">',
+];
 
 /**
  * The react-native primitives whose props land on a real host element. The rules

@@ -941,6 +941,10 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 };
 
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '考え中' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: '完了',
+  taskTodo: '未完了',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: {
@@ -2860,6 +2864,7 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  MARKDOWN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

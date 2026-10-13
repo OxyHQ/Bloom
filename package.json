@@ -979,6 +979,20 @@
         "default": "./lib/commonjs/agent-log/index.js"
       }
     },
+    "./markdown": {
+      "react-native": {
+        "types": "./lib/typescript/module/markdown/index.d.ts",
+        "default": "./src/markdown/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/markdown/index.d.ts",
+        "default": "./lib/module/markdown/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/markdown/index.d.ts",
+        "default": "./lib/commonjs/markdown/index.js"
+      }
+    },
     "./agent-progress": {
       "react-native": {
         "types": "./lib/typescript/module/agent-progress/index.d.ts",
@@ -3932,6 +3946,9 @@
       ],
       "agent-log": [
         "./lib/typescript/module/agent-log/index.d.ts"
+      ],
+      "markdown": [
+        "./lib/typescript/module/markdown/index.d.ts"
       ],
       "agent-progress": [
         "./lib/typescript/module/agent-progress/index.d.ts"

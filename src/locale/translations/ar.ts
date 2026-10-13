@@ -1084,6 +1084,10 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
   thinking: 'جارٍ التفكير',
 };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'مكتملة',
+  taskTodo: 'غير مكتملة',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: { like: 'إجابة جيدة', dislike: 'إجابة سيئة', copy: 'نسخ الإجابة', copied: 'تم النسخ!' },
@@ -3301,6 +3305,7 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  MARKDOWN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
