@@ -52,6 +52,29 @@ describe('BottomSheet', () => {
     expect(materials()).toHaveLength(0);
   });
 
+  it('keeps a detached sheet off the top edge by the same gap it keeps off the bottom', () => {
+    const maxHeightOf = (props: { detached?: boolean }) => {
+      const ref = createRef<BottomSheetRef>();
+      const screen = renderWithTheme(
+        <BottomSheet ref={ref} {...props}>
+          <Text>Tall content</Text>
+        </BottomSheet>,
+      );
+      act(() => ref.current?.present());
+      const panel = hostNodes(screen.toJSON()).find(
+        (n) => resolvedStyle(n.props.style).maxWidth === 800,
+      );
+      const value = resolvedStyle(panel?.props.style).maxHeight as number;
+      screen.unmount();
+      return value;
+    };
+    const flush = maxHeightOf({});
+    const detached = maxHeightOf({ detached: true });
+    // Flush clears only the top inset; detached also stands 16 off the top and
+    // bottom (the shared window-edge rule), so it is shorter by at least both.
+    expect(flush - detached).toBeGreaterThanOrEqual(32);
+  });
+
   it('publishes and paints the exact flat fill without an optical layer', () => {
     const ref = createRef<BottomSheetRef>();
     let published: string | undefined;

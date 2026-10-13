@@ -627,12 +627,16 @@ export const BottomSheetBase = forwardRef(
     // it covers that surface — offsetting it by a tab bar it is already hiding
     // would float it off the bottom of the screen for nothing.
     const detachedGap = detached ? windowEdgeGap(insets.bottom, EDGE_GAP) : 0;
+    // A detached sheet floats, so a tall one holds off the top edge by the same
+    // breathing room it keeps from the bottom one. A flush sheet only clears the
+    // safe area: it is a panel hanging off the screen, not a card.
+    const topGap = detached ? windowEdgeGap(insets.top, EDGE_GAP) : insets.top;
 
     const sheetHeightStyle = useAnimatedStyle(
       () => ({
-        maxHeight: screenHeightSV.value - keyboardHeight.value - insets.top - detachedGap,
+        maxHeight: screenHeightSV.value - keyboardHeight.value - topGap - detachedGap,
       }),
-      [insets.top, detachedGap, screenHeightSV, keyboardHeight],
+      [topGap, detachedGap, screenHeightSV, keyboardHeight],
     );
 
     const sheetMarginStyle = useAnimatedStyle(() => {
