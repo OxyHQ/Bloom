@@ -1012,6 +1012,20 @@
         "default": "./lib/commonjs/composer-loader/index.js"
       }
     },
+    "./voice": {
+      "react-native": {
+        "types": "./lib/typescript/module/voice/index.d.ts",
+        "default": "./src/voice/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/voice/index.d.ts",
+        "default": "./lib/module/voice/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/voice/index.d.ts",
+        "default": "./lib/commonjs/voice/index.js"
+      }
+    },
     "./composer-panel": {
       "react-native": {
         "types": "./lib/typescript/module/composer-panel/index.d.ts",
@@ -3938,6 +3952,9 @@
       ],
       "composer-loader": [
         "./lib/typescript/module/composer-loader/index.d.ts"
+      ],
+      "voice": [
+        "./lib/typescript/module/voice/index.d.ts"
       ],
       "composer-panel": [
         "./lib/typescript/module/composer-panel/index.d.ts"

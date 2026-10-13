@@ -240,6 +240,7 @@ export * from './agent-thinking';
 export * from './agent-log';
 export * from './agent-progress';
 export * from './composer-loader/index.web';
+export * from './voice';
 export * from './composer-panel/index.web';
 export * from './questionnaire';
 export * from './web-search';

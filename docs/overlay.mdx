@@ -99,7 +99,7 @@ as long as the root is mounted. That is the Android half: nothing on the
 surface's side of the outlet can confine TalkBack, so the app's
 [`OverlayInertBoundary`](/docs/bloom/main/portal) subscribes and hides the
 content while anything modal is open (`inert` on web). Dialog (every
-placement), the web `BottomSheet`, `SettingsModal` and `ZoomableMediaGallery`
+placement), the web `BottomSheet`, `SettingsModal`, `VoiceOverlay` and `ZoomableMediaGallery`
 pass it; the native `BottomSheet` needs no flag because its shell is an RN
 `Modal`, its own window. Menus, popovers, tooltips, toasts, media flight and
 the shell drawers must not — the content under an anchored menu stays

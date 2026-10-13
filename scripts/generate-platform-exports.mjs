@@ -126,6 +126,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./agent-log', 'agent-log/index.ts'],
   ['./agent-progress', 'agent-progress/index.ts'],
   ['./composer-loader', 'composer-loader/index.ts'],
+  // Voice mode: wave, controls and the full-surface overlay. Not web-forked.
+  ['./voice', 'voice/index.ts'],
   ['./composer-panel', 'composer-panel/index.ts'],
   ['./questionnaire', 'questionnaire/index.ts'],
   ['./web-search', 'web-search/index.ts'],

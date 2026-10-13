@@ -2845,6 +2845,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('fr', skills, { one: '{n} compétence', other: '{n} compétences' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'Mode vocal',
+  controls: 'Commandes vocales',
+  mute: 'Couper le micro',
+  pause: 'Pause',
+  end: 'Terminer la session vocale',
+  typeInstead: 'Écrire plutôt',
+  status: {
+    idle: 'Prêt',
+    listening: 'À l’écoute…',
+    transcribing: 'Transcription…',
+    thinking: 'Réflexion…',
+    speaking: 'Prise de parole…',
+    error: 'Une erreur s’est produite',
+  },
+  mutedStatus: 'Micro coupé',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -3055,6 +3073,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

@@ -3180,6 +3180,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'وضع الصوت',
+  controls: 'عناصر التحكم الصوتي',
+  mute: 'كتم الميكروفون',
+  pause: 'إيقاف مؤقت',
+  end: 'إنهاء الجلسة الصوتية',
+  typeInstead: 'اكتب بدلًا من ذلك',
+  status: {
+    idle: 'جاهز',
+    listening: 'جارٍ الاستماع…',
+    transcribing: 'جارٍ النسخ…',
+    thinking: 'جارٍ التفكير…',
+    speaking: 'جارٍ التحدث…',
+    error: 'حدث خطأ ما',
+  },
+  mutedStatus: 'الميكروفون مكتوم',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -3390,6 +3408,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

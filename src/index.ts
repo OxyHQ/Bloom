@@ -235,6 +235,7 @@ export * from './agent-thinking';
 export * from './agent-log';
 export * from './agent-progress';
 export * from './composer-loader';
+export * from './voice';
 export * from './composer-panel';
 export * from './questionnaire';
 export * from './web-search';

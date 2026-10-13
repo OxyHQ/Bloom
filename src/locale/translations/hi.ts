@@ -2725,6 +2725,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('hi', skills, { one: '{n} कौशल', other: '{n} कौशल' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'वॉइस मोड',
+  controls: 'वॉइस नियंत्रण',
+  mute: 'माइक्रोफ़ोन म्यूट करें',
+  pause: 'रोकें',
+  end: 'वॉइस सत्र समाप्त करें',
+  typeInstead: 'इसके बजाय टाइप करें',
+  status: {
+    idle: 'तैयार',
+    listening: 'सुन रहा है…',
+    transcribing: 'ट्रांसक्राइब हो रहा है…',
+    thinking: 'सोच रहा है…',
+    speaking: 'बोल रहा है…',
+    error: 'कुछ गड़बड़ हो गई',
+  },
+  mutedStatus: 'माइक्रोफ़ोन म्यूट है',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2934,6 +2952,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

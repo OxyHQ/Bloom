@@ -2798,6 +2798,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('ca', skills, { one: '{n} habilitat', other: '{n} habilitats' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'Mode de veu',
+  controls: 'Controls de veu',
+  mute: 'Silencia el micròfon',
+  pause: 'Pausa',
+  end: 'Finalitza la sessió de veu',
+  typeInstead: 'Escriu-ho',
+  status: {
+    idle: 'A punt',
+    listening: 'Escoltant…',
+    transcribing: 'Transcrivint…',
+    thinking: 'Pensant…',
+    speaking: 'Parlant…',
+    error: 'Alguna cosa ha fallat',
+  },
+  mutedStatus: 'Micròfon silenciat',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -3008,6 +3026,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

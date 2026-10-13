@@ -38,7 +38,7 @@
 //     `disabled` PROP is the only spelling that works. On a plain `View` there
 //     is no such prop, so `aria-disabled` is the only one that works.
 
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -79,6 +79,7 @@ import { FavoriteButton } from '../listing-card';
 import { CategoryBar } from '../category-bar';
 import { MapPriceMarker, MapSearchAreaButton } from '../map-marker';
 import { TransportControls } from '../media-player';
+import { VoiceControls } from '../voice';
 import { RiFireLine } from '../icons/remix/RiFireLine';
 import {
   DropdownMenuCheckboxItem,
@@ -323,6 +324,27 @@ describe('role="button" toggles use aria-pressed', () => {
       />,
     );
     expect(byTestId(c, 'fib').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('VoiceControls mute and pause emit aria-pressed under a fixed name', () => {
+    let c = mount(
+      <VoiceControls onMutedChange={() => {}} onPausedChange={() => {}} testID="voice" />,
+    );
+    expect(byTestId(c, 'voice-mute').getAttribute('aria-label')).toBe('Mute microphone');
+    expect(byTestId(c, 'voice-mute').getAttribute('aria-pressed')).toBe('false');
+    expect(byTestId(c, 'voice-pause').getAttribute('aria-pressed')).toBe('false');
+    c = mount(
+      <VoiceControls
+        muted
+        paused
+        onMutedChange={() => {}}
+        onPausedChange={() => {}}
+        testID="voice"
+      />,
+    );
+    expect(byTestId(c, 'voice-mute').getAttribute('aria-label')).toBe('Mute microphone');
+    expect(byTestId(c, 'voice-mute').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'voice-pause').getAttribute('aria-pressed')).toBe('true');
   });
 
   it('FavoriteButton emits aria-pressed and a name for what pressing does', () => {
