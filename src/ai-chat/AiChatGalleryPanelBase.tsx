@@ -141,7 +141,7 @@ function Scrim({ palette, expanded }: { palette: AiChatPalette; expanded: boolea
   );
 }
 
-/** A 22px glass action on the scrim: neutral-950 @45% (65% hovered), blur 4, radius 6, 14px white glyph. */
+/** A 22px frosted action on the scrim: neutral-950 % (65% hovered), blur 4, radius 6, 14px white glyph. */
 function ScrimAction({
   label,
   icon: Icon,

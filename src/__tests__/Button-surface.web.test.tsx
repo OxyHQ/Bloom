@@ -41,7 +41,7 @@ afterEach(() => {
 });
 
 it.each(['solid', 'subtle', 'outline'] as const)(
-  'keeps %s glass material and its rim when disabled',
+  'keeps %s surface material and its rim when disabled',
   (appearance) => {
     act(() =>
       root.render(
@@ -57,7 +57,7 @@ it.each(['solid', 'subtle', 'outline'] as const)(
       'rgba(239, 240, 239, 0.9)',
     );
     expect(BLOOM_BUTTON_CSS).toContain('backdrop-filter:');
-    expect(BLOOM_BUTTON_CSS).toContain('filter: url(');
+    expect(BLOOM_BUTTON_CSS).not.toContain('filter: url(');
     expect(BLOOM_BUTTON_CSS).toContain(SURFACE_RIM);
   },
 );

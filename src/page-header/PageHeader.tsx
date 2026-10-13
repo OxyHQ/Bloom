@@ -22,7 +22,7 @@ import { ScreenHeaderContext, useScreenContext } from '../screen/context';
 import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
 import { BloomScope } from '../appearance';
-import { GlassIsland } from '../glass';
+import { BlurIsland } from '../blur';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { useScrollMetricsValue } from '../layout/scroll-metrics';
 import { useClaimTopEdge, useScrollOffset } from '../layout';
@@ -72,7 +72,7 @@ import { useCommonMessages } from '../locale/common-messages';
  *
  *              floating                      bar
  *   chrome     islands + gradient            opaque strip + hairline + shadow
- *   back       36 capsule, glass             secondary medium icon `Button`
+ *   back       36 capsule, island            secondary medium icon `Button`
  *   title      headline-medium, no capsule   headline-medium
  *   scroll     drives the scrim              drives border, background, shadow
  *
@@ -374,7 +374,7 @@ function PageHeaderComponent({
       // Its own island: a back action is not a member of the page's action
       // group, and a `role="group"` of one is noise a screen reader reads out.
       // One shared pane; the back action is plain so it adds no second material.
-      <GlassIsland testID={testID ? `${testID}-back-island` : undefined}>
+      <BlurIsland testID={testID ? `${testID}-back-island` : undefined}>
         <Button
           appearance="plain"
           tone="neutral"
@@ -396,7 +396,7 @@ function PageHeaderComponent({
           hitSlop={CAPSULE_HIT_SLOP}
           testID={testID ? `${testID}-back` : undefined}
         />
-      </GlassIsland>
+      </BlurIsland>
     ) : (
       <Button
         appearance="plain"

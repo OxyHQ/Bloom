@@ -1,16 +1,13 @@
 import { surfaceStyle } from '../shapes/surface-style';
 import type { SurfaceShape } from '../shapes/corner-types';
-import React, { memo, useCallback, useEffect, useState } from 'react';
-import { Platform, StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { useSvgIdPrefix } from '../styles/svg-id';
+import React, { memo, useEffect } from 'react';
+import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { surfaceMaterialCss } from './web-material';
-import { useSurfaceRefraction } from './web-refraction';
 import { useTheme } from '../theme/use-theme';
-import { resolveSurfaceTint, resolveSurfaceOptics, surfaceSvgStop } from './shared';
+import { resolveSurfaceTint, resolveSurfaceOptics } from './shared';
 
 const WEB_PAINT_CSS = `
 .bloom-surface-paint { isolation: isolate; overflow: hidden; }
@@ -19,10 +16,12 @@ ${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)')}
 `;
 
 /**
- * The filled variants' top-to-bottom gradient, painted under the label.
+ * The material under a surface's content: tint, sheen and rim.
  *
- * Tint and sheen share one SVG. Alpha is explicitly split into stopOpacity,
- * because react-native-svg drops alpha embedded in stopColor.
+ * Web adds a backdrop blur beneath them. Native paints one `View` (tint as
+ * `backgroundColor`, sheen as a CSS gradient, rim as an inset `boxShadow`):
+ * no SVG, no layout state, no per-surface blur. A `BlurView` inside a surface
+ * can SIGSEGV on Android, so native blur lives only in `overlay/` `Backdrop`.
  */
 export const SurfacePaint = memo(function SurfacePaint({
   fill,
@@ -48,17 +47,7 @@ export const SurfacePaint = memo(function SurfacePaint({
   const theme = useTheme();
   const optics = resolveSurfaceOptics(theme.isDark);
   const resolvedFill = resolveSurfaceTint(fill ?? 'transparent');
-  const id = useSvgIdPrefix('bloom-surface');
   const isWeb = Platform.OS === 'web';
-  const [nativeSize, setNativeSize] = useState<{ width: number; height: number } | null>(null);
-  const onNativeLayout = useCallback((event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return;
-    setNativeSize((previous) =>
-      previous?.width === width && previous.height === height ? previous : { width, height },
-    );
-  }, []);
-  useSurfaceRefraction(isWeb);
   useEffect(() => {
     if (isWeb) adoptStyleSheet('bloom-surface-paint-web-css', WEB_PAINT_CSS);
   }, [isWeb]);
@@ -84,55 +73,20 @@ export const SurfacePaint = memo(function SurfacePaint({
       />
     );
   }
-  const base = surfaceSvgStop(resolvedFill);
   return (
     <View
       testID={testID}
-      onLayout={onNativeLayout}
       pointerEvents="none"
-      style={[StyleSheet.absoluteFill, geometry, { overflow: 'hidden' }]}
-    >
-      {/* Android SVG percentage paths cache canvas dimensions after first paint.
-          Update the actual Rect geometry when this backing View changes size. */}
-      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-        <Defs>
-          {sheen ? (
-            <LinearGradient id={`${id}-sheen`} x1="0" y1="0" x2="0" y2="1">
-              {optics.sheen.map((stop) => (
-                <Stop
-                  key={stop.offset}
-                  offset={String(stop.offset)}
-                  stopColor={stop.color}
-                  stopOpacity={stop.opacity}
-                />
-              ))}
-            </LinearGradient>
-          ) : null}
-        </Defs>
-        {fill !== undefined ? (
-          <Rect
-            x="0"
-            y="0"
-            width={nativeSize?.width ?? '100%'}
-            height={nativeSize?.height ?? '100%'}
-            fill={base.color}
-            fillOpacity={base.opacity}
-          />
-        ) : null}
-        {sheen ? (
-          <Rect
-            x="0"
-            y="0"
-            width={nativeSize?.width ?? '100%'}
-            height={nativeSize?.height ?? '100%'}
-            fill={`url(#${id}-sheen)`}
-          />
-        ) : null}
-      </Svg>
-      <View
-        pointerEvents="none"
-        style={[StyleSheet.absoluteFill, geometry, { boxShadow: optics.rim }]}
-      />
-    </View>
+      style={[
+        StyleSheet.absoluteFill,
+        geometry,
+        {
+          overflow: 'hidden',
+          backgroundColor: fill === undefined ? 'transparent' : resolvedFill,
+          boxShadow: optics.rim,
+          ...(sheen ? { experimental_backgroundImage: optics.sheenCss } : null),
+        },
+      ]}
+    />
   );
 });

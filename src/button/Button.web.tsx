@@ -1,4 +1,3 @@
-import { useSurfaceRefraction } from '../surface/web-refraction';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { useButtonLayout } from './use-button-layout.web';
 import { useLongPress } from './use-long-press.web';
@@ -61,7 +60,7 @@ export type {
 //  is declared only in the sheet. An inline `background-color` would outrank the
 //  `:hover` rule and silence it (`interactive-web-css.test.tsx` gates that).
 //
-//  Glass paints the backdrop in ::before and its state tint in ::after.
+//  The material paints the backdrop in ::before and its state tint in ::after.
 //
 //  `aria-busy` is excluded from the disabled paint: a loading button keeps its
 //  rest colours under the spinner instead of greying out.
@@ -245,7 +244,6 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
   const resolvedId = id ?? `bloom-btn-${reactId}`;
 
   const appearance = appearanceProp ?? 'solid';
-  useSurfaceRefraction(material === 'surface' && appearance !== 'plain');
   const { size, tone } = useBloomAppearance(
     { size: sizeProp, tone: toneProp },
     { size: 'md', tone: 'accent' },

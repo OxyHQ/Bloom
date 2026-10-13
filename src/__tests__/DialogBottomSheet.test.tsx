@@ -4,7 +4,6 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { Dialog, useDialogControl } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Rect } from 'react-native-svg';
 
 /**
  * Minimal shape of a `react-test-renderer` JSON node — enough to walk the tree
@@ -77,12 +76,8 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
         (node) => typeof node.type === 'function' && node.type.name === 'SurfacePaint',
       )[0];
       expect(paint).toBeDefined();
-      const fillRect = paint!
-        .findAllByType(Rect)
-        .find((node) => node.props.fillOpacity !== undefined);
-      expect(fillRect).toBeDefined();
-      expect(fillRect!.props.fill).not.toBe('transparent');
-      expect(fillRect!.props.fillOpacity).toBeGreaterThan(0);
+      expect(paint!.props.fill).toBeDefined();
+      expect(paint!.props.fill).not.toBe('transparent');
     },
   );
 
@@ -96,11 +91,7 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
       (node) => typeof node.type === 'function' && node.type.name === 'SurfacePaint',
     )[0];
     expect(paint).toBeDefined();
-    const fillRect = paint!
-      .findAllByType(Rect)
-      .find((node) => node.props.fillOpacity !== undefined);
-    expect(fillRect).toBeDefined();
-    expect(fillRect!.props.fill).toBe('transparent');
+    expect(paint!.props.fill).toBe('transparent');
   });
 
   it('does not render bottom-sheet content until opened', () => {

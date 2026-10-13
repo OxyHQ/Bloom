@@ -105,7 +105,7 @@ Opt into `cornerCurve="smooth"` for CSS squircle on supporting browsers,
 iOS continuous curves, and circular corners on Android and unsupported browsers. `radius-max` always remains a pill.
 `border="medium"` supplies a 2px selection border.
 Both layers use the same curve; the inner radius accounts for the border width.
-Explicit `radius`, `cornerCurve` and `border` own geometry. With no radius prop, a resolved `style.borderRadius` is used before the family default, matching Surface and GlassIsland. Individual corner radii, border widths and overflow remain controlled by the shape, border and clipping props. `contentStyle` cannot replace the resolved clip geometry.
+Explicit `radius`, `cornerCurve` and `border` own geometry. With no radius prop, a resolved `style.borderRadius` is used before the family default, matching Surface and BlurIsland. Individual corner radii, border widths and overflow remain controlled by the shape, border and clipping props. `contentStyle` cannot replace the resolved clip geometry.
 
 ## Parts
 
@@ -114,7 +114,7 @@ spacing and type conventions, not requirements. A card with entirely custom
 content is a normal thing; use the parts when you want the same rhythm as every
 other card.
 
-`LinkPreviewCard` composes Card and inherits this material without a separate glass implementation.
+`LinkPreviewCard` composes Card and inherits this material without a separate material implementation.
 
 `appearance="plain"` is an unpainted container: it does not mount SurfacePaint or add a gradient/rim. Explicit caller backgrounds, borders and elevation remain authoritative. The removed `variant="plain"` maps to `appearance="solid" elevation="none"`; `elevated`, `outlined` and `filled` map to `solid`, `outline` and `subtle`.
 

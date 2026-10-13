@@ -303,7 +303,7 @@ export const PanelsWithoutBackend: Story = {
   ),
 };
 
-/** The chat container: breadcrumb header, a thread, and the glass composer lit while `working`. */
+/** The chat container: breadcrumb header, a thread, and the frosted composer lit while `working`. */
 export const Container: Story = {
   parameters: { controls: { disable: true } },
   render: function Render() {
@@ -323,7 +323,7 @@ export const Container: Story = {
                 <ComposerLoader active={working}>
                   <ComposerPill
                     surface={false}
-                    glass={working}
+                    frosted={working}
                     models={['Composer 2.5', 'Fable 5', 'Sonnet 5']}
                   />
                 </ComposerLoader>
@@ -476,7 +476,7 @@ export const FloatingChrome: Story = {
             composer={
               <ComposerPill
                 surface={false}
-                glass={working}
+                frosted={working}
                 models={['Composer 2.5', 'Fable 5', 'Sonnet 5']}
               />
             }

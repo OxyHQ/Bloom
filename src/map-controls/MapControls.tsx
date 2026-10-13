@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { ButtonGroupItem } from '../button-group';
-import { GlassIsland } from '../glass';
+import { BlurIsland } from '../blur';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiBox3Line } from '../icons/remix/RiBox3Line';
 import { RiFocus3Line } from '../icons/remix/RiFocus3Line';
@@ -17,7 +17,7 @@ import type { MapControlsProps } from './types';
  * The chrome that floats over a map — locate, compass, zoom, tilt — as a
  * column of translucent capsules.
  *
- *   island   every group is a `GlassIsland`: rung 1 of the surface ladder at
+ *   island   every group is a `BlurIsland`: rung 1 of the surface ladder at
  *            the chrome alpha, with the material's own hairline and shadow.
  *            One capsule per GROUP, so the column reads as separate controls
  *            rather than as one bar — which is exactly what the island was
@@ -31,8 +31,8 @@ import type { MapControlsProps } from './types';
  *            is where that is said; nothing else about it changes.
  *   stack    44 controls, 8 apart, hugging whichever edge `align` names.
  *
- * WHY NOT `FrostedIconButton`: it is one of the three glass materials Bloom
- * grew independently, and `glass/` exists so there is not a fourth. Two glass
+ * WHY NOT `FrostedIconButton`: it is one of the three translucent materials Bloom
+ * grew independently, and `blur/` exists so there is not a fourth. Two material
  * recipes side by side in one stack is the drift the island was written to
  * end, so the whole stack is one material. A single frosted button over a
  * photograph is still the right control where there is no island.
@@ -82,7 +82,7 @@ function MapControlsComponent({
       ]}
     >
       {onLocate ? (
-        <GlassIsland testID={id('locate-island')}>
+        <BlurIsland testID={id('locate-island')}>
           <ButtonGroupItem
             iconOnly
             leadingIcon={RiFocus3Line}
@@ -96,7 +96,7 @@ function MapControlsComponent({
             style={MAP_CONTROL_BOX}
             testID={id('locate')}
           />
-        </GlassIsland>
+        </BlurIsland>
       ) : null}
 
       {onResetNorth && heading !== undefined ? (
@@ -109,7 +109,7 @@ function MapControlsComponent({
       ) : null}
 
       {zoomable ? (
-        <GlassIsland
+        <BlurIsland
           role="group"
           accessibilityLabel={zoomLabel}
           style={{ flexDirection: 'column' }}
@@ -133,11 +133,11 @@ function MapControlsComponent({
             style={MAP_CONTROL_BOX}
             testID={id('zoom-out')}
           />
-        </GlassIsland>
+        </BlurIsland>
       ) : null}
 
       {onTiltChange ? (
-        <GlassIsland testID={id('tilt-island')}>
+        <BlurIsland testID={id('tilt-island')}>
           <ButtonGroupItem
             iconOnly
             leadingIcon={RiBox3Line}
@@ -149,7 +149,7 @@ function MapControlsComponent({
             style={MAP_CONTROL_BOX}
             testID={id('tilt')}
           />
-        </GlassIsland>
+        </BlurIsland>
       ) : null}
 
       {children}

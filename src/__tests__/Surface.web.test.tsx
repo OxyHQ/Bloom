@@ -35,7 +35,6 @@ import { SurfacePaint } from '../surface/SurfacePaint';
 import { Surface } from '../surface/Surface.web';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
 import { Button } from '../button/Button.web';
-import { SURFACE_REFRACTION_ID } from '../surface/web-refraction';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let container: HTMLDivElement;
@@ -73,8 +72,7 @@ it('uses real RN web layout styles and keeps the material on the same root', () 
   expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(255, 255, 255, 0.9)');
 });
 
-it('shares one refractive material across Surface and disabled Button', () => {
-  document.getElementById(`${SURFACE_REFRACTION_ID}-defs`)?.remove();
+it('shares one blur-and-tint material across Surface and disabled Button', () => {
   act(() =>
     root.render(
       <>
@@ -85,14 +83,15 @@ it('shares one refractive material across Surface and disabled Button', () => {
       </>,
     ),
   );
-  expect(document.querySelectorAll(`#${SURFACE_REFRACTION_ID}`)).toHaveLength(1);
   const surfaceCss = document.getElementById('bloom-surface-web-css')!.textContent!;
   const buttonCss = document.getElementById('bloom-button-web-css')!.textContent!;
-  // Expanding the filtered pane leaks rectangular pixels outside rounded hosts.
+  // The blur pane is inset to the host so it cannot leak past rounded corners.
   for (const css of [surfaceCss, buttonCss]) {
     const sampler = css.match(/::before\s*\{([^}]+)\}/)?.[1];
     expect(sampler).toMatch(/inset:\s*0;/);
-    expect(sampler).toContain(`filter: url(#${SURFACE_REFRACTION_ID})`);
+    expect(sampler).toContain('backdrop-filter: blur(8px)');
+    expect(css).not.toContain('feDisplacementMap');
+    expect(css).not.toMatch(/filter:\s*url\(/);
     expect(css).not.toContain('background-clip: padding-box');
     expect(css).not.toContain('border: 1px solid transparent');
   }
@@ -118,13 +117,12 @@ it('the universal paint entry renders web optics without a platform barrel', () 
   expect(getComputedStyle(paint).pointerEvents).toBe('none');
   expect(getComputedStyle(paint).borderTopLeftRadius).toBe('19px');
   expect(container.querySelector('svg')).toBeNull();
-  expect(document.getElementById(SURFACE_REFRACTION_ID)).not.toBeNull();
+  expect(document.querySelector('svg')).toBeNull();
 });
 
 it.each(['solid', 'subtle', 'outline'] as const)(
   'keeps %s disabled material and native disabled semantics on latest Button',
   (appearance) => {
-    document.getElementById(`${SURFACE_REFRACTION_ID}-defs`)?.remove();
     act(() =>
       root.render(
         <Button appearance={appearance} disabled>
@@ -135,7 +133,7 @@ it.each(['solid', 'subtle', 'outline'] as const)(
     const button = container.querySelector('button')!;
     expect(button.disabled).toBe(true);
     expect(button.className).toContain('bloom-btn--surface');
-    expect(document.getElementById(SURFACE_REFRACTION_ID)).not.toBeNull();
+    expect(document.querySelector('svg')).toBeNull();
   },
 );
 it('keeps plain actions unfilled and forwards the original activation event', () => {
@@ -166,7 +164,7 @@ it('uses the explicit brand pair and exposes persistent pressed state', () => {
   expect(button.style.getPropertyValue('--bloom-btn-fg')).toBe('#ffffff');
 });
 
-it('can omit sheen without dropping the refractive pane or rim', () => {
+it('can omit sheen without dropping the blur pane or rim', () => {
   act(() =>
     root.render(
       <SurfacePaint testID="pane" fill="rgba(255,255,255,.25)" radius={20} sheen={false} />,
@@ -180,7 +178,7 @@ it('can omit sheen without dropping the refractive pane or rim', () => {
   expect(css).toContain(SURFACE_RIM);
 });
 
-// The glass rim owns the edge even on semantic outline buttons.
+// The rim owns the edge even on semantic outline buttons.
 it.each(['solid', 'subtle', 'outline'] as const)(
   'keeps %s semantic borders transparent in every state',
   (appearance) => {

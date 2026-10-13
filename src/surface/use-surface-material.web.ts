@@ -1,4 +1,3 @@
-import { useSurfaceRefraction } from './web-refraction';
 import { useContext, useMemo } from 'react';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -13,7 +12,6 @@ export function useSurfaceMaterial(
   fill: string,
   enabled = true,
 ): WebCssStyle {
-  useSurfaceRefraction(enabled);
   const css = useMemo(
     () =>
       `${selector} { isolation: isolate; }\n${surfaceMaterialCss(selector, 'var(--bloom-surface-fill)')}`,

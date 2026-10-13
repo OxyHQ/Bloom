@@ -72,7 +72,7 @@ it**. A stop written as `rgba(…, 0.45)` renders correctly in a browser and
 FULLY OPAQUE on a device — a hard-edged accent wedge lying over half the map —
 and a gate that pinned both platforms to the same colour token would stay green,
 because the two agree about every value and only the renderer's reading differs.
-That exact defect shipped once in `theme/glass-colors.ts`.
+That exact defect shipped once in the old surface material.
 
 So `LOCATION_PUCK_CONE_STOPS` holds an OFFSET and an OPACITY in separate fields,
 and the cone hands `color` to `stopColor` and `opacity` to `stopOpacity`, which

@@ -5,7 +5,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { BloomScope } from '../appearance';
-import { hostNodes, resolvedStyle } from './support/rendered-style';
+import { hostNodes, resolvedStyle, surfaceSheens } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -15,16 +15,13 @@ function renderWithTheme(ui: React.ReactElement) {
   );
 }
 
-const materialCount = (tree: unknown) =>
-  hostNodes(tree).filter(
-    (n) => n.type === 'LinearGradient' && /^bloom-surface-.*-sheen$/.test(String(n.props.id)),
-  ).length;
+const materialCount = (tree: unknown) => surfaceSheens(tree).length;
 
 /** A divider is the only 1px-wide box a group renders. */
 const hairlineCount = (tree: unknown) =>
   hostNodes(tree).filter((n) => resolvedStyle(n.props.style).width === 1).length;
 
-describe('ButtonGroup, glass', () => {
+describe('ButtonGroup, surface', () => {
   it('paints ONE material for the whole group and none on the items', () => {
     const { getByTestId, toJSON } = renderWithTheme(
       <ButtonGroup accessibilityLabel="Actions" testID="group">

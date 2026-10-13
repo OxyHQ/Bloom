@@ -1,6 +1,6 @@
 ---
 title: Map controls
-description: The chrome that floats over a map — locate, compass, zoom, tilt and the layer picker — as a column of glass islands, with no map engine anywhere in it.
+description: The chrome that floats over a map — locate, compass, zoom, tilt and the layer picker — as a column of blur islands, with no map engine anywhere in it.
 order: 136
 ---
 
@@ -25,12 +25,12 @@ import { MapControls, MapLayerPicker } from '@oxy.so/bloom/map-controls';
 
 ## One material, and it is the island's
 
-Every group in the stack is a [`GlassIsland`](/docs/glass) and every control inside it is a
+Every group in the stack is a [`BlurIsland`](/docs/blur) and every control inside it is a
 `ButtonGroupItem`. That is not a preference:
 
 - the island paints rung 1 of the surface ladder at the chrome alpha, with the material's
   own hairline and shadow, so the stack moves with a preset change like everything else;
-- the island mounts a `BloomScope` with `material: 'glass'`, so the items inside paint
+- the island mounts a `BloomScope`, so the items inside paint
   FLUSH with no `variant` written on any of them — the contract in
   [composition](/docs/composition);
 - `ButtonGroupItem` is Bloom's island-aware control. It carries a toggle's `aria-pressed`
@@ -38,8 +38,8 @@ Every group in the stack is a [`GlassIsland`](/docs/glass) and every control ins
   an anchored family's `asChild` hands it, which is what makes the layer picker's trigger
   announce its own expanded state.
 
-**Why not `FrostedIconButton`.** It is one of the three glass materials Bloom grew
-independently, and `glass/` exists so there is not a fourth. Two glass recipes side by side
+**Why not `FrostedIconButton`.** It is one of the three translucent materials Bloom grew
+independently, and `blur/` exists so there is not a fourth. Two material recipes side by side
 in one stack is exactly the drift the island was written to end, so the whole stack is one
 material. A single frosted button over a photograph — where there is no island — is still
 the right control.
@@ -52,7 +52,7 @@ the stack read as separate controls rather than as one bar.
 
 The button group's rungs are 34 and 30, sized for a toolbar standing beside other chrome
 where the row as a whole is what a finger aims at. A map control is a LONE circle over a
-moving map with a finger already on the glass, so `MAP_CONTROL_BOX` sets the item to 44
+moving map with a finger already on the screen, so `MAP_CONTROL_BOX` sets the item to 44
 square through the `style` override `ButtonGroupItem` publishes. Nothing about its fill,
 hover, press or focus ring changes.
 
@@ -86,7 +86,7 @@ differently:
 
 The rows, indicators, keyboard handling, dismissal and anchoring are
 [`dropdown-menu`](/docs/dropdown-menu)'s. The trigger is a `ButtonGroupItem` composed
-through `asChild`, inside the same `GlassIsland` as everything else, so the picker lands in
+through `asChild`, inside the same `BlurIsland` as everything else, so the picker lands in
 the stack as one more island rather than as a different kind of thing.
 
 It is placed in `children` rather than configured through a prop, so an app can put it

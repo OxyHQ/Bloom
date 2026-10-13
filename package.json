@@ -8,7 +8,10 @@
   "types": "lib/typescript/commonjs/index.d.ts",
   "react-native": "src/index.ts",
   "source": "src/index.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/theme/init-css-interop.*",
+    "**/toast/use-stack-hover.*"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -3616,7 +3619,6 @@
     "@vitejs/plugin-react": "^6.0.2",
     "expo-blur": "~56.0.3",
     "expo-font": "^56.0.5",
-    "expo-glass-effect": "~56.0.4",
     "expo-haptics": "~56.0.3",
     "expo-image": "~56.0.11",
     "expo-router": "^56.0.0",
@@ -3651,7 +3653,6 @@
     "expo": "*",
     "expo-blur": "*",
     "expo-font": "*",
-    "expo-glass-effect": ">=0.1.9",
     "expo-haptics": "*",
     "expo-image": "*",
     "expo-router": ">=3.0.0",

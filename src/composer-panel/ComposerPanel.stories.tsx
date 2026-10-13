@@ -354,8 +354,8 @@ export const Pill: Story = {
   ),
 };
 
-/** Glass: inside a lit `ComposerLoader`, the controls sit on frosted chips over the light. */
-export const PillGlass: Story = {
+/** Frosted: inside a lit `ComposerLoader`, the controls sit on frosted chips over the light. */
+export const PillFrosted: Story = {
   parameters: { controls: { disable: true } },
   render: function Render() {
     const [working, setWorking] = useState(true);
@@ -374,7 +374,7 @@ export const PillGlass: Story = {
         <ComposerLoader active={working}>
           <ComposerPill
             surface={false}
-            glass={working}
+            frosted={working}
             models={PILL_MODELS}
             defaultModel="Fable 5"
           />
@@ -421,7 +421,7 @@ export const BusyAndStop: Story = {
         <ComposerLoader active={busy}>
           <ComposerPill
             surface={false}
-            glass={busy}
+            frosted={busy}
             busy={busy}
             disabled={busy}
             onStop={() => setBusy(false)}

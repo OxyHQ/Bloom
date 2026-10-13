@@ -115,21 +115,21 @@ it('plain custom backgrounds update the fill without raising the level', () => {
   );
   expect(value(screen)).toEqual({ fill: 'rgb(128, 0, 128)', level: 2 });
 });
-it('preserves colored semantic pairs and estimates glass against its parent', () => {
+it('preserves colored semantic pairs and estimates the surface against its parent', () => {
   const solid = render(
     <Card tone="accent">
       <Probe />
     </Card>,
   );
   expect(value(solid).fill).toBe('rgb(44, 115, 71)');
-  const glass = render(
+  const tinted = render(
     <SurfaceLevelProvider level={1} fill="#222222">
       <Card style={{ backgroundColor: 'rgba(255,255,255,.25)' }}>
         <Probe />
       </Card>
     </SurfaceLevelProvider>,
   );
-  expect(value(glass)).toEqual({
+  expect(value(tinted)).toEqual({
     fill: resolveSurfaceFill('rgba(255,255,255,.25)', '#222222'),
     level: 2,
   });

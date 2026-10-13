@@ -4,7 +4,7 @@
  *
  * Geometry, motion constants, theme resolution and the contracts for the two
  * injected platform components. Everything here is platform-neutral — no
- * expo-glass-effect, expo-symbols, expo-router or react-native-screens — because
+ * expo-symbols, expo-router or react-native-screens — because
  * this module is pulled into the native bundle, the web bundle and a consumer's
  * `tsc` alike.
  */
@@ -89,7 +89,7 @@ export function resolveTabBarTheme(
     activeTint: overrides?.activeTint ?? colors.text,
     inactiveTint: overrides?.inactiveTint ?? colors.textSecondary,
     highlight: overrides?.highlight ?? colors.contrast50,
-    glassTint: overrides?.glassTint ?? colors.card,
+    blurTint: overrides?.blurTint ?? colors.card,
   };
 }
 
@@ -104,7 +104,7 @@ export function resolveTabBarTheme(
  */
 export function useTabBarTheme(overrides?: Partial<TabBarTheme>): TabBarTheme {
   const { colors } = useTheme();
-  const { activeTint, inactiveTint, highlight, glassTint } = overrides ?? {};
+  const { activeTint, inactiveTint, highlight, blurTint } = overrides ?? {};
 
   return useMemo(
     () =>
@@ -112,9 +112,9 @@ export function useTabBarTheme(overrides?: Partial<TabBarTheme>): TabBarTheme {
         activeTint,
         inactiveTint,
         highlight,
-        glassTint,
+        blurTint,
       }),
-    [colors, activeTint, inactiveTint, highlight, glassTint],
+    [colors, activeTint, inactiveTint, highlight, blurTint],
   );
 }
 
@@ -129,25 +129,21 @@ export function useTabBarTheme(overrides?: Partial<TabBarTheme>): TabBarTheme {
 //  that imports `*.web.tsx`, everything else gets the neutral file.
 // ---------------------------------------------------------------------------
 
-/** Renderer reports its actual fill, including platform capability fallbacks. */
-export type TabBarSurfaceComponent = ComponentType<TabBarSurfaceProps> & {
-  resolveFill?: (theme: TabBarTheme) => string;
-};
+export type TabBarSurfaceComponent = ComponentType<TabBarSurfaceProps>;
 
 export interface TabBarSurfaceProps {
-  /** Resolved theme — the surface picks `glassTint`. */
+  /** Resolved theme — the surface paints `blurTint`. */
   theme: TabBarTheme;
   /**
    * Animated capsule shape (a `borderRadius` tracking the animated height).
-   * It rides on the surface itself rather than on a clipping parent: iOS 26
-   * glass renders its own native corner configuration (true squircle + rim
-   * lighting), which an RN mask would flatten.
+   * It rides on the surface itself rather than on a clipping parent, so the
+   * material's shadow and rim are not masked.
    *
    * Typed through `AnimatedStyle` because this always receives a
    * `useAnimatedStyle` result, which reanimated 4.5 returns as an opaque
    * `AnimatedStyleHandle` rather than the plain style object 4.2 handed back.
    * Same reason `BottomSheetProps.style` is typed this way. Every variant
-   * forwards it into an `Animated.View` (or an animated `GlassView`), so the
+   * forwards it into an `Animated.View`, so the
    * wider type is what they genuinely accept.
    */
   style: StyleProp<AnimatedStyle<ViewStyle>>;

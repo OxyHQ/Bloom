@@ -15,7 +15,13 @@ import {
 } from '../button/shared';
 import { TYPE_SCALE } from '../typography/scale';
 import { pressHost } from './support/press-host';
-import { classNamesOn, renderedChildren, resolvedStyle } from './support/rendered-style';
+import {
+  classNamesOn,
+  renderedChildren,
+  resolvedStyle,
+  sheenStops,
+  surfaceSheens,
+} from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -635,15 +641,17 @@ describe('button details', () => {
 
 describe('filled button material', () => {
   it.each(['accent', 'danger', 'success', 'warning', 'info'] as const)(
-    'renders the shared three-stop sheen for %s',
+    'paints the shared three-stop sheen as a gradient on one view for %s',
     (tone) => {
       const screen = renderWithTheme(<Button tone={tone}>Save</Button>);
-      const stops = screen.UNSAFE_getAllByType(Stop).map((stop) => stop.props.stopColor);
-      expect(stops).toHaveLength(3);
-      expect(stops[0]).not.toBe(stops[2]);
-      expect(stops.every((color) => typeof color === 'string' && !color.startsWith('rgba'))).toBe(
-        true,
+      const sheens = surfaceSheens(screen.toJSON());
+      expect(sheens).toHaveLength(1);
+      const stops = sheenStops(
+        String(resolvedStyle(sheens[0]!.props.style).experimental_backgroundImage),
       );
+      expect(stops).toHaveLength(3);
+      expect(stops[0]!.color).not.toBe(stops[2]!.color);
+      expect(screen.UNSAFE_queryAllByType(Stop)).toHaveLength(0);
     },
   );
 });

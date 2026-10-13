@@ -50,10 +50,10 @@ import { revealTheme, THEME_TRANSITION_DURATION, type RevealOrigin } from './vie
  *                      hover secondary-hover + icon-primary
  *   segmented          track p4 gap4 full radius; two 32px circular segments,
  *                      icon 16; a 32px thumb with shadow-xs slides 36px (200ms)
- *   glass-segmented    no track; black / white literals (landing nav skin)
+ *   bare-segmented    no track; black / white literals (landing nav skin)
  *
  * Neutral tracks, thumbs and labels use canonical surface/text roles; the
- * active switch keeps its accent gradient and the explicit glass landing skin
+ * active switch keeps its accent gradient and the explicit bare landing skin
  * keeps its backdrop-dependent material colours.
  *
  * On web the change is revealed as a growing circle from the pointer
@@ -80,9 +80,9 @@ interface TogglePalette {
   switchThumb: readonly [string, string];
   chipOff: { border: string; from: string; to: string };
   chipOn: { border: string; from: string; to: string };
-  glassSelected: string;
-  glassIdle: string;
-  glassHover: string;
+  bareSelected: string;
+  bareIdle: string;
+  bareHover: string;
 }
 
 /** CSS `color-mix(in oklab, a p%, b)` approximated in sRGB — the stops are one hue apart. */
@@ -104,12 +104,12 @@ export function resolveThemeTogglePalette(theme: Theme): TogglePalette {
     track: {
       segmented: c.backgroundSecondary,
       'sidebar-segmented': c.backgroundTertiary,
-      'glass-segmented': 'transparent',
+      'bare-segmented': 'transparent',
     },
     thumb: {
       segmented: c.card,
       'sidebar-segmented': c.card,
-      'glass-segmented': dark ? '#2e2e33' : '#ffffff',
+      'bare-segmented': dark ? '#2e2e33' : '#ffffff',
     },
     thumbShadow: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     switchOff: c.backgroundTertiary,
@@ -123,9 +123,9 @@ export function resolveThemeTogglePalette(theme: Theme): TogglePalette {
       from: mix(ramp[500], ramp[600], 0.63),
       to: mix(ramp[600], ramp[700], 0.16),
     },
-    glassSelected: dark ? '#ffffff' : '#000000',
-    glassIdle: dark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.45)',
-    glassHover: dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+    bareSelected: dark ? '#ffffff' : '#000000',
+    bareIdle: dark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.45)',
+    bareHover: dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
   };
 }
 
@@ -319,13 +319,13 @@ function SwitchTrackSm({
 function SegmentButton({
   mode,
   selected,
-  glass,
+  bare,
   palette,
   onSelect,
 }: {
   mode: 'light' | 'dark';
   selected: boolean;
-  glass: boolean;
+  bare: boolean;
   palette: TogglePalette;
   onSelect: (mode: 'light' | 'dark', event: GestureResponderEvent, node: unknown) => void;
 }) {
@@ -333,12 +333,12 @@ function SegmentButton({
   const ref = useRef<View>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = mode === 'light' ? RiSunLine : RiMoonLine;
-  const color = glass
+  const color = bare
     ? selected
-      ? palette.glassSelected
+      ? palette.bareSelected
       : hovered
-        ? palette.glassHover
-        : palette.glassIdle
+        ? palette.bareHover
+        : palette.bareIdle
     : selected || hovered
       ? palette.iconActive
       : palette.icon;
@@ -458,7 +458,7 @@ function SegmentedToggle({
   testID?: string;
 }) {
   const { messages } = useMessages(THEME_TOGGLE_MESSAGES);
-  const glass = variant === 'glass-segmented';
+  const bare = variant === 'bare-segmented';
   const progress = useSharedValue(dark ? 1 : 0);
   useEffect(() => {
     progress.value = reducedMotion
@@ -488,7 +488,7 @@ function SegmentedToggle({
           padding: 4,
           borderRadius: borderRadius.full,
           backgroundColor: palette.track[variant],
-          zIndex: glass ? 10 : undefined,
+          zIndex: bare ? 10 : undefined,
         },
         style,
       ]}
@@ -514,14 +514,14 @@ function SegmentedToggle({
       <SegmentButton
         mode="light"
         selected={!dark}
-        glass={glass}
+        bare={bare}
         palette={palette}
         onSelect={onSelect}
       />
       <SegmentButton
         mode="dark"
         selected={dark}
-        glass={glass}
+        bare={bare}
         palette={palette}
         onSelect={onSelect}
       />

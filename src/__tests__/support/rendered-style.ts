@@ -97,3 +97,24 @@ export function renderedChildren(tree: unknown, hostTestID: string): HostNode[] 
   if (host === null) throw new Error(`no host rendered for testID "${hostTestID}"`);
   return (host.children ?? []).filter(isHostNode);
 }
+
+const SHEEN_GRADIENT = /^linear-gradient\(180deg/;
+
+/**
+ * The native surface-material panes in a rendered tree: the host views that
+ * carry the shared sheen as `experimental_backgroundImage`. One per painted
+ * surface, so a count is a count of materials.
+ */
+export function surfaceSheens(tree: unknown): HostNode[] {
+  return hostNodes(tree).filter((n) =>
+    SHEEN_GRADIENT.test(String(resolvedStyle(n.props.style).experimental_backgroundImage ?? '')),
+  );
+}
+
+/** The `[color, opacity]` stops of a sheen gradient, as `rgb(...)` plus alpha. */
+export function sheenStops(gradient: string): Array<{ color: string; opacity: number }> {
+  return [...gradient.matchAll(/rgba\((\d+), (\d+), (\d+), ([\d.]+)\)/g)].map((m) => ({
+    color: `rgb(${m[1]}, ${m[2]}, ${m[3]})`,
+    opacity: Number(m[4]),
+  }));
+}

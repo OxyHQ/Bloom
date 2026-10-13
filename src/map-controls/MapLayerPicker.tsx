@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../dropdown-menu';
-import { GlassIsland } from '../glass';
+import { BlurIsland } from '../blur';
 import { RiStackLine } from '../icons/remix/RiStackLine';
 import { useMessages } from '../locale/messages';
 import { MAP_CONTROL_BOX } from './constants';
@@ -34,7 +34,7 @@ import type { MapLayerPickerProps } from './types';
  * keyboard handling, the dismissal and the anchoring are `dropdown-menu`'s; the
  * trigger is a `ButtonGroupItem` composed through `asChild`, which is why it
  * announces its own expanded state; and the capsule it sits in is the same
- * `GlassIsland` every other map control sits in, so the picker lands in the
+ * `BlurIsland` every other map control sits in, so the picker lands in the
  * stack as one more island rather than as a different kind of thing.
  */
 function MapLayerPickerComponent({
@@ -61,7 +61,7 @@ function MapLayerPickerComponent({
 
   return (
     <DropdownMenu open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
-      <GlassIsland style={style} testID={testID}>
+      <BlurIsland style={style} testID={testID}>
         <DropdownMenuTrigger asChild label={triggerLabel} disabled={disabled}>
           <ButtonGroupItem
             iconOnly
@@ -72,7 +72,7 @@ function MapLayerPickerComponent({
             testID={testID ? `${testID}-trigger` : undefined}
           />
         </DropdownMenuTrigger>
-      </GlassIsland>
+      </BlurIsland>
 
       <DropdownMenuContent label={triggerLabel} testID={testID ? `${testID}-content` : undefined}>
         <DropdownMenuLabel>{layersLabel}</DropdownMenuLabel>

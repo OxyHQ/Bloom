@@ -79,7 +79,7 @@ export const Matrix: Story = {
 };
 
 /** One pane with flush item hit targets; no nested item material. */
-export const Glass: Story = {
+export const Material: Story = {
   args: {},
   parameters: { controls: { include: ['size', 'dividers'] } },
   render: (args) => (

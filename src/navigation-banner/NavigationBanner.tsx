@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { DIRECTIONS_MANEUVER_ICON } from '../directions/maneuvers';
 import { DIRECTIONS_MESSAGES } from '../directions/messages';
-import { GlassIsland } from '../glass';
+import { BlurIsland } from '../blur';
 import { borderRadius } from '../styles/tokens';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useMessages } from '../locale/messages';
@@ -26,7 +26,7 @@ import type { NavigationBannerProps } from './types';
 /**
  * THE NEXT MANEUVER, while it is happening.
  *
- *   pane        `GlassIsland` at the 16 rung — the guidance is drawn over tiles
+ *   pane        `BlurIsland` at the 16 rung — the guidance is drawn over tiles
  *               Bloom does not own, and the island is the one material in the
  *               library priced for that. It is asked for a SURFACE radius
  *               rather than its default capsule: a banner is a surface, and the
@@ -107,7 +107,7 @@ function NavigationBannerComponent({
     });
 
   return (
-    <GlassIsland
+    <BlurIsland
       radius={g.radius}
       style={[{ alignSelf: 'stretch', flexDirection: 'column' }, style]}
       testID={testID}
@@ -214,7 +214,7 @@ function NavigationBannerComponent({
           {children}
         </View>
       ) : null}
-    </GlassIsland>
+    </BlurIsland>
   );
 }
 

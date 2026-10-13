@@ -237,7 +237,7 @@ describe('MapAttribution', () => {
   it('puts the scale INSIDE the one pane rather than beside a second one', () => {
     mount(<MapAttribution credit="©" scales={METRIC} testID="a" />);
     expect(byTestId('a').contains(byTestId('a-scale'))).toBe(true);
-    // One glass material for the whole strip.
+    // One surface material for the whole strip.
     expect(container.querySelectorAll('[data-testid$="-material"]')).toHaveLength(1);
   });
 

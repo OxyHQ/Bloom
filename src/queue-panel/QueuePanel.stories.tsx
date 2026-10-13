@@ -78,7 +78,7 @@ const RECENT: QueueTrack[] = [
     id: 'r1',
     title: 'Glasshouse',
     artists: 'Juno Vale',
-    cover: cover('glass'),
+    cover: cover('blur'),
     meta: '12 min ago',
   },
   {

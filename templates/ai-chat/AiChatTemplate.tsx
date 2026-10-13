@@ -431,7 +431,7 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
                 */}
                 <ComposerPill
                   surface={false}
-                  glass={working}
+                  frosted={working}
                   models={MODELS}
                   defaultModel="oxy/fable-5"
                   disabled={working}

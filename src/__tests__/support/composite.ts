@@ -3,12 +3,10 @@
  *
  * A pane you can see through has no colour of its own to read off a style prop:
  * what a label lands on is the fill flattened onto whatever is behind it. Every
- * gate on a glass material therefore needs the same four functions, and they
+ * gate on a translucent material therefore needs the same four functions, and they
  * are here so a new one does not start by copying them — which is how two
  * copies of a luminance formula end up disagreeing about the sRGB knee.
  *
- * `theme/__tests__/glass-colors.test.ts` keeps its OWN copies, deliberately and
- * with its own reasons written down; this is for everything since.
  */
 
 export interface Rgba {

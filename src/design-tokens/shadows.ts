@@ -19,24 +19,24 @@ import { type ViewStyle } from 'react-native';
  * `.native`/`.web` split convention.
  */
 
-export type ShadowRole = 's' | 'm' | 'glass';
+export type ShadowRole = 's' | 'm' | 'floating';
 
 /**
  * The `box-shadow` strings. Subtle, brand-neutral elevation that reads on both
  * light and dark surfaces. Registered by the Tailwind preset as
- * `boxShadow.s/m/glass`.
+ * `boxShadow.s/m/floating`.
  *
- * The GLASS rung is the drop shadow of a translucent surface that floats over
+ * The FLOATING rung is the drop shadow of a translucent surface that floats over
  * content. It is a third rung rather than a reuse of `s` or `m` because it is a
  * different weight from either: a near-contact `0 0 1px` seat plus a soft
  * `0 4px 8px` lift, which lands between them.
  *
  * It carries the DROP half only. The lit rim along the top edge — the inset
- * highlight that separates a pane of glass from a tinted card — is
+ * highlight that separates a translucent pane from a tinted card — is
  * `SURFACE_RIM` in `surface/shared.ts` instead, and the split is
  * forced rather than tidy: an inset shadow paints above the element's own
  * background but BELOW its children, so on a surface whose layers are
- * absolutely-positioned children (every glass surface, by construction) an inset
+ * absolutely-positioned children (every material surface, by construction) an inset
  * on the outer box is covered by the first layer that lands on it. It has to be
  * the TOP layer of the stack, which is a place a caller-applied shadow role
  * cannot reach.
@@ -48,7 +48,7 @@ export type ShadowRole = 's' | 'm' | 'glass';
 export const SHADOW_BOX: Record<ShadowRole, string> = {
   s: '0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.10)',
   m: '0 4px 12px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12)',
-  glass: '0 0 1px 0 rgb(0 0 0 / 0.12), 0 4px 8px 0 rgb(0 0 0 / 0.12)',
+  floating: '0 0 1px 0 rgb(0 0 0 / 0.12), 0 4px 8px 0 rgb(0 0 0 / 0.12)',
 };
 
 /**

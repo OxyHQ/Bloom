@@ -10,5 +10,5 @@ export const SURFACE_SHAPES = {
   sheet: { radius: { topStart: RADIUS['radius-24'], topEnd: RADIUS['radius-24'] }, curve: 'round' },
   chart: { curve: 'smooth' },
   capsule: { curve: 'round' },
-  glass: { curve: 'smooth' },
+  island: { curve: 'smooth' },
 } as const satisfies Record<string, SurfaceShape>;

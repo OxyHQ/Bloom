@@ -2,7 +2,7 @@ import type React from 'react';
 import { forwardRef } from 'react';
 import { Modal, Platform, StyleSheet } from 'react-native';
 
-import { GlassBlurWindow } from '../glass/blur-target';
+import { BlurWindow } from '../blur/blur-target';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { SharedValue } from 'react-native-reanimated';
 import { BottomSheetBase } from './BottomSheetBase';
@@ -97,15 +97,15 @@ function NativeShell({ visible, onRequestClose, keyboardHeight, children }: Bott
       {/*
               This <Modal> is its own native window — the same boundary the
               GestureHandlerRootView below is re-established for.
-              `GlassBlurWindow` declares it to the glass layer, which is the
+              `BlurWindow` declares it to the blur layer, which is the
               ONLY thing that lets a backdrop in here take an Android blur target:
               a BlurView in the app's own window would be a descendant of what it
-              blurs, and that segfaults. See `glass/blur-target.tsx`.
+              blurs, and that segfaults. See `blur/blur-target.tsx`.
             */}
-      <GlassBlurWindow>
+      <BlurWindow>
         <SheetKeyboardSync keyboardHeight={keyboardHeight} />
         <GestureHandlerRootView style={styles.rootView}>{children}</GestureHandlerRootView>
-      </GlassBlurWindow>
+      </BlurWindow>
     </Modal>
   );
 }

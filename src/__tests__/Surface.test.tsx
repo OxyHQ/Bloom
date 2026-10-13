@@ -8,10 +8,10 @@ jest.mock('../theme/use-theme', () => ({
   }),
 }));
 import { Surface } from '../surface/Surface';
-import Svg, { LinearGradient, Rect } from 'react-native-svg';
+import Svg from 'react-native-svg';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { SURFACE_RIM } from '../surface/shared';
-import { resolvedStyle, classNamesOn } from './support/rendered-style';
+import { resolvedStyle, classNamesOn, surfaceSheens } from './support/rendered-style';
 
 beforeAll(() => {
   jest.spyOn(StyleSheet, 'flatten').mockImplementation((style) => resolvedStyle(style));
@@ -21,7 +21,7 @@ afterAll(() => {
 });
 
 it('keeps caller layout and clipped paint radius on the same native root', () => {
-  const { getByTestId, UNSAFE_getAllByType } = render(
+  const { getByTestId, UNSAFE_queryAllByType } = render(
     <Surface
       testID="surface"
       className="flex-1"
@@ -31,7 +31,7 @@ it('keeps caller layout and clipped paint radius on the same native root', () =>
   const root = getByTestId('surface');
   expect(resolvedStyle(root.props.style).paddingHorizontal).toBe(16);
   expect(classNamesOn(root.props.style)).toContain('flex-1');
-  expect(UNSAFE_getAllByType(Svg)).toHaveLength(1);
+  expect(UNSAFE_queryAllByType(Svg)).toHaveLength(0);
   const clipped = root.findAll((node) => resolvedStyle(node.props.style).overflow === 'hidden');
   expect(clipped.length).toBeGreaterThan(0);
   for (const layer of clipped) expect(resolvedStyle(layer.props.style).borderRadius).toBe(13);
@@ -39,11 +39,16 @@ it('keeps caller layout and clipped paint radius on the same native root', () =>
 });
 
 it('material keeps the shared gradient and rim on a translucent base', () => {
-  const { UNSAFE_queryAllByType, getByTestId } = render(
+  const { UNSAFE_queryAllByType, getByTestId, toJSON } = render(
     <Surface fill="#123456" testID="surface" />,
   );
-  expect(UNSAFE_queryAllByType(Svg)).toHaveLength(1);
-  expect(UNSAFE_queryAllByType(Rect)[0]!.props.fillOpacity).toBe(0.9);
+  expect(UNSAFE_queryAllByType(Svg)).toHaveLength(0);
+  expect(surfaceSheens(toJSON())).toHaveLength(1);
+  expect(
+    getByTestId('surface').findAll(
+      (node) => resolvedStyle(node.props.style).backgroundColor === 'rgba(18, 52, 86, 0.9)',
+    ).length,
+  ).toBeGreaterThan(0);
   expect(
     getByTestId('surface').findAll(
       (node) => resolvedStyle(node.props.style).boxShadow === SURFACE_RIM,
@@ -52,20 +57,21 @@ it('material keeps the shared gradient and rim on a translucent base', () => {
   expect(resolvedStyle(getByTestId('surface').props.style).backgroundColor).toBe('transparent');
 });
 
-it('uses one sheen gradient and splits native glass fill alpha explicitly', () => {
-  const { UNSAFE_getAllByType } = render(<SurfacePaint fill="rgba(18, 52, 86, 0.5)" radius={12} />);
-  expect(UNSAFE_getAllByType(LinearGradient)).toHaveLength(1);
-  const [base, sheen] = UNSAFE_getAllByType(Rect);
-  expect(base!.props.fillOpacity).toBe(0.5);
-  expect(base!.props.fill).not.toMatch(/rgba/);
-  expect(sheen!.props.fill).toMatch(/^url\(#bloom-surface-/);
+it('paints one view with the tint alpha, the sheen gradient and the rim', () => {
+  const { toJSON } = render(
+    <SurfacePaint testID="paint" fill="rgba(18, 52, 86, 0.5)" radius={12} />,
+  );
+  const style = resolvedStyle((toJSON() as unknown as { props: { style: unknown } }).props.style);
+  expect(style.backgroundColor).toBe('rgba(18, 52, 86, 0.5)');
+  expect(String(style.experimental_backgroundImage)).toMatch(/^linear-gradient\(180deg/);
+  expect(style.boxShadow).toBe(SURFACE_RIM);
 });
 
 it('decorates a host-owned background without adding another fill', () => {
-  const { UNSAFE_getAllByType } = render(<SurfacePaint radius={12} />);
-  const rectangles = UNSAFE_getAllByType(Rect);
-  expect(rectangles).toHaveLength(1);
-  expect(rectangles[0]!.props.fill).toMatch(/^url\(#bloom-surface-/);
+  const { toJSON } = render(<SurfacePaint radius={12} />);
+  const style = resolvedStyle((toJSON() as unknown as { props: { style: unknown } }).props.style);
+  expect(style.backgroundColor).toBe('transparent');
+  expect(String(style.experimental_backgroundImage)).toMatch(/^linear-gradient\(180deg/);
 });
 
 it('keeps explicit radius authoritative on both native host and paint', () => {

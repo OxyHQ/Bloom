@@ -1,0 +1,30 @@
+---
+title: Blur
+description: The shared blur-and-tint material, floating islands and the safe Android blur boundary.
+---
+
+# Blur
+
+Surface provides one shared material: a 90%-opaque tinted body with a sheen and rim, over a single backdrop blur on web. Explicit caller alpha is preserved. Native paints the same tint, sheen and rim in one view and has no per-surface blur. See [Surface](./surface.mdx) and [Button](./button.mdx).
+
+There is no displacement, SVG filter or SVG gradient in the material. The only backdrop pass per surface is one CSS `backdrop-filter: blur(8px)` on web.
+
+## Material checks
+
+A translucent fill's label must be measured against the painted composite, across both theme modes and representative backdrops. High-opacity tints usually need the fill's on-colour; clear neutral panes need the theme's text colour. Prove translucency by measuring how painted pixels move with a changed backdrop, not by reading computed background colour or relying on a failed contrast threshold.
+
+Keep shadow on the outer control and clip only the inner paint layer; clipping the outer node removes iOS shadows.
+
+## Overlay blur
+
+`expo-blur` couples tint and blur intensity; CSS backdrop blur does not. Native and web therefore require separate visual checks whenever their materials change. Android blur must target content in a separate native window. A BlurView inside its own BlurTargetView can crash in native rendering (recursive RenderNode traversal), which is also why a surface never mounts its own `BlurView` on native. Never expose the app-root target directly to an inline control; only `BlurWindow` inside an actual Modal may publish it. The separate-window check in `blur-target.tsx` preserves that boundary.
+
+`BlurTargetProvider`, `BlurWindow` and `useWindowedBlurTarget` live in `src/blur/` and are internal; `BloomProvider` mounts the provider and `BottomSheet` the window.
+
+## Floating islands
+
+`BlurIsland` groups related controls in one translucent pane with flush controls, painted with the same Surface material. It publishes its tint composited against the parent as an estimate for descendants. BloomScope carries density only. Plain sidebar surfaces and navigation rails keep their existing semantics.
+
+## Shared geometry
+
+`SurfacePaint` accepts `shape` plus `direction` for logical corners. The host and material share the same Shapes policy, including CSS smooth corners, native continuous curves where supported, clipped paint and the rim. `BlurIsland` exposes `cornerCurve` for non-capsule shapes; capsules remain round. Radius precedence is explicit prop, then resolved `style.borderRadius`, then the capsule default; host and paint use the same result.

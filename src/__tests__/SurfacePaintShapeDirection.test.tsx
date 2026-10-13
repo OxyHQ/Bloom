@@ -8,8 +8,8 @@ function flatten(style: unknown): Record<string, unknown> {
   return style && typeof style === 'object' ? (style as Record<string, unknown>) : {};
 }
 
-describe('Glass surface logical corners', () => {
-  it('mirrors the clipping pane and its rim together', () => {
+describe('Surface paint logical corners', () => {
+  it('mirrors the clipping pane, which also carries the rim', () => {
     const tree = render(
       <BloomThemeProvider mode="light" colorPreset="teal">
         <SurfacePaint
@@ -17,20 +17,19 @@ describe('Glass surface logical corners', () => {
           shape={{ radius: { topStart: 20, bottomEnd: 8 }, curve: 'smooth' }}
           direction="rtl"
           sheen={false}
-          testID="glass"
+          testID="paint"
         />
       </BloomThemeProvider>,
     );
-    const pane = tree.getByTestId('glass');
+    const pane = tree.getByTestId('paint');
     const expected = {
       borderTopLeftRadius: 0,
       borderTopRightRadius: 20,
       borderBottomLeftRadius: 8,
       borderBottomRightRadius: 0,
     };
+    // The pane clips and carries the rim itself: one view, one set of corners.
     expect(flatten(pane.props.style)).toMatchObject(expected);
-    const rim = pane.children[pane.children.length - 1];
-    expect(typeof rim).not.toBe('string');
-    if (typeof rim !== 'string') expect(flatten(rim?.props.style)).toMatchObject(expected);
+    expect(flatten(pane.props.style).boxShadow).toBeDefined();
   });
 });

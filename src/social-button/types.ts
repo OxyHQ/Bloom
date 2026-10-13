@@ -11,7 +11,7 @@ export type SocialButtonSize = 'md' | 'sm';
 
 /**
  * - `colorful` (default) fills with the brand colour, a white glyph on it.
- * - `black` is the same glass shape in near-black.
+ * - `black` is the same shape in near-black.
  * - `white` is the outlined treatment (the secondary button) and the one that
  *   shows each provider's real multi-colour mark.
  */
@@ -59,7 +59,7 @@ export interface SocialButtonProps {
    * `onPress` runs. Dropped while `disabled`.
    */
   href?: string;
-  /** Shared Button disabled tint; retains glass and ignores presses. */
+  /** Shared Button disabled tint; retains its material and ignores presses. */
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   /** Label text style override. */

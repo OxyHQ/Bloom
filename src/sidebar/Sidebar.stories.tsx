@@ -749,7 +749,7 @@ export const PrimaryAction: Story = {
 };
 
 /** Shared material while retaining the current sidebar navigation API. */
-export const GlassPanel: Story = {
+export const BlurPanel: Story = {
   render: () => (
     <div
       style={{
@@ -762,7 +762,7 @@ export const GlassPanel: Story = {
       }}
     >
       <Sidebar
-        testID="sidebar-glass"
+        testID="sidebar-blur"
         items={DEMO_NAV}
         secondaryItems={DEMO_SECONDARY}
         account={DEMO_ACCOUNT}

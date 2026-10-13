@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';
-import { GlassIsland } from '../glass';
+import { BlurIsland } from '../blur';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
@@ -16,7 +16,7 @@ import type { ArrivalBarProps } from './types';
  * THE STRIP AT THE BOTTOM while you are driving: when you get there, how long
  * is left, how far is left, and the way out.
  *
- *   pane      `GlassIsland` at the 16 rung, stretched — the same material the
+ *   pane      `BlurIsland` at the 16 rung, stretched — the same material the
  *             banner at the top is on, because they are two edges of one
  *             surface over the same tiles
  *   figures   THREE PEERS, `title-3-semibold` and TABULAR, each over its own
@@ -25,7 +25,7 @@ import type { ArrivalBarProps } from './types';
  *             two; tabular because all three count down.
  *   end       the way out, on the right — `Button` in `destructive` at the 44
  *             rung, which keeps its own chrome inside the island on purpose (a
- *             glass control flush with the pane would be the quietest thing on
+ *             translucent control flush with the pane would be the quietest thing on
  *             a strip whose only action stops the navigation). 44 rather than
  *             the 32 that looks better in a screenshot: this is pressed in a
  *             moving car, by a thumb, at the bottom of the screen.
@@ -94,7 +94,7 @@ function ArrivalBarComponent({
   const endWord = labels?.end ?? messages.end;
 
   return (
-    <GlassIsland
+    <BlurIsland
       radius={g.radius}
       style={[{ alignSelf: 'stretch', flexDirection: 'column' }, style]}
       testID={testID}
@@ -158,7 +158,7 @@ function ArrivalBarComponent({
             </Button>
           ) : null)}
       </View>
-    </GlassIsland>
+    </BlurIsland>
   );
 }
 

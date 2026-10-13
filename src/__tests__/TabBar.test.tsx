@@ -11,7 +11,6 @@ import { SurfaceLevelProvider, useSurfaceFill, surfaceFillOn } from '../styles/s
 import { TabBar, TabBarButton } from '../tab-bar';
 import { TabBarGlyph as NativeTabBarGlyph } from '../tab-bar/glyph.native';
 import { resolveTabBarTheme } from '../tab-bar/shared';
-import { TabBarSurface as NativeTabBarSurface } from '../tab-bar/surface.native';
 import type { TabBarItem, TabBarTheme } from '../tab-bar/types';
 
 /**
@@ -20,10 +19,9 @@ import type { TabBarItem, TabBarTheme } from '../tab-bar/types';
  * Three properties of the environment shape every assertion here:
  *
  *  1. Jest has no platform-extension resolution, so `../tab-bar` binds the
- *     NEUTRAL `surface.tsx` / `glyph.tsx`. The two `.native` variants are pulled
- *     in by their full path where they are asserted on directly — which is also
- *     what makes the `expo-glass-effect` / `expo-symbols` mocks load-bearing
- *     rather than decorative.
+ *     NEUTRAL `glyph.tsx`. The `.native` variant is pulled in by its full path
+ *     where it is asserted on directly — which is also what makes the
+ *     `expo-symbols` mock load-bearing rather than decorative.
  *  2. Labels render through `Animated.Text`, a plain host string under the
  *     reanimated mock, so testing-library's text queries cannot see them.
  *     `labelFor` walks the tree instead.
@@ -452,7 +450,7 @@ describe('TabBar', () => {
       const overridden = readTheme({ highlight: 'rgb(1 2 3)' });
       expect(overridden.highlight).toBe('rgb(1 2 3)');
       expect(overridden.activeTint).toBe(defaults.activeTint);
-      expect(overridden.glassTint).toBe(defaults.glassTint);
+      expect(overridden.blurTint).toBe(defaults.blurTint);
     });
 
     it('never lets an explicit undefined in a partial punch a hole', () => {
@@ -472,22 +470,6 @@ describe('TabBar', () => {
   });
 
   describe('native platform variants', () => {
-    it('falls back to the solid theme fill when liquid glass is unavailable', () => {
-      // The `expo-glass-effect` mock reports `isLiquidGlassAvailable() === false`
-      // (see the note in that file), so this is the branch every Android and
-      // pre-iOS-26 device takes.
-      const theme = readTheme();
-      const { UNSAFE_root } = renderWithTheme(
-        <NativeTabBarSurface theme={theme} style={{ borderRadius: 29 }} />,
-      );
-      expect(hosts(UNSAFE_root, 'GlassView')).toHaveLength(0);
-      expect(
-        UNSAFE_root.findAll(
-          (node) => node.props.fill === theme.glassTint && node.props.radius === 999,
-        ).length,
-      ).toBeGreaterThan(0);
-    });
-
     it('renders an SF Symbol on iOS when the item carries one', () => {
       const theme = readTheme();
       const item: TabBarItem = { ...(ITEMS[0] as TabBarItem), sfSymbol: 'house.fill' };
@@ -529,12 +511,12 @@ describe('TabBar shared surface hierarchy', () => {
       function Scene({ override }: { override?: string }) {
         const theme = useTheme();
         expected = resolveSurfaceFill(
-          resolveSurfaceTint(override ?? resolveTabBarTheme(theme.colors).glassTint),
+          resolveSurfaceTint(override ?? resolveTabBarTheme(theme.colors).blurTint),
           '#445566',
         );
         return (
           <SurfaceLevelProvider level={3} fill="#445566">
-            <TabBar blur={false} theme={override ? { glassTint: override } : undefined}>
+            <TabBar blur={false} theme={override ? { blurTint: override } : undefined}>
               <Probe />
             </TabBar>
           </SurfaceLevelProvider>
