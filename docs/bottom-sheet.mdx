@@ -57,7 +57,7 @@ On web the open sheet owns the keyboard like a dialog does (`overlay/ModalKeyboa
 | `enablePanDownToClose?` | `boolean` | `true` | |
 | `enableHandlePanningGesture?` | `boolean` | `true` | |
 | `onDismissAttempt?` | `() => boolean` | — | Return `false` to veto user Back/backdrop/Escape/pan before closing. Explicit ref dismissal bypasses this guard and always reports completion. |
-| `detached?` | `boolean` | `false` | Float with horizontal margins and rounded corners on all sides. |
+| `detached?` | `boolean` | `false` | Float with horizontal margins and rounded corners on all sides. A tall detached sheet stops 16 (plus the safe-area inset) short of the top edge, the same gap it keeps from the bottom; a flush sheet only clears the safe area. |
 | `showHandle?` | `boolean` | `true` | Toggle the drag handle pill. |
 | `backdropOpacity?` | `number` | `0.5` | Opacity (0–1) of the dimming backdrop once fully visible. |
 | `backgroundComponent?` | `(props) => ReactElement \| null` | — | Custom background renderer. |
