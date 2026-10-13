@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import { groupThousands } from '../chart-cards/primitives/format';
 import { resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
@@ -10,8 +8,6 @@ import type { Theme } from '../theme/types';
 import type { EnergyClass } from './types';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 import { formatCompactCurrency, formatCurrency } from '../locale/format-number';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /**
  * Every neutral and accent colour the insight parts paint. Pure.

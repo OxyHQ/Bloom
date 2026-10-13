@@ -1,11 +1,12 @@
 import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { Animated, Platform, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { ACCENT_TABLE, BUTTON_SHADOW, colorRamp, resolveButtonRamps } from '../button/shared';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { RadioIndicatorProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `RadioDot`. Geometry is fixed at 16px and scales with `size`; colours are
@@ -29,8 +30,6 @@ const DEFAULT_SIZE = 16;
 
 /** `transition-opacity duration-200 ease`. */
 const TRANSITION_MS = 200;
-
-const IS_WEB = Platform.OS === 'web';
 
 /**
  * CSS `ease` — `cubic-bezier(0.25, 0.1, 0.25, 1)` — solved for `x` by Newton's

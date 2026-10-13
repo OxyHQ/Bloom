@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import { space } from '../styles/tokens';
 
 import { RiInbox2Line } from '../icons/remix/RiInbox2Line';
@@ -26,8 +24,6 @@ import type {
   MailSwipeActions,
 } from './types';
 import { MAIL_LIST_MESSAGES } from './messages';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /** The glyph an empty inbox draws. */
 export const MAIL_EMPTY_ICON = RiInbox2Line;

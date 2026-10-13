@@ -19,12 +19,13 @@ import {
   type CalendarViewPalette,
   type HueResolver,
 } from './palette';
-import { IS_WEB, type WebDataSet } from './shared';
+import { type WebDataSet } from './shared';
 import type {
   CalendarViewFeed,
   CalendarViewFeedAccount,
   CalendarViewInboxMenuProps,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `CalendarViewInboxMenu`: the header's inbox button and the subscribed-feeds

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Platform, View } from 'react-native';
+import { Animated, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { useReducedMotion } from 'react-native-reanimated';
 
@@ -13,6 +13,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import type { CheckboxSize } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The checkbox glyph — the box and its tick — shared by `Checkbox` and
@@ -120,8 +121,6 @@ export function resolveCheckboxPaint(
     cardBackgroundHover: theme.colors.backgroundSecondary,
   };
 }
-
-const IS_WEB = Platform.OS === 'web';
 
 /**
  * A top-to-bottom gradient as a style: `background-image` on web (react-native-web

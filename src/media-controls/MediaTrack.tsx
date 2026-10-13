@@ -16,12 +16,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
 import { useTheme } from '../theme/use-theme';
-import {
-  IS_WEB,
-  MEDIA_CONTROLS_CSS,
-  MEDIA_CONTROLS_STYLE_ID,
-  resolveMediaControlsPaint,
-} from './shared';
+import { MEDIA_CONTROLS_CSS, MEDIA_CONTROLS_STYLE_ID, resolveMediaControlsPaint } from './shared';
+import { IS_WEB } from '../styles/platform';
 
 /** Height of the pointer target. The drawn rail is centred in it. */
 export const MEDIA_TRACK_HIT = 16;

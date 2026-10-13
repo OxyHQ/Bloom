@@ -19,7 +19,6 @@ import { RevealFade, RevealLine, RevealSequence } from './AiChatReveal';
 import {
   CARD_RADIUS,
   dataHook,
-  IS_WEB,
   useAiChatPalette,
   useAiChatWebCss,
   type AiChatPalette,
@@ -27,6 +26,7 @@ import {
 import type { AiChatImageGenerationProps } from './types';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 const FRAME_WIDTH = 200;
 const FRAME_HEIGHT = 250;

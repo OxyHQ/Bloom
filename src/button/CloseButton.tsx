@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { Platform } from 'react-native';
+
 import { StyledPressable } from '../styles/styled-primitives';
 import Svg, { Path } from 'react-native-svg';
 
@@ -9,6 +9,7 @@ import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-w
 import type { WebCssStyle } from '../styles/web-view-style';
 import { BUTTON_TRANSITION_MS, CLOSE_BUTTON_GEOMETRY, resolveCloseButtonPaint } from './shared';
 import type { CloseButtonProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `CloseButton`: the compact round dismiss control for announcements, toasts,
@@ -30,7 +31,6 @@ import type { CloseButtonProps } from './types';
  * scale.
  */
 
-const IS_WEB = Platform.OS === 'web';
 const STYLE_ID = 'bloom-close-button-family-web-css';
 const SELECTOR = '[data-bloom-button-close]';
 

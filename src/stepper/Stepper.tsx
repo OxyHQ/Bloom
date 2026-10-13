@@ -1,6 +1,6 @@
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback } from 'react';
-import { Platform, View, type AccessibilityActionEvent } from 'react-native';
+import { View, type AccessibilityActionEvent } from 'react-native';
 
 import { Button, type ButtonProps } from '../button';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -21,6 +21,7 @@ import { useFieldMembership } from '../field/membership';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { STEPPER_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Bloom's numeric counter: a round `−` button, the value, a round `+` button.
@@ -49,8 +50,6 @@ import { STEPPER_MESSAGES } from './messages';
  * destructive action behind an arithmetic one. So that a keyboard user can
  * still reach it, the button joins the tab order while it is the remove control.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 const SIZE_CONFIG: Record<
   StepperSize,

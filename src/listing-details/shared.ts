@@ -1,11 +1,7 @@
-import { Platform } from 'react-native';
-
 import { resolveButtonRamps } from '../button/shared';
 import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import type { Theme } from '../theme/types';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /**
  * Every colour the listing parts paint. Pure.

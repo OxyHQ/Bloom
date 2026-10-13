@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import {
   ACCENT_TABLE,
   colorRamp,
@@ -23,8 +21,7 @@ import {
   type CreatorCreditRole,
   type CreatorStudioMessages,
 } from './messages';
-
-export const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /** Cards: `rounded-2xl`, the chart cards' radius. */
 export const CARD_RADIUS = 16;

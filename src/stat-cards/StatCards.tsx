@@ -1,7 +1,7 @@
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { Chip } from '../chip';
@@ -25,6 +25,7 @@ import type {
   StatCardsProps,
   StatCardsTone,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * KPI stat cards. Geometry, to the pixel:
@@ -46,8 +47,6 @@ import type {
  * this reads `useWindowDimensions`, and rows stretch their cards to one height
  * the way CSS grid rows do.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 /** Tailwind `sm` / `lg` / `xl`. */
 const BREAKPOINT_SM = 640;

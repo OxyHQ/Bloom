@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Platform, Pressable, View, type GestureResponderEvent } from 'react-native';
+import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { Meter } from '../stat-bar';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -13,6 +13,7 @@ import { Text } from '../typography';
 import { OUTLINE_NAV_MESSAGES } from './messages';
 import { buildOutlineTree, compactHeadings, outlineProgress, type OutlineNode } from './shared';
 import type { OutlineHeading, OutlineNavLabels, OutlineNavProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The document's own table of contents.
@@ -43,8 +44,6 @@ import type { OutlineHeading, OutlineNavLabels, OutlineNavProps } from './types'
  * `compactMaxLevel` an indent on a 360px screen is a few pixels nobody reads, so
  * the honest compact form is a shorter list of full-width rows at a touch size.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 const STYLE_ID = 'bloom-outline-nav-web-css';
 const ROW = '[data-bloom-outline-row]';

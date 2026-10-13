@@ -18,7 +18,6 @@ import {
   LISTING_PHOTO_GRID_RADIUS,
 } from './constants';
 import {
-  IS_WEB,
   LISTING_DETAILS_CSS,
   LISTING_DETAILS_STYLE_ID,
   resolveImageUri,
@@ -29,6 +28,7 @@ import { useMessages } from '../locale/messages';
 import { LISTING_DETAILS_MESSAGES, type ListingDetailsMessages } from './messages';
 import type { ListingPhoto, ListingPhotoGridProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The photos at the top of a listing page.

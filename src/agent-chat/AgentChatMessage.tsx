@@ -22,13 +22,13 @@ import {
   CONFIRM_MS,
   dataHook,
   formatAgo,
-  IS_WEB,
   useAgentChatPalette,
   useAgentChatWebCss,
 } from './shared';
 import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatMessageProps } from './types';
 import { writeClipboardText } from '../hooks/clipboard';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `AgentMessage`: one turn of the transcript.

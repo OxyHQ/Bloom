@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Badge } from '../badge';
 import { useMessages } from '../locale/messages';
@@ -7,8 +7,7 @@ import { useTheme } from '../theme/use-theme';
 import { DIRECTIONS_MESSAGES } from './messages';
 import { describeTransitLine, resolveTransitLineColors } from './shared';
 import type { TransitLineBadgeProps } from './types';
-
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A transit line's own badge — "L4", "N12", "S1".

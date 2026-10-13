@@ -7,16 +7,11 @@ import { borderRadius } from '../styles/tokens';
 import { Text } from '../typography';
 import { useSidebarGeometry } from './geometry';
 import { useSidebarPalette } from './palette';
-import {
-  Collapsible,
-  IS_WEB,
-  SidebarAvatarView,
-  useSidebarCollapseProgress,
-  useInSidebar,
-} from './parts';
+import { Collapsible, SidebarAvatarView, useSidebarCollapseProgress, useInSidebar } from './parts';
 import type { SidebarPlanCardProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The plan card at the foot of the AI chat's rail.

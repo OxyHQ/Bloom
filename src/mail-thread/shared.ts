@@ -1,10 +1,7 @@
-import { Platform } from 'react-native';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 
 import { MAIL_THREAD_MESSAGES } from './messages';
 import type { MailThreadMessage, MailAddress, MailThreadStrings } from './types';
-
-export const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Geometry

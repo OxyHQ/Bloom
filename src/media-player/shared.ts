@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { MediaArtist, RepeatMode, SleepTimerValue, TransportControlsSize } from './types';
 import {
@@ -10,8 +8,7 @@ import {
   relativeLuminance,
 } from '../styles/color-contrast';
 import { formatMultiplier } from '../locale/format-number';
-
-export const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 // ---------------------------------------------------------------------------
 //  Repeat, speed, sleep

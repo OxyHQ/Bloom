@@ -9,15 +9,11 @@ import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
-import {
-  IS_WEB,
-  MEDIA_CONTROLS_CSS,
-  MEDIA_CONTROLS_STYLE_ID,
-  resolveMediaControlsPaint,
-} from './shared';
+import { MEDIA_CONTROLS_CSS, MEDIA_CONTROLS_STYLE_ID, resolveMediaControlsPaint } from './shared';
 import type { LikeButtonProps, LikeButtonSize } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The heart that saves a track, album or playlist to the library.

@@ -19,7 +19,6 @@ import { ListingFacts, ListingStatusPill } from '../listing-card/parts';
 import {
   COMPACT_PHOTO_RADIUS,
   COMPACT_PHOTO_SIZE,
-  IS_WEB,
   LISTING_CARD_CSS,
   LISTING_CARD_STYLE_ID,
   PHOTO_RADIUS,
@@ -52,6 +51,7 @@ import {
   vendorFacts,
 } from './shared';
 import type { VendorCardDensity, VendorCardProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A restaurant or a shop in a list.

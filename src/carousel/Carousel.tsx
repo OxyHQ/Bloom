@@ -38,6 +38,7 @@ import { useTheme } from '../theme/use-theme';
 import { CarouselContext, CarouselItemIndexContext } from './context';
 import { CAROUSEL_MESSAGES } from './messages';
 import type { CarouselItemProps, CarouselProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A gallery carousel: a horizontal run of slides you scroll through, with
@@ -60,8 +61,6 @@ import type { CarouselItemProps, CarouselProps } from './types';
  * measured: at the far end the last slide can never reach the left edge, so a
  * nearest-slide search would never light the last dot.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 /** `transition-all duration-200 ease-out` on the dots. */
 const DOT_TRANSITION_MS = 200;

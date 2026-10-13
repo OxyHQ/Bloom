@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Platform, type ViewStyle } from 'react-native';
+import { type ViewStyle } from 'react-native';
 
 import { BUTTON_SHADOW, resolveButtonRamps, type Ramp } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -11,6 +11,7 @@ import {
 } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { IS_WEB } from '../styles/platform';
 
 /** Shared semantic surfaces and foreground pairs; code colours belong to `code`. */
 export interface AiChatPalette {
@@ -101,8 +102,6 @@ export const TRANSITION_MS = 150;
 export const CONFIRM_MS = 1600;
 /** `cubic-bezier(0.22, 1, 0.36, 1)` — the settle curve. */
 export const EASE_OUT_QUINT = [0.22, 1, 0.36, 1] as const;
-
-export const IS_WEB = Platform.OS === 'web';
 
 /** The window is at least this wide when the panel (and the resize handle) show: `xl`. */
 export const PANEL_BREAKPOINT = 1280;

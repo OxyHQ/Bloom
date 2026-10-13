@@ -14,12 +14,7 @@ import { Chip } from '../chip';
 import { useImageResolver } from '../image-resolver/context';
 import { FavoriteButton } from '../listing-card/FavoriteButton';
 import { ListingFacts, ListingLocationLine } from '../listing-card/parts';
-import {
-  COMPACT_PHOTO_RADIUS,
-  COMPACT_PHOTO_SIZE,
-  IS_WEB,
-  resolvePhoto,
-} from '../listing-card/shared';
+import { COMPACT_PHOTO_RADIUS, COMPACT_PHOTO_SIZE, resolvePhoto } from '../listing-card/shared';
 import { Rating } from '../rating';
 import { Box as SkeletonBox } from '../skeleton';
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -42,6 +37,7 @@ import type { PlaceCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { PLACE_CARD_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A place on the map — the result you scroll past, and the header of the sheet

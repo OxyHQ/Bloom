@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Button, LinkButton } from '../button';
 
@@ -8,6 +8,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { WizardFooterProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The action bar under a step of a multi-step flow.
@@ -25,7 +26,6 @@ import { useCommonMessages } from '../locale/common-messages';
  * container; on native by placement (render it after the `ScrollView`).
  */
 
-const IS_WEB = Platform.OS === 'web';
 const NARROW = 480;
 
 function WizardFooterComponent({

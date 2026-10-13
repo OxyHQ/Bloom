@@ -15,12 +15,13 @@ import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { DEVICE_GLYPHS } from './device-icons';
 import { ImmersiveTheme, immersiveDarkTheme } from './ImmersiveTheme';
 import { Artwork } from './TrackText';
-import { artistNames, IS_WEB, resolveArtworkTint } from './shared';
+import { artistNames, resolveArtworkTint } from './shared';
 import type { MiniPlayerProps } from './types';
 import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
 import { useMessages } from '../locale/messages';
 import { MEDIA_PLAYER_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 export const MINI_PLAYER_HEIGHT = 56;
 /** Horizontal travel that counts as a swipe (native). */

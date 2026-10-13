@@ -15,7 +15,6 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  IS_WEB,
   LISTING_CARD_CSS,
   LISTING_CARD_STYLE_ID,
   PHOTO_RADIUS,
@@ -24,6 +23,7 @@ import {
   type ListingCardPaint,
 } from './shared';
 import type { WishlistCardProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A saved collection of stays.

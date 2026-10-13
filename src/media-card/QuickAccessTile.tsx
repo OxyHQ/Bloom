@@ -11,7 +11,6 @@ import { Text } from '../typography';
 import { Artwork, CardLink, useMediaCardCss } from './parts';
 import {
   composeName,
-  IS_WEB,
   QUICK_TILE_HEIGHT,
   QUICK_TILE_RADIUS,
   resolveMediaCardPaint,
@@ -21,6 +20,7 @@ import type { QuickAccessTileProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The compact home-screen shortcut, laid out 2–4 to a row.

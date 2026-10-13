@@ -14,10 +14,11 @@ import { AvatarPresence } from '../chat-indicators';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { GroupAvatar } from './GroupAvatar';
-import { CHAT_ROW_RADIUS, IS_WEB, type ChatListPaint } from './shared';
+import { CHAT_ROW_RADIUS, type ChatListPaint } from './shared';
 import type { ChatAction, ChatFace, ChatIconComponent } from './types';
 import type { Shape } from '../shapes';
 import type { PresenceStatus } from '../chat-indicators/types';
+import { IS_WEB } from '../styles/platform';
 
 // ---------------------------------------------------------------------------
 //  The link that covers a row

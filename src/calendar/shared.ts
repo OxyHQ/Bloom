@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
-import { Platform, useWindowDimensions } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 
 import { addDays, buildMonthGrid, isSameMonth, startOfDay } from '../date-picker/calendar-grid';
 import type { CalendarViewEvent } from './types';
 import { formatGregorian } from '../locale/format-date';
 import { CALENDAR_MESSAGES, type CalendarMessages } from './messages';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /** `dataSet` is react-native-web's channel for a `data-*` attribute; RN has no type for it. */
 export type WebDataSet = { dataSet?: Record<string, string> };

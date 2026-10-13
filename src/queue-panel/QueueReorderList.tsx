@@ -26,7 +26,6 @@ import { useTheme } from '../theme/use-theme';
 import { QueueIconButton } from './QueueIconButton';
 import { QueuePanelRow } from './QueuePanelRow';
 import {
-  IS_WEB,
   QUEUE_ROW_HEIGHT,
   resolveQueuePanelPaint,
   type QueuePanelPaint,
@@ -35,6 +34,7 @@ import {
 import type { QueuePanelLabels, QueueSection, QueueTrack } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A reorderable section of the queue.

@@ -46,7 +46,6 @@ import {
   dataHook,
   DOCUMENT_CARD_RADIUS,
   DOCUMENT_LAYER,
-  IS_WEB,
   SHELL_GUTTER,
   useAiChatPalette,
   useAiChatWebCss,
@@ -56,6 +55,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES } from './messages';
 import type { AiChatContainerProps, AiChatThreadHandle, AiChatThreadProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /** The thread's own top padding: the gap between the header and the first turn. */
 const THREAD_PAD_TOP = 16;

@@ -21,7 +21,6 @@ import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import {
-  IS_WEB,
   MESSAGE_MEDIA_CSS,
   MESSAGE_MEDIA_STYLE_ID,
   PROGRESS_RING_SIZE,
@@ -32,6 +31,7 @@ import type { MessageMediaSource } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The pieces every block in `message-media` is built from.

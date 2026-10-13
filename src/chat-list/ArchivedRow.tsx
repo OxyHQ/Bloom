@@ -14,12 +14,12 @@ import {
   CHAT_LIST_STYLE_ID,
   CHAT_ROW_GEOMETRY,
   CHAT_ROW_RADIUS,
-  IS_WEB,
   resolveChatListPaint,
 } from './shared';
 import type { ArchivedRowProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CHAT_LIST_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The archive folder, above the conversations.

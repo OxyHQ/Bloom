@@ -17,7 +17,7 @@ import { RiMic2Line } from '../icons/remix/RiMic2Line';
 import { RiStopFill } from '../icons/remix/RiStopFill';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { CONTROL_SIZE, type ComposerPalette } from './shared';
-import { IS_WEB } from './web-hooks';
+import { IS_WEB } from '../styles/platform';
 
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
 const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);

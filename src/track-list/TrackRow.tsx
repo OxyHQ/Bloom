@@ -27,7 +27,6 @@ import { Text } from '../typography';
 import { TrackCover, TrackMenu } from './parts';
 import {
   CELL,
-  IS_WEB,
   isNarrow,
   resolveTrackListPaint,
   ROLE_GRIDCELL,
@@ -41,6 +40,7 @@ import type { TrackMenuItem, TrackRowPressEvent, TrackRowProps } from './types';
 import { useMessages } from '../locale/messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { TRACK_LIST_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One track in a table: the row `TrackList` maps, usable on its own inside a

@@ -1,5 +1,4 @@
 import { resolveSurfaceLevel } from '../styles/surface-levels';
-import { Platform } from 'react-native';
 
 import { mixColor } from '../button/shared';
 import { parseRgba } from '../theme/color-utils';
@@ -15,8 +14,6 @@ import {
   darkenUntilContrast,
   relativeLuminance,
 } from '../styles/color-contrast';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /** The English empty line; components read the localised one from `LYRICS_MESSAGES`. */
 export const DEFAULT_EMPTY_TEXT = LYRICS_MESSAGES.en.empty;

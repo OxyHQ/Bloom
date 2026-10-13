@@ -2,6 +2,9 @@ import { Platform, type ImageStyle, type TextStyle, type ViewStyle } from 'react
 
 type Style = ViewStyle & TextStyle & ImageStyle;
 
+/** `true` when running under react-native-web; fixed at import. */
+export const IS_WEB = Platform.OS === 'web';
+
 /**
  * Returns the provided styles only on web, undefined on native.
  */

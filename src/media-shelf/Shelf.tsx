@@ -21,7 +21,6 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  IS_WEB,
   MEDIA_SHELF_CSS,
   MEDIA_SHELF_STYLE_ID,
   SHELF_GAP,
@@ -34,6 +33,7 @@ import type { ShelfProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MEDIA_SHELF_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A section of a home or search page: a header over a run of items.

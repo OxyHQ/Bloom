@@ -20,7 +20,6 @@ import { useSidebarGeometry } from './geometry';
 import { useSidebarMetrics } from './metrics';
 import {
   Collapsible,
-  IS_WEB,
   useInSidebar,
   useSidebarCollapseProgress,
   useSidebarWebCss,
@@ -29,6 +28,7 @@ import {
 import type { SidebarMode, SidebarModeSwitcherProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `SidebarModeSwitcher`: a vertical segmented control for the modes a sidebar

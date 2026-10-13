@@ -1,6 +1,5 @@
 import { hairlineOn, surfaceTextOn } from '../styles/surface-levels';
 import { useCallback, useState } from 'react';
-import { Platform } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import { parseRgb } from '../theme/color-utils';
@@ -21,8 +20,6 @@ import {
   darkenUntilContrast,
   relativeLuminance,
 } from '../styles/color-contrast';
-
-export const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Pure logic

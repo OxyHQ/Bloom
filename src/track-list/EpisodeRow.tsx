@@ -10,17 +10,13 @@ import { Meter } from '../stat-bar';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TrackCover, TrackIconButton, TrackMenu } from './parts';
-import {
-  formatEpisodeLength,
-  formatEpisodeRemaining,
-  IS_WEB,
-  resolveTrackListPaint,
-} from './shared';
+import { formatEpisodeLength, formatEpisodeRemaining, resolveTrackListPaint } from './shared';
 import type { EpisodeRowProps } from './types';
 import { webDataSet } from '../styles/web-data';
 import { useMessages } from '../locale/messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { TRACK_LIST_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /** Below this the cover shrinks to 64 and the description is dropped. */
 const EPISODE_NARROW_WIDTH = 560;

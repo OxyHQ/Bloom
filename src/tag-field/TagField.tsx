@@ -1,6 +1,5 @@
 import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
 import {
-  Platform,
   Pressable,
   TextInput,
   View,
@@ -48,6 +47,7 @@ import { useMessages } from '../locale/messages';
 import { TAG_FIELD_MESSAGES } from './messages';
 import { commitTag, filterSuggestions, normalizeTag } from './shared';
 import type { TagFieldLabels, TagFieldProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Tags as an input: the committed ones as removable chips, a caret after them,
@@ -93,8 +93,6 @@ import type { TagFieldLabels, TagFieldProps } from './types';
  * and a notes app's tags are the same control, and the day it learns about any
  * one of them it stops being usable by the other two.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 /** A DOM keyboard event as react-native-web hands it to `onKeyPress`. */
 type WebKeyEvent = TextInputKeyPressEventData & { isComposing?: boolean };

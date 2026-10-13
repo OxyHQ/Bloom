@@ -11,15 +11,11 @@ import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
 import { useTheme } from '../theme/use-theme';
 import { MediaTrack } from './MediaTrack';
-import {
-  IS_WEB,
-  MEDIA_CONTROLS_CSS,
-  MEDIA_CONTROLS_STYLE_ID,
-  resolveMediaControlsPaint,
-} from './shared';
+import { MEDIA_CONTROLS_CSS, MEDIA_CONTROLS_STYLE_ID, resolveMediaControlsPaint } from './shared';
 import type { VolumeControlProps } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /** The speaker glyph for a level: muted or 0 → mute, under 0.5 → down, else up. */
 export function volumeIconFor(volume: number, muted: boolean) {

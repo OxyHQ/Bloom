@@ -21,7 +21,7 @@ import {
   useHousingPalette,
   useHousingWebCss,
 } from '../tenancy/parts';
-import { IS_WEB } from '../tenancy/shared';
+
 import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -30,6 +30,7 @@ import type { PlaceReviewCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { PLACE_REVIEWS_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One past tenant's review of a building.

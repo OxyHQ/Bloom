@@ -6,12 +6,13 @@ import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { TENANCY_MESSAGES } from './messages';
-import { IS_WEB, joinName, resolveHousingPalette } from './shared';
+import { joinName, resolveHousingPalette } from './shared';
 import type {
   TenancyTimelineDensity,
   TenancyTimelineEventState,
   TenancyTimelineProps,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A vertical history of tenancy events, oldest first.

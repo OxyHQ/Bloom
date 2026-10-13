@@ -39,7 +39,6 @@ import {
   DOT_SIZE,
   dotWindow,
   HORIZONTAL_PHOTO_WIDTH,
-  IS_WEB,
   LISTING_CARD_CSS,
   LISTING_CARD_STYLE_ID,
   PHOTO_ASPECT_RATIO,
@@ -57,6 +56,7 @@ import type { ListingCardLayout, ListingCardProps } from './types';
 import { useMessages } from '../locale/messages';
 import { LISTING_CARD_MESSAGES, type ListingCardMessages } from './messages';
 import { useCommonMessages } from '../locale/common-messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A home in a results grid — a stay, a rental, a home for sale or a swap.

@@ -10,7 +10,6 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  IS_WEB,
   LISTING_DETAILS_CSS,
   LISTING_DETAILS_STYLE_ID,
   resolveListingPalette,
@@ -20,6 +19,7 @@ import { useMessages } from '../locale/messages';
 import { LISTING_DETAILS_MESSAGES } from './messages';
 import type { ReviewCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One guest review.

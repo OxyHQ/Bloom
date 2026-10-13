@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Image, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Chip } from '../chip';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -14,13 +14,12 @@ import { MENU_ITEM_MESSAGES } from './messages';
 import { describeSpice, spiceLevel, uniqueDiets } from './shared';
 
 import type { MenuItemDiet, MenuItemRowProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The pieces a dish row and a dish sheet both draw, so the two cannot drift
  * apart. Internal: not on the family barrel.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 /** Only the two diets that are about what the dish is MADE OF carry a glyph. */
 const DIET_GLYPH: Partial<Record<MenuItemDiet, BloomIconComponent>> = {

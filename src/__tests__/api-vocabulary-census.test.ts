@@ -120,3 +120,14 @@ describe('the material has no glass in its names', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe('one web flag', () => {
+  // 99 families each declared `const IS_WEB = Platform.OS === 'web'`. The flag is
+  // `styles/platform`'s, so a change to how web is detected is one edit.
+  it('only styles/platform declares IS_WEB', () => {
+    const declarers = files.filter((file) =>
+      /^\s*(export\s+)?const IS_WEB\s*=/m.test(readFileSync(join(SRC, '..', file), 'utf8')),
+    );
+    expect(declarers).toEqual(['src/styles/platform.ts']);
+  });
+});

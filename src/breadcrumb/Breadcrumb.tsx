@@ -1,12 +1,5 @@
 import React, { Children, Fragment, isValidElement, memo, useMemo } from 'react';
-import {
-  Linking,
-  Platform,
-  Pressable,
-  ScrollView,
-  View,
-  type GestureResponderEvent,
-} from 'react-native';
+import { Linking, Pressable, ScrollView, View, type GestureResponderEvent } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
@@ -21,6 +14,7 @@ import type { Theme } from '../theme/types';
 import type { BreadcrumbItemProps, BreadcrumbProps } from './types';
 import { useMessages } from '../locale/messages';
 import { BREADCRUMB_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The breadcrumb, coloured from Bloom's theme through the neutral ramp
@@ -82,8 +76,6 @@ const BREADCRUMB_CSS = interactiveWebCss({
   transition: color ${BUTTON_TRANSITION_MS}ms ease;
 }`,
 });
-
-const IS_WEB = Platform.OS === 'web';
 
 /**
  * `ChevronRightSmall`, path for path. It points the READING direction: the

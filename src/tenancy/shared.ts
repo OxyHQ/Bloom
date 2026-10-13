@@ -19,15 +19,12 @@
  * (`floating/menu-palette.ts`), the same family `booking` cards use, so a lease
  * card and a trip card sit side by side without a seam.
  */
-import { Platform } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import type { Theme } from '../theme/types';
-
-export const IS_WEB = Platform.OS === 'web';
 
 export interface HousingPalette {
   surface: string;

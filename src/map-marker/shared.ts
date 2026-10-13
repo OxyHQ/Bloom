@@ -21,13 +21,11 @@
  * menu panel. The elevations are the design tokens' `shadow-s` (at rest) and
  * `shadow-m` (active marker, preview card, search pill).
  */
-import { Platform } from 'react-native';
 
 import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import type { Theme } from '../theme/types';
-
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 export interface MapMarkerPaint {
   surface: string;

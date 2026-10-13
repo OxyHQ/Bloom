@@ -2,7 +2,6 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from '
 import {
   Animated,
   Easing,
-  Platform,
   Pressable,
   View,
   type LayoutChangeEvent,
@@ -62,8 +61,6 @@ import type { FileUploadFile, FileUploadLabels, FileUploadProps } from './types'
  * unless the caller controls `progress`.
  */
 
-const IS_WEB = Platform.OS === 'web';
-
 const DEFAULT_MAX_BYTES = 8 * 1024 * 1024;
 const DEFAULT_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'xlsx'] as const;
 
@@ -93,6 +90,7 @@ type StaggerState = 'shown' | 'hiding' | 'hidden';
 import { formatFileSize } from './shared';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { useFieldMembership } from '../field/membership';
+import { IS_WEB } from '../styles/platform';
 
 export { formatFileSize };
 

@@ -42,10 +42,11 @@ import { ModalPortal } from './modal-portal';
 import type { SettingsPalette } from './palette';
 import type { SettingsModalProps, SettingsNavGroup, SettingsNavItem } from './types';
 import { useKeyboardReveal } from './use-keyboard-reveal';
-import { IS_WEB, useSettingsWebCss } from './web-css';
+import { useSettingsWebCss } from './web-css';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { SETTINGS_MODAL_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A settings modal.

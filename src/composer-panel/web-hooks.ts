@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { COMPOSER_STYLE_ID, COMPOSER_WEB_CSS } from './shared';
-
-export const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A `dataSet` attribute on web — the hook the family's stylesheet hangs its

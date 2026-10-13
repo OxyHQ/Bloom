@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import { colorRamp, mixColor, resolveButtonRamps, ACCENT_TABLE } from '../button/shared';
 import { formatFileSize } from '../file-upload/shared';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
@@ -8,8 +6,6 @@ import { MESSAGE_MEDIA_MESSAGES, type MessageMediaMessages } from './messages';
 import type { FileKind, MessageTone, VoicePlaybackRate } from './types';
 import { formatMultiplier } from '../locale/format-number';
 import { clamp01 } from '../styles/clamp';
-
-export const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Contrast

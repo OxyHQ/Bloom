@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useState } from 'react';
-import { Platform, ScrollView, View, type LayoutChangeEvent } from 'react-native';
+import { ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
 import { ActionCardShell } from '../booking/ActionCard';
 import { Button } from '../button';
@@ -16,8 +16,7 @@ import { Text } from '../typography';
 import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { SelectChip, useActionPalette } from './parts';
 import type { ViewingMode, ViewingSchedulerProps } from './types';
-
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /** Slot chips are at least this wide; the grid fits as many columns as that allows. */
 export const VIEWING_SLOT_MIN_WIDTH = 76;

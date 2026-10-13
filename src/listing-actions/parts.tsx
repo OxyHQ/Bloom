@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, type ReactNode } from 'react';
-import { Image, Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Image, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import {
@@ -24,8 +24,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ExchangeHome, KeyFact } from './types';
-
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * INTERNAL — the pieces the `listing-actions` cards share.

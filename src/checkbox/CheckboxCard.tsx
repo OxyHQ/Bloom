@@ -3,7 +3,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -19,6 +19,7 @@ import {
 } from './shared';
 import type { CheckboxCardProps } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `CheckboxCard`: a selectable card with the title and an optional
@@ -39,7 +40,6 @@ import { DISABLED_OPACITY } from '../styles/tokens';
  */
 const CARD_RADIUS = 10;
 const TRANSITION_MS = 150;
-const IS_WEB = Platform.OS === 'web';
 
 const CARD_STYLE_ID = 'bloom-checkbox-card-web-css';
 const CARD = '[data-bloom-checkbox-card]';

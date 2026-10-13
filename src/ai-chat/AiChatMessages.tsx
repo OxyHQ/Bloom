@@ -7,7 +7,7 @@ import { useDirectionProps } from '../hooks/use-is-rtl';
 import { TurnActionButton } from './AiChatControls';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { RevealFade, RevealLine, RevealSequence, useRevealSlot } from './AiChatReveal';
-import { CARD_RADIUS, dataHook, IS_WEB, useAiChatPalette, useAiChatWebCss } from './shared';
+import { CARD_RADIUS, dataHook, useAiChatPalette, useAiChatWebCss } from './shared';
 import type {
   AiChatAssistantMessageProps,
   AiChatBulletListProps,
@@ -17,6 +17,7 @@ import type {
   AiChatStrongProps,
   AiChatUserMessageProps,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Thread turns (`UserMessage`, `AssistantMessage`, `Line`, `Bullets`,

@@ -30,7 +30,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { FollowLabel } from './FollowLabel';
 import { useMediaHeaderPaint } from './parts';
-import { IS_WEB } from './shared';
+
 import { clamp01 } from '../styles/clamp';
 import { webDataSet as webData } from '../styles/web-data';
 import type {
@@ -44,6 +44,7 @@ import type {
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MEDIA_HEADER_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The row of controls under a media header.

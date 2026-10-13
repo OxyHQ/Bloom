@@ -14,7 +14,6 @@ import {
   CHAT_LIST_STYLE_ID,
   CHAT_ROW_GEOMETRY,
   CHAT_ROW_RADIUS,
-  IS_WEB,
   chatMarker,
   groupSearchResults,
   resolveChatListPaint,
@@ -22,6 +21,7 @@ import {
 import type { ChatSearchResult, ChatSearchResultsProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CHAT_LIST_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Search hits, grouped Chats / Messages / Contacts.

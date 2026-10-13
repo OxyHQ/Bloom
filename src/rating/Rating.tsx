@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 
 import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -9,6 +9,7 @@ import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import { RATING_MESSAGES } from './messages';
 import type { RatingProps, RatingSize } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Bloom's compact rating: a star, the value, and an optional review count.
@@ -51,8 +52,6 @@ export function formatRatingValue(value: number | string): string {
   if (Number.isInteger(value)) return value.toFixed(1);
   return String(Math.round(value * 100) / 100);
 }
-
-const IS_WEB = Platform.OS === 'web';
 
 /** The number of stars in the `stars` variant. */
 const STAR_COUNT = 5;

@@ -11,7 +11,6 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LISTING_HEADER_WIDE_MIN_WIDTH } from './constants';
 import {
-  IS_WEB,
   LISTING_DETAILS_CSS,
   LISTING_DETAILS_STYLE_ID,
   resolveListingPalette,
@@ -20,6 +19,7 @@ import {
 import { webDataSet as webData } from '../styles/web-data';
 import type { ListingHeaderActionProps, ListingHeaderProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The title block of a listing page.

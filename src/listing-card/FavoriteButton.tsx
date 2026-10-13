@@ -10,7 +10,6 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import {
   HEART_SCRIM_OPACITY,
-  IS_WEB,
   LISTING_CARD_CSS,
   LISTING_CARD_STYLE_ID,
   resolveListingCardPaint,
@@ -18,6 +17,7 @@ import {
 import { useMessages } from '../locale/messages';
 import { LISTING_CARD_MESSAGES } from './messages';
 import type { FavoriteButtonProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A heart that saves an item, drawn over a photo.

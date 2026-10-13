@@ -26,7 +26,6 @@ import { PanelHeader, PanelPlaceholder } from './AiChatCodePanel';
 import { SurfaceAction } from './AiChatControls';
 import {
   dataHook,
-  IS_WEB,
   primaryHoverOver,
   ROW_RADIUS,
   useAiChatPalette,
@@ -43,6 +42,7 @@ import type {
   AiChatPanelAction,
   AiChatPanelTab,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 const EASE_QUINT = Easing.bezier(0.22, 1, 0.36, 1);
 const EASE_QUINT_CSS = 'cubic-bezier(0.22, 1, 0.36, 1)';

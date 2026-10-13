@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Platform, Pressable, View, type Role, type TextStyle } from 'react-native';
+import { Pressable, View, type Role, type TextStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { borderRadius } from '../styles/tokens';
@@ -15,6 +15,7 @@ import {
 } from './calendar-grid';
 import type { CalendarPalette } from './palette';
 import type { WeekStart } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One month panel: header, weekday row and day grid.
@@ -40,8 +41,6 @@ const CELL_GAP = 12;
 const WEEKDAY_ROW_HEIGHT = 24;
 const NAV_SIZE = 16;
 const DAY_RADIUS = 8;
-
-const IS_WEB = Platform.OS === 'web';
 
 /**
  * ARIA's `gridcell` — the role that carries `aria-selected` in a `grid`. React

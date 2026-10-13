@@ -21,6 +21,7 @@ import { useMessages } from '../locale/messages';
 import { INPUT_OTP_MESSAGES } from './messages';
 import type { InputOtpProps, InputOtpType } from './types';
 import { useFieldMembership } from '../field/membership';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `InputOtp`: one box per digit, side by side, behaving as ONE value.
@@ -66,7 +67,6 @@ const GROUP_GAP = 12;
 const RING_WIDTH = 2;
 /** `text-title-3-medium`. */
 const DIGIT_TEXT = TYPE_SCALE['title-3-medium'];
-const IS_WEB = Platform.OS === 'web';
 
 export interface InputOtpPalette {
   /** `background-primary-default`. */

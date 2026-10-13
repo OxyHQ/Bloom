@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
@@ -21,8 +19,7 @@ import {
   readableOn,
   relativeLuminance,
 } from '../styles/color-contrast';
-
-export const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /** A header lays its cover beside the text from this container width. */
 export const MEDIA_HEADER_WIDE_MIN_WIDTH = 600;

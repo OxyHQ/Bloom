@@ -19,8 +19,9 @@ import { RiFolderOpenLine } from '../icons/remix/RiFolderOpenLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useSidebarPalette, type SidebarPalette } from './palette';
-import { IS_WEB, useSidebarWebCss } from './parts';
+import { useSidebarWebCss } from './parts';
 import type { SidebarFolderProps, SidebarTreeFolder, SidebarTreeItem } from './types';
+import { IS_WEB } from '../styles/platform';
 
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
 const ROW_PITCH = 32; // a 30px row and its 2px gap

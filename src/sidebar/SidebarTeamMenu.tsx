@@ -27,7 +27,6 @@ import { useSidebarPalette, type SidebarPalette } from './palette';
 import {
   ChevronDownSmall,
   Collapsible,
-  IS_WEB,
   MenuDivider,
   SIDEBAR_MENU_PANEL,
   SidebarAvatarView,
@@ -38,6 +37,7 @@ import {
 import type { SidebarMenuGroup, SidebarMenuItem, SidebarTeamMenuProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 

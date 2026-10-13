@@ -30,8 +30,9 @@ import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { CALENDAR_MESSAGES } from './messages';
 import { resolveCalendarViewPalette, type CalendarViewPalette } from './palette';
-import { BREAKPOINT, IS_WEB, dayKey, formatShortMonth, type WebDataSet } from './shared';
+import { BREAKPOINT, dayKey, formatShortMonth, type WebDataSet } from './shared';
 import type { CalendarViewMonthSwitcherProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `CalendarMonthSwitcher`: a pill with prev/next chevrons around the month

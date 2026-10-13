@@ -17,14 +17,9 @@ import { RiStarLine } from '../icons/remix/RiStarLine';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
-import {
-  IS_WEB,
-  MAIL_LABEL_DOT,
-  MAIL_ROW_RADIUS,
-  MAIL_TOUCH_TARGET,
-  type MailPaint,
-} from './shared';
+import { MAIL_LABEL_DOT, MAIL_ROW_RADIUS, MAIL_TOUCH_TARGET, type MailPaint } from './shared';
 import type { MailAction, MailLabel, MailStrings } from './types';
+import { IS_WEB } from '../styles/platform';
 
 // ---------------------------------------------------------------------------
 //  The link that covers a row

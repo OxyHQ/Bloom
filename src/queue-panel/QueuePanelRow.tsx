@@ -13,7 +13,6 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  IS_WEB,
   QUEUE_COVER_SIZE,
   QUEUE_PANEL_CSS,
   QUEUE_PANEL_STYLE_ID,
@@ -23,6 +22,7 @@ import {
 import type { QueuePanelRowProps } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One track row, 56 tall:

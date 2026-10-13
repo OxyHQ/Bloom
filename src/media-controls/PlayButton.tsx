@@ -8,17 +8,13 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
-import {
-  IS_WEB,
-  MEDIA_CONTROLS_CSS,
-  MEDIA_CONTROLS_STYLE_ID,
-  resolveMediaControlsPaint,
-} from './shared';
+import { MEDIA_CONTROLS_CSS, MEDIA_CONTROLS_STYLE_ID, resolveMediaControlsPaint } from './shared';
 import { PauseGlyph } from './PauseGlyph';
 import { SpinnerRing } from './SpinnerRing';
 import type { PlayButtonProps, PlayButtonSize } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The round play / pause button.

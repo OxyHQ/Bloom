@@ -8,16 +8,7 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { parseRgba } from '../theme/color-utils';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  Image,
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { Animated, Easing, Image, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { Avatar } from '../avatar';
@@ -44,6 +35,7 @@ import {
   USER_HOVER_CARD_WIDTH,
 } from './constants';
 import type { UserHoverCardProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A profile hover card, built from Bloom's existing component vocabulary:
@@ -85,7 +77,6 @@ const VERIFIED_SIZE = 16;
 const RADIUS = 16;
 const STAT_RADIUS = 10;
 
-const IS_WEB = Platform.OS === 'web';
 const MENU_EASING = Easing.bezier(...MENU_MOTION_EASING);
 
 interface HoverCardPalette {

@@ -1,6 +1,6 @@
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback, useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { RiStarFill } from '../icons/remix/RiStarFill';
 import { RiStarLine } from '../icons/remix/RiStarLine';
@@ -18,6 +18,7 @@ import { useMessages } from '../locale/messages';
 import { RATING_MESSAGES } from './messages';
 import type { RatingInputProps, RatingInputSize } from './types';
 import { useFieldMembership } from '../field/membership';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The star PICKER — `Rating`'s counterpart for a review form. `Rating` draws a
@@ -57,8 +58,6 @@ const SIZE_CONFIG: Record<RatingInputSize, { star: number; gap: number }> = {
   md: { star: 32, gap: 6 },
   lg: { star: 40, gap: 8 },
 };
-
-const IS_WEB = Platform.OS === 'web';
 
 const HIT_SLOP = { top: 6, bottom: 6, left: 2, right: 2 } as const;
 

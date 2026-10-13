@@ -2,7 +2,6 @@ import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
-  Platform,
   ScrollView,
   StyleSheet,
   View,
@@ -31,6 +30,7 @@ import type {
   ImportantAlertsCardProps,
   ImportantAlertsCardTone,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The important alerts card. Geometry, to the pixel:
@@ -53,7 +53,6 @@ import type {
  *            opacity 0 → 1 over 200ms ease-out once the feed is scrolled
  */
 
-const IS_WEB = Platform.OS === 'web';
 const CARD_HEIGHT = 330;
 const FADE_HEIGHT = 40;
 const FADE_MS = 200;

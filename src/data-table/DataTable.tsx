@@ -1,7 +1,6 @@
 import { useBloomAppearance } from '../appearance';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Platform,
   Pressable,
   ScrollView,
   View,
@@ -38,6 +37,7 @@ import type {
   DataTableSize,
   DataTableSort,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The advanced data table, styled after the dashboard template's customers table).
@@ -74,7 +74,6 @@ const NARROW_WIDTH = 640;
 const DEFAULT_PAGE_SIZE = 8;
 /** react-aria's `TooltipTrigger delay={200}`. */
 const TOOLTIP_DELAY_MS = 200;
-const IS_WEB = Platform.OS === 'web';
 
 interface DataTablePalette {
   border: string;

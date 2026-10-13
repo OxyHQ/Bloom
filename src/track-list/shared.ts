@@ -1,5 +1,5 @@
 import { surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
-import { Platform, type ViewProps } from 'react-native';
+import { type ViewProps } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
@@ -8,8 +8,6 @@ import type { Theme } from '../theme/types';
 import type { TrackListColumn, TrackListDensity, TrackListLabels } from './types';
 import { COMMON_MESSAGES, type CommonMessages } from '../locale/common-messages';
 import { TRACK_LIST_MESSAGES, type TrackListMessages } from './messages';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /**
  * `role="gridcell"`, typed for React Native's `role` union, which has `cell`

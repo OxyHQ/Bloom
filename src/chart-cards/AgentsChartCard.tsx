@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Animated,
   Easing,
-  Platform,
   StyleSheet,
   View,
   type GestureResponderEvent,
@@ -29,6 +28,7 @@ import { useMessages } from '../locale/messages';
 import { formatGregorian } from '../locale/format-date';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
+import { IS_WEB } from '../styles/platform';
 /**
  * A month of daily agent runs as plain rounded bars, with a month switcher
  * pill and a count-up headline that follows the hovered day.
@@ -108,7 +108,6 @@ const BAR_RADIUS = 4;
 const RISE_MS = 360;
 const RISE_STAGGER_MS = 22;
 const RISE_EASE = Easing.bezier(0.22, 1, 0.36, 1);
-const IS_WEB = Platform.OS === 'web';
 
 const defaultFormat = (value: number) => `${value} agents`;
 

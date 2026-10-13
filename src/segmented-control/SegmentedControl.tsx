@@ -10,7 +10,6 @@ import {
 } from 'react';
 import {
   type GestureResponderEvent,
-  Platform,
   Pressable,
   type PressableProps,
   type StyleProp,
@@ -46,6 +45,7 @@ import { useFieldMembership } from '../field/membership';
 import { StyledView, StyledPressable } from '../styles/styled-primitives';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
 import { webDataSet } from '../styles/web-data';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A segmented control using Bloom's canonical surface and text roles.
@@ -89,8 +89,6 @@ const TRACK_PADDING = 4;
 const SEGMENT_GAP = 2;
 /** Transition duration (ease), for the thumb and the segment text. */
 const TRANSITION_MS = 200;
-
-const IS_WEB = Platform.OS === 'web';
 
 interface SegmentedPalette {
   track: string;

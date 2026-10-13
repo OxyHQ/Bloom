@@ -1,5 +1,5 @@
 import { surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
-import { Platform, type DimensionValue } from 'react-native';
+import { type DimensionValue } from 'react-native';
 
 import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
 import { CHART_TONE_ORDER, chartHueTone } from '../chart-cards/palette';
@@ -15,8 +15,6 @@ import type {
   MessagePosition,
 } from './types';
 import { MESSAGE_BUBBLE_MESSAGES, type MessageBubbleMessages } from './messages';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /** WCAG AA for body text — every colour in this family is measured against it. */
 const AA = 4.5;

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Platform, TextInput, View, type TextStyle } from 'react-native';
+import { TextInput, View, type TextStyle } from 'react-native';
 
 import { RiAlertLine } from '../icons/remix/RiAlertLine';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
@@ -15,6 +15,7 @@ import { Text } from '../typography';
 import { resolveNoteStatusPaint } from './shared';
 import { NOTE_EDITOR_MESSAGES } from './messages';
 import type { NoteEditorHeaderProps, NoteSaveState } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The chrome above a writing surface: the document's title, and the quiet line
@@ -47,8 +48,6 @@ const STATE_ICON = {
   offline: RiAlertLine,
   error: RiErrorWarningLine,
 } as const satisfies Record<NoteSaveState, unknown>;
-
-const IS_WEB = Platform.OS === 'web';
 
 /**
  * One reading of the status line, with its own leading separator.

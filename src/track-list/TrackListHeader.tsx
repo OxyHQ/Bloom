@@ -6,11 +6,12 @@ import { WEB_POSITION_STICKY } from '../styles/web-view-style';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { CELL, IS_WEB, rowGeometry, resolveTrackListPaint, trackListLabels } from './shared';
+import { CELL, rowGeometry, resolveTrackListPaint, trackListLabels } from './shared';
 import type { TrackListHeaderProps } from './types';
 import { useMessages } from '../locale/messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { TRACK_LIST_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The column labels above a track table: "#", "Title", "Album", "Date added",

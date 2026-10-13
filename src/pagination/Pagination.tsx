@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { Platform, Pressable, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
@@ -16,6 +16,7 @@ import type { PaginationProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { PAGINATION_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The pagination, coloured from Bloom's theme through the ramps
@@ -114,8 +115,6 @@ const PAGINATION_CSS = interactiveWebCss({
   hover: { declarations: 'cursor: pointer;' },
   outlineOffset: 2,
 });
-
-const IS_WEB = Platform.OS === 'web';
 
 interface PageCellProps {
   page: number;

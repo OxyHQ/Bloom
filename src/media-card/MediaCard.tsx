@@ -11,7 +11,6 @@ import type { TypeScaleVariant } from '../typography/scale';
 import { Artwork, CardLink, CardMenu, hasMenu, useMediaCardCss } from './parts';
 import {
   composeName,
-  IS_WEB,
   ROW_ARTWORK,
   ROW_PADDING,
   ROW_RADIUS,
@@ -27,6 +26,7 @@ import type { MediaCardLayout, MediaCardProps, MediaCardSize } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The anatomy every music card shares.

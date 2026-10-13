@@ -6,12 +6,9 @@
  *
  * Pure, so `OrderStatus.test.tsx` can walk presets and modes without rendering.
  */
-import { Platform } from 'react-native';
 
 import { hairlineOn, surfaceTextOn, type SurfaceTextPaint } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
-
-export const IS_WEB = Platform.OS === 'web';
 
 export interface OrderStatusPaint extends SurfaceTextPaint {
   /** The connector between two steps that have not been travelled yet. */

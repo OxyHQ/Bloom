@@ -16,13 +16,13 @@ import { Cover } from './Cover';
 import { useMessages } from '../locale/messages';
 import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import {
-  IS_WEB,
   MUSIC_LIBRARY_CSS,
   MUSIC_LIBRARY_STYLE_ID,
   libraryMeta,
   resolveMusicLibraryPaint,
 } from './shared';
 import type { LibraryItemProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One entry of Your Library.

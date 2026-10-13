@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo, type ReactNode } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -13,6 +13,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ListingEditorIcon } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The large selectable card the listing editor's pickers are built from.
@@ -40,7 +41,6 @@ import { DISABLED_OPACITY } from '../styles/tokens';
  * Colour-only hover; no scale.
  */
 
-const IS_WEB = Platform.OS === 'web';
 export const SELECTION_CARD_RADIUS = 16;
 
 const STYLE_ID = 'bloom-listing-editor-card-web-css';

@@ -49,9 +49,10 @@ import {
   waveformBars,
 } from './shared';
 import type { VoiceRecorderProps } from './types';
-import { IS_WEB, useChatComposerWebCss } from './web-hooks';
+import { useChatComposerWebCss } from './web-hooks';
 import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createVoiceRecorder({

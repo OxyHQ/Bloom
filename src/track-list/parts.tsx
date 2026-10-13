@@ -15,8 +15,9 @@ import { resolvePhoto } from '../listing-card/shared';
 import { useImageResolver } from '../image-resolver/context';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
-import { IS_WEB, resolveTrackListPaint } from './shared';
+import { resolveTrackListPaint } from './shared';
 import type { TrackIconComponent, TrackMenuItem } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /** The props `DropdownMenuTrigger asChild` merges onto its child. */
 interface TrackIconButtonProps {

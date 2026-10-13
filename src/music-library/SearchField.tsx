@@ -13,16 +13,12 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { SANS_FONT_FAMILY } from '../text-field/shared';
 import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography/scale';
-import {
-  IS_WEB,
-  MUSIC_LIBRARY_CSS,
-  MUSIC_LIBRARY_STYLE_ID,
-  resolveMusicLibraryPaint,
-} from './shared';
+import { MUSIC_LIBRARY_CSS, MUSIC_LIBRARY_STYLE_ID, resolveMusicLibraryPaint } from './shared';
 import type { SearchFieldProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MUSIC_LIBRARY_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The top-bar search pill.

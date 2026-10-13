@@ -1,9 +1,5 @@
-import { Platform } from 'react-native';
-
 import { MAIL_COMPOSE_MESSAGES } from './messages';
 import type { MailComposeStrings, MailRecipient, MailRecipientSuggestion } from './types';
-
-export const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Geometry

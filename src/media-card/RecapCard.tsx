@@ -10,17 +10,12 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Artwork, CoverGradient, useMediaCardCss } from './parts';
-import {
-  IS_WEB,
-  RECAP_RADIUS,
-  resolveCoverTint,
-  resolveMediaCardPaint,
-  type CoverTint,
-} from './shared';
+import { RECAP_RADIUS, resolveCoverTint, resolveMediaCardPaint, type CoverTint } from './shared';
 import type { RecapCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CARD_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The share pill over a generated cover. Not `Button`: its fill is the cover's

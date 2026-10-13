@@ -1,5 +1,5 @@
 import React, { forwardRef, useMemo } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -13,6 +13,7 @@ import {
   resolveGlyphButtonPaint,
 } from './shared';
 import type { GlyphButtonProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `GlyphButton`: the round glyph-only control at an ARBITRARY size.
@@ -48,7 +49,6 @@ import type { GlyphButtonProps } from './types';
  * caller paints (a text glyph, a two-tone icon).
  */
 
-const IS_WEB = Platform.OS === 'web';
 const STYLE_ID = 'bloom-glyph-button-web-css';
 const SELECTOR = '[data-bloom-glyph-button]';
 

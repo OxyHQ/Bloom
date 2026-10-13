@@ -16,7 +16,6 @@ import {
   COMPOSER_CONTROL,
   COMPOSER_HEIGHT,
   dataHook,
-  IS_WEB,
   shortModel,
   useAgentChatPalette,
   useAgentChatWebCss,
@@ -24,6 +23,7 @@ import {
 } from './shared';
 import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatComposerProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The free composer: a 52px pill with a text field and circular controls, and

@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
@@ -13,8 +11,7 @@ import {
   darkenUntilContrast,
   relativeLuminance,
 } from '../styles/color-contrast';
-
-export const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 // ---------------------------------------------------------------------------
 //  Geometry

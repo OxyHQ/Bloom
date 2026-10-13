@@ -2,7 +2,6 @@ import { Card } from '../card';
 import React, { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import {
   Easing,
-  Platform,
   StyleSheet,
   View,
   type GestureResponderEvent,
@@ -30,6 +29,7 @@ import { useMessages } from '../locale/messages';
 import { formatGregorian } from '../locale/format-date';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
+import { IS_WEB } from '../styles/platform';
 /**
  * `TokensChartCard`: daily token usage as a sharp line over a fading
  * area, idle stretches drawn as a grey dashed baseline, the plot bleeding to
@@ -104,7 +104,6 @@ export const TOKENS_MARGIN_TOP = 27;
 export const TOKENS_MARGIN_BOTTOM = 2;
 const REVEAL_MS = 1800;
 const REVEAL_EASE = Easing.bezier(0.33, 0, 0.15, 1);
-const IS_WEB = Platform.OS === 'web';
 
 const defaultFormat = (value: number) => `${value.toFixed(1)}M tokens`;
 

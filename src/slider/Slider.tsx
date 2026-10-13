@@ -3,7 +3,6 @@ import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
-  Platform,
   View,
   type GestureResponderEvent,
   type LayoutChangeEvent,
@@ -27,6 +26,7 @@ import type { RangeSliderProps, SliderProps } from './types';
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SLIDER_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 function quantize(raw: number, min: number, max: number, step: number): number {
   if (step <= 0) return clamp(raw, min, max);
@@ -78,8 +78,6 @@ const BUBBLE_HEIGHT = 28;
 /** `-bottom-[4.5px]`: the arrow's bottom edge below the bubble's padding box. */
 const ARROW_OVERHANG = 4.5;
 const TRANSITION_MS = 150;
-
-const IS_WEB = Platform.OS === 'web';
 
 function gradientStyle(angle: number, top: string, bottom: string): WebCssStyle {
   const image = `linear-gradient(${angle}deg, ${top} 0%, ${bottom} 100%)`;

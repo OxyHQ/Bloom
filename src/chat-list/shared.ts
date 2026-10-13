@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import { colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
 import { CHAT_INDICATORS_MESSAGES } from '../chat-indicators/messages';
 import type { MessageDeliveryStatus } from '../chat-indicators/types';
@@ -34,8 +32,6 @@ import type {
   StoryEntry,
 } from './types';
 import { CHAT_LIST_MESSAGES } from './messages';
-
-export const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Geometry
