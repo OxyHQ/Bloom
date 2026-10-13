@@ -1,5 +1,5 @@
-import { mixColor, resolveButtonRamps } from '../button/shared';
-import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
+import { resolveButtonRamps } from '../button/shared';
+import { srgbToOklch, oklchToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import { quietTextOver } from '../styles/color-contrast';
 import {
@@ -20,6 +20,7 @@ import {
   relativeLuminance,
 } from '../styles/color-contrast';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 /** A header lays its cover beside the text from this container width. */
 export const MEDIA_HEADER_WIDE_MIN_WIDTH = 600;
@@ -52,15 +53,7 @@ export function tintArtworkColor(color: string | null | undefined, dark: boolean
   let chroma = Math.min(c, 0.14);
   const lightness = Math.min(max, Math.max(min, l));
   // Reduce chroma until the colour fits sRGB, keeping hue and lightness.
-  for (let i = 0; i < 24; i++) {
-    const rgb = oklchToSrgb({ l: lightness, c: chroma, h });
-    const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - lightness) < 0.01 && Math.abs(back.c - chroma) < 0.01) {
-      return srgbToRgbString(rgb);
-    }
-    chroma *= 0.9;
-  }
-  return srgbToRgbString(oklchToSrgb({ l: lightness, c: chroma, h }));
+  return oklchToRgbString({ l: lightness, c: chroma, h });
 }
 
 export interface MediaHeaderPaint {
@@ -115,13 +108,13 @@ export function resolveMediaHeaderPaint(
   const tinted = tintArtworkColor(artworkColor, dark);
   const fallback = tinted === null;
   const bandTop = tinted ?? surfaceFillOn(theme, colors.background);
-  const bandBottom = mixColor(colors.background, bandTop, 0.55);
+  const bandBottom = mixColors(colors.background, bandTop, 0.55);
 
   const onBand = readableOn([bandTop, bandBottom], [colors.text, colors.background]);
   // Walk the secondary text towards the band until one more step would fail AA.
   let onBandMuted = onBand;
   for (let t = 0.04; t <= 0.4; t += 0.04) {
-    const candidate = mixColor(onBand, bandTop, t);
+    const candidate = mixColors(onBand, bandTop, t);
     const worst = Math.min(contrastRatio(candidate, bandTop), contrastRatio(candidate, bandBottom));
     if (worst < AA_TEXT_CONTRAST + 0.25) break;
     onBandMuted = candidate;
@@ -134,7 +127,7 @@ export function resolveMediaHeaderPaint(
     background: colors.background,
     onBand,
     onBandMuted,
-    bandRail: mixColor(bandTop, onBand, 0.2),
+    bandRail: mixColors(bandTop, onBand, 0.2),
     bar: bandTop,
     onBar: readableOn([bandTop], [colors.text, colors.background]),
     text: colors.text,

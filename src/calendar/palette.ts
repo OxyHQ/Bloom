@@ -1,4 +1,4 @@
-import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
+import { srgbToOklch, oklchToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { CalendarViewEventColor, CalendarViewFeedColor } from './types';
@@ -124,18 +124,6 @@ const TAILWIND: Record<Hue, Partial<Record<Stop, Lch>>> = {
 
 const BLUE_500 = TAILWIND.blue[500]!;
 
-function toRgb(l: number, c: number, h: number): string {
-  let chroma = c;
-  for (let i = 0; i < 24; i++) {
-    const rgb = oklchToSrgb({ l, c: chroma, h });
-    const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01)
-      return srgbToRgbString(rgb);
-    chroma *= 0.9;
-  }
-  return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
-}
-
 /** A hue's Tailwind stop, re-anchored on the theme's primary. */
 export type HueResolver = (hue: Hue, stop: Stop) => string;
 
@@ -150,7 +138,7 @@ export function createHueResolver(primary: string): HueResolver {
     const hit = cache.get(key);
     if (hit) return hit;
     const [l, c, h] = TAILWIND[hue][stop]!;
-    const value = toRgb(l, c * ratio, (((h + shift) % 360) + 360) % 360);
+    const value = oklchToRgbString({ l, c: c * ratio, h: (((h + shift) % 360) + 360) % 360 });
     cache.set(key, value);
     return value;
   };

@@ -1,10 +1,4 @@
-import {
-  ACCENT_TABLE,
-  colorRamp,
-  DANGER_TABLE,
-  mixColor,
-  resolveButtonRamps,
-} from '../button/shared';
+import { ACCENT_TABLE, colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import type { AccentTone } from '../theme/accent-colors';
 import {
   surfaceTextOn,
@@ -22,6 +16,7 @@ import {
   type CreatorStudioMessages,
 } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 /** Cards: `rounded-2xl`, the chart cards' radius. */
 export const CARD_RADIUS = 16;
@@ -90,7 +85,7 @@ export function resolveCreatorStudioPaint(theme: Theme): CreatorStudioPaint {
     positive: dark ? green[400] : green[700],
     negative: dark ? rose[400] : rose[600],
     error: dark ? red[400] : red[600],
-    errorSurface: dark ? mixColor(theme.colors.background, red[950], 0.5) : red[50],
+    errorSurface: dark ? mixColors(theme.colors.background, red[950], 0.5) : red[50],
   };
 }
 

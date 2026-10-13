@@ -1,7 +1,6 @@
 import React, { memo, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { mixColor } from '../button/shared';
 import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { Box as SkeletonBox } from '../skeleton';
 import { borderRadius } from '../styles/tokens';
@@ -16,6 +15,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CARD_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * The share pill over a generated cover. Not `Button`: its fill is the cover's
@@ -43,7 +43,7 @@ function SharePill({
     paddingLeft: 14,
     paddingRight: 16,
     borderRadius: borderRadius.full,
-    backgroundColor: hovered ? mixColor(tint.text, tint.top, 0.12) : tint.text,
+    backgroundColor: hovered ? mixColors(tint.text, tint.top, 0.12) : tint.text,
     ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: '150ms' } : null),
   };
   return (

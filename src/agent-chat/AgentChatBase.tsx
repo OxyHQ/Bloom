@@ -22,7 +22,6 @@ import { AGENT_CHAT_MESSAGES } from './messages';
 import {
   CARD_RADIUS,
   COLUMN_MAX_WIDTH,
-  dataHook,
   HEADER_HEIGHT,
   HISTORY_BREAKPOINT,
   useAgentChatPalette,
@@ -31,6 +30,7 @@ import {
 } from './shared';
 import type { AgentChatMessageData, AgentChatProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 /**
  * `AgentChat` — the chat workspace, without the app shell around it and

@@ -5,10 +5,11 @@ import { isValidElement, type ReactNode } from 'react';
 import { resolveBloomColors } from '../appearance/colors';
 import type { BloomAppearance, BloomTone } from '../appearance/types';
 
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, animation } from '../styles/tokens';
 import { parseRgba, withAlpha } from '../theme/color-utils';
 import { TYPE_SCALE, type TypeScaleStyle, type TypeScaleVariant } from '../typography/scale';
-import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
+import { srgbToOklch, type Oklch, oklchToRgbString } from '../theme/color-space';
+import { mixColors } from '../styles/color-contrast';
 import type { Theme } from '../theme/types';
 import type { ButtonIconComponent, ButtonLinkTone, ButtonUnderline } from './types';
 
@@ -138,7 +139,7 @@ export const CLOSE_BUTTON_GEOMETRY: Record<
 };
 
 /** The button's transition duration. */
-export const BUTTON_TRANSITION_MS = 150;
+export const BUTTON_TRANSITION_MS = animation.duration.fast;
 
 /**
  * The sliding thumb of a segmented control — the sidebar theme toggle and the
@@ -260,20 +261,6 @@ function toOklch(color: string): Oklch | null {
   return rgba ? srgbToOklch(rgba) : null;
 }
 
-/** OKLCH → `rgb()`, reducing chroma until the colour fits sRGB (hue-stable). */
-function toRgb({ l, c, h }: Oklch): string {
-  let chroma = c;
-  for (let i = 0; i < 24; i++) {
-    const rgb = oklchToSrgb({ l, c: chroma, h });
-    const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01) {
-      return srgbToRgbString(rgb);
-    }
-    chroma *= 0.9;
-  }
-  return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
-}
-
 /**
  * A Tailwind-shaped ramp around one theme colour (the 500 stop). Pass
  * {@link ACCENT_TABLE} for an accent/status hue, {@link DANGER_TABLE} for red.
@@ -289,7 +276,7 @@ export function colorRamp(color: string, table: RampTable): Ramp {
     }
     const [l, c] = table[stop];
     const lightness = RELATIVE_STOPS.has(stop) ? base.l + (l - baseL) : l;
-    ramp[stop] = toRgb({
+    ramp[stop] = oklchToRgbString({
       l: Math.min(0.99, Math.max(0.05, lightness)),
       c: base.c * (c / baseC),
       h: base.h,
@@ -304,7 +291,7 @@ export function neutralRamp(tintSource: string): Ramp {
   const c = Math.min(tint?.c ?? 0, 0.01);
   const h = tint?.h ?? 0;
   const ramp = {} as Ramp;
-  for (const stop of STOPS) ramp[stop] = toRgb({ l: NEUTRAL_LIGHTNESS[stop], c, h });
+  for (const stop of STOPS) ramp[stop] = oklchToRgbString({ l: NEUTRAL_LIGHTNESS[stop], c, h });
   return ramp;
 }
 
@@ -317,15 +304,6 @@ export function resolveButtonRamps(theme: Theme): { accent: Ramp; neutral: Ramp 
     accent: colorRamp(theme.colors.primary, ACCENT_TABLE),
     neutral: neutralRamp(theme.colors.text),
   };
-}
-
-/** Composite `top` at `alpha` over opaque `base` — CSS `color-mix(in srgb)`. */
-export function mixColor(base: string, top: string, alpha: number): string {
-  const b = parseRgba(base);
-  const t = parseRgba(top);
-  if (!b || !t) return base;
-  const ch = (x: number, y: number) => Math.round(y * alpha + x * (1 - alpha));
-  return `rgb(${ch(b.r, t.r)} ${ch(b.g, t.g)} ${ch(b.b, t.b)})`;
 }
 
 /** Shared semantic recipe. Color and fill are independent axes. */
@@ -379,7 +357,7 @@ export function resolveCanonicalButtonPalette(
       background:
         amount === 0 || pair.background === 'transparent'
           ? pair.background
-          : withAlpha(mixColor(pair.background, '#000000', amount), alpha),
+          : withAlpha(mixColors(pair.background, '#000000', amount), alpha),
       foreground: pair.foreground,
       border: appearance === 'outline' ? semantic.border : TRANSPARENT,
       gradient: null,
@@ -426,7 +404,7 @@ export function resolveCanonicalButtonPalette(
                 ? tint
                 : fill
               : withAlpha(
-                  mixColor(fill, state === 1 ? '#ffffff' : '#000000', state === 1 ? 0.06 : 0.08),
+                  mixColors(fill, state === 1 ? '#ffffff' : '#000000', state === 1 ? 0.06 : 0.08),
                   semanticAlpha,
                 ),
         ),

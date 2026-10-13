@@ -8,7 +8,6 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
-import { mixColor } from '../button/shared';
 import { CardLink, useMediaCardCss } from './parts';
 import {
   GENRE_ARTWORK_ROTATION,
@@ -20,6 +19,7 @@ import {
 } from './shared';
 import type { GenreCardProps, MediaCardSize } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { mixColors } from '../styles/color-contrast';
 
 const TITLE: Record<MediaCardSize, TypeScaleVariant> = {
   large: 'title-2-bold',
@@ -83,7 +83,7 @@ function GenreCardComponent({
     borderRadius: GENRE_RADIUS,
     overflow: 'hidden',
     backgroundColor: tint.top,
-    '--bloom-media-card-hover': mixColor(tint.top, tint.bottom, 0.5),
+    '--bloom-media-card-hover': mixColors(tint.top, tint.bottom, 0.5),
   };
 
   return (

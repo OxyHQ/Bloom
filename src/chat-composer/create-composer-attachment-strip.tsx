@@ -18,9 +18,10 @@ import { Text } from '../typography';
 import type { ComposerIconButton as ComposerIconButtonComponent } from './ComposerIconButton';
 import { TILE, TILE_RADIUS, resolveChatComposerPalette } from './shared';
 import type { ChatComposerAttachment, ComposerAttachmentStripProps } from './types';
-import { dataHook } from './web-hooks';
+
 import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
+import { dataHook } from '../styles/data-hook';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createComposerAttachmentStrip({

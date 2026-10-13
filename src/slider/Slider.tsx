@@ -13,20 +13,21 @@ import { useTheme } from '../theme/use-theme';
 import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { Text } from '../typography';
-import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
+import { borderRadius, DISABLED_OPACITY, animation } from '../styles/tokens';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { focusRingShadow } from '../styles/interactive-web-css';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
-import { BUTTON_SHADOW, mixColor, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import type { RangeSliderProps, SliderProps } from './types';
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SLIDER_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 function quantize(raw: number, min: number, max: number, step: number): number {
   if (step <= 0) return clamp(raw, min, max);
@@ -77,7 +78,7 @@ const BUBBLE_OFFSET = 9;
 const BUBBLE_HEIGHT = 28;
 /** `-bottom-[4.5px]`: the arrow's bottom edge below the bubble's padding box. */
 const ARROW_OVERHANG = 4.5;
-const TRANSITION_MS = 150;
+const TRANSITION_MS = animation.duration.fast;
 
 function gradientStyle(angle: number, top: string, bottom: string): WebCssStyle {
   const image = `linear-gradient(${angle}deg, ${top} 0%, ${bottom} 100%)`;
@@ -104,7 +105,7 @@ function resolveSliderPaint(theme: Theme) {
     fillTop: accent[500],
     fillBottom: accent[600],
     // accent-600 → accent-700 mix (`rgb(4 80 226 / 0.16)`).
-    fillShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 1px 2px ${withAlpha(mixColor(accent[700], accent[600], 0.16), 0.16)}`,
+    fillShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 1px 2px ${withAlpha(mixColors(accent[700], accent[600], 0.16), 0.16)}`,
     thumbBorder: theme.colors.borderLight,
     thumbBorderHover: theme.colors.border,
     thumbBorderDrag: accent[500],

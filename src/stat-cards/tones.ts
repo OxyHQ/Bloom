@@ -6,7 +6,7 @@ import {
   resolveButtonRamps,
   type Ramp,
 } from '../button/shared';
-import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
+import { srgbToOklch, type Oklch, oklchToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 
@@ -65,25 +65,11 @@ const UNROLED: Record<'purple' | 'pink' | 'teal', Partial<Record<ToneStop, Oklch
   },
 };
 
-/** OKLCH → `rgb()`, reducing chroma until the colour fits sRGB (hue-stable). */
-function toRgb({ l, c, h }: Oklch): string {
-  let chroma = c;
-  for (let i = 0; i < 24; i++) {
-    const rgb = oklchToSrgb({ l, c: chroma, h });
-    const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01) {
-      return srgbToRgbString(rgb);
-    }
-    chroma *= 0.9;
-  }
-  return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
-}
-
 function rotatedFromPrimary(primary: string, target: Oklch): string {
   const rgba = parseRgba(primary);
   if (!rgba) return primary;
   const base = srgbToOklch(rgba);
-  return toRgb({
+  return oklchToRgbString({
     l: Math.min(0.99, Math.max(0.05, base.l + (target.l - BLUE_500.l))),
     c: base.c * (target.c / BLUE_500.c),
     h: (((base.h + (target.h - BLUE_500.h)) % 360) + 360) % 360,

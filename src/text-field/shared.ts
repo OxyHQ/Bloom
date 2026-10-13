@@ -9,6 +9,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { RADIUS } from '../design-tokens/scales';
 import { TYPE_SCALE } from '../typography/scale';
+import { animation } from '../styles/tokens';
 
 /**
  * The geometry and palette the `Input` shell paints, shared by `TextField`,
@@ -74,7 +75,7 @@ export const TEXT_FIELD_TRAILING_GAP = 8;
 /** `gap-1` between label, shell and hint. */
 export const TEXT_FIELD_STACK_GAP = 4;
 /** `--input-transition-ms`. */
-export const TEXT_FIELD_TRANSITION_MS = 150;
+export const TEXT_FIELD_TRANSITION_MS = animation.duration.fast;
 
 /** `text-body-regular` — the control. */
 export const TEXT_FIELD_TEXT = TYPE_SCALE['body-regular'];

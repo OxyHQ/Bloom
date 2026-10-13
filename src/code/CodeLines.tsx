@@ -3,16 +3,10 @@ import { ScrollView, Text as RNText, View } from 'react-native';
 
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import { tokenizeCode } from './highlight';
-import {
-  dataHook,
-  LINE_METRICS,
-  MONO_FAMILY,
-  tokenColor,
-  useCodePalette,
-  useCodeWebCss,
-} from './shared';
+import { LINE_METRICS, MONO_FAMILY, tokenColor, useCodePalette, useCodeWebCss } from './shared';
 import type { CodeLinesProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 /**
  * Highlighted, numbered lines of code — the body of a `CodeBlock` and of a full

@@ -18,7 +18,6 @@ import {
   BUTTON_SHADOW,
   colorRamp,
   ACCENT_TABLE,
-  mixColor,
   resolveButtonPalette,
   resolveButtonRamps,
 } from '../button/shared';
@@ -61,6 +60,8 @@ import {
   type ChatComposerMessages,
 } from './messages';
 import { formatClock } from '../locale/format-number';
+import { mixColors } from '../styles/color-contrast';
+import { animation } from '../styles/tokens';
 
 // ---------------------------------------------------------------------------
 //  Palette
@@ -122,7 +123,7 @@ export function resolveChatComposerPalette(theme: Theme, backing?: string): Chat
     accent: accent[500],
     // A tint of the PAGE toward the accent, so a banner rail's wash keeps its
     // own surface's luminance instead of being an alpha of an unknown backdrop.
-    accentSoft: mixColor(surface, accent[500], dark ? 0.2 : 0.12),
+    accentSoft: mixColors(surface, accent[500], dark ? 0.2 : 0.12),
     accentStrong: dark ? accent[400] : accent[600],
     onAccent: theme.colors.primaryForeground,
     destructive: colorRamp(theme.colors.negative, ACCENT_TABLE)[dark ? 400 : 500],
@@ -169,7 +170,7 @@ export const WAVE_BAR_WIDTH = 2;
 export const WAVE_BAR_GAP = 2;
 export const WAVE_HEIGHT = 24;
 /** State colours everywhere in the family. */
-export const TRANSITION_MS = 150;
+export const TRANSITION_MS = animation.duration.fast;
 /** Mic ↔ send crossfade. Long enough to read as a swap, short enough to type through. */
 export const SWAP_MS = 220;
 

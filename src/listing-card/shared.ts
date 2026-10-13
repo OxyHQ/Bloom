@@ -1,4 +1,4 @@
-import { colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
+import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
@@ -11,6 +11,7 @@ import type {
   ListingStatus,
   Offering,
 } from './types';
+import { mixColors } from '../styles/color-contrast';
 
 /** The photo tile's corner radius (a card image). */
 export const PHOTO_RADIUS = 16;

@@ -16,17 +16,12 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { RevealFade, RevealLine, RevealSequence } from './AiChatReveal';
-import {
-  CARD_RADIUS,
-  dataHook,
-  useAiChatPalette,
-  useAiChatWebCss,
-  type AiChatPalette,
-} from './shared';
+import { CARD_RADIUS, useAiChatPalette, useAiChatWebCss, type AiChatPalette } from './shared';
 import type { AiChatImageGenerationProps } from './types';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 const FRAME_WIDTH = 200;
 const FRAME_HEIGHT = 250;

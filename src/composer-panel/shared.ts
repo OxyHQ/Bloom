@@ -29,6 +29,7 @@ import type {
   ComposerPanelAttachmentKind,
   ComposerPanelPermissionOption,
 } from './types';
+import { animation } from '../styles/tokens';
 
 export type ComposerIcon = ComponentType<IconProps>;
 
@@ -150,7 +151,7 @@ export const PICKER_HEIGHT = 282;
 export const EFFORT_WIDTH = 266;
 
 /** The popover motion (150ms `ease-out`) and state transitions (150ms `ease`). */
-export const TRANSITION_MS = 150;
+export const TRANSITION_MS = animation.duration.fast;
 /** `cubic-bezier(0.22, 1, 0.36, 1)` — the attachment tiles' and strip's curve. */
 export const EASE_OUT_QUINT = [0.22, 1, 0.36, 1] as const;
 

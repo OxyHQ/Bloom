@@ -29,7 +29,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { parseRgba } from '../theme/color-utils';
-import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
+import { srgbToOklch, oklchToRgbString } from '../theme/color-space';
 import type { Theme } from '../theme/types';
 import { AGENT_LIMITS_CARD_MESSAGES } from './messages';
 import { useTheme } from '../theme/use-theme';
@@ -101,20 +101,6 @@ const CHART_TONES_OKLCH = [
   { l: 0.841, c: 0.238, h: 128.85 }, // lime
 ] as const;
 
-/** OKLCH → `rgb()`, reducing chroma until it fits sRGB (same walk as `button/shared`). */
-function oklchToRgbString(l: number, c: number, h: number): string {
-  let chroma = c;
-  for (let i = 0; i < 24; i++) {
-    const rgb = oklchToSrgb({ l, c: chroma, h });
-    const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01) {
-      return srgbToRgbString(rgb);
-    }
-    chroma *= 0.9;
-  }
-  return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
-}
-
 /**
  * The `chart-*` palette around the theme. The first tone IS the accent
  * ramp's 400 (`colorRamp(primary)`, the `chart-6` blue-400); every other
@@ -128,11 +114,11 @@ function chartPalette(accent400: string): string[] {
   const base = srgbToOklch(rgba);
   return CHART_TONES_OKLCH.map((tone, index) => {
     if (index === 0) return accent400;
-    return oklchToRgbString(
-      Math.min(0.99, Math.max(0.05, base.l + (tone.l - TAILWIND_BLUE_400.l))),
-      base.c * (tone.c / TAILWIND_BLUE_400.c),
-      (((base.h + (tone.h - TAILWIND_BLUE_400.h)) % 360) + 360) % 360,
-    );
+    return oklchToRgbString({
+      l: Math.min(0.99, Math.max(0.05, base.l + (tone.l - TAILWIND_BLUE_400.l))),
+      c: base.c * (tone.c / TAILWIND_BLUE_400.c),
+      h: (((base.h + (tone.h - TAILWIND_BLUE_400.h)) % 360) + 360) % 360,
+    });
   });
 }
 

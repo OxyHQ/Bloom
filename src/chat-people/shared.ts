@@ -1,10 +1,4 @@
-import {
-  ACCENT_TABLE,
-  colorRamp,
-  DANGER_TABLE,
-  mixColor,
-  resolveButtonRamps,
-} from '../button/shared';
+import { ACCENT_TABLE, colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import type { Theme } from '../theme/types';
 import { CHAT_PEOPLE_MESSAGES } from './messages';
 import type {
@@ -14,6 +8,7 @@ import type {
   NewGroupFormLabels,
   StoryViewerLabels,
 } from './types';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * Two palettes, because these components live in two places.
@@ -77,14 +72,14 @@ export function resolveChatPeoplePaint(theme: Theme): ChatPeoplePaint {
     accent: accent[500],
     onAccent: c.primaryForeground,
     accentSubtle: dark
-      ? mixColor(c.background, accent[500], 0.22)
-      : mixColor(c.background, accent[500], 0.12),
+      ? mixColors(c.background, accent[500], 0.22)
+      : mixColors(c.background, accent[500], 0.12),
     onAccentSubtle: dark ? accent[300] : accent[700],
     negative: dark ? red[400] : red[500],
     owner: dark ? amber[300] : amber[700],
     ownerSubtle: dark
-      ? mixColor(c.background, amber[500], 0.22)
-      : mixColor(c.background, amber[500], 0.16),
+      ? mixColors(c.background, amber[500], 0.22)
+      : mixColors(c.background, amber[500], 0.16),
     chip: c.backgroundTertiary,
     onChip: c.text,
     railText: c.textSecondary,
@@ -92,12 +87,12 @@ export function resolveChatPeoplePaint(theme: Theme): ChatPeoplePaint {
 
     stage,
     onStage: n[50],
-    onStageMuted: mixColor(stage, n[50], 0.72),
-    stageControl: mixColor(stage, n[50], 0.18),
+    onStageMuted: mixColors(stage, n[50], 0.72),
+    stageControl: mixColors(stage, n[50], 0.18),
     // 0.45, not 0.32: the unplayed segments sit under the top scrim, over a
     // photo that may be bright, and at a third of the white they read as no bar
     // at all — which is a viewer that never says how many stories are left.
-    stageTrack: mixColor(stage, n[50], 0.45),
+    stageTrack: mixColors(stage, n[50], 0.45),
   };
 }
 

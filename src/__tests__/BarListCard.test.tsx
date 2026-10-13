@@ -4,12 +4,12 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
 
-import { mixColor } from '../button/shared';
 import { RiComputerLine } from '../icons/remix';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { BarListCard, shareLabel, type BarListTab } from '../chart-cards/BarListCard';
 import { resolveChartTones, resolveMonoTone } from '../chart-cards/palette';
+import { mixColors } from '../styles/color-contrast';
 
 const TABS: BarListTab[] = [
   {
@@ -110,15 +110,15 @@ describe('BarListCard', () => {
     });
     expect(resolvedStyle(getByTestId('barlist-rows-row-1-bar').props.style)).toMatchObject({
       borderRadius: 8,
-      backgroundColor: mixColor(palette.surface, blue.color, 0.14),
+      backgroundColor: mixColors(palette.surface, blue.color, 0.14),
     });
     fireEvent(getByTestId('barlist-rows-row-1'), 'pointerEnter');
     expect(resolvedStyle(getByTestId('barlist-rows-row-1-bar').props.style).backgroundColor).toBe(
-      mixColor(palette.surface, blue.activeColor, 0.26),
+      mixColors(palette.surface, blue.activeColor, 0.26),
     );
     fireEvent(getByTestId('barlist-rows-row-1'), 'pointerLeave');
     expect(resolvedStyle(getByTestId('barlist-rows-row-1-bar').props.style).backgroundColor).toBe(
-      mixColor(palette.surface, blue.color, 0.14),
+      mixColors(palette.surface, blue.color, 0.14),
     );
   });
 
@@ -187,7 +187,7 @@ describe('BarListCard', () => {
     const mono = renderCard(<BarListCard testID="barlist" tabs={TABS} mono />, 'dark');
     expect(
       resolvedStyle(mono.getByTestId('barlist-rows-row-0-bar').props.style).backgroundColor,
-    ).toBe(mixColor(palette.surface, resolveMonoTone(theme).color, 0.14));
+    ).toBe(mixColors(palette.surface, resolveMonoTone(theme).color, 0.14));
     mono.unmount();
     const custom = renderCard(
       <BarListCard
@@ -203,9 +203,9 @@ describe('BarListCard', () => {
     );
     expect(
       resolvedStyle(custom.getByTestId('barlist-rows-row-0-bar').props.style).backgroundColor,
-    ).toBe(mixColor(palette.surface, 'rgb(200 100 50)', 0.14));
+    ).toBe(mixColors(palette.surface, 'rgb(200 100 50)', 0.14));
     expect(
       resolvedStyle(custom.getByTestId('barlist-rows-row-1-bar').props.style).backgroundColor,
-    ).toBe(mixColor(palette.surface, 'rgb(10 20 30)', 0.14));
+    ).toBe(mixColors(palette.surface, 'rgb(10 20 30)', 0.14));
   });
 });

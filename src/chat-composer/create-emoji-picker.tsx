@@ -40,9 +40,10 @@ import {
   resolveChatComposerPalette,
 } from './shared';
 import type { EmojiEntry, EmojiGroup, EmojiPickerProps } from './types';
-import { dataHook, useChatComposerWebCss } from './web-hooks';
+import { useChatComposerWebCss } from './web-hooks';
 import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
+import { dataHook } from '../styles/data-hook';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createEmojiPicker({

@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import Svg, { G, Path } from 'react-native-svg';
 
-import { mixColor } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { chartHueTone, resolveTone, type ChartHue, type ChartSeriesTone } from './palette';
@@ -33,6 +32,7 @@ import { svgTextType, textTopForBaseline } from './svg-text';
 import { useEasedValues } from './use-eased-values';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
+import { mixColors } from '../styles/color-contrast';
 
 export interface SankeyNodeDatum {
   name: string;
@@ -535,7 +535,7 @@ export function SankeyChartCard({
                             ? tone.color
                             : t >= 1
                               ? tone.activeColor
-                              : mixColor(tone.color, tone.activeColor, t)
+                              : mixColors(tone.color, tone.activeColor, t)
                         }
                       />
                     </G>

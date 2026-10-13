@@ -10,7 +10,6 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { mixColor } from '../button/shared';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { resolveTone } from './palette';
@@ -22,6 +21,7 @@ import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
+import { mixColors } from '../styles/color-contrast';
 
 export interface HeatmapRow {
   label: string;
@@ -104,7 +104,7 @@ export function heatmapCellColor(
 ): string {
   const share = Math.max(0, Math.min(1, max > 0 ? value / max : 0));
   const pct = Math.round(8 + share * 92);
-  return mixColor(track, accent, pct / 100);
+  return mixColors(track, accent, pct / 100);
 }
 
 /**

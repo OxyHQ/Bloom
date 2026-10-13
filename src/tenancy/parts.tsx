@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, type ReactNode } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Card } from '../card';
-import { BUTTON_GEOMETRY, BUTTON_RADIUS, mixColor } from '../button/shared';
+import { BUTTON_GEOMETRY, BUTTON_RADIUS } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Meter } from '../stat-bar';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -20,6 +20,7 @@ import {
 } from './shared';
 import type { HousingIcon } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * Internal parts the housing cards are built from. Not published: each is a
@@ -158,7 +159,7 @@ export function HousingToggleButton({
   const active = (hovered || down) && !disabled;
   const background = pressed
     ? active
-      ? mixColor(palette.toggleOn, palette.text, 0.12)
+      ? mixColors(palette.toggleOn, palette.text, 0.12)
       : palette.toggleOn
     : active
       ? palette.toggleOffHover

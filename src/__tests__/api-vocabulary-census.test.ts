@@ -131,3 +131,26 @@ describe('one web flag', () => {
     expect(declarers).toEqual(['src/styles/platform.ts']);
   });
 });
+
+describe('one number, one place', () => {
+  const read = (file: string) => readFileSync(join(SRC, '..', file), 'utf8');
+
+  it('no family re-states the 150ms control transition', () => {
+    const offenders = files.filter((file) => /TRANSITION_MS\s*=\s*150\b/.test(read(file)));
+    expect(offenders).toEqual([]);
+  });
+
+  it('only theme/color-space walks chroma down to fit sRGB', () => {
+    const offenders = files.filter(
+      (file) => /chroma\s*\*=\s*0\.9/.test(read(file)) && file !== 'src/theme/color-space.ts',
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it('the gamut walk and the blend each have one definition', () => {
+    const count = (re: RegExp) => files.filter((file) => re.test(read(file))).length;
+    expect(count(/export function oklchToRgbString\b/)).toBe(1);
+    expect(count(/export function mixColors?\b/)).toBe(1);
+    expect(count(/export function dataHook\b/)).toBeLessThanOrEqual(2); // styles/data-hook + chat-screen's own
+  });
+});

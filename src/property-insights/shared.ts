@@ -1,6 +1,6 @@
 import { groupThousands } from '../chart-cards/primitives/format';
 import { resolveButtonRamps } from '../button/shared';
-import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
+import { srgbToOklch, type Oklch, oklchToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import { quietTextOver } from '../styles/color-contrast';
 import { AA_TEXT, resolveSurfaceLevel, surfaceFillOn, hairlineOn } from '../styles/surface-levels';
@@ -95,19 +95,6 @@ function toOklch(color: string): Oklch | null {
   return rgba ? srgbToOklch(rgba) : null;
 }
 
-/** OKLCH → `rgb()`, reducing chroma until it fits sRGB (hue-stable). */
-function fitRgb({ l, c, h }: Oklch): string {
-  let chroma = c;
-  for (let i = 0; i < 24; i++) {
-    const rgb = oklchToSrgb({ l, c: chroma, h });
-    const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01)
-      return srgbToRgbString(rgb);
-    chroma *= 0.9;
-  }
-  return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
-}
-
 /**
  * Lightness and chroma per class, A → G: a dark green, brightening to a light
  * yellow at D, darkening again to a deep red. The standard scale's shape —
@@ -142,7 +129,7 @@ export function resolveEnergyTones(theme: Theme): EnergyTone[] {
     const from = i < 4 ? green : amber;
     const to = i < 4 ? amber : red;
     const t = i < 4 ? i / 4 : (i - 4) / 2;
-    return fitRgb(lerpOklch({ l, c, h: from }, { l, c, h: to }, t));
+    return oklchToRgbString(lerpOklch({ l, c, h: from }, { l, c, h: to }, t));
   });
   const dark = '#000000';
   return fills.map((fill) => ({

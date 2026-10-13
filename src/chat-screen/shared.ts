@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Platform, type ImageSourcePropType } from 'react-native';
 
-import { colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps, type Ramp } from '../button/shared';
+import { colorRamp, DANGER_TABLE, resolveButtonRamps, type Ramp } from '../button/shared';
 import { useImageResolver } from '../image-resolver/context';
 import { relativeLuminance } from '../styles/color-contrast';
 import { resolveMenuPalette } from '../floating/menu-palette';
@@ -9,6 +9,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import type { ChatBackgroundVariant } from './types';
 import { CHAT_SCREEN_MESSAGES, type ChatScreenMessages } from './messages';
+import { mixColors } from '../styles/color-contrast';
 
 /** `true` on every platform that is not the web. */
 export const IS_NATIVE = Platform.OS !== 'web';
@@ -131,14 +132,14 @@ export function resolveChatScreenPaint(theme: Theme): ChatScreenPaint {
     // recipe did the same once the tonal page moved close to black.
     gradient: dark
       ? [
-          mixColor(c.background, '#000000', 0.5),
+          mixColors(c.background, '#000000', 0.5),
           c.background,
-          mixColor(c.background, '#000000', 0.8),
+          mixColors(c.background, '#000000', 0.8),
         ]
       : [
-          mixColor(c.background, accent[300], 0.3),
+          mixColors(c.background, accent[300], 0.3),
           c.background,
-          mixColor(c.background, n[300], 0.35),
+          mixColors(c.background, n[300], 0.35),
         ],
     // NOT white/black. Dimming a light wallpaper toward WHITE puts its lightest
     // possible pixel exactly on the card colour — a white incoming bubble over a
@@ -184,14 +185,14 @@ export function chatBackgroundExtremes(
       // bare page and the page fully inked.
       return extremesOf([
         paint.page,
-        mixColor(paint.page, paint.patternTint, DEFAULT_PATTERN_OPACITY),
+        mixColors(paint.page, paint.patternTint, DEFAULT_PATTERN_OPACITY),
       ]);
     case 'gradient':
       return extremesOf([...paint.gradient]);
     case 'image':
       return {
-        lightest: mixColor('#ffffff', paint.imageDim, paint.imageDimOpacity),
-        darkest: mixColor('#000000', paint.imageDim, paint.imageDimOpacity),
+        lightest: mixColors('#ffffff', paint.imageDim, paint.imageDimOpacity),
+        darkest: mixColors('#000000', paint.imageDim, paint.imageDimOpacity),
       };
   }
 }

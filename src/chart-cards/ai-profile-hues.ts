@@ -1,7 +1,7 @@
-import { mixColor } from '../button/shared';
-import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
+import { srgbToOklch, type Oklch, oklchToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * The purple / violet stops the AI profile template hardcodes, on the
@@ -39,24 +39,11 @@ const VIOLET_500: Oklch = { l: 0.606, c: 0.25, h: 292.717 };
 /** Tailwind v4 `blue-500`, the anchor. */
 const BLUE_500: Oklch = { l: 0.623, c: 0.214, h: 259.815 };
 
-function toRgb({ l, c, h }: Oklch): string {
-  let chroma = c;
-  for (let i = 0; i < 24; i++) {
-    const rgb = oklchToSrgb({ l, c: chroma, h });
-    const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01) {
-      return srgbToRgbString(rgb);
-    }
-    chroma *= 0.9;
-  }
-  return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
-}
-
 function fromPrimary(primary: string, target: Oklch): string {
   const rgba = parseRgba(primary);
   if (!rgba) return primary;
   const base = srgbToOklch(rgba);
-  return toRgb({
+  return oklchToRgbString({
     l: target.l,
     c: base.c * (target.c / BLUE_500.c),
     h: (((base.h + (target.h - BLUE_500.h)) % 360) + 360) % 360,
@@ -80,7 +67,7 @@ export function purpleChip(
 ): { background: string; foreground: string } {
   return theme.isDark
     ? {
-        background: mixColor(surface, purpleStop(theme, 900), 0.5),
+        background: mixColors(surface, purpleStop(theme, 900), 0.5),
         foreground: purpleStop(theme, 300),
       }
     : { background: purpleStop(theme, 100), foreground: purpleStop(theme, 600) };

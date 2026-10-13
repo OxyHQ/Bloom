@@ -1,10 +1,4 @@
-import {
-  ACCENT_TABLE,
-  colorRamp,
-  DANGER_TABLE,
-  mixColor,
-  resolveButtonRamps,
-} from '../button/shared';
+import { ACCENT_TABLE, colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import type { Theme } from '../theme/types';
 import type {
   CallControlKey,
@@ -19,6 +13,7 @@ import type {
   IncomingCallLabels,
 } from './types';
 import { CALL_UI_MESSAGES } from './messages';
+import { mixColors } from '../styles/color-contrast';
 
 // ---------------------------------------------------------------------------
 //  The stage palette
@@ -105,11 +100,11 @@ export function resolveCallPaint(theme: Theme, accentColor?: string): CallPaint 
     stage,
     // 0.42 is the most wash the stage takes before the status line stops
     // clearing AA against it on the brightest preset.
-    stageWash: mixColor(stage, hue, 0.42),
+    stageWash: mixColors(stage, hue, 0.42),
     onStage: n[50],
-    onStageMuted: mixColor(stage, n[50], 0.72),
-    control: mixColor(stage, n[50], 0.16),
-    controlHover: mixColor(stage, n[50], 0.26),
+    onStageMuted: mixColors(stage, n[50], 0.72),
+    control: mixColors(stage, n[50], 0.16),
+    controlHover: mixColors(stage, n[50], 0.26),
     controlActive: n[50],
     onControlActive: n[900],
     // READ THE PAIR. `negative`/`negativeForeground` is the text pair — in dark
@@ -118,16 +113,16 @@ export function resolveCallPaint(theme: Theme, accentColor?: string): CallPaint 
     // ERROR pair is the filled one and it is strong in both modes, which is what
     // a stage that is dark in both modes needs.
     end: c.error,
-    endHover: mixColor(c.error, c.errorForeground, 0.16),
+    endHover: mixColors(c.error, c.errorForeground, 0.16),
     onEnd: c.errorForeground,
     accept: c.success,
-    acceptHover: mixColor(c.success, c.successForeground, 0.16),
+    acceptHover: mixColors(c.success, c.successForeground, 0.16),
     onAccept: c.successForeground,
     speaking: dark ? green[400] : green[500],
     negativeOnStage: colorRamp(c.error, DANGER_TABLE)[400],
-    pipBorder: mixColor(stage, n[50], 0.24),
-    tile: mixColor(stage, n[50], 0.09),
-    tilePill: mixColor(stage, n[950], 0.45),
+    pipBorder: mixColors(stage, n[50], 0.24),
+    tile: mixColors(stage, n[50], 0.09),
+    tilePill: mixColors(stage, n[950], 0.45),
 
     surface: c.background,
     surfaceRaised: c.card,

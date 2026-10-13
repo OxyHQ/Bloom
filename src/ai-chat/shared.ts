@@ -3,7 +3,7 @@ import { type ViewStyle } from 'react-native';
 
 import { BUTTON_SHADOW, resolveButtonRamps, type Ramp } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, animation } from '../styles/tokens';
 import {
   WEB_POSITION_STICKY,
   webViewportHeightMinus,
@@ -97,7 +97,7 @@ export const CARD_RADIUS = 16;
 /** `rounded-2lg` — panel rows and tiles. */
 export const ROW_RADIUS = 10;
 /** `duration-150`. */
-export const TRANSITION_MS = 150;
+export const TRANSITION_MS = animation.duration.fast;
 /** How long a copy confirmation stays. */
 export const CONFIRM_MS = 1600;
 /** `cubic-bezier(0.22, 1, 0.36, 1)` — the settle curve. */
@@ -156,9 +156,6 @@ export const DOCUMENT_LAYER: WebCssStyle = {
  * focus rings, hover reveals and keyframes off (react-native-web renders no
  * class) — and nothing on native.
  */
-export function dataHook(name: string, value = ''): Record<string, unknown> {
-  return IS_WEB ? { dataSet: { [name]: value } } : {};
-}
 
 const STYLE_ID = 'bloom-ai-chat-web-css';
 

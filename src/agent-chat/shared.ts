@@ -6,6 +6,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { AGENT_CHAT_MESSAGES, type AgentChatMessages } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { animation } from '../styles/tokens';
 
 /** Shared semantic surfaces, text and action roles for every agent-chat part. */
 export interface AgentChatPalette {
@@ -97,7 +98,7 @@ export const SMALL_MENU_STYLE = { width: 190, minWidth: 190, padding: 8 } as con
 /** `w-[248px] p-2.5` — the account menu. */
 export const ACCOUNT_MENU_STYLE = { width: 248, minWidth: 248, padding: 10, gap: 7 } as const;
 /** `transition-colors` / `duration-150`. */
-export const TRANSITION_MS = 150;
+export const TRANSITION_MS = animation.duration.fast;
 /** How long the ✓ stays after a copy or share. */
 export const CONFIRM_MS = 1600;
 /** Window width at which the rail shows (`xl`). */
@@ -158,9 +159,6 @@ export function shortModel(model: string): string {
  * focus rings and the hover reveals off (react-native-web renders no class) —
  * and nothing on native.
  */
-export function dataHook(name: string, value = ''): Record<string, unknown> {
-  return IS_WEB ? { dataSet: { [name]: value } } : {};
-}
 
 const STYLE_ID = 'bloom-agent-chat-web-css';
 

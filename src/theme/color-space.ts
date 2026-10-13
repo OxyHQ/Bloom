@@ -82,3 +82,21 @@ export function parseRgbString(s: string): Rgb {
 export function deltaE(a: Rgb, b: Rgb): number {
   return Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2) / Math.sqrt(3);
 }
+
+/**
+ * OKLCH → `rgb()` for a colour that may sit outside sRGB: chroma is reduced
+ * until the round trip keeps lightness and chroma within 0.01, so the hue stays
+ * put instead of clipping to a neighbour.
+ */
+export function oklchToRgbString({ l, c, h }: Oklch): string {
+  let chroma = c;
+  for (let i = 0; i < 24; i++) {
+    const rgb = oklchToSrgb({ l, c: chroma, h });
+    const back = srgbToOklch(rgb);
+    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01) {
+      return srgbToRgbString(rgb);
+    }
+    chroma *= 0.9;
+  }
+  return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
+}

@@ -29,8 +29,9 @@ import {
 } from './shared';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 import type { ChatComposerSuggestion, SuggestionKind, SuggestionListProps } from './types';
-import { dataHook } from './web-hooks';
+
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createSuggestionList({

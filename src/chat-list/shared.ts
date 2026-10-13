@@ -1,4 +1,4 @@
-import { colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
+import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import { CHAT_INDICATORS_MESSAGES } from '../chat-indicators/messages';
 import type { MessageDeliveryStatus } from '../chat-indicators/types';
 import { RiChat3Line } from '../icons/remix/RiChat3Line';
@@ -32,6 +32,7 @@ import type {
   StoryEntry,
 } from './types';
 import { CHAT_LIST_MESSAGES } from './messages';
+import { mixColors } from '../styles/color-contrast';
 
 // ---------------------------------------------------------------------------
 //  Geometry
@@ -163,7 +164,7 @@ export function resolveChatListPaint(theme: Theme): ChatListPaint {
   const dark = theme.isDark;
   const { background, text } = theme.colors;
   const step = (light: number, darkAlpha: number) =>
-    mixColor(background, text, dark ? darkAlpha : light);
+    mixColors(background, text, dark ? darkAlpha : light);
   // The raw `error` token is tuned for a light page; on a dark one the same red
   // is the one a draft line and a delete pane are read AGAINST, so the ramp's
   // lighter step is taken instead.

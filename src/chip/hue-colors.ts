@@ -1,8 +1,9 @@
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { purpleChip } from '../chart-cards/ai-profile-hues';
 import { toneColor } from '../stat-cards/tones';
 import type { Theme } from '../theme/types';
 import type { ChipHue } from './types';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * Chip data-hue colours on Bloom's theme. These are
@@ -52,7 +53,7 @@ export function resolveChipHueColors(
         hue === 'blue' ? accent[s] : toneColor(theme, HUE_TONE[hue], s);
       if (!theme.isDark) return { background: stop(200), foreground: stop(800) };
       const foreground = hue === 'blue' ? accent[300] : hue === 'cyan' ? stop(400) : stop(500);
-      return { background: mixColor(surface, stop(950), 0.6), foreground };
+      return { background: mixColors(surface, stop(950), 0.6), foreground };
     }
   }
 }

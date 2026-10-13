@@ -1,9 +1,10 @@
 import { quietTextOver } from '../styles/color-contrast';
 import { AA_TEXT, AA_TEXT_STRONG, surfaceFillOn, hairlineOn } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
-import { BUTTON_SHADOW, mixColor } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { resolveThemeChartColors } from '../theme/chart-colors';
 import type { Theme } from '../theme/types';
+import { mixColors } from '../styles/color-contrast';
 
 /** Chart surfaces, text and status use the same semantic roles as other cards. */
 export interface ChartCardPalette {
@@ -82,7 +83,7 @@ export function resolveTone(
   color?: string,
   activeColor?: string,
 ): ChartSeriesTone {
-  if (color) return { color, activeColor: activeColor ?? mixColor('rgb(0 0 0)', color, 0.82) };
+  if (color) return { color, activeColor: activeColor ?? mixColors('rgb(0 0 0)', color, 0.82) };
   return tones[((index % tones.length) + tones.length) % tones.length]!;
 }
 

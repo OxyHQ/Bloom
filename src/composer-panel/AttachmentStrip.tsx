@@ -11,7 +11,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
-import { mixColor } from '../button/shared';
 import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
 import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
 import { Text } from '../typography';
@@ -26,8 +25,10 @@ import {
   type ComposerPalette,
 } from './shared';
 import type { ComposerPanelAttachment } from './types';
-import { dataHook } from './web-hooks';
+
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
+import { dataHook } from '../styles/data-hook';
 
 const QUINT = Easing.bezier(...EASE_OUT_QUINT);
 const TILE_MS = 280;
@@ -90,7 +91,7 @@ function TileDismiss({
       colors={{
         background: overImage
           ? 'rgba(255,255,255,0.5)'
-          : mixColor(palette.surface, palette.tertiary, 0.5),
+          : mixColors(palette.surface, palette.tertiary, 0.5),
         foreground: color,
       }}
       disabled={!visible}

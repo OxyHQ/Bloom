@@ -1,6 +1,5 @@
 import { resolveSurfaceLevel } from '../styles/surface-levels';
 
-import { mixColor } from '../button/shared';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -14,6 +13,7 @@ import {
   darkenUntilContrast,
   relativeLuminance,
 } from '../styles/color-contrast';
+import { mixColors } from '../styles/color-contrast';
 
 /** The English empty line; components read the localised one from `LYRICS_MESSAGES`. */
 export const DEFAULT_EMPTY_TEXT = LYRICS_MESSAGES.en.empty;
@@ -145,7 +145,7 @@ export function lyricsSizeForWidth(width: number): LyricsSize {
 function alphaForContrast(background: string, foreground: string, ratio: number): number {
   for (let step = 0; step <= 100; step++) {
     const alpha = step / 100;
-    if (contrastRatio(background, mixColor(background, foreground, alpha)) >= ratio) return alpha;
+    if (contrastRatio(background, mixColors(background, foreground, alpha)) >= ratio) return alpha;
   }
   return 1;
 }
@@ -153,12 +153,12 @@ function alphaForContrast(background: string, foreground: string, ratio: number)
 const WHITE = '#ffffff';
 
 function paletteFrom(background: string, foreground: string, fromArtwork: boolean): LyricsPalette {
-  const upcoming = mixColor(
+  const upcoming = mixColors(
     background,
     foreground,
     Math.max(0.72, alphaForContrast(background, foreground, AA_TEXT_CONTRAST)),
   );
-  const past = mixColor(
+  const past = mixColors(
     background,
     foreground,
     Math.max(0.5, alphaForContrast(background, foreground, AA_LARGE_TEXT_CONTRAST)),
@@ -170,7 +170,7 @@ function paletteFrom(background: string, foreground: string, fromArtwork: boolea
     past,
     muted: upcoming,
     pill: foreground,
-    pillHover: mixColor(foreground, background, 0.14),
+    pillHover: mixColors(foreground, background, 0.14),
     onPill: background,
     ring: foreground,
     fromArtwork,

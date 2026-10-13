@@ -20,7 +20,6 @@ import { IconAction } from './AgentChatControls';
 import {
   ACTION_SIZE,
   CONFIRM_MS,
-  dataHook,
   formatAgo,
   useAgentChatPalette,
   useAgentChatWebCss,
@@ -29,6 +28,7 @@ import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatMessageProps } from './types';
 import { writeClipboardText } from '../hooks/clipboard';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 /**
  * `AgentMessage`: one turn of the transcript.
