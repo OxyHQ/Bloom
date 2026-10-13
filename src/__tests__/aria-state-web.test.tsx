@@ -55,12 +55,9 @@ import { Checkbox } from '../checkbox/Checkbox';
 import { Switch } from '../switch/Switch';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
 import { Chip } from '../chip';
-<<<<<<< HEAD
 import { AgentPlan } from '../agent-plan';
 import { Reasoning } from '../reasoning';
-=======
 import { ToolCall, ToolCallList } from '../tool-call';
->>>>>>> origin/feat/tool-call
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
 import { Button } from '../button/Button';
