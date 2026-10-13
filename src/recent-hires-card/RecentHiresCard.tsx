@@ -20,6 +20,7 @@ import { Text } from '../typography';
 import { RECENT_HIRES_CARD_MESSAGES } from './messages';
 import type { RecentHire, RecentHiresCardProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { getInitials } from '../avatar/initials';
 
 /**
  * The "Recent hires" card:
@@ -77,16 +78,6 @@ export function resolveRecentHiresPalette(
   };
 }
 
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
-}
-
 function HireCard({
   hire,
   palette,
@@ -123,7 +114,7 @@ function HireCard({
           size="lg"
           source={photo ? hire.avatar : undefined}
           alt={hire.name}
-          initials={photo ? undefined : (hire.initials ?? initialsOf(hire.name))}
+          initials={photo ? undefined : (hire.initials ?? getInitials(hire.name))}
           color={hire.avatarColor}
         />
         <View style={{ flex: 1, minWidth: 0, justifyContent: 'center', alignItems: 'flex-start' }}>

@@ -18,16 +18,7 @@ import {
 } from './shared';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import type { ContactMessageProps } from './types';
-
-/** The first letters of the first two words — the same rule `Avatar` uses. */
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word.charAt(0).toUpperCase())
-    .join('');
-}
+import { getInitials } from '../avatar/initials';
 
 function ContactAction({
   label,
@@ -127,7 +118,7 @@ function ContactMessageComponent({
           variant={avatarVariant}
           size={44}
           name={name}
-          initials={initials ?? initialsOf(name)}
+          initials={initials ?? getInitials(name)}
         />
         <View style={{ flexGrow: 1, flexShrink: 1, minWidth: 0 }}>
           <Text variant="body-medium" numberOfLines={1} style={{ color: paint.text }}>
