@@ -32,15 +32,15 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **215 families** in `src/`, **213** published (a subpath, the root barrel, or both). **49** carry a web fork.
+- **217 families** in `src/`, **215** published (a subpath, the root barrel, or both). **49** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the per-family counts are in the table below.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
 | Field membership | 49 | 23 | 0 | 21 | 5 |
-| Control presentation | 41 | 40 | 1 | 0 | 0 |
+| Control presentation | 42 | 41 | 1 | 0 | 0 |
 | Trigger composition | 10 | 8 | 0 | 2 | 0 |
-| Controlled / uncontrolled state | 53 | 44 | 1 | 1 | 7 |
+| Controlled / uncontrolled state | 54 | 45 | 1 | 1 | 7 |
 
 ## What remains — the named adaptations
 
@@ -116,6 +116,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `agent-creator` | `@oxy.so/bloom/agent-creator` + barrel | web fork | `agent-creator.mdx` | yes | 6 | reads |  |  |  |
 | `agent-limits-card` | `@oxy.so/bloom/agent-limits-card` + barrel | universal | `agent-limits-card.mdx` | yes | 2 |  |  |  | reads |
 | `agent-log` | `@oxy.so/bloom/agent-log` + barrel | universal | `agent-log.mdx` | yes | 1 |  |  |  |  |
+| `agent-plan` | `@oxy.so/bloom/agent-plan` + barrel | universal | `agent-plan.mdx` | yes | 2 |  |  |  |  |
 | `agent-progress` | `@oxy.so/bloom/agent-progress` + barrel | universal | `agent-progress.mdx` | yes | 2 |  |  |  | reads |
 | `agent-thinking` | `@oxy.so/bloom/agent-thinking` + barrel | universal | `agent-thinking.mdx` | yes | 2 |  |  |  |  |
 | `ai-chat` | `@oxy.so/bloom/ai-chat` + barrel | web fork | `ai-chat.mdx` | yes | 12 |  |  |  | reads |
@@ -210,7 +211,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `listing-details` | `@oxy.so/bloom/listing-details` + barrel | universal | `listing-details.mdx` | yes | 5 |  |  |  | reads |
 | `listing-editor` | `@oxy.so/bloom/listing-editor` + barrel | universal | `listing-editor.mdx` | yes | 2 | **adaptation** |  |  | reads |
 | `loading` | `@oxy.so/bloom/loading` + barrel | web fork | `loading.mdx` | yes | 3 |  | reads |  |  |
-| `locale` | `@oxy.so/bloom/locale` + barrel | universal | `locale.mdx` | — | 25 |  |  |  |  |
+| `locale` | `@oxy.so/bloom/locale` + barrel | universal | `locale.mdx` | — | 26 |  |  |  |  |
 | `location-puck` | `@oxy.so/bloom/location-puck` + barrel | universal | `location-puck.mdx` | yes | 2 |  |  |  |  |
 | `lyrics` | `@oxy.so/bloom/lyrics` + barrel | universal | `lyrics.mdx` | yes | 3 |  |  |  |  |
 | `mail-compose` | `@oxy.so/bloom/mail-compose` + barrel | universal | `mail-compose.mdx` | yes | 4 | reads |  |  | reads |
@@ -270,6 +271,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `radio-indicator` | `@oxy.so/bloom/radio-indicator` + barrel | universal | `radio-indicator.mdx` | yes | 2 |  |  |  |  |
 | `rail` | `@oxy.so/bloom/rail` + barrel | universal | `rail.mdx` | yes | 1 |  |  |  |  |
 | `rating` | `@oxy.so/bloom/rating` + barrel | web fork | `rating.mdx` | yes | 7 | reads | reads |  |  |
+| `reasoning` | `@oxy.so/bloom/reasoning` + barrel | universal | `reasoning.mdx` | yes | 2 |  | reads |  | reads |
 | `recent-hires-card` | `@oxy.so/bloom/recent-hires-card` + barrel | universal | `recent-hires-card.mdx` | yes | 1 |  |  |  |  |
 | `route-stops` | `@oxy.so/bloom/route-stops` + barrel | universal | `route-stops.mdx` | yes | 2 |  |  |  |  |
 | `screen` | `@oxy.so/bloom/screen` + barrel | universal | `screen.mdx` | yes | 5 |  |  |  |  |
@@ -307,7 +309,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `tenancy` | `@oxy.so/bloom/tenancy` + barrel | universal | `tenancy.mdx` | yes | 5 |  | reads |  |  |
 | `text-field` | `@oxy.so/bloom/text-field` + barrel | universal | `text-field.mdx` | yes | 18 | reads | reads |  |  |
 | `textarea` | `@oxy.so/bloom/textarea` + barrel | universal | `textarea.mdx` | yes | 4 | reads | reads |  | n/a¹ |
-| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 383 |  |  | n/a¹ | reads |
+| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 385 |  |  | n/a¹ | reads |
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | 2 | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | 18 |  |  |  |  |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | 1 |  |  |  |  |

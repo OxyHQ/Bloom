@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -930,6 +931,21 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 };
 
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '思考中' };
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('思考了{time}', '分钟', '秒', ''),
+  thoughtBriefly: '稍作思考',
+  reasoning: '推理',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: '建议的计划',
+  approve: '批准',
+  reject: '拒绝',
+  approved: '已批准',
+  rejected: '已拒绝',
+  decision: '计划决定',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: { like: '回答不错', dislike: '回答不好', copy: '复制回答', copied: '已复制！' },
@@ -2786,6 +2802,8 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

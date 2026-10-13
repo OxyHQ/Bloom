@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import {
   words as navigationBanner_words,
@@ -987,6 +988,21 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
   thinking: 'Sto pensando',
+};
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('Ragionato per {time}', ' min', ' s', ' '),
+  thoughtBriefly: 'Ragionato per un attimo',
+  reasoning: 'Ragionamento',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: 'Piano proposto',
+  approve: 'Approva',
+  reject: 'Rifiuta',
+  approved: 'Approvato',
+  rejected: 'Rifiutato',
+  decision: 'Decisione sul piano',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2951,6 +2967,8 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

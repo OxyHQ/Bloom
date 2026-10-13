@@ -1,0 +1,48 @@
+---
+title: AgentPlan
+description: A plan the agent proposes, with Approve and Reject, and the approved or rejected outcome as a status badge.
+order: 100
+---
+
+# AgentPlan
+
+`AgentProgress` shows a plan being worked through. `AgentPlan` shows one waiting to be approved: a titled list of steps and an action row. Once the caller says it is decided, the row is replaced by a badge.
+
+```tsx
+import { AgentPlan } from '@oxy.so/bloom/agent-plan';
+
+<AgentPlan
+  steps={['Read the project files', 'Update the tokens', 'Run the build']}
+  decision={decision}            // 'pending' | 'approved' | 'rejected'
+  loading={sending}
+  onApprove={() => send('approve')}
+  onReject={() => send('reject')}
+/>
+```
+
+## Why a sibling of AgentProgress
+
+`AgentProgress` is a fixed-geometry card: 341 wide, a height computed from the step count and animated, an internal clock that completes steps, a minimized bar. A decision has no clock, its steps are free-length text, and its footer is a pair of buttons. Folding that in would leave most of `AgentProgress`'s props meaningless in one mode and the plan's in the other. The two share the pending-step glyph and the palette, exported from `AgentProgress.tsx`.
+
+## Props
+
+| Prop | Type | Default | |
+| --- | --- | --- | --- |
+| `steps` | `readonly string[]` | required | In order. |
+| `title` | `string` | "Proposed plan" | |
+| `decision` | `'pending' \| 'approved' \| 'rejected'` | `'pending'` | Controlled. |
+| `onApprove`, `onReject` | `() => void` | | Fire once per press. |
+| `approveLabel`, `rejectLabel` | `string` | "Approve", "Reject" | |
+| `disabled` | `boolean` | `false` | Blocks both buttons. |
+| `loading` | `boolean` | `false` | A decision is being sent: both buttons block and the pressed one shows its spinner. |
+| `className`, `style`, `testID`, `ref` | | | The card. Parts: `<testID>-approve`, `-reject`, `-status`. |
+
+Approve is `Button` `solid` `accent`; Reject is `outline` `neutral`. The component holds no decision: after a press it is the caller who changes `decision`, and a failed send simply leaves it `pending`.
+
+## Decided
+
+`approved` and `rejected` remove the buttons and show a `Badge`, `success` and `danger`, that reads "Approved" or "Rejected": the outcome is text, not colour. A rejected plan strikes its steps through.
+
+The status region is mounted from the start, empty, so the change is announced rather than appearing already in the tree. After a press the deciding button unmounts and would take focus with it, so focus moves to the status: `focus()` on web, the screen reader's cursor on native (`useAccessibilityFocus`). A decision that arrives without a press moves nothing.
+
+Every string is localised via `BloomProvider locale`; the label props still win.

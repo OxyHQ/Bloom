@@ -38,7 +38,7 @@
 //     `disabled` PROP is the only spelling that works. On a plain `View` there
 //     is no such prop, so `aria-disabled` is the only one that works.
 
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -55,6 +55,8 @@ import { Checkbox } from '../checkbox/Checkbox';
 import { Switch } from '../switch/Switch';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
 import { Chip } from '../chip';
+import { AgentPlan } from '../agent-plan';
+import { Reasoning } from '../reasoning';
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
 import { Button } from '../button/Button';
@@ -269,6 +271,35 @@ describe('Accordion', () => {
     expect(triggers).toHaveLength(2);
     expect(triggers[0]?.getAttribute('aria-expanded')).toBe('true');
     expect(triggers[1]?.getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('Reasoning', () => {
+  it('header emits aria-expanded reflecting the body', () => {
+    const open = mount(
+      <Reasoning testID="open" defaultOpen>
+        why
+      </Reasoning>,
+    );
+    expect(byTestId(open, 'open-header').getAttribute('aria-expanded')).toBe('true');
+    const closed = mount(
+      <Reasoning key="closed" testID="closed">
+        why
+      </Reasoning>,
+    );
+    expect(byTestId(closed, 'closed-header').getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('AgentPlan', () => {
+  it('names its decision buttons and announces the outcome as a status', () => {
+    const c = mount(<AgentPlan testID="plan" steps={['One']} />);
+    expect(byTestId(c, 'plan-approve').textContent).toBe('Approve');
+    expect(byTestId(c, 'plan-status').getAttribute('role')).toBe('status');
+    const decided = mount(
+      <AgentPlan key="decided" testID="plan" steps={['One']} decision="approved" />,
+    );
+    expect(byTestId(decided, 'plan-status').textContent).toBe('Approved');
   });
 });
 

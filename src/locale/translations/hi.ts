@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -949,6 +950,21 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 };
 
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'सोच रहा है' };
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('{time} तक सोचा', ' मिनट', ' सेकंड', ' '),
+  thoughtBriefly: 'थोड़ी देर सोचा',
+  reasoning: 'तर्क',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: 'प्रस्तावित योजना',
+  approve: 'मंज़ूर करें',
+  reject: 'अस्वीकार करें',
+  approved: 'मंज़ूर किया गया',
+  rejected: 'अस्वीकार किया गया',
+  decision: 'योजना पर निर्णय',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: {
@@ -2845,6 +2861,8 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
