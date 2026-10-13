@@ -50,9 +50,13 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
   private linear = new Matrix4();
   private sizeDelta = new Matrix4();
   private semantic = new Vector3();
+  private parentTurn = new Matrix4();
+  private eyeTurn = new Matrix4();
+  private pivotInParent = new Vector3();
   private transformed = new Vector3();
   private displacement = new Vector3();
-  private groundDelta: number;
+  /** Where the destination body's centre sits relative to the donor's, along the body's own height. */
+  private centerDelta: number;
   private heightRatio: number;
   private mappings: {
     source: number;
@@ -116,7 +120,10 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
         dimensions.height <= 0
       )
         throw Error('Invalid catalog retarget dimensions');
-    this.groundDelta = destinationDimensions.ground - sourceDimensions.ground;
+    this.centerDelta =
+      destinationDimensions.ground +
+      destinationDimensions.height / 2 -
+      (sourceDimensions.ground + sourceDimensions.height / 2);
     this.heightRatio = destinationDimensions.height / sourceDimensions.height;
     this.targetBodyIndex = this.clip.parts.findIndex((p) => p.id === 'mesh:0');
     this.bodyPigmentTargets = bindings
@@ -215,9 +222,9 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
       this.body.copy(inputBody.world);
       this.normal.copy(inputBody.normalMatrix);
       const b = this.body.elements;
-      b[12]! -= b[4]! * this.groundDelta;
-      b[13]! += (Math.hypot(b[4]!, b[5]!, b[6]!) - b[5]!) * this.groundDelta;
-      b[14]! -= b[6]! * this.groundDelta;
+      b[12]! -= b[4]! * this.centerDelta;
+      b[13]! += (Math.hypot(b[4]!, b[5]!, b[6]!) - b[5]!) * this.centerDelta;
+      b[14]! -= b[6]! * this.centerDelta;
     }
     for (const mapping of this.mappings) {
       const input = this.sourcePose[mapping.source]!,
@@ -293,19 +300,48 @@ export class CatalogRetargetSampler extends AuthoredMotionSampler {
           e[13]! += this.displacement.y;
           e[14]! += this.displacement.z;
         } else if (mapping.category === 'eyes') {
+          // The pivot offset between the donor's eye and this one is carried by whatever
+          // the eye actually rides, which is read off the eye's own world turn `eyeTurn`
+          // rather than assumed to be its parent's: a heart's eyes roll with its body, a
+          // six-lobed flower's body rolls 180° in plane under eyes that stay put. Scale
+          // and any turn the eye makes about itself still pivot on the offset (`linear`),
+          // and both terms are written into the parent's frame at this instant.
+          this.eyeTurn.makeBasis(
+            this.semantic
+              .set(input.world.elements[0]!, input.world.elements[1]!, input.world.elements[2]!)
+              .normalize(),
+            this.transformed
+              .set(input.world.elements[4]!, input.world.elements[5]!, input.world.elements[6]!)
+              .normalize(),
+            this.displacement
+              .set(input.world.elements[8]!, input.world.elements[9]!, input.world.elements[10]!)
+              .normalize(),
+          );
+          this.parentTurn.copy(this.sourceInverse).setPosition(0, 0, 0);
           this.linear.copy(this.local).setPosition(0, 0, 0);
+          this.pivotInParent
+            .copy(mapping.pivot)
+            .applyMatrix4(this.eyeTurn)
+            .applyMatrix4(this.parentTurn);
           this.semantic
             .copy(mapping.pivot)
             .applyMatrix4(this.linear)
-            .sub(mapping.pivot)
+            .sub(this.pivotInParent)
             .add(this.displacement.setFromMatrixPosition(this.local));
           this.transformed.copy(mapping.shift).applyMatrix4(this.linear);
-          this.displacement.copy(mapping.shift);
+          this.displacement
+            .copy(mapping.shift)
+            .applyMatrix4(this.eyeTurn)
+            .applyMatrix4(this.parentTurn);
           const e = this.local.elements;
           e[12]! +=
-            this.semantic.x * (mapping.eyeHeightRatio - 1) + mapping.shift.x - this.transformed.x;
+            this.semantic.x * (mapping.eyeHeightRatio - 1) +
+            this.displacement.x -
+            this.transformed.x;
           e[13]! +=
-            this.semantic.y * (mapping.eyeHeightRatio - 1) + mapping.shift.y - this.transformed.y;
+            this.semantic.y * (mapping.eyeHeightRatio - 1) +
+            this.displacement.y -
+            this.transformed.y;
           e[14]! += this.displacement.z - this.transformed.z;
         } else {
           this.local.premultiply(mapping.fit).multiply(mapping.inverseFit);
