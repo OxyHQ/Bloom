@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import {
   words as navigationBanner_words,
@@ -891,6 +892,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'Подсказки',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'Сообщение',
   add: 'Прикрепить файл',
@@ -901,6 +906,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'Голосовой ввод',
   send: 'Отправить сообщение',
   stop: 'Остановить генерацию',
+  transcribing: 'Расшифровка',
   permissionTrigger: (mode) => `Разрешения: ${mode}`,
   removeFile: (name) => `Убрать ${name}`,
   retryFile: (name) => `Повторить загрузку ${name}`,
@@ -1060,7 +1066,32 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Строка меню',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: 'Выполняется',
+  done: 'Готово',
+  failed: 'Ошибка',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Думаю' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Выполнено',
+  taskTodo: 'Не выполнено',
+};
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('Размышления: {time}', ' мин', ' с', ' '),
+  thoughtBriefly: 'Размышлял мгновение',
+  reasoning: 'Рассуждение',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: 'Предлагаемый план',
+  approve: 'Утвердить',
+  reject: 'Отклонить',
+  approved: 'Утверждено',
+  rejected: 'Отклонено',
+  decision: 'Решение по плану',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: {
@@ -3116,6 +3147,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
       : '') + plural('ru', skills, { one: '{n} навык', few: '{n} навыка', other: '{n} навыков' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'Голосовой режим',
+  controls: 'Голосовое управление',
+  mute: 'Выключить микрофон',
+  pause: 'Пауза',
+  end: 'Завершить голосовой сеанс',
+  typeInstead: 'Написать вместо этого',
+  status: {
+    idle: 'Готов',
+    listening: 'Слушаю…',
+    transcribing: 'Расшифровка…',
+    thinking: 'Думаю…',
+    speaking: 'Говорю…',
+    error: 'Что-то пошло не так',
+  },
+  mutedStatus: 'Микрофон выключен',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -3237,6 +3286,10 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
@@ -3326,6 +3379,8 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

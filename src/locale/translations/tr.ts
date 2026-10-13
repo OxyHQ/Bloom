@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import {
   words as navigationBanner_words,
@@ -798,6 +799,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'Öneriler',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'Mesaj',
   add: 'Ek ekle',
@@ -808,6 +813,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'Sesli giriş',
   send: 'Mesajı gönder',
   stop: 'Oluşturmayı durdur',
+  transcribing: 'Yazıya dökülüyor',
   permissionTrigger: (mode) => `İzin: ${mode}`,
   removeFile: (name) => `${name}: Kaldır`,
   retryFile: (name) => `${name}: Yeniden dene`,
@@ -949,7 +955,32 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Menü çubuğu',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: 'Çalışıyor',
+  done: 'Tamamlandı',
+  failed: 'Başarısız',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Düşünüyor' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Tamamlandı',
+  taskTodo: 'Tamamlanmadı',
+};
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('{time} düşündü', ' dk', ' sn', ' '),
+  thoughtBriefly: 'Kısaca düşündü',
+  reasoning: 'Akıl yürütme',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: 'Önerilen plan',
+  approve: 'Onayla',
+  reject: 'Reddet',
+  approved: 'Onaylandı',
+  rejected: 'Reddedildi',
+  decision: 'Plan kararı',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: {
@@ -2758,6 +2789,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('tr', skills, { one: '{n} beceri', other: '{n} beceri' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'Sesli mod',
+  controls: 'Ses denetimleri',
+  mute: 'Mikrofonu sessize al',
+  pause: 'Duraklat',
+  end: 'Sesli oturumu bitir',
+  typeInstead: 'Bunun yerine yaz',
+  status: {
+    idle: 'Hazır',
+    listening: 'Dinleniyor…',
+    transcribing: 'Yazıya dökülüyor…',
+    thinking: 'Düşünüyor…',
+    speaking: 'Konuşuyor…',
+    error: 'Bir şeyler ters gitti',
+  },
+  mutedStatus: 'Mikrofon sessize alındı',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2879,6 +2928,10 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
@@ -2968,6 +3021,8 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

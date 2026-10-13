@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -789,6 +790,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: '候補',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'メッセージ',
   add: '添付ファイルを追加',
@@ -799,6 +804,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: '音声入力',
   send: 'メッセージを送信',
   stop: '生成を停止',
+  transcribing: '文字起こし中',
   permissionTrigger: (mode) => `権限: ${mode}`,
   removeFile: (name) => `${name}を削除`,
   retryFile: (name) => `${name}を再試行`,
@@ -940,7 +946,32 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'メニューバー',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: '実行中',
+  done: '完了',
+  failed: '失敗',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '考え中' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: '完了',
+  taskTodo: '未完了',
+};
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('{time}思考しました', '分', '秒', ''),
+  thoughtBriefly: '少し考えました',
+  reasoning: '推論',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: '提案されたプラン',
+  approve: '承認',
+  reject: '却下',
+  approved: '承認済み',
+  rejected: '却下済み',
+  decision: 'プランの判断',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: {
@@ -2739,6 +2770,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('ja', skills, { other: '{n}個のスキル' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: '音声モード',
+  controls: '音声コントロール',
+  mute: 'マイクをミュート',
+  pause: '一時停止',
+  end: '音声セッションを終了',
+  typeInstead: '代わりに入力',
+  status: {
+    idle: '準備完了',
+    listening: '聞いています…',
+    transcribing: '文字起こし中…',
+    thinking: '考え中…',
+    speaking: '話しています…',
+    error: '問題が発生しました',
+  },
+  mutedStatus: 'マイクはミュート中',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2860,6 +2909,10 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
@@ -2949,6 +3002,8 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

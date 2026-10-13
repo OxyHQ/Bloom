@@ -3,10 +3,36 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { BloomIconComponent } from '../icons/icon-component';
+import type { ToolCallProps } from '../tool-call';
+
+/** The agent a reply was delegated to, shown above it. */
+export interface AgentChatAgent {
+  name: string;
+  /** Defaults to an initials avatar made from `name`. */
+  avatar?: ReactNode;
+}
+
+/** The model's reasoning for a reply, shown as a collapsible block above it. */
+export interface AgentChatReasoning {
+  text: string;
+  /** How long the model reasoned, in ms, for the "Thought for N s" header. */
+  durationMs?: number;
+  /** Still reasoning: the block opens, and closes again when this turns false. */
+  streaming?: boolean;
+}
+
+/** A tool call inside a reply: a `ToolCall` row with an identity for the list key. */
+export interface AgentChatToolCall
+  extends Pick<
+    ToolCallProps,
+    'name' | 'label' | 'status' | 'detail' | 'error' | 'durationMs' | 'icon' | 'onPress'
+  > {
+  id: string;
+}
 
 /**
- * One turn of the transcript. Bloom renders text only — reasoning and tool
- * parts of a model message are the consumer's to fold into `text` or ignore.
+ * One turn of the transcript. An assistant turn can carry the agent it was
+ * delegated to, its reasoning, its tool calls and its text, in that order.
  */
 export interface AgentChatMessageData {
   id: string;
@@ -15,6 +41,14 @@ export interface AgentChatMessageData {
   text: string;
   /** Epoch ms the message arrived, for the hover timestamp ("3 minutes ago"). */
   at?: number;
+  /** Assistant turns only. */
+  agent?: AgentChatAgent;
+  /** Assistant turns only. */
+  reasoning?: AgentChatReasoning;
+  /** Assistant turns only. */
+  toolCalls?: ReadonlyArray<AgentChatToolCall>;
+  /** Render the assistant `text` as Markdown instead of plain paragraphs. Default `false`. */
+  markdown?: boolean;
 }
 
 /**
@@ -51,6 +85,12 @@ export interface AgentChatMessageLabels {
 export interface AgentChatMessageProps {
   role: AgentChatMessageData['role'];
   text: string;
+  agent?: AgentChatMessageData['agent'];
+  reasoning?: AgentChatMessageData['reasoning'];
+  toolCalls?: AgentChatMessageData['toolCalls'];
+  markdown?: AgentChatMessageData['markdown'];
+  /** Called with a Markdown link's URL. Only used when `markdown` is on. */
+  onLinkPress?: (url: string) => void;
   /** True while this message is still being streamed — hides the action row. */
   streaming?: boolean;
   /** When the message first appeared, for the timestamp beside the actions. */
@@ -300,6 +340,8 @@ export interface AgentChatProps {
   onExport?: () => void;
   onCopyMessage?: AgentChatMessageProps['onCopy'];
   onReadAloud?: AgentChatMessageProps['onReadAloud'];
+  /** Called with a Markdown link's URL in messages that set `markdown`. */
+  onLinkPress?: AgentChatMessageProps['onLinkPress'];
 
   // History rail
   /** Omit to hide the rail. */

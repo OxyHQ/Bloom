@@ -38,7 +38,7 @@
 //     `disabled` PROP is the only spelling that works. On a plain `View` there
 //     is no such prop, so `aria-disabled` is the only one that works.
 
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -55,6 +55,9 @@ import { Checkbox } from '../checkbox/Checkbox';
 import { Switch } from '../switch/Switch';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
 import { Chip } from '../chip';
+import { AgentPlan } from '../agent-plan';
+import { Reasoning } from '../reasoning';
+import { ToolCall, ToolCallList } from '../tool-call';
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
 import { Button } from '../button/Button';
@@ -79,6 +82,7 @@ import { FavoriteButton } from '../listing-card';
 import { CategoryBar } from '../category-bar';
 import { MapPriceMarker, MapSearchAreaButton } from '../map-marker';
 import { TransportControls } from '../media-player';
+import { VoiceControls } from '../voice';
 import { RiFireLine } from '../icons/remix/RiFireLine';
 import {
   DropdownMenuCheckboxItem,
@@ -272,6 +276,35 @@ describe('Accordion', () => {
   });
 });
 
+describe('Reasoning', () => {
+  it('header emits aria-expanded reflecting the body', () => {
+    const open = mount(
+      <Reasoning testID="open" defaultOpen>
+        why
+      </Reasoning>,
+    );
+    expect(byTestId(open, 'open-header').getAttribute('aria-expanded')).toBe('true');
+    const closed = mount(
+      <Reasoning key="closed" testID="closed">
+        why
+      </Reasoning>,
+    );
+    expect(byTestId(closed, 'closed-header').getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('AgentPlan', () => {
+  it('names its decision buttons and announces the outcome as a status', () => {
+    const c = mount(<AgentPlan testID="plan" steps={['One']} />);
+    expect(byTestId(c, 'plan-approve').textContent).toBe('Approve');
+    expect(byTestId(c, 'plan-status').getAttribute('role')).toBe('status');
+    const decided = mount(
+      <AgentPlan key="decided" testID="plan" steps={['One']} decision="approved" />,
+    );
+    expect(byTestId(decided, 'plan-status').textContent).toBe('Approved');
+  });
+});
+
 describe('role="button" toggles use aria-pressed', () => {
   // ARIA defines the toggle state of a button as `aria-pressed`; `aria-selected`
   // is not valid on that role. React Native has no `aria-pressed`, so these
@@ -323,6 +356,27 @@ describe('role="button" toggles use aria-pressed', () => {
       />,
     );
     expect(byTestId(c, 'fib').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('VoiceControls mute and pause emit aria-pressed under a fixed name', () => {
+    let c = mount(
+      <VoiceControls onMutedChange={() => {}} onPausedChange={() => {}} testID="voice" />,
+    );
+    expect(byTestId(c, 'voice-mute').getAttribute('aria-label')).toBe('Mute microphone');
+    expect(byTestId(c, 'voice-mute').getAttribute('aria-pressed')).toBe('false');
+    expect(byTestId(c, 'voice-pause').getAttribute('aria-pressed')).toBe('false');
+    c = mount(
+      <VoiceControls
+        muted
+        paused
+        onMutedChange={() => {}}
+        onPausedChange={() => {}}
+        testID="voice"
+      />,
+    );
+    expect(byTestId(c, 'voice-mute').getAttribute('aria-label')).toBe('Mute microphone');
+    expect(byTestId(c, 'voice-mute').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'voice-pause').getAttribute('aria-pressed')).toBe('true');
   });
 
   it('FavoriteButton emits aria-pressed and a name for what pressing does', () => {
@@ -1384,4 +1438,68 @@ describe('modal dialogs say they are modal', () => {
       expect(panel?.getAttribute('aria-modal')).toBe('true');
     },
   );
+});
+
+describe('ToolCall states its status and disclosure on web', () => {
+  it('names the status in a live region and marks a running row busy', () => {
+    const c = mount(<ToolCall name="web_search" status="running" onPress={() => {}} testID="tc" />);
+    const row = byTestId(c, 'tc-row');
+    expect(row.getAttribute('role')).toBe('button');
+    expect(row.getAttribute('aria-busy')).toBe('true');
+    expect(row.hasAttribute('data-bloom-tool-call')).toBe(true);
+    const status = byTestId(c, 'tc-status');
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.textContent).toBe('Running');
+  });
+
+  it('announces a failure assertively', () => {
+    const c = mount(<ToolCall name="t" status="error" error="boom" testID="tc" />);
+    expect(byTestId(c, 'tc-status').getAttribute('aria-live')).toBe('assertive');
+    expect(byTestId(c, 'tc-status').textContent).toBe('Failed');
+  });
+
+  it('emits aria-expanded on a disclosure row and flips it when activated', () => {
+    // react-native-web renders `role="button"` as a real <button>: focusable,
+    // and Enter/Space activate it natively as a click, which is what the
+    // browser would send. jsdom does not synthesise that click, so send it.
+    const c = mount(
+      <ToolCall name="t" status="done" testID="tc">
+        <Text>Result</Text>
+      </ToolCall>,
+    );
+    const row = byTestId(c, 'tc-row');
+    expect(row.tagName).toBe('BUTTON');
+    expect(row.getAttribute('tabindex')).toBe('0');
+    expect(row.getAttribute('aria-label')).toBe('t, Done');
+    expect(row.getAttribute('aria-expanded')).toBe('false');
+    act(() => row.click());
+    expect(byTestId(c, 'tc-row').getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('opens the result when activated, without claiming to expand', () => {
+    const onPress = jest.fn();
+    const c = mount(<ToolCall name="t" status="done" onPress={onPress} testID="tc" />);
+    const row = byTestId(c, 'tc-row');
+    act(() => row.click());
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(row.hasAttribute('aria-expanded')).toBe(false);
+  });
+
+  it('is not a button, and not focusable, without onPress or a body', () => {
+    const c = mount(<ToolCall name="t" status="done" testID="tc" />);
+    expect(c.querySelector('[role="button"]')).toBeNull();
+    expect(byTestId(c, 'tc-row').hasAttribute('tabindex')).toBe(false);
+  });
+
+  it('is a list of listitems inside ToolCallList', () => {
+    const c = mount(
+      <ToolCallList accessibilityLabel="Tool calls">
+        <ToolCall name="a" status="done" />
+        <ToolCall name="b" status="done" />
+      </ToolCallList>,
+    );
+    const list = byRole(c, 'list');
+    expect(list.getAttribute('aria-label')).toBe('Tool calls');
+    expect(list.querySelectorAll(':scope > [role="listitem"]')).toHaveLength(2);
+  });
 });

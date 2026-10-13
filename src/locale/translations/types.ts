@@ -1,3 +1,4 @@
+import type { VOICE_MESSAGES } from '../../voice/messages';
 import type { MULTI_AGENT_CHAT_MESSAGES } from '../../multi-agent-chat/messages';
 import type { AGENT_CREATOR_MESSAGES } from '../../agent-creator/messages';
 import type { PROJECT_BOARD_MESSAGES } from '../../project-board/messages';
@@ -45,6 +46,10 @@ import type { PAYMENT_METHOD_MESSAGES } from '../../payment-method/messages';
 import type { AVATAR_GROUP_MESSAGES } from '../../avatar-group/messages';
 import type { MENUBAR_MESSAGES } from '../../menubar/messages';
 import type { AGENT_THINKING_MESSAGES } from '../../agent-thinking/messages';
+import type { REASONING_MESSAGES } from '../../reasoning/messages';
+import type { AGENT_PLAN_MESSAGES } from '../../agent-plan/messages';
+import type { MARKDOWN_MESSAGES } from '../../markdown/messages';
+import type { TOOL_CALL_MESSAGES } from '../../tool-call/messages';
 import type { AI_CHAT_MESSAGES } from '../../ai-chat/messages';
 import type { COMMAND_MESSAGES } from '../../command/messages';
 import type { MUSIC_LIBRARY_MESSAGES } from '../../music-library/messages';
@@ -134,6 +139,7 @@ import type { CONTEXT_MENU_MESSAGES } from '../../context-menu/messages';
 import type { SORTABLE_MEDIA_MESSAGES } from '../../sortable-media/messages';
 import type { CONNECTION_DOTS_MESSAGES } from '../../connection-dots/messages';
 import type { CHAT_PEOPLE_MESSAGES } from '../../chat-people/messages';
+import type { EMPTY_STATE_MESSAGES } from '../../empty-state/messages';
 
 export interface Translations {
   readonly MULTI_AGENT_CHAT_MESSAGES: CatalogMessages<typeof MULTI_AGENT_CHAT_MESSAGES>;
@@ -179,6 +185,10 @@ export interface Translations {
   readonly AVATAR_GROUP_MESSAGES: CatalogMessages<typeof AVATAR_GROUP_MESSAGES>;
   readonly MENUBAR_MESSAGES: CatalogMessages<typeof MENUBAR_MESSAGES>;
   readonly AGENT_THINKING_MESSAGES: CatalogMessages<typeof AGENT_THINKING_MESSAGES>;
+  readonly REASONING_MESSAGES: CatalogMessages<typeof REASONING_MESSAGES>;
+  readonly AGENT_PLAN_MESSAGES: CatalogMessages<typeof AGENT_PLAN_MESSAGES>;
+  readonly MARKDOWN_MESSAGES: CatalogMessages<typeof MARKDOWN_MESSAGES>;
+  readonly TOOL_CALL_MESSAGES: CatalogMessages<typeof TOOL_CALL_MESSAGES>;
   readonly AI_CHAT_MESSAGES: CatalogMessages<typeof AI_CHAT_MESSAGES>;
   readonly COMMAND_MESSAGES: CatalogMessages<typeof COMMAND_MESSAGES>;
   readonly MUSIC_LIBRARY_MESSAGES: CatalogMessages<typeof MUSIC_LIBRARY_MESSAGES>;
@@ -268,4 +278,6 @@ export interface Translations {
   readonly SORTABLE_MEDIA_MESSAGES: CatalogMessages<typeof SORTABLE_MEDIA_MESSAGES>;
   readonly CONNECTION_DOTS_MESSAGES: CatalogMessages<typeof CONNECTION_DOTS_MESSAGES>;
   readonly CHAT_PEOPLE_MESSAGES: CatalogMessages<typeof CHAT_PEOPLE_MESSAGES>;
+  readonly EMPTY_STATE_MESSAGES: CatalogMessages<typeof EMPTY_STATE_MESSAGES>;
+  readonly VOICE_MESSAGES: CatalogMessages<typeof VOICE_MESSAGES>;
 }

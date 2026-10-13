@@ -116,7 +116,7 @@ export function agentProgressExpandedHeight(stepCount: number): number {
 //  Palette
 // ---------------------------------------------------------------------------
 
-interface ProgressPalette {
+export interface ProgressPalette {
   surface: string;
   border: string;
   quaternary: string;
@@ -135,7 +135,7 @@ function hex(color: string): string {
 }
 
 /** Canonical theme surfaces, foregrounds and focus roles. */
-function resolvePalette(theme: Theme): ProgressPalette {
+export function resolvePalette(theme: Theme): ProgressPalette {
   const c = theme.colors;
   return {
     surface: c.card,
@@ -382,7 +382,7 @@ function CompletedStepIcon({ palette }: { palette: ProgressPalette }) {
   );
 }
 
-function PendingStepIcon({ palette }: { palette: ProgressPalette }) {
+export function PendingStepIcon({ palette }: { palette: ProgressPalette }) {
   return (
     <Svg width={15} height={15} viewBox="0 0 15 15" aria-hidden>
       <Circle

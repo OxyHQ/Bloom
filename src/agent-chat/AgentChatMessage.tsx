@@ -8,6 +8,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { Avatar } from '../avatar';
+import { Markdown } from '../markdown';
+import { Reasoning } from '../reasoning';
+import { ToolCall, ToolCallList } from '../tool-call';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiVolumeMuteLine } from '../icons/remix/RiVolumeMuteLine';
@@ -241,6 +245,11 @@ function MessageActions({
 export function AgentChatMessage({
   role,
   text,
+  agent,
+  reasoning,
+  toolCalls,
+  markdown = false,
+  onLinkPress,
   streaming = false,
   at,
   onCopy,
@@ -266,7 +275,8 @@ export function AgentChatMessage({
     [formatTimeProp, messages],
   );
 
-  if (!text) return null;
+  const hasParts = Boolean(agent || reasoning || toolCalls?.length);
+  if (!text && !hasParts) return null;
 
   if (role === 'user') {
     const bubble: WebCssStyle = {
@@ -295,15 +305,43 @@ export function AgentChatMessage({
       testID={testID}
       style={[{ flexDirection: 'column', gap: 4, paddingLeft: 4, paddingRight: 4 }, style]}
     >
-      <View style={{ flexDirection: 'column', gap: 12 }}>
-        {lines.map((line, index) => (
-          <Line key={index} text={line} color={palette.text} animate={!reducedMotion} />
-        ))}
-      </View>
+      {agent ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {agent.avatar ?? <Avatar name={agent.name} size={20} />}
+          <Text variant="caption-1-medium" style={{ color: palette.textTertiary }}>
+            {agent.name}
+          </Text>
+        </View>
+      ) : null}
+      {reasoning ? (
+        <Reasoning streaming={reasoning.streaming} durationMs={reasoning.durationMs}>
+          {reasoning.text}
+        </Reasoning>
+      ) : null}
+      {toolCalls?.length ? (
+        <ToolCallList>
+          {toolCalls.map(({ id, ...call }) => (
+            <ToolCall key={id} {...call} />
+          ))}
+        </ToolCallList>
+      ) : null}
+      {text ? (
+        markdown ? (
+          <Markdown streaming={streaming} onLinkPress={onLinkPress}>
+            {text}
+          </Markdown>
+        ) : (
+          <View style={{ flexDirection: 'column', gap: 12 }}>
+            {lines.map((line, index) => (
+              <Line key={index} text={line} color={palette.text} animate={!reducedMotion} />
+            ))}
+          </View>
+        )
+      ) : null}
       <MessageActions
         text={text}
         at={at}
-        hidden={streaming}
+        hidden={streaming || !text}
         onCopy={onCopy}
         onReadAloud={onReadAloud}
         readingAloud={readingAloud}

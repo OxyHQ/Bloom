@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -797,6 +798,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'सुझाव',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'संदेश',
   add: 'अटैचमेंट जोड़ें',
@@ -807,6 +812,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'वॉइस इनपुट',
   send: 'संदेश भेजें',
   stop: 'जनरेट करना रोकें',
+  transcribing: 'ट्रांसक्रिप्ट हो रहा है',
   permissionTrigger: (mode) => `अनुमति: ${mode}`,
   removeFile: (name) => `${name} निकालें`,
   retryFile: (name) => `${name} फिर से आज़माएं`,
@@ -948,7 +954,32 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'मेन्यू बार',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: 'चल रहा है',
+  done: 'हो गया',
+  failed: 'विफल',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'सोच रहा है' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'पूर्ण',
+  taskTodo: 'अपूर्ण',
+};
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('{time} तक सोचा', ' मिनट', ' सेकंड', ' '),
+  thoughtBriefly: 'थोड़ी देर सोचा',
+  reasoning: 'तर्क',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: 'प्रस्तावित योजना',
+  approve: 'मंज़ूर करें',
+  reject: 'अस्वीकार करें',
+  approved: 'मंज़ूर किया गया',
+  rejected: 'अस्वीकार किया गया',
+  decision: 'योजना पर निर्णय',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: {
@@ -2725,6 +2756,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('hi', skills, { one: '{n} कौशल', other: '{n} कौशल' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'वॉइस मोड',
+  controls: 'वॉइस नियंत्रण',
+  mute: 'माइक्रोफ़ोन म्यूट करें',
+  pause: 'रोकें',
+  end: 'वॉइस सत्र समाप्त करें',
+  typeInstead: 'इसके बजाय टाइप करें',
+  status: {
+    idle: 'तैयार',
+    listening: 'सुन रहा है…',
+    transcribing: 'ट्रांसक्राइब हो रहा है…',
+    thinking: 'सोच रहा है…',
+    speaking: 'बोल रहा है…',
+    error: 'कुछ गड़बड़ हो गई',
+  },
+  mutedStatus: 'माइक्रोफ़ोन म्यूट है',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2845,6 +2894,10 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
@@ -2934,6 +2987,8 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

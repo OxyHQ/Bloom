@@ -25,6 +25,8 @@ export interface ComposerPanelMessages {
   send: string;
   /** Send's stop state while a turn is running. */
   stop: string;
+  /** The mic's name and announcement while the recording is being transcribed. */
+  transcribing: string;
   /** The permission chip's name, with the mode it is on. */
   permissionTrigger: (mode: string) => string;
   /** An attachment tile's dismiss, and a failed tile's retry. */
@@ -95,6 +97,7 @@ export const COMPOSER_PANEL_MESSAGES: MessageCatalog<ComposerPanelMessages> =
     voice: 'Voice input',
     send: 'Send message',
     stop: 'Stop generating',
+    transcribing: 'Transcribing',
     permissionTrigger: (mode) => `Permission: ${mode}`,
     removeFile: (name) => `Remove ${name}`,
     retryFile: (name) => `Retry ${name}`,

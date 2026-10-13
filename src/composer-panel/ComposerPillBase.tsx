@@ -30,6 +30,7 @@ import Animated, {
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useTextareaAutosize } from '../hooks/use-textarea-autosize';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
+import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { RadioIndicator } from '../radio-indicator';
@@ -37,14 +38,18 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text, TYPE_SCALE } from '../typography';
 import { AddMenu } from './AddMenu';
+import { AttachmentStrip } from './AttachmentStrip';
+import { Collapse } from './Collapse';
 import { MicButton, SendButton, StopButton } from './ComposerControls';
 import { useComposerPopover } from './context';
 import { EffortSlider } from './EffortSlider';
+import { useAttachmentLabels } from './use-attachment-labels';
 import {
   composerAddMenu,
   CONTROL_SIZE,
   DEFAULT_EFFORT,
   EFFORT_WIDTH,
+  isComposerEmpty,
   resolveComposerPalette,
   type ComposerPalette,
 } from './shared';
@@ -53,6 +58,7 @@ import type {
   ComposerPanelLabels,
   ComposerPillLabels,
   ComposerPillProps,
+  ComposerVoiceState,
   ModelPickerModel,
 } from './types';
 import { useComposerWebCss } from './web-hooks';
@@ -436,9 +442,13 @@ export function ComposerPillBase({
   defaultEffort = DEFAULT_EFFORT,
   onEffortChange,
   effortLevels: effortLevelsProp,
-  listening,
-  defaultListening = false,
-  onListeningChange,
+  voiceState,
+  defaultVoiceState = 'idle',
+  onVoiceStateChange,
+  attachments,
+  onRemoveAttachment,
+  onAttachmentRetry,
+  error,
   surface = true,
   frosted = false,
   inputRef,
@@ -469,10 +479,14 @@ export function ComposerPillBase({
       voice: messages.voice,
       send: messages.send,
       stop: messages.stop,
+      transcribing: messages.transcribing,
+      remove: common.remove,
+      retry: common.retry,
       ...labelOverrides,
     }),
-    [messages, labelOverrides],
+    [messages, common, labelOverrides],
   );
+  const { removeFileLabel, retryFileLabel } = useAttachmentLabels(labelOverrides);
   // `AddMenu` reads the panel's label set; only `add` and `addMenu` reach it.
   const addMenuLabels = useMemo<Required<ComposerPanelLabels>>(
     () => ({
@@ -485,10 +499,11 @@ export function ComposerPillBase({
       voice: labels.voice,
       send: labels.send,
       stop: labels.stop,
-      remove: common.remove,
-      retry: common.retry,
+      transcribing: labels.transcribing,
+      remove: labels.remove,
+      retry: labels.retry,
     }),
-    [labels, messages, common],
+    [labels, messages],
   );
   const placeholder = placeholderProp ?? messages.pillPlaceholder;
   const compactPlaceholder = compactPlaceholderProp ?? messages.pillCompactPlaceholder;
@@ -501,10 +516,10 @@ export function ComposerPillBase({
     defaultValue,
     onChange: onValueChange,
   });
-  const [isListening, setListening] = useControllableState<boolean>({
-    value: listening,
-    defaultValue: defaultListening,
-    onChange: onListeningChange,
+  const [voice, setVoice] = useControllableState<ComposerVoiceState>({
+    value: voiceState,
+    defaultValue: defaultVoiceState,
+    onChange: onVoiceStateChange,
   });
   const lineup = useMemo(() => normalizeModels(models ?? []), [models]);
   const [modelId, setModel] = useControllableState<string>({
@@ -624,6 +639,16 @@ export function ComposerPillBase({
    */
   const pillHeight = PILL_HEIGHT + (lines - 1) * LINE_HEIGHT;
   const multiLine = lines > 1;
+  const hasAttachments = !!attachments && attachments.length > 0;
+  const errorMessage = typeof error === 'string' && error !== '' ? error : undefined;
+  const invalid = error !== undefined && error !== false && error !== '';
+  /*
+   * The capsule is one line of controls and nothing else. A strip above the
+   * field or a reason under it makes the pill a stack, and a fully-round
+   * stack puts its first and last rows inside the curve like a grown draft.
+   */
+  const stacked = multiLine || hasAttachments || errorMessage !== undefined;
+  const radius = stacked ? 26 : 9999;
 
   /*
    * On web the field is measured, not reported. react-native-web's
@@ -655,19 +680,25 @@ export function ComposerPillBase({
     typeof ownFill === 'string' && ownFill !== 'transparent' && parseRgba(ownFill)?.a !== 0
       ? resolveSurfaceMaterial({ fill: ownFill, parentFill, paint: paintsSurface }).publishedFill
       : undefined;
+  // An error ring is outside the box, so the pill neither shifts nor resizes.
+  const errorRing = invalid ? `0 0 0 1px ${palette.error}` : undefined;
   const pillStyle: WebCssStyle = {
     width: '100%',
+    flexDirection: 'column',
+    borderRadius: radius,
+    backgroundColor: 'transparent',
+    boxShadow:
+      [surface ? palette.shadowXs : undefined, errorRing].filter(Boolean).join(', ') || undefined,
+    '--bloom-composer-ring': palette.focusRing,
+  };
+  const rowStyle: WebCssStyle = {
     height: pillHeight,
     flexDirection: 'row',
     // The controls sit with the LAST line once the field has grown, which is
     // where the caret is; centred, they would drift to the middle of the draft.
     alignItems: multiLine ? 'flex-end' : 'center',
     gap: 10,
-    borderRadius: multiLine ? 26 : 9999,
     padding: 8,
-    backgroundColor: 'transparent',
-    boxShadow: surface ? palette.shadowXs : undefined,
-    '--bloom-composer-ring': palette.focusRing,
   };
 
   const fieldStyle: WebCssStyle = {
@@ -696,120 +727,153 @@ export function ComposerPillBase({
       ]}
     >
       {paintsSurface ? (
-        <SurfacePaint
-          fill={surfaceFill}
-          radius={customSurface?.borderRadius ?? (multiLine ? 26 : 9999)}
-        />
+        <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? radius} />
       ) : null}
-      {addMenu.length > 0 ? (
-        <View style={{ position: 'relative', flexShrink: 0 }}>
-          <FrostedChip shown={frosted} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
-          <AddMenu
+      <Collapse open={hasAttachments}>
+        <View style={{ paddingTop: 8, paddingLeft: 8, paddingRight: 8 }}>
+          <AttachmentStrip
+            attachments={attachments ?? []}
             palette={palette}
-            groups={addMenu}
-            onSelect={onAddMenuSelect}
-            labels={addMenuLabels}
-            testID={testID ? `${testID}-add` : undefined}
+            onRemove={onRemoveAttachment}
+            onRetry={onAttachmentRetry}
+            removeLabel={removeFileLabel}
+            retryLabel={retryFileLabel}
           />
         </View>
-      ) : null}
+      </Collapse>
+      <View style={rowStyle}>
+        {addMenu.length > 0 ? (
+          <View style={{ position: 'relative', flexShrink: 0 }}>
+            <FrostedChip shown={frosted} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
+            <AddMenu
+              palette={palette}
+              groups={addMenu}
+              onSelect={onAddMenuSelect}
+              labels={addMenuLabels}
+              testID={testID ? `${testID}-add` : undefined}
+            />
+          </View>
+        ) : null}
 
-      <View style={fieldStyle}>
-        <TextInput
-          ref={setFieldRef}
-          {...dataHook('bloomComposerInput')}
-          testID={testID ? `${testID}-input` : undefined}
-          accessibilityLabel={labels.message}
-          value={text}
-          onChangeText={setText}
-          onKeyPress={onKeyPress}
-          onSubmitEditing={submit}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          placeholder={compact ? compactPlaceholder : placeholder}
-          placeholderTextColor={palette.textTertiary}
-          selectionColor={palette.accent500}
-          cursorColor={palette.accent500}
-          returnKeyType="send"
-          multiline
-          onContentSizeChange={
-            IS_WEB ? undefined : (event) => setContentHeight(event.nativeEvent.contentSize.height)
-          }
+        <View style={fieldStyle}>
+          <TextInput
+            ref={setFieldRef}
+            {...dataHook('bloomComposerInput')}
+            testID={testID ? `${testID}-input` : undefined}
+            accessibilityLabel={labels.message}
+            aria-invalid={invalid || undefined}
+            value={text}
+            onChangeText={setText}
+            onKeyPress={onKeyPress}
+            onSubmitEditing={submit}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder={compact ? compactPlaceholder : placeholder}
+            placeholderTextColor={palette.textTertiary}
+            selectionColor={palette.accent500}
+            cursorColor={palette.accent500}
+            returnKeyType="send"
+            multiline
+            onContentSizeChange={
+              IS_WEB ? undefined : (event) => setContentHeight(event.nativeEvent.contentSize.height)
+            }
+            style={{
+              width: '100%',
+              height: fieldHeight,
+              // react-native-web gives a multiline field a resize grip and a
+              // scrollbar it does not need: the pill owns the height.
+              ...(IS_WEB
+                ? { resize: 'none', overflowY: lines >= maxLines ? 'auto' : 'hidden' }
+                : null),
+              padding: 0,
+              margin: 0,
+              ...TYPE_SCALE['body-regular'],
+              fontFamily: IS_WEB ? 'var(--bloom-font-sans)' : 'Inter',
+              color: palette.text,
+              backgroundColor: 'transparent',
+              ...(IS_WEB ? { caretColor: palette.accent500 } : null),
+            }}
+          />
+        </View>
+
+        {lineup.length > 0 ? (
+          <View style={{ position: 'relative', flexShrink: 0 }}>
+            <FrostedChip shown={frosted && modelWidth > 0} radius={12} dark={theme.isDark} />
+            <ModelMenu
+              models={lineup}
+              modelId={modelId}
+              onModelChange={setModel}
+              effort={effortValue}
+              onEffortChange={setEffort}
+              levels={effortLevels}
+              labels={labels}
+              palette={palette}
+              triggerPalette={controlPalette}
+              onTriggerLayout={setModelWidth}
+              testID={testID ? `${testID}-model` : undefined}
+            />
+          </View>
+        ) : null}
+
+        <View
           style={{
-            width: '100%',
-            height: fieldHeight,
-            // react-native-web gives a multiline field a resize grip and a
-            // scrollbar it does not need: the pill owns the height.
-            ...(IS_WEB
-              ? { resize: 'none', overflowY: lines >= maxLines ? 'auto' : 'hidden' }
-              : null),
-            padding: 0,
-            margin: 0,
-            ...TYPE_SCALE['body-regular'],
-            fontFamily: IS_WEB ? 'var(--bloom-font-sans)' : 'Inter',
-            color: palette.text,
-            backgroundColor: 'transparent',
-            ...(IS_WEB ? { caretColor: palette.accent500 } : null),
+            flexShrink: 0,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingLeft: 6,
           }}
-        />
+        >
+          <View style={{ position: 'relative' }}>
+            <FrostedChip shown={frosted} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
+            <MicButton
+              state={voice}
+              onToggle={() => setVoice(voice === 'recording' ? 'idle' : 'recording')}
+              label={labels.voice}
+              transcribingLabel={labels.transcribing}
+              palette={controlPalette}
+            />
+          </View>
+          {/* What the trailing control is, in the order the states rank.
+           *
+           * Stop wins: a turn in flight is the one thing a person needs to be
+           * able to reach, and `StopButton` deliberately takes no `disabled`.
+           *
+           * Then `emptyAction`, if the host gave one and there is nothing to
+           * send. An assistant with a voice mode puts it here — the slot where
+           * send WOULD be, which is where the thumb already is — and it is the
+           * host's control, not a Bloom affordance, because only the host knows
+           * whether it has one. Without it the send button simply sits there
+           * disabled, as it always did. */}
+          {busy && onStop ? (
+            <StopButton onPress={onStop} label={labels.stop} />
+          ) : emptyAction !== undefined && isComposerEmpty(text, attachments) ? (
+            emptyAction
+          ) : (
+            <SendButton disabled={disabled} onPress={submit} label={labels.send} />
+          )}
+        </View>
       </View>
-
-      {lineup.length > 0 ? (
-        <View style={{ position: 'relative', flexShrink: 0 }}>
-          <FrostedChip shown={frosted && modelWidth > 0} radius={12} dark={theme.isDark} />
-          <ModelMenu
-            models={lineup}
-            modelId={modelId}
-            onModelChange={setModel}
-            effort={effortValue}
-            onEffortChange={setEffort}
-            levels={effortLevels}
-            labels={labels}
-            palette={palette}
-            triggerPalette={controlPalette}
-            onTriggerLayout={setModelWidth}
-            testID={testID ? `${testID}-model` : undefined}
-          />
+      {errorMessage !== undefined ? (
+        <View
+          role="alert"
+          aria-live="assertive"
+          testID={testID ? `${testID}-error` : undefined}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingLeft: 16,
+            paddingRight: 16,
+            paddingBottom: 10,
+          }}
+        >
+          <RiErrorWarningLine width={16} height={16} fill={palette.error} />
+          <Text variant="body-2-regular" style={{ flexShrink: 1, color: palette.error }}>
+            {errorMessage}
+          </Text>
         </View>
       ) : null}
-
-      <View
-        style={{
-          flexShrink: 0,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          paddingLeft: 6,
-        }}
-      >
-        <View style={{ position: 'relative' }}>
-          <FrostedChip shown={frosted} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
-          <MicButton
-            listening={isListening}
-            onToggle={() => setListening(!isListening)}
-            label={labels.voice}
-            palette={controlPalette}
-          />
-        </View>
-        {/* What the trailing control is, in the order the states rank.
-         *
-         * Stop wins: a turn in flight is the one thing a person needs to be
-         * able to reach, and `StopButton` deliberately takes no `disabled`.
-         *
-         * Then `emptyAction`, if the host gave one and there is nothing to
-         * send. An assistant with a voice mode puts it here — the slot where
-         * send WOULD be, which is where the thumb already is — and it is the
-         * host's control, not a Bloom affordance, because only the host knows
-         * whether it has one. Without it the send button simply sits there
-         * disabled, as it always did. */}
-        {busy && onStop ? (
-          <StopButton onPress={onStop} label={labels.stop} />
-        ) : emptyAction !== undefined && text.trim() === '' ? (
-          emptyAction
-        ) : (
-          <SendButton disabled={disabled} onPress={submit} label={labels.send} />
-        )}
-      </View>
     </View>
   );
   return publishedFill ? (

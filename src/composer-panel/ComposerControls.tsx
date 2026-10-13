@@ -16,7 +16,9 @@ import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
 import { RiMic2Line } from '../icons/remix/RiMic2Line';
 import { RiStopFill } from '../icons/remix/RiStopFill';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { Text } from '../typography';
 import { CONTROL_SIZE, type ComposerPalette } from './shared';
+import type { ComposerVoiceState } from './types';
 import { IS_WEB } from '../styles/platform';
 
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
@@ -109,51 +111,72 @@ function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactN
   );
 }
 
+/** Out of sight, in the accessibility tree: the one way to announce without drawing. */
+const ANNOUNCE_ONLY = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  overflow: 'hidden',
+  opacity: 0,
+} as const;
+
 /**
- * Voice input: a 36px shared Button surface with
- * a mic that crossfades to four dancing accent-500 bars (2.5 wide, 2.5
- * apart) while listening.
+ * Voice input: a 36px shared Button surface with a mic that crossfades to four
+ * dancing accent-500 bars (2.5 wide, 2.5 apart) while recording. While
+ * transcribing the button is `loading` — a spinner, `aria-busy`, presses
+ * ignored — is named `transcribingLabel`, and says so in a polite live region:
+ * a name that changes under a disabled control is not announced by itself.
  */
 export function MicButton({
-  listening,
+  state,
   onToggle,
   label,
+  transcribingLabel,
   palette,
 }: {
-  listening: boolean;
+  state: ComposerVoiceState;
   onToggle: () => void;
   label: string;
+  transcribingLabel: string;
   palette: Pick<ComposerPalette, 'accent500' | 'iconPrimary'>;
 }) {
   const Button = useComposerButton();
+  const recording = state === 'recording';
+  const transcribing = state === 'transcribing';
   return (
-    <Button
-      appearance="solid"
-      tone="neutral"
-      size="md"
-      iconOnly
-      accessibilityLabel={label}
-      pressed={listening}
-      onPress={onToggle}
-      style={{
-        width: CONTROL_SIZE,
-        height: CONTROL_SIZE,
-        flexShrink: 0,
-        paddingLeft: 0,
-        paddingRight: 0,
-      }}
-    >
-      <SwapLayer shown={listening}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2.5 }}>
-          {MIC_BARS.map((bar, index) => (
-            <MicBar key={index} bar={bar} color={palette.accent500} />
-          ))}
-        </View>
-      </SwapLayer>
-      <SwapLayer shown={!listening}>
-        <RiMic2Line width={20} height={20} fill={palette.iconPrimary} />
-      </SwapLayer>
-    </Button>
+    <>
+      <Button
+        appearance="solid"
+        tone="neutral"
+        size="md"
+        iconOnly
+        accessibilityLabel={transcribing ? transcribingLabel : label}
+        pressed={recording}
+        loading={transcribing}
+        onPress={onToggle}
+        style={{
+          width: CONTROL_SIZE,
+          height: CONTROL_SIZE,
+          flexShrink: 0,
+          paddingLeft: 0,
+          paddingRight: 0,
+        }}
+      >
+        <SwapLayer shown={recording}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2.5 }}>
+            {MIC_BARS.map((bar, index) => (
+              <MicBar key={index} bar={bar} color={palette.accent500} />
+            ))}
+          </View>
+        </SwapLayer>
+        <SwapLayer shown={!recording}>
+          <RiMic2Line width={20} height={20} fill={palette.iconPrimary} />
+        </SwapLayer>
+      </Button>
+      <Text role="status" aria-live="polite" style={ANNOUNCE_ONLY}>
+        {transcribing ? transcribingLabel : ''}
+      </Text>
+    </>
   );
 }
 

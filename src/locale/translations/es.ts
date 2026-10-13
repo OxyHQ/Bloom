@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import {
   words as navigationBanner_words,
@@ -831,6 +832,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'Sugerencias',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'Mensaje',
   add: 'Añadir archivo adjunto',
@@ -841,6 +846,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'Entrada de voz',
   send: 'Enviar mensaje',
   stop: 'Detener la generación',
+  transcribing: 'Transcribiendo',
   permissionTrigger: (mode) => `Permisos: ${mode}`,
   removeFile: (name) => `Quitar ${name}`,
   retryFile: (name) => `Reintentar ${name}`,
@@ -982,7 +988,32 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Barra de menús',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: 'Ejecutando',
+  done: 'Hecho',
+  failed: 'Falló',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Pensando' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Completada',
+  taskTodo: 'Sin completar',
+};
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('Pensó durante {time}', ' min', ' s', ' '),
+  thoughtBriefly: 'Pensó un momento',
+  reasoning: 'Razonamiento',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: 'Plan propuesto',
+  approve: 'Aprobar',
+  reject: 'Rechazar',
+  approved: 'Aprobado',
+  rejected: 'Rechazado',
+  decision: 'Decisión sobre el plan',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: {
@@ -2826,6 +2857,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('es', skills, { one: '{n} habilidad', other: '{n} habilidades' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'Modo de voz',
+  controls: 'Controles de voz',
+  mute: 'Silenciar micrófono',
+  pause: 'Pausar',
+  end: 'Finalizar sesión de voz',
+  typeInstead: 'Escribir en su lugar',
+  status: {
+    idle: 'Listo',
+    listening: 'Escuchando…',
+    transcribing: 'Transcribiendo…',
+    thinking: 'Pensando…',
+    speaking: 'Hablando…',
+    error: 'Algo salió mal',
+  },
+  mutedStatus: 'Micrófono silenciado',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2947,6 +2996,10 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
@@ -3036,6 +3089,8 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

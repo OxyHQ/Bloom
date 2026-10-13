@@ -31,7 +31,10 @@ export interface ComposerPanelPermissionOption {
 export interface ComposerPanelAddMenuRow {
   id: string;
   label: string;
-  /** Muted inline description after the label. */
+  /**
+   * Muted inline description after the label. On a `disabled` row it is the
+   * place to say why ("Needs a project"); it is part of the row's name.
+   */
   description?: string;
   /** A Bloom icon, drawn in the secondary icon colour. */
   icon?: ComponentType<IconProps>;
@@ -48,12 +51,30 @@ export interface ComposerPanelAddMenuRow {
    * way.
    */
   checked?: boolean;
+  /**
+   * The row cannot be chosen: drawn dimmed, announced as disabled, out of the
+   * tab order, and pressing it neither selects nor closes the menu.
+   */
+  disabled?: boolean;
 }
 
 export interface ComposerPanelAddMenuGroup {
   label: string;
   rows: ReadonlyArray<ComposerPanelAddMenuRow>;
 }
+
+// ---------------------------------------------------------------------------
+//  Voice input
+// ---------------------------------------------------------------------------
+
+/**
+ * Where voice input is. `recording` shows the mic's active treatment and its
+ * next press stops; `transcribing` shows it busy and disabled, because the
+ * words are on their way and a second press has nothing to act on. The
+ * composer only moves between `idle` and `recording` itself; entering
+ * `transcribing` is the host's, once its recorder has finished.
+ */
+export type ComposerVoiceState = 'idle' | 'recording' | 'transcribing';
 
 // ---------------------------------------------------------------------------
 //  Attachments
@@ -200,6 +221,8 @@ export interface ComposerPanelLabels {
   send?: string;
   /** `'Stop generating'` in English — send's stop state while `busy`. */
   stop?: string;
+  /** `'Transcribing'` in English — the mic's name and announcement while `voiceState` is `transcribing`. */
+  transcribing?: string;
   /** `'Remove'` in English — prefixed to the file name on a tile's dismiss. */
   remove?: string;
   /** `'Retry'` in English — prefixed to the file name on a failed tile's retry. */
@@ -256,11 +279,12 @@ export interface ComposerPanelProps {
   effortLevels?: ReadonlyArray<string>;
   modelPickerLabels?: ModelPickerLabels;
 
-  /** Controlled voice-input state (the mic swaps to equalizer bars). */
-  listening?: boolean;
-  /** Initial voice-input state when uncontrolled. Default `false`. */
-  defaultListening?: boolean;
-  onListeningChange?: (listening: boolean) => void;
+  /** Controlled voice-input state: the mic swaps to equalizer bars while `recording`, and is busy and disabled while `transcribing`. */
+  voiceState?: ComposerVoiceState;
+  /** Initial voice-input state when uncontrolled. Default `idle`. */
+  defaultVoiceState?: ComposerVoiceState;
+  /** The mic was pressed: `recording` from `idle`, `idle` from `recording`. */
+  onVoiceStateChange?: (voiceState: ComposerVoiceState) => void;
 
   /** Tiles above the prompt. Each one's `progress` drives its upload ring. */
   attachments?: ReadonlyArray<ComposerPanelAttachment>;
@@ -368,6 +392,12 @@ export interface ComposerPillLabels {
   send?: string;
   /** `'Stop generating'` in English — send's stop state while `busy`. */
   stop?: string;
+  /** `'Transcribing'` in English — the mic's name and announcement while `voiceState` is `transcribing`. */
+  transcribing?: string;
+  /** `'Remove'` in English — prefixed to the file name on a tile's dismiss. */
+  remove?: string;
+  /** `'Retry'` in English — prefixed to the file name on a failed tile's retry. */
+  retry?: string;
 }
 
 export interface ComposerPillProps {
@@ -423,10 +453,27 @@ export interface ComposerPillProps {
   /** Default the six stops of `MODEL_PICKER_EFFORT_LEVELS`, in the locale's language; `[]` drops the effort half of the menu. */
   effortLevels?: ReadonlyArray<string>;
 
-  /** Controlled voice-input state (the mic swaps to equalizer bars). */
-  listening?: boolean;
-  defaultListening?: boolean;
-  onListeningChange?: (listening: boolean) => void;
+  /** Controlled voice-input state: the mic swaps to equalizer bars while `recording`, and is busy and disabled while `transcribing`. */
+  voiceState?: ComposerVoiceState;
+  /** Initial voice-input state when uncontrolled. Default `idle`. */
+  defaultVoiceState?: ComposerVoiceState;
+  /** The mic was pressed: `recording` from `idle`, `idle` from `recording`. */
+  onVoiceStateChange?: (voiceState: ComposerVoiceState) => void;
+
+  /** Tiles above the field, inside the pill, which grows to hold them. Each one's `progress` drives its upload ring. */
+  attachments?: ReadonlyArray<ComposerPanelAttachment>;
+  onRemoveAttachment?: (id: string) => void;
+  /** Draws a retry button on every tile with an `error`; called with its id. */
+  onAttachmentRetry?: (id: string) => void;
+
+  /**
+   * The pill is in error: its ring turns to the error tone and the field is
+   * marked invalid (`aria-invalid` on web). A string is also drawn under the
+   * field as the reason and announced assertively; `true` marks the pill
+   * without a message. Controlled: the pill never clears it, so a host that
+   * wants it gone on the next keystroke clears it in `onValueChange`.
+   */
+  error?: string | boolean;
 
   /**
    * Paint the pill's own surface and `shadow-xs`. Default `true`; turn it off
@@ -451,12 +498,13 @@ export interface ComposerPillProps {
   maxLines?: number;
 
   /**
-   * Drawn where send would be, while the draft is empty and no turn is in
-   * flight.
+   * Drawn where send would be, while there is nothing to send — no draft and
+   * no attachment — and no turn is in flight.
    *
    * An assistant with a voice mode puts its call button here — the slot the
    * thumb is already over. Omit it and send simply sits there disabled, as
-   * before. A stop always wins over it: a turn in flight is the one thing a
+   * before. A lone attachment gives the slot back to send: a picture with no
+   * caption is a turn. A stop always wins over it: a turn in flight is the one thing a
    * person has to be able to reach.
    */
   emptyAction?: ReactNode;

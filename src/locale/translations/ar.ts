@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -915,6 +916,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'اقتراحات',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'رسالة',
   add: 'إضافة مرفق',
@@ -925,6 +930,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'الإدخال الصوتي',
   send: 'إرسال الرسالة',
   stop: 'إيقاف الإنشاء',
+  transcribing: 'جارٍ النسخ',
   permissionTrigger: (mode) => `الأذونات: ${mode}`,
   removeFile: (name) => `إزالة ${name}`,
   retryFile: (name) => `إعادة محاولة ${name}`,
@@ -1081,8 +1087,33 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'شريط القوائم',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: 'قيد التشغيل',
+  done: 'تم',
+  failed: 'فشل',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
   thinking: 'جارٍ التفكير',
+};
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'مكتملة',
+  taskTodo: 'غير مكتملة',
+};
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('فكّر لمدة {time}', ' دقيقة', ' ثانية', ' و'),
+  thoughtBriefly: 'فكّر للحظة',
+  reasoning: 'التفكير',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: 'الخطة المقترحة',
+  approve: 'موافقة',
+  reject: 'رفض',
+  approved: 'تمت الموافقة',
+  rejected: 'تم الرفض',
+  decision: 'قرار الخطة',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -3180,6 +3211,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'وضع الصوت',
+  controls: 'عناصر التحكم الصوتي',
+  mute: 'كتم الميكروفون',
+  pause: 'إيقاف مؤقت',
+  end: 'إنهاء الجلسة الصوتية',
+  typeInstead: 'اكتب بدلًا من ذلك',
+  status: {
+    idle: 'جاهز',
+    listening: 'جارٍ الاستماع…',
+    transcribing: 'جارٍ النسخ…',
+    thinking: 'جارٍ التفكير…',
+    speaking: 'جارٍ التحدث…',
+    error: 'حدث خطأ ما',
+  },
+  mutedStatus: 'الميكروفون مكتوم',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -3301,6 +3350,10 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
@@ -3390,6 +3443,8 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

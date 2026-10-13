@@ -26,6 +26,7 @@ export type {
   ComposerPanelStatusTabProps,
   ComposerPillLabels,
   ComposerPillProps,
+  ComposerVoiceState,
   ComposerStatusBarFolder,
   ComposerStatusBarLabels,
   ComposerStatusBarProps,

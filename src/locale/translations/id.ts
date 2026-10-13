@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import {
   words as navigationBanner_words,
@@ -806,6 +807,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'Saran',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'Pesan',
   add: 'Tambahkan lampiran',
@@ -816,6 +821,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'Input suara',
   send: 'Kirim pesan',
   stop: 'Hentikan pembuatan',
+  transcribing: 'Mentranskripsi',
   permissionTrigger: (mode) => `Izin: ${mode}`,
   removeFile: (name) => `Hapus ${name}`,
   retryFile: (name) => `Coba lagi ${name}`,
@@ -955,7 +961,32 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Bilah menu',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: 'Berjalan',
+  done: 'Selesai',
+  failed: 'Gagal',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Berpikir' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Selesai',
+  taskTodo: 'Belum selesai',
+};
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('Berpikir selama {time}', ' mnt', ' dtk', ' '),
+  thoughtBriefly: 'Berpikir sejenak',
+  reasoning: 'Penalaran',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: 'Rencana yang diusulkan',
+  approve: 'Setujui',
+  reject: 'Tolak',
+  approved: 'Disetujui',
+  rejected: 'Ditolak',
+  decision: 'Keputusan rencana',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: {
@@ -2786,6 +2817,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('id', skills, { one: '{n} keterampilan', other: '{n} keterampilan' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'Mode suara',
+  controls: 'Kontrol suara',
+  mute: 'Bisukan mikrofon',
+  pause: 'Jeda',
+  end: 'Akhiri sesi suara',
+  typeInstead: 'Ketik saja',
+  status: {
+    idle: 'Siap',
+    listening: 'Mendengarkan…',
+    transcribing: 'Mentranskripsi…',
+    thinking: 'Berpikir…',
+    speaking: 'Berbicara…',
+    error: 'Terjadi kesalahan',
+  },
+  mutedStatus: 'Mikrofon dibisukan',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2907,6 +2956,10 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
@@ -2996,6 +3049,8 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

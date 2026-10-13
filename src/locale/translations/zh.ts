@@ -6,6 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
+import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -780,6 +781,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: '建议',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: '消息',
   add: '添加附件',
@@ -790,6 +795,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: '语音输入',
   send: '发送消息',
   stop: '停止生成',
+  transcribing: '正在转录',
   permissionTrigger: (mode) => `权限：${mode}`,
   removeFile: (name) => `移除 ${name}`,
   retryFile: (name) => `重试 ${name}`,
@@ -929,7 +935,32 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: '菜单栏',
 };
 
+const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+  running: '运行中',
+  done: '已完成',
+  failed: '失败',
+};
+
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '思考中' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: '已完成',
+  taskTodo: '未完成',
+};
+
+const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+  thoughtFor: reasoning_thoughtFor('思考了{time}', '分钟', '秒', ''),
+  thoughtBriefly: '稍作思考',
+  reasoning: '推理',
+};
+
+const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
+  title: '建议的计划',
+  approve: '批准',
+  reject: '拒绝',
+  approved: '已批准',
+  rejected: '已拒绝',
+  decision: '计划决定',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: { like: '回答不错', dislike: '回答不好', copy: '复制回答', copied: '已复制！' },
@@ -2666,6 +2697,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('zh', skills, { other: '{n} 个技能' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: '语音模式',
+  controls: '语音控制',
+  mute: '静音麦克风',
+  pause: '暂停',
+  end: '结束语音会话',
+  typeInstead: '改为输入',
+  status: {
+    idle: '就绪',
+    listening: '正在聆听…',
+    transcribing: '正在转录…',
+    thinking: '正在思考…',
+    speaking: '正在说话…',
+    error: '出了点问题',
+  },
+  mutedStatus: '麦克风已静音',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2786,6 +2835,10 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
+  REASONING_MESSAGES,
+  AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
+  TOOL_CALL_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
@@ -2875,6 +2928,8 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

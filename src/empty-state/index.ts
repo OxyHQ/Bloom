@@ -7,5 +7,6 @@ export type {
   EmptyStateAction,
   EmptyStateMedia,
   EmptyStateProps,
+  EmptyStateSuggestion,
   EmptyStateVariant,
 } from './types';

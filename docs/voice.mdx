@@ -1,0 +1,88 @@
+---
+title: Voice
+description: Voice mode for an agent — a live wave, the control row and a full-surface overlay, on one state vocabulary.
+order: 69
+---
+
+# Voice
+
+Three parts for a spoken conversation with an agent. The wave shows the sound,
+the controls steer the session, and the overlay holds both with a status line
+and a live caption.
+
+```tsx
+import { AudioWaveVisualizer, VoiceControls, VoiceOverlay } from '@oxy.so/bloom/voice';
+
+<VoiceOverlay
+  open={voice.open}
+  onOpenChange={voice.setOpen}
+  state={voice.state}
+  transcript={voice.transcript}
+  levels={voice.levels}
+  muted={voice.muted}
+  onMutedChange={voice.setMuted}
+  onEnd={voice.end}
+/>
+```
+
+## One state vocabulary
+
+`VoiceState` is `idle | listening | transcribing | thinking | speaking | error`.
+The composer pill's microphone adopts the same names, so one value drives both.
+
+| state          | status line             | wave                                 |
+| -------------- | ----------------------- | ------------------------------------ |
+| `idle`         | Ready                   | rest                                 |
+| `listening`    | Listening… / Microphone muted | follows `levels` (rest while muted) |
+| `transcribing` | Transcribing…           | rest                                 |
+| `thinking`     | Thinking…               | rest                                 |
+| `speaking`     | Speaking…               | follows `levels`, accent tone        |
+| `error`        | the `error` prop, or "Something went wrong" | rest, danger tone |
+
+## `levels`: a plain array or a shared value
+
+`levels` is one frame of values from `0` to `1`, of any length — it is
+resampled to `bars`, each bar taking the loudest level of its slice, so a
+producer never needs to know how many bars are drawn.
+
+- A **plain array** is for state: pass it and it is copied into a shared value
+  when it changes. Cheap for a handful of updates a second.
+- A **shared value** (`SharedValue<readonly number[]>`) is for a live meter.
+  Writing `levels.value = next` moves the bars on the UI thread and renders no
+  React: neither the visualizer nor anything above it re-renders.
+
+Either way the bars read one shared value on a frame clock and ease toward it
+(about 90 ms), so a meter writing ten times a second reads as a wave. Under
+reduced motion, and while `active` is `false`, the bars rest as a row of dots
+and the clock is parked.
+
+The visualizer is decorative: hidden from assistive technology, whose view of
+the session is the status line.
+
+## `VoiceControls`
+
+Type instead, mute, pause and end; each renders only when its handler is given,
+and `leading` / `trailing` take your own. Mute and pause are toggles: their name
+is the **action** ("Mute microphone") and `pressed` carries the state, so it is
+announced as `aria-pressed` on web and as the pressed state on native. Both are
+disabled while the session is `idle` or in `error`; ending it and typing instead
+stay available.
+
+## `VoiceOverlay`
+
+A modal like [`Dialog`](/docs/bloom/main/dialog): it takes its place in the
+[overlay stack](/docs/bloom/main/overlay), marks the app behind it inert, moves
+focus in and returns it to the opener, and closes on Escape and Android back
+through `onOpenChange(false)`. Closing the overlay is not ending the session —
+`onEnd` is yours to act on.
+
+- `open` / `defaultOpen` / `onOpenChange` as everywhere in Bloom.
+- The status line is `role="status"` with `aria-live="polite"`: each state
+  change is announced without interrupting, and it always carries words, never
+  only colour.
+- `transcript` is a string that may grow while streaming; the caption follows
+  the newest text. Pass `children` for your own caption content instead.
+- It mounts through `Portal`, so on native the app root needs `PortalProvider`
+  and `PortalOutlet`, as for every Bloom overlay.
+- It has no backdrop: it covers the whole surface, so there is nothing to dim.
+  Reduced motion removes the fade.
