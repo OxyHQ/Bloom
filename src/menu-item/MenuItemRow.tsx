@@ -124,7 +124,7 @@ function MenuItemRowComponent(props: MenuItemRowProps) {
             content={quantity}
             variant="solid"
             color="primary"
-            size="medium"
+            size="md"
             testID={testID ? `${testID}-quantity` : undefined}
           />
         ) : null

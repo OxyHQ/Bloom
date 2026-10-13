@@ -39,7 +39,7 @@ export const Matrix: Story = {
           backgroundColor: theme.colors.background,
         }}
       >
-        {(['medium', 'small'] as const).map((size) => (
+        {(['md', 'sm'] as const).map((size) => (
           <View key={size} style={{ gap: 12 }}>
             <Caption>{size}</Caption>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>

@@ -234,7 +234,7 @@ export interface ReleaseStatusBadgeProps {
   status: ReleaseStatus;
   /** Overrides the status's default text. */
   label?: string;
-  size?: 'small' | 'medium';
+  size?: 'sm' | 'md';
   testID?: string;
 }
 

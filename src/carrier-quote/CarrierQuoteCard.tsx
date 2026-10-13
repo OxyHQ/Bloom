@@ -194,7 +194,7 @@ function CarrierQuoteCardComponent({
       >
         {markPills}
         {carrier.rating !== undefined ? (
-          <Rating value={carrier.rating} size="small" testID={id('rating')} />
+          <Rating value={carrier.rating} size="sm" testID={id('rating')} />
         ) : null}
         {jobs !== undefined || carrier.detail !== undefined ? (
           <Text

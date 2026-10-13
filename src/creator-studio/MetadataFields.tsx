@@ -73,7 +73,7 @@ function ArtistChipsInputComponent({
           {values.map((name) => (
             <Chip
               key={name}
-              size="medium"
+              size="md"
               variant="subtle"
               disabled={disabled}
               endIcon={

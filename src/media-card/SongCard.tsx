@@ -120,7 +120,7 @@ function SongCardComponent({
       meta={row && album ? [album] : undefined}
       placeholderIcon={RiMusic2Fill}
       titleLeading={current ? <NowPlayingIndicator playing={playing} size={14} /> : undefined}
-      titleAccessory={explicit ? <ExplicitBadge size="small" /> : undefined}
+      titleAccessory={explicit ? <ExplicitBadge size="sm" /> : undefined}
       titleAccessoryLabel={explicit ? controls.explicit : undefined}
       accessibilityDetail={onPressArtist ? names : undefined}
       trailing={trailing}

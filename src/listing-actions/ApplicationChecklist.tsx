@@ -158,7 +158,7 @@ function ApplicationChecklistComponent({
                   <Badge
                     variant="subtle"
                     color={info.tone}
-                    size="small"
+                    size="sm"
                     content={statusLabels?.[item.status] ?? messages.applicationStatus[item.status]}
                     testID={id(`item-${item.key}-status`)}
                   />

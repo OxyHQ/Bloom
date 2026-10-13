@@ -144,7 +144,7 @@ describe('sidebar, surfaces and the overlays', () => {
 
   describe('command', () => {
     it('speaks its placeholder, empty state and name in the provider locale', () => {
-      const screen = inLocale(<Command visible onClose={() => {}} items={[]} />);
+      const screen = inLocale(<Command open onOpenChange={() => {}} items={[]} />);
       expect(screen.getByPlaceholderText('Escribe un comando o busca…')).toBeTruthy();
       expect(screen.getByText('No se encontraron resultados.')).toBeTruthy();
       expect(screen.getByLabelText('Paleta de comandos')).toBeTruthy();
@@ -152,7 +152,13 @@ describe('sidebar, surfaces and the overlays', () => {
 
     it('lets placeholder and emptyText win', () => {
       const screen = inLocale(
-        <Command visible onClose={() => {}} items={[]} placeholder="Busca algo" emptyText="Nada" />,
+        <Command
+          open
+          onOpenChange={() => {}}
+          items={[]}
+          placeholder="Busca algo"
+          emptyText="Nada"
+        />,
       );
       expect(screen.getByPlaceholderText('Busca algo')).toBeTruthy();
       expect(screen.getByText('Nada')).toBeTruthy();
@@ -161,14 +167,14 @@ describe('sidebar, surfaces and the overlays', () => {
 
   describe('alert-dialog', () => {
     it('defaults its confirm and cancel words to the provider locale', () => {
-      const screen = inLocale(<AlertDialog visible onClose={() => {}} title="¿Borrar?" />);
+      const screen = inLocale(<AlertDialog open onOpenChange={() => {}} title="¿Borrar?" />);
       expect(screen.getByText('Confirmar')).toBeTruthy();
       expect(screen.getByText('Cancelar')).toBeTruthy();
     });
 
     it('lets confirmLabel win', () => {
       const screen = inLocale(
-        <AlertDialog visible onClose={() => {}} title="¿Borrar?" confirmLabel="Borrar" />,
+        <AlertDialog open onOpenChange={() => {}} title="¿Borrar?" confirmLabel="Borrar" />,
       );
       expect(screen.getByText('Borrar')).toBeTruthy();
       expect(screen.queryByText('Confirmar')).toBeNull();

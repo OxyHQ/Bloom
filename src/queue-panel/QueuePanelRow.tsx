@@ -133,7 +133,7 @@ function QueuePanelRowComponent({
           </Text>
           {track.artists || track.explicit ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 }}>
-              {track.explicit ? <ExplicitBadge size="small" /> : null}
+              {track.explicit ? <ExplicitBadge size="sm" /> : null}
               {track.artists ? (
                 <Text
                   variant="caption-1-regular"

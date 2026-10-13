@@ -154,7 +154,7 @@ export function VehiclePicker<T extends string = VehicleKind>({
                       }}
                     >
                       {chips.map((fit) => (
-                        <Chip key={fit} size="medium" variant="outlined">
+                        <Chip key={fit} size="md" variant="outlined">
                           {fit}
                         </Chip>
                       ))}

@@ -209,7 +209,7 @@ function MailRowComponent({
         style={{ flexShrink: 0 }}
         testID={testID ? `${testID}-thread-count` : undefined}
       >
-        <Badge content={threadCount} size="small" variant="subtle" color="default" />
+        <Badge content={threadCount} size="sm" variant="subtle" color="default" />
       </View>
     ) : null;
 

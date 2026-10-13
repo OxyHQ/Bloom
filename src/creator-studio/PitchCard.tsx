@@ -88,7 +88,7 @@ function TagGroup({
           return (
             <Chip
               key={tag}
-              size="medium"
+              size="md"
               variant="outlined"
               selected={on}
               disabled={disabled || (!on && full)}

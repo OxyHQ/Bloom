@@ -109,7 +109,7 @@ function PlaceAmenitiesComponent({
             its own wrapper.
           */}
           <Chip
-            size="large"
+            size="lg"
             variant="subtle"
             leadingIcon={icon}
             textStyle={

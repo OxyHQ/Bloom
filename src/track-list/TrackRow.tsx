@@ -422,7 +422,7 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
               <RiArrowDownCircleFill width={14} height={14} fill={paint.accent} />
             </View>
           ) : null}
-          {track.explicit ? <ExplicitBadge size="small" style={{ marginRight: 6 }} /> : null}
+          {track.explicit ? <ExplicitBadge size="sm" style={{ marginRight: 6 }} /> : null}
           {artists}
         </View>
       </View>

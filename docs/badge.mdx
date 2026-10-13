@@ -29,13 +29,13 @@ There are five rungs in TWO families, and the difference between them is not jus
 
 | size | height | text | padding-x | icon |
 | ---- | ------ | ---- | --------- | ---- |
-| `small` | 17 | `caption-2-semibold` (11/15), tracking 0 | 4 | 10 |
-| `medium` | 18 | `caption-1-semibold` (12/16), tracking 0 | 4 | 11 |
-| `large` | 24 | `body-semibold` (14/20) | 6 | 14 |
+| `sm` | 17 | `caption-2-semibold` (11/15), tracking 0 | 4 | 10 |
+| `md` | 18 | `caption-1-semibold` (12/16), tracking 0 | 4 | 11 |
+| `lg` | 24 | `body-semibold` (14/20) | 6 | 14 |
 | `label-small` | 20 | `caption-1-semibold` (12/16) | 8 | 12 |
 | `label-medium` | 24 | `body-2-semibold` (13/18) | 10 | 14 |
 
-`small` / `medium` / `large` are the COUNTER rungs, sized to a digit: `minWidth` equals the height so "3" is a circle rather than a pill narrower than it is tall, and the pill never shrinks — it is a fixed token in the row it sits in.
+`sm` / `md` / `lg` are the COUNTER rungs, sized to a digit: `minWidth` equals the height so "3" is a circle rather than a pill narrower than it is tall, and the pill never shrinks — it is a fixed token in the row it sits in.
 
 `label-small` and `label-medium` are sized to a WORD: the side padding a word needs, a leading icon slot, and they SHRINK and truncate, because a two-word status in a narrow card has to yield before the card's title does. They are the rung the housing badges live on — `OfferingBadge` and the listing card's status pill are presets over them.
 
@@ -44,7 +44,7 @@ Every label is Bloom's typography `Text` on a `TYPE_SCALE` step, so it is set in
 **Override the side padding with `paddingLeft`/`paddingRight`, the longhands the component uses** — react-native-web ranks `padding-inline` above `padding-left` whatever the array order, so mixing the spellings drops the override on web while it lands on native.
 
 A **standalone** `dot` is a status dot: a solid centre on a tinted halo —
-12 / 6 at `medium` (8 / 4 `small`, 16 / 8 `large`). The halo is the tone's
+12 / 6 at `md` (8 / 4 `sm`, 16 / 8 `lg`). The halo is the tone's
 `subtle` tint from the same recipe, so it follows the preset and mode like a
 subtle badge. An **attached** dot (one wrapping a child) stays a plain 6 / 8 / 10
 marker: a halo over the child's corner reads as a second ring on the icon.

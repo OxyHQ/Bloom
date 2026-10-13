@@ -331,7 +331,7 @@ function JobBoardComponent({
                 count instead. */}
             {filterRows.length > 0 && active > 0 ? (
               <View aria-hidden testID={id('filters-count')}>
-                <Badge content={active} variant="subtle" color="primary" size="medium" />
+                <Badge content={active} variant="subtle" color="primary" size="md" />
               </View>
             ) : null}
             {onRefresh ? (

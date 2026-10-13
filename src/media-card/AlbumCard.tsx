@@ -45,7 +45,7 @@ function AlbumCardComponent({
         [title, explicit ? controls.explicit : null, type, year, artist].filter(Boolean).join(', ')
       }
       placeholderIcon={RiDiscFill}
-      titleAccessory={explicit ? <ExplicitBadge size="small" /> : undefined}
+      titleAccessory={explicit ? <ExplicitBadge size="sm" /> : undefined}
     />
   );
 }

@@ -153,7 +153,7 @@ function EpisodeCardComponent({
       artworkSize={row ? EPISODE_ROW_ARTWORK[size] : undefined}
       rowAlign="top"
       placeholderIcon={RiMic2Fill}
-      titleAccessory={explicit ? <ExplicitBadge size="small" /> : undefined}
+      titleAccessory={explicit ? <ExplicitBadge size="sm" /> : undefined}
       accessibilityLabel={
         rest.accessibilityLabel ??
         [

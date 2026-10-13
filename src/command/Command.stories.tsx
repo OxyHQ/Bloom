@@ -63,7 +63,7 @@ export const Basic: Story = {
     return (
       <View style={{ padding: 40 }}>
         <Button onPress={() => setOpen(true)}>Open command palette (⌘K)</Button>
-        <Command visible={open} onClose={() => setOpen(false)} items={items} />
+        <Command open={open} onOpenChange={() => setOpen(false)} items={items} />
       </View>
     );
   },

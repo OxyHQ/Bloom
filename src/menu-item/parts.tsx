@@ -83,7 +83,7 @@ export function MenuItemDiets({
         return (
           <Chip
             key={diet}
-            size="small"
+            size="sm"
             variant="subtle"
             color={Glyph ? 'success' : 'default'}
             surface={surface}

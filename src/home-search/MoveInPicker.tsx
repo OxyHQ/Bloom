@@ -55,7 +55,7 @@ function MoveInPickerComponent({
     const selected = value.timing === timing;
     return (
       <Chip
-        size="large"
+        size="lg"
         variant="outlined"
         selected={selected}
         onPress={() => onValueChange({ ...value, timing: selected ? 'date' : timing, date: null })}
@@ -102,7 +102,7 @@ function MoveInPickerComponent({
           {contractLengths.map((option) => (
             <Chip
               key={option.value}
-              size="large"
+              size="lg"
               variant="outlined"
               selected={option.value === value.contractLength}
               onPress={() => onValueChange({ ...value, contractLength: option.value })}

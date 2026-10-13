@@ -38,7 +38,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
 | Field membership | 49 | 23 | 0 | 21 | 5 |
-| Control presentation | 43 | 40 | 1 | 2 | 0 |
+| Control presentation | 41 | 40 | 1 | 0 | 0 |
 | Trigger composition | 10 | 8 | 0 | 2 | 0 |
 | Controlled / uncontrolled state | 53 | 44 | 1 | 1 | 7 |
 
@@ -90,8 +90,6 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ### Control presentation
 
-- `chat-people` (does-not-apply) — sizes an avatar row of its own, not a control: there is nothing for a container’s density to mean here, and honouring it would resize a presentation block.
-- `creator-studio` (does-not-apply) — sizes a studio stat block — a presentation part, whose two sizes happen to be spelled with the same two words as the density pair.
 - `phone-input` (delegated) — passes `size` straight through to `TextField`, which inherits density — so a `BloomScope` reaches the phone field without this family reading anything.
 
 ### Trigger composition
@@ -151,7 +149,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `chat-composer` | `@oxy.so/bloom/chat-composer` + barrel | web fork | `chat-composer.mdx` | yes | 4 | n/a¹ | reads |  | reads |
 | `chat-indicators` | `@oxy.so/bloom/chat-indicators` + barrel | universal | `chat-indicators.mdx` | yes | 2 |  |  |  |  |
 | `chat-list` | `@oxy.so/bloom/chat-list` + barrel | universal | `chat-list.mdx` | yes | 3 | n/a¹ |  |  | **adaptation** |
-| `chat-people` | `@oxy.so/bloom/chat-people` + barrel | universal | `chat-people.mdx` | yes | 2 | n/a¹ | n/a¹ |  |  |
+| `chat-people` | `@oxy.so/bloom/chat-people` + barrel | universal | `chat-people.mdx` | yes | 2 | n/a¹ |  |  |  |
 | `chat-screen` | `@oxy.so/bloom/chat-screen` + barrel | universal | `chat-screen.mdx` | yes | 3 |  | reads |  | reads |
 | `checkbox` | `@oxy.so/bloom/checkbox` + barrel | universal | `checkbox.mdx` | yes | 7 | reads | reads |  | reads |
 | `checkout-summary` | `@oxy.so/bloom/checkout-summary` + barrel | universal | `checkout-summary.mdx` | yes | 2 |  |  |  |  |
@@ -168,7 +166,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `content-panel` | `@oxy.so/bloom/content-panel` + barrel | web fork | `content-panel.mdx` | yes | 11 |  |  |  |  |
 | `context-menu` | `@oxy.so/bloom/context-menu` + barrel | web fork | `context-menu.mdx` | yes | 6 |  |  | reads |  |
 | `cover-header` | `@oxy.so/bloom/cover-header` + barrel | universal | `cover-header.mdx` | yes | 1 |  |  |  |  |
-| `creator-studio` | `@oxy.so/bloom/creator-studio` + barrel | universal | `creator-studio.mdx` | yes | 4 |  | n/a¹ |  | **adaptation** |
+| `creator-studio` | `@oxy.so/bloom/creator-studio` + barrel | universal | `creator-studio.mdx` | yes | 4 |  |  |  | **adaptation** |
 | `data-table` | `@oxy.so/bloom/data-table` + barrel | universal | `data-table.mdx` | yes | 4 |  | reads |  | reads |
 | `date-picker` | `@oxy.so/bloom/date-picker` + barrel | universal | `date-picker.mdx` | yes | 5 | reads | reads |  | reads |
 | `delivery-slot` | `@oxy.so/bloom/delivery-slot` + barrel | universal | `delivery-slot.mdx` | yes | 2 | reads |  |  |  |

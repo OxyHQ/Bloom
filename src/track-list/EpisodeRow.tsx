@@ -84,7 +84,7 @@ function EpisodeRowComponent({
 
   const meta = (
     <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
-      {episode.explicit ? <ExplicitBadge size="small" style={{ marginRight: 6 }} /> : null}
+      {episode.explicit ? <ExplicitBadge size="sm" style={{ marginRight: 6 }} /> : null}
       {episode.played ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 6 }}>
           <RiCheckboxCircleFill width={14} height={14} fill={paint.accent} />

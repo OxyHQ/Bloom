@@ -101,9 +101,9 @@ function contrast(a: string, b: string): number {
 
 describe('Chip rungs', () => {
   it.each([
-    ['small', 24, 6],
-    ['medium', 24, 6],
-    ['large', 28, 6],
+    ['sm', 24, 6],
+    ['md', 24, 6],
+    ['lg', 28, 6],
     ['xl', 32, 12],
     ['2xl', 40, 16],
   ] as const)('%s is %ipx tall with %ipx sides', (size, height, padding) => {
@@ -149,7 +149,7 @@ describe('Chip rungs', () => {
   });
 
   it('sizes the icon slot to the rung, not to the icon the caller passed', () => {
-    for (const size of ['small', 'xl', '2xl'] as ChipSize[]) {
+    for (const size of ['sm', 'xl', '2xl'] as ChipSize[]) {
       mount(
         <Chip size={size} startIcon={<span data-testid="glyph" />} onPress={() => {}} testID="c">
           Filter

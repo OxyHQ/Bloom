@@ -100,7 +100,7 @@ function PipelineColumnComponent({
               content={count}
               variant="subtle"
               color="default"
-              size="medium"
+              size="md"
               testID={id('count')}
             />
           )}

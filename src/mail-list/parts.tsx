@@ -294,7 +294,7 @@ export function MailLabelChips({
       {labels.map((label) => (
         <Chip
           key={label.id}
-          size="small"
+          size="sm"
           variant="subtle"
           color={label.tone ?? 'default'}
           surface={surface}
@@ -305,7 +305,7 @@ export function MailLabelChips({
       ))}
       {overflow > 0 ? (
         <Chip
-          size="small"
+          size="sm"
           variant="subtle"
           color="default"
           surface={surface}
@@ -352,7 +352,7 @@ export function MailLabelMarks({ chip, dots, surface, testID }: MailLabelMarksPr
     >
       {chip === undefined ? null : (
         <Chip
-          size="small"
+          size="sm"
           variant="subtle"
           color={chip.tone ?? 'default'}
           surface={surface}

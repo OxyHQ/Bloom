@@ -103,7 +103,7 @@ function DiscographyFilterComponent({
         {options.map((option) => (
           <Chip
             key={option.value}
-            size="medium"
+            size="md"
             selected={option.value === value}
             onPress={() => onValueChange(option.value)}
             accessibilityLabel={option.label}

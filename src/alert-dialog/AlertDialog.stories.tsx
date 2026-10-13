@@ -9,7 +9,7 @@ import { Text } from '../typography';
 
 const meta: Meta<typeof AlertDialog> = {
   argTypes: {
-    visible: { control: 'boolean' },
+    open: { control: 'boolean' },
     title: { control: 'text' },
     description: { control: 'text' },
     confirmLabel: { control: 'text' },
@@ -42,8 +42,8 @@ export const Declarative: Story = {
         <AlertDialog
           {...args}
           title={String(args.title ?? 'Delete this app?')}
-          visible={open}
-          onClose={() => setOpen(false)}
+          open={open}
+          onOpenChange={() => setOpen(false)}
           onConfirm={() => {}}
         />
       </View>

@@ -11,13 +11,13 @@ import { OfferingBadge } from './OfferingBadge';
 const meta: Meta<typeof OfferingBadge> = {
   title: 'Base/Offering Badge',
   component: OfferingBadge,
-  args: { offering: 'long_term_rent', size: 'medium', variant: 'tinted' },
+  args: { offering: 'long_term_rent', size: 'md', variant: 'tinted' },
   argTypes: {
     offering: {
       control: 'select',
       options: ['long_term_rent', 'sale', 'short_term_rent', 'exchange'],
     },
-    size: { control: 'inline-radio', options: ['small', 'medium'] },
+    size: { control: 'inline-radio', options: ['sm', 'md'] },
     variant: { control: 'inline-radio', options: ['tinted', 'onMedia'] },
   },
 };
@@ -45,7 +45,7 @@ function MatrixBody() {
   return (
     <View style={{ gap: 16, padding: 24, backgroundColor: theme.colors.background }}>
       <Caption>Tinted — medium · small · no icon</Caption>
-      {(['medium', 'small'] as const).map((size) => (
+      {(['md', 'sm'] as const).map((size) => (
         <View key={size} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {OFFERINGS.map((offering) => (
             <OfferingBadge
@@ -66,7 +66,7 @@ function MatrixBody() {
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         <OfferingBadge offering="long_term_rent" label="En alquiler" />
         <OfferingBadge offering="sale" label="Rent to own" icon={RiHome4Line} />
-        <OfferingBadge offering="short_term_rent" label="Weekly stays" size="small" />
+        <OfferingBadge offering="short_term_rent" label="Weekly stays" size="sm" />
       </View>
       <Caption>On media — medium · small</Caption>
       <View
@@ -89,7 +89,7 @@ function MatrixBody() {
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {OFFERINGS.map((offering) => (
-              <OfferingBadge key={offering} offering={offering} variant="onMedia" size="small" />
+              <OfferingBadge key={offering} offering={offering} variant="onMedia" size="sm" />
             ))}
           </View>
         </View>

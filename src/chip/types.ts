@@ -8,7 +8,7 @@ import type { AccentFill, AccentTone } from '../theme/accent-colors';
  * used to stop at 28, which is why five families drew their own pill. The table
  * is in `shared.ts`.
  */
-export type ChipSize = BloomSize | 'small' | 'medium' | 'large' | 'xl' | '2xl';
+export type ChipSize = BloomSize | 'xl' | '2xl';
 
 /**
  * The three accent fills, plus `inverted`: a hairline pill on the page that

@@ -123,7 +123,7 @@ function ArchivedRowComponent({
           <UnreadBadge
             count={count}
             muted={muted}
-            size={density === 'compact' ? 'small' : 'medium'}
+            size={density === 'compact' ? 'sm' : 'md'}
             style={{ marginLeft: geo.gap }}
             testID={testID ? `${testID}-count` : undefined}
           />

@@ -176,9 +176,9 @@ describe('PresenceDot', () => {
 
   it('sizes the dot 8 / 10 / 12 and reserves ring + dot + ring', () => {
     for (const [size, px] of [
-      ['small', 8],
-      ['medium', 10],
-      ['large', 12],
+      ['sm', 8],
+      ['md', 10],
+      ['lg', 12],
     ] as const) {
       mount(<PresenceDot status="online" size={size} testID="dot" />);
       const outer = byTestId('dot');
@@ -210,11 +210,11 @@ describe('AvatarPresence', () => {
   });
 
   it('picks the dot rung from the avatar size', () => {
-    expect(presenceSizeForAvatar(24)).toBe('small');
-    expect(presenceSizeForAvatar(28)).toBe('small');
-    expect(presenceSizeForAvatar(40)).toBe('medium');
-    expect(presenceSizeForAvatar(44)).toBe('medium');
-    expect(presenceSizeForAvatar(56)).toBe('large');
+    expect(presenceSizeForAvatar(24)).toBe('sm');
+    expect(presenceSizeForAvatar(28)).toBe('sm');
+    expect(presenceSizeForAvatar(40)).toBe('md');
+    expect(presenceSizeForAvatar(44)).toBe('md');
+    expect(presenceSizeForAvatar(56)).toBe('lg');
 
     for (const [avatar, dot] of [
       [24, 8],
@@ -234,7 +234,7 @@ describe('AvatarPresence', () => {
         name="Ana"
         size={56}
         status="idle"
-        presenceSize="small"
+        presenceSize="sm"
         presenceLabel="Ausente"
       />,
     );
@@ -383,9 +383,9 @@ describe('UnreadBadge', () => {
     expect(getComputedStyle(byTestId('b')).paddingLeft).toBe('6px');
     expect(getComputedStyle(byTestId('b')).paddingRight).toBe('6px');
 
-    mount(<UnreadBadge count={7} size="small" testID="b" />);
+    mount(<UnreadBadge count={7} size="sm" testID="b" />);
     expect(getComputedStyle(byTestId('b')).height).toBe('16px');
-    mount(<UnreadBadge count={7} size="small" dot testID="b" />);
+    mount(<UnreadBadge count={7} size="sm" dot testID="b" />);
     expect(getComputedStyle(byTestId('b')).width).toBe('8px');
   });
 

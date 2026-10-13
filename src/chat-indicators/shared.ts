@@ -10,9 +10,9 @@ import type {
 
 /** Dot diameter per rung (the ring is drawn OUTSIDE this). */
 export const PRESENCE_DOT_SIZES: Record<PresenceDotSize, number> = {
-  small: 8,
-  medium: 10,
-  large: 12,
+  sm: 8,
+  md: 10,
+  lg: 12,
 };
 
 /**
@@ -20,21 +20,21 @@ export const PRESENCE_DOT_SIZES: Record<PresenceDotSize, number> = {
  * face, over 44 the small one disappears against it.
  */
 export function presenceSizeForAvatar(size: number): PresenceDotSize {
-  if (size <= 28) return 'small';
-  if (size <= 44) return 'medium';
-  return 'large';
+  if (size <= 28) return 'sm';
+  if (size <= 44) return 'md';
+  return 'lg';
 }
 
 /** Height of the pill, which is also its minimum width (a one-digit circle). */
 export const UNREAD_BADGE_HEIGHTS: Record<UnreadBadgeSize, number> = {
-  small: 16,
-  medium: 20,
+  sm: 16,
+  md: 20,
 };
 
 /** The plain-dot diameter per rung, for `dot`. */
 export const UNREAD_DOT_SIZES: Record<UnreadBadgeSize, number> = {
-  small: 8,
-  medium: 10,
+  sm: 8,
+  md: 10,
 };
 
 /**

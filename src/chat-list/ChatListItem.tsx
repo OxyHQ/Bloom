@@ -216,7 +216,7 @@ function ChatListItemComponent({
           count={unreadCount}
           dot={unreadDot}
           muted={muted}
-          size={density === 'compact' ? 'small' : 'medium'}
+          size={density === 'compact' ? 'sm' : 'md'}
           testID={testID ? `${testID}-unread` : undefined}
         />
       ) : outgoingStatus ? (

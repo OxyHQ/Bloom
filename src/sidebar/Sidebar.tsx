@@ -237,16 +237,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const publishedFill = hasFill
     ? resolveSurfaceMaterial({ fill: surfaceFill, parentFill, paint: paintsSurface }).publishedFill
     : undefined;
-  const canonicalSize =
-    sizeProp === 'small'
-      ? 'sm'
-      : sizeProp === 'medium'
-        ? 'md'
-        : sizeProp === 'large'
-          ? 'lg'
-          : sizeProp;
   const { size: scopedSize } = useBloomAppearance(
-    { size: canonicalSize },
+    { size: sizeProp },
     { size: 'md', tone: 'neutral' },
   );
   const size = scopedSize === 'xs' ? 'sm' : scopedSize;
@@ -505,7 +497,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             <Badge
               content={item.badge}
               max={99}
-              size="small"
+              size="sm"
               style={badgeStyle}
               textStyle={badgeTextStyle}
             />

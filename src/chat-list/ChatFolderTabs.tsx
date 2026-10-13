@@ -138,7 +138,7 @@ function ChatFolderTabsComponent({
                     <UnreadBadge
                       count={folder.unreadCount}
                       muted={folder.muted ?? !active}
-                      size="small"
+                      size="sm"
                       testID={testID ? `${testID}-count-${folder.key}` : undefined}
                     />
                   </View>

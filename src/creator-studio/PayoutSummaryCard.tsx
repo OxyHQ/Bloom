@@ -100,7 +100,7 @@ function PayoutSummaryCardComponent({
           </Text>
           {chip && chipPaint ? (
             <Chip
-              size="medium"
+              size="md"
               testID={testID ? `${testID}-delta` : undefined}
               style={{ backgroundColor: chipPaint.background }}
               textStyle={{ color: chipPaint.foreground }}

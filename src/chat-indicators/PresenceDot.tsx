@@ -38,7 +38,7 @@ function fillFor(status: PresenceStatus, paint: ReturnType<typeof resolveChatInd
 
 function PresenceDotComponent({
   status,
-  size = 'medium',
+  size = 'md',
   ringColor,
   ringWidth = 2,
   accessibilityLabel,
@@ -49,7 +49,7 @@ function PresenceDotComponent({
   const { messages } = useMessages(CHAT_INDICATORS_MESSAGES);
   const paint = useMemo(() => resolveChatIndicatorPaint(theme), [theme]);
 
-  const dot = PRESENCE_DOT_SIZES[size] ?? PRESENCE_DOT_SIZES.medium;
+  const dot = PRESENCE_DOT_SIZES[size] ?? PRESENCE_DOT_SIZES.md;
   const ring = Math.max(0, ringWidth);
   const outer = dot + ring * 2;
   const surface = ringColor ?? paint.surface;

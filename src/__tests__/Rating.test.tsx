@@ -123,7 +123,7 @@ describe('Rating', () => {
   it('sizes the star 16 at medium and 14 at small', () => {
     mount(<Rating value={4.9} testID="r" />);
     expect(byTestId('r').querySelector('svg')?.getAttribute('width')).toBe('16');
-    mount(<Rating value={4.9} size="small" testID="r" />);
+    mount(<Rating value={4.9} size="sm" testID="r" />);
     expect(byTestId('r').querySelector('svg')?.getAttribute('width')).toBe('14');
   });
 });

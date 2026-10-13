@@ -120,7 +120,7 @@ function LeaseSummaryCardComponent({
               content={paymentStatus}
               color={payment.tone}
               variant="subtle"
-              size="medium"
+              size="md"
               testID={id('payment-status')}
             />
           ) : null}

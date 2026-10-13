@@ -153,14 +153,14 @@ function PlaceReviewCardComponent({
               </Text>
             ) : null}
           </View>
-          <Rating value={rating} size="small" testID={id('rating')} />
+          <Rating value={rating} size="sm" testID={id('rating')} />
         </View>
 
         {wouldRecommend != null || depositReturned != null ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {wouldRecommend != null ? (
               <Chip
-                size="small"
+                size="sm"
                 variant="subtle"
                 color={wouldRecommend ? 'success' : 'default'}
                 startIcon={
@@ -176,7 +176,7 @@ function PlaceReviewCardComponent({
             ) : null}
             {depositReturned != null ? (
               <Chip
-                size="small"
+                size="sm"
                 variant="subtle"
                 color={depositReturned ? 'success' : 'error'}
                 startIcon={

@@ -35,7 +35,7 @@ import { DISABLED_OPACITY } from '../styles/tokens';
  * cannot be mistaken for the settings checkbox it is not.
  */
 
-const AVATAR: Record<'small' | 'medium', number> = { small: 36, medium: 44 };
+const AVATAR: Record<'sm' | 'md', number> = { sm: 36, md: 44 };
 
 function resolveTrailing(props: ContactRowProps): ContactRowTrailing {
   if (props.trailing !== undefined) return props.trailing;
@@ -62,7 +62,7 @@ function ContactRowComponent(props: ContactRowProps) {
     actionDoneLabel: actionDoneLabelProp,
     onPress,
     disabled = false,
-    size = 'medium',
+    size = 'md',
     horizontalInset = 10,
     style,
     textStyle,

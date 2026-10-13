@@ -41,8 +41,8 @@ const SIZE_CONFIG: Record<
   RatingSize,
   { star: number; value: TypeScaleVariant; count: TypeScaleVariant }
 > = {
-  small: { star: 14, value: 'body-2-semibold', count: 'body-2-regular' },
-  medium: { star: 16, value: 'body-semibold', count: 'body-regular' },
+  sm: { star: 14, value: 'body-2-semibold', count: 'body-2-regular' },
+  md: { star: 16, value: 'body-semibold', count: 'body-regular' },
 };
 
 /** 5 → "5.0", 4.9 → "4.9", 4.923 → "4.92". */
@@ -146,7 +146,7 @@ function RatingComponent({
   countStyle = 'parenthesis',
   reviewsLabel,
   newLabel: newLabelProp,
-  size = 'medium',
+  size = 'md',
   variant = 'compact',
   showValue = true,
   starSize,

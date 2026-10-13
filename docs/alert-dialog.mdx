@@ -12,8 +12,8 @@ A confirm dialog you render: a title, a description, and a confirm/cancel pair.
 import { AlertDialog } from '@oxy.so/bloom/alert-dialog';
 
 <AlertDialog
-  visible={confirmingDelete}
-  onClose={() => setConfirmingDelete(false)}
+  open={confirmingDelete}
+  onOpenChange={setConfirmingDelete}
   title="Delete this draft?"
   description="This cannot be undone."
   confirmLabel="Delete"
@@ -26,8 +26,8 @@ import { AlertDialog } from '@oxy.so/bloom/alert-dialog';
 
 | prop            | decides                                                     |
 | --------------- | ------------------------------------------------------------ |
-| `visible`       | whether it is open — the dialog is controlled                 |
-| `onClose`       | called whenever it closes, however it closed                  |
+| `open`          | whether it is open — the dialog is controlled                 |
+| `onOpenChange`  | called with `false` whenever it closes, however it closed     |
 | `title`         | the question                                                  |
 | `description`   | the consequence                                               |
 | `confirmLabel` / `cancelLabel` | the button text                                |
@@ -50,11 +50,11 @@ Both ask the same question; they differ in where the answer goes.
   already part of the screen's state.
 - **[`confirm()`](/docs/bloom/main/surfaces)** — imperative, returns a promise.
   Right inside an event handler or a mutation callback, where you want to
-  `await` the answer and there is no natural place to hang a `visible` flag.
+  `await` the answer and there is no natural place to hang an `open` flag.
 
 The family owns no queue and no host: it bridges onto `Dialog`'s imperative
 control internally, so it stacks with every other overlay and its exit
-animation is not raced by a consumer unmounting in `onClose`.
+animation is not raced by a consumer unmounting in `onOpenChange`.
 
 ## `destructive` is a colour
 

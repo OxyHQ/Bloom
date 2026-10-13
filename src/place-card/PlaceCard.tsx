@@ -131,7 +131,7 @@ function NameLine({
   props: PlaceCardProps;
   paint: PlaceCardPaint;
   variant: 'body-semibold' | 'title-2-medium';
-  ratingSize: 'small' | 'medium';
+  ratingSize: 'sm' | 'md';
 }) {
   const { name, rating, reviewCount, newLabel, testID } = props;
   const { messages } = useMessages(PLACE_CARD_MESSAGES);
@@ -364,7 +364,7 @@ function PlaceRow({ props, paint }: { props: PlaceCardProps; paint: PlaceCardPai
               )}
             </View>
           ) : null}
-          <NameLine props={props} paint={paint} variant="body-semibold" ratingSize="small" />
+          <NameLine props={props} paint={paint} variant="body-semibold" ratingSize="sm" />
           <StateLines
             props={props}
             paint={paint}
@@ -532,7 +532,7 @@ function PlaceDetail({ props, paint }: { props: PlaceCardProps; paint: PlaceCard
               )}
             </View>
           ) : null}
-          <NameLine props={props} paint={paint} variant="title-2-medium" ratingSize="medium" />
+          <NameLine props={props} paint={paint} variant="title-2-medium" ratingSize="md" />
           <StateLines
             props={props}
             paint={paint}
@@ -574,7 +574,7 @@ function PlaceDetail({ props, paint }: { props: PlaceCardProps; paint: PlaceCard
                     {figure}
                   </Text>
                   {figureDetail ? (
-                    <Chip size="medium" testID={testID ? `${testID}-figure-detail` : undefined}>
+                    <Chip size="md" testID={testID ? `${testID}-figure-detail` : undefined}>
                       {figureDetail}
                     </Chip>
                   ) : null}

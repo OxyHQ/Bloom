@@ -428,7 +428,7 @@ export function SocialWidgets(_props: { authenticated?: boolean }) {
           id={handle}
           name={name}
           subtitle={handle}
-          size="small"
+          size="sm"
           horizontalInset={0}
           trailingSlot={
             <FollowButton

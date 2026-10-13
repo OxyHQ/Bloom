@@ -64,7 +64,7 @@ export interface LikeButtonProps {
 }
 
 /** `small` 14, `medium` 16 (default) square. */
-export type ExplicitBadgeSize = 'small' | 'medium';
+export type ExplicitBadgeSize = 'sm' | 'md';
 
 export interface ExplicitBadgeProps {
   /** Default `medium`. */

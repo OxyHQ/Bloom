@@ -713,8 +713,8 @@ export const Energy: Story = {
             <EnergyBadge key={r} rating={r} testID={`badge-${r}`} />
           ))}
           <EnergyBadge pending />
-          <EnergyBadge rating="B" size="small" />
-          <EnergyBadge rating="F" size="small" label="" />
+          <EnergyBadge rating="B" size="sm" />
+          <EnergyBadge rating="F" size="sm" label="" />
         </View>
       </Frame>
       <Frame width={390}>

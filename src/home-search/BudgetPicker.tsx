@@ -113,7 +113,7 @@ function BudgetPickerComponent({
             return (
               <Chip
                 key={index}
-                size="large"
+                size="lg"
                 variant="outlined"
                 selected={selected}
                 onPress={() => onValueChange(selected ? [null, null] : [preset.min, preset.max])}

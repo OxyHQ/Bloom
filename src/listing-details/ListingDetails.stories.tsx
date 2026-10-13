@@ -271,7 +271,7 @@ function ListingPage({ width }: { width: number }) {
       onPressReviews={noop}
       location="Porto, Portugal"
       onPressLocation={noop}
-      badge={narrow ? undefined : <Badge content="Loved by guests" size="large" color="primary" />}
+      badge={narrow ? undefined : <Badge content="Loved by guests" size="lg" color="primary" />}
       actions={<HeaderActions compact={narrow} />}
     />
   );
@@ -429,7 +429,7 @@ export const Header: Story = {
           onPressReviews={noop}
           location="Porto, Portugal"
           onPressLocation={noop}
-          badge={<Badge content="Loved by guests" size="large" color="primary" />}
+          badge={<Badge content="Loved by guests" size="lg" color="primary" />}
           actions={<HeaderActions />}
           testID="header"
         />

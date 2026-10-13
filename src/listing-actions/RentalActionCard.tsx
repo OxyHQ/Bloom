@@ -73,7 +73,7 @@ function RentalActionCardComponent({
             <Badge
               variant="subtle"
               color={info.tone}
-              size="large"
+              size="lg"
               content={statusLabel ?? messages.rentalStatus[status]}
               testID={id('status')}
             />

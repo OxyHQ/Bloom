@@ -191,7 +191,7 @@ function TripCardComponent({
                 content={shownStatus}
                 color={statusInfo.tone}
                 variant="subtle"
-                size="medium"
+                size="md"
                 testID={id('status')}
                 style={{ marginBottom: 4 }}
               />

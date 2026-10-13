@@ -125,7 +125,7 @@ function SavedSearchCardComponent({
           content={formatNewCount(newCount)}
           color="primary"
           variant="solid"
-          size="medium"
+          size="md"
           testID={testID ? `${testID}-badge` : undefined}
         />
       ) : null}
@@ -171,7 +171,7 @@ function SavedSearchCardComponent({
       {criteria && criteria.length > 0 ? (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
           {criteria.map((item, index) => (
-            <Chip key={`${index}-${item}`} size="medium" variant="outlined">
+            <Chip key={`${index}-${item}`} size="md" variant="outlined">
               {item}
             </Chip>
           ))}

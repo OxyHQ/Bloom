@@ -23,9 +23,9 @@ export interface CommandItem {
 
 export interface CommandProps {
   /** Whether the palette is open (controlled). */
-  visible: boolean;
-  /** Close request (Escape, backdrop, after a selection). */
-  onClose: () => void;
+  open: boolean;
+  /** Close request (Escape, backdrop, after a selection) as `onOpenChange(false)`. */
+  onOpenChange: (open: boolean) => void;
   /** Command items. */
   items: CommandItem[];
   /** Input placeholder (`'Type a command or search…'` in English). */

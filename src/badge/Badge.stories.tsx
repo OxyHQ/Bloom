@@ -71,7 +71,7 @@ export const Counters: Story = {
 export const StatusDots: Story = {
   render: () => (
     <View style={{ gap: 12 }}>
-      {(['small', 'medium', 'large'] as const).map((size) => (
+      {(['sm', 'md', 'lg'] as const).map((size) => (
         <View key={size} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
           {TONES.map((color) => (
             <Badge key={color} dot size={size} color={color} testID={`dot-${size}-${color}`} />
@@ -133,9 +133,9 @@ export const Sizes: Story = {
   render: () => (
     <View style={{ gap: 12 }}>
       <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-        <Badge size="small" color="primary" content="small" />
-        <Badge size="medium" color="primary" content="medium" />
-        <Badge size="large" color="primary" content="large" />
+        <Badge size="sm" color="primary" content="sm" />
+        <Badge size="md" color="primary" content="md" />
+        <Badge size="lg" color="primary" content="lg" />
       </View>
       <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
         <Badge

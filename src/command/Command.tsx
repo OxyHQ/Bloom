@@ -60,23 +60,23 @@ interface FlatEntry {
  * keyboard-navigable (Up/Down/Enter); on native, tap to select.
  *
  * Control mode — IMPERATIVE, not controlled. `Command` keeps its public
- * *controlled* API (`visible` boolean + `onClose`) but internally bridges it
+ * *controlled* API (`open` boolean + `onOpenChange`) but internally bridges it
  * onto the Dialog's imperative `useDialogControl()` handle, exactly like
  * `AlertDialog`. This makes `Command` the LAST controlled-`open` `Dialog`
  * consumer to move onto the imperative path every other surface uses
  * (`alert()`, `confirm()`, native `Menu`/`Select`/`ContextMenu`, Mention's
  * dialogs), so there is one code path across the ecosystem. It also guarantees
  * the palette's exit animation on the dismiss path even for a consumer that
- * unmounts the palette in response to `onClose` (`{open && <Command …/>}`): the
- * imperative `close()` runs the exit animation FIRST and fires `onClose` only
+ * unmounts the palette in response to `onOpenChange` (`{open && <Command …/>}`): the
+ * imperative `close()` runs the exit animation FIRST and fires `onOpenChange(false)` only
  * once it settles, whereas the controlled `open` path fires `onClose`
  * synchronously — which, for an unmount-on-close consumer, would tear the
  * surface down before it could animate out.
  */
 export function createCommand(Dialog: DialogComponent) {
   const Command = function Command({
-    visible,
-    onClose,
+    open: visible,
+    onOpenChange,
     items,
     placeholder: placeholderProp,
     emptyText: emptyTextProp,
@@ -156,9 +156,9 @@ export function createCommand(Dialog: DialogComponent) {
         if (!item || item.disabled) return;
         item.onSelect();
         setQuery('');
-        onClose();
+        onOpenChange(false);
       },
-      [setQuery, onClose],
+      [setQuery, onOpenChange],
     );
 
     // Bridge the public *controlled* `visible` prop onto the Dialog's imperative
@@ -189,8 +189,8 @@ export function createCommand(Dialog: DialogComponent) {
         closingFromPropRef.current = false;
         return;
       }
-      onClose();
-    }, [onClose]);
+      onOpenChange(false);
+    }, [onOpenChange]);
 
     // Web keyboard navigation on the search input.
     const webKeyHandler: Record<string, unknown> =

@@ -288,7 +288,7 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
         </View>
         {connecting ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <PresenceDot status="idle" size="small" ringWidth={0} accessibilityLabel="" />
+            <PresenceDot status="idle" size="sm" ringWidth={0} accessibilityLabel="" />
             <Text
               variant="caption-1-regular"
               numberOfLines={1}

@@ -154,7 +154,7 @@ function PodcastShowHeaderComponent({
           {(categories ?? []).map((category) => (
             <Chip
               key={category}
-              size="small"
+              size="sm"
               variant="outlined"
               color="default"
               onPress={onCategoryPress ? () => onCategoryPress(category) : undefined}

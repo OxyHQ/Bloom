@@ -103,7 +103,7 @@ function RentPaymentListComponent({
         }
         color={info.tone}
         variant="subtle"
-        size="medium"
+        size="md"
         testID={id(`status-${index}`)}
       />
     );

@@ -69,7 +69,7 @@ export const ColorComparison: Story = {
             name="David Revoy"
             subtitle="@davidrevoy"
             avatar={defaultAvatarSource}
-            size="small"
+            size="sm"
             horizontalInset={0}
             trailingSlot={
               <InteractiveButton
@@ -86,7 +86,7 @@ export const ColorComparison: Story = {
             name="J L Westover"
             subtitle="@mrlovenstein"
             avatar={defaultAvatarSource}
-            size="small"
+            size="sm"
             horizontalInset={0}
             trailingSlot={
               <InteractiveButton

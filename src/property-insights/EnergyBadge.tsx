@@ -25,8 +25,8 @@ import type { EnergyBadgeProps } from './types';
  */
 
 const GEOMETRY = {
-  small: { height: 20, disc: 16, letter: 'caption-2-bold', label: 'caption-1-medium', icon: 10 },
-  medium: { height: 24, disc: 20, letter: 'caption-1-bold', label: 'body-2-medium', icon: 12 },
+  sm: { height: 20, disc: 16, letter: 'caption-2-bold', label: 'caption-1-medium', icon: 10 },
+  md: { height: 24, disc: 20, letter: 'caption-1-bold', label: 'body-2-medium', icon: 12 },
 } as const;
 
 function EnergyBadgeComponent({
@@ -34,7 +34,7 @@ function EnergyBadgeComponent({
   pending: pendingProp = false,
   label: labelProp,
   pendingLabel: pendingLabelProp,
-  size = 'medium',
+  size = 'md',
   accessibilityLabel,
   style,
   testID,

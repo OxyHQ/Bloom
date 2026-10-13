@@ -585,7 +585,7 @@ function CompactRow(props: CompactRowProps) {
                   label={statusText}
                   fill={paint.statusFill}
                   text={paint.statusText}
-                  size="small"
+                  size="sm"
                   testID={testID ? `${testID}-status` : undefined}
                 />
               ) : null}
@@ -594,7 +594,7 @@ function CompactRow(props: CompactRowProps) {
                   key={offering}
                   offering={offering}
                   label={offeringLabels?.[offering]}
-                  size="small"
+                  size="sm"
                   testID={testID ? `${testID}-offering-${offering}` : undefined}
                 />
               ))}
@@ -610,7 +610,7 @@ function CompactRow(props: CompactRowProps) {
             </Text>
             {rating !== undefined ? (
               <Rating
-                size="small"
+                size="sm"
                 value={rating}
                 count={reviewCount}
                 newLabel={newLabel}
@@ -893,7 +893,7 @@ function ListingCardComponent(props: ListingCardProps) {
                 label={shownStatus}
                 fill={paint.statusFill}
                 text={paint.statusText}
-                size="medium"
+                size="md"
                 testID={testID ? `${testID}-status` : undefined}
               />
             ) : null}
