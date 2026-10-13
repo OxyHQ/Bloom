@@ -1,4 +1,4 @@
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import { parseRgba } from '../theme/color-utils';
@@ -12,6 +12,7 @@ import {
   relativeLuminance,
 } from '../styles/color-contrast';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 // ---------------------------------------------------------------------------
 //  Geometry
@@ -208,13 +209,13 @@ export function resolveMediaCardPaint(theme: Theme): MediaCardPaint {
   return {
     text: colors.text,
     textSecondary: colors.textSecondary,
-    hover: mixColor(colors.background, colors.text, 0.06),
-    selected: mixColor(colors.background, colors.text, 0.1),
-    selectedHover: mixColor(colors.background, colors.text, 0.14),
-    placeholder: mixColor(colors.background, colors.text, isDark ? 0.1 : 0.08),
-    placeholderGlyph: mixColor(colors.background, colors.text, 0.4),
-    tile: mixColor(colors.background, colors.text, isDark ? 0.1 : 0.07),
-    tileHover: mixColor(colors.background, colors.text, isDark ? 0.16 : 0.12),
+    hover: mixColors(colors.background, colors.text, 0.06),
+    selected: mixColors(colors.background, colors.text, 0.1),
+    selectedHover: mixColors(colors.background, colors.text, 0.14),
+    placeholder: mixColors(colors.background, colors.text, isDark ? 0.1 : 0.08),
+    placeholderGlyph: mixColors(colors.background, colors.text, 0.4),
+    tile: mixColors(colors.background, colors.text, isDark ? 0.1 : 0.07),
+    tileHover: mixColors(colors.background, colors.text, isDark ? 0.16 : 0.12),
     rail: colors.contrast50,
     fill: accent[500],
     accent: accent[500],

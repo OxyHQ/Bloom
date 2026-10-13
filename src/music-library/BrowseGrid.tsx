@@ -1,7 +1,6 @@
 import React, { Children, memo, useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
-import { mixColor } from '../button/shared';
 import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -19,6 +18,7 @@ import {
 } from './shared';
 import type { BrowseGridProps, BrowseTile } from './types';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * The browse page's grid of genre and mood tiles.
@@ -65,7 +65,7 @@ function Tile({
       ? item.image
       : (resolver?.(item.image) ?? undefined)
     : undefined;
-  const hoverFill = mixColor(
+  const hoverFill = mixColors(
     paint.background,
     paint.text === TILE_LIGHT_TEXT ? '#000000' : '#ffffff',
     0.12,

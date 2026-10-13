@@ -22,7 +22,6 @@ import {
   SEGMENTED_THUMB_EASE_BEZIER,
   SEGMENTED_THUMB_MS,
   colorRamp,
-  mixColor,
 } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiMoonLine } from '../icons/remix/RiMoonLine';
@@ -38,6 +37,7 @@ import { THEME_TOGGLE_MESSAGES } from './messages';
 import type { ThemeToggleVariant, ThemeToggleProps } from './types';
 import { revealTheme, THEME_TRANSITION_DURATION, type RevealOrigin } from './view-transition';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * A theme toggle, driving Bloom's own mode through `useBloomTheme().setMode`
@@ -86,7 +86,7 @@ interface TogglePalette {
 
 /** CSS `color-mix(in oklab, a p%, b)` approximated in sRGB — the stops are one hue apart. */
 function mix(a: string, b: string, weightOfA: number): string {
-  return mixColor(b, a, weightOfA);
+  return mixColors(b, a, weightOfA);
 }
 
 export function resolveThemeTogglePalette(theme: Theme): TogglePalette {

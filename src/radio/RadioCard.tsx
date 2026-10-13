@@ -16,7 +16,7 @@ import { webDataSet } from '../styles/web-data';
 import { RadioIndicator } from '../radio-indicator';
 import type { RadioCardProps } from './types';
 import { RadioHost, RadioLabel } from './RadioHost';
-import { DISABLED_OPACITY } from '../styles/tokens';
+import { DISABLED_OPACITY, animation } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
 
 /**
@@ -38,7 +38,7 @@ import { IS_WEB } from '../styles/platform';
  */
 const CARD_RADIUS = 10;
 const DOT_SIZE = 16;
-const TRANSITION_MS = 150;
+const TRANSITION_MS = animation.duration.fast;
 
 const STYLE_ID = 'bloom-radio-card-web-css';
 const CARD = '[data-bloom-radio-card]';

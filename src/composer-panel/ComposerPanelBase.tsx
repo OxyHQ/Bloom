@@ -42,8 +42,9 @@ import {
   resolveComposerPalette,
 } from './shared';
 import type { ComposerPanelLabels, ComposerPanelProps } from './types';
-import { dataHook, useComposerWebCss } from './web-hooks';
+import { useComposerWebCss } from './web-hooks';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
 

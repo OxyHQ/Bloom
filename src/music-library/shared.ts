@@ -1,7 +1,7 @@
 import { hairlineOn, surfaceTextOn } from '../styles/surface-levels';
 import { useCallback, useState } from 'react';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { parseRgb } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type {
@@ -20,6 +20,7 @@ import {
   darkenUntilContrast,
   relativeLuminance,
 } from '../styles/color-contrast';
+import { mixColors } from '../styles/color-contrast';
 
 // ---------------------------------------------------------------------------
 //  Pure logic
@@ -242,7 +243,7 @@ export function resolveMusicLibraryPaint(theme: Theme, backing?: string): MusicL
   const { text } = theme.colors;
   const background = backing ?? theme.colors.background;
   const step = (light: number, darkAlpha: number) =>
-    mixColor(background, text, dark ? darkAlpha : light);
+    mixColors(background, text, dark ? darkAlpha : light);
   return {
     accent: accent[500],
     text,

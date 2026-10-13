@@ -41,7 +41,6 @@ import {
   type AiChatShellState,
 } from './context';
 import {
-  dataHook,
   DOCUMENT_RAIL,
   PANEL_BREAKPOINT,
   SHELL_GUTTER,
@@ -56,6 +55,7 @@ import type { AiChatMobileHeaderProps, AiChatShellProps } from './types';
 import { AiChatResizeHandle } from './AiChatResizeHandle';
 import { clamp01 } from '../styles/clamp';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 const NO_SAFE_INSETS = { top: 0, right: 0, bottom: 0, left: 0 };
 

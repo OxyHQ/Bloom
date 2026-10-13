@@ -11,7 +11,7 @@ import { useComposerPopover } from './context';
 import { COMPOSER_PANEL_MESSAGES } from './messages';
 import { PERMISSION_PANEL_WIDTH, type ComposerPalette } from './shared';
 import type { ComposerPanelLabels, ComposerPanelPermissionOption } from './types';
-import { dataHook } from './web-hooks';
+import { dataHook } from '../styles/data-hook';
 
 const FLIP: ViewStyle = { transform: [{ scaleY: -1 }] };
 /** The permission chip's widest: past this a mode's name truncates. */

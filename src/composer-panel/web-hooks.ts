@@ -8,9 +8,6 @@ import { IS_WEB } from '../styles/platform';
  * A `dataSet` attribute on web — the hook the family's stylesheet hangs its
  * transitions, focus rings and hidden scrollbars off — and nothing on native.
  */
-export function dataHook(name: string, value = ''): Record<string, unknown> {
-  return IS_WEB ? { dataSet: { [name]: value } } : {};
-}
 
 /** Adopt the family stylesheet once (web; a no-op on native). */
 export function useComposerWebCss(): void {

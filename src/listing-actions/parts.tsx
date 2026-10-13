@@ -8,7 +8,7 @@ import {
   BOOKING_STYLE_ID,
   BOOKING_WEB_CSS,
 } from '../booking/shared';
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { chartHueTone } from '../chart-cards/palette';
 import { pieSectorAngles, sectorPath } from '../chart-cards/polar-geometry';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -25,6 +25,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ExchangeHome, KeyFact } from './types';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * INTERNAL — the pieces the `listing-actions` cards share.

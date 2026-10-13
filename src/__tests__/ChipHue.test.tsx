@@ -2,13 +2,14 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { Chip, resolveChipHueColors, type ChipHue } from '../chip';
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { purpleChip } from '../chart-cards/ai-profile-hues';
 import { toneColor } from '../stat-cards/tones';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { resolvedStyle } from './support/rendered-style';
+import { mixColors } from '../styles/color-contrast';
 
 const HUES: ChipHue[] = [
   'lime',
@@ -66,7 +67,7 @@ describe('resolveChipHueColors', () => {
       const { accent, neutral: n } = resolveButtonRamps(theme);
       const page = theme.colors.background;
       expect(resolveChipHueColors(theme, 'lime')).toEqual({
-        background: mixColor(page, toneColor(theme, 'lime', 950), 0.6),
+        background: mixColors(page, toneColor(theme, 'lime', 950), 0.6),
         foreground: toneColor(theme, 'lime', 500),
       });
       expect(resolveChipHueColors(theme, 'cyan').foreground).toBe(toneColor(theme, 'sky', 400));
@@ -74,7 +75,7 @@ describe('resolveChipHueColors', () => {
       expect(resolveChipHueColors(theme, 'purple')).toEqual(purpleChip(theme, page));
       // A named surface changes only the translucent fill.
       const onCard = resolveChipHueColors(theme, 'rose', n[800]);
-      expect(onCard.background).toBe(mixColor(n[800], toneColor(theme, 'rose', 950), 0.6));
+      expect(onCard.background).toBe(mixColors(n[800], toneColor(theme, 'rose', 950), 0.6));
       expect(onCard.background).not.toBe(resolveChipHueColors(theme, 'rose').background);
     });
   });

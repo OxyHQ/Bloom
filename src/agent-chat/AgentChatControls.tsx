@@ -6,8 +6,9 @@ import { paintToCssImage, type ButtonStatePaint } from '../button/shared';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { dataHook, TRANSITION_MS, type AgentChatPalette } from './shared';
+import { TRANSITION_MS, type AgentChatPalette } from './shared';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 /**
  * The family's two bespoke control shapes. Both are plain `<button>`s

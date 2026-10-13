@@ -32,7 +32,7 @@ import type { Theme } from '../theme/types';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, animation } from '../styles/tokens';
 import { hairlineOn, surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
@@ -104,7 +104,7 @@ const PILL_TIMING = { duration: 300, easing: Easing.bezier(0.34, 1.2, 0.64, 1) }
 const HIGHLIGHT_FADE = { duration: 160 };
 
 /** `transition-colors duration-150 ease` on a trigger's label. */
-const COLOR_TRANSITION_MS = 150;
+const COLOR_TRANSITION_MS = animation.duration.fast;
 
 /** The pill hover layer, `transition-opacity duration-200 ease-out`. */
 const HOVER_FADE_MS = 200;

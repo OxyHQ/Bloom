@@ -1,7 +1,7 @@
 import React, { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { RiMapPin2Fill } from '../icons/remix/RiMapPin2Fill';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -14,6 +14,7 @@ import type {
   AddressPrecisionOption,
   AddressPrecisionPickerProps,
 } from './types';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * How precisely the published listing shows where the home is: three radio
@@ -72,7 +73,7 @@ function resolveMapPaint(theme: Theme): MapPaint {
     block: theme.colors.backgroundTertiary,
     road: theme.colors.background,
     accent: accent[500],
-    accentWash: mixColor(ground, accent[500], 0.2),
+    accentWash: mixColors(ground, accent[500], 0.2),
     pin: theme.colors.text,
   };
 }

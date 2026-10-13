@@ -37,7 +37,7 @@ import type { ChatBackgroundVariant } from '../chat-screen/types';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 import { buildTheme } from '../theme/build-theme';
 import { APP_COLOR_PRESETS, type AppColorName } from '../theme/color-presets';
-import { mixColor } from '../button/shared';
+import { mixColors } from '../styles/color-contrast';
 
 const PRESETS = [
   'oxy',
@@ -246,7 +246,7 @@ describe('bubble separation from each wallpaper', () => {
       // A wallpaper tinted with the brand colour competes with the outgoing
       // bubble, which IS the brand colour.
       expect(Object.values(accent)).not.toContain(paint.patternTint);
-      const inked = mixColor(paint.page, paint.patternTint, 0.5);
+      const inked = mixColors(paint.page, paint.patternTint, 0.5);
       const ex = chatBackgroundExtremes(paint, 'pattern');
       expect([ex.lightest, ex.darkest]).toContain(inked);
     }

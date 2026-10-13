@@ -8,7 +8,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { mixColor } from '../button/shared';
 import { CHAT_INDICATORS_MESSAGES } from '../chat-indicators/messages';
 import { useMessages } from '../locale/messages';
 import { webDataSet } from '../styles/web-data';
@@ -45,6 +44,7 @@ import { MESSAGE_BUBBLE_MESSAGES } from './messages';
 import { SwipeToReply } from './SwipeToReply';
 import type { MessageBubbleProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * One message in a transcript.
@@ -233,7 +233,7 @@ function MessageBubbleComponent({
     });
 
   const radii = bubbleRadii(direction, position);
-  const fill = failed ? mixColor(side.fill, paint.failed, theme.isDark ? 0.3 : 0.22) : side.fill;
+  const fill = failed ? mixColors(side.fill, paint.failed, theme.isDark ? 0.3 : 0.22) : side.fill;
   const mediaOnly = media !== undefined && text === undefined && children === undefined && !deleted;
   // `bare` only holds for media alone: with text beside it the text needs a
   // surface, so the block is fitted as `bleed` instead.

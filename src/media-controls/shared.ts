@@ -1,8 +1,9 @@
 import { surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import type { Theme } from '../theme/types';
 import { formatClock } from '../locale/format-number';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * Seconds as a clock: `m:ss` under an hour, `h:mm:ss` from an hour. Fractions
@@ -43,7 +44,7 @@ export function resolveMediaControlsPaint(theme: Theme): MediaControlsPaint {
     accentPressed: dark ? accent[300] : accent[700],
     onAccent: colors.primaryForeground,
     inverse: colors.text,
-    inverseHover: mixColor(colors.text, colors.background, 0.16),
+    inverseHover: mixColors(colors.text, colors.background, 0.16),
     onInverse: colors.background,
     text: colors.text,
     textMuted: surfaceTextOn(theme, colors.background).textSecondary,

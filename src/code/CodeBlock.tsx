@@ -7,17 +7,11 @@ import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { CodeLines } from './CodeLines';
 import { CODE_MESSAGES } from './messages';
-import {
-  CARD_RADIUS,
-  CONFIRM_MS,
-  dataHook,
-  MONO_FAMILY,
-  useCodePalette,
-  useCodeWebCss,
-} from './shared';
+import { CARD_RADIUS, CONFIRM_MS, MONO_FAMILY, useCodePalette, useCodeWebCss } from './shared';
 import type { CodeBlockProps } from './types';
 import { writeClipboardText } from '../hooks/clipboard';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 function writeClipboard(text: string): Promise<void> {
   if (!IS_WEB) return Promise.reject(new Error('clipboard unavailable'));

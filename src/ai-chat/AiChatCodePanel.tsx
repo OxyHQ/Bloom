@@ -12,16 +12,11 @@ import { CodeLines } from '../code';
 import { Tabs, TabsTrigger } from '../tabs';
 import { Text } from '../typography';
 import { GlyphAction } from './AiChatControls';
-import {
-  dataHook,
-  ROW_RADIUS,
-  useAiChatPalette,
-  useAiChatWebCss,
-  type AiChatPalette,
-} from './shared';
+import { ROW_RADIUS, useAiChatPalette, useAiChatWebCss, type AiChatPalette } from './shared';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
 import type { AiChatCodePanelProps, AiChatPanelAction, AiChatPanelTab } from './types';
+import { dataHook } from '../styles/data-hook';
 
 /**
  * The header row both right-hand panels share: the `PillTabList` (blue

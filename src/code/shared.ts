@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 
 import { ACCENT_TABLE, BUTTON_SHADOW, colorRamp, resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
+import { srgbToOklch, type Oklch, oklchToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -39,18 +39,6 @@ export interface CodePalette {
   inline: string;
 }
 
-function toRgb({ l, c, h }: Oklch): string {
-  let chroma = c;
-  for (let i = 0; i < 24; i++) {
-    const rgb = oklchToSrgb({ l, c: chroma, h });
-    const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01)
-      return srgbToRgbString(rgb);
-    chroma *= 0.9;
-  }
-  return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
-}
-
 /** Tailwind `emerald-500` → `lime-500`: the keyword hue keeps this offset from the class-name hue. */
 const EMERALD_500: Oklch = { l: 0.696, c: 0.17, h: 162.48 };
 const LIME_500: Oklch = { l: 0.768, c: 0.233, h: 130.85 };
@@ -59,7 +47,7 @@ function limeFrom(success: string): string {
   const rgba = parseRgba(success);
   if (!rgba) return success;
   const base = srgbToOklch(rgba);
-  return toRgb({
+  return oklchToRgbString({
     l: Math.min(0.99, Math.max(0.05, base.l + (LIME_500.l - EMERALD_500.l))),
     c: base.c * (LIME_500.c / EMERALD_500.c),
     h: (((base.h + (LIME_500.h - EMERALD_500.h)) % 360) + 360) % 360,
@@ -136,10 +124,6 @@ export const LINE_METRICS: Record<
 export const CARD_RADIUS = 16;
 /** How long the copied check stays. */
 export const CONFIRM_MS = 1600;
-
-export function dataHook(name: string, value = ''): Record<string, unknown> {
-  return IS_WEB ? { dataSet: { [name]: value } } : {};
-}
 
 const STYLE_ID = 'bloom-code-web-css';
 export const CODE_WEB_CSS = `

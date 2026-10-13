@@ -51,11 +51,12 @@ import {
 } from './shared';
 import type { SuggestionList as SuggestionListComponent } from './SuggestionList';
 import type { ChatComposerProps } from './types';
-import { dataHook, useChatComposerWebCss } from './web-hooks';
+import { useChatComposerWebCss } from './web-hooks';
 import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createChatComposer({

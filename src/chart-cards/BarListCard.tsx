@@ -12,7 +12,6 @@ import {
 import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { mixColor } from '../button/shared';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -39,6 +38,7 @@ import {
 } from './stage-parts';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * `BarListCard`: the analytics breakdown list (traffic by country, device,
@@ -351,8 +351,8 @@ function BarRows({
         percent={(item.value / top) * 100}
         tint={
           active === index
-            ? mixColor(palette.surface, itemTone.activeColor, 0.26)
-            : mixColor(palette.surface, itemTone.color, 0.14)
+            ? mixColors(palette.surface, itemTone.activeColor, 0.26)
+            : mixColors(palette.surface, itemTone.color, 0.14)
         }
         icon={renderChartIcon(item.icon, 16, palette.textSecondary)}
         mounted={mounted}

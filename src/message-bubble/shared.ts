@@ -1,7 +1,7 @@
 import { surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
 import { type DimensionValue } from 'react-native';
 
-import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
+import { ACCENT_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
 import { CHART_TONE_ORDER, chartHueTone } from '../chart-cards/palette';
 import { contrastRatio } from '../styles/color-contrast';
 import type { Theme } from '../theme/types';
@@ -15,6 +15,7 @@ import type {
   MessagePosition,
 } from './types';
 import { MESSAGE_BUBBLE_MESSAGES, type MessageBubbleMessages } from './messages';
+import { mixColors } from '../styles/color-contrast';
 
 /** WCAG AA for body text — every colour in this family is measured against it. */
 const AA = 4.5;
@@ -295,7 +296,7 @@ const AA_META = 4.5;
  */
 function legibleInk(surface: string, ink: string, ratio: number): string {
   for (let alpha = 0.6; alpha < 1; alpha += 0.05) {
-    const candidate = mixColor(surface, ink, alpha);
+    const candidate = mixColors(surface, ink, alpha);
     if (contrastRatio(surface, candidate) >= ratio) return candidate;
   }
   return ink;
@@ -383,7 +384,7 @@ export function resolveMessageBubblePaint(theme: Theme): MessageBubblePaint {
     text: onOutgoing,
     meta: legibleInk(outgoingFill, onOutgoing, AA_META),
     accent: legibleInk(outgoingFill, onOutgoing, AA),
-    quoteFill: mixColor(outgoingFill, onOutgoing, 0.16),
+    quoteFill: mixColors(outgoingFill, onOutgoing, 0.16),
     overlayFill: 'rgba(0, 0, 0, 0.45)',
     overlayText: 'rgb(255 255 255)',
   };
@@ -405,16 +406,16 @@ export function resolveMessageBubblePaint(theme: Theme): MessageBubblePaint {
     incoming,
     outgoing,
     background,
-    selectedBand: mixColor(background, accent[500], dark ? 0.2 : 0.12),
-    highlightBand: mixColor(background, accent[500], dark ? 0.34 : 0.24),
+    selectedBand: mixColors(background, accent[500], dark ? 0.2 : 0.12),
+    highlightBand: mixColors(background, accent[500], dark ? 0.34 : 0.24),
     failed: colors.error,
-    failedFill: mixColor(background, colors.error, dark ? 0.22 : 0.1),
+    failedFill: mixColors(background, colors.error, dark ? 0.22 : 0.1),
     pillFill: colors.backgroundSecondary,
     pillText: colors.textSecondary,
     unread: dark ? accent[400] : accent[600],
     unreadLine: dark
-      ? mixColor(background, accent[400], 0.4)
-      : mixColor(background, accent[600], 0.35),
+      ? mixColors(background, accent[400], 0.4)
+      : mixColors(background, accent[600], 0.35),
     reactionFill: colors.backgroundTertiary,
     reactionText: colors.text,
     reactionMineFill: colors.primarySubtle,

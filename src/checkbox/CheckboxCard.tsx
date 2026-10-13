@@ -18,7 +18,7 @@ import {
   resolveCheckboxPaint,
 } from './shared';
 import type { CheckboxCardProps } from './types';
-import { DISABLED_OPACITY } from '../styles/tokens';
+import { DISABLED_OPACITY, animation } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
 
 /**
@@ -39,7 +39,7 @@ import { IS_WEB } from '../styles/platform';
  * the hover paint while the card is held.
  */
 const CARD_RADIUS = 10;
-const TRANSITION_MS = 150;
+const TRANSITION_MS = animation.duration.fast;
 
 const CARD_STYLE_ID = 'bloom-checkbox-card-web-css';
 const CARD = '[data-bloom-checkbox-card]';

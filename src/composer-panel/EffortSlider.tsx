@@ -8,8 +8,9 @@ import {
 
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { ComposerPalette } from './shared';
-import { dataHook } from './web-hooks';
+
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 const TRACK_HEIGHT = 27;
 const THUMB_WIDTH = 21;

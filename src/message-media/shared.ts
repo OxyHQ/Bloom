@@ -1,4 +1,4 @@
-import { colorRamp, mixColor, resolveButtonRamps, ACCENT_TABLE } from '../button/shared';
+import { colorRamp, resolveButtonRamps, ACCENT_TABLE } from '../button/shared';
 import { formatFileSize } from '../file-upload/shared';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 import type { Theme } from '../theme/types';
@@ -6,6 +6,7 @@ import { MESSAGE_MEDIA_MESSAGES, type MessageMediaMessages } from './messages';
 import type { FileKind, MessageTone, VoicePlaybackRate } from './types';
 import { formatMultiplier } from '../locale/format-number';
 import { clamp01 } from '../styles/clamp';
+import { mixColors } from '../styles/color-contrast';
 
 // ---------------------------------------------------------------------------
 //  Contrast
@@ -35,7 +36,7 @@ export function mixToContrast(
 ): string {
   const start = Math.round(minAlpha * 100);
   for (let step = start; step <= 100; step++) {
-    const candidate = mixColor(background, foreground, step / 100);
+    const candidate = mixColors(background, foreground, step / 100);
     if (contrastRatio(background, candidate) >= ratio) return candidate;
   }
   return foreground;
@@ -66,14 +67,14 @@ export function ensureContrast(background: string, color: string, ratio: number)
   let lighterStep = STEPS + 1;
   for (let step = 1; step <= STEPS; step++) {
     if (darker === undefined) {
-      const candidate = mixColor(color, '#000000', step / STEPS);
+      const candidate = mixColors(color, '#000000', step / STEPS);
       if (contrastRatio(background, candidate) >= ratio) {
         darker = candidate;
         darkerStep = step;
       }
     }
     if (lighter === undefined) {
-      const candidate = mixColor(color, '#ffffff', step / STEPS);
+      const candidate = mixColors(color, '#ffffff', step / STEPS);
       if (contrastRatio(background, candidate) >= ratio) {
         lighter = candidate;
         lighterStep = step;
@@ -174,14 +175,14 @@ export function resolveMessageMediaPaint(
     textMuted: mixToContrast(bubble, text, AA_TEXT, 0.55),
     accent: accentOnBubble,
     onAccent: outgoing ? bubble : colors.primaryForeground,
-    rail: mixColor(bubble, text, 0.2),
-    border: mixColor(bubble, text, 0.14),
-    wash: mixColor(bubble, text, 0.08),
-    washStrong: mixColor(bubble, text, 0.16),
-    placeholder: mixColor(bubble, text, 0.16),
+    rail: mixColors(bubble, text, 0.2),
+    border: mixColors(bubble, text, 0.14),
+    wash: mixColors(bubble, text, 0.08),
+    washStrong: mixColors(bubble, text, 0.16),
+    placeholder: mixColors(bubble, text, 0.16),
     scrim: 'rgba(0, 0, 0, 0.45)',
     onScrim: '#ffffff',
-    spoilerScrim: mixColor(bubble, text, 0.22),
+    spoilerScrim: mixColors(bubble, text, 0.22),
     danger: outgoing ? text : danger,
     correct: outgoing ? text : correct,
     live: ensureContrast(bubble, colors.error, AA_LARGE),
@@ -205,10 +206,10 @@ export function resolveFileKindPaint(
 ): { disc: string; glyph: string } {
   const hue = FILE_KIND_COLORS[kind](theme);
   if (paint.tone === 'outgoing') {
-    const disc = mixColor(paint.bubble, paint.text, 0.92);
+    const disc = mixColors(paint.bubble, paint.text, 0.92);
     return { disc, glyph: ensureContrast(disc, hue, AA_LARGE) };
   }
-  const disc = mixColor(paint.bubble, hue, theme.isDark ? 0.22 : 0.14);
+  const disc = mixColors(paint.bubble, hue, theme.isDark ? 0.22 : 0.14);
   return { disc, glyph: ensureContrast(disc, hue, AA_LARGE) };
 }
 

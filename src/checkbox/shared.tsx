@@ -12,7 +12,7 @@ import { useRingOffsetStyle } from '../styles/surface-levels';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import type { CheckboxSize } from './types';
-import { DISABLED_OPACITY } from '../styles/tokens';
+import { DISABLED_OPACITY, animation } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
 
 /**
@@ -38,7 +38,7 @@ export const CHECKBOX_SIZE_CONFIG: Record<
 const BOX_RADIUS = 4;
 
 /** `transition-[background-color,border-color,box-shadow] duration-150`. */
-const TRANSITION_MS = 150;
+const TRANSITION_MS = animation.duration.fast;
 
 /** `animate-check-draw`. */
 const CHECK_DRAW_MS = 200;

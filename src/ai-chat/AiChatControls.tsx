@@ -12,9 +12,10 @@ import type { Props as IconProps } from '../icons/shared';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useAiChatPlatform } from './context';
-import { dataHook, type AiChatPalette } from './shared';
+import { type AiChatPalette } from './shared';
 import type { AiChatTurnAction } from './types';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 /**
  * The family's small interactive pieces, shared by the message, image, code

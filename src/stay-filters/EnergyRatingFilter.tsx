@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { webDataSet } from '../styles/web-data';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -17,6 +17,7 @@ import { Text } from '../typography';
 import { ENERGY_RATINGS } from './constants';
 import type { EnergyRating, EnergyRatingFilterProps } from './types';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import { mixColors } from '../styles/color-contrast';
 
 /**
  * An energy rating threshold, A (best) to G (worst), as seven small coloured
@@ -76,11 +77,11 @@ export function resolveEnergyRatingPaint(theme: Theme): Record<EnergyRating, Ene
   const { success, warning, error } = c;
   const fills: string[] = [
     success,
-    mixColor(success, warning, 1 / 3),
-    mixColor(success, warning, 2 / 3),
+    mixColors(success, warning, 1 / 3),
+    mixColors(success, warning, 2 / 3),
     warning,
-    mixColor(warning, error, 1 / 3),
-    mixColor(warning, error, 2 / 3),
+    mixColors(warning, error, 1 / 3),
+    mixColors(warning, error, 2 / 3),
     error,
   ];
   const light = '#ffffff';

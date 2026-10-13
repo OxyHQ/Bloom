@@ -3,7 +3,7 @@ import { Surface } from '../surface';
 import React, { memo, useContext, useMemo, useRef } from 'react';
 import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
 import { resolveMediaControlsPaint } from '../media-controls/shared';
@@ -22,6 +22,7 @@ import { clamp } from '../styles/clamp';
 import { useMessages } from '../locale/messages';
 import { MEDIA_PLAYER_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { mixColors } from '../styles/color-contrast';
 
 export const MINI_PLAYER_HEIGHT = 56;
 /** Horizontal travel that counts as a swipe (native). */
@@ -165,7 +166,7 @@ function MiniPlayerContent({
           height: 2,
           borderRadius: 1,
           // The rail is the text colour composited at 24% over the bar's own fill.
-          backgroundColor: mixColor(background, paint.text, 0.24),
+          backgroundColor: mixColors(background, paint.text, 0.24),
         }}
         testID={id('progress')}
       >
