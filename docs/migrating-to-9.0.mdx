@@ -6,7 +6,17 @@ order: 1
 
 # Migrating to 9.0
 
-Bloom follows its clean-cut rule: no `@deprecated` aliases, no shims. A symbol that was removed or renamed is simply gone, and the build tells you. This page lists every one, grouped by the change that caused it. Sections are added as each part of 9.0 lands.
+Bloom follows its clean-cut rule: no `@deprecated` aliases, no shims. A symbol that was removed or renamed is simply gone, and the build tells you. This page lists every one, grouped by the change that caused it.
+
+## The short version
+
+1. Install `@oxy.so/bloom@^9.0.0`. Remove `expo-glass-effect` from your app if nothing else uses it.
+2. Rename control sizes `small` / `medium` / `large` to `sm` / `md` / `lg` (TypeScript lists every site).
+3. `AlertDialog` and `Command`: `visible` + `onClose` become `open` + `onOpenChange`.
+4. `ComposerPill` / `ComposerPanel`: `listening` becomes `voiceState`.
+5. Rename the `glass*` props and tokens in the table below.
+
+Additive in 9.0, nothing to migrate: `Markdown`, `ToolCall` / `ToolCallList`, `Reasoning`, `AgentPlan`, `AudioWaveVisualizer` / `VoiceControls` / `VoiceOverlay`, attachments / `error` / disabled add-menu rows on `ComposerPill`, `EmptyState` `suggestions`, and the `agent`, `reasoning`, `toolCalls` and `markdown` fields on `AgentChat` messages.
 
 ## The surface material is blur and tint
 
