@@ -2779,6 +2779,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('tr', skills, { one: '{n} beceri', other: '{n} beceri' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'Sesli mod',
+  controls: 'Ses denetimleri',
+  mute: 'Mikrofonu sessize al',
+  pause: 'Duraklat',
+  end: 'Sesli oturumu bitir',
+  typeInstead: 'Bunun yerine yaz',
+  status: {
+    idle: 'Hazır',
+    listening: 'Dinleniyor…',
+    transcribing: 'Yazıya dökülüyor…',
+    thinking: 'Düşünüyor…',
+    speaking: 'Konuşuyor…',
+    error: 'Bir şeyler ters gitti',
+  },
+  mutedStatus: 'Mikrofon sessize alındı',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2992,6 +3010,7 @@ const translations: Translations = {
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

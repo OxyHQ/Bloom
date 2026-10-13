@@ -2727,6 +2727,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('bn', skills, { other: '{n}টি দক্ষতা' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'ভয়েস মোড',
+  controls: 'ভয়েস নিয়ন্ত্রণ',
+  mute: 'মাইক্রোফোন মিউট করুন',
+  pause: 'বিরতি',
+  end: 'ভয়েস সেশন শেষ করুন',
+  typeInstead: 'এর বদলে টাইপ করুন',
+  status: {
+    idle: 'প্রস্তুত',
+    listening: 'শুনছে…',
+    transcribing: 'ট্রান্সক্রাইব হচ্ছে…',
+    thinking: 'ভাবছে…',
+    speaking: 'বলছে…',
+    error: 'কিছু ভুল হয়েছে',
+  },
+  mutedStatus: 'মাইক্রোফোন মিউট করা আছে',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2940,6 +2958,7 @@ const translations: Translations = {
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

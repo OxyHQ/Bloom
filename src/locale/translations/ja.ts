@@ -2760,6 +2760,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('ja', skills, { other: '{n}個のスキル' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: '音声モード',
+  controls: '音声コントロール',
+  mute: 'マイクをミュート',
+  pause: '一時停止',
+  end: '音声セッションを終了',
+  typeInstead: '代わりに入力',
+  status: {
+    idle: '準備完了',
+    listening: '聞いています…',
+    transcribing: '文字起こし中…',
+    thinking: '考え中…',
+    speaking: '話しています…',
+    error: '問題が発生しました',
+  },
+  mutedStatus: 'マイクはミュート中',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2973,6 +2991,7 @@ const translations: Translations = {
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

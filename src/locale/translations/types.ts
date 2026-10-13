@@ -1,3 +1,4 @@
+import type { VOICE_MESSAGES } from '../../voice/messages';
 import type { MULTI_AGENT_CHAT_MESSAGES } from '../../multi-agent-chat/messages';
 import type { AGENT_CREATOR_MESSAGES } from '../../agent-creator/messages';
 import type { PROJECT_BOARD_MESSAGES } from '../../project-board/messages';
@@ -274,4 +275,5 @@ export interface Translations {
   readonly CONNECTION_DOTS_MESSAGES: CatalogMessages<typeof CONNECTION_DOTS_MESSAGES>;
   readonly CHAT_PEOPLE_MESSAGES: CatalogMessages<typeof CHAT_PEOPLE_MESSAGES>;
   readonly EMPTY_STATE_MESSAGES: CatalogMessages<typeof EMPTY_STATE_MESSAGES>;
+  readonly VOICE_MESSAGES: CatalogMessages<typeof VOICE_MESSAGES>;
 }

@@ -3137,6 +3137,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
       : '') + plural('ru', skills, { one: '{n} навык', few: '{n} навыка', other: '{n} навыков' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'Голосовой режим',
+  controls: 'Голосовое управление',
+  mute: 'Выключить микрофон',
+  pause: 'Пауза',
+  end: 'Завершить голосовой сеанс',
+  typeInstead: 'Написать вместо этого',
+  status: {
+    idle: 'Готов',
+    listening: 'Слушаю…',
+    transcribing: 'Расшифровка…',
+    thinking: 'Думаю…',
+    speaking: 'Говорю…',
+    error: 'Что-то пошло не так',
+  },
+  mutedStatus: 'Микрофон выключен',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -3350,6 +3368,7 @@ const translations: Translations = {
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

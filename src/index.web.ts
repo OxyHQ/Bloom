@@ -242,6 +242,7 @@ export * from './agent-progress';
 export * from './reasoning';
 export * from './agent-plan';
 export * from './composer-loader/index.web';
+export * from './voice';
 export * from './composer-panel/index.web';
 export * from './questionnaire';
 export * from './web-search';

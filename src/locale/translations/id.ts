@@ -2807,6 +2807,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('id', skills, { one: '{n} keterampilan', other: '{n} keterampilan' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: 'Mode suara',
+  controls: 'Kontrol suara',
+  mute: 'Bisukan mikrofon',
+  pause: 'Jeda',
+  end: 'Akhiri sesi suara',
+  typeInstead: 'Ketik saja',
+  status: {
+    idle: 'Siap',
+    listening: 'Mendengarkan…',
+    transcribing: 'Mentranskripsi…',
+    thinking: 'Berpikir…',
+    speaking: 'Berbicara…',
+    error: 'Terjadi kesalahan',
+  },
+  mutedStatus: 'Mikrofon dibisukan',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -3020,6 +3038,7 @@ const translations: Translations = {
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;

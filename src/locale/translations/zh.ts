@@ -2687,6 +2687,24 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('zh', skills, { other: '{n} 个技能' }),
 };
 
+const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
+  voiceMode: '语音模式',
+  controls: '语音控制',
+  mute: '静音麦克风',
+  pause: '暂停',
+  end: '结束语音会话',
+  typeInstead: '改为输入',
+  status: {
+    idle: '就绪',
+    listening: '正在聆听…',
+    transcribing: '正在转录…',
+    thinking: '正在思考…',
+    speaking: '正在说话…',
+    error: '出了点问题',
+  },
+  mutedStatus: '麦克风已静音',
+};
+
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
@@ -2899,6 +2917,7 @@ const translations: Translations = {
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
+  VOICE_MESSAGES,
 };
 
 export default translations;
