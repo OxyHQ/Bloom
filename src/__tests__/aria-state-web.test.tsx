@@ -56,7 +56,7 @@ import { Switch } from '../switch/Switch';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
 import { Chip } from '../chip';
 import { AgentPlan } from '../agent-plan';
-import { Reasoning } from '../reasoning';
+import { AgentThinking } from '../agent-thinking';
 import { ToolCall, ToolCallList } from '../tool-call';
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
@@ -276,18 +276,18 @@ describe('Accordion', () => {
   });
 });
 
-describe('Reasoning', () => {
+describe('AgentThinking disclosure', () => {
   it('header emits aria-expanded reflecting the body', () => {
     const open = mount(
-      <Reasoning testID="open" defaultOpen>
+      <AgentThinking testID="open" thinking={false} defaultOpen>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(byTestId(open, 'open-header').getAttribute('aria-expanded')).toBe('true');
     const closed = mount(
-      <Reasoning key="closed" testID="closed">
+      <AgentThinking key="closed" testID="closed" thinking={false}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(byTestId(closed, 'closed-header').getAttribute('aria-expanded')).toBe('false');
   });

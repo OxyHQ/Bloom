@@ -11,9 +11,9 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Text } from 'react-native';
 
-import { Reasoning } from '../reasoning';
+import { AgentThinking } from '../agent-thinking';
 import { pickMessages } from '../locale/messages';
-import { REASONING_MESSAGES } from '../reasoning/messages';
+import { AGENT_THINKING_MESSAGES } from '../agent-thinking/messages';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -48,12 +48,12 @@ afterEach(() => {
   document.documentElement.removeAttribute('dir');
 });
 
-describe('Reasoning open state', () => {
+describe('AgentThinking disclosure open state', () => {
   it('starts closed and names its header with aria-expanded', () => {
     mount(
-      <Reasoning testID="r" durationMs={4000}>
+      <AgentThinking thinking={false} testID="r" durationMs={4000}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(header().getAttribute('role')).toBe('button');
     expect(expanded()).toBe('false');
@@ -63,9 +63,9 @@ describe('Reasoning open state', () => {
   it('honours defaultOpen and toggles on press', () => {
     const onOpenChange = jest.fn();
     mount(
-      <Reasoning testID="r" defaultOpen onOpenChange={onOpenChange}>
+      <AgentThinking thinking={false} testID="r" defaultOpen onOpenChange={onOpenChange}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(expanded()).toBe('true');
     press();
@@ -79,9 +79,9 @@ describe('Reasoning open state', () => {
   it('is controlled by open and only reports the press', () => {
     const onOpenChange = jest.fn();
     mount(
-      <Reasoning testID="r" open={false} onOpenChange={onOpenChange}>
+      <AgentThinking thinking={false} testID="r" open={false} onOpenChange={onOpenChange}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     press();
     expect(onOpenChange).toHaveBeenCalledWith(true);
@@ -90,40 +90,32 @@ describe('Reasoning open state', () => {
 
   it('renders string and node children', () => {
     mount(
-      <Reasoning testID="r" defaultOpen>
+      <AgentThinking thinking={false} testID="r" defaultOpen>
         streamed text
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(body().textContent).toBe('streamed text');
     mount(
-      <Reasoning testID="r" defaultOpen>
+      <AgentThinking thinking={false} testID="r" defaultOpen>
         <Text>a node</Text>
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(body().textContent).toBe('a node');
   });
 
   it('grows with a streaming string', () => {
-    mount(
-      <Reasoning testID="r" streaming>
-        The
-      </Reasoning>,
-    );
-    mount(
-      <Reasoning testID="r" streaming>
-        The answer
-      </Reasoning>,
-    );
+    mount(<AgentThinking testID="r">The</AgentThinking>);
+    mount(<AgentThinking testID="r">The answer</AgentThinking>);
     expect(body().textContent).toBe('The answer');
   });
 });
 
-describe('Reasoning streaming', () => {
+describe('AgentThinking disclosure streaming', () => {
   it('opens while streaming and shows the thinking label, not the duration', () => {
     mount(
-      <Reasoning testID="r" streaming durationMs={9000}>
+      <AgentThinking testID="r" durationMs={9000}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(expanded()).toBe('true');
     expect(header().textContent).toContain('Thinking');
@@ -131,97 +123,81 @@ describe('Reasoning streaming', () => {
   });
 
   it('collapses when streaming ends and then reads the duration', () => {
+    mount(<AgentThinking testID="r">why</AgentThinking>);
     mount(
-      <Reasoning testID="r" streaming>
+      <AgentThinking testID="r" thinking={false} durationMs={12000}>
         why
-      </Reasoning>,
-    );
-    mount(
-      <Reasoning testID="r" streaming={false} durationMs={12000}>
-        why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(expanded()).toBe('false');
     expect(header().textContent).toContain('Thought for 12 s');
   });
 
   it('opens when streaming starts', () => {
-    mount(<Reasoning testID="r">why</Reasoning>);
     mount(
-      <Reasoning testID="r" streaming>
+      <AgentThinking thinking={false} testID="r">
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
+    mount(<AgentThinking testID="r">why</AgentThinking>);
     expect(expanded()).toBe('true');
   });
 
   it('reports the automatic changes through onOpenChange', () => {
     const onOpenChange = jest.fn();
     mount(
-      <Reasoning testID="r" streaming onOpenChange={onOpenChange}>
+      <AgentThinking testID="r" onOpenChange={onOpenChange}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(onOpenChange).not.toHaveBeenCalled();
     mount(
-      <Reasoning testID="r" onOpenChange={onOpenChange}>
+      <AgentThinking thinking={false} testID="r" onOpenChange={onOpenChange}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('keeps the user choice when streaming ends', () => {
-    mount(
-      <Reasoning testID="r" streaming>
-        why
-      </Reasoning>,
-    );
+    mount(<AgentThinking testID="r">why</AgentThinking>);
     press(); // user closes mid-stream
     expect(expanded()).toBe('false');
     mount(
-      <Reasoning testID="r" streaming={false}>
+      <AgentThinking testID="r" thinking={false}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(expanded()).toBe('false');
 
-    mount(
-      <Reasoning testID="r" streaming>
-        why
-      </Reasoning>,
-    );
+    mount(<AgentThinking testID="r">why</AgentThinking>);
     expect(expanded()).toBe('true'); // a new stream starts open again
     mount(
-      <Reasoning testID="r" streaming={false}>
+      <AgentThinking testID="r" thinking={false}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(expanded()).toBe('false');
   });
 
   it('does not close a body the user opened after streaming ended', () => {
+    mount(<AgentThinking testID="r">why</AgentThinking>);
     mount(
-      <Reasoning testID="r" streaming>
+      <AgentThinking testID="r" thinking={false}>
         why
-      </Reasoning>,
-    );
-    mount(
-      <Reasoning testID="r" streaming={false}>
-        why
-      </Reasoning>,
+      </AgentThinking>,
     );
     press();
     expect(expanded()).toBe('true');
   });
 });
 
-describe('Reasoning duration', () => {
+describe('AgentThinking disclosure duration', () => {
   const headerFor = (durationMs?: number) => {
     mount(
-      <Reasoning testID="r" durationMs={durationMs}>
+      <AgentThinking thinking={false} testID="r" durationMs={durationMs}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     return header().textContent;
   };
@@ -246,24 +222,26 @@ describe('Reasoning duration', () => {
   });
 
   it('reads in the locale, with its units and joiner', () => {
-    expect(pickMessages(REASONING_MESSAGES, 'zh').thoughtFor(1, 5)).toBe('思考了1分钟5秒');
-    expect(pickMessages(REASONING_MESSAGES, 'es').thoughtFor(0, 12)).toBe('Pensó durante 12 s');
+    expect(pickMessages(AGENT_THINKING_MESSAGES, 'zh').thoughtFor(1, 5)).toBe('思考了1分钟5秒');
+    expect(pickMessages(AGENT_THINKING_MESSAGES, 'es').thoughtFor(0, 12)).toBe(
+      'Pensó durante 12 s',
+    );
   });
 
   it('formats minutes and seconds from the catalog', () => {
-    const { thoughtFor } = REASONING_MESSAGES.en;
+    const { thoughtFor } = AGENT_THINKING_MESSAGES.en;
     expect(thoughtFor(1, 5)).toBe('Thought for 1 min 5 s');
     expect(thoughtFor(0, 7)).toBe('Thought for 7 s');
   });
 });
 
-describe('Reasoning layout', () => {
+describe('AgentThinking disclosure layout', () => {
   it('lays the body out with logical insets so RTL mirrors it', () => {
     document.documentElement.setAttribute('dir', 'rtl');
     mount(
-      <Reasoning testID="r" defaultOpen>
+      <AgentThinking thinking={false} testID="r" defaultOpen>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     const rule = body().querySelector<HTMLElement>('[style*="border"]')!;
     const style = rule.style;
@@ -271,15 +249,13 @@ describe('Reasoning layout', () => {
     expect(style.borderLeftWidth).not.toBe('2px');
   });
 
-  it('forwards className, style and ref to the root', () => {
-    const ref = React.createRef<unknown>();
+  it('forwards style and testID to the root', () => {
     mount(
-      <Reasoning testID="r" ref={ref as never} style={{ opacity: 0.5 }}>
+      <AgentThinking thinking={false} testID="r" style={{ opacity: 0.5 }}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     const rootEl = container.querySelector<HTMLElement>('[data-testid="r"]')!;
     expect(rootEl.style.opacity).toBe('0.5');
-    expect(ref.current).toBe(rootEl);
   });
 });

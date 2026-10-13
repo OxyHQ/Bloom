@@ -6,7 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
-import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
+import { thoughtFor as reasoning_thoughtFor } from '../../agent-thinking/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import {
   words as navigationBanner_words,
@@ -983,16 +983,15 @@ const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
   failed: 'Ha fallat',
 };
 
-const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Pensant' };
-const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
-  taskDone: 'Completada',
-  taskTodo: 'Sense completar',
-};
-
-const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
+  thinking: 'Pensant',
   thoughtFor: reasoning_thoughtFor('Ha pensat durant {time}', ' min', ' s', ' '),
   thoughtBriefly: 'Ha pensat un moment',
   reasoning: 'Raonament',
+};
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Completada',
+  taskTodo: 'Sense completar',
 };
 
 const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
@@ -2968,7 +2967,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   TOOL_CALL_MESSAGES,

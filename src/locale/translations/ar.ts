@@ -6,7 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
-import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
+import { thoughtFor as reasoning_thoughtFor } from '../../agent-thinking/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -1095,16 +1095,13 @@ const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
 
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
   thinking: 'جارٍ التفكير',
+  thoughtFor: reasoning_thoughtFor('فكّر لمدة {time}', ' دقيقة', ' ثانية', ' و'),
+  thoughtBriefly: 'فكّر للحظة',
+  reasoning: 'التفكير',
 };
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'مكتملة',
   taskTodo: 'غير مكتملة',
-};
-
-const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
-  thoughtFor: reasoning_thoughtFor('فكّر لمدة {time}', ' دقيقة', ' ثانية', ' و'),
-  thoughtBriefly: 'فكّر للحظة',
-  reasoning: 'التفكير',
 };
 
 const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
@@ -3350,7 +3347,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   TOOL_CALL_MESSAGES,

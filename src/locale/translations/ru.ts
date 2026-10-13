@@ -6,7 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
-import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
+import { thoughtFor as reasoning_thoughtFor } from '../../agent-thinking/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import {
   words as navigationBanner_words,
@@ -1072,16 +1072,15 @@ const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
   failed: 'Ошибка',
 };
 
-const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Думаю' };
-const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
-  taskDone: 'Выполнено',
-  taskTodo: 'Не выполнено',
-};
-
-const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
+  thinking: 'Думаю',
   thoughtFor: reasoning_thoughtFor('Размышления: {time}', ' мин', ' с', ' '),
   thoughtBriefly: 'Размышлял мгновение',
   reasoning: 'Рассуждение',
+};
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Выполнено',
+  taskTodo: 'Не выполнено',
 };
 
 const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
@@ -3286,7 +3285,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   TOOL_CALL_MESSAGES,

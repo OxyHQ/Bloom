@@ -10,7 +10,7 @@ import Animated, {
 
 import { Avatar } from '../avatar';
 import { Markdown } from '../markdown';
-import { Reasoning } from '../reasoning';
+import { AgentThinking } from '../agent-thinking';
 import { ToolCall, ToolCallList } from '../tool-call';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
@@ -314,9 +314,9 @@ export function AgentChatMessage({
         </View>
       ) : null}
       {reasoning ? (
-        <Reasoning streaming={reasoning.streaming} durationMs={reasoning.durationMs}>
+        <AgentThinking thinking={reasoning.streaming ?? false} durationMs={reasoning.durationMs}>
           {reasoning.text}
-        </Reasoning>
+        </AgentThinking>
       ) : null}
       {toolCalls?.length ? (
         <ToolCallList>
