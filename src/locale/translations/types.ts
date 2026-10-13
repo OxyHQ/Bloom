@@ -45,6 +45,8 @@ import type { PAYMENT_METHOD_MESSAGES } from '../../payment-method/messages';
 import type { AVATAR_GROUP_MESSAGES } from '../../avatar-group/messages';
 import type { MENUBAR_MESSAGES } from '../../menubar/messages';
 import type { AGENT_THINKING_MESSAGES } from '../../agent-thinking/messages';
+import type { REASONING_MESSAGES } from '../../reasoning/messages';
+import type { AGENT_PLAN_MESSAGES } from '../../agent-plan/messages';
 import type { AI_CHAT_MESSAGES } from '../../ai-chat/messages';
 import type { COMMAND_MESSAGES } from '../../command/messages';
 import type { MUSIC_LIBRARY_MESSAGES } from '../../music-library/messages';
@@ -180,6 +182,8 @@ export interface Translations {
   readonly AVATAR_GROUP_MESSAGES: CatalogMessages<typeof AVATAR_GROUP_MESSAGES>;
   readonly MENUBAR_MESSAGES: CatalogMessages<typeof MENUBAR_MESSAGES>;
   readonly AGENT_THINKING_MESSAGES: CatalogMessages<typeof AGENT_THINKING_MESSAGES>;
+  readonly REASONING_MESSAGES: CatalogMessages<typeof REASONING_MESSAGES>;
+  readonly AGENT_PLAN_MESSAGES: CatalogMessages<typeof AGENT_PLAN_MESSAGES>;
   readonly AI_CHAT_MESSAGES: CatalogMessages<typeof AI_CHAT_MESSAGES>;
   readonly COMMAND_MESSAGES: CatalogMessages<typeof COMMAND_MESSAGES>;
   readonly MUSIC_LIBRARY_MESSAGES: CatalogMessages<typeof MUSIC_LIBRARY_MESSAGES>;

@@ -239,6 +239,8 @@ export * from './auth-card';
 export * from './agent-thinking';
 export * from './agent-log';
 export * from './agent-progress';
+export * from './reasoning';
+export * from './agent-plan';
 export * from './composer-loader/index.web';
 export * from './composer-panel/index.web';
 export * from './questionnaire';
