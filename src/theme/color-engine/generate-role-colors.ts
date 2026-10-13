@@ -41,7 +41,42 @@ export interface GenerateOptions {
  * brand colours (e.g. a blue-primary brand with a yellow secondary); omitted, the
  * accents are derived as the variant's hue-rotations — byte-identical to before.
  */
-export function generateRoleColors(opts: GenerateOptions): RoleColors {
+export function generateRoleColors(opts: GenerateOptions): Readonly<RoleColors> {
+  const key = cacheKey(opts);
+  const hit = CACHE.get(key);
+  if (hit !== undefined) {
+    // Refresh recency: Map iterates in insertion order, so re-insert on hit.
+    CACHE.delete(key);
+    CACHE.set(key, hit);
+    return hit;
+  }
+  const roles = solveRoleColors(opts);
+  CACHE.set(key, roles);
+  if (CACHE.size > CACHE_LIMIT) CACHE.delete(CACHE.keys().next().value as string);
+  return roles;
+}
+
+/**
+ * The HCT solver is the expensive part of a theme change, and a theme resolves
+ * the same seed several times (tokens, scope vars, the theme object). Results are
+ * frozen and shared; an ambient seed that changes per artwork can only churn the
+ * bounded tail, never grow it.
+ */
+const CACHE_LIMIT = 128;
+const CACHE = new Map<string, Readonly<RoleColors>>();
+
+function cacheKey(o: GenerateOptions): string {
+  return [
+    o.seed.toLowerCase(),
+    o.variant ?? 'vibrant',
+    o.isDark ? 1 : 0,
+    o.contrastLevel ?? 0,
+    o.secondarySeed?.toLowerCase() ?? '',
+    o.tertiarySeed?.toLowerCase() ?? '',
+  ].join('|');
+}
+
+function solveRoleColors(opts: GenerateOptions): Readonly<RoleColors> {
   const scheme = buildScheme(
     opts.variant ?? 'vibrant',
     Hct.fromInt(argbFromHex(opts.seed)),
@@ -59,5 +94,5 @@ export function generateRoleColors(opts: GenerateOptions): RoleColors {
     const argb = Roles[name].getArgb(scheme);
     out[name] = `rgb(${redFromArgb(argb)} ${greenFromArgb(argb)} ${blueFromArgb(argb)})`;
   }
-  return out;
+  return Object.freeze(out);
 }

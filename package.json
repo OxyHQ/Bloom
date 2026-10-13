@@ -8,7 +8,10 @@
   "types": "lib/typescript/commonjs/index.d.ts",
   "react-native": "src/index.ts",
   "source": "src/index.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/theme/init-css-interop.*",
+    "**/toast/use-stack-hover.*"
+  ],
   "publishConfig": {
     "access": "public"
   },

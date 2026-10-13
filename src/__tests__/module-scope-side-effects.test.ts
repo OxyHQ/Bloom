@@ -354,3 +354,18 @@ describe('nothing does work when a consumer imports it', () => {
     expect(ACCEPTED.filter((e) => e.why.length < 40)).toEqual([]);
   });
 });
+
+describe('the package sideEffects flag', () => {
+  // `"sideEffects": false` lets Rollup, Vite and rolldown drop any import whose
+  // bindings are unused, including a bare `import './init-css-interop'`, which
+  // is the only thing that sets the dark-mode flag before css-interop observes.
+  // The flag must name exactly the modules ACCEPTED above, and nothing else.
+  it('lists exactly the accepted module-scope effects', () => {
+    const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as {
+      sideEffects: boolean | string[];
+    };
+    expect(Array.isArray(pkg.sideEffects)).toBe(true);
+    const expected = ACCEPTED.map((a) => `**/${a.where.replace(/\.ts$/, '.*')}`).sort();
+    expect([...(pkg.sideEffects as string[])].sort()).toEqual(expected);
+  });
+});

@@ -229,6 +229,12 @@ function useThemeState({
   modeRef.current = mode;
   const presetRef = useRef(colorPreset);
   presetRef.current = colorPreset;
+  // The change callbacks are usually inline arrows; reading the latest through a
+  // ref keeps the setters (and so the context value) stable across parent renders.
+  const onModeChangeRef = useRef(onModeChange);
+  onModeChangeRef.current = onModeChange;
+  const onColorPresetChangeRef = useRef(onColorPresetChange);
+  onColorPresetChangeRef.current = onColorPresetChange;
 
   // Async hydration for adapters that can't be read synchronously
   // (AsyncStorage, MMKV via JSI fallback, etc).
@@ -265,35 +271,35 @@ function useThemeState({
   const setMode = useCallback(
     (next: ThemeMode) => {
       setModeInternal(next);
-      onModeChange?.(next);
+      onModeChangeRef.current?.(next);
       void writePersistedTheme(persistKey, storage, {
         mode: next,
         colorPreset: presetRef.current,
       });
     },
-    [setModeInternal, onModeChange, persistKey, storage],
+    [setModeInternal, persistKey, storage],
   );
 
   const setColorPreset = useCallback(
     (next: AppColorName) => {
       setPresetInternal(next);
-      onColorPresetChange?.(next);
+      onColorPresetChangeRef.current?.(next);
       void writePersistedTheme(persistKey, storage, {
         mode: modeRef.current,
         colorPreset: next,
       });
     },
-    [setPresetInternal, onColorPresetChange, persistKey, storage],
+    [setPresetInternal, persistKey, storage],
   );
 
   const resetTheme = useCallback(() => {
     if (controlledMode === undefined) {
       setModeInternal(defaultMode);
-      onModeChange?.(defaultMode);
+      onModeChangeRef.current?.(defaultMode);
     }
     if (controlledPreset === undefined) {
       setPresetInternal(defaultPreset);
-      onColorPresetChange?.(defaultPreset);
+      onColorPresetChangeRef.current?.(defaultPreset);
     }
     void removePersistedTheme(persistKey, storage);
   }, [
@@ -303,8 +309,6 @@ function useThemeState({
     defaultPreset,
     setModeInternal,
     setPresetInternal,
-    onModeChange,
-    onColorPresetChange,
     persistKey,
     storage,
   ]);
