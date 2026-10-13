@@ -143,6 +143,10 @@ BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via appl
 - Material self-clips. Keep outer shadows unclipped on native; iOS clipsToBounds removes the shadow. Card clips native content separately while keeping caller layout resolved; web retains its single content layout node.
 - Read PAINTED pixels: computed background-color can name an unused slot. Capture the full viewport before cropping (Chromium screenshot `clip` can trim backdrop input), reload into a canvas and sample. Floors must be independent literals, not derived from the alpha under test.
 
+## Avatar runtime
+
+`assets/character-runtime/` is TRACKED: after editing `runtime/`, run `node scripts/build-avatar-runtime.mjs` and commit it. **Catalog retarget never writes an eye pivot offset in the PARENT's frame** (carrier = the eye's own turn; the six-lobed body rolls 180° under still eyes, the heart's eyes ride it): `docs/agent-avatar.mdx`, gate `catalog-retarget.test.ts`.
+
 ## Locale (`docs/locale.mdx`)
 
 - **No English literal in drawn/announced text:** `<family>/messages.ts` or `COMMON_MESSAGES`; props override. Gates: `i18n-literal-census` (`PENDING` equality), `message-catalogs`

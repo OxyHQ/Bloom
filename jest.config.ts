@@ -18,6 +18,11 @@ const config: Config = {
         },
       },
     ],
+    // three ships ESM only (type: module); the runtime's motion maths imports it.
+    '^.+/node_modules/three/build/.+\\.js$': [
+      'ts-jest',
+      { tsconfig: { allowJs: true, module: 'commonjs', skipLibCheck: true }, diagnostics: false },
+    ],
   },
   testMatch: ['**/__tests__/**/*.(test|spec).(ts|tsx)'],
   // Agent git worktrees. Each is a full checkout of this repo, so jest-haste-map
@@ -54,7 +59,7 @@ const config: Config = {
   },
   setupFiles: ['<rootDir>/__mocks__/setup.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native-web|@react-native|expo-linear-gradient|expo-video))',
+    'node_modules/(?!(react-native-web|@react-native|expo-linear-gradient|expo-video|three))',
   ],
 };
 

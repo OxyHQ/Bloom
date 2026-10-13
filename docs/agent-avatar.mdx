@@ -118,6 +118,26 @@ that claim. Software GL browser tests likewise do not establish laptop FPS.
 translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel`
 overrides the accessible name. Use an agent's name when it identifies them.
 
+## Catalog retarget
+
+Recipes whose `selections` hold anything but `color` take the catalog path: the donor's observed
+clips are retargeted onto the composed parts (`runtime/avatar/catalog-retarget.ts`). A preset-only
+avatar plays its authored clip instead, so a Storybook default never shows what follows.
+
+- **An eye's pivot offset is carried by the eye's own world turn, never by its parent's.** The
+  six-lobed body rolls 180° in plane during the reaction (its outline hides it) while the eyes
+  stay put. Writing the offset in the parent's frame dragged them together: the painted gap fell
+  to 0.26 of rest and stayed there to the end of the clip. Carrying it by the identity fixed the
+  flower and broke the heart (0.20), whose eyes ride the body. Scale and any turn the eye makes
+  about itself still pivot on the offset.
+- **The body turns about its own centre** (`centerDelta`: destination centre minus donor centre),
+  not the ground. About the ground, that same roll left the flower 0.17 high, held.
+- **Measure the painted result:** the gap between the two eye centres across the clip, and the
+  body's end translation, for every shape (a sweep of 19 shapes moved only the flower).
+  `src/agent-avatar/__tests__/catalog-retarget.test.ts` pins both cases on synthetic clips.
+- `assets/character-runtime/` is tracked: after editing `runtime/`, run
+  `node scripts/build-avatar-runtime.mjs` and commit the output.
+
 ## Verification
 
 Storybook's **Shape Proportions** gallery displays all distinct silhouettes with
