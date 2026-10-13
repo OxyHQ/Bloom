@@ -820,6 +820,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'Suggeriments',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'Missatge',
   add: 'Afegeix un fitxer adjunt',
@@ -830,6 +834,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'Entrada de veu',
   send: 'Envia el missatge',
   stop: 'Atura la generació',
+  transcribing: 'Transcrivint',
   permissionTrigger: (mode) => `Permisos: ${mode}`,
   removeFile: (name) => `Treu ${name}`,
   retryFile: (name) => `Torna a provar ${name}`,
@@ -3008,6 +3013,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
 };
 
 export default translations;

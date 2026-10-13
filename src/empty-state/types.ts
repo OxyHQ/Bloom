@@ -52,6 +52,23 @@ export interface EmptyStateAction {
   testID?: string;
 }
 
+/**
+ * One suggested next step, as DATA — a prompt to try, a filter to apply.
+ *
+ * Data rather than `children` for the reason `EmptyStateAction` is: the family
+ * owns the pill, its size and the wrap, and the caller owns the words and the
+ * handler. A suggestion that is not a pill belongs in `children`.
+ */
+export interface EmptyStateSuggestion {
+  /** Keys the pill. */
+  id: string;
+  /** The words on the pill. Also its accessible name. */
+  label: string;
+  /** A glyph before the label. */
+  icon?: BloomIconComponent;
+  onPress: () => void;
+}
+
 export interface EmptyStateProps {
   /**
    * The glyph. Omit it (and `illustration`) for a block that is text only —
@@ -75,6 +92,14 @@ export interface EmptyStateProps {
   action?: EmptyStateAction;
   /** The other thing to do about it. Drawn beside `action`, quieter. */
   secondaryAction?: EmptyStateAction;
+  /**
+   * Pills under the description: a branded greeting's first prompts, the
+   * searches that would find something. Centred, wrapping, and named as one
+   * group (`suggestionsLabel`).
+   */
+  suggestions?: ReadonlyArray<EmptyStateSuggestion>;
+  /** Names the suggestions group. `'Suggestions'` in English; Bloom speaks it in the locale. */
+  suggestionsLabel?: string;
   /**
    * Anything between the explanation and the actions — a reference chip, a
    * status strip, a list of facts. Stretched to the block's full width and

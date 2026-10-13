@@ -59,13 +59,27 @@ A node would have worked — the six blocks this replaces each passed one, which
 three of them ended up with three different button sizes for the same button. As
 `EmptyStateAction` the family owns the size (medium, or small at the panel rung), the
 order and the wrap; the caller owns the words and the handler. Anything that is not a
-button — a row of suggestion pills, a link, a note — goes in `footer`, under them.
+button — a link, a note — goes in `footer`, under them.
 
 `children` is the third slot, between the explanation and the actions. It is stretched to
 the block's full width and left to lay itself out, because what goes there is a strip, a
 fact box or a list rather than centred text. `order-confirmation` is built on exactly
 that: a "done" screen is the same object as a "nothing here" screen with a different
 reason for existing.
+
+## `suggestions`: pills under the description
+
+`suggestions` is `{ id, label, icon?, onPress }[]`, drawn as a centred, wrapping row of
+outline pill `Chip`s directly under the description — a branded greeting's first prompts
+(`Alia`'s welcome is an `EmptyState` with an `illustration`, a title, a line and these),
+or the searches that would find something. It is data rather than a `children` slot for
+the reason the actions are: the family owns the pill, its size (medium, small at the panel
+rung) and the wrap, and the caller owns the words and handlers. A row that must scroll, or
+holds anything other than pills, still goes in `children`.
+
+The row is one `role="group"` named `suggestionsLabel` (the locale's "Suggestions" by
+default), and each pill is a button, so Tab reaches them in order and Enter / Space
+press them.
 
 ## It is ONE named group
 

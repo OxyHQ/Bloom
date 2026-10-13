@@ -15,6 +15,7 @@ import {
   ComposerStatusBar,
   ModelPicker,
   type ComposerPanelAttachment,
+  type ComposerVoiceState,
   type ModelPickerModel,
   type ModelPickerProvider,
 } from './index';
@@ -31,8 +32,8 @@ const meta: Meta<typeof ComposerPanel> = {
     defaultModel: { control: 'text' },
     effort: { control: 'number' },
     defaultEffort: { control: 'number' },
-    listening: { control: 'boolean' },
-    defaultListening: { control: 'boolean' },
+    voiceState: { control: 'inline-radio', options: ['idle', 'recording', 'transcribing'] },
+    defaultVoiceState: { control: 'inline-radio', options: ['idle', 'recording', 'transcribing'] },
   },
   title: 'Blocks/Composer Panel',
   component: ComposerPanel,
@@ -252,11 +253,11 @@ export const UploadQueue: Story = {
   },
 };
 
-/** A turn in flight: send greyed out, the mic listening. */
+/** A turn in flight: send greyed out, the mic recording. */
 export const Disabled: Story = {
   args: {
     disabled: true,
-    defaultListening: true,
+    defaultVoiceState: 'recording',
     defaultValue: 'Summarise the Q3 numbers and draft the board update.',
     defaultModel: 'anthropic/opus-5',
     defaultPermission: 'plan',
@@ -384,16 +385,89 @@ export const PillFrosted: Story = {
   },
 };
 
-/** Listening and disabled states. */
+/** Recording, transcribing and disabled states. */
 export const PillStates: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ maxWidth: '100%', width: 520, gap: 16 }}>
-      <ComposerPill models={PILL_MODELS} defaultListening />
+      <ComposerPill models={PILL_MODELS} defaultVoiceState="recording" />
+      <ComposerPill models={PILL_MODELS} defaultVoiceState="transcribing" />
       <ComposerPill
         models={PILL_MODELS}
         disabled
         defaultValue="A long message that runs past the end of the field and fades out"
+      />
+    </View>
+  ),
+};
+
+/** The strip lives inside the capsule; a lone photo is a turn, so send is there with no text. */
+export const PillAttachments: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [files, setFiles] = useState<ComposerPanelAttachment[]>([
+      { id: 'photo', name: 'sunset.png', kind: 'image', src: PHOTO },
+      { id: 'upload', name: 'upload.png', kind: 'image', src: PHOTO, progress: 62 },
+      { id: 'bad', name: 'huge.mov', kind: 'video', error: 'Too large' },
+    ]);
+    return (
+      <View style={{ maxWidth: '100%', width: 520 }}>
+        <ComposerPill
+          models={PILL_MODELS}
+          attachments={files}
+          onRemoveAttachment={(id) => setFiles((current) => current.filter((f) => f.id !== id))}
+          onAttachmentRetry={(id) =>
+            setFiles((current) =>
+              current.map((f) => (f.id === id ? { ...f, error: undefined, progress: 0 } : f)),
+            )
+          }
+        />
+      </View>
+    );
+  },
+};
+
+/** The host drives the mic: press to record, press to stop, then it is busy until the words arrive. */
+export const PillVoice: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [voice, setVoice] = useState<ComposerVoiceState>('idle');
+    return (
+      <View style={{ maxWidth: '100%', width: 520 }}>
+        <ComposerPill
+          models={PILL_MODELS}
+          voiceState={voice}
+          onVoiceStateChange={(next) => {
+            setVoice(next === 'idle' ? 'transcribing' : next);
+            if (next === 'idle') setTimeout(() => setVoice('idle'), 1500);
+          }}
+        />
+      </View>
+    );
+  },
+};
+
+/** A string is the reason, announced assertively; `true` marks the pill alone. Add-menu rows can be disabled with a reason. */
+export const PillErrorAndDisabledRows: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ maxWidth: '100%', width: 520, gap: 16 }}>
+      <ComposerPill
+        models={PILL_MODELS}
+        defaultValue="A very long message"
+        error="That message is too long to send"
+      />
+      <ComposerPill models={PILL_MODELS} error />
+      <ComposerPill
+        addMenu={[
+          {
+            label: 'Add',
+            rows: [
+              { id: 'files', label: 'Files and folders' },
+              { id: 'code', label: 'Code blocks', description: 'Needs a project', disabled: true },
+            ],
+          },
+        ]}
       />
     </View>
   ),

@@ -798,6 +798,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'Öneriler',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'Mesaj',
   add: 'Ek ekle',
@@ -808,6 +812,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'Sesli giriş',
   send: 'Mesajı gönder',
   stop: 'Oluşturmayı durdur',
+  transcribing: 'Yazıya dökülüyor',
   permissionTrigger: (mode) => `İzin: ${mode}`,
   removeFile: (name) => `${name}: Kaldır`,
   retryFile: (name) => `${name}: Yeniden dene`,
@@ -2968,6 +2973,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
 };
 
 export default translations;

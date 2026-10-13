@@ -134,6 +134,7 @@ import type { CONTEXT_MENU_MESSAGES } from '../../context-menu/messages';
 import type { SORTABLE_MEDIA_MESSAGES } from '../../sortable-media/messages';
 import type { CONNECTION_DOTS_MESSAGES } from '../../connection-dots/messages';
 import type { CHAT_PEOPLE_MESSAGES } from '../../chat-people/messages';
+import type { EMPTY_STATE_MESSAGES } from '../../empty-state/messages';
 
 export interface Translations {
   readonly MULTI_AGENT_CHAT_MESSAGES: CatalogMessages<typeof MULTI_AGENT_CHAT_MESSAGES>;
@@ -268,4 +269,5 @@ export interface Translations {
   readonly SORTABLE_MEDIA_MESSAGES: CatalogMessages<typeof SORTABLE_MEDIA_MESSAGES>;
   readonly CONNECTION_DOTS_MESSAGES: CatalogMessages<typeof CONNECTION_DOTS_MESSAGES>;
   readonly CHAT_PEOPLE_MESSAGES: CatalogMessages<typeof CHAT_PEOPLE_MESSAGES>;
+  readonly EMPTY_STATE_MESSAGES: CatalogMessages<typeof EMPTY_STATE_MESSAGES>;
 }

@@ -51,7 +51,13 @@ it('renders all controls through actual Button with preserved size and callbacks
   act(() =>
     root.render(
       <ComposerButtonContext.Provider value={Button}>
-        <MicButton listening label="Mic" onToggle={mic} palette={palette} />
+        <MicButton
+          state="recording"
+          label="Mic"
+          transcribingLabel="Transcribing"
+          onToggle={mic}
+          palette={palette}
+        />
         <SendButton disabled={false} label="Send" onPress={send} />
         <StopButton label="Stop" onPress={stop} />
       </ComposerButtonContext.Provider>,

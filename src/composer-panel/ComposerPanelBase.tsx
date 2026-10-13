@@ -1,6 +1,6 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Text as RNText,
@@ -10,15 +10,6 @@ import {
   type NativeSyntheticEvent,
   type TextInputKeyPressEventData,
 } from 'react-native';
-import Animated, {
-  Easing,
-  runOnJS,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
-
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useTextareaAutosize } from '../hooks/use-textarea-autosize';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -26,9 +17,11 @@ import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography';
 import { AddMenu } from './AddMenu';
 import { AttachmentStrip } from './AttachmentStrip';
+import { Collapse } from './Collapse';
 import { MicButton, SendButton, StopButton } from './ComposerControls';
 import { ModelPickerBase } from './ModelPickerBase';
 import { PermissionMenu } from './PermissionMenu';
+import { useAttachmentLabels } from './use-attachment-labels';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { COMPOSER_PANEL_MESSAGES } from './messages';
@@ -37,63 +30,15 @@ import {
   CARD_RADIUS,
   composerAddMenu,
   composerPermissions,
+  isComposerEmpty,
   PROMPT_LINE,
   PROMPT_MAX_HEIGHT,
   resolveComposerPalette,
 } from './shared';
-import type { ComposerPanelLabels, ComposerPanelProps } from './types';
+import type { ComposerPanelLabels, ComposerPanelProps, ComposerVoiceState } from './types';
 import { useComposerWebCss } from './web-hooks';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
-
-const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
-
-/**
- * `AnimatePresence` + `height: 0 ↔ auto` and opacity, 250ms `ease-out`: the
- * strip mounts on arrival, the clip grows to its measured height, and it
- * unmounts once the collapse finishes. Mounted-open does not animate.
- */
-function Collapse({ open, children }: { open: boolean; children: React.ReactNode }) {
-  const reducedMotion = useReducedMotion();
-  const [mounted, setMounted] = useState(open);
-  const progress = useSharedValue(open ? 1 : 0);
-  const measured = useSharedValue(0);
-
-  useEffect(() => {
-    if (open) setMounted(true);
-    const target = open ? 1 : 0;
-    if (reducedMotion) {
-      progress.value = target;
-      if (!open) setMounted(false);
-      return;
-    }
-    progress.value = withTiming(target, { duration: 250, easing: EASE_OUT }, (finished) => {
-      'worklet';
-      if (finished && target === 0) runOnJS(setMounted)(false);
-    });
-  }, [open, reducedMotion, progress]);
-
-  const onLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      measured.value = event.nativeEvent.layout.height;
-    },
-    [measured],
-  );
-  const style = useAnimatedStyle(
-    () => ({
-      opacity: progress.value,
-      height: progress.value >= 1 ? 'auto' : progress.value * measured.value,
-    }),
-    [progress, measured],
-  );
-
-  if (!mounted) return null;
-  return (
-    <Animated.View style={[{ overflow: 'hidden' }, style]}>
-      <View onLayout={onLayout}>{children}</View>
-    </Animated.View>
-  );
-}
 
 /**
  * `ComposerPanel`: the two-row composer. A radius-24 card (p 10, the raw
@@ -134,9 +79,9 @@ export function ComposerPanelBase({
   onEffortChange,
   effortLevels,
   modelPickerLabels,
-  listening,
-  defaultListening = false,
-  onListeningChange,
+  voiceState,
+  defaultVoiceState = 'idle',
+  onVoiceStateChange,
   attachments,
   onRemoveAttachment,
   onAttachmentRetry,
@@ -169,30 +114,14 @@ export function ComposerPanelBase({
       voice: messages.voice,
       send: messages.send,
       stop: messages.stop,
+      transcribing: messages.transcribing,
       remove: common.remove,
       retry: common.retry,
       ...labelOverrides,
     }),
     [messages, common, labelOverrides],
   );
-  // A caller's `remove` / `retry` stays a prefix to the file name, as it always
-  // was; Bloom's own wording is the language's whole phrase.
-  const removeOverride = labelOverrides?.remove;
-  const retryOverride = labelOverrides?.retry;
-  const removeFileLabel = useMemo(
-    () =>
-      removeOverride !== undefined
-        ? (name: string) => `${removeOverride} ${name}`
-        : messages.removeFile,
-    [removeOverride, messages],
-  );
-  const retryFileLabel = useMemo(
-    () =>
-      retryOverride !== undefined
-        ? (name: string) => `${retryOverride} ${name}`
-        : messages.retryFile,
-    [retryOverride, messages],
-  );
+  const { removeFileLabel, retryFileLabel } = useAttachmentLabels(labelOverrides);
   const placeholder = placeholderProp ?? messages.panelPlaceholder;
   const permissions = useMemo(
     () => permissionsProp ?? composerPermissions(messages),
@@ -205,10 +134,10 @@ export function ComposerPanelBase({
     defaultValue,
     onChange: onValueChange,
   });
-  const [isListening, setListening] = useControllableState<boolean>({
-    value: listening,
-    defaultValue: defaultListening,
-    onChange: onListeningChange,
+  const [voice, setVoice] = useControllableState<ComposerVoiceState>({
+    value: voiceState,
+    defaultValue: defaultVoiceState,
+    onChange: onVoiceStateChange,
   });
 
   const fieldRef = useRef<TextInput | null>(null);
@@ -406,16 +335,17 @@ export function ComposerPanelBase({
                 ) : null}
                 <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <MicButton
-                    listening={isListening}
-                    onToggle={() => setListening(!isListening)}
+                    state={voice}
+                    onToggle={() => setVoice(voice === 'recording' ? 'idle' : 'recording')}
                     label={labels.voice}
+                    transcribingLabel={labels.transcribing}
                     palette={palette}
                   />
                   {/* Stop wins; then the host's empty action while there is
                     nothing to send; otherwise send. */}
                   {busy && onStop ? (
                     <StopButton onPress={onStop} label={labels.stop} />
-                  ) : emptyAction !== undefined && text.trim() === '' && !attachments?.length ? (
+                  ) : emptyAction !== undefined && isComposerEmpty(text, attachments) ? (
                     emptyAction
                   ) : (
                     <SendButton disabled={disabled} onPress={submit} label={labels.send} />

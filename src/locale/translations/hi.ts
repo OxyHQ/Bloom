@@ -797,6 +797,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'सुझाव',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'संदेश',
   add: 'अटैचमेंट जोड़ें',
@@ -807,6 +811,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'वॉइस इनपुट',
   send: 'संदेश भेजें',
   stop: 'जनरेट करना रोकें',
+  transcribing: 'ट्रांसक्रिप्ट हो रहा है',
   permissionTrigger: (mode) => `अनुमति: ${mode}`,
   removeFile: (name) => `${name} निकालें`,
   retryFile: (name) => `${name} फिर से आज़माएं`,
@@ -2934,6 +2939,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
 };
 
 export default translations;

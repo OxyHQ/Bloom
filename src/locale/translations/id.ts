@@ -806,6 +806,10 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   },
 };
 
+const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
+  suggestions: 'Saran',
+};
+
 const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   message: 'Pesan',
   add: 'Tambahkan lampiran',
@@ -816,6 +820,7 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   voice: 'Input suara',
   send: 'Kirim pesan',
   stop: 'Hentikan pembuatan',
+  transcribing: 'Mentranskripsi',
   permissionTrigger: (mode) => `Izin: ${mode}`,
   removeFile: (name) => `Hapus ${name}`,
   retryFile: (name) => `Coba lagi ${name}`,
@@ -2996,6 +3001,7 @@ const translations: Translations = {
   SORTABLE_MEDIA_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
+  EMPTY_STATE_MESSAGES,
 };
 
 export default translations;
