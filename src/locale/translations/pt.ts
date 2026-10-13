@@ -6,7 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
-import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
+import { thoughtFor as reasoning_thoughtFor } from '../../agent-thinking/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import {
   words as navigationBanner_words,
@@ -651,6 +651,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'Adicionar um seletor de tema reutilizável e registrado',
     'Executar o registro, o lint e o build de produção',
   ],
+  planTitle: 'Plano proposto',
+  approve: 'Aprovar',
+  reject: 'Rejeitar',
+  approved: 'Aprovado',
+  rejected: 'Rejeitado',
+  planDecision: 'Decisão sobre o plano',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -999,31 +1005,21 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Barra de menus',
 };
 
-const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+const AGENT_LOG_MESSAGES: Translations['AGENT_LOG_MESSAGES'] = {
   running: 'Executando',
   done: 'Concluído',
   failed: 'Falhou',
 };
 
-const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Pensando' };
-const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
-  taskDone: 'Concluída',
-  taskTodo: 'Não concluída',
-};
-
-const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
+  thinking: 'Pensando',
   thoughtFor: reasoning_thoughtFor('Pensou por {time}', ' min', ' s', ' '),
   thoughtBriefly: 'Pensou por um instante',
   reasoning: 'Raciocínio',
 };
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'Plano proposto',
-  approve: 'Aprovar',
-  reject: 'Rejeitar',
-  approved: 'Aprovado',
-  rejected: 'Rejeitado',
-  decision: 'Decisão sobre o plano',
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Concluída',
+  taskTodo: 'Não concluída',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -3014,10 +3010,8 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  REASONING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
-  TOOL_CALL_MESSAGES,
+  AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

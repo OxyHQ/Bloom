@@ -6,7 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
-import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
+import { thoughtFor as reasoning_thoughtFor } from '../../agent-thinking/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -622,6 +622,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     '再利用可能なテーマ切り替えを登録して追加',
     'レジストリ、lint、本番ビルドを実行',
   ],
+  planTitle: '提案されたプラン',
+  approve: '承認',
+  reject: '却下',
+  approved: '承認済み',
+  rejected: '却下済み',
+  planDecision: 'プランの判断',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -946,31 +952,21 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'メニューバー',
 };
 
-const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+const AGENT_LOG_MESSAGES: Translations['AGENT_LOG_MESSAGES'] = {
   running: '実行中',
   done: '完了',
   failed: '失敗',
 };
 
-const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '考え中' };
-const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
-  taskDone: '完了',
-  taskTodo: '未完了',
-};
-
-const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
+  thinking: '考え中',
   thoughtFor: reasoning_thoughtFor('{time}思考しました', '分', '秒', ''),
   thoughtBriefly: '少し考えました',
   reasoning: '推論',
 };
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: '提案されたプラン',
-  approve: '承認',
-  reject: '却下',
-  approved: '承認済み',
-  rejected: '却下済み',
-  decision: 'プランの判断',
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: '完了',
+  taskTodo: '未完了',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2909,10 +2905,8 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  REASONING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
-  TOOL_CALL_MESSAGES,
+  AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

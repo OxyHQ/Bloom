@@ -55,9 +55,9 @@ import { Checkbox } from '../checkbox/Checkbox';
 import { Switch } from '../switch/Switch';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
 import { Chip } from '../chip';
-import { AgentPlan } from '../agent-plan';
-import { Reasoning } from '../reasoning';
-import { ToolCall, ToolCallList } from '../tool-call';
+import { AgentProgressPlan } from '../agent-progress';
+import { AgentThinking } from '../agent-thinking';
+import { AgentLogToolCall, AgentLogToolCalls } from '../agent-log';
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
 import { Button } from '../button/Button';
@@ -276,30 +276,30 @@ describe('Accordion', () => {
   });
 });
 
-describe('Reasoning', () => {
+describe('AgentThinking disclosure', () => {
   it('header emits aria-expanded reflecting the body', () => {
     const open = mount(
-      <Reasoning testID="open" defaultOpen>
+      <AgentThinking testID="open" thinking={false} defaultOpen>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(byTestId(open, 'open-header').getAttribute('aria-expanded')).toBe('true');
     const closed = mount(
-      <Reasoning key="closed" testID="closed">
+      <AgentThinking key="closed" testID="closed" thinking={false}>
         why
-      </Reasoning>,
+      </AgentThinking>,
     );
     expect(byTestId(closed, 'closed-header').getAttribute('aria-expanded')).toBe('false');
   });
 });
 
-describe('AgentPlan', () => {
+describe('AgentProgressPlan', () => {
   it('names its decision buttons and announces the outcome as a status', () => {
-    const c = mount(<AgentPlan testID="plan" steps={['One']} />);
+    const c = mount(<AgentProgressPlan testID="plan" steps={['One']} />);
     expect(byTestId(c, 'plan-approve').textContent).toBe('Approve');
     expect(byTestId(c, 'plan-status').getAttribute('role')).toBe('status');
     const decided = mount(
-      <AgentPlan key="decided" testID="plan" steps={['One']} decision="approved" />,
+      <AgentProgressPlan key="decided" testID="plan" steps={['One']} decision="approved" />,
     );
     expect(byTestId(decided, 'plan-status').textContent).toBe('Approved');
   });
@@ -1440,20 +1440,22 @@ describe('modal dialogs say they are modal', () => {
   );
 });
 
-describe('ToolCall states its status and disclosure on web', () => {
+describe('AgentLogToolCall states its status and disclosure on web', () => {
   it('names the status in a live region and marks a running row busy', () => {
-    const c = mount(<ToolCall name="web_search" status="running" onPress={() => {}} testID="tc" />);
+    const c = mount(
+      <AgentLogToolCall name="web_search" status="running" onPress={() => {}} testID="tc" />,
+    );
     const row = byTestId(c, 'tc-row');
     expect(row.getAttribute('role')).toBe('button');
     expect(row.getAttribute('aria-busy')).toBe('true');
-    expect(row.hasAttribute('data-bloom-tool-call')).toBe(true);
+    expect(row.hasAttribute('data-bloom-agent-log-tool-call')).toBe(true);
     const status = byTestId(c, 'tc-status');
     expect(status.getAttribute('aria-live')).toBe('polite');
     expect(status.textContent).toBe('Running');
   });
 
   it('announces a failure assertively', () => {
-    const c = mount(<ToolCall name="t" status="error" error="boom" testID="tc" />);
+    const c = mount(<AgentLogToolCall name="t" status="error" error="boom" testID="tc" />);
     expect(byTestId(c, 'tc-status').getAttribute('aria-live')).toBe('assertive');
     expect(byTestId(c, 'tc-status').textContent).toBe('Failed');
   });
@@ -1463,9 +1465,9 @@ describe('ToolCall states its status and disclosure on web', () => {
     // and Enter/Space activate it natively as a click, which is what the
     // browser would send. jsdom does not synthesise that click, so send it.
     const c = mount(
-      <ToolCall name="t" status="done" testID="tc">
+      <AgentLogToolCall name="t" status="done" testID="tc">
         <Text>Result</Text>
-      </ToolCall>,
+      </AgentLogToolCall>,
     );
     const row = byTestId(c, 'tc-row');
     expect(row.tagName).toBe('BUTTON');
@@ -1478,7 +1480,7 @@ describe('ToolCall states its status and disclosure on web', () => {
 
   it('opens the result when activated, without claiming to expand', () => {
     const onPress = jest.fn();
-    const c = mount(<ToolCall name="t" status="done" onPress={onPress} testID="tc" />);
+    const c = mount(<AgentLogToolCall name="t" status="done" onPress={onPress} testID="tc" />);
     const row = byTestId(c, 'tc-row');
     act(() => row.click());
     expect(onPress).toHaveBeenCalledTimes(1);
@@ -1486,17 +1488,17 @@ describe('ToolCall states its status and disclosure on web', () => {
   });
 
   it('is not a button, and not focusable, without onPress or a body', () => {
-    const c = mount(<ToolCall name="t" status="done" testID="tc" />);
+    const c = mount(<AgentLogToolCall name="t" status="done" testID="tc" />);
     expect(c.querySelector('[role="button"]')).toBeNull();
     expect(byTestId(c, 'tc-row').hasAttribute('tabindex')).toBe(false);
   });
 
-  it('is a list of listitems inside ToolCallList', () => {
+  it('is a list of listitems inside AgentLogToolCalls', () => {
     const c = mount(
-      <ToolCallList accessibilityLabel="Tool calls">
-        <ToolCall name="a" status="done" />
-        <ToolCall name="b" status="done" />
-      </ToolCallList>,
+      <AgentLogToolCalls accessibilityLabel="Tool calls">
+        <AgentLogToolCall name="a" status="done" />
+        <AgentLogToolCall name="b" status="done" />
+      </AgentLogToolCalls>,
     );
     const list = byRole(c, 'list');
     expect(list.getAttribute('aria-label')).toBe('Tool calls');

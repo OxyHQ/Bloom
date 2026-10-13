@@ -1007,34 +1007,6 @@
         "default": "./lib/commonjs/agent-progress/index.js"
       }
     },
-    "./reasoning": {
-      "react-native": {
-        "types": "./lib/typescript/module/reasoning/index.d.ts",
-        "default": "./src/reasoning/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/reasoning/index.d.ts",
-        "default": "./lib/module/reasoning/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/reasoning/index.d.ts",
-        "default": "./lib/commonjs/reasoning/index.js"
-      }
-    },
-    "./agent-plan": {
-      "react-native": {
-        "types": "./lib/typescript/module/agent-plan/index.d.ts",
-        "default": "./src/agent-plan/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/agent-plan/index.d.ts",
-        "default": "./lib/module/agent-plan/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/agent-plan/index.d.ts",
-        "default": "./lib/commonjs/agent-plan/index.js"
-      }
-    },
     "./composer-loader": {
       "react-native": {
         "types": "./lib/typescript/module/composer-loader/index.d.ts",
@@ -1127,20 +1099,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/task-list/index.d.ts",
         "default": "./lib/commonjs/task-list/index.js"
-      }
-    },
-    "./tool-call": {
-      "react-native": {
-        "types": "./lib/typescript/module/tool-call/index.d.ts",
-        "default": "./src/tool-call/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/tool-call/index.d.ts",
-        "default": "./lib/module/tool-call/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/tool-call/index.d.ts",
-        "default": "./lib/commonjs/tool-call/index.js"
       }
     },
     "./agent-chat": {
@@ -4009,12 +3967,6 @@
       "agent-progress": [
         "./lib/typescript/module/agent-progress/index.d.ts"
       ],
-      "reasoning": [
-        "./lib/typescript/module/reasoning/index.d.ts"
-      ],
-      "agent-plan": [
-        "./lib/typescript/module/agent-plan/index.d.ts"
-      ],
       "composer-loader": [
         "./lib/typescript/module/composer-loader/index.d.ts"
       ],
@@ -4032,9 +3984,6 @@
       ],
       "task-list": [
         "./lib/typescript/module/task-list/index.d.ts"
-      ],
-      "tool-call": [
-        "./lib/typescript/module/tool-call/index.d.ts"
       ],
       "agent-chat": [
         "./lib/typescript/module/agent-chat/index.d.ts"

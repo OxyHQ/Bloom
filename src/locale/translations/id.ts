@@ -6,7 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
-import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
+import { thoughtFor as reasoning_thoughtFor } from '../../agent-thinking/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import {
   words as navigationBanner_words,
@@ -635,6 +635,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'Tambahkan pengalih tema terdaftar yang dapat dipakai ulang',
     'Jalankan registry, lint, dan build produksi',
   ],
+  planTitle: 'Rencana yang diusulkan',
+  approve: 'Setujui',
+  reject: 'Tolak',
+  approved: 'Disetujui',
+  rejected: 'Ditolak',
+  planDecision: 'Keputusan rencana',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -961,31 +967,21 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Bilah menu',
 };
 
-const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+const AGENT_LOG_MESSAGES: Translations['AGENT_LOG_MESSAGES'] = {
   running: 'Berjalan',
   done: 'Selesai',
   failed: 'Gagal',
 };
 
-const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Berpikir' };
-const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
-  taskDone: 'Selesai',
-  taskTodo: 'Belum selesai',
-};
-
-const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
+  thinking: 'Berpikir',
   thoughtFor: reasoning_thoughtFor('Berpikir selama {time}', ' mnt', ' dtk', ' '),
   thoughtBriefly: 'Berpikir sejenak',
   reasoning: 'Penalaran',
 };
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'Rencana yang diusulkan',
-  approve: 'Setujui',
-  reject: 'Tolak',
-  approved: 'Disetujui',
-  rejected: 'Ditolak',
-  decision: 'Keputusan rencana',
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Selesai',
+  taskTodo: 'Belum selesai',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2956,10 +2952,8 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  REASONING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
-  TOOL_CALL_MESSAGES,
+  AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

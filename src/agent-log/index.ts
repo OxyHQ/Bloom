@@ -6,6 +6,7 @@ export {
   AgentLogShimmerText,
   AgentLogWorkingRow,
 } from './AgentLog';
+export { AgentLogToolCall, AgentLogToolCalls } from './AgentLogToolCall';
 export { useAgentLogMotion } from './use-agent-log-motion';
 export { useAgentLogRevealTicker } from './use-agent-log-reveal-ticker';
 export {
@@ -20,6 +21,9 @@ export type {
   AgentLogRevealTickerOptions,
   AgentLogRowConnectorProps,
   AgentLogRowProps,
+  AgentLogToolCallProps,
+  AgentLogToolCallStatus,
+  AgentLogToolCallsProps,
   AgentLogShimmerTextProps,
   AgentLogWorkingRowProps,
 } from './types';

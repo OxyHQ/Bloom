@@ -32,13 +32,13 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **220 families** in `src/`, **218** published (a subpath, the root barrel, or both). **49** carry a web fork.
+- **217 families** in `src/`, **215** published (a subpath, the root barrel, or both). **49** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the per-family counts are in the table below.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
 | Field membership | 49 | 23 | 0 | 21 | 5 |
-| Control presentation | 43 | 42 | 1 | 0 | 0 |
+| Control presentation | 42 | 41 | 1 | 0 | 0 |
 | Trigger composition | 10 | 8 | 0 | 2 | 0 |
 | Controlled / uncontrolled state | 56 | 47 | 1 | 1 | 7 |
 
@@ -115,10 +115,9 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `agent-chat` | `@oxy.so/bloom/agent-chat` + barrel | web fork | `agent-chat.mdx` | yes | 3 | n/a¹ |  |  | reads |
 | `agent-creator` | `@oxy.so/bloom/agent-creator` + barrel | web fork | `agent-creator.mdx` | yes | 6 | reads |  |  |  |
 | `agent-limits-card` | `@oxy.so/bloom/agent-limits-card` + barrel | universal | `agent-limits-card.mdx` | yes | 2 |  |  |  | reads |
-| `agent-log` | `@oxy.so/bloom/agent-log` + barrel | universal | `agent-log.mdx` | yes | 1 |  |  |  |  |
-| `agent-plan` | `@oxy.so/bloom/agent-plan` + barrel | universal | `agent-plan.mdx` | yes | 2 |  |  |  |  |
-| `agent-progress` | `@oxy.so/bloom/agent-progress` + barrel | universal | `agent-progress.mdx` | yes | 2 |  |  |  | reads |
-| `agent-thinking` | `@oxy.so/bloom/agent-thinking` + barrel | universal | `agent-thinking.mdx` | yes | 2 |  |  |  |  |
+| `agent-log` | `@oxy.so/bloom/agent-log` + barrel | universal | `agent-log.mdx` | yes | 3 |  | reads |  | reads |
+| `agent-progress` | `@oxy.so/bloom/agent-progress` + barrel | universal | `agent-progress.mdx` | yes | 4 |  |  |  | reads |
+| `agent-thinking` | `@oxy.so/bloom/agent-thinking` + barrel | universal | `agent-thinking.mdx` | yes | 4 |  |  |  | reads |
 | `ai-chat` | `@oxy.so/bloom/ai-chat` + barrel | web fork | `ai-chat.mdx` | yes | 12 |  |  |  | reads |
 | `ai-profile-card` | `@oxy.so/bloom/ai-profile-card` + barrel | universal | `ai-profile-card.mdx` | yes | 2 |  |  |  | reads |
 | `alert-dialog` | `@oxy.so/bloom/alert-dialog` + barrel | web fork | `alert-dialog.mdx` | yes | 2 |  |  |  |  |
@@ -272,7 +271,6 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `radio-indicator` | `@oxy.so/bloom/radio-indicator` + barrel | universal | `radio-indicator.mdx` | yes | 2 |  |  |  |  |
 | `rail` | `@oxy.so/bloom/rail` + barrel | universal | `rail.mdx` | yes | 1 |  |  |  |  |
 | `rating` | `@oxy.so/bloom/rating` + barrel | web fork | `rating.mdx` | yes | 7 | reads | reads |  |  |
-| `reasoning` | `@oxy.so/bloom/reasoning` + barrel | universal | `reasoning.mdx` | yes | 2 |  | reads |  | reads |
 | `recent-hires-card` | `@oxy.so/bloom/recent-hires-card` + barrel | universal | `recent-hires-card.mdx` | yes | 1 |  |  |  |  |
 | `route-stops` | `@oxy.so/bloom/route-stops` + barrel | universal | `route-stops.mdx` | yes | 2 |  |  |  |  |
 | `screen` | `@oxy.so/bloom/screen` + barrel | universal | `screen.mdx` | yes | 5 |  |  |  |  |
@@ -313,7 +311,6 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 391 |  |  | n/a¹ | reads |
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | 2 | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | 18 |  |  |  |  |
-| `tool-call` | `@oxy.so/bloom/tool-call` + barrel | universal | `tool-call.mdx` | yes | 2 |  | reads |  | reads |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | 1 |  |  |  |  |
 | `track-list` | `@oxy.so/bloom/track-list` + barrel | universal | `track-list.mdx` | yes | 3 |  |  |  | **adaptation** |
 | `typography` | `@oxy.so/bloom/typography` + barrel | universal | `typography.mdx` | yes | 10 |  |  |  |  |

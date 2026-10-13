@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 /**
@@ -26,6 +27,28 @@ export interface AgentThinkingProps {
   shimmer?: boolean;
   /** Elapsed seconds since mount (`12.3s`), rendered after the label. Default `true`. */
   showTimer?: boolean;
+  /**
+   * Still reasoning. `false` is the finished header: no indicator, shimmer or
+   * timer, just "Thought for 12 s" (`durationMs`), "Thought for a moment" under
+   * half a second, or "Reasoning" with no duration. Default `true`.
+   */
+  thinking?: boolean;
+  /** How long the model reasoned, in ms, for the finished header. Rounded to whole seconds. */
+  durationMs?: number;
+  /**
+   * The model's reasoning: text or nodes. Giving it turns the row into a
+   * disclosure (a button with a chevron) with this folded under it. It opens
+   * while `thinking` and shuts when thinking ends, unless the user got there
+   * first. A string that grows token by token is fine. The timer is off in this
+   * mode (it would change the button's name every tenth of a second) unless you
+   * pass `showTimer`.
+   */
+  children?: ReactNode;
+  /** Controlled open state of the disclosure. Automatic open/close is reported through `onOpenChange`. */
+  open?: boolean;
+  /** Initial open state when uncontrolled. Defaults to `thinking`. */
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

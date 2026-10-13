@@ -1,5 +1,5 @@
-import React, { memo, useEffect, useState } from 'react';
-import { View, type ViewStyle } from 'react-native';
+import React, { memo, useEffect, useRef, useState } from 'react';
+import { Pressable, View, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   Easing,
@@ -14,7 +14,16 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { Collapsible } from '../collapsible';
+import { useControllableState } from '../hooks/use-controllable-state';
+import { useDirectionProps } from '../hooks/use-is-rtl';
+import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { useMessages } from '../locale/messages';
+import { dataHook } from '../styles/data-hook';
+import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import { useRingOffsetStyle } from '../styles/surface-levels';
+import { space } from '../styles/tokens';
+import type { WebCssStyle } from '../styles/web-view-style';
 import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -372,24 +381,71 @@ function ElapsedTimer({ color }: { color: string }) {
 //  Loader
 // ---------------------------------------------------------------------------
 
-function AgentThinkingComponent({
+/** `durationMs` as whole minutes and the seconds left over. */
+function splitDuration(durationMs: number) {
+  const total = Math.max(0, Math.round(durationMs / 1000));
+  return { minutes: Math.floor(total / 60), seconds: total % 60 };
+}
+
+/** The words of the row: the status label while thinking, the "Thought for N s" header once done. */
+function useThinkingText({
+  label,
+  thinking,
+  durationMs,
+}: Pick<AgentThinkingProps, 'label' | 'durationMs'> & { thinking: boolean }): string {
+  const { messages } = useMessages(AGENT_THINKING_MESSAGES);
+  if (label !== undefined) return label;
+  if (thinking) return messages.thinking;
+  if (durationMs === undefined) return messages.reasoning;
+  const { minutes, seconds } = splitDuration(durationMs);
+  return minutes === 0 && seconds === 0
+    ? messages.thoughtBriefly
+    : messages.thoughtFor(minutes, seconds);
+}
+
+type ThinkingRowProps = Omit<
+  AgentThinkingProps,
+  'children' | 'open' | 'defaultOpen' | 'onOpenChange'
+> & {
+  /** The row is the status itself, unless it sits inside the disclosure's button. */
+  statusRole?: boolean;
+};
+
+/** The indicator, its label and the timer: what `AgentThinking` has always drawn. */
+function ThinkingRow({
   variant = 'wave',
   label: labelProp,
   tone,
   shimmer = true,
   showTimer = true,
+  thinking = true,
+  durationMs,
+  statusRole = true,
   style,
   testID,
-}: AgentThinkingProps) {
-  const { messages } = useMessages(AGENT_THINKING_MESSAGES);
-  const label = labelProp ?? messages.thinking;
+}: ThinkingRowProps) {
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const color = resolveTone(theme, tone ?? VARIANT_TONE[variant]);
+  const label = useThinkingText({ label: labelProp, thinking, durationMs });
+
+  if (!thinking) {
+    return (
+      <View testID={testID} style={style}>
+        <ThinkingLabel
+          testID={testID ? `${testID}-label` : undefined}
+          color={color}
+          shimmer={false}
+        >
+          {label}
+        </ThinkingLabel>
+      </View>
+    );
+  }
 
   return (
     <View
-      role="status"
+      role={statusRole ? 'status' : undefined}
       testID={testID}
       style={[{ flexDirection: 'row', alignItems: 'center', gap: 10 }, style]}
     >
@@ -415,6 +471,127 @@ function AgentThinkingComponent({
       {showTimer && <ElapsedTimer color={resolveTone(theme, 'subtle')} />}
     </View>
   );
+}
+
+// ---------------------------------------------------------------------------
+//  Disclosure: the same row with the model's reasoning folded under it
+// ---------------------------------------------------------------------------
+
+const TOGGLE_STYLE_ID = 'bloom-agent-thinking-toggle-web-css';
+const TOGGLE_CSS = interactiveWebCss({
+  selector: '[data-bloom-agent-thinking-toggle]',
+  varPrefix: 'bloom-agent-thinking',
+  reset: 'none',
+  transition: 'none',
+});
+const RULE_WIDTH = 2;
+
+/**
+ * The row, a chevron, and a body that opens under it. Opening follows `thinking`
+ * (open while the model reasons, shut once it is done) until the user takes
+ * over: a press settles it for the rest of that run and the next run starts open.
+ */
+function ThinkingDisclosure({
+  children,
+  open: openProp,
+  defaultOpen,
+  onOpenChange,
+  showTimer = false,
+  thinking = true,
+  style,
+  testID,
+  ...row
+}: AgentThinkingProps) {
+  const theme = useTheme();
+  const direction = useDirectionProps();
+  const ringOffset = useRingOffsetStyle();
+  useInteractiveWebCss(TOGGLE_STYLE_ID, TOGGLE_CSS);
+  const [open, setOpen] = useControllableState({
+    value: openProp,
+    defaultValue: defaultOpen ?? thinking,
+    onChange: onOpenChange,
+  });
+
+  const accessibleLabel = useThinkingText({
+    label: row.label,
+    thinking,
+    durationMs: row.durationMs,
+  });
+  const userToggled = useRef(false);
+  const wasThinking = useRef(thinking);
+  useEffect(() => {
+    if (wasThinking.current === thinking) return;
+    wasThinking.current = thinking;
+    if (thinking) userToggled.current = false;
+    if (!userToggled.current) setOpen(thinking);
+  }, [thinking, setOpen]);
+
+  const toggle = () => {
+    userToggled.current = true;
+    setOpen(!open);
+  };
+
+  const headerStyle: WebCssStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    borderRadius: 6,
+    '--bloom-agent-thinking-ring': theme.colors.primary,
+    ...ringOffset,
+  };
+
+  return (
+    <View {...direction} testID={testID} style={[{ alignSelf: 'stretch' }, style]}>
+      <Pressable
+        {...dataHook('bloomAgentThinkingToggle')}
+        role="button"
+        accessibilityLabel={accessibleLabel}
+        aria-expanded={open}
+        accessibilityState={{ expanded: open }}
+        onPress={toggle}
+        testID={testID ? `${testID}-header` : undefined}
+        style={headerStyle}
+      >
+        <ThinkingRow
+          {...row}
+          testID={testID ? `${testID}-row` : undefined}
+          thinking={thinking}
+          showTimer={showTimer}
+          statusRole={false}
+        />
+        <RiArrowDownSLine
+          width={16}
+          height={16}
+          fill={theme.colors.textTertiary}
+          style={{ transform: [{ rotate: open ? '180deg' : '0deg' }] }}
+        />
+      </Pressable>
+      <Collapsible open={open} testID={testID ? `${testID}-body` : undefined}>
+        <View
+          style={{
+            marginStart: space.md,
+            paddingStart: space.md,
+            paddingVertical: space.xs,
+            borderStartColor: theme.colors.border,
+            borderStartWidth: RULE_WIDTH,
+          }}
+        >
+          {typeof children === 'string' ? (
+            <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
+              {children}
+            </Text>
+          ) : (
+            children
+          )}
+        </View>
+      </Collapsible>
+    </View>
+  );
+}
+
+function AgentThinkingComponent(props: AgentThinkingProps) {
+  return props.children == null ? <ThinkingRow {...props} /> : <ThinkingDisclosure {...props} />;
 }
 
 export const AgentThinking = memo(AgentThinkingComponent);

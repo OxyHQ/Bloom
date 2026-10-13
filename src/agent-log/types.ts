@@ -80,3 +80,38 @@ export interface AgentLogRevealTickerOptions {
   /** Fires once when the last unit lands. */
   onComplete?: () => void;
 }
+
+export type AgentLogToolCallStatus = 'running' | 'done' | 'error';
+
+export interface AgentLogToolCallProps {
+  /** The tool's identifier, e.g. `web_search`. Titles the row when there is no `label`. */
+  name: string;
+  /** Human title, e.g. "Searching the web". */
+  label?: string;
+  status: AgentLogToolCallStatus;
+  /** One-line argument or result summary after the title. */
+  detail?: string;
+  /** Shown instead of `detail` in the `error` state. */
+  error?: string;
+  /** How long the call took (or has taken), in milliseconds. */
+  durationMs?: number;
+  /** Makes the whole row a button that opens the result, with a chevron. */
+  onPress?: () => void;
+  /** An inline result revealed under the row. Makes the row a disclosure (a press also calls `onPress`). */
+  children?: ReactNode;
+  expanded?: boolean;
+  /** Default `false`. */
+  defaultExpanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
+  testID?: string;
+}
+
+export interface AgentLogToolCallsProps {
+  /** `AgentLogToolCall`s, one per row. */
+  children: ReactNode;
+  /** Skip the guide's draw animation. Defaults to the system reduced-motion setting. */
+  reduce?: boolean;
+  /** Names the list for assistive technology, e.g. "Tool calls". */
+  accessibilityLabel?: string;
+  testID?: string;
+}

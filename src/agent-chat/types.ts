@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { BloomIconComponent } from '../icons/icon-component';
-import type { ToolCallProps } from '../tool-call';
+import type { AgentLogToolCallProps } from '../agent-log';
 
 /** The agent a reply was delegated to, shown above it. */
 export interface AgentChatAgent {
@@ -21,11 +21,11 @@ export interface AgentChatReasoning {
   streaming?: boolean;
 }
 
-/** A tool call inside a reply: a `ToolCall` row with an identity for the list key. */
+/** A tool call inside a reply: an `AgentLogToolCall` row with an identity for the list key. */
 export interface AgentChatToolCall
   extends Pick<
-    ToolCallProps,
-    'name' | 'label' | 'status' | 'detail' | 'error' | 'durationMs' | 'icon' | 'onPress'
+    AgentLogToolCallProps,
+    'name' | 'label' | 'status' | 'detail' | 'error' | 'durationMs' | 'onPress'
   > {
   id: string;
 }

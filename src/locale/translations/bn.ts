@@ -6,7 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
-import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
+import { thoughtFor as reasoning_thoughtFor } from '../../agent-thinking/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -625,6 +625,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'পুনরায় ব্যবহারযোগ্য নিবন্ধিত থিম টগল যোগ করুন',
     'রেজিস্ট্রি, লিন্ট ও প্রোডাকশন বিল্ড চালান',
   ],
+  planTitle: 'প্রস্তাবিত পরিকল্পনা',
+  approve: 'অনুমোদন করুন',
+  reject: 'প্রত্যাখ্যান করুন',
+  approved: 'অনুমোদিত',
+  rejected: 'প্রত্যাখ্যাত',
+  planDecision: 'পরিকল্পনার সিদ্ধান্ত',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -949,31 +955,21 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'মেনু বার',
 };
 
-const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+const AGENT_LOG_MESSAGES: Translations['AGENT_LOG_MESSAGES'] = {
   running: 'চলছে',
   done: 'সম্পন্ন',
   failed: 'ব্যর্থ',
 };
 
-const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'ভাবছে' };
-const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
-  taskDone: 'সম্পন্ন',
-  taskTodo: 'অসম্পন্ন',
-};
-
-const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
+  thinking: 'ভাবছে',
   thoughtFor: reasoning_thoughtFor('{time} ভেবেছে', ' মিনিট', ' সেকেন্ড', ' '),
   thoughtBriefly: 'একটু ভেবেছে',
   reasoning: 'যুক্তি',
 };
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'প্রস্তাবিত পরিকল্পনা',
-  approve: 'অনুমোদন করুন',
-  reject: 'প্রত্যাখ্যান করুন',
-  approved: 'অনুমোদিত',
-  rejected: 'প্রত্যাখ্যাত',
-  decision: 'পরিকল্পনার সিদ্ধান্ত',
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'সম্পন্ন',
+  taskTodo: 'অসম্পন্ন',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2876,10 +2872,8 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  REASONING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
-  TOOL_CALL_MESSAGES,
+  AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

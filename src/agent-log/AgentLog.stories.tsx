@@ -10,6 +10,8 @@ import {
   AgentLogReveal,
   AgentLogRow,
   AgentLogShimmerText,
+  AgentLogToolCall,
+  AgentLogToolCalls,
   AgentLogWorkingRow,
   useAgentLogMotion,
   useAgentLogRevealTicker,
@@ -164,4 +166,33 @@ export const Pieces: Story = {
       </Frame>
     );
   },
+};
+
+/** Tool calls as log lines: running shimmers, done is plain, failed is the danger pair; one is pressable, one expands. */
+export const ToolCalls: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Frame>
+      <AgentLogToolCalls accessibilityLabel="Tool calls">
+        <AgentLogToolCall
+          name="read_file"
+          label="Reading q3.pdf"
+          status="done"
+          detail="12 pages"
+          durationMs={420}
+          onPress={() => {}}
+        />
+        <AgentLogToolCall name="calculator" label="Comparing margins" status="running" />
+        <AgentLogToolCall
+          name="web_search"
+          label="Searching the web"
+          status="error"
+          error="The search service did not answer"
+        />
+        <AgentLogToolCall name="summarise" label="Summarising" status="done" durationMs={2400}>
+          <Text variant="body-2-regular">Q3 grew faster; Q2 had the better margin.</Text>
+        </AgentLogToolCall>
+      </AgentLogToolCalls>
+    </Frame>
+  ),
 };

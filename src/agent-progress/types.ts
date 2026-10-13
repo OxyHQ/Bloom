@@ -1,4 +1,5 @@
-import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { Ref } from 'react';
+import type { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 
 import type { TypeScaleVariant } from '../typography/scale';
 
@@ -60,4 +61,34 @@ export interface AgentProgressLoadingTextProps {
   /** Default `1` (truncates the label). `0` lets it wrap. */
   numberOfLines?: number;
   testID?: string;
+}
+
+/** Where a proposed plan stands. Owned by the caller: it knows when the answer landed. */
+export type AgentProgressPlanDecision = 'pending' | 'approved' | 'rejected';
+
+export interface AgentProgressPlanProps {
+  /** Heading above the steps. "Proposed plan" in English. */
+  title?: string;
+  /** The steps the agent proposes, in order. */
+  steps: readonly string[];
+  /**
+   * Controlled. `pending` shows Approve and Reject; once `approved` or
+   * `rejected` they are replaced by a status badge, and nothing else changes
+   * the plan. Default `'pending'`.
+   */
+  decision?: AgentProgressPlanDecision;
+  onApprove?: () => void;
+  onReject?: () => void;
+  /** Overrides "Approve". */
+  approveLabel?: string;
+  /** Overrides "Reject". */
+  rejectLabel?: string;
+  /** Blocks both buttons. */
+  disabled?: boolean;
+  /** A decision is being sent: both buttons block and the one pressed shows a spinner. */
+  loading?: boolean;
+  /** Card style (width, margins…). Default card is 341 wide, `max-width: 100%`, like `AgentProgress`. */
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+  ref?: Ref<View>;
 }

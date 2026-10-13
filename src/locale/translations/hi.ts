@@ -6,7 +6,7 @@ import { priceName as booking_priceName } from '../../booking/message-helpers';
 import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
-import { thoughtFor as reasoning_thoughtFor } from '../../reasoning/message-helpers';
+import { thoughtFor as reasoning_thoughtFor } from '../../agent-thinking/message-helpers';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
 import {
@@ -628,6 +628,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'दोबारा इस्तेमाल होने वाला रजिस्टर्ड थीम टॉगल जोड़ें',
     'रजिस्ट्री, लिंट और प्रोडक्शन बिल्ड चलाएं',
   ],
+  planTitle: 'प्रस्तावित योजना',
+  approve: 'मंज़ूर करें',
+  reject: 'अस्वीकार करें',
+  approved: 'मंज़ूर किया गया',
+  rejected: 'अस्वीकार किया गया',
+  planDecision: 'योजना पर निर्णय',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -954,31 +960,21 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'मेन्यू बार',
 };
 
-const TOOL_CALL_MESSAGES: Translations['TOOL_CALL_MESSAGES'] = {
+const AGENT_LOG_MESSAGES: Translations['AGENT_LOG_MESSAGES'] = {
   running: 'चल रहा है',
   done: 'हो गया',
   failed: 'विफल',
 };
 
-const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'सोच रहा है' };
-const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
-  taskDone: 'पूर्ण',
-  taskTodo: 'अपूर्ण',
-};
-
-const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
+  thinking: 'सोच रहा है',
   thoughtFor: reasoning_thoughtFor('{time} तक सोचा', ' मिनट', ' सेकंड', ' '),
   thoughtBriefly: 'थोड़ी देर सोचा',
   reasoning: 'तर्क',
 };
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'प्रस्तावित योजना',
-  approve: 'मंज़ूर करें',
-  reject: 'अस्वीकार करें',
-  approved: 'मंज़ूर किया गया',
-  rejected: 'अस्वीकार किया गया',
-  decision: 'योजना पर निर्णय',
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'पूर्ण',
+  taskTodo: 'अपूर्ण',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2894,10 +2890,8 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  REASONING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
-  TOOL_CALL_MESSAGES,
+  AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,
