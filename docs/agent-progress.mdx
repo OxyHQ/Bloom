@@ -85,6 +85,37 @@ Ramps come from `resolveButtonRamps(theme)`. SVG colours are passed as hex so re
 
 The card is an `aria-live="polite"` region, so the header count is announced as steps finish. The minimize button ("Minimize steps") and the minimized bar ("Expand steps") are named buttons; rename them with `labels`. Glyphs and rings are `aria-hidden`. On web the bar shows the browser's focus ring on keyboard focus and reveals the expand glyph with it.
 
+## AgentProgressPlan
+
+A plan the agent proposes and the user approves or rejects, on the same card: the surface, shadow, corner and 341px width of `AgentProgress`, the same header line and the same 32px step rows with the pending glyph. Nothing in it moves: a plan awaiting a decision is not progress, so there is no clock, ring or minimize.
+
+```tsx
+import { AgentProgressPlan } from '@oxy.so/bloom/agent-progress';
+
+<AgentProgressPlan
+  steps={['Read the project files', 'Update the tokens', 'Run the build']}
+  decision={decision}            // 'pending' | 'approved' | 'rejected'
+  loading={sending}
+  onApprove={() => send('approved')}
+  onReject={() => send('rejected')}
+/>
+```
+
+| Prop | Type | Default | |
+| --- | --- | --- | --- |
+| `steps` | `readonly string[]` | required | In order. |
+| `title` | `string` | "Proposed plan" | |
+| `decision` | `'pending' \| 'approved' \| 'rejected'` | `'pending'` | Controlled. |
+| `onApprove`, `onReject` | `() => void` | | Fire once per press. |
+| `approveLabel`, `rejectLabel` | `string` | "Approve", "Reject" | |
+| `disabled` | `boolean` | `false` | Blocks both buttons. |
+| `loading` | `boolean` | `false` | A decision is being sent: both buttons block and the pressed one shows its spinner. |
+| `style`, `testID`, `ref` | | | The card. Parts: `<testID>-approve`, `-reject`, `-status`. |
+
+Approve is `Button` `solid` `accent`; Reject is `outline` `neutral`. The component holds no decision: after a press the caller changes `decision`, and a failed send simply leaves it `pending`. `approved` and `rejected` remove the buttons and show a `Badge` (`success` / `danger`) that reads "Approved" or "Rejected": the outcome is text, not colour. A rejected plan strikes its steps through.
+
+The status region is mounted from the start, empty, so the change is announced. After a press the deciding button unmounts and would take focus with it, so focus moves to the status: `focus()` on web, the screen reader's cursor on native. A decision that arrives without a press moves nothing. Every string is localised via `BloomProvider locale`.
+
 ## Props
 
 | Prop | Type | Default | Description |

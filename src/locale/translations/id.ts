@@ -635,6 +635,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'Tambahkan pengalih tema terdaftar yang dapat dipakai ulang',
     'Jalankan registry, lint, dan build produksi',
   ],
+  planTitle: 'Rencana yang diusulkan',
+  approve: 'Setujui',
+  reject: 'Tolak',
+  approved: 'Disetujui',
+  rejected: 'Ditolak',
+  planDecision: 'Keputusan rencana',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -976,15 +982,6 @@ const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'Selesai',
   taskTodo: 'Belum selesai',
-};
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'Rencana yang diusulkan',
-  approve: 'Setujui',
-  reject: 'Tolak',
-  approved: 'Disetujui',
-  rejected: 'Ditolak',
-  decision: 'Keputusan rencana',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2955,7 +2952,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,

@@ -9,7 +9,7 @@ import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
-import { AgentPlan, type AgentPlanDecision } from '../agent-plan';
+import { AgentProgressPlan, type AgentProgressPlanDecision } from '../agent-progress';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -19,11 +19,11 @@ let root: Root;
 
 const STEPS = ['Read the files', 'Write the change'];
 
-function mount(props: Partial<React.ComponentProps<typeof AgentPlan>> = {}) {
+function mount(props: Partial<React.ComponentProps<typeof AgentProgressPlan>> = {}) {
   act(() => {
     root.render(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <AgentPlan testID="p" steps={STEPS} {...props} />
+        <AgentProgressPlan testID="p" steps={STEPS} {...props} />
       </BloomThemeProvider>,
     );
   });
@@ -45,7 +45,7 @@ afterEach(() => {
   container.remove();
 });
 
-describe('AgentPlan pending', () => {
+describe('AgentProgressPlan pending', () => {
   it('lists the steps under the default title with both actions named', () => {
     mount();
     expect(container.textContent).toContain('Proposed plan');
@@ -112,27 +112,30 @@ describe('AgentPlan pending', () => {
 describe.each([
   ['approved', 'Approved', 'Rejected'],
   ['rejected', 'Rejected', 'Approved'],
-] as const)('AgentPlan %s', (decision: AgentPlanDecision, shown: string, hidden: string) => {
-  it('replaces the buttons with a status that is text', () => {
-    mount({ decision });
-    expect(approve()).toBeNull();
-    expect(reject()).toBeNull();
-    expect(container.querySelector('[role="group"]')).toBeNull();
-    expect(status().getAttribute('role')).toBe('status');
-    expect(status().textContent).toBe(shown);
-    expect(container.textContent).not.toContain(hidden);
-  });
+] as const)(
+  'AgentProgressPlan %s',
+  (decision: AgentProgressPlanDecision, shown: string, hidden: string) => {
+    it('replaces the buttons with a status that is text', () => {
+      mount({ decision });
+      expect(approve()).toBeNull();
+      expect(reject()).toBeNull();
+      expect(container.querySelector('[role="group"]')).toBeNull();
+      expect(status().getAttribute('role')).toBe('status');
+      expect(status().textContent).toBe(shown);
+      expect(container.textContent).not.toContain(hidden);
+    });
 
-  it('keeps the status region mounted from pending, so the change is announced', () => {
-    mount();
-    const region = status();
-    mount({ decision });
-    expect(status()).toBe(region);
-    expect(region.textContent).toBe(shown);
-  });
-});
+    it('keeps the status region mounted from pending, so the change is announced', () => {
+      mount();
+      const region = status();
+      mount({ decision });
+      expect(status()).toBe(region);
+      expect(region.textContent).toBe(shown);
+    });
+  },
+);
 
-describe('AgentPlan rejected', () => {
+describe('AgentProgressPlan rejected', () => {
   it('strikes the steps through', () => {
     mount({ decision: 'rejected' });
     const step = container.querySelector('[role="listitem"] [dir="auto"]') as HTMLElement;
@@ -146,7 +149,7 @@ describe('AgentPlan rejected', () => {
   });
 });
 
-describe('AgentPlan focus', () => {
+describe('AgentProgressPlan focus', () => {
   it('moves focus to the status after a press decides it', () => {
     mount();
     click(approve());

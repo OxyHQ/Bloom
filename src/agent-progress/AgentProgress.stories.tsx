@@ -3,7 +3,8 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { AgentProgress, AgentProgressLoadingText } from './index';
+import { AgentProgress, AgentProgressLoadingText, AgentProgressPlan } from './index';
+import type { AgentProgressPlanDecision } from './types';
 
 const meta: Meta<typeof AgentProgress> = {
   argTypes: {
@@ -148,5 +149,50 @@ export const LoadingText: Story = {
         Thinking about your request
       </AgentProgressLoadingText>
     </Frame>
+  ),
+};
+
+const PLAN_STEPS = [
+  'Read the project files',
+  'Update and install the light mode tokens',
+  'Implement the dark mode tokens',
+  'Run the registry, lint and production build',
+];
+
+/** A proposed plan on the progress card: Approve and Reject; the caller owns the decision. */
+export const Plan: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [decision, setDecision] = useState<AgentProgressPlanDecision>('pending');
+    const [sending, setSending] = useState(false);
+    const send = (next: AgentProgressPlanDecision) => {
+      setSending(true);
+      setTimeout(() => {
+        setSending(false);
+        setDecision(next);
+      }, 1000);
+    };
+    return (
+      <View style={{ padding: 24 }}>
+        <AgentProgressPlan
+          steps={PLAN_STEPS}
+          decision={decision}
+          loading={sending}
+          onApprove={() => send('approved')}
+          onReject={() => send('rejected')}
+        />
+      </View>
+    );
+  },
+};
+
+/** Once decided the buttons give way to a status badge; a rejected plan strikes its steps through. */
+export const PlanDecided: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ padding: 24, gap: 16 }}>
+      <AgentProgressPlan steps={PLAN_STEPS} decision="approved" />
+      <AgentProgressPlan steps={PLAN_STEPS} decision="rejected" />
+    </View>
   ),
 };

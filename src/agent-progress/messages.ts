@@ -12,6 +12,16 @@ export interface AgentProgressMessages {
   expand: string;
   /** The demo coding workflow shown when no `steps` are passed. */
   defaultSteps: readonly string[];
+  /** `AgentProgressPlan`'s title when none is passed. */
+  planTitle: string;
+  approve: string;
+  reject: string;
+  /** The plan's status once approved. */
+  approved: string;
+  /** The plan's status once rejected. */
+  rejected: string;
+  /** Names the group holding the approve and reject buttons. */
+  planDecision: string;
 }
 
 export const AGENT_PROGRESS_MESSAGES: MessageCatalog<AgentProgressMessages> =
@@ -27,4 +37,10 @@ export const AGENT_PROGRESS_MESSAGES: MessageCatalog<AgentProgressMessages> =
       'Add reusable registered theme toggle',
       'Run registry, lint and production build',
     ],
+    planTitle: 'Proposed plan',
+    approve: 'Approve',
+    reject: 'Reject',
+    approved: 'Approved',
+    rejected: 'Rejected',
+    planDecision: 'Plan decision',
   });

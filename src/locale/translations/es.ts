@@ -650,6 +650,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'Añadir un selector de tema reutilizable y registrado',
     'Ejecutar el registro, el lint y la compilación de producción',
   ],
+  planTitle: 'Plan propuesto',
+  approve: 'Aprobar',
+  reject: 'Rechazar',
+  approved: 'Aprobado',
+  rejected: 'Rechazado',
+  planDecision: 'Decisión sobre el plan',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -1003,15 +1009,6 @@ const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'Completada',
   taskTodo: 'Sin completar',
-};
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'Plan propuesto',
-  approve: 'Aprobar',
-  reject: 'Rechazar',
-  approved: 'Aprobado',
-  rejected: 'Rechazado',
-  decision: 'Decisión sobre el plan',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2995,7 +2992,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,

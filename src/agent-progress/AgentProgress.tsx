@@ -96,11 +96,11 @@ const SPRING = { stiffness: 260, damping: 30, mass: 0.8 } as const;
 //  Geometry
 // ---------------------------------------------------------------------------
 
-const CARD_WIDTH = 341;
-const CARD_RADIUS = 16;
+export const CARD_WIDTH = 341;
+export const CARD_RADIUS = 16;
 const MINIMIZED_HEIGHT = 44;
-const ROW_HEIGHT = 32;
-const ROW_GAP = 6;
+export const ROW_HEIGHT = 32;
+export const ROW_GAP = 6;
 const RING_SIZE = 16;
 const RING_R = 6.75;
 const RING_C = 2 * Math.PI * RING_R;

@@ -625,6 +625,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'পুনরায় ব্যবহারযোগ্য নিবন্ধিত থিম টগল যোগ করুন',
     'রেজিস্ট্রি, লিন্ট ও প্রোডাকশন বিল্ড চালান',
   ],
+  planTitle: 'প্রস্তাবিত পরিকল্পনা',
+  approve: 'অনুমোদন করুন',
+  reject: 'প্রত্যাখ্যান করুন',
+  approved: 'অনুমোদিত',
+  rejected: 'প্রত্যাখ্যাত',
+  planDecision: 'পরিকল্পনার সিদ্ধান্ত',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -964,15 +970,6 @@ const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'সম্পন্ন',
   taskTodo: 'অসম্পন্ন',
-};
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'প্রস্তাবিত পরিকল্পনা',
-  approve: 'অনুমোদন করুন',
-  reject: 'প্রত্যাখ্যান করুন',
-  approved: 'অনুমোদিত',
-  rejected: 'প্রত্যাখ্যাত',
-  decision: 'পরিকল্পনার সিদ্ধান্ত',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2875,7 +2872,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,

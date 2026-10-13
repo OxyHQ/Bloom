@@ -1007,20 +1007,6 @@
         "default": "./lib/commonjs/agent-progress/index.js"
       }
     },
-    "./agent-plan": {
-      "react-native": {
-        "types": "./lib/typescript/module/agent-plan/index.d.ts",
-        "default": "./src/agent-plan/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/agent-plan/index.d.ts",
-        "default": "./lib/module/agent-plan/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/agent-plan/index.d.ts",
-        "default": "./lib/commonjs/agent-plan/index.js"
-      }
-    },
     "./composer-loader": {
       "react-native": {
         "types": "./lib/typescript/module/composer-loader/index.d.ts",
@@ -3980,9 +3966,6 @@
       ],
       "agent-progress": [
         "./lib/typescript/module/agent-progress/index.d.ts"
-      ],
-      "agent-plan": [
-        "./lib/typescript/module/agent-plan/index.d.ts"
       ],
       "composer-loader": [
         "./lib/typescript/module/composer-loader/index.d.ts"

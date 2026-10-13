@@ -613,6 +613,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     '添加可复用的已注册主题切换',
     '运行注册表、lint 和生产构建',
   ],
+  planTitle: '建议的计划',
+  approve: '批准',
+  reject: '拒绝',
+  approved: '已批准',
+  rejected: '已拒绝',
+  planDecision: '计划决定',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -950,15 +956,6 @@ const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: '已完成',
   taskTodo: '未完成',
-};
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: '建议的计划',
-  approve: '批准',
-  reject: '拒绝',
-  approved: '已批准',
-  rejected: '已拒绝',
-  decision: '计划决定',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2834,7 +2831,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,

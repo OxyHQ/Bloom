@@ -622,6 +622,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     '再利用可能なテーマ切り替えを登録して追加',
     'レジストリ、lint、本番ビルドを実行',
   ],
+  planTitle: '提案されたプラン',
+  approve: '承認',
+  reject: '却下',
+  approved: '承認済み',
+  rejected: '却下済み',
+  planDecision: 'プランの判断',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -961,15 +967,6 @@ const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: '完了',
   taskTodo: '未完了',
-};
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: '提案されたプラン',
-  approve: '承認',
-  reject: '却下',
-  approved: '承認済み',
-  rejected: '却下済み',
-  decision: 'プランの判断',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2908,7 +2905,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,

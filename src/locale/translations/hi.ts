@@ -628,6 +628,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'दोबारा इस्तेमाल होने वाला रजिस्टर्ड थीम टॉगल जोड़ें',
     'रजिस्ट्री, लिंट और प्रोडक्शन बिल्ड चलाएं',
   ],
+  planTitle: 'प्रस्तावित योजना',
+  approve: 'मंज़ूर करें',
+  reject: 'अस्वीकार करें',
+  approved: 'मंज़ूर किया गया',
+  rejected: 'अस्वीकार किया गया',
+  planDecision: 'योजना पर निर्णय',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -969,15 +975,6 @@ const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'पूर्ण',
   taskTodo: 'अपूर्ण',
-};
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'प्रस्तावित योजना',
-  approve: 'मंज़ूर करें',
-  reject: 'अस्वीकार करें',
-  approved: 'मंज़ूर किया गया',
-  rejected: 'अस्वीकार किया गया',
-  decision: 'योजना पर निर्णय',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2893,7 +2890,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,

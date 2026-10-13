@@ -16,7 +16,7 @@ Bloom follows its clean-cut rule: no `@deprecated` aliases, no shims. A symbol t
 4. `ComposerPill` / `ComposerPanel`: `listening` becomes `voiceState`.
 5. Rename the `glass*` props and tokens in the table below.
 
-Additive in 9.0, nothing to migrate: `Markdown`, `ToolCall` / `ToolCallList`, `Reasoning`, `AgentPlan`, `AudioWaveVisualizer` / `VoiceControls` / `VoiceOverlay`, attachments / `error` / disabled add-menu rows on `ComposerPill`, `EmptyState` `suggestions`, and the `agent`, `reasoning`, `toolCalls` and `markdown` fields on `AgentChat` messages.
+Additive in 9.0, nothing to migrate: `Markdown`, `AgentLogToolCall` / `AgentLogToolCalls` (tool calls as log lines), `AgentThinking` children + `thinking` + `durationMs` (the collapsible "Thought for N s"), `AgentProgressPlan` (Approve / Reject on the progress card), `AudioWaveVisualizer` / `VoiceControls` / `VoiceOverlay`, attachments / `error` / disabled add-menu rows on `ComposerPill`, `EmptyState` `suggestions`, and the `agent`, `reasoning`, `toolCalls` and `markdown` fields on `AgentChat` messages.
 
 ## The surface material is blur and tint
 

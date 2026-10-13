@@ -710,6 +710,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'إضافة مبدّل سمة مسجَّل قابل لإعادة الاستخدام',
     'تشغيل السجل والتدقيق وبناء الإنتاج',
   ],
+  planTitle: 'الخطة المقترحة',
+  approve: 'موافقة',
+  reject: 'رفض',
+  approved: 'تمت الموافقة',
+  rejected: 'تم الرفض',
+  planDecision: 'قرار الخطة',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -1102,15 +1108,6 @@ const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'مكتملة',
   taskTodo: 'غير مكتملة',
-};
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'الخطة المقترحة',
-  approve: 'موافقة',
-  reject: 'رفض',
-  approved: 'تمت الموافقة',
-  rejected: 'تم الرفض',
-  decision: 'قرار الخطة',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -3347,7 +3344,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,

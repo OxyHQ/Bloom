@@ -55,7 +55,7 @@ import { Checkbox } from '../checkbox/Checkbox';
 import { Switch } from '../switch/Switch';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
 import { Chip } from '../chip';
-import { AgentPlan } from '../agent-plan';
+import { AgentProgressPlan } from '../agent-progress';
 import { AgentThinking } from '../agent-thinking';
 import { AgentLogToolCall, AgentLogToolCalls } from '../agent-log';
 import { Item } from '../item';
@@ -293,13 +293,13 @@ describe('AgentThinking disclosure', () => {
   });
 });
 
-describe('AgentPlan', () => {
+describe('AgentProgressPlan', () => {
   it('names its decision buttons and announces the outcome as a status', () => {
-    const c = mount(<AgentPlan testID="plan" steps={['One']} />);
+    const c = mount(<AgentProgressPlan testID="plan" steps={['One']} />);
     expect(byTestId(c, 'plan-approve').textContent).toBe('Approve');
     expect(byTestId(c, 'plan-status').getAttribute('role')).toBe('status');
     const decided = mount(
-      <AgentPlan key="decided" testID="plan" steps={['One']} decision="approved" />,
+      <AgentProgressPlan key="decided" testID="plan" steps={['One']} decision="approved" />,
     );
     expect(byTestId(decided, 'plan-status').textContent).toBe('Approved');
   });

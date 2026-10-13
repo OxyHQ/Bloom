@@ -631,6 +631,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'Yeniden kullanılabilir, kayıtlı bir tema düğmesi ekle',
     'Kayıt, lint ve üretim derlemesini çalıştır',
   ],
+  planTitle: 'Önerilen plan',
+  approve: 'Onayla',
+  reject: 'Reddet',
+  approved: 'Onaylandı',
+  rejected: 'Reddedildi',
+  planDecision: 'Plan kararı',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -970,15 +976,6 @@ const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'Tamamlandı',
   taskTodo: 'Tamamlanmadı',
-};
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'Önerilen plan',
-  approve: 'Onayla',
-  reject: 'Reddet',
-  approved: 'Onaylandı',
-  rejected: 'Reddedildi',
-  decision: 'Plan kararı',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -2927,7 +2924,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,

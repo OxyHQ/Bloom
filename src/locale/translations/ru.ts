@@ -690,6 +690,12 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
     'Добавить переиспользуемый зарегистрированный переключатель темы',
     'Запустить реестр, линтер и продакшен-сборку',
   ],
+  planTitle: 'Предлагаемый план',
+  approve: 'Утвердить',
+  reject: 'Отклонить',
+  approved: 'Утверждено',
+  rejected: 'Отклонено',
+  planDecision: 'Решение по плану',
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -1081,15 +1087,6 @@ const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
 const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
   taskDone: 'Выполнено',
   taskTodo: 'Не выполнено',
-};
-
-const AGENT_PLAN_MESSAGES: Translations['AGENT_PLAN_MESSAGES'] = {
-  title: 'Предлагаемый план',
-  approve: 'Утвердить',
-  reject: 'Отклонить',
-  approved: 'Утверждено',
-  rejected: 'Отклонено',
-  decision: 'Решение по плану',
 };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
@@ -3285,7 +3282,6 @@ const translations: Translations = {
   AVATAR_GROUP_MESSAGES,
   MENUBAR_MESSAGES,
   AGENT_THINKING_MESSAGES,
-  AGENT_PLAN_MESSAGES,
   MARKDOWN_MESSAGES,
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
