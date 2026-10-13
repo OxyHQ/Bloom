@@ -124,6 +124,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./auth-card', 'auth-card/index.ts'],
   ['./agent-thinking', 'agent-thinking/index.ts'],
   ['./agent-log', 'agent-log/index.ts'],
+  ['./markdown', 'markdown/index.ts'],
   ['./agent-progress', 'agent-progress/index.ts'],
   ['./reasoning', 'reasoning/index.ts'],
   ['./agent-plan', 'agent-plan/index.ts'],

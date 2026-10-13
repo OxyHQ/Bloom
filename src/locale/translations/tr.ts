@@ -956,6 +956,10 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 };
 
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Düşünüyor' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Tamamlandı',
+  taskTodo: 'Tamamlanmadı',
+};
 
 const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
   thoughtFor: reasoning_thoughtFor('{time} düşündü', ' dk', ' sn', ' '),
@@ -2920,6 +2924,7 @@ const translations: Translations = {
   AGENT_THINKING_MESSAGES,
   REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

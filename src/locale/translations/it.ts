@@ -994,6 +994,10 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
   thinking: 'Sto pensando',
 };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'Completata',
+  taskTodo: 'Non completata',
+};
 
 const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
   thoughtFor: reasoning_thoughtFor('Ragionato per {time}', ' min', ' s', ' '),
@@ -2992,6 +2996,7 @@ const translations: Translations = {
   AGENT_THINKING_MESSAGES,
   REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

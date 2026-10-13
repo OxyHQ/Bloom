@@ -233,6 +233,7 @@ export * from './settings-modal';
 export * from './auth-card';
 export * from './agent-thinking';
 export * from './agent-log';
+export * from './markdown';
 export * from './agent-progress';
 export * from './reasoning';
 export * from './agent-plan';

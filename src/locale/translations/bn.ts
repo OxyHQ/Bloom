@@ -950,6 +950,10 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 };
 
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'ভাবছে' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'সম্পন্ন',
+  taskTodo: 'অসম্পন্ন',
+};
 
 const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
   thoughtFor: reasoning_thoughtFor('{time} ভেবেছে', ' মিনিট', ' সেকেন্ড', ' '),
@@ -2868,6 +2872,7 @@ const translations: Translations = {
   AGENT_THINKING_MESSAGES,
   REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

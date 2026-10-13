@@ -936,6 +936,10 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 };
 
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '思考中' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: '已完成',
+  taskTodo: '未完成',
+};
 
 const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
   thoughtFor: reasoning_thoughtFor('思考了{time}', '分钟', '秒', ''),
@@ -2827,6 +2831,7 @@ const translations: Translations = {
   AGENT_THINKING_MESSAGES,
   REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

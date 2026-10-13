@@ -955,6 +955,10 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 };
 
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'सोच रहा है' };
+const MARKDOWN_MESSAGES: Translations['MARKDOWN_MESSAGES'] = {
+  taskDone: 'पूर्ण',
+  taskTodo: 'अपूर्ण',
+};
 
 const REASONING_MESSAGES: Translations['REASONING_MESSAGES'] = {
   thoughtFor: reasoning_thoughtFor('{time} तक सोचा', ' मिनट', ' सेकंड', ' '),
@@ -2886,6 +2890,7 @@ const translations: Translations = {
   AGENT_THINKING_MESSAGES,
   REASONING_MESSAGES,
   AGENT_PLAN_MESSAGES,
+  MARKDOWN_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
   MUSIC_LIBRARY_MESSAGES,

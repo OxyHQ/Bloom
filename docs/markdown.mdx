@@ -1,0 +1,89 @@
+---
+title: Markdown
+description: A Markdown renderer in Bloom's type ramp, built for text that arrives token by token — headings, lists, quotes, tables, links and code, with no HTML and no unsafe links.
+order: 66
+---
+
+# Markdown
+
+`Markdown` draws a Markdown string with Bloom's typography and theme: a chat reply, a note, a changelog. It is pure JavaScript with no native module, and it is made for a reply that is still being written.
+
+```tsx
+import { Markdown } from '@oxy.so/bloom/markdown';
+
+<Markdown streaming={isStreaming} onLinkPress={(url) => router.push(url)}>
+  {message.text}
+</Markdown>
+```
+
+## What it reads
+
+| Markdown | Drawn as |
+| --- | --- |
+| `# ` to `######` | a heading (`role="heading"`, with its level on web) on the ramp below |
+| paragraphs, `**strong**`, `*emphasis*`, `~~strikethrough~~` | `Text`, with the marks nested so they inherit the block's size |
+| `` `code` `` | the [`Code`](./code.mdx) family's inline code |
+| fenced code | a [`CodeBlock`](./code.mdx), with the fence's language as its chip and no line numbers |
+| `-`, `*`, `+`, `1.` lists, nested, with `[ ]` / `[x]` tasks | a list with a hanging indent; ordered items keep their start number |
+| `> quote` | a start rule and indent, holding any blocks |
+| `---` | a rule |
+| tables | a bordered grid that scrolls sideways; column alignment is kept |
+| `[label](url)`, `![alt](url)`, bare `https://…` | a link; an image reads as a link carrying its alt text and is not fetched |
+| two trailing spaces or `\` | a hard break |
+
+Not read: setext headings, indented code blocks, reference links, footnotes, and HTML. **Raw HTML is shown as text**, never parsed — `<img onerror=…>` reaches the screen as those characters.
+
+## Sizes
+
+| `size` | Body | Headings (h1 to h6) |
+| --- | --- | --- |
+| `md` (default) | `body-regular` 14/20 | `title-1`, `title-2`, `title-3`, `headline`, `body`, `body`, all semibold |
+| `sm` | `body-2-regular` 13/18 | `title-2`, `title-3`, `headline`, `body`, `body-2`, `body-2`, all semibold |
+
+Blocks are 12 apart at `md` and 8 at `sm`; a list's items are 4 apart. Lists use logical edges (`marginEnd`, `borderStartWidth`), so they mirror in right-to-left layouts, and the marker column is as wide as the widest number so a hanging indent stays aligned past item 9.
+
+## Links
+
+A link is handed to `onLinkPress(url)` only when its target is `http:`, `https:`, `mailto:` or relative (`/a`, `a/b`, `#top`). Every other scheme — `javascript:`, `data:`, `vbscript:`, `file:` — and a protocol-relative `//host` is refused when the text is read: the label is drawn as plain text and no press handler exists. The check ignores the whitespace and control characters a browser strips (`java\tscript:`) and is case-insensitive.
+
+Without `onLinkPress`, native opens the URL with `Linking` and web follows the anchor (`target="_blank"`, `rel="noopener noreferrer"` for absolute URLs). With it, web calls `preventDefault()` first, so the handler owns navigation.
+
+## Streaming
+
+Pass `streaming` while the text is still arriving. Text that stops mid-construct is closed where it ends instead of showing its raw markers:
+
+| Arrived so far | Drawn |
+| --- | --- |
+| `` ```ts `` and some code | a code block holding that code |
+| `a **bold and *it` | bold text containing italic text |
+| `` use `fo `` | inline code `fo` |
+| `see [the docs](https://x.` | the label `the docs`, not yet a link |
+| `so far **` | `so far` (a marker with nothing after it is dropped) |
+| `- ` | an empty bullet |
+
+Only the **last block** is read as unfinished. A finished block is parsed with the rules of finished text, and the same text read with `streaming={false}` shows an unclosed `**` literally.
+
+Appending text re-reads only the tail. The document is split into top-level blocks, and each render hands the previous result back to the parser: a block whose source lines are unchanged comes back as the same object, so its memoized view does not render. Appending a token to the last paragraph re-reads that paragraph and nothing above it; `markdown-parse.test.ts` pins this over every prefix of a sample document.
+
+## Props
+
+| Prop | Type | Default | |
+| --- | --- | --- | --- |
+| `children` | `string` | | the Markdown source |
+| `streaming` | `boolean` | `false` | the text is still growing |
+| `size` | `'sm' \| 'md'` | `'md'` | |
+| `onLinkPress` | `(url: string) => void` | | only safe URLs reach it |
+| `style`, `className`, `testID`, `ref` | | | the root `View` |
+
+## Accessibility
+
+- Headings carry `role="heading"` (and `aria-level` on web, where react-native-web makes it an `h1` to `h6`).
+- A link is `role="link"`; on web it is a real `<a href>`.
+- A list is `role="list"` with `role="listitem"` rows. A bullet glyph is hidden from assistive technology; an ordered number is not.
+- A task item's box announces `Completed` or `Not completed` (localised through `BloomProvider locale`); it is read-only, because a document is not a form.
+- A table is `table` / `row` / `columnheader` / `cell`.
+- Text is selectable.
+
+## Verified, and not
+
+The parser and the elements react-native-web produces are covered by `markdown-parse.test.ts` and `Markdown.web.test.tsx`; the native render is covered through the repo's `react-native` mock in `Markdown.test.tsx`. Native layout on a device (the marker column, the sideways-scrolling table, selection across nested text) has not been looked at.
