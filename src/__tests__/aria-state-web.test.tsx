@@ -55,6 +55,7 @@ import { Checkbox } from '../checkbox/Checkbox';
 import { Switch } from '../switch/Switch';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
 import { Chip } from '../chip';
+import { ToolCall, ToolCallList } from '../tool-call';
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
 import { Button } from '../button/Button';
@@ -1384,4 +1385,68 @@ describe('modal dialogs say they are modal', () => {
       expect(panel?.getAttribute('aria-modal')).toBe('true');
     },
   );
+});
+
+describe('ToolCall states its status and disclosure on web', () => {
+  it('names the status in a live region and marks a running row busy', () => {
+    const c = mount(<ToolCall name="web_search" status="running" onPress={() => {}} testID="tc" />);
+    const row = byTestId(c, 'tc-row');
+    expect(row.getAttribute('role')).toBe('button');
+    expect(row.getAttribute('aria-busy')).toBe('true');
+    expect(row.hasAttribute('data-bloom-tool-call')).toBe(true);
+    const status = byTestId(c, 'tc-status');
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.textContent).toBe('Running');
+  });
+
+  it('announces a failure assertively', () => {
+    const c = mount(<ToolCall name="t" status="error" error="boom" testID="tc" />);
+    expect(byTestId(c, 'tc-status').getAttribute('aria-live')).toBe('assertive');
+    expect(byTestId(c, 'tc-status').textContent).toBe('Failed');
+  });
+
+  it('emits aria-expanded on a disclosure row and flips it when activated', () => {
+    // react-native-web renders `role="button"` as a real <button>: focusable,
+    // and Enter/Space activate it natively as a click, which is what the
+    // browser would send. jsdom does not synthesise that click, so send it.
+    const c = mount(
+      <ToolCall name="t" status="done" testID="tc">
+        <Text>Result</Text>
+      </ToolCall>,
+    );
+    const row = byTestId(c, 'tc-row');
+    expect(row.tagName).toBe('BUTTON');
+    expect(row.getAttribute('tabindex')).toBe('0');
+    expect(row.getAttribute('aria-label')).toBe('t, Done');
+    expect(row.getAttribute('aria-expanded')).toBe('false');
+    act(() => row.click());
+    expect(byTestId(c, 'tc-row').getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('opens the result when activated, without claiming to expand', () => {
+    const onPress = jest.fn();
+    const c = mount(<ToolCall name="t" status="done" onPress={onPress} testID="tc" />);
+    const row = byTestId(c, 'tc-row');
+    act(() => row.click());
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(row.hasAttribute('aria-expanded')).toBe(false);
+  });
+
+  it('is not a button, and not focusable, without onPress or a body', () => {
+    const c = mount(<ToolCall name="t" status="done" testID="tc" />);
+    expect(c.querySelector('[role="button"]')).toBeNull();
+    expect(byTestId(c, 'tc-row').hasAttribute('tabindex')).toBe(false);
+  });
+
+  it('is a list of listitems inside ToolCallList', () => {
+    const c = mount(
+      <ToolCallList accessibilityLabel="Tool calls">
+        <ToolCall name="a" status="done" />
+        <ToolCall name="b" status="done" />
+      </ToolCallList>,
+    );
+    const list = byRole(c, 'list');
+    expect(list.getAttribute('aria-label')).toBe('Tool calls');
+    expect(list.querySelectorAll(':scope > [role="listitem"]')).toHaveLength(2);
+  });
 });
