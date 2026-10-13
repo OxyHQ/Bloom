@@ -3,7 +3,7 @@
  */
 import type { ReactNode } from 'react';
 
-import { GlassBlurTargetProvider } from '../glass/blur-target';
+import { BlurTargetProvider } from '../blur/blur-target';
 import { BottomEdgeProvider } from '../layout/bottom-edge';
 import { TopEdgeProvider } from '../layout/top-edge';
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
@@ -55,7 +55,7 @@ export function BloomProvider({
                   insets, and it must WRAP the content, which is exactly what this
                   provider already does with `children`.
                 */}
-                <GlassBlurTargetProvider>
+                <BlurTargetProvider>
                   {/*
                     The bottom edge's claim registry. Also a provider, not an outlet:
                     it renders nothing and holds only the set of surfaces currently
@@ -76,7 +76,7 @@ export function BloomProvider({
                       <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
                     </TopEdgeProvider>
                   </BottomEdgeProvider>
-                </GlassBlurTargetProvider>
+                </BlurTargetProvider>
               </BloomHapticsProvider>
             </ScrollRestorationProvider>
           </LocaleProvider>

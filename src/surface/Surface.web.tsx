@@ -11,7 +11,6 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { resolveSurfaceOptics } from './shared';
 import { surfaceMaterialCss } from './web-material';
-import { useSurfaceRefraction } from './web-refraction';
 import type { SurfaceProps } from './types';
 
 const CSS = `
@@ -46,7 +45,6 @@ const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponen
   const material = useResolvedSurface({
     fill: override === undefined ? undefined : String(override),
   });
-  useSurfaceRefraction(material.painted);
   const optics = resolveSurfaceOptics(theme.isDark);
   const baseStyle: WebCssStyle = {
     '--bloom-surface-rim': optics.rim,

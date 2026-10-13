@@ -45,7 +45,7 @@ import { BlurView } from 'expo-blur';
 
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { backdropDimStyle, clampBackdropNumber } from './backdrop-paint';
-import { useWindowedBlurTarget } from '../glass/blur-target';
+import { useWindowedBlurTarget } from '../blur/blur-target';
 import {
   Platform,
   Pressable,
@@ -261,7 +261,7 @@ interface BackdropLayerProps {
   /**
    * The Android blur target, or `undefined` when this surface may not use one.
    * Resolved ONCE in `Backdrop` and passed down, so both layer variants make
-   * the identical decision — see `glass/blur-target.tsx` for why a surface in
+   * the identical decision — see `blur/blur-target.tsx` for why a surface in
    * the app's own window must not receive it.
    */
   blurTarget?: ReturnType<typeof useWindowedBlurTarget>;
@@ -308,7 +308,7 @@ function AnimatedBackdropLayers({
           // A blur method ONLY alongside a target. Without one expo-blur
           // falls back to "none" and warns twice per mount, and WITH one in the
           // wrong window it segfaults — so the two props travel together or not
-          // at all. `glass/blur-target.tsx` is what guarantees this is
+          // at all. `blur/blur-target.tsx` is what guarantees this is
           // `undefined` anywhere it would be unsafe.
           {...(blurTarget ? { blurMethod: 'dimezisBlurView' as const, blurTarget } : null)}
           pointerEvents="none"

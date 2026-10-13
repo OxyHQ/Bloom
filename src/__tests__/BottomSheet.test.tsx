@@ -4,7 +4,7 @@ import { act, render, within } from '@testing-library/react-native';
 
 import { useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { hostNodes, resolvedStyle } from './support/rendered-style';
+import { hostNodes, resolvedStyle, surfaceSheens } from './support/rendered-style';
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -32,10 +32,7 @@ describe('BottomSheet', () => {
       </BottomSheet>,
     );
     act(() => ref.current?.present());
-    const materials = () =>
-      hostNodes(screen.toJSON()).filter(
-        (n) => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)),
-      );
+    const materials = () => surfaceSheens(screen.toJSON());
     expect(materials()).toHaveLength(1);
     const panel = hostNodes(screen.toJSON()).find(
       (n) => resolvedStyle(n.props.style).maxWidth === 800,
@@ -69,11 +66,7 @@ describe('BottomSheet', () => {
     );
     act(() => ref.current?.present());
     const nodes = hostNodes(screen.toJSON());
-    expect(
-      nodes.filter(
-        (n) => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)),
-      ),
-    ).toHaveLength(0);
+    expect(surfaceSheens(nodes)).toHaveLength(0);
     const panel = nodes.find((n) => resolvedStyle(n.props.style).maxWidth === 800);
     expect(resolvedStyle(panel?.props.style).backgroundColor).toBe('#f3d7b6');
     expect(published).toBe('#f3d7b6');

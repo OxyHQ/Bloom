@@ -36,7 +36,7 @@
  *    a ramp's biggest step is a couple.
  *
  * Everything is sampled off a real screenshot reloaded into a canvas, rather
- * than off `getComputedStyle`, for the reason `docs/glass.mdx` gives: the
+ * than off `getComputedStyle`, for the reason `docs/blur.mdx` gives: the
  * computed style of a translucent surface is not the colour anybody sees.
  */
 import { createRequire } from 'node:module';
@@ -269,7 +269,9 @@ try {
     `the same capsule over a page and over a photo: rgb(${a}) vs rgb(${b}), moved ${move}`,
   );
   if (move < 10) {
-    fail(`the capsule moved only ${move} levels between backdrops — that is a slab, not glass`);
+    fail(
+      `the capsule moved only ${move} levels between backdrops — that is a slab, not a translucent pane`,
+    );
   }
 
   // ── 3 + 4: the edge effect ends in nothing, with no step in it ────────────

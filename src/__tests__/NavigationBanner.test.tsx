@@ -7,7 +7,7 @@
  *
  * Two things are NOT assertable here and are named rather than faked:
  * `fontVariant: ['tabular-nums']` reaches react-native-web and jsdom's CSS
- * parser drops it (a real browser keeps it), and the glass island's blur is an
+ * parser drops it (a real browser keeps it), and the island blur is an
  * `expo-blur` mock. Both are browser checks.
  */
 import React from 'react';

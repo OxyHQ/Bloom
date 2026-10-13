@@ -7,7 +7,7 @@ const mockTheme = {
   colors: { background: '#eeeeee', card: '#ffffff', text: '#111111', border: '#999999' },
 } as unknown as Theme;
 jest.mock('../theme/use-theme', () => ({ useTheme: () => mockTheme }));
-import { GlassIsland } from '../glass/GlassIsland';
+import { BlurIsland } from '../blur/BlurIsland';
 import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import {
   SurfaceLevelProvider,
@@ -27,13 +27,13 @@ beforeAll(() =>
   jest.spyOn(StyleSheet, 'flatten').mockImplementation((style) => resolvedStyle(style)),
 );
 afterAll(() => jest.restoreAllMocks());
-it.each([false, true])('publishes the glass composite past level3 in dark=%s', (dark) => {
+it.each([false, true])('publishes the surface composite past level3 in dark=%s', (dark) => {
   mockTheme.isDark = dark;
   const screen = render(
     <SurfaceLevelProvider level={3} fill="#445566">
-      <GlassIsland>
+      <BlurIsland>
         <Probe />
-      </GlassIsland>
+      </BlurIsland>
     </SurfaceLevelProvider>,
   );
   expect(JSON.parse(screen.getByTestId('probe').props.children)).toEqual({
@@ -41,12 +41,12 @@ it.each([false, true])('publishes the glass composite past level3 in dark=%s', (
     level: 3,
   });
 });
-it('preserves explicit glass and publishes its tint estimate against its parent', () => {
+it('preserves explicit tint and publishes its tint estimate against its parent', () => {
   const screen = render(
     <SurfaceLevelProvider level={1} fill="#0000ff">
-      <GlassIsland radius={8} style={{ backgroundColor: 'rgba(255,0,0,.5)' }}>
+      <BlurIsland radius={8} style={{ backgroundColor: 'rgba(255,0,0,.5)' }}>
         <Probe />
-      </GlassIsland>
+      </BlurIsland>
     </SurfaceLevelProvider>,
   );
   expect(JSON.parse(screen.getByTestId('probe').props.children)).toEqual({

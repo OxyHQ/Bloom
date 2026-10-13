@@ -160,7 +160,7 @@ function PlaygroundGroup({ size }: { size: 'md' | 'sm' }) {
 }
 
 /** Approved material on the latest semantic Button API. */
-export const GlassPlayground: Story = {
+export const MaterialPlayground: Story = {
   render: () => (
     <div
       style={{
@@ -193,7 +193,7 @@ export const GlassPlayground: Story = {
         <PlaygroundGroup size="sm" />
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, padding: 20 }}>
-        <Card testID="glass-card" style={{ width: 280, maxWidth: '100%' }}>
+        <Card testID="material-card" style={{ width: 280, maxWidth: '100%' }}>
           <CardBody>
             <CardTitle>Shared Surface</CardTitle>
             <CardDescription>Card owns the shape; Surface paints the material.</CardDescription>

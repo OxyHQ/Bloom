@@ -1,5 +1,5 @@
 /**
- * Browser gate for the press feedback of the six non-glass families.
+ * Browser gate for the press feedback of the six non-surface-material families.
  *
  * Both halves are asserted, because each is trivially satisfiable without the
  * other: "the background moved" passes with the scale silently removed, and
@@ -9,7 +9,7 @@
  * Usage: start Storybook, then
  *   node scripts/verify-press-feedback.mjs [--url http://localhost:6006]
  *
- * `Button` is deliberately absent: its filled variants are GLASS, so a state
+ * `Button` is deliberately absent: its filled variants paint the surface material, so a state
  * layer there would composite onto a translucent tint over expo-blur's material
  * over an unknown backdrop — a different computation from the one measured here,
  * and one nobody has measured yet. It keeps the scale alone.

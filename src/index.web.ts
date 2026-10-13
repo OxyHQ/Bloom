@@ -12,7 +12,7 @@
 //     everything this file can reach — and an unmet REQUIRED peer is a build
 //     failure, not a degradation. Measured today exactly four families fail
 //     this, and each is reachable only through its own subpath:
-//       · `./tab-bar` — statically imports `expo-glass-effect` + `expo-symbols`
+//       · `./tab-bar` — statically imports `expo-symbols`
 //         from its `.native` files. Both ship Apple-only native modules, and the
 //         "a consumer that never imports @oxy.so/bloom/tab-bar never reaches
 //         them" rule in AGENTS.md is true only while this stays off the barrel.
@@ -1394,7 +1394,7 @@ export type {
 // is happening, and the small print the data's licence requires. Built on the
 // two families above — the accuracy halo IS `map-marker`'s area circle, the
 // maneuver glyphs ARE `directions`' own, and the guidance rides on the same
-// glass island the map controls do.
+// blur island the map controls do.
 export { LocationPuck } from './location-puck';
 export {
   LOCATION_PUCK_CONE_STOPS,

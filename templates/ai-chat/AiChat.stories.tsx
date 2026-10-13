@@ -4,7 +4,7 @@ import { AiChatTemplate } from './AiChatTemplate';
 
 /**
  * The AI chat template: the floating sidebar with its repositories tree, the
- * chat container (breadcrumb header, scripted thread, glass composer and status
+ * chat container (breadcrumb header, scripted thread, frosted composer and status
  * bar) and the resizable changes / code panel. Below 1280 the panel becomes a
  * right drawer; below 1024 the sidebar becomes a push drawer.
  */

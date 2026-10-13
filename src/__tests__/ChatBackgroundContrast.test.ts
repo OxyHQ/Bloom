@@ -21,7 +21,7 @@
  * SUBSET, AND WHY. The preset registry has 64 entries; a sweep over all of them
  * kills the jest worker in this environment with
  * `Context::GetNumberOfEmbedderDataFields Not a native context` — the same
- * V8/contextify fault `AGENTS.md` records for `glass-colors` and
+ * V8/contextify fault `AGENTS.md` records for
  * `color-preset-registry`, reproducible here on `main` and on `accent-colors`
  * too. So the sweep is the 16 named below: the ten hue families plus the two
  * achromatic presets and four of the generated pairs. Named rather than sliced,

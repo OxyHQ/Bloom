@@ -4,10 +4,10 @@ import type { StyleProp, ViewStyle } from 'react-native';
  * - `sidebar`            a "Dark mode" row with a small pill switch (the default)
  * - `segmented`          sun / moon segments on the secondary surface
  * - `sidebar-segmented`  the same segments on the sidebar's tertiary track
- * - `glass-segmented`    literal black / white segments with no track, for a
- *                        host that supplies its own glass surface
+ * - `bare-segmented`    literal black / white segments with no track, for a
+ *                        host that supplies its own surface
  */
-export type ThemeToggleVariant = 'sidebar' | 'segmented' | 'sidebar-segmented' | 'glass-segmented';
+export type ThemeToggleVariant = 'sidebar' | 'segmented' | 'sidebar-segmented' | 'bare-segmented';
 
 export interface ThemeToggleProps {
   /**

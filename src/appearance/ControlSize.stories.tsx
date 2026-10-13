@@ -97,7 +97,7 @@ export const Density: Story = {
 };
 
 /**
- * A glass island only reads as one over something. On a flat page there is
+ * A blur island only reads as one over something. On a flat page there is
  * nothing behind it to blur; over a picture the material does its work.
  */
 export const OverContent: Story = {

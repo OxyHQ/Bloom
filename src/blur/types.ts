@@ -2,7 +2,7 @@ import type { CornerCurve } from '../shapes/corner-types';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-export interface GlassBlurTargetProviderProps {
+export interface BlurTargetProviderProps {
   children?: ReactNode;
   /**
    * Style for the wrapping target view. Defaults to `flex: 1`, which is what an
@@ -11,12 +11,12 @@ export interface GlassBlurTargetProviderProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export interface GlassBlurWindowProps {
+export interface BlurWindowProps {
   children?: ReactNode;
 }
 
 /** Geometry is controlled by radius and cornerCurve; material owns clipping. */
-type GlassStyle = Omit<
+type IslandStyle = Omit<
   ViewStyle,
   Extract<
     keyof ViewStyle,
@@ -25,7 +25,7 @@ type GlassStyle = Omit<
 > &
   Pick<ViewStyle, 'borderRadius'>;
 
-export interface GlassIslandProps {
+export interface BlurIslandProps {
   children?: ReactNode;
   /**
    * Corner radius. A full pill by default — an island is a capsule, and a
@@ -46,6 +46,6 @@ export interface GlassIslandProps {
   accessibilityLabel?: string;
   /** Forwarded to the material. Controls the shared sheen gradient. */
   sheen?: boolean;
-  style?: StyleProp<GlassStyle>;
+  style?: StyleProp<IslandStyle>;
   testID?: string;
 }

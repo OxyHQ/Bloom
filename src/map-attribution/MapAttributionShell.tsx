@@ -1,7 +1,7 @@
 import React, { memo, type ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { GlassIsland } from '../glass';
+import { BlurIsland } from '../blur';
 import { MAP_ATTRIBUTION_GEOMETRY } from './constants';
 import type { MapAttributionVariant } from './types';
 
@@ -9,7 +9,7 @@ import type { MapAttributionVariant } from './types';
  * The box the small print sits in — the ONE place the two components in this
  * family decide what "legible over any tile" means, so they cannot drift apart.
  *
- * `island` is `GlassIsland` at the 8 rung: a translucent pane with a hairline
+ * `island` is `BlurIsland` at the 8 rung: a translucent pane with a hairline
  * and a shadow, over content Bloom does not own. It is asked for a SURFACE
  * radius rather than its default capsule, because the small print is a surface
  * and the pill rung belongs to button-like controls. `inline` renders a plain
@@ -65,7 +65,7 @@ function MapAttributionShellComponent({
   }
 
   return (
-    <GlassIsland
+    <BlurIsland
       radius={g.radius}
       role={role}
       accessibilityLabel={accessibilityLabel}
@@ -73,7 +73,7 @@ function MapAttributionShellComponent({
       testID={testID}
     >
       {children}
-    </GlassIsland>
+    </BlurIsland>
   );
 }
 

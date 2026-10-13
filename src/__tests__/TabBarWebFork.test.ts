@@ -9,7 +9,7 @@ import { join } from 'node:path';
  * condition), a non-Metro bundler reading the published `lib/`, and a consumer's
  * `tsc` (which follows the `"react-native"` source condition). Three packages
  * break that the moment they appear outside a `.native` file:
- * `expo-glass-effect` and `expo-symbols` are native-only, and `expo-router` /
+ * `expo-symbols` is native-only, and `expo-router` /
  * `react-native-screens` belong solely to the opt-in
  * `@oxy.so/bloom/tab-bar/expo-router` subpath so the core bar stays usable in an
  * app with no router at all.
@@ -30,12 +30,7 @@ const REPO_ROOT = join(SRC, '..');
 const read = (rel: string) => readFileSync(join(SRC, rel), 'utf8');
 
 /** Packages that must never be reached from a neutral or web module. */
-const PLATFORM_ONLY = [
-  'expo-glass-effect',
-  'expo-symbols',
-  'expo-router',
-  'react-native-screens',
-] as const;
+const PLATFORM_ONLY = ['expo-symbols', 'expo-router', 'react-native-screens'] as const;
 
 /**
  * Files resolved by a web bundler, a non-Metro bundler, or a consumer's `tsc`.
@@ -51,8 +46,6 @@ const NEUTRAL_AND_WEB_FILES = [
   'tab-bar/context.tsx',
   'tab-bar/use-footprint.ts',
   'tab-bar/surface.tsx',
-  'tab-bar/surface-paint.tsx',
-  'tab-bar/surface.web.tsx',
   'tab-bar/glyph.tsx',
   'progressive-blur/ProgressiveBlur.web.tsx',
   'progressive-blur/shared.ts',
@@ -100,13 +93,9 @@ describe('tab-bar platform split', () => {
       "// import { Nope } from 'react-native-screens';",
       "import { A } from 'react-native';",
       "export type { B } from './types';",
-      "const c = require('expo-glass-effect');",
+      "const c = require('expo-symbols');",
     ].join('\n');
-    expect(moduleSpecifiers(probe).sort()).toEqual([
-      './types',
-      'expo-glass-effect',
-      'react-native',
-    ]);
+    expect(moduleSpecifiers(probe).sort()).toEqual(['./types', 'expo-symbols', 'react-native']);
   });
 
   it.each(NEUTRAL_AND_WEB_FILES)('%s imports no native-only or router package', (file) => {
@@ -123,22 +112,10 @@ describe('tab-bar platform split', () => {
     expect(moduleSpecifiers(read('progressive-blur/ProgressiveBlur.tsx'))).toContain('expo-blur');
   });
 
-  it('the native surface and glyph are the ONLY holders of the native packages', () => {
+  it('the native glyph is the ONLY holder of the native packages', () => {
     // The guard above only proves absence; this proves the split is real rather
     // than the feature having quietly lost its native path.
-    expect(moduleSpecifiers(read('tab-bar/surface.native.tsx'))).toContain('expo-glass-effect');
     expect(moduleSpecifiers(read('tab-bar/glyph.native.tsx'))).toContain('expo-symbols');
-  });
-
-  it('the native surface takes its fallback from surface-paint, never ./surface', () => {
-    // Metro resolves a bare `./surface` to `surface.native.tsx` from ANY caller,
-    // so importing the neutral sibling by that name would be a self-import — which
-    // is the entire reason `surface-paint.tsx` exists as a separate name.
-    const specifiers = moduleSpecifiers(read('tab-bar/surface.native.tsx'));
-    expect(specifiers).toContain('./surface-paint');
-    expect(specifiers).not.toContain('./surface');
-    // And the neutral variant must be that same component, not a second copy.
-    expect(moduleSpecifiers(read('tab-bar/surface.tsx'))).toContain('./surface-paint');
   });
 
   it('the router packages live only under tab-bar/expo-router', () => {
@@ -150,20 +127,16 @@ describe('tab-bar platform split', () => {
 
   it('the default entry imports the platform pieces BY BARE NAME (Metro picks .native)', () => {
     const specifiers = moduleSpecifiers(read('tab-bar/index.ts'));
-    expect(specifiers).toContain('./surface');
     expect(specifiers).toContain('./glyph');
     expect(specifiers).toContain('../progressive-blur');
     // A `.web` path here would pin every platform to the web fork.
-    expect(specifiers).not.toContain('./surface.web');
   });
 
   it('the web entry imports the web pieces by their FULL .web name', () => {
     // Inside the published `lib/` every file is plain `.js`, and no web bundler
     // resolves a bare `./surface` to the `.web` sibling — only Metro does.
     const specifiers = moduleSpecifiers(read('tab-bar/index.web.ts'));
-    expect(specifiers).toContain('./surface.web');
     expect(specifiers).toContain('../progressive-blur/index.web');
-    expect(specifiers).not.toContain('./surface');
     // `./glyph` has no web fork: the neutral file already renders `item.icon`,
     // which is the correct web behaviour.
     expect(specifiers).toContain('./glyph');
@@ -199,24 +172,14 @@ describe('tab-bar published surface', () => {
     expect(entry?.browser).toBeUndefined();
   });
 
-  it('declares the two Apple-only native peers REQUIRED, keeping their ranges', () => {
-    // `expo-glass-effect` and `expo-symbols` are imported STATICALLY, by
-    // `tab-bar/surface.native` and `tab-bar/glyph.native`. That is what settles
-    // this: optional means "you may omit this", but omitting it does not degrade
-    // — the native bundle fails to RESOLVE the specifier and the build dies. An
-    // optional peer plus a static import is an incoherent pair, and the only
-    // thing marking them optional would achieve is silencing the one warning
-    // that tells a consumer their build is about to break. Declared the same way
-    // `expo-blur` already is, for the same reason.
-    //
-    // The RANGE carries the second half: both files import symbols that arrived
-    // after 1.0 — `isGlassEffectAPIAvailable` first shipped in
-    // expo-glass-effect 0.1.9 — so an older installed copy is a real
-    // incompatibility, not merely an absent one.
-    for (const peer of ['expo-glass-effect', 'expo-symbols']) {
-      expect(pkg.peerDependencies[peer]).toMatch(/^>=\d/);
-      expect(pkg.peerDependenciesMeta[peer]).toBeUndefined();
-    }
+  it('declares the Apple-only native peer REQUIRED, keeping its range', () => {
+    // `expo-symbols` is imported STATICALLY by `tab-bar/glyph.native`. Optional
+    // means "you may omit this", but omitting it does not degrade: the native
+    // bundle fails to RESOLVE the specifier and the build dies. An optional peer
+    // plus a static import is an incoherent pair, so it is declared required,
+    // the same way `expo-blur` is.
+    expect(pkg.peerDependencies['expo-symbols']).toMatch(/^>=\d/);
+    expect(pkg.peerDependenciesMeta['expo-symbols']).toBeUndefined();
   });
 
   it('keeps the cross-platform native peers REQUIRED', () => {
@@ -243,9 +206,7 @@ describe('tab-bar published surface', () => {
   });
 });
 
-it('binds both BottomBar entries to the universal translucent material', () => {
-  for (const entry of ['bottom-bar/BottomBar.tsx', 'bottom-bar/BottomBar.web.tsx']) {
-    const imports = moduleSpecifiers(read(entry));
-    expect(imports).toContain('../tab-bar/surface-paint');
-  }
+it('keeps the bar surface universal: one file, no platform sibling', () => {
+  expect(read('tab-bar/TabBarBase.tsx')).toContain("from './surface'");
+  expect(moduleSpecifiers(read('tab-bar/surface.tsx'))).toContain('../surface/SurfacePaint');
 });

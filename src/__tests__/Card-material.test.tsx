@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { resolvedStyle } from './support/rendered-style';
+import { resolvedStyle, surfaceSheens } from './support/rendered-style';
 jest.mock('../theme/use-theme', () => ({
   useTheme: () => ({
     isDark: false,
@@ -38,6 +38,7 @@ it('preserves an explicit caller background on plain cards without adding materi
 });
 
 it('keeps shared material on a filled card', () => {
-  const { UNSAFE_queryAllByType } = render(<Card appearance="solid" />);
-  expect(UNSAFE_queryAllByType(Svg)).toHaveLength(1);
+  const { UNSAFE_queryAllByType, toJSON } = render(<Card appearance="solid" />);
+  expect(UNSAFE_queryAllByType(Svg)).toHaveLength(0);
+  expect(surfaceSheens(toJSON())).toHaveLength(1);
 });

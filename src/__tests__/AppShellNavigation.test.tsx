@@ -11,7 +11,7 @@ import { PortalOutlet, PortalProvider } from '../portal';
 import { AppShell, AppShellHeader, NotificationBell, ProOfferCard } from '../app-shell';
 import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
-import { resolvedStyle } from './support/rendered-style';
+import { resolvedStyle, sheenStops, surfaceSheens } from './support/rendered-style';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 const ITEMS: NotificationCenterItem[] = [
@@ -224,12 +224,17 @@ it('keeps Pro Offer copy readable across its painted dark gradient', () => {
       />
     </BloomThemeProvider>,
   );
-  const material = screen
+  const paint = screen
     .getByTestId('tonal-offer')
     .findAll((node) => node.props.radius === 16 && typeof node.props.fill === 'string')[0];
-  expect(material).toBeDefined();
-  const base = material!.props.fill as string;
-  const sheen = material!.findAllByType(Stop);
+  expect(paint).toBeDefined();
+  const base = paint!.props.fill as string;
+  const sheenPane = surfaceSheens(screen.toJSON()).find(
+    (node) => resolvedStyle(node.props.style).backgroundColor !== undefined,
+  );
+  const sheen = sheenStops(
+    String(resolvedStyle(sheenPane?.props.style).experimental_backgroundImage),
+  );
   const stops = screen
     .UNSAFE_getAllByType(Stop)
     .filter((stop) => /^bloom-pro-offer-\d+-fill$/.test(String(stop.parent?.props.id)));
@@ -238,7 +243,7 @@ it('keeps Pro Offer copy readable across its painted dark gradient', () => {
   // Include both shared sheen and decorative artwork, not the transparent host.
   for (const light of sheen)
     for (const stop of stops) {
-      const underArt = mixColors(base, light.props.stopColor, light.props.stopOpacity);
+      const underArt = mixColors(base, light.color, light.opacity);
       const painted = mixColors(underArt, stop.props.stopColor, stop.props.stopOpacity);
       for (const label of ['Upgrade', 'More room for your work']) {
         const ink = resolvedStyle(screen.getByText(label).props.style).color as string;

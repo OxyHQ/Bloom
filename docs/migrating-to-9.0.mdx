@@ -1,0 +1,38 @@
+---
+title: Migrating to 9.0
+description: Every breaking change between @oxy.so/bloom 8.x and 9.0.0 — the surface material is blur and tint with no glass layer, the glass names are gone, and the API vocabulary is one set.
+order: 1
+---
+
+# Migrating to 9.0
+
+Bloom follows its clean-cut rule: no `@deprecated` aliases, no shims. A symbol that was removed or renamed is simply gone, and the build tells you. This page lists every one, grouped by the change that caused it. Sections are added as each part of 9.0 lands.
+
+## The surface material is blur and tint
+
+`Surface`, `Button`, `Card`, `Sidebar` and every painted overlay share one material. It no longer has a refraction layer.
+
+| Before | After |
+|---|---|
+| Web: backdrop blur plus an SVG displacement filter (`feTurbulence` / `feDisplacementMap`) on every painted surface. | Web: one `backdrop-filter: blur(8px)`. No SVG filter. |
+| Native: an `Svg` tree per surface (tint rect, sheen gradient, rim view) with `onLayout` state. | Native: one `View` — tint as `backgroundColor`, sheen as `experimental_backgroundImage`, rim as an inset `boxShadow`. |
+| `useSurfaceRefraction`, `ensureSurfaceRefraction`, `SURFACE_REFRACTION_ID`, `surface/web-refraction` | Removed. Nothing to replace. |
+| `surfaceSvgStop`, `SURFACE_SHEEN` (the stop array) | Removed. `SURFACE_SHEEN_CSS` is the one sheen string. |
+
+Native surfaces have no per-surface blur: a `BlurView` inside its own blur target can crash Android. Native blur lives in the overlay `Backdrop` and `ProgressiveBlur`.
+
+## Glass names are gone
+
+| Before | After |
+|---|---|
+| `GlassIsland` (internal) | `BlurIsland` |
+| `GlassBlurTargetProvider`, `GlassBlurWindow` (internal) | `BlurTargetProvider`, `BlurWindow` |
+| `TabBarTheme.glassTint` | `TabBarTheme.blurTint` |
+| `ComposerPill glass` | `ComposerPill frosted` |
+| `ThemeToggle variant="glass-segmented"` | `variant="bare-segmented"` |
+| `Card elevation="glass"`, `bloomShadowStyle('glass')`, `SHADOW_BOX.glass`, Tailwind `shadow-glass` | `'floating'` |
+| `SURFACE_SHAPES.glass` (design token `shapes.glass`) | `SURFACE_SHAPES.island` (`shapes.island`) |
+
+## The tab bar has no liquid-glass capsule
+
+`TabBar` paints the same capsule material on every platform. `expo-glass-effect` is no longer a peer or a dependency; remove it from your app if nothing else uses it. `TabBarGlassFallback`, `GlassView` and the `solidFallback` logic are gone.

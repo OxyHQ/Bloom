@@ -233,7 +233,7 @@ export type DialogAction = {
  * be a responsive map that collapses to a bottom-sheet on narrow viewports.
  */
 export type DialogProps = React.PropsWithChildren<{
-  /** Standard optical surface, or a plain fill without refraction/sheen. Default surface. */
+  /** Standard optical surface, or a plain fill without blur/sheen. Default surface. */
   material?: 'surface' | 'flat';
   /** Backdrop paint; the surface continues to own dismissal and layering. */
   backdrop?: BackdropAppearance;

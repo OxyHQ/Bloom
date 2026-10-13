@@ -434,11 +434,11 @@ export interface ComposerPillProps {
    */
   surface?: boolean;
   /**
-   * Put the add, model and mic controls on frosted glass chips — the
+   * Put the add, model and mic controls on frosted chips — the
    * agent-working treatment, paired with an active `ComposerLoader`. Each control
    * drops its own paint (480ms) so the light passing behind shows through.
    */
-  glass?: boolean;
+  frosted?: boolean;
 
   /**
    * How many lines the pill grows to before the field scrolls instead. Default

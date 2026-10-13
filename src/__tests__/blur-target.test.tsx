@@ -2,13 +2,13 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { render } from '@testing-library/react-native';
 
-import { GlassBlurTargetProvider, GlassBlurWindow } from '../glass/blur-target';
+import { BlurTargetProvider, BlurWindow } from '../blur/blur-target';
 import { Backdrop } from '../overlay';
 
 /**
  * The blur target must be UNREACHABLE from a surface that shares a window with
  * the content it would blur, because that topology is not a visual bug — it is
- * `SIGSEGV` in `RenderThread`, measured on API 37 (`glass/blur-target.tsx`).
+ * `SIGSEGV` in `RenderThread`, measured on API 37 (`blur/blur-target.tsx`).
  *
  * Jest cannot rasterise a blur, and it certainly cannot segfault, so what it
  * gates here is the one thing it CAN see and the one thing that decides the
@@ -45,11 +45,11 @@ describe('the Android blur target is unreachable outside a window boundary', () 
   it('reaches a Backdrop that has crossed one — the positive control for every case below', () => {
     setPlatform('android');
     const tree = render(
-      <GlassBlurTargetProvider>
-        <GlassBlurWindow>
+      <BlurTargetProvider>
+        <BlurWindow>
           <Backdrop onPress={() => {}} />
-        </GlassBlurWindow>
-      </GlassBlurTargetProvider>,
+        </BlurWindow>
+      </BlurTargetProvider>,
     );
     const props = blurProps(tree);
     // If this ever stops holding, every "absent" assertion below becomes
@@ -61,9 +61,9 @@ describe('the Android blur target is unreachable outside a window boundary', () 
   it('does NOT reach a Backdrop in the app’s own window, even with a provider mounted', () => {
     setPlatform('android');
     const tree = render(
-      <GlassBlurTargetProvider>
+      <BlurTargetProvider>
         <Backdrop onPress={() => {}} />
-      </GlassBlurTargetProvider>,
+      </BlurTargetProvider>,
     );
     const props = blurProps(tree);
     // This is the crash. A target here would point at an ancestor of this very
@@ -75,9 +75,9 @@ describe('the Android blur target is unreachable outside a window boundary', () 
   it('does not reach a Backdrop when no provider is mounted, and the surface still paints', () => {
     setPlatform('android');
     const tree = render(
-      <GlassBlurWindow>
+      <BlurWindow>
         <Backdrop onPress={() => {}} />
-      </GlassBlurWindow>,
+      </BlurWindow>,
     );
     const props = blurProps(tree);
     expect(props.blurTarget).toBeUndefined();
@@ -91,11 +91,11 @@ describe('the Android blur target is unreachable outside a window boundary', () 
   it('never wires anything off Android, where no target exists to point at', () => {
     setPlatform('ios');
     const tree = render(
-      <GlassBlurTargetProvider>
-        <GlassBlurWindow>
+      <BlurTargetProvider>
+        <BlurWindow>
           <Backdrop onPress={() => {}} />
-        </GlassBlurWindow>
-      </GlassBlurTargetProvider>,
+        </BlurWindow>
+      </BlurTargetProvider>,
     );
     const props = blurProps(tree);
     expect(props.blurTarget).toBeUndefined();
@@ -105,17 +105,17 @@ describe('the Android blur target is unreachable outside a window boundary', () 
   it('adds no wrapping node off Android', () => {
     setPlatform('ios');
     const iosTree = render(
-      <GlassBlurTargetProvider>
+      <BlurTargetProvider>
         <Backdrop onPress={() => {}} />
-      </GlassBlurTargetProvider>,
+      </BlurTargetProvider>,
     );
     expect(iosTree.UNSAFE_queryAllByType('BlurTargetView' as never)).toHaveLength(0);
 
     setPlatform('android');
     const androidTree = render(
-      <GlassBlurTargetProvider>
+      <BlurTargetProvider>
         <Backdrop onPress={() => {}} />
-      </GlassBlurTargetProvider>,
+      </BlurTargetProvider>,
     );
     // …and exactly one where it is load-bearing, so the assertion above is
     // about the platform rather than about the query never matching.

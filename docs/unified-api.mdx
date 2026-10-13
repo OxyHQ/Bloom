@@ -30,7 +30,7 @@ Families expose the meaningful subset of sizes. A two-size control maps inherite
 
 A single internal material resolver chooses the paint fill, applies default 90% opacity, composes the estimated backing and supplies the descendant level and web variables. Explicit alpha stays explicit. Painted containers establish a backing; transparent containers inherit it. Docked chrome can publish a backing without adding depth; modal roots declare their reset.
 
-`Surface`, `Card` and `GlassIsland` share radius precedence: explicit radius prop, resolved style radius, family default. The host and paint receive the same geometry. Surface does not introduce content padding, layout wrappers or interaction behavior into its consumers.
+`Surface`, `Card` and `BlurIsland` share radius precedence: explicit radius prop, resolved style radius, family default. The host and paint receive the same geometry. Surface does not introduce content padding, layout wrappers or interaction behavior into its consumers.
 
 The published backing is an estimate from known fills, not a sampled image. Web backdrop blur and displacement still incur per-surface compositor cost. Native shares tint and sheen but does not pretend to implement the web filter.
 

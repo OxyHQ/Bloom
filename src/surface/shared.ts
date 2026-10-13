@@ -1,24 +1,27 @@
 import { parseRgba, withAlpha } from '../theme/color-utils';
 
-/** Optical light, separate from the tint; SVG must receive opacity separately. */
-export const SURFACE_SHEEN = [
-  { offset: 0, color: 'rgb(255, 255, 255)', opacity: 0.18 },
-  { offset: 0.48, color: 'rgb(255, 255, 255)', opacity: 0.035 },
-  { offset: 1, color: 'rgb(0, 0, 0)', opacity: 0.045 },
-] as const;
-export const SURFACE_SHEEN_CSS = `linear-gradient(180deg, ${SURFACE_SHEEN.map((stop) => `${withAlpha(stop.color, stop.opacity)} ${stop.offset * 100}%`).join(', ')})`;
+/** Backdrop blur of the web material, in CSS px. One pass per surface, no displacement. */
+export const SURFACE_BLUR_PX = 8;
+
+const gradient = (stops: ReadonlyArray<readonly [color: string, opacity: number, at: number]>) =>
+  `linear-gradient(180deg, ${stops.map(([color, opacity, at]) => `${withAlpha(color, opacity)} ${at}%`).join(', ')})`;
+
+/** Optical light, separate from the tint: a top highlight easing to a faint shade. */
+export const SURFACE_SHEEN_CSS = gradient([
+  ['rgb(255, 255, 255)', 0.18, 0],
+  ['rgb(255, 255, 255)', 0.035, 48],
+  ['rgb(0, 0, 0)', 0.045, 100],
+]);
 export const SURFACE_RIM =
   'inset 2px 2px 1px rgba(255, 255, 255, 0.5), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5)';
 
-const DARK_SHEEN = [
-  { offset: 0, color: 'rgb(255, 255, 255)', opacity: 0.075 },
-  { offset: 0.48, color: 'rgb(255, 255, 255)', opacity: 0.012 },
-  { offset: 1, color: 'rgb(0, 0, 0)', opacity: 0.06 },
-] as const;
-const DARK_SHEEN_CSS = `linear-gradient(180deg, ${DARK_SHEEN.map((stop) => `${withAlpha(stop.color, stop.opacity)} ${stop.offset * 100}%`).join(', ')})`;
-const LIGHT_OPTICS = { sheen: SURFACE_SHEEN, sheenCss: SURFACE_SHEEN_CSS, rim: SURFACE_RIM };
+const DARK_SHEEN_CSS = gradient([
+  ['rgb(255, 255, 255)', 0.075, 0],
+  ['rgb(255, 255, 255)', 0.012, 48],
+  ['rgb(0, 0, 0)', 0.06, 100],
+]);
+const LIGHT_OPTICS = { sheenCss: SURFACE_SHEEN_CSS, rim: SURFACE_RIM };
 const DARK_OPTICS = {
-  sheen: DARK_SHEEN,
   sheenCss: DARK_SHEEN_CSS,
   rim: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 1px 0 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.28)',
 };
@@ -26,14 +29,6 @@ const DARK_OPTICS = {
 /** Preserve the approved light optics; avoid a white double outline in dark. */
 export function resolveSurfaceOptics(isDark: boolean) {
   return isDark ? DARK_OPTICS : LIGHT_OPTICS;
-}
-
-/** Alpha is explicit at the SVG boundary; stopColor alone discards it on native. */
-export function surfaceSvgStop(color: string): { color: string; opacity: number } {
-  const parsed = parseRgba(color);
-  return parsed
-    ? { color: `rgb(${parsed.r}, ${parsed.g}, ${parsed.b})`, opacity: parsed.a }
-    : { color, opacity: 1 };
 }
 
 /** One subtle material: retain explicit alpha; opaque fills transmit ten percent. */

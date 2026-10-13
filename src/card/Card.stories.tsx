@@ -27,7 +27,7 @@ const meta: Meta<typeof Card> = {
         'radius-max',
       ],
     },
-    elevation: { control: 'select', options: ['glass', 'none', 's', 'm'] },
+    elevation: { control: 'select', options: ['floating', 'none', 's', 'm'] },
     border: { control: 'select', options: ['none', 'hairline', 'thin'] },
     disabled: { control: 'boolean' },
   },

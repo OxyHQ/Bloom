@@ -28,7 +28,6 @@ const SRC = join(__dirname, '..');
  * `src/index.ts` is the mistake this catches.
  */
 const FORBIDDEN: Record<string, string> = {
-  'expo-glass-effect': '@oxy.so/bloom/tab-bar',
   'expo-symbols': '@oxy.so/bloom/tab-bar',
   'expo-router': '@oxy.so/bloom/provider (and ./scroll/expo-router)',
   // Reached from BOTH families: `media-flight/MediaSurface.tsx` is the one

@@ -53,7 +53,7 @@ const PRESETS = APP_COLOR_NAMES as readonly AppColorName[];
  * assertion is not just slow: Node's `vm`/contextify hits
  * `Context::GetNumberOfEmbedderDataFields Not a native context` and takes the
  * worker down with a SIGSEGV (the known crash `AGENTS.md` records against
- * `glass-colors`). One derivation per preset x mode keeps the suite inside it.
+ * `color-preset-registry`). One derivation per preset x mode keeps the suite inside it.
  */
 const THEMES: {
   theme: Theme;

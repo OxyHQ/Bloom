@@ -1,4 +1,5 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { TabBarSurface } from './surface';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
@@ -7,12 +8,11 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
  *
  * The platform-agnostic body of the floating tab bar: gestures, springs, every
  * animated style, the highlight geometry and the button. The only pieces that
- * differ per platform are injected as component props — the capsule `Surface`
- * (liquid glass on iOS 26, backdrop-filter on web, a solid fill everywhere
- * else), the `Blur` behind the bar, and the `Glyph` (SF Symbol on iOS, the
+ * differ per platform are injected as component props — the `Blur` behind
+ * the bar, and the `Glyph` (SF Symbol on iOS, the
  * item's own icon node elsewhere). Same shape as `BottomSheetBase`'s `Shell`.
  *
- * Nothing here imports expo-glass-effect, expo-symbols, expo-router or
+ * Nothing here imports expo-symbols, expo-router or
  * react-native-screens, so this file is safe in a web bundle and in a
  * consumer's type-check.
  */
@@ -148,7 +148,6 @@ function OptionalGesture({
 }
 
 interface TabBarBodyProps extends TabBarProps {
-  Surface: TabBarSurfaceComponent;
   Blur: ComponentType<ProgressiveBlurProps>;
 }
 
@@ -157,7 +156,6 @@ interface TabBarBodyProps extends TabBarProps {
  * and finger scrubbing.
  */
 function TabBarBody({
-  Surface,
   Blur,
   children,
   activeIndex,
@@ -217,9 +215,8 @@ function TabBarBody({
   const dirProps = useDirectionProps();
   const layer = useSurfaceLayer();
   const theme = useTabBarTheme(themeOverrides);
-  const ResolvedSurface = Surface;
   const publishedFill = resolveSurfaceMaterial({
-    fill: ResolvedSurface.resolveFill?.(theme) ?? theme.glassTint,
+    fill: theme.blurTint,
     parentFill: layer.parentFill,
   }).publishedFill;
   const impact = useHaptics();
@@ -490,9 +487,8 @@ function TabBarBody({
     return { height, marginLeft: inset, marginRight: inset };
   }, [progress, minimizeInset]);
 
-  // The capsule shape lives on the surface itself: iOS 26 glass renders its own
-  // native corner configuration (true squircle + rim lighting). Clipping a
-  // rectangular glass with an RN mask breaks that.
+  // The capsule shape lives on the surface itself; clipping it with a parent
+  // mask would also clip its shadow and rim.
   const shapeStyle = useAnimatedStyle(() => {
     const height = interpolate(
       progress.value,
@@ -630,7 +626,7 @@ function TabBarBody({
       >
         <OptionalGesture enabled={!scrollable} gesture={gesture}>
           <Animated.View style={[barStyle, surfaceFillVars(publishedFill)]}>
-            <ResolvedSurface theme={theme} style={shapeStyle} />
+            <TabBarSurface theme={theme} style={shapeStyle} />
             <Animated.View
               style={[styles.highlight, { backgroundColor: theme.highlight }, highlightStyle]}
             />
@@ -813,17 +809,13 @@ function TabBarButtonBody({
 }
 
 /**
- * Bind the platform `Surface` + `Blur` to the shared body, once per entry
- * module. The returned component is created at module scope, so its identity is
- * stable across renders. `index.ts` binds the native/neutral pieces and
- * `index.web.tsx` binds the web pieces explicitly — the same split
+ * Bind the platform `Blur` to the shared body, once per entry module. The returned component is created at module scope, so its identity is
+ * stable across renders. `index.ts` binds the native/neutral piece and
+ * `index.web.tsx` binds the web piece explicitly — the same split
  * `BottomSheet` makes with its `Shell`.
  */
-export function createTabBar(
-  Surface: TabBarSurfaceComponent,
-  Blur: ComponentType<ProgressiveBlurProps>,
-) {
-  const TabBar = (props: TabBarProps) => <TabBarBody {...props} Surface={Surface} Blur={Blur} />;
+export function createTabBar(Blur: ComponentType<ProgressiveBlurProps>) {
+  const TabBar = (props: TabBarProps) => <TabBarBody {...props} Blur={Blur} />;
   TabBar.displayName = 'TabBar';
   return TabBar;
 }

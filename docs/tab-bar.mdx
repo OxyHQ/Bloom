@@ -1,35 +1,34 @@
 ---
 title: TabBar
-description: A floating, minimize-on-scroll tab bar with a sliding highlight, liquid glass on iOS 26 and a backdrop-filter on web.
+description: A floating, minimize-on-scroll tab bar with a sliding highlight and the shared Surface material.
 order: 19
 ---
 
 # TabBar
 
-A floating tab bar that sits over your content instead of boxing it in. It minimizes as you scroll down and re-expands as you scroll up, its highlight slides between tabs and can be scrubbed with a finger, and its capsule renders as real liquid glass on iOS 26, a CSS `backdrop-filter` on web, and the shared Surface everywhere else.
+A floating tab bar that sits over your content instead of boxing it in. It minimizes as you scroll down and re-expands as you scroll up, its highlight slides between tabs and can be scrubbed with a finger, and its capsule renders the shared Surface material (tint, sheen and rim over a backdrop blur on web) on every platform.
 
 It works with or without a router. `@oxy.so/bloom/tab-bar` has no router dependency at all; the expo-router bindings live in a separate `@oxy.so/bloom/tab-bar/expo-router` subpath.
 
 ## Install
 
-The tab bar adds three peers on top of Bloom's usual ones:
+The tab bar adds two peers on top of Bloom's usual ones:
 
 ```bash
-bunx expo install expo-glass-effect expo-symbols react-native-screens
+bunx expo install expo-symbols react-native-screens
 ```
 
 | Peer | Used by | Needed when |
 |------|---------|-------------|
-| `expo-glass-effect` | `tab-bar/surface.native` | Any native build that renders the bar. Its NATIVE module is Apple-only (`"platforms": ["apple"]`) and provides the iOS 26 liquid-glass capsule; on Android the package is pure JS, its own `isLiquidGlassAvailable()` answers `false`, and the bar paints the shared Surface instead. A build whose native module is missing altogether — an OTA JS update landing on a binary built before the package was linked — degrades to that same shared tint and logs one `[Bloom]` warning, rather than throwing out of render. |
 | `expo-symbols` | `tab-bar/glyph.native` | Any native build that renders the bar. Apple-only as well: it draws `item.sfSymbol` as a real SF Symbol on iOS, and the bar falls back to `item.icon` everywhere else. |
 | `react-native-screens` | `tab-bar/expo-router` | Only if you use `renderFadingTabScreen`. |
 
 The bar also uses Bloom's existing `expo-blur`, `react-native-reanimated`, `react-native-gesture-handler` and `react-native-safe-area-context` peers. Native apps must wrap their root in `GestureHandlerRootView` — the bar is scrubbable, so it needs gesture-handler mounted.
 
 <Callout variant="info" title="Web builds pull none of the native packages">
-`expo-glass-effect` and `expo-symbols` are imported only from `.native` files, and the router packages only from the `expo-router` subpath. A web bundle of `@oxy.so/bloom/tab-bar` reaches none of them, so nothing about them ends up in a web app's output.
+`expo-symbols` is imported only from a `.native` file, and the router packages only from the `expo-router` subpath. A web bundle of `@oxy.so/bloom/tab-bar` reaches none of them, so nothing about them ends up in a web app's output.
 
-Both are nonetheless declared as **required** peers, deliberately. They are static imports, so omitting them from a native build that imports the tab bar does not degrade to anything — Metro fails to resolve the specifier and the build dies. The only thing marking them optional would buy is silencing the one warning that says so in advance. That applies on Android too: the native module there is Apple-only (`"platforms": ["apple"]`), but the JS package still has to be installed for the bundle to resolve.
+`expo-symbols` is nonetheless declared as a **required** peer, deliberately. It is a static import, so omitting them from a native build that imports the tab bar does not degrade to anything — Metro fails to resolve the specifier and the build dies. The only thing marking them optional would buy is silencing the one warning that says so in advance. That applies on Android too: the native module there is Apple-only (`"platforms": ["apple"]`), but the JS package still has to be installed for the bundle to resolve.
 
 That degrade-to-nothing only follows once you import the tab bar. An app that never imports `@oxy.so/bloom/tab-bar` at all — on native or web — never reaches these files, so leaving the peer unmet costs nothing; don't install two Apple-only packages just to quiet a warning about a surface you don't use. In practice bun never shows the gap: it installs a required peer itself, so both packages land in the lockfile of an app that does not list them, with no warning either way (measured on bun 1.4.3).
 </Callout>
@@ -375,7 +374,7 @@ Every color comes from the active `BloomThemeProvider` preset and mode — there
 | `activeTint` | `colors.text` | Label and glyph of the tab the highlight is over. |
 | `inactiveTint` | `colors.textSecondary` | Label and glyph of every other tab. |
 | `highlight` | `colors.contrast50` | The sliding highlight pill. |
-| `glassTint` | `colors.card` (painted at 90% opacity) | Tint layered over the liquid glass (iOS 26) or `backdrop-filter` (web) material. |
+| `blurTint` | `colors.card` (painted at 90% opacity) | Tint of the capsule material. |
 
 Override any subset with the `theme` prop; the rest keep their token-derived values.
 
@@ -389,11 +388,10 @@ Overrides are coalesced key by key, so an explicit `undefined` in a partial can 
 
 | Platform | Capsule surface | Blur behind the bar |
 |----------|-----------------|---------------------|
-| iOS 26 | Real `UIGlassEffect` liquid glass under `glassTint`, with the native corner configuration (true squircle + rim lighting) tracking the animated height. | Ten thin stacked `BlurView`s — iOS has no public variable-blur API, so the falloff is built from layer coverage. |
-| iOS &lt; 26, Android | Shared `SurfacePaint` body, sheen and rim. `isLiquidGlassAvailable()` reports `false`, so `GlassView` is never mounted. | Same ten-layer stack. |
-| Web | Shared `SurfacePaint` glass optics under `glassTint`, with the same sheen and rim as other Bloom surfaces. | One `backdrop-filter` faded with a `mask-image` — an order of magnitude cheaper than ten composited backdrop passes, and it traces the same curve as the native stack. |
+| iOS, Android | Shared `SurfacePaint` body, sheen and rim under `blurTint`. | Ten thin stacked `BlurView`s — iOS has no public variable-blur API, so the falloff is built from layer coverage. |
+| Web | Shared `SurfacePaint` (backdrop blur, tint, sheen, rim) under `blurTint`, with the same sheen and rim as other Bloom surfaces. | One `backdrop-filter` faded with a `mask-image` — an order of magnitude cheaper than ten composited backdrop passes, and it traces the same curve as the native stack. |
 
-The capsule radius rides on the surface itself rather than on a clipping parent: iOS 26 glass renders its own native corner configuration, which an RN mask would flatten.
+The capsule radius rides on the surface itself rather than on a clipping parent, so its shadow and rim are not masked.
 
 ## ProgressiveBlur
 
@@ -465,6 +463,6 @@ Types: `TabBarItem`, `TabBarProps`, `TabBarButtonProps`, `TabBarTheme`, `Minimiz
 
 ## Shared surface material
 
-The capsule uses one shared Surface material. Web paints the body at 90% opacity and refracts a thin edge, with shared sheen and rim; native uses the same body and edge paint unless the OS liquid-glass capability is available. The bar publishes the composited tint estimate to descendants. Animated capsule sizing and gestures stay on their existing hosts.
+The capsule uses one shared Surface material. Web paints a backdrop blur under the 90%-opaque body with the shared sheen and rim; native paints the same body, sheen and rim without a per-surface blur. The bar publishes the composited tint estimate to descendants. Animated capsule sizing and gestures stay on their existing hosts.
 
-`material` and `theme.solidFallback` were removed. `theme.glassTint` remains a tint override, not a separate material. Standalone `TabBar` retains its optional screen-edge blur; `BottomBar` disables that band because it owns its own backdrop treatment.
+`material` and `theme.solidFallback` were removed. `theme.blurTint` is a tint override, not a separate material. Standalone `TabBar` retains its optional screen-edge blur; `BottomBar` disables that band because it owns its own backdrop treatment.

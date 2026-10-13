@@ -77,7 +77,7 @@ export const WEB_OVERFLOW_CLIP = 'clip' as ViewStyle['overflow'];
  * JavaScript is byte-identical to the cast it replaces.
  *
  * ```ts
- * const glass: WebCssStyle = { backdropFilter: 'blur(24px)' };
+ * const blurred: WebCssStyle = { backdropFilter: 'blur(24px)' };
  * // …then pass it anywhere a `ViewStyle` is expected.
  * ```
  *

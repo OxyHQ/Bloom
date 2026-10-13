@@ -93,7 +93,7 @@ function MaterialExample() {
         style={{ padding: 24, width: 360, maxWidth: '100%', gap: 20 }}
       >
         <Text variant="title-3-semibold">Shared material</Text>
-        <Text>A mostly opaque body with a little transparency and a subtle glass edge.</Text>
+        <Text>A mostly opaque body with a little transparency and a subtle edge.</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <Button>Continue</Button>
           <Button tone="neutral" appearance="outline">
@@ -166,7 +166,7 @@ export const BackdropReflection: Story = {
               justifyContent: 'center',
             }}
           >
-            <span>Subtle glass</span>
+            <span>Subtle edge</span>
           </Surface>
         </div>
         <Button appearance="subtle" tone="neutral" onPress={() => setAlternate((value) => !value)}>

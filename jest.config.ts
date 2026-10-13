@@ -48,7 +48,6 @@ const config: Config = {
     '^expo-blur$': '<rootDir>/__mocks__/expo-blur.ts',
     '^expo-image$': '<rootDir>/__mocks__/expo-image.ts',
     '^expo-video$': '<rootDir>/__mocks__/expo-video.ts',
-    '^expo-glass-effect$': '<rootDir>/__mocks__/expo-glass-effect.ts',
     '^expo-symbols$': '<rootDir>/__mocks__/expo-symbols.ts',
     '^react-native$': '<rootDir>/__mocks__/react-native.ts',
     '\\.(woff2?|ttf|otf|eot)$': '<rootDir>/__mocks__/font-asset.ts',

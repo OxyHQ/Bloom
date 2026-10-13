@@ -14,7 +14,7 @@
  *
  *   PageHeader's scrim   760px-wide header → a 300 x 150 block with a hard
  *                        vertical edge down the middle of the screen
- *   GlassSurface's sheen 34px island → covered, but its vertical ramp scaled
+ *   the old surface sheen 34px island → covered, but its vertical ramp scaled
  *                        over 150px instead of 36, so only the top quarter of
  *                        the gradient was ever visible
  *   Button's gradient    same, and a button wider than 300px stopped dead

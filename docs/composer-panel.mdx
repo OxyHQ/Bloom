@@ -8,7 +8,7 @@ order: 97
 
 Painted containers publish their actual base fill to descendants and `--bloom-surface`. Unpainted embedded variants inherit the enclosing surface instead of resetting its level.
 
-The card and surfaced pill use the shared Surface material. A plain pill paints no container; explicit glass chips use the same shared glass paint.
+The card and surfaced pill use the shared Surface material. A plain pill paints no container; explicit frosted chips use the same shared surface paint.
 
 A two-row agent composer: a radius-24 card with the prompt on its first row and the controls on its second, a grey status tab hanging off its top edge, and a strip of 56px attachment tiles that draw an upload ring while a file lands.
 
@@ -67,7 +67,7 @@ import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
 import { ComposerPill, ComposerStatusBar } from '@oxy.so/bloom/composer-panel';
 
 <ComposerLoader active={working}>
-  <ComposerPill surface={false} glass={working} models={['Composer 2.5', 'Fable 5']} onSubmit={send} />
+  <ComposerPill surface={false} frosted={working} models={['Composer 2.5', 'Fable 5']} onSubmit={send} />
 </ComposerLoader>
 <ComposerStatusBar branch="Main" folders={folders} mode="Agent" context={57} />
 ```
@@ -78,7 +78,7 @@ import { ComposerPill, ComposerStatusBar } from '@oxy.so/bloom/composer-panel';
 - **No effort axis** — `effortLevels={[]}` drops the divider and the whole effort half of the panel. A model with no stops gets the model rows alone, not an empty chip over a slider that cannot commit.
 - **Mic and send** — the panel's own controls, 8 apart after a 6px lead.
 - **`surface={false}`** inside a `ComposerLoader`, which paints the pill surface behind its light.
-- **`glass`** — the add, model and mic controls drop their fill, border and shadow over 480ms onto frosted chips (web: 6px saturated backdrop blur, a 12% / dark 6% white tint, a 155° sheen, a 0.3px conic rim; native: the tint). Pair it with an active loader.
+- **`frosted`** — the add, model and mic controls drop their fill, border and shadow over 480ms onto frosted chips (web: 6px saturated backdrop blur, a 12% / dark 6% white tint, a 155° sheen, a 0.3px conic rim; native: the tint). Pair it with an active loader.
 - **Status bar** — 26 tall; branch (mirrored merge glyph), the project folder (a caret that turns over while its 266px "Local Folders" panel is open: rows of a 20px folder glyph, the path prefix in text-secondary and the name in text-primary), the agent mode (∞ + caret) and the context meter on a radius-40 background-tertiary pill. Labels body-2-medium text-secondary, glyphs 16px icon-secondary.
 
 Both take their menus from the same platform binding as `ComposerPanel`.
@@ -259,4 +259,4 @@ Composer action buttons compose Bloom Button: send, stop, voice, add, model/effo
 
 ### Shared surface paint
 
-The painted host delegates its fill to Surface: a 90%-opacity body with a subtle refracted edge on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.
+The painted host delegates its fill to Surface: a 90%-opacity body with a backdrop blur on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.

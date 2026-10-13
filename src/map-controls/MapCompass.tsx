@@ -2,7 +2,7 @@ import React, { memo, useContext } from 'react';
 import { View } from 'react-native';
 
 import { ButtonGroupItem } from '../button-group';
-import { GlassIsland } from '../glass';
+import { BlurIsland } from '../blur';
 import { RiCompass3Line } from '../icons/remix/RiCompass3Line';
 import type { BloomIconComponent } from '../icons/icon-component';
 import { useMessages } from '../locale/messages';
@@ -15,7 +15,7 @@ import type { MapCompassProps } from './types';
  * The compass that floats over a map: a needle that keeps pointing at north
  * while the map turns under it, and a press that puts the map back.
  *
- *   island   `GlassIsland` — one translucent capsule over content Bloom does
+ *   island   `BlurIsland` — one translucent capsule over content Bloom does
  *            not own. It mounts the `BloomScope` the item inside reads, so
  *            the button paints flush with no `variant` written on it.
  *   control  `ButtonGroupItem`, the island-aware control, at the 44 map rung.
@@ -62,7 +62,7 @@ function MapCompassComponent({
 
   return (
     <MapHeadingContext.Provider value={heading}>
-      <GlassIsland style={style} testID={testID}>
+      <BlurIsland style={style} testID={testID}>
         <ButtonGroupItem
           iconOnly
           leadingIcon={CompassNeedle}
@@ -72,7 +72,7 @@ function MapCompassComponent({
           style={MAP_CONTROL_BOX}
           testID={testID ? `${testID}-button` : undefined}
         />
-      </GlassIsland>
+      </BlurIsland>
     </MapHeadingContext.Provider>
   );
 }

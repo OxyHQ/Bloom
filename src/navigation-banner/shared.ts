@@ -30,7 +30,7 @@ export interface NavigationPaint extends SurfaceTextPaint {
 /**
  * Read off the island, not off the page.
  *
- * `GlassIsland` paints rung 1 of the surface ladder at the chrome alpha, so
+ * `BlurIsland` paints rung 1 of the surface ladder at the chrome alpha, so
  * rung 1 is the fill the banner's own text has to be legible on — and it is the
  * fill whether the map underneath is a night satellite tile or a pale street
  * map, which is the whole reason the guidance sits on an island instead of

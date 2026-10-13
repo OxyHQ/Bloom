@@ -12,15 +12,15 @@ import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { borderRadius } from '../styles/tokens';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import type { GlassIslandProps } from './types';
+import type { BlurIslandProps } from './types';
 
-/** Floating control container using the shared glass material.
+/** Floating control container using the shared surface material.
  * Paint clips itself so the host can preserve its external shadow.
  */
-const GlassIslandComponent: React.FC<GlassIslandProps> = ({
+const BlurIslandComponent: React.FC<BlurIslandProps> = ({
   children,
   radius,
-  cornerCurve = SURFACE_SHAPES.glass.curve,
+  cornerCurve = SURFACE_SHAPES.island.curve,
   role,
   accessibilityLabel,
   sheen = true,
@@ -53,7 +53,7 @@ const GlassIslandComponent: React.FC<GlassIslandProps> = ({
             ...geometry.style,
             ...surfaceStyle(shape, direction),
           },
-          bloomShadowStyle('glass'),
+          bloomShadowStyle('floating'),
           style,
           {
             backgroundColor: 'transparent',
@@ -88,5 +88,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export const GlassIsland = memo(GlassIslandComponent);
-GlassIsland.displayName = 'GlassIsland';
+export const BlurIsland = memo(BlurIslandComponent);
+BlurIsland.displayName = 'BlurIsland';

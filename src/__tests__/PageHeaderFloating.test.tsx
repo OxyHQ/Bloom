@@ -27,7 +27,7 @@ import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { TopEdgeProvider, useTopEdgeInset } from '../layout';
 import { PageHeader } from '../page-header';
 import type { PageHeaderProps } from '../page-header';
-import { hostNodes, resolvedStyle } from './support/rendered-style';
+import { hostNodes, resolvedStyle, surfaceSheens } from './support/rendered-style';
 
 function renderHeader(props: PageHeaderProps, mode: 'light' | 'dark' = 'light') {
   return render(
@@ -43,10 +43,7 @@ function setWidth(width: number) {
     .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
-const materialCount = (tree: unknown) =>
-  hostNodes(tree).filter(
-    (n) => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)),
-  ).length;
+const materialCount = (tree: unknown) => surfaceSheens(tree).length;
 const opacity = (node: { props: Record<string, unknown> }) =>
   resolvedStyle(node.props.style).opacity;
 
@@ -167,7 +164,7 @@ describe('PageHeader, floating', () => {
     expect(stops.every((c) => c === '#1d3b53')).toBe(true);
     // The alpha is the RAMP's and travels in its own prop — a stop colour
     // carrying alpha renders at full strength on native (react-native-svg drops
-    // the channel inside `stopColor`), which is the defect `GLASS_SHEEN`
+    // the channel inside `stopColor`), which is the defect `SURFACE_SHEEN_CSS`
     // documents.
     const opacities = hostNodes(custom.toJSON())
       .filter((n) => n.type === 'Stop')

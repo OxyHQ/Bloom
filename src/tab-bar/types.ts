@@ -6,7 +6,7 @@
  *
  * This module names no PLATFORM package. It is resolved by a consumer's `tsc`,
  * by Metro, and by every web bundler alike, so an import here of
- * expo-glass-effect / expo-symbols / expo-router / react-native-screens would
+ * expo-symbols / expo-router / react-native-screens would
  * break all three at once. Platform behaviour lives in `surface.native.tsx` /
  * `glyph.native.tsx` / `surface.web.tsx` and the `expo-router/` adapter; the
  * gate is `src/__tests__/TabBarWebFork.test.ts`.
@@ -73,8 +73,8 @@ export type TabBarTheme = {
   inactiveTint: string;
   /** Sliding highlight pill color. */
   highlight: string;
-  /** Tint layered over the liquid glass (iOS 26) surface. */
-  glassTint: string;
+  /** Tint layered over the capsule's blur. */
+  blurTint: string;
 };
 
 export type TabBarProps = ViewProps & {

@@ -17,7 +17,7 @@ import type { TabBarItem, TabBarProps } from './types';
  * layer, and it is what lets the family be exercised in a plain web bundle.
  *
  * Storybook resolves `./index` through its `.web.*`-first extension list, so
- * these stories run the WEB fork (`surface.web.tsx`'s `backdrop-filter` glass
+ * these stories run the WEB fork (`backdrop-filter`
  * and `progressive-blur/index.web.tsx`) against the REAL reanimated,
  * gesture-handler and safe-area-context — no worklets babel plugin, exactly
  * what every Oxy RN-Web app ships. That makes every animated path here
@@ -114,7 +114,7 @@ function Feed({ heading, caption }: { heading: string; caption: string }) {
         >
           <Text style={{ color: colors.text, fontSize: 15, fontWeight: '600' }}>Item {row}</Text>
           <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
-            Scrolls under the glass so the surface has something to refract.
+            Scrolls under the bar so the surface has something to blur.
           </Text>
         </View>
       ))}
@@ -230,7 +230,7 @@ function ThemeOverrideScreen() {
       <ScrollView contentContainerStyle={CONTENT_STYLE}>
         <Feed
           heading="Theme override"
-          caption="Only the highlight and the active tint are overridden — the inactive tint, the glass tint still come from the active preset."
+          caption="Only the highlight and the active tint are overridden — the inactive tint, the blur tint still come from the active preset."
         />
       </ScrollView>
       <ControlledBar

@@ -59,7 +59,7 @@ import { dataHook, IS_WEB, useComposerWebCss } from './web-hooks';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
-const GLASS_MS = 480;
+const FROST_MS = 480;
 /** `max-width: 639px`. */
 const COMPACT_WIDTH = 640;
 /** The pill at one line: the field's 20px line box plus 8px padding either side, in a 52 box. */
@@ -67,8 +67,8 @@ const PILL_HEIGHT = 52;
 /** One line of `body-regular`, which is what the field was fixed at. */
 const LINE_HEIGHT = 20;
 
-/** Shared glass paint behind an explicitly glass control; fades with its existing transition. */
-function GlassChip({ shown, radius, dark }: { shown: boolean; radius: number; dark: boolean }) {
+/** Shared surface paint behind an explicitly frosted control; fades with its existing transition. */
+function FrostedChip({ shown, radius, dark }: { shown: boolean; radius: number; dark: boolean }) {
   const reducedMotion = useReducedMotion();
   const opacity = useSharedValue(shown ? 1 : 0);
   const [mounted, setMounted] = useState(shown);
@@ -78,9 +78,9 @@ function GlassChip({ shown, radius, dark }: { shown: boolean; radius: number; da
       ? shown
         ? 1
         : 0
-      : withTiming(shown ? 1 : 0, { duration: GLASS_MS, easing: EASE });
+      : withTiming(shown ? 1 : 0, { duration: FROST_MS, easing: EASE });
     if (!shown) {
-      const timer = setTimeout(() => setMounted(false), reducedMotion ? 0 : GLASS_MS);
+      const timer = setTimeout(() => setMounted(false), reducedMotion ? 0 : FROST_MS);
       return () => clearTimeout(timer);
     }
   }, [shown, reducedMotion, opacity]);
@@ -397,7 +397,7 @@ function ModelMenu({
 }
 
 /**
- * The AI chat's pill composer (the reference's `Composer` and `GlassComposer`):
+ * The AI chat's pill composer (the reference's `Composer` and the frosted composer):
  *
  *   pill      52 tall, full radius, p 8, gap 10; background-primary + shadow-xs
  *             (`surface`)
@@ -411,7 +411,7 @@ function ModelMenu({
  *             listening) and the `bg-button-primary` send disc — which becomes
  *             the stop disc while `busy`, outside `disabled`'s reach
  *
- * `glass` drops the add, model and mic paint (480ms) onto frosted chips, so an
+ * `frosted` drops the add, model and mic paint (480ms) onto frosted chips, so an
  * active `ComposerLoader` behind the pill shows through them.
  */
 export function ComposerPillBase({
@@ -438,7 +438,7 @@ export function ComposerPillBase({
   defaultListening = false,
   onListeningChange,
   surface = true,
-  glass = false,
+  frosted = false,
   inputRef,
   labels: labelOverrides,
   style,
@@ -539,7 +539,7 @@ export function ComposerPillBase({
 
   const controlPalette: ComposerPalette = useMemo(
     () =>
-      glass
+      frosted
         ? {
             ...palette,
             surface: 'transparent',
@@ -548,7 +548,7 @@ export function ComposerPillBase({
             shadowXs: '0 0 0 0 transparent',
           }
         : palette,
-    [palette, glass],
+    [palette, frosted],
   );
 
   const submit = useCallback(() => {
@@ -701,7 +701,7 @@ export function ComposerPillBase({
       ) : null}
       {addMenu.length > 0 ? (
         <View style={{ position: 'relative', flexShrink: 0 }}>
-          <GlassChip shown={glass} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
+          <FrostedChip shown={frosted} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
           <AddMenu
             palette={palette}
             groups={addMenu}
@@ -754,7 +754,7 @@ export function ComposerPillBase({
 
       {lineup.length > 0 ? (
         <View style={{ position: 'relative', flexShrink: 0 }}>
-          <GlassChip shown={glass && modelWidth > 0} radius={12} dark={theme.isDark} />
+          <FrostedChip shown={frosted && modelWidth > 0} radius={12} dark={theme.isDark} />
           <ModelMenu
             models={lineup}
             modelId={modelId}
@@ -781,7 +781,7 @@ export function ComposerPillBase({
         }}
       >
         <View style={{ position: 'relative' }}>
-          <GlassChip shown={glass} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
+          <FrostedChip shown={frosted} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
           <MicButton
             listening={isListening}
             onToggle={() => setListening(!isListening)}

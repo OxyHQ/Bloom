@@ -60,7 +60,7 @@ export const Appearances: Story = {
             alignSelf: 'flex-start',
           }}
         >
-          <ThemeToggle variant="glass-segmented" testID="glass" />
+          <ThemeToggle variant="bare-segmented" testID="bare" />
         </View>
       </View>
     );
@@ -95,7 +95,7 @@ export const Playground: Story = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['sidebar', 'segmented', 'sidebar-segmented', 'glass-segmented'],
+      options: ['sidebar', 'segmented', 'sidebar-segmented', 'bare-segmented'],
     },
     collapsed: { control: 'boolean' },
     transitionDuration: { control: { type: 'range', min: 0, max: 1600, step: 20 } },

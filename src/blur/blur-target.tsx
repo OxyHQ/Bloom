@@ -2,7 +2,7 @@ import React, { createContext, memo, useContext, useMemo, useRef, useState } fro
 import { Platform, StyleSheet, type View } from 'react-native';
 import { BlurTargetView } from 'expo-blur';
 
-import type { GlassBlurTargetProviderProps, GlassBlurWindowProps } from './types';
+import type { BlurTargetProviderProps, BlurWindowProps } from './types';
 
 /**
  * Who gets to blur what, on Android.
@@ -37,9 +37,9 @@ import type { GlassBlurTargetProviderProps, GlassBlurWindowProps } from './types
  * One of those two crashes. A rule in a doc would not be enough — the same
  * component, with the same props, is safe in one caller and fatal in the other.
  *
- * So the target is published in two hops. {@link GlassBlurTargetProvider} holds
+ * So the target is published in two hops. {@link BlurTargetProvider} holds
  * it at the app root, and nothing reads it directly; only
- * {@link GlassBlurWindow} — which Bloom renders INSIDE its own `<Modal>`s, and
+ * {@link BlurWindow} — which Bloom renders INSIDE its own `<Modal>`s, and
  * nowhere else — re-publishes it to descendants. A `Backdrop` that has not
  * crossed a declared window boundary sees `undefined` and paints the tint-only
  * surface it painted before. The crashing topology is not reachable by writing
@@ -90,10 +90,10 @@ const SeparateWindowContext = createContext(false);
  * else — so unlike an outlet it is safe at any depth; the nearest one simply
  * becomes the target for its subtree.
  */
-export const GlassBlurTargetProvider = memo(function GlassBlurTargetProvider({
+export const BlurTargetProvider = memo(function BlurTargetProvider({
   children,
   style,
-}: GlassBlurTargetProviderProps) {
+}: BlurTargetProviderProps) {
   const ref = useRef<View | null>(null);
   // `BlurView` resolves `findNodeHandle(blurTarget.current)` in
   // `componentDidMount` and re-resolves only when `blurTarget.current` DIFFERS
@@ -133,7 +133,7 @@ export const GlassBlurTargetProvider = memo(function GlassBlurTargetProvider({
  * anywhere that is not a real window boundary re-arms the crash it exists to
  * prevent.
  */
-export const GlassBlurWindow = memo(function GlassBlurWindow({ children }: GlassBlurWindowProps) {
+export const BlurWindow = memo(function BlurWindow({ children }: BlurWindowProps) {
   return <SeparateWindowContext.Provider value>{children}</SeparateWindowContext.Provider>;
 });
 

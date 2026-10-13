@@ -69,7 +69,7 @@ function roundedNode(node: unknown): HostNode {
 }
 
 describe('Card axes', () => {
-  it('keeps the outlined fill on shared glass material while explicit appearance wins', () => {
+  it('keeps the outlined fill on shared surface material while explicit appearance wins', () => {
     const opaque = renderWithTheme(<Card testID="c" appearance="outline" />);
     expect(
       opaque
