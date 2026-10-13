@@ -9,10 +9,11 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Cover, HeaderTitle, MediaHeaderFrame, MetaLine, useMediaHeaderPaint } from './parts';
-import { IS_WEB, resolveLikedGradient, selectTitleVariant } from './shared';
+import { resolveLikedGradient, selectTitleVariant } from './shared';
 import type { CollectionHeaderProps } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_HEADER_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The header of an album, single, EP, playlist, liked songs or audiobook page.

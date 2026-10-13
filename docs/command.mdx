@@ -12,8 +12,8 @@ A searchable list of actions, opened over the page. Type to filter, press to run
 import { Command } from '@oxy.so/bloom/command';
 
 <Command
-  visible={paletteOpen}
-  onClose={() => setPaletteOpen(false)}
+  open={paletteOpen}
+  onOpenChange={setPaletteOpen}
   placeholder="Type a command…"
   items={[
     {
@@ -40,7 +40,7 @@ import { Command } from '@oxy.so/bloom/command';
 
 | prop            | decides                                                    |
 | --------------- | ----------------------------------------------------------- |
-| `visible` / `onClose` | whether it is open — controlled                        |
+| `open` / `onOpenChange` | whether it is open — controlled; closing calls `onOpenChange(false)` |
 | `items`         | everything that can be run                                   |
 | `query` / `onQueryChange` | the search text, if you want to control it         |
 | `filter`        | replaces the default match                                   |

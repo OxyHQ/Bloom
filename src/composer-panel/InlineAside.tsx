@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Text } from '../typography';
-import { IS_WEB } from './web-hooks';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A muted run inside a row's single truncating line — a

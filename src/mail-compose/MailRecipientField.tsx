@@ -155,7 +155,7 @@ export function MailRecipientField({
             return (
               <Chip
                 key={recipient.id}
-                size="large"
+                size="lg"
                 variant={recipient.invalid === true ? 'outlined' : 'subtle'}
                 color={recipient.invalid === true ? 'error' : 'default'}
                 surface={surface}

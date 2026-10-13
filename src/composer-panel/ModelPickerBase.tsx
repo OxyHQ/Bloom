@@ -45,7 +45,8 @@ import type {
   ModelPickerProps,
   ModelPickerProvider,
 } from './types';
-import { dataHook, IS_WEB, useComposerWebCss } from './web-hooks';
+import { dataHook, useComposerWebCss } from './web-hooks';
+import { IS_WEB } from '../styles/platform';
 
 /** CSS `ease`, the chevrons' 200ms turn. */
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);

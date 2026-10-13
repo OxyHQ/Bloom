@@ -1,6 +1,5 @@
 import { useBloomAppearance } from '../appearance';
 import React, { memo } from 'react';
-import { Platform } from 'react-native';
 
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography';
@@ -12,6 +11,7 @@ import {
 import { useMessages } from '../locale/messages';
 import { LABEL_MESSAGES } from './messages';
 import type { LabelProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The field `Label` (`base/input/label.tsx`): `text-body-medium` in
@@ -28,8 +28,6 @@ const SIZE_VARIANT: Record<NonNullable<LabelProps['size']>, TypeScaleVariant> = 
   sm: 'body-medium',
   md: 'headline-medium',
 };
-
-const IS_WEB = Platform.OS === 'web';
 
 const LabelComponent = function Label({
   children,

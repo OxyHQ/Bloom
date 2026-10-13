@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react';
-import { Platform } from 'react-native';
 
 import { ACCENT_TABLE, BUTTON_SHADOW, colorRamp, resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -8,8 +7,7 @@ import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import type { CodeLinesSize, CodeTokenKind } from './types';
-
-export const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /** `fontFamilies.mono` on web (the CSS variable), the registered face on native. */
 export const MONO_FAMILY = IS_WEB ? 'var(--bloom-font-mono)' : 'JetBrains Mono';

@@ -210,7 +210,7 @@ describe('ExplicitBadge', () => {
     expect(el.textContent).toBe('E');
     expect(el.style.width).toBe('16px');
     expect(el.style.borderTopLeftRadius || el.style.borderRadius).toBe('3px');
-    mount(<ExplicitBadge size="small" label="Explícito" testID="e" />);
+    mount(<ExplicitBadge size="sm" label="Explícito" testID="e" />);
     expect(byTestId('e').style.width).toBe('14px');
     expect(byTestId('e').getAttribute('aria-label')).toBe('Explícito');
   });

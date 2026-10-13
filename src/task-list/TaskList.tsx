@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -24,6 +24,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TaskListChip, TaskListProps, TaskListStep, TaskListTask } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The agent's working log
@@ -55,8 +56,6 @@ import type { TaskListChip, TaskListProps, TaskListStep, TaskListTask } from './
  * way, the old title leaving out of flow); collapse is height 300ms soft +
  * opacity 220ms ease-out; the chevron turns 300ms `ease`; chip colours 150ms.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Palette

@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Platform,
   Pressable,
   ScrollView,
   View,
@@ -26,6 +25,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CATEGORY_BAR_MESSAGES } from './messages';
 import type { CategoryBarItem, CategoryBarProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Bloom's category strip: a horizontal, scrollable row of icon-over-label tabs
@@ -53,8 +53,6 @@ import type { CategoryBarItem, CategoryBarProps } from './types';
  * `role="tab"` with `aria-selected` (React Native folds it into
  * `accessibilityState.selected`).
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 const ICON_SIZE = 24;
 /** Horizontal padding inside each item, so the focus ring clears the label. */

@@ -26,7 +26,6 @@ import {
   CREATOR_STUDIO_CSS,
   CREATOR_STUDIO_STYLE_ID,
   indeterminateDataSet,
-  IS_WEB,
   placeholderWaveform,
   resolveCreatorStudioPaint,
   uploadBarKind,
@@ -36,6 +35,7 @@ import { COMMON_MESSAGES, useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { TrackUploadRowLabels, TrackUploadRowProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `TrackUploadRow`: one audio file on its way into a release.

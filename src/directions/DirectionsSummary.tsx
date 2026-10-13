@@ -174,7 +174,7 @@ function DirectionsSummaryComponent({
               {chosen.duration}
             </Text>
             {chosen.distance ? (
-              <Chip size="medium" testID={id('distance')}>
+              <Chip size="md" testID={id('distance')}>
                 {chosen.distance}
               </Chip>
             ) : null}

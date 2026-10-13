@@ -13,13 +13,13 @@ import { useMessages } from '../locale/messages';
 import { Cover } from './Cover';
 import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import {
-  IS_WEB,
   MUSIC_LIBRARY_CSS,
   MUSIC_LIBRARY_STYLE_ID,
   resolveMusicLibraryPaint,
   type MusicLibraryPaint,
 } from './shared';
 import type { RecentSearchEntry, RecentSearchesProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The recent-searches list on an empty search page.

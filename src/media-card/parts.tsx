@@ -28,7 +28,6 @@ import { webDataSet } from '../styles/web-data';
 import { clamp01 } from '../styles/clamp';
 import { useTheme } from '../theme/use-theme';
 import {
-  IS_WEB,
   MEDIA_CARD_CSS,
   MEDIA_CARD_STYLE_ID,
   resolveArtworkUri,
@@ -40,6 +39,7 @@ import type { BloomIconComponent } from '../icons/icon-component';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CARD_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 export function useMediaCardCss(): void {
   React.useEffect(() => {

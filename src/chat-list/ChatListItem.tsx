@@ -18,7 +18,6 @@ import {
   CHAT_LIST_STYLE_ID,
   CHAT_ROW_GEOMETRY,
   CHAT_ROW_RADIUS,
-  IS_WEB,
   chatMarker,
   composeChatRowName,
   hasUnread,
@@ -28,6 +27,7 @@ import type { ChatAction, ChatListItemProps } from './types';
 import { CHAT_INDICATORS_MESSAGES } from '../chat-indicators/messages';
 import { useMessages } from '../locale/messages';
 import { CHAT_LIST_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One conversation in the list.
@@ -216,7 +216,7 @@ function ChatListItemComponent({
           count={unreadCount}
           dot={unreadDot}
           muted={muted}
-          size={density === 'compact' ? 'small' : 'medium'}
+          size={density === 'compact' ? 'sm' : 'md'}
           testID={testID ? `${testID}-unread` : undefined}
         />
       ) : outgoingStatus ? (

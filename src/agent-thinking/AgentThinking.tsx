@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState } from 'react';
-import { Platform, View, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   Easing,
@@ -22,6 +22,7 @@ import { Text } from '../typography';
 import { ThinkingLabel } from './ThinkingLabel';
 import { AGENT_THINKING_MESSAGES } from './messages';
 import type { AgentThinkingProps, AgentThinkingTone, AgentThinkingVariant } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Agent Thinking: the agent "thinking" state that sits above a chat composer
@@ -42,8 +43,6 @@ import type { AgentThinkingProps, AgentThinkingTone, AgentThinkingVariant } from
  * Under reduced motion the dots rest on their seed frame, stars rest visible at
  * 0.7, the comet stops and the label drops its shimmer.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Tone

@@ -21,7 +21,7 @@ import {
   useHousingPalette,
   useHousingWebCss,
 } from '../tenancy/parts';
-import { IS_WEB } from '../tenancy/shared';
+
 import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -30,6 +30,7 @@ import type { PlaceReviewCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { PLACE_REVIEWS_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One past tenant's review of a building.
@@ -153,14 +154,14 @@ function PlaceReviewCardComponent({
               </Text>
             ) : null}
           </View>
-          <Rating value={rating} size="small" testID={id('rating')} />
+          <Rating value={rating} size="sm" testID={id('rating')} />
         </View>
 
         {wouldRecommend != null || depositReturned != null ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {wouldRecommend != null ? (
               <Chip
-                size="small"
+                size="sm"
                 variant="subtle"
                 color={wouldRecommend ? 'success' : 'default'}
                 startIcon={
@@ -176,7 +177,7 @@ function PlaceReviewCardComponent({
             ) : null}
             {depositReturned != null ? (
               <Chip
-                size="small"
+                size="sm"
                 variant="subtle"
                 color={depositReturned ? 'success' : 'error'}
                 startIcon={

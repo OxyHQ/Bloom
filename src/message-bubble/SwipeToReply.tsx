@@ -11,8 +11,9 @@ import Animated, {
 
 import { RiArrowGoBackLine } from '../icons/remix/RiArrowGoBackLine';
 import { useTheme } from '../theme/use-theme';
-import { IS_WEB, resolveMessageBubblePaint } from './shared';
+import { resolveMessageBubblePaint } from './shared';
 import type { MessageDirection } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Swipe a bubble towards the centre to reply.

@@ -8,11 +8,9 @@
  * `adoptStyleSheet` (never a `<style>` element), a no-op without a `document`.
  */
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-
-export const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 const STYLE_ID = 'bloom-settings-modal-web-css';
 

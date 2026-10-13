@@ -2,14 +2,7 @@ import { useCardFill } from '../card/use-card-fill';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { Card } from '../card/Card';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Image,
-  Platform,
-  Pressable,
-  View,
-  type LayoutChangeEvent,
-  type ViewStyle,
-} from 'react-native';
+import { Image, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 
 import { Badge } from '../badge';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -32,8 +25,7 @@ import {
   TRIP_IMAGE_RADIUS,
 } from './shared';
 import type { TripCardProps } from './types';
-
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * An upcoming or past reservation.
@@ -191,7 +183,7 @@ function TripCardComponent({
                 content={shownStatus}
                 color={statusInfo.tone}
                 variant="subtle"
-                size="medium"
+                size="md"
                 testID={id('status')}
                 style={{ marginBottom: 4 }}
               />

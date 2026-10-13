@@ -27,7 +27,6 @@ import {
   CARD_RADIUS,
   dataHook,
   DENSE_ROW_CLASS,
-  IS_WEB,
   RAIL_WIDTH,
   relativeTime,
   ROW_RADIUS,
@@ -39,6 +38,7 @@ import {
 import { AGENT_CHAT_MESSAGES, type AgentChatMessages } from './messages';
 import type { AgentChatHistoryProps, AgentChatThread } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The chat-history rail, a card of its own

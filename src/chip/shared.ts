@@ -51,9 +51,6 @@ export const CHIP_GEOMETRY: Readonly<Record<ChipSize, ChipGeometry>> = {
   sm: rung(24, 'caption-1-medium', 6, 4),
   md: rung(24, 'body-medium', 6, 4),
   lg: rung(28, 'body-medium', 6, 4),
-  small: rung(24, 'caption-1-medium', 6, 4),
-  medium: rung(24, 'body-medium', 6, 4),
-  large: rung(28, 'body-medium', 6, 4),
   xl: rung(32, 'body-medium', 12, 8),
   '2xl': rung(40, 'body-medium', 16, 8, 48, 18),
 };

@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
@@ -14,6 +14,7 @@ import { STAY_SEARCH_MESSAGES } from './messages';
 import { STAY_SEARCH_TILE_RADIUS, STAY_SEARCH_TILE_SIZE } from './constants';
 import { useStaySearchPalette } from './palette';
 import type { DestinationSuggestionsProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Destination rows for a `StaySearchPanel`: a 48px rounded icon tile (radius
@@ -32,7 +33,6 @@ import type { DestinationSuggestionsProps } from './types';
  * read after the title, so the row says why.
  */
 
-const IS_WEB = Platform.OS === 'web';
 const ICON_SIZE = 22;
 
 const STYLE_ID = 'bloom-destination-suggestions-web-css';

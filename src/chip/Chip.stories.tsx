@@ -66,7 +66,7 @@ export const Hues: Story = {
     const theme = useTheme();
     return (
       <View style={{ gap: 12, padding: 16, backgroundColor: theme.colors.background }}>
-        {(['medium', 'large', 'small'] as const).map((size) => (
+        {(['md', 'lg', 'sm'] as const).map((size) => (
           <View key={size} style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
             {HUES.map((hue) => (
               <Chip key={hue} size={size} hue={hue} testID={`chip-hue-${size}-${hue}`}>
@@ -86,22 +86,13 @@ export const WithIcons: Story = {
     const theme = useTheme();
     return (
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-        <Chip
-          size="small"
-          startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}
-        >
+        <Chip size="sm" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
           Small
         </Chip>
-        <Chip
-          size="medium"
-          startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}
-        >
+        <Chip size="md" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
           Medium
         </Chip>
-        <Chip
-          size="large"
-          startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}
-        >
+        <Chip size="lg" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
           Large
         </Chip>
       </View>
@@ -206,7 +197,7 @@ export const Disabled: Story = {
 export const Sizes: Story = {
   render: () => (
     <View style={{ gap: 12, alignItems: 'flex-start' }}>
-      {(['small', 'medium', 'large', 'xl', '2xl'] as const).map((size) => (
+      {(['sm', 'md', 'lg', 'xl', '2xl'] as const).map((size) => (
         <View key={size} style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
           <Chip size={size} variant="subtle" color="primary" testID={`chip-size-${size}`}>
             {size}

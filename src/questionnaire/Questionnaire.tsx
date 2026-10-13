@@ -18,7 +18,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  Platform,
   StyleSheet,
   Pressable,
   TextInput,
@@ -65,6 +64,7 @@ import type {
   QuestionnaireQuestion,
   QuestionnaireSelect,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The questions an agent asks before it commits to a plan, one at a time, as
@@ -164,8 +164,6 @@ export function resolveQuestionnairePalette(theme: Theme, backing?: string): Que
 // ---------------------------------------------------------------------------
 //  Geometry + motion
 // ---------------------------------------------------------------------------
-
-const IS_WEB = Platform.OS === 'web';
 
 const CARD_RADIUS = 20;
 const CARD_PADDING = 12;

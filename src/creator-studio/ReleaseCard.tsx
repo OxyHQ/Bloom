@@ -52,14 +52,14 @@ import type { ReleaseCardLabels, ReleaseCardProps, ReleaseStatusBadgeProps } fro
 export function ReleaseStatusBadge({
   status,
   label,
-  size = 'small',
+  size = 'sm',
   testID,
 }: ReleaseStatusBadgeProps) {
   const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const { tone, fill } = RELEASE_STATUS_TONES[status];
   return (
     <Badge
-      size={size === 'small' ? 'label-small' : 'label-medium'}
+      size={size === 'sm' ? 'label-small' : 'label-medium'}
       color={tone}
       variant={fill}
       content={label ?? messages.releaseStatuses[status]}

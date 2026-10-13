@@ -17,14 +17,9 @@ import { RiStarLine } from '../icons/remix/RiStarLine';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
-import {
-  IS_WEB,
-  MAIL_LABEL_DOT,
-  MAIL_ROW_RADIUS,
-  MAIL_TOUCH_TARGET,
-  type MailPaint,
-} from './shared';
+import { MAIL_LABEL_DOT, MAIL_ROW_RADIUS, MAIL_TOUCH_TARGET, type MailPaint } from './shared';
 import type { MailAction, MailLabel, MailStrings } from './types';
+import { IS_WEB } from '../styles/platform';
 
 // ---------------------------------------------------------------------------
 //  The link that covers a row
@@ -294,7 +289,7 @@ export function MailLabelChips({
       {labels.map((label) => (
         <Chip
           key={label.id}
-          size="small"
+          size="sm"
           variant="subtle"
           color={label.tone ?? 'default'}
           surface={surface}
@@ -305,7 +300,7 @@ export function MailLabelChips({
       ))}
       {overflow > 0 ? (
         <Chip
-          size="small"
+          size="sm"
           variant="subtle"
           color="default"
           surface={surface}
@@ -352,7 +347,7 @@ export function MailLabelMarks({ chip, dots, surface, testID }: MailLabelMarksPr
     >
       {chip === undefined ? null : (
         <Chip
-          size="small"
+          size="sm"
           variant="subtle"
           color={chip.tone ?? 'default'}
           surface={surface}

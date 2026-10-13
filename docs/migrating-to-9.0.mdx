@@ -36,3 +36,25 @@ Native surfaces have no per-surface blur: a `BlurView` inside its own blur targe
 ## The tab bar has no liquid-glass capsule
 
 `TabBar` paints the same capsule material on every platform. `expo-glass-effect` is no longer a peer or a dependency; remove it from your app if nothing else uses it. `TabBarGlassFallback`, `GlassView` and the `solidFallback` logic are gone.
+
+## One size vocabulary
+
+`small` / `medium` / `large` are gone from control sizes. The geometry is unchanged: rename the value.
+
+| Component | Before | After |
+|---|---|---|
+| `Badge` | `small` / `medium` / `large` (`label-small`, `label-medium` stay) | `sm` / `md` / `lg` |
+| `Chip`, `Sidebar` | `small` / `medium` / `large` | `sm` / `md` / `lg` |
+| `Rating`, `OfferingBadge`, `EnergyBadge`, `ExplicitBadge`, `UnreadBadge`, creator-studio, chat-people | `small` / `medium` | `sm` / `md` |
+| `PresenceDot` | `small` / `medium` / `large` | `sm` / `md` / `lg` |
+
+Content-density types keep their words: `MediaCard`, `Lyrics`, `ListingHeader`, `ListingSection`, `ShipmentLoadSize` and `TileSize` describe a layout or a load, not a control.
+
+## One open / close pair on declarative overlays
+
+| Component | Before | After |
+|---|---|---|
+| `AlertDialog` | `visible` + `onClose()` | `open` + `onOpenChange(open)` |
+| `Command` | `visible` + `onClose()` | `open` + `onOpenChange(open)` |
+
+`onOpenChange` is called with `false` on every close. `Dialog`, `SettingsModal` and `BottomSheet` keep their imperative `control` / ref contract: a controlled boolean races the exit animation there (`docs/dialog.mdx`).

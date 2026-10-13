@@ -418,16 +418,6 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason:
         'passes `size` straight through to `TextField`, which inherits density — so a `BloomScope` reaches the phone field without this family reading anything.',
     },
-    'chat-people': {
-      verdict: 'does-not-apply',
-      reason:
-        'sizes an avatar row of its own, not a control: there is nothing for a container\u2019s density to mean here, and honouring it would resize a presentation block.',
-    },
-    'creator-studio': {
-      verdict: 'does-not-apply',
-      reason:
-        'sizes a studio stat block — a presentation part, whose two sizes happen to be spelled with the same two words as the density pair.',
-    },
   },
   trigger: {
     button: {

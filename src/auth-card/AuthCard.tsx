@@ -3,7 +3,6 @@ import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
-  Platform,
   Pressable,
   View,
   useWindowDimensions,
@@ -29,6 +28,7 @@ import { Text } from '../typography';
 import { useMessages } from '../locale/messages';
 import { AUTH_CARD_MESSAGES } from './messages';
 import type { AuthCardProps, AuthCardValues } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `AuthCard`: sign-in, sign-up and one-time-code cards built on the provider
@@ -56,8 +56,6 @@ import type { AuthCardProps, AuthCardValues } from './types';
  * The form is uncontrolled from the outside: the card holds the field values
  * and hands them to `onSubmit` as a typed object.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 /** Marks where `codeSentTo` puts the address; never typed by a person. */
 const EMAIL_SLOT = '\u0000';

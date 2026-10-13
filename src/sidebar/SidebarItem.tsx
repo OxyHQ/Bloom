@@ -11,14 +11,9 @@ import { useSidebarGeometry } from './geometry';
 import { useSidebarMetrics } from './metrics';
 import { useSidebarPalette } from './palette';
 import { borderRadius } from '../styles/tokens';
-import {
-  Collapsible,
-  IS_WEB,
-  useInSidebar,
-  useSidebarCollapseProgress,
-  useSidebarWebCss,
-} from './parts';
+import { Collapsible, useInSidebar, useSidebarCollapseProgress, useSidebarWebCss } from './parts';
 import type { SidebarItemProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A sidebar nav item.

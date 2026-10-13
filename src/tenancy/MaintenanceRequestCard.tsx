@@ -154,7 +154,7 @@ function MaintenanceRequestCardComponent({
           content={stageWord(stage)}
           color={stageInfo.tone}
           variant="subtle"
-          size="medium"
+          size="md"
           testID={id('stage')}
         />
       </View>

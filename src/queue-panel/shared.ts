@@ -1,5 +1,4 @@
 import { surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
-import { Platform } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
@@ -9,8 +8,6 @@ import type { QueuePanelLabels } from './types';
 import { COMMON_MESSAGES, type CommonMessages } from '../locale/common-messages';
 import { MEDIA_CONTROLS_MESSAGES, type MediaControlsMessages } from '../media-controls/messages';
 import { QUEUE_PANEL_MESSAGES, type QueuePanelMessages } from './messages';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /** Every row is exactly this tall, so a drag offset converts to an index with no measuring. */
 export const QUEUE_ROW_HEIGHT = 56;

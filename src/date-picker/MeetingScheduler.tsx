@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import {
-  Platform,
   Pressable,
   ScrollView,
   View,
@@ -31,6 +30,7 @@ import type {
   MeetingSchedulerProps,
   MeetingSchedulerValue,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `MeetingScheduler` (`base/date-picker/meeting-scheduler.tsx`): a
@@ -63,7 +63,6 @@ const COLUMN_GAP = 16;
 /** 16 + 207 + 16 + 326 panel + 16 + 170 + 16. */
 const WIDE_WIDTH = 16 + HOST_WIDTH + COLUMN_GAP + 326 + COLUMN_GAP + SLOTS_WIDTH + 16;
 
-const IS_WEB = Platform.OS === 'web';
 const BODY_MEDIUM: TextStyle = TYPE_SCALE['body-medium'];
 
 /** Tailwind `shadow-2xs`, with a dark override in dark mode. */

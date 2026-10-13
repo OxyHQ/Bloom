@@ -31,7 +31,7 @@ const [stars, setStars] = useState<number | null>(null);
 | `countStyle`         | `'parenthesis'` → "(128)" (default) or `'reviews'` → "· 128 reviews"                    |
 | `reviewsLabel`       | the word after the count, English `"reviews"`, pluralised and localised via `BloomProvider locale` |
 | `newLabel`           | drawn instead of the value when there is no rating yet, English `"New"`, localised via `BloomProvider locale` |
-| `size`               | `'small'` (14px star, body-2 text) or `'medium'` (default, 16px star, body text)        |
+| `size`               | `'sm'` (14px star, body-2 text) or `'md'` (default, 16px star, body text)        |
 | `showValue` | default `true`; `false` hides the numeric label while retaining its accessible name; the unrated fallback remains visible |
 | `starSize` | positive glyph size independent of text size; defaults to the selected size scale |
 | `variant`            | `'compact'` (default, one star) or `'stars'` (five stars, filled fractionally, before the value) |

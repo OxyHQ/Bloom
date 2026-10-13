@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import {
-  Platform,
   ScrollView,
   View,
   type LayoutChangeEvent,
@@ -13,6 +12,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { chipRowOverflow, type ChipRowScroll } from './shared';
 import type { ChipRowProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A row of pills that scrolls sideways, with a fade at whichever edge has more
@@ -37,8 +37,6 @@ import type { ChipRowProps } from './types';
  * match what the pills are (`group` of toggles, `radiogroup`, `tablist`). The
  * row draws nothing of its own that assistive technology should see.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 /** Width of each edge's fade. */
 export const CHIP_ROW_EDGE = 40;

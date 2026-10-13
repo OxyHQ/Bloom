@@ -11,8 +11,9 @@ import { PanResponder, View, type LayoutChangeEvent, type PointerEvent } from 'r
 
 import { useCommonMessages } from '../locale/common-messages';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { dataHook, IS_WEB, useAiChatPalette, useAiChatWebCss } from './shared';
+import { dataHook, useAiChatPalette, useAiChatWebCss } from './shared';
 import type { AiChatResizeHandleProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The resize grip (`DragHandle`): a 20px strip straddling the chat's right edge

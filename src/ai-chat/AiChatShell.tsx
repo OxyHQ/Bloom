@@ -43,7 +43,6 @@ import {
 import {
   dataHook,
   DOCUMENT_RAIL,
-  IS_WEB,
   PANEL_BREAKPOINT,
   SHELL_GUTTER,
   SIDEBAR_BREAKPOINT,
@@ -56,6 +55,7 @@ import { AI_CHAT_MESSAGES } from './messages';
 import type { AiChatMobileHeaderProps, AiChatShellProps } from './types';
 import { AiChatResizeHandle } from './AiChatResizeHandle';
 import { clamp01 } from '../styles/clamp';
+import { IS_WEB } from '../styles/platform';
 
 const NO_SAFE_INSETS = { top: 0, right: 0, bottom: 0, left: 0 };
 

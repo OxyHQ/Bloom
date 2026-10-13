@@ -46,7 +46,7 @@ import { Text, TYPE_SCALE } from '../typography';
 import { resolveSidebarGeometry, SidebarGeometryProvider } from './geometry';
 import { SidebarSizeProvider, SIDEBAR_METRICS } from './metrics';
 import { useSidebarPalette, type SidebarPalette } from './palette';
-import { Collapsible, CollapseProvider, IS_WEB, MORPH_MS, useSidebarWebCss } from './parts';
+import { Collapsible, CollapseProvider, MORPH_MS, useSidebarWebCss } from './parts';
 import { SidebarFolder } from './SidebarFolder';
 import { SidebarItem } from './SidebarItem';
 import { SidebarModeSwitcher } from './SidebarModeSwitcher';
@@ -61,6 +61,7 @@ import type { SidebarNavItem, SidebarProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `Sidebar` — the floating app rail, expanded or collapsed.
@@ -237,16 +238,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const publishedFill = hasFill
     ? resolveSurfaceMaterial({ fill: surfaceFill, parentFill, paint: paintsSurface }).publishedFill
     : undefined;
-  const canonicalSize =
-    sizeProp === 'small'
-      ? 'sm'
-      : sizeProp === 'medium'
-        ? 'md'
-        : sizeProp === 'large'
-          ? 'lg'
-          : sizeProp;
   const { size: scopedSize } = useBloomAppearance(
-    { size: canonicalSize },
+    { size: sizeProp },
     { size: 'md', tone: 'neutral' },
   );
   const size = scopedSize === 'xs' ? 'sm' : scopedSize;
@@ -505,7 +498,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             <Badge
               content={item.badge}
               max={99}
-              size="small"
+              size="sm"
               style={badgeStyle}
               textStyle={badgeTextStyle}
             />

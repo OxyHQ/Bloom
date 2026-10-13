@@ -61,9 +61,6 @@ export const SIDEBAR_METRICS: Record<SidebarSize, SidebarMetrics> = {
   sm: size(232, 6, 18, 'body-2-medium'),
   md: size(260, 9, 22, 'headline-medium'),
   lg: size(300, 10, 24, 'title-3-medium'),
-  small: size(232, 6, 18, 'body-2-medium'),
-  medium: size(260, 9, 22, 'headline-medium'),
-  large: size(300, 10, 24, 'title-3-medium'),
 };
 
 const SizeContext = createContext<SidebarSize | null>(null);
@@ -74,7 +71,6 @@ export const SidebarSizeProvider = SizeContext.Provider;
 /** The enclosing sidebar's size, or the row's own when it names one. */
 export function useSidebarMetrics(own?: SidebarSize): SidebarMetrics {
   const inherited = useContext(SizeContext);
-  const canonical = own === 'small' ? 'sm' : own === 'medium' ? 'md' : own === 'large' ? 'lg' : own;
-  const { size } = useBloomAppearance({ size: canonical }, { size: 'md', tone: 'neutral' });
+  const { size } = useBloomAppearance({ size: own }, { size: 'md', tone: 'neutral' });
   return SIDEBAR_METRICS[own ?? inherited ?? (size === 'xs' ? 'sm' : size)];
 }

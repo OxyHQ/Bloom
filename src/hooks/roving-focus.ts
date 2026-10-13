@@ -29,9 +29,8 @@
  * key and a pointer select through exactly one code path.
  */
 import { useLayoutEffect } from 'react';
-import { Platform } from 'react-native';
 
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /** Which arrow pair moves between the options. */
 export type RovingOrientation = 'horizontal' | 'vertical' | 'both';

@@ -18,7 +18,6 @@ import { LYRICS_MESSAGES } from './messages';
 import { TYPE_SCALE } from '../typography/scale';
 import { LyricsLineRow, LyricsPill, type LyricLineState } from './LyricsParts';
 import {
-  IS_WEB,
   LYRICS_CSS,
   LYRICS_STYLE_ID,
   activeLyricIndex,
@@ -29,6 +28,7 @@ import {
   resolveLyricsPalette,
 } from './shared';
 import type { LyricsSize, LyricsViewProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Synced lyrics that follow playback.

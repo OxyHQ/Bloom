@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Image, Platform, Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
@@ -36,6 +36,7 @@ import { DISABLED_OPACITY } from '../styles/tokens';
 import { useMessages } from '../locale/messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { SORTABLE_MEDIA_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * An editable, reorderable grid of uploaded photos. The first photo is the
@@ -69,7 +70,6 @@ import { SORTABLE_MEDIA_MESSAGES } from './messages';
  * Colour-only hover; no scale.
  */
 
-const IS_WEB = Platform.OS === 'web';
 const RADIUS = 12;
 const DRAG_THRESHOLD = 5;
 

@@ -161,7 +161,7 @@ function NowPlayingBarComponent({
             onTitlePress={onTitlePress}
             onArtistPress={onArtistPress}
             titleLabel={labels.openTrack}
-            trailingTitle={track.explicit ? <ExplicitBadge size="small" /> : null}
+            trailingTitle={track.explicit ? <ExplicitBadge size="sm" /> : null}
             testID={id('track')}
           />
           {onLikedChange ? (

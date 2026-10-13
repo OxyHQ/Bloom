@@ -19,7 +19,6 @@ import { ListingFacts, ListingStatusPill } from '../listing-card/parts';
 import {
   COMPACT_PHOTO_RADIUS,
   COMPACT_PHOTO_SIZE,
-  IS_WEB,
   LISTING_CARD_CSS,
   LISTING_CARD_STYLE_ID,
   PHOTO_RADIUS,
@@ -52,6 +51,7 @@ import {
   vendorFacts,
 } from './shared';
 import type { VendorCardDensity, VendorCardProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A restaurant or a shop in a list.
@@ -238,7 +238,7 @@ function Cuisines({
       testID={testID ? `${testID}-cuisines` : undefined}
     >
       {cuisines.map((cuisine) => (
-        <Chip key={cuisine} size="small" variant="subtle" color="default" surface={surface}>
+        <Chip key={cuisine} size="sm" variant="subtle" color="default" surface={surface}>
           {cuisine}
         </Chip>
       ))}
@@ -340,7 +340,7 @@ function VendorCardComponent(props: VendorCardProps) {
   const status = availabilityLabelFor(availability, availabilityLabel, messages);
   const facts = vendorFacts(props, messages);
   const shownCuisines = vendorCuisines(cuisines, density);
-  const markSize: OfferingBadgeSize = compact ? 'small' : 'medium';
+  const markSize: OfferingBadgeSize = compact ? 'sm' : 'md';
   const label = accessibilityLabel ?? composeVendorName(props, messages);
 
   const handlePress = (event: GestureResponderEvent) => {
@@ -404,7 +404,7 @@ function VendorCardComponent(props: VendorCardProps) {
         </Text>
         {rating !== undefined ? (
           <Rating
-            size={compact ? 'small' : 'medium'}
+            size={compact ? 'sm' : 'md'}
             value={rating}
             count={reviewCount}
             newLabel={newLabel ?? messages.new}

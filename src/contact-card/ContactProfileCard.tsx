@@ -307,7 +307,7 @@ function ContactProfileCardComponent({
     chips.push(
       <Chip
         key="last-touch"
-        size="medium"
+        size="md"
         variant={lastTouchTone === undefined ? 'outlined' : 'subtle'}
         color={lastTouchTone ?? 'default'}
         startIcon={
@@ -326,14 +326,14 @@ function ContactProfileCardComponent({
   for (const fact of facts ?? []) {
     if (fact !== '')
       chips.push(
-        <Chip key={`fact-${fact}`} size="medium" variant="outlined">
+        <Chip key={`fact-${fact}`} size="md" variant="outlined">
           {fact}
         </Chip>,
       );
   }
   for (const tag of tags ?? []) {
     chips.push(
-      <Chip key={`tag-${tag}`} size="medium" variant="outlined">
+      <Chip key={`tag-${tag}`} size="md" variant="outlined">
         {tag}
       </Chip>,
     );
@@ -423,7 +423,7 @@ function ContactProfileCardComponent({
                   </Text>
                   {headline.delta ? (
                     <Chip
-                      size="medium"
+                      size="md"
                       variant="subtle"
                       color={headline.deltaTone ?? 'success'}
                       style={{ alignSelf: 'center' }}

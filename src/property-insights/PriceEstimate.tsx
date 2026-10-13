@@ -341,7 +341,7 @@ function PriceEstimateComponent({
             <View style={{ flexDirection: 'row' }}>
               <Chip
                 variant="subtle"
-                size="large"
+                size="lg"
                 color={priceVerdictTone(verdict, highAboveRatio)}
                 testID={testID ? `${testID}-verdict` : undefined}
               >

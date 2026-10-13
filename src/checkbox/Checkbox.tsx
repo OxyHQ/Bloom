@@ -3,7 +3,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -20,6 +20,7 @@ import {
 } from './shared';
 import { useFieldMembership } from '../field/membership';
 import type { CheckboxProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The checkbox. Colours are Bloom's theme run through the shared recipe
@@ -48,8 +49,6 @@ const DESCRIPTION_GAP = 2;
  * growing the drawing, derived per size so all three reach the same floor.
  */
 const MIN_TOUCH_TARGET = 44;
-
-const IS_WEB = Platform.OS === 'web';
 
 // The row's reset. The focus ring and the box's motion live in the glyph's
 // sheet (`./shared`), which `CheckboxCard` adopts too.

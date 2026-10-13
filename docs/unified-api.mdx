@@ -32,7 +32,7 @@ A single internal material resolver chooses the paint fill, applies default 90% 
 
 `Surface`, `Card` and `BlurIsland` share radius precedence: explicit radius prop, resolved style radius, family default. The host and paint receive the same geometry. Surface does not introduce content padding, layout wrappers or interaction behavior into its consumers.
 
-The published backing is an estimate from known fills, not a sampled image. Web backdrop blur and displacement still incur per-surface compositor cost. Native shares tint and sheen but does not pretend to implement the web filter.
+The published backing is an estimate from known fills, not a sampled image. Web paints one backdrop blur per painted surface, which still costs compositor time on dense screens. Native paints tint, sheen and rim in one view and has no per-surface blur.
 
 ## Controls and overlays
 
@@ -68,6 +68,8 @@ These removals require a breaking release. Migrate consumers before adopting tha
 | Switch `value` / `onValueChange` | `checked` / `onCheckedChange` |
 | Radio/RadioCard `selected`, radio `onSelect` | `checked`, `onValueChange` |
 | Fab `small` / `medium` / `large` | `xs` / `md` / `lg` (preserves 40/50/64 geometry) |
+| Badge, Chip, Sidebar, Rating, OfferingBadge, EnergyBadge, UnreadBadge, ExplicitBadge, PresenceDot, chat-people and creator-studio `small` / `medium` / `large` | `sm` / `md` / `lg` (same geometry) |
+| AlertDialog, Command `visible` + `onClose` | `open` + `onOpenChange` (`onOpenChange(false)` on every close) |
 | Fab placement/minimization props | Parent `Screen` / `BottomBar` coordination; explicit `collapsed` for label collapse |
 
 The package ships an import-aware codemod (requires TypeScript). From a Bloom checkout, preview first, then write:
@@ -85,8 +87,6 @@ It migrates package-imported literal JSX props and fenced documentation examples
 
 Storybook **System / Composition / Connected** combines post, nested link card, buttons, selection, a disabled field, menu and dialog. Its browser check exercises inherited and explicit size, field constraints, real clicks, Escape and focus restoration at narrow/wide widths in both modes.
 
-**System / Composition / Dense Feed** renders 100 posts for a repeatable material-cost diagnostic. `scripts/measure-surface-feed.mjs` reports four optical-on/off runs and verifies that liking one post does not mutate its 99 siblings. This intentionally unvirtualized stress fixture does not recommend rendering long production feeds without virtualization. Frame timings depend on hardware, browser and build; development measurements are not production Core Web Vitals.
-
-The local Chrome 146 development measurement (100 posts, 400 material layers) reported a p95 frame interval of 33.4 ms with optics and 16.7–16.8 ms with optics disabled. Liking one post produced zero DOM mutations in the other 99. Containment and compositor-promotion experiments worsened scrolling; removing offscreen posts reduced JavaScript work but did not improve that frame interval. None of these experiments changed the approved material recipe. The visible filters remain a measured performance cost; native performance has not been established by this browser test.
+**System / Composition / Dense Feed** renders 100 posts for a repeatable material-cost diagnostic. `scripts/measure-surface-feed.mjs` reports optical-on/off runs and verifies that liking one post does not mutate its 99 siblings. This intentionally unvirtualized stress fixture does not recommend rendering long production feeds without virtualization. Frame timings depend on hardware, browser and build; development measurements are not production Core Web Vitals. Earlier figures in this page were taken with the refraction filter, which no longer exists; re-measure before quoting any.
 
 The migration verification covered 485 distinct Jest suites across three shards and targeted reruns: 483 passed. `theme/__tests__/build-theme-from-seed-parity.test.ts` and `__tests__/color-role-foundation.test.ts` remained unverified because repeated runs terminated inside V8's VM/context machinery. This is not a complete green test run. Browser composition checks and all 59 template renders passed separately.

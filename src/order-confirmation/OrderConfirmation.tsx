@@ -152,7 +152,7 @@ function OrderConfirmationComponent({
               {caption(referenceLabel, 'reference-label')}
               <Chip
                 variant="outlined"
-                size="large"
+                size="lg"
                 // `Chip` pins itself to `alignSelf: 'flex-start'`, so a centred
                 // parent does not centre it — it has to say so itself.
                 style={{ alignSelf: 'center' }}

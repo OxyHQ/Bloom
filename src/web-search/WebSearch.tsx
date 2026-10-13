@@ -51,6 +51,7 @@ import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { WEB_SEARCH_MESSAGES } from './messages';
 import type { WebSearchBrand, WebSearchProps, WebSearchSource, WebSearchStep } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Web Search: what the agent looked at, as it looks.
@@ -80,8 +81,6 @@ import type { WebSearchBrand, WebSearchProps, WebSearchSource, WebSearchStep } f
  * a 420/36 spring, the stack's width follows on the same spring 70ms behind, and
  * the chevron turns 300ms `ease`. All of it snaps under reduced motion.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Palette

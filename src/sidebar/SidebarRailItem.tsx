@@ -15,8 +15,9 @@ import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useSidebarPalette } from './palette';
-import { IS_WEB, useSidebarWebCss } from './parts';
+import { useSidebarWebCss } from './parts';
 import type { SidebarRailItemProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /** The indicator pill behind the icon. */
 const INDICATOR_WIDTH = 48;

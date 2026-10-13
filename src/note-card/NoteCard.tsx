@@ -317,7 +317,7 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
         {shownTags.map((tag) => (
           <Chip
             key={tag}
-            size="small"
+            size="sm"
             variant={tagVariant}
             color={tone ?? 'default'}
             surface={background}
@@ -326,7 +326,7 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
           </Chip>
         ))}
         {hiddenTags > 0 ? (
-          <Chip size="small" variant={tagVariant} color="default" surface={background}>
+          <Chip size="sm" variant={tagVariant} color="default" surface={background}>
             {`+${hiddenTags}`}
           </Chip>
         ) : null}

@@ -6,12 +6,13 @@ import { RiMusic2Fill } from '../icons/remix/RiMusic2Fill';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MediaCard, SUBTITLE_VARIANT } from './MediaCard';
-import { IS_WEB, resolveMediaCardPaint } from './shared';
+import { resolveMediaCardPaint } from './shared';
 import type { SongCardArtist, SongCardProps } from './types';
 import { webDataSet } from '../styles/web-data';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CARD_MESSAGES } from './messages';
 import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
+import { IS_WEB } from '../styles/platform';
 
 export function normaliseArtists(artists: SongCardProps['artists']): SongCardArtist[] {
   return (artists ?? []).map((artist) => (typeof artist === 'string' ? { name: artist } : artist));
@@ -120,7 +121,7 @@ function SongCardComponent({
       meta={row && album ? [album] : undefined}
       placeholderIcon={RiMusic2Fill}
       titleLeading={current ? <NowPlayingIndicator playing={playing} size={14} /> : undefined}
-      titleAccessory={explicit ? <ExplicitBadge size="small" /> : undefined}
+      titleAccessory={explicit ? <ExplicitBadge size="sm" /> : undefined}
       titleAccessoryLabel={explicit ? controls.explicit : undefined}
       accessibilityDetail={onPressArtist ? names : undefined}
       trailing={trailing}

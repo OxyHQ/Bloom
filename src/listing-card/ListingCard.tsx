@@ -39,7 +39,6 @@ import {
   DOT_SIZE,
   dotWindow,
   HORIZONTAL_PHOTO_WIDTH,
-  IS_WEB,
   LISTING_CARD_CSS,
   LISTING_CARD_STYLE_ID,
   PHOTO_ASPECT_RATIO,
@@ -57,6 +56,7 @@ import type { ListingCardLayout, ListingCardProps } from './types';
 import { useMessages } from '../locale/messages';
 import { LISTING_CARD_MESSAGES, type ListingCardMessages } from './messages';
 import { useCommonMessages } from '../locale/common-messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A home in a results grid — a stay, a rental, a home for sale or a swap.
@@ -585,7 +585,7 @@ function CompactRow(props: CompactRowProps) {
                   label={statusText}
                   fill={paint.statusFill}
                   text={paint.statusText}
-                  size="small"
+                  size="sm"
                   testID={testID ? `${testID}-status` : undefined}
                 />
               ) : null}
@@ -594,7 +594,7 @@ function CompactRow(props: CompactRowProps) {
                   key={offering}
                   offering={offering}
                   label={offeringLabels?.[offering]}
-                  size="small"
+                  size="sm"
                   testID={testID ? `${testID}-offering-${offering}` : undefined}
                 />
               ))}
@@ -610,7 +610,7 @@ function CompactRow(props: CompactRowProps) {
             </Text>
             {rating !== undefined ? (
               <Rating
-                size="small"
+                size="sm"
                 value={rating}
                 count={reviewCount}
                 newLabel={newLabel}
@@ -893,7 +893,7 @@ function ListingCardComponent(props: ListingCardProps) {
                 label={shownStatus}
                 fill={paint.statusFill}
                 text={paint.statusText}
-                size="medium"
+                size="md"
                 testID={testID ? `${testID}-status` : undefined}
               />
             ) : null}

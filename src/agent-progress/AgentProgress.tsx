@@ -3,7 +3,7 @@ import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -34,6 +34,7 @@ import { TYPE_SCALE } from '../typography/scale';
 import { AgentProgressLoadingText } from './AgentProgressLoadingText';
 import { AGENT_PROGRESS_MESSAGES } from './messages';
 import type { AgentProgressProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The card that lists an agent's plan and ticks it off step by step.
@@ -69,8 +70,6 @@ import type { AgentProgressProps } from './types';
 /** The demo workflow in English; the component shows it in the locale's language. */
 export const DEFAULT_AGENT_PROGRESS_STEPS: readonly string[] =
   AGENT_PROGRESS_MESSAGES.en.defaultSteps;
-
-const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Timing constants

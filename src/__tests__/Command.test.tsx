@@ -33,18 +33,18 @@ function makeItems(onSelect: () => void): CommandItem[] {
 // `Command` is now a ⌘K palette built on `<Dialog placement="center">`. These
 // tests assert the public-API contract it owns (controlled visibility, the
 // grouped results list, query filtering, the empty state, and select →
-// onClose) holds on the native Dialog surface.
+// onOpenChange) holds on the native Dialog surface.
 describe('Command (built on Dialog)', () => {
-  it('renders nothing when not visible', () => {
+  it('renders nothing when not open', () => {
     const { queryByText } = renderWithTheme(
-      <Command visible={false} onClose={() => {}} items={makeItems(() => {})} />,
+      <Command open={false} onOpenChange={() => {}} items={makeItems(() => {})} />,
     );
     expect(queryByText('Go to profile')).toBeNull();
   });
 
-  it('renders grouped items and their group headers when visible', () => {
+  it('renders grouped items and their group headers when open', () => {
     const { getByText } = renderWithTheme(
-      <Command visible onClose={() => {}} items={makeItems(() => {})} />,
+      <Command open onOpenChange={() => {}} items={makeItems(() => {})} />,
     );
     expect(getByText('Go to profile')).toBeTruthy();
     expect(getByText('Open settings')).toBeTruthy();
@@ -56,7 +56,7 @@ describe('Command (built on Dialog)', () => {
 
   it('filters items by a controlled query (label, description, keywords)', () => {
     const { getByText, queryByText, rerender } = renderWithTheme(
-      <Command visible onClose={() => {}} items={makeItems(() => {})} query="settings" />,
+      <Command open onOpenChange={() => {}} items={makeItems(() => {})} query="settings" />,
     );
     expect(getByText('Open settings')).toBeTruthy();
     expect(queryByText('Go to profile')).toBeNull();
@@ -64,7 +64,7 @@ describe('Command (built on Dialog)', () => {
     // A keyword on a different item matches that item.
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <Command visible onClose={() => {}} items={makeItems(() => {})} query="oauth" />
+        <Command open onOpenChange={() => {}} items={makeItems(() => {})} query="oauth" />
       </BloomThemeProvider>,
     );
     expect(getByText('Create application')).toBeTruthy();
@@ -74,8 +74,8 @@ describe('Command (built on Dialog)', () => {
   it('shows the empty state when nothing matches', () => {
     const { getByText } = renderWithTheme(
       <Command
-        visible
-        onClose={() => {}}
+        open
+        onOpenChange={() => {}}
         items={makeItems(() => {})}
         query="zzz-no-match"
         emptyText="Nothing here"
@@ -84,17 +84,17 @@ describe('Command (built on Dialog)', () => {
     expect(getByText('Nothing here')).toBeTruthy();
   });
 
-  it('invokes onSelect then onClose when an item is pressed', () => {
+  it('invokes onSelect then onOpenChange when an item is pressed', () => {
     const onSelect = jest.fn();
-    const onClose = jest.fn();
+    const onOpenChange = jest.fn();
     const { getByText } = renderWithTheme(
-      <Command visible onClose={onClose} items={makeItems(onSelect)} />,
+      <Command open onOpenChange={onOpenChange} items={makeItems(onSelect)} />,
     );
     act(() => {
       fireEvent.press(getByText('Open settings'));
     });
     expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
   });
 
   // The migration off the controlled `open` prop onto the imperative `control`
@@ -115,18 +115,18 @@ describe('Command (built on Dialog)', () => {
     it('drives the underlying Dialog imperatively (control), never the controlled `open` prop', () => {
       const { captured, MockDialog } = captureDialogProps();
       const TestCommand = createCommand(MockDialog);
-      renderWithTheme(<TestCommand visible onClose={() => {}} items={makeItems(() => {})} />);
+      renderWithTheme(<TestCommand open onOpenChange={() => {}} items={makeItems(() => {})} />);
       // The whole point of the migration: `Command` must take the Dialog's
       // imperative/uncontrolled branch (the one that plays the exit animation on
       // dismiss), so an imperative `control` handle is passed and the controlled
-      // `open` boolean — which fires `onClose` synchronously — is never set.
+      // `open` boolean — which fires `onOpenChange` synchronously — is never set.
       expect(captured.props?.control).toBeDefined();
       expect(captured.props?.open).toBeUndefined();
     });
 
     // A mock Dialog that registers the real imperative contract on `control.ref`
     // (so `Command`'s `control.open()` / `control.close()` proxy through it) and
-    // fires `onClose` when imperatively closed — modelling the real Dialog,
+    // fires `onOpenChange` when imperatively closed — modelling the real Dialog,
     // which invokes `onClose` only AFTER its exit animation settles.
     function ImperativeMockDialog(props: DialogProps) {
       const onCloseRef = React.useRef(props.onClose);
@@ -135,7 +135,7 @@ describe('Command (built on Dialog)', () => {
         props.control?.ref,
         () => ({
           open: () => {},
-          // The real Dialog fires `onClose` post-exit-animation.
+          // The real Dialog fires `onOpenChange` post-exit-animation.
           close: () => onCloseRef.current?.(),
         }),
         [],
@@ -143,7 +143,7 @@ describe('Command (built on Dialog)', () => {
       return null;
     }
 
-    it('opens the Dialog imperatively on mount when visible, and closes it when visible flips false', () => {
+    it('opens the Dialog imperatively on mount when open, and closes it when open flips false', () => {
       const spies = { open: jest.fn(), close: jest.fn() };
       const MockDialog = (props: DialogProps) => {
         useImperativeHandle(props.control?.ref, () => spies, []);
@@ -151,7 +151,7 @@ describe('Command (built on Dialog)', () => {
       };
       const TestCommand = createCommand(MockDialog);
       const { rerender } = renderWithTheme(
-        <TestCommand visible onClose={() => {}} items={makeItems(() => {})} />,
+        <TestCommand open onOpenChange={() => {}} items={makeItems(() => {})} />,
       );
       expect(spies.open).toHaveBeenCalledTimes(1);
       expect(spies.close).not.toHaveBeenCalled();
@@ -159,48 +159,48 @@ describe('Command (built on Dialog)', () => {
       act(() => {
         rerender(
           <BloomThemeProvider mode="light" colorPreset="teal">
-            <TestCommand visible={false} onClose={() => {}} items={makeItems(() => {})} />
+            <TestCommand open={false} onOpenChange={() => {}} items={makeItems(() => {})} />
           </BloomThemeProvider>,
         );
       });
       expect(spies.close).toHaveBeenCalledTimes(1);
     });
 
-    it('forwards a user dismissal (backdrop / Escape) through onClose', () => {
+    it('forwards a user dismissal (backdrop / Escape) through onOpenChange', () => {
       const spyRef: { fn?: () => void } = {};
       const MockDialog = (props: DialogProps) => {
         spyRef.fn = props.onClose;
         return null;
       };
-      const onClose = jest.fn();
+      const onOpenChange = jest.fn();
       const TestCommand = createCommand(MockDialog);
-      renderWithTheme(<TestCommand visible onClose={onClose} items={makeItems(() => {})} />);
-      // The real Dialog fires `onClose` once its exit animation settles after a
+      renderWithTheme(<TestCommand open onOpenChange={onOpenChange} items={makeItems(() => {})} />);
+      // The real Dialog fires `onOpenChange` once its exit animation settles after a
       // backdrop / Escape dismissal. `Command` must forward that to the consumer.
       act(() => {
         spyRef.fn?.();
       });
-      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
     });
 
-    it('does not re-enter onClose when the consumer closes it (visible → false)', () => {
-      const onClose = jest.fn();
+    it('does not re-enter onOpenChange when the consumer closes it (open → false)', () => {
+      const onOpenChange = jest.fn();
       const TestCommand = createCommand(ImperativeMockDialog);
       const { rerender } = renderWithTheme(
-        <TestCommand visible onClose={onClose} items={makeItems(() => {})} />,
+        <TestCommand open onOpenChange={onOpenChange} items={makeItems(() => {})} />,
       );
       act(() => {
         rerender(
           <BloomThemeProvider mode="light" colorPreset="teal">
-            <TestCommand visible={false} onClose={onClose} items={makeItems(() => {})} />
+            <TestCommand open={false} onOpenChange={onOpenChange} items={makeItems(() => {})} />
           </BloomThemeProvider>,
         );
       });
-      // A consumer-initiated close flips `visible` to false → `Command`
-      // imperatively `close()`s the Dialog (which fires its post-exit `onClose`).
-      // That programmatic close must NOT re-enter the consumer's `onClose`,
+      // A consumer-initiated close flips `open` to false → `Command`
+      // imperatively `close()`s the Dialog (which fires its post-exit `onOpenChange`).
+      // That programmatic close must NOT re-enter the consumer's `onOpenChange`,
       // preserving the previous controlled semantics.
-      expect(onClose).not.toHaveBeenCalled();
+      expect(onOpenChange).not.toHaveBeenCalled();
     });
   });
 });

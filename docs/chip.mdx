@@ -33,9 +33,9 @@ Chip has a second colour system beside the status tones: DATA hues, for a catego
 ```tsx
 import { Chip, resolveChipHueColors, type ChipHue } from '@oxy.so/bloom/chip';
 
-<Chip size="medium" hue="lime">Shipped</Chip>
-<Chip size="large" hue="gray">$1.290</Chip>
-<Chip size="small" hue="purple">Design</Chip>
+<Chip size="md" hue="lime">Shipped</Chip>
+<Chip size="lg" hue="gray">$1.290</Chip>
+<Chip size="sm" hue="purple">Design</Chip>
 ```
 
 | hue | light | dark | theme source |
@@ -142,17 +142,17 @@ The close affordance is its own control inside the pill, with its own label and 
 
 | `size` | height | padding-x | gap | icon | text |
 |---|---|---|---|---|---|
-| `small` | 24 | 6 | 4 | 14 | `caption-1-medium` |
-| `medium` (default) | 24 | 6 | 4 | 16 | `body-medium` |
-| `large` | 28 | 6 | 4 | 16 | `body-medium` |
+| `sm` | 24 | 6 | 4 | 14 | `caption-1-medium` |
+| `md` (default) | 24 | 6 | 4 | 16 | `body-medium` |
+| `lg` | 28 | 6 | 4 | 16 | `body-medium` |
 | `xl` | 32 | 12 | 8 | 16 | `body-medium` |
 | `2xl` | 40 | 16 | 8 | 18 | `body-medium` |
 
-The scale used to stop at `large`, which is why five families grew a pill of their own rather than use this one: 28 tall with 6px sides is a TAG, and a filter you tap needs a target. `xl` is the filter/segment pill; `2xl` is the filters-sheet pill, and it pins a `minWidth` of 48 so a one-character label ("1", "8+") stays a pill rather than collapsing to a dot — a rung with a `minWidth` also centres its contents.
+The scale used to stop at `lg`, which is why five families grew a pill of their own rather than use this one: 28 tall with 6px sides is a TAG, and a filter you tap needs a target. `xl` is the filter/segment pill; `2xl` is the filters-sheet pill, and it pins a `minWidth` of 48 so a one-character label ("1", "8+") stays a pill rather than collapsing to a dot — a rung with a `minWidth` also centres its contents.
 
 **Override the side padding with `paddingHorizontal`, never `paddingLeft`/`paddingRight`.** react-native-web maps the shorthand this component uses to `padding-inline`, which its atomic sheet ranks above `padding-left` whatever the array order — so a longhand override drops on WEB and lands on native. Two families were overriding it that way and had been drawing 6px on the web since they shipped. Better still: pick the rung that already carries the padding you want.
 
-The close glyph is Remix `close-line` at 16. `startIcon` and `endIcon` take any node, and both are sized to the RUNG rather than to whatever was passed — an icon in a `small` chip and the same icon in a `2xl` one come out proportional.
+The close glyph is Remix `close-line` at 16. `startIcon` and `endIcon` take any node, and both are sized to the RUNG rather than to whatever was passed — an icon in an `sm` chip and the same icon in a `2xl` one come out proportional.
 
 ## The focus ring
 

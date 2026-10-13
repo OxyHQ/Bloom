@@ -3,10 +3,10 @@ import type { StyleProp, ViewStyle } from 'react-native';
 export type AlertDialogActionStyle = 'default' | 'cancel' | 'destructive';
 
 export interface AlertDialogProps {
-  /** Whether the dialog is mounted + visible (controlled). */
-  visible: boolean;
-  /** Close request — backdrop tap, Escape, cancel, or after confirm. */
-  onClose: () => void;
+  /** Whether the dialog is open (controlled). */
+  open: boolean;
+  /** Close request — backdrop tap, Escape, cancel, or after confirm — as `onOpenChange(false)`. */
+  onOpenChange: (open: boolean) => void;
   /** Headline. */
   title: string;
   /** Supporting copy. */
@@ -17,7 +17,7 @@ export interface AlertDialogProps {
   cancelLabel?: string;
   /** Confirm handler. The dialog closes after it runs (sync). */
   onConfirm?: () => void;
-  /** Cancel handler. Runs in addition to `onClose`. */
+  /** Cancel handler. Runs in addition to `onOpenChange(false)`. */
   onCancel?: () => void;
   /**
    * Style the confirm button as destructive (negative color). Defaults to

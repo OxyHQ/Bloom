@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import {
-  Platform,
   StyleSheet,
   View,
   type LayoutChangeEvent,
@@ -23,8 +22,7 @@ import { borderRadius } from '../styles/tokens';
 import { Text } from '../typography';
 import type { SidebarPalette } from './palette';
 import type { SidebarAvatar } from './types';
-
-export const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /** The `duration-300 ease-in-out` morph. */
 export const MORPH_MS = 300;

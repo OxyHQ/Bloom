@@ -13,8 +13,9 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
-import { IS_WEB } from './shared';
+
 import type { LyricLine, LyricsPalette } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /** Drawn for a blank synced line. */
 export const BREAK_DOTS = '•  •  •';

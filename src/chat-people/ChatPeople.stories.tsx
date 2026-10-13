@@ -318,13 +318,13 @@ export const ChannelPost: Story = {
         onPress={() => undefined}
         reactions={
           <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-            <Chip size="small" variant="subtle">
+            <Chip size="sm" variant="subtle">
               🌊 42
             </Chip>
-            <Chip size="small" variant="subtle">
+            <Chip size="sm" variant="subtle">
               👀 18
             </Chip>
-            <Chip size="small" variant="subtle">
+            <Chip size="sm" variant="subtle">
               🙏 7
             </Chip>
           </View>

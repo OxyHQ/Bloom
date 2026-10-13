@@ -27,12 +27,12 @@ const SIZE_CONFIG: Record<
   ExplicitBadgeSize,
   { box: number; radius: number; type: TypeScaleVariant }
 > = {
-  small: { box: 14, radius: 2, type: 'caption-2-bold' },
-  medium: { box: 16, radius: 3, type: 'caption-2-bold' },
+  sm: { box: 14, radius: 2, type: 'caption-2-bold' },
+  md: { box: 16, radius: 3, type: 'caption-2-bold' },
 };
 
 function ExplicitBadgeComponent({
-  size = 'medium',
+  size = 'md',
   letter = 'E',
   label: labelProp,
   style,

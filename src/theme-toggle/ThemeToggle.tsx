@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
-  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -38,6 +37,7 @@ import { Text } from '../typography';
 import { THEME_TOGGLE_MESSAGES } from './messages';
 import type { ThemeToggleVariant, ThemeToggleProps } from './types';
 import { revealTheme, THEME_TRANSITION_DURATION, type RevealOrigin } from './view-transition';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A theme toggle, driving Bloom's own mode through `useBloomTheme().setMode`
@@ -60,7 +60,6 @@ import { revealTheme, THEME_TRANSITION_DURATION, type RevealOrigin } from './vie
  * (`view-transition.ts`); natively, and under reduced motion, it is immediate.
  */
 
-const IS_WEB = Platform.OS === 'web';
 const EASE = Easing.bezier(...SEGMENTED_THUMB_EASE_BEZIER);
 const THUMB_MS = SEGMENTED_THUMB_MS;
 const HOVER_MS = 150;

@@ -19,7 +19,6 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { HOST_CARD_AVATAR_SIZE } from './constants';
 import {
-  IS_WEB,
   LISTING_DETAILS_CSS,
   LISTING_DETAILS_STYLE_ID,
   resolveImageUri,
@@ -28,6 +27,7 @@ import {
 import { useMessages } from '../locale/messages';
 import { LISTING_DETAILS_MESSAGES, type ListingDetailsMessages } from './messages';
 import type { ContactCardProps, ContactRole, ListingIcon } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The person or business behind a listing — a host, a landlord, an agent or an

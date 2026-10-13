@@ -4,7 +4,6 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
-  Platform,
   StyleSheet,
   View,
   useWindowDimensions,
@@ -34,6 +33,7 @@ import type { ProOfferCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { APP_SHELL_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `ProOfferCard`: the upgrade prompt anchored
@@ -56,7 +56,6 @@ import { APP_SHELL_MESSAGES } from './messages';
  * `backdrop` node (masked the same way on web).
  */
 
-const IS_WEB = Platform.OS === 'web';
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
 const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
 

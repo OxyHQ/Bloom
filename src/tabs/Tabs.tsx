@@ -13,7 +13,6 @@ import React, {
 import {
   View,
   Pressable,
-  Platform,
   ScrollView,
   StyleSheet,
   type LayoutRectangle,
@@ -45,6 +44,7 @@ import type {
   TabsTriggerProps,
   TabsVariant,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Tabs and its pill tab switcher.
@@ -254,8 +254,6 @@ const GEOMETRY = {
 
 /** The strip's gap between triggers (`gap-1`), both variants. */
 const STRIP_GAP = 4;
-
-const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Web: keyboard focus ring, colour transitions, disabled cursor

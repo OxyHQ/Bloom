@@ -1,6 +1,4 @@
-import { Platform } from 'react-native';
-
-export const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /** Default gap between shelf items: 16 on web, 12 on native. */
 export const SHELF_GAP = IS_WEB ? 16 : 12;

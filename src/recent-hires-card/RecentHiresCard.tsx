@@ -1,7 +1,7 @@
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useEffect, useMemo } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
@@ -19,6 +19,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { RECENT_HIRES_CARD_MESSAGES } from './messages';
 import type { RecentHire, RecentHiresCardProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The "Recent hires" card:
@@ -41,7 +42,6 @@ import type { RecentHire, RecentHiresCardProps } from './types';
  *   secondary labels use the authored textSecondary role in both modes.
  */
 
-const IS_WEB = Platform.OS === 'web';
 const CARD_HEIGHT = 329;
 
 const STYLE_ID = 'bloom-recent-hires-card-web-css';

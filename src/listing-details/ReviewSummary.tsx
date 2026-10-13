@@ -7,11 +7,12 @@ import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { REVIEW_SUMMARY_WIDE_MIN_WIDTH } from './constants';
-import { IS_WEB, resolveListingPalette } from './shared';
+import { resolveListingPalette } from './shared';
 import { useMessages } from '../locale/messages';
 import { LISTING_DETAILS_MESSAGES } from './messages';
 import type { ReviewSummaryProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The top of a reviews section.

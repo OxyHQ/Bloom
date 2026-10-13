@@ -108,7 +108,7 @@ function TrackRow({
         >
           {track.title}
         </Text>
-        {track.explicit ? <ExplicitBadge size="small" /> : null}
+        {track.explicit ? <ExplicitBadge size="sm" /> : null}
       </View>
       {track.plays && !compact ? (
         <Text

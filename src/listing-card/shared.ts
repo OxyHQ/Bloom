@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import { colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import type { ImageResolver } from '../image-resolver/context';
@@ -13,8 +11,6 @@ import type {
   ListingStatus,
   Offering,
 } from './types';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /** The photo tile's corner radius (a card image). */
 export const PHOTO_RADIUS = 16;

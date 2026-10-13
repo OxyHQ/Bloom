@@ -4,7 +4,7 @@ import { useRingOffsetStyle } from '../styles/surface-levels';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -17,6 +17,7 @@ import { RadioIndicator } from '../radio-indicator';
 import type { RadioCardProps } from './types';
 import { RadioHost, RadioLabel } from './RadioHost';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `RadioCard` — the radio flavour of `CheckboxCard`: title and an optional
@@ -38,7 +39,6 @@ import { DISABLED_OPACITY } from '../styles/tokens';
 const CARD_RADIUS = 10;
 const DOT_SIZE = 16;
 const TRANSITION_MS = 150;
-const IS_WEB = Platform.OS === 'web';
 
 const STYLE_ID = 'bloom-radio-card-web-css';
 const CARD = '[data-bloom-radio-card]';

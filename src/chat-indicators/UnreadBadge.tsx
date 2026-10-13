@@ -41,8 +41,8 @@ import type { UnreadBadgeProps, UnreadBadgeSize } from './types';
  */
 
 const SIZE_TYPE: Record<UnreadBadgeSize, TypeScaleVariant> = {
-  small: 'caption-2-semibold',
-  medium: 'caption-1-semibold',
+  sm: 'caption-2-semibold',
+  md: 'caption-1-semibold',
 };
 
 function UnreadBadgeComponent({
@@ -50,7 +50,7 @@ function UnreadBadgeComponent({
   max = 99,
   dot = false,
   muted = false,
-  size = 'medium',
+  size = 'md',
   formatLabel,
   accessibilityLabel,
   style,

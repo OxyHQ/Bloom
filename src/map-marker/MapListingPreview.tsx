@@ -237,7 +237,7 @@ function MapListingPreviewComponent({
           <ListingOfferings
             offerings={offerings}
             labels={offeringLabels}
-            size="small"
+            size="sm"
             variant="tinted"
             style={{ gap: 4, marginBottom: 4 }}
             testID={testID ? `${testID}-offerings` : undefined}
@@ -251,11 +251,9 @@ function MapListingPreviewComponent({
           >
             {title}
           </Text>
-          {showRating && !compact ? (
-            <Rating size="small" value={rating} count={reviewCount} />
-          ) : null}
+          {showRating && !compact ? <Rating size="sm" value={rating} count={reviewCount} /> : null}
         </View>
-        {showRating && compact ? <Rating size="small" value={rating} count={reviewCount} /> : null}
+        {showRating && compact ? <Rating size="sm" value={rating} count={reviewCount} /> : null}
         {subtitle ? (
           <Text variant="body-2-regular" numberOfLines={1} style={{ color: paint.labelSecondary }}>
             {subtitle}

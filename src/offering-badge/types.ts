@@ -4,8 +4,8 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type { Offering } from '../listing-card/types';
 import type { BloomIconComponent } from '../icons/icon-component';
 
-/** `small` is 20 tall with caption text; `medium` (default) is 24 tall with body-2 text. */
-export type OfferingBadgeSize = 'small' | 'medium';
+/** `sm` is 20 tall with caption text; `md` (default) is 24 tall with body-2 text. */
+export type OfferingBadgeSize = 'sm' | 'md';
 
 /**
  * `tinted` paints the offering's own tint on the page; `onMedia` is a light
@@ -27,7 +27,7 @@ export interface OfferingBadgeProps {
    * replaces it.
    */
   icon?: boolean | OfferingBadgeIcon;
-  /** Default `medium`. */
+  /** Default `md`. */
   size?: OfferingBadgeSize;
   /** Default `tinted`. */
   variant?: OfferingBadgeVariant;

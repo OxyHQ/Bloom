@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { resolveCategoryBarPaint, type CategoryBarPaint } from '../category-bar/CategoryBar';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -17,6 +17,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { HOME_SEARCH_MODES } from './constants';
 import type { HomeSearchMode, SearchModeTabsProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The mode switch above the search bar: Rent, Buy, Vacation rentals, Swap.
@@ -39,8 +40,6 @@ import type { HomeSearchMode, SearchModeTabsProps } from './types';
  * Either way a `tablist` named by `accessibilityLabel`, each mode a `tab` with
  * `aria-selected`.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 const STYLE_ID = 'bloom-search-mode-tabs-web-css';
 const TAB = '[data-bloom-search-mode-tab]';

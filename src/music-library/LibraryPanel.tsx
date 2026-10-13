@@ -36,7 +36,6 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import {
-  IS_WEB,
   libraryPanelLabels,
   LIBRARY_FILTERS,
   MUSIC_LIBRARY_CSS,
@@ -54,6 +53,7 @@ import type {
   LibrarySort,
   LibraryView,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The left-hand library.

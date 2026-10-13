@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { Badge } from '../badge';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { useSidebarPalette } from './palette';
-import { IS_WEB } from './parts';
+
 import { SidebarPrimaryAction } from './SidebarPrimaryAction';
 import { SidebarScrollArea } from './SidebarScrollArea';
 import { SidebarLogoView } from './SidebarLogoView';
@@ -12,6 +12,7 @@ import { SidebarRailItem } from './SidebarRailItem';
 import type { SidebarNavItem, SidebarProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /** The rail's fixed width. */
 export const SIDEBAR_RAIL_WIDTH = 80;

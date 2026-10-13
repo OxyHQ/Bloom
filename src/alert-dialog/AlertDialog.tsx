@@ -28,14 +28,14 @@ type DialogComponent = React.ComponentType<DialogProps>;
  * shared surface stack, so it layers over whatever is already open.
  *
  * Control mode — IMPERATIVE, not controlled. `AlertDialog` keeps its public
- * *controlled* API (`visible` boolean + `onClose`) but internally bridges it
+ * *controlled* API (`open` boolean + `onOpenChange`) but internally bridges it
  * onto the Dialog's imperative `useDialogControl()` handle, so `confirm()`
  * drives `<Dialog>` through the EXACT uncontrolled/imperative internals
  * Mention's `ConfirmPrompt` uses. That is the code path that actually plays the
  * exit animation on dismiss: imperative `close()` sets `isClosing`, runs the
- * exit animation, and fires `onClose` only once it settles. The controlled path
- * instead fires `onClose` synchronously — so a host that unmounts the surface
- * inside its own `onClose` handler races ahead of the exit animation and it
+ * exit animation, and fires `onOpenChange(false)` only once it settles. The controlled path
+ * instead fires `onOpenChange(false)` synchronously — so a host that unmounts the surface
+ * inside its own `onOpenChange` handler races ahead of the exit animation and it
  * never plays. Bridging to imperative mode eliminates that fork.
  *
  * The centered card uses the Dialog default `maxWidth` (480px) for full visual
@@ -43,8 +43,8 @@ type DialogComponent = React.ComponentType<DialogProps>;
  */
 export function createAlertDialog(Dialog: DialogComponent) {
   const AlertDialogComponent = function AlertDialog({
-    visible,
-    onClose,
+    open: visible,
+    onOpenChange,
     title,
     description,
     confirmLabel: confirmLabelProp,
@@ -92,8 +92,8 @@ export function createAlertDialog(Dialog: DialogComponent) {
         closingFromPropRef.current = false;
         return;
       }
-      onClose();
-    }, [onClose]);
+      onOpenChange(false);
+    }, [onOpenChange]);
 
     // Confirm/cancel map onto the Dialog's declarative action row. Both keep the
     // default `shouldCloseOnPress` (true): the button runs the exit animation

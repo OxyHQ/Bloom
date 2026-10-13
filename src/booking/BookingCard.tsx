@@ -132,7 +132,7 @@ function BookingCardComponent({
         testID={id('price')}
         trailing={
           rating !== undefined ? (
-            <Rating value={rating} count={reviewCount} countStyle="reviews" size="small" />
+            <Rating value={rating} count={reviewCount} countStyle="reviews" size="sm" />
           ) : null
         }
       />

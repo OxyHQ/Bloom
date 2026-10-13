@@ -119,7 +119,7 @@ function RentHistoryListComponent({
           {item.delta ? (
             <Chip
               variant="subtle"
-              size="small"
+              size="sm"
               color={item.deltaTone ?? rentDeltaTone(item.delta)}
               testID={testID ? `${testID}-item-${index}-delta` : undefined}
             >

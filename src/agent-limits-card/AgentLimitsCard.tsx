@@ -3,7 +3,6 @@ import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Platform,
   Pressable,
   View,
   type LayoutChangeEvent,
@@ -40,6 +39,7 @@ import type {
   AgentLimitsContextGroup,
   AgentLimitsUsageLimit,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The agent limits card: the "how much of my agent budget is left" widget.
@@ -173,7 +173,6 @@ function defaultFormatTokens(n: number): string {
 //  paints on native as well.
 // ---------------------------------------------------------------------------
 
-const IS_WEB = Platform.OS === 'web';
 const STYLE_ID = 'bloom-agent-limits-card-web-css';
 const ROW_SELECTOR = '[data-bloom-agent-limits-row]';
 const WEB_CSS = `

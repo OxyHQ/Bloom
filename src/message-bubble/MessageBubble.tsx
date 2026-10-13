@@ -31,7 +31,6 @@ import {
   BUBBLE_RADIUS,
   DEFAULT_MAX_WIDTH,
   DOUBLE_PRESS_MS,
-  IS_WEB,
   MESSAGE_BUBBLE_CSS,
   MESSAGE_BUBBLE_STYLE_ID,
   bubbleAccessibleName,
@@ -45,6 +44,7 @@ import {
 import { MESSAGE_BUBBLE_MESSAGES } from './messages';
 import { SwipeToReply } from './SwipeToReply';
 import type { MessageBubbleProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One message in a transcript.

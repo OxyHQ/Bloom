@@ -1,11 +1,11 @@
 import { useEffect, useMemo } from 'react';
-import { Platform } from 'react-native';
 
 import { resolveButtonPalette, type ButtonPalette } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { AGENT_CHAT_MESSAGES, type AgentChatMessages } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /** Shared semantic surfaces, text and action roles for every agent-chat part. */
 export interface AgentChatPalette {
@@ -152,8 +152,6 @@ export function shortModel(model: string): string {
 // ---------------------------------------------------------------------------
 //  Web
 // ---------------------------------------------------------------------------
-
-export const IS_WEB = Platform.OS === 'web';
 
 /**
  * A `dataSet` attribute on web — the hook the family sheet hangs transitions,

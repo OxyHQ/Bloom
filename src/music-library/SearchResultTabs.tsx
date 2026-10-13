@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useRef } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Chip, ChipRow } from '../chip';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -7,6 +7,7 @@ import { useMessages } from '../locale/messages';
 import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import { MUSIC_LIBRARY_CSS, MUSIC_LIBRARY_STYLE_ID } from './shared';
 import type { SearchResultTabsProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The result-type pills under the search field: "All, Songs, Artists, …".
@@ -26,8 +27,6 @@ import type { SearchResultTabsProps } from './types';
  * (the selected pill); ArrowLeft / ArrowRight / Home / End move focus, Enter
  * and Space select.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 function SearchResultTabsComponent({
   tabs,

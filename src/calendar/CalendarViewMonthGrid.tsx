@@ -29,7 +29,6 @@ import {
   type HueResolver,
 } from './palette';
 import {
-  IS_WEB,
   dayKey,
   sixWeekGrid,
   useBreakpoint,
@@ -40,6 +39,7 @@ import {
   type WebDataSet,
 } from './shared';
 import type { CalendarViewEvent, CalendarViewMonthGridProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The month grid: seven weekday

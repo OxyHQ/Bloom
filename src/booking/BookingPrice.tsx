@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -8,8 +8,7 @@ import { useMessages } from '../locale/messages';
 import { BOOKING_MESSAGES } from './messages';
 import { priceAccessibilityName, resolveBookingPalette } from './shared';
 import type { BookingPriceProps } from './types';
-
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * INTERNAL — the price line `BookingCard` and `BookingBar` share: an optional

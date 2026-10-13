@@ -20,7 +20,6 @@ import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import { MediaFailure, useHovered, useMessageMediaCss } from './parts';
 import {
   formatPlaybackRate,
-  IS_WEB,
   MESSAGE_MEDIA_WIDTH,
   nextPlaybackRate,
   playedBarCount,
@@ -31,6 +30,7 @@ import {
   type MessageMediaPaint,
 } from './shared';
 import type { VoiceMessageProps, VoicePlaybackRate } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /** Bar geometry: 2px wide with a 2px gutter, 26px of track. */
 const BAR_WIDTH = 2;

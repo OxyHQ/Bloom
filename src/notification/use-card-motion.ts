@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Platform } from 'react-native';
+import { Animated, Easing } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { IS_WEB } from '../styles/platform';
 
 /** One end of the card's entrance or exit: where it comes from / goes to. */
 export interface CardMotionPose {
@@ -18,8 +19,6 @@ export interface CardMotionPose {
 /** `motion/react`'s `easeOut` and `easeInOut`. */
 export const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
 export const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
-
-const IS_WEB = Platform.OS === 'web';
 
 /**
  * The self-managed enter/exit notification and announcement cards run

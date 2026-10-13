@@ -10,7 +10,7 @@ import type { AccentFill, AccentTone } from '../theme/accent-colors';
  * carrying an optional leading icon). `shared.ts` has the table and why the two
  * families differ in more than height.
  */
-export type BadgeSize = BloomSize | 'small' | 'medium' | 'large' | 'label-small' | 'label-medium';
+export type BadgeSize = BloomSize | 'label-small' | 'label-medium';
 
 /**
  * The three accent fills, plus `onMedia`: a light pill with a shadow that reads

@@ -8,7 +8,6 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  IS_WEB,
   isNarrow,
   nextSelection,
   resolveTrackListPaint,
@@ -21,6 +20,7 @@ import { TrackRow } from './TrackRow';
 import type { Track, TrackListProps, TrackRowNavigation, TrackRowPressEvent } from './types';
 import { useMessages } from '../locale/messages';
 import { TRACK_LIST_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The table of tracks for an album, a playlist, the liked songs or a page of

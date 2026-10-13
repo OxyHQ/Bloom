@@ -181,7 +181,7 @@ export type SidebarSurface = 'card' | 'plain' | 'docked';
  * - `lg`  44 / 24 / `title-3-medium`; 300 expanded, 60 collapsed — the
  *   destination-first rail a social app reads with at arm's length
  */
-export type SidebarSize = 'sm' | 'md' | 'lg' | 'small' | 'medium' | 'large';
+export type SidebarSize = 'sm' | 'md' | 'lg';
 
 /** A row in the team menu. */
 export interface SidebarMenuItem {

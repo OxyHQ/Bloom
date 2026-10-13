@@ -16,7 +16,7 @@ import type { AvatarProps } from '../avatar/types';
 export type PresenceStatus = 'online' | 'idle' | 'offline' | 'busy';
 
 /** Dot diameter: `small` 8, `medium` 10 (default), `large` 12. */
-export type PresenceDotSize = 'small' | 'medium' | 'large';
+export type PresenceDotSize = 'sm' | 'md' | 'lg';
 
 export interface PresenceDotProps {
   status: PresenceStatus;
@@ -89,7 +89,7 @@ export interface MessageStatusProps {
 // ---------------------------------------------------------------------------
 
 /** `small` 16 tall (a row corner), `medium` 20 (default, a tab or header). */
-export type UnreadBadgeSize = 'small' | 'medium';
+export type UnreadBadgeSize = 'sm' | 'md';
 
 export interface UnreadBadgeProps {
   /** Unread messages. `0` or less renders NOTHING unless `dot` is set. */

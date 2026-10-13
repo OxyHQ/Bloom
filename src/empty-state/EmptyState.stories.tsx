@@ -106,13 +106,13 @@ export const WithSuggestions: Story = {
         footer={<Text variant="caption-1-regular">Searches cover names and ingredients.</Text>}
       >
         <ChipRow accessibilityLabel="Suggestions" contentInset={0}>
-          <Chip size="large" onPress={() => {}}>
+          <Chip size="lg" onPress={() => {}}>
             Rye
           </Chip>
-          <Chip size="large" onPress={() => {}}>
+          <Chip size="lg" onPress={() => {}}>
             Focaccia
           </Chip>
-          <Chip size="large" onPress={() => {}}>
+          <Chip size="lg" onPress={() => {}}>
             Flatbread
           </Chip>
         </ChipRow>

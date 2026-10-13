@@ -36,9 +36,9 @@ export const TAG_FIELD_INPUT_MIN_WIDTH = 120;
  * `mail-compose`'s recipient chips do inside their own row.
  */
 export const TAG_CHIP_RUNG: Readonly<Record<TagFieldSize, ChipSize>> = {
-  xs: 'small',
-  sm: 'medium',
-  md: 'large',
+  xs: 'sm',
+  sm: 'md',
+  md: 'lg',
   lg: 'xl',
 };
 

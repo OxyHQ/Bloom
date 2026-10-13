@@ -1,5 +1,5 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, TextInput, View, type TextStyle, type ViewStyle } from 'react-native';
+import { Pressable, TextInput, View, type TextStyle, type ViewStyle } from 'react-native';
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
@@ -22,6 +22,7 @@ import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import type { HomeSearchBarProps, HomeSearchSegment } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Bloom's wide housing search: one full pill split into any segments — the
@@ -39,8 +40,6 @@ import { useCommonMessages } from '../locale/common-messages';
  * strings). `panel` drops under the bar while a segment is open, aligned under
  * it. With `onQueryChange`, the open FIRST segment is a focused text field.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 /** React Native's `Role` has no `search`; react-native-web passes it through. */
 const WEB_SEARCH_ROLE: Record<string, unknown> = IS_WEB ? { role: 'search' } : {};

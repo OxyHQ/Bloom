@@ -33,6 +33,7 @@ import type {
   TableRowProps,
   TableSize,
 } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Table geometry, to the pixel:
@@ -135,7 +136,6 @@ const EMPTY_STATE_HEIGHT = 160;
 //  and is adopted rather than injected as a `<style>` (CSP).
 // ---------------------------------------------------------------------------
 
-const IS_WEB = Platform.OS === 'web';
 const STYLE_ID = 'bloom-table-web-css';
 const SORT_SELECTOR = '[data-bloom-table-sort]';
 const TABLE_CSS = `${SORT_SELECTOR} { cursor: pointer; outline: none; }

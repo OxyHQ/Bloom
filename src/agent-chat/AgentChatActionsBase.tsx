@@ -11,7 +11,6 @@ import {
   ACTION_SIZE,
   CONFIRM_MS,
   DENSE_ROW_CLASS,
-  IS_WEB,
   SMALL_MENU_STYLE,
   useAgentChatPalette,
   useAgentChatWebCss,
@@ -19,6 +18,7 @@ import {
 import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatActionsProps } from './types';
 import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `AgentChatActions`: the controls in the top right of the

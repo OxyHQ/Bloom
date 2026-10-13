@@ -62,8 +62,8 @@ export interface ContactRowProps extends PersonSummary {
   actionDoneLabel?: string;
   onPress?: () => void;
   disabled?: boolean;
-  /** `medium` 44px avatar (default), `small` 36 for a dense picker. */
-  size?: 'small' | 'medium';
+  /** `md` 44px avatar (default), `sm` 36 for a dense picker. */
+  size?: 'sm' | 'md';
   /** Horizontal inset around the avatar/text area. Default 10; use 0 in an already-inset widget. */
   horizontalInset?: number;
   style?: StyleProp<ViewStyle>;

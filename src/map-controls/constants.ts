@@ -15,7 +15,7 @@ export interface MapControlsGeometry {
  *
  * A group rung is sized for a toolbar standing beside other chrome, where the
  * row as a whole is the target a finger aims at. A map control is a LONE
- * circle over a moving map with a finger already on the glass, and 34 is under
+ * circle over a moving map with a finger already on the screen, and 34 is under
  * every platform's minimum. The item takes the size through its own `style`,
  * which is the override `ButtonGroupItem` publishes — nothing about its fill,
  * its hover, its press or its focus ring changes.

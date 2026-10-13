@@ -57,6 +57,7 @@ import type {
 } from './types';
 
 import { useFieldMembership } from '../field/membership';
+import { IS_WEB } from '../styles/platform';
 
 interface TextFieldContextValue {
   inputRef: React.RefObject<TextInput | null>;
@@ -143,8 +144,6 @@ const WEB_INPUT_OUTLINE_RESET: TextStyle | undefined =
   Platform.OS === 'web'
     ? ({ outlineWidth: 0, outlineStyle: 'none' } as unknown as TextStyle)
     : undefined;
-
-const IS_WEB = Platform.OS === 'web';
 
 /** `disabled:cursor-not-allowed`; RN's `cursor` type has no such value. */
 const WEB_INPUT_DISABLED_CURSOR: TextStyle | undefined = IS_WEB

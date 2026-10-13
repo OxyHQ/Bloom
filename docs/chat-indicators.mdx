@@ -26,14 +26,14 @@ clock, formats a name or decides what "recently" means.
 
 ```tsx
 <PresenceDot status="online" />
-<PresenceDot status="busy" size="large" ringColor={theme.colors.backgroundSecondary} />
+<PresenceDot status="busy" size="lg" ringColor={theme.colors.backgroundSecondary} />
 <PresenceDot status="offline" accessibilityLabel="" />   // the row already says it
 ```
 
 | prop                 | decides                                                                      |
 | -------------------- | ---------------------------------------------------------------------------- |
 | `status`             | `'online'` success · `'idle'` warning · `'busy'` negative · `'offline'` hollow neutral |
-| `size`               | `'small'` 8, `'medium'` 10 (default), `'large'` 12 — the DOT, not the footprint |
+| `size`               | `'sm'` 8, `'md'` 10 (default), `'lg'` 12 — the DOT, not the footprint |
 | `ringColor`          | the colour separating the dot from what is behind it; default the page background |
 | `ringWidth`          | default `2`; `0` draws no ring                                               |
 | `accessibilityLabel` | default "Online" / "Away" / "Offline" / "Busy" (localised via `BloomProvider locale`); `""` hides it from assistive tech |
@@ -43,7 +43,7 @@ are four states one reader in twelve cannot tell apart at all, so the quiet one
 differs in shape too.
 
 The ring is drawn OUTSIDE the dot, so the component measures
-`size + 2 * ringWidth` (14 at the default medium). On a card, pass the card's
+`size + 2 * ringWidth` (14 at the default `md`). On a card, pass the card's
 own colour as `ringColor` — the default is the page background, which reads as
 a halo on a raised surface.
 
@@ -111,9 +111,9 @@ confusion, and the tick count is the same.
 | -------------------- | ------------------------------------------------------------------- |
 | `count`              | `0` or less renders `null` (unless `dot`)                           |
 | `max`                | default `99`; above it the pill reads `"99+"`                       |
-| `dot`                | a plain dot, no number — 8 (small) or 10 (medium)                   |
+| `dot`                | a plain dot, no number — 8 (`sm`) or 10 (`md`)                   |
 | `muted`              | neutral fill instead of the accent                                  |
-| `size`               | `'small'` 16 tall, `'medium'` 20 (default); one digit is a circle   |
+| `size`               | `'sm'` 16 tall, `'md'` 20 (default); one digit is a circle   |
 | `formatLabel`        | `(count) => string` for the accessible name — it gets the REAL count |
 | `accessibilityLabel` | replaces the composed name outright                                 |
 | `textStyle`          | the digits                                                          |

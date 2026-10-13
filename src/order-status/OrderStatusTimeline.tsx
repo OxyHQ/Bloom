@@ -11,8 +11,9 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ORDER_STATUS_GEOMETRY, type OrderStatusGeometry } from './constants';
 import { ORDER_STATUS_MESSAGES } from './messages';
-import { IS_WEB, resolveOrderStatusPaint } from './shared';
+import { resolveOrderStatusPaint } from './shared';
 import type { OrderStatusStep, OrderStatusStepState, OrderStatusTimelineProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Where a thing that moves through named steps is now.

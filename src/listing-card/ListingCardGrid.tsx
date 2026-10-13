@@ -1,8 +1,9 @@
 import React, { Children, isValidElement, memo, useState } from 'react';
 import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 
-import { IS_WEB, listingGridColumns } from './shared';
+import { listingGridColumns } from './shared';
 import type { ListingCardGridProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A results grid for `ListingCard`s.

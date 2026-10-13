@@ -1,11 +1,12 @@
 import React, { memo, useMemo } from 'react';
-import { Platform, View, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { borderRadius } from '../styles/tokens';
 import type { Theme } from '../theme/types';
 import type { DividerAlign, DividerProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The divider, with its colours built from Bloom's theme through the
@@ -37,8 +38,6 @@ const JUSTIFY: Record<DividerAlign, ViewStyle['justifyContent']> = {
   center: 'center',
   end: 'flex-end',
 };
-
-const IS_WEB = Platform.OS === 'web';
 
 const DividerComponent: React.FC<DividerProps> = ({
   variant = 'single',

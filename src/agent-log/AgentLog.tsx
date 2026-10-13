@@ -37,6 +37,7 @@ import type {
   AgentLogWorkingRowProps,
 } from './types';
 import { useAgentLogMotion } from './use-agent-log-motion';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The shared machinery behind a streaming agent transcript. Task List and Web
@@ -55,8 +56,6 @@ import { useAgentLogMotion } from './use-agent-log-motion';
  * opacity and lift. The label shimmer is web-only too (`background-clip: text`);
  * native shows the flat text-secondary it rests on under reduced motion.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 // ---------------------------------------------------------------------------
 //  Palette

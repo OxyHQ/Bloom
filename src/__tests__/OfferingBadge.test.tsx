@@ -100,8 +100,8 @@ describe('OfferingBadge', () => {
   });
 
   it.each([
-    ['small', 20, '8px', '12'],
-    ['medium', 24, '10px', '14'],
+    ['sm', 20, '8px', '12'],
+    ['md', 24, '10px', '14'],
   ] as const)('%s: %ipx full pill, %s side padding, %spx icon', (size, height, padding, icon) => {
     mount(<OfferingBadge offering="sale" size={size} icon={false} testID="b" />);
     const style = getComputedStyle(byTestId('b'));
@@ -110,7 +110,7 @@ describe('OfferingBadge', () => {
     expect(style.paddingRight).toBe(padding);
     expect(parseFloat(style.borderTopLeftRadius)).toBeGreaterThanOrEqual(height / 2);
     expect(parseFloat(getComputedStyle(label(byTestId('b'))).fontSize)).toBe(
-      size === 'small' ? 12 : 13,
+      size === 'sm' ? 12 : 13,
     );
     mount(<OfferingBadge offering="sale" size={size} testID="b" />);
     expect(byTestId('b-icon').querySelector('svg')?.getAttribute('width')).toBe(icon);

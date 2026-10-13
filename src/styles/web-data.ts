@@ -1,6 +1,4 @@
-import { Platform } from 'react-native';
-
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from './platform';
 
 /**
  * The web-only `dataSet` hook an adopted sheet's selectors hang off, as spread

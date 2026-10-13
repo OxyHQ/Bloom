@@ -81,7 +81,7 @@ function SaleActionCardComponent({
             <Badge
               variant="subtle"
               color={info.tone}
-              size="large"
+              size="lg"
               content={statusLabel ?? messages.saleStatus[status]}
               testID={id('status')}
             />

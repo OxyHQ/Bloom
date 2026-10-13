@@ -15,7 +15,6 @@ import { Text } from '../typography';
 import { useMessages } from '../locale/messages';
 import { MailGlyphButton, MailLabelChips, MailLabelMarks, MailRowLink, MailStar } from './parts';
 import {
-  IS_WEB,
   MAIL_LIST_CSS,
   MAIL_LIST_STYLE_ID,
   MAIL_ROW_GEOMETRY,
@@ -31,6 +30,7 @@ import {
 } from './shared';
 import { MAIL_LIST_MESSAGES } from './messages';
 import type { MailAction, MailRowProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * One message thread in the inbox.
@@ -209,7 +209,7 @@ function MailRowComponent({
         style={{ flexShrink: 0 }}
         testID={testID ? `${testID}-thread-count` : undefined}
       >
-        <Badge content={threadCount} size="small" variant="subtle" color="default" />
+        <Badge content={threadCount} size="sm" variant="subtle" color="default" />
       </View>
     ) : null;
 

@@ -209,7 +209,7 @@ describe('EnergyBadge', () => {
   });
 
   it('small is 20 tall; pending draws the clock and "Pending"', () => {
-    mount(<EnergyBadge size="small" pending testID="b" />);
+    mount(<EnergyBadge size="sm" pending testID="b" />);
     expect(getComputedStyle(byTestId('b')).height).toBe('20px');
     expect(byTestId('b').textContent).toBe('Pending');
     expect(byTestId('b-disc').querySelector('svg')).not.toBeNull();

@@ -55,8 +55,8 @@ export const OFFERING_TONES: Readonly<Record<Offering, AccentTone>> = {
  * is how the listing card's status pill ended up with a third.
  */
 export const OFFERING_BADGE_RUNG: Readonly<Record<OfferingBadgeSize, BadgeSize>> = {
-  small: 'label-small',
-  medium: 'label-medium',
+  sm: 'label-small',
+  md: 'label-medium',
 };
 
 export type OfferingBadgeGeometry = BadgeGeometry;
@@ -69,8 +69,8 @@ export type OfferingBadgeGeometry = BadgeGeometry;
  * Read through from `BADGE_GEOMETRY` so there is one table, not two.
  */
 export const OFFERING_BADGE_GEOMETRY: Readonly<Record<OfferingBadgeSize, OfferingBadgeGeometry>> = {
-  small: BADGE_GEOMETRY['label-small'],
-  medium: BADGE_GEOMETRY['label-medium'],
+  sm: BADGE_GEOMETRY['label-small'],
+  md: BADGE_GEOMETRY['label-medium'],
 };
 
 export interface OfferingBadgePaint {

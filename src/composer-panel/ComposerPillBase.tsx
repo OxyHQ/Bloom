@@ -55,7 +55,8 @@ import type {
   ComposerPillProps,
   ModelPickerModel,
 } from './types';
-import { dataHook, IS_WEB, useComposerWebCss } from './web-hooks';
+import { dataHook, useComposerWebCss } from './web-hooks';
+import { IS_WEB } from '../styles/platform';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);

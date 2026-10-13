@@ -1,7 +1,7 @@
 import { useBloomAppearance } from '../appearance';
 import { normalizeTagTone } from './shared';
 import React, { forwardRef, memo, useMemo } from 'react';
-import { View, Platform, Pressable, type ViewStyle, type TextStyle } from 'react-native';
+import { View, Pressable, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
@@ -17,6 +17,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { CHIP_GEOMETRY, resolveChipPaint, resolveChipRing } from './shared';
 import type { ChipProps } from './types';
 import { StyledView, StyledPressable } from '../styles/styled-primitives';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The chip, five rungs and four fills. The rung table and the paint recipe are
@@ -106,8 +107,6 @@ const BLOOM_CHIP_CSS = interactiveWebCss({
 }
 `,
 });
-
-const IS_WEB = Platform.OS === 'web';
 
 const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   {

@@ -90,7 +90,7 @@ export const Matrix: Story = {
         <View style={{ gap: 8 }}>
           <Caption>ExplicitBadge — small, medium</Caption>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <ExplicitBadge size="small" />
+            <ExplicitBadge size="sm" />
             <ExplicitBadge />
           </View>
         </View>
@@ -288,7 +288,7 @@ export const TrackRows: Story = {
                   {track.title}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  {track.explicit && <ExplicitBadge size="small" />}
+                  {track.explicit && <ExplicitBadge size="sm" />}
                   <Text
                     variant="body-2-regular"
                     numberOfLines={1}

@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { Platform, View, type LayoutChangeEvent } from 'react-native';
+import { View, type LayoutChangeEvent } from 'react-native';
 
 import { ActionCardNote, ActionCardShell } from '../booking/ActionCard';
 import { BookingFieldCell } from '../booking/BookingFieldCell';
@@ -13,8 +13,8 @@ import { EXCHANGE_STACK_BELOW } from './constants';
 import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { HomeTile, useActionPalette, useFocusSheet } from './parts';
 import type { ExchangeMode, ExchangeProposalCardProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
-const IS_WEB = Platform.OS === 'web';
 const SWAP_GLYPH = 36;
 const HOMES_GAP = 10;
 /** A tile's caption-2 label line (15) and the gap under it (8). */

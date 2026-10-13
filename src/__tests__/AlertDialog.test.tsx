@@ -24,11 +24,11 @@ function renderWithTheme(ui: React.ReactElement) {
 // presents onto the shared surface stack, and its promise contract is asserted
 // in `surface-prompts.test.tsx` against the real rendered chrome.
 describe('AlertDialog (built on Dialog)', () => {
-  it('renders nothing when not visible', () => {
+  it('renders nothing when not open', () => {
     const { queryByText } = renderWithTheme(
       <AlertDialog
-        visible={false}
-        onClose={() => {}}
+        open={false}
+        onOpenChange={() => {}}
         title="Delete app?"
         description="This cannot be undone."
       />,
@@ -37,11 +37,11 @@ describe('AlertDialog (built on Dialog)', () => {
     expect(queryByText('This cannot be undone.')).toBeNull();
   });
 
-  it('renders title, description and the confirm/cancel row when visible', () => {
+  it('renders title, description and the confirm/cancel row when open', () => {
     const { getByText } = renderWithTheme(
       <AlertDialog
-        visible
-        onClose={() => {}}
+        open
+        onOpenChange={() => {}}
         title="Delete app?"
         description="This cannot be undone."
         confirmLabel="Delete"
@@ -54,14 +54,14 @@ describe('AlertDialog (built on Dialog)', () => {
     expect(getByText('Keep')).toBeTruthy();
   });
 
-  it('runs onConfirm then onClose when the confirm button is pressed', () => {
+  it('runs onConfirm then onOpenChange when the confirm button is pressed', () => {
     const calls: string[] = [];
     const onConfirm = jest.fn(() => calls.push('confirm'));
-    const onClose = jest.fn(() => calls.push('close'));
+    const onOpenChange = jest.fn(() => calls.push('close'));
     const { getByText } = renderWithTheme(
       <AlertDialog
-        visible
-        onClose={onClose}
+        open
+        onOpenChange={onOpenChange}
         title="Confirm?"
         confirmLabel="Yes"
         onConfirm={onConfirm}
@@ -71,22 +71,22 @@ describe('AlertDialog (built on Dialog)', () => {
       fireEvent.press(getByText('Yes'));
     });
     expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onClose).toHaveBeenCalledTimes(1);
-    // Order matters: onConfirm must resolve the promise BEFORE onClose runs.
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
+    // Order matters: onConfirm must resolve the promise BEFORE onOpenChange runs.
     expect(calls).toEqual(['confirm', 'close']);
   });
 
   it('requests close (resolves cancel) when the cancel button is pressed', () => {
-    const onClose = jest.fn();
+    const onOpenChange = jest.fn();
     const { getByText } = renderWithTheme(
-      <AlertDialog visible onClose={onClose} title="Confirm?" cancelLabel="No" />,
+      <AlertDialog open onOpenChange={onOpenChange} title="Confirm?" cancelLabel="No" />,
     );
     act(() => {
       fireEvent.press(getByText('No'));
     });
     // The `cancel` action dismisses via the Dialog's `close()`, which in
-    // controlled mode fires `onClose` — the confirm() host's resolve-false.
-    expect(onClose).toHaveBeenCalledTimes(1);
+    // controlled mode fires `onOpenChange` — the confirm() host's resolve-false.
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
   });
 
   it('invokes onCancel after the cancel button dismisses the dialog', () => {
@@ -95,8 +95,8 @@ describe('AlertDialog (built on Dialog)', () => {
       const [open, setOpen] = useState(true);
       return (
         <AlertDialog
-          visible={open}
-          onClose={() => setOpen(false)}
+          open={open}
+          onOpenChange={() => setOpen(false)}
           title="Confirm?"
           cancelLabel="No"
           onCancel={onCancel}
@@ -113,8 +113,8 @@ describe('AlertDialog (built on Dialog)', () => {
   it('hides the cancel button when hideCancel is set', () => {
     const { queryByText, getByText } = renderWithTheme(
       <AlertDialog
-        visible
-        onClose={() => {}}
+        open
+        onOpenChange={() => {}}
         title="Acknowledge"
         confirmLabel="OK"
         cancelLabel="Cancel"
@@ -129,8 +129,8 @@ describe('AlertDialog (built on Dialog)', () => {
     const onConfirm = jest.fn();
     const { getByText } = renderWithTheme(
       <AlertDialog
-        visible
-        onClose={() => {}}
+        open
+        onOpenChange={() => {}}
         title="Sign out everywhere?"
         confirmLabel="Sign out"
         destructive
@@ -162,7 +162,7 @@ describe('AlertDialog (built on Dialog)', () => {
     it('drives the underlying Dialog imperatively (control), never the controlled `open` prop', () => {
       const { captured, MockDialog } = captureDialogProps();
       const TestAlertDialog = createAlertDialog(MockDialog);
-      renderWithTheme(<TestAlertDialog visible onClose={() => {}} title="Delete?" />);
+      renderWithTheme(<TestAlertDialog open onOpenChange={() => {}} title="Delete?" />);
       // The whole point of the fix: `confirm()` must take the Dialog's
       // imperative/uncontrolled branch (the one that plays the exit animation),
       // so an imperative `control` handle is passed and the controlled `open`
@@ -174,7 +174,7 @@ describe('AlertDialog (built on Dialog)', () => {
     it('defaults dismissOnBackdrop to true (backdrop / Escape dismiss by default)', () => {
       const { captured, MockDialog } = captureDialogProps();
       const TestAlertDialog = createAlertDialog(MockDialog);
-      renderWithTheme(<TestAlertDialog visible onClose={() => {}} title="Delete?" />);
+      renderWithTheme(<TestAlertDialog open onOpenChange={() => {}} title="Delete?" />);
       // Matches the shared Dialog default + Mention's ConfirmPrompt.
       expect(captured.props?.dismissOnBackdrop).toBe(true);
     });
@@ -183,7 +183,7 @@ describe('AlertDialog (built on Dialog)', () => {
       const { captured, MockDialog } = captureDialogProps();
       const TestAlertDialog = createAlertDialog(MockDialog);
       renderWithTheme(
-        <TestAlertDialog visible onClose={() => {}} title="Delete?" dismissible={false} />,
+        <TestAlertDialog open onOpenChange={() => {}} title="Delete?" dismissible={false} />,
       );
       expect(captured.props?.dismissOnBackdrop).toBe(false);
     });

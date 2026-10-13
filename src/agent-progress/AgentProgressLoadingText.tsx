@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { Platform, Text as RNText } from 'react-native';
+import { Text as RNText } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -7,6 +7,7 @@ import { parseRgba } from '../theme/color-utils';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { AgentProgressLoadingTextProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * A label in `text-secondary` with a soft `text-primary`
@@ -25,8 +26,6 @@ import type { AgentProgressLoadingTextProps } from './types';
  * on a 50ms tick. Glyph centres assume even advance widths — the highlight is
  * ±36% of the label wide, so the approximation is not visible.
  */
-
-const IS_WEB = Platform.OS === 'web';
 
 /** The shimmer duration. */
 export const SHIMMER_PERIOD_MS = 3400;

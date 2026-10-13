@@ -7,7 +7,7 @@ import { ACCENT_TABLE, colorRamp } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import { useSettingsPalette } from './context';
 import type { SettingsPlanArtProps } from './types';
-import { IS_WEB } from './web-css';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The settings modal's artwork pieces.

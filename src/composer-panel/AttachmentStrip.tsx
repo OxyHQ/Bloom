@@ -26,7 +26,8 @@ import {
   type ComposerPalette,
 } from './shared';
 import type { ComposerPanelAttachment } from './types';
-import { dataHook, IS_WEB } from './web-hooks';
+import { dataHook } from './web-hooks';
+import { IS_WEB } from '../styles/platform';
 
 const QUINT = Easing.bezier(...EASE_OUT_QUINT);
 const TILE_MS = 280;

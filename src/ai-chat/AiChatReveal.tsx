@@ -8,8 +8,7 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
-
-import { IS_WEB } from './shared';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The message motion (`motion/react`-style variants), without the library:

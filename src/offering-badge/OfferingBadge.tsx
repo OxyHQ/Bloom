@@ -23,7 +23,7 @@ function OfferingBadgeComponent({
   offering,
   label,
   icon = true,
-  size = 'medium',
+  size = 'md',
   variant = 'tinted',
   style,
   testID,

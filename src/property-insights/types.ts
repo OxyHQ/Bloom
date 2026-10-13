@@ -43,7 +43,7 @@ export interface EnergyLabelProps {
   testID?: string;
 }
 
-export type EnergyBadgeSize = 'small' | 'medium';
+export type EnergyBadgeSize = 'sm' | 'md';
 
 export interface EnergyBadgeProps {
   /** Omit (or set `pending`) for a certificate still in progress. */

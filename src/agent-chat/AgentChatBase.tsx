@@ -25,12 +25,12 @@ import {
   dataHook,
   HEADER_HEIGHT,
   HISTORY_BREAKPOINT,
-  IS_WEB,
   useAgentChatPalette,
   useAgentChatWebCss,
   type AgentChatPalette,
 } from './shared';
 import type { AgentChatMessageData, AgentChatProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * `AgentChat` — the chat workspace, without the app shell around it and

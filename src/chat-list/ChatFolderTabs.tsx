@@ -7,10 +7,11 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { CHAT_LIST_CSS, CHAT_LIST_STYLE_ID, IS_WEB, resolveChatListPaint } from './shared';
+import { CHAT_LIST_CSS, CHAT_LIST_STYLE_ID, resolveChatListPaint } from './shared';
 import type { ChatFolderTabsProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CHAT_LIST_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * All / Unread / Groups / Channels / Bots, with each folder's unread count.
@@ -138,7 +139,7 @@ function ChatFolderTabsComponent({
                     <UnreadBadge
                       count={folder.unreadCount}
                       muted={folder.muted ?? !active}
-                      size="small"
+                      size="sm"
                       testID={testID ? `${testID}-count-${folder.key}` : undefined}
                     />
                   </View>

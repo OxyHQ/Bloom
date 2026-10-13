@@ -14,8 +14,9 @@ import { useCommonMessages } from '../locale/common-messages';
 import { StyledView } from '../styles/styled-primitives';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { useSidebarPalette } from './palette';
-import { IS_WEB } from './parts';
+
 import type { SidebarToolbarProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 

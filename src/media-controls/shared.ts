@@ -1,11 +1,8 @@
 import { surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
-import { Platform } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import type { Theme } from '../theme/types';
 import { formatClock } from '../locale/format-number';
-
-export const IS_WEB = Platform.OS === 'web';
 
 /**
  * Seconds as a clock: `m:ss` under an hour, `h:mm:ss` from an hour. Fractions

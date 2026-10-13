@@ -84,7 +84,7 @@ export const Matrix: Story = {
     return (
       <BothModes>
         <Group title="presence — online, away, busy, offline (8 / 10 / 12)">
-          {(['small', 'medium', 'large'] as const).map((size) => (
+          {(['sm', 'md', 'lg'] as const).map((size) => (
             <View key={size} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               {PRESENCE.map((status) => (
                 <PresenceDot key={status} status={status} size={size} />
@@ -117,9 +117,9 @@ export const Matrix: Story = {
           <UnreadBadge count={128} />
           <UnreadBadge count={7} muted />
           <UnreadBadge count={7} dot />
-          <UnreadBadge count={3} size="small" />
-          <UnreadBadge count={64} size="small" />
-          <UnreadBadge count={4} size="small" muted />
+          <UnreadBadge count={3} size="sm" />
+          <UnreadBadge count={64} size="sm" />
+          <UnreadBadge count={4} size="sm" muted />
           <UnreadBadge count={0} />
         </Group>
 
@@ -239,9 +239,7 @@ export const ConversationRows: Story = {
                 <Text variant="caption-1-regular" style={{ color: theme.colors.textSecondary }}>
                   {row.time}
                 </Text>
-                {row.unread ? (
-                  <UnreadBadge count={row.unread} size="small" muted={row.muted} />
-                ) : null}
+                {row.unread ? <UnreadBadge count={row.unread} size="sm" muted={row.muted} /> : null}
               </View>
             </View>
           ))}
@@ -322,7 +320,7 @@ export const Stories: Story = {
             </Text>
           </View>
           <View style={{ alignItems: 'center', gap: 6, width: 76 }}>
-            <StoryRing state="unseen" size={56} badge={<UnreadBadge count={4} size="small" />}>
+            <StoryRing state="unseen" size={56} badge={<UnreadBadge count={4} size="sm" />}>
               <Avatar name="Roof Garden" size={56} />
             </StoryRing>
             <Text variant="caption-2-regular" numberOfLines={1}>

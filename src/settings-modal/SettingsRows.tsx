@@ -13,7 +13,8 @@ import type {
   SettingsSectionProps,
   SettingsValueFieldProps,
 } from './types';
-import { IS_WEB, useSettingsWebCss } from './web-css';
+import { useSettingsWebCss } from './web-css';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Settings row chrome:

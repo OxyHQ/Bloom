@@ -1,8 +1,8 @@
 import type { MeterReveal } from '../stat-bar/types';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-/** `small` is body-2 text with a 14px star; `medium` (default) body text with a 16px star. */
-export type RatingSize = 'small' | 'medium';
+/** `sm` is body-2 text with a 14px star; `md` (default) body text with a 16px star. */
+export type RatingSize = 'sm' | 'md';
 
 /** `parenthesis` draws "(128)"; `reviews` draws "· 128 reviews". */
 export type RatingCountStyle = 'parenthesis' | 'reviews';
@@ -29,7 +29,7 @@ export interface RatingProps {
   reviewsLabel?: string;
   /** Drawn (and announced) when there is no rating yet (`"New"` in English). */
   newLabel?: string;
-  /** Default `medium`. */
+  /** Default `md`. */
   size?: RatingSize;
   /** Default `compact` — one star. `stars` draws a row of five, filled fractionally. */
   variant?: RatingVariant;

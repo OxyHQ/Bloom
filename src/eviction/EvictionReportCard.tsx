@@ -104,7 +104,7 @@ function EvictionReportCardComponent({
           content={statusLabel ?? messages.status[status]}
           color={info.tone}
           variant={info.fill}
-          size="medium"
+          size="md"
           testID={id('status')}
         />
         {verified ? (
@@ -192,7 +192,7 @@ function EvictionReportCardComponent({
         >
           {household.map((item, index) => (
             <View key={`${item}-${index}`} role="listitem">
-              <Chip size="small" variant="subtle" color="default">
+              <Chip size="sm" variant="subtle" color="default">
                 {item}
               </Chip>
             </View>

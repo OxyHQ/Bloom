@@ -84,7 +84,7 @@ function RoundJumpButton({
           style={{ position: 'absolute', top: -6, alignSelf: 'center' }}
           testID={testID ? `${testID}-badge` : undefined}
         >
-          <UnreadBadge count={count} max={badgeMax} size="small" />
+          <UnreadBadge count={count} max={badgeMax} size="sm" />
         </View>
       ) : null}
     </View>

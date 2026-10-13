@@ -11,11 +11,12 @@ import { SANS_FONT_FAMILY } from '../text-field/shared';
 import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography/scale';
 import { ChatGlyphButton } from './parts';
-import { CHAT_LIST_CSS, CHAT_LIST_STYLE_ID, IS_WEB, resolveChatListPaint } from './shared';
+import { CHAT_LIST_CSS, CHAT_LIST_STYLE_ID, resolveChatListPaint } from './shared';
 import type { ChatSearchFieldProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { CHAT_LIST_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The search pill above the conversations.

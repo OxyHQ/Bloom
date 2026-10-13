@@ -21,12 +21,13 @@ import { QueueIconButton } from './QueueIconButton';
 import { QueuePanelRow, useQueuePanelCss } from './QueuePanelRow';
 import { QueueReorderList } from './QueueReorderList';
 import { RecentlyPlayedList } from './RecentlyPlayedList';
-import { IS_WEB, queuePanelLabels, queuePlayName, resolveQueuePanelPaint } from './shared';
+import { queuePanelLabels, queuePlayName, resolveQueuePanelPaint } from './shared';
 import type { QueuePanelLabels, QueuePanelProps, QueuePanelTab } from './types';
 import { useMessages } from '../locale/messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 import { QUEUE_PANEL_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The play queue.

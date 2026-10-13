@@ -5,7 +5,6 @@ import { flattenWebStyle } from '../styles/flatten-web-style';
 import { tokenizeCode } from './highlight';
 import {
   dataHook,
-  IS_WEB,
   LINE_METRICS,
   MONO_FAMILY,
   tokenColor,
@@ -13,6 +12,7 @@ import {
   useCodeWebCss,
 } from './shared';
 import type { CodeLinesProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * Highlighted, numbered lines of code — the body of a `CodeBlock` and of a full

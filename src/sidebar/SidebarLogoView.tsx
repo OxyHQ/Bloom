@@ -6,8 +6,9 @@ import { Pressable, View, type GestureResponderEvent } from 'react-native';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useSidebarPalette } from './palette';
-import { Collapsible, IS_WEB, useSidebarCollapseProgress, useSidebarWebCss } from './parts';
+import { Collapsible, useSidebarCollapseProgress, useSidebarWebCss } from './parts';
 import type { SidebarLogoViewProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /** The mark's box: the collapsed column's width, and the header row's height. */
 export const SIDEBAR_LOGO_SIZE = 36;

@@ -5,7 +5,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo, useRef, type KeyboardEvent } from 'react';
-import { View, Platform } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -27,6 +27,7 @@ import { RadioCard } from './RadioCard';
 import { RadioChip } from './RadioChip';
 import { RadioHost, RadioGroupHost, RadioLabel } from './RadioHost';
 import type { RadioGroupProps, RadioProps } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The radio: the dot is `RadioIndicator`, this is the row.
@@ -95,8 +96,6 @@ ${ROW}:focus-visible ${DOT} {
   box-shadow: ${focusRingShadow('--bloom-radio-ring')};
 }`,
 })}}`;
-
-const IS_WEB = Platform.OS === 'web';
 
 const RadioComponent = function Radio<Value extends string = string>({
   value,

@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -18,6 +18,7 @@ import type { ListingQualityItem, ListingQualityMeterProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { LISTING_EDITOR_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * How complete a listing is: a score ring, a checklist of what is left, and
@@ -44,7 +45,6 @@ import { LISTING_EDITOR_MESSAGES } from './messages';
  * photos, To do").
  */
 
-const IS_WEB = Platform.OS === 'web';
 const RING = 72;
 const STROKE = 6;
 const RING_TRANSITION_MS = 400;

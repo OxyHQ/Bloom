@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { chartHueTone } from '../chart-cards/palette';
@@ -26,8 +26,7 @@ import {
 } from './shared';
 import { PLACE_DETAILS_MESSAGES } from './messages';
 import type { PlacePopularTimesProps } from './types';
-
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 /** The width an hour label is centred in. Two or three characters, never more. */
 const LABEL_SLOT = 40;

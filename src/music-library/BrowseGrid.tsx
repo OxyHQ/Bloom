@@ -10,7 +10,6 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  IS_WEB,
   MUSIC_LIBRARY_CSS,
   MUSIC_LIBRARY_STYLE_ID,
   TILE_LIGHT_TEXT,
@@ -19,6 +18,7 @@ import {
   resolveMusicLibraryPaint,
 } from './shared';
 import type { BrowseGridProps, BrowseTile } from './types';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The browse page's grid of genre and mood tiles.
