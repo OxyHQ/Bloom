@@ -14,7 +14,7 @@ import { AgentThinking } from '@oxy.so/bloom/agent-thinking';
 {working && <AgentThinking variant="infinity" label="Generating" />}
 ```
 
-The component is purely presentational — mount it while your transport is waiting and unmount it when the reply starts streaming. The timer starts on mount, so remount (or change `key`) to restart it.
+The component is purely presentational — mount it while your transport is waiting and unmount it when the reply starts streaming. The timer starts on mount, so remount (or change `key`) to restart it; to change what it says while it runs, change `label`, and **do not** put the label in `key`, which would restart the timer on every change. Inside `AiChatContainer`, pass `working` / `workingLabel` instead of mounting your own: the container draws it, and a second one doubles it. To fold the model's reasoning under it, give it children (see [Reasoning disclosure](#reasoning-disclosure)); do not hand-build the open state. The wider picture is in [Building AI interfaces](./ai-overview.mdx).
 
 ## Variants
 
