@@ -199,6 +199,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
     renderLeadingIcon,
     renderTrailingIcon,
     iconOnly = false,
+    wide = false,
     linkTone,
     underline,
     textVariant,
@@ -341,9 +342,9 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
         letterSpacing: geometry.letterSpacing || undefined,
       });
     if (isSquare) {
-      if (!className)
-        Object.assign(base, { width: geometry.height, paddingLeft: 0, paddingRight: 0 });
-      (base as Record<string, unknown>)['--bloom-btn-width'] = `${geometry.height}px`;
+      const width = wide ? Math.round(geometry.height * 1.5) : geometry.height;
+      if (!className) Object.assign(base, { width, paddingLeft: 0, paddingRight: 0 });
+      (base as Record<string, unknown>)['--bloom-btn-width'] = `${width}px`;
       (base as Record<string, unknown>)['--bloom-btn-padding'] = '0px';
     }
     if (isLink && !isSquare) {
@@ -367,6 +368,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
     palette,
     theme.isDark,
     isSquare,
+    wide,
     isIconVariant,
     isLink,
     togglePressed,

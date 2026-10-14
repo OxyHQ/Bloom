@@ -44,6 +44,8 @@ paints from `color` renders at its default colour with nothing thrown.
 and the foreground for the current state. They win over the icon component, and
 supply the glyph for `iconOnly`.
 
+`iconOnly` is a square. `wide` makes it a pill 1.5× as wide as it is tall (36×24 at `xs`), for a row of icon buttons that stand apart, where a circle is not a pill; a separated [`ButtonGroup`](./button-group.mdx) sets it.
+
 ```tsx
 <Button
   iconOnly

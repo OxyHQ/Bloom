@@ -363,6 +363,7 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent(
     renderLeadingIcon,
     renderTrailingIcon,
     iconOnly = false,
+    wide = false,
     linkTone,
     underline,
     textVariant,
@@ -488,7 +489,7 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent(
       styles.opacity = palette.disabledOpacity;
     }
     if (isSquare) {
-      styles.width = geometry.height;
+      styles.width = wide ? Math.round(geometry.height * 1.5) : geometry.height;
       styles.paddingHorizontal = 0;
     }
     if (isLink && !isSquare) {

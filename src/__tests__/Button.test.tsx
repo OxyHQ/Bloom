@@ -478,6 +478,23 @@ describe('Button geometry', () => {
     expect(resolvedStyle(getByTestId('btn').props.style).width).toBe(32);
   });
 
+  it('iconOnly wide is a pill 1.5 times as wide as it is tall, not a square', () => {
+    const Glyph = jest.fn((_: { width?: number; height?: number; fill?: string }) => null);
+    const widths = (['xs', 'sm', 'md', 'lg'] as const).map((size) => {
+      const { getByTestId } = renderWithTheme(
+        <Button testID="btn" size={size} iconOnly wide icon={Glyph} accessibilityLabel="Add" />,
+      );
+      const style = resolvedStyle(getByTestId('btn').props.style);
+      return [style.width, style.height];
+    });
+    expect(widths).toEqual([
+      [36, 24],
+      [48, 32],
+      [54, 36],
+      [66, 44],
+    ]);
+  });
+
   it('a caller hitSlop still replaces the default', () => {
     const slop = { top: 1, bottom: 2, left: 3, right: 4 };
     const { UNSAFE_getByType } = renderWithTheme(
