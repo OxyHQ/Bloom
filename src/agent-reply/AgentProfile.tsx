@@ -19,6 +19,7 @@ export function AgentProfile({
   expanded,
   onPress,
   avatarRef,
+  avatarHidden = false,
 }: AgentProfileProps) {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
@@ -61,7 +62,7 @@ export function AgentProfile({
         pointerEvents="none"
         aria-hidden
         className="relative z-10 -mb-0.5 size-14"
-        style={{ width: 56, height: 56, marginBottom: -2 }}
+        style={{ width: 56, height: 56, marginBottom: -2, opacity: avatarHidden ? 0 : 1 }}
       >
         {agents.slice(0, 3).map((agent, index) => {
           const single = agents.length === 1;

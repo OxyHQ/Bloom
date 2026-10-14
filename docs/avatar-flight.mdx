@@ -9,7 +9,7 @@ order: 77
 An avatar leaves where it is and lands where it is going, instead of vanishing from one place and appearing in the other. `useAvatarFlights` owns where avatars are and which are in the air; `AvatarFlightLayer` draws them.
 
 ```tsx
-import { AvatarFlightLayer, useAvatarFlights } from '@oxy.so/bloom/avatar-flight';
+import { AvatarAnchor, AvatarFlightLayer, useAvatarFlights } from '@oxy.so/bloom/avatar-flight';
 
 function Chat() {
   const flights = useAvatarFlights();
@@ -25,9 +25,9 @@ function Chat() {
   return (
     <>
       <EmptyChat>
-        <View ref={flights.anchor('empty:lumi')} style={{ opacity: flights.isLeaving('empty:lumi') ? 0 : 1 }}>
+        <AvatarAnchor flights={flights} anchor="empty:lumi">
           <AgentAvatar character={lumi.avatar} />
-        </View>
+        </AvatarAnchor>
       </EmptyChat>
 
       <AgentReplyIdentity
@@ -47,7 +47,7 @@ function Chat() {
 
 | | |
 | --- | --- |
-| **Anchor** | an avatar's box under a key you choose (`flights.anchor(key)`, a ref). `AgentReplyIdentity` and `AgentProfile` take it as `avatarRef`. |
+| **Anchor** | an avatar's box under a key you choose. `AvatarAnchor` wraps an avatar and does it all; `AgentReplyIdentity` and `AgentProfile` take `flights.anchor(key)` as `avatarRef`. |
 | **Flight** | one `AvatarFlightSpec`: `key`, `character`, `from` and `to` (anchor keys), and its motion. |
 | **Layer** | `AvatarFlightLayer`, rendered once. It draws the avatars above the screen and never intercepts a touch. |
 
@@ -69,7 +69,7 @@ With reduced motion nothing flies and nothing is hidden. A flight whose source c
 
 ## What it does for you
 
-- **The picture it left as.** Wrap the source avatar in `AvatarSnapshotObserver.Provider value={flights.snapshot(key)}` and the flight leaves as the picture the avatar had at that moment, not a second 3D render.
+- **The picture it left as.** An avatar inside an `AvatarAnchor` hands its picture to the flight leaving it, so the flight is the avatar as it was at that moment, not a second 3D render.
 - **A target that is not there yet.** Targets are measured every frame until they settle, so the reply may mount after `launch`; the avatar waits where it left, and a target that never mounts ends the flight.
 - **Web and native.** On web the layer is portaled to the document, so no scroller or clipped panel cuts a flight; on native it sits in the screen's own absolute overlay.
 - **Stale launches.** `cancel()` ends every flight and any `launch` still capturing: it resolves `false` and never lands.

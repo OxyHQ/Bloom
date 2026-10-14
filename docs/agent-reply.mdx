@@ -59,5 +59,5 @@ The row's labels and the thinking status follow `BloomProvider locale`. Names an
 
 ## Hazards
 
-- **Give the avatar's box to a caller that animates it** with `avatarRef` (identity) or `avatarRef` (profile). `MultiAgentChat` flies avatars between them when an agent starts answering; the `avatarHidden` prop keeps the one in the thread invisible until the flight lands.
+- **Give the avatar's box to a caller that animates it** with `avatarRef` (identity or profile), and hide it with `avatarHidden` while an avatar is on its way to it. [`AvatarFlight`](./avatar-flight.mdx) does the flying: `avatarRef={flights.anchor(key)}`, `avatarHidden={flights.isLanding(key)}`.
 - **`workingKey` is read once**, on the first render: a reply that is already thinking when it mounts starts its working animation once, a finished one never does.

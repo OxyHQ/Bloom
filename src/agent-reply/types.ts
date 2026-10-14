@@ -89,6 +89,8 @@ export interface AgentProfileProps {
   onPress: () => void;
   /** The artwork's box, for a caller that animates it elsewhere. */
   avatarRef?: Ref<View>;
+  /** Hide the artwork while something else draws it (an avatar flying in). */
+  avatarHidden?: boolean;
 }
 
 export interface AgentStackProps {

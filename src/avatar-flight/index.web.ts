@@ -3,6 +3,8 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
+export { AvatarAnchor } from './AvatarAnchor';
+export type { AvatarAnchorProps } from './AvatarAnchor';
 export { AvatarFlightLayer } from './AvatarFlightLayer.web';
 export { centeredLanding } from './geometry';
 export { useAvatarFlights } from './use-avatar-flights';
