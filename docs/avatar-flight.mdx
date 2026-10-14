@@ -1,0 +1,81 @@
+---
+title: AvatarFlight
+description: Avatars that fly from one place on the screen to another — a group chat's avatars landing on the reply that answers, an agent joining a header — measured, captured and drawn above the screen.
+order: 77
+---
+
+# AvatarFlight
+
+An avatar leaves where it is and lands where it is going, instead of vanishing from one place and appearing in the other. `useAvatarFlights` owns where avatars are and which are in the air; `AvatarFlightLayer` draws them.
+
+```tsx
+import { AvatarFlightLayer, useAvatarFlights } from '@oxy.so/bloom/avatar-flight';
+
+function Chat() {
+  const flights = useAvatarFlights();
+
+  const send = async () => {
+    // Resolves once the avatars are measured and captured: change your own state right after.
+    const flying = await flights.launch([
+      { key: 'lumi', character: lumi.avatar, from: 'empty:lumi', to: 'reply:lumi' },
+    ]);
+    addTheReply({ delayMs: flying ? 800 : 0 });
+  };
+
+  return (
+    <>
+      <EmptyChat>
+        <View ref={flights.anchor('empty:lumi')} style={{ opacity: flights.isLeaving('empty:lumi') ? 0 : 1 }}>
+          <AgentAvatar character={lumi.avatar} />
+        </View>
+      </EmptyChat>
+
+      <AgentReplyIdentity
+        character={lumi.avatar}
+        name="Lumi"
+        avatarRef={flights.anchor('reply:lumi')}
+        avatarHidden={flights.isLanding('reply:lumi')}
+      />
+
+      <AvatarFlightLayer flights={flights} />
+    </>
+  );
+}
+```
+
+## The model
+
+| | |
+| --- | --- |
+| **Anchor** | an avatar's box under a key you choose (`flights.anchor(key)`, a ref). `AgentReplyIdentity` and `AgentProfile` take it as `avatarRef`. |
+| **Flight** | one `AvatarFlightSpec`: `key`, `character`, `from` and `to` (anchor keys), and its motion. |
+| **Layer** | `AvatarFlightLayer`, rendered once. It draws the avatars above the screen and never intercepts a touch. |
+
+`isLeaving(key)` is true while the avatar that left `key` is in the air, and `isLanding(key)` while one is on its way to it: hide the real avatar in both, the layer draws the one in the air, and the hidden one appears as it arrives.
+
+## Motion
+
+Every field of a spec is optional beyond the four above.
+
+| Field | Default | |
+| --- | --- | --- |
+| `path` | `'arc'` | `'arc'` bows above the straight line and eases; `'straight'` follows `ease` alone |
+| `ease` | `'linear'` | `'out'` decelerates into the target |
+| `duration` / `delay` | `800` / `0` ms | stagger several flights with `delay` |
+| `landing` | the target's box | derive the landing box from the target's: `centeredLanding(14)` shrinks into its centre |
+| `merge` | `false` | the avatar fades out over the last of the journey: it merges into something instead of landing |
+
+With reduced motion nothing flies and nothing is hidden. A flight whose source cannot be measured is dropped; `launch` resolves `false` when nothing is flying.
+
+## What it does for you
+
+- **The picture it left as.** Wrap the source avatar in `AvatarSnapshotObserver.Provider value={flights.snapshot(key)}` and the flight leaves as the picture the avatar had at that moment, not a second 3D render.
+- **A target that is not there yet.** Targets are measured every frame until they settle, so the reply may mount after `launch`; the avatar waits where it left, and a target that never mounts ends the flight.
+- **Web and native.** On web the layer is portaled to the document, so no scroller or clipped panel cuts a flight; on native it sits in the screen's own absolute overlay.
+- **Stale launches.** `cancel()` ends every flight and any `launch` still capturing: it resolves `false` and never lands.
+
+## Not part of it
+
+The choreography is yours: which avatars fly, where, in what order. [`MultiAgentChat`](./multi-agent-chat.mdx) flies the group's avatars from the picker to the new conversation, and on a first message the answering agent to its reply and the others into the header profile.
+
+[`MediaFlight`](./media-flight.mdx) is the same idea for one picture or video that survives a route change; it shares no code with this one.

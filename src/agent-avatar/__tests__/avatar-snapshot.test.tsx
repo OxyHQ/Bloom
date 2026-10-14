@@ -1,9 +1,9 @@
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
-import { AgentAvatar } from '../../agent-avatar/AgentAvatar';
-import { AgentAvatarProvider } from '../../agent-avatar/AgentAvatarProvider';
-import { AvatarSnapshotObserver, type CaptureAvatarSnapshot } from '../../agent-avatar/context';
+import { AgentAvatar } from '../AgentAvatar';
+import { AgentAvatarProvider } from '../AgentAvatarProvider';
+import { AvatarSnapshotObserver, type CaptureAvatarSnapshot } from '../context';
 const mockInject = jest.fn();
-jest.mock('../../agent-avatar/character-webview', () => {
+jest.mock('../character-webview', () => {
   const React = require('react');
   const View = require('react-native').View;
   const WebView = React.forwardRef((props: unknown, ref: unknown) => {

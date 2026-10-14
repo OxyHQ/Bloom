@@ -87,6 +87,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./breadcrumb', 'breadcrumb/index.ts'],
   ['./pagination', 'pagination/index.ts'],
   ['./agent-avatar', 'agent-avatar/index.ts'],
+  // Avatars flying between places (web-forked: the layer is portaled).
+  ['./avatar-flight', 'avatar-flight/index.ts'],
   ['./agent-creator', 'agent-creator/index.ts'],
   ['./project-board', 'project-board/index.ts'],
   ['./multi-agent-chat', 'multi-agent-chat/index.ts'],
@@ -369,6 +371,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   './agent-creator',
   './project-board',
   './multi-agent-chat',
+  './avatar-flight',
   './bottom-bar',
   './app-shell',
   '.',

@@ -511,6 +511,25 @@
         "default": "./lib/commonjs/agent-avatar/index.js"
       }
     },
+    "./avatar-flight": {
+      "react-native": {
+        "types": "./lib/typescript/module/avatar-flight/index.d.ts",
+        "default": "./src/avatar-flight/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/avatar-flight/index.web.d.ts",
+        "import": "./lib/module/avatar-flight/index.web.js",
+        "require": "./lib/commonjs/avatar-flight/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/avatar-flight/index.d.ts",
+        "default": "./lib/module/avatar-flight/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/avatar-flight/index.d.ts",
+        "default": "./lib/commonjs/avatar-flight/index.js"
+      }
+    },
     "./agent-creator": {
       "react-native": {
         "types": "./lib/typescript/module/agent-creator/index.d.ts",
@@ -3883,6 +3902,9 @@
       ],
       "agent-avatar": [
         "./lib/typescript/module/agent-avatar/index.d.ts"
+      ],
+      "avatar-flight": [
+        "./lib/typescript/module/avatar-flight/index.d.ts"
       ],
       "agent-creator": [
         "./lib/typescript/module/agent-creator/index.d.ts"
