@@ -6,7 +6,7 @@
  * what advances it. Keeping the geometry in one module is what stops the two
  * bands from drifting apart while still looking like one component.
  */
-import { Surface } from '../surface';
+import { Surface } from '../surface/index.web';
 import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
