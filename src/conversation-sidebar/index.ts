@@ -11,7 +11,6 @@ export const ConversationSidebar = createConversationSidebar({ Dropdown, Context
 export type {
   ConversationSidebarAction,
   ConversationSidebarCreateOption,
-  ConversationSidebarIcon,
   ConversationSidebarItem,
   ConversationSidebarLabels,
   ConversationSidebarProps,

@@ -1,14 +1,8 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import type { AgentReplyAgent } from '../agent-reply';
+import type { BloomIconComponent } from '../icons/icon-component';
 import type { SidebarProps } from '../sidebar/types';
-
-/** An icon component Bloom sizes and tints (`RiPushpinLine`, or any component taking `width` / `fill`). */
-export type ConversationSidebarIcon = ComponentType<{
-  width?: number;
-  height?: number;
-  fill?: string;
-}>;
 
 /** One conversation row: the agents in it drawn as its avatar, a title and a line under it. */
 export interface ConversationSidebarItem {
@@ -27,7 +21,8 @@ export interface ConversationSidebarItem {
 export interface ConversationSidebarAction {
   key: string;
   label: string;
-  icon: ConversationSidebarIcon;
+  /** An icon component Bloom sizes and tints (`RiPushpinLine`, or any taking `width` / `fill`). */
+  icon: BloomIconComponent;
   /** Drawn as a destructive row (delete). */
   destructive?: boolean;
 }
