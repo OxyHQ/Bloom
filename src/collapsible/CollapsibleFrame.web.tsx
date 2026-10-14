@@ -7,7 +7,7 @@ import type { CollapsibleFrameProps } from './frame-types';
 
 const CSS = `@layer base {
 .bloom-collapsible-panel,.bloom-collapsible-content { box-sizing:border-box;display:flex;flex-direction:column;flex-shrink:0;min-width:0; }
-.bloom-collapsible-panel { overflow:hidden; }
+
 }`;
 const PanelHost = forwardRef<
   HTMLDivElement,
@@ -22,6 +22,7 @@ const AnimatedPanel = Animated.createAnimatedComponent(PanelHost);
 
 export function CollapsibleFrame({
   open,
+  settled = false,
   progress,
   children,
   style,
@@ -99,7 +100,8 @@ export function CollapsibleFrame({
         style={[
           {
             opacity: progress,
-            maxHeight: height === 0 && open ? undefined : maxHeight,
+            maxHeight: settled || (height === 0 && open) ? undefined : maxHeight,
+            overflow: settled ? 'visible' : 'hidden',
           },
           style,
         ]}

@@ -14,6 +14,7 @@ import type { CollapsibleFrameProps } from './frame-types';
 function CollapsibleFrameComponent({
   open,
   hidden,
+  settled = false,
   progress,
   children,
   style,
@@ -86,9 +87,9 @@ function CollapsibleFrameComponent({
         }}
         style={[
           {
-            overflow: 'hidden',
+            overflow: settled ? 'visible' : 'hidden',
             opacity: progress,
-            maxHeight: height === 0 && open && initiallyOpen ? undefined : maxHeight,
+            maxHeight: settled || (height === 0 && open && initiallyOpen) ? undefined : maxHeight,
           },
           style,
         ]}

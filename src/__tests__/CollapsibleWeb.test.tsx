@@ -61,11 +61,13 @@ it('measures arbitrary content, retains its state and hides closed descendants w
   expect(panel.hasAttribute('aria-labelledby')).toBe(false);
   draw(true);
   expect(panel.hasAttribute('inert')).toBe(false);
-  expect(panel.style.maxHeight).toBe('900px');
+  // Open and at rest: no cap and no clip, so content that grows or overflows is never cut.
+  expect(panel.style.maxHeight).toBe('');
+  expect(panel.style.overflow).toBe('visible');
   expect(container.querySelector('.custom-body')?.getAttribute('style')).toContain('padding: 18px');
   naturalHeight = 1300;
   act(() => resize());
-  expect(panel.style.maxHeight).toBe('1300px');
+  expect(panel.style.maxHeight).toBe('');
   draw(false);
   expect(parseFloat(panel.style.maxHeight)).toBe(0);
   draw(true);

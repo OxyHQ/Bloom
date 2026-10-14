@@ -54,26 +54,14 @@ describe('Accordion content is sized by its content, not by a constant', () => {
     expect(withLayout.length).toBeGreaterThan(0);
   });
 
-  it('withholds the clip from an open item until the height is known, then applies it', () => {
-    // The first frame has no measurement. Clipping to an un-measured 0 would hide
-    // an open item outright, so the constraint is withheld until it can be stated
-    // in real pixels — and it must ARRIVE once they are, or the reveal would have
-    // no animation at all.
+  it('never clips or caps an open item at rest', () => {
+    // Clipping to an un-measured 0 would hide an open item outright, and a cap once measured
+    // would cut what grows or overflows it. Open and settled, the item has no constraint; it
+    // takes one only while it moves.
     const { UNSAFE_root } = renderWithTheme(openAccordion());
-    const clipOf = () =>
-      UNSAFE_root.findAll((node) => resolvedStyle(node.props.style).overflow === 'hidden')[0];
-
-    expect(resolvedStyle(clipOf()?.props.style).maxHeight).toBeUndefined();
-
-    const content = UNSAFE_root.findAll(
-      (node) =>
-        typeof node.props.onLayout === 'function' &&
-        resolvedStyle(node.props.style).paddingBottom != null,
-    )[0];
-    if (!content) throw new Error('the accordion content node reports no layout');
-    fireEvent(content, 'layout', { nativeEvent: { layout: { height: 900, width: 320 } } });
-
-    expect(resolvedStyle(clipOf()?.props.style).maxHeight).toBeDefined();
+    expect(
+      UNSAFE_root.findAll((node) => resolvedStyle(node.props.style).overflow === 'hidden'),
+    ).toHaveLength(0);
   });
 });
 

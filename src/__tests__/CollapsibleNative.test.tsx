@@ -48,14 +48,18 @@ it('uses the real native JS animation engine for natural height and settles live
       nativeEvent: { layout: { height: 940, width: 300, x: 0, y: 0 } },
     }),
   );
+  // `undefined` is no limit at all: open and at rest it neither clips nor caps.
   const height = () =>
-    (resolvedStyle(body().props.style).maxHeight as { __getValue(): number }).__getValue();
+    (
+      resolvedStyle(body().props.style).maxHeight as { __getValue(): number } | undefined
+    )?.__getValue();
   expect(height()).toBe(0);
   act(() => jest.advanceTimersByTime(150));
   expect(height()).toBeGreaterThan(0);
   expect(height()).toBeLessThan(940);
   act(() => jest.advanceTimersByTime(250));
-  expect(height()).toBe(940);
+  expect(height()).toBeUndefined();
+  expect(resolvedStyle(body().props.style).overflow).toBe('visible');
   ui.rerender(draw(false));
   expect(body().props.importantForAccessibility).toBe('no-hide-descendants');
   expect(body().props.pointerEvents).toBe('none');
@@ -67,7 +71,7 @@ it('uses the real native JS animation engine for natural height and settles live
   expect(ui.queryByText('Content')).toBeNull();
   expect(ui.getByText('Content', { includeHiddenElements: true })).toBeTruthy();
   ui.rerender(draw(true));
-  expect(height()).toBe(940);
+  expect(height()).toBeUndefined();
   expect(ui.getByText('Content')).toBeTruthy();
 });
 it('only restores observable focus that was within the native body', () => {
@@ -161,5 +165,6 @@ it('opens from nothing when it appears, and stays settled when it does not', () 
   expect(height(arriving)).toBeGreaterThan(0);
   expect(height(arriving)).toBeLessThan(200);
   act(() => jest.advanceTimersByTime(250));
-  expect(height(arriving)).toBe(200);
+  // Arrived: at rest it neither clips nor caps.
+  expect(height(arriving)).toBeUndefined();
 });

@@ -33,6 +33,9 @@ export function useCollapsibleMotion(
   const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
   const [hidden, setHidden] = useState(!open);
   if (open && hidden) setHidden(false);
+  // Open and at rest: the frame stops clipping and measuring, so content that grows or overflows
+  // (a shadow, a ring, text still streaming in) is never cut.
+  const [settled, setSettled] = useState(open);
   const resolved = resolveSurfaceTransition(transition === 'spring' ? undefined : transition);
   const duration = transition === 'spring' ? undefined : resolved.duration;
   const [x1, y1, x2, y2] = resolved.easing;
@@ -41,9 +44,11 @@ export function useCollapsibleMotion(
     let cancelled = false;
     progress.stopAnimation();
     const toValue = open ? 1 : 0;
+    setSettled(false);
     if (reduced || duration === 0) {
       progress.setValue(toValue);
       setHidden(!open);
+      setSettled(open);
       return;
     }
     const motion =
@@ -60,12 +65,15 @@ export function useCollapsibleMotion(
             easing,
           });
     motion.start((result) => {
-      if (!cancelled && result?.finished !== false) setHidden(!open);
+      if (!cancelled && result?.finished !== false) {
+        setHidden(!open);
+        setSettled(open);
+      }
     });
     return () => {
       cancelled = true;
       motion.stop();
     };
   }, [open, progress, reduced, duration, easing, kind, useNativeDriver]);
-  return { progress, hidden };
+  return { progress, hidden, settled };
 }
