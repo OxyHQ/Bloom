@@ -1,6 +1,6 @@
 import { AgentCreator } from '../agent-creator/index.web';
 import { ComposerPanel } from '../composer-panel/index.web';
-import * as ContextMenu from '../context-menu/index.web';
+import { ConversationSidebar } from '../conversation-sidebar/index.web';
 import { Dialog } from '../dialog/index.web';
 import * as Dropdown from '../dropdown-menu/index.web';
 import { Portal } from '../portal/index.web';
@@ -14,7 +14,7 @@ const components = {
   Surface,
   Select,
   Dropdown,
-  ContextMenu,
+  ConversationSidebar,
   Dialog,
   ComposerPanel,
   AgentCreator,

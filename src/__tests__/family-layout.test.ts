@@ -20,8 +20,8 @@ import ts from 'typescript';
  * THE ONE EXCEPTION IS THE FACTORY LAYOUT, and it is a real one. A web-forked
  * family whose fork differs only in which component it is BUILT FROM cannot
  * express that as a re-export: `alert-dialog` and `command`
- * construct themselves from `Dialog`, and each barrel binds the
- * platform's own. Written as a normal import, the shared implementation would
+ * construct themselves from `Dialog`, `conversation-sidebar` from `DropdownMenu` and
+ * `ContextMenu`, and each barrel binds the platform's own. Written as a normal import, the shared implementation would
  * have to import the surface that imports it. So those barrels carry exactly
  * one `const X = createY(Z)` binding and nothing else.
  *
@@ -43,6 +43,8 @@ const FACTORY_BARRELS = [
   'alert-dialog/index.web.ts',
   'command/index.ts',
   'command/index.web.ts',
+  'conversation-sidebar/index.ts',
+  'conversation-sidebar/index.web.ts',
   'surfaces/index.ts',
   'surfaces/index.web.ts',
   'tab-bar/index.ts',

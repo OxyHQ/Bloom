@@ -7,7 +7,7 @@ export interface MultiAgentChatComponents {
   Surface: ComponentType<import('../surface/types').SurfaceProps>;
   Select: typeof import('../select');
   Dropdown: typeof import('../dropdown-menu');
-  ContextMenu: typeof import('../context-menu');
+  ConversationSidebar: ComponentType<import('../conversation-sidebar').ConversationSidebarProps>;
   Dialog: ComponentType<DialogProps>;
   ComposerPanel: ComponentType<ComposerPanelProps>;
   AgentCreator: ComponentType<AgentCreatorProps>;
