@@ -217,8 +217,10 @@ export function createButtonGroup(
     );
     const itemStyle: WebCssStyle = {
       height,
-      minWidth: iconOnly ? height : undefined,
-      width: iconOnly ? height : undefined,
+      // Joined, an icon item is a square cell of the group. Separated, it stands alone, and a
+      // circle is not a pill: it is wider than it is tall.
+      minWidth: iconOnly ? (group?.separated ? Math.round(height * 1.5) : height) : undefined,
+      width: iconOnly ? (group?.separated ? Math.round(height * 1.5) : height) : undefined,
       borderWidth: 0,
       borderRadius: BUTTON_RADIUS,
       boxShadow: 'none',

@@ -114,6 +114,16 @@ describe('ButtonGroup', () => {
       expect(renderedChildren(toJSON(), 'group')).toHaveLength(3);
     });
 
+    it('makes an icon-only item a pill, 1.5 times as wide as tall, never a circle', () => {
+      const { getByTestId } = renderWithTheme(
+        <ButtonGroup separated size="xs">
+          <ButtonGroupItem iconOnly testID="item" accessibilityLabel="One" />
+        </ButtonGroup>,
+      );
+      const style = resolvedStyle(getByTestId('item').props.style);
+      expect([style.width, style.height]).toEqual([36, 24]);
+    });
+
     it('sizes items 24 at xs, 30 at sm and 34 at md', () => {
       const heights = (['xs', 'sm', 'md'] as const).map((size) => {
         const { getByTestId } = renderWithTheme(
