@@ -131,9 +131,22 @@ function mirroredPackage() {
   };
 }
 
+/** Delete what the mirror holds and the source no longer does, without recreating the tree. */
+function prune(mirrorDir, sourceDir) {
+  if (!existsSync(mirrorDir)) return;
+  for (const name of readdirSync(mirrorDir)) {
+    const mirrored = join(mirrorDir, name);
+    const source = join(sourceDir, name);
+    if (!existsSync(source) || !keep(source)) rmSync(mirrored, { recursive: true, force: true });
+    else if (statSync(mirrored).isDirectory()) prune(mirrored, source);
+  }
+}
+
+// In place, never `rm -rf` of the tree: a running Metro that loses the directory under it fails
+// every bundle with ENOENT until it is restarted.
 function mirrorAll() {
-  rmSync(MIRROR, { recursive: true, force: true });
   mkdirSync(MIRROR, { recursive: true });
+  prune(join(MIRROR, 'src'), join(BLOOM, 'src'));
   cpSync(join(BLOOM, 'src'), join(MIRROR, 'src'), { recursive: true, filter: keep });
   if (existsSync(join(BLOOM, 'assets', 'character-runtime')))
     cpSync(
