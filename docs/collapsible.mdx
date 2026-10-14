@@ -42,6 +42,7 @@ siblings of the radio, never children of its decorative label.
 | Prop | Ownership |
 | --- | --- |
 | `open` | Required controlled visibility; no internal toggle or default state. |
+| `appear` | Mounted open, it opens: height and fade run from nothing instead of starting settled. For content that arrives while the person watches (a new row in a thread). Default `false`: open at mount (a history, a restored page) does not move. |
 | `transition` | `{ duration, easing? }`, milliseconds and cubic-bezier coordinates. Defaults to 300ms and `[.42, 0, .58, 1]`. Duration is clamped non-negative; invalid values use the standard motion defaults. |
 | `returnFocusRef` | DOM or native focusable host to receive focus only when closing content owned it. Accepts `RadioOptionState.controlRef` directly. |
 | `className`, `style` | Outer frame, the node its parent lays out. Height clipping and opacity are animated by Bloom. |

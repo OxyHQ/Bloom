@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useTrackEvents } from '../agent-creator/use-track-events';
+import { Collapsible } from '../collapsible';
 import { StyledView } from '../styles/styled-primitives';
 import type { AgentReplyProps } from './types';
 
@@ -44,7 +45,8 @@ export function AgentReply({ children, identity, actions, style }: AgentReplyPro
         style,
       ]}
     >
-      {children}
+      {/* The reply opens up as it arrives (a thinking agent has none yet): no jump of height. */}
+      <Collapsible open={children != null && children !== false}>{children}</Collapsible>
       <StyledView className="flex items-center justify-between gap-2 flex-row">
         {identity}
         {actions ? (

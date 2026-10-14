@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { resolveSurfaceTransition } from '../motion/surface-transition';
@@ -9,6 +9,18 @@ export const DEFAULT_COLLAPSIBLE_TRANSITION: SurfaceTransition = {
   duration: 300,
   easing: [0.42, 0, 0.58, 1],
 };
+
+/**
+ * `open`, held shut for the first commit when the content should `appear`: it then opens on the
+ * next frame through the same motion as any other opening. Without `appear` it is `open` itself.
+ */
+export function useAppearingOpen(open: boolean, appear: boolean) {
+  const [armed, setArmed] = useState(!appear);
+  useEffect(() => {
+    if (appear) setArmed(true);
+  }, [appear]);
+  return open && armed;
+}
 
 /** Shared measured-reveal motion; Accordion retains its existing springs. */
 export function useCollapsibleMotion(

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated, {
   Easing,
@@ -85,6 +85,13 @@ export function AgentReplyIdentity({
     if (thinking) setOpen(true);
   }, [thinking]);
   const actionable = folds || onPress !== undefined;
+  // The reasoning stays while it folds shut after the reply starts, so the body shrinks with its
+  // content instead of vanishing from under the animation.
+  const [lastReasoning, setLastReasoning] = useState<ReactNode>(null);
+  useEffect(() => {
+    if (reasoning != null) setLastReasoning(reasoning);
+  }, [reasoning]);
+  const shownReasoning = reasoning ?? lastReasoning;
   const row = (
     <StyledPressable
       accessibilityRole={actionable ? 'button' : undefined}
@@ -150,12 +157,12 @@ export function AgentReplyIdentity({
       ) : null}
     </StyledPressable>
   );
-  return reasoning == null ? (
+  return shownReasoning == null ? (
     row
   ) : (
     <View style={{ minWidth: 0, flexShrink: 1 }}>
       {row}
-      <ThinkingReasoning open={folds && open}>{reasoning}</ThinkingReasoning>
+      <ThinkingReasoning open={folds && open}>{shownReasoning}</ThinkingReasoning>
     </View>
   );
 }

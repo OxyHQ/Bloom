@@ -123,3 +123,43 @@ it('blurs only the public focused TextInput contained by the native host before 
   if (original) Object.defineProperty(TextInput, 'State', original);
   else delete (TextInput as unknown as { State?: unknown }).State;
 });
+
+it('opens from nothing when it appears, and stays settled when it does not', () => {
+  const draw = (appear: boolean) => (
+    <Collapsible open appear={appear} testID="body">
+      <Text>Content</Text>
+    </Collapsible>
+  );
+  const measure = (ui: ReturnType<typeof render>) => {
+    const measured = ui.UNSAFE_root.findAll(
+      (node) => node.props.collapsable === false && typeof node.props.onLayout === 'function',
+    )[0]!;
+    act(() =>
+      measured.props.onLayout({ nativeEvent: { layout: { height: 200, width: 300, x: 0, y: 0 } } }),
+    );
+  };
+  const height = (ui: ReturnType<typeof render>) => {
+    const maxHeight = resolvedStyle(
+      ui.getByTestId('body', { includeHiddenElements: true }).props.style,
+    ).maxHeight;
+    return typeof maxHeight === 'number'
+      ? maxHeight
+      : (maxHeight as { __getValue(): number } | undefined)?.__getValue();
+  };
+
+  // Open at mount: no motion, whatever is measured.
+  const settled = render(draw(false));
+  measure(settled);
+  expect(height(settled) ?? 200).toBe(200);
+  settled.unmount();
+
+  // Appearing: shut when measured, then growing through the motion to its height.
+  const arriving = render(draw(true));
+  measure(arriving);
+  expect(height(arriving)).toBe(0);
+  act(() => jest.advanceTimersByTime(150));
+  expect(height(arriving)).toBeGreaterThan(0);
+  expect(height(arriving)).toBeLessThan(200);
+  act(() => jest.advanceTimersByTime(250));
+  expect(height(arriving)).toBe(200);
+});
