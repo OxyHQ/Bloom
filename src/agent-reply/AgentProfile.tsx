@@ -24,6 +24,8 @@ export function AgentProfile({
   const reduced = useReducedMotion();
   const [pressed, setPressed] = useState(false);
   const [hovered, setHovered] = useState(false);
+  // Every avatar in the profile waves when it is pressed, not only the first.
+  const [reaction, setReaction] = useState(0);
   const label =
     labelProp ??
     (agents.length === 1
@@ -37,7 +39,10 @@ export function AgentProfile({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       aria-expanded={expanded}
-      onPress={onPress}
+      onPress={() => {
+        setReaction((key) => key + 1);
+        onPress();
+      }}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       onHoverIn={() => setHovered(true)}
@@ -72,7 +77,7 @@ export function AgentProfile({
                 top: index === 2 ? 20 : 0,
               }}
             >
-              <AgentAvatar character={agent.avatar} size={size} />
+              <AgentAvatar character={agent.avatar} size={size} reactionKey={reaction} />
             </StyledView>
           );
         })}
