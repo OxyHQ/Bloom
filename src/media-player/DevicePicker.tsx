@@ -11,6 +11,7 @@ import { DEVICE_GLYPHS } from './device-icons';
 import type { DevicePickerProps, PlaybackDevice } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_PLAYER_MESSAGES } from './messages';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 export const DEVICE_ROW_HEIGHT = 52;
 
@@ -30,7 +31,7 @@ function DeviceRow({
   const theme = useTheme();
   const palette = useMemo(() => resolveMenuPalette(theme), [theme]);
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const Glyph = DEVICE_GLYPHS[device.kind];
   const disabled = !!device.disabled;
   const accentText = theme.isDark ? accent[400] : accent[600];
@@ -108,8 +109,8 @@ function DeviceRow({
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={[
         rowStyle,
         { backgroundColor: hovered && !disabled ? palette.rowHighlight : undefined },

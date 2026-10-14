@@ -35,6 +35,7 @@ import { monthNames as localMonthNames } from '../locale/format-date';
 import { pickMessages } from '../locale/messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
+import { useInteractionState } from '../hooks/use-interaction-state';
 /**
  * A whole year as one continuous vertical calendar of activity rings.
  *
@@ -202,7 +203,7 @@ const DayCell = memo(function DayCell({
   onSelectDay,
   testID,
 }: DayCellProps) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { hook, ring } = useChartFocusRing('inset', medical.focusRing);
   const ease: WebCssStyle | null =
     Platform.OS === 'web'
@@ -221,8 +222,8 @@ const DayCell = memo(function DayCell({
       accessibilityState={{ selected }}
       accessibilityLabel={getDayLabel({ month, day }, monthName)}
       onPress={() => onSelectDay?.({ month, day })}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={[
         {
           flex: 1,

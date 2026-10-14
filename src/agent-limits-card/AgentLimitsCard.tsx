@@ -40,6 +40,7 @@ import type {
   AgentLimitsUsageLimit,
 } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The agent limits card: the "how much of my agent budget is left" widget.
@@ -397,15 +398,15 @@ function HoverRow({
   testID?: string;
   children: (hovered: boolean) => React.ReactNode;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const ringStyle: WebCssStyle = { '--bloom-agent-limits-ring': palette.ring };
   const webStyle = IS_WEB ? ringStyle : null;
   return (
     <Pressable
       {...(IS_WEB ? ({ dataSet: { bloomAgentLimitsRow: '' } } as Record<string, unknown>) : {})}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       aria-expanded={expanded}
@@ -690,14 +691,14 @@ function PlanLink({
   accessibilityLabel: string;
   testID?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const ringStyle: WebCssStyle = { '--bloom-agent-limits-ring': palette.ring };
   return (
     <Pressable
       {...(IS_WEB ? ({ dataSet: { bloomAgentLimitsRow: '' } } as Record<string, unknown>) : {})}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       accessibilityRole="link"
       accessibilityLabel={accessibilityLabel}
       testID={testID}

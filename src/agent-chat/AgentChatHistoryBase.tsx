@@ -39,6 +39,7 @@ import type { AgentChatHistoryProps, AgentChatThread } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The chat-history rail, a card of its own
@@ -136,7 +137,7 @@ function HoverRow({
   expanded?: boolean;
   testID?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const lit = !disabled && (hovered || active);
   const merged: WebCssStyle = {
     flexDirection: 'row',
@@ -159,8 +160,8 @@ function HoverRow({
       accessibilityState={{ disabled, expanded }}
       disabled={disabled}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={merged}
     >
       {children}
@@ -489,7 +490,7 @@ function AccountMenu({
   } = useAgentChatPlatform();
   const [open, setOpen] = useState(false);
   const [usageOpen, setUsageOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const close = useCallback(() => setOpen(false), []);
   const name = labels.accountMenu(account.name);
   const hasUsage = Boolean(usage && usage.length > 0);
@@ -525,8 +526,8 @@ function AccountMenu({
           testID={testID}
           accessibilityRole="button"
           accessibilityLabel={name}
-          onHoverIn={() => setHovered(true)}
-          onHoverOut={() => setHovered(false)}
+          onHoverIn={onHoverIn}
+          onHoverOut={onHoverOut}
           style={triggerStyle}
         >
           <Avatar

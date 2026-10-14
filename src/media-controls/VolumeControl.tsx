@@ -16,6 +16,7 @@ import type { VolumeControlProps } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /** The speaker glyph for a level: muted or 0 → mute, under 0.5 → down, else up. */
 export function volumeIconFor(volume: number, muted: boolean) {
@@ -65,7 +66,7 @@ function VolumeControlComponent({
     adoptStyleSheet(MEDIA_CONTROLS_STYLE_ID, MEDIA_CONTROLS_CSS);
   }, []);
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const level = clamp(volume, 0, 1);
   const drawn = muted ? 0 : level;
@@ -115,8 +116,8 @@ function VolumeControlComponent({
         aria-disabled={disabled || undefined}
         accessibilityState={{ disabled }}
         disabled={disabled}
-        onHoverIn={() => setHovered(true)}
-        onHoverOut={() => setHovered(false)}
+        onHoverIn={onHoverIn}
+        onHoverOut={onHoverOut}
         onPress={() => onMutedChange?.(!muted)}
         style={buttonStyle}
         testID={testID ? `${testID}-mute` : undefined}

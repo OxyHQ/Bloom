@@ -26,6 +26,7 @@ import { useChartCardPalette } from './use-chart-palette';
 import { useWebTransition } from './use-web-transition';
 import { CHART_CARDS_MESSAGES } from '../messages';
 import { useMessages } from '../../locale/messages';
+import { useInteractionState } from '../../hooks/use-interaction-state';
 
 const ICON = 16;
 /** `w-[188px]` on the period menu. */
@@ -115,7 +116,7 @@ export function ChartRangeSelect({
   const label = labelProp ?? chartText.changePeriod;
   const palette = useChartCardPalette();
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const current = ranges.find((r) => r.id === value) ?? ranges[0];
   const transition = useWebTransition('background-color', 150);
 
@@ -126,8 +127,8 @@ export function ChartRangeSelect({
           testID={testID}
           accessibilityRole="button"
           accessibilityLabel={label}
-          onHoverIn={() => setHovered(true)}
-          onHoverOut={() => setHovered(false)}
+          onHoverIn={onHoverIn}
+          onHoverOut={onHoverOut}
           style={[
             pillStyle(palette),
             {

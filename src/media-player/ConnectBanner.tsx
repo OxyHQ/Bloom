@@ -8,6 +8,7 @@ import { DEVICE_GLYPHS } from './device-icons';
 import type { ConnectBannerProps } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_PLAYER_MESSAGES } from './messages';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 export const CONNECT_BANNER_HEIGHT = 28;
 
@@ -32,7 +33,7 @@ function ConnectBannerComponent({
   const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
   const theme = useTheme();
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const Glyph = DEVICE_GLYPHS[kind];
   // A caller's `label` keeps the "<label> <device>" shape; the catalog's
   // sentence places the device where the language does.
@@ -75,8 +76,8 @@ function ConnectBannerComponent({
       role="button"
       accessibilityLabel={text}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
       testID={testID}
     >

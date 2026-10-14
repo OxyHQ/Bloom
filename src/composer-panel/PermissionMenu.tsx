@@ -12,6 +12,7 @@ import { COMPOSER_PANEL_MESSAGES } from './messages';
 import { PERMISSION_PANEL_WIDTH, type ComposerPalette } from './shared';
 import type { ComposerPanelLabels, ComposerPanelPermissionOption } from './types';
 import { dataHook } from '../styles/data-hook';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 const FLIP: ViewStyle = { transform: [{ scaleY: -1 }] };
 /** The permission chip's widest: past this a mode's name truncates. */
@@ -186,7 +187,7 @@ function PermissionRow({
   palette: ComposerPalette;
   onSelect: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [focused, setFocused] = useState(false);
   const Icon = option.icon;
   return (
@@ -197,8 +198,8 @@ function PermissionRow({
       aria-checked={checked}
       accessibilityState={{ checked }}
       onPress={onSelect}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       style={{

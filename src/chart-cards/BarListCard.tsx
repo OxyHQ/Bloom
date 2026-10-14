@@ -39,6 +39,7 @@ import {
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 import { mixColors } from '../styles/color-contrast';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * `BarListCard`: the analytics breakdown list (traffic by country, device,
@@ -569,7 +570,7 @@ function MoreButton({
   const palette = useChartCardPalette();
   const medical = useMedicalPalette();
   const reducedMotion = useReducedMotion();
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { hook, ring } = useChartFocusRing('outset', medical.focusRing);
   const colorEase = useWebTransition('background-color', 150);
   const turn = useRef(new Animated.Value(expanded ? 1 : 0)).current;
@@ -603,8 +604,8 @@ function MoreButton({
       accessibilityLabel={label}
       aria-expanded={expanded}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={[
         {
           position: 'absolute',

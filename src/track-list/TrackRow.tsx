@@ -41,6 +41,7 @@ import { useMessages } from '../locale/messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { TRACK_LIST_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * One track in a table: the row `TrackList` maps, usable on its own inside a
@@ -138,7 +139,7 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
   const geo = rowGeometry(density, narrow);
   const compact = density === 'compact';
 
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [focusWithin, setFocusWithin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const active = hovered || focusWithin || menuOpen;
@@ -488,8 +489,8 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
       tabIndex={tabIndex}
       onPress={handlePress}
       onLongPress={handleLongPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       onFocus={() => setFocusWithin(true)}
       onBlur={blurToOutside}
       {...(IS_WEB

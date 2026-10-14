@@ -14,6 +14,7 @@ import type { CalendarPalette } from './palette';
 import { PickerActions, PickerShell, usePickerPalette } from './PickerShell';
 import { SummaryPresence } from './SummaryPresence';
 import type { DateRange, DateRangePickerProps } from './types';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * `DateRangePicker`: a quick-select column, two adjacent months, and a
@@ -57,7 +58,7 @@ function PresetRow({
   onPress: () => void;
   palette: CalendarPalette;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   return (
     <Pressable
       role="button"
@@ -66,8 +67,8 @@ function PresetRow({
       aria-pressed={active}
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={[
         PRESET_TRANSITION,
         {

@@ -6,6 +6,7 @@ import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { AgentProfileProps } from './types';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The conversation's profile target: animated artwork above an intrinsically sized name capsule.
@@ -24,7 +25,7 @@ export function AgentProfile({
   const { colors } = useTheme();
   const reduced = useReducedMotion();
   const [pressed, setPressed] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   // Every avatar in the profile waves when it is pressed, not only the first.
   const [reaction, setReaction] = useState(0);
   const label =
@@ -46,8 +47,8 @@ export function AgentProfile({
       }}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       className={`group/agent-profile relative min-w-0 max-w-full select-none items-center outline-none ${Platform.OS === 'web' ? 'motion-safe:active:scale-95' : ''}`}
       style={
         Platform.OS === 'web'

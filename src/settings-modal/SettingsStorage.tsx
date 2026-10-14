@@ -59,6 +59,7 @@ import type {
   SettingsStoredFile,
 } from './types';
 import { useSettingsWebCss } from './web-css';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The Storage page.
@@ -196,7 +197,7 @@ function RowMoreMenu({
   const common = useCommonMessages();
   const palette = useSettingsPalette();
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const label = common.labelFor(common.moreActions, file.name);
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -208,8 +209,8 @@ function RowMoreMenu({
             aria-expanded={open}
             accessibilityState={{ expanded: open }}
             {...webDataSet({ bloomSettingsPress: '', ringOffset: '' })}
-            onHoverIn={() => setHovered(true)}
-            onHoverOut={() => setHovered(false)}
+            onHoverIn={onHoverIn}
+            onHoverOut={onHoverOut}
             style={[
               styles.moreTrigger,
               {

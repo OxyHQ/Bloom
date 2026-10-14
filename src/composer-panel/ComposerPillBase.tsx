@@ -58,6 +58,7 @@ import type {
 import { useComposerWebCss } from './web-hooks';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
@@ -156,7 +157,7 @@ function ModelRow({
   onPress: () => void;
   palette: ComposerPalette;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [focused, setFocused] = useState(false);
   /**
    * The field's measured content height, from `onContentSizeChange`.
@@ -173,8 +174,8 @@ function ModelRow({
       aria-checked={selected}
       accessibilityState={{ checked: selected }}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       style={{

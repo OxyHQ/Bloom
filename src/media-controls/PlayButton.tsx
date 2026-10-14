@@ -15,6 +15,7 @@ import type { PlayButtonProps, PlayButtonSize } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The round play / pause button.
@@ -80,7 +81,7 @@ function PlayButtonComponent({
     adoptStyleSheet(MEDIA_CONTROLS_STYLE_ID, MEDIA_CONTROLS_CSS);
   }, []);
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [pressed, setPressed] = useState(false);
   const { box, glyph } = SIZE_CONFIG[size];
 
@@ -167,8 +168,8 @@ function PlayButtonComponent({
       accessibilityState={{ busy: loading, disabled }}
       disabled={disabled}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       style={[rootStyle, style]}

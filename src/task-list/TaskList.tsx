@@ -25,6 +25,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TaskListChip, TaskListProps, TaskListStep, TaskListTask } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The agent's working log
@@ -454,7 +455,7 @@ function TaskSection({
   // null until the reader touches it, so `collapseOnComplete` stays in charge
   // right up to the moment they decide otherwise.
   const [manualOpen, setManualOpen] = useState<boolean | null>(null);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const done = revealed >= endIndex;
   const Icon = task.icon;
@@ -488,8 +489,8 @@ function TaskSection({
         aria-expanded={open}
         accessibilityState={{ expanded: open }}
         onPress={() => setManualOpen(!open)}
-        onHoverIn={() => setHovered(true)}
-        onHoverOut={() => setHovered(false)}
+        onHoverIn={onHoverIn}
+        onHoverOut={onHoverOut}
         style={[
           {
             width: '100%',

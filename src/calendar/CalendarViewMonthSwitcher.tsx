@@ -33,6 +33,7 @@ import { resolveCalendarViewPalette, type CalendarViewPalette } from './palette'
 import { BREAKPOINT, dayKey, formatShortMonth, type WebDataSet } from './shared';
 import type { CalendarViewMonthSwitcherProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * `CalendarMonthSwitcher`: a pill with prev/next chevrons around the month
@@ -100,7 +101,7 @@ function NavButton({
   onPress: () => void;
   palette: CalendarViewPalette;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarNav: '' } } : {};
   const style: WebCssStyle = {
     width: NAV_SIZE,
@@ -118,8 +119,8 @@ function NavButton({
       role="button"
       accessibilityLabel={label}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       hitSlop={8}
       style={style}
     >
@@ -143,7 +144,7 @@ function SwitcherDay({
   onPress: (date: Date) => void;
   registerNode: (key: string, node: View | null) => void;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarDay: '' } } : {};
   const style: WebCssStyle = {
     width: DAY_SIZE,
@@ -163,8 +164,8 @@ function SwitcherDay({
       accessibilityLabel={formatAccessibleDate(date, locale)}
       tabIndex={isTabStop ? 0 : -1}
       onPress={() => onPress(date)}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
     >
       <Text variant="body-medium">{date.getDate()}</Text>

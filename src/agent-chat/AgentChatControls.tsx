@@ -9,6 +9,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { TRANSITION_MS, type AgentChatPalette } from './shared';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The family's two bespoke control shapes. Both are plain `<button>`s
@@ -61,7 +62,7 @@ export function IconAction({
   'aria-expanded': ariaExpanded,
   'aria-haspopup': ariaHaspopup,
 }: IconActionProps) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const lit = !disabled && (hovered || active);
   const style: WebCssStyle = {
     width: size,
@@ -88,8 +89,8 @@ export function IconAction({
       accessibilityState={{ disabled, expanded: ariaExpanded }}
       disabled={disabled}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
     >
       {icon(lit ? hoverColor : color)}
@@ -174,7 +175,7 @@ export function PrimaryDisc({
   children,
   testID,
 }: PrimaryDiscProps) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [pressed, setPressed] = useState(false);
   const paint = palette.primary;
   const base = disabled ? paint.disabled : pressed ? paint.active : paint.rest;
@@ -201,8 +202,8 @@ export function PrimaryDisc({
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
     >
       <GradientFill paint={base} radius={size / 2} />
