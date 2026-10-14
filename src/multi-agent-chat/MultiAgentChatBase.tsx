@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
 import { Platform, ScrollView, Share, useWindowDimensions } from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
 import { AvatarFlightLayer, centeredLanding, useAvatarFlights } from '../avatar-flight';
 import { StreamedText } from '../agent-chat/AgentChatMessage';
@@ -87,7 +87,6 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const { Portal, Dialog, ComposerPanel, AgentCreator, Dropdown: D } = useChatComponents();
   const { colors } = useTheme();
   const directionProps = useDirectionProps();
-  const reduced = useReducedMotion();
   const flights = useAvatarFlights();
   const handoffGeneration = useRef(0),
     sending = useRef(false),

@@ -14,7 +14,7 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
 /**
  * One reply of an agent: the reply on top, and under it who answered (start) and what can be
- * done with it (end). Actions appear on hover or focus on web, and stay shown elsewhere.
+ * done with it (end), both flush with the reply's own edges. Actions appear on hover or focus on web, and stay shown elsewhere.
  */
 export function AgentReply({ children, identity, actions, style }: AgentReplyProps) {
   const ref = useRef<View>(null);
@@ -45,7 +45,7 @@ export function AgentReply({ children, identity, actions, style }: AgentReplyPro
       ]}
     >
       {children}
-      <StyledView className="flex items-center justify-between gap-2 px-3 flex-row">
+      <StyledView className="flex items-center justify-between gap-2 flex-row">
         {identity}
         {actions ? (
           <AnimatedView style={[{ flexShrink: 0 }, animated]}>{actions}</AnimatedView>
