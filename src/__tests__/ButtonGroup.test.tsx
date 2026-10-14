@@ -98,4 +98,32 @@ describe('ButtonGroup', () => {
     expect(screen.getByTestId('disabled').props.disabled).toBe(true);
     expect(screen.getByTestId('disabled').props.onPress).toBeUndefined();
   });
+  describe('separated', () => {
+    it('is a row of independent pills: no shared surface, no hairlines, a gap between', () => {
+      const { getByTestId, toJSON } = renderWithTheme(
+        <ButtonGroup separated size="xs" testID="group" accessibilityLabel="Actions">
+          <ButtonGroupItem iconOnly accessibilityLabel="One" />
+          <ButtonGroupItem iconOnly accessibilityLabel="Two" />
+          <ButtonGroupItem iconOnly accessibilityLabel="Three" />
+        </ButtonGroup>,
+      );
+      const group = getByTestId('group');
+      expect(group.props.role).toBe('group');
+      expect(resolvedStyle(group.props.style)).toMatchObject({ flexDirection: 'row', gap: 4 });
+      // Three items and nothing between them: the joined group would draw two separators.
+      expect(renderedChildren(toJSON(), 'group')).toHaveLength(3);
+    });
+
+    it('sizes items 24 at xs, 30 at sm and 34 at md', () => {
+      const heights = (['xs', 'sm', 'md'] as const).map((size) => {
+        const { getByTestId } = renderWithTheme(
+          <ButtonGroup separated size={size}>
+            <ButtonGroupItem testID="item">Pill</ButtonGroupItem>
+          </ButtonGroup>,
+        );
+        return resolvedStyle(getByTestId('item').props.style).height;
+      });
+      expect(heights).toEqual([24, 30, 34]);
+    });
+  });
 });

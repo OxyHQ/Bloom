@@ -1,6 +1,7 @@
 import type { ReactNode, Ref } from 'react';
 import type { StyleProp, View, ViewStyle } from 'react-native';
 import type { AvatarCharacter } from '../agent-avatar';
+import type { ButtonIconComponent } from '../button/types';
 
 /** An agent as the reply pieces draw it. */
 export interface AgentReplyAgent {
@@ -22,6 +23,11 @@ export interface AgentReplyProps {
    * end. Mouse hover and keyboard focus reveal it on web; touch platforms keep it shown.
    */
   actions?: ReactNode;
+  /**
+   * The row's own style, after its defaults: 12px of margin at each side and above, a column up to
+   * 520px wide. A thread that already pads its content sets `marginHorizontal: 0`.
+   */
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface AgentReplyBubbleProps {
@@ -61,8 +67,8 @@ export interface AgentReplyActionsProps {
 }
 
 export interface AgentReplyActionProps {
-  /** The icon, drawn at 12px. */
-  icon: (props: { width?: number; height?: number; fill?: string }) => ReactNode;
+  /** The icon component, sized by the row. */
+  icon: ButtonIconComponent;
   /** The tile's name; it draws no text. */
   label: string;
   /** Lit as the current choice (a vote, a read-aloud in progress). */

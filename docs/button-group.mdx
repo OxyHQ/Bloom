@@ -80,7 +80,8 @@ Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a 
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `ButtonGroup.size?` | `'md' \| 'sm'` | inherited, then `'md'` | Size for every item. |
+| `ButtonGroup.size?` | `'md' \| 'sm' \| 'xs'` | inherited, then `'md'` | Size for every item: 34, 30 or 24px. |
+| `ButtonGroup.separated?` | `boolean` | `false` | Each item is its own pill with a gap between, not one joined control: no shared surface, hairlines or sliding selection. An item is `subtle`, and `outline` while `checked`. |
 | `ButtonGroup.dividers?` | `boolean` | `true` | Hairlines between items. |
 | `ButtonGroup.accessibilityLabel?` | `string` | — | Names the group. |
 | `ButtonGroupItem.onPress?` | `(event) => void` | — | Press handler. Receives the event, so a composed trigger handler can `preventDefault()` it. |
@@ -89,7 +90,7 @@ Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a 
 | `ButtonGroupItem.iconOnly?` | `boolean` | `false` | Square icon-only item. |
 | `ButtonGroupItem.leadingIcon?` / `trailingIcon?` | `BloomIconComponent` | — | Icon components. |
 | `ButtonGroupItem.renderLeadingIcon?` / `renderTrailingIcon?` | `BloomIconRenderer` | — | Draw the glyph yourself, handed `{ size, color }` for the current state — for an app's own icon set. Wins over the icon component. [Icons](/docs/icons). |
-| `ButtonGroupItem.size?` | `'md' \| 'sm'` | group size | Per-item override. |
+| `ButtonGroupItem.size?` | `'md' \| 'sm' \| 'xs'` | group size | Per-item override. |
 | `ButtonGroupItem.hitSlop?` | `number \| {top,bottom,left,right}` | — | Extra touch area. NOT defaulted: items in a group are adjacent, so slop on one overlaps its neighbour. Use it for an item that stands alone in its own island. |
 | `ButtonGroupItem.onLongPress?` / `aria-expanded` / `aria-haspopup` / `accessibilityRole` | | — | The trigger contract, set by an anchored family. |
 
@@ -98,3 +99,7 @@ Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a 
 Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
 
 Each `ButtonGroupItem` now composes the actual `Button`, including icon render slots, toggle state, disabled state and trigger events. The group owns joining, dividers and inherited density. The group uses one shared `Surface`. With one checked item, a measured rounded capsule moves behind the plain Buttons and resizes to their actual bounds. It shares the same spring and visibility transition as BottomBar, respects reduced motion, and fades in place when selection disappears. Until layout is available, or when multiple items are checked, each checked Button paints its own material instead. Each platform binding injects its own Surface and Button, so browser packages resolve the web implementations directly.
+
+## Separated
+
+`separated` keeps the group semantics (one named `role="group"`, inherited size, `checked` items) and drops the joined look: a row of rounded pills with a 4–6px gap. It is what a reply's action row is — [`AgentReplyActions`](./agent-reply.mdx) is a separated `xs` group.

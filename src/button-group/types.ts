@@ -4,8 +4,8 @@ import type { ButtonIconComponent } from '../button/types';
 import type { BloomIconRenderer } from '../icons/render-icon';
 import type { WebAriaProps } from '../styles/styled-primitives';
 
-/** The two group sizes: 34px (`md`) and 30px (`sm`) items. */
-export type ButtonGroupSize = 'md' | 'sm';
+/** The group sizes: 34px (`md`), 30px (`sm`) and 24px (`xs`) items. */
+export type ButtonGroupSize = 'md' | 'sm' | 'xs';
 
 export interface ButtonGroupProps {
   /**
@@ -20,6 +20,12 @@ export interface ButtonGroupProps {
    * vertically so they do not cross the outer rim.
    */
   dividers?: boolean;
+  /**
+   * Draw each item as its own pill with a gap between them, instead of one joined control with
+   * hairlines. There is no shared surface and no sliding selection: an item is `subtle`, and
+   * `outline` while `checked`. Default `false`.
+   */
+  separated?: boolean;
   /** `ButtonGroupItem` children. */
   children: React.ReactNode;
   /** Names the group. */

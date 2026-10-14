@@ -43,11 +43,15 @@ export function createButtonGroup(
   Surface: ComponentType<SurfaceProps>,
 ) {
   const GroupContext = createContext<
-    ({ size: 'sm' | 'md' } & ReturnType<typeof useGroupSelection>['registry']) | null
+    | ({ size: 'xs' | 'sm' | 'md'; separated: boolean } & ReturnType<
+        typeof useGroupSelection
+      >['registry'])
+    | null
   >(null);
   const ButtonGroup = memo(function ButtonGroup({
     size: sizeProp,
     dividers,
+    separated = false,
     children,
     accessibilityLabel,
     style,
@@ -60,9 +64,10 @@ export function createButtonGroup(
       { size: 'md', tone: 'neutral' },
     );
     const inheritedSize = scopedSize;
-    const size: 'sm' | 'md' = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
+    const size: 'xs' | 'sm' | 'md' =
+      inheritedSize === 'xs' ? 'xs' : inheritedSize === 'sm' ? 'sm' : 'md';
     const { registry, layout, disabled: selectionDisabled } = useGroupSelection();
-    const context = useMemo(() => ({ size, ...registry }), [size, registry]);
+    const context = useMemo(() => ({ size, separated, ...registry }), [size, separated, registry]);
     const x = useSharedValue(0);
     const y = useSharedValue(0);
     const width = useSharedValue(0);
@@ -99,6 +104,29 @@ export function createButtonGroup(
         {item}
       </Fragment>
     ));
+    if (separated)
+      return (
+        <GroupContext.Provider value={context}>
+          <BloomScope size={size}>
+            <View
+              role="group"
+              accessibilityLabel={accessibilityLabel}
+              testID={testID}
+              style={[
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  alignSelf: 'flex-start',
+                  gap: size === 'xs' ? 4 : 6,
+                },
+                style,
+              ]}
+            >
+              {items}
+            </View>
+          </BloomScope>
+        </GroupContext.Provider>
+      );
     return (
       <GroupContext.Provider value={context}>
         <BloomScope size={size}>
@@ -174,8 +202,8 @@ export function createButtonGroup(
     );
     const inheritedDensity = scopedSize;
     const rawSize = canonicalSize ?? group?.size ?? inheritedDensity;
-    const size = rawSize === 'xs' || rawSize === 'sm' ? 'sm' : 'md';
-    const height = size === 'sm' ? 30 : 34;
+    const size = rawSize === 'xs' ? 'xs' : rawSize === 'sm' ? 'sm' : 'md';
+    const height = size === 'xs' ? 24 : size === 'sm' ? 30 : 34;
     const checked = checkedProp ?? selected;
     useLayoutEffect(() => {
       register?.(id, Boolean(checked), disabled);
@@ -204,7 +232,15 @@ export function createButtonGroup(
       <Button
         {...props}
         onLayout={group ? onLayout : undefined}
-        appearance={checked && !group?.moving ? 'outline' : 'plain'}
+        appearance={
+          group?.separated
+            ? checked
+              ? 'outline'
+              : 'subtle'
+            : checked && !group?.moving
+              ? 'outline'
+              : 'plain'
+        }
         tone="neutral"
         size={size}
         iconOnly={iconOnly}

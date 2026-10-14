@@ -5,10 +5,13 @@
  *   node scripts/mirror-into-consumer.mjs <consumer-root> [--watch]
  *   node scripts/mirror-into-consumer.mjs <consumer-root> --restore
  *
- * Mirrors this checkout's SOURCE into `<consumer-root>/.bloom-local/` and points every
+ * Mirrors this checkout's SOURCE into `<consumer-root>/bloom-local/` and points every
  * `node_modules/@oxy.so/bloom` under the consumer at it, so Metro serves what you edit here.
  * With `--watch` an edit under `src/` reaches the consumer in a moment; `--restore` puts the
  * published copies back.
+ *
+ * The folder is `bloom-local`, not dot-prefixed: Metro's file watcher ignores dot-directories, so
+ * a `.bloom-local` is served once and every later edit is silently never seen.
  *
  * Why a mirror inside the consumer, not a symlink to this checkout: Metro only indexes the
  * project root and its watch folders, and a Bloom living elsewhere would resolve `react`,
@@ -49,14 +52,14 @@ if (!consumerArg) {
   process.exit(1);
 }
 const CONSUMER = resolve(consumerArg);
-const MIRROR = join(CONSUMER, '.bloom-local');
+const MIRROR = join(CONSUMER, 'bloom-local');
 const KEPT = '.bloom-published';
 
 /** Every `node_modules/@oxy.so/bloom` under the consumer (root and each workspace package). */
 function bloomInstalls(dir, found = []) {
   if (!existsSync(dir)) return found;
   for (const name of readdirSync(dir)) {
-    if (name === '.git' || name === '.bloom-local') continue;
+    if (name === '.git' || name === 'bloom-local') continue;
     const full = join(dir, name);
     let stat;
     try {
@@ -183,7 +186,7 @@ function linkInstalls() {
     rmSync(kept, { recursive: true, force: true });
     renameSync(install, kept);
     symlinkSync(relative(dirname(install), MIRROR), install);
-    console.log(`linked ${relative(CONSUMER, install)} -> .bloom-local`);
+    console.log(`linked ${relative(CONSUMER, install)} -> bloom-local`);
   }
 }
 

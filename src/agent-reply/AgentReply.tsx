@@ -16,7 +16,7 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
  * One reply of an agent: the reply on top, and under it who answered (start) and what can be
  * done with it (end). Actions appear on hover or focus on web, and stay shown elsewhere.
  */
-export function AgentReply({ children, identity, actions }: AgentReplyProps) {
+export function AgentReply({ children, identity, actions, style }: AgentReplyProps) {
   const ref = useRef<View>(null);
   const reduced = useReducedMotion();
   const [hovered, setHovered] = useState(false);
@@ -33,11 +33,16 @@ export function AgentReply({ children, identity, actions }: AgentReplyProps) {
       ref={ref}
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}
-      className="group/reply mx-3 mt-3 w-fit max-w-[min(520px,calc(100%-24px))] text-body-regular"
-      style={{
-        maxWidth: Platform.OS === 'web' ? undefined : '94%',
-        alignSelf: 'flex-start',
-      }}
+      className="group/reply w-fit max-w-[min(520px,calc(100%-24px))] text-body-regular"
+      style={[
+        {
+          marginHorizontal: 12,
+          marginTop: 12,
+          maxWidth: Platform.OS === 'web' ? undefined : '94%',
+          alignSelf: 'flex-start',
+        },
+        style,
+      ]}
     >
       {children}
       <StyledView className="flex items-center justify-between gap-2 px-3 flex-row">
