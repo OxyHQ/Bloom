@@ -453,7 +453,6 @@ export function ComposerPillBase({
   frosted = false,
   inputRef,
   labels: labelOverrides,
-  question,
   style,
   maxLines = 8,
   emptyAction,
@@ -877,20 +876,12 @@ export function ComposerPillBase({
       ) : null}
     </View>
   );
-  const pill = publishedFill ? (
+  return publishedFill ? (
     <SurfaceLevelProvider level={surface ? 1 : parentLevel} fill={publishedFill}>
       {content}
     </SurfaceLevelProvider>
   ) : (
     content
-  );
-  return question ? (
-    <View style={{ width: '100%', flexDirection: 'column', gap: 8 }}>
-      {question}
-      {pill}
-    </View>
-  ) : (
-    pill
   );
 }
 

@@ -87,10 +87,12 @@ Both take their menus from the same platform binding as `ComposerPanel`.
 
 ## Asking above the composer
 
-An agent that needs an answer asks the person who is about to type, so the question sits where they are looking: docked over the composer, not as a message in the thread. Give a `Questionnaire` to `question` while the agent waits and drop it when it is answered; the thread carries no card and nothing to scroll back to.
+An agent that needs an answer asks the person who is about to type, so the question sits where they are looking: docked over the composer, not as a message in the thread; the thread carries no card and nothing to scroll back to.
+
+`ComposerPanel` takes it as `question`, above its status tab, in its own column and width:
 
 ```tsx
-<ComposerPill
+<ComposerPanel
   question={pending && <Questionnaire questions={pending} onComplete={answer} onDismiss={skip} />}
   value={draft}
   onValueChange={setDraft}
@@ -98,7 +100,16 @@ An agent that needs an answer asks the person who is about to type, so the quest
 />
 ```
 
-Both composers take it. The slot is empty by default and adds no node then.
+`ComposerPill` has no slot, because the pill is usually wrapped in a `ComposerLoader`, whose light traces the box it wraps: a question inside the pill would be inside that box, and the light would ring the question too. Put the question beside the loader instead, in the same column as the pill, as you would the suggestions:
+
+```tsx
+<View style={{ gap: 8 }}>
+  {pending && <Questionnaire questions={pending} onComplete={answer} />}
+  <ComposerLoader active={busy}>
+    <ComposerPill value={draft} onValueChange={setDraft} onSubmit={send} />
+  </ComposerLoader>
+</View>
+```
 
 ## Anatomy
 
@@ -214,7 +225,7 @@ The English defaults below — strings, placeholders, and the default permission
 | `voiceState` / `defaultVoiceState` / `onVoiceStateChange` | `'idle' \| 'recording' \| 'transcribing'` | `'idle'` | Voice input. `recording` swaps the mic to equalizer bars and the next press stops; `transcribing` makes it busy and disabled, named `labels.transcribing` and announced in a polite live region. A press reports `recording` from `idle` and `idle` from `recording`; entering `transcribing` is yours. |
 | `attachments` / `onRemoveAttachment` | `ComposerPanelAttachment[]` / `(id) => void` | — | |
 | `onAttachmentRetry` | `(id) => void` | — | Draws a retry button on every failed (`error`) tile. |
-| `question` | `ReactNode` | — | What the agent is waiting on — a [`Questionnaire`](./questionnaire.mdx) — docked above the composer in its column and width (above the status tab on the panel; the pill fills the column while one is shown). See [Asking above the composer](#asking-above-the-composer). |
+| `question` | `ReactNode` | — | `ComposerPanel` only. What the agent is waiting on — a [`Questionnaire`](./questionnaire.mdx) — docked above the card, above the status tab. See [Asking above the composer](#asking-above-the-composer). |
 | `status` | `ReactNode` | — | Usually `<ComposerPanelStatusTab />`. |
 | `inputRef` | `RefObject<TextInput>` | — | The prompt field. |
 | `labels`, `modelPickerLabels` | objects | the locale's | Your own wording; a key here wins over Bloom's. |

@@ -220,7 +220,7 @@ function within(scope: HTMLElement, label: string): HTMLElement {
   return found as HTMLElement;
 }
 
-describe('question — what the agent waits on, docked above the composer', () => {
+describe('ComposerPanel question — what the agent waits on, docked above the card', () => {
   const ask = <div data-testid="asked">Which parts should it cover?</div>;
   const order = (first: string, second: string) => {
     const a = container.querySelector(first) as HTMLElement;
@@ -229,20 +229,7 @@ describe('question — what the agent waits on, docked above the composer', () =
     return !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
   };
 
-  it('draws it above the pill, in the pill’s column, and draws nothing extra without one', () => {
-    mount(<ComposerPill question={ask} testID="pill" />);
-    expect(order('[data-testid="asked"]', '[data-testid="pill"]')).toBe(true);
-    expect(container.querySelector('[data-testid="pill"]')?.parentElement).toBe(
-      container.querySelector('[data-testid="asked"]')?.parentElement,
-    );
-
-    act(() => root.unmount());
-    root = createRoot(container);
-    mount(<ComposerPill testID="pill" />);
-    expect(container.querySelector('[data-testid="asked"]')).toBeNull();
-  });
-
-  it('draws it above the panel too, with the status tab still on the card’s edge', () => {
+  it('draws it above the panel, with the status tab still on the card’s edge', () => {
     mount(
       <ComposerPanel question={ask} status={<div data-testid="tab">tab</div>} testID="panel" />,
     );

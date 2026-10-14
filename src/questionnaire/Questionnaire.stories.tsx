@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ComposerPanel, ComposerPill } from '../composer-panel';
+import { ComposerLoader } from '../composer-loader';
 import { Text } from '../typography';
 import { Questionnaire } from './index';
 import type { QuestionnaireAnswers, QuestionnaireQuestion } from './types';
@@ -160,7 +161,7 @@ export const Demo: Story = {
 
 /**
  * What an agent asks is asked of the person about to type, so it docks above the composer
- * (`question`) instead of landing in the thread. Answering it, or dismissing it, takes it away.
+ * instead of landing in the thread: beside the pill (and its loader), in the same column.
  */
 export const AboveTheComposer: Story = {
   render: () => {
@@ -171,20 +172,16 @@ export const AboveTheComposer: Story = {
         <Text variant="body-2-regular">
           {asking ? 'The agent is waiting on you…' : 'Answered. The thread never held the card.'}
         </Text>
-        <ComposerPill
-          value={draft}
-          onValueChange={setDraft}
-          onSubmit={() => setDraft('')}
-          question={
-            asking ? (
-              <Questionnaire
-                questions={QUESTIONS}
-                onComplete={() => setAsking(false)}
-                onDismiss={() => setAsking(false)}
-              />
-            ) : undefined
-          }
-        />
+        {asking ? (
+          <Questionnaire
+            questions={QUESTIONS}
+            onComplete={() => setAsking(false)}
+            onDismiss={() => setAsking(false)}
+          />
+        ) : null}
+        <ComposerLoader active={false}>
+          <ComposerPill value={draft} onValueChange={setDraft} onSubmit={() => setDraft('')} />
+        </ComposerLoader>
       </View>
     );
   },
