@@ -125,21 +125,15 @@ export const Conversation: StoryObj = {
             {null}
           </AgentReply>
           <View style={{ flex: 1 }} />
-          <View style={{ paddingHorizontal: 12 }}>
-            <ComposerPill
-              value={draft}
-              onValueChange={setDraft}
-              onSubmit={() => setDraft('')}
-              question={
-                asking ? (
-                  <Questionnaire
-                    questions={QUESTIONS}
-                    onComplete={() => setAsking(false)}
-                    onDismiss={() => setAsking(false)}
-                  />
-                ) : undefined
-              }
-            />
+          <View style={{ paddingHorizontal: 12, gap: 8 }}>
+            {asking ? (
+              <Questionnaire
+                questions={QUESTIONS}
+                onComplete={() => setAsking(false)}
+                onDismiss={() => setAsking(false)}
+              />
+            ) : null}
+            <ComposerPill value={draft} onValueChange={setDraft} onSubmit={() => setDraft('')} />
           </View>
         </View>
       </View>

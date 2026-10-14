@@ -14,6 +14,7 @@ import { webDataSet } from '../styles/web-data';
 import type { CheckboxSize } from './types';
 import { DISABLED_OPACITY, animation } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
+import { CHOICE_CONTROL_SIZES } from '../styles/choice-control-sizes';
 
 /**
  * The checkbox glyph — the box and its tick — shared by `Checkbox` and
@@ -24,14 +25,20 @@ import { IS_WEB } from '../styles/platform';
  *   label      body-2-medium  body-medium  headline-medium
  *   gap        6       8        8
  */
+/** The type of a rung, from the table a radio shares. */
+function labels(size: CheckboxSize) {
+  const { label, description } = CHOICE_CONTROL_SIZES[size];
+  return { label, description };
+}
+
 export const CHECKBOX_SIZE_CONFIG: Record<
   CheckboxSize,
   { box: number; gap: number; label: TypeScaleVariant; description: TypeScaleVariant }
 > = {
-  xs: { box: 12, gap: 4, label: 'caption-1-medium', description: 'caption-1-regular' },
-  sm: { box: 14, gap: 6, label: 'body-2-medium', description: 'body-2-regular' },
-  md: { box: 16, gap: 8, label: 'body-medium', description: 'body-regular' },
-  lg: { box: 20, gap: 8, label: 'headline-medium', description: 'body-regular' },
+  xs: { box: CHOICE_CONTROL_SIZES.xs.mark, gap: 4, ...labels('xs') },
+  sm: { box: CHOICE_CONTROL_SIZES.sm.mark, gap: 6, ...labels('sm') },
+  md: { box: CHOICE_CONTROL_SIZES.md.mark, gap: 8, ...labels('md') },
+  lg: { box: CHOICE_CONTROL_SIZES.lg.mark, gap: 8, ...labels('lg') },
 };
 
 /** `rounded-sm` — Tailwind v4's 4px. */

@@ -1,20 +1,12 @@
 import React, { useRef, useState, type ReactNode, type Ref } from 'react';
-import { Platform, ScrollView, type ScrollViewProps } from 'react-native';
-import { styled } from 'react-native-css';
+import { Platform, type ScrollView, type ScrollViewProps } from 'react-native';
 import { EdgeScrim } from '../page-header/EdgeScrim';
 import { StyledView } from '../styles/styled-primitives';
+import { ScrollArea } from './ScrollArea';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
-const StyledScrollView: React.ComponentType<
-  ScrollViewProps & {
-    className?: string;
-    contentContainerClassName?: string;
-    ref?: Ref<ScrollView>;
-  }
-> = styled(ScrollView, {
-  className: 'style',
-  contentContainerClassName: 'contentContainerStyle',
-});
+
+/** A scroll surface whose top (and optionally bottom) edge fades into `surface` as content scrolls under it. */
 export function ScrollSurface({
   children,
   className,
@@ -53,11 +45,11 @@ export function ScrollSurface({
         : colors.backgroundSecondary;
   return (
     <StyledView className={`relative min-h-0 ${className ?? ''}`}>
-      <StyledScrollView
+      <ScrollArea
         ref={scrollRef}
         accessibilityLabel={label}
-        showsVerticalScrollIndicator={false}
-        className="h-full overflow-y-auto overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring [scrollbar-width:none]"
+        className="overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring"
+        style={{ height: '100%' }}
         contentContainerClassName={contentClassName}
         {...props}
         onLayout={(event) => {
@@ -78,7 +70,7 @@ export function ScrollSurface({
         scrollEventThrottle={16}
       >
         {children}
-      </StyledScrollView>
+      </ScrollArea>
       {[false, ...(fadeBottom ? [true] : [])].map((bottom) => (
         <StyledView
           key={String(bottom)}

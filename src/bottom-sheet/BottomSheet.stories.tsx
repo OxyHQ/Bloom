@@ -16,7 +16,6 @@ const meta: Meta<typeof BottomSheet> = {
     backdropOpacity: { control: 'number' },
     scrollable: { control: 'boolean' },
     manualActivation: { control: 'boolean' },
-    dynamicBackdrop: { control: 'boolean' },
   },
   title: 'Base/Bottom Sheet',
   component: BottomSheet,

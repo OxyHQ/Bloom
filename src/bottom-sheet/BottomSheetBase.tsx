@@ -21,7 +21,7 @@ import {
   type StyleProp,
 } from 'react-native';
 import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
-import { adoptStyleSheet, dropStyleSheet } from '../styles/adopt-style-sheet';
+import { ScrollBar } from '../layout/ScrollBar';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
@@ -42,6 +42,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
+import { backdropFade } from './backdrop-fade';
 import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { useTheme } from '../theme/use-theme';
 import { SheetKeyboardProvider } from './context';
@@ -93,7 +94,6 @@ export const BottomSheetBase = forwardRef(
       backdropOpacity = BACKDROP_DIM_OPACITY,
       scrollable = true,
       manualActivation = false,
-      dynamicBackdrop = false,
       animatedProgress,
       handleComponent,
       scrollY: externalScrollY,
@@ -316,16 +316,6 @@ export const BottomSheetBase = forwardRef(
       },
       [],
     );
-
-    // Apply web scrollbar styles when colors change; clean up on unmount
-    useEffect(() => {
-      if (Platform.OS === 'web') {
-        createWebScrollbarStyle(colors.border);
-      }
-      return () => {
-        removeWebScrollbarStyle();
-      };
-    }, [colors.border]);
 
     // Gesture callbacks cross to JS before consulting the consumer's veto.
     // A refused drag springs back; it never hides the Modal or strands its owner.
@@ -585,23 +575,27 @@ export const BottomSheetBase = forwardRef(
     // itself. Handing it over as an animated style would put the opacity on the
     // layers' shared ancestor, which composites the group in isolation and
     // leaves `backdrop-filter` with nothing behind it to blur.
+    // The backdrop follows the sheet: it fades in with the sheet and fades out as the sheet is
+    // dragged away, reaching nothing exactly when the sheet is out of sight.
+    const sheetHeightSV = useSharedValue(0);
     const backdropProgress = useDerivedValue(() => {
-      const dragFactor = dynamicBackdrop
-        ? interpolate(translateY.value, [0, screenHeightSV.value * 0.4], [1, 0.3], 'clamp')
-        : 1;
-      return opacity.value * dragFactor;
-    }, [dynamicBackdrop, opacity, translateY, screenHeightSV]);
+      const travel = sheetHeightSV.value > 0 ? sheetHeightSV.value : screenHeightSV.value;
+      return opacity.value * backdropFade(translateY.value, travel);
+    }, [opacity, translateY, sheetHeightSV, screenHeightSV]);
 
     useAnimatedReaction(
       () =>
         Math.min(
           opacity.value,
-          interpolate(translateY.value, [0, screenHeightSV.value], [1, 0], 'clamp'),
+          backdropFade(
+            translateY.value,
+            sheetHeightSV.value > 0 ? sheetHeightSV.value : screenHeightSV.value,
+          ),
         ),
       (progress) => {
         if (animatedProgress) animatedProgress.value = progress;
       },
-      [animatedProgress, opacity, translateY, screenHeightSV],
+      [animatedProgress, opacity, translateY, sheetHeightSV, screenHeightSV],
     );
 
     // Only the consumer-supplied `backdropComponent` needs the progress as a
@@ -753,15 +747,6 @@ export const BottomSheetBase = forwardRef(
         handleNode
       );
 
-    // `scrollbar-width` / `scrollbar-color` are web-only CSS RN does not model.
-    const webScrollbarStyle: WebCssStyle | undefined =
-      Platform.OS === 'web'
-        ? {
-            scrollbarWidth: 'thin',
-            scrollbarColor: `${colors.border} transparent`,
-          }
-        : undefined;
-
     // The sheet uses the PAGE token as its tint and nominal surface, resetting
     // everything inside it. Without this a sheet rendered inside a `ContentPanel`
     // — web keeps React context across a portal — would tell its content it is
@@ -783,32 +768,35 @@ export const BottomSheetBase = forwardRef(
     const scrollViewNode = (
       <Animated.ScrollView
         ref={scrollViewRef}
-        style={[styles.scrollView, surfaceCorners, webScrollbarStyle]}
+        style={[styles.scrollView, surfaceCorners]}
         contentContainerStyle={dynamicStyles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onScroll={scrollHandler}
         scrollEventThrottle={16}
-        {...(Platform.OS === 'web' ? { className: 'bottom-sheet-scrollview' } : undefined)}
-        onLayout={() => {
-          if (Platform.OS === 'web') {
-            createWebScrollbarStyle(colors.border);
-          }
-        }}
       >
         {surfaceChildren}
       </Animated.ScrollView>
     );
 
+    const scrollBody = manualActivation ? (
+      // In manualActivation mode the scroll view is referenced by the
+      // pan's simultaneous list directly; no wrapping native gesture.
+      scrollViewNode
+    ) : (
+      // Legacy mode: native gesture wraps the scroll view to coordinate
+      // with the always-active body pan.
+      <GestureDetector gesture={nativeGesture}>{scrollViewNode}</GestureDetector>
+    );
     const bodyContent = scrollable ? (
-      manualActivation ? (
-        // In manualActivation mode the scroll view is referenced by the
-        // pan's simultaneous list directly; no wrapping native gesture.
-        scrollViewNode
+      Platform.OS === 'web' ? (
+        // Bloom's scrollbar floats over the scroller, so it needs a box of its own around it.
+        <View style={styles.scrollBox}>
+          {scrollBody}
+          <ScrollBar target={scrollViewRef} />
+        </View>
       ) : (
-        // Legacy mode: native gesture wraps the scroll view to coordinate
-        // with the always-active body pan.
-        <GestureDetector gesture={nativeGesture}>{scrollViewNode}</GestureDetector>
+        scrollBody
       )
     ) : (
       <View style={[styles.nonScrollableContent, surfaceCorners, { overflow: 'hidden' }]}>
@@ -864,7 +852,10 @@ export const BottomSheetBase = forwardRef(
               aria-labelledby={Platform.OS === 'web' ? labelledBy : undefined}
               aria-describedby={Platform.OS === 'web' ? describedBy : undefined}
               tabIndex={Platform.OS === 'web' ? -1 : undefined}
-              onLayout={onLayout}
+              onLayout={(event) => {
+                sheetHeightSV.value = event.nativeEvent.layout.height;
+                onLayout?.(event);
+              }}
               style={[
                 dynamicStyles.sheet,
                 // `--bloom-surface` on the element that carries the
@@ -989,6 +980,10 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  scrollBox: {
+    flex: 1,
+    minHeight: 0,
+  },
   scrollContent: {
     flexGrow: 1,
   },
@@ -1004,42 +999,3 @@ const styles = StyleSheet.create({
     minHeight: 0,
   },
 });
-
-// Create web scrollbar styles dynamically based on theme
-const createWebScrollbarStyle = (borderColor: string) => {
-  if (Platform.OS !== 'web') return;
-
-  // Derive a slightly darker scrollbar hover color from the border color
-  const scrollbarColor = borderColor;
-  const scrollbarHoverColor = borderColor.startsWith('hsl')
-    ? borderColor.replace(/\)$/, ' / 0.7)') // add alpha for hover
-    : '#888';
-
-  adoptStyleSheet(
-    SCROLLBAR_STYLE_ID,
-    `
-        .bottom-sheet-scrollview::-webkit-scrollbar {
-            width: 6px;
-        }
-        .bottom-sheet-scrollview::-webkit-scrollbar-track {
-            background: transparent;
-            border-radius: 10px;
-        }
-        .bottom-sheet-scrollview::-webkit-scrollbar-thumb {
-            background: ${scrollbarColor};
-            border-radius: 10px;
-        }
-        .bottom-sheet-scrollview::-webkit-scrollbar-thumb:hover {
-            background: ${scrollbarHoverColor};
-        }
-    `,
-  );
-};
-
-const SCROLLBAR_STYLE_ID = 'bottom-sheet-scrollbar-style';
-
-/** Detach the scrollbar rules on unmount. */
-const removeWebScrollbarStyle = () => {
-  if (Platform.OS !== 'web') return;
-  dropStyleSheet(SCROLLBAR_STYLE_ID);
-};

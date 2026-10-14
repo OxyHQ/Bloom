@@ -43,6 +43,7 @@ import type {
 } from './types';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { ScrollArea } from '../layout/ScrollArea';
 
 const EASE_QUINT = Easing.bezier(0.22, 1, 0.36, 1);
 const EASE_QUINT_CSS = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -593,11 +594,7 @@ export function AiChatGalleryPanelBase({
       </PanelHeader>
 
       {shown === 'gallery' ? (
-        <ScrollView
-          ref={scrollRef}
-          {...dataHook('bloomAiChatScroll', 'thin')}
-          style={{ minHeight: 0, width: '100%', flex: 1 }}
-        >
+        <ScrollArea ref={scrollRef} style={{ minHeight: 0, width: '100%', flex: 1 }}>
           <View
             ref={contentRef}
             onLayout={rebaseline}
@@ -615,7 +612,7 @@ export function AiChatGalleryPanelBase({
               ))}
             </View>
           </View>
-        </ScrollView>
+        </ScrollArea>
       ) : (
         (stylePresets ?? <PanelPlaceholder label={l.stylePresets} palette={palette} />)
       )}

@@ -35,11 +35,11 @@ import {
 
 | Piece | What it is |
 | --- | --- |
-| `AgentReply` | The reply on top; under it, `identity` at the start and `actions` at the end. On web the actions appear on hover or focus; touch platforms keep them shown. |
+| `AgentReply` | The reply on top; under it, `identity` at the start and `actions` at the end. On web the actions appear on hover or focus; touch platforms keep them shown. It carries 12px of margin at each side and above; `style` is applied after, so a thread that already pads its content passes `marginHorizontal: 0`. |
 | `AgentReplyBubble` | The tinted surface (`background-tertiary`, radius `2.5xl`, 12px padding) the reply sits on. Takes `style` and `className`. |
 | `AgentReplyIdentity` | The agent's 3D avatar and name. While `thinking`, the avatar grows to 32px, plays its working animation and the name gives way to "Thinking…". Pass `onPress` to make it a button (`pressLabel` names it). |
-| `AgentReplyActions` | Helpful, unhelpful and — with `onCopy` — copy, as 22px tiles with 12px icons. Add your own after them with `AgentReplyAction` children (read aloud, retry…). |
-| `AgentReplyAction` | One tile. It draws no text, so `label` is its name. `selected` lights it. |
+| `AgentReplyActions` | Helpful, unhelpful and — with `onCopy` — copy, as a separated extra-small [`ButtonGroup`](./button-group.mdx): each action its own rounded pill. Add your own after them with `AgentReplyAction` children (read aloud, retry…). |
+| `AgentReplyAction` | One pill (a `ButtonGroupItem`). It draws no text, so `label` is its name. `selected` lights it. |
 | `AgentProfile` | The conversation's header target: one agent large, two or three overlapped, a longer team as its first three and "+N". The capsule names them ("Lumi + Atlas + Sol"). Pressing it makes every avatar in it wave, then calls `onPress`. |
 | `AgentStack` | Up to three avatars overlapped in one square, for a list row. |
 

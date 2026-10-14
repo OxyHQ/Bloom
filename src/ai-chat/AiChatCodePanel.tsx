@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiCornerUpLeftLine } from '../icons/remix/RiCornerUpLeftLine';
@@ -17,6 +17,7 @@ import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
 import type { AiChatCodePanelProps, AiChatPanelAction, AiChatPanelTab } from './types';
 import { dataHook } from '../styles/data-hook';
+import { ScrollArea } from '../layout/ScrollArea';
 
 /**
  * The header row both right-hand panels share: the `PillTabList` (blue
@@ -334,13 +335,12 @@ export function AiChatCodePanel({
             </View>
           ) : null}
           <View style={{ paddingTop: 3 }} />
-          <ScrollView
-            {...dataHook('bloomAiChatScroll', 'thin')}
+          <ScrollArea
             style={{ minHeight: 0, width: '100%', flex: 1 }}
             contentContainerStyle={{ paddingLeft: 6 }}
           >
             <CodeLines code={code} language={language} size="md" wrap />
-          </ScrollView>
+          </ScrollArea>
         </>
       ) : (
         (browser ?? <PanelPlaceholder label={l.browserPreview} palette={palette} />)

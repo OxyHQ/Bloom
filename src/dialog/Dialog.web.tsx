@@ -28,7 +28,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -37,6 +36,7 @@ import {
 } from 'react-native';
 import Animated, { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
+import { ScrollArea } from '../layout/ScrollArea.web';
 
 import { Backdrop, OverlayRoot } from '../overlay';
 import { ModalKeyboard } from '../overlay/ModalKeyboard';
@@ -621,10 +621,9 @@ function DialogPanel({
                 <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
               </DialogMorphContent>
             ) : (
-              <ScrollView
+              <ScrollArea
                 style={{ flexShrink: 1 }}
                 contentContainerStyle={{ paddingBottom: contentPadding }}
-                showsVerticalScrollIndicator={false}
                 scrollEventThrottle={16}
                 onScroll={(e) => {
                   headerController.scrollY.value = e.nativeEvent.contentOffset.y;
@@ -634,7 +633,7 @@ function DialogPanel({
                   <DialogLargeTitle controller={headerController} header={header} />
                   <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
                 </DialogMorphContent>
-              </ScrollView>
+              </ScrollArea>
             )}
           </>
         ) : scrollable === false ? (
@@ -650,13 +649,9 @@ function DialogPanel({
             {body}
           </DialogMorphContent>
         ) : (
-          <ScrollView
-            style={{ flexShrink: 1 }}
-            contentContainerStyle={{ padding: contentPadding }}
-            showsVerticalScrollIndicator={false}
-          >
+          <ScrollArea style={{ flexShrink: 1 }} contentContainerStyle={{ padding: contentPadding }}>
             <DialogMorphContent morph={morphState}>{body}</DialogMorphContent>
-          </ScrollView>
+          </ScrollArea>
         )}
       </SurfaceLevelProvider>
     </Animated.View>
@@ -916,13 +911,13 @@ function SheetSurface({
                   </DialogHeaderProvider>
                 </View>
               ) : (
-                <ScrollView
+                <ScrollArea
                   style={{ flexShrink: 1 }}
                   contentContainerStyle={{
                     paddingTop: DIALOG_NAV_BAR_HEIGHT,
                     paddingBottom: contentPadding,
                   }}
-                  showsVerticalScrollIndicator={false}
+                  scrollIndicatorInsets={{ top: DIALOG_NAV_BAR_HEIGHT }}
                   scrollEventThrottle={16}
                   onScroll={(e) => {
                     headerController.scrollY.value = e.nativeEvent.contentOffset.y;
@@ -939,7 +934,7 @@ function SheetSurface({
                       {surfaceChildren}
                     </DialogBody>
                   </DialogHeaderProvider>
-                </ScrollView>
+                </ScrollArea>
               )}
             </View>
           ) : (

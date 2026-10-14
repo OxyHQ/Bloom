@@ -7,7 +7,9 @@ describe('BottomSheet animated progress', () => {
   it('mirrors both presentation and drag position on the UI thread', () => {
     expect(source).toContain('useAnimatedReaction(');
     expect(source).toContain('Math.min(\n          opacity.value,');
-    expect(source).toContain('interpolate(translateY.value, [0, screenHeightSV.value], [1, 0]');
+    // Drag position is the sheet's own travel (its measured height), the same fade the backdrop uses.
+    expect(source).toContain('backdropFade(');
+    expect(source).toContain('sheetHeightSV.value');
     expect(source).toContain('animatedProgress.value = progress');
   });
 });

@@ -28,6 +28,7 @@ import { RadioChip } from './RadioChip';
 import { RadioHost, RadioGroupHost, RadioLabel } from './RadioHost';
 import type { RadioGroupProps, RadioProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { CHOICE_CONTROL_SIZES } from '../styles/choice-control-sizes';
 
 /**
  * The radio: the dot is `RadioIndicator`, this is the row.
@@ -45,11 +46,16 @@ const SIZE_CONFIG: Record<
   NonNullable<RadioProps['size']>,
   { indicator: number; label: TypeScaleVariant; description: TypeScaleVariant }
 > = {
-  xs: { indicator: 12, label: 'caption-1-medium', description: 'caption-1-regular' },
-  sm: { indicator: 14, label: 'body-2-medium', description: 'body-2-regular' },
-  md: { indicator: 16, label: 'body-medium', description: 'body-regular' },
-  lg: { indicator: 20, label: 'headline-medium', description: 'body-regular' },
+  xs: { indicator: CHOICE_CONTROL_SIZES.xs.mark, ...typeOf('xs') },
+  sm: { indicator: CHOICE_CONTROL_SIZES.sm.mark, ...typeOf('sm') },
+  md: { indicator: CHOICE_CONTROL_SIZES.md.mark, ...typeOf('md') },
+  lg: { indicator: CHOICE_CONTROL_SIZES.lg.mark, ...typeOf('lg') },
 };
+
+function typeOf(size: keyof typeof CHOICE_CONTROL_SIZES) {
+  const { label, description } = CHOICE_CONTROL_SIZES[size];
+  return { label, description };
+}
 
 /** The `gap-2` between the dot and its label, at every size. */
 const LABEL_GAP = 8;

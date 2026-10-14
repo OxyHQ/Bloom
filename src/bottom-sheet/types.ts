@@ -105,15 +105,6 @@ export interface BottomSheetProps {
    */
   manualActivation?: boolean;
   /**
-   * When `true`, the backdrop dims proportionally with drag distance — the
-   * overlay fades from full opacity (sheet at rest) to 30% as the sheet is
-   * pulled down 40% of the screen height. iOS Photos style. The base
-   * `backdropOpacity` still controls the resting dim level.
-   *
-   * Defaults to `false` (constant opacity during drag).
-   */
-  dynamicBackdrop?: boolean;
-  /**
    * Optional UI-thread progress mirror for coordinating content behind the
    * sheet. `0` means fully closed and `1` fully presented; dragging the sheet
    * updates every intermediate value without crossing the JS bridge.

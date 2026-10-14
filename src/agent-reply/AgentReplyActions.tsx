@@ -1,43 +1,39 @@
 import { useState } from 'react';
+import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { useMessages } from '../locale/messages';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiThumbDownLine } from '../icons/remix/RiThumbDownLine';
 import { RiThumbUpLine } from '../icons/remix/RiThumbUpLine';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
-import { useTheme } from '../theme/use-theme';
 import { AGENT_REPLY_MESSAGES } from './messages';
 import type { AgentReplyActionProps, AgentReplyActionsProps, AgentReplyVote } from './types';
 
 /**
- * One tile of an `AgentReplyActions` row: a 22px square holding a 12px icon. It draws no text,
- * so `label` is its name. `aria-pressed` and `accessibilityState` both carry `selected`, which
- * react-native-web needs to announce it.
+ * One pill of an `AgentReplyActions` row. It draws no text, so `label` is its name; `selected`
+ * lights it (a `ButtonGroupItem`'s `checked`, which sets `aria-pressed` for react-native-web).
  */
 export function AgentReplyAction({
-  icon: Icon,
+  icon,
   label,
   selected,
   disabled,
   onPress,
 }: AgentReplyActionProps) {
-  const { colors } = useTheme();
   return (
-    <StyledPressable
-      accessibilityRole="button"
+    <ButtonGroupItem
+      iconOnly
+      leadingIcon={icon}
       accessibilityLabel={label}
-      accessibilityState={selected === undefined ? undefined : { selected }}
-      aria-pressed={selected}
+      checked={selected}
       disabled={disabled}
       onPress={onPress}
-      className="h-[22px] w-[22px] items-center justify-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-      style={{ backgroundColor: colors.backgroundTertiary }}
-    >
-      <Icon width={12} height={12} fill={selected ? colors.primary : colors.textTertiary} />
-    </StyledPressable>
+    />
   );
 }
 
-/** The row under a reply: helpful, unhelpful, copy, and any `AgentReplyAction`s after them. */
+/**
+ * The row under a reply: helpful, unhelpful, copy, and any `AgentReplyAction`s after them — a
+ * separated, extra-small `ButtonGroup`, so each action is its own rounded pill.
+ */
 export function AgentReplyActions({
   vote,
   onVoteChange,
@@ -52,7 +48,7 @@ export function AgentReplyActions({
     onVoteChange?.(value);
   };
   return (
-    <StyledView className="mt-1 flex-row items-center gap-1">
+    <ButtonGroup separated size="xs">
       <AgentReplyAction
         icon={RiThumbUpLine}
         label={messages.helpfulResponse}
@@ -69,6 +65,6 @@ export function AgentReplyActions({
         <AgentReplyAction icon={RiFileCopyLine} label={messages.copyResponse} onPress={onCopy} />
       ) : null}
       {children}
-    </StyledView>
+    </ButtonGroup>
   );
 }

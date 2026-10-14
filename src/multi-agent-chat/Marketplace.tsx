@@ -31,7 +31,7 @@ import {
 import { MARKETPLACE_LOGOS } from './marketplace-logos';
 import { MarketplaceSettings } from './MarketplaceSettings';
 import { MULTI_AGENT_CHAT_MESSAGES, type MultiAgentChatMessages } from './messages';
-import { ScrollSurface } from './ScrollSurface';
+import { ScrollSurface } from '../layout/ScrollSurface';
 const cx = (...classes: (string | false | undefined)[]) => classes.filter(Boolean).join(' ');
 const focus = 'outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring';
 type View = 'discover' | 'plugin' | 'bot' | 'installed';

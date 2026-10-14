@@ -239,24 +239,6 @@ describe('BottomSheet', () => {
     });
   });
 
-  describe('dynamicBackdrop prop', () => {
-    it('renders without errors with dynamicBackdrop enabled', () => {
-      // iOS Photos-style backdrop dim — proportional to drag distance. The
-      // animated style closure must evaluate without throwing under the
-      // interpolate mock (which accepts and ignores the clamp arg).
-      const ref = createRef<BottomSheetRef>();
-      const { unmount } = renderWithTheme(
-        <BottomSheet ref={ref} dynamicBackdrop>
-          <React.Fragment>Dynamic content</React.Fragment>
-        </BottomSheet>,
-      );
-      act(() => {
-        ref.current?.present();
-      });
-      unmount();
-    });
-  });
-
   describe('handleComponent prop', () => {
     it('renders a custom handle when handleComponent is provided', () => {
       const ref = createRef<BottomSheetRef>();

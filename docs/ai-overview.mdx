@@ -15,7 +15,7 @@ Bloom draws AI interfaces. It does not run them: there is no model, transport, s
 | A whole agent chat: transcript, composer, history rail | [`AgentChat`](./agent-chat.mdx) | Assembling the parts yourself unless you need a layout it does not have |
 | A chat workspace with a sidebar, a resizable side panel and image generation | [`AiChat`](./ai-chat.mdx) (`AiChatShell`, `AiChatContainer`, `AiChatThread`) | `AgentChat`: it has no shell, panels or image frame |
 | Each agent answering in its own bubble, its avatar under it, a header naming the team | [`AgentReply`](./agent-reply.mdx) (`AgentReplyBubble`, `AgentReplyIdentity`, `AgentReplyActions`, `AgentProfile`) | A hand-built bubble row: `MultiAgentChat` is made of these |
-| A question the agent waits on | [`Questionnaire`](./questionnaire.mdx) in the composer's `question` slot, [docked above it](./composer-panel.mdx#asking-above-the-composer) | A card in the thread |
+| A question the agent waits on | [`Questionnaire`](./questionnaire.mdx) docked above the composer ([`question` slot or beside the pill](./composer-panel.mdx#asking-above-the-composer)) | A card in the thread |
 | A group of agents, a creator and a library | [`MultiAgentChat`](./multi-agent-chat.mdx) | |
 | A person-to-person messaging screen | [`chat-screen`](./chat-screen.mdx) and [`chat-list`](./chat-list.mdx) | The AI components: those are for model turns |
 | The message box | [`ComposerPill`](./composer-panel.mdx) (one line, grows) or `ComposerPanel` (two rows, large) | A `TextField`: it has no send/stop, attachments, voice or busy state |

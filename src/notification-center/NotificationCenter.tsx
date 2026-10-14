@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { ScrollView, View, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
@@ -329,7 +330,7 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
 
       <View style={{ padding: 6, backgroundColor: palette.section }}>
         <View style={{ overflow: 'hidden', borderRadius: 16, backgroundColor: palette.well }}>
-          <ScrollView style={scrollStyle} contentContainerStyle={{ padding: 8 }}>
+          <ScrollArea style={scrollStyle} contentContainerStyle={{ padding: 8 }}>
             {visible.length === 0 ? (
               <View
                 testID={testID ? `${testID}-empty` : undefined}
@@ -463,7 +464,7 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
                 })}
               </View>
             )}
-          </ScrollView>
+          </ScrollArea>
         </View>
       </View>
     </View>

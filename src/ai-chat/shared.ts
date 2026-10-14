@@ -197,9 +197,6 @@ export const AI_CHAT_WEB_CSS = `
 [data-bloom-ai-chat-zoom="out"] { cursor: zoom-out; }
 [data-bloom-ai-chat-zoom]:focus-visible { box-shadow: inset 0 0 0 2px var(--bloom-ai-chat-ring); }
 [data-bloom-ai-chat-thread] { overflow-anchor: none; }
-[data-bloom-ai-chat-scroll="thin"] { scrollbar-width: thin; }
-[data-bloom-ai-chat-scroll="none"] { scrollbar-width: none; }
-[data-bloom-ai-chat-scroll="none"]::-webkit-scrollbar { display: none; }
 [data-bloom-ai-chat-tile] [data-bloom-ai-chat-scrim] {
   opacity: 0;
   transition: opacity 200ms cubic-bezier(0, 0, 0.2, 1);
