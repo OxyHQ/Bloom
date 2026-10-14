@@ -28,6 +28,12 @@ export interface AgentCreatorProps {
   style?: StyleProp<ViewStyle>;
   /** Native hosts can supply their speech provider's catalog. Web uses local device voices by default. */
   voices?: readonly AgentVoice[];
+  /**
+   * Draw the speech preferences (voice, speed, language, notifications) under the profile. Default
+   * `true`. A host that does not keep them, because its agents have no voice, turns it off: the
+   * editor is then the profile and the look alone, and `agent.preferences` is left untouched.
+   */
+  showPreferences?: boolean;
   /** Host-owned speech preview, used on native and optionally on web. */
   onPreviewVoice?: (text: string, preferences: AgentPreferences) => void;
 }

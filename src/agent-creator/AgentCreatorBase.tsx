@@ -338,7 +338,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               </StyledView>
             </StyledView>
           </StyledView>
-          <AgentPreferencesPanel {...props} />
+          {props.showPreferences === false ? null : <AgentPreferencesPanel {...props} />}
         </ScrollSurface>
       </StyledView>
     </AgentCreatorCopyContext.Provider>

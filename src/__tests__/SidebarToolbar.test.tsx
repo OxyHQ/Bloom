@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Text, Pressable } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import { Sidebar, SidebarItem, SidebarToolbar } from '../sidebar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ContextMenu, ContextMenuTrigger } from '../context-menu';
@@ -122,4 +122,92 @@ it('composes a descriptive avatar row with native context-menu holds while ordin
   expect(onOpenChange).toHaveBeenCalledWith(true);
   expect(select).toHaveBeenCalledTimes(1);
   expect(screen.getByText('Last response')).toBeTruthy();
+});
+
+describe('leaving the search field', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  const open = (initial: string) => {
+    const onOpenChange = jest.fn();
+    const screen = render(
+      scope(
+        <SidebarToolbar
+          search={{
+            open: true,
+            onOpenChange,
+            value: initial,
+            onValueChange: () => {},
+            accessibilityLabel: 'Find conversations',
+          }}
+        />,
+      ),
+    );
+    return { screen, onOpenChange };
+  };
+
+  it('closes an empty search when the field loses focus', () => {
+    const { screen, onOpenChange } = open('');
+    fireEvent(screen.getByLabelText('Find conversations'), 'blur');
+    expect(onOpenChange).not.toHaveBeenCalled();
+    act(() => jest.advanceTimersByTime(200));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('keeps a search with text open, so the filter it applies is never hidden', () => {
+    const { screen, onOpenChange } = open('sec');
+    fireEvent(screen.getByLabelText('Find conversations'), 'blur');
+    act(() => jest.advanceTimersByTime(200));
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('the toolbar slot', () => {
+  const logo = { icon: <Text>mark</Text>, wordmark: 'Alia' };
+
+  it('sits under the header: the logo stays, and the toolbar is drawn after it', () => {
+    const screen = render(
+      scope(
+        <Sidebar
+          logo={logo}
+          showSearch={false}
+          showThemeToggle={false}
+          toolbar={<Text>tools</Text>}
+        />,
+      ),
+    );
+    expect(screen.getByText('Alia')).toBeTruthy();
+    expect(screen.getByText('tools')).toBeTruthy();
+  });
+
+  it('is what header replaces: a header drops the logo row, header={false} draws none, the toolbar stays', () => {
+    const replaced = render(
+      scope(
+        <Sidebar
+          logo={logo}
+          header={<Text>mine</Text>}
+          showSearch={false}
+          showThemeToggle={false}
+          toolbar={<Text>tools</Text>}
+        />,
+      ),
+    );
+    expect(replaced.queryByText('Alia')).toBeNull();
+    expect(replaced.getByText('mine')).toBeTruthy();
+    replaced.unmount();
+
+    const none = render(
+      scope(
+        <Sidebar
+          logo={logo}
+          header={false}
+          showSearch={false}
+          showThemeToggle={false}
+          toolbar={<Text>tools</Text>}
+        />,
+      ),
+    );
+    expect(none.queryByText('Alia')).toBeNull();
+    expect(none.getByText('tools')).toBeTruthy();
+  });
 });

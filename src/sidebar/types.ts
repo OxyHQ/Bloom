@@ -290,8 +290,16 @@ export interface SidebarUserMenuProps {
 
 export interface SidebarProps {
   className?: string;
-  /** Replaces the account/logo header. The panel still owns its fixed chrome and scroll area. */
+  /**
+   * Replaces the account/logo header row (logo, account, the collapse control). The panel still
+   * owns its fixed chrome and scroll area. `false` draws no header row at all.
+   */
   header?: ReactNode | ((state: { collapsed: boolean }) => ReactNode);
+  /**
+   * A fixed row UNDER the header, above the modes and quick search: the header (logo, account,
+   * collapse control) stays. A conversations sidebar puts its search and tools here.
+   */
+  toolbar?: ReactNode | ((state: { collapsed: boolean }) => ReactNode);
   /** Expanded panel inset, also used to measure app-owned scroll content. Defaults to the size's inset. */
   contentPadding?: number;
   /** Center the main navigation group in space above the persistent footer. */

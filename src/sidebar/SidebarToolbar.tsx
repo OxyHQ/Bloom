@@ -20,6 +20,9 @@ import { IS_WEB } from '../styles/platform';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
+/** How long after the field loses focus the empty search closes. */
+const BLUR_CLOSE_MS = 150;
+
 /** Search and fixed action slots share one row; the sidebar owns its viewport. */
 export function SidebarToolbar({ actions = [], search, style, testID }: SidebarToolbarProps) {
   const common = useCommonMessages();
@@ -74,6 +77,17 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
     search.onValueChange('');
     search.onOpenChange(false);
     requestAnimationFrame(() => trigger.current?.focus?.());
+  };
+  // Leaving the field leaves the search when nothing was typed: an empty field open on its own is
+  // only in the way. With text it stays, so the filter it applies is never hidden. The decision waits
+  // a moment so that a press on the field's own clear button (which blurs the field first) is
+  // that button's, and the value it reads is the latest one.
+  const value = useRef(search.value);
+  value.current = search.value;
+  const onBlur = () => {
+    setTimeout(() => {
+      if (value.current === '') search.onOpenChange(false);
+    }, BLUR_CLOSE_MS);
   };
   const label = search.accessibilityLabel ?? common.search;
   return (
@@ -158,6 +172,7 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
                 placeholder={search.placeholder ?? label}
                 value={search.value}
                 onChangeText={search.onValueChange}
+                onBlur={onBlur}
                 onKeyPress={(event) => {
                   if (event.nativeEvent.key === 'Escape') close();
                 }}

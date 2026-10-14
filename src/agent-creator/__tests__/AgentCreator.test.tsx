@@ -62,6 +62,18 @@ describe('controlled agent creator', () => {
       preferences: { ...agent.preferences, notifications: true },
     });
   });
+  it('draws the speech preferences by default, and not with showPreferences={false}', () => {
+    const shown = editor();
+    expect(shown.queryByLabelText('Notify when this agent finishes')).toBeTruthy();
+    shown.unmount();
+
+    const onChange = jest.fn();
+    const hidden = editor(onChange, { showPreferences: false });
+    expect(hidden.queryByLabelText('Notify when this agent finishes')).toBeNull();
+    // The profile and the look are still the editor, and the preferences are left as they were.
+    fireEvent.changeText(hidden.getByLabelText('Agent name'), 'Architect');
+    expect(onChange).toHaveBeenLastCalledWith({ ...agent, name: 'Architect' });
+  });
   it('previews a host speech provider with saved voice preferences', () => {
     const onPreviewVoice = jest.fn();
     const view = editor(jest.fn(), {

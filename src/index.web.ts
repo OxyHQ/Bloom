@@ -239,6 +239,7 @@ export * from './auth-card';
 export * from './agent-thinking';
 export * from './agent-reply';
 export * from './avatar-flight/index.web';
+export * from './conversation-sidebar/index.web';
 export * from './agent-log';
 export * from './markdown';
 export * from './agent-progress';
