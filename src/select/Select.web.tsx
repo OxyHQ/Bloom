@@ -12,7 +12,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { type ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea.web';
 
 import {
   MENU_WIDTH,
@@ -598,20 +599,19 @@ export function SelectContent<T>({
       surface="listbox"
       className={className}
     >
-      <ScrollView
+      <ScrollArea
         ref={attachList}
         {...({ dataSet: { bloomSelectList: '' } } as Record<string, unknown>)}
         style={{ maxHeight }}
         // `flex flex-col gap-1` — the rows sit 4px apart.
         contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator
       >
         {items.map((item, index) => (
           <React.Fragment key={valueExtractor(item)}>
             {renderItem(item, index, ctx.value)}
           </React.Fragment>
         ))}
-      </ScrollView>
+      </ScrollArea>
     </FloatingPanel>
   );
 }

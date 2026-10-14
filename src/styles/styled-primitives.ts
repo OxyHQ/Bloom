@@ -26,10 +26,12 @@ import type { ComponentType, ForwardRefExoticComponent, Ref, RefAttributes } fro
 import {
   Image,
   Pressable,
+  ScrollView,
   Text,
   View,
   type ImageProps,
   type PressableProps,
+  type ScrollViewProps,
   type StyleProp,
   type TextProps,
   type ViewProps,
@@ -125,4 +127,16 @@ const PressableBase: ForwardRefExoticComponent<StyledPressableBase & RefAttribut
   Pressable;
 export const StyledPressable: ComponentType<StyledPressableProps> = styled(PressableBase, {
   className: 'style',
+});
+
+/** `className` and `contentContainerClassName` for a ScrollView; `ref` as on the others. */
+export const StyledScrollView: ComponentType<
+  ScrollViewProps & {
+    className?: string;
+    contentContainerClassName?: string;
+    ref?: Ref<ScrollView>;
+  }
+> = styled(ScrollView, {
+  className: 'style',
+  contentContainerClassName: 'contentContainerStyle',
 });

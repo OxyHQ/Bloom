@@ -189,13 +189,13 @@ export {
   HeaderDockProvider,
   useHeaderDockInset,
   StickySection,
-} from './layout';
+} from './layout/index.web';
 export type {
   StickySectionProps,
   ScrollMetricsBindingOptions,
   AnimatedScrollMetricsBindingOptions,
   ScrollAreaProps,
-} from './layout';
+} from './layout/index.web';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabSize } from './fab/index.web';
 export { FrostedIconButton } from './frosted-icon-button/index.web';

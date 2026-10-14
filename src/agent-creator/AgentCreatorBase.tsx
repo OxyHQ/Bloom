@@ -21,7 +21,7 @@ import { CharacterControls } from './CharacterControls';
 import { CustomColorPicker } from './CustomColorPicker';
 import { EmotionPicker } from './EmotionPicker';
 import { GlossArt } from './GlossArt';
-import { ScrollSurface } from './ScrollSurface';
+import { ScrollSurface } from '../layout/ScrollSurface';
 import { ShapeArc } from './ShapeArc';
 import { CHARACTER_COLORS, CHARACTER_OPTIONS } from './constants';
 import {

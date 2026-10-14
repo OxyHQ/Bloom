@@ -56,6 +56,7 @@ import { AI_CHAT_MESSAGES } from './messages';
 import type { AiChatContainerProps, AiChatThreadHandle, AiChatThreadProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { ScrollArea } from '../layout/ScrollArea';
 
 /** The thread's own top padding: the gap between the header and the first turn. */
 const THREAD_PAD_TOP = 16;
@@ -810,10 +811,9 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
   );
 
   return (
-    <ScrollView
+    <ScrollArea
       ref={scrollRef}
       testID={testID}
-      {...dataHook('bloomAiChatScroll', 'thin')}
       onContentSizeChange={onContentSizeChange}
       onLayout={onLayout}
       onScroll={listening ? handleScroll : undefined}
@@ -837,7 +837,7 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
       }
     >
       {children}
-    </ScrollView>
+    </ScrollArea>
   );
 });
 

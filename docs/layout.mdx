@@ -323,3 +323,35 @@ return <AnimatedFlashList {...binding} onScroll={onScroll} data={items} renderIt
 Keep the returned layout and content-size props in either form. `ScrollArea`
 and `useScrollMetricsBinding` retain ordinary RN callbacks and do not require
 animated components.
+
+### The scrollbar
+
+`ScrollArea` is also Bloom's scroll container, so every scrolling surface can have the same bar.
+The browser's own bar is hidden on web and Bloom draws its own **over** the content: it takes no
+room and nothing moves when it appears, it is 4px (`size="md"`: 6px, each growing 2px under the
+pointer), it takes its colour from the theme (`textTertiary`, the muted-foreground pair) and it
+hides when it is not needed. Wheel, touch, keyboard and `scrollTo` stay the browser's; the bar
+mirrors the position and can be dragged, and a click on the bare track jumps there.
+
+| Prop | Type | Default | |
+| --- | --- | --- | --- |
+| `scrollbar` | `'scroll' \| 'hover' \| 'always' \| 'never'` | `'scroll'` | `scroll`: while it scrolls, for 0.9s after, and while the pointer is on the bar; `hover`: while the pointer is over the area; `always`: whenever there is something to scroll; `never`: not at all, the area still scrolls. |
+| `size` | `'sm' \| 'md'` | `'sm'` | The bar's thickness. |
+| `horizontal` | `boolean` | `false` | The bar lies along the bottom edge. |
+
+On web the area is a `View` that takes `style` and `testID` (give it the size: `flex: 1`, a height) around the scroller, which takes `className`, `contentContainerClassName` and the rest; `ref` is the `ScrollView`.
+On native the system's indicator already floats and hides itself, so `scrollbar` maps onto what
+the platform has (`never` hides it, `always` keeps it on Android), `indicatorStyle` follows the
+theme on iOS, and `size` does nothing. The thumb's size and place are written to its element on
+every scroll event, so scrolling renders nothing in React.
+
+`ScrollBar` is the same bar for a scroller that is not a plain `ScrollView` — a reanimated one, the bottom sheet's. Give it a ref to the scroller and put it beside the scroller in a box that is not `static`:
+
+```tsx
+<View style={{ flex: 1 }}>
+  <Animated.ScrollView ref={scroller} onScroll={handler}>{children}</Animated.ScrollView>
+  <ScrollBar target={scroller} />
+</View>
+```
+
+It hides the scroller's own bar and draws Bloom's over it; on native it renders nothing. `ScrollArea` is a `ScrollView` and one of these, and `scrollIndicatorInsets` (`top` / `bottom`, or `left` / `right` when `horizontal`) keeps the bar clear of chrome that floats over the scroller. Do not style `::-webkit-scrollbar` per component: that is how nine surfaces ended up with nine different bars, some hidden outright.

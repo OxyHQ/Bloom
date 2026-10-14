@@ -101,7 +101,6 @@ describe('Svg accessibility props', () => {
     ).toEqual([
       'agent-creator/CustomColorPicker.tsx',
       'agent-creator/GlossArt.tsx',
-      'agent-creator/ScrollSurface.tsx',
       'agent-creator/ShapeArc.tsx',
       'shapes/Border.tsx',
       'shapes/Fill.tsx',

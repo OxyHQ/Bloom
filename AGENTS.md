@@ -152,6 +152,10 @@ An avatar is ONE flat `AvatarCharacter` everywhere (`agent-avatar/character.ts`)
 - **No English literal in drawn/announced text:** `<family>/messages.ts` or `COMMON_MESSAGES`; props override. Gates: `i18n-literal-census` (`PENDING` equality), `message-catalogs`
 - **Hermes lacks Intl PluralRules/RelativeTimeFormat/ListFormat/DisplayNames:** use `locale/plural.ts`, `formatGregorian`; no English connector (`labelFor`).
 
+## Scrollbars
+
+**Never style `::-webkit-scrollbar` per component or hide one with `showsVerticalScrollIndicator={false}`:** `layout/ScrollArea` (a `ScrollView`) and `ScrollBar` (any scroller) draw the ONE overlay bar (`docs/layout.mdx`).
+
 ## Web fonts
 
 Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub, `FontLoader` fork, `node` export condition, registered families): `docs/fonts.mdx`.
@@ -185,7 +189,7 @@ These silently verify the PUBLISHED package instead:
 - **Metro `resolver.extraNodeModules` is a FALLBACK:** a real `node_modules/@oxy.so/bloom` wins. **`expo export`/`expo start` disagree:** the dev server indexes only `projectRoot` + `watchFolders`; put the local copy inside the consumer repo, gitignored.
 - **Metro port is baked at BUILD time** (`-PreactNativeDevServerPort`, not `RCT_METRO_PORT`); emulators resolve it via host loopback, which `adb reverse` misses. Confirm it in `gradleResValues.xml`.
 
-**Live-edit: `node scripts/mirror-into-consumer.mjs <consumer-root> --watch`** mirrors `src/` into `<consumer>/bloom-local` (peers from the consumer, exports sent to source) and links the consumer's `node_modules/@oxy.so/bloom` to it; `--restore` undoes it, and run it before trusting a typecheck.
+**Live-edit: `node scripts/mirror-into-consumer.mjs <consumer-root> --watch`** mirrors `src/` into `<consumer>/bloom-local` and links `node_modules/@oxy.so/bloom` to it; restart Metro for NEW files, `--restore` before trusting a typecheck.
 
 **Assert what you test first:** resolved version plus a marker only the local build produces. **Never write over `node_modules/<pkg>`:** bun hardlinks its global cache, mutating it for every worktree/session.
 

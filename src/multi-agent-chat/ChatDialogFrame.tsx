@@ -16,7 +16,7 @@ import { useMessages } from '../locale/messages';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
-import { ScrollSurface } from './ScrollSurface';
+import { ScrollSurface } from '../layout/ScrollSurface';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 

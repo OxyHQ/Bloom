@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ScrollArea } from '../layout/ScrollArea';
 import {
   Platform,
   Pressable,
   Text as RNText,
-  ScrollView,
+  type ScrollView,
   StyleSheet,
   TextInput,
   View,
@@ -298,7 +299,7 @@ export function createCommand(Dialog: DialogComponent) {
               </Text>
             </View>
           ) : (
-            <ScrollView
+            <ScrollArea
               ref={listRef}
               style={{ maxHeight: maxListHeight }}
               contentContainerStyle={styles.list}
@@ -331,7 +332,7 @@ export function createCommand(Dialog: DialogComponent) {
                   />
                 );
               })}
-            </ScrollView>
+            </ScrollArea>
           )}
         </View>
       </Dialog>

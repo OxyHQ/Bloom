@@ -58,7 +58,7 @@ import {
 } from './marketplace-data';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 import { WORKSPACE_MODELS } from './model-catalog';
-import { ScrollSurface } from './ScrollSurface';
+import { ScrollSurface } from '../layout/ScrollSurface';
 import { SelectedAgentPreview } from './SelectedAgentPreview';
 import type { MultiAgentChatProps } from './types';
 import { chatId, useReplies } from './use-replies';
