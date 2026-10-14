@@ -44,7 +44,8 @@ import { ConversationSidebar } from '@oxy.so/bloom/conversation-sidebar';
 | **Rows** | `conversations`: `title`, `description`, `agents` (stacked as the avatar; one agent is drawn larger) and `pinned` (a pin). `activeId` selects one; `onSelect` opens it. |
 | **Context menu** | `actions(conversation)` returns a menu per row (right-click, long press); `onAction(conversation, key)` runs it. A `destructive` action is drawn as one. No actions, no menu. |
 | **Words** | `labels`: every string defaults to Bloom's localized copy. |
-| **The panel** | every other `Sidebar` prop (`secondaryItems`, `team`, `footer`, `primaryAction`, `mobile`, `className`, `style`…) goes straight through. |
+| **Under the rows** | `after`: a loading line or ghost rows while another page arrives (with it, the "no conversations" text is not drawn). |
+| **The panel** | every other `Sidebar` prop (`items`, `tree`, `secondaryItems`, `team`, `footer`, `mobile`, `className`, `style`, `onScroll`…) goes straight through. It has no look of its own beyond `Sidebar`'s: a card, a width, a border are yours to give. |
 
 The sidebar does not filter, sort or group: the list you pass is the list it draws, so the order is yours (pinned first, newest first) and `query` only reports what was typed.
 

@@ -44,8 +44,7 @@ export function createConversationSidebar({
     actions,
     onAction,
     labels: labelOverrides,
-    className,
-    style,
+    after,
     ...sidebar
   }: ConversationSidebarProps) {
     const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
@@ -135,8 +134,6 @@ export function createConversationSidebar({
         contentPadding={7}
         showSearch={false}
         showThemeToggle={false}
-        className={`flex h-full min-h-0 w-[260px] shrink-0 flex-col rounded-3xl border border-border-button-white bg-background-secondary-default p-[7px] shadow-sidebar ${className ?? ''}`}
-        style={[{ height: '100%', width: 260, borderRadius: 24 }, style]}
         {...sidebar}
         header={
           <SidebarToolbar
@@ -210,9 +207,10 @@ export function createConversationSidebar({
                 </C.ContextMenu>
               );
             })}
-            {!conversations.length && (
+            {!conversations.length && !after && (
               <Text className="px-2 py-6 text-body-regular text-text-secondary">{l.empty}</Text>
             )}
+            {after}
           </StyledView>
         }
       />

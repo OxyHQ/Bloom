@@ -75,6 +75,9 @@ export function ChatSidebar(props: ChatSidebarProps) {
   return (
     <ConversationSidebar
       testID="multi-agent-chat-sidebar"
+      // The template's card: a 260 wide, rounded, bordered panel with its own shadow.
+      className="flex h-full min-h-0 w-[260px] shrink-0 flex-col rounded-3xl border border-border-button-white bg-background-secondary-default p-[7px] shadow-sidebar"
+      style={{ height: '100%', width: 260, borderRadius: 24 }}
       conversations={items}
       activeId={props.activeId}
       onSelect={props.onSelect}
