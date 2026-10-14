@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { CharacterAvatar } from '../../agent-avatar/CharacterAvatar';
-import { FOLD_CONFIG } from '../../agent-avatar/model';
+import type { AvatarCharacter } from '../../agent-avatar/character';
 import { StyledImage } from '../../styles/styled-primitives';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { CHARACTER_OPTIONS } from '../constants';
@@ -10,44 +10,26 @@ jest.mock('../../agent-avatar/CharacterAvatar', () => ({
   CharacterAvatar: jest.fn(() => null),
 }));
 
-it('renders all eye styles as isolated eyes on a neutral fitting body, preserving paint and selection', () => {
-  const config = {
-    ...FOLD_CONFIG,
-    face: false,
-    seed: 83,
-    character: {
-      preset: 'blue_beret',
-      bodyColor: '#23ab78',
-      selections: {
-        shape: 'heart',
-        eyes: 'todd',
-        eyewear: 'monocle',
-        accessory: 'crown',
-      },
-    },
-  };
+const character: AvatarCharacter = {
+  preset: 'blue_beret',
+  bodyColor: '#23ab78',
+  shape: 'heart',
+  eyes: 'todd',
+  eyewear: 'monocle',
+  accessory: 'crown',
+};
+
+it('renders all eye styles as isolated eyes on a plain circle, preserving paint and selection', () => {
   const choices = CHARACTER_OPTIONS.eyes.map(([id, label]) => ({
     id,
     label,
-    config: {
-      ...config,
-      character: {
-        ...config.character,
-        selections: { ...config.character.selections, eyes: id },
-      },
-    },
+    character: { ...character, eyes: id },
   }));
   const snapshot = JSON.stringify(choices),
     onSelect = jest.fn();
   const view = render(
     <BloomThemeProvider>
-      <EmotionPicker
-        config={config}
-        choices={choices}
-        value="todd"
-        onChange={jest.fn()}
-        onSelect={onSelect}
-      />
+      <EmotionPicker choices={choices} value="todd" backgroundColor="#23ab78" onSelect={onSelect} />
     </BloomThemeProvider>,
   );
   const eyes = view.UNSAFE_getAllByType(CharacterAvatar);
@@ -61,19 +43,12 @@ it('renders all eye styles as isolated eyes on a neutral fitting body, preservin
       interactive: false,
       size: 34,
     });
-    expect(eye.props.config).toMatchObject({
-      face: true,
-      seed: 83,
-      lookAt: 'center',
-      character: {
-        bodyColor: '#23ab78',
-        selections: {
-          shape: 'circle',
-          eyes: choices[index]!.id,
-          eyewear: 'none',
-          accessory: 'none',
-        },
-      },
+    expect(eye.props.character).toMatchObject({
+      bodyColor: '#23ab78',
+      shape: 'circle',
+      eyes: choices[index]!.id,
+      eyewear: 'none',
+      accessory: 'none',
     });
   }
   fireEvent.press(view.getByLabelText('Single eye'));
@@ -81,19 +56,16 @@ it('renders all eye styles as isolated eyes on a neutral fitting body, preservin
   expect(JSON.stringify(choices)).toBe(snapshot);
 });
 
-it('keeps disabled eyes noninteractive without changing the chosen recipe', () => {
-  const config = {
-    ...FOLD_CONFIG,
-    character: { preset: 'lime_frog', selections: { eyes: 'clippo' } },
-  };
+it('keeps disabled eyes noninteractive without changing the chosen character', () => {
+  const lime: AvatarCharacter = { preset: 'lime_frog', eyes: 'clippo' };
   const onSelect = jest.fn();
   const view = render(
     <BloomThemeProvider>
       <EmotionPicker
-        config={config}
-        choices={[{ id: 'clippo', label: 'Clippo', config, disabled: true }]}
+        choices={[{ id: 'clippo', label: 'Clippo', character: lime, disabled: true }]}
+        value="clippo"
+        backgroundColor="#b6d80b"
         onSelect={onSelect}
-        onChange={jest.fn()}
       />
     </BloomThemeProvider>,
   );

@@ -555,7 +555,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   <D.DropdownMenuItem
                     key={agent.id}
                     onPress={() => edit(agent)}
-                    leading={<AgentAvatar config={agent.avatar} size={20} />}
+                    leading={<AgentAvatar character={agent.avatar} size={20} />}
                     className="px-2 py-1.5 text-body-medium"
                   >
                     {formatChatMessage(messages.editAgent, agent.name)}
@@ -874,7 +874,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                     <StyledView className="inline-flex items-center justify-center px-1 shrink-0 flex-row">
                       <StyledView className="flex min-w-0 items-center gap-2 flex-row">
                         <StyledView className="size-6 shrink-0" aria-hidden>
-                          <AgentAvatar config={agent.avatar} size={24} />
+                          <AgentAvatar character={agent.avatar} size={24} />
                         </StyledView>
                         <Text
                           className={`truncate text-body-medium ${picked ? 'text-text-primary' : 'text-text-secondary'}`}

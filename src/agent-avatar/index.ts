@@ -1,30 +1,31 @@
 export { AgentAvatar } from './AgentAvatar';
-export {
-  ALIEN_CONFIG,
-  ALIEN_PRESETS,
-  ALIEN_SHAPES,
-  DEFAULT_CONFIG,
-  EYES,
-  FAMILIES,
-  FOLD_CONFIG,
-  FOLD_DIRECTIONS,
-  FOLD_MATERIALS,
-  FOLD_PRESETS,
-  FOLD_SHAPES,
-  LOOKS,
-  MASCOT_ACTIVITIES,
-  MASCOT_BUILDS,
-  MASCOT_CONFIG,
-  MASCOT_FINISHES,
-  MASCOT_OUTFITS,
-  MASCOT_PRESETS,
-  MATERIALS,
-  PRESETS,
-  SHAPES,
-  parsePreset,
-} from './model';
-export type { AvatarConfig, AvatarFamily, AvatarPreset } from './model';
+export { AgentAvatarProvider } from './AgentAvatarProvider';
 export type { AgentAvatarProps, AgentAvatarProviderProps } from './types';
 
-export { AgentAvatarProvider } from './AgentAvatarProvider';
-export type { AvatarCharacterConfig, AvatarCharacterCategory } from './config-character';
+// One model: a character. `resolveAvatarCharacter` fills it in, `parseAvatarCharacter`
+// checks saved JSON, `characterFromLegacy` migrates an avatar saved before 10.
+export {
+  avatarBodyHex,
+  avatarCharacterOf,
+  parseAvatarCharacter,
+  resolveAvatarCharacter,
+  updateAvatarCharacter,
+} from './character';
+export type { AvatarCharacter, ResolvedAvatarCharacter } from './character';
+export { characterFromLegacy } from './legacy-character';
+export {
+  AVATAR_ACCESSORIES,
+  AVATAR_COLORS,
+  AVATAR_EYES,
+  AVATAR_EYEWEAR,
+  AVATAR_PRESETS,
+  AVATAR_SHAPES,
+} from './catalog-ids';
+export type {
+  AvatarAccessoryId,
+  AvatarColorId,
+  AvatarEyesId,
+  AvatarEyewearId,
+  AvatarPresetId,
+  AvatarShapeId,
+} from './catalog-ids';

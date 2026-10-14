@@ -1,5 +1,4 @@
 import { act, renderHook } from '@testing-library/react-native';
-import { FOLD_CONFIG } from '../../agent-avatar/model';
 import type { Workspace } from '../data';
 import { useReplies } from '../use-replies';
 
@@ -11,7 +10,7 @@ function fixture() {
         name: id,
         label: id,
         description: '',
-        avatar: { ...FOLD_CONFIG },
+        avatar: { preset: 'blue_beret' },
       })),
       chats: [
         { id: 'group', title: 'Group', agentIds: ['a', 'b'], messages: [] },

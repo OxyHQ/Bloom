@@ -1,0 +1,75 @@
+---
+title: Migrating to 10.0
+description: Every breaking change between @oxy.so/bloom 9.x and 10.0.0 — an avatar is one flat character, AgentAvatar takes `character`, and the 36-field AvatarConfig is gone.
+order: 0
+---
+
+# Migrating to 10.0
+
+Bloom follows its clean-cut rule: no `@deprecated` aliases, no shims. A symbol that was removed or renamed is simply gone, and the build tells you. 10.0 changes one family, the avatars, so that `AgentAvatar`, `AgentCreator`, `MultiAgentChat` and your saved JSON all describe an avatar the same way.
+
+## The short version
+
+1. Install `@oxy.so/bloom@^10.0.0`.
+2. `<AgentAvatar config={…} />` becomes `<AgentAvatar character={…} />`.
+3. `AgentCreator` and `MultiAgentChat` take and give `agent.avatar` as an `AvatarCharacter`.
+4. Read saved avatars once with `characterFromLegacy`, keep the flat character.
+
+## One character
+
+```tsx
+// Before (9.x)
+<AgentAvatar
+  config={{ ...FOLD_CONFIG, character: { preset: 'blue_beret', selections: { accessory: 'none', color: 'orchid' } } }}
+/>
+
+// After (10.0)
+<AgentAvatar character={{ preset: 'blue_beret', accessory: 'none', color: 'orchid' }} />
+```
+
+| Field | Replaces |
+| --- | --- |
+| `preset` | `config.character.preset` |
+| `shape`, `eyes`, `eyewear`, `accessory`, `color` | `config.character.selections.*` |
+| `bodyColor` | `config.character.bodyColor`, and `hue` / `saturation` / `lightness` |
+| `eyeSpacing` | `config.character.eyeSpacing` |
+
+Without a `preset`, all four parts and a paint are required, as before. The ids are exported as `AVATAR_PRESETS`, `AVATAR_SHAPES`, `AVATAR_EYES`, `AVATAR_EYEWEAR`, `AVATAR_ACCESSORIES` and `AVATAR_COLORS`. `resolveAvatarCharacter`, `parseAvatarCharacter` and `updateAvatarCharacter` are in [Agent Avatar](/docs/agent-avatar).
+
+## Which animation plays is now data
+
+In 9.x the renderer chose between a preset's authored animation and the retargeted one by whether `selections` held anything besides `color`. Restating a part the preset already had ("`eyes: 'oval'`") or removing a hat changed the path without any visible reason, and the retargeted path had a bug that merged a six-lobed flower's eyes on tap (fixed in 9.0.1).
+
+Now a character that is **exactly its preset** (paint aside) plays the authored animation; any other character is retargeted. `resolveAvatarCharacter(character).authored` says which, and it does not depend on how the character was written.
+
+## Removed
+
+| Removed | Use instead |
+| --- | --- |
+| `AgentAvatar` / `CharacterAvatar` prop `config` | `character` |
+| `AvatarConfig`, `AvatarPreset`, `AvatarFamily`, `AvatarCharacterConfig`, `AvatarCharacterCategory` | `AvatarCharacter` |
+| `DEFAULT_CONFIG`, `FOLD_CONFIG`, `ALIEN_CONFIG`, `MASCOT_CONFIG` | a `preset`, or complete parts |
+| `PRESETS`, `FOLD_PRESETS`, `ALIEN_PRESETS`, `MASCOT_PRESETS`, `parsePreset` | `AVATAR_PRESETS`, `parseAvatarCharacter` |
+| `SHAPES`, `FOLD_SHAPES`, `ALIEN_SHAPES`, `MASCOT_*`, `FAMILIES`, `FOLD_DIRECTIONS`, `FOLD_MATERIALS`, `MATERIALS` | `AVATAR_SHAPES` |
+| `EYES` (sixteen expressions), `LOOKS` | `AVATAR_EYES` (twelve catalog eye styles) |
+| Props on the old config: `family`, `foldShape`, `mascot*`, `alienShape`, `hue`, `saturation`, `lightness`, `spread`, `grain`, `complexity`, `eyeSize`, `eyeGap`, `eyeTilt`, `gaze`, `lookAt`, `expression`, `motion`, `duration`, `seed`, `idle`, `lightEyes`, `face` | None had an effect on a catalog character. A hidden face is `eyes: 'none'`. Every avatar wanders its gaze. |
+| Alien eyes (`eyes: 'alien'`) and custom contours (`points`) in the runtime | The catalog bodies and eyes. |
+| `AgentCreatorAgent.avatar: AvatarConfig` | `AvatarCharacter` |
+| `MultiAgentChat` agents with `hue`-based avatars | `AvatarCharacter` (restored workspaces are migrated, below) |
+
+## Saved avatars
+
+```ts
+import { characterFromLegacy, parseAvatarCharacter } from '@oxy.so/bloom/agent-avatar';
+
+// Once, when reading a value saved before 10:
+const avatar = 'family' in saved ? characterFromLegacy(saved) : parseAvatarCharacter(saved);
+```
+
+`characterFromLegacy` is best effort for what the old procedural families drew: the body becomes the catalog shape of the same name, `face: false` becomes `eyes: 'none'`, and hue / saturation / lightness become the exact `bodyColor`. Alien eyes and the sixteen expressions have no catalog counterpart and become `oval`. A catalog character that was written with `selections` is flattened as it was.
+
+`MultiAgentChat`'s stored workspace does this for you: `restoreWorkspace` migrates every agent saved before 10 and the next save writes characters.
+
+## What does not change
+
+`AgentAvatarProvider`, `reactionKey`, `workingKey`, `workingCycles`, `entranceKey`, `interactive`, `paused`, `portrait`, `size`, `label`, `locale`, `className` and `style` are as they were. The hosted runtime is the same; its files are rebuilt.

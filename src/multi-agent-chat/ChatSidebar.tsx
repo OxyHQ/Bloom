@@ -13,7 +13,7 @@ import { RiLogoutBoxRLine } from '../icons/remix/RiLogoutBoxRLine';
 import { RiPaletteLine } from '../icons/remix/RiPaletteLine';
 import React from 'react';
 import { Button } from '../button';
-import { AgentAvatar, FOLD_CONFIG } from '../agent-avatar';
+import { AgentAvatar } from '../agent-avatar';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiStore2Line } from '../icons/remix/RiStore2Line';
 import { RiCustomerService2Line } from '../icons/remix/RiCustomerService2Line';
@@ -33,7 +33,7 @@ import type { Agent, Conversation } from './data';
 
 export function AgentStack({ agents, size = 40 }: { agents: Agent[]; size?: number }) {
   if (agents.length === 1)
-    return <AgentAvatar config={agents[0]!.avatar} size={size} label={agents[0]!.name} />;
+    return <AgentAvatar character={agents[0]!.avatar} size={size} label={agents[0]!.name} />;
   return (
     <StyledView
       className="relative shrink-0"
@@ -49,7 +49,7 @@ export function AgentStack({ agents, size = 40 }: { agents: Agent[]; size?: numb
             top: i === 2 ? size * 0.4 : 0,
           }}
         >
-          <AgentAvatar config={agent.avatar} size={size * 0.65} label={agent.name} />
+          <AgentAvatar character={agent.avatar} size={size * 0.65} label={agent.name} />
         </StyledView>
       ))}
     </StyledView>
@@ -134,7 +134,7 @@ export function ChatSidebar(props: ChatSidebarProps) {
                   className="rounded-[14px] p-2"
                   style={{ borderRadius: 14, padding: 8 }}
                   leading={
-                    <AgentAvatar config={{ ...FOLD_CONFIG, hue: 254, saturation: 66 }} size={32} />
+                    <AgentAvatar character={{ preset: 'blue_beret', color: 'violet' }} size={32} />
                   }
                 >
                   <StyledView className="flex min-w-0 flex-1 flex-col">

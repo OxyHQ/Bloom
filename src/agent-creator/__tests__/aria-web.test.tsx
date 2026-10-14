@@ -2,7 +2,6 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { CharacterRuntimeFixture } from './support/character-runtime-fixture';
-import { FOLD_CONFIG } from '../../agent-avatar/model';
 import { Field } from '../../field';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { AgentCreator } from '../AgentCreator.web';
@@ -36,28 +35,19 @@ function render(ui: React.ReactNode) {
 
 it('announces selected avatar colors and profile fields through real react-native-web attributes', () => {
   render(
-    <AgentCreator
-      agent={{
-        id: 'design',
-        name: 'Designer',
-        label: 'Design',
-        description: '',
-        avatar: {
-          ...FOLD_CONFIG,
-          hue: 220,
-          saturation: 85,
-          eyes: 'happy',
-          foldShape: 'diamond',
-          // Palette identity is saved explicitly by the shared engine; the
-          // historical HSL fields are not the named Blue swatch's RGB.
-          character: {
-            preset: 'blue_beret',
-            selections: { color: 'blue', shape: 'rounded_diamond' },
-          },
-        },
-      }}
-      onChange={() => {}}
-    />,
+    <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
+      <AgentCreator
+        agent={{
+          id: 'design',
+          name: 'Designer',
+          label: 'Design',
+          description: '',
+          avatar: { preset: 'blue_beret', shape: 'rounded_diamond', color: 'blue' },
+          preferences: { voice: 'local', speed: 1, language: 'en', notifications: true },
+        }}
+        onChange={() => {}}
+      />
+    </CharacterRuntimeFixture>,
   );
   expect(container.querySelector('[aria-label="Blue avatar"]')?.getAttribute('aria-pressed')).toBe(
     'true',
@@ -75,26 +65,17 @@ it('announces selected avatar colors and profile fields through real react-nativ
   );
 });
 
-it('offers eye styles without an eye-placement control, including saved spacing recipes', () => {
-  const character = { preset: 'lime_frog', eyeSpacing: 1.23 };
-  const key = JSON.stringify(character);
+it('offers eye styles without an eye-placement control, including saved spacing', () => {
   const agent = {
     id: 'todd',
     name: 'Todd',
     label: '',
     description: '',
-    avatar: { ...FOLD_CONFIG, character },
+    avatar: { preset: 'lime_frog' as const, eyes: 'todd' as const, eyeSpacing: 1.23 },
   };
   const onChange = jest.fn();
   render(
-    <CharacterRuntimeFixture
-      value={{
-        runtimeUrl: '/runtime.mjs',
-        capabilitiesByKey: new Map([
-          [key, { key, available: {}, selected: { eyes: 'todd', shape: 'todd' } }],
-        ]),
-      }}
-    >
+    <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
       <AgentCreator agent={agent} onChange={onChange} />
     </CharacterRuntimeFixture>,
   );
@@ -148,7 +129,7 @@ it('uses the requested locale for drawn and announced editor copy', () => {
         name: '',
         label: '',
         description: '',
-        avatar: { ...FOLD_CONFIG },
+        avatar: { preset: 'blue_beret' },
       }}
       onChange={() => {}}
     />,
@@ -158,32 +139,17 @@ it('uses the requested locale for drawn and announced editor copy', () => {
   expect(container.textContent).toContain('Notificaciones');
 });
 
-it('announces a custom beta body color and returns to a named color through the shared palette', () => {
-  const character = {
-    preset: 'blue_beret',
-    bodyColor: '#123456',
-    selections: { eyes: 'oval' },
-  };
+it('announces a custom body color and returns to a named color through the shared palette', () => {
   const agent = {
     id: 'beta',
     name: 'Felipe',
     label: '',
     description: '',
-    avatar: { ...FOLD_CONFIG, character },
-  };
-  const capabilities = {
-    key: JSON.stringify(character),
-    selected: { color: 'blue', eyes: 'oval' },
-    available: { 'color:blue': true },
+    avatar: { preset: 'blue_beret' as const, bodyColor: '#123456' },
   };
   const onChange = jest.fn();
   render(
-    <CharacterRuntimeFixture
-      value={{
-        runtimeUrl: '/runtime.mjs',
-        capabilitiesByKey: new Map([[capabilities.key, capabilities]]),
-      }}
-    >
+    <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
       <AgentCreator agent={agent} onChange={onChange} />
     </CharacterRuntimeFixture>,
   );
@@ -195,16 +161,12 @@ it('announces a custom beta body color and returns to a named color through the 
   expect(onChange).toHaveBeenLastCalledWith({
     ...agent,
     avatar: {
-      ...agent.avatar,
-      character: {
-        selections: {
-          shape: 'six_lobed_flower',
-          eyewear: 'none',
-          eyes: 'oval',
-          color: 'blue',
-          accessory: 'felipe_beret',
-        },
-      },
+      preset: 'blue_beret',
+      shape: 'six_lobed_flower',
+      eyes: 'oval',
+      eyewear: 'none',
+      accessory: 'felipe_beret',
+      color: 'blue',
     },
   });
 });
@@ -221,10 +183,7 @@ it.each([
     name: 'Preview',
     label: '',
     description: '',
-    avatar: {
-      ...FOLD_CONFIG,
-      character: { preset: 'lime_frog', bodyColor, selections: { eyes: 'todd' } },
-    },
+    avatar: { preset: 'lime_frog' as const, bodyColor, eyes: 'todd' as const },
   };
   const onChange = jest.fn();
   render(
@@ -234,16 +193,11 @@ it.each([
   );
   const eye = container.querySelector<HTMLElement>('[role="button"][aria-label="Clippo"]')!;
   expect(getComputedStyle(eye).backgroundColor).toBe(background);
-  expect(agent.avatar.character.bodyColor).toBe(bodyColor);
+  expect(agent.avatar.bodyColor).toBe(bodyColor);
   act(() => eye.dispatchEvent(new MouseEvent('click', { bubbles: true })));
   expect(onChange).toHaveBeenCalledWith(
     expect.objectContaining({
-      avatar: expect.objectContaining({
-        character: expect.objectContaining({
-          bodyColor,
-          selections: expect.objectContaining({ eyes: 'clippo' }),
-        }),
-      }),
+      avatar: expect.objectContaining({ bodyColor, eyes: 'clippo' }),
     }),
   );
 });

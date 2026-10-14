@@ -1,4 +1,4 @@
-import { FOLD_CONFIG, type AvatarConfig } from '../agent-avatar/model';
+import type { AvatarCharacter } from '../agent-avatar';
 import { conversationFor, type Workspace } from './data';
 
 export type MarketplaceItem = {
@@ -21,7 +21,7 @@ export type MarketplaceItem = {
     | 'appwrite'
     | 'linear'
     | 'aws';
-  avatar?: AvatarConfig;
+  avatar?: AvatarCharacter;
   apps: string[];
   skills: { name: string; description: string }[];
 };
@@ -54,7 +54,7 @@ const bot = (
   category: string,
   description: string,
   detail: string,
-  avatar: Partial<AvatarConfig>,
+  avatar: AvatarCharacter,
   skills: MarketplaceItem['skills'],
 ): MarketplaceItem => ({
   id,
@@ -65,7 +65,7 @@ const bot = (
   detail,
   developer: 'Bloom',
   website: 'https://oxy.so',
-  avatar: { ...FOLD_CONFIG, ...avatar },
+  avatar,
   apps: [],
   skills,
 });
@@ -178,7 +178,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     'Writing',
     'Find the words that make your idea click.',
     'A thoughtful writing partner for pitches, introductions, and the story behind your product. Explore a few directions, sharpen your message, and keep your own voice.',
-    { foldShape: 'petal', hue: 24, saturation: 72, eyes: 'happy', seed: 117 },
+    { shape: 'petal', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'coral' },
     [
       {
         name: 'Storytelling',
@@ -192,13 +192,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     'Productivity',
     'Good conversations deserve clear next steps.',
     'Turn pasted meeting notes into a useful recap. Pull out decisions, open questions, and action items so the next step is easy to see.',
-    {
-      foldShape: 'pocket',
-      hue: 157,
-      saturation: 39,
-      eyes: 'curious',
-      seed: 143,
-    },
+    { shape: 'pocket', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'teal' },
     [
       {
         name: 'Meeting summaries',
@@ -212,7 +206,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     'Marketing',
     'From a promising idea to launch day.',
     'Plan a focused launch with an agent that keeps the audience, message, and next milestone in view. Build a checklist and refine the details as you go.',
-    { foldShape: 'star', hue: 252, saturation: 64, eyes: 'excited', seed: 179 },
+    { shape: 'star', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'violet' },
     [
       {
         name: 'Launch planning',
@@ -226,13 +220,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     'Development',
     'A fresh pair of eyes on your next change.',
     'Talk through pasted code and review changes for clarity, edge cases, and maintainability. Get actionable feedback with enough context to understand the tradeoffs.',
-    {
-      foldShape: 'flower',
-      hue: 204,
-      saturation: 65,
-      eyes: 'thinking',
-      seed: 211,
-    },
+    { shape: 'six_lobed_flower', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'cyan' },
     [
       {
         name: 'Code feedback',
@@ -246,7 +234,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     'Design',
     'Turn a rough idea into a thoughtful interface.',
     'Explore layouts, refine visual hierarchy, and talk through the details that make an interface feel natural. Bring a brief or describe a screen to get practical design feedback.',
-    { foldShape: 'heart', hue: 329, saturation: 62, eyes: 'happy', seed: 239 },
+    { shape: 'heart', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'pink' },
     [
       {
         name: 'Interface feedback',
@@ -260,13 +248,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     'Research',
     'Find the useful signals in your research.',
     'Make sense of pasted articles, interview notes, and research findings. Compare perspectives, separate evidence from assumptions, and identify questions worth exploring next.',
-    {
-      foldShape: 'diamond',
-      hue: 46,
-      saturation: 73,
-      eyes: 'curious',
-      seed: 263,
-    },
+    { shape: 'rounded_diamond', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'yellow' },
     [
       {
         name: 'Research synthesis',
@@ -280,13 +262,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     'Analytics',
     'Make the numbers easier to understand.',
     'Walk through the data you share and turn patterns into clear explanations. Explore useful comparisons, question unexpected results, and choose how to present your findings.',
-    {
-      foldShape: 'shield',
-      hue: 185,
-      saturation: 53,
-      eyes: 'focused',
-      seed: 293,
-    },
+    { shape: 'shield', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'cyan' },
     [
       {
         name: 'Data interpretation',
@@ -300,7 +276,7 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     'Support',
     'A little clarity for every customer question.',
     'Draft helpful replies from the customer questions and product context you provide. Break troubleshooting into simple steps and keep the tone warm, clear, and consistent.',
-    { foldShape: 'cloud', hue: 112, saturation: 42, eyes: 'calm', seed: 317 },
+    { shape: 'cloud', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'lime' },
     [
       {
         name: 'Customer replies',

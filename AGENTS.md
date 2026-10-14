@@ -145,7 +145,7 @@ BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via appl
 
 ## Avatar runtime
 
-`assets/character-runtime/` is TRACKED: after editing `runtime/`, run `node scripts/build-avatar-runtime.mjs` and commit it. **Catalog retarget never writes an eye pivot offset in the PARENT's frame** (carrier = the eye's own turn; the six-lobed body rolls 180° under still eyes, the heart's eyes ride it): `docs/agent-avatar.mdx`, gate `catalog-retarget.test.ts`.
+An avatar is ONE flat `AvatarCharacter` everywhere (`agent-avatar/character.ts`); which animation plays is `resolveAvatarCharacter(c).authored`, never how it was written. `assets/character-runtime/` is TRACKED: after editing `runtime/`, run `node scripts/build-avatar-runtime.mjs` and commit it. **Catalog retarget never writes an eye pivot offset in the PARENT's frame** (carrier = the eye's own turn; the six-lobed body rolls 180° under still eyes, the heart's eyes ride it): `docs/agent-avatar.mdx`, gate `catalog-retarget.test.ts`.
 
 ## Locale (`docs/locale.mdx`)
 

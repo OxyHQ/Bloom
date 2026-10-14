@@ -1,4 +1,9 @@
-import { FOLD_CONFIG, parsePreset, type AvatarConfig } from '../agent-avatar/model';
+import {
+  AVATAR_COLORS,
+  type AvatarCharacter,
+  characterFromLegacy,
+  parseAvatarCharacter,
+} from '../agent-avatar';
 import { pickMessages } from '../locale/messages';
 import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
 
@@ -27,39 +32,31 @@ export type Workspace = {
   installedPlugins?: string[];
 };
 
+/** A saved avatar: a character, or the old `AvatarConfig` of a workspace saved before 10. */
+function readAvatar(saved: unknown): AvatarCharacter {
+  return saved && typeof saved === 'object' && 'family' in saved
+    ? characterFromLegacy(saved)
+    : parseAvatarCharacter(saved);
+}
+
 const NEW_AGENT_IDENTITIES = [
   {
     name: 'Product planner',
     avatar: {
-      ...FOLD_CONFIG,
-      foldShape: 'diamond',
-      hue: 215,
-      saturation: 70,
-      eyes: 'curious',
-      seed: 71,
+      shape: 'rounded_diamond',
+      eyes: 'oval',
+      eyewear: 'none',
+      accessory: 'none',
+      color: 'blue',
     },
   },
   {
     name: 'Cloud engineer',
-    avatar: {
-      ...FOLD_CONFIG,
-      foldShape: 'cloud',
-      hue: 18,
-      saturation: 76,
-      eyes: 'thinking',
-      seed: 82,
-    },
+    avatar: { shape: 'cloud', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'coral' },
   },
   {
     name: 'Support guide',
-    avatar: {
-      ...FOLD_CONFIG,
-      foldShape: 'heart',
-      hue: 135,
-      saturation: 48,
-      eyes: 'happy',
-      seed: 93,
-    },
+    avatar: { shape: 'heart', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'teal' },
   },
 ] satisfies Pick<Agent, 'name' | 'avatar'>[];
 
@@ -74,10 +71,13 @@ export function nextAgentIdentity(agents: Pick<Agent, 'name'>[]): Pick<Agent, 'n
     if (!names.has(name.toLowerCase()))
       return {
         name,
+        // The same body in the next paint each time round, so a long list stays tellable apart.
         avatar: {
           ...identity.avatar,
-          hue: (identity.avatar.hue + cycle * 47) % 360,
-          seed: identity.avatar.seed + cycle,
+          color:
+            AVATAR_COLORS[
+              (AVATAR_COLORS.indexOf(identity.avatar.color) + cycle) % AVATAR_COLORS.length
+            ],
         },
       };
     index++;
@@ -111,14 +111,7 @@ const ADDITIONAL_AGENTS: Agent[] = [
     name: 'Data analyst',
     label: 'Analytics',
     description: 'Turns data into clear insights, useful charts, and practical decisions.',
-    avatar: {
-      ...FOLD_CONFIG,
-      foldShape: 'pocket',
-      hue: 205,
-      saturation: 62,
-      eyes: 'focused',
-      seed: 104,
-    },
+    avatar: { shape: 'pocket', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'cyan' },
   },
 ];
 
@@ -129,41 +122,21 @@ export const INITIAL_AGENTS: Agent[] = [
     label: 'Design',
     description:
       'Thoughtful layouts, clear hierarchy, and a little personality for your next landing page.',
-    avatar: {
-      ...FOLD_CONFIG,
-      hue: 157,
-      saturation: 37,
-      eyes: 'curious',
-      seed: 12,
-    },
+    avatar: { shape: 'slender', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'teal' },
   },
   {
     id: 'content',
     name: 'content reviewer',
     label: 'Writing',
     description: 'Makes your writing clear, concise, and unmistakably yours.',
-    avatar: {
-      ...FOLD_CONFIG,
-      foldShape: 'pocket',
-      hue: 25,
-      saturation: 60,
-      eyes: 'thinking',
-      seed: 29,
-    },
+    avatar: { shape: 'pocket', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'coral' },
   },
   {
     id: 'marketing',
     name: 'marketing bot',
     label: 'Marketing',
     description: 'Turns a good idea into a campaign people remember.',
-    avatar: {
-      ...FOLD_CONFIG,
-      foldShape: 'star',
-      hue: 179,
-      saturation: 47,
-      eyes: 'happy',
-      seed: 37,
-    },
+    avatar: { shape: 'star', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'teal' },
   },
   {
     id: 'seo',
@@ -171,12 +144,11 @@ export const INITIAL_AGENTS: Agent[] = [
     label: 'SEO',
     description: 'Helps the right people discover your work through search.',
     avatar: {
-      ...FOLD_CONFIG,
-      foldShape: 'flower',
-      hue: 253,
-      saturation: 65,
-      eyes: 'neutral',
-      seed: 42,
+      shape: 'six_lobed_flower',
+      eyes: 'oval',
+      eyewear: 'none',
+      accessory: 'none',
+      color: 'violet',
     },
   },
   {
@@ -184,14 +156,7 @@ export const INITIAL_AGENTS: Agent[] = [
     name: 'research assistant',
     label: 'Research',
     description: 'Connects the dots, asks better questions, and brings the evidence.',
-    avatar: {
-      ...FOLD_CONFIG,
-      foldShape: 'petal',
-      hue: 43,
-      saturation: 80,
-      eyes: 'thinking',
-      seed: 53,
-    },
+    avatar: { shape: 'petal', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'yellow' },
   },
   {
     id: 'security',
@@ -199,15 +164,7 @@ export const INITIAL_AGENTS: Agent[] = [
     label: 'Security',
     description:
       'A careful second pair of eyes for permissions, privacy, and application security.',
-    avatar: {
-      ...FOLD_CONFIG,
-      foldShape: 'shield',
-      hue: 181,
-      saturation: 49,
-      eyes: 'neutral',
-      grain: 8,
-      seed: 64,
-    },
+    avatar: { shape: 'shield', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'teal' },
   },
   ...ADDITIONAL_AGENTS,
 ];
@@ -330,11 +287,7 @@ export function restoreWorkspace(raw: string): Workspace | null {
         label: a.label.slice(0, 60),
         description: a.description.slice(0, 500),
         ...(a.preferences ? { preferences: normalizeAgentPreferences(a.preferences) } : {}),
-        avatar: {
-          ...parsePreset({ name: a.name, config: a.avatar }).config,
-          family: 'fold',
-          lookAt: 'wander',
-        },
+        avatar: readAvatar(a.avatar),
       };
     });
     const renamed = new Set<string>();
@@ -450,7 +403,7 @@ export function restoreWorkspace(raw: string): Workspace | null {
         agent.description !== original.description ||
         agent.preferences ||
         Object.entries(original.avatar).some(
-          ([key, value]) => agent.avatar[key as keyof AvatarConfig] !== value,
+          ([key, value]) => agent.avatar[key as keyof AvatarCharacter] !== value,
         );
       const samples = sampleMessages(agent.id);
       const untouched =

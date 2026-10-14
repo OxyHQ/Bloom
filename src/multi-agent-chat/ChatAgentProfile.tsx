@@ -78,7 +78,7 @@ export function ChatAgentProfile({
                 top: index === 2 ? 20 : 0,
               }}
             >
-              <AgentAvatar config={agent.avatar} size={size} />
+              <AgentAvatar character={agent.avatar} size={size} />
             </StyledView>
           );
         })}

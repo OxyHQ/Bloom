@@ -4,9 +4,9 @@ import { AgentAvatar } from '../AgentAvatar';
 import { AgentAvatarProvider } from '../AgentAvatarProvider';
 import { CharacterAvatar } from '../CharacterAvatar';
 import { CharacterCapabilitiesContext, CharacterRuntimeContext } from '../context';
-import * as recipes from '../legacy-recipe';
-import { createConfigForShape } from '../character-shapes';
-import { FOLD_CONFIG } from '../model';
+import * as characters from '../character';
+
+const BERET: characters.AvatarCharacter = { preset: 'blue_beret' };
 
 // These tests measure React commits and geometry generation, not native engine performance.
 jest.mock('../character-webview', () => ({
@@ -21,7 +21,7 @@ describe('avatar React rendering isolation', () => {
   });
 
   it('updates the editor catalog without committing the unchanged avatar gallery', () => {
-    const geometry = jest.spyOn(recipes, 'legacyRecipe');
+    const resolved = jest.spyOn(characters, 'resolveAvatarCharacter');
     const avatarCommits = jest.fn();
     const catalogRenders = jest.fn();
     let report: NonNullable<
@@ -45,13 +45,13 @@ describe('avatar React rendering isolation', () => {
           <EditorCatalog />
           <Profiler id="gallery" onRender={avatarCommits}>
             {Array.from({ length: 8 }, (_, i) => (
-              <AgentAvatar key={i} config={FOLD_CONFIG} paused label={`Agent ${i}`} />
+              <AgentAvatar key={i} character={BERET} paused label={`Agent ${i}`} />
             ))}
           </Profiler>
         </AgentAvatarProvider>,
       );
     });
-    expect(geometry).toHaveBeenCalledTimes(8);
+    expect(resolved).toHaveBeenCalledTimes(8);
     const stableRuntime = runtime!;
     const initialCommits = avatarCommits.mock.calls.length;
     for (let i = 0; i < 10; i++) {
@@ -66,16 +66,15 @@ describe('avatar React rendering isolation', () => {
     expect(catalogRenders).toHaveBeenLastCalledWith(10);
     expect(runtime!).toBe(stableRuntime);
     expect(avatarCommits).toHaveBeenCalledTimes(initialCommits);
-    expect(geometry).toHaveBeenCalledTimes(8);
+    expect(resolved).toHaveBeenCalledTimes(8);
   });
 
-  it('reuses the contour across work, reaction and pause changes, but recalculates for a new recipe', () => {
-    const geometry = jest.spyOn(recipes, 'legacyRecipe');
-    const config = { ...FOLD_CONFIG, foldShape: 'cloud' as const };
-    const view = (workingKey: number, reactionKey: number, paused = false, avatar = config) => (
+  it('resolves the character once across work, reaction and pause changes, again for a new one', () => {
+    const resolved = jest.spyOn(characters, 'resolveAvatarCharacter');
+    const view = (workingKey: number, reactionKey: number, paused = false, avatar = BERET) => (
       <AgentAvatarProvider runtimeUrl="/runtime.mjs">
         <CharacterAvatar
-          config={avatar}
+          character={avatar}
           workingKey={workingKey}
           reactionKey={reactionKey}
           paused={paused}
@@ -85,34 +84,27 @@ describe('avatar React rendering isolation', () => {
     act(() => {
       renderer = create(view(0, 0));
     });
-    expect(geometry).toHaveBeenCalledTimes(1);
+    expect(resolved).toHaveBeenCalledTimes(1);
     act(() => renderer.update(view(1, 0)));
     act(() => renderer.update(view(1, 1)));
     act(() => renderer.update(view(1, 1, true)));
-    expect(geometry).toHaveBeenCalledTimes(1);
-    act(() => renderer.update(view(1, 1, true, { ...config, foldDepth: 60 })));
-    expect(geometry).toHaveBeenCalledTimes(2);
+    expect(resolved).toHaveBeenCalledTimes(1);
+    act(() => renderer.update(view(1, 1, true, { ...BERET, color: 'coral' })));
+    expect(resolved).toHaveBeenCalledTimes(2);
   });
-  it('keeps the same mounted renderer when crossing authored and migrated bodies', () => {
-    const original = {
-      ...FOLD_CONFIG,
-      character: {
-        preset: 'blue_beret',
-        selections: { color: 'blue', eyes: 'todd' },
-      },
-    };
-    const view = (shape: string) => (
+  it('keeps the same mounted renderer when crossing the authored preset and edited bodies', () => {
+    const view = (character: characters.AvatarCharacter) => (
       <AgentAvatarProvider runtimeUrl="/runtime.mjs">
-        <AgentAvatar config={createConfigForShape(original, shape)} />
+        <AgentAvatar character={character} />
       </AgentAvatarProvider>
     );
     act(() => {
-      renderer = create(view('todd'));
+      renderer = create(view(BERET));
     });
     const instance = renderer.root.findByType(CharacterAvatar);
-    act(() => renderer.update(view('cloud')));
+    act(() => renderer.update(view({ ...BERET, shape: 'cloud' })));
     expect(renderer.root.findByType(CharacterAvatar)).toBe(instance);
-    act(() => renderer.update(view('circle')));
+    act(() => renderer.update(view({ ...BERET, shape: 'circle', accessory: 'none' })));
     expect(renderer.root.findByType(CharacterAvatar)).toBe(instance);
   });
 });

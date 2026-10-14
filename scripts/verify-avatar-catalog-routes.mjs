@@ -22,9 +22,8 @@ try {
     const { resolveCompleteEditorRecipe } = await import('/runtime/avatar/recipe.ts');
     const { createCatalogAssetResolver } = await import('/runtime/avatar/catalog-assets.ts');
     const { createCatalogMotion } = await import('/runtime/avatar/catalog-motion-factory.ts');
-    const { CHARACTER_SHAPES, createConfigForShape } = await import(
-      '/src/agent-avatar/character-shapes.ts'
-    );
+    const { CHARACTER_SHAPES } = await import('/src/agent-avatar/character-shapes.ts');
+    const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
     const presets = [
       'clippo',
       'blue_beret',
@@ -40,15 +39,14 @@ try {
     const results = [];
     for (let i = 0; i < 48; i++) {
       const preset = presets[Math.floor(i / 2) % presets.length];
-      const cfg = { character: { preset } };
-      const config =
+      const character =
         i % 2
-          ? createConfigForShape(
-              cfg,
-              CHARACTER_SHAPES[Math.floor(i / 2) % CHARACTER_SHAPES.length][0],
-            )
-          : cfg;
-      const recipe = resolveCompleteEditorRecipe({ config, reduced: false });
+          ? { preset, shape: CHARACTER_SHAPES[Math.floor(i / 2) % CHARACTER_SHAPES.length][0] }
+          : { preset };
+      const recipe = resolveCompleteEditorRecipe({
+        character: resolveAvatarCharacter(character),
+        reduced: false,
+      });
       if (!recipe.catalog) continue;
       for (const detail of ['low', 'high'])
         try {

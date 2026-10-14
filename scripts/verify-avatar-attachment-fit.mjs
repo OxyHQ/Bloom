@@ -22,6 +22,10 @@ try {
   await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__fit.html`);
   await page.evaluate(async () => {
     const runtime = await import('/bloom-character/runtime.mjs');
+    const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
+    const { characterFromLegacy } = await import('/src/agent-avatar/legacy-character.ts');
+    // These gates still write a character as `{ preset, selections }`; the renderer takes it resolved.
+    const resolved = (nested) => resolveAvatarCharacter(characterFromLegacy({ character: nested }));
     const { authoredAssemblyRecords, authoredEyeRecords, hasAuthoredLabel } = await import(
       '/bloom-character/authored-parts.mjs'
     );
@@ -92,7 +96,7 @@ try {
       canvas.style.cssText = 'width:240px;height:240px';
       document.body.append(canvas);
       const props = {
-        config: { character },
+        character: resolved(character),
         paused: true,
         interactive: true,
         workingKey: 0,

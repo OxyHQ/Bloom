@@ -76,7 +76,7 @@ function PreviewAvatar({
       style={[{ position: 'absolute', left: 0, top: 0, width: size, height: size }, animated]}
     >
       <AvatarSnapshotObserver.Provider value={observeSnapshot}>
-        <AgentAvatar config={agent.avatar} size={size} />
+        <AgentAvatar character={agent.avatar} size={size} />
       </AvatarSnapshotObserver.Provider>
     </AnimatedView>
   );

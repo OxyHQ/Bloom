@@ -1,38 +1,28 @@
-import { useContext, useRef } from 'react';
-import { CharacterRuntimeContext, CharacterCapabilitiesContext } from '../agent-avatar/context';
-import type {
-  AvatarCharacterCategory,
-  AvatarCharacterConfig,
-} from '../agent-avatar/config-character';
+import type { AvatarAccessoryId, AvatarEyewearId } from '../agent-avatar/catalog-ids';
+import {
+  type AvatarCharacter,
+  resolveAvatarCharacter,
+  updateAvatarCharacter,
+} from '../agent-avatar/character';
 import { StyledView } from '../styles/styled-primitives';
 import { Text } from '../typography';
-import { materializeCharacter } from '../agent-avatar/character-shapes';
-import { FOLD_CONFIG, type AvatarConfig } from '../agent-avatar/model';
 import {
   CHARACTER_OPTIONS,
   CHARACTER_PRESETS,
-  createCharacterPreset,
-  characterPresetChoice,
+  CHARACTER_TEMPLATES,
+  characterTemplateChoice,
 } from './constants';
 import { useAgentCreatorBindings, useAgentCreatorMessages } from './context';
 
-/** Preset and accessory controls share Bloom Select; shapes, eyes and colors use the existing pickers. */
+/** Template and accessory controls share Bloom Select; shapes, eyes and colors use the pickers. */
 export function CharacterControls({
   character,
-  config,
-  capabilitiesKey,
-  selected,
   onChange,
 }: {
-  character?: AvatarCharacterConfig;
-  config?: AvatarConfig;
-  capabilitiesKey?: string;
-  selected?: Readonly<Record<string, string>>;
-  onChange: (character: AvatarCharacterConfig | undefined) => void;
+  character: AvatarCharacter;
+  onChange: (character: AvatarCharacter) => void;
 }) {
   const messages = useAgentCreatorMessages();
-  const { runtimeUrl } = useContext(CharacterRuntimeContext);
-  const { capabilities, capabilitiesByKey } = useContext(CharacterCapabilitiesContext);
   const {
     Select,
     SelectTrigger,
@@ -42,21 +32,8 @@ export function CharacterControls({
     SelectItem,
     SelectItemText,
   } = useAgentCreatorBindings();
-  const key = capabilitiesKey ?? JSON.stringify(character);
-  const current =
-    capabilitiesByKey?.get(key) ??
-    (character && capabilities?.key === key ? capabilities : undefined);
-  const retained = useRef<{
-    preset?: string;
-    selected: Readonly<Record<string, string>>;
-  }>({ selected: {} });
-  if (retained.current.preset !== character?.preset)
-    retained.current = { preset: character?.preset, selected: {} };
-  if (current) retained.current.selected = current.selected;
-  const resolved = {
-    selected: selected ?? current?.selected ?? retained.current.selected,
-  };
-  if (!runtimeUrl) return null;
+  const choice = characterTemplateChoice(character);
+  const resolved = resolveAvatarCharacter(character);
   const row = (
     label: string,
     value: string,
@@ -89,36 +66,19 @@ export function CharacterControls({
       </StyledView>
     </StyledView>
   );
-  const presets = [
-    { id: 'bloom', title: messages.proceduralAvatar },
-    ...(character && !character.preset
-      ? [
-          {
-            id: 'custom',
-            title: messages.characterOption('preset', 'custom', 'Custom'),
-          },
-        ]
+  const templates = [
+    ...(choice === 'custom'
+      ? [{ id: 'custom', title: messages.characterOption('preset', 'custom', 'Custom') }]
       : []),
     ...CHARACTER_PRESETS.map((item) => ({
       id: item.id,
       title: messages.characterOption('preset', item.id, item.title),
     })),
   ];
-  if (character?.preset && !presets.some((item) => item.id === character.preset))
-    presets.push({
-      id: character.preset,
-      title:
-        character.preset === 'legacy'
-          ? messages.proceduralAvatar
-          : messages.characterOption('preset', character.preset, character.preset),
-    });
-  const labels: Record<AvatarCharacterCategory, string> = {
-    shape: messages.shape,
-    color: messages.color,
-    eyes: messages.betaEyes,
+  const parts = {
     eyewear: messages.eyewear,
     accessory: messages.accessory,
-  };
+  } as const;
   return (
     <StyledView
       className="mt-[15px] flex flex-col gap-2 px-3"
@@ -126,39 +86,38 @@ export function CharacterControls({
     >
       {row(
         messages.avatarStyle,
-        character ? characterPresetChoice(character) : 'bloom',
-        presets,
+        choice,
+        templates,
         (id) => {
-          if (id !== 'custom') onChange(id === 'bloom' ? undefined : createCharacterPreset(id));
+          const template = CHARACTER_TEMPLATES[id];
+          if (template) onChange(template);
         },
         messages.betaPreset,
       )}
-      {character &&
-        (['eyewear', 'accessory'] as AvatarCharacterCategory[]).map((category) =>
-          row(
-            labels[category],
-            character.selections?.[category] ?? resolved?.selected[category] ?? 'none',
-            (category === 'accessory'
-              ? [['none', messages.off] as const, ...CHARACTER_OPTIONS[category]]
-              : CHARACTER_OPTIONS[category]
-            ).map(([id, title]) => ({
-              id,
-              title: messages.characterOption(category, id, title),
-              disabled: false,
-            })),
-            (id) => {
-              const materialized = materializeCharacter(
-                config ?? { ...FOLD_CONFIG, character },
-                resolved.selected,
-              );
-              onChange({
-                ...materialized,
-                selections: { ...materialized.selections, [category]: id },
-              });
-            },
-            labels[category],
-          ),
-        )}
+      {(['eyewear', 'accessory'] as const).map((part) =>
+        row(
+          parts[part],
+          resolved[part],
+          (part === 'accessory'
+            ? [['none', messages.off] as const, ...CHARACTER_OPTIONS[part]]
+            : CHARACTER_OPTIONS[part]
+          ).map(([id, title]) => ({
+            id,
+            title: messages.characterOption(part, id, title),
+            disabled: false,
+          })),
+          (id) =>
+            onChange(
+              updateAvatarCharacter(
+                character,
+                part === 'eyewear'
+                  ? { eyewear: id as AvatarEyewearId }
+                  : { accessory: id as AvatarAccessoryId },
+              ),
+            ),
+          parts[part],
+        ),
+      )}
     </StyledView>
   );
 }

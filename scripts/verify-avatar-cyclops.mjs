@@ -3,17 +3,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
-import { execFileSync } from 'node:child_process';
-const migrated = JSON.parse(
-  execFileSync(
-    'bun',
-    [
-      '-e',
-      "import {FOLD_CONFIG} from './src/agent-avatar/model'; import {legacyRecipe} from './src/agent-avatar/legacy-recipe'; const config={...FOLD_CONFIG,foldShape:'cloud',character:{preset:'bloom',selections:{eyes:'cyclops'}}}; console.log(JSON.stringify({config,legacy:legacyRecipe(config)}));",
-    ],
-    { cwd: new URL('..', import.meta.url), encoding: 'utf8' },
-  ),
-);
 const { chromium } = createRequire(import.meta.url)(
   process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
 );
@@ -34,8 +23,12 @@ try {
     }),
   );
   await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__cyclops-gate.html`);
-  await page.evaluate(async (migrated) => {
+  await page.evaluate(async () => {
     const runtime = await import('/bloom-character/runtime.mjs');
+    const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
+    const { characterFromLegacy } = await import('/src/agent-avatar/legacy-character.ts');
+    // These gates still write a character as `{ preset, selections }`; the renderer takes it resolved.
+    const resolved = (nested) => resolveAvatarCharacter(characterFromLegacy({ character: nested }));
     const characters = [
       {
         preset: 'clippo',
@@ -56,7 +49,6 @@ try {
         preset: 'lime_frog',
         selections: { shape: 'rounded_head_two_ears', eyes: 'cyclops' },
       },
-      migrated.config.character,
     ];
     window.gate = {
       runtime,
@@ -72,7 +64,7 @@ try {
       document.body.append(canvas);
       gate.canvases.push(canvas);
       const props = {
-        ...(i === characters.length - 1 ? migrated : { config: { character } }),
+        character: resolved(character),
         paused: true,
         interactive: true,
         workingKey: 0,
@@ -119,7 +111,7 @@ try {
         }
         return { painted, white, red, blue, teal, dark, hash };
       });
-  }, migrated);
+  });
   await page.waitForFunction(
     () =>
       gate.errors.length ||
@@ -200,7 +192,7 @@ try {
     JSON.stringify({ initial, motion, work, browserErrors }, null, 2),
   );
   console.log(
-    'PASS single eye on original and migrated shapes, colored iris, React/Work motion, one context and full disposal',
+    'PASS single eye on every body, colored iris, React/Work motion, one context and full disposal',
   );
 } finally {
   await browser.close();

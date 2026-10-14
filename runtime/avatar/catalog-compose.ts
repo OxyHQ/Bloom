@@ -1,8 +1,6 @@
-import { constructAlienEye, type AlienFace } from './catalog-alien';
 import { integrateCatalogTuft } from './catalog-tuft';
 import { catalogLayout, fitCatalogFace } from './catalog-layout';
 import { constructCyclops } from './catalog-cyclops';
-import { deformCatalogContour } from './catalog-contour';
 import { fitClippoEyes } from './catalog-clippo';
 import { catalogFurMask } from './catalog-fur';
 import { Matrix4 } from 'three';
@@ -24,9 +22,7 @@ export type CatalogRecipe = {
   eyes: string;
   eyewear: string;
   accessory: string;
-  points?: number[][];
   eyeSpacing?: number;
-  alienFace?: AlienFace;
   /** Editor thumbnails render the actual eye meshes, without a body behind them. */
   previewPart?: 'eyes';
 };
@@ -54,19 +50,14 @@ export async function composeCatalog(
 ): Promise<ComposedCatalog> {
   const [bodySource, eyes, eyewear, accessory, cyclopsSource] = await Promise.all([
     loadCatalogDonor('body', recipe.shape, detail),
-    loadCatalogDonor(
-      'eyes',
-      recipe.eyes === 'none' || recipe.eyes === 'alien' ? 'oval' : recipe.eyes,
-      detail,
-    ),
+    loadCatalogDonor('eyes', recipe.eyes === 'none' ? 'oval' : recipe.eyes, detail),
     recipe.eyewear === 'none' ? null : loadCatalogDonor('eyewear', recipe.eyewear, detail),
     recipe.accessory === 'none' ? null : loadCatalogDonor('accessory', recipe.accessory, detail),
     recipe.eyes === 'cyclops' ? loadCatalogDonor('eyes', 'todd', detail) : null,
   ]);
-  const contour = recipe.points ? deformCatalogContour(bodySource, recipe.points) : bodySource;
   const body = {
-    ...contour,
-    face: fitCatalogFace(contour, recipe.shape, recipe.eyes === 'cyclops'),
+    ...bodySource,
+    face: fitCatalogFace(bodySource, recipe.shape, recipe.eyes === 'cyclops'),
   };
   if (recipe.eyeSpacing !== undefined && recipe.eyeSpacing !== 1) {
     if (!Number.isFinite(recipe.eyeSpacing) || recipe.eyeSpacing < 0.5 || recipe.eyeSpacing > 1.5)
@@ -112,7 +103,7 @@ export async function composeCatalog(
       if (donor === body && recipe.eyeSpacing !== undefined && recipe.eyeSpacing !== 1) {
         const side =
           (placement.part.bounds.min[0]! + placement.part.bounds.max[0]!) / 2 < 0 ? 0 : 1;
-        const center = contour.face.centers[side]!;
+        const center = bodySource.face.centers[side]!;
         placement.translate = placement.translate.map(
           (v, k) => v + body.face.centers[side]![k]! - center[k]!,
         );
@@ -166,7 +157,7 @@ export async function composeCatalog(
       body,
       eyes,
       'eyes',
-      recipe.eyes === 'none' || recipe.eyes === 'alien' ? 'oval' : recipe.eyes,
+      recipe.eyes === 'none' ? 'oval' : recipe.eyes,
       {
         faceLayout: body.face,
       },
@@ -176,20 +167,6 @@ export async function composeCatalog(
         fittingEyes.push(transformCatalogPiece(placement.part, placement));
       } else {
         add(eyes, placement);
-        if (recipe.eyes === 'alien') {
-          if (!recipe.alienFace) throw Error('Missing Alien face settings');
-          const binding = bindings[bindings.length - 1]!;
-          const fitted = binding.part;
-          binding.part = constructAlienEye(
-            body,
-            fitted,
-            recipe.alienFace,
-            fitted.pivot[0]! < 0 ? -1 : 1,
-          );
-          fitted.geometry.dispose();
-          binding.preserveMaterial = true;
-          binding.preserveFields = ['colorRoughness', 'signatureDeform'];
-        }
       }
     }
   }

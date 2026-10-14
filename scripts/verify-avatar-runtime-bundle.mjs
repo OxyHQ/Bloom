@@ -37,6 +37,10 @@ try {
     if (typeof runtime.createAvatar !== 'function')
       throw Error('Public createAvatar export missing');
     window.diag = () => globalThis[Symbol.for('bloom.character.runtimes')].get(url).diagnostics();
+    const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
+    const { characterFromLegacy } = await import('/src/agent-avatar/legacy-character.ts');
+    // These gates still write a character as `{ preset, selections }`; the renderer takes it resolved.
+    const resolved = (nested) => resolveAvatarCharacter(characterFromLegacy({ character: nested }));
     window.canvases = [];
     window.controllers = [];
     window.props = [];
@@ -58,7 +62,7 @@ try {
         document.body.append(canvas);
         canvases[i] = canvas;
         const value = {
-          config: { character, face: true, motion: 1, lookAt: 'center' },
+          character: resolved(character),
           reduced: false,
           reactionKey: 0,
           workingKey: 0,

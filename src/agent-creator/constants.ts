@@ -1,4 +1,8 @@
-import type { AvatarCharacterConfig } from '../agent-avatar/config-character';
+import {
+  type AvatarCharacter,
+  avatarCharacterOf,
+  resolveAvatarCharacter,
+} from '../agent-avatar/character';
 import { NATIVE_CHARACTER_SHAPES } from '../agent-avatar/character-shapes';
 import type { AgentLanguage, AgentPreferences } from './types';
 export const AGENT_LANGUAGES = [
@@ -18,17 +22,6 @@ export const DEFAULT_AGENT_PREFERENCES: AgentPreferences = {
   language: 'auto',
   notifications: true,
 };
-export const AVATAR_COLORS = [
-  [220, 85, 'Blue', '#437EF7', '#004DE9'],
-  [181, 49, 'Teal', '#27b5a2', '#00957c'],
-  [259, 75, 'Violet', '#8554F6', '#3E00CD'],
-  [321, 74, 'Pink', '#E34798', '#D3006D'],
-  [0, 78, 'Red', '#E74241', '#CF0100'],
-  [31, 89, 'Orange', '#f47327', '#d83f00'],
-  [193, 78, 'Cyan', '#1bb4ce', '#0093ad'],
-  [78, 72, 'Lime', '#88c81c', '#6aa400'],
-  [145, 51, 'Green', '#36c15c', '#009f13'],
-] as const;
 export const EMOTION_NAMES = {
   neutral: 'Neutral',
   happy: 'Happy',
@@ -120,63 +113,48 @@ export const CHARACTER_OPTIONS = {
 
 export { CHARACTER_COLORS } from '../agent-avatar/character-colors';
 
-/** Creation choices only: saved template references retain their historical defaults. */
-export function createCharacterPreset(preset: string): AvatarCharacterConfig {
-  if (preset === 'blue_beret')
-    return {
-      selections: {
-        eyes: 'sleepy_lids',
-        eyewear: 'none',
-        accessory: 'felipe_beret',
-        shape: 'six_lobed_flower',
-        color: 'blue',
-      },
-      bodyColor: '#ff9547',
-    };
-  if (preset === 'lime_frog')
-    return {
-      preset,
-      selections: {
-        eyes: 'clippo',
-        eyewear: 'none',
-        accessory: 'bow',
-        color: 'coral',
-      },
-    };
-  if (preset === 'alfred')
-    return {
-      preset,
-      selections: {
-        eyes: 'cyclops',
-        eyewear: 'monocle',
-        accessory: 'bow',
-        color: 'cyan',
-      },
-    };
-  if (preset === 'coral_monocle')
-    return {
-      preset,
-      selections: {
-        eyes: 'clippo',
-        eyewear: 'round_sunglasses',
-        accessory: 'none',
-      },
-    };
-  return { preset };
-}
+/**
+ * What choosing a template in the creator starts from: a complete character each. They are
+ * creation choices only (Felipe starts orange with sleepy eyes, where the saved `blue_beret`
+ * preset is blue with oval ones), so the character that results carries no hidden template id.
+ */
+export const CHARACTER_TEMPLATES: Record<string, AvatarCharacter> = {
+  clippo: { preset: 'clippo' },
+  blue_beret: {
+    shape: 'six_lobed_flower',
+    eyes: 'sleepy_lids',
+    eyewear: 'none',
+    accessory: 'felipe_beret',
+    bodyColor: '#ff9547',
+  },
+  alfred: {
+    preset: 'alfred',
+    eyes: 'cyclops',
+    eyewear: 'monocle',
+    accessory: 'bow',
+    color: 'cyan',
+  },
+  purple_heart: { preset: 'purple_heart' },
+  lime_frog: {
+    preset: 'lime_frog',
+    eyes: 'clippo',
+    eyewear: 'none',
+    accessory: 'bow',
+    color: 'coral',
+  },
+  coral_monocle: { preset: 'coral_monocle', eyes: 'clippo', eyewear: 'round_sunglasses' },
+  gus: { preset: 'gus' },
+  blue_spectacles: { preset: 'blue_spectacles' },
+  lime_headphones: { preset: 'lime_headphones' },
+};
 
-/** Match a complete creation template without persisting a hidden template ID. */
-export function characterPresetChoice(character: AvatarCharacterConfig): string {
-  if (character.preset) return character.preset;
-  const template = createCharacterPreset('blue_beret');
-  const keys = Object.keys(character).sort();
-  const selections = character.selections ?? {};
-  return keys.join(',') === Object.keys(template).sort().join(',') &&
-    character.bodyColor === template.bodyColor &&
-    Object.keys(selections).length === Object.keys(template.selections!).length &&
-    Object.entries(template.selections!).every(
-      ([key, value]) => selections[key as keyof typeof selections] === value,
-    )
-    ? 'blue_beret'
-    : 'custom';
+/** The template a character is exactly, or `'custom'`. */
+export function characterTemplateChoice(character: AvatarCharacter): string {
+  const current = JSON.stringify(avatarCharacterOf(resolveAvatarCharacter(character)));
+  return (
+    Object.entries(CHARACTER_TEMPLATES).find(
+      ([, template]) =>
+        JSON.stringify(avatarCharacterOf(resolveAvatarCharacter(template))) === current,
+    )?.[0] ?? 'custom'
+  );
 }

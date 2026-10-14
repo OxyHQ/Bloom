@@ -12,14 +12,12 @@ import {
 import { characterHtml, scriptJson } from './character-html';
 import { loadCharacterRuntime } from './character-runtime-module';
 import { characterWebView, type CharacterWebViewHandle } from './character-webview';
-import { legacyRecipe } from './legacy-recipe';
-import { isMigratedCharacterShape } from './character-shapes';
+import { type ResolvedAvatarCharacter, resolveAvatarCharacter } from './character';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 
 type RenderProps = Pick<
   AgentAvatarProps,
-  | 'config'
   | 'paused'
   | 'portrait'
   | 'workingKey'
@@ -27,7 +25,7 @@ type RenderProps = Pick<
   | 'interactive'
   | 'reactionKey'
   | 'entranceKey'
-> & { reduced: boolean; legacy?: ReturnType<typeof legacyRecipe>; previewPart?: 'eyes' };
+> & { character: ResolvedAvatarCharacter; reduced: boolean; previewPart?: 'eyes' };
 type Controller = { update(props: RenderProps): void; dispose(): void };
 type RuntimeModule = {
   createAvatar(
@@ -229,7 +227,7 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
   const [active, setActive] = useState(AppState.currentState !== 'background');
   const [failed, setFailed] = useState(false);
   const {
-    config,
+    character,
     paused,
     portrait,
     workingKey,
@@ -253,20 +251,13 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
       media?.removeEventListener('change', change);
     };
   }, []);
-  useEffect(() => setFailed(false), [runtimeUrl, config.character]);
-  const legacy = useMemo(
-    () =>
-      !config.character ||
-      config.character.preset === 'bloom' ||
-      isMigratedCharacterShape(config.character.selections?.shape)
-        ? legacyRecipe(config)
-        : undefined,
-    [config],
-  );
+  // The one place a character becomes what the renderer takes; an invalid one throws here,
+  // at the component that was handed it, not later inside the engine.
+  const resolved = useMemo(() => resolveAvatarCharacter(character), [character]);
+  useEffect(() => setFailed(false), [runtimeUrl, resolved]);
   const value = useMemo(
     () => ({
-      config,
-      legacy,
+      character: resolved,
       paused: paused || !active,
       portrait,
       previewPart: props.previewPart,
@@ -278,8 +269,7 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
       reduced,
     }),
     [
-      config,
-      legacy,
+      resolved,
       paused,
       portrait,
       props.previewPart,

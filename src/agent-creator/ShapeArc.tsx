@@ -11,7 +11,7 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
-import { FOLD_SHAPES, type AvatarConfig } from '../agent-avatar/model';
+import type { AvatarCharacter } from '../agent-avatar';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -39,7 +39,7 @@ const trackClip: ArcCssStyle = {
 export type ShapeArcChoice = {
   id: string;
   label: string;
-  config: AvatarConfig;
+  character: AvatarCharacter;
 };
 const wrap = (slot: number, count: number) => ((slot % count) + count) % count;
 function ShapeSlot({
@@ -100,7 +100,7 @@ function ShapeSlot({
           backgroundColor: active ? colors.backgroundSecondary : 'transparent',
         }}
       >
-        <ShapeSilhouette config={choice.config} />
+        <ShapeSilhouette character={choice.character} />
       </StyledPressable>
     </AnimatedView>
   );
@@ -108,37 +108,18 @@ function ShapeSlot({
 
 /** A manually moved, evenly spaced circular track with an unbounded index. */
 export function ShapeArc({
-  config,
-  onChange,
-  choices: choicesProp,
-  value: valueProp,
+  choices,
+  value,
   onSelect,
 }: {
-  config: AvatarConfig;
-  choices?: readonly ShapeArcChoice[];
-  value?: string;
-  onSelect?: (id: string) => void;
-  onChange: (shape: AvatarConfig['foldShape']) => void;
+  choices: readonly ShapeArcChoice[];
+  value: string;
+  onSelect: (id: string) => void;
 }) {
   const messages = useAgentCreatorMessages();
   const { colors } = useTheme();
-  const choices =
-    choicesProp ??
-    FOLD_SHAPES.map((shape) => ({
-      id: shape,
-      label: messages.shapes[shape],
-      config: {
-        ...config,
-        family: 'fold' as const,
-        character: undefined,
-        foldShape: shape,
-      },
-    }));
-  const value = valueProp ?? config.foldShape;
   const emit = (slot: number) => {
-    const choice = choices[wrap(slot, choices.length)]!;
-    if (onSelect) onSelect(choice.id);
-    else onChange(choice.id as AvatarConfig['foldShape']);
+    onSelect(choices[wrap(slot, choices.length)]!.id);
   };
   const id = useId();
   const ref = useRef<View>(null);
