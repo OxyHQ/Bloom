@@ -6,7 +6,7 @@ import { AgentCreator } from './AgentCreator.web';
 import type { AgentCreatorAgent } from './types';
 
 const meta: Meta<typeof AgentCreator> = {
-  title: 'Application/Agent Creator',
+  title: 'Agents/Agent Creator',
   component: AgentCreator,
 };
 export default meta;

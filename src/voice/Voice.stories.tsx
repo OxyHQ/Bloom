@@ -7,7 +7,7 @@ import { Button } from '../button';
 import { AudioWaveVisualizer, VoiceControls, VoiceOverlay, type VoiceState } from './index';
 
 const meta: Meta<typeof AudioWaveVisualizer> = {
-  title: 'AI/Voice',
+  title: 'Agents/Voice',
   component: AudioWaveVisualizer,
   argTypes: {
     size: { control: 'inline-radio', options: ['sm', 'md', 'lg'] },

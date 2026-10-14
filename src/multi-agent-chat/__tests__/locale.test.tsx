@@ -1,12 +1,11 @@
 import { render } from '@testing-library/react-native';
 import React from 'react';
 import { LocaleProvider } from '../../locale';
-import { pickMessages } from '../../locale/messages';
+import { pickMessages, formatMessage } from '../../locale/messages';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { Text } from '../../typography';
 import type { Agent } from '../data';
-import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from '../messages';
-import { ReplyHeader } from '../ReplyRow';
+import { MULTI_AGENT_CHAT_MESSAGES } from '../messages';
 import { SelectedAgentPreview } from '../SelectedAgentPreview';
 import { useWorkspaceSettingsPages } from '../WorkspaceSettingsPages';
 
@@ -31,25 +30,13 @@ describe('multi-agent chat locale', () => {
   afterAll(() => {
     global.cancelAnimationFrame = priorCancel;
   });
-  it('names the preview and edit action in the scoped language, preserving supplied names', () => {
+  it('names the preview in the scoped language, preserving supplied names', () => {
     const messages = pickMessages(MULTI_AGENT_CHAT_MESSAGES, 'es');
     const view = render(
-      scope(
-        <>
-          <SelectedAgentPreview agents={[agent]} nodes={new Map()} caption />
-          <ReplyHeader agent={agent} thinking={false} onEdit={jest.fn()} />
-        </>,
-        'es',
-      ),
+      scope(<SelectedAgentPreview agents={[agent]} nodes={new Map()} caption />, 'es'),
     );
-    expect(view.getByLabelText(formatChatMessage(messages.selectedAgents, 'Peri'))).toBeTruthy();
-    expect(view.getByLabelText(formatChatMessage(messages.editAgent, 'Peri'))).toBeTruthy();
+    expect(view.getByLabelText(formatMessage(messages.selectedAgents, 'Peri'))).toBeTruthy();
     expect(view.getByText(messages.chooseWhoSJoiningTheConversation)).toBeTruthy();
-    expect(view.queryByLabelText('Edit Peri')).toBeNull();
-    view.rerender(scope(<ReplyHeader agent={agent} thinking onEdit={jest.fn()} />, 'ar'));
-    const arabic = pickMessages(MULTI_AGENT_CHAT_MESSAGES, 'ar');
-    expect(view.getByLabelText(formatChatMessage(arabic.agentThinking, 'Peri'))).toBeTruthy();
-    expect(view.getByText(arabic.thinking)).toBeTruthy();
   });
 
   it('updates memoized settings titles when the locale changes', () => {

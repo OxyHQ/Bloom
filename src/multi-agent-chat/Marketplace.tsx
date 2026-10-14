@@ -12,7 +12,7 @@ import { RiLinkM } from '../icons/remix/RiLinkM';
 import { RiPlugLine } from '../icons/remix/RiPlugLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiStore2Line } from '../icons/remix/RiStore2Line';
-import { useMessages } from '../locale/messages';
+import { useMessages, formatMessage } from '../locale/messages';
 import { SettingsCard, SettingsSectionLabel } from '../settings-modal';
 import { SOCIAL_COLOR_LOGOS } from '../social-button/color-logos';
 import { ColorLogo } from '../social-button/SocialButtonBase';
@@ -30,11 +30,7 @@ import {
 } from './marketplace-data';
 import { MARKETPLACE_LOGOS } from './marketplace-logos';
 import { MarketplaceSettings } from './MarketplaceSettings';
-import {
-  formatChatMessage,
-  MULTI_AGENT_CHAT_MESSAGES,
-  type MultiAgentChatMessages,
-} from './messages';
+import { MULTI_AGENT_CHAT_MESSAGES, type MultiAgentChatMessages } from './messages';
 import { ScrollSurface } from './ScrollSurface';
 const cx = (...classes: (string | false | undefined)[]) => classes.filter(Boolean).join(' ');
 const focus = 'outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring';
@@ -227,7 +223,7 @@ export function Marketplace({
         >
           <StyledPressable
             accessibilityRole="button"
-            accessibilityLabel={formatChatMessage(messages.viewItem, item.name)}
+            accessibilityLabel={formatMessage(messages.viewItem, item.name)}
             onPress={() => openDetail(item)}
             className={cx('flex min-w-0 items-center gap-3 rounded-xl text-start flex-row', focus)}
           >
@@ -245,8 +241,8 @@ export function Marketplace({
             className="mt-auto w-full shrink-0 rounded-full"
             accessibilityLabel={
               isAdded(item)
-                ? formatChatMessage(messages.viewAdded, item.name)
-                : formatChatMessage(messages.add2, item.name)
+                ? formatMessage(messages.viewAdded, item.name)
+                : formatMessage(messages.add2, item.name)
             }
             onPress={() => (isAdded(item) ? openDetail(item) : add(item))}
             leadingIcon={isAdded(item) ? RiCheckLine : undefined}
@@ -270,7 +266,7 @@ export function Marketplace({
           <StyledPressable
             key={item.id}
             accessibilityRole="button"
-            accessibilityLabel={formatChatMessage(messages.viewItem, item.name)}
+            accessibilityLabel={formatMessage(messages.viewItem, item.name)}
             onPress={() => openDetail(item)}
             className={cx(
               'flex min-w-0 flex-col items-center gap-2 rounded-2xl bg-background-secondary-default px-2 py-4 text-center transition-colors hover:bg-background-tertiary-default',
@@ -325,7 +321,7 @@ export function Marketplace({
               surface="full"
               className="flex-1"
               contentClassName="px-5 pb-8 sm:px-8"
-              label={formatChatMessage(messages.itemDetails, detail.name)}
+              label={formatMessage(messages.itemDetails, detail.name)}
             >
               <StyledView className="flex flex-col gap-5 pt-1">
                 <SettingsCard
@@ -343,7 +339,7 @@ export function Marketplace({
                       {detail.name}
                     </Text>
                     <Text className="text-body-2-regular text-text-secondary">
-                      {formatChatMessage(messages.by, detail.category, detail.developer)}
+                      {formatMessage(messages.by, detail.category, detail.developer)}
                     </Text>
                   </StyledView>
                   <Text
@@ -400,7 +396,7 @@ export function Marketplace({
                 </SettingsCard>
                 <StyledView className="flex flex-col gap-1">
                   <SettingsSectionLabel>
-                    {formatChatMessage(messages.skills2, detail.skills.length)}
+                    {formatMessage(messages.skills2, detail.skills.length)}
                   </SettingsSectionLabel>
                   <StyledView className="flex flex-col gap-2">
                     {detail.skills.map((skill) => (
@@ -422,7 +418,7 @@ export function Marketplace({
                 {!!detail.apps.length && (
                   <StyledView className="flex flex-col gap-1">
                     <SettingsSectionLabel>
-                      {formatChatMessage(messages.apps, detail.apps.length)}
+                      {formatMessage(messages.apps, detail.apps.length)}
                     </SettingsSectionLabel>
                     <CatalogGrid gap={8} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {detail.apps.map((app) => (

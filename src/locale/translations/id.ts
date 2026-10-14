@@ -2679,7 +2679,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   copied: 'Disalin',
   copyConversation: 'Salin percakapan',
   copyConversationID: 'Salin ID percakapan',
-  copyResponse: 'Salin respons',
   couldnTCopyPleaseTryAgain: 'Tidak dapat menyalin. Silakan coba lagi.',
   create: 'Buat',
   createANewBot: 'Buat bot baru',
@@ -2714,7 +2713,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: 'Tanggapan yang bermanfaat',
   inTheBrowser: 'Di peramban',
   inThisConversation: 'Dalam percakapan ini',
   includes: 'Termasuk',
@@ -2782,13 +2780,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   support: 'Dukungan',
   systemNotifications: 'Pemberitahuan sistem',
   thinkingTogether: 'Berpikir bersama…',
-  thinking: 'Berpikir…',
   today: 'Hari ini',
   tools: 'Alat',
   toolsForYourWorkflow: 'Alat untuk alur kerja Anda',
   tryAnotherNameCategoryOrKeyword: 'Coba nama, kategori, atau kata kunci lain.',
   ultra149Mo: 'Sangat $149/bln',
-  unhelpfulResponse: 'Tanggapan tidak membantu',
   unpinChat: 'Lepas sematan obrolan',
   upgradeToMax: 'Tingkatkan ke Max',
   useToCreateABotOrStart:
@@ -2805,12 +2801,19 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   areHereSendAMessageToGet:
     '{0} ada di sini. Kirim pesan untuk mendapatkan perspektif semua orang.',
   itemDetails: '{0} detailnya',
-  agentThinking: '{0} sedang berpikir',
   by: '{0} · oleh {1}',
   results: (count: number) => plural('id', count, { other: '{n} hasil' }),
   includedSkills: (apps: number, skills: number) =>
     (apps ? plural('id', apps, { one: '{n} aplikasi', other: '{n} aplikasi' }) + ', ' : '') +
     plural('id', skills, { one: '{n} keterampilan', other: '{n} keterampilan' }),
+};
+
+const AGENT_REPLY_MESSAGES: Translations['AGENT_REPLY_MESSAGES'] = {
+  thinking: 'Berpikir…',
+  agentThinking: '{0} sedang berpikir',
+  helpfulResponse: 'Tanggapan yang bermanfaat',
+  unhelpfulResponse: 'Tanggapan tidak membantu',
+  copyResponse: 'Salin respons',
 };
 
 const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
@@ -2833,6 +2836,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
+  AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
     defaultTitle: 'Tugas Desain Bloom',
     defaultTeam: 'Tim Bloom',

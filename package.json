@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -963,6 +963,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/agent-thinking/index.d.ts",
         "default": "./lib/commonjs/agent-thinking/index.js"
+      }
+    },
+    "./agent-reply": {
+      "react-native": {
+        "types": "./lib/typescript/module/agent-reply/index.d.ts",
+        "default": "./src/agent-reply/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/agent-reply/index.d.ts",
+        "default": "./lib/module/agent-reply/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/agent-reply/index.d.ts",
+        "default": "./lib/commonjs/agent-reply/index.js"
       }
     },
     "./agent-log": {
@@ -3957,6 +3971,9 @@
       ],
       "agent-thinking": [
         "./lib/typescript/module/agent-thinking/index.d.ts"
+      ],
+      "agent-reply": [
+        "./lib/typescript/module/agent-reply/index.d.ts"
       ],
       "agent-log": [
         "./lib/typescript/module/agent-log/index.d.ts"

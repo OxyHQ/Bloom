@@ -11,7 +11,7 @@ const meta: Meta<typeof AgentLimitsCard> = {
     expanded: { control: 'boolean' },
     defaultExpanded: { control: 'boolean' },
   },
-  title: 'Blocks/Agent Limits',
+  title: 'Agents/Agent Limits',
   component: AgentLimitsCard,
 };
 

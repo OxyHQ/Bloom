@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { ComposerPanel, ComposerPill } from '../composer-panel';
 import { Text } from '../typography';
 import { Questionnaire } from './index';
 import type { QuestionnaireAnswers, QuestionnaireQuestion } from './types';
 
 const meta: Meta<typeof Questionnaire> = {
-  title: 'Blocks/Questionnaire',
+  title: 'Agents/Questionnaire',
   component: Questionnaire,
   decorators: [
     (Story) => (
@@ -155,4 +156,46 @@ export const Demo: Story = {
       </View>
     );
   },
+};
+
+/**
+ * What an agent asks is asked of the person about to type, so it docks above the composer
+ * (`question`) instead of landing in the thread. Answering it, or dismissing it, takes it away.
+ */
+export const AboveTheComposer: Story = {
+  render: () => {
+    const [asking, setAsking] = useState(true);
+    const [draft, setDraft] = useState('');
+    return (
+      <View style={{ gap: 16 }}>
+        <Text variant="body-2-regular">
+          {asking ? 'The agent is waiting on you…' : 'Answered. The thread never held the card.'}
+        </Text>
+        <ComposerPill
+          value={draft}
+          onValueChange={setDraft}
+          onSubmit={() => setDraft('')}
+          question={
+            asking ? (
+              <Questionnaire
+                questions={QUESTIONS}
+                onComplete={() => setAsking(false)}
+                onDismiss={() => setAsking(false)}
+              />
+            ) : undefined
+          }
+        />
+      </View>
+    );
+  },
+};
+
+/** The panel docks it too, above its status tab. */
+export const AboveThePanel: Story = {
+  render: () => (
+    <ComposerPanel
+      question={<Questionnaire questions={QUESTIONS.slice(0, 2)} />}
+      placeholder="Ask anything"
+    />
+  ),
 };

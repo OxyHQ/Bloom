@@ -3002,7 +3002,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   copied: 'Скопировано',
   copyConversation: 'Копировать разговор',
   copyConversationID: 'Копировать идентификатор беседы',
-  copyResponse: 'Копировать ответ',
   couldnTCopyPleaseTryAgain: 'Не удалось скопировать. Пожалуйста, попробуйте еще раз.',
   create: 'Создать',
   createANewBot: 'Создать нового бота',
@@ -3038,7 +3037,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: 'Полезный ответ',
   inTheBrowser: 'В браузере',
   inThisConversation: 'В этом разговоре',
   includes: 'Включает',
@@ -3107,13 +3105,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   support: 'Поддержка',
   systemNotifications: 'Системные уведомления',
   thinkingTogether: 'Думаем вместе…',
-  thinking: 'Думая…',
   today: 'Сегодня',
   tools: 'Инструменты',
   toolsForYourWorkflow: 'Инструменты для вашего рабочего процесса',
   tryAnotherNameCategoryOrKeyword: 'Попробуйте другое имя, категорию или ключевое слово.',
   ultra149Mo: 'Ультра $149 в месяц',
-  unhelpfulResponse: 'Бесполезный ответ',
   unpinChat: 'Открепить чат',
   upgradeToMax: 'Перейти на Max',
   useToCreateABotOrStart:
@@ -3129,7 +3125,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   youAreOn7xMoreUsageThan2: 'Вы используете в 7 раз больше, чем обычный.',
   areHereSendAMessageToGet: '{0} здесь. Отправьте сообщение, чтобы узнать мнение каждого.',
   itemDetails: '{0} подробнее',
-  agentThinking: '{0} думает',
   by: '{0} · от {1}',
   results: (count: number) =>
     plural('ru', count, { one: '{n} результат', few: '{n} результата', other: '{n} результатов' }),
@@ -3141,6 +3136,14 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
           other: '{n} приложений',
         }) + ', '
       : '') + plural('ru', skills, { one: '{n} навык', few: '{n} навыка', other: '{n} навыков' }),
+};
+
+const AGENT_REPLY_MESSAGES: Translations['AGENT_REPLY_MESSAGES'] = {
+  thinking: 'Думая…',
+  agentThinking: '{0} думает',
+  helpfulResponse: 'Полезный ответ',
+  unhelpfulResponse: 'Бесполезный ответ',
+  copyResponse: 'Копировать ответ',
 };
 
 const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
@@ -3163,6 +3166,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
+  AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
     defaultTitle: 'Задачи дизайна Bloom',
     defaultTeam: 'Команда Bloom',

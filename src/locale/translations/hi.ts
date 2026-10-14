@@ -2622,7 +2622,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   copied: 'कॉपी हो गया',
   copyConversation: 'बातचीत की प्रतिलिपि बनाएँ',
   copyConversationID: 'वार्तालाप आईडी कॉपी करें',
-  copyResponse: 'जवाब कॉपी करें',
   couldnTCopyPleaseTryAgain: 'कॉपी नहीं किया जा सका. कृपया पुन: प्रयास करें।',
   create: 'बनाएं',
   createANewBot: 'एक नया बॉट बनाएं',
@@ -2657,7 +2656,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: 'उपयोगी प्रतिक्रिया',
   inTheBrowser: 'ब्राउज़र में',
   inThisConversation: 'इस बातचीत में',
   includes: 'शामिल है',
@@ -2724,13 +2722,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   support: 'समर्थन',
   systemNotifications: 'सिस्टम सूचनाएं',
   thinkingTogether: 'साथ मिलकर सोचना...',
-  thinking: 'सोच रहा हूँ...',
   today: 'आज',
   tools: 'उपकरण',
   toolsForYourWorkflow: 'आपके वर्कफ़्लो के लिए उपकरण',
   tryAnotherNameCategoryOrKeyword: 'कोई अन्य नाम, श्रेणी, या कीवर्ड आज़माएँ।',
   ultra149Mo: 'अल्ट्रा $149/माह',
-  unhelpfulResponse: 'अनुपयोगी प्रतिक्रिया',
   unpinChat: 'चैट को अनपिन करें',
   upgradeToMax: 'Max में अपग्रेड करें',
   useToCreateABotOrStart: 'बॉट बनाने या कई एजेंटों के साथ बातचीत शुरू करने के लिए + का उपयोग करें।',
@@ -2744,12 +2740,19 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   youAreOn7xMoreUsageThan2: 'आप नियमित की तुलना में 7 गुना अधिक उपयोग कर रहे हैं।',
   areHereSendAMessageToGet: '{0} यहाँ हैं। सभी का दृष्टिकोण जानने के लिए एक संदेश भेजें।',
   itemDetails: '{0} विवरण',
-  agentThinking: '{0} सोच रहा है',
   by: '{0} · {1} द्वारा',
   results: (count: number) => plural('hi', count, { other: '{n} परिणाम' }),
   includedSkills: (apps: number, skills: number) =>
     (apps ? plural('hi', apps, { one: '{n} ऐप', other: '{n} ऐप' }) + ', ' : '') +
     plural('hi', skills, { one: '{n} कौशल', other: '{n} कौशल' }),
+};
+
+const AGENT_REPLY_MESSAGES: Translations['AGENT_REPLY_MESSAGES'] = {
+  thinking: 'सोच रहा हूँ...',
+  agentThinking: '{0} सोच रहा है',
+  helpfulResponse: 'उपयोगी प्रतिक्रिया',
+  unhelpfulResponse: 'अनुपयोगी प्रतिक्रिया',
+  copyResponse: 'जवाब कॉपी करें',
 };
 
 const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
@@ -2772,6 +2775,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
+  AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
     defaultTitle: 'Bloom डिज़ाइन कार्य',
     defaultTeam: 'Bloom टीम',

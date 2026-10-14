@@ -61,7 +61,7 @@ const ANIMATION =
   );
 
 const meta: Meta<typeof Sticker> = {
-  title: 'Messaging/Sticker',
+  title: 'Blocks/Chat/Sticker',
   component: Sticker,
   argTypes: {
     size: { control: { type: 'range', min: 48, max: 256, step: 8 } },

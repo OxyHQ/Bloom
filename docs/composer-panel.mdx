@@ -85,6 +85,21 @@ Both take their menus from the same platform binding as `ComposerPanel`.
 
 **Hazard:** the anchored panel (`floating/FloatingPanel`) lays its direct children out 4px apart. A panel whose sections carry their own measured spacing (the model menu's divider margins) must set `gap: 0` on the panel style, or every section boundary drifts 4px.
 
+## Asking above the composer
+
+An agent that needs an answer asks the person who is about to type, so the question sits where they are looking: docked over the composer, not as a message in the thread. Give a `Questionnaire` to `question` while the agent waits and drop it when it is answered; the thread carries no card and nothing to scroll back to.
+
+```tsx
+<ComposerPill
+  question={pending && <Questionnaire questions={pending} onComplete={answer} onDismiss={skip} />}
+  value={draft}
+  onValueChange={setDraft}
+  onSubmit={send}
+/>
+```
+
+Both composers take it. The slot is empty by default and adds no node then.
+
 ## Anatomy
 
 | Part | Geometry |
@@ -199,6 +214,7 @@ The English defaults below — strings, placeholders, and the default permission
 | `voiceState` / `defaultVoiceState` / `onVoiceStateChange` | `'idle' \| 'recording' \| 'transcribing'` | `'idle'` | Voice input. `recording` swaps the mic to equalizer bars and the next press stops; `transcribing` makes it busy and disabled, named `labels.transcribing` and announced in a polite live region. A press reports `recording` from `idle` and `idle` from `recording`; entering `transcribing` is yours. |
 | `attachments` / `onRemoveAttachment` | `ComposerPanelAttachment[]` / `(id) => void` | — | |
 | `onAttachmentRetry` | `(id) => void` | — | Draws a retry button on every failed (`error`) tile. |
+| `question` | `ReactNode` | — | What the agent is waiting on — a [`Questionnaire`](./questionnaire.mdx) — docked above the composer in its column and width (above the status tab on the panel; the pill fills the column while one is shown). See [Asking above the composer](#asking-above-the-composer). |
 | `status` | `ReactNode` | — | Usually `<ComposerPanelStatusTab />`. |
 | `inputRef` | `RefObject<TextInput>` | — | The prompt field. |
 | `labels`, `modelPickerLabels` | objects | the locale's | Your own wording; a key here wins over Bloom's. |

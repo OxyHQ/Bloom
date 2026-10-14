@@ -1,8 +1,8 @@
 import type { RefObject } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useMessages } from '../locale/messages';
+import { useMessages, formatMessage } from '../locale/messages';
 import { demoReply, type Conversation, type Message, type Workspace } from './data';
-import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
+import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 import { streamReply, waitForReply } from './stream-reply';
 import type { MultiAgentChatProps } from './types';
 
@@ -139,7 +139,7 @@ export function useReplies(
               }));
             });
           } catch {
-            if (active()) setNotice(formatChatMessage(messages.responseFailed, agent.name));
+            if (active()) setNotice(formatMessage(messages.responseFailed, agent.name));
           }
         }
       } finally {

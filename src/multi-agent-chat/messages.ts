@@ -52,7 +52,6 @@ export const MULTI_AGENT_CHAT_MESSAGES = defineMessages('MULTI_AGENT_CHAT_MESSAG
   copied: 'Copied',
   copyConversation: 'Copy conversation',
   copyConversationID: 'Copy conversation ID',
-  copyResponse: 'Copy response',
   couldnTCopyPleaseTryAgain: 'Couldn’t copy. Please try again.',
   create: 'Create',
   createANewBot: 'Create a new bot',
@@ -87,7 +86,6 @@ export const MULTI_AGENT_CHAT_MESSAGES = defineMessages('MULTI_AGENT_CHAT_MESSAG
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: 'Helpful response',
   inTheBrowser: 'In the browser',
   inThisConversation: 'In this conversation',
   includes: 'Includes',
@@ -154,13 +152,11 @@ export const MULTI_AGENT_CHAT_MESSAGES = defineMessages('MULTI_AGENT_CHAT_MESSAG
   support: 'Support',
   systemNotifications: 'System notifications',
   thinkingTogether: 'Thinking together…',
-  thinking: 'Thinking…',
   today: 'Today',
   tools: 'Tools',
   toolsForYourWorkflow: 'Tools for your workflow',
   tryAnotherNameCategoryOrKeyword: 'Try another name, category, or keyword.',
   ultra149Mo: 'Ultra $149/mo',
-  unhelpfulResponse: 'Unhelpful response',
   unpinChat: 'Unpin chat',
   upgradeToMax: 'Upgrade to Max',
   useToCreateABotOrStart: 'Use + to create a bot or start a conversation with several agents.',
@@ -174,7 +170,6 @@ export const MULTI_AGENT_CHAT_MESSAGES = defineMessages('MULTI_AGENT_CHAT_MESSAG
   youAreOn7xMoreUsageThan2: 'You are on 7x more usage than Regular.',
   areHereSendAMessageToGet: '{0} are here. Send a message to get everyone’s perspective.',
   itemDetails: '{0} details',
-  agentThinking: '{0} is thinking',
   by: '{0} · by {1}',
   results: (count: number) => plural('en', count, { one: '{n} result', other: '{n} results' }),
   includedSkills: (apps: number, skills: number) =>
@@ -183,10 +178,3 @@ export const MULTI_AGENT_CHAT_MESSAGES = defineMessages('MULTI_AGENT_CHAT_MESSAG
 });
 
 export type MultiAgentChatMessages = CatalogMessages<typeof MULTI_AGENT_CHAT_MESSAGES>;
-
-/** Keep dynamic names/counts in their translated grammatical position. */
-export function formatChatMessage(template: string, ...values: unknown[]): string {
-  return template.replace(/\{(\d+)\}/g, (_match, index: string) =>
-    String(values[Number(index)] ?? ''),
-  );
-}

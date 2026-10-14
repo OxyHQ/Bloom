@@ -15,7 +15,7 @@ const meta: Meta<typeof AgentProgress> = {
     minimized: { control: 'boolean' },
     defaultMinimized: { control: 'boolean' },
   },
-  title: 'Blocks/Agent Progress',
+  title: 'Agents/Agent Progress',
   component: AgentProgress,
 };
 

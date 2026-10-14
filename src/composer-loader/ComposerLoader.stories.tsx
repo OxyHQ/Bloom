@@ -45,7 +45,7 @@ const meta: Meta<typeof ComposerLoader> = {
     },
     offset: { control: 'number' },
   },
-  title: 'Blocks/Composer Loader',
+  title: 'Agents/Composer Loader',
   component: ComposerLoader,
 };
 

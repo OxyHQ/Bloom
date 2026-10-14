@@ -2632,7 +2632,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   copied: 'コピーしました',
   copyConversation: '会話をコピーする',
   copyConversationID: '会話 ID をコピー',
-  copyResponse: '回答をコピー',
   couldnTCopyPleaseTryAgain: 'コピーできませんでした。もう一度試してください。',
   create: '作成する',
   createANewBot: '新しいボットを作成する',
@@ -2667,7 +2666,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: '役立つ回答',
   inTheBrowser: 'ブラウザ内',
   inThisConversation: 'この会話では',
   includes: '含まれるもの',
@@ -2736,13 +2734,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   support: 'サポート',
   systemNotifications: 'システム通知',
   thinkingTogether: '一緒に考えて…',
-  thinking: '考え中…',
   today: '今日',
   tools: 'ツール',
   toolsForYourWorkflow: 'ワークフローのためのツール',
   tryAnotherNameCategoryOrKeyword: '別の名前、カテゴリ、またはキーワードを試してください。',
   ultra149Mo: 'ウルトラ $149/月',
-  unhelpfulResponse: '役に立たない応答',
   unpinChat: 'チャットの固定を解除する',
   upgradeToMax: 'Max にアップグレード',
   useToCreateABotOrStart:
@@ -2758,12 +2754,19 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   areHereSendAMessageToGet:
     '{0} がここにいます。メッセージを送信して全員の視点を取得してください。',
   itemDetails: '{0}の詳細',
-  agentThinking: '{0} は考えています',
   by: '{0} · {1} 著',
   results: (count: number) => plural('ja', count, { other: '{n}件の結果' }),
   includedSkills: (apps: number, skills: number) =>
     (apps ? plural('ja', apps, { other: '{n}個のアプリ' }) + '、' : '') +
     plural('ja', skills, { other: '{n}個のスキル' }),
+};
+
+const AGENT_REPLY_MESSAGES: Translations['AGENT_REPLY_MESSAGES'] = {
+  thinking: '考え中…',
+  agentThinking: '{0} は考えています',
+  helpfulResponse: '役立つ回答',
+  unhelpfulResponse: '役に立たない応答',
+  copyResponse: '回答をコピー',
 };
 
 const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
@@ -2786,6 +2789,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
+  AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
     defaultTitle: 'Bloomのデザインタスク',
     defaultTeam: 'Bloomチーム',

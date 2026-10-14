@@ -344,7 +344,7 @@ laptop fluency, energy use, sustained thermal behaviour or complete animation pa
 
 #### Finite motion review and affine transform support
 
-`Application/Agent Avatar/New Engine/Motion Review` now plays and scrubs captured
+`Agents/Agent Avatar/New Engine/Motion Review` now plays and scrubs captured
 idle/reaction segments for all eight presets. The original PNG appears only at
 its exact observed timestamp. Playback stops at the recording boundary and labels
 that boundary explicitly; it does not pretend the action ended or wrap an unknown

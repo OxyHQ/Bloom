@@ -1,4 +1,5 @@
 import type { VOICE_MESSAGES } from '../../voice/messages';
+import type { AGENT_REPLY_MESSAGES } from '../../agent-reply/messages';
 import type { MULTI_AGENT_CHAT_MESSAGES } from '../../multi-agent-chat/messages';
 import type { AGENT_CREATOR_MESSAGES } from '../../agent-creator/messages';
 import type { PROJECT_BOARD_MESSAGES } from '../../project-board/messages';
@@ -141,6 +142,7 @@ import type { EMPTY_STATE_MESSAGES } from '../../empty-state/messages';
 
 export interface Translations {
   readonly MULTI_AGENT_CHAT_MESSAGES: CatalogMessages<typeof MULTI_AGENT_CHAT_MESSAGES>;
+  readonly AGENT_REPLY_MESSAGES: CatalogMessages<typeof AGENT_REPLY_MESSAGES>;
   AGENT_CREATOR_MESSAGES: CatalogMessages<typeof AGENT_CREATOR_MESSAGES>;
   PROJECT_BOARD_MESSAGES: CatalogMessages<typeof PROJECT_BOARD_MESSAGES>;
   readonly AGENT_AVATAR_MESSAGES: CatalogMessages<typeof AGENT_AVATAR_MESSAGES>;

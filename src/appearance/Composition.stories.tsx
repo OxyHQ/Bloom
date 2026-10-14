@@ -21,7 +21,7 @@ import {
 } from '../dropdown-menu';
 
 const meta: Meta = {
-  title: 'System/Composition',
+  title: 'Foundations/Composition',
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
 };
 export default meta;

@@ -79,7 +79,7 @@ function ExactScopeFixture({ placement = 'end' }: { placement?: 'end' | 'bottom'
   );
 }
 const meta = {
-  title: 'Theme/ColorScope',
+  title: 'Foundations/Color Scope',
   component: ExactScopeFixture,
 } satisfies Meta<typeof ExactScopeFixture>;
 export default meta;

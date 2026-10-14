@@ -3057,7 +3057,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   copied: 'تم النسخ',
   copyConversation: 'نسخ المحادثة',
   copyConversationID: 'نسخ معرف المحادثة',
-  copyResponse: 'نسخ الإجابة',
   couldnTCopyPleaseTryAgain: 'تعذر النسخ. يرجى المحاولة مرة أخرى.',
   create: 'إنشاء',
   createANewBot: 'إنشاء بوت جديد',
@@ -3092,7 +3091,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: 'رد مفيد',
   inTheBrowser: 'في المتصفح',
   inThisConversation: 'في هذا الحديث',
   includes: 'يشمل',
@@ -3159,13 +3157,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   support: 'الدعم',
   systemNotifications: 'إشعارات النظام',
   thinkingTogether: 'التفكير معًا...',
-  thinking: 'التفكير…',
   today: 'اليوم',
   tools: 'الأدوات',
   toolsForYourWorkflow: 'أدوات لسير عملك',
   tryAnotherNameCategoryOrKeyword: 'جرّب اسمًا أو فئة أو كلمة رئيسية أخرى.',
   ultra149Mo: 'الترا 149 دولارًا شهريًا',
-  unhelpfulResponse: 'رد غير مفيد',
   unpinChat: 'إزالة تثبيت الدردشة',
   upgradeToMax: 'الترقية إلى Max',
   useToCreateABotOrStart: 'استخدم + لإنشاء روبوت أو بدء محادثة مع العديد من الوكلاء.',
@@ -3179,7 +3175,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   youAreOn7xMoreUsageThan2: 'أنت تستخدم 7 مرات أكثر من العادي.',
   areHereSendAMessageToGet: '{0} هنا. أرسل رسالة للحصول على وجهة نظر الجميع.',
   itemDetails: '{0} تفاصيل',
-  agentThinking: '{0} يفكر',
   by: '{0} · بواسطة {1}',
   results: (count: number) =>
     plural('ar', count, {
@@ -3205,6 +3200,14 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     }),
 };
 
+const AGENT_REPLY_MESSAGES: Translations['AGENT_REPLY_MESSAGES'] = {
+  thinking: 'التفكير…',
+  agentThinking: '{0} يفكر',
+  helpfulResponse: 'رد مفيد',
+  unhelpfulResponse: 'رد غير مفيد',
+  copyResponse: 'نسخ الإجابة',
+};
+
 const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   voiceMode: 'وضع الصوت',
   controls: 'عناصر التحكم الصوتي',
@@ -3225,6 +3228,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
+  AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
     defaultTitle: 'مهام تصميم Bloom',
     defaultTeam: 'فريق Bloom',

@@ -2650,7 +2650,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   copied: 'Kopyalandı',
   copyConversation: 'Konuşmayı kopyala',
   copyConversationID: 'Konuşma kimliğini kopyala',
-  copyResponse: 'Yanıtı kopyala',
   couldnTCopyPleaseTryAgain: 'Kopyalanamadı. Lütfen tekrar deneyin.',
   create: 'Oluştur',
   createANewBot: 'Yeni bir bot oluştur',
@@ -2685,7 +2684,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: 'Faydalı yanıt',
   inTheBrowser: 'Tarayıcıda',
   inThisConversation: 'Bu sohbette',
   includes: 'İçerir',
@@ -2754,13 +2752,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   support: 'Destek',
   systemNotifications: 'Sistem bildirimleri',
   thinkingTogether: 'Birlikte düşünmek…',
-  thinking: 'Düşünüyorum…',
   today: 'Bugün',
   tools: 'Araçlar',
   toolsForYourWorkflow: 'İş akışınız için araçlar',
   tryAnotherNameCategoryOrKeyword: 'Başka bir ad, kategori veya anahtar kelime deneyin.',
   ultra149Mo: 'Ultra 149$/ay',
-  unhelpfulResponse: 'Faydasız yanıt',
   unpinChat: 'Sohbetin sabitlemesini kaldır',
   upgradeToMax: 'Max’e yükselt',
   useToCreateABotOrStart:
@@ -2777,12 +2773,19 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   areHereSendAMessageToGet:
     '{0} buradalar. Herkesin bakış açısını öğrenmek için bir mesaj gönderin.',
   itemDetails: '{0} ayrıntıları',
-  agentThinking: '{0} düşünüyor',
   by: '{0} · yazan: {1}',
   results: (count: number) => plural('tr', count, { other: '{n} sonuç' }),
   includedSkills: (apps: number, skills: number) =>
     (apps ? plural('tr', apps, { one: '{n} uygulama', other: '{n} uygulama' }) + ', ' : '') +
     plural('tr', skills, { one: '{n} beceri', other: '{n} beceri' }),
+};
+
+const AGENT_REPLY_MESSAGES: Translations['AGENT_REPLY_MESSAGES'] = {
+  thinking: 'Düşünüyorum…',
+  agentThinking: '{0} düşünüyor',
+  helpfulResponse: 'Faydalı yanıt',
+  unhelpfulResponse: 'Faydasız yanıt',
+  copyResponse: 'Yanıtı kopyala',
 };
 
 const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
@@ -2805,6 +2808,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
+  AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
     defaultTitle: 'Bloom Tasarım Görevleri',
     defaultTeam: 'Bloom ekibi',

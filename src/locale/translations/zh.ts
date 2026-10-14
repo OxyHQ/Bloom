@@ -2565,7 +2565,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   copied: '已复制',
   copyConversation: '复制对话',
   copyConversationID: '复制对话 ID',
-  copyResponse: '复制回答',
   couldnTCopyPleaseTryAgain: '无法复制。请再试一次。',
   create: '创建',
   createANewBot: '创建一个新机器人',
@@ -2599,7 +2598,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: '有用的回复',
   inTheBrowser: '在浏览器中',
   inThisConversation: '在这次谈话中',
   includes: '包括',
@@ -2665,13 +2663,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   support: '支持',
   systemNotifications: '系统通知',
   thinkingTogether: '一起思考……',
-  thinking: '思考……',
   today: '今天',
   tools: '工具',
   toolsForYourWorkflow: '适用于您的工作流程的工具',
   tryAnotherNameCategoryOrKeyword: '尝试其他名称、类别或关键字。',
   ultra149Mo: '超 149 美元/月',
-  unhelpfulResponse: '无益的回应',
   unpinChat: '取消固定聊天',
   upgradeToMax: '升级到 Max',
   useToCreateABotOrStart: '使用 + 创建机器人或开始与多个代理对话。',
@@ -2685,12 +2681,19 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   youAreOn7xMoreUsageThan2: '您的使用量是常规的 7 倍。',
   areHereSendAMessageToGet: '{0} 在这里。发送消息以了解每个人的观点。',
   itemDetails: '{0} 详细信息',
-  agentThinking: '{0} 正在思考',
   by: '{0} · 由 {1}',
   results: (count: number) => plural('zh', count, { other: '{n} 个结果' }),
   includedSkills: (apps: number, skills: number) =>
     (apps ? plural('zh', apps, { other: '{n} 个应用' }) + '，' : '') +
     plural('zh', skills, { other: '{n} 个技能' }),
+};
+
+const AGENT_REPLY_MESSAGES: Translations['AGENT_REPLY_MESSAGES'] = {
+  thinking: '思考……',
+  agentThinking: '{0} 正在思考',
+  helpfulResponse: '有用的回复',
+  unhelpfulResponse: '无益的回应',
+  copyResponse: '复制回答',
 };
 
 const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
@@ -2713,6 +2716,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
+  AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
     defaultTitle: 'Bloom设计任务',
     defaultTeam: 'Bloom团队',

@@ -85,6 +85,7 @@ export function ComposerPanelBase({
   attachments,
   onRemoveAttachment,
   onAttachmentRetry,
+  question,
   status,
   emptyAction,
   onKeyPress: onKeyPressProp,
@@ -201,6 +202,7 @@ export function ComposerPanelBase({
 
   return (
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column' }, style]}>
+      {question ? <View style={{ marginBottom: 8 }}>{question}</View> : null}
       {status ?? null}
 
       <SurfaceLevelProvider level={1} fill={publishedFill}>

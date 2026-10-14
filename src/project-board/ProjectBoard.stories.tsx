@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ProjectBoard } from './ProjectBoard';
 const meta: Meta<typeof ProjectBoard> = {
-  title: 'Application/Project Board',
+  title: 'Blocks/Project Board',
   component: ProjectBoard,
   args: {
     initialColumns: [
