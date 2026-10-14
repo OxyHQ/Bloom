@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -8,6 +9,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
 import { ThinkingLabel } from '../agent-thinking/ThinkingLabel';
+import { ThinkingReasoning } from '../agent-thinking/ThinkingReasoning';
+import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { formatMessage, useMessages } from '../locale/messages';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
@@ -20,13 +23,16 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
 /**
  * Who answered, under their reply: the agent's 3D avatar and name. While the agent works the
- * avatar grows, plays its working animation, and the name gives way to "Thinking…".
+ * avatar grows, plays its working animation, and the name gives way to "Thinking…" — and, given
+ * its `reasoning`, to a disclosure of it. It is the one component of a thinking agent: the avatar,
+ * the status and the reasoning, which settle into the avatar and name under the reply.
  */
 export function AgentReplyIdentity({
   character,
   name,
   thinking = false,
   workingKey,
+  reasoning,
   avatarHidden = false,
   avatarRef,
   onPress,
@@ -72,14 +78,22 @@ export function AgentReplyIdentity({
     [progress],
   );
   const status = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
-  return (
+  // While it thinks with a reasoning to show, pressing the row folds and unfolds it.
+  const folds = thinking && reasoning != null;
+  const [open, setOpen] = useState(true);
+  useEffect(() => {
+    if (thinking) setOpen(true);
+  }, [thinking]);
+  const actionable = folds || onPress !== undefined;
+  const row = (
     <StyledPressable
-      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityRole={actionable ? 'button' : undefined}
       accessibilityLabel={
         thinking ? formatMessage(messages.agentThinking, name) : (pressLabel ?? name)
       }
-      disabled={!onPress}
-      onPress={onPress}
+      aria-expanded={folds ? open : undefined}
+      disabled={!actionable}
+      onPress={folds ? () => setOpen((current) => !current) : onPress}
       className="my-1 min-w-0 flex-row items-center gap-1 rounded-lg text-start text-body-2-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
     >
       <AnimatedView
@@ -124,6 +138,24 @@ export function AgentReplyIdentity({
           </Text>
         </AnimatedView>
       </StyledView>
+      {folds ? (
+        <AnimatedView aria-hidden style={status}>
+          <RiArrowDownSLine
+            width={16}
+            height={16}
+            fill={colors.textTertiary}
+            style={{ transform: [{ rotate: open ? '180deg' : '0deg' }] }}
+          />
+        </AnimatedView>
+      ) : null}
     </StyledPressable>
+  );
+  return reasoning == null ? (
+    row
+  ) : (
+    <View style={{ minWidth: 0, flexShrink: 1 }}>
+      {row}
+      <ThinkingReasoning open={folds && open}>{reasoning}</ThinkingReasoning>
+    </View>
   );
 }

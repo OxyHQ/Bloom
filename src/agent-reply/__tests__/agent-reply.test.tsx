@@ -38,6 +38,33 @@ describe('agent reply', () => {
     global.cancelAnimationFrame = priorCancel;
   });
 
+  describe('AgentReplyIdentity reasoning', () => {
+    const thinking = (props: { thinking: boolean; reasoning?: React.ReactNode }) =>
+      scope(<AgentReplyIdentity character={{ preset: 'blue_beret' }} name="Lumi" {...props} />);
+
+    it('is a disclosure while it thinks: open to start with, folded and unfolded by a press', () => {
+      const view = render(thinking({ thinking: true, reasoning: 'Weighing the options.' }));
+      const row = () => view.getByLabelText('Lumi is thinking');
+      expect(row().props['aria-expanded']).toBe(true);
+      expect(view.getByText('Weighing the options.')).toBeTruthy();
+      fireEvent.press(row());
+      expect(row().props['aria-expanded']).toBe(false);
+      fireEvent.press(row());
+      expect(row().props['aria-expanded']).toBe(true);
+    });
+
+    it('is no disclosure without a reasoning, and none once it stops thinking', () => {
+      const plain = render(thinking({ thinking: true }));
+      expect(plain.getByLabelText('Lumi is thinking').props['aria-expanded']).toBeUndefined();
+      plain.unmount();
+
+      const view = render(thinking({ thinking: true, reasoning: 'Weighing the options.' }));
+      view.rerender(thinking({ thinking: false, reasoning: 'Weighing the options.' }));
+      expect(view.queryByLabelText('Lumi is thinking')).toBeNull();
+      expect(view.queryAllByRole('button')).toHaveLength(0);
+    });
+  });
+
   describe('AgentReplyActions', () => {
     it('keeps the vote itself, one at a time, and reports it', () => {
       const onVoteChange = jest.fn();

@@ -44,6 +44,13 @@ export interface AgentReplyIdentityProps {
   thinking?: boolean;
   /** Seeds which working animation the avatar starts with; `name` when absent. */
   workingKey?: string;
+  /**
+   * The model's reasoning, while `thinking`: "Thinking…" becomes a disclosure with a chevron that
+   * folds it under the row (open to start with), so one component is the avatar, the status and
+   * the reasoning. It is gone once the reply starts; `AgentThinking` keeps it as "Thought for…".
+   * A string is set as muted text; anything else is yours to style.
+   */
+  reasoning?: ReactNode;
   /** Hide the avatar while something else draws it (the handoff flight). */
   avatarHidden?: boolean;
   /** The avatar's box, for a caller that animates it elsewhere. */

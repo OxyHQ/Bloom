@@ -14,7 +14,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Collapsible } from '../collapsible';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
@@ -29,6 +28,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ThinkingLabel } from './ThinkingLabel';
+import { ThinkingReasoning } from './ThinkingReasoning';
 import { AGENT_THINKING_MESSAGES } from './messages';
 import type { AgentThinkingProps, AgentThinkingTone, AgentThinkingVariant } from './types';
 import { IS_WEB } from '../styles/platform';
@@ -484,7 +484,6 @@ const TOGGLE_CSS = interactiveWebCss({
   reset: 'none',
   transition: 'none',
 });
-const RULE_WIDTH = 2;
 
 /**
  * The row, a chevron, and a body that opens under it. Opening follows `thinking`
@@ -567,25 +566,9 @@ function ThinkingDisclosure({
           style={{ transform: [{ rotate: open ? '180deg' : '0deg' }] }}
         />
       </Pressable>
-      <Collapsible open={open} testID={testID ? `${testID}-body` : undefined}>
-        <View
-          style={{
-            marginStart: space.md,
-            paddingStart: space.md,
-            paddingVertical: space.xs,
-            borderStartColor: theme.colors.border,
-            borderStartWidth: RULE_WIDTH,
-          }}
-        >
-          {typeof children === 'string' ? (
-            <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
-              {children}
-            </Text>
-          ) : (
-            children
-          )}
-        </View>
-      </Collapsible>
+      <ThinkingReasoning open={open} testID={testID ? `${testID}-body` : undefined}>
+        {children}
+      </ThinkingReasoning>
     </View>
   );
 }
