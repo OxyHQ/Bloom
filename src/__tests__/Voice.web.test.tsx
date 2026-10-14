@@ -94,6 +94,18 @@ describe('VoiceControls on web', () => {
     expect(byLabel(en.typeInstead)?.hasAttribute('aria-pressed')).toBe(false);
   });
 
+  it('calls end and type-instead with NOTHING, not the press event', () => {
+    // A host's `onEnd(error?: string)` would otherwise be handed the event as its error and
+    // render it: the press event is no argument of a handler that takes no arguments.
+    const onEnd = jest.fn();
+    const onTypeInstead = jest.fn();
+    mount(<VoiceControls onEnd={onEnd} onTypeInstead={onTypeInstead} />);
+    act(() => byLabel(en.end)?.click());
+    act(() => byLabel(en.typeInstead)?.click());
+    expect(onEnd).toHaveBeenCalledWith();
+    expect(onTypeInstead).toHaveBeenCalledWith();
+  });
+
   it('renders real, named buttons in a named toolbar', () => {
     mount(<VoiceControls onMutedChange={() => {}} onEnd={() => {}} />);
     expect(byLabel(en.mute)?.tagName).toBe('BUTTON');

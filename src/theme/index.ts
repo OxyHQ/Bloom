@@ -84,7 +84,7 @@ export { pressedSurface, PRESS_LAYER_ALPHA } from './press-colors';
 // two callers; anything building a status pill wants the same three values.
 export { resolveAccentColors } from './accent-colors';
 export type { AccentColors, AccentFill, AccentTone } from './accent-colors';
-export { applyPresetVarsToDocument } from './preset-vars';
+export { applyPresetVarsToDocument } from './token-registry';
 // `getPresetVars` + `ExplicitAccents`: see the note above — `design-tokens`
 // owns them.
 export { applyDarkClass } from './apply-dark-class';

@@ -65,7 +65,7 @@ export function VoiceControls({
           size={size}
           accessibilityLabel={messages.typeInstead}
           disabled={disabled}
-          onPress={onTypeInstead}
+          onPress={() => onTypeInstead()}
           testID={id('type')}
         />
       ) : null}
@@ -106,7 +106,7 @@ export function VoiceControls({
           size={size}
           accessibilityLabel={messages.end}
           disabled={disabled}
-          onPress={onEnd}
+          onPress={() => onEnd()}
           testID={id('end')}
         />
       ) : null}

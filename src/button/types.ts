@@ -152,6 +152,11 @@ export interface ButtonProps {
    * `icon`. Name it with `accessibilityLabel` — there is no text to read.
    */
   iconOnly?: boolean;
+  /**
+   * With `iconOnly`: a pill 1.5 times as wide as it is tall, not a square. Where a row of icon
+   * buttons stands apart (a separated `ButtonGroup`), a circle is not a pill.
+   */
+  wide?: boolean;
 
   /**
    * When true, displays a centered loading spinner overlay and prevents

@@ -189,7 +189,7 @@ These silently verify the PUBLISHED package instead:
 - **Metro `resolver.extraNodeModules` is a FALLBACK:** a real `node_modules/@oxy.so/bloom` wins. **`expo export`/`expo start` disagree:** the dev server indexes only `projectRoot` + `watchFolders`; put the local copy inside the consumer repo, gitignored.
 - **Metro port is baked at BUILD time** (`-PreactNativeDevServerPort`, not `RCT_METRO_PORT`); emulators resolve it via host loopback, which `adb reverse` misses. Confirm it in `gradleResValues.xml`.
 
-**Live-edit: `node scripts/mirror-into-consumer.mjs <consumer-root> --watch`** mirrors `src/` into `<consumer>/bloom-local` and links `node_modules/@oxy.so/bloom` to it; restart Metro for NEW files, `--restore` before trusting a typecheck.
+**Live-edit: `node scripts/mirror-into-consumer.mjs <consumer-root> --watch`** mirrors `src/` into `bloom-local` (`--into=<dir>`: inside what Metro WATCHES, else edits are never seen) and links `node_modules/@oxy.so/bloom` to it; restart Metro for NEW files, `--restore` before trusting a typecheck.
 
 **Assert what you test first:** resolved version plus a marker only the local build produces. **Never write over `node_modules/<pkg>`:** bun hardlinks its global cache, mutating it for every worktree/session.
 

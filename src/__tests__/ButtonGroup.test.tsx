@@ -99,7 +99,7 @@ describe('ButtonGroup', () => {
     expect(screen.getByTestId('disabled').props.onPress).toBeUndefined();
   });
   describe('separated', () => {
-    it('is a row of independent pills: no shared surface, no hairlines, a gap between', () => {
+    it('is one pill cut into segments: one surface, no hairlines, a 2px gap, ends clipped', () => {
       const { getByTestId, toJSON } = renderWithTheme(
         <ButtonGroup separated size="xs" testID="group" accessibilityLabel="Actions">
           <ButtonGroupItem iconOnly accessibilityLabel="One" />
@@ -109,12 +109,28 @@ describe('ButtonGroup', () => {
       );
       const group = getByTestId('group');
       expect(group.props.role).toBe('group');
-      expect(resolvedStyle(group.props.style)).toMatchObject({ flexDirection: 'row', gap: 4 });
+      // The group's own surface is the pill: its rim and shadow are drawn once, around the whole.
+      expect(resolvedStyle(group.props.style).borderRadius).toBe(BUTTON_RADIUS);
+      expect(resolvedStyle(getByTestId('group-items').props.style)).toMatchObject({
+        flexDirection: 'row',
+        gap: 2,
+        overflow: 'hidden',
+        borderRadius: BUTTON_RADIUS,
+      });
       // Three items and nothing between them: the joined group would draw two separators.
-      expect(renderedChildren(toJSON(), 'group')).toHaveLength(3);
+      expect(renderedChildren(toJSON(), 'group-items')).toHaveLength(3);
     });
 
-    it('makes an icon-only item a pill, 1.5 times as wide as tall, never a circle', () => {
+    it('makes the items straight segments: only the group’s ends are rounded', () => {
+      const { getByTestId } = renderWithTheme(
+        <ButtonGroup separated size="xs">
+          <ButtonGroupItem testID="item">One</ButtonGroupItem>
+        </ButtonGroup>,
+      );
+      expect(resolvedStyle(getByTestId('item').props.style).borderRadius).toBe(0);
+    });
+
+    it('makes an icon-only item 1.5 times as wide as tall, never a circle', () => {
       const { getByTestId } = renderWithTheme(
         <ButtonGroup separated size="xs">
           <ButtonGroupItem iconOnly testID="item" accessibilityLabel="One" />

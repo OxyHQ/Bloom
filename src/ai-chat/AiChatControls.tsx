@@ -203,6 +203,7 @@ export function SurfaceAction({
   onTooltipOpenChange,
   onPress,
   padding,
+  paddingHorizontal,
   radius,
   background,
   hoverBackground,
@@ -210,6 +211,7 @@ export function SurfaceAction({
   glyph,
   active,
   disabled = false,
+  inset = false,
   style,
   testID,
 }: {
@@ -221,6 +223,8 @@ export function SurfaceAction({
   onTooltipOpenChange?: (open: boolean) => void;
   onPress?: () => void;
   padding: number;
+  /** Side padding when it differs from `padding`: a wide pill, not a square. */
+  paddingHorizontal?: number;
   radius: number;
   background: string;
   hoverBackground: string;
@@ -232,6 +236,8 @@ export function SurfaceAction({
    */
   active?: boolean;
   disabled?: boolean;
+  /** The focus ring is drawn inside the control, for a control a clip would cut the ring off. */
+  inset?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
@@ -246,7 +252,9 @@ export function SurfaceAction({
     flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    padding,
+    // Longhands, both: a caller `style` of either kind then overrides on web as on native.
+    paddingVertical: padding,
+    paddingHorizontal: paddingHorizontal ?? padding,
     borderRadius: radius,
     backgroundColor: lit ? hoverBackground : background,
     opacity: disabled ? DISABLED_OPACITY : 1,
@@ -255,7 +263,7 @@ export function SurfaceAction({
   return (
     <WithTooltip label={tooltip ?? label} open={tip.open} onOpenChange={tip.setOpen}>
       <Pressable
-        {...dataHook('bloomAiChatControl')}
+        {...dataHook('bloomAiChatControl', inset ? 'inset' : '')}
         testID={testID}
         accessibilityRole="button"
         accessibilityLabel={label}
@@ -293,11 +301,49 @@ export function SurfaceAction({
   );
 }
 
-/** The feedback row's button surface: 28 square, radius 8, p 6, tertiary → secondary-hover. */
+/**
+ * A turn's action row: ONE pill cut into segments. The segments sit 2px apart under a
+ * pill-shaped clip, so only the first one's start and the last one's end are rounded.
+ */
+export function TurnActionGroup({
+  children,
+  style,
+  testID,
+}: {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}) {
+  return (
+    <View
+      testID={testID}
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'stretch',
+          alignSelf: 'flex-start',
+          gap: 2,
+          borderRadius: 9999,
+          overflow: 'hidden',
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
+/**
+ * A segment of a `TurnActionGroup`: 28 tall and 1.5 times as wide (42), straight-sided (the
+ * group's pill rounds the ends), tertiary → secondary-hover, its focus ring inside.
+ */
 export function turnActionSurface(palette: AiChatPalette) {
   return {
     padding: 6,
-    radius: 8,
+    paddingHorizontal: 13,
+    radius: 0,
+    inset: true,
     background: palette.tertiary,
     hoverBackground: palette.secondaryHover,
     palette,

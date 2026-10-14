@@ -437,20 +437,10 @@ function FloatingChrome({
             topStyle,
           ]}
         >
-          {/* SOLID behind the header's own block. A ramp that starts fading
-              inside the block leaves the breadcrumb row over half-covered
-              turns — measured in a browser, a code block's lines read straight
-              through the chat's title and crumbs at every width. The ramp
-              only starts where the block ends. */}
-          <View
-            testID={`${prefix}-fade-top-surface`}
-            style={{ height: headerHeight, backgroundColor: solid }}
-          />
-          {/* Past the block's own bottom: a ramp that ends where the layout
-              does is a line across the transcript again. */}
-          <View style={{ height: scrimTail }}>
-            <EdgeScrim color={solid} />
-          </View>
+          {/* The page-header edge scrim, whole: the same ramp, over the same height (the
+              header plus its tail), as Bloom's own `PageHeader` draws, solid at the top and
+              nothing at the bottom, so a header is the same everywhere. */}
+          <EdgeScrim color={solid} />
         </Animated.View>
       ) : null}
       {header}

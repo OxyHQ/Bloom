@@ -203,3 +203,28 @@ export function getResolvedTokens(
 }
 
 export { APP_COLOR_NAMES };
+
+/**
+ * Apply a preset's extended vars to `document.documentElement`. Web-only no-op
+ * on native. `BloomThemeProvider` already writes the base preset vars on web;
+ * call this only when an app needs the extended (card/chart/sidebar) tokens on
+ * the document root.
+ *
+ * Tokens are resolved via the single canonical `getResolvedTokens` pipeline
+ * (already full `rgb(...)` colours from the engine), so `var(--x)` — the form
+ * Tailwind v4 `@theme inline` compiles its color utilities to — resolves
+ * directly to a valid color on web.
+ */
+export function applyPresetVarsToDocument(colorName: AppColorName, mode: 'light' | 'dark'): void {
+  // Web-only: on native `document` is undefined, so this is a no-op there
+  // without needing a `react-native` Platform import (keeping this module —
+  // and `getPresetVars` — free of any RN dependency so it is importable from
+  // pure/web/test environments).
+  if (typeof document === 'undefined') return;
+
+  const vars = getResolvedTokens(colorName, mode);
+  const root = document.documentElement.style;
+  for (const [key, value] of Object.entries(vars)) {
+    root.setProperty(key, value);
+  }
+}

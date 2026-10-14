@@ -2,13 +2,16 @@
 /**
  * Live-edit Bloom inside a consumer app, without publishing.
  *
- *   node scripts/mirror-into-consumer.mjs <consumer-root> [--watch]
+ *   node scripts/mirror-into-consumer.mjs <consumer-root> [--into=<dir>] [--watch]
  *   node scripts/mirror-into-consumer.mjs <consumer-root> --restore
  *
  * Mirrors this checkout's SOURCE into `<consumer-root>/bloom-local/` and points every
  * `node_modules/@oxy.so/bloom` under the consumer at it, so Metro serves what you edit here.
  * With `--watch` an edit under `src/` reaches the consumer in a moment; `--restore` puts the
  * published copies back.
+ *
+ * The mirror must sit inside what the consumer's Metro watches (its `projectRoot` or a
+ * `watchFolders` entry), or Metro serves each file once and never sees an edit: pass `--into`.
  *
  * The folder is `bloom-local`, not dot-prefixed: Metro's file watcher ignores dot-directories, so
  * a `.bloom-local` is served once and every later edit is silently never seen.
@@ -38,7 +41,6 @@ import {
   statSync,
   symlinkSync,
   unlinkSync,
-  watch,
   writeFileSync,
   lstatSync,
 } from 'node:fs';
@@ -47,12 +49,15 @@ import { fileURLToPath } from 'node:url';
 
 const BLOOM = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [, , consumerArg, ...flags] = process.argv;
+const into = flags.find((flag) => flag.startsWith('--into='))?.slice('--into='.length);
 if (!consumerArg) {
   console.error('usage: mirror-into-consumer.mjs <consumer-root> [--watch | --restore]');
   process.exit(1);
 }
 const CONSUMER = resolve(consumerArg);
-const MIRROR = join(CONSUMER, 'bloom-local');
+// Where Metro WATCHES: a folder outside its `projectRoot` and `watchFolders` is read once and then
+// never seen to change. `--into=packages/app` for a monorepo whose watch folders are its packages.
+const MIRROR = join(into ? resolve(CONSUMER, into) : CONSUMER, 'bloom-local');
 const KEPT = '.bloom-published';
 
 /** Every `node_modules/@oxy.so/bloom` under the consumer (root and each workspace package). */
@@ -195,33 +200,50 @@ linkInstalls();
 console.log(`mirrored ${relative(process.cwd(), BLOOM) || '.'} into ${MIRROR}`);
 
 if (flags.includes('--watch')) {
-  const pending = new Map();
-  watch(join(BLOOM, 'src'), { recursive: true }, (_event, name) => {
-    if (!name) return;
-    const from = join(BLOOM, 'src', name);
-    if (!keep(from)) return;
-    clearTimeout(pending.get(from));
-    pending.set(
-      from,
-      setTimeout(() => {
-        pending.delete(from);
+  // Polled, not `fs.watch`: a recursive watch loses the directories a `git switch` replaces (and
+  // every directory created after it started), and then edits silently stop arriving. A scan of
+  // `src/` is a few thousand `stat`s every half second.
+  const seen = new Map();
+  const scan = (dir, found = new Map()) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = join(dir, entry.name);
+      if (!keep(path)) continue;
+      if (entry.isDirectory()) scan(path, found);
+      else if (entry.isFile()) found.set(path, statSync(path).mtimeMs);
+    }
+    return found;
+  };
+  for (const [path, mtime] of scan(join(BLOOM, 'src'))) seen.set(path, mtime);
+  const sync = () => {
+    let now;
+    try {
+      now = scan(join(BLOOM, 'src'));
+    } catch {
+      return; // a directory vanished mid-scan (a branch switch): the next pass sees the new tree
+    }
+    for (const [from, mtime] of now) {
+      if (seen.get(from) === mtime) continue;
+      seen.set(from, mtime);
+      const name = relative(join(BLOOM, 'src'), from);
+      try {
         const to = join(MIRROR, 'src', name);
-        try {
-          if (existsSync(from) && statSync(from).isFile()) {
-            mkdirSync(dirname(to), { recursive: true });
-            cpSync(from, to);
-            scanCopy(name);
-          } else if (!existsSync(from)) {
-            rmSync(to, { recursive: true, force: true });
-            rmSync(join(SCAN, `${name}.js`), { recursive: true, force: true });
-          }
-        } catch (error) {
-          console.warn(`could not mirror ${name}: ${error.message}`);
-        }
-      }, 40),
-    );
-  });
+        mkdirSync(dirname(to), { recursive: true });
+        cpSync(from, to);
+        scanCopy(name);
+      } catch (error) {
+        console.warn(`could not mirror ${name}: ${error.message}`);
+      }
+    }
+    for (const from of [...seen.keys()]) {
+      if (now.has(from)) continue;
+      seen.delete(from);
+      const name = relative(join(BLOOM, 'src'), from);
+      rmSync(join(MIRROR, 'src', name), { recursive: true, force: true });
+      rmSync(join(SCAN, `${name}.js`), { recursive: true, force: true });
+    }
+  };
+  setInterval(sync, 500);
   console.log(
-    'watching src/ — Ctrl-C to stop (run with --restore to put the published copies back)',
+    'watching src/ (polled) — Ctrl-C to stop (run with --restore to put the published copies back)',
   );
 }

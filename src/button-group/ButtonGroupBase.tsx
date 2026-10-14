@@ -108,22 +108,36 @@ export function createButtonGroup(
       return (
         <GroupContext.Provider value={context}>
           <BloomScope size={size}>
-            <View
+            {/* One pill: the group's own Surface paints the rim and shadow once, around the
+                whole, and clips the first segment's start and the last one's end. The segments
+                are flat tints with a hairline of the surface between them. */}
+            <Surface
+              radius={BUTTON_RADIUS}
+              cornerCurve="round"
               role="group"
               accessibilityLabel={accessibilityLabel}
               testID={testID}
               style={[
                 {
-                  flexDirection: 'row',
-                  alignItems: 'center',
                   alignSelf: 'flex-start',
-                  gap: size === 'xs' ? 4 : 6,
+                  boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
                 },
                 style,
               ]}
             >
-              {items}
-            </View>
+              <View
+                testID={testID ? `${testID}-items` : undefined}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'stretch',
+                  gap: 2,
+                  borderRadius: BUTTON_RADIUS,
+                  overflow: 'hidden',
+                }}
+              >
+                {items}
+              </View>
+            </Surface>
           </BloomScope>
         </GroupContext.Provider>
       );
@@ -204,6 +218,8 @@ export function createButtonGroup(
     const rawSize = canonicalSize ?? group?.size ?? inheritedDensity;
     const size = rawSize === 'xs' ? 'xs' : rawSize === 'sm' ? 'sm' : 'md';
     const height = size === 'xs' ? 24 : size === 'sm' ? 30 : 34;
+    const pill = Boolean(group?.separated) && iconOnly;
+    const width = pill ? Math.round(height * 1.5) : height;
     const checked = checkedProp ?? selected;
     useLayoutEffect(() => {
       register?.(id, Boolean(checked), disabled);
@@ -218,11 +234,13 @@ export function createButtonGroup(
     const itemStyle: WebCssStyle = {
       height,
       // Joined, an icon item is a square cell of the group. Separated, it stands alone, and a
-      // circle is not a pill: it is wider than it is tall.
-      minWidth: iconOnly ? (group?.separated ? Math.round(height * 1.5) : height) : undefined,
-      width: iconOnly ? (group?.separated ? Math.round(height * 1.5) : height) : undefined,
+      // circle is not a pill: it is wider than it is tall (`Button wide`).
+      minWidth: iconOnly ? width : undefined,
+      width: iconOnly ? width : undefined,
       borderWidth: 0,
-      borderRadius: BUTTON_RADIUS,
+      // Separated, the group's pill rounds the ends and every item is a straight segment.
+      borderRadius: group?.separated ? 0 : BUTTON_RADIUS,
+      ...(group?.separated ? { '--bloom-btn-radius': '0px' } : null),
       boxShadow: 'none',
       paddingLeft: iconOnly ? 0 : 8,
       paddingRight: iconOnly ? 0 : 8,
@@ -246,6 +264,8 @@ export function createButtonGroup(
         tone="neutral"
         size={size}
         iconOnly={iconOnly}
+        wide={pill}
+        material={group?.separated ? 'flat' : undefined}
         pressed={checked}
         disabled={disabled}
         hitSlop={
