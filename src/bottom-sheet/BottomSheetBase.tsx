@@ -42,6 +42,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
+import { backdropFade } from './backdrop-fade';
 import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { useTheme } from '../theme/use-theme';
 import { SheetKeyboardProvider } from './context';
@@ -93,7 +94,6 @@ export const BottomSheetBase = forwardRef(
       backdropOpacity = BACKDROP_DIM_OPACITY,
       scrollable = true,
       manualActivation = false,
-      dynamicBackdrop = false,
       animatedProgress,
       handleComponent,
       scrollY: externalScrollY,
@@ -575,23 +575,27 @@ export const BottomSheetBase = forwardRef(
     // itself. Handing it over as an animated style would put the opacity on the
     // layers' shared ancestor, which composites the group in isolation and
     // leaves `backdrop-filter` with nothing behind it to blur.
+    // The backdrop follows the sheet: it fades in with the sheet and fades out as the sheet is
+    // dragged away, reaching nothing exactly when the sheet is out of sight.
+    const sheetHeightSV = useSharedValue(0);
     const backdropProgress = useDerivedValue(() => {
-      const dragFactor = dynamicBackdrop
-        ? interpolate(translateY.value, [0, screenHeightSV.value * 0.4], [1, 0.3], 'clamp')
-        : 1;
-      return opacity.value * dragFactor;
-    }, [dynamicBackdrop, opacity, translateY, screenHeightSV]);
+      const travel = sheetHeightSV.value > 0 ? sheetHeightSV.value : screenHeightSV.value;
+      return opacity.value * backdropFade(translateY.value, travel);
+    }, [opacity, translateY, sheetHeightSV, screenHeightSV]);
 
     useAnimatedReaction(
       () =>
         Math.min(
           opacity.value,
-          interpolate(translateY.value, [0, screenHeightSV.value], [1, 0], 'clamp'),
+          backdropFade(
+            translateY.value,
+            sheetHeightSV.value > 0 ? sheetHeightSV.value : screenHeightSV.value,
+          ),
         ),
       (progress) => {
         if (animatedProgress) animatedProgress.value = progress;
       },
-      [animatedProgress, opacity, translateY, screenHeightSV],
+      [animatedProgress, opacity, translateY, sheetHeightSV, screenHeightSV],
     );
 
     // Only the consumer-supplied `backdropComponent` needs the progress as a
@@ -848,7 +852,10 @@ export const BottomSheetBase = forwardRef(
               aria-labelledby={Platform.OS === 'web' ? labelledBy : undefined}
               aria-describedby={Platform.OS === 'web' ? describedBy : undefined}
               tabIndex={Platform.OS === 'web' ? -1 : undefined}
-              onLayout={onLayout}
+              onLayout={(event) => {
+                sheetHeightSV.value = event.nativeEvent.layout.height;
+                onLayout?.(event);
+              }}
               style={[
                 dynamicStyles.sheet,
                 // `--bloom-surface` on the element that carries the
