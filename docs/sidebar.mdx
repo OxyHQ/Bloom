@@ -94,6 +94,7 @@ The logo leads the header beside the collapse (or close) control; `account`, if 
 />
 ```
 
+- `toolbar` is a fixed row under the header (logo, account, collapse control) and above the modes: the header stays. `header` replaces the header row instead; `header={false}` draws none. A conversations sidebar puts its search and tools in `toolbar` ([`ConversationSidebar`](./conversation-sidebar.mdx)).
 - A switch between whole sidebar modes, rendered under the header and above quick search. Standalone it is `SidebarModeSwitcher` (`modes`, `value`, `onValueChange`).
 - Track p4, radius 20, background-tertiary (neutral-200 / neutral-800). Rows are 32 tall and 4 apart: an 18px icon in a 32 box, 4 gap, `body-2-medium`. The selected row's 32px pill — card / neutral-700 with shadow-xs, the sidebar theme toggle's thumb — slides 200ms ease between rows, instantly under reduced motion.
 - Rest is text-secondary, selected text-primary. On web a `shortcut` hint (`caption-2`, text-tertiary) appears at the row's end on hover.
@@ -285,7 +286,7 @@ Card and docked sidebar surfaces paint the shared Surface material at 90% body o
 
 `header` replaces the account/logo header while keeping it outside the existing destination scroll. A render function receives `{ collapsed }`. `contentPadding` changes the expanded inset and the measured width of app-owned content together; omit it to preserve the size's default inset. `className` reaches the panel's animated layout node. Navigation rows also accept `style` and `className`; collapsed rows retain the sidebar's square geometry.
 
-`SidebarToolbar` composes action slots beside controlled `search` (`value`, `onValueChange`, `open`, `onOpenChange`, optional names and placeholder). Opening search expands it across those slots, focuses its input and removes hidden actions from interaction, accessibility and web tab order. Close and Escape clear the query and restore the search trigger. The 300ms width and 200ms action fade/transform respect reduced motion. Buttons and fields reuse Bloom's existing bases.
+`SidebarToolbar` composes action slots beside controlled `search` (`value`, `onValueChange`, `open`, `onOpenChange`, optional names and placeholder). Opening search expands it across those slots, focuses its input and removes hidden actions from interaction, accessibility and web tab order. Close and Escape clear the query and restore the search trigger. Leaving the field (blur) closes an empty search too; with text in it, it stays open so the filter is never hidden. The 300ms width and 200ms action fade/transform respect reduced motion. Buttons and fields reuse Bloom's existing bases.
 
 `SidebarItem` accepts `leading` in place of an icon, a secondary `description`, and `selectedAppearance="neutral"` for a tertiary surface instead of the default accent selection. Descriptive rows constrain both text lines for ellipsis and collapse them together. `labelClassName` and `descriptionClassName` reach the text nodes; existing icon-only rows and default selection retain their previous recipe. Press events, native holds, trigger ARIA props and refs reach the host for `asChild` menu composition.
 

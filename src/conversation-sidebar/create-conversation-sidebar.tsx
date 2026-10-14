@@ -40,6 +40,7 @@ export function createConversationSidebar({
     searchOpen: searchOpenProp,
     onSearchOpenChange,
     onMarketplace,
+    onCreate,
     createOptions,
     actions,
     onAction,
@@ -125,6 +126,16 @@ export function createConversationSidebar({
             ))}
           </D.DropdownMenuContent>
         </D.DropdownMenu>
+      ) : onCreate ? (
+        <Button
+          key="create"
+          iconOnly
+          leadingIcon={RiAddLine}
+          accessibilityLabel={l.create}
+          className="flex w-full min-w-0 items-center justify-center rounded-full bg-button-primary text-text-white"
+          style={{ height: 36, width: '100%', borderRadius: 999 }}
+          onPress={onCreate}
+        />
       ) : null,
     ].filter((button): button is React.ReactElement => button !== null);
 
@@ -135,19 +146,23 @@ export function createConversationSidebar({
         showSearch={false}
         showThemeToggle={false}
         {...sidebar}
-        header={
-          <SidebarToolbar
-            search={{
-              value: query,
-              onValueChange: setQuery,
-              open: searchOpen,
-              onOpenChange: setSearchOpen,
-              accessibilityLabel: l.search,
-              placeholder: l.searchPlaceholder,
-              closeLabel: l.closeSearch,
-            }}
-            actions={toolButtons}
-          />
+        // Under the panel's own header (logo, account, collapse control), which stays; a rail has
+        // no room for the three tools.
+        toolbar={({ collapsed }) =>
+          collapsed ? null : (
+            <SidebarToolbar
+              search={{
+                value: query,
+                onValueChange: setQuery,
+                open: searchOpen,
+                onOpenChange: setSearchOpen,
+                accessibilityLabel: l.search,
+                placeholder: l.searchPlaceholder,
+                closeLabel: l.closeSearch,
+              }}
+              actions={toolButtons}
+            />
+          )
         }
         content={
           <StyledView className="flex flex-col gap-2" accessibilityLabel={l.list}>
@@ -207,9 +222,9 @@ export function createConversationSidebar({
                 </C.ContextMenu>
               );
             })}
-            {!conversations.length && !after && (
+            {!conversations.length && !after && l.empty ? (
               <Text className="px-2 py-6 text-body-regular text-text-secondary">{l.empty}</Text>
-            )}
+            ) : null}
             {after}
           </StyledView>
         }

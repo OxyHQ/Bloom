@@ -40,12 +40,12 @@ import { ConversationSidebar } from '@oxy.so/bloom/conversation-sidebar';
 
 | Part | Props |
 | --- | --- |
-| **Three tools** on top | search (always; `query` / `onQueryChange`, `searchOpen` / `onSearchOpenChange`), the store button (`onMarketplace`), and the "+" menu (`createOptions`). Each of the last two is absent without its prop. |
+| **Three tools** on top | search (always; `query` / `onQueryChange`, `searchOpen` / `onSearchOpenChange`), the store button (`onMarketplace`), and the "+" button: `onCreate` makes it act directly (a new conversation), `createOptions` makes it open a menu instead. Each of the last two is absent without its prop. |
 | **Rows** | `conversations`: `title`, `description`, `agents` (stacked as the avatar; one agent is drawn larger) and `pinned` (a pin). `activeId` selects one; `onSelect` opens it. |
 | **Context menu** | `actions(conversation)` returns a menu per row (right-click, long press); `onAction(conversation, key)` runs it. A `destructive` action is drawn as one. No actions, no menu. |
 | **Words** | `labels`: every string defaults to Bloom's localized copy. |
-| **Under the rows** | `after`: a loading line or ghost rows while another page arrives (with it, the "no conversations" text is not drawn). |
-| **The panel** | every other `Sidebar` prop (`items`, `tree`, `secondaryItems`, `team`, `footer`, `mobile`, `className`, `style`, `onScroll`…) goes straight through. It has no look of its own beyond `Sidebar`'s: a card, a width, a border are yours to give. |
+| **Under the rows** | `after`: a loading line or ghost rows while another page arrives (with it, the "no conversations" text is not drawn; neither is it when `labels.empty` is empty). |
+| **The panel** | every other `Sidebar` prop (`items`, `tree`, `secondaryItems`, `team`, `footer`, `mobile`, `className`, `style`, `onScroll`…) goes straight through, `logo` and `header` included: the panel's header row (logo, account, collapse control) stays above the tools unless you pass `header={false}`. It has no look of its own beyond `Sidebar`'s: a card, a width, a border are yours to give. |
 
 The sidebar does not filter, sort or group: the list you pass is the list it draws, so the order is yours (pinned first, newest first) and `query` only reports what was typed.
 

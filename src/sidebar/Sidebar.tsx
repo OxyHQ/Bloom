@@ -163,6 +163,7 @@ function SearchField({
 const SidebarPanel: React.FC<SidebarProps> = ({
   className,
   header,
+  toolbar,
   contentPadding,
   items = [],
   primaryAction,
@@ -332,7 +333,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // app's rows, elements and data — a `Date` among them crashes native on the
   // copy. The mapper reads only whether there is one (`worklet-captures.test.ts`).
   const treeShown = Boolean(tree);
-  const hasHeader = header != null;
+  const hasHeader = header != null || toolbar != null;
   const contentMorph = useAnimatedStyle(
     () => ({
       height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : undefined,
@@ -893,6 +894,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                       ? header({ collapsed })
                       : header
                     : headerRow}
+                  {typeof toolbar === 'function' ? toolbar({ collapsed }) : toolbar}
                   {modeSwitcher}
                   {showSearch && !flatMobile ? searchButton : null}
                 </View>

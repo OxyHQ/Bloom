@@ -67,7 +67,7 @@ export interface ConversationSidebarLabels {
 }
 
 export interface ConversationSidebarProps
-  extends Omit<SidebarProps, 'header' | 'content' | 'showSearch' | 'children'> {
+  extends Omit<SidebarProps, 'toolbar' | 'content' | 'showSearch' | 'children'> {
   conversations: ConversationSidebarItem[];
   activeId?: string;
   onSelect: (id: string) => void;
@@ -79,7 +79,9 @@ export interface ConversationSidebarProps
   onSearchOpenChange?: (open: boolean) => void;
   /** The store button beside search; omitted, there is none. */
   onMarketplace?: () => void;
-  /** The "+" menu; omitted (or empty), there is no "+" button. */
+  /** The "+" button does this directly (a new conversation). Use `createOptions` instead for a menu. */
+  onCreate?: () => void;
+  /** The "+" opens this menu. Wins over `onCreate`; with neither, there is no "+" button. */
   createOptions?: ConversationSidebarCreateOption[];
   /** The context menu of a conversation; none, none. */
   actions?: (conversation: ConversationSidebarItem) => ConversationSidebarAction[];

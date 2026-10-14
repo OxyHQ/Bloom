@@ -104,4 +104,13 @@ describe('ConversationSidebar', () => {
     expect(view.getByLabelText('Launch plan')).toBeTruthy();
     expect(view.getByLabelText('Security')).toBeTruthy();
   });
+
+  it('makes "+" act directly with onCreate, and a menu only with createOptions', () => {
+    const onCreate = jest.fn();
+    const direct = render(
+      scope(<ConversationSidebar conversations={CHATS} onSelect={() => {}} onCreate={onCreate} />),
+    );
+    fireEvent.press(direct.getByLabelText('Create bot or chat'));
+    expect(onCreate).toHaveBeenCalledTimes(1);
+  });
 });
