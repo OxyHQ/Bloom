@@ -157,13 +157,16 @@ describe('ComposerLoader (native)', () => {
         <Text>composer</Text>
       </ComposerLoader>,
     );
-    const theme = buildTheme('teal', 'light');
-    const surface = resolvedStyle(getByTestId('cl-surface', HIDDEN).props.style);
-    expect(surface).toMatchObject({
+    const plate = getByTestId('cl-surface', HIDDEN);
+    expect(resolvedStyle(plate.props.style)).toMatchObject({
       borderRadius: 9999,
-      backgroundColor: theme.colors.card,
       boxShadow: BUTTON_SHADOW.light,
     });
+    // The plate is a Surface: its colour is the shared material, not the `card` role.
+    expect(
+      plate.findAll((node) => node.props.radius === 9999 && typeof node.props.fill === 'string')
+        .length,
+    ).toBeGreaterThan(0);
     expect(getByText('composer')).toBeTruthy();
   });
 
@@ -174,9 +177,7 @@ describe('ComposerLoader (native)', () => {
       </ComposerLoader>,
       'dark',
     );
-    const theme = buildTheme('teal', 'dark');
     expect(resolvedStyle(getByTestId('cl-surface', HIDDEN).props.style)).toMatchObject({
-      backgroundColor: theme.colors.card,
       boxShadow: BUTTON_SHADOW.dark,
     });
   });

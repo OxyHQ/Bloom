@@ -527,6 +527,9 @@ describe('AiChatContainer host slots', () => {
       </AiChatContainer>,
     );
     expect(resolvedStyle(bare.getByTestId('chat').props.style).backgroundColor).toBe('transparent');
+    // Not a card, so no radius of its own: the host's shape (a sheet, a panel) rounds it.
+    expect(resolvedStyle(bare.getByTestId('chat').props.style).borderRadius).toBe(0);
+    expect(resolvedStyle(painted.getByTestId('chat').props.style).borderRadius).toBe(24);
   });
 });
 

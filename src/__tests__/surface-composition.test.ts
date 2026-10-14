@@ -15,7 +15,6 @@ it.each([
   'src/queue-panel/QueuePanel.tsx',
   'src/user-hover-card/UserHoverCard.tsx',
   'src/tooltip/Tooltip.tsx',
-  'src/composer-panel/ComposerPanelBase.tsx',
   'src/toast/ToastContent.tsx',
 ])('%s composes the universal material', (file) => {
   const source = read(file);
@@ -24,6 +23,16 @@ it.each([
   );
   expect(source).toContain('<SurfacePaint');
 });
+
+// The composer is the shared `Surface` itself, so its tone is the one buttons and bubbles have.
+it.each(['src/composer-panel/ComposerPanelBase.tsx', 'src/composer-panel/ComposerPillBase.tsx'])(
+  '%s is the shared Surface',
+  (file) => {
+    const source = read(file);
+    expect(source).toMatch(/import\s+\{\s*Surface\s*\}\s+from\s+['"][^'"]*\/surface['"]/);
+    expect(source).toContain('<Surface');
+  },
+);
 
 it.each([
   'src/floating/FloatingPanel.tsx',

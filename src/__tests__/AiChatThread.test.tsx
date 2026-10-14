@@ -389,13 +389,12 @@ describe('AiChatContainer floatingChrome', () => {
     expect(api.queryByTestId('chat-fade-top-surface', HIDDEN)).toBeNull();
   });
 
-  it('draws no fades without a surface to fade to', () => {
+  it('still fades without a surface of its own, into the lighter chat tone rather than the host fill', () => {
     const api = floating({ surface: false });
     measure(api, 60, 100);
     settle(api, 1000, 300);
     scrollTo_(api, 300, 1000);
-    expect(api.queryByTestId('chat-fade-top', HIDDEN)).toBeNull();
-    expect(api.queryByTestId('chat-fade-bottom', HIDDEN)).toBeNull();
+    expect(api.queryByTestId('chat-fade-top', HIDDEN)).not.toBeNull();
   });
 
   it('holds the reader still when only the chrome resizes, and follows real turns as before', () => {

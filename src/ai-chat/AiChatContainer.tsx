@@ -57,6 +57,7 @@ import type { AiChatContainerProps, AiChatThreadHandle, AiChatThreadProps } from
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { ScrollArea } from '../layout/ScrollArea';
+import { useWheelForwarding } from './use-wheel-forwarding';
 
 /** The thread's own top padding: the gap between the header and the first turn. */
 const THREAD_PAD_TOP = 16;
@@ -214,6 +215,7 @@ export function AiChatContainerBase({
   ) : null;
 
   const backing = useSurfaceBacking(surface ? palette.secondary : undefined, style, !background);
+  const wheelRoot = useWheelForwarding();
   const rootStyle: StyleProp<ViewStyle> = [
     {
       height: '100%',
@@ -221,7 +223,8 @@ export function AiChatContainerBase({
       flex: 1,
       flexDirection: 'column',
       overflow: 'hidden',
-      borderRadius: CONTAINER_RADIUS,
+      // The card rounds itself; without its own surface the host's shape (a sheet, a panel) does.
+      borderRadius: surface ? CONTAINER_RADIUS : 0,
       backgroundColor: surface ? palette.secondary : 'transparent',
     },
     style,
@@ -248,7 +251,7 @@ export function AiChatContainerBase({
           header={header}
           crumbRow={crumbRow}
           footerBody={footerBody}
-          fadeColor={surface ? backing.fill : null}
+          fadeColor={surface ? backing.fill : palette.secondary}
           gutterColor={gutterColor}
         >
           {children}
@@ -267,7 +270,7 @@ export function AiChatContainerBase({
           header={header}
           crumbRow={crumbRow}
           footerBody={footerBody}
-          fadeColor={surface ? backing.fill : null}
+          fadeColor={surface ? backing.fill : palette.secondary}
         >
           {children}
         </FloatingChrome>
@@ -277,7 +280,7 @@ export function AiChatContainerBase({
 
   return (
     <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-      <View testID={testID} style={rootStyle}>
+      <View ref={wheelRoot} testID={testID} style={rootStyle}>
         {backgroundLayer}
         {header}
         {crumbRow}
@@ -350,6 +353,7 @@ function FloatingChrome({
   const [headerHeight, setHeaderHeight] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const topFade = useSharedValue(0);
+  const wheelRoot = useWheelForwarding();
 
   const onHeaderLayout = useCallback(
     (event: LayoutChangeEvent) => {
@@ -510,7 +514,7 @@ function FloatingChrome({
   }
 
   return (
-    <View testID={testID} style={[rootStyle, { position: 'relative' }]}>
+    <View ref={wheelRoot} testID={testID} style={[rootStyle, { position: 'relative' }]}>
       {backgroundLayer}
       {thread}
       {top}

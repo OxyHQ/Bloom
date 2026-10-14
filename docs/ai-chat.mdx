@@ -110,7 +110,7 @@ The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is 
 
 | Layer | Geometry |
 |---|---|
-| card | unchanged: radius 24, background-secondary (or `surface={false}`), clipped; `background` still fills it under everything |
+| card | unchanged: radius 24, background-secondary, clipped; with `surface={false}` it is not a card: no radius or fill of its own, the host's shape and fill apply; `background` still fills it under everything |
 | `children` | fill the card's full height — nothing is in flow above or below them |
 | header block | the `header` slot (`AiChatMobileHeader`) + the breadcrumb row, absolute at the top, transparent — no band of its own |
 | footer block | `AgentThinking` + `composer`, absolute at the bottom, px 10 / pt 12 / pb 10, gap 10 — **no band of its own**: the transcript passes behind the composer and stays in sight around it |
@@ -122,7 +122,7 @@ Both blocks are `pointerEvents="box-none"`, so the transcript under their empty 
 
 **Why a fade, not a frost.** `AgentChat` frosts its overlaid header (white/black 20%, a 20px backdrop blur on web) once the transcript reaches it. Here the chrome has no band, and a frosted rectangle is one: it ends at its own bottom edge, and that edge is a line across the transcript. A one-colour opacity ramp is identical on native and web and needs no blur.
 
-**Limits.** The fade is background-secondary. With `surface={false}` there is no known colour to fade to, so the header floats **without** it. Over an opaque `background` layer the fade is the card surface, not the layer.
+**Limits.** The fade is background-secondary — the tone of the chat card — also with `surface={false}`, so a header over a host's darker fill (a dark sheet) reads as a lighter band, not a dark slab. Over an opaque `background` layer the fade is the card surface, not the layer.
 
 ### Document scroll
 
