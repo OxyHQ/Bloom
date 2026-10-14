@@ -8,7 +8,7 @@
  * scores the palette for theme suitability. Feed the top result straight into
  * `generateRoleColors({ seed })`.
  */
-import { hexFromArgb } from './index';
+import { hexFromArgb } from './color-utils';
 import { labDistance, labFromInt, type LabPoint } from './lab-point-provider';
 import { quantizeWu } from './quantizer-wu';
 import { countByColor } from './quantizer-map';
