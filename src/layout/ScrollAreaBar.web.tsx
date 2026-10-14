@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useIsRtl } from '../hooks/use-is-rtl';
+import { dataHook } from '../styles/data-hook';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { offsetOfThumb, thumbOf, type ScrollAxis } from './scroll-area-geometry';
 import type { ScrollAreaScrollbar } from './types';
@@ -139,6 +140,9 @@ export function ScrollAreaBar({
     const down = (event: PointerEvent) => {
       if (event.button !== 0) return;
       event.preventDefault();
+      // The bar's drag is the bar's: a pan gesture further up (the bottom sheet's) would take the
+      // pointer's capture from the bar on the same press and drag the sheet instead.
+      event.stopPropagation();
       trackEl.setPointerCapture(event.pointerId);
       // On the thumb the drag keeps its grip; on the bare track the thumb jumps under the pointer.
       const onThumb = event.target === thumbEl;
@@ -186,11 +190,15 @@ export function ScrollAreaBar({
     <View
       ref={track}
       aria-hidden
+      {...dataHook('bloomScrollbar')}
       style={
         {
           position: 'absolute',
           zIndex: 1,
-          pointerEvents: shown ? 'auto' : 'none',
+          // The grab strip is live whenever there is something to scroll, shown or not: a hidden
+          // bar that took no pointer could never be woken by moving to the edge, only caught in
+          // the moment after a scroll.
+          pointerEvents: scrollable ? 'auto' : 'none',
           touchAction: 'none',
           ...(horizontal
             ? {
@@ -212,6 +220,7 @@ export function ScrollAreaBar({
     >
       <View
         ref={thumb}
+        {...dataHook('bloomScrollbarThumb')}
         style={
           {
             borderRadius: 999,

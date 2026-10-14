@@ -124,9 +124,55 @@ describe('ScrollArea (web)', () => {
     expect(never.area.querySelector('[aria-hidden="true"]')).toBeNull();
   });
 
-  it('takes no pointer events while hidden, so a click goes through to the content', () => {
+  it('takes no pointer while there is nothing to scroll', () => {
+    // The default metrics of an unmeasured box: the strip lets clicks through to the content.
     const { track } = mount();
     expect(track().style.pointerEvents).toBe('none');
+  });
+
+  it('is grabbable whenever there is something to scroll, even hidden', () => {
+    const { scroller, track, thumb } = mount();
+    scrollTo(scroller, 0);
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+    // Hidden, and still taking the pointer: otherwise moving to the edge could never wake it.
+    expect(thumb().style.opacity).toBe('0');
+    expect(track().style.pointerEvents).toBe('auto');
+  });
+
+  it('wakes when the pointer reaches the strip, and goes again when it leaves', () => {
+    const { scroller, track, thumb } = mount();
+    scrollTo(scroller, 0);
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+    expect(thumb().style.opacity).toBe('0');
+
+    act(() => {
+      track().dispatchEvent(new Event('pointerenter'));
+    });
+    expect(thumb().style.opacity).not.toBe('0');
+
+    act(() => {
+      track().dispatchEvent(new Event('pointerleave'));
+    });
+    expect(thumb().style.opacity).toBe('0');
+  });
+
+  it('keeps a press on the bar from reaching what is above it (a sheet’s pan gesture)', () => {
+    const { area, scroller, track, thumb } = mount();
+    scrollTo(scroller, 0);
+    const above = jest.fn();
+    area.addEventListener('pointerdown', above);
+    // jsdom has no pointer capture; the bar asks for it on the track.
+    Object.assign(track(), { setPointerCapture: jest.fn(), hasPointerCapture: () => true });
+    act(() => {
+      thumb().dispatchEvent(
+        new MouseEvent('pointerdown', { bubbles: true, cancelable: true, button: 0 }),
+      );
+    });
+    expect(above).not.toHaveBeenCalled();
   });
 
   it('puts a horizontal bar along the bottom edge', () => {
