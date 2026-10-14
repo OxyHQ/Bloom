@@ -4,7 +4,7 @@ import { View, type LayoutChangeEvent } from 'react-native';
 import { RiLinkM } from '../icons/remix/RiLinkM';
 import { Text } from '../typography';
 import { useDirectionProps } from '../hooks/use-is-rtl';
-import { TurnActionButton } from './AiChatControls';
+import { TurnActionButton, TurnActionGroup } from './AiChatControls';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { RevealFade, RevealLine, RevealSequence, useRevealSlot } from './AiChatReveal';
 import { CARD_RADIUS, useAiChatPalette, useAiChatWebCss } from './shared';
@@ -105,11 +105,7 @@ export function AiChatUserMessageBase({
       </RevealFade>
       {actions && actions.length > 0 ? (
         <RevealFade animate={animate} style={{ marginTop: 8 }}>
-          <View
-            {...dataHook('bloomAiChatTurnActions')}
-            testID={testID ? `${testID}-actions` : undefined}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
-          >
+          <TurnActionGroup testID={testID ? `${testID}-actions` : undefined}>
             {actions.map((action) => (
               <TurnActionButton
                 key={action.key}
@@ -118,7 +114,7 @@ export function AiChatUserMessageBase({
                 testID={testID ? `${testID}-actions` : undefined}
               />
             ))}
-          </View>
+          </TurnActionGroup>
         </RevealFade>
       ) : null}
     </View>

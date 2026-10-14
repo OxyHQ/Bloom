@@ -19,7 +19,7 @@ The pieces of the AI chat and AI image generation screens. Everything is data an
 | `AiChatThread` | The bottom-anchored, self-following scroll of turns — with the follow, upward pagination and `ref` a host with history needs |
 | `AiChatUserMessage` / `AiChatAssistantMessage` | The turns, with the staggered blur-in |
 | `AiChatMessageLine`, `AiChatBulletList`, `AiChatBullet`, `AiChatStrong`, `AiChatLinkChip` | A reply's blocks and inline runs |
-| `AiChatFeedbackRow` | Like / dislike / copy with tooltips, plus your own `actions` |
+| `AiChatFeedbackRow` | Like / dislike / copy with tooltips, plus your own `actions`, as one pill cut into segments |
 | `AiChatImageGeneration` | An image generating: dot wave, split-flap countdown, radial reveal, feedback and toast |
 | `AiChatCodePanel` | Changes / Browser panel: uncommitted-changes card and a numbered code view |
 | `AiChatGalleryPanel` | Gallery / Styles panel: masonry wall of generations that expand in place |
@@ -153,7 +153,7 @@ At rest the chrome is in the flow and covers nothing, so `useAiChatChromeInsets(
 ## Turns
 
 - **User** — pushed right with a 6px bleed past the column, as wide as its text up to half the column + 6; radius 16, background-primary, px 12 / py 11, shadow-card.
-- **User actions** — `actions` draws the feedback row's buttons under the card, 8 below and right-aligned, 6 apart (copy, edit). On a web pointer (`@media (hover: hover)`) they fade in over 150ms while the turn is hovered or holds focus — opacity only, so they stay in the tab order and the accessibility tree, and tabbing into one reveals the row. Native and touch web always show them.
+- **User actions** — `actions` draws the feedback row's buttons under the card, 8 below and right-aligned, as one pill cut into 28×42 segments 2px apart (copy, edit). On a web pointer (`@media (hover: hover)`) they fade in over 150ms while the turn is hovered or holds focus — opacity only, so they stay in the tab order and the accessibility tree, and tabbing into one reveals the row. Native and touch web always show them.
 - **Assistant** — full width, blocks 8 apart, with `AiChatFeedbackRow` last (`feedback={false}` drops it).
 - **Blocks** — `AiChatMessageLine` (body-regular; `tone="secondary"` for status lines; `block` for a card), `AiChatBulletList` (a 5px disc in a 21px indent, items 8 apart), `AiChatStrong` (body-medium), `AiChatLinkChip` (inline, radius 8, px 4 / py 3, accent-100 with a 16px link glyph and caption-2-medium accent-500). A bare string child becomes a line; any other element a block line.
 - **Motion** — a turn fades in over 400ms while its blocks rise 6px, un-blur 6px (web) and fade in, 500ms `cubic-bezier(0.25, 0.1, 0.25, 1)`, 180ms apart; a bullet list staggers its own items from its slot. `animate={false}` mounts settled (history), as does reduced motion.

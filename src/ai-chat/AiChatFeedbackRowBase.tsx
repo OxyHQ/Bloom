@@ -5,7 +5,13 @@ import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiThumbDownLine } from '../icons/remix/RiThumbDownLine';
 import { RiThumbUpLine } from '../icons/remix/RiThumbUpLine';
-import { SurfaceAction, SwapGlyph, TurnActionButton, turnActionSurface } from './AiChatControls';
+import {
+  SurfaceAction,
+  SwapGlyph,
+  TurnActionButton,
+  TurnActionGroup,
+  turnActionSurface,
+} from './AiChatControls';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES } from './messages';
 import { CONFIRM_MS, useAiChatPalette, useAiChatWebCss } from './shared';
@@ -88,7 +94,7 @@ export function AiChatFeedbackRowBase({
   const surface = turnActionSurface(palette);
 
   return (
-    <View testID={testID} style={[{ flexDirection: 'row', alignItems: 'center', gap: 6 }, style]}>
+    <TurnActionGroup testID={testID} style={style}>
       <SurfaceAction
         {...surface}
         testID={testID ? `${testID}-like` : undefined}
@@ -125,7 +131,7 @@ export function AiChatFeedbackRowBase({
       {actions?.map((action) => (
         <TurnActionButton key={action.key} action={action} palette={palette} testID={testID} />
       ))}
-    </View>
+    </TurnActionGroup>
   );
 }
 
