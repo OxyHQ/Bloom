@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import type { AvatarConfig } from './model';
+import type { AvatarCharacter } from './character';
 
 export type AgentAvatarProps = {
-  config: AvatarConfig;
+  /** What the avatar is. `{ preset: 'blue_beret' }` is a complete one; see `AvatarCharacter`. */
+  character: AvatarCharacter;
   size?: number;
   paused?: boolean;
   label?: string;
@@ -23,11 +24,6 @@ export type AgentAvatarProps = {
   testID?: string;
 };
 export type AvatarProps = AgentAvatarProps;
-
-export type {
-  AvatarCharacterConfig,
-  AvatarCharacterCategory,
-} from './config-character';
 
 export type AgentAvatarProviderProps = {
   /** Defaults to /bloom-character/runtime.mjs on web; native requires an absolute hosted URL. */

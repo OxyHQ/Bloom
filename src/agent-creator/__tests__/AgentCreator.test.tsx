@@ -1,16 +1,12 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import { useState } from 'react';
 import { CharacterRuntimeFixture } from './support/character-runtime-fixture';
-import { CharacterAvatar } from '../../agent-avatar/CharacterAvatar';
-import { legacyCharacterRecipe, legacyRecipe } from '../../agent-avatar/legacy-recipe';
 import { Select } from '../../select';
-import { CHARACTER_OPTIONS } from '../constants';
+import { CHARACTER_OPTIONS, CHARACTER_TEMPLATES } from '../constants';
 import { ShapeArc } from '../ShapeArc';
 import { CustomColorPicker } from '../CustomColorPicker';
 import { GlossArt } from '../GlossArt';
-import { avatarHex, hexAppearance } from '../shared';
 import { EmotionPicker } from '../EmotionPicker';
-import { FOLD_CONFIG } from '../../agent-avatar/model';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { AgentCreator } from '../AgentCreator';
 import type { AgentCreatorAgent } from '../types';
@@ -20,7 +16,7 @@ const agent: AgentCreatorAgent = {
   name: 'Designer',
   label: 'Design',
   description: 'Helpful designer',
-  avatar: { ...FOLD_CONFIG },
+  avatar: { preset: 'blue_beret' },
   preferences: {
     voice: 'local',
     speed: 1.25,
@@ -57,27 +53,6 @@ describe('controlled agent creator', () => {
       description: 'Builds better systems',
     });
   });
-  it('preserves the other avatar controls when choosing a color or expression', () => {
-    const onChange = jest.fn();
-    const view = editor(onChange);
-    fireEvent.press(view.getByLabelText('Blue avatar'));
-    expect(onChange).toHaveBeenLastCalledWith({
-      ...agent,
-      avatar: {
-        ...agent.avatar,
-        hue: 220,
-        saturation: 85,
-        lightness: undefined,
-        lightEyes: false,
-        lookAt: 'wander',
-      },
-    });
-    fireEvent.press(view.getByLabelText('Happy'));
-    expect(onChange).toHaveBeenLastCalledWith({
-      ...agent,
-      avatar: { ...agent.avatar, eyes: 'happy', lookAt: 'wander' },
-    });
-  });
   it('edits notifications without discarding language, voice or speed', () => {
     const onChange = jest.fn();
     const view = editor(onChange);
@@ -106,859 +81,159 @@ describe('controlled agent creator', () => {
   });
 });
 
-describe('optional character editor', () => {
-  it('offers beta controls only with a runtime and preserves the procedural recipe when choosing a preset', () => {
-    const onChange = jest.fn();
-    const plain = editor(onChange);
-    expect(plain.queryByTestId('agent-creator-character-controls')).toBeNull();
-    plain.unmount();
-    const view = render(
+/** The editor with its runtime present, edits applied the way a host would apply them. */
+function controlled(initial: AgentCreatorAgent = agent) {
+  const onChange = jest.fn();
+  function Host() {
+    const [current, setCurrent] = useState(initial);
+    return (
       <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
         <BloomThemeProvider>
-          <AgentCreator agent={agent} onChange={onChange} />
+          <AgentCreator
+            agent={current}
+            onChange={(next) => {
+              onChange(next);
+              setCurrent(next);
+            }}
+          />
         </BloomThemeProvider>
-      </CharacterRuntimeFixture>,
+      </CharacterRuntimeFixture>
     );
-    const preset = view.UNSAFE_getAllByType(Select)[0]!;
-    fireEvent(preset, 'valueChange', 'blue_beret');
-    expect(onChange).toHaveBeenLastCalledWith({
-      ...agent,
-      avatar: {
-        ...agent.avatar,
-        character: {
-          selections: {
-            eyes: 'sleepy_lids',
-            eyewear: 'none',
-            accessory: 'felipe_beret',
-            shape: 'six_lobed_flower',
-            color: 'blue',
-          },
-          bodyColor: '#ff9547',
-        },
-      },
-    });
+  }
+  const view = render(<Host />);
+  const last = () => (onChange.mock.lastCall![0] as AgentCreatorAgent).avatar;
+  return { view, onChange, last };
+}
+
+describe('the character editor', () => {
+  beforeEach(() => {
+    global.requestAnimationFrame = jest.fn(() => 1);
+    global.cancelAnimationFrame = jest.fn();
   });
-  it('retains explicit eye style when changing shape while awaiting engine compatibility', () => {
-    const character = {
+
+  it('offers no character controls without a runtime to draw them', () => {
+    const view = editor();
+    expect(view.queryByTestId('agent-creator-character-controls')).toBeNull();
+    expect(view.queryByLabelText('Blue avatar')).toBeNull();
+    expect(view.UNSAFE_queryByType(ShapeArc)).toBeNull();
+    expect(view.UNSAFE_queryByType(EmotionPicker)).toBeNull();
+  });
+
+  it('offers every body and every eye style, as characters', () => {
+    const { view } = controlled();
+    const shapes = view.UNSAFE_getByType(ShapeArc).props.choices;
+    expect(shapes.map((choice: { id: string }) => choice.id)).toHaveLength(21);
+    expect(new Set(shapes.map((choice: { id: string }) => choice.id)).size).toBe(21);
+    expect(shapes[0].character).toMatchObject({ preset: 'blue_beret', shape: shapes[0].id });
+    expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toHaveLength(12);
+    expect(view.UNSAFE_getByType(ShapeArc).props.value).toBe('six_lobed_flower');
+    expect(view.UNSAFE_getByType(EmotionPicker).props.value).toBe('oval');
+  });
+
+  it('writes the whole character when a body is chosen, keeping the face, the hat and the paint', () => {
+    const { view, last } = controlled();
+    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('heart'));
+    expect(last()).toEqual({
       preset: 'blue_beret',
-      selections: { eyes: 'round_inset', color: 'pink' },
-    };
-    const onChange = jest.fn();
-    const configured = { ...agent, avatar: { ...agent.avatar, character } };
-    const capabilities = {
-      key: JSON.stringify(character),
-      available: { 'eyes:round_inset': false },
-      selected: { eyes: 'oval', color: 'pink', shape: 'rounded_diamond' },
-    };
-    const view = render(
-      <CharacterRuntimeFixture
-        value={{
-          runtimeUrl: '/runtime.mjs',
-          capabilitiesByKey: new Map([[capabilities.key, capabilities]]),
-        }}
-      >
-        <BloomThemeProvider>
-          <AgentCreator agent={configured} onChange={onChange} />
-        </BloomThemeProvider>
-      </CharacterRuntimeFixture>,
-    );
-    expect(view.UNSAFE_getByType(EmotionPicker).props.value).toBe('round_inset');
-    expect(view.getByLabelText('Round inset').props.disabled).toBe(false);
-    expect(view.queryByLabelText('Happy')).toBeNull();
-    expect(view.getByLabelText('Custom avatar color')).toBeTruthy();
-    fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'heart');
-    expect(onChange).toHaveBeenLastCalledWith({
-      ...configured,
-      avatar: {
-        ...configured.avatar,
-        character: {
-          selections: {
-            eyes: 'round_inset',
-            eyewear: 'none',
-            color: 'pink',
-            shape: 'heart',
-            accessory: 'felipe_beret',
-          },
-        },
-      },
-    });
-    fireEvent(view.UNSAFE_getAllByType(Select)[0]!, 'valueChange', 'bloom');
-    expect(onChange).toHaveBeenLastCalledWith({
-      ...agent,
-      avatar: { ...agent.avatar, lookAt: 'wander' },
-    });
-  });
-});
-
-it('edits custom beta body RGB through the existing picker and retains the entire recipe', () => {
-  const character = {
-    preset: 'blue_beret',
-    bodyColor: '#123456',
-    selections: { shape: 'heart', eyes: 'oval', accessory: 'bow' },
-  };
-  const configured = {
-    ...agent,
-    avatar: { ...agent.avatar, lookAt: 'top-left' as const, character },
-  };
-  const onChange = jest.fn();
-  const capabilities = {
-    key: JSON.stringify(character),
-    available: { 'color:blue': true },
-    selected: { color: 'blue', shape: 'heart', eyes: 'oval', accessory: 'bow' },
-  };
-  const view = render(
-    <CharacterRuntimeFixture
-      value={{
-        runtimeUrl: '/runtime.mjs',
-        capabilitiesByKey: new Map([[capabilities.key, capabilities]]),
-      }}
-    >
-      <BloomThemeProvider>
-        <AgentCreator agent={configured} onChange={onChange} />
-      </BloomThemeProvider>
-    </CharacterRuntimeFixture>,
-  );
-  expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(false);
-  expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(true);
-  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#123456');
-  expect(
-    view
-      .UNSAFE_getAllByType(GlossArt)
-      .some((art) => art.props.center === '#123456' && art.props.active),
-  ).toBe(true);
-  fireEvent.press(view.getByLabelText('Custom avatar color'));
-  const picker = view.UNSAFE_getByType(CustomColorPicker);
-  expect(picker.props.value).toBe('#123456');
-  fireEvent(picker, 'change', '#Ab1234');
-  expect(onChange).toHaveBeenLastCalledWith({
-    ...configured,
-    avatar: {
-      ...configured.avatar,
-      ...hexAppearance('#Ab1234'),
-      character: {
-        bodyColor: '#ab1234',
-        selections: { ...character.selections, eyewear: 'none' },
-      },
-    },
-  });
-  fireEvent.press(view.getByLabelText('Blue avatar'));
-  expect(onChange).toHaveBeenLastCalledWith({
-    ...configured,
-    avatar: {
-      ...configured.avatar,
-      character: {
-        selections: { ...character.selections, eyewear: 'none', color: 'blue' },
-      },
-    },
-  });
-});
-
-describe('shared original-engine editor catalog', () => {
-  function withRuntime(
-    configured: AgentCreatorAgent,
-    onChange = jest.fn(),
-    selected: Record<string, string> = {},
-  ) {
-    const beta = configured.avatar.character && configured.avatar.character.preset !== 'bloom';
-    const key = JSON.stringify(
-      beta ? configured.avatar.character : legacyCharacterRecipe(configured.avatar),
-    );
-    const caps = {
-      key,
-      selected: {
-        shape: 'circle',
-        eyes: configured.avatar.character?.selections?.eyes ?? 'oval',
-        ...selected,
-      },
-      available: { 'eyes:dots': true },
-    };
-    return render(
-      <CharacterRuntimeFixture
-        value={{
-          runtimeUrl: '/runtime.mjs',
-          capabilitiesByKey: new Map([[key, caps]]),
-        }}
-      >
-        <BloomThemeProvider>
-          <AgentCreator agent={configured} onChange={onChange} />
-        </BloomThemeProvider>
-      </CharacterRuntimeFixture>,
-    );
-  }
-
-  it('offers all twenty-one unique shapes in the same arc for both saved recipe kinds', () => {
-    const kinds = [
-      agent,
-      {
-        ...agent,
-        avatar: { ...agent.avatar, character: { preset: 'blue_beret' } },
-      },
-    ];
-    for (const configured of kinds) {
-      const view = withRuntime(configured);
-      const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
-      expect(
-        choices.every((choice: { thumbnail?: string }) => choice.thumbnail === undefined),
-      ).toBe(true);
-      expect(choices).toHaveLength(21);
-      expect(new Set(choices.map((choice: { id: string }) => choice.id)).size).toBe(21);
-      expect(choices.map((choice: { id: string }) => choice.id)).toEqual(
-        expect.arrayContaining([
-          'clippo',
-          'circle',
-          'heart',
-          'rounded_triangle',
-          'slender',
-          'pocket',
-          'petal',
-          'star',
-          'cloud',
-          'shield',
-          'pebble',
-          'squircle',
-        ]),
-      );
-      expect(view.queryByLabelText('Happy')).toBeNull();
-      expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toHaveLength(12);
-      view.unmount();
-    }
-  });
-
-  it('offers Clippo eyes from the shared renderer and retains them across every body', () => {
-    const configured = {
-      ...agent,
-      avatar: {
-        ...agent.avatar,
-        character: { preset: 'clippo', selections: { eyes: 'clippo' } },
-      },
-    };
-    const view = withRuntime(configured, jest.fn(), { color: 'blue' });
-    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#999b9d');
-    expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(false);
-    expect(
-      view.UNSAFE_getAllByType(GlossArt).find((node) => node.props.active)?.props,
-    ).toMatchObject({ center: '#999b9d', edge: '#999b9d', rainbow: false });
-    const eyes = view.UNSAFE_getByType(EmotionPicker).props.choices;
-    expect(
-      eyes.every(
-        (choice: { thumbnail?: string; artwork?: string }) => !choice.thumbnail && !choice.artwork,
-      ),
-    ).toBe(true);
-    expect(eyes.find((choice: { id: string }) => choice.id === 'clippo')).toMatchObject({
-      id: 'clippo',
-      disabled: false,
-    });
-    expect(eyes.find((choice: { id: string }) => choice.id === 'clippo').thumbnail).toBeUndefined();
-    const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
-    expect(choices.every((choice: { thumbnail?: string }) => choice.thumbnail === undefined)).toBe(
-      true,
-    );
-    expect(
-      choices.find((choice: { id: string }) => choice.id === 'clippo').thumbnail,
-    ).toBeUndefined();
-    for (const choice of choices) expect(choice.config.character.selections.eyes).toBe('clippo');
-    for (const choice of choices)
-      expect(choice.config.character.bodyColor ?? avatarHex(choice.config)).toBe('#999b9d');
-    view.unmount();
-  });
-
-  it('retains Todd eyes and Felipe’s beret when selecting any shape', () => {
-    const configured = {
-      ...agent,
-      avatar: {
-        ...agent.avatar,
-        character: {
-          preset: 'blue_beret',
-          selections: { eyes: 'todd', accessory: 'felipe_beret' },
-        },
-      },
-    };
-    const view = withRuntime(configured);
-    const eyes = view.UNSAFE_getByType(EmotionPicker).props.choices;
-    expect(
-      eyes.every(
-        (choice: { thumbnail?: string; artwork?: string }) => !choice.thumbnail && !choice.artwork,
-      ),
-    ).toBe(true);
-    expect(eyes.find((choice: { id: string }) => choice.id === 'todd')).toMatchObject({
-      id: 'todd',
-      disabled: false,
-    });
-    const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
-    expect(choices.every((choice: { thumbnail?: string }) => choice.thumbnail === undefined)).toBe(
-      true,
-    );
-    for (const choice of choices) {
-      expect(choice.config.character.selections).toMatchObject({
-        eyes: 'todd',
-        accessory: 'felipe_beret',
-      });
-    }
-  });
-
-  it('materializes a known preset paint only when selecting another body', () => {
-    const configured = {
-      ...agent,
-      avatar: { ...agent.avatar, character: { preset: 'blue_beret' } },
-    };
-    const onChange = jest.fn();
-    const view = withRuntime(configured, onChange, {
-      color: 'blue',
+      shape: 'heart',
       eyes: 'oval',
-      accessory: 'felipe_beret',
-    });
-    fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'todd');
-    expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-      selections: {
-        shape: 'todd',
-        eyewear: 'none',
-        color: 'blue',
-        eyes: 'oval',
-        accessory: 'felipe_beret',
-      },
-    });
-    fireEvent.press(view.getByLabelText('Single eye'));
-    expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-      selections: {
-        shape: 'circle',
-        eyes: 'cyclops',
-        eyewear: 'none',
-        accessory: 'felipe_beret',
-        color: 'blue',
-      },
-    });
-    view.unmount();
-  });
-
-  it('copies actual unnamed preset RGB to every body instead of its unrelated procedural fallback', () => {
-    const configured = {
-      ...agent,
-      avatar: { ...agent.avatar, hue: 300, character: { preset: 'gus' } },
-    };
-    const view = withRuntime(configured, jest.fn(), { bodyColor: '#f0bd73' });
-    expect(avatarHex(configured.avatar)).not.toBe('#f0bd73');
-    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#f0bd73');
-    for (const choice of view.UNSAFE_getByType(ShapeArc).props.choices)
-      expect(choice.config.character.bodyColor ?? avatarHex(choice.config)).toBe('#f0bd73');
-    expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(true);
-    view.unmount();
-  });
-
-  it.each([
-    [{ bodyColor: '#123456' }, '#123456'],
-    [{ selections: { color: 'blue' } }, '#4778ff'],
-  ])('keeps an explicit color ahead of unnamed preset RGB metadata %#', (override, expected) => {
-    const configured = {
-      ...agent,
-      avatar: { ...agent.avatar, character: { preset: 'gus', ...override } },
-    };
-    const view = withRuntime(configured, jest.fn(), { bodyColor: '#f0bd73' });
-    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(expected);
-    for (const choice of view.UNSAFE_getByType(ShapeArc).props.choices) {
-      const actual =
-        choice.config.character.bodyColor ??
-        (choice.config.character.selections.color === 'blue'
-          ? '#4778ff'
-          : avatarHex(choice.config));
-      expect(actual).toBe(expected);
-    }
-    const silhouettes = view
-      .UNSAFE_getAllByType(CharacterAvatar)
-      .filter((node) => node.props.config.face === false);
-    expect(silhouettes).toHaveLength(9);
-    for (const preview of silhouettes) {
-      const config = preview.props.config;
-      expect(config.character.selections).toMatchObject({
-        eyes: 'none',
-        eyewear: 'none',
-        accessory: 'none',
-      });
-      expect(
-        config.character.bodyColor ??
-          (config.character.selections.color === 'blue' ? '#4778ff' : avatarHex(config)),
-      ).toBe(expected);
-    }
-    view.unmount();
-  });
-
-  it.each(['round_inset', 'sleepy_lids', 'dots'])(
-    'keeps %s, eyewear, headwear and historical metadata on every body',
-    (eyes) => {
-      const configured = {
-        ...agent,
-        avatar: {
-          ...agent.avatar,
-          character: {
-            preset: 'lime_frog',
-            eyeSpacing: 1.23,
-            selections: { eyes, eyewear: 'monocle', accessory: 'crown' },
-          },
-        },
-      };
-      const view = withRuntime(configured);
-      for (const choice of view.UNSAFE_getByType(ShapeArc).props.choices) {
-        expect(choice.config.character).toMatchObject({
-          eyeSpacing: 1.23,
-          selections: { eyes, eyewear: 'monocle', accessory: 'crown' },
-        });
-      }
-      view.unmount();
-    },
-  );
-
-  it('materializes every Todd eye edit with explicit body and paint', () => {
-    const configured = {
-      ...agent,
-      avatar: { ...agent.avatar, character: { preset: 'lime_frog' } },
-    };
-    const onChange = jest.fn();
-    const view = withRuntime(configured, onChange, {
-      shape: 'todd',
-      eyes: 'todd',
       eyewear: 'none',
-      accessory: 'none',
-    });
-    for (const [id, title] of CHARACTER_OPTIONS.eyes) {
-      expect(view.getByLabelText(title).props.disabled).toBe(false);
-      fireEvent.press(view.getByLabelText(title));
-      expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-        selections: {
-          shape: 'todd',
-          color: 'lime',
-          eyes: id,
-          eyewear: 'none',
-          accessory: 'none',
-        },
-      });
-    }
-    expect(view.queryByLabelText('Eye spacing')).toBeNull();
-    view.unmount();
-  });
-
-  it('uses shared-renderer single eyes on every body and preserves historical recipe metadata', () => {
-    const configured = {
-      ...agent,
-      avatar: {
-        ...agent.avatar,
-        character: {
-          preset: 'lime_frog',
-          eyeSpacing: 1.23,
-          selections: { eyes: 'cyclops' },
-        },
-      },
-    };
-    const view = withRuntime(configured);
-    expect(view.queryByLabelText('Eye spacing')).toBeNull();
-    const single = view
-      .UNSAFE_getByType(EmotionPicker)
-      .props.choices.find((choice: { id: string }) => choice.id === 'cyclops');
-    expect(single).toMatchObject({
-      id: 'cyclops',
-      label: 'Single eye',
-      disabled: false,
-    });
-    expect(single.thumbnail).toBeUndefined();
-    for (const choice of view.UNSAFE_getByType(ShapeArc).props.choices)
-      expect(choice.config.character).toMatchObject({
-        eyeSpacing: 1.23,
-        selections: { eyes: 'cyclops' },
-      });
-    view.unmount();
-  });
-
-  it('keeps the current RGB and native eyes when selecting a migrated body from a preset', () => {
-    const configured = {
-      ...agent,
-      avatar: {
-        ...agent.avatar,
-        character: {
-          preset: 'blue_beret',
-          bodyColor: '#123456',
-          selections: { eyes: 'dots', accessory: 'bow' },
-        },
-      },
-    };
-    const onChange = jest.fn();
-    const view = withRuntime(configured, onChange);
-    fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'cloud');
-    expect(onChange).toHaveBeenLastCalledWith({
-      ...configured,
-      avatar: {
-        ...agent.avatar,
-        family: 'fold',
-        foldShape: 'cloud',
-        character: {
-          bodyColor: '#123456',
-          selections: {
-            eyes: 'dots',
-            eyewear: 'none',
-            accessory: 'bow',
-            shape: 'cloud',
-          },
-        },
-      },
-    });
-  });
-
-  it('enters a native body with the current color and explicitly empty preset accessories', () => {
-    const configured = {
-      ...agent,
-      avatar: {
-        ...agent.avatar,
-        character: {
-          preset: 'bloom',
-          bodyColor: '#123456',
-          eyeSpacing: 0.78,
-          selections: { eyes: 'dots' },
-        },
-      },
-    };
-    const onChange = jest.fn();
-    const view = withRuntime(configured, onChange);
-    fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'heart');
-    expect(onChange).toHaveBeenLastCalledWith({
-      ...configured,
-      avatar: {
-        ...configured.avatar,
-        character: {
-          bodyColor: '#123456',
-          eyeSpacing: 0.78,
-          selections: {
-            shape: 'heart',
-            eyes: 'dots',
-            eyewear: 'none',
-            accessory: 'none',
-          },
-        },
-      },
-    });
-  });
-
-  it('retains native eye choices when replacing an old custom color with the shared named palette', () => {
-    const configured = {
-      ...agent,
-      avatar: {
-        ...agent.avatar,
-        character: {
-          preset: 'bloom',
-          bodyColor: '#123456',
-          selections: { eyes: 'dots' },
-        },
-      },
-    };
-    const onChange = jest.fn();
-    const view = withRuntime(configured, onChange);
-    expect(view.getByLabelText('Dots').props['aria-pressed']).toBe(true);
-    fireEvent.press(view.getByLabelText('Blue avatar'));
-    expect(onChange).toHaveBeenLastCalledWith({
-      ...configured,
-      avatar: {
-        ...configured.avatar,
-        character: {
-          selections: {
-            shape: 'slender',
-            color: 'blue',
-            eyes: 'dots',
-            eyewear: 'none',
-            accessory: 'none',
-          },
-        },
-      },
-    });
-  });
-
-  it('replays working on the main migrated preview without editing the saved recipe', () => {
-    const onChange = jest.fn();
-    const view = withRuntime(agent, onChange);
-    const hero = () =>
-      view.UNSAFE_getAllByType(CharacterAvatar).find((node) => node.props.size === 162)!;
-    expect(hero().props.workingKey).toBe(0);
-    fireEvent.press(view.getByText('Work'));
-    expect(hero().props.workingKey).toBe(1);
-    fireEvent.press(view.getByText('Work'));
-    expect(hero().props.workingKey).toBe(2);
-    expect(onChange).not.toHaveBeenCalled();
-  });
-});
-
-it('edits migrated accessories, eyewear, eyes and color while preserving the original contour', () => {
-  const initial = {
-    ...agent,
-    avatar: { ...agent.avatar, foldShape: 'cloud' as const },
-  };
-  const initialOutline = legacyRecipe(initial.avatar).points;
-  const onChange = jest.fn();
-  function ControlledEditor() {
-    const [current, setCurrent] = useState<AgentCreatorAgent>(initial);
-    const identity = legacyCharacterRecipe(current.avatar);
-    const key = JSON.stringify(identity);
-    const selections = current.avatar.character?.selections;
-    const caps = {
-      key,
-      selected: {
-        shape: 'circle',
-        eyes: selections?.eyes ?? 'oval',
-        eyewear: selections?.eyewear ?? 'none',
-        accessory: selections?.accessory ?? 'none',
-      },
-      available: {
-        'eyes:dots': true,
-        'eyewear:monocle': true,
-        'accessory:crown': true,
-        'accessory:orb': false,
-      },
-    };
-    return (
-      <CharacterRuntimeFixture
-        value={{
-          runtimeUrl: '/runtime.mjs',
-          capabilitiesByKey: new Map([[key, caps]]),
-        }}
-      >
-        <BloomThemeProvider>
-          <AgentCreator
-            agent={current}
-            onChange={(next) => {
-              onChange(next);
-              setCurrent(next);
-            }}
-          />
-        </BloomThemeProvider>
-      </CharacterRuntimeFixture>
-    );
-  }
-  const view = render(<ControlledEditor />);
-  const controls = () => view.UNSAFE_getAllByType(Select);
-  expect(controls()[1]!.props.value).toBe('none');
-  expect(controls()[2]!.props.value).toBe('none');
-  fireEvent(controls()[2]!, 'valueChange', 'crown');
-  expect(onChange).toHaveBeenLastCalledWith({
-    ...initial,
-    avatar: {
-      ...initial.avatar,
-      character: {
-        bodyColor: avatarHex(initial.avatar),
-        selections: {
-          shape: 'cloud',
-          eyes: 'oval',
-          eyewear: 'none',
-          accessory: 'crown',
-        },
-      },
-    },
-  });
-  expect(controls()[2]!.props.value).toBe('crown');
-  fireEvent(controls()[1]!, 'valueChange', 'monocle');
-  expect(controls()[1]!.props.value).toBe('monocle');
-  fireEvent.press(view.getByLabelText('Dots'));
-  expect(view.getByLabelText('Dots').props['aria-pressed']).toBe(true);
-  fireEvent.press(view.getByLabelText('Blue avatar'));
-  let updated = onChange.mock.lastCall![0] as AgentCreatorAgent;
-  expect(updated.avatar.character).toEqual({
-    selections: {
-      shape: 'cloud',
+      accessory: 'felipe_beret',
       color: 'blue',
-      accessory: 'crown',
-      eyewear: 'monocle',
+    });
+  });
+
+  it('keeps the body and the rest when an eye style is chosen', () => {
+    const { view, last } = controlled({ ...agent, avatar: { preset: 'alfred', color: 'coral' } });
+    fireEvent.press(view.getByLabelText('Dots'));
+    expect(last()).toEqual({
+      preset: 'alfred',
+      shape: 'rounded_triangle',
       eyes: 'dots',
-    },
-  });
-  expect(updated.avatar).toMatchObject({
-    family: 'fold',
-    foldShape: 'cloud',
-    foldDepth: initial.avatar.foldDepth,
-    eyeGap: initial.avatar.eyeGap,
-    hue: initial.avatar.hue,
-    saturation: initial.avatar.saturation,
-  });
-  expect(legacyRecipe(updated.avatar).points).toEqual(initialOutline);
-  fireEvent.press(view.getByLabelText('Custom avatar color'));
-  fireEvent(view.UNSAFE_getByType(CustomColorPicker), 'change', '#abcdef');
-  updated = onChange.mock.lastCall![0] as AgentCreatorAgent;
-  expect(avatarHex(updated.avatar)).toBe('#abcdef');
-  expect(updated.avatar.character?.selections).toEqual({
-    shape: 'cloud',
-    color: 'blue',
-    accessory: 'crown',
-    eyewear: 'monocle',
-    eyes: 'dots',
-  });
-  expect(legacyRecipe(updated.avatar).points).toEqual(initialOutline);
-});
-
-it('accepts rapid body, eye, glasses, hat and palette edits while only the initial recipe has capabilities', () => {
-  const initial = {
-    ...agent,
-    avatar: { ...agent.avatar, character: { preset: 'blue_beret' } },
-  };
-  const key = JSON.stringify(initial.avatar.character);
-  const caps = {
-    key,
-    selected: {
-      shape: 'circle',
-      color: 'blue',
-      eyes: 'oval',
-      eyewear: 'none',
-      accessory: 'felipe_beret',
-    },
-    available: {
-      'eyes:todd': false,
-      'eyewear:monocle': false,
-      'accessory:crown': false,
-      'color:pink': false,
-    },
-  };
-  const onChange = jest.fn();
-  function Controlled() {
-    const [current, setCurrent] = useState<AgentCreatorAgent>(initial);
-    return (
-      <CharacterRuntimeFixture
-        value={{
-          runtimeUrl: '/runtime.mjs',
-          capabilitiesByKey: new Map([[key, caps]]),
-        }}
-      >
-        <BloomThemeProvider>
-          <AgentCreator
-            agent={current}
-            onChange={(next) => {
-              setCurrent(next);
-              onChange(next);
-            }}
-          />
-        </BloomThemeProvider>
-      </CharacterRuntimeFixture>
-    );
-  }
-  const view = render(<Controlled />);
-  const palette = view.getByTestId('agent-avatar-color-selector');
-  fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'cloud');
-  expect(view.getByTestId('agent-avatar-color-selector')).toBe(palette);
-  for (const [, title] of CHARACTER_OPTIONS.color)
-    expect(view.getByLabelText(`${title} avatar`).props.disabled).toBe(false);
-  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#4778ff');
-  expect(view.getByLabelText('Todd').props.disabled).toBe(false);
-  fireEvent.press(view.getByLabelText('Todd'));
-  fireEvent(view.UNSAFE_getAllByType(Select)[1]!, 'valueChange', 'monocle');
-  fireEvent(view.UNSAFE_getAllByType(Select)[2]!, 'valueChange', 'crown');
-  expect(view.getByLabelText('Pink avatar').props.disabled).toBe(false);
-  fireEvent.press(view.getByLabelText('Pink avatar'));
-  fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'todd');
-  fireEvent(view.UNSAFE_getByType(ShapeArc), 'select', 'slender');
-  expect(view.getByTestId('agent-avatar-color-selector')).toBe(palette);
-  expect(onChange).toHaveBeenCalledTimes(7);
-  expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-    selections: {
-      shape: 'slender',
-      color: 'pink',
-      eyes: 'todd',
-      eyewear: 'monocle',
-      accessory: 'crown',
-    },
-  });
-  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#fa70ab');
-  expect(view.getByLabelText('Pink avatar').props['aria-pressed']).toBe(true);
-});
-
-it.each([
-  [
-    'lime_frog',
-    { eyes: 'clippo', eyewear: 'none', accessory: 'bow', color: 'coral' },
-    'rounded_head_two_ears',
-    'coral',
-  ],
-  [
-    'alfred',
-    { eyes: 'cyclops', eyewear: 'monocle', accessory: 'bow', color: 'cyan' },
-    'rounded_triangle',
-    'cyan',
-  ],
-  [
-    'coral_monocle',
-    { eyes: 'clippo', eyewear: 'round_sunglasses', accessory: 'none' },
-    'twelve_scalloped_rosette',
-    'coral',
-  ],
-] as const)(
-  'creates %s as an exact template, then removes its reference on an accessory edit without losing parts or paint',
-  (preset, selections, shape, color) => {
-    const onChange = jest.fn();
-    function Controlled() {
-      const [value, setValue] = useState(agent);
-      return (
-        <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
-          <BloomThemeProvider>
-            <AgentCreator
-              agent={value}
-              onChange={(next) => {
-                setValue(next);
-                onChange(next);
-              }}
-            />
-          </BloomThemeProvider>
-        </CharacterRuntimeFixture>
-      );
-    }
-    const view = render(<Controlled />);
-    fireEvent(view.UNSAFE_getAllByType(Select)[0]!, 'valueChange', preset);
-    const saved = onChange.mock.lastCall![0];
-    expect(saved.avatar.character).toEqual({ preset, selections });
-    fireEvent(view.UNSAFE_getAllByType(Select)[2]!, 'valueChange', 'crown');
-    const custom = onChange.mock.lastCall![0].avatar.character;
-    expect(custom).toEqual({
-      selections: { ...selections, shape, color, accessory: 'crown' },
+      eyewear: 'tall_oval_frames',
+      accessory: 'bow',
+      color: 'coral',
     });
-    expect(view.UNSAFE_getAllByType(Select)[0]!.props.value).toBe('custom');
-    expect(saved.avatar.character).toEqual({ preset, selections });
+    expect(view.getByLabelText('Dots').props['aria-pressed']).toBe(true);
+  });
+
+  it('names one paint at a time: a named color replaces an exact one and back', () => {
+    const { view, last } = controlled({
+      ...agent,
+      avatar: { preset: 'blue_beret', bodyColor: '#123456' },
+    });
+    expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(false);
+    expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(true);
+    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#123456');
+    expect(
+      view
+        .UNSAFE_getAllByType(GlossArt)
+        .some((art) => art.props.center === '#123456' && art.props.active),
+    ).toBe(true);
+    fireEvent.press(view.getByLabelText('Custom avatar color'));
+    const picker = view.UNSAFE_getByType(CustomColorPicker);
+    expect(picker.props.value).toBe('#123456');
+    fireEvent(picker, 'change', '#Ab1234');
+    expect(last()).toMatchObject({ bodyColor: '#ab1234' });
+    expect(last()).not.toHaveProperty('color');
     fireEvent.press(view.getByLabelText('Blue avatar'));
-    expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-      selections: { ...custom.selections, color: 'blue' },
-    });
-  },
-);
-
-it('recognizes exact Felipe creation without saving a preset, then displays Custom after an edit', () => {
-  const onChange = jest.fn();
-  function Controlled() {
-    const [value, setValue] = useState(agent);
-    return (
-      <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
-        <BloomThemeProvider>
-          <AgentCreator
-            agent={value}
-            onChange={(next) => {
-              setValue(next);
-              onChange(next);
-            }}
-          />
-        </BloomThemeProvider>
-      </CharacterRuntimeFixture>
-    );
-  }
-  const view = render(<Controlled />);
-  fireEvent(view.UNSAFE_getAllByType(Select)[0]!, 'valueChange', 'blue_beret');
-  expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-    selections: {
-      eyes: 'sleepy_lids',
-      eyewear: 'none',
-      accessory: 'felipe_beret',
-      shape: 'six_lobed_flower',
-      color: 'blue',
-    },
-    bodyColor: '#ff9547',
+    expect(last()).toMatchObject({ color: 'blue' });
+    expect(last()).not.toHaveProperty('bodyColor');
+    expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(true);
   });
-  expect(view.UNSAFE_getAllByType(Select)[0]!.props.value).toBe('blue_beret');
-  expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe('#ff9547');
-  fireEvent(view.UNSAFE_getAllByType(Select)[2]!, 'valueChange', 'crown');
-  expect(view.UNSAFE_getAllByType(Select)[0]!.props.value).toBe('custom');
-  expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-    selections: {
-      eyes: 'sleepy_lids',
-      eyewear: 'none',
+
+  it('edits eyewear and accessory through the selects, and rejects a malformed exact color', () => {
+    const { view, onChange, last } = controlled();
+    const controls = () => view.UNSAFE_getAllByType(Select);
+    expect(controls()[1]!.props.value).toBe('none');
+    expect(controls()[2]!.props.value).toBe('felipe_beret');
+    fireEvent(controls()[2]!, 'valueChange', 'crown');
+    expect(last()).toMatchObject({ accessory: 'crown', shape: 'six_lobed_flower' });
+    fireEvent(controls()[1]!, 'valueChange', 'monocle');
+    expect(last()).toMatchObject({ eyewear: 'monocle', accessory: 'crown' });
+    expect(controls()[1]!.props.value).toBe('monocle');
+    fireEvent(controls()[2]!, 'valueChange', 'none');
+    expect(last()).toMatchObject({ accessory: 'none' });
+    fireEvent.press(view.getByLabelText('Custom avatar color'));
+    const calls = onChange.mock.calls.length;
+    fireEvent(view.UNSAFE_getByType(CustomColorPicker), 'change', 'not-a-color');
+    expect(onChange).toHaveBeenCalledTimes(calls);
+  });
+
+  it('accepts rapid body, eye, glasses, hat and palette edits without losing any of them', () => {
+    const { view, last } = controlled();
+    const controls = () => view.UNSAFE_getAllByType(Select);
+    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('cloud'));
+    fireEvent.press(view.getByLabelText('Dots'));
+    fireEvent(controls()[1]!, 'valueChange', 'round_sunglasses');
+    fireEvent(controls()[2]!, 'valueChange', 'crown');
+    fireEvent.press(view.getByLabelText('Coral avatar'));
+    expect(last()).toEqual({
+      preset: 'blue_beret',
+      shape: 'cloud',
+      eyes: 'dots',
+      eyewear: 'round_sunglasses',
       accessory: 'crown',
-      shape: 'six_lobed_flower',
-      color: 'blue',
-    },
-    bodyColor: '#ff9547',
+      color: 'coral',
+    });
+  });
+
+  it('starts from a template, shows Custom after an edit, and recognises the template again', () => {
+    const { view, last } = controlled({ ...agent, avatar: CHARACTER_TEMPLATES.blue_beret! });
+    const controls = () => view.UNSAFE_getAllByType(Select);
+    expect(controls()[0]!.props.value).toBe('blue_beret');
+    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('heart'));
+    expect(controls()[0]!.props.value).toBe('custom');
+    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('six_lobed_flower'));
+    expect(controls()[0]!.props.value).toBe('blue_beret');
+    fireEvent(controls()[0]!, 'valueChange', 'alfred');
+    expect(last()).toEqual(CHARACTER_TEMPLATES.alfred);
+    expect(CHARACTER_OPTIONS.eyes.length).toBe(12);
+  });
+
+  it('replays working on the preview without editing the saved character', () => {
+    const { view, onChange } = controlled();
+    fireEvent.press(view.getByText('Work'));
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

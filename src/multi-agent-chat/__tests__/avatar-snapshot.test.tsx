@@ -2,7 +2,6 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { AgentAvatar } from '../../agent-avatar/AgentAvatar';
 import { AgentAvatarProvider } from '../../agent-avatar/AgentAvatarProvider';
 import { AvatarSnapshotObserver, type CaptureAvatarSnapshot } from '../../agent-avatar/context';
-import { FOLD_CONFIG } from '../../agent-avatar/model';
 const mockInject = jest.fn();
 jest.mock('../../agent-avatar/character-webview', () => {
   const React = require('react');
@@ -24,7 +23,7 @@ it('captures the displayed WebView frame on demand and clears pending requests o
     view = create(
       <AgentAvatarProvider runtimeUrl="https://example.test/runtime.mjs">
         <AvatarSnapshotObserver.Provider value={observe}>
-          <AgentAvatar config={FOLD_CONFIG} size={80} paused />
+          <AgentAvatar character={{ preset: 'blue_beret' }} size={80} paused />
         </AvatarSnapshotObserver.Provider>
       </AgentAvatarProvider>,
     );

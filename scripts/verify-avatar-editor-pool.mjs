@@ -36,13 +36,17 @@ try {
   await cdp.send('Fetch.disable');
   await page.evaluate(async () => {
     window.runtime = await import('/runtime/avatar-runtime.ts');
+    const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
+    const { characterFromLegacy } = await import('/src/agent-avatar/legacy-character.ts');
+    // These gates still write a character as `{ preset, selections }`; the renderer takes it resolved.
+    const resolved = (nested) => resolveAvatarCharacter(characterFromLegacy({ character: nested }));
     // Resolve the pool URL from the SAME transformed runtime module graph.
     const source = await (await fetch('/runtime/avatar-runtime.ts')).text();
     const match = source.match(/import\(["']([^"']*avatar-pool[^"']*)["']\)/);
     if (!match) throw Error('Missing runtime pool import');
     window.pool = await import(match[1]);
     window.props = {
-      config: { character: { preset: 'blue_beret' }, motion: 1 },
+      character: resolved({ preset: 'blue_beret' }),
       reduced: false,
       interactive: true,
     };
@@ -234,13 +238,7 @@ try {
       {
         ...props,
         workingKey: 1,
-        config: {
-          ...props.config,
-          character: {
-            preset: 'blue_beret',
-            selections: { accessory: 'crown' },
-          },
-        },
+        character: resolved({ preset: 'blue_beret', selections: { accessory: 'crown' } }),
       },
       {
         onError() {

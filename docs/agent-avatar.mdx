@@ -5,26 +5,60 @@ description: One shared 3D engine for agents, editors and previews.
 
 # Agent Avatar
 
-`AgentAvatar`, AgentCreator, avatar selectors and chat previews use the same
-TypeScript/WebGL engine in `runtime/`. The package contains no original WASM
-engine, preparation workers, procedural SVG renderer or renderer fallback.
-Saved configuration is converted to geometry and selections for this engine;
-it never dispatches to a second renderer.
+`AgentAvatar`, AgentCreator, MultiAgentChat, avatar selectors and chat previews use the same
+TypeScript/WebGL engine in `runtime/`, and they all describe an avatar the same way: a
+**character**. There is no second model, no second renderer and no fallback.
 
 ```tsx
-import { AgentAvatar, AgentAvatarProvider, FOLD_CONFIG } from '@oxy.so/bloom/agent-avatar';
+import { AgentAvatar, AgentAvatarProvider } from '@oxy.so/bloom/agent-avatar';
 
 <AgentAvatarProvider runtimeUrl="https://example.com/bloom-character/runtime.mjs">
+  <AgentAvatar character={{ preset: 'blue_beret' }} size={128} interactive label="Peri" />
+  <AgentAvatar character={{ preset: 'blue_beret', accessory: 'crown', color: 'orchid' }} />
   <AgentAvatar
-    config={{ ...FOLD_CONFIG, character: {
-      preset: 'blue_beret', selections: { accessory: 'crown' },
-    } }}
-    size={128}
-    interactive
-    label="Peri"
+    character={{ shape: 'heart', eyes: 'oval', eyewear: 'none', accessory: 'bow', bodyColor: '#ffd838' }}
   />
 </AgentAvatarProvider>
 ```
+
+## The character
+
+One flat shape, the same in `AgentAvatar`, `AgentCreator` (`agent.avatar`), `MultiAgentChat`
+and your saved JSON:
+
+| Field | Values |
+| --- | --- |
+| `preset` | `AVATAR_PRESETS`: a named template. Any part or paint you leave out comes from it. |
+| `shape` | `AVATAR_SHAPES`: the 21 catalog bodies. |
+| `eyes` | `AVATAR_EYES`, or `'none'` to hide the face. |
+| `eyewear`, `accessory` | `AVATAR_EYEWEAR`, `AVATAR_ACCESSORIES`; `'none'` removes it. |
+| `color` | `AVATAR_COLORS`: named paint. |
+| `bodyColor` | An exact `#rrggbb`. It wins over `color`. |
+| `eyeSpacing` | 0.5 to 1.5, a multiplier on the shape's eye separation. |
+
+Without a `preset`, all four parts and a paint are required. Every field is optional with
+one; nothing else is read. The catalogs are exported so a UI can offer exactly what the
+renderer can draw, and `catalog-ids.test.ts` pins them to the runtime's catalog index in both
+directions.
+
+- `resolveAvatarCharacter(character)` fills in every part and the paint, validates each id and
+  throws on anything the renderer cannot draw. `AgentAvatar` calls it, so an invalid character
+  fails at the component that was handed it.
+- `parseAvatarCharacter(json)` is the JSON boundary for saved values: flat characters only,
+  unknown fields refused.
+- `updateAvatarCharacter(character, patch)` is an edit: the result is written out in full, so
+  choosing a body keeps the face, the hat and the paint the preset supplied. A `color` replaces a
+  `bodyColor` and the other way round; the two are never held together.
+- `characterFromLegacy(saved)` migrates an avatar saved before 10 (see
+  [Migrating to 10.0](/docs/migrating-to-10.0)).
+
+### Which animation plays
+
+A character that is **exactly its preset** (paint aside) plays the preset's own authored
+animation. Change a part, set `eyeSpacing` or hide the face and the animation is **retargeted**
+onto the new parts. That is the whole rule, and it is decided in one place,
+`resolveAvatarCharacter(...).authored`, from the data: writing a part out that equals the
+preset's own does not change it, and naming the preset's own paint again does not repaint it.
 
 ## Hosting and packaging
 
@@ -47,26 +81,17 @@ lazy loading.
 
 ## Editing and proportions
 
-`character` stores explicit `selections` for shape, eyes, eyewear and accessory,
-plus a named color or `bodyColor`. A `preset` is an optional template reference,
-not the identity of a customized avatar. The first edit materializes every
-effective part and paint and removes that reference; changing a template later
-cannot change a saved custom avatar. Existing template-based saves remain readable.
-Creation templates define Todd (Clippo eyes, bow, coral), Alfred (Cyclops, monocle,
-bow, cyan), and Iris (Clippo eyes, round sunglasses, no accessory) independently
-of historical saved template defaults.
-`none` removes an accessory or eyewear. Named unedited presets retain their
-authored scenes. Edited recipes compose the selected actual geometry, materials,
-fur and animation channels; color is instance state and does not rebuild meshes.
+A preset is a default, not the identity of an edited avatar: the first edit with
+`updateAvatarCharacter` writes every effective part and paint, so changing a template later
+cannot change a saved custom avatar. AgentCreator's templates (`CHARACTER_TEMPLATES`) are
+complete characters of their own: Felipe (orange, sleepy eyes), Todd (Clippo eyes, bow, coral),
+Alfred (Cyclops, monocle, bow, cyan) and Iris (Clippo eyes, round sunglasses, no accessory).
+Edited characters compose the selected actual geometry, materials, fur and animation
+channels; color is instance state and does not rebuild meshes.
 
-The catalog has 20 distinct bodies plus the stored Todd alias. Circle, triangle,
-flower, diamond and heart have native catalog geometry; slender, pocket, petal,
-star, cloud, shield, pebble and squircle retain their saved contours. Clippo's
-open wire and asymmetric face remain independently selectable. Todd's eyes,
-Clippo's face, Cyclops and the other catalog eye styles can be fitted across
-bodies. Saved blob, fold, alien, mascot and hidden-face configurations all use
-this engine. Hidden faces contribute no eye meshes. Saved Alien faces retain
-their almond geometry and expression parameters.
+The catalog has 21 bodies, Todd's among them. Clippo's open wire and asymmetric face remain
+independently selectable. Todd's eyes, Clippo's face, Cyclops and the other catalog eye styles
+can be fitted across bodies. Hidden faces (`eyes: 'none'`) contribute no eye meshes.
 
 `catalog-layout.ts` assigns each silhouette its own Tuft position, scale and
 rotation, and eye size, separation and height. Attachment depth follows actual
@@ -76,7 +101,7 @@ including animated material updates. Normals, morphs and fur frames follow the
 join and rotation. This work happens once per composed geometry, not per frame.
 Todd keeps paired eyes on its stalks and places Cyclops on its forehead.
 Eyewear follows the composed face and accessories remain attached during motion.
-Explicit `character.eyeSpacing` is included in geometry identity.
+An explicit `eyeSpacing` is included in geometry identity.
 
 The shape selector draws only the body in the selected color. The eye selector
 draws only the eye meshes, framed independently, with no body or accessories.
@@ -96,11 +121,10 @@ on demand, and moves that image; it does not regenerate the removed SVG artwork.
 the verified endpoint. `entranceKey` replays a scale/position/rotation entrance
 inside the same scene. New actions start at their first presented frame, so a
 slow preceding frame cannot consume an entire reaction before it is visible.
-Other instances retain their elapsed clocks. `interactive` enables pointer and drag input. Fixed
-`lookAt` directions and free wandering drive the gaze controller; pointer input
-owns gaze while interacting. Custom catalog ocular tracking still lacks the
-per-eye gaze profiles available for named authored scenes; body gaze and
-catalog eye animation remain active.
+Other instances retain their elapsed clocks. `interactive` enables pointer and drag input.
+Every avatar wanders its gaze on its own; pointer input owns gaze while interacting. Retargeted
+characters still lack the per-eye gaze profiles available for authored scenes; body gaze and
+eye animation remain active.
 
 A browser document shares live instanced scenes grouped by resolution. Each
 avatar has independent pose, phase, paint and action state. Paused, portrait,
@@ -120,9 +144,9 @@ overrides the accessible name. Use an agent's name when it identifies them.
 
 ## Catalog retarget
 
-Recipes whose `selections` hold anything but `color` take the catalog path: the donor's observed
-clips are retargeted onto the composed parts (`runtime/avatar/catalog-retarget.ts`). A preset-only
-avatar plays its authored clip instead, so a Storybook default never shows what follows.
+A character that is not exactly its preset takes the catalog path: the donor's observed clips
+are retargeted onto the composed parts (`runtime/avatar/catalog-retarget.ts`). A preset plays its
+authored clip instead, so a Storybook default never shows what follows.
 
 - **An eye's pivot offset is carried by the eye's own world turn, never by its parent's.** The
   six-lobed body rolls 180° in plane during the reaction (its outline hides it) while the eyes

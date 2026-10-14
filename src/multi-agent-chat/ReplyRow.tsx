@@ -107,7 +107,7 @@ export function ReplyHeader({
           ]}
         >
           <AgentAvatar
-            config={agent.avatar}
+            character={agent.avatar}
             size={32}
             workingKey={arriving ? undefined : initialWorkingKey}
             workingCycles={2}

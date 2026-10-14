@@ -54,6 +54,37 @@ describe('multi-agent workspace', () => {
       ),
     ).toBeNull();
   });
+  it('restores a workspace saved before 10, migrating each avatar once, and keeps new ones as written', () => {
+    const [first, second] = INITIAL_WORKSPACE.agents;
+    const withAvatar = (avatar: unknown) =>
+      INITIAL_WORKSPACE.agents.map((agent) => (agent === first ? { ...agent, avatar } : agent));
+    const old = {
+      family: 'fold',
+      foldShape: 'cloud',
+      shape: 'pebble',
+      face: true,
+      hue: 0,
+      saturation: 100,
+      lightness: 50,
+    };
+    const saved = { ...INITIAL_WORKSPACE, agents: withAvatar(old) };
+    const restored = restoreWorkspace(JSON.stringify(saved))!;
+    expect(restored.agents[0]!.avatar).toEqual({
+      shape: 'cloud',
+      eyes: 'oval',
+      eyewear: 'none',
+      accessory: 'none',
+      bodyColor: '#ff0000',
+    });
+    expect(restored.agents[1]!.avatar).toEqual(second!.avatar);
+    // And what was restored is a character, so saving it and restoring it again changes nothing.
+    expect(restoreWorkspace(JSON.stringify(restored))!.agents[0]!.avatar).toEqual(
+      restored.agents[0]!.avatar,
+    );
+    expect(
+      restoreWorkspace(JSON.stringify({ ...saved, agents: withAvatar({ shape: 'blob' }) })),
+    ).toBeNull();
+  });
   it('creates unused identities and installs marketplace bots once', () => {
     const identity = nextAgentIdentity(INITIAL_WORKSPACE.agents);
     expect(INITIAL_WORKSPACE.agents.some((a) => a.name === identity.name)).toBe(false);

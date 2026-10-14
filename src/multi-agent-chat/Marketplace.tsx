@@ -102,7 +102,7 @@ function ItemIcon({ item, size = 44 }: { item: MarketplaceItem; size?: number })
   if (item.avatar)
     return (
       <StyledView className="shrink-0">
-        <AgentAvatar config={item.avatar} size={size} label={item.name} />
+        <AgentAvatar character={item.avatar} size={size} label={item.name} />
       </StyledView>
     );
   const key = item.logo!,

@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react-native';
 import React from 'react';
-import { FOLD_CONFIG } from '../../agent-avatar';
 import { LocaleProvider } from '../../locale';
 import { pickMessages } from '../../locale/messages';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
@@ -16,7 +15,7 @@ const agent: Agent = {
   name: 'Peri',
   label: 'Research',
   description: '',
-  avatar: { ...FOLD_CONFIG, motion: 0 },
+  avatar: { preset: 'blue_beret' },
 };
 const scope = (children: React.ReactNode, locale: string) => (
   <BloomThemeProvider mode="light">

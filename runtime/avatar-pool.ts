@@ -17,24 +17,12 @@ type Entry = {
   onReady?: () => void;
 };
 const pools = new Set<EditorPool>();
-const frozen = (p: EditorRenderProps) =>
-  !!(p.paused || p.portrait || p.reduced || p.config.motion === 0);
+const frozen = (p: EditorRenderProps) => !!(p.paused || p.portrait || p.reduced);
 const sizeFor = (canvas: HTMLCanvasElement) => {
   const width = canvas.getBoundingClientRect().width;
   return width <= 64 ? 64 : width <= 128 ? 128 : 320;
 };
 const aborted = () => new DOMException('Avatar attachment aborted', 'AbortError');
-const gazePoints: Record<string, readonly [number, number]> = {
-  'top-left': [0, 0],
-  top: [0.5, 0],
-  'top-right': [1, 0],
-  left: [0, 0.5],
-  center: [0.5, 0.5],
-  right: [1, 0.5],
-  'bottom-left': [0, 1],
-  bottom: [0.5, 1],
-  'bottom-right': [1, 1],
-};
 
 /** Live instanced scenes; resizing raises the whole pool's resolution so no
  * member loses its independent motion state or receives an undersized render. */
@@ -230,7 +218,6 @@ class EditorPool {
       this.engine.idle(index);
       let currentPreset = recipe.preset;
       let currentColor: string | undefined;
-      let currentGaze: string | undefined;
       let previous = initial;
       let ownsPointer = false;
       let hovered = false;
@@ -281,19 +268,14 @@ class EditorPool {
             if (disposed) return;
             currentPreset = next.preset;
             this.engine.idle(index);
-            currentGaze = undefined;
+            // Every avatar looks around on its own; nothing else was ever asked of the gaze.
+            this.engine.setWander(index, true);
+            this.engine.setGaze(index, 0.5, 0.5);
           }
           if (currentColor !== next.color) {
             if (next.color) this.engine.setColor(index, next.color);
             else this.engine.clearColor(index);
             currentColor = next.color;
-          }
-          const gaze = props.config.lookAt ?? 'wander';
-          if (gaze !== currentGaze) {
-            const point = gazePoints[gaze] ?? [0.5, 0.5];
-            this.engine.setWander(index, gaze === 'wander');
-            this.engine.setGaze(index, point[0], point[1]);
-            currentGaze = gaze;
           }
           if (props.workingKey !== previous.workingKey && props.workingKey !== undefined)
             this.engine.work(index, false, props.workingCycles);

@@ -66,10 +66,8 @@ try {
         );
         return (
           e?.paints &&
-          e.paintedKey === JSON.stringify(e.props.config.character) &&
-          Object.entries(expected).every(
-            ([key, value]) => e.props.config.character.selections?.[key] === value,
-          )
+          e.paintedKey === JSON.stringify(e.props.character) &&
+          Object.entries(expected).every(([key, value]) => e.props.character[key] === value)
         );
       },
       expected,
@@ -89,7 +87,7 @@ try {
           if (p[i + 2] > p[i] * 1.4 && p[i + 2] > p[i + 1] * 1.1) blue++;
         }
       return {
-        character: e.props.config.character,
+        character: e.props.character,
         selected: e.caps.selected,
         blue,
         painted,
@@ -147,7 +145,7 @@ try {
   const rows = [];
   const verify = (state, id, eyes = 'todd') => {
     assert.equal(state.character.preset, 'lime_frog', 'Body choices retain preset defaults');
-    assert.equal(state.character.selections.shape, id);
+    assert.equal(state.character.shape, id);
     assert.equal(state.selected.shape, id);
     assert.equal(state.selected.eyes, eyes);
     assert.equal(state.selected.color, 'blue');

@@ -24,6 +24,10 @@ try {
   await page.goto(`${process.argv[2] || 'http://localhost:6006'}/__clippo-gate.html`);
   await page.evaluate(async () => {
     const runtime = await import('/bloom-character/runtime.mjs');
+    const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
+    const { characterFromLegacy } = await import('/src/agent-avatar/legacy-character.ts');
+    // These gates still write a character as `{ preset, selections }`; the renderer takes it resolved.
+    const resolved = (nested) => resolveAvatarCharacter(characterFromLegacy({ character: nested }));
     const characters = [
       { preset: 'clippo' },
       { preset: 'clippo', bodyColor: '#c73838' },
@@ -56,7 +60,7 @@ try {
       document.body.append(canvas);
       gate.canvases.push(canvas);
       const props = {
-        config: { character },
+        character: resolved(character),
         paused: true,
         interactive: true,
         workingKey: 0,

@@ -102,7 +102,7 @@ function FlyingAvatar({
           style={{ width: avatar.from.width, height: avatar.from.height }}
         />
       ) : (
-        <AgentAvatar config={avatar.agent.avatar} paused size={avatar.from.width} />
+        <AgentAvatar character={avatar.agent.avatar} paused size={avatar.from.width} />
       )}
     </AnimatedView>
   );
@@ -219,7 +219,7 @@ export function AvatarHandoff({
                       }}
                     />
                   ) : (
-                    <AgentAvatar config={avatar.agent.avatar} size={avatar.from.width} paused />
+                    <AgentAvatar character={avatar.agent.avatar} size={avatar.from.width} paused />
                   )}
                 </StyledView>
               );

@@ -23,6 +23,10 @@ try {
       return wait.apply(this, args);
     };
     window.runtime = await import('/bloom-character/runtime.mjs');
+    const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
+    const { characterFromLegacy } = await import('/src/agent-avatar/legacy-character.ts');
+    // These gates still write a character as `{ preset, selections }`; the renderer takes it resolved.
+    const resolved = (nested) => resolveAvatarCharacter(characterFromLegacy({ character: nested }));
     window.surface = await import('/bloom-character/shared-surface.mjs');
     window.gate = {
       ready: new Set(),
@@ -39,11 +43,7 @@ try {
       canvas.addEventListener('gotpointercapture', () => gate.captures++);
       document.body.append(canvas);
       const props = {
-        config: {
-          motion: 35,
-          lookAt: 'wander',
-          character: { preset: 'blue_beret' },
-        },
+        character: resolved({ preset: 'blue_beret' }),
         interactive: true,
         reactionKey: 0,
         workingKey: 0,
@@ -86,10 +86,7 @@ try {
   await page.evaluate(() => {
     gate.props[0] = {
       ...gate.props[0],
-      config: {
-        ...gate.props[0].config,
-        character: { preset: 'blue_beret', selections: { eyes: 'oval' } },
-      },
+      character: resolved({ preset: 'blue_beret', selections: { eyes: 'oval' } }),
     };
     gate.controls[0].update(gate.props[0]);
     document.querySelector('#avatar-0').style.width = '128px';

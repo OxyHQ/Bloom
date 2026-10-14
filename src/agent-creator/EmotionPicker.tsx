@@ -10,11 +10,10 @@ import Animated, {
   withSpring,
   type SharedValue,
 } from 'react-native-reanimated';
-import { EYES, type AvatarConfig } from '../agent-avatar';
-import { avatarHex } from '../agent-avatar/avatar-color';
+import type { AvatarCharacter } from '../agent-avatar';
 import { bodyPigmentHex } from '../agent-avatar/body-pigment';
 import { CharacterAvatar } from '../agent-avatar/CharacterAvatar';
-import { createConfigForShape } from '../agent-avatar/character-shapes';
+import { updateAvatarCharacter } from '../agent-avatar/character';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
@@ -24,7 +23,7 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
 export type EmotionChoice = {
   id: string;
   label: string;
-  config: AvatarConfig;
+  character: AvatarCharacter;
   disabled?: boolean;
 };
 function Emotion({
@@ -45,27 +44,16 @@ function Emotion({
   onChange: (id: string) => void;
 }) {
   const { colors } = useTheme();
-  const eyeConfig = useMemo<AvatarConfig>(() => {
-    const circle = createConfigForShape(choice.config, 'circle');
-    return {
-      ...circle,
-      face: true,
-      lookAt: 'center',
-      motion: 0,
-      idle: false,
-      character: {
-        ...circle.character!,
-        selections: {
-          ...circle.character!.selections,
-          ...(choice.config.family === 'alien' && !choice.config.character
-            ? { eyes: 'alien' }
-            : {}),
-          eyewear: 'none',
-          accessory: 'none',
-        },
-      },
-    };
-  }, [choice.config]);
+  // The eyes alone, on a plain circle: the chip shows the eyes, not the body they sit in.
+  const eyeCharacter = useMemo(
+    () =>
+      updateAvatarCharacter(choice.character, {
+        shape: 'circle',
+        eyewear: 'none',
+        accessory: 'none',
+      }),
+    [choice.character],
+  );
   const angle = (index * 360) / count;
   const counterRotation = useAnimatedStyle(
     () => ({ transform: [{ rotate: `${-rotation.value - angle}deg` }] }),
@@ -105,7 +93,7 @@ function Emotion({
         >
           <CharacterAvatar
             previewPart="eyes"
-            config={eyeConfig}
+            character={eyeCharacter}
             portrait
             paused
             interactive={false}
@@ -120,31 +108,20 @@ function Emotion({
 
 /** Slow automatic orbit with direct manipulation and always-upright eye chips. */
 export function EmotionPicker({
-  config,
-  onChange,
-  choices: choicesProp,
-  value: valueProp,
+  choices,
+  value,
   onSelect,
   backgroundColor,
 }: {
-  config: AvatarConfig;
-  backgroundColor?: string;
-  choices?: readonly EmotionChoice[];
-  value?: string;
-  onSelect?: (id: string) => void;
-  onChange: (eyes: AvatarConfig['eyes']) => void;
+  /** The body paint as `#rrggbb`, behind each chip. */
+  backgroundColor: string;
+  choices: readonly EmotionChoice[];
+  value: string;
+  onSelect: (id: string) => void;
 }) {
   const messages = useAgentCreatorMessages();
-  const previewBackground = bodyPigmentHex(backgroundColor ?? avatarHex(config));
-  const choices =
-    choicesProp ??
-    EYES.map((eyes) => ({
-      id: eyes,
-      label: messages.emotions[eyes],
-      config: { ...config, eyes },
-    }));
-  const value = valueProp ?? config.eyes;
-  const emit = (id: string) => (onSelect ? onSelect(id) : onChange(id as AvatarConfig['eyes']));
+  const previewBackground = bodyPigmentHex(backgroundColor);
+  const emit = onSelect;
   const ref = useRef<View>(null);
   const visible = useSharedValue(true);
   const target = useSharedValue(0);
