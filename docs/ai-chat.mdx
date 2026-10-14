@@ -114,7 +114,7 @@ The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is 
 | `children` | fill the card's full height — nothing is in flow above or below them |
 | header block | the `header` slot (`AiChatMobileHeader`) + the breadcrumb row, absolute at the top, transparent — no band of its own |
 | footer block | `AgentThinking` + `composer`, absolute at the bottom, px 10 / pt 12 / pb 10, gap 10 — **no band of its own**: the transcript passes behind the composer and stays in sight around it |
-| top fade | the card surface, **solid behind the whole header block**, then the page-header edge scrim ramping to nothing 55% of the block's height below it; fades in over the first **16px** scrolled (the gap it closes). The ramp used to start at the top edge, leaving the breadcrumb row over a half-covered turn — code and text read straight through the title and crumbs |
+| top fade | the page-header edge scrim over the whole header and its tail (header height + 55%), solid at the top and nothing at the bottom, exactly as `PageHeader`'s own scrim; fades in over the first **16px** scrolled (the gap it closes) |
 
 Both blocks are `pointerEvents="box-none"`, so the transcript under their empty space still scrolls and takes clicks. The fade is decorative (hidden from assistive tech) and exists **only while turns are actually under the header**. Nothing is painted behind the composer: its own card is what covers the turns under it, as the conversation slides past on either side.
 
