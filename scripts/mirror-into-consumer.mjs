@@ -131,6 +131,20 @@ function mirroredPackage() {
   };
 }
 
+/**
+ * A consumer's Tailwind scans `node_modules/@oxy.so/bloom/lib/**\/*.js` for class names, and the
+ * mirror has no `lib`. It only reads TEXT, so each source file is also written there as a `.js`
+ * copy; without it every utility Bloom's own components use (`bg-background-tertiary-default`,
+ * `rounded-3xl`…) is silently missing from the consumer's CSS and the tint or the layout is gone.
+ */
+const SCAN = join(MIRROR, 'lib', 'scan');
+function scanCopy(rel) {
+  if (!/\.tsx?$/.test(rel)) return;
+  const to = join(SCAN, `${rel}.js`);
+  mkdirSync(dirname(to), { recursive: true });
+  cpSync(join(BLOOM, 'src', rel), to);
+}
+
 /** Delete what the mirror holds and the source no longer does, without recreating the tree. */
 function prune(mirrorDir, sourceDir) {
   if (!existsSync(mirrorDir)) return;
@@ -148,6 +162,9 @@ function mirrorAll() {
   mkdirSync(MIRROR, { recursive: true });
   prune(join(MIRROR, 'src'), join(BLOOM, 'src'));
   cpSync(join(BLOOM, 'src'), join(MIRROR, 'src'), { recursive: true, filter: keep });
+  rmSync(SCAN, { recursive: true, force: true });
+  for (const rel of readdirSync(join(BLOOM, 'src'), { recursive: true }))
+    if (keep(join(BLOOM, 'src', rel)) && statSync(join(BLOOM, 'src', rel)).isFile()) scanCopy(rel);
   if (existsSync(join(BLOOM, 'assets', 'character-runtime')))
     cpSync(
       join(BLOOM, 'assets', 'character-runtime'),
@@ -190,8 +207,10 @@ if (flags.includes('--watch')) {
           if (existsSync(from) && statSync(from).isFile()) {
             mkdirSync(dirname(to), { recursive: true });
             cpSync(from, to);
+            scanCopy(name);
           } else if (!existsSync(from)) {
             rmSync(to, { recursive: true, force: true });
+            rmSync(join(SCAN, `${name}.js`), { recursive: true, force: true });
           }
         } catch (error) {
           console.warn(`could not mirror ${name}: ${error.message}`);
