@@ -1,3 +1,4 @@
+import { Surface } from '../surface';
 import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, {
@@ -177,8 +178,6 @@ function ComposerLoaderComponent({
 
   const surfaceStyle: ViewStyle = {
     borderRadius: cornerRadius,
-    // `bg-background-primary-default shadow-xs`.
-    backgroundColor: theme.colors.card,
     boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
   };
 
@@ -190,7 +189,11 @@ function ComposerLoaderComponent({
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, surfaceStyle]}
           testID={testID ? `${testID}-surface` : undefined}
-        />
+        >
+          {/* The plate is the shared Surface, filling its frame (its own class sets `position`,
+              so it cannot be the absolutely-positioned node itself). */}
+          <Surface radius={cornerRadius} style={{ flex: 1 }} />
+        </View>
       ) : null}
 
       <Animated.View

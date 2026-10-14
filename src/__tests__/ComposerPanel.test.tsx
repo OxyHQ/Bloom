@@ -1,6 +1,8 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { resolveButtonPalette } from '../button/shared';
 import { Text } from 'react-native';
+import type { ReactTestInstance } from 'react-test-renderer';
+import { Surface } from '../surface';
 import {
   SurfaceLevelProvider,
   useSurfaceFill,
@@ -46,6 +48,13 @@ const PROVIDERS: ModelPickerProvider[] = [
   },
 ];
 
+/** The fill of the `SurfacePaint` of this radius under `root`. */
+function surfacePaintFill(root: ReactTestInstance, radius: number) {
+  return root.findAll(
+    (node) => node.props.radius === radius && typeof node.props.fill === 'string',
+  )[0]?.props.fill as string | undefined;
+}
+
 function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   return render(
     <BloomThemeProvider mode={mode} colorPreset="teal">
@@ -57,36 +66,33 @@ function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 describe('ComposerPanel', () => {
   it('keeps the card: radius 24, padding 10, the card surface; send is 36 round', () => {
     const { getByTestId, getByLabelText } = renderIn(<ComposerPanel testID="composer" />);
-    const theme = buildTheme('teal', 'light');
     const card = getByTestId('composer').findAll(
       (node) =>
         resolvedStyle(node.props.style).borderRadius === 24 &&
         resolvedStyle(node.props.style).padding === 10,
     )[0]!;
-    expect(resolvedStyle(card.props.style)).toMatchObject({
-      borderRadius: 24,
-      padding: 10,
-      backgroundColor: 'transparent',
-    });
-    expect(
-      getByTestId('composer').findAll(
-        (node) => node.props.fill === theme.colors.card && node.props.radius === 24,
-      ).length,
-    ).toBeGreaterThan(0);
+    expect(resolvedStyle(card.props.style)).toMatchObject({ borderRadius: 24, padding: 10 });
+    expect(surfacePaintFill(getByTestId('composer'), 24)).toBe(
+      surfacePaintFill(renderIn(<Surface testID="ref" radius={24} />).getByTestId('ref'), 24),
+    );
     expect(resolvedStyle(getByLabelText('Send message').props.style)).toMatchObject({
       width: 36,
       height: 36,
     });
   });
 
-  it('paints the card with the canonical card role in dark mode', () => {
+  it('paints the card with the shared Surface material, in dark mode too', () => {
     const { getByTestId } = renderIn(<ComposerPanel testID="composer" />, 'dark');
     const { colors } = buildTheme('teal', 'dark');
-    expect(
-      getByTestId('composer').findAll(
-        (node) => node.props.fill === colors.card && node.props.radius === 24,
-      ).length,
-    ).toBeGreaterThan(0);
+    const fill = surfacePaintFill(getByTestId('composer'), 24);
+    expect(fill).toBe(
+      surfacePaintFill(
+        renderIn(<Surface testID="ref" radius={24} />, 'dark').getByTestId('ref'),
+        24,
+      ),
+    );
+    // Not the `card` role: that read lighter than the buttons and bubbles beside it.
+    expect(fill).not.toBe(colors.card);
   });
 
   it('submits the draft from send and clears it when uncontrolled', () => {
@@ -847,17 +853,25 @@ function ComposerSurfaceProbe() {
   );
 }
 it('leaves a plain pill on its parent and publishes the filled pill backing', () => {
-  for (const surface of [false, true]) {
+  const published = (ui: React.ReactElement) => {
     const screen = renderIn(
       <SurfaceLevelProvider level={2} fill="#123456">
-        <ComposerPill surface={surface} emptyAction={<ComposerSurfaceProbe />} />
+        {ui}
       </SurfaceLevelProvider>,
     );
-    expect(screen.getByTestId('composer-surface-probe').props.children).toBe(
-      surface
-        ? `1:${resolveSurfaceMaterial({ fill: buildTheme('teal', 'light').colors.card, parentFill: '#123456' }).publishedFill}`
-        : '2:#123456',
-    );
+    const value = screen.getByTestId('composer-surface-probe').props.children;
     screen.unmount();
-  }
+    return value;
+  };
+  expect(published(<ComposerPill surface={false} emptyAction={<ComposerSurfaceProbe />} />)).toBe(
+    '2:#123456',
+  );
+  // The filled pill is a Surface like any other: whatever a bare Surface publishes here.
+  expect(published(<ComposerPill emptyAction={<ComposerSurfaceProbe />} />)).toBe(
+    published(
+      <Surface>
+        <ComposerSurfaceProbe />
+      </Surface>,
+    ),
+  );
 });

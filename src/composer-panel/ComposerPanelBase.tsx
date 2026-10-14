@@ -1,7 +1,5 @@
-import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { SurfacePaint } from '../surface/SurfacePaint';
+import { Surface } from '../surface';
 import {
   Text as RNText,
   TextInput,
@@ -96,12 +94,7 @@ export function ComposerPanelBase({
 }: ComposerPanelProps) {
   useComposerWebCss();
   const theme = useTheme();
-  const parentFill = useSurfaceFill();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
-  const publishedFill = resolveSurfaceMaterial({
-    fill: palette.surface,
-    parentFill: parentFill,
-  }).publishedFill;
   const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
   const common = useCommonMessages();
   const labels = useMemo<Required<ComposerPanelLabels>>(
@@ -194,7 +187,6 @@ export function ComposerPanelBase({
     width: '100%',
     flexDirection: 'column',
     borderRadius: CARD_RADIUS,
-    backgroundColor: 'transparent',
     padding: CARD_PADDING,
     boxShadow: palette.shadowCard,
     '--bloom-composer-ring': palette.focusRing,
@@ -205,159 +197,156 @@ export function ComposerPanelBase({
       {question ? <View style={{ marginBottom: 8 }}>{question}</View> : null}
       {status ?? null}
 
-      <SurfaceLevelProvider level={1} fill={publishedFill}>
-        <View style={[cardStyle, surfaceFillVars(publishedFill)]}>
-          <SurfacePaint fill={palette.surface} radius={CARD_RADIUS} />
-          <Collapse open={hasAttachments}>
-            <View style={{ paddingBottom: 4 }}>
-              <AttachmentStrip
-                attachments={attachments ?? []}
-                palette={palette}
-                onRemove={onRemoveAttachment}
-                onRetry={onAttachmentRetry}
-                removeLabel={removeFileLabel}
-                retryLabel={retryFileLabel}
-              />
-            </View>
-          </Collapse>
+      <Surface radius={CARD_RADIUS} style={cardStyle}>
+        <Collapse open={hasAttachments}>
+          <View style={{ paddingBottom: 4 }}>
+            <AttachmentStrip
+              attachments={attachments ?? []}
+              palette={palette}
+              onRemove={onRemoveAttachment}
+              onRetry={onAttachmentRetry}
+              removeLabel={removeFileLabel}
+              retryLabel={retryFileLabel}
+            />
+          </View>
+        </Collapse>
 
-          <View style={{ flexDirection: 'column', gap: 20, paddingTop: 6 }}>
-            <View style={{ paddingLeft: 6, paddingRight: 6 }}>
-              <TextInput
-                ref={setFieldRef}
-                {...dataHook('bloomComposerInput')}
-                testID={testID ? `${testID}-input` : undefined}
-                accessibilityLabel={labels.message}
-                multiline
-                value={text}
-                onChangeText={setText}
-                onKeyPress={onKeyPress}
-                placeholder={placeholder}
-                placeholderTextColor={palette.textTertiary}
-                selectionColor={palette.accent500}
-                cursorColor={palette.accent500}
-                scrollEnabled={height >= PROMPT_MAX_HEIGHT}
-                style={{
-                  width: '100%',
-                  height,
-                  maxHeight: PROMPT_MAX_HEIGHT,
-                  padding: 0,
-                  margin: 0,
-                  ...TYPE_SCALE['body-regular'],
-                  fontFamily: IS_WEB ? 'var(--bloom-font-sans)' : 'Inter',
-                  color: palette.text,
-                  backgroundColor: 'transparent',
-                  textAlignVertical: 'top',
-                  ...(IS_WEB ? { caretColor: palette.accent500 } : null),
-                }}
-              />
-              {IS_WEB ? null : (
-                <RNText
-                  aria-hidden
-                  accessibilityElementsHidden
-                  importantForAccessibility="no-hide-descendants"
-                  pointerEvents="none"
-                  testID={testID ? `${testID}-input-twin` : undefined}
-                  onLayout={onTwinLayout}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 6,
-                    right: 6,
-                    opacity: 0,
-                    ...TYPE_SCALE['body-regular'],
-                    fontFamily: 'Inter',
-                  }}
-                >
-                  {/* A trailing newline is a line of its own in the field; a
-                    Text drops it unless something follows. */}
-                  {text.endsWith('\n') || text === '' ? `${text} ` : text}
-                </RNText>
-              )}
-            </View>
-
-            <View
+        <View style={{ flexDirection: 'column', gap: 20, paddingTop: 6 }}>
+          <View style={{ paddingLeft: 6, paddingRight: 6 }}>
+            <TextInput
+              ref={setFieldRef}
+              {...dataHook('bloomComposerInput')}
+              testID={testID ? `${testID}-input` : undefined}
+              accessibilityLabel={labels.message}
+              multiline
+              value={text}
+              onChangeText={setText}
+              onKeyPress={onKeyPress}
+              placeholder={placeholder}
+              placeholderTextColor={palette.textTertiary}
+              selectionColor={palette.accent500}
+              cursorColor={palette.accent500}
+              scrollEnabled={height >= PROMPT_MAX_HEIGHT}
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8,
+                width: '100%',
+                height,
+                maxHeight: PROMPT_MAX_HEIGHT,
+                padding: 0,
+                margin: 0,
+                ...TYPE_SCALE['body-regular'],
+                fontFamily: IS_WEB ? 'var(--bloom-font-sans)' : 'Inter',
+                color: palette.text,
+                backgroundColor: 'transparent',
+                textAlignVertical: 'top',
+                ...(IS_WEB ? { caretColor: palette.accent500 } : null),
               }}
-            >
-              {/* The actions never give way: + and the permission chip on the
+            />
+            {IS_WEB ? null : (
+              <RNText
+                aria-hidden
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                pointerEvents="none"
+                testID={testID ? `${testID}-input-twin` : undefined}
+                onLayout={onTwinLayout}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 6,
+                  right: 6,
+                  opacity: 0,
+                  ...TYPE_SCALE['body-regular'],
+                  fontFamily: 'Inter',
+                }}
+              >
+                {/* A trailing newline is a line of its own in the field; a
+                    Text drops it unless something follows. */}
+                {text.endsWith('\n') || text === '' ? `${text} ` : text}
+              </RNText>
+            )}
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 8,
+            }}
+          >
+            {/* The actions never give way: + and the permission chip on the
                 left, voice and send on the right keep their size, and the
                 model chip between them is what truncates (a long model name
                 once covered + and pushed voice off the card). */}
+            <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              {addMenu.length > 0 ? (
+                <AddMenu
+                  palette={palette}
+                  groups={addMenu}
+                  onSelect={onAddMenuSelect}
+                  labels={labels}
+                  testID={testID ? `${testID}-add` : undefined}
+                />
+              ) : null}
+              {permissions.length > 0 ? (
+                <PermissionMenu
+                  palette={palette}
+                  permissions={permissions}
+                  value={permission}
+                  defaultValue={defaultPermission}
+                  onChange={onPermissionChange}
+                  onLearnMore={onLearnMore}
+                  labels={labels}
+                  testID={testID ? `${testID}-permission` : undefined}
+                />
+              ) : null}
+            </View>
+            <View
+              style={{
+                minWidth: 0,
+                flexShrink: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: 16,
+              }}
+            >
+              {providers && providers.length > 0 ? (
+                <ModelPickerBase
+                  providers={providers}
+                  value={model}
+                  defaultValue={defaultModel}
+                  onValueChange={onModelChange}
+                  effort={effort}
+                  defaultEffort={defaultEffort}
+                  onEffortChange={onEffortChange}
+                  effortLevels={effortLevels}
+                  labels={modelPickerLabels}
+                  testID={testID ? `${testID}-model` : undefined}
+                />
+              ) : null}
               <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                {addMenu.length > 0 ? (
-                  <AddMenu
-                    palette={palette}
-                    groups={addMenu}
-                    onSelect={onAddMenuSelect}
-                    labels={labels}
-                    testID={testID ? `${testID}-add` : undefined}
-                  />
-                ) : null}
-                {permissions.length > 0 ? (
-                  <PermissionMenu
-                    palette={palette}
-                    permissions={permissions}
-                    value={permission}
-                    defaultValue={defaultPermission}
-                    onChange={onPermissionChange}
-                    onLearnMore={onLearnMore}
-                    labels={labels}
-                    testID={testID ? `${testID}-permission` : undefined}
-                  />
-                ) : null}
-              </View>
-              <View
-                style={{
-                  minWidth: 0,
-                  flexShrink: 1,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  gap: 16,
-                }}
-              >
-                {providers && providers.length > 0 ? (
-                  <ModelPickerBase
-                    providers={providers}
-                    value={model}
-                    defaultValue={defaultModel}
-                    onValueChange={onModelChange}
-                    effort={effort}
-                    defaultEffort={defaultEffort}
-                    onEffortChange={onEffortChange}
-                    effortLevels={effortLevels}
-                    labels={modelPickerLabels}
-                    testID={testID ? `${testID}-model` : undefined}
-                  />
-                ) : null}
-                <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <MicButton
-                    state={voice}
-                    onToggle={() => setVoice(voice === 'recording' ? 'idle' : 'recording')}
-                    label={labels.voice}
-                    transcribingLabel={labels.transcribing}
-                    palette={palette}
-                  />
-                  {/* Stop wins; then the host's empty action while there is
+                <MicButton
+                  state={voice}
+                  onToggle={() => setVoice(voice === 'recording' ? 'idle' : 'recording')}
+                  label={labels.voice}
+                  transcribingLabel={labels.transcribing}
+                  palette={palette}
+                />
+                {/* Stop wins; then the host's empty action while there is
                     nothing to send; otherwise send. */}
-                  {busy && onStop ? (
-                    <StopButton onPress={onStop} label={labels.stop} />
-                  ) : emptyAction !== undefined && isComposerEmpty(text, attachments) ? (
-                    emptyAction
-                  ) : (
-                    <SendButton disabled={disabled} onPress={submit} label={labels.send} />
-                  )}
-                </View>
+                {busy && onStop ? (
+                  <StopButton onPress={onStop} label={labels.stop} />
+                ) : emptyAction !== undefined && isComposerEmpty(text, attachments) ? (
+                  emptyAction
+                ) : (
+                  <SendButton disabled={disabled} onPress={submit} label={labels.send} />
+                )}
               </View>
             </View>
           </View>
         </View>
-      </SurfaceLevelProvider>
+      </Surface>
     </View>
   );
 }

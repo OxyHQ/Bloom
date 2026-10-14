@@ -1,14 +1,7 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import {
-  SurfaceLevelProvider,
-  surfaceFillVars,
-  useSurfaceFill,
-  useSurfaceLevelValue,
-} from '../styles/surface-levels';
-import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { Surface } from '../surface';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { parseRgba } from '../theme/color-utils';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Pressable,
@@ -18,6 +11,7 @@ import {
   useWindowDimensions,
   type NativeSyntheticEvent,
   type TextInputKeyPressEventData,
+  type ViewProps,
 } from 'react-native';
 import Animated, {
   Easing,
@@ -666,27 +660,13 @@ export function ComposerPillBase({
     onMeasure: setContentHeight,
   });
 
-  const parentFill = useSurfaceFill();
-  const parentLevel = useSurfaceLevelValue();
   const customSurface = StyleSheet.flatten(style);
-  const surfaceFill = customSurface?.backgroundColor ?? palette.surface;
-  const paintsSurface =
-    surface &&
-    typeof surfaceFill === 'string' &&
-    surfaceFill !== 'transparent' &&
-    parseRgba(surfaceFill)?.a !== 0;
-  const ownFill = paintsSurface ? surfaceFill : customSurface?.backgroundColor;
-  const publishedFill =
-    typeof ownFill === 'string' && ownFill !== 'transparent' && parseRgba(ownFill)?.a !== 0
-      ? resolveSurfaceMaterial({ fill: ownFill, parentFill, paint: paintsSurface }).publishedFill
-      : undefined;
   // An error ring is outside the box, so the pill neither shifts nor resizes.
   const errorRing = invalid ? `0 0 0 1px ${palette.error}` : undefined;
   const pillStyle: WebCssStyle = {
     width: '100%',
     flexDirection: 'column',
     borderRadius: radius,
-    backgroundColor: 'transparent',
     boxShadow:
       [surface ? palette.shadowXs : undefined, errorRing].filter(Boolean).join(', ') || undefined,
     '--bloom-composer-ring': palette.focusRing,
@@ -716,19 +696,13 @@ export function ComposerPillBase({
   };
 
   const content = (
-    <View
+    <PillRoot
       {...dataHook('bloomComposerPill')}
       testID={testID}
-      style={[
-        pillStyle,
-        style,
-        paintsSurface ? { backgroundColor: 'transparent' } : undefined,
-        surfaceFillVars(publishedFill),
-      ]}
+      style={[pillStyle, style]}
+      surface={surface}
+      radius={typeof customSurface?.borderRadius === 'number' ? customSurface.borderRadius : radius}
     >
-      {paintsSurface ? (
-        <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? radius} />
-      ) : null}
       <Collapse open={hasAttachments}>
         <View style={{ paddingTop: 8, paddingLeft: 8, paddingRight: 8 }}>
           <AttachmentStrip
@@ -874,14 +848,29 @@ export function ComposerPillBase({
           </Text>
         </View>
       ) : null}
-    </View>
+    </PillRoot>
   );
-  return publishedFill ? (
-    <SurfaceLevelProvider level={surface ? 1 : parentLevel} fill={publishedFill}>
-      {content}
-    </SurfaceLevelProvider>
+  return content;
+}
+
+/**
+ * The pill's root. With `surface` it IS a Bloom `Surface` — the one base every control shares, so
+ * the composer's tone follows the same material as buttons and cards; without it the host paints.
+ */
+function PillRoot({
+  surface,
+  radius,
+  children,
+  ...rest
+}: ViewProps & { surface: boolean; radius: number }) {
+  return surface ? (
+    <Surface {...rest} radius={radius}>
+      {children}
+    </Surface>
   ) : (
-    content
+    <View {...rest} style={[{ backgroundColor: 'transparent' }, rest.style]}>
+      {children}
+    </View>
   );
 }
 

@@ -6,6 +6,7 @@
  * what advances it. Keeping the geometry in one module is what stops the two
  * bands from drifting apart while still looking like one component.
  */
+import { Surface } from '../surface';
 import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
@@ -105,7 +106,6 @@ function ComposerLoaderComponent({
 
   const surfaceStyle: WebCssStyle = {
     borderRadius: cornerRadius,
-    backgroundColor: theme.colors.card,
     boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
   };
   const clipStyle: WebCssStyle = {
@@ -126,7 +126,11 @@ function ComposerLoaderComponent({
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, surfaceStyle]}
           testID={testID ? `${testID}-surface` : undefined}
-        />
+        >
+          {/* The plate is the shared Surface, filling its frame (its own class sets `position`,
+              so it cannot be the absolutely-positioned node itself). */}
+          <Surface radius={cornerRadius} style={{ flex: 1 }} />
+        </View>
       ) : null}
 
       <View
