@@ -8,7 +8,6 @@ export interface MultiAgentChatComponents {
   Select: typeof import('../select');
   Dropdown: typeof import('../dropdown-menu');
   ContextMenu: typeof import('../context-menu');
-  FlightHost: ComponentType<React.PropsWithChildren>;
   Dialog: ComponentType<DialogProps>;
   ComposerPanel: ComponentType<ComposerPanelProps>;
   AgentCreator: ComponentType<AgentCreatorProps>;

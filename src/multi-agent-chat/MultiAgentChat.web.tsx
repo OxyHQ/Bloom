@@ -6,7 +6,6 @@ import * as Dropdown from '../dropdown-menu/index.web';
 import { Portal } from '../portal/index.web';
 import * as Select from '../select/index.web';
 import { Surface } from '../surface/index.web';
-import { AvatarFlightHost } from './AvatarFlightHost.web';
 import { ComponentsContext } from './context';
 import { MultiAgentChatBase } from './MultiAgentChatBase';
 import type { MultiAgentChatProps } from './types';
@@ -19,7 +18,6 @@ const components = {
   Dialog,
   ComposerPanel,
   AgentCreator,
-  FlightHost: AvatarFlightHost,
 };
 export function MultiAgentChat(props: MultiAgentChatProps) {
   return (

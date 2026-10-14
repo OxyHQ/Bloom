@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
 import { Platform, ScrollView, Share, useWindowDimensions } from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
+import { AvatarFlightLayer, centeredLanding, useAvatarFlights } from '../avatar-flight';
 import { StreamedText } from '../agent-chat/AgentChatMessage';
 import { Button, IconButton } from '../button';
 import { useDialogControl } from '../dialog/context';
@@ -28,7 +29,6 @@ import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { TextFieldInput } from '../text-field';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { AvatarHandoff } from './AvatarHandoff';
 import { ChatDialogFrame, SupportCopy } from './ChatDialogFrame';
 import { ChatSidebar } from './ChatSidebar';
 import { useChatComponents } from './context';
@@ -42,13 +42,6 @@ import {
   type Conversation,
 } from './data';
 import { EditorRail } from './EditorRail';
-import {
-  captureAvatars,
-  measureAvatar,
-  type AvatarHandoffState,
-  type AvatarNodes,
-  type AvatarRect,
-} from './handoff';
 import { Marketplace } from './Marketplace';
 import {
   DEFAULT_PLUGINS,
@@ -77,6 +70,9 @@ type Panel =
   | null;
 
 /** Shared workspace implementation. Platform bindings select Bloom's existing surfaces only. */
+/** The reply waits for the first-message flight to land on it: the flight's length. */
+const REPLY_DELAY_MS = 800;
+
 export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
   const {
@@ -91,36 +87,10 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const { Portal, Dialog, ComposerPanel, AgentCreator, Dropdown: D } = useChatComponents();
   const { colors } = useTheme();
   const directionProps = useDirectionProps();
-  const reduced = useReducedMotion();
-  const root = useRef<View>(null),
-    pickerAvatars = useRef<AvatarNodes>(new Map()),
-    emptyAvatars = useRef<AvatarNodes>(new Map()),
-    profileAvatarRef = useRef<View>(null),
-    replyAvatars = useRef<AvatarNodes>(new Map());
-  const [handoff, setHandoff] = useState<AvatarHandoffState | null>(null),
-    [flightOrigin, setFlightOrigin] = useState<AvatarRect | null>(null);
+  const flights = useAvatarFlights();
   const handoffGeneration = useRef(0),
     sending = useRef(false),
     starting = useRef(false);
-  const finishHandoff = useCallback(() => setHandoff(null), []);
-  const arriveAvatar = useCallback(
-    (id: string) =>
-      setHandoff((current) => {
-        if (!current || current.arrived.includes(id)) return current;
-        const arrived = [...current.arrived, id];
-        return arrived.length === current.avatars.length ? null : { ...current, arrived };
-      }),
-    [],
-  );
-  const resolveFlightTarget = useCallback(
-    (id: string) =>
-      handoff?.kind === 'group'
-        ? emptyAvatars.current.get(id)
-        : id === handoff?.responderId
-          ? replyAvatars.current.get(id)
-          : (profileAvatarRef.current ?? undefined),
-    [handoff?.kind, handoff?.responderId],
-  );
   const { width } = useWindowDimensions();
   const compact = width < 1100;
   const phone = width < 768;
@@ -228,7 +198,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   };
   const chooseAgents = (ids: string[] = [], existingId: string | null = null) => {
     handoffGeneration.current++;
-    setHandoff(null);
+    flights.cancel();
     setSelected(ids);
     setEditingChatId(existingId);
     open('picker');
@@ -257,16 +227,23 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     starting.current = true;
     const generation = ++handoffGeneration.current;
     const selectedAgents = ids.flatMap((id) => workspace.agents.find((a) => a.id === id) ?? []);
-    const [avatars, origin] = await Promise.all([
-      ids.length > 1 && !reduced
-        ? captureAvatars(selectedAgents, pickerAvatars.current)
-        : Promise.resolve([]),
-      measureAvatar(root.current ?? undefined),
-    ]);
+    // The chosen avatars leave the picker's preview and land in the new conversation's.
+    await flights.launch(
+      ids.length > 1
+        ? selectedAgents.map((agent, index) => ({
+            key: agent.id,
+            character: agent.avatar,
+            from: `picker:${agent.id}`,
+            to: `empty:${agent.id}`,
+            path: 'straight' as const,
+            ease: 'out' as const,
+            duration: 700,
+            delay: index * 80,
+          }))
+        : [],
+    );
     starting.current = false;
     if (generation !== handoffGeneration.current) return;
-    setFlightOrigin(origin);
-    setHandoff(avatars.length ? { chatId: id, kind: 'group', avatars, arrived: [] } : null);
     setEditor(null);
     update((s) => ({ ...s, chats: [next, ...s.chats], activeId: id }));
     follow.current = true;
@@ -292,7 +269,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
       .join('\n\n');
   const selectChat = (id: string) => {
     handoffGeneration.current++;
-    setHandoff(null);
+    flights.cancel();
     update((s) => ({ ...s, activeId: id }));
     follow.current = !offsets.current[id];
     requestAnimationFrame(() =>
@@ -318,29 +295,37 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     sending.current = true;
     const id = chat.id,
       generation = ++handoffGeneration.current;
-    const [avatars, origin] = await Promise.all([
-      !chat.messages.length && participants.length > 1 && !reduced
-        ? captureAvatars(participants, emptyAvatars.current)
-        : Promise.resolve([]),
-      measureAvatar(root.current ?? undefined),
-    ]);
+    // In a group's first message the avatars leave the empty chat: the one answering lands on its
+    // reply, the others merge into the header's profile.
+    const [responder, ...waiting] = participants;
+    const flying = await flights.launch(
+      !chat.messages.length && responder && waiting.length
+        ? [
+            {
+              key: responder.id,
+              character: responder.avatar,
+              from: `empty:${responder.id}`,
+              to: `reply:${responder.id}`,
+              duration: REPLY_DELAY_MS,
+            },
+            ...waiting.map((agent, index) => ({
+              key: agent.id,
+              character: agent.avatar,
+              from: `empty:${agent.id}`,
+              to: 'profile',
+              landing: centeredLanding(14),
+              duration: 950,
+              delay: index * 120,
+              merge: true,
+            })),
+          ]
+        : [],
+    );
     sending.current = false;
     if (generation !== handoffGeneration.current) return;
-    setFlightOrigin(origin);
-    setHandoff(
-      avatars.length
-        ? {
-            chatId: id,
-            kind: 'first',
-            responderId: participants[0]?.id,
-            avatars,
-            arrived: [],
-          }
-        : null,
-    );
     setDrafts((s) => ({ ...s, [id]: '' }));
     follow.current = true;
-    void replies.send(text, id, avatars.length ? 800 : 0, chat);
+    void replies.send(text, id, flying ? REPLY_DELAY_MS : 0, chat);
   };
   const editPanel = useMemo(
     () =>
@@ -446,7 +431,6 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   return (
     <StyledView
       {...directionProps}
-      ref={root}
       collapsable={false}
       className={`flex h-dvh min-h-0 overflow-hidden bg-background-full p-3 text-text-primary flex-row ${className ?? ''}`}
       style={[{ flex: 1, minHeight: 0 }, style]}
@@ -478,7 +462,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                     ? formatMessage(messages.editAgent, participants[0]!.name)
                     : messages.editConversationAgents
                 }
-                avatarRef={profileAvatarRef}
+                avatarRef={flights.anchor('profile')}
                 expanded={
                   participants.length === 1
                     ? editor?.id === participants[0]!.id
@@ -570,17 +554,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         >
           {!chat || !chat.messages.length ? (
             <StyledView className="flex-1 items-center justify-center gap-4 px-4 py-8">
-              <SelectedAgentPreview
-                agents={participants}
-                nodes={emptyAvatars.current}
-                hidden={
-                  handoff?.kind === 'group' && handoff.chatId === chat?.id
-                    ? handoff.avatars
-                        .filter((a) => !handoff.arrived.includes(a.agent.id))
-                        .map((a) => a.agent.id)
-                    : []
-                }
-              />
+              <SelectedAgentPreview agents={participants} flights={flights} anchor="empty" />
               <StyledView className="flex flex-col items-center gap-1.5">
                 <Text variant="title-3-semibold" style={{ textAlign: 'center' }}>
                   {participants.length > 1
@@ -648,21 +622,8 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                           name={agent.name}
                           thinking={thinking}
                           workingKey={replies.pending[chat.id] ?? agent.id}
-                          avatarRef={
-                            thinking
-                              ? (node) => {
-                                  if (node) replyAvatars.current.set(agent.id, node);
-                                  else replyAvatars.current.delete(agent.id);
-                                }
-                              : undefined
-                          }
-                          avatarHidden={
-                            thinking &&
-                            handoff?.kind === 'first' &&
-                            handoff.chatId === chat.id &&
-                            handoff.responderId === agent.id &&
-                            !handoff.arrived.includes(agent.id)
-                          }
+                          avatarRef={thinking ? flights.anchor(`reply:${agent.id}`) : undefined}
+                          avatarHidden={thinking && flights.isLanding(`reply:${agent.id}`)}
                           onPress={() => edit(agent)}
                           pressLabel={formatMessage(messages.editAgent, agent.name)}
                         />
@@ -765,8 +726,8 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
               <SelectedAgentPreview
                 caption
                 agents={selected.flatMap((id) => workspace.agents.find((a) => a.id === id) ?? [])}
-                nodes={pickerAvatars.current}
-                hidden={handoff?.kind === 'group' ? handoff.avatars.map((a) => a.agent.id) : []}
+                flights={flights}
+                anchor="picker"
               />
             ) : undefined
           }
@@ -1001,15 +962,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
           }
         />
       )}
-      {handoff && handoff.chatId === chat?.id && (
-        <AvatarHandoff
-          handoff={handoff}
-          origin={flightOrigin}
-          resolveTarget={resolveFlightTarget}
-          onArrive={arriveAvatar}
-          onFinish={finishHandoff}
-        />
-      )}
+      <AvatarFlightLayer flights={flights} />
     </StyledView>
   );
 }

@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useTrackEvents } from '../agent-creator/use-track-events';
+import { Collapsible } from '../collapsible';
 import { StyledView } from '../styles/styled-primitives';
 import type { AgentReplyProps } from './types';
 
@@ -14,7 +15,7 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
 /**
  * One reply of an agent: the reply on top, and under it who answered (start) and what can be
- * done with it (end). Actions appear on hover or focus on web, and stay shown elsewhere.
+ * done with it (end), both flush with the reply's own edges. Actions appear on hover or focus on web, and stay shown elsewhere.
  */
 export function AgentReply({ children, identity, actions, style }: AgentReplyProps) {
   const ref = useRef<View>(null);
@@ -44,8 +45,9 @@ export function AgentReply({ children, identity, actions, style }: AgentReplyPro
         style,
       ]}
     >
-      {children}
-      <StyledView className="flex items-center justify-between gap-2 px-3 flex-row">
+      {/* The reply opens up as it arrives (a thinking agent has none yet): no jump of height. */}
+      <Collapsible open={children != null && children !== false}>{children}</Collapsible>
+      <StyledView className="flex items-center justify-between gap-2 flex-row">
         {identity}
         {actions ? (
           <AnimatedView style={[{ flexShrink: 0 }, animated]}>{actions}</AnimatedView>

@@ -48,14 +48,18 @@ it('uses the real native JS animation engine for natural height and settles live
       nativeEvent: { layout: { height: 940, width: 300, x: 0, y: 0 } },
     }),
   );
+  // `undefined` is no limit at all: open and at rest it neither clips nor caps.
   const height = () =>
-    (resolvedStyle(body().props.style).maxHeight as { __getValue(): number }).__getValue();
+    (
+      resolvedStyle(body().props.style).maxHeight as { __getValue(): number } | undefined
+    )?.__getValue();
   expect(height()).toBe(0);
   act(() => jest.advanceTimersByTime(150));
   expect(height()).toBeGreaterThan(0);
   expect(height()).toBeLessThan(940);
   act(() => jest.advanceTimersByTime(250));
-  expect(height()).toBe(940);
+  expect(height()).toBeUndefined();
+  expect(resolvedStyle(body().props.style).overflow).toBe('visible');
   ui.rerender(draw(false));
   expect(body().props.importantForAccessibility).toBe('no-hide-descendants');
   expect(body().props.pointerEvents).toBe('none');
@@ -67,7 +71,7 @@ it('uses the real native JS animation engine for natural height and settles live
   expect(ui.queryByText('Content')).toBeNull();
   expect(ui.getByText('Content', { includeHiddenElements: true })).toBeTruthy();
   ui.rerender(draw(true));
-  expect(height()).toBe(940);
+  expect(height()).toBeUndefined();
   expect(ui.getByText('Content')).toBeTruthy();
 });
 it('only restores observable focus that was within the native body', () => {
@@ -122,4 +126,45 @@ it('blurs only the public focused TextInput contained by the native host before 
   expect(focus).toHaveBeenCalledTimes(1);
   if (original) Object.defineProperty(TextInput, 'State', original);
   else delete (TextInput as unknown as { State?: unknown }).State;
+});
+
+it('opens from nothing when it appears, and stays settled when it does not', () => {
+  const draw = (appear: boolean) => (
+    <Collapsible open appear={appear} testID="body">
+      <Text>Content</Text>
+    </Collapsible>
+  );
+  const measure = (ui: ReturnType<typeof render>) => {
+    const measured = ui.UNSAFE_root.findAll(
+      (node) => node.props.collapsable === false && typeof node.props.onLayout === 'function',
+    )[0]!;
+    act(() =>
+      measured.props.onLayout({ nativeEvent: { layout: { height: 200, width: 300, x: 0, y: 0 } } }),
+    );
+  };
+  const height = (ui: ReturnType<typeof render>) => {
+    const maxHeight = resolvedStyle(
+      ui.getByTestId('body', { includeHiddenElements: true }).props.style,
+    ).maxHeight;
+    return typeof maxHeight === 'number'
+      ? maxHeight
+      : (maxHeight as { __getValue(): number } | undefined)?.__getValue();
+  };
+
+  // Open at mount: no motion, whatever is measured.
+  const settled = render(draw(false));
+  measure(settled);
+  expect(height(settled) ?? 200).toBe(200);
+  settled.unmount();
+
+  // Appearing: shut when measured, then growing through the motion to its height.
+  const arriving = render(draw(true));
+  measure(arriving);
+  expect(height(arriving)).toBe(0);
+  act(() => jest.advanceTimersByTime(150));
+  expect(height(arriving)).toBeGreaterThan(0);
+  expect(height(arriving)).toBeLessThan(200);
+  act(() => jest.advanceTimersByTime(250));
+  // Arrived: at rest it neither clips nor caps.
+  expect(height(arriving)).toBeUndefined();
 });

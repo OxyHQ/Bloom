@@ -1,5 +1,4 @@
-import { useCallback, useEffect } from 'react';
-import { type View } from 'react-native';
+import { useEffect } from 'react';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,44 +8,56 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
 import { AvatarSnapshotObserver } from '../agent-avatar/context';
-import type { CaptureAvatarSnapshot } from '../agent-avatar/context';
+import type { AvatarFlights } from '../avatar-flight';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { useMessages, formatMessage } from '../locale/messages';
 import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { Agent } from './data';
-import { previewAvatarGeometry, retainAvatarSnapshotCapture, type AvatarNodes } from './handoff';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
+
+/** The selected-preview composition: one large avatar, a trio, or a ring from four up. */
+export function previewAvatarGeometry(count: number, index: number) {
+  const size = count === 1 ? 80 : count <= 3 ? 62 : 48;
+  const angle = (index * Math.PI * 2) / count - Math.PI / 2;
+  const x =
+    count === 1
+      ? 40
+      : count <= 3
+        ? index === 1
+          ? 76
+          : index === 2
+            ? 49
+            : 22
+        : 56 + Math.cos(angle) * 38;
+  const y =
+    count === 1
+      ? 16
+      : count <= 3
+        ? count === 3 && index === 2
+          ? 46
+          : 8
+        : 32 + Math.sin(angle) * 30;
+  return { size, x, y };
+}
 function PreviewAvatar({
   agent,
   index,
   count,
-  hidden,
-  nodes,
+  flights,
+  anchor,
 }: {
   agent: Agent;
   index: number;
   count: number;
-  hidden: boolean;
-  nodes: AvatarNodes;
+  flights: AvatarFlights;
+  anchor: string;
 }) {
-  const observeSnapshot = useCallback(
-    (capture: CaptureAvatarSnapshot | null) =>
-      retainAvatarSnapshotCapture(nodes, agent.id, capture),
-    [nodes, agent.id],
-  );
-  const captureNode = useCallback(
-    (node: View | null) => {
-      if (node) nodes.set(agent.id, node);
-      else {
-        nodes.delete(agent.id);
-        retainAvatarSnapshotCapture(nodes, agent.id, null);
-      }
-    },
-    [nodes, agent.id],
-  );
+  const key = `${anchor}:${agent.id}`;
+  // Hidden while its flight is in the air: the layer draws it, either leaving or arriving.
+  const hidden = flights.isLeaving(key) || flights.isLanding(key);
   const reduced = useReducedMotion();
   const progress = useSharedValue(reduced ? 1 : 0);
   const { size, x, y } = previewAvatarGeometry(count, index);
@@ -69,13 +80,13 @@ function PreviewAvatar({
   );
   return (
     <AnimatedView
-      ref={captureNode}
+      ref={flights.anchor(key)}
       collapsable={false}
       pointerEvents="none"
       aria-hidden
       style={[{ position: 'absolute', left: 0, top: 0, width: size, height: size }, animated]}
     >
-      <AvatarSnapshotObserver.Provider value={observeSnapshot}>
+      <AvatarSnapshotObserver.Provider value={flights.snapshot(key)}>
         <AgentAvatar character={agent.avatar} size={size} />
       </AvatarSnapshotObserver.Provider>
     </AnimatedView>
@@ -83,13 +94,14 @@ function PreviewAvatar({
 }
 export function SelectedAgentPreview({
   agents,
-  nodes,
-  hidden = [],
+  flights,
+  anchor,
   caption = false,
 }: {
   agents: Agent[];
-  nodes: AvatarNodes;
-  hidden?: string[];
+  flights: AvatarFlights;
+  /** Names this preview's avatars for `flights`: `${anchor}:${agent.id}`. */
+  anchor: string;
   caption?: boolean;
 }) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
@@ -116,8 +128,8 @@ export function SelectedAgentPreview({
             agent={agent}
             index={index}
             count={agents.length}
-            hidden={hidden.includes(agent.id)}
-            nodes={nodes}
+            flights={flights}
+            anchor={anchor}
           />
         ))}
       </StyledView>

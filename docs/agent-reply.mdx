@@ -36,10 +36,10 @@ import {
 | Piece | What it is |
 | --- | --- |
 | `AgentReply` | The reply on top; under it, `identity` at the start and `actions` at the end. On web the actions appear on hover or focus; touch platforms keep them shown. It carries 12px of margin at each side and above; `style` is applied after, so a thread that already pads its content passes `marginHorizontal: 0`. |
-| `AgentReplyBubble` | The tinted surface (`background-tertiary`, radius `2.5xl`, 12px padding) the reply sits on. Takes `style` and `className`. |
-| `AgentReplyIdentity` | The agent's 3D avatar and name. While `thinking`, the avatar grows to 32px, plays its working animation and the name gives way to "Thinking…". Pass `onPress` to make it a button (`pressLabel` names it). |
-| `AgentReplyActions` | Helpful, unhelpful and — with `onCopy` — copy, as a separated extra-small [`ButtonGroup`](./button-group.mdx): each action its own rounded pill. Add your own after them with `AgentReplyAction` children (read aloud, retry…). |
-| `AgentReplyAction` | One pill (a `ButtonGroupItem`). It draws no text, so `label` is its name. `selected` lights it. |
+| `AgentReplyBubble` | The tinted surface (`background-tertiary`, radius `2.5xl`) the reply sits on. 12px at the sides; the top and bottom are 12px **as the eye reads them**: less half the text's leading (`text`: its font size and line height, default Bloom's body 14 on 20), so a reply set in 16 on 28 gets less padding than one in 14 on 20 and both look even. Takes `style` and `className`. |
+| `AgentReplyIdentity` | The agent's 3D avatar and name. While `thinking`, the avatar grows to 32px, plays its working animation and the name gives way to "Thinking…". Pass `onPress` to make it a button (`pressLabel` names it). Pass `reasoning` and, while it thinks, "Thinking…" is a disclosure with a chevron that folds the model's reasoning under the row (open to start with): the avatar, the status and the reasoning are one component, which settles into avatar and name under the reply. |
+| `AgentReplyActions` | Helpful, unhelpful and — with `onCopy` — copy, as bare icons in a row (a plain [`Button`](./button.mdx) each): nothing around them until one is hovered. Add your own after them with `AgentReplyAction` children (read aloud, retry…). |
+| `AgentReplyAction` | One bare icon button. It draws no text, so `label` is its name. `selected` lights it and is announced as a toggle. |
 | `AgentProfile` | The conversation's header target: one agent large, two or three overlapped, a longer team as its first three and "+N". The capsule names them ("Lumi + Atlas + Sol"). Pressing it makes every avatar in it wave, then calls `onPress`. |
 | `AgentStack` | Up to three avatars overlapped in one square, for a list row. |
 
@@ -59,5 +59,5 @@ The row's labels and the thinking status follow `BloomProvider locale`. Names an
 
 ## Hazards
 
-- **Give the avatar's box to a caller that animates it** with `avatarRef` (identity) or `avatarRef` (profile). `MultiAgentChat` flies avatars between them when an agent starts answering; the `avatarHidden` prop keeps the one in the thread invisible until the flight lands.
+- **Give the avatar's box to a caller that animates it** with `avatarRef` (identity or profile), and hide it with `avatarHidden` while an avatar is on its way to it. [`AvatarFlight`](./avatar-flight.mdx) does the flying: `avatarRef={flights.anchor(key)}`, `avatarHidden={flights.isLanding(key)}`.
 - **`workingKey` is read once**, on the first render: a reply that is already thinking when it mounts starts its working animation once, a finished one never does.

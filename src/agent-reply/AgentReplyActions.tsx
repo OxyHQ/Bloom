@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { View } from 'react-native';
+import { Button } from '../button';
 import { useMessages } from '../locale/messages';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiThumbDownLine } from '../icons/remix/RiThumbDownLine';
@@ -8,8 +9,8 @@ import { AGENT_REPLY_MESSAGES } from './messages';
 import type { AgentReplyActionProps, AgentReplyActionsProps, AgentReplyVote } from './types';
 
 /**
- * One pill of an `AgentReplyActions` row. It draws no text, so `label` is its name; `selected`
- * lights it (a `ButtonGroupItem`'s `checked`, which sets `aria-pressed` for react-native-web).
+ * One action of an `AgentReplyActions` row: a bare icon, no fill until it is hovered. It draws no
+ * text, so `label` is its name; `selected` lights it and is announced as a toggle (`aria-pressed`).
  */
 export function AgentReplyAction({
   icon,
@@ -19,11 +20,13 @@ export function AgentReplyAction({
   onPress,
 }: AgentReplyActionProps) {
   return (
-    <ButtonGroupItem
+    <Button
       iconOnly
+      appearance="plain"
+      size="sm"
       leadingIcon={icon}
       accessibilityLabel={label}
-      checked={selected}
+      pressed={selected}
       disabled={disabled}
       onPress={onPress}
     />
@@ -31,8 +34,8 @@ export function AgentReplyAction({
 }
 
 /**
- * The row under a reply: helpful, unhelpful, copy, and any `AgentReplyAction`s after them — a
- * separated, extra-small `ButtonGroup`, so each action is its own rounded pill.
+ * The row under a reply: helpful, unhelpful, copy, and any `AgentReplyAction`s after them, as bare
+ * icons in a row: nothing around them, so the reply keeps the eye.
  */
 export function AgentReplyActions({
   vote,
@@ -48,7 +51,7 @@ export function AgentReplyActions({
     onVoteChange?.(value);
   };
   return (
-    <ButtonGroup separated size="xs">
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
       <AgentReplyAction
         icon={RiThumbUpLine}
         label={messages.helpfulResponse}
@@ -65,6 +68,6 @@ export function AgentReplyActions({
         <AgentReplyAction icon={RiFileCopyLine} label={messages.copyResponse} onPress={onCopy} />
       ) : null}
       {children}
-    </ButtonGroup>
+    </View>
   );
 }

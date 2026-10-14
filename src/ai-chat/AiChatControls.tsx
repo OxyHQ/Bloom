@@ -301,10 +301,7 @@ export function SurfaceAction({
   );
 }
 
-/**
- * A turn's action row: ONE pill cut into segments. The segments sit 2px apart under a
- * pill-shaped clip, so only the first one's start and the last one's end are rounded.
- */
+/** A turn's action row: bare icons in a row, nothing around them until one is hovered. */
 export function TurnActionGroup({
   children,
   style,
@@ -323,8 +320,6 @@ export function TurnActionGroup({
           alignItems: 'stretch',
           alignSelf: 'flex-start',
           gap: 2,
-          borderRadius: 9999,
-          overflow: 'hidden',
         },
         style,
       ]}
@@ -334,18 +329,13 @@ export function TurnActionGroup({
   );
 }
 
-/**
- * A segment of a `TurnActionGroup`: 28 tall and 1.5 times as wide (42), straight-sided (the
- * group's pill rounds the ends), tertiary → secondary-hover, its focus ring inside.
- */
+/** One action of a `TurnActionGroup`: a 32 circle holding a 16 glyph, filled only on hover. */
 export function turnActionSurface(palette: AiChatPalette) {
   return {
-    padding: 6,
-    paddingHorizontal: 13,
-    radius: 0,
-    inset: true,
-    background: palette.tertiary,
-    hoverBackground: palette.secondaryHover,
+    padding: 8,
+    radius: 9999,
+    background: 'transparent',
+    hoverBackground: palette.tertiary,
     palette,
   };
 }

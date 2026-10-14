@@ -8,6 +8,12 @@ export interface CollapsibleFocusTarget {
 }
 export interface CollapsibleProps {
   open: boolean;
+  /**
+   * Mounted open, it opens: the height and the fade run from nothing instead of starting
+   * settled. For content that arrives while the person watches (a new row in a thread). Default
+   * `false`: a collapsible that is open at mount (a restored page, a history) does not move.
+   */
+  appear?: boolean;
   children?: ReactNode;
   /** Defaults to 300ms CSS ease-in-out. Live reduced motion settles immediately. */
   transition?: SurfaceTransition;

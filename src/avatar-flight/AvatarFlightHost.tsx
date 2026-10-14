@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react';
-/** Decorative native flights stay in the workspace's absolute overlay and never open a touch-blocking window. */
+
+/** Native flights are decorative and stay in the screen's own absolute overlay: no touch-blocking window. */
 export function AvatarFlightHost({ children }: PropsWithChildren) {
   return <>{children}</>;
 }

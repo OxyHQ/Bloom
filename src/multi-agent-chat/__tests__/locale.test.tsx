@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react-native';
 import React from 'react';
+import { useAvatarFlights } from '../../avatar-flight';
 import { LocaleProvider } from '../../locale';
 import { pickMessages, formatMessage } from '../../locale/messages';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
@@ -16,6 +17,12 @@ const agent: Agent = {
   description: '',
   avatar: { preset: 'blue_beret' },
 };
+function Preview({ caption }: { caption?: boolean }) {
+  const flights = useAvatarFlights();
+  return (
+    <SelectedAgentPreview agents={[agent]} flights={flights} anchor="empty" caption={caption} />
+  );
+}
 const scope = (children: React.ReactNode, locale: string) => (
   <BloomThemeProvider mode="light">
     <LocaleProvider locale={locale}>{children}</LocaleProvider>
@@ -32,9 +39,7 @@ describe('multi-agent chat locale', () => {
   });
   it('names the preview in the scoped language, preserving supplied names', () => {
     const messages = pickMessages(MULTI_AGENT_CHAT_MESSAGES, 'es');
-    const view = render(
-      scope(<SelectedAgentPreview agents={[agent]} nodes={new Map()} caption />, 'es'),
-    );
+    const view = render(scope(<Preview caption />, 'es'));
     expect(view.getByLabelText(formatMessage(messages.selectedAgents, 'Peri'))).toBeTruthy();
     expect(view.getByText(messages.chooseWhoSJoiningTheConversation)).toBeTruthy();
   });

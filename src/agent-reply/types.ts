@@ -34,6 +34,11 @@ export interface AgentReplyBubbleProps {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   className?: string;
+  /**
+   * The font size and line height (px) of the text inside, so the top and bottom padding looks as
+   * wide as the sides. Default Bloom's body, 14 on 20.
+   */
+  text?: { fontSize: number; lineHeight: number };
 }
 
 export interface AgentReplyIdentityProps {
@@ -44,6 +49,13 @@ export interface AgentReplyIdentityProps {
   thinking?: boolean;
   /** Seeds which working animation the avatar starts with; `name` when absent. */
   workingKey?: string;
+  /**
+   * The model's reasoning, while `thinking`: "Thinking…" becomes a disclosure with a chevron that
+   * folds it under the row (open to start with), so one component is the avatar, the status and
+   * the reasoning. It is gone once the reply starts; `AgentThinking` keeps it as "Thought for…".
+   * A string is set as muted text; anything else is yours to style.
+   */
+  reasoning?: ReactNode;
   /** Hide the avatar while something else draws it (the handoff flight). */
   avatarHidden?: boolean;
   /** The avatar's box, for a caller that animates it elsewhere. */
@@ -89,6 +101,8 @@ export interface AgentProfileProps {
   onPress: () => void;
   /** The artwork's box, for a caller that animates it elsewhere. */
   avatarRef?: Ref<View>;
+  /** Hide the artwork while something else draws it (an avatar flying in). */
+  avatarHidden?: boolean;
 }
 
 export interface AgentStackProps {
