@@ -66,3 +66,10 @@ export function useMessages<M>(
   );
   return { locale, messages };
 }
+
+/** Keep dynamic names/counts in their translated grammatical position: `{0}`, `{1}`… */
+export function formatMessage(template: string, ...values: unknown[]): string {
+  return template.replace(/\{(\d+)\}/g, (_match, index: string) =>
+    String(values[Number(index)] ?? ''),
+  );
+}

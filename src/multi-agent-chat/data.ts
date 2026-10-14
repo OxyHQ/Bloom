@@ -4,8 +4,8 @@ import {
   characterFromLegacy,
   parseAvatarCharacter,
 } from '../agent-avatar';
-import { pickMessages } from '../locale/messages';
-import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
+import { pickMessages, formatMessage } from '../locale/messages';
+import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 
 import { normalizeAgentPreferences } from '../agent-creator/shared';
 import type { AgentCreatorAgent } from '../agent-creator/types';
@@ -538,5 +538,5 @@ export function demoReply(agent: Agent, turn = 0): string {
     INITIAL_AGENTS.findIndex((a) => a.id === agent.id),
   );
   const answer = DEMO_ANSWERS[(Math.max(0, Math.floor(turn)) + offset) % DEMO_ANSWERS.length];
-  return `${suggestions[agent.id] ?? formatChatMessage(messages.iLlApproachThisFromThePerspective, agent.label || agent.name)} ${answer}`;
+  return `${suggestions[agent.id] ?? formatMessage(messages.iLlApproachThisFromThePerspective, agent.label || agent.name)} ${answer}`;
 }

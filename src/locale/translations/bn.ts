@@ -2603,7 +2603,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   copied: 'কপি হয়েছে',
   copyConversation: 'কথোপকথন কপি করুন',
   copyConversationID: 'কথোপকথনের আইডি কপি করুন',
-  copyResponse: 'উত্তর কপি করুন',
   couldnTCopyPleaseTryAgain: 'কপি করা যায়নি। আবার চেষ্টা করুন.',
   create: 'তৈরি করুন',
   createANewBot: 'একটি নতুন বট তৈরি করুন',
@@ -2638,7 +2637,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: 'সহায়ক প্রতিক্রিয়া',
   inTheBrowser: 'ব্রাউজারে',
   inThisConversation: 'এই কথোপকথনে',
   includes: 'অন্তর্ভুক্ত',
@@ -2705,13 +2703,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   support: 'সমর্থন',
   systemNotifications: 'সিস্টেম বিজ্ঞপ্তি',
   thinkingTogether: 'একসাথে ভাবছি...',
-  thinking: 'ভাবছি...',
   today: 'আজ',
   tools: 'টুলস',
   toolsForYourWorkflow: 'আপনার কর্মপ্রবাহের জন্য টুল',
   tryAnotherNameCategoryOrKeyword: 'অন্য নাম, বিভাগ বা কীওয়ার্ড চেষ্টা করুন।',
   ultra149Mo: 'আল্ট্রা $149/মাস',
-  unhelpfulResponse: 'অসহায় প্রতিক্রিয়া',
   unpinChat: 'চ্যাট আনপিন করুন',
   upgradeToMax: 'Max-এ আপগ্রেড করুন',
   useToCreateABotOrStart: 'একটি বট তৈরি করতে বা একাধিক এজেন্টের সাথে কথোপকথন শুরু করতে + ব্যবহার করুন।',
@@ -2725,12 +2721,19 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   youAreOn7xMoreUsageThan2: 'আপনি নিয়মিত থেকে 7 গুণ বেশি ব্যবহার করছেন।',
   areHereSendAMessageToGet: '{0} এখানে আছে। সবার দৃষ্টিভঙ্গি পেতে একটি বার্তা পাঠান।',
   itemDetails: '{0} বিশদ বিবরণ',
-  agentThinking: '{0} ভাবছে',
   by: '{0} · {1} দ্বারা',
   results: (count: number) => plural('bn', count, { other: '{n}টি ফলাফল' }),
   includedSkills: (apps: number, skills: number) =>
     (apps ? plural('bn', apps, { other: '{n}টি অ্যাপ' }) + ', ' : '') +
     plural('bn', skills, { other: '{n}টি দক্ষতা' }),
+};
+
+const AGENT_REPLY_MESSAGES: Translations['AGENT_REPLY_MESSAGES'] = {
+  thinking: 'ভাবছি...',
+  agentThinking: '{0} ভাবছে',
+  helpfulResponse: 'সহায়ক প্রতিক্রিয়া',
+  unhelpfulResponse: 'অসহায় প্রতিক্রিয়া',
+  copyResponse: 'উত্তর কপি করুন',
 };
 
 const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
@@ -2753,6 +2756,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
+  AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
     defaultTitle: 'Bloom ডিজাইন কাজ',
     defaultTeam: 'Bloom দল',

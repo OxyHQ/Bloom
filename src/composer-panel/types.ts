@@ -292,6 +292,13 @@ export interface ComposerPanelProps {
   /** Draws a retry button on every tile with an `error`; called with its id. */
   onAttachmentRetry?: (id: string) => void;
 
+  /**
+   * What the agent is waiting on — a `Questionnaire` — docked directly above the composer, in
+   * its column and width. A question is asked of the person who is about to type, so it
+   * belongs where they are looking, not as a message in the thread; answering it unmounts it.
+   */
+  question?: ReactNode;
+
   /** The tab on the card's top edge — typically `<ComposerPanelStatusTab />`. */
   status?: ReactNode;
 
@@ -459,6 +466,13 @@ export interface ComposerPillProps {
   defaultVoiceState?: ComposerVoiceState;
   /** The mic was pressed: `recording` from `idle`, `idle` from `recording`. */
   onVoiceStateChange?: (voiceState: ComposerVoiceState) => void;
+
+  /**
+   * What the agent is waiting on — a `Questionnaire` — docked directly above the composer, in
+   * its column and width. A question is asked of the person who is about to type, so it
+   * belongs where they are looking, not as a message in the thread; answering it unmounts it.
+   */
+  question?: ReactNode;
 
   /** Tiles above the field, inside the pill, which grows to hold them. Each one's `progress` drives its upload ring. */
   attachments?: ReadonlyArray<ComposerPanelAttachment>;

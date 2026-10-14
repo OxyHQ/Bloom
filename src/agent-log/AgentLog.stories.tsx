@@ -19,7 +19,7 @@ import {
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Blocks/Agent Log',
+  title: 'Agents/Agent Log',
 };
 
 export default meta;

@@ -35,7 +35,7 @@ const meta: Meta<typeof ComposerPanel> = {
     voiceState: { control: 'inline-radio', options: ['idle', 'recording', 'transcribing'] },
     defaultVoiceState: { control: 'inline-radio', options: ['idle', 'recording', 'transcribing'] },
   },
-  title: 'Blocks/Composer Panel',
+  title: 'Agents/Composer Panel',
   component: ComposerPanel,
 };
 

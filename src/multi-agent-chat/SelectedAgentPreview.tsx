@@ -11,13 +11,13 @@ import { AgentAvatar } from '../agent-avatar';
 import { AvatarSnapshotObserver } from '../agent-avatar/context';
 import type { CaptureAvatarSnapshot } from '../agent-avatar/context';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
-import { useMessages } from '../locale/messages';
+import { useMessages, formatMessage } from '../locale/messages';
 import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { Agent } from './data';
 import { previewAvatarGeometry, retainAvatarSnapshotCapture, type AvatarNodes } from './handoff';
-import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
+import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 function PreviewAvatar({
   agent,
@@ -100,7 +100,7 @@ export function SelectedAgentPreview({
         role="img"
         accessibilityLabel={
           agents.length
-            ? formatChatMessage(messages.selectedAgents, agents.map((a) => a.name).join(', '))
+            ? formatMessage(messages.selectedAgents, agents.map((a) => a.name).join(', '))
             : messages.chooseYourTeammates
         }
         style={{ position: 'relative', width: 160, height: 112 }}

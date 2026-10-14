@@ -33,7 +33,7 @@ import type { AiChatGeneration } from './types';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Blocks/AI Chat',
+  title: 'Agents/AI Chat',
 };
 
 export default meta;

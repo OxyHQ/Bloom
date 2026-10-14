@@ -1,0 +1,63 @@
+---
+title: AgentReply
+description: An agent's reply in a conversation — the bubble, who answered, the actions under it, and the profile that names the team.
+order: 66
+---
+
+# AgentReply
+
+The pieces a conversation with several agents is made of. Each agent answers in its own bubble, its 3D avatar and name under it, and the row of actions at the other end. The header names the team.
+
+```tsx
+import {
+  AgentProfile,
+  AgentReply,
+  AgentReplyActions,
+  AgentReplyBubble,
+  AgentReplyIdentity,
+} from '@oxy.so/bloom/agent-reply';
+
+<AgentProfile agents={team} onPress={openTeam} />
+
+<AgentReply
+  identity={<AgentReplyIdentity character={lumi.avatar} name={lumi.name} thinking={streaming} />}
+  actions={!streaming && <AgentReplyActions onCopy={() => copy(text)} />}
+>
+  <AgentReplyBubble>
+    <Markdown>{text}</Markdown>
+  </AgentReplyBubble>
+</AgentReply>
+```
+
+`MultiAgentChat` is built from exactly these, so a thread built here looks like it.
+
+## Pieces
+
+| Piece | What it is |
+| --- | --- |
+| `AgentReply` | The reply on top; under it, `identity` at the start and `actions` at the end. On web the actions appear on hover or focus; touch platforms keep them shown. |
+| `AgentReplyBubble` | The tinted surface (`background-tertiary`, radius `2.5xl`, 12px padding) the reply sits on. Takes `style` and `className`. |
+| `AgentReplyIdentity` | The agent's 3D avatar and name. While `thinking`, the avatar grows to 32px, plays its working animation and the name gives way to "Thinking…". Pass `onPress` to make it a button (`pressLabel` names it). |
+| `AgentReplyActions` | Helpful, unhelpful and — with `onCopy` — copy, as 22px tiles with 12px icons. Add your own after them with `AgentReplyAction` children (read aloud, retry…). |
+| `AgentReplyAction` | One tile. It draws no text, so `label` is its name. `selected` lights it. |
+| `AgentProfile` | The conversation's header target: one agent large, two or three overlapped, a longer team as its first three and "+N". The capsule names them ("Lumi + Atlas + Sol"). |
+| `AgentStack` | Up to three avatars overlapped in one square, for a list row. |
+
+An agent is `{ id, name, label?, avatar }`, where `avatar` is an [`AvatarCharacter`](./agent-avatar.mdx).
+
+## Votes
+
+`AgentReplyActions` keeps the vote itself. Pass `vote` (`'up' | 'down' | null`) to keep it yourself — a controlled row ignores what it was tapped to — and `onVoteChange` to be told.
+
+## Accessibility
+
+A tile draws no text: its name is `label`, and `selected` is set as both `aria-pressed` and `accessibilityState` because react-native-web reads only the first. `AgentProfile` is a button named by `accessibilityLabel` (the label when absent) and reports `expanded` as `aria-expanded`. While `thinking`, `AgentReplyIdentity` is named "{name} is thinking" and the "Thinking…" status is announced as `role="status"`.
+
+## Language
+
+The row's labels and the thinking status follow `BloomProvider locale`. Names and the profile's text come from you.
+
+## Hazards
+
+- **Give the avatar's box to a caller that animates it** with `avatarRef` (identity) or `avatarRef` (profile). `MultiAgentChat` flies avatars between them when an agent starts answering; the `avatarHidden` prop keeps the one in the thread invisible until the flight lands.
+- **`workingKey` is read once**, on the first render: a reply that is already thinking when it mounts starts its working animation once, a finished one never does.

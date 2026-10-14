@@ -7,6 +7,13 @@ import { StreamedText } from '../agent-chat/AgentChatMessage';
 import { Button, IconButton } from '../button';
 import { useDialogControl } from '../dialog/context';
 import { useDirectionProps } from '../hooks/use-is-rtl';
+import {
+  AgentProfile,
+  AgentReply,
+  AgentReplyActions,
+  AgentReplyBubble,
+  AgentReplyIdentity,
+} from '../agent-reply';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
@@ -15,7 +22,7 @@ import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { RiShare2Line } from '../icons/remix/RiShare2Line';
 import { RiThumbDownLine } from '../icons/remix/RiThumbDownLine';
 import { RiThumbUpLine } from '../icons/remix/RiThumbUpLine';
-import { useMessages } from '../locale/messages';
+import { useMessages, formatMessage } from '../locale/messages';
 import { OverlayRoot, TOAST_LAYER_Z } from '../overlay';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { TextFieldInput } from '../text-field';
@@ -24,7 +31,6 @@ import { Text } from '../typography';
 import { AvatarHandoff } from './AvatarHandoff';
 import { ChatDialogFrame, SupportCopy } from './ChatDialogFrame';
 import { ChatSidebar } from './ChatSidebar';
-import { ChatAgentProfile } from './ChatAgentProfile';
 import { useChatComponents } from './context';
 import {
   conversationFor,
@@ -50,9 +56,8 @@ import {
   addMarketplaceBot,
   type MarketplaceItem,
 } from './marketplace-data';
-import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
+import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 import { WORKSPACE_MODELS } from './model-catalog';
-import { ReplyHeader, ReplyRow } from './ReplyRow';
 import { ScrollSurface } from './ScrollSurface';
 import { SelectedAgentPreview } from './SelectedAgentPreview';
 import type { MultiAgentChatProps } from './types';
@@ -430,46 +435,13 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   ? messages.conversations
                   : messages.conversationOptions;
   const messageActions = (id: string, text: string) => (
-    <StyledView className="mt-1 flex-row items-center gap-1">
-      {(['up', 'down'] as const).map((value) => (
-        <StyledPressable
-          key={value}
-          accessibilityRole="button"
-          accessibilityLabel={
-            value === 'up' ? messages.helpfulResponse : messages.unhelpfulResponse
-          }
-          accessibilityState={{ selected: feedback[id] === value }}
-          aria-pressed={feedback[id] === value}
-          onPress={() => setFeedback((s) => ({ ...s, [id]: value }))}
-          className="h-[22px] w-[22px] items-center justify-center rounded-md"
-          style={{ backgroundColor: colors.backgroundTertiary }}
-        >
-          {value === 'up' ? (
-            <RiThumbUpLine
-              width={12}
-              height={12}
-              fill={feedback[id] === value ? colors.primary : colors.textTertiary}
-            />
-          ) : (
-            <RiThumbDownLine
-              width={12}
-              height={12}
-              fill={feedback[id] === value ? colors.primary : colors.textTertiary}
-            />
-          )}
-        </StyledPressable>
-      ))}
-      <StyledPressable
-        accessibilityRole="button"
-        accessibilityLabel={messages.copyResponse}
-        className="flex size-[22px] items-center justify-center rounded-md bg-background-tertiary-default text-foreground-icon-tertiary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-        onPress={() => {
-          void copy(text, messages.responseCopied);
-        }}
-      >
-        <RiFileCopyLine width={12} height={12} fill={colors.textTertiary} />
-      </StyledPressable>
-    </StyledView>
+    <AgentReplyActions
+      vote={feedback[id] ?? null}
+      onVoteChange={(value) => setFeedback((s) => ({ ...s, [id]: value }))}
+      onCopy={() => {
+        void copy(text, messages.responseCopied);
+      }}
+    />
   );
   return (
     <StyledView
@@ -498,8 +470,14 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
               pointerEvents="box-none"
               className="min-w-0 max-w-full items-center self-start"
             >
-              <ChatAgentProfile
+              <AgentProfile
                 agents={participants}
+                label={participants.length ? undefined : messages.chooseYourTeammates}
+                accessibilityLabel={
+                  participants.length === 1
+                    ? formatMessage(messages.editAgent, participants[0]!.name)
+                    : messages.editConversationAgents
+                }
                 avatarRef={profileAvatarRef}
                 expanded={
                   participants.length === 1
@@ -558,7 +536,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                     leading={<AgentAvatar character={agent.avatar} size={20} />}
                     className="px-2 py-1.5 text-body-medium"
                   >
-                    {formatChatMessage(messages.editAgent, agent.name)}
+                    {formatMessage(messages.editAgent, agent.name)}
                   </D.DropdownMenuItem>
                 ))}
                 <D.DropdownMenuItem
@@ -608,7 +586,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   {participants.length > 1
                     ? messages.aFewMindsOneConversation
                     : participants[0]
-                      ? formatChatMessage(messages.sayHelloTo, participants[0].name)
+                      ? formatMessage(messages.sayHelloTo, participants[0].name)
                       : messages.chatWithYourAgents}
                 </Text>
                 <Text
@@ -620,7 +598,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   }}
                 >
                   {participants.length > 1
-                    ? formatChatMessage(
+                    ? formatMessage(
                         messages.areHereSendAMessageToGet,
                         participants.map((a) => a.name).join(', '),
                       )
@@ -661,23 +639,32 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   );
                 const thinking = replies.thinking[chat.id]?.id === message.id;
                 return (
-                  <ReplyRow
+                  <AgentReply
                     key={message.id}
-                    header={
+                    identity={
                       agent && (
-                        <ReplyHeader
-                          agent={agent}
+                        <AgentReplyIdentity
+                          character={agent.avatar}
+                          name={agent.name}
                           thinking={thinking}
-                          workingKey={replies.pending[chat.id]}
-                          nodes={thinking ? replyAvatars.current : undefined}
-                          arriving={
+                          workingKey={replies.pending[chat.id] ?? agent.id}
+                          avatarRef={
+                            thinking
+                              ? (node) => {
+                                  if (node) replyAvatars.current.set(agent.id, node);
+                                  else replyAvatars.current.delete(agent.id);
+                                }
+                              : undefined
+                          }
+                          avatarHidden={
                             thinking &&
                             handoff?.kind === 'first' &&
                             handoff.chatId === chat.id &&
                             handoff.responderId === agent.id &&
                             !handoff.arrived.includes(agent.id)
                           }
-                          onEdit={() => edit(agent)}
+                          onPress={() => edit(agent)}
+                          pressLabel={formatMessage(messages.editAgent, agent.name)}
                         />
                       )
                     }
@@ -688,11 +675,11 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                     }
                   >
                     {!!text && (
-                      <StyledView className="rounded-[var(--radius-2-5xl)] bg-background-tertiary-default p-3">
+                      <AgentReplyBubble>
                         <StreamedText text={text} paragraphs />
-                      </StyledView>
+                      </AgentReplyBubble>
                     )}
-                  </ReplyRow>
+                  </AgentReply>
                 );
               })}
             </StyledView>
@@ -933,7 +920,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                         edit(agent);
                       }}
                     >
-                      {formatChatMessage(messages.editAgent, agent.name)}
+                      {formatMessage(messages.editAgent, agent.name)}
                     </Button>
                   )
                 );

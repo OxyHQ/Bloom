@@ -33,7 +33,7 @@ const meta: Meta = {
   },
   component: AgentChat,
   parameters: { controls: { disable: true } },
-  title: 'Blocks/Agent Chat',
+  title: 'Agents/Agent Chat',
 };
 
 export default meta;

@@ -132,6 +132,7 @@ const preview: Preview = {
           ],
           'Base',
           'Blocks',
+          'Agents',
           'Charts',
           'Templates',
         ],

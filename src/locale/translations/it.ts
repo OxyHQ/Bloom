@@ -2721,7 +2721,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   copied: 'Copiato',
   copyConversation: 'Copia conversazione',
   copyConversationID: "Copia l'ID della conversazione",
-  copyResponse: 'Copia risposta',
   couldnTCopyPleaseTryAgain: 'Impossibile copiare. Per favore riprova.',
   create: 'Crea',
   createANewBot: 'Crea un nuovo bot',
@@ -2757,7 +2756,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   git: 'Git',
   github: 'GitHub',
   gitlab: 'GitLab',
-  helpfulResponse: 'Risposta utile',
   inTheBrowser: 'Nel browser',
   inThisConversation: 'In questa conversazione',
   includes: 'Include',
@@ -2825,13 +2823,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   support: 'Supporto',
   systemNotifications: 'Notifiche di sistema',
   thinkingTogether: 'Pensare insieme…',
-  thinking: 'Pensando…',
   today: 'Oggi',
   tools: 'Strumenti',
   toolsForYourWorkflow: 'Strumenti per il tuo flusso di lavoro',
   tryAnotherNameCategoryOrKeyword: 'Prova un altro nome, categoria o parola chiave.',
   ultra149Mo: 'Ultra $ 149/mese',
-  unhelpfulResponse: 'Risposta inutile',
   unpinChat: 'Sblocca la chat',
   upgradeToMax: 'Passa a Max',
   useToCreateABotOrStart: 'Usa + per creare un bot o avviare una conversazione con più agenti.',
@@ -2847,12 +2843,19 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   areHereSendAMessageToGet:
     '{0} sono qui. Invia un messaggio per ottenere il punto di vista di tutti.',
   itemDetails: '{0} dettagli',
-  agentThinking: '{0} sta pensando',
   by: '{0} · di {1}',
   results: (count: number) => plural('it', count, { one: '{n} risultato', other: '{n} risultati' }),
   includedSkills: (apps: number, skills: number) =>
     (apps ? plural('it', apps, { one: '{n} app', other: '{n} app' }) + ', ' : '') +
     plural('it', skills, { one: '{n} competenza', other: '{n} competenze' }),
+};
+
+const AGENT_REPLY_MESSAGES: Translations['AGENT_REPLY_MESSAGES'] = {
+  thinking: 'Pensando…',
+  agentThinking: '{0} sta pensando',
+  helpfulResponse: 'Risposta utile',
+  unhelpfulResponse: 'Risposta inutile',
+  copyResponse: 'Copia risposta',
 };
 
 const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
@@ -2875,6 +2878,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
+  AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
     defaultTitle: 'Attività di design Bloom',
     defaultTeam: 'Team Bloom',

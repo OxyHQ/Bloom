@@ -6,7 +6,7 @@ import { AVATAR_PRESETS, assetUrl, type AvatarPreset } from '../runtime/avatar/c
 import { AvatarMotionReview } from './AvatarMotionReview';
 
 const meta = {
-  title: 'Application/Agent Avatar/New Engine',
+  title: 'Agents/Agent Avatar/New Engine',
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
 } satisfies Meta;
 export default meta;
