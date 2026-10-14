@@ -38,13 +38,38 @@ function fontFamilyStyle(kind: 'display' | 'sans' | 'mono'): { fontFamily: strin
 const SANS_FONT_FAMILY = fontFamilyStyle('sans');
 const DISPLAY_FONT_FAMILY = fontFamilyStyle('display');
 
+/**
+ * The big titles of the scale — `large-title` and `display-1` … `display-4`, 32px and up — are
+ * set in BlomusModernus, Oxy's brand face, as `H1`–`H4` are; everything below them (`title-*`,
+ * `headline`, `body`, `caption`) is Inter. The face is a property of the variant, so a screen
+ * that asks for a big title gets the brand face without naming it.
+ */
+const isDisplayVariant = (variant: string): boolean =>
+  variant.startsWith('large-title-') || variant.startsWith('display-');
+
+/**
+ * The same by className, for a title sized with utilities instead of a variant: an explicit
+ * `font-display`, or a size from `text-3xl` (30px) up, at any breakpoint or state
+ * (`md:text-5xl`, `dark:font-display`).
+ */
+const DISPLAY_CLASS = /(?:^|\s)(?:[\w-]+:)*(?:font-display|text-[3-9]xl)(?=\s|$)/;
+
+/** The family a `Text` is set in: BlomusModernus for the big titles, Inter for the rest. */
+function textFamily(variant: string | undefined, className: string | undefined) {
+  const display =
+    (variant !== undefined && isDisplayVariant(variant)) ||
+    (className !== undefined && DISPLAY_CLASS.test(className));
+  return display ? DISPLAY_FONT_FAMILY : SANS_FONT_FAMILY;
+}
+
 const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
   fontSize: 13,
 };
 
 /**
  * Base text component with theme-aware default color and the Bloom sans
- * font family applied. NativeWind `className` utilities (text-*, font-*,
+ * font family applied (the display family for the `large-title` and `display-*`
+ * variants). NativeWind `className` utilities (text-*, font-*,
  * leading-*, text-foreground, …) override defaults when provided.
  */
 const TextComponent = function Text({ children, style, className, variant, ...rest }: TextProps) {
@@ -58,7 +83,7 @@ const TextComponent = function Text({ children, style, className, variant, ...re
       style={mergeTypographyStyle(
         trimmedClassName,
         { ...(variant ? TYPE_SCALE[variant] : DEFAULT_TEXT_TYPOGRAPHY), color: colors.text },
-        SANS_FONT_FAMILY,
+        textFamily(variant, trimmedClassName),
         style,
       )}
     >

@@ -37,7 +37,7 @@ import { fontFamilies, fontCssVars, FONT_ASSETS, applyFontFaces, FontLoader } fr
 | --- | --- | --- |
 | `fontFamilies.sans` | **Inter** (variable, 100–900) | Every UI surface: the type ramp, controls, body text |
 | `fontFamilies.mono` | **JetBrains Mono** (variable, 100–800) | `Code`, `Pre` and `CodeBlock` |
-| `fontFamilies.display` | **BlomusModernus** (400, 700) | Oxy's brand face, for headings and brand moments that ask for it explicitly |
+| `fontFamilies.display` | **BlomusModernus** (400, 700) | Oxy's brand face, for **every big title**: `H1`–`H4`, the `large-title` and `display-1` … `display-4` variants of `Text`, and a `Text` sized `text-3xl` or up (or marked `font-display`). See [Big titles](#big-titles) |
 
 On native, `FontLoader` prepends `{ fontFamily: 'Inter' }` to
 `Text.defaultProps.style` once the assets report loaded, so every `<Text>` in
@@ -66,6 +66,19 @@ Reach a family through `fontFamilies` or the `--bloom-font-*` variables rather
 than a hand-written literal. Only the family names above are registered: a
 literal such as `'Inter-Regular'` names nothing Bloom registers and silently
 falls back to the system face.
+
+## Big titles
+
+BlomusModernus is the default for big titles, not an opt-in: a screen that asks for a big title gets the brand face without naming it, and `BloomProvider` needs no setting for it.
+
+| You write | It is set in |
+| --- | --- |
+| `<H1>` … `<H4>` | BlomusModernus |
+| `<Text variant="large-title-*">`, `display-1-*` … `display-4-*` (32px and up) | BlomusModernus |
+| `<Text className="text-3xl">` … `text-9xl`, at any breakpoint or state (`md:text-5xl`), or `font-display` | BlomusModernus |
+| every other `Text` (`title-*`, `headline`, `body`, `caption`, `text-2xl` and below) | Inter |
+
+The face is the caller's only through those; an inline `fontFamily` still wins. BlomusModernus ships two cuts (400, 700), so the medium and semibold weights of a display variant draw the nearest cut.
 
 ## Four ways in, one surface
 
