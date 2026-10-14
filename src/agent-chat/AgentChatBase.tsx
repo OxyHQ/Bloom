@@ -31,6 +31,7 @@ import {
 import type { AgentChatMessageData, AgentChatProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * `AgentChat` — the chat workspace, without the app shell around it and
@@ -78,7 +79,7 @@ function SuggestionPill({
   onPress: () => void;
   palette: AgentChatPalette;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const style: WebCssStyle = {
     borderRadius: 9999,
     backgroundColor: hovered ? palette.cardHover : palette.card,
@@ -95,8 +96,8 @@ function SuggestionPill({
       accessibilityRole="button"
       accessibilityLabel={text}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
     >
       <Text variant="body-regular" style={{ color: palette.textSecondary }}>

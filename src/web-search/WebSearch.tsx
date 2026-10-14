@@ -52,6 +52,7 @@ import { TYPE_SCALE } from '../typography/scale';
 import { WEB_SEARCH_MESSAGES } from './messages';
 import type { WebSearchBrand, WebSearchProps, WebSearchSource, WebSearchStep } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * Web Search: what the agent looked at, as it looks.
@@ -497,7 +498,7 @@ function SourceLinkRow({
   showDomain: boolean;
   testID?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const height = useAutoHeight(visible, reduce ? 0 : ROW_HEIGHT_MS);
 
   const textOpacity = useSharedValue(visible ? 1 : 0);
@@ -582,8 +583,8 @@ function SourceLinkRow({
             role="link"
             accessibilityLabel={`${source.title}, ${source.domain}`}
             tabIndex={visible ? 0 : -1}
-            onHoverIn={() => setHovered(true)}
-            onHoverOut={() => setHovered(false)}
+            onHoverIn={onHoverIn}
+            onHoverOut={onHoverOut}
             onPress={() => {
               // On web the rendered `<a href>` navigates by itself.
               if (!IS_WEB) Linking.openURL(href).catch(() => {});
@@ -623,7 +624,7 @@ function SourcesRow({
 }) {
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(0);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [countWidth, setCountWidth] = useState(0);
   const uid = useId();
   const { width: windowWidth } = useWindowDimensions();
@@ -745,8 +746,8 @@ function SourcesRow({
           aria-expanded={open}
           accessibilityState={{ expanded: open }}
           onPress={() => setOpen(!open)}
-          onHoverIn={() => setHovered(true)}
-          onHoverOut={() => setHovered(false)}
+          onHoverIn={onHoverIn}
+          onHoverOut={onHoverOut}
           style={[
             {
               flexDirection: 'row',

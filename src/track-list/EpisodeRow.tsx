@@ -17,6 +17,7 @@ import { useMessages } from '../locale/messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { TRACK_LIST_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /** Below this the cover shrinks to 64 and the description is dropped. */
 const EPISODE_NARROW_WIDTH = 560;
@@ -63,7 +64,7 @@ function EpisodeRowComponent({
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
   const window = useWindowDimensions();
   const narrow = (width ?? window.width) < EPISODE_NARROW_WIDTH;
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const formatLength =
@@ -195,8 +196,8 @@ function EpisodeRowComponent({
   return (
     <Pressable
       onPress={onPress ? () => onPress(episode) : undefined}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       focusable={false}
       tabIndex={-1}
       style={[

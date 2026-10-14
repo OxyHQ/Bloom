@@ -31,6 +31,7 @@ import type {
   MeetingSchedulerValue,
 } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * `MeetingScheduler` (`base/date-picker/meeting-scheduler.tsx`): a
@@ -223,7 +224,7 @@ function HourFormatOption({
   palette: CalendarPalette;
   shadow: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   return (
     <Pressable
       role="radio"
@@ -231,8 +232,8 @@ function HourFormatOption({
       aria-checked={selected}
       accessibilityState={{ checked: selected }}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={[
         COLOR_TRANSITION,
         {
@@ -272,7 +273,7 @@ function SlotButton({
   palette: CalendarPalette;
   testID?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   return (
     <Pressable
       role="radio"
@@ -280,8 +281,8 @@ function SlotButton({
       aria-checked={selected}
       accessibilityState={{ checked: selected }}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       testID={testID}
       style={[
         COLOR_TRANSITION,

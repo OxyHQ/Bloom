@@ -23,6 +23,7 @@ import { webDataSet } from '../styles/web-data';
 import { useMessages } from '../locale/messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { MEDIA_PLAYER_MESSAGES } from './messages';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /** At and above this measured width the artwork sits beside the controls. */
 export const FULL_SCREEN_PLAYER_WIDE = 900;
@@ -49,7 +50,7 @@ function LyricsCard({
   const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const active = lyrics.activeIndex ?? -1;
   const body = (
     <>
@@ -82,8 +83,8 @@ function LyricsCard({
       role="button"
       accessibilityLabel={lyrics.actionLabel ?? messages.showLyrics}
       onPress={lyrics.onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={[style, hovered ? { backgroundColor: paint.wash } : null]}
       testID={testID}
     >

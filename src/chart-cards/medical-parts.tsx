@@ -20,6 +20,7 @@ import { FadeOnChange } from './primitives/FadeOnChange';
 import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useCountUp } from './use-count-up';
 import { useCommonMessages } from '../locale/common-messages';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * Chrome shared by the medical dashboard cards (`StepsCard`,
@@ -337,7 +338,7 @@ function NavButton({
 }) {
   const palette = useChartCardPalette();
   const medical = useMedicalPalette();
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { hook, ring } = useChartFocusRing('outset', medical.focusRing);
   const ease: WebCssStyle | null =
     Platform.OS === 'web'
@@ -354,8 +355,8 @@ function NavButton({
       role="button"
       accessibilityLabel={label}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={[
         {
           width: 16,

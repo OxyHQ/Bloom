@@ -19,6 +19,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The top-bar search pill.
@@ -84,7 +85,7 @@ function SearchFieldComponent({
   const fill = useSurfaceFill();
   const paint = useMemo(() => resolveMusicLibraryPaint(theme, fill), [theme, fill]);
   const inputRef = useRef<TextInput>(null);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [focused, setFocused] = useState(false);
   const hasText = value.length > 0;
 
@@ -110,8 +111,8 @@ function SearchFieldComponent({
       {...webDataSet({ bloomSearchField: '' })}
       {...(IS_WEB ? { tabIndex: -1 } : null)}
       onPress={() => inputRef.current?.focus()}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={[pillStyle, style]}
       testID={testID}
     >

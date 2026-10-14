@@ -19,6 +19,7 @@ import {
 import type { BrowseGridProps, BrowseTile } from './types';
 import { IS_WEB } from '../styles/platform';
 import { mixColors } from '../styles/color-contrast';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The browse page's grid of genre and mood tiles.
@@ -52,7 +53,7 @@ function Tile({
   const theme = useTheme();
   const libraryPaint = useMemo(() => resolveMusicLibraryPaint(theme), [theme]);
   const resolver = useImageResolver();
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const paint = useMemo(
     () =>
       browseTilePaint(item.color, { background: libraryPaint.selected, text: libraryPaint.text }),
@@ -88,8 +89,8 @@ function Tile({
       role="button"
       accessibilityLabel={item.title}
       onPress={onPress ? () => onPress(item) : undefined}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
       testID={testID}
     >

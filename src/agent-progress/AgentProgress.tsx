@@ -35,6 +35,7 @@ import { AgentProgressLoadingText } from './AgentProgressLoadingText';
 import { AGENT_PROGRESS_MESSAGES } from './messages';
 import type { AgentProgressProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The card that lists an agent's plan and ticks it off step by step.
@@ -884,7 +885,7 @@ function AgentProgressComponent({
   const [fastReopen, setFastReopen] = useState(false);
   const fastReopenRef = useRef(false);
   const [processingStarted, setProcessingStarted] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [minimizeHovered, setMinimizeHovered] = useState(false);
 
   const remainingCount = stepCount - completedCount;
@@ -1065,8 +1066,8 @@ function AgentProgressComponent({
             accessibilityRole="button"
             accessibilityLabel={labels?.expand ?? messages.expand}
             onPress={expand}
-            onHoverIn={() => setHovered(true)}
-            onHoverOut={() => setHovered(false)}
+            onHoverIn={onHoverIn}
+            onHoverOut={onHoverOut}
             style={styles.bar}
             {...(IS_WEB
               ? ({ dataSet: { bloomAgentProgressBar: '' } } as Record<string, unknown>)

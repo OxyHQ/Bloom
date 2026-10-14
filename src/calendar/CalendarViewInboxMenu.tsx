@@ -26,6 +26,7 @@ import type {
   CalendarViewInboxMenuProps,
 } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * `CalendarViewInboxMenu`: the header's inbox button and the subscribed-feeds
@@ -66,7 +67,7 @@ function FeedRow({
   palette: CalendarViewPalette;
   onPress: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const swatch = feedSwatchColors(hue, feed.color);
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarFeed: '' } } : {};
   const style: WebCssStyle = {
@@ -87,8 +88,8 @@ function FeedRow({
       role="button"
       accessibilityLabel={feed.label}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
     >
       <View

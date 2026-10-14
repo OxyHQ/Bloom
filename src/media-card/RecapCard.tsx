@@ -16,6 +16,7 @@ import { useMessages } from '../locale/messages';
 import { MEDIA_CARD_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { mixColors } from '../styles/color-contrast';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The share pill over a generated cover. Not `Button`: its fill is the cover's
@@ -33,7 +34,7 @@ function SharePill({
   tint: CoverTint;
   testID?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const style: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
@@ -52,8 +53,8 @@ function SharePill({
       role="button"
       accessibilityLabel={label}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
       testID={testID}
     >

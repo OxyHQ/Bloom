@@ -13,6 +13,7 @@ import { Text } from '../typography';
 import { useSettingsPalette, useSettingsSavedToast } from './context';
 import type { SettingsDateFieldProps, SettingsTextFieldProps } from './types';
 import { useSettingsWebCss } from './web-css';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The Profile page's editable controls.
@@ -107,7 +108,7 @@ export function SettingsDateField({
   const showSaved = useSettingsSavedToast();
   const locale = useBloomLocale();
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const text = formatDate ? formatDate(value) : formatBirthDate(value, locale);
 
   const panel: ViewStyle =
@@ -129,8 +130,8 @@ export function SettingsDateField({
           role="button"
           accessibilityLabel={`${label}, ${text}`}
           {...webDataSet({ bloomSettingsPress: '' })}
-          onHoverIn={() => setHovered(true)}
-          onHoverOut={() => setHovered(false)}
+          onHoverIn={onHoverIn}
+          onHoverOut={onHoverOut}
           testID={testID}
           style={[
             styles.dateTrigger,

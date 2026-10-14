@@ -24,6 +24,7 @@ import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatComposerProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The free composer: a 52px pill with a text field and circular controls, and
@@ -63,7 +64,7 @@ function AttachButton({
   onPress?: () => void;
   palette: AgentChatPalette;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const style: WebCssStyle = {
     width: COMPOSER_CONTROL,
     height: COMPOSER_CONTROL,
@@ -80,8 +81,8 @@ function AttachButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
     >
       <RiAttachment2 width={20} height={20} fill={palette.iconPrimary} />
@@ -98,7 +99,7 @@ function StopButton({
   onPress?: () => void;
   palette: AgentChatPalette;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const style: WebCssStyle = {
     width: COMPOSER_CONTROL,
     height: COMPOSER_CONTROL,
@@ -114,8 +115,8 @@ function StopButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={style}
     >
       <RiStopFill width={20} height={20} fill={palette.iconSecondary} />

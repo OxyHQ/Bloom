@@ -14,6 +14,7 @@ import type { LikeButtonProps, LikeButtonSize } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The heart that saves a track, album or playlist to the library.
@@ -64,7 +65,7 @@ function LikeButtonComponent({
     adoptStyleSheet(MEDIA_CONTROLS_STYLE_ID, MEDIA_CONTROLS_CSS);
   }, []);
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { glyph, box } = SIZE_CONFIG[size];
 
   const color = liked
@@ -93,8 +94,8 @@ function LikeButtonComponent({
       accessibilityState={{ selected: liked, disabled }}
       aria-disabled={disabled || undefined}
       disabled={disabled}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       onPress={(event: GestureResponderEvent) => {
         if (IS_WEB) {
           event.preventDefault?.();

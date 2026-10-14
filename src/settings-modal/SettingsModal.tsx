@@ -47,6 +47,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { SETTINGS_MODAL_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * A settings modal.
@@ -659,7 +660,7 @@ function RailRow({
   palette: SettingsPalette;
   testID?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const Icon = item.icon;
   const onPress = item.page ? () => onSelect(item.page as string) : item.onPress;
   return (
@@ -672,8 +673,8 @@ function RailRow({
       {...webDataSet({ bloomSettingsPress: '' })}
       disabled={item.disabled}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       testID={testID}
       style={[
         styles.railRow,

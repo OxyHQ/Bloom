@@ -48,6 +48,7 @@ import type {
 import { useComposerWebCss } from './web-hooks';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /** CSS `ease`, the chevrons' 200ms turn. */
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -384,7 +385,7 @@ function ModelRow({
   onSelect: () => void;
   effort: React.ReactNode;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { provider, model } = match;
   const hitStyle: WebCssStyle = {
     position: 'absolute',
@@ -421,8 +422,8 @@ function ModelRow({
         aria-checked={checked}
         accessibilityState={{ checked }}
         onPress={onSelect}
-        onHoverIn={() => setHovered(true)}
-        onHoverOut={() => setHovered(false)}
+        onHoverIn={onHoverIn}
+        onHoverOut={onHoverOut}
         style={hitStyle}
       />
       <View
@@ -897,7 +898,7 @@ function RailMark({
   palette: ComposerPalette;
   onPress: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const markStyle: WebCssStyle = {
     height: MARK_HEIGHT,
     width: 36,
@@ -921,8 +922,8 @@ function RailMark({
       aria-selected={active}
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={markStyle}
     >
       <ProviderMark provider={provider} size={provider.logoSize ?? 20} palette={palette} />
