@@ -81,7 +81,7 @@ Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `ButtonGroup.size?` | `'md' \| 'sm' \| 'xs'` | inherited, then `'md'` | Size for every item: 34, 30 or 24px. |
-| `ButtonGroup.separated?` | `boolean` | `false` | Each item is its own pill with a gap between, not one joined control: no shared surface, hairlines or sliding selection. An item is `subtle`, and `outline` while `checked`; an `iconOnly` item is a `Button wide`: a pill 1.5× as wide as it is tall, never a circle. |
+| `ButtonGroup.separated?` | `boolean` | `false` | One pill cut into segments: items sit 2px apart under a pill-shaped clip, so only the first item's start and the last item's end are rounded. No shared surface, hairlines or sliding selection. An item is `subtle`, and `outline` while `checked`; an `iconOnly` item is a `Button wide`: a pill 1.5× as wide as it is tall, never a circle. |
 | `ButtonGroup.dividers?` | `boolean` | `true` | Hairlines between items. |
 | `ButtonGroup.accessibilityLabel?` | `string` | — | Names the group. |
 | `ButtonGroupItem.onPress?` | `(event) => void` | — | Press handler. Receives the event, so a composed trigger handler can `preventDefault()` it. |
@@ -102,4 +102,4 @@ Each `ButtonGroupItem` now composes the actual `Button`, including icon render s
 
 ## Separated
 
-`separated` keeps the group semantics (one named `role="group"`, inherited size, `checked` items) and drops the joined look: a row of rounded pills with a 4–6px gap. It is what a reply's action row is — [`AgentReplyActions`](./agent-reply.mdx) is a separated `xs` group.
+`separated` keeps the group semantics (one named `role="group"`, inherited size, `checked` items) and drops the joined surface: the whole group reads as one pill cut into straight segments 2px apart. It is what a reply's action row is — [`AgentReplyActions`](./agent-reply.mdx) is a separated `xs` group.
