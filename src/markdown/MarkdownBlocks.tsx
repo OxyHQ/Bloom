@@ -253,7 +253,9 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
           role={isHeader ? 'columnheader' : 'cell'}
           style={{ flex: 1, minWidth: MIN_COLUMN, paddingHorizontal: 10, paddingVertical: 6 }}
         >
-          <Text variant={isHeader ? HEADING[size][4] : BODY[size]} style={[isHeader ? undefined : BODY_STYLE[size], { textAlign }]}
+          <Text
+            variant={isHeader ? HEADING[size][4] : BODY[size]}
+            style={[isHeader ? undefined : BODY_STYLE[size], { textAlign }]}
             selectable
           >
             <MarkdownInlineText source={value} streaming={streaming && isLast} />
