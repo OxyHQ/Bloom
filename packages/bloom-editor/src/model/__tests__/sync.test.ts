@@ -33,6 +33,11 @@ class FakeServer {
   applied = new Map<string, number>();
   /** Lose the response to the next transaction applied (once). */
   loseNextResponse = false;
+  /**
+   * Refuse, as stale, a text change made against a text this server has
+   * moved past — as Nilo's server does — instead of merging it here.
+   */
+  strict = false;
 
   constructor(doc: EditorDocument) {
     this.doc = doc;
@@ -41,6 +46,16 @@ class FakeServer {
   receive(clientId: string, tx: Transaction, key?: string): Promise<SendResult> {
     const seen = key === undefined ? undefined : this.applied.get(key);
     if (seen !== undefined) return Promise.resolve({ ok: true, version: seen });
+    if (this.strict) {
+      for (const op of tx.ops) {
+        if (op.kind !== 'update' || op.before.text === undefined || !this.doc.blocks[op.id])
+          continue;
+        const current = JSON.stringify(getBlock(this.doc, op.id).text);
+        if (current !== JSON.stringify(op.before.text)) {
+          return Promise.resolve({ ok: false, stale: true });
+        }
+      }
+    }
     const applied = rebaseOperations(this.doc, tx.ops);
     if (!applied) return Promise.resolve({ ok: false, retry: false });
     this.doc = applied.doc;
@@ -164,6 +179,23 @@ describe('SyncSession', () => {
       expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
     },
   );
+
+  it('sends a stale change again once the newer version arrives, merged into it', async () => {
+    const { server, a, b } = start();
+    server.strict = true;
+    const text = (doc: EditorDocument) =>
+      (getBlock(doc, 'b2').text ?? []).map((s) => s.text).join('');
+    edit(a.store, 'b2', 'two, said a');
+    edit(b.store, 'b2', 'b says two');
+    await settle(server, 'acks-first');
+    for (let i = 0; i < 20 && (a.session.hasPending || b.session.hasPending); i += 1) {
+      await new Promise((r) => setTimeout(r, 5));
+      await settle(server);
+    }
+    expect(text(server.doc)).toBe('b says two, said a');
+    expect(snapshot(a.store.doc)).toBe(snapshot(server.doc));
+    expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
+  });
 
   it('sends a retry under the same key, so a lost response does not apply it twice', async () => {
     const { server, a, b } = start();

@@ -28,7 +28,13 @@ import type { EditorStore, TransactionOrigin } from './store';
 export type SendResult =
   | { ok: true; version: number }
   /** `retry`: a network or server failure worth trying again; otherwise the server refused it. */
-  | { ok: false; retry: boolean };
+  | { ok: false; retry: boolean }
+  /**
+   * The server has a newer version of something this changes (someone else's
+   * edit this client has not received yet). It is on its way: the session
+   * sends again once it arrives, the change rebased onto it.
+   */
+  | { ok: false; stale: true };
 
 export interface SyncTransport {
   /**
@@ -134,6 +140,8 @@ export class SyncSession {
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly unsubscribe: () => void;
   private disposed = false;
+  /** A send came back stale: send again once a remote version arrives. */
+  private waitingForRemote = false;
 
   constructor(
     private readonly store: EditorStore,
@@ -260,6 +268,18 @@ export class SyncSession {
       this.flush();
       return;
     }
+    if ('stale' in result) {
+      // Sent again as soon as the newer version arrives (`applyRemote`); the
+      // timer only covers a broadcast that never comes.
+      this.waitingForRemote = true;
+      this.retryTimer = setTimeout(() => {
+        this.retryTimer = null;
+        this.waitingForRemote = false;
+        this.flush();
+      }, this.retryDelay);
+      this.retryDelay = Math.min(this.retryDelay * 2, 30_000);
+      return;
+    }
     if (result.retry) {
       this.setStatus('offline');
       this.retryTimer = setTimeout(() => {
@@ -349,6 +369,12 @@ export class SyncSession {
     }
     this.applyRemote(remote);
     this.advance();
+    if (this.waitingForRemote) {
+      this.waitingForRemote = false;
+      if (this.retryTimer) clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+      this.flush();
+    }
   }
 
   private applyRemote(remote: RemoteTransaction): void {
