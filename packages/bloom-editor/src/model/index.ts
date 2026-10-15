@@ -94,3 +94,4 @@ export {
   slashQuery,
   slashTriggerAt,
 } from './slash';
+export { pasteIntoBlock } from './paste';

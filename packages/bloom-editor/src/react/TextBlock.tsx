@@ -38,6 +38,7 @@ import {
 } from '../model/commands';
 import { type Block, childrenOf, getBlock, positionOf } from '../model/document';
 import { applyBlockShortcut, applyInlineShortcut, detectBlockShortcut } from '../model/markdown';
+import { pasteIntoBlock } from '../model/paste';
 import type { EditorSelection, Transaction } from '../model/operations';
 import { specOf } from '../model/schema';
 import { filterSlashItems, type SlashItem, slashQuery, slashTriggerAt } from '../model/slash';
@@ -175,6 +176,17 @@ export function TextBlock({ block }: { block: Block }) {
       if (edit && edit.deleteCount === 0) {
         const at = slashTriggerAt(text, edit.index, edit.insert);
         if (at !== null) ui.set({ slash: { blockId: id, slashAt: at, query: '', highlighted: 0 } });
+      }
+
+      // Line breaks pasted into a one-line block: a block per line (Notion).
+      if (edit?.insert.includes('\n')) {
+        const pasted = pasteIntoBlock(ctx, id, segments, edit);
+        if (pasted) {
+          store.sealHistory();
+          store.dispatch(pasted);
+          store.sealHistory();
+          return;
+        }
       }
 
       const shortcut = detectBlockShortcut(current.type, text, edit);

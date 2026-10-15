@@ -230,6 +230,32 @@ async function press(page, key, modifier) {
   await page.close();
 }
 
+// Pasting lines makes a block of each, Markdown prefixes included.
+{
+  const page = await open();
+  await clickInto(page, 'Second');
+  await press(page, 'End');
+  await page.evaluate(() => {
+    const data = new DataTransfer();
+    data.setData('text/plain', ' half\n# Heading\n- item\nlast');
+    document.activeElement.dispatchEvent(
+      new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+    );
+  });
+  await sleep(400);
+  const doc = await outline(page);
+  const at = doc.indexOf('numbered_list_item:Second half');
+  await check(
+    page,
+    at >= 0 &&
+      doc[at + 1] === 'heading_1:Heading' &&
+      doc[at + 2] === 'bulleted_list_item:item' &&
+      doc[at + 3] === 'numbered_list_item:last',
+    'a pasted block of lines becomes blocks',
+  );
+  await page.close();
+}
+
 // Menus hang over the blocks below them and take the mouse.
 {
   const page = await open();
