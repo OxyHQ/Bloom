@@ -16,8 +16,53 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Has the full suite already run on this exact tree? On a push to main that
+  # came through the merge queue it has: the queue tested THIS SHA in its
+  # merge_group run and fast-forwarded main to it only after `CI complete` went
+  # green. Re-running build + every shard on push re-tested an identical tree,
+  # and the org is on GitHub's free plan (20 concurrent jobs across ALL repos),
+  # so the second run was paid for in every other repo's queue time.
+  #
+  # So a queue-verified push runs only this job and `CI complete`, which
+  # accepts the heavy jobs as skipped ONLY when this job says verified. Every
+  # other push (direct push, the queue switched off) and every dispatch runs
+  # the full suite, because this job answers nothing for them. Skipped outright
+  # on pull_request and merge_group, where it costs no runner slot.
+  #
+  # An unanswerable question means RUN EVERYTHING: the step is
+  # continue-on-error, an API failure leaves `verified` unset, and unset is
+  # not 'true'. Ported from OxyHQ/Mention's ci.yml `provenance` job.
+  provenance:
+    name: Merge-queue provenance
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      verified: ${{ steps.verified.outputs.verified }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - name: Did this exact commit pass Validate Bloom in the merge queue?
+        id: verified
+        continue-on-error: true
+        env:
+          VERIFY_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/merge-queue-verified.sh
+
   build:
     name: Build, package and types
+    needs: provenance
+    # Every heavy job carries this condition. `!cancelled()` because a
+    # dependency on a SKIPPED job (every pull_request, merge_group and
+    # dispatch run) would otherwise skip the dependent too; it runs unless
+    # provenance positively answered verified.
+    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -44,14 +89,18 @@ jobs:
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
 
+  # The shard list and the `/5` denominator (name + --shard) must agree, or
+  # jest silently runs only part of the suite.
   tests:
-    name: Tests (${{ matrix.shard }}/9)
+    name: Tests (${{ matrix.shard }}/5)
+    needs: provenance
+    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        shard: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -66,24 +115,60 @@ jobs:
       - run: bun install --frozen-lockfile --ignore-scripts
       # Keep the runtime/Intl data aligned with the build. --no-opt mitigates
       # the documented V8 contextify crashes; it cannot go in NODE_OPTIONS.
-      - run: node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=2 --shard=${{ matrix.shard }}/9
+      # Five shards x four workers (the runner's 4 vCPU) keeps suites per
+      # worker at or below the old nine x two: the crash grows with files per
+      # worker and with FEWER workers, not with memory (AGENTS.md).
+      - run: node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=4 --shard=${{ matrix.shard }}/5
 
   # The one required check of the main merge queue: green only when every job
-  # above is, so a skipped or cancelled shard can never read as a pass.
+  # above is, so a skipped or cancelled shard can never read as a pass. The ONE
+  # legitimate skip is a push whose exact SHA already passed this job in the
+  # merge queue (provenance verified) — and then the heavy jobs MUST be
+  # skipped, so a gating bug that ran them anyway is a red too.
   ci-complete:
     name: CI complete
     if: always()
-    needs: [build, tests]
+    needs: [provenance, build, tests]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Every job passed
         env:
-          RESULTS: ${{ join(needs.*.result, ' ') }}
+          RESULTS: ${{ toJSON(needs) }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          for result in $RESULTS; do
-            if [ "$result" != success ]; then
-              echo "::error::a required job ended $result"
-              exit 1
+          set -euo pipefail
+          failures=()
+
+          # Provenance runs on push and nowhere else. On push it must SUCCEED:
+          # its step is continue-on-error, so even an unanswerable API call
+          # leaves the job green with `verified` unset.
+          provenance="$(jq -r '.provenance.result' <<<"$RESULTS")"
+          verified="$(jq -r '.provenance.outputs.verified // ""' <<<"$RESULTS")"
+          if [ "$EVENT_NAME" = push ]; then
+            [ "$provenance" = success ] || failures+=("provenance did not pass on push: $provenance")
+          else
+            [ "$provenance" = skipped ] || failures+=("provenance ran on $EVENT_NAME: $provenance")
+            verified=
+          fi
+
+          for job in build tests; do
+            result="$(jq -r --arg job "$job" '.[$job].result' <<<"$RESULTS")"
+            if [ "$verified" = true ]; then
+              [ "$result" = skipped ] || failures+=("$job ran on a queue-verified push: $result")
+            elif [ "$result" != success ]; then
+              failures+=("$job did not pass: $result")
             fi
           done
+
+          if [ ${#failures[@]} -gt 0 ]; then
+            for failure in "${failures[@]}"; do
+              echo "::error::$failure"
+            done
+            exit 1
+          fi
+          if [ "$verified" = true ]; then
+            echo "::notice::${GITHUB_SHA} passed CI complete in the merge queue on this exact tree; build and tests were not re-run."
+          else
+            echo 'Every job passed.'
+          fi
