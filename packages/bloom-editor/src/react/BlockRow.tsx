@@ -4,6 +4,7 @@ import { insertBlockAfter, setProps } from '../model/commands';
 import type { BlockId } from '../model/document';
 import { specOf } from '../model/schema';
 import { useBlock, useEditorContext } from './context';
+import { useBlockDecoration } from './decorations';
 import { TextBlock } from './TextBlock';
 import { blockSpacing } from './typography';
 import { useUi } from './ui-store';
@@ -41,7 +42,9 @@ const BlockRow = memo(function BlockRow({
   depth: number;
   number: number;
 }) {
-  const { store, ui, theme, labels, renderers, markers, readOnly } = useEditorContext();
+  const { store, ui, theme, labels, renderers, markers, decorations, readOnly } =
+    useEditorContext();
+  const decoration = useBlockDecoration(decorations, id);
   const block = useBlock(store, id);
   const selected = useUi(ui, (s) => s.selectedBlocks.includes(id));
   const hovered = useUi(ui, (s) => s.hovered === id);
@@ -157,7 +160,9 @@ const BlockRow = memo(function BlockRow({
         styles.block,
         { marginTop: blockSpacing(block.type) },
         selected && { backgroundColor: theme.selection },
+        decoration && [styles.decorated, { borderLeftColor: decoration.color }],
       ]}
+      accessibilityHint={decoration?.label}
     >
       <View
         style={[
@@ -231,6 +236,8 @@ function Gutter({ id, visible }: { id: BlockId; visible: boolean }) {
 
 const styles = StyleSheet.create({
   block: { position: 'relative', borderRadius: 4 },
+  // A collaborator's caret: an edge that does not move the content.
+  decorated: { borderLeftWidth: 2, marginLeft: -2 },
   row: { flexDirection: 'row', alignItems: 'flex-start', borderRadius: 4 },
   content: { flex: 1, minWidth: 0 },
   markerBox: { width: 24, alignItems: 'center', paddingTop: 2 },

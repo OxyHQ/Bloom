@@ -8,3 +8,4 @@ export {
   DEFAULT_THEME,
   type EditorTheme,
 } from './theme';
+export { type BlockDecoration, BlockDecorations } from './decorations';

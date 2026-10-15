@@ -22,6 +22,7 @@ import {
   type EditorContextValue,
   useEditorSnapshot,
 } from './context';
+import type { BlockDecorations } from './decorations';
 import { DEFAULT_LABELS, type EditorLabels } from './labels';
 import { DEFAULT_THEME, type EditorTheme } from './theme';
 import { UiStore } from './ui-store';
@@ -41,6 +42,8 @@ export interface BlockEditorProps {
   markers?: Readonly<Record<string, BlockRenderer>>;
   /** The application's own entries in each block's menu, listed first. */
   blockActions?: readonly BlockAction[];
+  /** Per-block marks the application changes often (collaborators' carets). */
+  decorations?: BlockDecorations;
   theme?: EditorTheme;
   labels?: Partial<EditorLabels>;
   readOnly?: boolean;
@@ -61,6 +64,7 @@ export function BlockEditor({
   renderers = NONE,
   markers = NONE,
   blockActions = NO_ACTIONS,
+  decorations,
   theme = DEFAULT_THEME,
   labels,
   readOnly = false,
@@ -80,6 +84,7 @@ export function BlockEditor({
       renderers,
       markers,
       blockActions,
+      decorations,
       slashItems,
       onSlashAction,
       readOnly,
@@ -93,6 +98,7 @@ export function BlockEditor({
       renderers,
       markers,
       blockActions,
+      decorations,
       slashItems,
       onSlashAction,
       readOnly,

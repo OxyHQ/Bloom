@@ -3,6 +3,7 @@ import { createContext, type ReactNode, useContext, useSyncExternalStore } from 
 import type { Block, BlockId } from '../model/document';
 import type { SlashItem } from '../model/slash';
 import type { EditorSnapshot, EditorStore } from '../model/store';
+import type { BlockDecorations } from './decorations';
 import type { EditorLabels } from './labels';
 import type { EditorTheme } from './theme';
 import type { UiStore } from './ui-store';
@@ -34,6 +35,7 @@ export interface EditorContextValue {
   renderers: Readonly<Record<string, BlockRenderer>>;
   markers: Readonly<Record<string, BlockRenderer>>;
   blockActions: readonly BlockAction[];
+  decorations?: BlockDecorations;
   slashItems: readonly SlashItem[];
   onSlashAction?: (id: string, blockId: BlockId) => void;
   readOnly: boolean;
