@@ -19,7 +19,7 @@ import { useUi } from './ui-store';
 
 /** Options for one block: turn into, colours, duplicate, move, delete. */
 export function BlockMenu() {
-  const { store, ui, theme, labels, slashItems } = useEditorContext();
+  const { store, ui, theme, labels, slashItems, blockActions } = useEditorContext();
   const id = useUi(ui, (s) => s.blockMenu);
   const turnIntoItems = useMemo(
     () => slashItems.filter((item) => item.action.kind === 'block'),
@@ -68,6 +68,16 @@ export function BlockMenu() {
           style={[styles.sheet, { backgroundColor: theme.background, borderColor: theme.border }]}
         >
           <ScrollView>
+            {blockActions.map((action) => (
+              <Row
+                key={action.id}
+                label={action.label}
+                onPress={() => {
+                  close();
+                  action.onPress(id);
+                }}
+              />
+            ))}
             <Row label={labels.duplicate} onPress={() => act((c) => duplicateBlocks(c, [id]))} />
             <Row label={labels.delete} onPress={() => act((c) => removeBlocks(c, [id]))} />
             {before ? (

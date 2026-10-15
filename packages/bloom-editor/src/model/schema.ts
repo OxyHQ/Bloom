@@ -28,6 +28,13 @@ export interface BlockSpec {
   /** Props a new block of this type starts with. */
   defaultProps?: Readonly<Record<string, unknown>>;
   /**
+   * The props this type keeps, when the application's storage accepts only
+   * those. Commands drop any other prop (turning a to-do into a paragraph
+   * loses `checked`), so the editor never holds what the server would
+   * discard. When absent, every prop is kept.
+   */
+  props?: readonly string[];
+  /**
    * Props that do not carry over when Return continues the type (a new to-do
    * starts unchecked).
    */
@@ -104,6 +111,21 @@ export function defineSchema(specs: readonly BlockSpec[]): Schema {
 /** A schema with `specs` added or replacing types of the same name. */
 export function extendSchema(base: Schema, specs: readonly BlockSpec[]): Schema {
   return { ...base, ...defineSchema(specs) };
+}
+
+/**
+ * A block's props under `spec`: the type's defaults under `props`, without
+ * the props the type does not keep.
+ */
+export function propsFor(
+  spec: BlockSpec,
+  props: Readonly<Record<string, unknown>> = {},
+): Record<string, unknown> {
+  const merged: Record<string, unknown> = { ...spec.defaultProps, ...props };
+  if (!spec.props) return merged;
+  const kept: Record<string, unknown> = {};
+  for (const key of spec.props) if (key in merged) kept[key] = merged[key];
+  return kept;
 }
 
 /** The spec for `type`; unknown types behave as plain, childless, textless blocks. */

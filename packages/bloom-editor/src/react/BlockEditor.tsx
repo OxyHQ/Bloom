@@ -16,6 +16,7 @@ import type { EditorStore } from '../model/store';
 import { BlockMenu } from './BlockMenu';
 import { BlockList } from './BlockRow';
 import {
+  type BlockAction,
   type BlockRenderer,
   EditorContext,
   type EditorContextValue,
@@ -33,11 +34,21 @@ export interface BlockEditorProps {
   onSlashAction?: (id: string, blockId: BlockId) => void;
   /** Renderers for block types the editor does not draw (media, embeds, app blocks). */
   renderers?: Readonly<Record<string, BlockRenderer>>;
+  /**
+   * Markers drawn beside a text block in place of the editor's own, by type
+   * (a callout's icon from the app's icon set).
+   */
+  markers?: Readonly<Record<string, BlockRenderer>>;
+  /** The application's own entries in each block's menu, listed first. */
+  blockActions?: readonly BlockAction[];
   theme?: EditorTheme;
   labels?: Partial<EditorLabels>;
   readOnly?: boolean;
   style?: StyleProp<ViewStyle>;
 }
+
+const NONE: Readonly<Record<string, BlockRenderer>> = {};
+const NO_ACTIONS: readonly BlockAction[] = [];
 
 /**
  * A Notion-style block editor over an `EditorStore`. Every edit goes through
@@ -47,7 +58,9 @@ export function BlockEditor({
   store,
   slashItems,
   onSlashAction,
-  renderers = {},
+  renderers = NONE,
+  markers = NONE,
+  blockActions = NO_ACTIONS,
   theme = DEFAULT_THEME,
   labels,
   readOnly = false,
@@ -65,12 +78,26 @@ export function BlockEditor({
       theme,
       labels: mergedLabels,
       renderers,
+      markers,
+      blockActions,
       slashItems,
       onSlashAction,
       readOnly,
       inputs,
     }),
-    [store, ui, theme, mergedLabels, renderers, slashItems, onSlashAction, readOnly, inputs],
+    [
+      store,
+      ui,
+      theme,
+      mergedLabels,
+      renderers,
+      markers,
+      blockActions,
+      slashItems,
+      onSlashAction,
+      readOnly,
+      inputs,
+    ],
   );
 
   // Whole-block selection (Escape, then arrows / Backspace / ⌘D) on web.

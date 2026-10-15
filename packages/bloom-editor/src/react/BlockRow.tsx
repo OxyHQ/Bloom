@@ -41,7 +41,7 @@ const BlockRow = memo(function BlockRow({
   depth: number;
   number: number;
 }) {
-  const { store, ui, theme, labels, renderers, readOnly } = useEditorContext();
+  const { store, ui, theme, labels, renderers, markers, readOnly } = useEditorContext();
   const block = useBlock(store, id);
   const selected = useUi(ui, (s) => s.selectedBlocks.includes(id));
   const hovered = useUi(ui, (s) => s.hovered === id);
@@ -77,7 +77,9 @@ const BlockRow = memo(function BlockRow({
     content = null;
   }
 
+  const appMarker = markers[block.type];
   const marker = (() => {
+    if (appMarker) return appMarker({ block, readOnly, updateProps, renderChildren });
     switch (block.type) {
       case 'bulleted_list_item':
         return (

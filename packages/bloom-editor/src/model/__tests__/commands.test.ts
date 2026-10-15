@@ -19,7 +19,9 @@ import {
   invertTransaction,
   moveBlocks,
   outdent,
+  propsFor,
   removeBlocks,
+  setProps,
   snapshotToMarkdown,
   splitBlock,
   type Transaction,
@@ -250,6 +252,57 @@ describe('turnInto', () => {
       'heading_1:p',
       'paragraph:c',
     ]);
+  });
+});
+
+describe('props a type keeps', () => {
+  const STRICT = extendSchema(SCHEMA, [
+    { type: 'paragraph', hasText: true, canHaveChildren: true, props: ['color'] },
+    {
+      type: 'todo',
+      hasText: true,
+      canHaveChildren: true,
+      continueAs: 'todo',
+      defaultProps: { checked: false },
+      props: ['checked', 'color'],
+    },
+  ]);
+  const strict = (doc: EditorDocument): CommandContext => ({
+    doc,
+    schema: STRICT,
+    newId: idFactory('s'),
+  });
+
+  it('fills defaults and drops what the type does not keep', () => {
+    expect(propsFor(STRICT.todo as never, { color: 'red', icon: 'x' })).toEqual({
+      checked: false,
+      color: 'red',
+    });
+    expect(propsFor(DEFAULT_SCHEMA.paragraph as never, { icon: 'x' })).toEqual({ icon: 'x' });
+  });
+
+  it('turnInto drops props the new type does not keep', () => {
+    const doc = build([['todo', 'task', [], { checked: true, color: 'blue' }]]);
+    const next = run(doc, turnInto(strict(doc), 'b1', 'paragraph'));
+    expect(getBlock(next, 'b1').props).toEqual({ color: 'blue' });
+  });
+
+  it('setProps ignores props the type does not keep', () => {
+    const doc = build([['paragraph', 'p']]);
+    const next = run(doc, setProps(strict(doc), 'b1', { color: 'red', checked: true }));
+    expect(getBlock(next, 'b1').props).toEqual({ color: 'red' });
+  });
+
+  it('a snapshot inserted with a schema follows it', () => {
+    const doc = build([['paragraph', 'p']]);
+    const tx = insertSnapshot(
+      doc,
+      [{ type: 'todo', props: { stray: 1 } }],
+      'b1',
+      idFactory('x'),
+      STRICT,
+    );
+    expect(getBlock(run(doc, tx), 'x1').props).toEqual({ checked: false });
   });
 });
 

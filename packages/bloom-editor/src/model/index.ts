@@ -19,6 +19,7 @@ export {
   defineSchema,
   extendSchema,
   type Schema,
+  propsFor,
   specOf,
 } from './schema';
 export {

@@ -30,7 +30,7 @@ import {
 } from './document';
 import type { EditorSelection, Operation, Transaction } from './operations';
 import { anchorAt, anchorOf, applyOperation } from './operations';
-import { type Schema, specOf } from './schema';
+import { propsFor, type Schema, specOf } from './schema';
 
 export type IdFactory = () => BlockId;
 
@@ -112,7 +112,7 @@ function newBlock(
     type,
     parent,
     ...(spec.hasText && { text: init.text ?? [] }),
-    props: { ...spec.defaultProps, ...init.props },
+    props: propsFor(spec, init.props),
     children: [],
   };
 }
@@ -195,15 +195,19 @@ export function setProps(
     if (value === undefined) delete props[key];
     else props[key] = value;
   }
+  const spec = specOf(ctx.schema, block.type);
   const b = new Builder(ctx.doc);
-  b.update(id, { props });
+  b.update(id, {
+    props: spec.props ? propsFor({ ...spec, defaultProps: undefined }, props) : props,
+  });
   return b.done();
 }
 
 /**
  * Change a block's type, keeping its text and props (so turning a to-do into a
- * paragraph and back keeps `checked`, as Notion does). The new type's default
- * props fill gaps; text is added or kept per the new type.
+ * paragraph and back keeps `checked`, as Notion does) unless the new type
+ * lists the props it keeps. The new type's default props fill gaps; text is
+ * added or kept per the new type.
  */
 export function turnInto(ctx: CommandContext, id: BlockId, type: string): Transaction | null {
   const block = getBlock(ctx.doc, id);
@@ -214,12 +218,14 @@ export function turnInto(ctx: CommandContext, id: BlockId, type: string): Transa
     type,
   };
   if (spec.hasText && !block.text) after.text = [];
-  if (spec.defaultProps) after.props = { ...spec.defaultProps, ...block.props };
+  if (spec.defaultProps || spec.props) after.props = propsFor(spec, block.props);
   b.update(id, after);
   // A type that cannot hold children hands them to the following position.
   if (!spec.canHaveChildren && block.children.length > 0) {
     const { parent, index } = positionOf(b.doc, id);
-    [...block.children].forEach((child, i) => b.move(child, parent, index + 1 + i));
+    block.children.forEach((child, i) => {
+      b.move(child, parent, index + 1 + i);
+    });
   }
   const sel = spec.hasText ? caret(id, lengthOf(getBlock(b.doc, id))) : null;
   return b.done(null, sel);

@@ -60,7 +60,16 @@ export interface SyncSessionOptions {
    * Remote changes can no longer be reconciled locally (a skipped version, a
    * transaction that does not apply): the app should reload the document.
    */
-  onDesync?: () => void;
+  onDesync?: (reason: string) => void;
+  /**
+   * Corrections for servers whose notion of position is not the editor's
+   * anchors (sibling order by number): two collaborators inserting into the
+   * same gap are ordered by the server, while a rebased local insert lands
+   * by its anchor. Called after every remote change and whenever every local
+   * change is confirmed; return moves that put the document in the server's
+   * order. They are local only (the server already has that order).
+   */
+  reconcile?: (doc: EditorDocument) => Operation[];
 }
 
 interface Entry {
@@ -138,7 +147,10 @@ export class SyncSession {
       return;
     }
     const before = this.documentBefore(next);
-    if (!before) return this.desync();
+    if (!before) {
+      this.desync('could not rebuild the document a pending transaction applies to');
+      return;
+    }
     this.sending = next;
     this.setStatus('saving');
     this.transport.send(next.tx, before).then(
@@ -182,8 +194,8 @@ export class SyncSession {
     for (const e of [...dropped].reverse()) undo.push(...invertTransaction(e.tx).ops);
     const undone = tryApply(this.store.doc, undo);
     this.entries = this.entries.filter((e) => !dropped.includes(e));
-    if (undone) this.store.dispatch({ ops: undo }, 'remote');
-    else this.options.onDesync?.();
+    if (undone) this.store.dispatch({ ops: [...undo, ...this.corrections(undone)] }, 'remote');
+    else this.options.onDesync?.('could not undo a refused transaction');
     this.options.onRejected?.(entry.tx);
     this.setStatus('error');
     this.flush();
@@ -201,6 +213,16 @@ export class SyncSession {
     return doc;
   }
 
+  /**
+   * The `reconcile` moves for `doc`, when they apply (anchored operations
+   * survive any reordering, so pending entries still undo exactly).
+   */
+  private corrections(doc: EditorDocument): Operation[] {
+    if (!this.options.reconcile) return [];
+    const ops = this.options.reconcile(doc);
+    return ops.length > 0 && tryApply(doc, ops) ? ops : [];
+  }
+
   /** Fold acknowledged entries whose versions are next in line into the base. */
   private advance(): void {
     for (;;) {
@@ -209,6 +231,11 @@ export class SyncSession {
       if (head?.acked === expected) {
         this.entries.shift();
         this.version = expected;
+        // Everything confirmed: put the document in the server's order.
+        if (this.entries.length === 0) {
+          const corrections = this.corrections(this.store.doc);
+          if (corrections.length > 0) this.store.dispatch({ ops: corrections }, 'remote');
+        }
         continue;
       }
       const early = this.early.get(expected);
@@ -230,7 +257,7 @@ export class SyncSession {
       this.early.set(remote.version, remote);
       if (this.early.size > 100) {
         this.early.clear();
-        this.options.onDesync?.();
+        this.options.onDesync?.(`missing version ${this.version + 1}`);
       }
       return;
     }
@@ -245,13 +272,19 @@ export class SyncSession {
     for (const entry of [...this.entries].reverse()) {
       const inverse = invertTransaction(entry.tx).ops;
       doc = tryApply(doc, inverse);
-      if (!doc) return this.desync();
+      if (!doc) {
+        this.desync('could not take local changes off for a remote one');
+        return;
+      }
       ops.push(...inverse);
     }
 
     const remoteOps = remote.toOperations(doc);
     doc = tryApply(doc, remoteOps);
-    if (!doc) return this.desync();
+    if (!doc) {
+      this.desync(`remote version ${remote.version} does not apply`);
+      return;
+    }
     ops.push(...remoteOps);
     this.version = remote.version;
 
@@ -268,20 +301,23 @@ export class SyncSession {
         entry.tx = { ...entry.tx, ops: rebased.ops };
         kept.push(entry);
       } else if (entry.acked !== undefined) {
-        return this.desync();
+        this.desync('an acknowledged local change no longer applies');
+        return;
       } else {
         dropped.push(entry);
       }
     }
     this.entries = kept;
+    const corrections = this.corrections(doc);
+    ops.push(...corrections);
     if (ops.length > 0) this.store.dispatch({ ops }, 'remote');
     // Superseded by someone else's change: as good as refused.
     for (const entry of dropped) this.options.onRejected?.(entry.tx);
   }
 
-  private desync(): void {
+  private desync(reason: string): void {
     this.entries = [];
     this.early.clear();
-    this.options.onDesync?.();
+    this.options.onDesync?.(reason);
   }
 }

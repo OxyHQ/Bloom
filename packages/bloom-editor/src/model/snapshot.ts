@@ -16,6 +16,7 @@ import {
   positionOf,
 } from './document';
 import type { Transaction } from './operations';
+import { propsFor, type Schema, specOf } from './schema';
 
 export interface BlockSnapshot {
   type: string;
@@ -42,15 +43,20 @@ export function documentToSnapshot(doc: EditorDocument): BlockSnapshot[] {
   return exportSnapshot(doc, doc.root);
 }
 
-/** Build a document from a snapshot, minting ids. */
+/**
+ * Build a document from a snapshot, minting ids. With a schema, each block's
+ * props are completed and restricted as the schema says (`propsFor`).
+ */
 export function documentFromSnapshot(
   snapshot: readonly BlockSnapshot[],
   newId: IdFactory,
+  schema?: Schema,
 ): EditorDocument {
   const blocks: Record<BlockId, Block> = {};
   const build = (node: BlockSnapshot, parent: BlockId | null): BlockId => {
     const id = newId();
-    const block: Block = { id, type: node.type, parent, props: { ...node.props }, children: [] };
+    const props = schema ? propsFor(specOf(schema, node.type), node.props) : { ...node.props };
+    const block: Block = { id, type: node.type, parent, props, children: [] };
     if (node.text) block.text = node.text;
     blocks[id] = block;
     blocks[id] = { ...block, children: (node.children ?? []).map((child) => build(child, id)) };
@@ -62,13 +68,15 @@ export function documentFromSnapshot(
 
 /**
  * Insert a snapshot after `afterId` (at the end of the document when null),
- * as one transaction. Returns null for an empty snapshot.
+ * as one transaction. Returns null for an empty snapshot. With a schema,
+ * props follow it as in `documentFromSnapshot`.
  */
 export function insertSnapshot(
   doc: EditorDocument,
   snapshot: readonly BlockSnapshot[],
   afterId: BlockId | null,
   newId: IdFactory,
+  schema?: Schema,
 ): Transaction | null {
   if (snapshot.length === 0) return null;
   let parent: BlockId | null = null;
@@ -78,7 +86,7 @@ export function insertSnapshot(
     parent = pos.parent;
     index = pos.index + 1;
   }
-  const inserted = documentFromSnapshot(snapshot, newId);
+  const inserted = documentFromSnapshot(snapshot, newId, schema);
   const ops = inserted.root.map((topId, i) => {
     const subtree: Block[] = [];
     const collect = (id: BlockId, p: BlockId | null) => {

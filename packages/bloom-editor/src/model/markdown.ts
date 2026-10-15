@@ -143,7 +143,7 @@ export function applyInlineShortcut(
   segments: Segment[],
   edit: TextEdit | null,
 ): { segments: Segment[]; caret: number } | null {
-  if (!edit || edit.deleteCount !== 0 || edit.insert.length !== 1) return null;
+  if (edit?.deleteCount !== 0 || edit.insert.length !== 1) return null;
   const caret = edit.index + 1;
   const before = segmentsToPlainText(segments).slice(0, caret);
   for (const shortcut of INLINE_SHORTCUTS) {

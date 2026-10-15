@@ -1,4 +1,6 @@
 import {
+  anchorOf,
+  applyOperation,
   type BlockId,
   documentFromSnapshot,
   documentToSnapshot,
@@ -7,6 +9,7 @@ import {
   getBlock,
   indent,
   insertBlockAfter,
+  type Operation,
   rebaseOperations,
   removeBlocks,
   splitBlock,
@@ -215,5 +218,63 @@ describe('SyncSession under random concurrent editing', () => {
         expect(snapshot(client.store.doc)).toBe(snapshot(server.doc));
       }
     }
+  });
+});
+
+describe('SyncSession with a server that orders siblings itself', () => {
+  /** Moves that sort the top level by id: the server's order in this test. */
+  const sortRoot = (doc: EditorDocument): Operation[] => {
+    const ops: Operation[] = [];
+    let current = doc;
+    [...doc.root].sort().forEach((id, i, wanted) => {
+      if (current.root[i] === id) return;
+      const op: Operation = {
+        kind: 'move',
+        id,
+        from: anchorOf(current, id),
+        to: { parent: null, after: i === 0 ? null : (wanted[i - 1] as BlockId) },
+      };
+      current = applyOperation(current, op);
+      ops.push(op);
+    });
+    return ops;
+  };
+
+  it('ends in the server order, through reconcile, when both insert into the same gap', async () => {
+    seq = 0;
+    const doc = documentFromSnapshot(
+      [{ type: 'paragraph' }, { type: 'paragraph' }],
+      () => `m${++seq}`,
+    );
+    const server = new FakeServer(doc);
+    const receive = server.receive.bind(server);
+    server.receive = (clientId, tx) => {
+      const result = receive(clientId, tx);
+      server.doc = { ...server.doc, root: [...server.doc.root].sort() };
+      return result;
+    };
+    const client = (id: string) => {
+      const store = new EditorStore({ document: server.doc, newId: () => `${id}${++seq}` });
+      const entry = {
+        id,
+        store,
+        inbox: [] as (() => void)[],
+        session: null as unknown as SyncSession,
+      };
+      entry.session = new SyncSession(
+        store,
+        { send: (tx) => server.receive(id, tx) },
+        { version: server.version, reconcile: sortRoot },
+      );
+      server.clients.push(entry);
+      return entry;
+    };
+    const a = client('z');
+    const b = client('a');
+    a.store.run((c) => insertBlockAfter(c, 'm1', 'paragraph'));
+    b.store.run((c) => insertBlockAfter(c, 'm1', 'paragraph'));
+    await settle(server);
+    expect(a.store.doc.root).toEqual(server.doc.root);
+    expect(b.store.doc.root).toEqual(server.doc.root);
   });
 });

@@ -19,12 +19,21 @@ export interface BlockRendererProps {
 
 export type BlockRenderer = (props: BlockRendererProps) => ReactNode;
 
+/** An application action in a block's menu (comment on the block, copy a link to it). */
+export interface BlockAction {
+  id: string;
+  label: string;
+  onPress: (blockId: BlockId) => void;
+}
+
 export interface EditorContextValue {
   store: EditorStore;
   ui: UiStore;
   theme: EditorTheme;
   labels: EditorLabels;
   renderers: Readonly<Record<string, BlockRenderer>>;
+  markers: Readonly<Record<string, BlockRenderer>>;
+  blockActions: readonly BlockAction[];
   slashItems: readonly SlashItem[];
   onSlashAction?: (id: string, blockId: BlockId) => void;
   readOnly: boolean;
