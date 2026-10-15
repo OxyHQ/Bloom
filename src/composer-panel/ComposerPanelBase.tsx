@@ -16,7 +16,8 @@ import { TYPE_SCALE } from '../typography';
 import { AddMenu } from './AddMenu';
 import { AttachmentStrip } from './AttachmentStrip';
 import { Collapse } from './Collapse';
-import { MicButton, SendButton, StopButton } from './ComposerControls';
+import { ComposerDock } from './ComposerDock';
+import { ComposerTrailingActions } from './ComposerTrailingActions';
 import { ModelPickerBase } from './ModelPickerBase';
 import { PermissionMenu } from './PermissionMenu';
 import { useAttachmentLabels } from './use-attachment-labels';
@@ -28,7 +29,6 @@ import {
   CARD_RADIUS,
   composerAddMenu,
   composerPermissions,
-  isComposerEmpty,
   PROMPT_LINE,
   PROMPT_MAX_HEIGHT,
   resolveComposerPalette,
@@ -193,10 +193,7 @@ export function ComposerPanelBase({
   };
 
   return (
-    <View testID={testID} style={[{ width: '100%', flexDirection: 'column' }, style]}>
-      {question ? <View style={{ marginBottom: 8 }}>{question}</View> : null}
-      {status ?? null}
-
+    <ComposerDock testID={testID} style={style} question={question} status={status}>
       <Surface radius={CARD_RADIUS} style={cardStyle}>
         <Collapse open={hasAttachments}>
           <View style={{ paddingBottom: 4 }}>
@@ -326,27 +323,24 @@ export function ComposerPanelBase({
                 />
               ) : null}
               <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <MicButton
-                  state={voice}
-                  onToggle={() => setVoice(voice === 'recording' ? 'idle' : 'recording')}
-                  label={labels.voice}
-                  transcribingLabel={labels.transcribing}
+                <ComposerTrailingActions
                   palette={palette}
+                  voice={voice}
+                  onVoiceChange={setVoice}
+                  text={text}
+                  attachments={attachments}
+                  busy={busy}
+                  disabled={disabled}
+                  onStop={onStop}
+                  onSubmit={submit}
+                  emptyAction={emptyAction}
+                  labels={labels}
                 />
-                {/* Stop wins; then the host's empty action while there is
-                    nothing to send; otherwise send. */}
-                {busy && onStop ? (
-                  <StopButton onPress={onStop} label={labels.stop} />
-                ) : emptyAction !== undefined && isComposerEmpty(text, attachments) ? (
-                  emptyAction
-                ) : (
-                  <SendButton disabled={disabled} onPress={submit} label={labels.send} />
-                )}
               </View>
             </View>
           </View>
         </View>
       </Surface>
-    </View>
+    </ComposerDock>
   );
 }

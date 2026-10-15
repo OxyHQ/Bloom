@@ -589,6 +589,84 @@ function pillRow(pill: ReturnType<ReturnType<typeof renderIn>['getByTestId']>) {
   return resolvedStyle(row!.props.style);
 }
 
+describe('ComposerPill parity with the panel', () => {
+  const MODES = COMPOSER_PANEL_PERMISSIONS.slice(0, 3);
+
+  it('draws no permission trigger unless given modes, and none for []', () => {
+    expect(renderIn(<ComposerPill testID="pill" />).queryByTestId('pill-permission')).toBeNull();
+    expect(
+      renderIn(<ComposerPill testID="pill" permissions={[]} />).queryByTestId('pill-permission'),
+    ).toBeNull();
+  });
+
+  it('opens the described, iconed modes as named radios and reports the pick', () => {
+    const onPermissionChange = jest.fn();
+    const onLearnMore = jest.fn();
+    const { getByTestId, getByLabelText } = renderIn(
+      <ComposerPill
+        testID="pill"
+        permissions={MODES}
+        onPermissionChange={onPermissionChange}
+        onLearnMore={onLearnMore}
+      />,
+    );
+    const trigger = getByTestId('pill-permission');
+    expect(trigger.props.accessibilityLabel).toBe('Permission: Auto');
+    expect(trigger.props['aria-expanded']).toBe(false);
+    pressHost(trigger);
+    const panel = within(getByTestId('pill-permission-panel'));
+    expect(panel.getByText('Always ask before making a change')).toBeTruthy();
+    expect(panel.getByLabelText('Auto').props['aria-checked']).toBe(true);
+    expect(panel.getByLabelText('Manual').props['aria-checked']).toBe(false);
+    pressHost(panel.getByLabelText('Learn more'));
+    expect(onLearnMore).toHaveBeenCalledTimes(1);
+    pressHost(panel.getByLabelText('Manual'));
+    expect(onPermissionChange).toHaveBeenCalledWith('manual');
+    expect(getByLabelText('Permission: Manual')).toBeTruthy();
+  });
+
+  it('shrinks the permission trigger to its icon below 640 wide and keeps its name', () => {
+    const spy = jest
+      .spyOn(require('react-native'), 'useWindowDimensions')
+      .mockReturnValue({ width: 400, height: 800, scale: 1, fontScale: 1 });
+    try {
+      const { getByTestId, queryByText } = renderIn(
+        <ComposerPill testID="pill" permissions={MODES} />,
+      );
+      expect(queryByText('Auto')).toBeNull();
+      expect(getByTestId('pill-permission').props.accessibilityLabel).toBe('Permission: Auto');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('docks the question and the status tab above the pill and squares its corners', () => {
+    const docked = renderIn(
+      <ComposerPill
+        testID="pill"
+        question={<Text>Which file?</Text>}
+        status={<ComposerPanelStatusTab branch="main" testID="tab" />}
+      />,
+    );
+    expect(docked.getByText('Which file?')).toBeTruthy();
+    expect(docked.getByText('main')).toBeTruthy();
+    expect(docked.getByTestId('tab')).toBeTruthy();
+    expect(resolvedStyle(docked.getByTestId('pill').props.style).borderRadius).toBe(26);
+    const bare = renderIn(<ComposerPill testID="pill" />);
+    expect(bare.queryByText('Which file?')).toBeNull();
+    expect(resolvedStyle(bare.getByTestId('pill').props.style).borderRadius).toBe(9999);
+  });
+
+  it('keeps the panel and the pill on one trailing-control rule', () => {
+    for (const ui of [<ComposerPanel key="a" />, <ComposerPill key="b" />]) {
+      const view = renderIn(ui);
+      expect(view.getByLabelText('Voice input')).toBeTruthy();
+      expect(view.getByLabelText('Send message')).toBeTruthy();
+      view.unmount();
+    }
+  });
+});
+
 describe('ComposerPill', () => {
   it('draws the 52px pill with the surface and shadow, and drops both inside a loader', () => {
     const { getByTestId, rerender } = renderIn(<ComposerPill testID="pill" />);

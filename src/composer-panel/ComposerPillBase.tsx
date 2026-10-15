@@ -34,7 +34,9 @@ import { Text, TYPE_SCALE } from '../typography';
 import { AddMenu } from './AddMenu';
 import { AttachmentStrip } from './AttachmentStrip';
 import { Collapse } from './Collapse';
-import { MicButton, SendButton, StopButton } from './ComposerControls';
+import { ComposerDock } from './ComposerDock';
+import { ComposerTrailingActions } from './ComposerTrailingActions';
+import { PermissionMenu } from './PermissionMenu';
 import { useComposerPopover } from './context';
 import { EffortSlider } from './EffortSlider';
 import { useAttachmentLabels } from './use-attachment-labels';
@@ -43,7 +45,6 @@ import {
   CONTROL_SIZE,
   DEFAULT_EFFORT,
   EFFORT_WIDTH,
-  isComposerEmpty,
   resolveComposerPalette,
   type ComposerPalette,
 } from './shared';
@@ -429,6 +430,13 @@ export function ComposerPillBase({
   compactPlaceholder: compactPlaceholderProp,
   addMenu: addMenuProp,
   onAddMenuSelect,
+  permissions,
+  permission,
+  defaultPermission,
+  onPermissionChange,
+  onLearnMore,
+  question,
+  status,
   models,
   model,
   defaultModel,
@@ -462,6 +470,9 @@ export function ComposerPillBase({
   const labels = useMemo<Required<ComposerPillLabels>>(
     () => ({
       message: messages.message,
+      permissions: messages.permissions,
+      permissionMode: messages.permissionMode,
+      learnMore: messages.learnMore,
       add: messages.add,
       addMenu: messages.addMenu,
       modelSettings: messages.modelSettings,
@@ -482,15 +493,15 @@ export function ComposerPillBase({
     [messages, common, labelOverrides],
   );
   const { removeFileLabel, retryFileLabel } = useAttachmentLabels(labelOverrides);
-  // `AddMenu` reads the panel's label set; only `add` and `addMenu` reach it.
+  // `AddMenu` and `PermissionMenu` read the panel's label set.
   const addMenuLabels = useMemo<Required<ComposerPanelLabels>>(
     () => ({
       message: labels.message,
       add: labels.add,
       addMenu: labels.addMenu,
-      permissions: messages.permissions,
-      permissionMode: messages.permissionMode,
-      learnMore: messages.learnMore,
+      permissions: labels.permissions,
+      permissionMode: labels.permissionMode,
+      learnMore: labels.learnMore,
       voice: labels.voice,
       send: labels.send,
       stop: labels.stop,
@@ -498,7 +509,7 @@ export function ComposerPillBase({
       remove: labels.remove,
       retry: labels.retry,
     }),
-    [labels, messages],
+    [labels],
   );
   const placeholder = placeholderProp ?? messages.pillPlaceholder;
   const compactPlaceholder = compactPlaceholderProp ?? messages.pillCompactPlaceholder;
@@ -640,9 +651,10 @@ export function ComposerPillBase({
   /*
    * The capsule is one line of controls and nothing else. A strip above the
    * field or a reason under it makes the pill a stack, and a fully-round
-   * stack puts its first and last rows inside the curve like a grown draft.
+   * stack puts its first and last rows inside the curve like a grown draft. The same goes
+   * for a status tab: its flat foot needs a card edge to sit on, not the crown of a circle.
    */
-  const stacked = multiLine || hasAttachments || errorMessage !== undefined;
+  const stacked = multiLine || hasAttachments || errorMessage !== undefined || status != null;
   const radius = stacked ? 26 : 9999;
 
   /*
@@ -696,7 +708,7 @@ export function ComposerPillBase({
       : null),
   };
 
-  const content = (
+  const pill = (
     <PillRoot
       {...dataHook('bloomComposerPill')}
       testID={testID}
@@ -726,6 +738,22 @@ export function ComposerPillBase({
               onSelect={onAddMenuSelect}
               labels={addMenuLabels}
               testID={testID ? `${testID}-add` : undefined}
+            />
+          </View>
+        ) : null}
+
+        {permissions && permissions.length > 0 ? (
+          <View style={{ flexShrink: 0 }}>
+            <PermissionMenu
+              palette={palette}
+              permissions={permissions}
+              value={permission}
+              defaultValue={defaultPermission}
+              onChange={onPermissionChange}
+              onLearnMore={onLearnMore}
+              labels={addMenuLabels}
+              iconOnly={compact}
+              testID={testID ? `${testID}-permission` : undefined}
             />
           </View>
         ) : null}
@@ -799,34 +827,22 @@ export function ComposerPillBase({
             paddingLeft: 6,
           }}
         >
-          <View style={{ position: 'relative' }}>
-            <FrostedChip shown={frosted} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
-            <MicButton
-              state={voice}
-              onToggle={() => setVoice(voice === 'recording' ? 'idle' : 'recording')}
-              label={labels.voice}
-              transcribingLabel={labels.transcribing}
-              palette={controlPalette}
-            />
-          </View>
-          {/* What the trailing control is, in the order the states rank.
-           *
-           * Stop wins: a turn in flight is the one thing a person needs to be
-           * able to reach, and `StopButton` deliberately takes no `disabled`.
-           *
-           * Then `emptyAction`, if the host gave one and there is nothing to
-           * send. An assistant with a voice mode puts it here — the slot where
-           * send WOULD be, which is where the thumb already is — and it is the
-           * host's control, not a Bloom affordance, because only the host knows
-           * whether it has one. Without it the send button simply sits there
-           * disabled, as it always did. */}
-          {busy && onStop ? (
-            <StopButton onPress={onStop} label={labels.stop} />
-          ) : emptyAction !== undefined && isComposerEmpty(text, attachments) ? (
-            emptyAction
-          ) : (
-            <SendButton disabled={disabled} onPress={submit} label={labels.send} />
-          )}
+          <ComposerTrailingActions
+            palette={controlPalette}
+            voice={voice}
+            onVoiceChange={setVoice}
+            text={text}
+            attachments={attachments}
+            busy={busy}
+            disabled={disabled}
+            onStop={onStop}
+            onSubmit={submit}
+            emptyAction={emptyAction}
+            labels={labels}
+            micBackdrop={
+              <FrostedChip shown={frosted} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
+            }
+          />
         </View>
       </View>
       {errorMessage !== undefined ? (
@@ -851,7 +867,14 @@ export function ComposerPillBase({
       ) : null}
     </PillRoot>
   );
-  return content;
+  // The dock wraps only when something is docked: a bare pill is the same single node as before.
+  return question || status ? (
+    <ComposerDock question={question} status={status}>
+      {pill}
+    </ComposerDock>
+  ) : (
+    pill
+  );
 }
 
 /**

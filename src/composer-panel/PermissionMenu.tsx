@@ -26,6 +26,8 @@ interface PermissionMenuProps {
   onChange?: (permission: string) => void;
   onLearnMore?: () => void;
   labels: Required<ComposerPanelLabels>;
+  /** Draw the trigger as the mode's icon alone (the pill below 640 wide); it keeps its name. */
+  iconOnly?: boolean;
   testID?: string;
 }
 
@@ -50,6 +52,7 @@ export function PermissionMenu({
   onChange,
   onLearnMore,
   labels,
+  iconOnly = false,
   testID,
 }: PermissionMenuProps) {
   const Button = useComposerButton();
@@ -106,7 +109,7 @@ export function PermissionMenu({
             paddingTop: 5,
             paddingBottom: 5,
             paddingLeft: 8,
-            paddingRight: 10,
+            paddingRight: iconOnly ? 8 : 10,
             cursor: 'pointer',
           },
         ]}
@@ -114,14 +117,16 @@ export function PermissionMenu({
         <View style={current.flip ? [FLIP, { flexShrink: 0 }] : { flexShrink: 0 }}>
           <CurrentIcon width={16} height={16} fill={palette.iconSecondary} />
         </View>
-        <Text
-          variant="body-medium"
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          style={{ flexShrink: 1, minWidth: 0, color: palette.textSecondary }}
-        >
-          {current.label}
-        </Text>
+        {iconOnly ? null : (
+          <Text
+            variant="body-medium"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{ flexShrink: 1, minWidth: 0, color: palette.textSecondary }}
+          >
+            {current.label}
+          </Text>
+        )}
       </Button>
 
       <Popover
