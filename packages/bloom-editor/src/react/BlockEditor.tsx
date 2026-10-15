@@ -1,5 +1,7 @@
 import { useEffect, useMemo } from 'react';
+import type { MentionMark } from '@oxy.so/bloom-text/model';
 import {
+  Linking,
   Platform,
   Pressable,
   type StyleProp,
@@ -47,6 +49,10 @@ export interface BlockEditorProps {
   decorations?: BlockDecorations;
   /** Mentions: the indicators that open the menu, and where to look matches up. */
   mentions?: MentionSource;
+  /** Follow a link from its popover; opens it with `Linking` by default. */
+  onOpenLink?: (href: string) => void;
+  /** Follow a mention from its popover (open the page, show the person). */
+  onOpenMention?: (mention: MentionMark, text: string) => void;
   theme?: EditorTheme;
   labels?: Partial<EditorLabels>;
   readOnly?: boolean;
@@ -59,6 +65,9 @@ export interface BlockEditorProps {
 }
 
 const NONE: Readonly<Record<string, BlockRenderer>> = {};
+const openWithLinking = (href: string) => {
+  void Linking.openURL(href);
+};
 const NO_ACTIONS: readonly BlockAction[] = [];
 
 /**
@@ -74,6 +83,8 @@ export function BlockEditor({
   blockActions = NO_ACTIONS,
   decorations,
   mentions,
+  onOpenLink = openWithLinking,
+  onOpenMention,
   theme = DEFAULT_THEME,
   labels,
   readOnly = false,
@@ -98,6 +109,8 @@ export function BlockEditor({
       blockActions,
       decorations,
       mentions,
+      onOpenLink,
+      onOpenMention,
       slashItems,
       onSlashAction,
       readOnly,
@@ -114,6 +127,8 @@ export function BlockEditor({
       blockActions,
       decorations,
       mentions,
+      onOpenLink,
+      onOpenMention,
       slashItems,
       onSlashAction,
       readOnly,

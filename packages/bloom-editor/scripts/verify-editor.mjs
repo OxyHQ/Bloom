@@ -203,6 +203,47 @@ async function press(page, key, modifier) {
   await page.close();
 }
 
+// A link under the caret: its popover follows it or removes it.
+{
+  const page = await open();
+  await clickInto(page, 'Write with bold, links and more. Type / for commands.');
+  // Put the caret inside "links".
+  await press(page, 'Home');
+  for (let i = 0; i < 'Write with bold, li'.length; i += 1) await press(page, 'ArrowRight');
+  await page.waitForSelector('[aria-label="Open"]', { timeout: 2000 });
+  await (await page.$('[aria-label="Open"]')).click();
+  await sleep(200);
+  const opened = await page.evaluate(() => globalThis.__bloomOpened ?? []);
+  await check(
+    page,
+    opened.includes('https://example.com/docs'),
+    `Open follows the link (${opened})`,
+  );
+  await (await page.$('[aria-label="Remove link"]')).click();
+  await sleep(250);
+  const linked = await page.evaluate(() =>
+    Object.values(globalThis.__bloomEditorStore.doc.blocks).some((b) =>
+      (b.text || []).some((s) => s.link),
+    ),
+  );
+  await check(page, !linked, 'Remove link unlinks it');
+  await page.close();
+}
+
+// Menus hang over the blocks below them and take the mouse.
+{
+  const page = await open();
+  await clickInto(page, 'First');
+  await press(page, 'End');
+  await press(page, 'Enter');
+  await type(page, '/quo');
+  const item = await page.waitForSelector('[role="menuitem"]', { timeout: 2000 });
+  await item.click();
+  await sleep(250);
+  await check(page, (await outline(page)).includes('quote:'), 'clicking a slash item picks it');
+  await page.close();
+}
+
 // The touch toolbar: shown while a block has the keyboard, acting on it.
 {
   const page = await open('with-toolbar');

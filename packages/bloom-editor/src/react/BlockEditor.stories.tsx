@@ -125,6 +125,12 @@ export const SLASH_ITEMS: SlashItem[] = [
   },
 ];
 
+/** The verification scripts read what was opened instead of leaving the page. */
+function recordOpened(what: string) {
+  const g = globalThis as { __bloomOpened?: string[] };
+  g.__bloomOpened = [...(g.__bloomOpened ?? []), what];
+}
+
 function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
   const store = useMemo(
     () =>
@@ -138,7 +144,9 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
               text: [
                 { text: 'Write with ' },
                 { text: 'bold', bold: true },
-                { text: ', links and more. Type ' },
+                { text: ', ' },
+                { text: 'links', link: 'https://example.com/docs' },
+                { text: ' and more. Type ' },
                 { text: '/', code: true },
                 { text: ' for commands.' },
               ],
@@ -189,6 +197,10 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
             slashItems={SLASH_ITEMS}
             mentions={MENTIONS}
             controller={controller}
+            onOpenLink={recordOpened}
+            onOpenMention={(mention) =>
+              recordOpened(`${mention.attributes.kind}:${mention.attributes.id}`)
+            }
           />
         </View>
       </ScrollView>

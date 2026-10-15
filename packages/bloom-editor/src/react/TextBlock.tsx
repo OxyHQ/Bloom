@@ -43,6 +43,8 @@ import { specOf } from '../model/schema';
 import { filterSlashItems, type SlashItem, slashQuery, slashTriggerAt } from '../model/slash';
 import { type MentionItem, useEditorContext } from './context';
 import { FormatBar } from './FormatBar';
+import { InlinePopover } from './InlinePopover';
+import { inlineTargetAt } from './inline-target';
 import { MentionMenu } from './MentionMenu';
 import { SlashMenu } from './SlashMenu';
 import { useUi } from './ui-store';
@@ -433,6 +435,20 @@ export function TextBlock({ block }: { block: Block }) {
     [controller, id, ui],
   );
 
+  // The link or mention at the caret, for its popover.
+  const inlineKey = useSyncExternalStore(store.subscribe, () => {
+    const sel = store.selection;
+    if (sel?.kind !== 'text' || sel.blockId !== id || sel.start !== sel.end) return null;
+    const found = inlineTargetAt(store.doc.blocks[id]?.text ?? [], sel.start);
+    return found ? `${found.start}:${found.end}` : null;
+  });
+  const inlineTarget = useMemo(() => {
+    if (!inlineKey) return null;
+    const sel = store.selection;
+    return sel?.kind === 'text' ? inlineTargetAt(block.text ?? [], sel.start) : null;
+  }, [inlineKey, block.text, store]);
+  const slashOpen = useUi(ui, (s) => s.slash?.blockId === id || s.mention?.blockId === id);
+
   // Web: the marks and link of a selection, over the block (touch devices
   // get `EditorToolbar` above the keyboard instead).
   const linking = useUi(ui, (s) => s.linking === id);
@@ -528,6 +544,9 @@ export function TextBlock({ block }: { block: Block }) {
         >
           <FormatBar controller={controller} theme={theme} labels={labels} />
         </View>
+      ) : null}
+      {inlineTarget && focused && !slashOpen && !readOnly ? (
+        <InlinePopover target={inlineTarget} />
       ) : null}
       <SlashMenu blockId={id} onChoose={runSlashItem} />
       <MentionMenu blockId={id} onChoose={chooseMention} />

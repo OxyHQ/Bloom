@@ -1,4 +1,5 @@
 import type { RichTextInputHandle } from '@oxy.so/bloom-text';
+import type { MentionMark } from '@oxy.so/bloom-text/model';
 import { createContext, type ReactNode, useContext, useSyncExternalStore } from 'react';
 import type { Block, BlockId } from '../model/document';
 import type { SlashItem } from '../model/slash';
@@ -56,6 +57,10 @@ export interface EditorContextValue {
   blockActions: readonly BlockAction[];
   decorations?: BlockDecorations;
   mentions?: MentionSource;
+  /** Follow a link (the editor's own default opens it with `Linking`). */
+  onOpenLink: (href: string) => void;
+  /** Follow a mention (open the page, show the person); without it mentions offer no "Open". */
+  onOpenMention?: (mention: MentionMark, text: string) => void;
   slashItems: readonly SlashItem[];
   onSlashAction?: (id: string, blockId: BlockId) => void;
   readOnly: boolean;

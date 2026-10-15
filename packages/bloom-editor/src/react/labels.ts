@@ -28,6 +28,7 @@ export interface EditorLabels {
   removeLink: string;
   apply: string;
   cancel: string;
+  open: string;
   mention: string;
   undo: string;
   redo: string;
@@ -86,6 +87,7 @@ export const DEFAULT_LABELS: EditorLabels = {
   removeLink: 'Remove link',
   apply: 'Apply',
   cancel: 'Cancel',
+  open: 'Open',
   mention: 'Mention',
   undo: 'Undo',
   redo: 'Redo',

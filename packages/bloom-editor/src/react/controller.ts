@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { applyEdit } from '../model/commands';
 import { type BlockId, getBlock } from '../model/document';
 import type { EditorStore } from '../model/store';
+import { inlineTargetAt } from './inline-target';
 import { UiStore } from './ui-store';
 
 /**
@@ -46,10 +47,14 @@ export class EditorController {
   removeLink(): void {
     const selection = this.textSelection;
     if (!selection) return;
-    const range =
-      selection.start === selection.end
-        ? linkRangeAt(getBlock(this.store.doc, selection.blockId).text ?? [], selection.start)
-        : selection;
+    let range: { start: number; end: number } | null = selection;
+    if (selection.start === selection.end) {
+      const target = inlineTargetAt(
+        getBlock(this.store.doc, selection.blockId).text ?? [],
+        selection.start,
+      );
+      range = target?.kind === 'link' ? target : null;
+    }
     if (range) this.inputs.get(selection.blockId)?.removeLink(range.start, range.end);
   }
 
@@ -100,21 +105,4 @@ export function normalizeLink(raw: string): string | null {
     return isSafeLink(withScheme) ? withScheme : null;
   }
   return null;
-}
-
-/** The run of one link around `offset` (the caret just inside or at its end). */
-function linkRangeAt(
-  segments: readonly { text: string; link?: string }[],
-  offset: number,
-): { start: number; end: number } | null {
-  let at = 0;
-  const runs: { start: number; end: number; link?: string }[] = [];
-  for (const segment of segments) {
-    const last = runs[runs.length - 1];
-    if (last && segment.link && last.link === segment.link) last.end += segment.text.length;
-    else runs.push({ start: at, end: at + segment.text.length, link: segment.link });
-    at += segment.text.length;
-  }
-  const run = runs.find((r) => r.link && offset > r.start && offset <= r.end);
-  return run ? { start: run.start, end: run.end } : null;
 }

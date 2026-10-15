@@ -49,6 +49,22 @@ const BlockRow = memo(function BlockRow({
   const selected = useUi(ui, (s) => s.selectedBlocks.includes(id));
   const hovered = useUi(ui, (s) => s.hovered === id);
   const dropHere = useUi(ui, (s) => (s.drag?.target === id ? s.drag.position : null));
+  // Menus and popovers hang outside their block. Every view stacks on its
+  // own (react-native-web gives each `z-index: 0`), so the block that has
+  // one, and the blocks it is nested in, are raised over their siblings —
+  // and its row over its own children.
+  const raised = useUi(ui, (s) => {
+    const owner = s.slash?.blockId ?? s.mention?.blockId ?? s.linking ?? s.focused;
+    if (owner === id) return 'self';
+    for (
+      let at = owner ? store.doc.blocks[owner]?.parent : null;
+      at;
+      at = store.doc.blocks[at]?.parent
+    ) {
+      if (at === id) return 'ancestor';
+    }
+    return null;
+  });
 
   const updateProps = useCallback(
     (patch: Record<string, unknown>) => {
@@ -161,12 +177,14 @@ const BlockRow = memo(function BlockRow({
         { marginTop: blockSpacing(block.type) },
         selected && { backgroundColor: theme.selection },
         decoration && [styles.decorated, { borderLeftColor: decoration.color }],
+        raised !== null && styles.raised,
       ]}
       accessibilityHint={decoration?.label}
     >
       <View
         style={[
           styles.row,
+          raised === 'self' && styles.raised,
           block.type === 'callout' && [
             styles.callout,
             { backgroundColor: background ?? theme.codeBackground },
@@ -236,6 +254,7 @@ function Gutter({ id, visible }: { id: BlockId; visible: boolean }) {
 
 const styles = StyleSheet.create({
   block: { position: 'relative', borderRadius: 4 },
+  raised: { zIndex: 1 },
   // A collaborator's caret: an edge that does not move the content.
   decorated: { borderLeftWidth: 2, marginLeft: -2 },
   row: { flexDirection: 'row', alignItems: 'flex-start', borderRadius: 4 },
