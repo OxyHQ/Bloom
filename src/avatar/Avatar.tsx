@@ -18,7 +18,6 @@ import { AvatarRing } from './AvatarRing';
 import { CharacterFace } from './CharacterFace';
 import { accountName, pickAccountCharacter } from './account';
 import { tryResolveAvatarCharacter } from '../agent-avatar/character';
-import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
 import { Fill as ShapeFill, Image as ShapeImage } from '../shapes';
 import type { Shape, ImageSource } from '../shapes';
 import { Text } from '../typography';
@@ -263,7 +262,6 @@ const AvatarComponent: React.FC<AvatarProps> = ({
     () => tryResolveAvatarCharacter(pickedCharacter),
     [pickedCharacter],
   );
-  const { messages: agentMessages } = useMessages(AGENT_AVATAR_MESSAGES);
   const placeholderProps = {
     shape,
     size,
@@ -284,8 +282,8 @@ const AvatarComponent: React.FC<AvatarProps> = ({
           activity={activity}
           reactionKey={reactionKey}
           workingKey={workingKey}
-          // `alt=""` is the explicit "decorative"; otherwise the name, then the handle, then "Agent avatar".
-          label={alt !== undefined ? alt || undefined : hasName ? name : agentMessages.label}
+          alt={alt}
+          name={hasName ? name : undefined}
           placeholder={<AvatarImageContent {...placeholderProps} />}
         />
       ) : (
