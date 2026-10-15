@@ -301,3 +301,96 @@ describe('SyncSession with a server that orders siblings itself', () => {
     expect(b.store.doc.root).toEqual(server.doc.root);
   });
 });
+
+describe('SyncSession snapshot and resume', () => {
+  it('picks pending work up again in a new session, sending each change once', async () => {
+    const { server, a } = start();
+    // The server is unreachable: edits stay pending.
+    const offline = new SyncSession(
+      a.store,
+      { send: () => Promise.resolve({ ok: false, retry: true }) },
+      { version: server.version, retryDelayMs: 60_000 },
+    );
+    a.session.dispose();
+    a.store.run((c) => insertBlockAfter(c, 'b1', 'paragraph', { text: [{ text: 'offline' }] }));
+    edit(a.store, 'b2', 'TWO');
+    const saved = offline.snapshot();
+    offline.dispose();
+    expect(saved?.pending).toHaveLength(2);
+    expect(snapshot(saved?.base as EditorDocument)).toBe(snapshot(server.doc));
+
+    // Later, a new session on the persisted base, online again.
+    const store = new EditorStore({
+      document: saved?.base as EditorDocument,
+      newId: () => `r${++seq}`,
+    });
+    const resumed = new SyncSession(
+      store,
+      { send: (tx, _before, key) => server.receive('a', tx, key) },
+      { version: saved?.version ?? 0, resume: saved?.pending },
+    );
+    await settle(server);
+    await new Promise((r) => setTimeout(r, 0));
+    await settle(server);
+    expect(resumed.hasPending).toBe(false);
+    expect(server.version).toBe(2);
+    expect(snapshot(store.doc)).toBe(snapshot(server.doc));
+    expect(getBlock(server.doc, 'b2').text).toEqual([{ text: 'TWO' }]);
+  });
+
+  it('keeps pending work across a reload onto a newer server document', async () => {
+    const { server, a, b } = start();
+    a.session.dispose();
+    const stalled = new SyncSession(
+      a.store,
+      { send: () => Promise.resolve({ ok: false, retry: true }) },
+      { version: server.version, retryDelayMs: 60_000 },
+    );
+    edit(a.store, 'b1', 'from a');
+    // Meanwhile someone else changes another block.
+    edit(b.store, 'b3', 'from b');
+    await settle(server);
+    const handover = stalled.snapshot();
+    stalled.dispose();
+
+    // Reload: the server's current document, with a's pending change on top.
+    const store = new EditorStore({ document: server.doc, newId: () => `n${++seq}` });
+    new SyncSession(
+      store,
+      { send: (tx, _before, key) => server.receive('a2', tx, key) },
+      { version: server.version, resume: handover?.pending },
+    );
+    await settle(server);
+    await new Promise((r) => setTimeout(r, 0));
+    await settle(server);
+    expect(getBlock(server.doc, 'b1').text).toEqual([{ text: 'from a' }]);
+    expect(getBlock(server.doc, 'b3').text).toEqual([{ text: 'from b' }]);
+    expect(snapshot(store.doc)).toBe(snapshot(server.doc));
+  });
+
+  it('does not apply twice a change the server had applied before the handover', async () => {
+    const { server, a } = start();
+    server.loseNextResponse = true;
+    a.store.run((c) => insertBlockAfter(c, 'b1', 'paragraph'));
+    await new Promise((r) => setTimeout(r, 0));
+    // The response was lost; the session still has it pending.
+    const handover = a.session.snapshot();
+    a.session.dispose();
+    expect(handover?.pending).toHaveLength(1);
+    const store = new EditorStore({
+      document: handover?.base as EditorDocument,
+      newId: () => `k${++seq}`,
+    });
+    const resumed = new SyncSession(
+      store,
+      { send: (tx, _before, key) => server.receive('a3', tx, key) },
+      { version: handover?.version ?? 0, resume: handover?.pending },
+    );
+    await settle(server);
+    await new Promise((r) => setTimeout(r, 0));
+    await settle(server);
+    expect(server.version).toBe(1);
+    expect(resumed.hasPending).toBe(false);
+    expect(snapshot(store.doc)).toBe(snapshot(server.doc));
+  });
+});

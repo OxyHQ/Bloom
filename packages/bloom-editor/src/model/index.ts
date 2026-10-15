@@ -43,6 +43,8 @@ export {
   type SyncSessionOptions,
   type SyncStatus,
   type SyncTransport,
+  type PendingTransaction,
+  type SyncSnapshot,
 } from './sync';
 export {
   applyEdit,

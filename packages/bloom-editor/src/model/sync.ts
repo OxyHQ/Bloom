@@ -62,6 +62,14 @@ export interface SyncSessionOptions {
    * factory, which mints block ids with that guarantee.
    */
   newKey?: () => string;
+  /**
+   * Local transactions a previous session had not had confirmed (its
+   * `snapshot().pending`): re-applied on top of the store's document — those
+   * that no longer apply are dropped and reported through `onRejected` — and
+   * sent again under their keys, so one the server already applied is not
+   * applied twice.
+   */
+  resume?: readonly PendingTransaction[];
   onStatus?: (status: SyncStatus) => void;
   /** The server refused a local transaction; the session has undone it. */
   onRejected?: (tx: Transaction) => void;
@@ -79,6 +87,21 @@ export interface SyncSessionOptions {
    * order. They are local only (the server already has that order).
    */
   reconcile?: (doc: EditorDocument) => Operation[];
+}
+
+/** A local transaction not yet confirmed, as a session hands it over. */
+export interface PendingTransaction {
+  tx: Transaction;
+  key: string;
+}
+
+/** What it takes to pick a session's work up again: see `SyncSession.snapshot`. */
+export interface SyncSnapshot {
+  /** The server version `base` is. */
+  version: number;
+  /** The document as the server has it, without the pending changes. */
+  base: EditorDocument;
+  pending: PendingTransaction[];
 }
 
 interface Entry {
@@ -120,6 +143,54 @@ export class SyncSession {
     this.version = options.version;
     this.retryDelay = options.retryDelayMs ?? 1000;
     this.unsubscribe = store.onTransaction((tx, origin) => this.onLocal(tx, origin));
+    if (options.resume?.length) this.resumePending(options.resume);
+  }
+
+  private resumePending(pending: readonly PendingTransaction[]): void {
+    let doc = this.store.doc;
+    const ops: Operation[] = [];
+    const dropped: Transaction[] = [];
+    for (const { tx, key } of pending) {
+      const rebased = rebaseOperations(doc, tx.ops);
+      if (!rebased) {
+        dropped.push(tx);
+        continue;
+      }
+      doc = rebased.doc;
+      ops.push(...rebased.ops);
+      this.entries.push({ tx: { ...tx, ops: rebased.ops }, key });
+    }
+    // Shown as they were made; not recorded again as new local changes.
+    if (ops.length > 0) this.store.dispatch({ ops }, 'remote');
+    for (const tx of dropped) this.options.onRejected?.(tx);
+    this.flush();
+  }
+
+  /**
+   * The session's work, to persist (offline) or to hand to the next session
+   * (after a reload): the confirmed version and document, and the local
+   * transactions the server has not confirmed. Null when the base document
+   * cannot be rebuilt.
+   */
+  snapshot(): SyncSnapshot | null {
+    const first = this.entries[0];
+    let base = first ? this.documentBefore(first) : this.store.doc;
+    if (!base) return null;
+    // Acknowledged entries are the server's already: part of the base, not
+    // pending. (If one is ahead of a missing version, the next session sees
+    // the gap, reloads, and keeps what is pending.)
+    for (const entry of this.entries) {
+      if (entry.acked === undefined) break;
+      base = tryApply(base, entry.tx.ops);
+      if (!base) return null;
+    }
+    return {
+      version: this.version,
+      base,
+      pending: this.entries
+        .filter((e) => e.acked === undefined)
+        .map((e) => ({ tx: e.tx, key: e.key })),
+    };
   }
 
   private newKey(): string {
