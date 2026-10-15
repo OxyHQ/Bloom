@@ -31,7 +31,12 @@ export type SendResult =
   | { ok: false; retry: boolean };
 
 export interface SyncTransport {
-  send(tx: Transaction): Promise<SendResult>;
+  /**
+   * Send one transaction. `before` is the document it applies to — the
+   * server's state as this client knows it plus the local transactions sent
+   * ahead of it — for transports that place blocks by their neighbours.
+   */
+  send(tx: Transaction, before: EditorDocument): Promise<SendResult>;
 }
 
 /** A transaction another collaborator applied, as the server reports it. */
@@ -132,9 +137,11 @@ export class SyncSession {
       this.setStatus('saved');
       return;
     }
+    const before = this.documentBefore(next);
+    if (!before) return this.desync();
     this.sending = next;
     this.setStatus('saving');
-    this.transport.send(next.tx).then(
+    this.transport.send(next.tx, before).then(
       (result) => this.onResult(next, result),
       () => this.onResult(next, { ok: false, retry: true }),
     );
@@ -180,6 +187,18 @@ export class SyncSession {
     this.options.onRejected?.(entry.tx);
     this.setStatus('error');
     this.flush();
+  }
+
+  /** The document `entry` applies to: the current one with it and every later entry undone. */
+  private documentBefore(entry: Entry): EditorDocument | null {
+    let doc: EditorDocument | null = this.store.doc;
+    const index = this.entries.indexOf(entry);
+    for (let i = this.entries.length - 1; i >= index; i -= 1) {
+      const later = this.entries[i];
+      if (!later || !doc) return null;
+      doc = tryApply(doc, invertTransaction(later.tx).ops);
+    }
+    return doc;
   }
 
   /** Fold acknowledged entries whose versions are next in line into the base. */
