@@ -68,6 +68,35 @@ function Bar({
 }
 
 describe('Tabs', () => {
+  it('reveals an already-measured selection when its viewport arrives or narrows', () => {
+    const scrollTo = jest.fn();
+    const { getByText, getByTestId } = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Bar value="b" />
+      </BloomThemeProvider>,
+      {
+        createNodeMock: (element) =>
+          typeof element.props === 'object' &&
+          element.props !== null &&
+          'horizontal' in element.props &&
+          element.props.horizontal
+            ? { scrollTo }
+            : null,
+      },
+    );
+    let trigger: ReactTestInstance | null = triggerFor(getByText('Second'));
+    while (trigger && !trigger.props.onLayout) trigger = trigger.parent;
+    if (!trigger) throw new Error('Selected trigger has no layout host');
+    // RNW can deliver child geometry before the ScrollView's ResizeObserver.
+    fireEvent(trigger, 'layout', { nativeEvent: { layout: { x: 600, width: 100 } } });
+    expect(scrollTo).not.toHaveBeenCalled();
+    fireEvent(getByTestId('tabs'), 'layout', { nativeEvent: { layout: { width: 300 } } });
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 500, animated: false });
+    // The trigger did not move; only the viewport changed on a device resize.
+    fireEvent(getByTestId('tabs'), 'layout', { nativeEvent: { layout: { width: 200 } } });
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 550, animated: false });
+  });
+
   it('renders trigger labels', () => {
     const { getByText } = renderWithTheme(<Bar value="a" />);
     expect(getByText('First')).toBeTruthy();
