@@ -3572,6 +3572,9 @@
     "!**/*.spec.*",
     "assets/character-runtime"
   ],
+  "workspaces": [
+    "packages/*"
+  ],
   "keywords": [
     "react-native",
     "expo",
@@ -3831,7 +3834,28 @@
     "lodash": "4.18.1",
     "lightningcss": "1.30.1",
     "lightningcss-linux-x64-gnu": "1.30.1",
-    "lightningcss-linux-x64-musl": "1.30.1"
+    "lightningcss-linux-x64-musl": "1.30.1",
+    "@tiptap/pm": "3.31.4",
+    "@tiptap/core": "3.31.4",
+    "@tiptap/react": "3.31.4",
+    "@tiptap/extensions": "3.31.4",
+    "@tiptap/extension-bold": "3.31.4",
+    "@tiptap/extension-code": "3.31.4",
+    "@tiptap/extension-link": "3.31.4",
+    "@tiptap/extension-list": "3.31.4",
+    "@tiptap/extension-text": "3.31.4",
+    "@tiptap/extension-image": "3.31.4",
+    "@tiptap/extension-italic": "3.31.4",
+    "@tiptap/extension-strike": "3.31.4",
+    "@tiptap/extension-heading": "3.31.4",
+    "@tiptap/extension-history": "3.31.4",
+    "@tiptap/extension-document": "3.31.4",
+    "@tiptap/extension-paragraph": "3.31.4",
+    "@tiptap/extension-underline": "3.31.4",
+    "@tiptap/extension-blockquote": "3.31.4",
+    "@tiptap/extension-text-align": "3.31.4",
+    "@tiptap/extension-floating-menu": "3.31.4",
+    "@tiptap/extension-bubble-menu": "3.31.4"
   },
   "typesVersions": {
     "*": {
