@@ -4,9 +4,35 @@ import { ScrollView, View } from 'react-native';
 import { documentFromSnapshot, type SlashItem } from '../model';
 import { EditorStore } from '../model/store';
 import { BlockEditor } from './BlockEditor';
+import type { MentionSource } from './context';
 
 let counter = 0;
 const newId = () => `id-${Date.now().toString(36)}-${(++counter).toString(36)}`;
+
+/** A tiny directory for the story: people and pages matched by prefix, after a delay. */
+const PEOPLE = ['Ana Ruiz', 'Ben Ito', 'Carla Díaz'];
+const PAGES = ['Roadmap', 'Retrospective'];
+export const MENTIONS: MentionSource = {
+  indicators: ['@'],
+  search: async ({ text }) => {
+    await new Promise((r) => setTimeout(r, 30));
+    const match = (name: string) => name.toLowerCase().startsWith(text.toLowerCase());
+    return [
+      ...PEOPLE.filter(match).map((name) => ({
+        id: name,
+        label: name,
+        group: 'People',
+        attributes: { kind: 'user', id: name },
+      })),
+      ...PAGES.filter(match).map((name) => ({
+        id: name,
+        label: name,
+        group: 'Pages',
+        attributes: { kind: 'page', id: name },
+      })),
+    ];
+  },
+};
 
 export const SLASH_ITEMS: SlashItem[] = [
   {
@@ -154,7 +180,7 @@ function EditorDemo() {
           paddingVertical: 48,
         }}
       >
-        <BlockEditor store={store} slashItems={SLASH_ITEMS} />
+        <BlockEditor store={store} slashItems={SLASH_ITEMS} mentions={MENTIONS} />
       </View>
     </ScrollView>
   );

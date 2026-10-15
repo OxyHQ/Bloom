@@ -152,6 +152,39 @@ async function press(page, key, modifier) {
   await page.close();
 }
 
+// Mentions: typing @ opens the menu, matches narrow as you type, Return inserts.
+{
+  const page = await open();
+  await clickInto(page, 'First');
+  await press(page, 'End');
+  await type(page, ' with @an');
+  await sleep(200);
+  const menu = await page.$$eval('[role="menuitem"]', (els) => els.map((e) => e.innerText));
+  await check(
+    page,
+    menu.some((label) => label.includes('Ana Ruiz')),
+    'the mention menu lists matches',
+  );
+  await press(page, 'Enter');
+  await sleep(200);
+  const mention = await page.evaluate(() => {
+    const s = globalThis.__bloomEditorStore;
+    for (const b of Object.values(s.doc.blocks)) {
+      const seg = (b.text || []).find((x) => x.mention);
+      if (seg) return { text: seg.text, mention: seg.mention };
+    }
+    return null;
+  });
+  await check(
+    page,
+    mention?.mention?.attributes?.kind === 'user' &&
+      mention?.mention?.attributes?.id === 'Ana Ruiz',
+    `Return inserts the mention with its attributes (${JSON.stringify(mention)})`,
+  );
+  await check(page, !(await page.$('[role="menu"]')), 'the mention menu closes');
+  await page.close();
+}
+
 // Checkboxes, toggles, merging, the block menu, drag and drop, undo.
 {
   const page = await open();

@@ -20,6 +20,23 @@ export interface BlockRendererProps {
 
 export type BlockRenderer = (props: BlockRendererProps) => ReactNode;
 
+/** Something a mention can point at (a person, a page, a date), as the app finds it. */
+export interface MentionItem {
+  id: string;
+  label: string;
+  description?: string;
+  /** Section heading in the menu (People, Pages…). */
+  group?: string;
+  /** Stored with the mention: what it points at, e.g. `{ kind: 'page', id }`. */
+  attributes: Readonly<Record<string, string>>;
+}
+
+/** Where the editor looks up mentions: typing an indicator (`@`) opens the menu. */
+export interface MentionSource {
+  indicators: readonly string[];
+  search(query: { indicator: string; text: string }): Promise<readonly MentionItem[]>;
+}
+
 /** An application action in a block's menu (comment on the block, copy a link to it). */
 export interface BlockAction {
   id: string;
@@ -36,6 +53,7 @@ export interface EditorContextValue {
   markers: Readonly<Record<string, BlockRenderer>>;
   blockActions: readonly BlockAction[];
   decorations?: BlockDecorations;
+  mentions?: MentionSource;
   slashItems: readonly SlashItem[];
   onSlashAction?: (id: string, blockId: BlockId) => void;
   readOnly: boolean;

@@ -1,5 +1,11 @@
 export { BlockEditor, type BlockEditorProps } from './BlockEditor';
-export type { BlockAction, BlockRenderer, BlockRendererProps } from './context';
+export type {
+  BlockAction,
+  BlockRenderer,
+  BlockRendererProps,
+  MentionItem,
+  MentionSource,
+} from './context';
 export { DEFAULT_LABELS, type EditorLabels } from './labels';
 export {
   BLOCK_COLOR_NAMES,

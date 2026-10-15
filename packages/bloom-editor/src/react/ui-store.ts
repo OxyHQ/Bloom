@@ -1,10 +1,20 @@
 import { useSyncExternalStore } from 'react';
 import type { BlockId } from '../model/document';
+import type { MentionItem } from './context';
 
 /** Transient editor UI state, kept out of the document and its history. */
 export interface UiState {
   /** The open slash menu: the block, where the slash is, the typed query. */
   slash: { blockId: BlockId; slashAt: number; query: string; highlighted: number } | null;
+  /** The open mention menu: the block, the indicator and text typed after it, the matches. */
+  mention: {
+    blockId: BlockId;
+    indicator: string;
+    text: string;
+    highlighted: number;
+    items: readonly MentionItem[];
+    loading: boolean;
+  } | null;
   /** The block whose options menu is open. */
   blockMenu: BlockId | null;
   /** Blocks selected as whole blocks (Escape, Shift-click, drag selection). */
@@ -22,6 +32,7 @@ export interface UiState {
 export class UiStore {
   private state: UiState = {
     slash: null,
+    mention: null,
     blockMenu: null,
     selectedBlocks: [],
     hovered: null,

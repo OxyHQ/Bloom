@@ -40,7 +40,8 @@ import { applyBlockShortcut, applyInlineShortcut, detectBlockShortcut } from '..
 import type { EditorSelection, Transaction } from '../model/operations';
 import { specOf } from '../model/schema';
 import { filterSlashItems, type SlashItem, slashQuery, slashTriggerAt } from '../model/slash';
-import { useEditorContext } from './context';
+import { type MentionItem, useEditorContext } from './context';
+import { MentionMenu } from './MentionMenu';
 import { SlashMenu } from './SlashMenu';
 import { textStyleFor } from './typography';
 
@@ -52,7 +53,7 @@ const caret = (blockId: string, offset: number): EditorSelection => ({
 });
 
 export function TextBlock({ block }: { block: Block }) {
-  const { store, ui, theme, labels, inputs, readOnly, slashItems, onSlashAction } =
+  const { store, ui, theme, labels, inputs, readOnly, slashItems, onSlashAction, mentions } =
     useEditorContext();
   const id = block.id;
   const spec = specOf(store.schema, block.type);
@@ -217,8 +218,75 @@ export function TextBlock({ block }: { block: Block }) {
     [store],
   );
 
+  // Each lookup gets a number; only the latest one's answer is shown.
+  const mentionSearch = useRef(0);
+  const onMentionQuery = useCallback(
+    (query: { indicator: string; text: string } | null) => {
+      if (!query || !mentions) {
+        if (ui.get().mention?.blockId === id) ui.set({ mention: null });
+        return;
+      }
+      const current = ui.get().mention;
+      const seq = ++mentionSearch.current;
+      ui.set({
+        mention: {
+          blockId: id,
+          indicator: query.indicator,
+          text: query.text,
+          highlighted: 0,
+          items: current?.blockId === id ? current.items : [],
+          loading: true,
+        },
+      });
+      mentions.search(query).then(
+        (items) => {
+          const open = ui.get().mention;
+          if (seq !== mentionSearch.current || open?.blockId !== id) return;
+          ui.set({ mention: { ...open, items, loading: false, highlighted: 0 } });
+        },
+        () => {
+          const open = ui.get().mention;
+          if (seq !== mentionSearch.current || open?.blockId !== id) return;
+          ui.set({ mention: { ...open, items: [], loading: false } });
+        },
+      );
+    },
+    [id, mentions, ui],
+  );
+
+  const chooseMention = useCallback(
+    (item: MentionItem) => {
+      const open = ui.get().mention;
+      ui.set({ mention: null });
+      if (!open) return;
+      inputRef.current?.insertMention(open.indicator, item.label, { ...item.attributes });
+    },
+    [ui],
+  );
+
   const onKeyCommand = useCallback(
     (key: KeyCommand): boolean => {
+      const mention = ui.get().mention;
+      if (mention && mention.blockId === id) {
+        const count = Math.max(mention.items.length, 1);
+        if (key.key === 'ArrowDown' || key.key === 'ArrowUp') {
+          const step = key.key === 'ArrowDown' ? 1 : -1;
+          ui.set({
+            mention: { ...mention, highlighted: (mention.highlighted + step + count) % count },
+          });
+          return true;
+        }
+        if (key.key === 'Escape') {
+          ui.set({ mention: null });
+          return true;
+        }
+        if (key.key === 'Enter' || key.key === 'Tab') {
+          const item = mention.items[mention.highlighted];
+          if (item) chooseMention(item);
+          else ui.set({ mention: null });
+          return true;
+        }
+      }
       const slash = ui.get().slash;
       if (slash && slash.blockId === id) {
         const matches = filterSlashItems(slashItems, slash.query);
@@ -302,10 +370,17 @@ export function TextBlock({ block }: { block: Block }) {
       }
       return false;
     },
-    [focusBlock, id, run, runSlashItem, slashItems, store, ui],
+    [chooseMention, focusBlock, id, run, runSlashItem, slashItems, store, ui],
   );
 
   const onSubmit = useCallback(() => {
+    const mention = ui.get().mention;
+    if (mention && mention.blockId === id) {
+      const item = mention.items[mention.highlighted];
+      if (item) chooseMention(item);
+      else ui.set({ mention: null });
+      return;
+    }
     const slash = ui.get().slash;
     if (slash && slash.blockId === id) {
       const item = filterSlashItems(slashItems, slash.query)[slash.highlighted];
@@ -331,7 +406,7 @@ export function TextBlock({ block }: { block: Block }) {
         (cc) => splitBlock(cc, id, sel.start),
       ]),
     );
-  }, [id, run, runSlashItem, slashItems, store, ui]);
+  }, [chooseMention, id, run, runSlashItem, slashItems, store, ui]);
 
   const placeholder = useMemo(() => {
     if (block.type.startsWith('heading_')) return labels.emptyHeading;
@@ -371,6 +446,8 @@ export function TextBlock({ block }: { block: Block }) {
         onChange={onChange}
         onSelectionChange={onSelectionChange}
         onKeyCommand={onKeyCommand}
+        mentionIndicators={mentions ? [...mentions.indicators] : undefined}
+        onMentionQuery={mentions ? onMentionQuery : undefined}
         onSubmit={spec.multiline ? undefined : onSubmit}
         onFocus={() => {
           focusedRef.current = true;
@@ -405,6 +482,7 @@ export function TextBlock({ block }: { block: Block }) {
         </Text>
       ) : null}
       <SlashMenu blockId={id} onChoose={runSlashItem} />
+      <MentionMenu blockId={id} onChoose={chooseMention} />
     </View>
   );
 }

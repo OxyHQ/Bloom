@@ -19,6 +19,7 @@ import {
   type BlockAction,
   type BlockRenderer,
   EditorContext,
+  type MentionSource,
   type EditorContextValue,
   useEditorSnapshot,
 } from './context';
@@ -44,6 +45,8 @@ export interface BlockEditorProps {
   blockActions?: readonly BlockAction[];
   /** Per-block marks the application changes often (collaborators' carets). */
   decorations?: BlockDecorations;
+  /** Mentions: the indicators that open the menu, and where to look matches up. */
+  mentions?: MentionSource;
   theme?: EditorTheme;
   labels?: Partial<EditorLabels>;
   readOnly?: boolean;
@@ -65,6 +68,7 @@ export function BlockEditor({
   markers = NONE,
   blockActions = NO_ACTIONS,
   decorations,
+  mentions,
   theme = DEFAULT_THEME,
   labels,
   readOnly = false,
@@ -85,6 +89,7 @@ export function BlockEditor({
       markers,
       blockActions,
       decorations,
+      mentions,
       slashItems,
       onSlashAction,
       readOnly,
@@ -99,6 +104,7 @@ export function BlockEditor({
       markers,
       blockActions,
       decorations,
+      mentions,
       slashItems,
       onSlashAction,
       readOnly,

@@ -5,6 +5,8 @@ export interface EditorLabels {
   emptyListItem: string;
   emptyToggle: string;
   slashNoResults: string;
+  mentionNoResults: string;
+  mentionSearching: string;
   slashGroups: Readonly<Record<string, string>>;
   turnInto: string;
   duplicate: string;
@@ -39,6 +41,8 @@ export const DEFAULT_LABELS: EditorLabels = {
   emptyListItem: 'List',
   emptyToggle: 'Toggle',
   slashNoResults: 'No results',
+  mentionNoResults: 'No matches',
+  mentionSearching: 'Searching…',
   slashGroups: {
     basic: 'Basic blocks',
     media: 'Media',
