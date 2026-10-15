@@ -2,9 +2,11 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Image, View } from 'react-native';
 
 import { AgentAvatar } from '../agent-avatar/AgentAvatar';
+import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
 import type { ResolvedAvatarCharacter } from '../agent-avatar/character';
 import { useCharacterStill } from '../agent-avatar/use-character-still';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useMessages } from '../locale/messages';
 import { AVATAR_LIVE_SIZE } from './initials';
 import type { AvatarMotion } from './types';
 
@@ -35,8 +37,14 @@ export interface CharacterFaceProps {
   activity?: 'idle' | 'working';
   workingKey?: number;
   reactionKey?: number;
-  /** The accessible name; `undefined` makes the face decorative. */
-  label?: string;
+  /**
+   * The avatar's `alt`: `""` makes the face decorative, any other value is its
+   * accessible name. When absent, the face is named after {@link name}, then
+   * "Agent avatar".
+   */
+  alt?: string;
+  /** The account's display name or handle, when it has one. */
+  name?: string;
   /** Drawn at the same size until the picture is there: reserves the box, so nothing jumps. */
   placeholder: ReactNode;
 }
@@ -52,9 +60,15 @@ export function CharacterFace({
   activity,
   workingKey,
   reactionKey,
-  label,
+  alt,
+  name,
   placeholder,
 }: CharacterFaceProps) {
+  // Read here, not in `Avatar`: only an account with a character mounts this,
+  // so every other avatar skips the locale lookup (one context read and one
+  // hook per avatar, on every feed row that draws one).
+  const { messages } = useMessages(AGENT_AVATAR_MESSAGES);
+  const label = alt !== undefined ? alt || undefined : (name ?? messages.label);
   const reduced = usePrefersReducedMotion();
   const working = activity === 'working';
   const live = characterIsLive({ motion, size, working, reduced });
