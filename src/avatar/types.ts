@@ -121,6 +121,13 @@ export interface AvatarProps {
    */
   character?: AvatarCharacter | null;
   /**
+   * A picture of the character made ahead of time — for an app's own, fixed character (a bundled
+   * asset or a `data:` URI). Wherever the character is still this is drawn instead of a still
+   * rendered through the runtime, so a still avatar then loads no runtime at all; a live
+   * character shows it until its first frame. Ignored when no character is drawn.
+   */
+  characterStill?: ImageSource;
+  /**
    * Whether a character moves (see {@link AvatarMotion}). Stills are one cached image per
    * character, so a list of bots costs no canvas per row. The OS reduced-motion setting always
    * wins: a character never moves under it. Does not touch `live` (the live-stream ring).
