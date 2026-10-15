@@ -1,10 +1,13 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import type { AgentAvatarProviderProps } from './types';
+import { CharacterStillHost, type NativeStillJob } from './CharacterStillHost';
+import { createCharacterStills, type StillBackend } from './character-still';
+import { renderWebStill } from './character-still-web';
 import {
   type CharacterCapabilities,
   CharacterRuntimeContext,
-  DEFAULT_CHARACTER_RUNTIME_URL,
+  BLOOM_CHARACTER_RUNTIME_URL,
   CharacterCapabilitiesContext,
 } from './context';
 
@@ -16,7 +19,8 @@ function sameRecord<T>(left: Record<string, T>, right: Record<string, T>) {
 
 /** Enables the character engine without fetching it until an avatar needs it. */
 export function AgentAvatarProvider({
-  runtimeUrl = Platform.OS === 'web' ? DEFAULT_CHARACTER_RUNTIME_URL : undefined,
+  runtimeUrl = BLOOM_CHARACTER_RUNTIME_URL,
+  stillStorage,
   children,
 }: AgentAvatarProviderProps) {
   const [cache, setCapabilities] = useState(() => ({
@@ -56,15 +60,35 @@ export function AgentAvatarProvider({
     },
     [runtimeUrl],
   );
+  // Native draws stills in one hidden WebView (`CharacterStillHost`) this provider mounts while a
+  // render is queued; web draws them straight into the DOM. Either way, one render at a time.
+  const [nativeJob, setNativeJob] = useState<NativeStillJob | null>(null);
+  const stills = useMemo(() => {
+    const backend: StillBackend =
+      Platform.OS === 'web'
+        ? renderWebStill
+        : (job) =>
+            new Promise((resolve) =>
+              setNativeJob({
+                ...job,
+                done: (uri) => {
+                  setNativeJob((current) => (current?.key === job.key ? null : current));
+                  resolve(uri);
+                },
+              }),
+            );
+    return createCharacterStills({ runtimeUrl, storage: stillStorage, backend });
+  }, [runtimeUrl, stillStorage]);
   const value = useMemo(
-    () => ({ runtimeUrl, reportCapabilities }),
-    [runtimeUrl, reportCapabilities],
+    () => ({ runtimeUrl, reportCapabilities, stills }),
+    [runtimeUrl, reportCapabilities, stills],
   );
   const catalog = useMemo(() => ({ capabilitiesByKey }), [capabilitiesByKey]);
   return (
     <CharacterRuntimeContext.Provider value={value}>
       <CharacterCapabilitiesContext.Provider value={catalog}>
         {children}
+        {Platform.OS === 'web' ? null : <CharacterStillHost job={nativeJob} />}
       </CharacterCapabilitiesContext.Provider>
     </CharacterRuntimeContext.Provider>
   );

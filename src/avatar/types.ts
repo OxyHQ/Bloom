@@ -3,7 +3,30 @@ import type { StyleProp, ViewStyle } from 'react-native';
 // Referenced by the `variant` prop docs below.
 import type { ImageResolver } from '../image-resolver/context';
 
+import type { AvatarCharacter } from '../agent-avatar/character';
 import type { Shape, GradientDirection, ImageSource } from '../shapes';
+
+/**
+ * The part of an account an avatar reads: what an Oxy user or profile object already is, so an app
+ * passes it whole (`<Avatar account={user} />`). Every field is optional.
+ */
+export interface AvatarAccount {
+  /** `'bot'` accounts draw their `character`. Anything else (or absent) is a person: its image. */
+  kind?: string;
+  /** The account's image: a URL or a resolver-handled file id, exactly as `source` takes it. */
+  avatar?: string | null;
+  /** The stored 3D character of a bot account. Remote and federated bots carry none. */
+  character?: AvatarCharacter | null;
+  username?: string | null;
+  /** A display name, or Oxy's `{ first, last, full }`. */
+  name?: string | { full?: string; first?: string; last?: string } | null;
+}
+
+/**
+ * How much of the character moves. `'auto'` (the default) is a still picture until the avatar is
+ * `AVATAR_LIVE_SIZE` or larger (a profile or header) or its `activity` is `'working'`.
+ */
+export type AvatarMotion = 'auto' | 'always' | 'never';
 
 export interface AvatarRingConfig {
   /** Solid ring: one color. Gradient ring: 2+ colors. */
@@ -86,6 +109,32 @@ export interface AvatarProps {
    * Consumers can still override via `placeholderColor` / `placeholderIcon`.
    */
   name?: string;
+  /**
+   * The account this avatar stands for. A bot with a `character` is drawn as that character; any
+   * other account falls to its `avatar` image (unless `source`/`uri` is passed) and then to
+   * initials from its name. Resolution order: character, image, initials.
+   */
+  account?: AvatarAccount;
+  /**
+   * An explicit character. Wins over the account's: `null` says "no character here" and draws
+   * the image path even for a bot.
+   */
+  character?: AvatarCharacter | null;
+  /**
+   * Whether a character moves (see {@link AvatarMotion}). Stills are one cached image per
+   * character, so a list of bots costs no canvas per row. The OS reduced-motion setting always
+   * wins: a character never moves under it. Does not touch `live` (the live-stream ring).
+   */
+  motion?: AvatarMotion;
+  /**
+   * `'working'` makes a character live and plays its Computer episode (once the first frame is
+   * up); set it back to leave it. Ignored for a non-character avatar.
+   */
+  activity?: 'idle' | 'working';
+  /** Replays the character's authored reaction when the key changes (live characters only). */
+  reactionKey?: number;
+  /** Starts the Computer episode when the key changes; derived from `activity` when omitted. */
+  workingKey?: number;
   /** Press handler — wraps the avatar in a `Pressable` when provided. */
   onPress?: () => void;
   /**

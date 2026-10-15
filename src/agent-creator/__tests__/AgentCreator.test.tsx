@@ -124,7 +124,14 @@ describe('the character editor', () => {
   });
 
   it('offers no character controls without a runtime to draw them', () => {
-    const view = editor();
+    // An app that opts out of the hosted default (BLOOM_CHARACTER_RUNTIME_URL) has no runtime.
+    const view = render(
+      <CharacterRuntimeFixture value={{ runtimeUrl: undefined }}>
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <AgentCreator agent={agent} onChange={jest.fn()} />
+        </BloomThemeProvider>
+      </CharacterRuntimeFixture>,
+    );
     expect(view.queryByTestId('agent-creator-character-controls')).toBeNull();
     expect(view.queryByLabelText('Blue avatar')).toBeNull();
     expect(view.UNSAFE_queryByType(ShapeArc)).toBeNull();

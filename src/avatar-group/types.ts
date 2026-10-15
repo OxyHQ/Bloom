@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { AvatarCharacter } from '../agent-avatar/character';
+
 /**
  * A single member of an {@link AvatarGroup}. Mirrors the minimal shape needed to
  * render an {@link Avatar} plus drive the optional hover card. `uri` carries the
@@ -23,6 +25,9 @@ export interface AvatarGroupItem {
   displayName?: string;
   /** Handle without the leading `@`. */
   username?: string;
+  /** `'bot'` with a `character` draws that character (a still at facepile sizes); see `Avatar`. */
+  kind?: string;
+  character?: AvatarCharacter | null;
 }
 
 export interface AvatarGroupProps {
