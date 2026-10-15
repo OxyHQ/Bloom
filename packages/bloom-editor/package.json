@@ -61,7 +61,7 @@
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
-    "exclude": "**/__tests__/**",
+    "exclude": "{**/__tests__/**,**/*.stories.tsx}",
     "targets": [
       [
         "commonjs",

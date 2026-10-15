@@ -1,5 +1,10 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "types": [] },
-  "exclude": ["lib", "node_modules", "src/**/__tests__/**"]
+  "compilerOptions": {
+    "types": [],
+    "rootDir": "src",
+    // The build resolves bloom-text through its published types, not its source.
+    "paths": {}
+  },
+  "exclude": ["lib", "node_modules", "src/**/__tests__/**", "src/**/*.stories.tsx"]
 }
