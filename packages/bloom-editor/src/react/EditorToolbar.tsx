@@ -19,8 +19,8 @@ export interface EditorToolbarProps {
 
 /**
  * The editing toolbar a touch device needs where there are no shortcuts:
- * marks, link, mention, indent, outdent, undo and redo for the block being
- * edited. Shown while a block has the keyboard; the app places it (above the
+ * marks, link, the block's menu, mention, indent, outdent, undo and redo for
+ * the block being edited. Shown while a block has the keyboard; the app places it (above the
  * keyboard) and passes the same controller as `BlockEditor`.
  */
 export function EditorToolbar({
@@ -64,6 +64,15 @@ export function EditorToolbar({
         {linking ? null : (
           <KeepFocus style={styles.row}>
             <View style={[styles.separator, { backgroundColor: theme.border }]} />
+            {/* The block's own menu (turn into, colour, duplicate, move,
+                delete): on touch there is no gutter handle to open it. */}
+            <BarButton
+              label={merged.blockMenu}
+              theme={theme}
+              onPress={() => ui.set({ blockMenu: blockId })}
+            >
+              <Text style={[styles.glyph, { color: theme.text }]}>⋮⋮</Text>
+            </BarButton>
             {mentionIndicator ? (
               <BarButton
                 label={merged.mention}

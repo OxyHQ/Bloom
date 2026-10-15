@@ -339,6 +339,14 @@ async function press(page, key, modifier) {
     await (await page.$(`${bar} [aria-label="${label}"]`)).click();
     await sleep(250);
   };
+  await tap('Block options');
+  const options = await page.$$eval('[role="menuitem"]', (els) => els.map((e) => e.innerText));
+  await check(page, options.includes('Duplicate'), 'the toolbar opens the block menu');
+  await press(page, 'Escape');
+  await page.mouse.click(5, 5);
+  await sleep(200);
+  await clickInto(page, 'Second');
+  await page.waitForSelector(bar, { timeout: 2000 });
   await tap('Indent');
   let doc = await outline(page);
   await check(page, doc.includes('  numbered_list_item:Second'), 'Indent nests the block');
