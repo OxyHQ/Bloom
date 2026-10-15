@@ -11,6 +11,11 @@ export interface BlockSpec {
   /** May hold child blocks (indentation, toggles, containers). */
   canHaveChildren: boolean;
   /**
+   * May hold children while this prop is true, though `canHaveChildren` is
+   * false: a heading made a toggle (`toggleable`). See `acceptsChildren`.
+   */
+  childrenWhen?: string;
+  /**
    * Children are laid out by the block itself (columns, tables) rather than
    * indented under it; nothing indents into or out of such a block.
    */
@@ -46,9 +51,27 @@ export type Schema = Readonly<Record<string, BlockSpec>>;
 /** The block types every Bloom editor understands. */
 export const DEFAULT_SCHEMA: Schema = defineSchema([
   { type: 'paragraph', hasText: true, canHaveChildren: true },
-  { type: 'heading_1', hasText: true, canHaveChildren: false, revertOnBackspace: true },
-  { type: 'heading_2', hasText: true, canHaveChildren: false, revertOnBackspace: true },
-  { type: 'heading_3', hasText: true, canHaveChildren: false, revertOnBackspace: true },
+  {
+    type: 'heading_1',
+    hasText: true,
+    canHaveChildren: false,
+    childrenWhen: 'toggleable',
+    revertOnBackspace: true,
+  },
+  {
+    type: 'heading_2',
+    hasText: true,
+    canHaveChildren: false,
+    childrenWhen: 'toggleable',
+    revertOnBackspace: true,
+  },
+  {
+    type: 'heading_3',
+    hasText: true,
+    canHaveChildren: false,
+    childrenWhen: 'toggleable',
+    revertOnBackspace: true,
+  },
   {
     type: 'bulleted_list_item',
     hasText: true,
@@ -131,4 +154,24 @@ export function propsFor(
 /** The spec for `type`; unknown types behave as plain, childless, textless blocks. */
 export function specOf(schema: Schema, type: string): BlockSpec {
   return schema[type] ?? { type, hasText: false, canHaveChildren: false };
+}
+
+/** Whether `block` may hold children now (its type always, or while a prop says so). */
+export function acceptsChildren(
+  schema: Schema,
+  block: { type: string; props: Readonly<Record<string, unknown>> },
+): boolean {
+  const spec = specOf(schema, block.type);
+  if (spec.canHaveChildren) return true;
+  return spec.childrenWhen !== undefined && block.props[spec.childrenWhen] === true;
+}
+
+/** Whether `block` folds its children away like a toggle (a toggle, a toggle heading). */
+export function isToggle(
+  schema: Schema,
+  block: { type: string; props: Readonly<Record<string, unknown>> },
+): boolean {
+  if (block.type === 'toggle') return true;
+  const spec = specOf(schema, block.type);
+  return spec.childrenWhen !== undefined && block.props[spec.childrenWhen] === true;
 }

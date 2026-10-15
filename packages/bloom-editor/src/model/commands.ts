@@ -30,7 +30,7 @@ import {
 } from './document';
 import type { EditorSelection, Operation, Transaction } from './operations';
 import { anchorAt, anchorOf, applyOperation } from './operations';
-import { propsFor, type Schema, specOf } from './schema';
+import { acceptsChildren, isToggle, propsFor, type Schema, specOf } from './schema';
 
 export type IdFactory = () => BlockId;
 
@@ -200,6 +200,13 @@ export function setProps(
   b.update(id, {
     props: spec.props ? propsFor({ ...spec, defaultProps: undefined }, props) : props,
   });
+  // A heading no longer a toggle hands its children to the following position.
+  if (block.children.length > 0 && !acceptsChildren(ctx.schema, getBlock(b.doc, id))) {
+    const { parent, index } = positionOf(b.doc, id);
+    block.children.forEach((child, i) => {
+      b.move(child, parent, index + 1 + i);
+    });
+  }
   return b.done();
 }
 
@@ -221,7 +228,7 @@ export function turnInto(ctx: CommandContext, id: BlockId, type: string): Transa
   if (spec.defaultProps || spec.props) after.props = propsFor(spec, block.props);
   b.update(id, after);
   // A type that cannot hold children hands them to the following position.
-  if (!spec.canHaveChildren && block.children.length > 0) {
+  if (!acceptsChildren(ctx.schema, getBlock(b.doc, id)) && block.children.length > 0) {
     const { parent, index } = positionOf(b.doc, id);
     block.children.forEach((child, i) => {
       b.move(child, parent, index + 1 + i);
@@ -276,7 +283,14 @@ export function splitBlock(ctx: CommandContext, id: BlockId, offset: number): Tr
 
   const [head, tail] = splitSegmentsAt(textOf(block), offset);
   const atEnd = offset >= length;
-  const continueType = atEnd ? (spec.continueAs ?? 'paragraph') : block.type;
+  const collapsed = ctx.isCollapsed?.(block) ?? false;
+  // Return at the end of an open toggle (or toggle heading) writes inside it, as in Notion.
+  const intoToggle = atEnd && isToggle(ctx.schema, block) && !collapsed;
+  const continueType = intoToggle
+    ? 'paragraph'
+    : atEnd
+      ? (spec.continueAs ?? 'paragraph')
+      : block.type;
   const continueSpec = specOf(ctx.schema, continueType);
   const inheritedProps: Record<string, unknown> =
     continueType === block.type ? { ...block.props } : {};
@@ -285,7 +299,7 @@ export function splitBlock(ctx: CommandContext, id: BlockId, offset: number): Tr
   const b = new Builder(ctx.doc);
   if (!atEnd) b.update(id, { text: head });
 
-  const showsChildren = block.children.length > 0 && !(ctx.isCollapsed?.(block) ?? false);
+  const showsChildren = intoToggle || (block.children.length > 0 && !collapsed);
   const created = newBlock(ctx, continueType, showsChildren ? id : block.parent, {
     text: atEnd ? [] : tail,
     props: { ...continueSpec.defaultProps, ...inheritedProps },
@@ -331,11 +345,10 @@ export function backspaceAtStart(ctx: CommandContext, id: BlockId): Transaction 
 
   const b = new Builder(ctx.doc);
   b.update(previous, { text: [...textOf(target), ...textOf(block)] });
-  const targetSpec = specOf(ctx.schema, target.type);
+  const targetTakes = acceptsChildren(ctx.schema, target);
   const children = [...block.children];
   children.forEach((child, i) => {
-    if (targetSpec.canHaveChildren)
-      b.move(child, previous, getBlock(b.doc, previous).children.length);
+    if (targetTakes) b.move(child, previous, getBlock(b.doc, previous).children.length);
     else {
       const { parent, index } = positionOf(b.doc, id);
       b.move(child, parent, index + 1 + i);
@@ -385,7 +398,7 @@ export function indent(
   if (!previous) return null;
   const previousBlock = getBlock(ctx.doc, previous);
   const previousSpec = specOf(ctx.schema, previousBlock.type);
-  if (!previousSpec.canHaveChildren || previousSpec.isContainer) return null;
+  if (!acceptsChildren(ctx.schema, previousBlock) || previousSpec.isContainer) return null;
   const b = new Builder(ctx.doc);
   b.move(id, previous, previousBlock.children.length);
   if (previousBlock.props.expanded === false)
@@ -412,7 +425,7 @@ export function outdent(
 
   const b = new Builder(ctx.doc);
   b.move(id, grandparent, parentIndex + 1);
-  if (following.length > 0 && specOf(ctx.schema, block.type).canHaveChildren) {
+  if (following.length > 0 && acceptsChildren(ctx.schema, block)) {
     for (const sibling of following) b.move(sibling, id, getBlock(b.doc, id).children.length);
   }
   const sel = selection ?? (specOf(ctx.schema, block.type).hasText ? caret(id, 0) : null);
@@ -500,8 +513,7 @@ export function moveBlocks(
   const roots = selectionRoots(ctx.doc, ids);
   if (roots.length === 0) return null;
   if (roots.some((id) => isWithin(ctx.doc, target, id))) return null;
-  if (position === 'inside' && !specOf(ctx.schema, getBlock(ctx.doc, target).type).canHaveChildren)
-    return null;
+  if (position === 'inside' && !acceptsChildren(ctx.schema, getBlock(ctx.doc, target))) return null;
 
   const b = new Builder(ctx.doc);
   for (const [i, id] of roots.entries()) {

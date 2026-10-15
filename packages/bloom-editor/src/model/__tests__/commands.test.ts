@@ -131,7 +131,19 @@ describe('splitBlock (Return)', () => {
   it('puts the new block first under a block that shows children', () => {
     const doc = build([['toggle', 'T', [['paragraph', 'inside']]]]);
     const next = run(doc, splitBlock(ctx(doc), 'b1', 1));
-    expect(outline(next)).toEqual(['toggle:T', '  toggle:', '  paragraph:inside']);
+    expect(outline(next)).toEqual(['toggle:T', '  paragraph:', '  paragraph:inside']);
+  });
+
+  it('writes inside an open toggle heading, even an empty one, as in Notion', () => {
+    const doc = build([['heading_1', 'Plan', [], { toggleable: true, expanded: true }]]);
+    const next = run(doc, splitBlock(ctx(doc), 'b1', 4));
+    expect(outline(next)).toEqual(['heading_1:Plan', '  paragraph:']);
+    // Closed, Return goes on after it.
+    const closed = build([['heading_1', 'Plan', [], { toggleable: true, expanded: false }]]);
+    expect(outline(run(closed, splitBlock(ctx(closed), 'b1', 4)))).toEqual([
+      'heading_1:Plan',
+      'paragraph:',
+    ]);
   });
 
   it('does not split a code block (Return is a newline there)', () => {
@@ -541,5 +553,26 @@ describe('undo with other people editing', () => {
     expect(text()).toBe('plan for May');
     expect(store.redo()).toBe(true);
     expect(text()).toBe('the plan for May');
+  });
+});
+
+describe('toggle headings', () => {
+  it('take children only while they are toggles, and hand them back when they stop', () => {
+    let doc = build([
+      ['heading_2', 'Section'],
+      ['paragraph', 'body'],
+    ]);
+    const [heading, body] = doc.root as [string, string];
+    // A plain heading holds nothing.
+    expect(indent(ctx(doc), body)).toBeNull();
+
+    doc = run(doc, setProps(ctx(doc), heading, { toggleable: true, expanded: true }));
+    doc = run(doc, indent(ctx(doc), body));
+    expect(getBlock(doc, heading).children).toEqual([body]);
+
+    // No longer a toggle: its children follow it instead.
+    doc = run(doc, setProps(ctx(doc), heading, { toggleable: undefined }));
+    expect(getBlock(doc, heading).children).toEqual([]);
+    expect(doc.root).toEqual([heading, body]);
   });
 });

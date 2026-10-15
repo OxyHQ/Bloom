@@ -14,8 +14,10 @@ export {
   validateDocument,
 } from './document';
 export {
+  acceptsChildren,
   type BlockSpec,
   DEFAULT_SCHEMA,
+  isToggle,
   defineSchema,
   extendSchema,
   type Schema,

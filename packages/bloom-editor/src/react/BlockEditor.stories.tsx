@@ -117,6 +117,13 @@ export const SLASH_ITEMS: SlashItem[] = [
     action: { kind: 'block', type: 'code' },
   },
   {
+    id: 'toggle_heading_1',
+    label: 'Toggle heading 1',
+    description: 'A heading that folds what is under it',
+    group: 'basic',
+    action: { kind: 'block', type: 'heading_1', props: { toggleable: true, expanded: true } },
+  },
+  {
     id: 'divider',
     label: 'Divider',
     description: 'Separate blocks',

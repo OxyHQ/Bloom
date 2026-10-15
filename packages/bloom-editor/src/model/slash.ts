@@ -32,13 +32,16 @@ export function slashTriggerAt(text: string, insertedAt: number, inserted: strin
 
 /**
  * The query typed after the slash at `slashAt`, up to `caret`, or null when
- * the menu should close (slash deleted, caret moved before it, or whitespace
- * typed).
+ * the menu should close (slash deleted, caret moved before it, a space right
+ * after the slash, two spaces, a line break).
  */
 export function slashQuery(text: string, slashAt: number, caret: number): string | null {
   if (text.charAt(slashAt) !== '/' || caret <= slashAt) return null;
   const query = text.slice(slashAt + 1, caret);
-  return /\s/.test(query) ? null : query;
+  // Words may be separated by a space ("toggle heading"), as in Notion; a
+  // space right after the slash, two in a row or a line break end it.
+  if (/^\s|\s{2}|\n/.test(query) || query.length > 40) return null;
+  return query;
 }
 
 function normalize(value: string): string {

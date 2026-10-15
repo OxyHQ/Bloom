@@ -1,6 +1,6 @@
 import { moveBlocks } from '../model/commands';
 import type { BlockId } from '../model/document';
-import { specOf } from '../model/schema';
+import { acceptsChildren } from '../model/schema';
 import type { EditorStore } from '../model/store';
 import { BLOCK_DOM_PREFIX } from './block-dom';
 import type { UiStore } from './ui-store';
@@ -22,12 +22,7 @@ function dropTarget(
   const row = (element.firstElementChild as HTMLElement | null) ?? (element as HTMLElement);
   const rect = row.getBoundingClientRect();
   const ratio = (y - rect.top) / Math.max(rect.height, 1);
-  if (
-    specOf(store.schema, block.type).canHaveChildren &&
-    ratio > 0.3 &&
-    ratio < 0.7 &&
-    y <= rect.bottom
-  ) {
+  if (acceptsChildren(store.schema, block) && ratio > 0.3 && ratio < 0.7 && y <= rect.bottom) {
     return { target, position: 'inside' };
   }
   return { target, position: ratio < 0.5 ? 'before' : 'after' };

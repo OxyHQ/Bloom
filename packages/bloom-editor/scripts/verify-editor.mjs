@@ -285,6 +285,35 @@ async function press(page, key, modifier) {
   await page.close();
 }
 
+// A toggle heading folds what is written under it.
+{
+  const page = await open();
+  await clickInto(page, 'Callouts stand out.');
+  await press(page, 'End');
+  await press(page, 'Enter');
+  await type(page, '/toggle heading');
+  await press(page, 'Enter');
+  await type(page, 'Folding');
+  await press(page, 'Enter');
+  await type(page, 'Tucked away');
+  const doc = await outline(page);
+  await check(
+    page,
+    doc.includes('heading_1:Folding') && doc.includes('  paragraph:Tucked away'),
+    'Return writes inside the toggle heading',
+  );
+  const chevrons = await page.$$('[aria-expanded="true"]');
+  await chevrons[chevrons.length - 1].click();
+  await sleep(200);
+  const visible = await page.evaluate(() =>
+    [...document.querySelectorAll('[contenteditable]')].some((e) =>
+      e.innerText.includes('Tucked away'),
+    ),
+  );
+  await check(page, !visible, 'collapsing it hides its content');
+  await page.close();
+}
+
 // Menus hang over the blocks below them and take the mouse.
 {
   const page = await open();

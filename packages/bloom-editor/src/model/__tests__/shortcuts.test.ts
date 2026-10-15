@@ -141,7 +141,9 @@ describe('slash menu', () => {
 
   it('reads the query and closes on whitespace or a deleted slash', () => {
     expect(slashQuery('/hea', 0, 4)).toBe('hea');
-    expect(slashQuery('/he a', 0, 5)).toBeNull();
+    expect(slashQuery('/toggle heading', 0, 15)).toBe('toggle heading');
+    expect(slashQuery('/ he', 0, 4)).toBeNull();
+    expect(slashQuery('/he  a', 0, 6)).toBeNull();
     expect(slashQuery('hea', 0, 3)).toBeNull();
   });
 

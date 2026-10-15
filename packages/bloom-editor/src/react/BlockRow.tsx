@@ -2,7 +2,7 @@ import { memo, type ReactNode, useCallback, useSyncExternalStore } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { insertBlockAfter, setProps } from '../model/commands';
 import type { BlockId } from '../model/document';
-import { specOf } from '../model/schema';
+import { acceptsChildren, isToggle, specOf } from '../model/schema';
 import { useBlock, useEditorContext } from './context';
 import { useBlockDecoration } from './decorations';
 import { TextBlock } from './TextBlock';
@@ -99,7 +99,9 @@ const BlockRow = memo(function BlockRow({
   const appMarker = markers[block.type];
   const marker = (() => {
     if (appMarker) return appMarker({ block, readOnly, updateProps, renderChildren });
-    switch (block.type) {
+    switch (
+      block.type !== 'toggle' && isToggle(store.schema, block) ? 'toggle_heading' : block.type
+    ) {
       case 'bulleted_list_item':
         return (
           <Text style={[styles.marker, { color: theme.text }]}>
@@ -131,6 +133,7 @@ const BlockRow = memo(function BlockRow({
         );
       }
       case 'toggle':
+      case 'toggle_heading':
         return (
           <Pressable
             accessibilityRole="button"
@@ -157,7 +160,11 @@ const BlockRow = memo(function BlockRow({
   })();
 
   const showsChildren =
-    block.children.length > 0 && !custom && spec.canHaveChildren && !spec.isContainer && expanded;
+    block.children.length > 0 &&
+    !custom &&
+    acceptsChildren(store.schema, block) &&
+    !spec.isContainer &&
+    expanded;
 
   return (
     <View
