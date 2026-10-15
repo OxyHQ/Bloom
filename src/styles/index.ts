@@ -17,6 +17,8 @@ export {
   AAA_TEXT_CONTRAST,
 } from './color-contrast';
 export { webDataSet } from './web-data';
+export { svgA11yProps } from './svg-a11y';
+export type { SvgA11yProps } from './svg-a11y';
 export { clamp, clamp01 } from './clamp';
 export { mixColors, quietText, quietTextOver } from './color-contrast';
 export {

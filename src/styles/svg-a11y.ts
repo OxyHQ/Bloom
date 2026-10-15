@@ -18,7 +18,8 @@ export type SvgA11yProps =
  * that draws one, and the role and name never reach the accessibility tree.
  * Web gets ARIA (`role="img"` + `aria-label`, or `aria-hidden`); native keeps
  * the React Native props. Spread it on every `<Svg>`; never pass those props
- * directly (`svg-a11y-census.test.ts`).
+ * directly (`svg-a11y-census.test.ts`). Public from `@oxy.so/bloom/styles`, so
+ * an app's own `<Svg>` (a logo, an illustration) gets the same treatment.
  */
 export function svgA11yProps(label?: string): SvgA11yProps {
   if (Platform.OS === 'web') {
