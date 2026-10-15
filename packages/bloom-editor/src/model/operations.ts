@@ -5,6 +5,11 @@
  * together, the way Notion groups its record operations. Each operation
  * carries the state it replaces, so inverting it (undo) needs no document and
  * a persistence adapter can translate it without diffing.
+ *
+ * Positions are anchors — "under this parent, after that sibling" — never
+ * indices, as Notion's `listAfter` is: an operation replayed after someone
+ * else's concurrent change still lands next to the block it was placed by.
+ * An anchor that no longer exists puts the block at the end of its parent.
  */
 import type { Segment } from '@oxy.so/bloom-text/model';
 import {
@@ -13,7 +18,8 @@ import {
   childrenOf,
   type EditorDocument,
   getBlock,
-  type Position,
+  isWithin,
+  subtreeIds,
 } from './document';
 
 /** The fields an update can change. A present key is set; `text: undefined` removes the text. */
@@ -23,13 +29,19 @@ export interface BlockFields {
   props?: Readonly<Record<string, unknown>>;
 }
 
+/** A place in the tree: under `parent` (the root when null), right after `after` (first when null). */
+export interface Anchor {
+  parent: BlockId | null;
+  after: BlockId | null;
+}
+
 export type Operation =
-  /** Insert a subtree: `blocks[0]` at `parent[index]`, the rest its descendants. */
-  | { kind: 'insert'; parent: BlockId | null; index: number; blocks: Block[] }
-  /** Remove the subtree at `parent[index]`; `blocks` is it, for the inverse. */
-  | { kind: 'remove'; parent: BlockId | null; index: number; blocks: Block[] }
-  /** Move a block (and its subtree). `to.index` counts after removal from `from`. */
-  | { kind: 'move'; id: BlockId; from: Position; to: Position }
+  /** Insert a subtree, `blocks[0]` at the anchor, the rest its descendants. */
+  | ({ kind: 'insert'; blocks: Block[] } & Anchor)
+  /** Remove a subtree; `blocks` and the anchor are what the inverse restores. */
+  | ({ kind: 'remove'; blocks: Block[] } & Anchor)
+  /** Move a block and its subtree. */
+  | { kind: 'move'; id: BlockId; from: Anchor; to: Anchor }
   | { kind: 'update'; id: BlockId; before: BlockFields; after: BlockFields };
 
 /** Where the caret or selection is: in one block's text, or over whole blocks. */
@@ -43,77 +55,86 @@ export interface Transaction {
   selectionAfter?: EditorSelection | null;
 }
 
-function setChildren(
+/** The anchor a block currently sits at. */
+export function anchorOf(doc: EditorDocument, id: BlockId): Anchor {
+  const { parent } = getBlock(doc, id);
+  const siblings = childrenOf(doc, parent);
+  const index = siblings.indexOf(id);
+  return { parent, after: index > 0 ? (siblings[index - 1] ?? null) : null };
+}
+
+/** The anchor for `parent[index]` in `doc`, as if `moving` were not in the list. */
+export function anchorAt(
   doc: EditorDocument,
+  parent: BlockId | null,
+  index: number,
+  moving?: BlockId,
+): Anchor {
+  const siblings = childrenOf(doc, parent).filter((id) => id !== moving);
+  return { parent, after: index > 0 ? (siblings[index - 1] ?? null) : null };
+}
+
+function indexFor(siblings: readonly BlockId[], after: BlockId | null): number {
+  if (after === null) return 0;
+  const at = siblings.indexOf(after);
+  return at < 0 ? siblings.length : at + 1;
+}
+
+function withChildren(
+  root: readonly BlockId[],
   blocks: Record<BlockId, Block>,
   parent: BlockId | null,
-  children: readonly BlockId[],
+  children: BlockId[],
 ): readonly BlockId[] {
   if (parent === null) return children;
-  blocks[parent] = { ...getBlock({ ...doc, blocks }, parent), children };
-  return doc.root;
+  const block = blocks[parent];
+  if (!block) throw new Error(`Unknown parent ${parent}`);
+  blocks[parent] = { ...block, children };
+  return root;
 }
 
-function splice(
-  list: readonly BlockId[],
-  index: number,
-  remove: number,
-  ...insert: BlockId[]
-): BlockId[] {
-  if (index < 0 || index > list.length)
-    throw new Error(`Index ${index} out of range 0..${list.length}`);
-  const next = list.slice();
-  next.splice(index, remove, ...insert);
-  return next;
+function requireParent(doc: EditorDocument, parent: BlockId | null): void {
+  if (parent !== null && !doc.blocks[parent]) throw new Error(`Unknown parent ${parent}`);
 }
 
-/** Apply one operation. Throws when the document does not match it. */
+/** Apply one operation. Throws when it cannot apply to this document. */
 export function applyOperation(doc: EditorDocument, op: Operation): EditorDocument {
   const blocks: Record<BlockId, Block> = { ...doc.blocks };
   switch (op.kind) {
     case 'insert': {
       const [top] = op.blocks;
       if (!top) throw new Error('Insert of an empty subtree');
-      if (top.parent !== op.parent)
-        throw new Error(
-          `Inserted ${top.id} names parent ${top.parent}, inserted under ${op.parent}`,
-        );
+      requireParent(doc, op.parent);
       for (const block of op.blocks) {
         if (blocks[block.id]) throw new Error(`Block ${block.id} already exists`);
-        blocks[block.id] = block;
+        blocks[block.id] = block.id === top.id ? { ...block, parent: op.parent } : block;
       }
-      const root = setChildren(
-        doc,
-        blocks,
-        op.parent,
-        splice(childrenOf(doc, op.parent), op.index, 0, top.id),
-      );
-      return { root, blocks };
+      const siblings = childrenOf(doc, op.parent).slice();
+      siblings.splice(indexFor(siblings, op.after), 0, top.id);
+      return { root: withChildren(doc.root, blocks, op.parent, siblings), blocks };
     }
     case 'remove': {
       const [top] = op.blocks;
       if (!top) throw new Error('Remove of an empty subtree');
-      const siblings = childrenOf(doc, op.parent);
-      if (siblings[op.index] !== top.id)
-        throw new Error(`Block ${top.id} is not at ${op.parent ?? 'root'}[${op.index}]`);
-      for (const block of op.blocks) delete blocks[block.id];
-      const root = setChildren(doc, blocks, op.parent, splice(siblings, op.index, 1));
-      return { root, blocks };
+      const current = getBlock(doc, top.id);
+      // Delete what is there now, including children added concurrently.
+      for (const id of subtreeIds(doc, top.id)) delete blocks[id];
+      const siblings = childrenOf(doc, current.parent).filter((id) => id !== top.id);
+      return { root: withChildren(doc.root, blocks, current.parent, siblings), blocks };
     }
     case 'move': {
       const moving = getBlock(doc, op.id);
-      const fromSiblings = childrenOf(doc, op.from.parent);
-      if (fromSiblings[op.from.index] !== op.id)
-        throw new Error(`Block ${op.id} is not at its recorded position`);
-      let root = setChildren(doc, blocks, op.from.parent, splice(fromSiblings, op.from.index, 1));
+      requireParent(doc, op.to.parent);
+      if (op.to.parent !== null && isWithin(doc, op.to.parent, op.id)) {
+        throw new Error(`Cannot move ${op.id} inside itself`);
+      }
+      const fromSiblings = childrenOf(doc, moving.parent).filter((id) => id !== op.id);
+      let root = withChildren(doc.root, blocks, moving.parent, fromSiblings);
       const interim: EditorDocument = { root, blocks };
-      root = setChildren(
-        interim,
-        blocks,
-        op.to.parent,
-        splice(childrenOf(interim, op.to.parent), op.to.index, 0, op.id),
-      );
-      blocks[op.id] = { ...moving, parent: op.to.parent };
+      const toSiblings = childrenOf(interim, op.to.parent).slice();
+      toSiblings.splice(indexFor(toSiblings, op.to.after), 0, op.id);
+      root = withChildren(root, blocks, op.to.parent, toSiblings);
+      blocks[op.id] = { ...(blocks[op.id] ?? moving), parent: op.to.parent };
       return { root, blocks };
     }
     case 'update': {
@@ -134,9 +155,9 @@ export function applyOperation(doc: EditorDocument, op: Operation): EditorDocume
 export function invertOperation(op: Operation): Operation {
   switch (op.kind) {
     case 'insert':
-      return { kind: 'remove', parent: op.parent, index: op.index, blocks: op.blocks };
+      return { kind: 'remove', parent: op.parent, after: op.after, blocks: op.blocks };
     case 'remove':
-      return { kind: 'insert', parent: op.parent, index: op.index, blocks: op.blocks };
+      return { kind: 'insert', parent: op.parent, after: op.after, blocks: op.blocks };
     case 'move':
       return { kind: 'move', id: op.id, from: op.to, to: op.from };
     case 'update':
@@ -153,7 +174,50 @@ export function applyTransaction(doc: EditorDocument, tx: Transaction): EditorDo
 export function invertTransaction(tx: Transaction): Transaction {
   return {
     ops: tx.ops.map(invertOperation).reverse(),
-    selectionBefore: tx.selectionAfter,
-    selectionAfter: tx.selectionBefore,
+    ...(tx.selectionAfter !== undefined && { selectionBefore: tx.selectionAfter }),
+    ...(tx.selectionBefore !== undefined && { selectionAfter: tx.selectionBefore }),
   };
+}
+
+/**
+ * The same operations, re-recorded against `doc`: each one's "before" state
+ * (old fields, removed subtree, origin anchor) is read from the document it
+ * now applies to, so inverting it later restores what was really there.
+ * Returns null when an operation no longer applies.
+ */
+export function rebaseOperations(
+  doc: EditorDocument,
+  ops: readonly Operation[],
+): { ops: Operation[]; doc: EditorDocument } | null {
+  let current = doc;
+  const out: Operation[] = [];
+  try {
+    for (const op of ops) {
+      let next: Operation = op;
+      if (op.kind === 'update') {
+        const block = getBlock(current, op.id);
+        const before: BlockFields = {};
+        if ('type' in op.after) before.type = block.type;
+        if ('text' in op.after) before.text = block.text;
+        if ('props' in op.after) before.props = block.props;
+        next = { ...op, before };
+      } else if (op.kind === 'remove') {
+        const top = op.blocks[0];
+        if (!top) return null;
+        const anchor = anchorOf(current, top.id);
+        next = {
+          kind: 'remove',
+          ...anchor,
+          blocks: subtreeIds(current, top.id).map((id) => getBlock(current, id)),
+        };
+      } else if (op.kind === 'move') {
+        next = { ...op, from: anchorOf(current, op.id) };
+      }
+      current = applyOperation(current, next);
+      out.push(next);
+    }
+  } catch {
+    return null;
+  }
+  return { ops: out, doc: current };
 }

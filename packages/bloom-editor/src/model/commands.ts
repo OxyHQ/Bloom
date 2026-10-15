@@ -29,7 +29,7 @@ import {
   subtreeIds,
 } from './document';
 import type { EditorSelection, Operation, Transaction } from './operations';
-import { applyOperation } from './operations';
+import { anchorAt, anchorOf, applyOperation } from './operations';
 import { type Schema, specOf } from './schema';
 
 export type IdFactory = () => BlockId;
@@ -71,17 +71,18 @@ class Builder {
     if ('props' in after) before.props = block.props;
     this.push({ kind: 'update', id, before, after });
   }
+  /** Move `id` to `parent[index]`, counted without `id` in the list. */
   move(id: BlockId, parent: BlockId | null, index: number): void {
-    const from = positionOf(this.doc, id);
-    this.push({ kind: 'move', id, from, to: { parent, index } });
+    const from = anchorOf(this.doc, id);
+    this.push({ kind: 'move', id, from, to: anchorAt(this.doc, parent, index, id) });
   }
   insert(block: Block, index: number): void {
-    this.push({ kind: 'insert', parent: block.parent, index, blocks: [block] });
+    this.push({ kind: 'insert', ...anchorAt(this.doc, block.parent, index), blocks: [block] });
   }
   remove(id: BlockId): void {
-    const { parent, index } = positionOf(this.doc, id);
+    const anchor = anchorOf(this.doc, id);
     const blocks = subtreeIds(this.doc, id).map((b) => getBlock(this.doc, b));
-    this.push({ kind: 'remove', parent, index, blocks });
+    this.push({ kind: 'remove', ...anchor, blocks });
   }
   /**
    * The transaction. `undefined` for a selection means "leave it as it is";
@@ -449,7 +450,7 @@ export function duplicateBlocks(ctx: CommandContext, ids: readonly BlockId[]): T
   const copies: BlockId[] = [];
   roots.forEach((id, i) => {
     const subtree = cloneSubtree(ctx, ctx.doc, id, parent);
-    b.push({ kind: 'insert', parent, index: index + 1 + i, blocks: subtree });
+    b.push({ kind: 'insert', ...anchorAt(b.doc, parent, index + 1 + i), blocks: subtree });
     const top = subtree[0];
     if (top) copies.push(top.id);
   });

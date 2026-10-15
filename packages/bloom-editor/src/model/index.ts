@@ -22,6 +22,9 @@ export {
   specOf,
 } from './schema';
 export {
+  type Anchor,
+  anchorAt,
+  anchorOf,
   applyOperation,
   applyTransaction,
   type BlockFields,
@@ -29,8 +32,17 @@ export {
   invertOperation,
   invertTransaction,
   type Operation,
+  rebaseOperations,
   type Transaction,
 } from './operations';
+export {
+  type RemoteTransaction,
+  type SendResult,
+  SyncSession,
+  type SyncSessionOptions,
+  type SyncStatus,
+  type SyncTransport,
+} from './sync';
 export {
   applyEdit,
   backspaceAtStart,

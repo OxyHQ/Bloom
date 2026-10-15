@@ -7,7 +7,14 @@
  */
 import { segmentsToPlainText, type Segment } from '@oxy.so/bloom-text/model';
 import type { IdFactory } from './commands';
-import { type Block, type BlockId, type EditorDocument, getBlock, positionOf } from './document';
+import {
+  type Block,
+  type BlockId,
+  childrenOf,
+  type EditorDocument,
+  getBlock,
+  positionOf,
+} from './document';
 import type { Transaction } from './operations';
 
 export interface BlockSnapshot {
@@ -81,7 +88,13 @@ export function insertSnapshot(
       for (const child of block.children) collect(child, id);
     };
     collect(topId, parent);
-    return { kind: 'insert' as const, parent, index: index + i, blocks: subtree };
+    const after =
+      i === 0
+        ? index > 0
+          ? (childrenOf(doc, parent)[index - 1] ?? null)
+          : null
+        : (inserted.root[i - 1] ?? null);
+    return { kind: 'insert' as const, parent, after, blocks: subtree };
   });
   const ids = inserted.root;
   return { ops, selectionBefore: null, selectionAfter: { kind: 'blocks', ids } };

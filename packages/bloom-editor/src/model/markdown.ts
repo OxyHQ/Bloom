@@ -88,12 +88,12 @@ export function applyBlockShortcut(
       before: { type: block.type, text: block.text, props: block.props },
       after: { type: shortcut.type, text: undefined, props: { ...spec.defaultProps } },
     });
-    const { parent, index } = positionOf(doc, id);
+    const { parent } = positionOf(doc, id);
     const next = ctx.newId();
     push({
       kind: 'insert',
       parent,
-      index: index + 1,
+      after: id,
       blocks: [{ id: next, type: 'paragraph', parent, text: rest, props: {}, children: [] }],
     });
     return {
