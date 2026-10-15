@@ -4,10 +4,5 @@
     "types": [],
     "rootDir": "src"
   },
-  "exclude": [
-    "lib",
-    "node_modules",
-    "src/**/__tests__/**",
-    "src/**/*.stories.tsx"
-  ]
+  "exclude": ["lib", "node_modules", "src/**/__tests__/**", "src/**/*.stories.tsx"]
 }
