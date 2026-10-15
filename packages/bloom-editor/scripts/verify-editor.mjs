@@ -469,6 +469,52 @@ async function press(page, key, modifier) {
   await page.close();
 }
 
+// EditorSurface: two notes the app lays out side by side over one store.
+{
+  const page = await open('surface');
+  await clickInto(page, 'One');
+  await press(page, 'End');
+  await press(page, 'Enter');
+  await type(page, 'Two');
+  let doc = await outline(page);
+  await check(
+    page,
+    JSON.stringify(doc) ===
+      JSON.stringify([
+        'note:',
+        '  heading_2:Left note',
+        '  paragraph:One',
+        '  paragraph:Two',
+        'note:',
+        '  paragraph:Right note',
+      ]),
+    'Return in a note writes inside that note',
+  );
+
+  await page.click('[aria-label="Add to note 2"]');
+  await sleep(200);
+  await type(page, 'Added');
+  doc = await outline(page);
+  await check(
+    page,
+    doc.slice(-3).join('|') === 'note:|  paragraph:Right note|  paragraph:Added',
+    'appendChild adds to the end of the note, with the caret in it',
+  );
+
+  await type(page, ' /');
+  await check(page, await page.$('[role="menu"]'), 'the slash menu opens inside a note');
+  await press(page, 'Escape');
+
+  for (let i = 0; i < 4; i += 1) await press(page, 'z', 'Control');
+  doc = await outline(page);
+  await check(
+    page,
+    !doc.some((line) => line.includes('Added')) && !doc.includes('  paragraph:Two'),
+    'undo walks back across both notes',
+  );
+  await page.close();
+}
+
 await browser.close();
 assert.deepEqual(errors, [], 'no page errors');
 console.log('verify-editor: all assertions passed');

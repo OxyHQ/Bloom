@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { type ReactNode, useEffect, useMemo } from 'react';
 import type { MentionMark } from '@oxy.so/bloom-text/model';
 import {
   Linking,
@@ -25,6 +25,7 @@ import {
   EditorContext,
   type MentionSource,
   type EditorContextValue,
+  useEditorContext,
   useEditorSnapshot,
 } from './context';
 import type { BlockDecorations } from './decorations';
@@ -65,6 +66,14 @@ export interface BlockEditorProps {
   style?: StyleProp<ViewStyle>;
 }
 
+export interface EditorSurfaceProps extends BlockEditorProps {
+  /**
+   * The blocks, laid out by the app: `BlockList`s of whichever ids it places
+   * where it likes (a note on a canvas, a column), all over the one store.
+   */
+  children: ReactNode;
+}
+
 const NONE: Readonly<Record<string, BlockRenderer>> = {};
 const openWithLinking = (href: string) => {
   void Linking.openURL(href);
@@ -72,10 +81,64 @@ const openWithLinking = (href: string) => {
 const NO_ACTIONS: readonly BlockAction[] = [];
 
 /**
- * A Notion-style block editor over an `EditorStore`. Every edit goes through
- * the store's commands; the app persists by listening to its transactions.
+ * A Notion-style block editor over an `EditorStore`, the document laid out
+ * top to bottom. Every edit goes through the store's commands; the app
+ * persists by listening to its transactions.
  */
-export function BlockEditor({
+export function BlockEditor(props: BlockEditorProps) {
+  return (
+    <EditorSurface {...props}>
+      <DocumentBody />
+    </EditorSurface>
+  );
+}
+
+/** The document's blocks in order, and the space below them that adds one. */
+function DocumentBody() {
+  const { store, readOnly, labels } = useEditorContext();
+  const snapshot = useEditorSnapshot(store);
+
+  // Clicking below the last block focuses it when it is an empty paragraph,
+  // otherwise adds one — as in Notion.
+  const focusEnd = () => {
+    if (readOnly) return;
+    const last = snapshot.doc.root[snapshot.doc.root.length - 1];
+    if (last) {
+      const block = getBlock(snapshot.doc, last);
+      const isEmptyParagraph =
+        block.type === 'paragraph' &&
+        block.children.length === 0 &&
+        (block.text ?? []).every((s) => !s.text);
+      if (isEmptyParagraph && specOf(store.schema, block.type).hasText) {
+        store.setSelection({ kind: 'text', blockId: last, start: 0, end: 0 });
+        return;
+      }
+    }
+    store.sealHistory();
+    store.run((c) => insertBlockAfter(c, last ?? null, 'paragraph'));
+  };
+
+  return (
+    <>
+      <BlockList ids={snapshot.doc.root} depth={0} />
+      {!readOnly ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={labels.addBelow}
+          onPress={focusEnd}
+          style={styles.tail}
+        />
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * The editor without a layout: its context (store, menus, theme), the
+ * keyboard and clipboard handling of whole-block selections, and the block
+ * menu; the app lays the blocks out with `BlockList`s inside it.
+ */
+export function EditorSurface({
   store,
   slashItems,
   onSlashAction,
@@ -91,11 +154,11 @@ export function BlockEditor({
   readOnly = false,
   controller: given,
   style,
-}: BlockEditorProps) {
+  children,
+}: EditorSurfaceProps) {
   const own = useEditorController(store);
   const controller = given ?? own;
   const { ui, inputs } = controller;
-  const snapshot = useEditorSnapshot(store);
   const mergedLabels = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
 
   const value: EditorContextValue = useMemo(
@@ -198,38 +261,10 @@ export function BlockEditor({
     };
   }, [readOnly, store, ui]);
 
-  // Clicking below the last block focuses it when it is an empty paragraph,
-  // otherwise adds one — as in Notion.
-  const focusEnd = () => {
-    if (readOnly) return;
-    const last = snapshot.doc.root[snapshot.doc.root.length - 1];
-    if (last) {
-      const block = getBlock(snapshot.doc, last);
-      const isEmptyParagraph =
-        block.type === 'paragraph' &&
-        block.children.length === 0 &&
-        (block.text ?? []).every((s) => !s.text);
-      if (isEmptyParagraph && specOf(store.schema, block.type).hasText) {
-        store.setSelection({ kind: 'text', blockId: last, start: 0, end: 0 });
-        return;
-      }
-    }
-    store.sealHistory();
-    store.run((c) => insertBlockAfter(c, last ?? null, 'paragraph'));
-  };
-
   return (
     <EditorContext.Provider value={value}>
       <View style={[styles.editor, style]}>
-        <BlockList ids={snapshot.doc.root} depth={0} />
-        {!readOnly ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={mergedLabels.addBelow}
-            onPress={focusEnd}
-            style={styles.tail}
-          />
-        ) : null}
+        {children}
         <BlockMenu />
       </View>
     </EditorContext.Provider>

@@ -1,5 +1,6 @@
 import { segmentsToPlainText } from '@oxy.so/bloom-text/model';
 import {
+  appendChild,
   applyTransaction,
   backspaceAtStart,
   type Block,
@@ -574,5 +575,27 @@ describe('toggle headings', () => {
     doc = run(doc, setProps(ctx(doc), heading, { toggleable: undefined }));
     expect(getBlock(doc, heading).children).toEqual([]);
     expect(doc.root).toEqual([heading, body]);
+  });
+});
+
+describe('appendChild', () => {
+  it('adds the last child of a container, the caret in it, reversibly', () => {
+    const doc = build([['columns', undefined, [['column', undefined, [['paragraph', 'a']]]]]]);
+    const column = getBlock(doc, doc.root[0] as string).children[0] as string;
+    const tx = appendChild(ctx(doc), column, 'paragraph');
+    const next = run(doc, tx);
+    expect(outline(next)).toEqual(['columns:', '  column:', '    paragraph:a', '    paragraph:']);
+    expect(getBlock(next, caretBlock(tx)).parent).toBe(column);
+  });
+
+  it('fills an empty container', () => {
+    const doc = build([['column', undefined, []]]);
+    const next = run(doc, appendChild(ctx(doc), doc.root[0] as string, 'heading_1'));
+    expect(outline(next)).toEqual(['column:', '  heading_1:']);
+  });
+
+  it('refuses a block that takes no children', () => {
+    const doc = build([['divider']]);
+    expect(appendChild(ctx(doc), doc.root[0] as string, 'paragraph')).toBeNull();
   });
 });

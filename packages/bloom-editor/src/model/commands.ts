@@ -262,6 +262,27 @@ export function insertBlockAfter(
 }
 
 /**
+ * Add a block as the last child of `parentId` (into an empty container, at
+ * the end of a note). Null when that block takes no children.
+ */
+export function appendChild(
+  ctx: CommandContext,
+  parentId: BlockId,
+  type: string,
+  init: { text?: Segment[]; props?: Readonly<Record<string, unknown>> } = {},
+): Transaction | null {
+  const parent = getBlock(ctx.doc, parentId);
+  if (!acceptsChildren(ctx.schema, parent)) return null;
+  const b = new Builder(ctx.doc);
+  const block = newBlock(ctx, type, parentId, init);
+  b.insert(block, parent.children.length);
+  const sel = specOf(ctx.schema, type).hasText
+    ? caret(block.id, 0)
+    : { kind: 'blocks' as const, ids: [block.id] };
+  return b.done(null, sel);
+}
+
+/**
  * Return in a text block with the caret at `offset`.
  *
  * - In an empty list-like block: leave it — outdent when nested, else revert

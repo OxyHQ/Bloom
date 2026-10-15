@@ -1,4 +1,10 @@
-export { BlockEditor, type BlockEditorProps } from './BlockEditor';
+export {
+  BlockEditor,
+  type BlockEditorProps,
+  EditorSurface,
+  type EditorSurfaceProps,
+} from './BlockEditor';
+export { BlockList } from './BlockRow';
 export type {
   BlockAction,
   BlockRenderer,

@@ -61,6 +61,7 @@ export {
   formatText,
   type IdFactory,
   indent,
+  appendChild,
   insertBlockAfter,
   moveBlocks,
   nextTextBlock,
