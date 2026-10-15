@@ -34,6 +34,11 @@ Keep the adapter reference stable. Vite and other router integrations supply the
 own `ScrollRouterAdapter`; Expo consumers now pass the adapter explicitly instead
 of receiving an implicit router dependency.
 
+`BloomProvider` also mounts `AgentAvatarProvider`: no UI, nothing fetched until a bot's character is
+drawn, so `Avatar account={bot}` works anywhere below it. `characterRuntimeUrl` replaces the
+hosted runtime for an app that self-hosts it; `storage` (the theme's adapter) persists drawn
+stills. See [Avatar](/docs/avatar).
+
 Visual hosts (`ToastOutlet`, `SurfaceHost`, portal/dialog outlets) stay outside the
 provider: their position determines stacking, and mounting duplicate outlets draws
 duplicate surfaces. `Screen` scopes coordinated geometry and motion locally.

@@ -335,3 +335,55 @@ export const CustomPlaceholder: Story = {
     </View>
   ),
 };
+
+const BOT = { kind: 'bot', name: 'Peri', character: { preset: 'blue_beret' } } as const;
+
+/**
+ * A bot account draws its character. In a list or facepile it is a STILL (one cached image per
+ * character, drawn once offscreen); a profile-sized slot moves; `activity="working"` moves it at
+ * any size while the agent works. Reduced motion makes all of them stills.
+ */
+export const BotCharacter: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+      <Avatar account={BOT} size="lg" />
+      <Avatar account={BOT} size={64} />
+      <Avatar account={BOT} size={36} activity="working" />
+      <Avatar account={BOT} size={128} />
+      <Avatar account={BOT} size={128} motion="never" />
+    </View>
+  ),
+};
+
+/** Fifty bots: zero live renderers; each distinct character is drawn once, one at a time. */
+export const FiftyBots: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, maxWidth: 480 }}>
+      {Array.from({ length: 50 }, (_, i) => (
+        <Avatar
+          key={i}
+          size={36}
+          account={{
+            kind: 'bot',
+            name: `Bot ${i}`,
+            character: { preset: 'blue_beret', eyeSpacing: 0.5 + (i % 10) / 10 },
+          }}
+        />
+      ))}
+    </View>
+  ),
+};
+
+/** Resolution order: character, then the account's image, then initials. */
+export const CharacterOrImageOrInitials: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+      <Avatar account={BOT} size={48} />
+      <Avatar account={{ kind: 'bot', name: 'Remote', avatar: SAMPLE_URI }} size={48} />
+      <Avatar account={{ kind: 'user', name: 'Ada Lovelace' }} size={48} />
+    </View>
+  ),
+};

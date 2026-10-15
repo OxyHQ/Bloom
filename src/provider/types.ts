@@ -21,4 +21,11 @@ export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'child
    * wins. Unset, components follow the runtime's locale.
    */
   locale?: string;
+  /**
+   * Where bot characters load their 3D runtime from. Defaults to the SDK's hosted copy
+   * (`BLOOM_CHARACTER_RUNTIME_URL`); pass the absolute URL of a self-hosted
+   * `assets/character-runtime/runtime.mjs` to replace it. Nothing is fetched until a character
+   * is drawn. Drawn stills persist in the same `storage` the theme uses, when one is given.
+   */
+  characterRuntimeUrl?: string;
 }

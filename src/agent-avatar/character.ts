@@ -130,6 +130,22 @@ export function resolveAvatarCharacter(character: AvatarCharacter): ResolvedAvat
 }
 
 /**
+ * `resolveAvatarCharacter` for a value that arrives from outside (an account payload): `undefined`
+ * instead of a throw, so one bad stored character costs its own row the character and not the
+ * screen that lists it.
+ */
+export function tryResolveAvatarCharacter(
+  character: AvatarCharacter | null | undefined,
+): ResolvedAvatarCharacter | undefined {
+  if (!character) return undefined;
+  try {
+    return resolveAvatarCharacter(character);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * The JSON boundary: what was saved, checked before it reaches the renderer. Flat characters
  * only; anything saved in the old `AvatarConfig` shape goes through `characterFromLegacy`.
  */

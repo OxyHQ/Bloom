@@ -49,6 +49,13 @@ export const AVATAR_SIZES: Record<AvatarSizeToken, number> = {
   lg: 36,
 };
 
+/**
+ * The smallest avatar a character moves in under `motion="auto"`: a profile or header slot,
+ * where one avatar is the subject. Smaller ones (every rung above, list rows, facepiles) are a
+ * still image.
+ */
+export const AVATAR_LIVE_SIZE = 96;
+
 /** A numeric size, or a rung resolved to its pixels. */
 export function resolveAvatarSize(size: number | AvatarSizeToken | undefined): number {
   if (size == null) return 40;

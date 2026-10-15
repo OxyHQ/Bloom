@@ -5,8 +5,10 @@ export type {
   AvatarProps,
   AvatarSizeToken,
   AvatarColor,
+  AvatarAccount,
+  AvatarMotion,
   AvatarRingConfig,
 } from './types';
 export { defaultAvatarSource } from './default-avatar';
-export { AVATAR_SIZES, resolveAvatarTint } from './initials';
+export { AVATAR_LIVE_SIZE, AVATAR_SIZES, resolveAvatarTint } from './initials';
 export type { AvatarTint } from './initials';

@@ -156,6 +156,93 @@ Wraps the avatar in `Pressable` when `onPress` is set.
 
 When no `source`, `uri`, or `name` resolves, you can fully control the placeholder.
 
+## Bot accounts: the character, a still, or live
+
+AI agents are Oxy accounts (`kind: 'bot'`) that carry a stored 3D `character`
+(`AvatarCharacter`, see [Agent Avatar](/docs/agent-avatar)). `Avatar` draws it itself, so no app
+wraps it:
+
+```tsx
+<Avatar account={user} size="lg" />            // a person: their image. A bot: its character.
+<Avatar account={bot} size={128} />            // profile-sized: the character moves
+<Avatar account={bot} size={36} activity="working" /> // moves while the agent works
+<Avatar character={{ preset: 'blue_beret' }} name="Peri" /> // no account: an explicit character
+```
+
+`account` is the part of the account object an avatar reads: `{ kind, avatar, character,
+username, name }` (`name` is a string or Oxy's `{ first, last, full }`). **Resolution order:
+character, then image, then initials.**
+
+1. **Character**: an explicit `character` prop, else a bot account's `character`. `character={null}`
+   opts out and draws the image path. A remote or federated bot has no character and keeps its
+   remote `avatar`. An invalid stored character is not an error: that avatar falls to its image,
+   so one bad row does not take a list down.
+2. **Image**: `source`/`uri` as before, else `account.avatar` (a URL or a resolver-handled id).
+3. **Initials**: from `name`, else the account's name or handle.
+
+The character is drawn unclipped (its silhouette is its own); `shape` applies to the image and
+initials. `ring`, `verified` and the live-stream badge work the same.
+
+### Still or live
+
+| `motion` | behaviour |
+| --- | --- |
+| `'auto'` (default) | a **still** until `size >= AVATAR_LIVE_SIZE` (96, a profile or header slot) or `activity="working"` |
+| `'always'` | live at every size |
+| `'never'` | always a still |
+
+The OS reduced-motion setting beats all three: a character never moves under it. (The existing
+boolean `live` prop is the live-stream ring and badge and is unrelated; the character's motion
+is `motion`.)
+
+A live character is one `AgentAvatar`. `activity="working"` plays its Computer episode as soon as
+its first frame is up (and again each time `activity` re-enters `'working'`); pass `workingKey`
+yourself to own the trigger, and `reactionKey` to replay the authored reaction. Both only act on a
+live character.
+
+A **still** is an ordinary image, so a list of dozens of bots costs no canvas per row:
+
+- Stills are drawn once by the same runtime, offscreen, and cached by **content**: a hash of the
+  resolved character (so `{ preset }` and the same preset written out are one picture) plus a size
+  bucket (64, 128 or 256 CSS px) and the pixel density. Fifty rows share a handful of images.
+- Renders are queued **one at a time**; a row scrolled away before its turn takes its render with
+  it. Web draws straight into the document; native uses ONE hidden `WebView` that
+  `AgentAvatarProvider` mounts only while a render is queued.
+- The box is reserved from the first render. Until the still is there the avatar shows its
+  initials placeholder at the final size, so nothing jumps; if a still cannot be drawn the
+  placeholder stays.
+- Stills live in memory for the session (256 entries). Pass `storage` to `BloomProvider` (the
+  adapter the theme persists with) or `stillStorage` to `AgentAvatarProvider` and the last 96
+  also persist across launches. `localStorage` quotas are small; a PNG at list sizes is about
+  7 KB.
+- Nothing here opens a socket: only the runtime module (and the renderer's assets) is fetched, and
+  only when a character is first drawn.
+
+A character avatar is an image named by `alt`, else `name`, else the handle, else "Agent avatar";
+`alt=""` makes it decorative.
+
+`AvatarGroupItem` takes the same `kind` and `character`, so a facepile of agents shows stills.
+
+### Where the runtime comes from
+
+`BloomProvider` mounts `AgentAvatarProvider` for you: it renders nothing and loads nothing until a
+character is drawn. The runtime URL defaults to `BLOOM_CHARACTER_RUNTIME_URL`
+(`https://alia.onl/bloom-character/runtime.mjs`, CORS open, which needs `script-src` to allow
+alia.onl under a strict CSP). An app that hosts `assets/character-runtime/` itself passes
+`<BloomProvider characterRuntimeUrl="https://app.example/bloom-character/runtime.mjs">`; a nested
+`AgentAvatarProvider` still wins for its subtree. An avatar with no provider at all gets the same
+default, not a path relative to your host that would answer with HTML.
+
+### Migrating to 10.7
+
+Additive. `Avatar` without `account`/`character` is unchanged.
+
+| Before | After |
+| --- | --- |
+| `bot.character ? <AgentAvatar character={bot.character} /> : <Avatar source={bot.avatar} />` | `<Avatar account={bot} />` |
+| `<AgentAvatarProvider>` mounted per app | `BloomProvider` mounts it; delete yours unless you set a different `runtimeUrl` |
+| default runtime URL `/bloom-character/runtime.mjs` on web, none on native | `BLOOM_CHARACTER_RUNTIME_URL` everywhere. Self-hosters pass `characterRuntimeUrl` / `runtimeUrl` (the old default was never a Bloom promise on native) |
+
 ## Props
 
 | Prop | Type | Default | Description |
@@ -174,7 +261,12 @@ When no `source`, `uri`, or `name` resolves, you can fully control the placehold
 | `style?` | `StyleProp<ViewStyle>` | — | Container style. |
 | `placeholderColor?` | `string` | derived | Override placeholder background. |
 | `placeholderIcon?` | `React.ReactNode` | initial | Override placeholder icon/letter. |
-| `name?` | `string` | — | Used to derive the initial + a stable tint. |
+| `name?` | `string` | account name | Used to derive the initial + a stable tint, and the accessible name of a character. |
+| `account?` | `AvatarAccount` | — | `{ kind, avatar, character, username, name }`. A bot with a character draws it; see above. |
+| `character?` | `AvatarCharacter \| null` | — | Explicit character. Wins over the account's; `null` opts out. |
+| `motion?` | `'auto' \| 'always' \| 'never'` | `'auto'` | Still or live. Reduced motion always wins. |
+| `activity?` | `'idle' \| 'working'` | — | `'working'` makes the character live and plays its Computer episode. |
+| `workingKey?` / `reactionKey?` | `number` | — | Replay the Computer episode / authored reaction when the key changes (live only). |
 | `onPress?` | `() => void` | — | Wraps in `Pressable`. |
 | `testID?` | `string` | — | |
 

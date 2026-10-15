@@ -150,6 +150,7 @@ function AvatarGroupCell({
       */}
       <Avatar
         source={item.uri ?? undefined}
+        account={{ kind: item.kind, character: item.character }}
         name={showInitials ? name : undefined}
         variant={variant}
         size={innerSize}

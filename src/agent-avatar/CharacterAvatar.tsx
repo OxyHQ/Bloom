@@ -16,7 +16,7 @@ import { type ResolvedAvatarCharacter, resolveAvatarCharacter } from './characte
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 
-type RenderProps = Pick<
+export type RenderProps = Pick<
   AgentAvatarProps,
   | 'paused'
   | 'portrait'
@@ -26,13 +26,14 @@ type RenderProps = Pick<
   | 'reactionKey'
   | 'entranceKey'
 > & { character: ResolvedAvatarCharacter; reduced: boolean; previewPart?: 'eyes' };
-type Controller = { update(props: RenderProps): void; dispose(): void };
-type RuntimeModule = {
+export type Controller = { update(props: RenderProps): void; dispose(): void };
+export type RuntimeModule = {
   createAvatar(
     canvas: HTMLCanvasElement,
     props: RenderProps,
     callbacks: {
       onError(): void;
+      onReady?(): void;
       onCapabilities?(value: CharacterCapabilities): void;
     },
   ): Promise<Controller>;
@@ -41,10 +42,12 @@ function WebCharacter({
   runtimeUrl,
   value,
   onError,
+  onReady,
 }: {
   runtimeUrl: string;
   value: RenderProps;
   onError(): void;
+  onReady?(): void;
 }) {
   const { reportCapabilities } = useContext(CharacterRuntimeContext);
   const observeSnapshot = useContext(AvatarSnapshotObserver);
@@ -57,6 +60,8 @@ function WebCharacter({
   latest.current = value;
   const fail = useRef(onError);
   fail.current = onError;
+  const ready = useRef(onReady);
+  ready.current = onReady;
   useEffect(() => {
     const element = host.current as unknown as HTMLElement;
     if (!element || typeof document === 'undefined') return;
@@ -80,6 +85,7 @@ function WebCharacter({
         if (stopped) return;
         const instance = await module.createAvatar(canvas, latest.current, {
           onError: () => fail.current(),
+          onReady: () => ready.current?.(),
           onCapabilities: (info) => report.current?.(info),
         });
         if (stopped) instance.dispose();
@@ -129,10 +135,12 @@ function NativeCharacter({
   runtimeUrl,
   value,
   onError,
+  onReady,
 }: {
   runtimeUrl: string;
   value: RenderProps;
   onError(): void;
+  onReady?(): void;
 }) {
   const { reportCapabilities } = useContext(CharacterRuntimeContext);
   const observeSnapshot = useContext(AvatarSnapshotObserver);
@@ -211,7 +219,8 @@ function NativeCharacter({
           } catch {
             onError();
           }
-        } else if (event.nativeEvent.data === 'error') onError();
+        } else if (event.nativeEvent.data === 'ready') onReady?.();
+        else if (event.nativeEvent.data === 'error') onError();
         else if (event.nativeEvent.data === 'loaded') send();
       }}
     />
@@ -294,7 +303,7 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
       testID={props.testID}
     >
       {runtimeUrl && !failed ? (
-        <Renderer runtimeUrl={runtimeUrl} value={value} onError={fail} />
+        <Renderer runtimeUrl={runtimeUrl} value={value} onError={fail} onReady={props.onReady} />
       ) : (
         <StyledText numberOfLines={2} style={{ fontSize: 10 }}>
           {!runtimeUrl ? messages.runtimeRequired : messages.unavailable}

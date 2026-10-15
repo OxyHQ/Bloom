@@ -62,10 +62,12 @@ preset's own does not change it, and naming the preset's own paint again does no
 
 ## Hosting and packaging
 
-Host the package's complete `assets/character-runtime/` directory. Web defaults
-to `/bloom-character/runtime.mjs`; an explicit provider may choose another URL.
-Native requires an absolute hosted URL and the optional `react-native-webview`
-peer. Missing assets or an unavailable bridge produce an explicit translated
+The runtime URL defaults to `BLOOM_CHARACTER_RUNTIME_URL`, the SDK's hosted copy
+(`https://alia.onl/bloom-character/runtime.mjs`, CORS open), on web and native alike, so an app
+that does not host the 214 MB runtime needs no setup. To self-host, serve the package's complete
+`assets/character-runtime/` directory and pass its absolute URL to `BloomProvider
+characterRuntimeUrl` or `AgentAvatarProvider runtimeUrl`. Native needs the optional
+`react-native-webview` peer. Missing assets or an unavailable bridge produce an explicit translated
 unavailable state. Geometry and motion load lazily; keep the generated chunks
 and assets beside the entry point with their original relative paths.
 
@@ -78,6 +80,15 @@ The source lives outside `src/` so Three and browser-only code never enter
 Metro's native import graph. Vite application output preserves `createAvatar`
 and external binary assets; library mode would inline these assets and defeat
 lazy loading.
+
+## Stills
+
+`Avatar account={bot}` (see [Avatar](/docs/avatar)) draws a character as a cached still below
+profile size. The still pipeline renders a paused `portrait` through this same runtime, one at a
+time, into an invisible fixed-size box (web) or one hidden WebView (native), reads the canvas back
+once and caches the PNG by content. `AgentAvatar` takes `onReady`, called when the renderer has
+painted its first picture. The measured cost is in the pull request that introduced it; the
+runtime itself is unchanged.
 
 ## Editing and proportions
 

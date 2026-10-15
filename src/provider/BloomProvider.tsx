@@ -9,6 +9,7 @@ import { TopEdgeProvider } from '../layout/top-edge';
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
 import { LocaleProvider } from '../locale/context';
 import { BloomHapticsProvider } from '../hooks/use-haptics';
+import { AgentAvatarProvider } from '../agent-avatar/AgentAvatarProvider';
 import { TabBarMinimizeProvider } from '../tab-bar/context';
 import { BloomThemeProvider, type BloomThemeProviderProps } from '../theme';
 import { ScrollRestorationProvider } from '../scroll/context';
@@ -28,6 +29,7 @@ export function BloomProvider({
   haptics = true,
   scrollAdapter = noRouterAdapter,
   locale,
+  characterRuntimeUrl,
   ...themeProps
 }: BloomProviderProps) {
   return (
@@ -73,7 +75,20 @@ export function BloomProvider({
                       re-render when the other moves.
                     */}
                     <TopEdgeProvider>
-                      <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
+                      <TabBarMinimizeProvider>
+                        {/*
+                          A provider, not an outlet: it renders nothing, loads nothing and
+                          draws nothing until a bot's character is asked for, so an avatar
+                          anywhere below finds the runtime without every app mounting this.
+                          Inner `AgentAvatarProvider`s still win for their own subtree.
+                        */}
+                        <AgentAvatarProvider
+                          runtimeUrl={characterRuntimeUrl}
+                          stillStorage={themeProps.storage}
+                        >
+                          {children}
+                        </AgentAvatarProvider>
+                      </TabBarMinimizeProvider>
                     </TopEdgeProvider>
                   </BottomEdgeProvider>
                 </BlurTargetProvider>

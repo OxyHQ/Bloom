@@ -15,6 +15,10 @@ import { useAvatarPlaceholder } from './context';
 import { AVATAR_MESSAGES } from './messages';
 import { LiveBadge } from './LiveBadge';
 import { AvatarRing } from './AvatarRing';
+import { CharacterFace } from './CharacterFace';
+import { accountName, pickAccountCharacter } from './account';
+import { tryResolveAvatarCharacter } from '../agent-avatar/character';
+import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
 import { Fill as ShapeFill, Image as ShapeImage } from '../shapes';
 import type { Shape, ImageSource } from '../shapes';
 import { Text } from '../typography';
@@ -148,7 +152,13 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   style,
   placeholderColor,
   placeholderIcon,
-  name,
+  name: nameProp,
+  account,
+  character,
+  motion,
+  activity,
+  reactionKey,
+  workingKey,
   onPress,
   live = false,
   hideLiveBadge = false,
@@ -167,6 +177,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const placeholderConfig = useAvatarPlaceholder();
   const scope = useContext(BloomAppearanceContext);
   const size = resolveAvatarSize(sizeProp ?? scope.size);
+  const name = nameProp ?? accountName(account);
   const hasName = typeof name === 'string' && name.trim().length > 0;
   const hasInitials = typeof initials === 'string' && initials.trim().length > 0;
   // The fallback text: explicit `initials` > the first letter of `name`.
@@ -200,19 +211,21 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   // avatar never accidentally requests the full-size original; callers wanting
   // the full image pass an explicit variant.
   // Resolve on each render: a stable resolver can read refreshed URL data.
+  // An explicit `source`/`uri` wins over the account's own image.
+  const sourceValue = source ?? (uri ? undefined : account?.avatar);
   const resolvedUri =
-    typeof source === 'string'
-      ? isImageUrl(source)
-        ? source
-        : imageResolver?.(source, variant)
-      : source != null
+    typeof sourceValue === 'string'
+      ? isImageUrl(sourceValue)
+        ? sourceValue
+        : imageResolver?.(sourceValue, variant)
+      : sourceValue != null
         ? undefined
         : uri;
 
   const resolvedImageSource = useMemo(() => {
-    if (source != null && typeof source !== 'string') return source;
+    if (sourceValue != null && typeof sourceValue !== 'string') return sourceValue;
     return undefined;
-  }, [source]);
+  }, [sourceValue]);
 
   const primarySource = useMemo(
     () => (resolvedUri ? { uri: resolvedUri } : resolvedImageSource),
@@ -243,20 +256,46 @@ const AvatarComponent: React.FC<AvatarProps> = ({
     />
   ) : null;
 
+  // Resolution order: character, then image, then initials.
+  // An invalid stored character resolves to nothing, which sends this avatar to its image.
+  const pickedCharacter = pickAccountCharacter({ character, account });
+  const resolvedCharacter = useMemo(
+    () => tryResolveAvatarCharacter(pickedCharacter),
+    [pickedCharacter],
+  );
+  const { messages: agentMessages } = useMessages(AGENT_AVATAR_MESSAGES);
+  const placeholderProps = {
+    shape,
+    size,
+    alt,
+    fallbackColor,
+    icon: resolvedPlaceholderIcon,
+    text: fallbackText,
+    textColor: fallbackTextColor,
+  };
+
   const avatarBox = (
     <View style={[styles.avatarBox, SIZE_TRANSITION, { width: size, height: size }]}>
-      <AvatarImageContent
-        key={imageSourcesKey(primarySource, fallbackSource)}
-        primarySource={primarySource}
-        fallbackSource={fallbackSource}
-        shape={shape}
-        size={size}
-        alt={alt}
-        fallbackColor={fallbackColor}
-        icon={resolvedPlaceholderIcon}
-        text={fallbackText}
-        textColor={fallbackTextColor}
-      />
+      {resolvedCharacter ? (
+        <CharacterFace
+          character={resolvedCharacter}
+          size={size}
+          motion={motion}
+          activity={activity}
+          reactionKey={reactionKey}
+          workingKey={workingKey}
+          // `alt=""` is the explicit "decorative"; otherwise the name, then the handle, then "Agent avatar".
+          label={alt !== undefined ? alt || undefined : hasName ? name : agentMessages.label}
+          placeholder={<AvatarImageContent {...placeholderProps} />}
+        />
+      ) : (
+        <AvatarImageContent
+          key={imageSourcesKey(primarySource, fallbackSource)}
+          primarySource={primarySource}
+          fallbackSource={fallbackSource}
+          {...placeholderProps}
+        />
+      )}
       {ringElement}
 
       {verified && verifiedIcon && (

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { BloomThemeStorage } from '../theme/persistence';
 import type { AvatarCharacter } from './character';
 
 export type AgentAvatarProps = {
@@ -18,6 +19,8 @@ export type AgentAvatarProps = {
   entranceKey?: number;
   workingKey?: number;
   workingCycles?: number;
+  /** The first picture of the character has been painted. Fires once per mounted renderer. */
+  onReady?: () => void;
   className?: string;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
@@ -26,7 +29,15 @@ export type AgentAvatarProps = {
 export type AvatarProps = AgentAvatarProps;
 
 export type AgentAvatarProviderProps = {
-  /** Defaults to /bloom-character/runtime.mjs on web; native requires an absolute hosted URL. */
+  /**
+   * The runtime module's absolute URL. Defaults to `BLOOM_CHARACTER_RUNTIME_URL` (the SDK's own
+   * hosted copy); an app that self-hosts `assets/character-runtime/` passes its own.
+   */
   runtimeUrl?: string;
+  /**
+   * Where drawn stills persist across launches: any `getItem`/`setItem` adapter (the one
+   * `BloomThemeProvider` takes). Without it stills live in memory for the session.
+   */
+  stillStorage?: BloomThemeStorage;
   children: ReactNode;
 };
