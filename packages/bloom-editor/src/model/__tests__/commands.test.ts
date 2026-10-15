@@ -139,9 +139,11 @@ describe('splitBlock (Return)', () => {
 });
 
 describe('backspaceAtStart', () => {
-  it('reverts a styled block to a paragraph first', () => {
+  it('reverts a styled block to a paragraph first, keeping the caret at the start', () => {
     const doc = build([['heading_2', 'Title']]);
-    expect(outline(run(doc, backspaceAtStart(ctx(doc), 'b1')))).toEqual(['paragraph:Title']);
+    const tx = backspaceAtStart(ctx(doc), 'b1');
+    expect(outline(run(doc, tx))).toEqual(['paragraph:Title']);
+    expect(tx?.selectionAfter).toEqual({ kind: 'text', blockId: 'b1', start: 0, end: 0 });
   });
 
   it('outdents a nested paragraph before merging', () => {

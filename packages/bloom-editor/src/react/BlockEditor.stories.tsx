@@ -1,0 +1,170 @@
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useMemo } from 'react';
+import { ScrollView, View } from 'react-native';
+import { documentFromSnapshot, type SlashItem } from '../model';
+import { EditorStore } from '../model/store';
+import { BlockEditor } from './BlockEditor';
+
+let counter = 0;
+const newId = () => `id-${Date.now().toString(36)}-${(++counter).toString(36)}`;
+
+export const SLASH_ITEMS: SlashItem[] = [
+  {
+    id: 'text',
+    label: 'Text',
+    description: 'Plain text',
+    group: 'basic',
+    action: { kind: 'block', type: 'paragraph' },
+  },
+  {
+    id: 'h1',
+    label: 'Heading 1',
+    description: 'Big section heading',
+    keywords: ['title'],
+    group: 'basic',
+    action: { kind: 'block', type: 'heading_1' },
+  },
+  {
+    id: 'h2',
+    label: 'Heading 2',
+    description: 'Medium section heading',
+    group: 'basic',
+    action: { kind: 'block', type: 'heading_2' },
+  },
+  {
+    id: 'h3',
+    label: 'Heading 3',
+    description: 'Small section heading',
+    group: 'basic',
+    action: { kind: 'block', type: 'heading_3' },
+  },
+  {
+    id: 'bullet',
+    label: 'Bulleted list',
+    description: 'A simple list',
+    group: 'basic',
+    action: { kind: 'block', type: 'bulleted_list_item' },
+  },
+  {
+    id: 'number',
+    label: 'Numbered list',
+    description: 'A numbered list',
+    group: 'basic',
+    action: { kind: 'block', type: 'numbered_list_item' },
+  },
+  {
+    id: 'todo',
+    label: 'To-do list',
+    description: 'Track tasks',
+    keywords: ['check'],
+    group: 'basic',
+    action: { kind: 'block', type: 'todo' },
+  },
+  {
+    id: 'toggle',
+    label: 'Toggle list',
+    description: 'Hide content inside',
+    group: 'basic',
+    action: { kind: 'block', type: 'toggle' },
+  },
+  {
+    id: 'quote',
+    label: 'Quote',
+    description: 'Capture a quote',
+    group: 'basic',
+    action: { kind: 'block', type: 'quote' },
+  },
+  {
+    id: 'callout',
+    label: 'Callout',
+    description: 'Make writing stand out',
+    group: 'basic',
+    action: { kind: 'block', type: 'callout' },
+  },
+  {
+    id: 'code',
+    label: 'Code',
+    description: 'Capture a code snippet',
+    group: 'advanced',
+    action: { kind: 'block', type: 'code' },
+  },
+  {
+    id: 'divider',
+    label: 'Divider',
+    description: 'Separate blocks',
+    group: 'basic',
+    action: { kind: 'block', type: 'divider' },
+  },
+];
+
+function EditorDemo() {
+  const store = useMemo(
+    () =>
+      new EditorStore({
+        newId,
+        document: documentFromSnapshot(
+          [
+            { type: 'heading_1', text: [{ text: 'Project plan' }] },
+            {
+              type: 'paragraph',
+              text: [
+                { text: 'Write with ' },
+                { text: 'bold', bold: true },
+                { text: ', links and more. Type ' },
+                { text: '/', code: true },
+                { text: ' for commands.' },
+              ],
+            },
+            { type: 'todo', text: [{ text: 'Ship the editor' }], props: { checked: true } },
+            {
+              type: 'todo',
+              text: [{ text: 'Real-time collaboration' }],
+              props: { checked: false },
+            },
+            {
+              type: 'toggle',
+              text: [{ text: 'Details' }],
+              props: { expanded: true },
+              children: [
+                { type: 'bulleted_list_item', text: [{ text: 'Nested inside a toggle' }] },
+              ],
+            },
+            { type: 'numbered_list_item', text: [{ text: 'First' }] },
+            { type: 'numbered_list_item', text: [{ text: 'Second' }] },
+            { type: 'quote', text: [{ text: 'Simple things should be simple.' }] },
+            { type: 'callout', text: [{ text: 'Callouts stand out.' }], props: { icon: '💡' } },
+            { type: 'divider' },
+            { type: 'paragraph', text: [] },
+          ],
+          newId,
+        ),
+      }),
+    [],
+  );
+  // Exposed for the browser verification scripts.
+  (globalThis as { __bloomEditorStore?: EditorStore }).__bloomEditorStore = store;
+  return (
+    <ScrollView style={{ flex: 1 }}>
+      <View
+        style={{
+          maxWidth: 720,
+          width: '100%',
+          alignSelf: 'center',
+          paddingHorizontal: 64,
+          paddingVertical: 48,
+        }}
+      >
+        <BlockEditor store={store} slashItems={SLASH_ITEMS} />
+      </View>
+    </ScrollView>
+  );
+}
+
+const meta: Meta<typeof EditorDemo> = {
+  title: 'Editor/BlockEditor',
+  component: EditorDemo,
+  parameters: { layout: 'fullscreen' },
+};
+export default meta;
+
+export const Playground: StoryObj<typeof EditorDemo> = {};

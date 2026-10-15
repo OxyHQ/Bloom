@@ -16,5 +16,10 @@ module.exports = {
       },
     ],
   },
+  // Test against the sibling package's source, not its last build.
+  moduleNameMapper: {
+    '^@oxy.so/bloom-text/model$': '<rootDir>/../bloom-text/src/model.ts',
+    '^@oxy.so/bloom-text$': '<rootDir>/../bloom-text/src/index.ts',
+  },
   testMatch: ['<rootDir>/src/**/__tests__/**/*.test.ts'],
 };

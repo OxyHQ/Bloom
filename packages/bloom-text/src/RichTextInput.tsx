@@ -8,7 +8,7 @@ import {
   useState,
   type ForwardedRef,
 } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import {
   EnrichedTextInput,
   type EnrichedInputStyle,
@@ -17,6 +17,7 @@ import {
   type OnChangeStateEvent,
 } from 'react-native-enriched-html';
 import { htmlToSegments, segmentsToHtml } from './html';
+import { containsFocus, useKeyCapture } from './key-capture';
 import { reconcileInputValue } from './reconcile';
 import { segmentsEqual, segmentsToPlainText, diffText } from './segments';
 import { transformSelection } from './selection';
@@ -53,6 +54,7 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
     onFocus,
     onBlur,
     onKeyPress,
+    onKeyCommand,
     onSubmit,
     mentionIndicators,
     onMentionQuery,
@@ -67,8 +69,13 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
   } = props;
 
   const inputRef = useRef<EnrichedTextInputInstance | null>(null);
+  const wrapperRef = useRef<View | null>(null);
+  const focusedRef = useRef(false);
+  useKeyCapture(wrapperRef, onKeyCommand);
   // The value the input currently shows, as last reported by it or pushed to it.
   const shownRef = useRef<Segment[]>(value);
+  /** Whether the input has loaded `shownRef`'s value since it was last set. */
+  const loadedRef = useRef(false);
   const selectionRef = useRef<TextSelection>({ start: 0, end: 0 });
   // Mounted with the first value only; later values arrive through setValue.
   const [defaultHtml] = useState(() => segmentsToHtml(value));
@@ -82,6 +89,7 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
     shownRef.current = value;
     const input = inputRef.current;
     if (!input) return;
+    loadedRef.current = false;
     input.setValue(segmentsToHtml(value));
     const next = edit ? transformSelection(selectionRef.current, edit) : selectionRef.current;
     selectionRef.current = next;
@@ -90,7 +98,15 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
 
   const handleHtml = useCallback(
     (html: string) => {
-      const { segments, edit } = reconcileInputValue(shownRef.current, htmlToSegments(html));
+      const reported = htmlToSegments(html);
+      // Until the input shows the value it was given (on mount, after
+      // setValue), what it reports is its own transient state — an empty
+      // document before the content loads — not an edit.
+      if (!loadedRef.current) {
+        if (segmentsEqual(reported, shownRef.current)) loadedRef.current = true;
+        return;
+      }
+      const { segments, edit } = reconcileInputValue(shownRef.current, reported);
       if (segmentsEqual(segments, shownRef.current)) return;
       shownRef.current = segments;
       onChange({ segments, text: segmentsToPlainText(segments), edit });
@@ -103,6 +119,7 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
     (): RichTextInputHandle => ({
       focus: () => inputRef.current?.focus(),
       blur: () => inputRef.current?.blur(),
+      isFocused: () => focusedRef.current || containsFocus(wrapperRef),
       setSelection: (start, end) => {
         selectionRef.current = { start, end };
         inputRef.current?.setSelection(start, end);
@@ -156,42 +173,64 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
   );
 
   return (
-    <EnrichedTextInput
-      ref={inputRef}
-      defaultValue={defaultHtml}
-      editable={editable}
-      autoFocus={autoFocus}
-      placeholder={placeholder}
-      placeholderTextColor={placeholderTextColor}
-      mentionIndicators={mentionIndicators ?? []}
-      textShortcuts={NO_TEXT_SHORTCUTS}
-      scrollEnabled={false}
-      submitBehavior={onSubmit ? 'submit' : 'newline'}
-      style={inputStyle}
-      htmlStyle={htmlStyle}
-      accessibilityLabel={accessibilityLabel}
-      testID={testID}
-      onChangeHtml={(e) => handleHtml(e.nativeEvent.value)}
-      onChangeSelection={(e) => {
-        const { start, end } = e.nativeEvent;
-        selectionRef.current = { start, end };
-        onSelectionChange?.({ start, end });
-      }}
-      onChangeState={
-        onActiveMarksChange ? (e) => onActiveMarksChange(activeMarksFrom(e.nativeEvent)) : undefined
-      }
-      onKeyPress={onKeyPress ? (e) => onKeyPress(e.nativeEvent.key) : undefined}
-      onSubmitEditing={onSubmit ? () => onSubmit() : undefined}
-      onFocus={onFocus ? () => onFocus() : undefined}
-      onBlur={onBlur ? () => onBlur() : undefined}
-      onStartMention={
-        onMentionQuery ? (indicator) => onMentionQuery({ indicator, text: '' }) : undefined
-      }
-      onChangeMention={
-        onMentionQuery ? (e) => onMentionQuery({ indicator: e.indicator, text: e.text }) : undefined
-      }
-      onEndMention={onMentionQuery ? () => onMentionQuery(null) : undefined}
-    />
+    <View ref={wrapperRef}>
+      <EnrichedTextInput
+        ref={inputRef}
+        defaultValue={defaultHtml}
+        editable={editable}
+        autoFocus={autoFocus}
+        placeholder={placeholder}
+        placeholderTextColor={placeholderTextColor}
+        mentionIndicators={mentionIndicators ?? []}
+        textShortcuts={NO_TEXT_SHORTCUTS}
+        scrollEnabled={false}
+        submitBehavior={onSubmit ? 'submit' : 'newline'}
+        style={inputStyle}
+        htmlStyle={htmlStyle}
+        accessibilityLabel={accessibilityLabel}
+        testID={testID}
+        onChangeHtml={(e) => handleHtml(e.nativeEvent.value)}
+        onChangeSelection={(e) => {
+          const { start, end } = e.nativeEvent;
+          selectionRef.current = { start, end };
+          onSelectionChange?.({ start, end });
+        }}
+        onChangeState={
+          onActiveMarksChange
+            ? (e) => onActiveMarksChange(activeMarksFrom(e.nativeEvent))
+            : undefined
+        }
+        onKeyPress={
+          onKeyPress || (onKeyCommand && Platform.OS !== 'web')
+            ? (e) => {
+                const { key } = e.nativeEvent;
+                onKeyPress?.(key);
+                // Web reports key commands from the capture listener instead.
+                if (Platform.OS !== 'web')
+                  onKeyCommand?.({ key, shift: false, alt: false, mod: false });
+              }
+            : undefined
+        }
+        onSubmitEditing={onSubmit ? () => onSubmit() : undefined}
+        onFocus={() => {
+          focusedRef.current = true;
+          onFocus?.();
+        }}
+        onBlur={() => {
+          focusedRef.current = false;
+          onBlur?.();
+        }}
+        onStartMention={
+          onMentionQuery ? (indicator) => onMentionQuery({ indicator, text: '' }) : undefined
+        }
+        onChangeMention={
+          onMentionQuery
+            ? (e) => onMentionQuery({ indicator: e.indicator, text: e.text })
+            : undefined
+        }
+        onEndMention={onMentionQuery ? () => onMentionQuery(null) : undefined}
+      />
+    </View>
   );
 }
 

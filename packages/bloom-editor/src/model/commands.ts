@@ -83,11 +83,19 @@ class Builder {
     const blocks = subtreeIds(this.doc, id).map((b) => getBlock(this.doc, b));
     this.push({ kind: 'remove', parent, index, blocks });
   }
+  /**
+   * The transaction. `undefined` for a selection means "leave it as it is";
+   * `null` clears it.
+   */
   done(
-    selectionBefore: EditorSelection | null,
-    selectionAfter: EditorSelection | null,
+    selectionBefore?: EditorSelection | null,
+    selectionAfter?: EditorSelection | null,
   ): Transaction {
-    return { ops: this.ops, selectionBefore, selectionAfter };
+    return {
+      ops: this.ops,
+      ...(selectionBefore !== undefined && { selectionBefore }),
+      ...(selectionAfter !== undefined && { selectionAfter }),
+    };
   }
 }
 
@@ -147,7 +155,7 @@ export function editText(
 ): Transaction {
   const b = new Builder(ctx.doc);
   b.update(id, { text: next });
-  return b.done(null, selectionAfter ?? null);
+  return b.done(undefined, selectionAfter);
 }
 
 /** Apply one text edit to a block, keeping marks outside it. */
@@ -188,7 +196,7 @@ export function setProps(
   }
   const b = new Builder(ctx.doc);
   b.update(id, { props });
-  return b.done(null, null);
+  return b.done();
 }
 
 /**
@@ -295,7 +303,11 @@ export function splitBlock(ctx: CommandContext, id: BlockId, offset: number): Tr
 export function backspaceAtStart(ctx: CommandContext, id: BlockId): Transaction | null {
   const block = getBlock(ctx.doc, id);
   const spec = specOf(ctx.schema, block.type);
-  if (spec.revertOnBackspace && block.type !== 'paragraph') return turnInto(ctx, id, 'paragraph');
+  if (spec.revertOnBackspace && block.type !== 'paragraph') {
+    const reverted = turnInto(ctx, id, 'paragraph');
+    // The caret stays where it was: at the start.
+    return reverted && { ...reverted, selectionAfter: caret(id, 0) };
+  }
 
   if (
     block.parent !== null &&
@@ -371,7 +383,7 @@ export function indent(
   b.move(id, previous, previousBlock.children.length);
   if (previousBlock.props.expanded === false)
     b.update(previous, { props: { ...previousBlock.props, expanded: true } });
-  return b.done(selection, selection);
+  return b.done(selection ?? undefined, selection ?? undefined);
 }
 
 /**
@@ -507,4 +519,31 @@ export function moveBlocks(
   }
   if (b.ops.length === 0) return null;
   return b.done({ kind: 'blocks', ids: roots }, { kind: 'blocks', ids: roots });
+}
+
+/**
+ * Run commands in sequence as one transaction (one undo step): each sees the
+ * document the previous ones produced. A command returning null is skipped.
+ * Null when none applied.
+ */
+export function composeCommands(
+  ctx: CommandContext,
+  commands: readonly ((ctx: CommandContext) => Transaction | null)[],
+): Transaction | null {
+  let doc = ctx.doc;
+  const ops: Operation[] = [];
+  let selectionBefore: EditorSelection | null | undefined;
+  let selectionAfter: EditorSelection | null | undefined;
+  for (const command of commands) {
+    const tx = command({ ...ctx, doc });
+    if (!tx) continue;
+    for (const op of tx.ops) {
+      doc = applyOperation(doc, op);
+      ops.push(op);
+    }
+    if (selectionBefore === undefined) selectionBefore = tx.selectionBefore;
+    if (tx.selectionAfter !== undefined) selectionAfter = tx.selectionAfter;
+  }
+  if (ops.length === 0) return null;
+  return { ops, selectionBefore: selectionBefore ?? null, selectionAfter: selectionAfter ?? null };
 }

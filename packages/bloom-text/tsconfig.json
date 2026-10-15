@@ -2,7 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "target": "ES2020",
-    "lib": ["ES2021"],
+    "lib": ["ES2021", "DOM"],
     "module": "ES2020",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",

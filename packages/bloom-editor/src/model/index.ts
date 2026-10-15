@@ -36,6 +36,7 @@ export {
   backspaceAtStart,
   cloneSubtree,
   type CommandContext,
+  composeCommands,
   deleteAtEnd,
   type DropPosition,
   duplicateBlocks,
@@ -70,3 +71,11 @@ export {
   insertSnapshot,
   snapshotToMarkdown,
 } from './snapshot';
+export { applyBlockShortcut, applyInlineShortcut, detectBlockShortcut } from './markdown';
+export {
+  filterSlashItems,
+  type SlashAction,
+  type SlashItem,
+  slashQuery,
+  slashTriggerAt,
+} from './slash';

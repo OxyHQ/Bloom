@@ -135,6 +135,13 @@ describe('HTML', () => {
     expect(parsed).toEqual([{ text: 'abcd' }]);
   });
 
+  it('reads the placeholder <br> of an empty or trailing line as nothing', () => {
+    expect(htmlToSegments('<html>\n<p><br></p>\n</html>')).toEqual([]);
+    expect(htmlToSegments('<html><br></html>')).toEqual([]);
+    expect(segmentsToPlainText(htmlToSegments('<p>a<br></p><p>b</p>'))).toBe('a\nb');
+    expect(segmentsToPlainText(htmlToSegments('<p>a<br>b</p>'))).toBe('a\nb');
+  });
+
   it('decodes entities', () => {
     expect(segmentsToPlainText(htmlToSegments('<p>&lt;&amp;&gt;&quot;&#39;&#x1F600;</p>'))).toBe(
       '<&>"\'😀',

@@ -45,6 +45,14 @@ export interface TextSelection {
   end: number;
 }
 
+/** A key press with its modifiers. `mod` is Cmd on Apple platforms, Ctrl elsewhere. */
+export interface KeyCommand {
+  key: string;
+  shift: boolean;
+  alt: boolean;
+  mod: boolean;
+}
+
 /** The marks a user can toggle on a selection. */
 export type ToggleableMark = 'bold' | 'italic' | 'underline' | 'strike' | 'code';
 
@@ -72,6 +80,13 @@ export interface RichTextInputProps {
   onBlur?: () => void;
   /** Hardware/soft key presses, e.g. `Enter`, `Backspace`, `Tab`. */
   onKeyPress?: (key: string) => void;
+  /**
+   * A key with its modifiers, before the input acts on it. Return true to
+   * claim it: the input then does nothing with it. On native, modifiers are
+   * not reported and the input has already acted (only Backspace, Tab and the
+   * like arrive, after the fact).
+   */
+  onKeyCommand?: (command: KeyCommand) => boolean;
   /**
    * Called on Return instead of inserting a line break. Omit it for a
    * multi-line input where Return inserts a newline.
@@ -108,6 +123,8 @@ export interface RichTextStyle {
 export interface RichTextInputHandle {
   focus(): void;
   blur(): void;
+  /** Whether the input holds the keyboard focus right now. */
+  isFocused(): boolean;
   setSelection(start: number, end: number): void;
   toggleMark(mark: ToggleableMark): void;
   setLink(start: number, end: number, text: string, url: string): void;

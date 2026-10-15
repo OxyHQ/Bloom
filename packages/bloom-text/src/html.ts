@@ -84,6 +84,9 @@ export function segmentsToHtml(segments: readonly Segment[]): string {
   return `<html>\n${paragraphs.map((p) => `<p>${p}</p>`).join('\n')}\n</html>`;
 }
 
+/** What follows a placeholder <br>: the end of its paragraph or of the input. */
+const TRAILING_BREAK = /^\s*(<\/(p|h[1-6]|li|blockquote|codeblock|div|html|body)>|$)/i;
+
 const PARAGRAPH_TAGS = new Set([
   'p',
   'h1',
@@ -199,6 +202,13 @@ export function htmlToSegments(html: string): Segment[] {
     if (!rawTag) continue;
     const tag = rawTag.toLowerCase();
     if (tag === 'br') {
+      // A <br> that closes its paragraph is the placeholder editing surfaces
+      // put in an empty or trailing line, not a line break.
+      const rest = source.slice((m.index ?? 0) + m[0].length);
+      if (TRAILING_BREAK.test(rest)) {
+        if (!inParagraph) startParagraph();
+        continue;
+      }
       if (!inParagraph) startParagraph();
       out.push({ text: '\n' });
       continue;

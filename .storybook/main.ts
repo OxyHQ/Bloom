@@ -14,6 +14,7 @@ const config: StorybookConfig = {
     './AvatarEngineNext.stories.tsx',
     '../src/**/*.stories.@(ts|tsx|mdx)',
     '../templates/**/*.stories.@(ts|tsx)',
+    '../packages/*/src/**/*.stories.@(ts|tsx)',
   ],
   addons: ['@storybook/addon-docs'],
   staticDirs: [{ from: '../assets/character-runtime', to: '/bloom-character' }],
@@ -128,6 +129,15 @@ const config: StorybookConfig = {
           {
             find: 'react-native/Libraries/Image/AssetRegistry',
             replacement: 'react-native-web/dist/modules/AssetRegistry',
+          },
+          // The workspace packages render from source, not their last build.
+          {
+            find: /^@oxy\.so\/bloom-text\/model$/,
+            replacement: path.resolve(__dirname, '../packages/bloom-text/src/model.ts'),
+          },
+          {
+            find: /^@oxy\.so\/bloom-text$/,
+            replacement: path.resolve(__dirname, '../packages/bloom-text/src/index.ts'),
           },
         ],
         extensions: [
