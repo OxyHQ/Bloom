@@ -1,0 +1,99 @@
+{
+  "name": "@oxy.so/bloom-text",
+  "version": "0.1.0",
+  "description": "Native rich text input for Bloom: one contract over the platform text engines of iOS, Android and the web.",
+  "license": "SEE LICENSE IN LICENSE",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/commonjs/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "exports": {
+    ".": {
+      "react-native": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./src/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/index.d.ts",
+        "default": "./lib/commonjs/index.js"
+      }
+    },
+    "./model": {
+      "react-native": {
+        "types": "./lib/typescript/module/model.d.ts",
+        "default": "./src/model.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/model.d.ts",
+        "default": "./lib/module/model.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/model.d.ts",
+        "default": "./lib/commonjs/model.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib",
+    "LICENSE",
+    "!**/__tests__/**"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bob build",
+    "typescript": "tsc --noEmit -p .",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-native": ">=0.81.0",
+    "react-native-enriched-html": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.1.0",
+    "jest": "^30.3.0",
+    "react": "19.2.0",
+    "react-native": "0.85.3",
+    "react-native-builder-bob": "^0.40.16",
+    "ts-jest": "^29.4.6",
+    "typescript": "~5.9.2",
+    "react-native-enriched-html": "1.1.1"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "exclude": "**/__tests__/**",
+    "targets": [
+      [
+        "commonjs",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "bun@1.4.3"
+}
