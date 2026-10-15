@@ -1,8 +1,19 @@
 import type { RichTextStyle } from '@oxy.so/bloom-text';
 import type { EditorTheme } from './theme';
 
-/** Type scale per block type, Notion's proportions. */
+/** Type scale per block type, Notion's proportions, times the theme's `textScale`. */
 export function textStyleFor(type: string, theme: EditorTheme): RichTextStyle {
+  const style = baseStyleFor(type, theme);
+  const scale = theme.textScale ?? 1;
+  if (scale === 1) return style;
+  return {
+    ...style,
+    ...(style.fontSize !== undefined && { fontSize: Math.round(style.fontSize * scale) }),
+    ...(style.lineHeight !== undefined && { lineHeight: Math.round(style.lineHeight * scale) }),
+  };
+}
+
+function baseStyleFor(type: string, theme: EditorTheme): RichTextStyle {
   const base: RichTextStyle = { color: theme.text, fontFamily: theme.fontFamily };
   switch (type) {
     case 'heading_1':

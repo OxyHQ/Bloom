@@ -23,6 +23,8 @@ export interface EditorTheme {
   /** Named colours (`gray`, `brown`, `orange`, …) for marks and blocks. */
   colors: Readonly<Record<string, BlockColor>>;
   fontFamily?: string;
+  /** Multiplies every text size and line height: Notion's "Small text" is 0.875. */
+  textScale?: number;
   monoFontFamily?: string;
 }
 
