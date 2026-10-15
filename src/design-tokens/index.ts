@@ -57,7 +57,7 @@ export type {
  *
  * Both are pure — no React, no react-native — so they run in a plain node/bun
  * build script as well as in an app. */
-export { getPresetVars } from '../theme/preset-vars';
+export { getPresetBackground, getPresetVars } from '../theme/preset-vars';
 export type { ExplicitAccents } from '../theme/preset-vars';
 export { buildSeedScopeVars } from '../theme/color-scope/seed-scope';
 export type { SeedScopeOptions } from '../theme/color-scope/seed-scope';

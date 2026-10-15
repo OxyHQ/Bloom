@@ -1,6 +1,6 @@
 import { APP_COLOR_PRESETS, type AppColorName, type PresetTokens } from './color-presets';
 import { argbFromHex, generateRoleColors, type RoleColors } from './color-engine';
-import { buildPolicyTokens } from './color-policy';
+import { buildPolicyTokens, policyBackground } from './color-policy';
 
 /**
  * Optional explicit accent-colour overrides (`#rrggbb`) that PIN the secondary
@@ -150,6 +150,21 @@ function solvePresetVars(
 }
 
 /**
+ * A preset's page background (`--background`) for one mode — exactly what
+ * `getPresetVars(colorName, mode)['--background']` returns, for one tone solve
+ * instead of the whole set (~50 ms on a 4x-throttled mobile profile, before the
+ * first paint). For UI drawn before the theme resolves, such as a boot splash,
+ * which needs this one colour and often for the mode the device is NOT in. The
+ * page colour does not depend on pinned accents, so it takes none.
+ */
+export function getPresetBackground(colorName: AppColorName, mode: 'light' | 'dark'): string {
+  const preset = APP_COLOR_PRESETS[colorName];
+  const authored = preset.tokens?.[mode]?.['--background'];
+  if (authored !== undefined) return rgbFromHex(authored);
+  return policyBackground(preset.hex, mode === 'dark');
+}
+
+/**
  * A preset's hand-authored values, as the same `rgb(r g b)` form the engine
  * emits. An app-wide accent override still wins over the authored accent it
  * replaces, so the `secondary*`/`tertiary*` family is dropped when pinned.
@@ -163,8 +178,12 @@ function authoredTokens(
   for (const [token, hex] of Object.entries(authored)) {
     if (accents?.secondaryHex !== undefined && token.startsWith('--secondary')) continue;
     if (accents?.tertiaryHex !== undefined && token.startsWith('--tertiary')) continue;
-    const argb = argbFromHex(hex);
-    out[token] = `rgb(${(argb >> 16) & 255} ${(argb >> 8) & 255} ${argb & 255})`;
+    out[token] = rgbFromHex(hex);
   }
   return out;
+}
+
+function rgbFromHex(hex: string): string {
+  const argb = argbFromHex(hex);
+  return `rgb(${(argb >> 16) & 255} ${(argb >> 8) & 255} ${argb & 255})`;
 }

@@ -200,6 +200,9 @@ const SURFACE_RAMP = {
 /** Where the page itself sits. A touch off M3's own page background in both modes. */
 const BACKGROUND_TONE = { light: 96, dark: 4 } as const;
 
+/** How far a chromatic light theme's neutral ladder (page and surface rungs) sits below those tones. */
+const LIGHT_NEUTRAL_SHIFT = -2;
+
 /** Seed-linked chroma for the whole shell, not merely its accent controls. */
 const NEUTRAL_CHROMA = 28;
 
@@ -218,6 +221,21 @@ const MONOCHROME_MAX_CHROMA = 6;
  */
 export function isColourlessSeed(seedHex: string): boolean {
   return Hct.fromInt(argbFromHex(seedHex)).chroma <= MONOCHROME_MAX_CHROMA;
+}
+
+/**
+ * The page background (`--background`) the policy derives from a seed: the
+ * seed-hued neutral at {@link BACKGROUND_TONE}. `buildPolicyTokens` reads it from
+ * here, so a caller that needs ONLY the page colour (a splash painted before the
+ * theme resolves) gets the same value for one tone solve instead of the whole
+ * set — roles, fill searches, accents, charts and status families.
+ */
+export function policyBackground(seedHex: string, isDark: boolean): string {
+  const seed = Hct.fromInt(argbFromHex(seedHex));
+  const monochrome = seed.chroma <= MONOCHROME_MAX_CHROMA;
+  const neutral = TonalPalette.fromHueAndChroma(seed.hue, monochrome ? 0 : NEUTRAL_CHROMA);
+  const lightShift = !isDark && !monochrome ? LIGHT_NEUTRAL_SHIFT : 0;
+  return rgb(neutral.tone((isDark ? BACKGROUND_TONE.dark : BACKGROUND_TONE.light) + lightShift));
 }
 
 /** Where a monochrome brand fill sits: near-black on a white page, near-white on a black one. */
@@ -470,7 +488,7 @@ export function buildPolicyTokens(
   // Surfaces, text and boundaries share the identity hue and tonal authority.
   const neutral = TonalPalette.fromHueAndChroma(seed.hue, monochrome ? 0 : NEUTRAL_CHROMA);
   const originalRamp = isDark ? SURFACE_RAMP.dark : SURFACE_RAMP.light;
-  const lightShift = !isDark && !monochrome ? -2 : 0;
+  const lightShift = !isDark && !monochrome ? LIGHT_NEUTRAL_SHIFT : 0;
   const rampTones = {
     surface: originalRamp.surface + lightShift,
     popover: originalRamp.popover + lightShift,
@@ -496,9 +514,7 @@ export function buildPolicyTokens(
         ? roles.surfaceContainerHighest
         : roles.surfaceContainerLowest
       : rgb(neutral.tone(isDark ? 22 : 98)),
-    '--background': rgb(
-      neutral.tone((isDark ? BACKGROUND_TONE.dark : BACKGROUND_TONE.light) + lightShift),
-    ),
+    '--background': policyBackground(seedHex, isDark),
     '--content-area': monochrome ? roles.background : rgb(neutral.tone(isDark ? 6 : 96)),
     '--foreground': monochrome ? roles.onBackground : foreground,
     '--surface-foreground': monochrome ? roles.onSurface : foreground,
