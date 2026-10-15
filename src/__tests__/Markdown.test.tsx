@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking } from 'react-native';
+import { Linking, StyleSheet, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { Markdown } from '../markdown';
@@ -63,5 +63,49 @@ describe('Markdown', () => {
     expect(second?.[1]).not.toBe(first?.[1]);
     expect(view.getByText('Second block')).toBeTruthy();
     spy.mockRestore();
+  });
+
+  it('sets the lg size at 16/28 with 18 and 16/22 headings, and the face on the block', () => {
+    const { getByText } = renderMarkdown(
+      <Markdown size="lg">{'# Big\n\n## Small\n\nBody text'}</Markdown>,
+    );
+    const flat = (text: string) => StyleSheet.flatten(getByText(text).props.style);
+    expect(flat('Body text')).toMatchObject({ fontSize: 16, lineHeight: 28 });
+    expect(flat('Big')).toMatchObject({ fontSize: 18, lineHeight: 26, fontWeight: '600' });
+    expect(flat('Small')).toMatchObject({ fontSize: 16, lineHeight: 22, fontWeight: '600' });
+    // The face is set on the block's Text; nested marks inherit it, no defaultProps needed.
+    expect(flat('Body text').fontFamily).toBe('Inter');
+  });
+
+  it('keeps md at 14/20', () => {
+    const { getByText } = renderMarkdown(<Markdown>{'Body text'}</Markdown>);
+    expect(StyleSheet.flatten(getByText('Body text').props.style)).toMatchObject({
+      fontSize: 14,
+      lineHeight: 20,
+    });
+  });
+
+  it('draws a fence through renderCodeBlock and shows what it returns', () => {
+    const renderCodeBlock = jest.fn((code: string, language?: string) => (
+      <Text>{`slot:${language}:${code}`}</Text>
+    ));
+    const { getByText } = renderMarkdown(
+      <Markdown renderCodeBlock={renderCodeBlock}>{'```ts\nconst a = 1\n```'}</Markdown>,
+    );
+    expect(renderCodeBlock).toHaveBeenCalledWith('const a = 1', 'ts');
+    expect(getByText('slot:ts:const a = 1')).toBeTruthy();
+  });
+
+  it('stays tolerant of unfinished fence, bold and link at size lg', () => {
+    for (const source of ['```ts\nconst a', 'so **bold and *it', 'see [the docs](https://x.']) {
+      const view = renderMarkdown(
+        <Markdown size="lg" streaming>
+          {source}
+        </Markdown>,
+      );
+      expect(view.toJSON()).toBeTruthy();
+      expect(JSON.stringify(view.toJSON())).not.toMatch(/\*\*|\]\(/);
+      view.unmount();
+    }
   });
 });

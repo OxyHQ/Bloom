@@ -16,6 +16,17 @@ import type { MarkdownBlock, MarkdownColumnAlign, MarkdownListItem, MarkdownSize
 const BODY: Record<MarkdownSize, TypeScaleVariant> = {
   sm: 'body-2-regular',
   md: 'body-regular',
+  // The ramp has no 16/28 step: `lg` is `headline` with the loose line height set below.
+  lg: 'headline-regular',
+};
+
+const BODY_LINE_HEIGHT: Record<MarkdownSize, number> = { sm: 18, md: 20, lg: 28 };
+
+/** Only a size whose line height the ramp cannot express carries one of its own. */
+const BODY_STYLE: Record<MarkdownSize, TextStyle | undefined> = {
+  sm: undefined,
+  md: undefined,
+  lg: { lineHeight: BODY_LINE_HEIGHT.lg },
 };
 
 const HEADING: Record<MarkdownSize, TypeScaleVariant[]> = {
@@ -35,10 +46,18 @@ const HEADING: Record<MarkdownSize, TypeScaleVariant[]> = {
     'body-semibold',
     'body-semibold',
   ],
+  lg: [
+    'title-3-semibold',
+    'headline-semibold',
+    'headline-semibold',
+    'headline-semibold',
+    'headline-semibold',
+    'headline-semibold',
+  ],
 };
 
 /** The space between blocks, and the tighter space between a list's items. */
-const BLOCK_GAP: Record<MarkdownSize, number> = { sm: 8, md: 12 };
+const BLOCK_GAP: Record<MarkdownSize, number> = { sm: 8, md: 12, lg: 16 };
 const ITEM_GAP = 4;
 
 const BULLETS = ['•', '◦', '▪'];
@@ -77,13 +96,13 @@ interface BlockProps {
 }
 
 const MarkdownBlockView = memo(function MarkdownBlockView({ block, streaming, depth }: BlockProps) {
-  const { size } = useMarkdownContext();
+  const { size, renderCodeBlock } = useMarkdownContext();
   const { colors } = useTheme();
 
   switch (block.type) {
     case 'paragraph':
       return (
-        <Text variant={BODY[size]} selectable>
+        <Text variant={BODY[size]} style={BODY_STYLE[size]} selectable>
           <MarkdownInlineText source={block.text} streaming={streaming} />
         </Text>
       );
@@ -97,7 +116,11 @@ const MarkdownBlockView = memo(function MarkdownBlockView({ block, streaming, de
       );
     }
     case 'code':
-      return <CodeBlock code={block.code} language={block.language} lineNumbers={false} />;
+      return renderCodeBlock ? (
+        renderCodeBlock(block.code, block.language)
+      ) : (
+        <CodeBlock code={block.code} language={block.language} lineNumbers={false} />
+      );
     case 'quote':
       return (
         <View style={{ borderStartWidth: 3, borderStartColor: colors.border, paddingStart: 12 }}>
@@ -146,7 +169,7 @@ interface ListItemProps {
 function MarkdownListItemView({ item, marker, ordered, streaming, depth }: ListItemProps) {
   const { size } = useMarkdownContext();
   const { colors } = useTheme();
-  const lineHeight = size === 'sm' ? 18 : 20;
+  const lineHeight = BODY_LINE_HEIGHT[size];
   // The marker column is as wide as the widest number, so the text hangs in line.
   const width = ordered ? 9 * marker.length + 6 : 18;
 
@@ -167,7 +190,7 @@ function MarkdownListItemView({ item, marker, ordered, streaming, depth }: ListI
         {item.checked !== undefined ? (
           <TaskBox checked={item.checked} />
         ) : (
-          <Text variant={BODY[size]} style={{ color: colors.textSecondary }}>
+          <Text variant={BODY[size]} style={[BODY_STYLE[size], { color: colors.textSecondary }]}>
             {marker}
           </Text>
         )}
@@ -230,7 +253,11 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
           role={isHeader ? 'columnheader' : 'cell'}
           style={{ flex: 1, minWidth: MIN_COLUMN, paddingHorizontal: 10, paddingVertical: 6 }}
         >
-          <Text variant={isHeader ? HEADING[size][4] : BODY[size]} style={{ textAlign }} selectable>
+          <Text
+            variant={isHeader ? HEADING[size][4] : BODY[size]}
+            style={[isHeader ? undefined : BODY_STYLE[size], { textAlign }]}
+            selectable
+          >
             <MarkdownInlineText source={value} streaming={streaming && isLast} />
           </Text>
         </View>
