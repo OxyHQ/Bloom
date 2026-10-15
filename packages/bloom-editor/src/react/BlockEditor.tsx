@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { duplicateBlocks, insertBlockAfter, removeBlocks } from '../model/commands';
+import { exportSnapshot, snapshotToMarkdown } from '../model/snapshot';
 import { getBlock } from '../model/document';
 import type { BlockId } from '../model/document';
 import { specOf } from '../model/schema';
@@ -169,6 +170,32 @@ export function BlockEditor({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, [readOnly, store, ui]);
+
+  // Copying and cutting selected blocks (web): as Markdown, which pasting
+  // turns back into blocks — in this editor or any other.
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const onCopy = (cut: boolean) => (event: ClipboardEvent) => {
+      const selected = ui.get().selectedBlocks;
+      if (selected.length === 0 || !event.clipboardData) return;
+      const ids = selected.filter((id) => !selected.includes(store.doc.blocks[id]?.parent ?? ''));
+      event.clipboardData.setData('text/plain', snapshotToMarkdown(exportSnapshot(store.doc, ids)));
+      event.preventDefault();
+      if (cut && !readOnly) {
+        ui.set({ selectedBlocks: [] });
+        store.sealHistory();
+        store.run((c) => removeBlocks(c, ids));
+      }
+    };
+    const copy = onCopy(false);
+    const cut = onCopy(true);
+    document.addEventListener('copy', copy);
+    document.addEventListener('cut', cut);
+    return () => {
+      document.removeEventListener('copy', copy);
+      document.removeEventListener('cut', cut);
+    };
   }, [readOnly, store, ui]);
 
   // Clicking below the last block focuses it when it is an empty paragraph,

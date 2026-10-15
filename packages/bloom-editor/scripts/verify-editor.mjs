@@ -256,6 +256,35 @@ async function press(page, key, modifier) {
   await page.close();
 }
 
+// Selected blocks copy and cut as Markdown.
+{
+  const page = await open();
+  await clickInto(page, 'Simple things should be simple.');
+  await press(page, 'Escape');
+  const clip = (kind) =>
+    page.evaluate((k) => {
+      const data = new DataTransfer();
+      document.dispatchEvent(
+        new ClipboardEvent(k, { clipboardData: data, bubbles: true, cancelable: true }),
+      );
+      return data.getData('text/plain');
+    }, kind);
+  const copied = await clip('copy');
+  await check(
+    page,
+    copied.trim() === '> Simple things should be simple.',
+    `copy gives Markdown (${copied})`,
+  );
+  await clip('cut');
+  await sleep(200);
+  await check(
+    page,
+    !(await outline(page)).some((l) => l.includes('Simple things')),
+    'cut removes the selected block',
+  );
+  await page.close();
+}
+
 // Menus hang over the blocks below them and take the mouse.
 {
   const page = await open();
