@@ -1,0 +1,99 @@
+export {
+  type Block,
+  type BlockId,
+  childrenOf,
+  depthOf,
+  type EditorDocument,
+  emptyDocument,
+  getBlock,
+  isWithin,
+  type Position,
+  positionOf,
+  readingOrder,
+  subtreeIds,
+  validateDocument,
+} from './document';
+export {
+  acceptsChildren,
+  type BlockSpec,
+  DEFAULT_SCHEMA,
+  isToggle,
+  defineSchema,
+  extendSchema,
+  type Schema,
+  propsFor,
+  specOf,
+} from './schema';
+export {
+  type Anchor,
+  anchorAt,
+  anchorOf,
+  applyOperation,
+  applyTransaction,
+  type BlockFields,
+  type EditorSelection,
+  invertOperation,
+  invertTransaction,
+  type Operation,
+  rebaseOperations,
+  type Transaction,
+} from './operations';
+export {
+  type RemoteTransaction,
+  type SendResult,
+  SyncSession,
+  type SyncSessionOptions,
+  type SyncStatus,
+  type SyncTransport,
+  type PendingTransaction,
+  type SyncSnapshot,
+} from './sync';
+export {
+  applyEdit,
+  backspaceAtStart,
+  cloneSubtree,
+  type CommandContext,
+  composeCommands,
+  deleteAtEnd,
+  type DropPosition,
+  duplicateBlocks,
+  editText,
+  formatText,
+  type IdFactory,
+  indent,
+  insertBlockAfter,
+  moveBlocks,
+  nextTextBlock,
+  outdent,
+  previousTextBlock,
+  removeBlocks,
+  setProps,
+  splitBlock,
+  turnInto,
+} from './commands';
+export { History, type HistoryOptions } from './history';
+export {
+  type Command,
+  type EditorSnapshot,
+  EditorStore,
+  type EditorStoreOptions,
+  type TransactionListener,
+  type TransactionOrigin,
+} from './store';
+export {
+  type BlockSnapshot,
+  documentFromSnapshot,
+  documentToSnapshot,
+  exportSnapshot,
+  insertSnapshot,
+  snapshotToMarkdown,
+} from './snapshot';
+export { applyBlockShortcut, applyInlineShortcut, detectBlockShortcut } from './markdown';
+export {
+  filterSlashItems,
+  type SlashAction,
+  type SlashItem,
+  slashQuery,
+  slashTriggerAt,
+} from './slash';
+export { pasteIntoBlock } from './paste';

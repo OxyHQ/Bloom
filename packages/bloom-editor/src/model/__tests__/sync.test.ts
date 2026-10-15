@@ -1,0 +1,443 @@
+import {
+  anchorOf,
+  applyOperation,
+  type BlockId,
+  documentFromSnapshot,
+  documentToSnapshot,
+  type EditorDocument,
+  EditorStore,
+  getBlock,
+  indent,
+  insertBlockAfter,
+  type Operation,
+  rebaseOperations,
+  removeBlocks,
+  splitBlock,
+  type Transaction,
+  validateDocument,
+} from '../index';
+import { type SendResult, SyncSession } from '../sync';
+
+/**
+ * A server that orders transactions: it applies each one to its own document
+ * (re-recorded against it, as the real server re-validates) or refuses it,
+ * and pushes what it applied to everyone else.
+ */
+class FakeServer {
+  doc: EditorDocument;
+  version = 0;
+  clients: { session: SyncSession; id: string; inbox: (() => void)[] }[] = [];
+  /** Acknowledgements waiting to be delivered, per client. */
+  acks = new Map<string, (() => void)[]>();
+  /** Versions of applied transactions by key, to answer retries. */
+  applied = new Map<string, number>();
+  /** Lose the response to the next transaction applied (once). */
+  loseNextResponse = false;
+  /**
+   * Refuse, as stale, a text change made against a text this server has
+   * moved past — as Nilo's server does — instead of merging it here.
+   */
+  strict = false;
+
+  constructor(doc: EditorDocument) {
+    this.doc = doc;
+  }
+
+  receive(clientId: string, tx: Transaction, key?: string): Promise<SendResult> {
+    const seen = key === undefined ? undefined : this.applied.get(key);
+    if (seen !== undefined) return Promise.resolve({ ok: true, version: seen });
+    if (this.strict) {
+      for (const op of tx.ops) {
+        if (op.kind !== 'update' || op.before.text === undefined || !this.doc.blocks[op.id])
+          continue;
+        const current = JSON.stringify(getBlock(this.doc, op.id).text);
+        if (current !== JSON.stringify(op.before.text)) {
+          return Promise.resolve({ ok: false, stale: true });
+        }
+      }
+    }
+    const applied = rebaseOperations(this.doc, tx.ops);
+    if (!applied) return Promise.resolve({ ok: false, retry: false });
+    this.doc = applied.doc;
+    this.version += 1;
+    const version = this.version;
+    if (key !== undefined) this.applied.set(key, version);
+    const ops = applied.ops;
+    for (const client of this.clients) {
+      if (client.id === clientId) continue;
+      client.inbox.push(() =>
+        client.session.receiveRemote({
+          version,
+          toOperations: (doc) => rebaseOperations(doc, ops)?.ops ?? [],
+        }),
+      );
+    }
+    if (this.loseNextResponse) {
+      this.loseNextResponse = false;
+      return Promise.resolve({ ok: false, retry: true });
+    }
+    return new Promise((resolve) => {
+      const queue = this.acks.get(clientId) ?? [];
+      queue.push(() => resolve({ ok: true, version }));
+      this.acks.set(clientId, queue);
+    });
+  }
+}
+
+let seq = 0;
+function makeClient(server: FakeServer, id: string) {
+  const store = new EditorStore({ document: server.doc, newId: () => `${id}-${++seq}` });
+  const client = {
+    id,
+    store,
+    inbox: [] as (() => void)[],
+    session: null as unknown as SyncSession,
+  };
+  client.session = new SyncSession(
+    store,
+    { send: (tx, _before, key) => server.receive(id, tx, key) },
+    { version: server.version, retryDelayMs: 1 },
+  );
+  server.clients.push(client);
+  return client;
+}
+
+/** Deliver everything outstanding in a given order. */
+async function settle(server: FakeServer, order: 'remote-first' | 'acks-first' = 'remote-first') {
+  for (let round = 0; round < 20; round += 1) {
+    const work: (() => void)[] = [];
+    const acks = [...server.acks.values()].flatMap((queue) => queue.splice(0));
+    const remotes = server.clients.flatMap((c) => c.inbox.splice(0));
+    if (acks.length === 0 && remotes.length === 0) return;
+    if (order === 'remote-first') work.push(...remotes, ...acks);
+    else work.push(...acks, ...remotes);
+    for (const job of work) job();
+    await new Promise((r) => setTimeout(r, 0));
+  }
+}
+
+const snapshot = (doc: EditorDocument) => JSON.stringify(documentToSnapshot(doc));
+
+function start() {
+  seq = 0;
+  const doc = documentFromSnapshot(
+    [
+      { type: 'paragraph', text: [{ text: 'one' }] },
+      { type: 'paragraph', text: [{ text: 'two' }] },
+      { type: 'paragraph', text: [{ text: 'three' }] },
+    ],
+    () => `b${++seq}`,
+  );
+  const server = new FakeServer(doc);
+  return { server, a: makeClient(server, 'a'), b: makeClient(server, 'b') };
+}
+
+function edit(store: EditorStore, id: BlockId, text: string) {
+  const block = getBlock(store.doc, id);
+  store.dispatch({
+    ops: [{ kind: 'update', id, before: { text: block.text }, after: { text: [{ text }] } }],
+  });
+}
+
+describe('SyncSession', () => {
+  it.each(['remote-first', 'acks-first'] as const)(
+    'converges when two people edit different blocks (%s)',
+    async (order) => {
+      const { server, a, b } = start();
+      edit(a.store, 'b1', 'ONE');
+      edit(b.store, 'b3', 'THREE');
+      await settle(server, order);
+      expect(snapshot(a.store.doc)).toBe(snapshot(server.doc));
+      expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
+      expect(server.version).toBe(2);
+    },
+  );
+
+  it.each(['remote-first', 'acks-first'] as const)(
+    'resolves edits to the same block in server order (%s)',
+    async (order) => {
+      const { server, a, b } = start();
+      edit(a.store, 'b2', 'from a');
+      edit(b.store, 'b2', 'from b');
+      await settle(server, order);
+      expect(snapshot(a.store.doc)).toBe(snapshot(server.doc));
+      expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
+    },
+  );
+
+  it.each(['remote-first', 'acks-first'] as const)(
+    "keeps both people's typing in one block (%s)",
+    async (order) => {
+      const { server, a, b } = start();
+      const text = (store: EditorStore) =>
+        (getBlock(store.doc, 'b2').text ?? []).map((s) => s.text).join('');
+      edit(a.store, 'b2', 'two, said a');
+      edit(b.store, 'b2', 'b says two');
+      await settle(server, order);
+      expect(text(a.store)).toBe('b says two, said a');
+      expect(snapshot(a.store.doc)).toBe(snapshot(server.doc));
+      expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
+    },
+  );
+
+  it('sends a stale change again once the newer version arrives, merged into it', async () => {
+    const { server, a, b } = start();
+    server.strict = true;
+    const text = (doc: EditorDocument) =>
+      (getBlock(doc, 'b2').text ?? []).map((s) => s.text).join('');
+    edit(a.store, 'b2', 'two, said a');
+    edit(b.store, 'b2', 'b says two');
+    await settle(server, 'acks-first');
+    for (let i = 0; i < 20 && (a.session.hasPending || b.session.hasPending); i += 1) {
+      await new Promise((r) => setTimeout(r, 5));
+      await settle(server);
+    }
+    expect(text(server.doc)).toBe('b says two, said a');
+    expect(snapshot(a.store.doc)).toBe(snapshot(server.doc));
+    expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
+  });
+
+  it('sends a retry under the same key, so a lost response does not apply it twice', async () => {
+    const { server, a, b } = start();
+    server.loseNextResponse = true;
+    a.store.run((c) => insertBlockAfter(c, 'b1', 'paragraph'));
+    await new Promise((r) => setTimeout(r, 20));
+    await settle(server);
+    expect(server.version).toBe(1);
+    expect(a.session.hasPending).toBe(false);
+    expect(snapshot(a.store.doc)).toBe(snapshot(server.doc));
+    expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
+  });
+
+  it('drops a local edit to a block someone else deleted', async () => {
+    const { server, a, b } = start();
+    const rejected: Transaction[] = [];
+    a.session.dispose();
+    a.session = new SyncSession(
+      a.store,
+      { send: (tx) => server.receive('a', tx) },
+      {
+        version: 0,
+        onRejected: (tx) => rejected.push(tx),
+      },
+    );
+    // Both act before hearing from the other: b deletes, a edits the same block.
+    b.store.run((c) => removeBlocks(c, ['b2']));
+    edit(a.store, 'b2', 'too late');
+    await settle(server);
+    expect(rejected).toHaveLength(1);
+    expect(snapshot(a.store.doc)).toBe(snapshot(server.doc));
+    expect(validateDocument(a.store.doc)).toEqual([]);
+  });
+
+  it('converges under interleaved structural edits from both sides', async () => {
+    const { server, a, b } = start();
+    a.store.run((c) => splitBlock(c, 'b1', 1));
+    b.store.run((c) => insertBlockAfter(c, 'b3', 'heading_1'));
+    a.store.run((c) => insertBlockAfter(c, 'b2', 'todo'));
+    b.store.run((c) => removeBlocks(c, ['b1']));
+    await settle(server, 'acks-first');
+    for (const client of [a, b]) {
+      expect(validateDocument(client.store.doc)).toEqual([]);
+      expect(snapshot(client.store.doc)).toBe(snapshot(server.doc));
+      expect(client.session.hasPending).toBe(false);
+    }
+  });
+});
+
+describe('SyncSession under random concurrent editing', () => {
+  it('always converges with the server, whatever the delivery order', async () => {
+    let rnd = 11;
+    const random = () => {
+      rnd = (rnd * 1103515245 + 12345) % 2 ** 31;
+      return rnd / 2 ** 31;
+    };
+    const pick = <T>(items: readonly T[]): T => items[Math.floor(random() * items.length)] as T;
+
+    for (let round = 0; round < 25; round += 1) {
+      const { server, a, b } = start();
+      const c = makeClient(server, 'c');
+      const clients = [a, b, c];
+      for (let step = 0; step < 30; step += 1) {
+        const client = pick(clients);
+        const ids = Object.keys(client.store.doc.blocks);
+        if (ids.length === 0) continue;
+        const id = pick(ids);
+        const action = pick(['edit', 'split', 'insert', 'remove', 'indent', 'deliver'] as const);
+        if (action === 'edit') edit(client.store, id, `t${step}`);
+        else if (action === 'split') client.store.run((ctx) => splitBlock(ctx, id, 1));
+        else if (action === 'insert') client.store.run((ctx) => insertBlockAfter(ctx, id, 'todo'));
+        else if (action === 'remove' && ids.length > 1)
+          client.store.run((ctx) => removeBlocks(ctx, [id]));
+        else if (action === 'indent') client.store.run((ctx) => indent(ctx, id));
+        // Deliver a random share of what is in flight, in random order.
+        const jobs = [
+          ...[...server.acks.values()].flatMap((queue) =>
+            queue.splice(0, Math.floor(random() * (queue.length + 1))),
+          ),
+          ...clients.flatMap((cl) =>
+            cl.inbox.splice(0, Math.floor(random() * (cl.inbox.length + 1))),
+          ),
+        ].sort(() => random() - 0.5);
+        for (const job of jobs) job();
+        await new Promise((r) => setTimeout(r, 0));
+      }
+      await settle(server);
+      for (const client of clients) {
+        expect(validateDocument(client.store.doc)).toEqual([]);
+        expect(snapshot(client.store.doc)).toBe(snapshot(server.doc));
+      }
+    }
+  });
+});
+
+describe('SyncSession with a server that orders siblings itself', () => {
+  /** Moves that sort the top level by id: the server's order in this test. */
+  const sortRoot = (doc: EditorDocument): Operation[] => {
+    const ops: Operation[] = [];
+    let current = doc;
+    [...doc.root].sort().forEach((id, i, wanted) => {
+      if (current.root[i] === id) return;
+      const op: Operation = {
+        kind: 'move',
+        id,
+        from: anchorOf(current, id),
+        to: { parent: null, after: i === 0 ? null : (wanted[i - 1] as BlockId) },
+      };
+      current = applyOperation(current, op);
+      ops.push(op);
+    });
+    return ops;
+  };
+
+  it('ends in the server order, through reconcile, when both insert into the same gap', async () => {
+    seq = 0;
+    const doc = documentFromSnapshot(
+      [{ type: 'paragraph' }, { type: 'paragraph' }],
+      () => `m${++seq}`,
+    );
+    const server = new FakeServer(doc);
+    const receive = server.receive.bind(server);
+    server.receive = (clientId, tx) => {
+      const result = receive(clientId, tx);
+      server.doc = { ...server.doc, root: [...server.doc.root].sort() };
+      return result;
+    };
+    const client = (id: string) => {
+      const store = new EditorStore({ document: server.doc, newId: () => `${id}${++seq}` });
+      const entry = {
+        id,
+        store,
+        inbox: [] as (() => void)[],
+        session: null as unknown as SyncSession,
+      };
+      entry.session = new SyncSession(
+        store,
+        { send: (tx) => server.receive(id, tx) },
+        { version: server.version, reconcile: sortRoot },
+      );
+      server.clients.push(entry);
+      return entry;
+    };
+    const a = client('z');
+    const b = client('a');
+    a.store.run((c) => insertBlockAfter(c, 'm1', 'paragraph'));
+    b.store.run((c) => insertBlockAfter(c, 'm1', 'paragraph'));
+    await settle(server);
+    expect(a.store.doc.root).toEqual(server.doc.root);
+    expect(b.store.doc.root).toEqual(server.doc.root);
+  });
+});
+
+describe('SyncSession snapshot and resume', () => {
+  it('picks pending work up again in a new session, sending each change once', async () => {
+    const { server, a } = start();
+    // The server is unreachable: edits stay pending.
+    const offline = new SyncSession(
+      a.store,
+      { send: () => Promise.resolve({ ok: false, retry: true }) },
+      { version: server.version, retryDelayMs: 60_000 },
+    );
+    a.session.dispose();
+    a.store.run((c) => insertBlockAfter(c, 'b1', 'paragraph', { text: [{ text: 'offline' }] }));
+    edit(a.store, 'b2', 'TWO');
+    const saved = offline.snapshot();
+    offline.dispose();
+    expect(saved?.pending).toHaveLength(2);
+    expect(snapshot(saved?.base as EditorDocument)).toBe(snapshot(server.doc));
+
+    // Later, a new session on the persisted base, online again.
+    const store = new EditorStore({
+      document: saved?.base as EditorDocument,
+      newId: () => `r${++seq}`,
+    });
+    const resumed = new SyncSession(
+      store,
+      { send: (tx, _before, key) => server.receive('a', tx, key) },
+      { version: saved?.version ?? 0, resume: saved?.pending },
+    );
+    await settle(server);
+    await new Promise((r) => setTimeout(r, 0));
+    await settle(server);
+    expect(resumed.hasPending).toBe(false);
+    expect(server.version).toBe(2);
+    expect(snapshot(store.doc)).toBe(snapshot(server.doc));
+    expect(getBlock(server.doc, 'b2').text).toEqual([{ text: 'TWO' }]);
+  });
+
+  it('keeps pending work across a reload onto a newer server document', async () => {
+    const { server, a, b } = start();
+    a.session.dispose();
+    const stalled = new SyncSession(
+      a.store,
+      { send: () => Promise.resolve({ ok: false, retry: true }) },
+      { version: server.version, retryDelayMs: 60_000 },
+    );
+    edit(a.store, 'b1', 'from a');
+    // Meanwhile someone else changes another block.
+    edit(b.store, 'b3', 'from b');
+    await settle(server);
+    const handover = stalled.snapshot();
+    stalled.dispose();
+
+    // Reload: the server's current document, with a's pending change on top.
+    const store = new EditorStore({ document: server.doc, newId: () => `n${++seq}` });
+    new SyncSession(
+      store,
+      { send: (tx, _before, key) => server.receive('a2', tx, key) },
+      { version: server.version, resume: handover?.pending },
+    );
+    await settle(server);
+    await new Promise((r) => setTimeout(r, 0));
+    await settle(server);
+    expect(getBlock(server.doc, 'b1').text).toEqual([{ text: 'from a' }]);
+    expect(getBlock(server.doc, 'b3').text).toEqual([{ text: 'from b' }]);
+    expect(snapshot(store.doc)).toBe(snapshot(server.doc));
+  });
+
+  it('does not apply twice a change the server had applied before the handover', async () => {
+    const { server, a } = start();
+    server.loseNextResponse = true;
+    a.store.run((c) => insertBlockAfter(c, 'b1', 'paragraph'));
+    await new Promise((r) => setTimeout(r, 0));
+    // The response was lost; the session still has it pending.
+    const handover = a.session.snapshot();
+    a.session.dispose();
+    expect(handover?.pending).toHaveLength(1);
+    const store = new EditorStore({
+      document: handover?.base as EditorDocument,
+      newId: () => `k${++seq}`,
+    });
+    const resumed = new SyncSession(
+      store,
+      { send: (tx, _before, key) => server.receive('a3', tx, key) },
+      { version: handover?.version ?? 0, resume: handover?.pending },
+    );
+    await settle(server);
+    await new Promise((r) => setTimeout(r, 0));
+    await settle(server);
+    expect(server.version).toBe(1);
+    expect(resumed.hasPending).toBe(false);
+    expect(snapshot(store.doc)).toBe(snapshot(server.doc));
+  });
+});
