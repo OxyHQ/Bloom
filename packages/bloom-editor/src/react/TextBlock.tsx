@@ -1,3 +1,4 @@
+import type { ActiveMarks } from '@oxy.so/bloom-text/model';
 import {
   type KeyCommand,
   type RichTextChange,
@@ -16,7 +17,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import { StyleSheet, Text, type TextStyle, View } from 'react-native';
+import { Platform, StyleSheet, Text, type TextStyle, View } from 'react-native';
 import {
   applyEdit,
   backspaceAtStart,
@@ -41,8 +42,10 @@ import type { EditorSelection, Transaction } from '../model/operations';
 import { specOf } from '../model/schema';
 import { filterSlashItems, type SlashItem, slashQuery, slashTriggerAt } from '../model/slash';
 import { type MentionItem, useEditorContext } from './context';
+import { FormatBar } from './FormatBar';
 import { MentionMenu } from './MentionMenu';
 import { SlashMenu } from './SlashMenu';
+import { useUi } from './ui-store';
 import { textStyleFor } from './typography';
 
 const caret = (blockId: string, offset: number): EditorSelection => ({
@@ -53,8 +56,18 @@ const caret = (blockId: string, offset: number): EditorSelection => ({
 });
 
 export function TextBlock({ block }: { block: Block }) {
-  const { store, ui, theme, labels, inputs, readOnly, slashItems, onSlashAction, mentions } =
-    useEditorContext();
+  const {
+    store,
+    controller,
+    ui,
+    theme,
+    labels,
+    inputs,
+    readOnly,
+    slashItems,
+    onSlashAction,
+    mentions,
+  } = useEditorContext();
   const id = block.id;
   const spec = specOf(store.schema, block.type);
   const inputRef = useRef<RichTextInputHandle | null>(null);
@@ -408,6 +421,26 @@ export function TextBlock({ block }: { block: Block }) {
     );
   }, [chooseMention, id, run, runSlashItem, slashItems, store, ui]);
 
+  // The input reports its marks whenever they change, focused or not (a link
+  // set while the link field has the keyboard): the block the selection is in
+  // speaks for the toolbar, and says again what it last had when focused.
+  const marksRef = useRef<ActiveMarks | null>(null);
+  const onActiveMarksChange = useCallback(
+    (marks: ActiveMarks) => {
+      marksRef.current = marks;
+      if (controller.textSelection?.blockId === id) ui.set({ marks: { blockId: id, marks } });
+    },
+    [controller, id, ui],
+  );
+
+  // Web: the marks and link of a selection, over the block (touch devices
+  // get `EditorToolbar` above the keyboard instead).
+  const linking = useUi(ui, (s) => s.linking === id);
+  const showBubble =
+    Platform.OS === 'web' &&
+    !readOnly &&
+    (linking || (focused && target !== null && target.start !== target.end));
+
   const placeholder = useMemo(() => {
     if (block.type.startsWith('heading_')) return labels.emptyHeading;
     if (
@@ -446,13 +479,18 @@ export function TextBlock({ block }: { block: Block }) {
         onChange={onChange}
         onSelectionChange={onSelectionChange}
         onKeyCommand={onKeyCommand}
+        onActiveMarksChange={onActiveMarksChange}
         mentionIndicators={mentions ? [...mentions.indicators] : undefined}
         onMentionQuery={mentions ? onMentionQuery : undefined}
         onSubmit={spec.multiline ? undefined : onSubmit}
         onFocus={() => {
           focusedRef.current = true;
           setFocused(true);
-          ui.set({ selectedBlocks: [] });
+          ui.set({
+            selectedBlocks: [],
+            focused: id,
+            ...(marksRef.current && { marks: { blockId: id, marks: marksRef.current } }),
+          });
           // The input reports its caret before it reports focus; claim it now.
           const { start, end } = selectionRef.current;
           store.setSelection({ kind: 'text', blockId: id, start, end });
@@ -460,6 +498,7 @@ export function TextBlock({ block }: { block: Block }) {
         onBlur={() => {
           focusedRef.current = false;
           setFocused(false);
+          if (ui.get().focused === id) ui.set({ focused: null });
           store.sealHistory();
         }}
         editable={!readOnly}
@@ -481,6 +520,15 @@ export function TextBlock({ block }: { block: Block }) {
           {placeholder}
         </Text>
       ) : null}
+      {showBubble ? (
+        <View
+          style={[styles.bubble, { backgroundColor: theme.background, borderColor: theme.border }]}
+          accessibilityRole="toolbar"
+          accessibilityLabel={labels.formatting}
+        >
+          <FormatBar controller={controller} theme={theme} labels={labels} />
+        </View>
+      ) : null}
       <SlashMenu blockId={id} onChoose={runSlashItem} />
       <MentionMenu blockId={id} onChoose={chooseMention} />
     </View>
@@ -498,4 +546,19 @@ function textStyleToText(style: RichTextStyle): TextStyle {
 
 const styles = StyleSheet.create({
   placeholder: { position: 'absolute', left: 0, right: 0, top: 0 },
+  bubble: {
+    position: 'absolute',
+    bottom: '100%',
+    left: 0,
+    zIndex: 60,
+    marginBottom: 6,
+    padding: 2,
+    borderWidth: 1,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 8,
+  },
 });

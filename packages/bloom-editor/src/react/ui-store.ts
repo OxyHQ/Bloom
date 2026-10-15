@@ -1,3 +1,4 @@
+import type { ActiveMarks } from '@oxy.so/bloom-text/model';
 import { useSyncExternalStore } from 'react';
 import type { BlockId } from '../model/document';
 import type { MentionItem } from './context';
@@ -15,6 +16,12 @@ export interface UiState {
     items: readonly MentionItem[];
     loading: boolean;
   } | null;
+  /** The block whose text input has the keyboard. */
+  focused: BlockId | null;
+  /** The formatting active at the focused block's selection, as its input reports it. */
+  marks: { blockId: BlockId; marks: ActiveMarks } | null;
+  /** The block whose selection a link is being entered for. */
+  linking: BlockId | null;
   /** The block whose options menu is open. */
   blockMenu: BlockId | null;
   /** Blocks selected as whole blocks (Escape, Shift-click, drag selection). */
@@ -33,6 +40,9 @@ export class UiStore {
   private state: UiState = {
     slash: null,
     mention: null,
+    focused: null,
+    marks: null,
+    linking: null,
     blockMenu: null,
     selectedBlocks: [],
     hovered: null,

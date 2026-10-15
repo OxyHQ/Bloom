@@ -25,11 +25,11 @@ const browser = await puppeteer.launch({
 });
 const errors = [];
 
-async function open() {
+async function open(story = 'playground') {
   const page = await browser.newPage();
   page.on('pageerror', (e) => errors.push(e.message));
   await page.setViewport({ width: 1000, height: 800 });
-  await page.goto(`${BASE}/iframe.html?id=editor-blockeditor--playground&viewMode=story`, {
+  await page.goto(`${BASE}/iframe.html?id=editor-blockeditor--${story}&viewMode=story`, {
     waitUntil: 'networkidle0',
   });
   await sleep(800);
@@ -148,6 +148,87 @@ async function press(page, key, modifier) {
     page,
     doc.includes('  paragraph:Third'),
     'Backspace at the start reverts to a paragraph',
+  );
+  await page.close();
+}
+
+// Formatting a selection: the bubble's marks and link.
+{
+  const page = await open();
+  const quote = () =>
+    page.evaluate(() => {
+      const s = globalThis.__bloomEditorStore;
+      const b = Object.values(s.doc.blocks).find((x) => x.type === 'quote');
+      return b.text;
+    });
+  const bubbleButton = async (label) => {
+    await page.waitForSelector(`[aria-label="Formatting"] [aria-label="${label}"]`, {
+      timeout: 2000,
+    });
+    await (await page.$(`[aria-label="Formatting"] [aria-label="${label}"]`)).click();
+    await sleep(250);
+  };
+  await clickInto(page, 'Simple things should be simple.');
+  await press(page, 'Home');
+  for (let i = 0; i < 6; i += 1) await press(page, 'ArrowRight', 'Shift');
+  await bubbleButton('Bold');
+  let text = await quote();
+  await check(
+    page,
+    text[0]?.text === 'Simple' && text[0]?.bold === true,
+    `Bold marks the selection (${JSON.stringify(text)})`,
+  );
+
+  await press(page, 'End');
+  await press(page, 'ArrowLeft');
+  for (let i = 0; i < 6; i += 1) await press(page, 'ArrowLeft', 'Shift');
+  await bubbleButton('Link');
+  await page.waitForSelector('[aria-label="Formatting"] input', { timeout: 2000 });
+  await type(page, 'example.com');
+  await press(page, 'Enter');
+  await sleep(250);
+  text = await quote();
+  const linked = text.find((s) => s.link);
+  await check(
+    page,
+    linked?.text === 'simple' && linked?.link === 'https://example.com',
+    `Link links the selection (${JSON.stringify(text)})`,
+  );
+  await check(page, !(await page.$('[aria-label="Formatting"] input')), 'the link field closes');
+
+  // The selection is back in the editor: the same word, now a link.
+  await bubbleButton('Remove link');
+  text = await quote();
+  await check(page, !text.some((s) => s.link), `Remove link unlinks it (${JSON.stringify(text)})`);
+  await page.close();
+}
+
+// The touch toolbar: shown while a block has the keyboard, acting on it.
+{
+  const page = await open('with-toolbar');
+  const bar = '[role="toolbar"][aria-label="Formatting"]';
+  await check(page, !(await page.$(bar)), 'no toolbar before editing');
+  await clickInto(page, 'Second');
+  await page.waitForSelector(bar, { timeout: 2000 });
+  const tap = async (label) => {
+    await (await page.$(`${bar} [aria-label="${label}"]`)).click();
+    await sleep(250);
+  };
+  await tap('Indent');
+  let doc = await outline(page);
+  await check(page, doc.includes('  numbered_list_item:Second'), 'Indent nests the block');
+  await tap('Undo');
+  doc = await outline(page);
+  await check(page, doc.includes('numbered_list_item:Second'), 'Undo takes it back');
+  await press(page, 'End');
+  await tap('Mention');
+  await type(page, 'ben');
+  await sleep(200);
+  const menu = await page.$$eval('[role="menuitem"]', (els) => els.map((e) => e.innerText));
+  await check(
+    page,
+    menu.some((label) => label.includes('Ben Ito')),
+    'the mention button starts a mention',
   );
   await page.close();
 }

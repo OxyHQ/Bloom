@@ -14,6 +14,7 @@ import { specOf } from '../model/schema';
 import type { SlashItem } from '../model/slash';
 import type { EditorStore } from '../model/store';
 import { BlockMenu } from './BlockMenu';
+import { type EditorController, useEditorController } from './controller';
 import { BlockList } from './BlockRow';
 import {
   type BlockAction,
@@ -26,7 +27,6 @@ import {
 import type { BlockDecorations } from './decorations';
 import { DEFAULT_LABELS, type EditorLabels } from './labels';
 import { DEFAULT_THEME, type EditorTheme } from './theme';
-import { UiStore } from './ui-store';
 
 export interface BlockEditorProps {
   store: EditorStore;
@@ -50,6 +50,11 @@ export interface BlockEditorProps {
   theme?: EditorTheme;
   labels?: Partial<EditorLabels>;
   readOnly?: boolean;
+  /**
+   * Shared with controls drawn outside the editor (`EditorToolbar`); the
+   * editor makes its own when none is given.
+   */
+  controller?: EditorController;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -72,16 +77,19 @@ export function BlockEditor({
   theme = DEFAULT_THEME,
   labels,
   readOnly = false,
+  controller: given,
   style,
 }: BlockEditorProps) {
-  const ui = useMemo(() => new UiStore(), []);
-  const inputs = useMemo(() => new Map(), []);
+  const own = useEditorController(store);
+  const controller = given ?? own;
+  const { ui, inputs } = controller;
   const snapshot = useEditorSnapshot(store);
   const mergedLabels = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
 
   const value: EditorContextValue = useMemo(
     () => ({
       store,
+      controller,
       ui,
       theme,
       labels: mergedLabels,
@@ -97,6 +105,7 @@ export function BlockEditor({
     }),
     [
       store,
+      controller,
       ui,
       theme,
       mergedLabels,

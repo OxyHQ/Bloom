@@ -27,6 +27,11 @@ export interface EditorLabels {
   linkPlaceholder: string;
   removeLink: string;
   apply: string;
+  cancel: string;
+  mention: string;
+  undo: string;
+  redo: string;
+  formatting: string;
   blockMenu: string;
   dragHandle: string;
   addBelow: string;
@@ -80,6 +85,11 @@ export const DEFAULT_LABELS: EditorLabels = {
   linkPlaceholder: 'Paste a link',
   removeLink: 'Remove link',
   apply: 'Apply',
+  cancel: 'Cancel',
+  mention: 'Mention',
+  undo: 'Undo',
+  redo: 'Redo',
+  formatting: 'Formatting',
   blockMenu: 'Block options',
   dragHandle: 'Drag to move',
   addBelow: 'Add a block below',

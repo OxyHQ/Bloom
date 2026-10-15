@@ -3,6 +3,7 @@ import { createContext, type ReactNode, useContext, useSyncExternalStore } from 
 import type { Block, BlockId } from '../model/document';
 import type { SlashItem } from '../model/slash';
 import type { EditorSnapshot, EditorStore } from '../model/store';
+import type { EditorController } from './controller';
 import type { BlockDecorations } from './decorations';
 import type { EditorLabels } from './labels';
 import type { EditorTheme } from './theme';
@@ -46,6 +47,7 @@ export interface BlockAction {
 
 export interface EditorContextValue {
   store: EditorStore;
+  controller: EditorController;
   ui: UiStore;
   theme: EditorTheme;
   labels: EditorLabels;

@@ -5,6 +5,8 @@ import { documentFromSnapshot, type SlashItem } from '../model';
 import { EditorStore } from '../model/store';
 import { BlockEditor } from './BlockEditor';
 import type { MentionSource } from './context';
+import { useEditorController } from './controller';
+import { EditorToolbar } from './EditorToolbar';
 
 let counter = 0;
 const newId = () => `id-${Date.now().toString(36)}-${(++counter).toString(36)}`;
@@ -123,7 +125,7 @@ export const SLASH_ITEMS: SlashItem[] = [
   },
 ];
 
-function EditorDemo() {
+function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
   const store = useMemo(
     () =>
       new EditorStore({
@@ -169,20 +171,29 @@ function EditorDemo() {
   );
   // Exposed for the browser verification scripts.
   (globalThis as { __bloomEditorStore?: EditorStore }).__bloomEditorStore = store;
+  const controller = useEditorController(store);
   return (
-    <ScrollView style={{ flex: 1 }}>
-      <View
-        style={{
-          maxWidth: 720,
-          width: '100%',
-          alignSelf: 'center',
-          paddingHorizontal: 64,
-          paddingVertical: 48,
-        }}
-      >
-        <BlockEditor store={store} slashItems={SLASH_ITEMS} mentions={MENTIONS} />
-      </View>
-    </ScrollView>
+    <View style={{ flex: 1, height: '100vh' as unknown as number }}>
+      <ScrollView style={{ flex: 1 }}>
+        <View
+          style={{
+            maxWidth: 720,
+            width: '100%',
+            alignSelf: 'center',
+            paddingHorizontal: 64,
+            paddingVertical: 48,
+          }}
+        >
+          <BlockEditor
+            store={store}
+            slashItems={SLASH_ITEMS}
+            mentions={MENTIONS}
+            controller={controller}
+          />
+        </View>
+      </ScrollView>
+      {toolbar ? <EditorToolbar controller={controller} mentionIndicator="@" /> : null}
+    </View>
   );
 }
 
@@ -194,3 +205,6 @@ const meta: Meta<typeof EditorDemo> = {
 export default meta;
 
 export const Playground: StoryObj<typeof EditorDemo> = {};
+
+/** With the touch toolbar docked under the page, as an app places it above the keyboard. */
+export const WithToolbar: StoryObj<typeof EditorDemo> = { args: { toolbar: true } };

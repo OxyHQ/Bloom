@@ -15,3 +15,5 @@ export {
   type EditorTheme,
 } from './theme';
 export { type BlockDecoration, BlockDecorations } from './decorations';
+export { EditorController, normalizeLink, useEditorController } from './controller';
+export { EditorToolbar, type EditorToolbarProps } from './EditorToolbar';
