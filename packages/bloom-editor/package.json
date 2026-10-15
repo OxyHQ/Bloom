@@ -1,0 +1,90 @@
+{
+  "name": "@oxy.so/bloom-editor",
+  "version": "0.1.0",
+  "description": "Bloom's block editor: a headless, command-based document model and the native-first React components on top of it.",
+  "license": "SEE LICENSE IN LICENSE",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/commonjs/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "exports": {
+    ".": {
+      "react-native": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./src/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/index.d.ts",
+        "default": "./lib/commonjs/index.js"
+      }
+    },
+    "./model": {
+      "react-native": {
+        "types": "./lib/typescript/module/model/index.d.ts",
+        "default": "./src/model/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/model/index.d.ts",
+        "default": "./lib/module/model/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/model/index.d.ts",
+        "default": "./lib/commonjs/model/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib",
+    "LICENSE",
+    "!**/__tests__/**"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bob build",
+    "typescript": "tsc --noEmit -p .",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@oxy.so/bloom-text": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-native": ">=0.81.0"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "exclude": "**/__tests__/**",
+    "targets": [
+      [
+        "commonjs",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "bun@1.4.3"
+}

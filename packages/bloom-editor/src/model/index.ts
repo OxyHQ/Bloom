@@ -1,0 +1,72 @@
+export {
+  type Block,
+  type BlockId,
+  childrenOf,
+  depthOf,
+  type EditorDocument,
+  emptyDocument,
+  getBlock,
+  isWithin,
+  type Position,
+  positionOf,
+  readingOrder,
+  subtreeIds,
+  validateDocument,
+} from './document';
+export {
+  type BlockSpec,
+  DEFAULT_SCHEMA,
+  defineSchema,
+  extendSchema,
+  type Schema,
+  specOf,
+} from './schema';
+export {
+  applyOperation,
+  applyTransaction,
+  type BlockFields,
+  type EditorSelection,
+  invertOperation,
+  invertTransaction,
+  type Operation,
+  type Transaction,
+} from './operations';
+export {
+  applyEdit,
+  backspaceAtStart,
+  cloneSubtree,
+  type CommandContext,
+  deleteAtEnd,
+  type DropPosition,
+  duplicateBlocks,
+  editText,
+  formatText,
+  type IdFactory,
+  indent,
+  insertBlockAfter,
+  moveBlocks,
+  nextTextBlock,
+  outdent,
+  previousTextBlock,
+  removeBlocks,
+  setProps,
+  splitBlock,
+  turnInto,
+} from './commands';
+export { History, type HistoryOptions } from './history';
+export {
+  type Command,
+  type EditorSnapshot,
+  EditorStore,
+  type EditorStoreOptions,
+  type TransactionListener,
+  type TransactionOrigin,
+} from './store';
+export {
+  type BlockSnapshot,
+  documentFromSnapshot,
+  documentToSnapshot,
+  exportSnapshot,
+  insertSnapshot,
+  snapshotToMarkdown,
+} from './snapshot';

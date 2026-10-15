@@ -3572,6 +3572,9 @@
     "!**/*.spec.*",
     "assets/character-runtime"
   ],
+  "workspaces": [
+    "packages/*"
+  ],
   "keywords": [
     "react-native",
     "expo",
