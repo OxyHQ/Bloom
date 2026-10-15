@@ -1,5 +1,6 @@
 import { webDataSet } from '../styles/web-data';
-import React, {
+import type React from 'react';
+import {
   createContext,
   forwardRef,
   memo,
@@ -828,6 +829,12 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
           contentContainerStyle={[containerStyle, style]}
           onLayout={(e) => {
             viewportWidthRef.current = e.nativeEvent.layout.width;
+            // Child geometry may arrive first, and a viewport resize need not
+            // change any trigger's layout. Reveal the current selection in both
+            // cases without depending on another child measurement or render.
+            const selected = selectedValueRef.current;
+            const target = selected === undefined ? undefined : triggerLayoutsRef.current[selected];
+            if (hasSelection && target) revealTrigger(target, false);
           }}
           testID={testID}
         >
