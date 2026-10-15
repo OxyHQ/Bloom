@@ -51,6 +51,14 @@ export function resetLottiePlayer(): void {
   hasWarned = false;
 }
 
+/**
+ * Web only: where dotLottie fetches its WebAssembly renderer (see
+ * `lottie-module.web.ts`). `lottie-react-native` draws natively and fetches no
+ * WebAssembly, so on native this does nothing — an app can call it from shared
+ * startup code without a platform check.
+ */
+export function setLottieWasmUrl(_url: string): void {}
+
 function isComponent(candidate: unknown): candidate is LottieViewLike {
   if (typeof candidate === 'function') return true;
   return typeof candidate === 'object' && candidate !== null && '$$typeof' in candidate;

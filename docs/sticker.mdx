@@ -47,6 +47,34 @@ An app that shows no animated sticker installs neither. An app with its own
 build of a player hands it in with `provideLottiePlayer(Component)`, adapted to
 `LottiePlayerProps` (`uri`, `loop`, `paused`, `onLoad`, `onError`, `style`).
 
+## The web player is loaded on demand
+
+On the web the player is a dynamic `import()`, fetched the first time a
+`Sticker` with an `animation` mounts — never part of an app's startup chunk.
+dotLottie and the ThorVG renderer under it are ~160 KiB of JavaScript, and a
+synchronous load put them in the always-loaded `__common` chunk of every app
+that shows a sticker anywhere. The wait is the existing "animation is still
+loading" state: the still stays until the animation reports it has loaded.
+
+dotLottie fetches its WebAssembly renderer from a public npm CDN unless told
+otherwise. An app that serves the binary itself (for a strict `connect-src`)
+names it with `setLottieWasmUrl`, once, at startup — NOT by importing
+`setWasmUrl` from `@lottiefiles/dotlottie-react`, which would put the whole
+player back into the startup chunk:
+
+```tsx
+import { setLottieWasmUrl } from '@oxy.so/bloom/sticker';
+import { Asset } from 'expo-asset';
+
+setLottieWasmUrl(
+  Asset.fromModule(require('@lottiefiles/dotlottie-web/dotlottie-player.wasm')).uri,
+);
+```
+
+The URL is applied when the player arrives, so the call loads nothing. On native
+it does nothing (`lottie-react-native` needs no WebAssembly), so shared startup
+code can call it without a platform check.
+
 ## Props
 
 | prop | decides |

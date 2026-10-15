@@ -4,5 +4,5 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export { Sticker } from './Sticker.web';
-export { provideLottiePlayer, resetLottiePlayer } from './lottie-module.web';
+export { provideLottiePlayer, resetLottiePlayer, setLottieWasmUrl } from './lottie-module.web';
 export type { LottiePlayerProps, StickerProps } from './types';
