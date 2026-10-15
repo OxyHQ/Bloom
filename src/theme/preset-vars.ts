@@ -29,8 +29,47 @@ export interface ExplicitAccents {
  *
  * This is the single source of truth for extended theming vars — consumer apps
  * must not redefine these per-app.
+ *
+ * Every call returns a fresh object the caller may keep or change; the solve
+ * behind it runs once per preset, mode and accent pair (see `PRESET_VARS_CACHE`).
  */
 export function getPresetVars(
+  colorName: AppColorName,
+  mode: 'light' | 'dark',
+  accents?: ExplicitAccents,
+): PresetTokens {
+  const key = JSON.stringify([
+    colorName,
+    mode,
+    accents?.secondaryHex ?? null,
+    accents?.tertiaryHex ?? null,
+  ]);
+  let tokens = PRESET_VARS_CACHE.get(key);
+  if (tokens === undefined) {
+    tokens = solvePresetVars(colorName, mode, accents);
+    PRESET_VARS_CACHE.set(key, tokens);
+    if (PRESET_VARS_CACHE.size > PRESET_VARS_CACHE_LIMIT) {
+      PRESET_VARS_CACHE.delete(PRESET_VARS_CACHE.keys().next().value as string);
+    }
+  }
+  return { ...tokens };
+}
+
+/**
+ * Resolved token sets, by preset, mode and pinned accents. `generateRoleColors`
+ * already caches the M3 roles, but the policy layer on top (`buildPolicyTokens`:
+ * fill tones searched for a legible label, the accent, chart and status
+ * families) is most of the cost — ~12 ms per set on a desktop CPU, ~50 ms on a
+ * 4x-throttled mobile profile — and one theme asks for the same set more than
+ * once: `BloomThemeProvider` resolves it for the scope vars and again for the
+ * theme object on the same render, on every app's cold start. The inputs are
+ * all static (presets are a fixed registry), so the result is too; the bound
+ * only matters for apps that pin arbitrary accents.
+ */
+const PRESET_VARS_CACHE_LIMIT = 64;
+const PRESET_VARS_CACHE = new Map<string, PresetTokens>();
+
+function solvePresetVars(
   colorName: AppColorName,
   mode: 'light' | 'dark',
   accents?: ExplicitAccents,
