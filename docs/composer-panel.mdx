@@ -100,7 +100,9 @@ An agent that needs an answer asks the person who is about to type, so the quest
 />
 ```
 
-`ComposerPill` has no slot, because the pill is usually wrapped in a `ComposerLoader`, whose light traces the box it wraps: a question inside the pill would be inside that box, and the light would ring the question too. Put the question beside the loader instead, in the same column as the pill, as you would the suggestions:
+`ComposerPill` takes the same `question` and `status` slots (both composers dock them through one `ComposerDock`, so a host moves between them without moving its question or its tab). A pill with a `status` squares its corners to 26, like a stacked pill, so the tab's flat foot sits on an edge rather than the crown of a circle.
+
+Inside a `ComposerLoader` the slot is the wrong place: the loader's light traces the box it wraps, so a question passed through the pill would be ringed too. Put the question beside the loader instead, in the same column as the pill, as you would the suggestions:
 
 ```tsx
 <View style={{ gap: 8 }}>
@@ -225,13 +227,17 @@ The English defaults below — strings, placeholders, and the default permission
 | `voiceState` / `defaultVoiceState` / `onVoiceStateChange` | `'idle' \| 'recording' \| 'transcribing'` | `'idle'` | Voice input. `recording` swaps the mic to equalizer bars and the next press stops; `transcribing` makes it busy and disabled, named `labels.transcribing` and announced in a polite live region. A press reports `recording` from `idle` and `idle` from `recording`; entering `transcribing` is yours. |
 | `attachments` / `onRemoveAttachment` | `ComposerPanelAttachment[]` / `(id) => void` | — | |
 | `onAttachmentRetry` | `(id) => void` | — | Draws a retry button on every failed (`error`) tile. |
-| `question` | `ReactNode` | — | `ComposerPanel` only. What the agent is waiting on — a [`Questionnaire`](./questionnaire.mdx) — docked above the card, above the status tab. See [Asking above the composer](#asking-above-the-composer). |
-| `status` | `ReactNode` | — | Usually `<ComposerPanelStatusTab />`. |
+| `question` | `ReactNode` | — | Both composers. What the agent is waiting on — a [`Questionnaire`](./questionnaire.mdx) — docked above the card, above the status tab. See [Asking above the composer](#asking-above-the-composer). |
+| `status` | `ReactNode` | — | Both composers. Usually `<ComposerPanelStatusTab />`. |
 | `inputRef` | `RefObject<TextInput>` | — | The prompt field. |
 | `labels`, `modelPickerLabels` | objects | the locale's | Your own wording; a key here wins over Bloom's. |
 | `style`, `testID` | | | |
 
-`ComposerPill` takes the same draft, add-menu, voice and `onStop` / `busy` props, plus `models` (`string | { id, name }` entries), `model` / `defaultModel` / `onModelChange` (by **id**), the effort trio, `effortLevels`, `compactPlaceholder`, `surface`, `frosted`, `maxLines`, the attachment trio (`attachments`, `onRemoveAttachment`, `onAttachmentRetry`) and `error`.
+`ComposerPill` takes the same draft, add-menu, voice and `onStop` / `busy` props, plus `models` (`string | { id, name }` entries), `model` / `defaultModel` / `onModelChange` (by **id**), the effort trio, `effortLevels`, `compactPlaceholder`, `surface`, `frosted`, `maxLines`, the attachment trio (`attachments`, `onRemoveAttachment`, `onAttachmentRetry`), `question` / `status`, the permission picker (below) and `error`.
+
+### The permission picker in the pill
+
+`permissions` (with `permission` / `defaultPermission` / `onPermissionChange` / `onLearnMore`, the panel's own props) puts the panel's picker in the pill: the same `PermissionMenu`, so the described, iconed radio list opens upward from a compact chip after the add button. Unlike the panel there is NO default set; omit `permissions` (or pass `[]`) and the pill is the bare capsule. Below 640 wide the chip shrinks to its mode icon, still named "Permission: <mode>" with `aria-expanded`. Its panel is labelled by `labels.permissions` / `labels.permissionMode` / `labels.learnMore`, which default to the locale's. The mic, the stop / `emptyAction` / send slot and the dock are shared code (`ComposerTrailingActions`, `ComposerDock`) with the panel.
 
 ### The pill grows
 

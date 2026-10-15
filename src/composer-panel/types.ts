@@ -229,7 +229,31 @@ export interface ComposerPanelLabels {
   retry?: string;
 }
 
-export interface ComposerPanelProps {
+/** The permission picker's state, shared by `ComposerPanel` and `ComposerPill`. */
+export interface ComposerPermissionProps {
+  /** Controlled permission id. */
+  permission?: string;
+  /** Initial permission id when uncontrolled. Default the first mode. */
+  defaultPermission?: string;
+  onPermissionChange?: (permission: string) => void;
+  /** Shows "Learn more" in the permission panel's header and handles its press. */
+  onLearnMore?: () => void;
+}
+
+/** The two slots a composer docks above itself, shared by `ComposerPanel` and `ComposerPill`. */
+export interface ComposerDockProps {
+  /**
+   * What the agent is waiting on — a `Questionnaire` — docked directly above the composer, in
+   * its column and width. A question is asked of the person who is about to type, so it
+   * belongs where they are looking, not as a message in the thread; answering it unmounts it.
+   */
+  question?: ReactNode;
+
+  /** The tab on the composer's top edge — typically `<ComposerPanelStatusTab />`. */
+  status?: ReactNode;
+}
+
+export interface ComposerPanelProps extends ComposerPermissionProps, ComposerDockProps {
   /** Controlled draft. */
   value?: string;
   /** Initial draft when uncontrolled. */
@@ -250,15 +274,8 @@ export interface ComposerPanelProps {
   /** `'Hi, what do you need today?'` in English. */
   placeholder?: string;
 
-  /** The permission modes. Defaults to four (`COMPOSER_PANEL_PERMISSIONS`, in the locale's language). */
+  /** The permission modes. Defaults to four (`COMPOSER_PANEL_PERMISSIONS`, in the locale's language); `[]` hides the picker. */
   permissions?: ReadonlyArray<ComposerPanelPermissionOption>;
-  /** Controlled permission id. */
-  permission?: string;
-  /** Initial permission id when uncontrolled. Default the first mode. */
-  defaultPermission?: string;
-  onPermissionChange?: (permission: string) => void;
-  /** Shows "Learn more" in the permission panel's header and handles its press. */
-  onLearnMore?: () => void;
 
   /** The add menu's groups. Defaults to "Add" and "Plugins" rows (in the locale's language); `[]` hides the button. */
   addMenu?: ReadonlyArray<ComposerPanelAddMenuGroup>;
@@ -291,16 +308,6 @@ export interface ComposerPanelProps {
   onRemoveAttachment?: (id: string) => void;
   /** Draws a retry button on every tile with an `error`; called with its id. */
   onAttachmentRetry?: (id: string) => void;
-
-  /**
-   * What the agent is waiting on — a `Questionnaire` — docked directly above the composer, in
-   * its column and width. A question is asked of the person who is about to type, so it
-   * belongs where they are looking, not as a message in the thread; answering it unmounts it.
-   */
-  question?: ReactNode;
-
-  /** The tab on the card's top edge — typically `<ComposerPanelStatusTab />`. */
-  status?: ReactNode;
 
   /**
    * Drawn where send would be, while there is nothing to send — no draft and
@@ -375,6 +382,12 @@ export interface ComposerPopoverProps {
 export interface ComposerPillLabels {
   /** `'Message'` in English — the field's accessible name. */
   message?: string;
+  /** `'Permissions'` in English — the permission panel's name. */
+  permissions?: string;
+  /** `'Permission mode'` in English — the permission radio group's name. */
+  permissionMode?: string;
+  /** `'Learn more'` in English. */
+  learnMore?: string;
   /** `'Add attachment'` in English. */
   add?: string;
   /** `'Add to chat'` in English. */
@@ -407,7 +420,7 @@ export interface ComposerPillLabels {
   retry?: string;
 }
 
-export interface ComposerPillProps {
+export interface ComposerPillProps extends ComposerPermissionProps, ComposerDockProps {
   /** Controlled field value. */
   value?: string;
   /** Initial value when uncontrolled. */
@@ -433,6 +446,14 @@ export interface ComposerPillProps {
   /** The add menu's groups. Default the Composer Panel's "Add" and "Plugins" rows; `[]` hides the button. */
   addMenu?: ReadonlyArray<ComposerPanelAddMenuGroup>;
   onAddMenuSelect?: (rowId: string) => void;
+
+  /**
+   * The permission modes — Alia's power levels. Unlike the panel there is NO default set: omit
+   * it (or pass `[]`) and the pill stays the compact capsule. Given, a trigger sits after the
+   * add button and opens the panel's described, iconed radio list; below 640 wide it shrinks
+   * to its icon (still named for the current mode).
+   */
+  permissions?: ReadonlyArray<ComposerPanelPermissionOption>;
 
   /**
    * The model menu's lineup. Omit to hide the model button.

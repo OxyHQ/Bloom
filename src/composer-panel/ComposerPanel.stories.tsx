@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useTheme } from '../theme/use-theme';
@@ -8,6 +8,7 @@ import { Button } from '../button';
 import { ComposerLoader } from '../composer-loader';
 
 import {
+  COMPOSER_PANEL_PERMISSIONS,
   ComposerAttachments,
   ComposerPanel,
   ComposerPanelStatusTab,
@@ -351,6 +352,21 @@ export const Pill: Story = {
           testID="status"
         />
       </View>
+    </View>
+  ),
+};
+
+/** Power levels, a status tab and a docked question: everything an app's one composer needs, in the pill. */
+export const PillPermissionsAndDock: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ maxWidth: '100%', paddingTop: 380, width: 700 }}>
+      <ComposerPill
+        testID="pill"
+        permissions={COMPOSER_PANEL_PERMISSIONS}
+        question={<Text>Which branch should I use?</Text>}
+        status={<ComposerPanelStatusTab branch="main" project="bloom" context={42} />}
+      />
     </View>
   ),
 };
