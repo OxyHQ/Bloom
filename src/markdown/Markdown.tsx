@@ -22,13 +22,17 @@ function MarkdownComponent({
   streaming = false,
   size = 'md',
   onLinkPress,
+  renderCodeBlock,
   style,
   className,
   testID,
   ref,
 }: MarkdownProps) {
   const segments = useMarkdownBlocks(children);
-  const context = useMemo(() => ({ size, onLinkPress }), [size, onLinkPress]);
+  const context = useMemo(
+    () => ({ size, onLinkPress, renderCodeBlock }),
+    [size, onLinkPress, renderCodeBlock],
+  );
   const blocks = segments.map((segment) => segment.block);
 
   return (

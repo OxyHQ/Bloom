@@ -38,9 +38,10 @@ Not read: setext headings, indented code blocks, reference links, footnotes, and
 | `size` | Body | Headings (h1 to h6) |
 | --- | --- | --- |
 | `md` (default) | `body-regular` 14/20 | `title-1`, `title-2`, `title-3`, `headline`, `body`, `body`, all semibold |
+| `lg` | `headline-regular` 16, line height 28 (the ramp has no 16/28 step) | `title-3` (18/26), then `headline` (16/22) for h2 to h6, all semibold |
 | `sm` | `body-2-regular` 13/18 | `title-2`, `title-3`, `headline`, `body`, `body-2`, `body-2`, all semibold |
 
-Blocks are 12 apart at `md` and 8 at `sm`; a list's items are 4 apart. Lists use logical edges (`marginEnd`, `borderStartWidth`), so they mirror in right-to-left layouts, and the marker column is as wide as the widest number so a hanging indent stays aligned past item 9.
+`lg` is a chat reading size: roomy body, modest headings. Blocks are 16 apart at `lg`, 12 at `md` and 8 at `sm`; a list's items are 4 apart. Lists use logical edges (`marginEnd`, `borderStartWidth`), so they mirror in right-to-left layouts, and the marker column is as wide as the widest number so a hanging indent stays aligned past item 9.
 
 ## Links
 
@@ -65,14 +66,30 @@ Only the **last block** is read as unfinished. A finished block is parsed with t
 
 Appending text re-reads only the tail. The document is split into top-level blocks, and each render hands the previous result back to the parser: a block whose source lines are unchanged comes back as the same object, so its memoized view does not render. Appending a token to the last paragraph re-reads that paragraph and nothing above it; `markdown-parse.test.ts` pins this over every prefix of a sample document.
 
+## Code blocks
+
+A fence is a `CodeBlock` with no `onCopy`, and native has no clipboard default, so its copy button does nothing there. `renderCodeBlock(code, language)` is the one slot: return your own `<CodeBlock onCopy={...} />` (or any node) and that is what is drawn. It is a render slot rather than an `onCopy` prop because a host also wants a filename, a different card or a lazily loaded highlighter, and a callback prop would need a new prop for each. Keep it at module scope or in `useCallback` so the memoized block views do not re-render.
+
+```tsx
+const renderCodeBlock = (code: string, language?: string) => (
+  <CodeBlock code={code} language={language} onCopy={copyToClipboard} />
+);
+<Markdown renderCodeBlock={renderCodeBlock}>{text}</Markdown>;
+```
+
+## Font
+
+Every block is a Bloom `Text` that sets the sans face from its variant (display faces never apply to body), and the inline marks are nested `Text` that inherit it. It therefore needs no `fontFamily` prop and does not depend on `Text.defaultProps` (dropped by React 19).
+
 ## Props
 
 | Prop | Type | Default | |
 | --- | --- | --- | --- |
 | `children` | `string` | | the Markdown source |
 | `streaming` | `boolean` | `false` | the text is still growing |
-| `size` | `'sm' \| 'md'` | `'md'` | |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | |
 | `onLinkPress` | `(url: string) => void` | | only safe URLs reach it |
+| `renderCodeBlock` | `(code: string, language?: string) => ReactNode` | | draws each fence in place of the default `CodeBlock` |
 | `style`, `className`, `testID`, `ref` | | | the root `View` |
 
 ## Accessibility

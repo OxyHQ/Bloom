@@ -1,13 +1,14 @@
-import type { Ref } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { StyleProp, View, ViewStyle } from 'react-native';
 
 /**
- * The two text ramps a document is set in:
+ * The text ramps a document is set in:
  *
  *   sm   body 13/18, headings from title-2 down (a chat bubble, a card)
  *   md   body 14/20, headings from title-1 down (a full reply)
+ *   lg   body 16/28, h1 title-3 (18), h2 to h6 headline (16/22) (a chat reading size)
  */
-export type MarkdownSize = 'sm' | 'md';
+export type MarkdownSize = 'sm' | 'md' | 'lg';
 
 export interface MarkdownProps {
   /** The Markdown source. Safe to grow token by token while `streaming`. */
@@ -27,6 +28,13 @@ export interface MarkdownProps {
    * the anchor.
    */
   onLinkPress?: (url: string) => void;
+  /**
+   * Draws a fenced block yourself, in place of the default `CodeBlock`; what it
+   * returns is drawn as is. Use it to wire `onCopy` (native has no clipboard
+   * default), a filename, or your own code card. Called once per render of the
+   * block, so keep its identity stable (module scope or `useCallback`).
+   */
+  renderCodeBlock?: (code: string, language?: string) => ReactNode;
   style?: StyleProp<ViewStyle>;
   className?: string;
   testID?: string;
