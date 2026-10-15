@@ -12,6 +12,7 @@ import type { Block, EditorDocument } from './document';
 import { History, type HistoryOptions } from './history';
 import {
   applyTransaction,
+  rebaseOperations,
   type EditorSelection,
   invertTransaction,
   type Transaction,
@@ -143,19 +144,24 @@ export class EditorStore {
     this.commit({ doc, selection: null });
   }
 
+  /**
+   * Undo and redo apply an entry to the document as it is now, which other
+   * people may have changed since: re-recorded against it, text merged, so
+   * only this person's own change is taken back or made again.
+   */
   private applyHistory(tx: Transaction): boolean {
-    try {
-      const doc = applyTransaction(this.doc, tx);
-      this.commit({ doc, selection: tx.selectionAfter ?? this.snapshot.selection });
-      for (const listener of this.transactionListeners) listener(tx, 'history');
-      return true;
-    } catch {
-      // A remote edit changed what this entry describes; it can no longer be
+    const rebased = rebaseOperations(this.doc, tx.ops);
+    if (!rebased) {
+      // A remote edit removed what this entry describes; it can no longer be
       // undone safely, and neither can anything older.
       this.history.clear();
       this.commit({ doc: this.doc, selection: this.snapshot.selection });
       return false;
     }
+    const applied: Transaction = { ...tx, ops: rebased.ops };
+    this.commit({ doc: rebased.doc, selection: tx.selectionAfter ?? this.snapshot.selection });
+    for (const listener of this.transactionListeners) listener(applied, 'history');
+    return true;
   }
 
   private commit(next: { doc: EditorDocument; selection: EditorSelection | null }): void {

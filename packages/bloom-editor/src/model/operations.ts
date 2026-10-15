@@ -11,7 +11,7 @@
  * else's concurrent change still lands next to the block it was placed by.
  * An anchor that no longer exists puts the block at the end of its parent.
  */
-import type { Segment } from '@oxy.so/bloom-text/model';
+import { mergeText, type Segment, segmentsEqual } from '@oxy.so/bloom-text/model';
 import {
   type Block,
   type BlockId,
@@ -183,6 +183,8 @@ export function invertTransaction(tx: Transaction): Transaction {
  * The same operations, re-recorded against `doc`: each one's "before" state
  * (old fields, removed subtree, origin anchor) is read from the document it
  * now applies to, so inverting it later restores what was really there.
+ * A text change made against an older text is merged into the block's text
+ * as it is now (`mergeText`): someone else's words in the same block stay.
  * Returns null when an operation no longer applies.
  */
 export function rebaseOperations(
@@ -200,7 +202,16 @@ export function rebaseOperations(
         if ('type' in op.after) before.type = block.type;
         if ('text' in op.after) before.text = block.text;
         if ('props' in op.after) before.props = block.props;
-        next = { ...op, before };
+        let after = op.after;
+        if (
+          op.after.text !== undefined &&
+          op.before.text !== undefined &&
+          block.text !== undefined &&
+          !segmentsEqual(op.before.text, block.text)
+        ) {
+          after = { ...op.after, text: mergeText(op.before.text, op.after.text, block.text) };
+        }
+        next = { ...op, before, after };
       } else if (op.kind === 'remove') {
         const top = op.blocks[0];
         if (!top) return null;

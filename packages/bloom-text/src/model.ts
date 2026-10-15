@@ -16,6 +16,7 @@ export {
   splitSegmentsAt,
 } from './segments';
 export { htmlToSegments, isSafeLink, segmentsToHtml } from './html';
+export { mergeText } from './merge';
 export { INPUT_MARKS, VALUE_ONLY_MARKS, reconcileInputValue } from './reconcile';
 export { transformSelection } from './selection';
 export type {

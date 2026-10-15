@@ -150,6 +150,21 @@ describe('SyncSession', () => {
     },
   );
 
+  it.each(['remote-first', 'acks-first'] as const)(
+    "keeps both people's typing in one block (%s)",
+    async (order) => {
+      const { server, a, b } = start();
+      const text = (store: EditorStore) =>
+        (getBlock(store.doc, 'b2').text ?? []).map((s) => s.text).join('');
+      edit(a.store, 'b2', 'two, said a');
+      edit(b.store, 'b2', 'b says two');
+      await settle(server, order);
+      expect(text(a.store)).toBe('b says two, said a');
+      expect(snapshot(a.store.doc)).toBe(snapshot(server.doc));
+      expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
+    },
+  );
+
   it('sends a retry under the same key, so a lost response does not apply it twice', async () => {
     const { server, a, b } = start();
     server.loseNextResponse = true;

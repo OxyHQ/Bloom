@@ -503,3 +503,43 @@ describe('random edit sequences', () => {
     }
   });
 });
+
+describe('undo with other people editing', () => {
+  it("takes back only this person's typing in a block someone else typed in too", () => {
+    const store = new EditorStore({
+      document: build([['paragraph', 'plan']]),
+      newId: idFactory('n'),
+    });
+    const id = store.doc.root[0] as string;
+    const text = () => (getBlock(store.doc, id).text ?? []).map((s) => s.text).join('');
+    const block = getBlock(store.doc, id);
+    store.dispatch({
+      ops: [
+        {
+          kind: 'update',
+          id,
+          before: { text: block.text },
+          after: { text: [{ text: 'the plan' }] },
+        },
+      ],
+    });
+    // Someone else adds to the end.
+    store.dispatch(
+      {
+        ops: [
+          {
+            kind: 'update',
+            id,
+            before: { text: [{ text: 'the plan' }] },
+            after: { text: [{ text: 'the plan for May' }] },
+          },
+        ],
+      },
+      'remote',
+    );
+    expect(store.undo()).toBe(true);
+    expect(text()).toBe('plan for May');
+    expect(store.redo()).toBe(true);
+    expect(text()).toBe('the plan for May');
+  });
+});
