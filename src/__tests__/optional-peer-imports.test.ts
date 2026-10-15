@@ -294,7 +294,17 @@ function isMetroOptional(node: ts.Node): boolean {
   return false;
 }
 
-/** Every `require(...)` call in a file. `specifier` is null when non-literal. */
+/**
+ * Every `require(...)` AND dynamic `import(...)` call in a file. `specifier` is
+ * null when non-literal.
+ *
+ * `import()` is in the same scan because Metro collects it with the same
+ * `isOptionalDependency` walk (`processImportCall`), so an optional peer loaded
+ * on demand — the web Lottie player, which must not sit in a startup chunk — has
+ * exactly the same two failure modes as a `require`: a non-literal specifier is
+ * not collected at all, and a literal outside the direct-statement-of-a-`try`
+ * shape is a hard dependency that fails the build of an app without the peer.
+ */
 function requireCalls(source: ts.SourceFile): {
   specifier: string | null;
   metroOptional: boolean;
@@ -303,10 +313,15 @@ function requireCalls(source: ts.SourceFile): {
   const found: { specifier: string | null; metroOptional: boolean; line: number }[] = [];
 
   const visit = (node: ts.Node): void => {
-    if (
+    const isRequire =
       ts.isCallExpression(node) &&
       ts.isIdentifier(node.expression) &&
-      node.expression.text === 'require' &&
+      node.expression.text === 'require';
+    const isDynamicImport =
+      ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword;
+    if (
+      ts.isCallExpression(node) &&
+      (isRequire || isDynamicImport) &&
       node.arguments.length === 1
     ) {
       const [argument] = node.arguments;

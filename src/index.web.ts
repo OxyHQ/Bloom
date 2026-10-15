@@ -643,7 +643,7 @@ export type {
   VoiceMessageProps,
   VoicePlaybackRate,
 } from './message-media';
-export { Sticker, provideLottiePlayer, resetLottiePlayer } from './sticker/index.web';
+export { Sticker, provideLottiePlayer, resetLottiePlayer, setLottieWasmUrl } from './sticker/index.web';
 export type { LottiePlayerProps, StickerProps } from './sticker/index.web';
 export {
   BUBBLE_RADIUS,
