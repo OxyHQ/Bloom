@@ -154,6 +154,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   name: nameProp,
   account,
   character,
+  characterStill,
   motion,
   activity,
   reactionKey,
@@ -277,6 +278,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
       {resolvedCharacter ? (
         <CharacterFace
           character={resolvedCharacter}
+          still={characterStill}
           size={size}
           motion={motion}
           activity={activity}

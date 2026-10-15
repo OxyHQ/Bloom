@@ -6,6 +6,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Avatar, AVATAR_LIVE_SIZE } from '../avatar';
 import { AvatarGroup } from '../avatar-group';
 import { CharacterRuntimeContext } from '../agent-avatar/context';
+import { resolveAvatarCharacter } from '../agent-avatar/character';
 import {
   createCharacterStills,
   type StillBackend,
@@ -243,9 +244,76 @@ describe('live or still', () => {
     expect(last().workingKey).toBe(2);
   });
 
+  it('a live character keeps its own paint, not its preset’s', () => {
+    renderAvatar(
+      <Avatar
+        character={{ preset: 'blue_beret', accessory: 'none', color: 'orchid' }}
+        size={120}
+      />,
+    );
+    const handed = resolveAvatarCharacter(lastProps().character);
+    expect(handed.paint).toEqual({ color: 'orchid' });
+    expect(handed).toEqual(
+      resolveAvatarCharacter({ preset: 'blue_beret', accessory: 'none', color: 'orchid' }),
+    );
+  });
+
   it('an explicit workingKey is the caller’s and is passed through', () => {
     renderAvatar(<Avatar account={bot} size={120} activity="working" workingKey={9} />);
     expect(lastProps().workingKey).toBe(9);
+  });
+});
+
+describe('a still made ahead of time (characterStill)', () => {
+  const MADE = 'data:image/png;base64,MADE';
+  const madeImages = (view: ReturnType<typeof render>) =>
+    view.UNSAFE_queryAllByType(Image).filter((node) => node.props.source?.uri === MADE);
+
+  it('a still avatar draws it from the first render and never asks the cache, so no runtime loads', async () => {
+    const view = renderAvatar(
+      <Avatar account={bot} characterStill={{ uri: MADE }} size={20} alt="Peri" />,
+    );
+    expect(madeImages(view)).toHaveLength(1);
+    await flush();
+    expect(backend).not.toHaveBeenCalled();
+    expect(mockAgentAvatar).not.toHaveBeenCalled();
+    expect(stillImages(view)).toHaveLength(0);
+    expect(view.queryByText('P')).toBeNull();
+    const image = madeImages(view)[0]!;
+    expect(image.props.style).toEqual({ width: 20, height: 20 });
+    expect(image.props.accessibilityLabel).toBe('Peri');
+  });
+
+  it('reduced motion keeps it a still', async () => {
+    mockReduced = true;
+    const view = renderAvatar(
+      <Avatar account={bot} characterStill={{ uri: MADE }} size={20} activity="working" />,
+    );
+    await flush();
+    expect(mockAgentAvatar).not.toHaveBeenCalled();
+    expect(madeImages(view)).toHaveLength(1);
+    expect(backend).not.toHaveBeenCalled();
+  });
+
+  it('a live character shows it, unnamed, under the first frame instead of the initials', () => {
+    const view = renderAvatar(
+      <Avatar account={bot} characterStill={{ uri: MADE }} size={20} activity="working" />,
+    );
+    expect(mockAgentAvatar).toHaveBeenCalled();
+    expect(madeImages(view)).toHaveLength(1);
+    expect(madeImages(view)[0]!.props.accessible).toBe(false);
+    expect(view.queryByText('P')).toBeNull();
+    act(() => lastProps().onReady!());
+    expect(madeImages(view)).toHaveLength(0);
+    expect(backend).not.toHaveBeenCalled();
+  });
+
+  it('is ignored when no character is drawn', () => {
+    const view = renderAvatar(
+      <Avatar account={{ kind: 'user', name: 'Ada' }} characterStill={{ uri: MADE }} />,
+    );
+    expect(madeImages(view)).toHaveLength(0);
+    expect(view.queryByText('A')).toBeTruthy();
   });
 });
 

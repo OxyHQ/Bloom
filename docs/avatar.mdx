@@ -217,6 +217,27 @@ A **still** is an ordinary image, so a list of dozens of bots costs no canvas pe
   7 KB.
 - Nothing here opens a socket: only the runtime module (and the renderer's assets) is fetched, and
   only when a character is first drawn.
+- **A rendered still is not cheap on a cold start.** It loads the same runtime and assets a live
+  avatar does — measured for Alia's character on a cold cache: 31 requests, 16.1 MiB from the
+  runtime origin — and only the canvas goes away afterwards.
+
+### A still made ahead of time
+
+An app whose character never changes (its own assistant, say) ships the picture and passes it as
+`characterStill`. Wherever the character is still that image is drawn from the first render; the
+still cache is not asked, so **nothing of the runtime is fetched**. When the character goes live
+(`activity="working"`, a profile size, `motion="always"`) the same image stays under it until the
+first frame, instead of the initials.
+
+```tsx
+import { ASSISTANT_STILL } from './assistant-still'; // a data: URI, or require('./assistant.png')
+
+<Avatar character={ASSISTANT} characterStill={ASSISTANT_STILL} size={20} activity={activity} />
+```
+
+Make the picture with the runtime itself (a paused `portrait`, `reduced: true`) at the largest size
+it is shown still: below `AVATAR_LIVE_SIZE` (96), at 2× density. Regenerate it when the
+character or the runtime's look changes.
 
 A character avatar is an image named by `alt`, else `name`, else the handle, else "Agent avatar";
 `alt=""` makes it decorative.
@@ -264,6 +285,7 @@ Additive. `Avatar` without `account`/`character` is unchanged.
 | `name?` | `string` | account name | Used to derive the initial + a stable tint, and the accessible name of a character. |
 | `account?` | `AvatarAccount` | — | `{ kind, avatar, character, username, name }`. A bot with a character draws it; see above. |
 | `character?` | `AvatarCharacter \| null` | — | Explicit character. Wins over the account's; `null` opts out. |
+| `characterStill?` | `Shapes.ImageSource` | — | The character's picture made ahead of time: drawn wherever it is still, so no runtime loads. |
 | `motion?` | `'auto' \| 'always' \| 'never'` | `'auto'` | Still or live. Reduced motion always wins. |
 | `activity?` | `'idle' \| 'working'` | — | `'working'` makes the character live and plays its Computer episode. |
 | `workingKey?` / `reactionKey?` | `number` | — | Replay the Computer episode / authored reaction when the key changes (live only). |

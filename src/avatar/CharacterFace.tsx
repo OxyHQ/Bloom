@@ -1,10 +1,11 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Image, View } from 'react-native';
 
 import { AgentAvatar } from '../agent-avatar/AgentAvatar';
 import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
-import type { ResolvedAvatarCharacter } from '../agent-avatar/character';
+import { avatarCharacterOf, type ResolvedAvatarCharacter } from '../agent-avatar/character';
 import { useCharacterStill } from '../agent-avatar/use-character-still';
+import type { ImageSource } from '../shapes';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useMessages } from '../locale/messages';
 import { AVATAR_LIVE_SIZE } from './initials';
@@ -32,6 +33,9 @@ export function characterIsLive({
 
 export interface CharacterFaceProps {
   character: ResolvedAvatarCharacter;
+  /** The character's still made ahead of time: drawn instead of rendering one, and under a live
+   * character until its first frame. */
+  still?: ImageSource;
   size: number;
   motion?: AvatarMotion;
   activity?: 'idle' | 'working';
@@ -50,11 +54,13 @@ export interface CharacterFaceProps {
 }
 
 /**
- * A bot's character at avatar size. A still is an ordinary image from the shared cache; a live
- * character is one `AgentAvatar`, with the placeholder under it until its first frame.
+ * A bot's character at avatar size. A still is an ordinary image — the caller's own `still`, else
+ * one from the shared cache; a live character is one `AgentAvatar`, with the still (or the
+ * placeholder) under it until its first frame.
  */
 export function CharacterFace({
   character,
+  still: provided,
   size,
   motion,
   activity,
@@ -82,16 +88,32 @@ export function CharacterFace({
   useEffect(() => {
     if (live && ready && working) setEpisodes((count) => count + 1);
   }, [live, ready, working]);
-  const still = useCharacterStill(character, size, !live);
+  // A still made ahead of time needs no render: the cache is not asked, so the runtime is not loaded.
+  const drawn = useCharacterStill(character, size, !live && !provided);
+  const still = provided ?? (drawn ? { uri: drawn } : undefined);
   const box = { width: size, height: size };
+  // `AgentAvatar` resolves what it is handed, and a resolved character keeps its paint under
+  // `paint`, where resolving again does not look: handed as is, every live character wore its
+  // preset's paint (Alia, orchid, went blue). Written back as a character, it resolves to itself.
+  const written = useMemo(() => avatarCharacterOf(character), [character]);
 
   if (live) {
     return (
       <View style={box}>
-        {!ready ? placeholder : null}
+        {ready ? null : provided ? (
+          <Image
+            source={provided}
+            style={box}
+            resizeMode="contain"
+            accessible={false}
+            accessibilityIgnoresInvertColors
+          />
+        ) : (
+          placeholder
+        )}
         <View style={ready ? box : { position: 'absolute', left: 0, top: 0, ...box }}>
           <AgentAvatar
-            character={character}
+            character={written}
             size={size}
             workingKey={workingKey ?? (episodes > 0 ? episodes : undefined)}
             reactionKey={reactionKey}
@@ -105,7 +127,7 @@ export function CharacterFace({
   if (!still) return <>{placeholder}</>;
   return (
     <Image
-      source={{ uri: still }}
+      source={still}
       style={box}
       resizeMode="contain"
       accessible={label !== undefined}
