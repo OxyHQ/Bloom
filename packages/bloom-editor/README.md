@@ -42,6 +42,12 @@ const controller = useEditorController(store);
 Every edit is a transaction on the store (`store.run(command)`,
 `store.dispatch(tx)`); listen with `store.onTransaction` to persist.
 
+To lay the blocks out yourself — notes on a canvas, panes side by side —
+use `EditorSurface` (the editor without a layout: its context, keyboard,
+clipboard and block menu) and place a `BlockList` of whichever ids wherever
+you like; it is all one store, one undo history. `appendChild` adds a block at
+the end of a container, an empty one included.
+
 ## What it does
 
 - **Blocks**: Return splits and continues lists; Backspace at the start

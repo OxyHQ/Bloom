@@ -1,9 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useMemo } from 'react';
-import { ScrollView, View } from 'react-native';
-import { documentFromSnapshot, type SlashItem } from '../model';
+import { useMemo, useSyncExternalStore } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  appendChild,
+  DEFAULT_SCHEMA,
+  documentFromSnapshot,
+  extendSchema,
+  type SlashItem,
+} from '../model';
 import { EditorStore } from '../model/store';
-import { BlockEditor } from './BlockEditor';
+import { BlockEditor, EditorSurface } from './BlockEditor';
+import { BlockList } from './BlockRow';
 import type { MentionSource } from './context';
 import { useEditorController } from './controller';
 import { EditorToolbar } from './EditorToolbar';
@@ -216,6 +223,69 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
   );
 }
 
+/** Notes the app lays out itself: containers whose blocks it places side by side. */
+const NOTE_SCHEMA = extendSchema(DEFAULT_SCHEMA, [
+  { type: 'note', hasText: false, canHaveChildren: true, isContainer: true },
+]);
+
+function SurfaceDemo() {
+  const store = useMemo(
+    () =>
+      new EditorStore({
+        newId,
+        schema: NOTE_SCHEMA,
+        document: documentFromSnapshot(
+          [
+            {
+              type: 'note',
+              children: [
+                { type: 'heading_2', text: [{ text: 'Left note' }] },
+                { type: 'paragraph', text: [{ text: 'One' }] },
+              ],
+            },
+            { type: 'note', children: [{ type: 'paragraph', text: [{ text: 'Right note' }] }] },
+          ],
+          newId,
+          NOTE_SCHEMA,
+        ),
+      }),
+    [],
+  );
+  (globalThis as { __bloomEditorStore?: EditorStore }).__bloomEditorStore = store;
+  const notes = useSyncExternalStore(store.subscribe, () => store.getSnapshot().doc.root);
+  return (
+    <EditorSurface store={store} slashItems={SLASH_ITEMS} mentions={MENTIONS}>
+      <View style={{ flexDirection: 'row', gap: 32, padding: 48 }}>
+        {notes.map((id, i) => (
+          <NoteDemo key={id} store={store} id={id} label={`Add to note ${i + 1}`} />
+        ))}
+      </View>
+    </EditorSurface>
+  );
+}
+
+function NoteDemo({ store, id, label }: { store: EditorStore; id: string; label: string }) {
+  const children = useSyncExternalStore(
+    store.subscribe,
+    () => store.getSnapshot().doc.blocks[id]?.children ?? [],
+  );
+  return (
+    <View style={{ width: 320, padding: 16, borderWidth: 1, borderColor: '#ddd', borderRadius: 8 }}>
+      <BlockList ids={children} depth={0} />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        onPress={() => {
+          store.sealHistory();
+          store.run((c) => appendChild(c, id, 'paragraph'));
+        }}
+      >
+        <Text style={{ color: '#888', paddingTop: 8 }}>+ {label}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 const meta: Meta<typeof EditorDemo> = {
   title: 'Editor/BlockEditor',
   component: EditorDemo,
@@ -227,3 +297,6 @@ export const Playground: StoryObj<typeof EditorDemo> = {};
 
 /** With the touch toolbar docked under the page, as an app places it above the keyboard. */
 export const WithToolbar: StoryObj<typeof EditorDemo> = { args: { toolbar: true } };
+
+/** `EditorSurface`: the app lays the blocks out (two notes side by side) over one store. */
+export const Surface: StoryObj<typeof EditorDemo> = { render: () => <SurfaceDemo /> };
