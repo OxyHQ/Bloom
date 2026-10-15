@@ -35,8 +35,11 @@ export interface SyncTransport {
    * Send one transaction. `before` is the document it applies to — the
    * server's state as this client knows it plus the local transactions sent
    * ahead of it — for transports that place blocks by their neighbours.
+   * `key` names the transaction and is the same on every retry of it, so a
+   * server can answer a retry whose first attempt it already applied (the
+   * response was lost) instead of applying it twice.
    */
-  send(tx: Transaction, before: EditorDocument): Promise<SendResult>;
+  send(tx: Transaction, before: EditorDocument, key: string): Promise<SendResult>;
 }
 
 /** A transaction another collaborator applied, as the server reports it. */
@@ -53,6 +56,12 @@ export interface SyncSessionOptions {
   version: number;
   /** Delay before retrying a failed send; doubles up to 30s. */
   retryDelayMs?: number;
+  /**
+   * Mints transaction keys (`SyncTransport.send`). They must be unique among
+   * everyone's transactions on the document; defaults to the store's id
+   * factory, which mints block ids with that guarantee.
+   */
+  newKey?: () => string;
   onStatus?: (status: SyncStatus) => void;
   /** The server refused a local transaction; the session has undone it. */
   onRejected?: (tx: Transaction) => void;
@@ -74,6 +83,8 @@ export interface SyncSessionOptions {
 
 interface Entry {
   tx: Transaction;
+  /** Stable across retries; see `SyncTransport.send`. */
+  key: string;
   /** The version the server gave it, once acknowledged. */
   acked?: number;
 }
@@ -111,6 +122,10 @@ export class SyncSession {
     this.unsubscribe = store.onTransaction((tx, origin) => this.onLocal(tx, origin));
   }
 
+  private newKey(): string {
+    return (this.options.newKey ?? this.store.newId)();
+  }
+
   /** The last server version the document reflects contiguously. */
   get currentVersion(): number {
     return this.version;
@@ -135,7 +150,7 @@ export class SyncSession {
 
   private onLocal(tx: Transaction, origin: TransactionOrigin): void {
     if (origin === 'remote' || tx.ops.length === 0) return;
-    this.entries.push({ tx });
+    this.entries.push({ tx, key: this.newKey() });
     this.flush();
   }
 
@@ -153,7 +168,7 @@ export class SyncSession {
     }
     this.sending = next;
     this.setStatus('saving');
-    this.transport.send(next.tx, before).then(
+    this.transport.send(next.tx, before, next.key).then(
       (result) => this.onResult(next, result),
       () => this.onResult(next, { ok: false, retry: true }),
     );

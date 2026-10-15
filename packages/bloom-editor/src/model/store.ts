@@ -47,7 +47,8 @@ export type Command = (ctx: CommandContext) => Transaction | null;
 
 export class EditorStore {
   readonly schema: Schema;
-  private readonly newId: IdFactory;
+  /** Mints block ids (and, by default, sync transaction keys). */
+  readonly newId: IdFactory;
   private readonly isCollapsed: (block: Block) => boolean;
   private readonly history: History;
   private snapshot: EditorSnapshot;

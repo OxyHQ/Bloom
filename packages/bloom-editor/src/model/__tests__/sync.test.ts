@@ -29,17 +29,24 @@ class FakeServer {
   clients: { session: SyncSession; id: string; inbox: (() => void)[] }[] = [];
   /** Acknowledgements waiting to be delivered, per client. */
   acks = new Map<string, (() => void)[]>();
+  /** Versions of applied transactions by key, to answer retries. */
+  applied = new Map<string, number>();
+  /** Lose the response to the next transaction applied (once). */
+  loseNextResponse = false;
 
   constructor(doc: EditorDocument) {
     this.doc = doc;
   }
 
-  receive(clientId: string, tx: Transaction): Promise<SendResult> {
+  receive(clientId: string, tx: Transaction, key?: string): Promise<SendResult> {
+    const seen = key === undefined ? undefined : this.applied.get(key);
+    if (seen !== undefined) return Promise.resolve({ ok: true, version: seen });
     const applied = rebaseOperations(this.doc, tx.ops);
     if (!applied) return Promise.resolve({ ok: false, retry: false });
     this.doc = applied.doc;
     this.version += 1;
     const version = this.version;
+    if (key !== undefined) this.applied.set(key, version);
     const ops = applied.ops;
     for (const client of this.clients) {
       if (client.id === clientId) continue;
@@ -49,6 +56,10 @@ class FakeServer {
           toOperations: (doc) => rebaseOperations(doc, ops)?.ops ?? [],
         }),
       );
+    }
+    if (this.loseNextResponse) {
+      this.loseNextResponse = false;
+      return Promise.resolve({ ok: false, retry: true });
     }
     return new Promise((resolve) => {
       const queue = this.acks.get(clientId) ?? [];
@@ -69,8 +80,8 @@ function makeClient(server: FakeServer, id: string) {
   };
   client.session = new SyncSession(
     store,
-    { send: (tx) => server.receive(id, tx) },
-    { version: server.version },
+    { send: (tx, _before, key) => server.receive(id, tx, key) },
+    { version: server.version, retryDelayMs: 1 },
   );
   server.clients.push(client);
   return client;
@@ -138,6 +149,18 @@ describe('SyncSession', () => {
       expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
     },
   );
+
+  it('sends a retry under the same key, so a lost response does not apply it twice', async () => {
+    const { server, a, b } = start();
+    server.loseNextResponse = true;
+    a.store.run((c) => insertBlockAfter(c, 'b1', 'paragraph'));
+    await new Promise((r) => setTimeout(r, 20));
+    await settle(server);
+    expect(server.version).toBe(1);
+    expect(a.session.hasPending).toBe(false);
+    expect(snapshot(a.store.doc)).toBe(snapshot(server.doc));
+    expect(snapshot(b.store.doc)).toBe(snapshot(server.doc));
+  });
 
   it('drops a local edit to a block someone else deleted', async () => {
     const { server, a, b } = start();
