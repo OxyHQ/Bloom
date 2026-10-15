@@ -1,9 +1,9 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Image, View } from 'react-native';
 
 import { AgentAvatar } from '../agent-avatar/AgentAvatar';
 import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
-import type { ResolvedAvatarCharacter } from '../agent-avatar/character';
+import { avatarCharacterOf, type ResolvedAvatarCharacter } from '../agent-avatar/character';
 import { useCharacterStill } from '../agent-avatar/use-character-still';
 import type { ImageSource } from '../shapes';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
@@ -92,6 +92,10 @@ export function CharacterFace({
   const drawn = useCharacterStill(character, size, !live && !provided);
   const still = provided ?? (drawn ? { uri: drawn } : undefined);
   const box = { width: size, height: size };
+  // `AgentAvatar` resolves what it is handed, and a resolved character keeps its paint under
+  // `paint`, where resolving again does not look: handed as is, every live character wore its
+  // preset's paint (Alia, orchid, went blue). Written back as a character, it resolves to itself.
+  const written = useMemo(() => avatarCharacterOf(character), [character]);
 
   if (live) {
     return (
@@ -109,7 +113,7 @@ export function CharacterFace({
         )}
         <View style={ready ? box : { position: 'absolute', left: 0, top: 0, ...box }}>
           <AgentAvatar
-            character={character}
+            character={written}
             size={size}
             workingKey={workingKey ?? (episodes > 0 ? episodes : undefined)}
             reactionKey={reactionKey}

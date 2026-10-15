@@ -6,6 +6,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Avatar, AVATAR_LIVE_SIZE } from '../avatar';
 import { AvatarGroup } from '../avatar-group';
 import { CharacterRuntimeContext } from '../agent-avatar/context';
+import { resolveAvatarCharacter } from '../agent-avatar/character';
 import {
   createCharacterStills,
   type StillBackend,
@@ -241,6 +242,20 @@ describe('live or still', () => {
     expect(last().workingKey).toBe(1);
     view.rerender(wrap(element('working')));
     expect(last().workingKey).toBe(2);
+  });
+
+  it('a live character keeps its own paint, not its preset’s', () => {
+    renderAvatar(
+      <Avatar
+        character={{ preset: 'blue_beret', accessory: 'none', color: 'orchid' }}
+        size={120}
+      />,
+    );
+    const handed = resolveAvatarCharacter(lastProps().character);
+    expect(handed.paint).toEqual({ color: 'orchid' });
+    expect(handed).toEqual(
+      resolveAvatarCharacter({ preset: 'blue_beret', accessory: 'none', color: 'orchid' }),
+    );
   });
 
   it('an explicit workingKey is the caller’s and is passed through', () => {
