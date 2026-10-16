@@ -14,6 +14,7 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { Card } from '../card';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import type { ViewStyle } from 'react-native';
 import { splitCompiledStyle } from '../styles/compiled-style';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -36,13 +37,13 @@ it('keeps both the class and the inline style, without a styleq error', () => {
   act(() =>
     root.render(
       <BloomThemeProvider fonts={false}>
-      <Card
-        testID="card"
-        className="p-6"
-        style={{ maxWidth: 372, gap: 20 }}
-        radius="radius-16"
-        appearance="outline"
-      />
+        <Card
+          testID="card"
+          className="p-6"
+          style={{ maxWidth: 372, gap: 20 }}
+          radius="radius-16"
+          appearance="outline"
+        />
       </BloomThemeProvider>,
     ),
   );
@@ -59,8 +60,8 @@ it('keeps both the class and the inline style, without a styleq error', () => {
 });
 
 it('splits compiled entries from the inline values a component may read', () => {
-  const compiled = { $$css: true, className: 'p-6' } as const;
-  const { classes, inline } = splitCompiledStyle([
+  const compiled = { $$css: true, className: 'p-6' } as unknown as ViewStyle;
+  const { classes, inline } = splitCompiledStyle<ViewStyle>([
     { maxWidth: 372 },
     [false, { gap: 20 }, compiled],
     null,

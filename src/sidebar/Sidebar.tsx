@@ -57,6 +57,7 @@ import { SidebarScrollArea } from './SidebarScrollArea';
 import { SidebarTeamMenu } from './SidebarTeamMenu';
 import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarUserMenu } from './SidebarUserMenu';
+import { sidebarItemAction, useSidebarShortcuts } from './use-sidebar-shortcuts';
 import type { SidebarNavItem, SidebarProps, SidebarTree } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
@@ -458,11 +459,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   // ---- rows --------------------------------------------------------------
   const pressFor = useCallback(
-    (item: SidebarNavItem) => {
-      if (item.onPress) return item.onPress;
-      if (onNavigate && item.href != null) return () => onNavigate(item);
-      return undefined;
-    },
+    (item: SidebarNavItem) => sidebarItemAction(item, onNavigate),
     [onNavigate],
   );
 
@@ -495,6 +492,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         collapsed={collapsed}
         onPress={pressFor(item)}
         onLongPress={item.onLongPress}
+        shortcut={item.shortcut}
         testID={`sidebar-item-${item.key}`}
         badge={
           item.badge !== undefined ? (
@@ -1130,8 +1128,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 };
 
 // Two component types, so switching `variant` remounts instead of changing the hook order.
-const SidebarComponent: React.FC<SidebarProps> = ({ variant = 'panel', ...props }) =>
-  variant === 'rail' ? <SidebarRail {...props} /> : <SidebarPanel {...props} />;
+const SidebarComponent: React.FC<SidebarProps> = ({ variant = 'panel', ...props }) => {
+  // Above the variant split: one binding whichever form the navigation takes.
+  useSidebarShortcuts(props);
+  return variant === 'rail' ? <SidebarRail {...props} /> : <SidebarPanel {...props} />;
+};
 
 export const Sidebar = memo(SidebarComponent);
 Sidebar.displayName = 'Sidebar';

@@ -101,10 +101,18 @@ export function wrapTab(event: KeyboardEvent, node: HTMLElement | null): boolean
   return false;
 }
 
-function isTextEntry(target: EventTarget | null): boolean {
+/** Focus is somewhere typing goes: a text input, a textarea or editable content. */
+export function isTextEntry(target: EventTarget | null): boolean {
   if (!target || typeof (target as Element).closest !== 'function') return false;
   const element = target as HTMLElement;
-  if (element.isContentEditable) return true;
+  // `closest` too: jsdom implements no `isContentEditable`.
+  if (
+    element.isContentEditable ||
+    element.closest(
+      '[contenteditable=""],[contenteditable="true"],[contenteditable="plaintext-only"]',
+    )
+  )
+    return true;
   if (element.tagName === 'TEXTAREA') return true;
   if (element.tagName !== 'INPUT') return false;
   const type = (element as HTMLInputElement).type;

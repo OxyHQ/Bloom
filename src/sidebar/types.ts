@@ -45,6 +45,12 @@ export interface SidebarNavItem {
   onPress?: () => void;
   /** Secondary touch action. Also expose it through a keyboard-accessible menu. */
   onLongPress?: () => void;
+  /**
+   * Web: a keyboard shortcut, e.g. `⌥⌃1` or `Ctrl+Shift+H`. Shown on hover and
+   * BOUND by the sidebar — pressing it does what pressing the row does. Don't
+   * bind it again in the app.
+   */
+  shortcut?: string;
 }
 
 /** One mode of a {@link SidebarModeSwitcherProps.modes} switcher. */
@@ -52,7 +58,11 @@ export interface SidebarMode {
   key: string;
   label: string;
   icon: SidebarIcon;
-  /** A shortcut hint shown on hover (web), e.g. `⌥⌃1`. */
+  /**
+   * Web: a keyboard shortcut, e.g. `⌥⌃1`. Shown on hover and BOUND by the
+   * `Sidebar` that lists the mode — the key calls `onModeChange(key)`. Don't bind
+   * it again in the app.
+   */
   shortcut?: string;
 }
 
@@ -102,6 +112,8 @@ export interface SidebarItemProps {
    * to `badge`.
    */
   collapsedBadge?: ReactNode;
+  /** Web: a shortcut hint at the row's end, shown on hover. Binding it is the `Sidebar`'s job. */
+  shortcut?: string;
   selected?: boolean;
   /** Icon-only square matching the sidebar size (40px for md). */
   collapsed?: boolean;
