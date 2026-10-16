@@ -334,7 +334,12 @@ export type DialogProps = React.PropsWithChildren<{
    * 20px default on every surface.
    */
   contentPadding?: number;
-  /** Whether tapping the backdrop dismisses the dialog. Defaults to `true`. */
+  /**
+   * Whether a USER dismissal closes the dialog: a backdrop tap, Escape, Android
+   * Back, and a drag down on the bottom sheet or the native centred card.
+   * Defaults to `true`. `false` keeps every placement open until `close()` or
+   * the header's close button, which are not user dismissals.
+   */
   dismissOnBackdrop?: boolean;
   /**
    * Whether the panel MORPHS across an in-place content swap. Defaults to

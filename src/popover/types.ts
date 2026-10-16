@@ -2,7 +2,26 @@ import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { OverlayOpenProps, OverlaySurfaceProps, OverlayTriggerProps } from '../floating/types';
 
-export type PopoverProps = React.PropsWithChildren<OverlayOpenProps>;
+export type PopoverProps = React.PropsWithChildren<
+  OverlayOpenProps & {
+    /**
+     * Whether an outside press is CAUGHT or passed through. Defaults to `true`.
+     *
+     * Modal (the default) lays a transparent backdrop over the app: the press
+     * closes the popover and goes no further, so a popover opened inside a
+     * dialog cannot dismiss the dialog with the same click.
+     *
+     * `false` lays down nothing. An outside press still closes the popover (when
+     * `dismissible`), AND it reaches what is under it — for a picker beside a
+     * field the user keeps typing and clicking in, such as an @-mention list,
+     * where a backdrop made the first click anywhere only close the picker.
+     * The same option `Menubar` and `HoverCard` use, under Radix's name.
+     *
+     * Web only: the native popover is a bottom sheet, which is always modal.
+     */
+    modal?: boolean;
+  }
+>;
 export type PopoverTriggerProps = OverlayTriggerProps;
 export type PopoverContentProps = OverlaySurfaceProps & {
   /** Standard optical surface or plain fill. Default surface. */

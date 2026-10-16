@@ -13,6 +13,8 @@ import type { OverlayShellContextValue } from '../floating/types';
 interface PopoverContextValue extends OverlayShellContextValue {
   /** Web floating host; the native sheet owns its own focus lifecycle. */
   panelRef?: RefObject<View | null>;
+  /** Web: whether the floating panel catches the outside press (`PopoverProps.modal`). */
+  modal?: boolean;
 }
 
 const PopoverContext = createContext<PopoverContextValue | null>(null);

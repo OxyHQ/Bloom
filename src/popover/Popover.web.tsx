@@ -24,7 +24,13 @@ import type { PopoverContentProps, PopoverProps, PopoverTriggerProps } from './t
 import { useMessages } from '../locale/messages';
 import { POPOVER_MESSAGES } from './messages';
 
-export function Popover({ children, open, defaultOpen = false, onOpenChange }: PopoverProps) {
+export function Popover({
+  children,
+  open,
+  defaultOpen = false,
+  onOpenChange,
+  modal = true,
+}: PopoverProps) {
   const [isOpen, setOpen] = useControllableState<boolean>({
     value: open,
     defaultValue: defaultOpen,
@@ -39,7 +45,10 @@ export function Popover({ children, open, defaultOpen = false, onOpenChange }: P
     isOpen,
     (element) => hostElement(panelRef.current)?.contains(element) ?? false,
   );
-  const value = useMemo(() => ({ open: isOpen, setOpen, anchorRef, panelRef }), [isOpen, setOpen]);
+  const value = useMemo(
+    () => ({ open: isOpen, setOpen, anchorRef, panelRef, modal }),
+    [isOpen, setOpen, modal],
+  );
 
   return <PopoverProvider value={value}>{children}</PopoverProvider>;
 }
@@ -128,6 +137,7 @@ export function PopoverContent({
       sideOffset={sideOffset}
       alignOffset={alignOffset}
       dismissible={dismissible}
+      modal={popover.modal}
       minWidth={minWidth}
       maxWidth={maxWidth}
       onDismiss={close}

@@ -134,7 +134,9 @@ Press outside or hit Escape. `dismissible={false}` turns both off, for a popover
 
 Escape stops at the innermost open surface, so a popover opened from inside a dialog closes the popover and leaves the dialog up.
 
-The outside press is caught by a transparent backdrop (it closes the popover and goes no further). Popovers are non-modal — a press outside would otherwise also reach the page — but Bloom keeps the caught press so a popover opened inside a dialog cannot dismiss the dialog with the same click.
+By default the outside press is caught by a transparent backdrop (it closes the popover and goes no further), so a popover opened inside a dialog cannot dismiss the dialog with the same click.
+
+`<Popover modal={false}>` lays down no backdrop: the outside press still closes the popover, and it also reaches whatever is under it. Use it for a panel that sits beside a control the user keeps working in — an @-mention picker under a text field, where a backdrop made the first click in the field only close the picker. It is the same option `Menubar` and `HoverCard` use. Web only: the native popover is a bottom sheet, which is always modal.
 
 ## The panel publishes its surface
 
