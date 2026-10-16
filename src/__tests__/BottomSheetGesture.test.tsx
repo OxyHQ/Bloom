@@ -206,3 +206,22 @@ it.each([
   expect(onClose).toHaveBeenCalledTimes(closes);
   expect(Boolean(screen.queryByText('Centred body'))).toBe(closes === 0);
 });
+
+// Controlled mode: a swipe the centred card commits on its own must reach the
+// host's `onClose`, or the host's `open` stays true over a closed dialog.
+it('a controlled centred native Dialog reports a committed swipe-down through onClose', () => {
+  mockPanGestures.length = 0;
+  const onClose = jest.fn();
+  const screen = render(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      <Dialog open placement="center" onClose={onClose}>
+        <Text>Controlled body</Text>
+      </Dialog>
+    </BloomThemeProvider>,
+  );
+  const gesture = mockPanGestures.find((g) => typeof g.onEnd === 'function');
+  expect(gesture).toBeDefined();
+  act(() => gesture?.onEnd?.({ velocityY: 1500, translationY: 500 }));
+  expect(onClose).toHaveBeenCalledTimes(1);
+  expect(screen.queryByText('Controlled body')).toBeNull();
+});

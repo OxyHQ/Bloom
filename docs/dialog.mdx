@@ -212,7 +212,9 @@ The `bottom` placement is the shared `BottomSheet`, which does the same on web
 (`docs/bottom-sheet.mdx`). A controlled bottom dialog the SHEET closes — the
 backdrop, a drag, Escape — now calls `onClose`, so the host's `open` does not
 stay `true` over a closed sheet; a close the host made by flipping `open` still
-does not call it again.
+does not call it again. The native `center` card follows the same rule for the
+backdrop, a swipe down and Android Back; the native side drawers already
+reported those through `onClose`.
 
 ## Web setup
 
