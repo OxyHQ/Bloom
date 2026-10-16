@@ -158,11 +158,30 @@ for one frame is a crash, not a state.
 | `source`                    | the wallpaper image (`image` only); URL, `ImageResolver` id or source |
 | `overlayOpacity`            | how hard the image is dimmed. Default `0.55` light / `0.62` dark  |
 | `tint`, `patternOpacity`    | the pattern's ink and its strength (default `0.5`)                |
+| `patternImage`              | `{ source, width, height }`: the app's own tile instead of the glyphs (`pattern` only) |
 | `colors`                    | override the gradient stops                                       |
 | `children`                  | the transcript, drawn above the wallpaper                         |
 
 It is the CONTAINER, not a layer: put the transcript and the floating controls
 inside it.
+
+`patternImage` is how an app brings its own wallpaper without leaving the
+pattern's contract. Only the image's ALPHA is used: every tile is inked with
+`tint` at `patternOpacity`, so a tile drawn in one colour on transparent lands
+on the same extremes as the glyphs, in both modes, and the measured table below
+still holds. The tiles are a grid sized in points and laid over the window, not
+`resizeMode="repeat"`, which repeats at the file's natural size — pixels on web,
+points at the asset's scale on native — and drew one file at a different density
+per platform. Make the tile seamless; nothing blends its edges.
+
+```tsx
+<ChatBackground
+  variant="pattern"
+  patternImage={{ source: require('./wallpaper.png'), width: 360, height: 654 }}
+>
+  {transcript}
+</ChatBackground>
+```
 
 ### Measured contrast
 

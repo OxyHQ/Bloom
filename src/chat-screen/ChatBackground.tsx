@@ -1,5 +1,6 @@
-import React, { memo, useId } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import type React from 'react';
+import { memo, useId } from 'react';
+import { Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Path, Pattern, Rect, Stop } from 'react-native-svg';
 
 import {
@@ -10,7 +11,7 @@ import {
   useResolvedImageSource,
   type ChatScreenPaint,
 } from './shared';
-import type { ChatBackgroundProps } from './types';
+import type { ChatBackgroundPatternImage, ChatBackgroundProps } from './types';
 
 /**
  * The repeated-glyph wallpaper, as ONE `<Pattern>` tile the renderer repeats.
@@ -72,6 +73,68 @@ function PatternLayer({
   );
 }
 
+/**
+ * A caller's own wallpaper tile, repeated, with the SAME ink and opacity as the
+ * glyph pattern: the image contributes only its alpha (`tintColor`), so the
+ * extremes `chatBackgroundExtremes` proves for `pattern` hold for any tile.
+ *
+ * The tiles are laid out as a fixed grid rather than `resizeMode="repeat"`,
+ * because "repeat" repeats at the image's NATURAL size — pixels on web, points at
+ * the asset's scale on native — so one file drew a different density per
+ * platform. The grid covers the WINDOW, which no transcript pane can outgrow, so
+ * nothing has to be measured first and nothing flashes in after a layout pass.
+ */
+function PatternImageLayer({
+  paint,
+  tint,
+  opacity,
+  image,
+}: {
+  paint: ChatScreenPaint;
+  tint?: string;
+  opacity: number;
+  image: ChatBackgroundPatternImage;
+}) {
+  const window = useWindowDimensions();
+  const source = useResolvedImageSource(image.source);
+  if (!source || !(image.width > 0) || !(image.height > 0)) return null;
+  const columns = Math.max(1, Math.ceil(window.width / image.width));
+  const rows = Math.max(1, Math.ceil(window.height / image.height));
+  const ink = tint ?? paint.patternTint;
+  const tiles: React.ReactNode[] = [];
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      tiles.push(
+        <Image
+          key={`${row}:${column}`}
+          source={source}
+          tintColor={ink}
+          resizeMode="stretch"
+          style={{
+            position: 'absolute',
+            left: column * image.width,
+            top: row * image.height,
+            width: image.width,
+            height: image.height,
+          }}
+        />,
+      );
+    }
+  }
+  return (
+    <View
+      pointerEvents="none"
+      testID="chat-background-pattern"
+      aria-hidden
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[StyleSheet.absoluteFill, { opacity }]}
+    >
+      {tiles}
+    </View>
+  );
+}
+
 function GradientLayer({ colors }: { colors: string[] }) {
   const id = `chat-gradient-${useId().replace(/[^A-Za-z0-9-]/g, '')}`;
   const last = colors.length - 1;
@@ -122,6 +185,7 @@ function ChatBackgroundComponent({
   overlayOpacity,
   tint,
   patternOpacity = DEFAULT_PATTERN_OPACITY,
+  patternImage,
   colors,
   children,
   style,
@@ -137,7 +201,15 @@ function ChatBackgroundComponent({
       testID={testID}
       style={[{ flex: 1, overflow: 'hidden', backgroundColor: paint.page }, style]}
     >
-      {variant === 'pattern' ? (
+      {variant === 'pattern' && patternImage ? (
+        <PatternImageLayer
+          paint={paint}
+          tint={tint}
+          opacity={patternOpacity}
+          image={patternImage}
+        />
+      ) : null}
+      {variant === 'pattern' && !patternImage ? (
         <PatternLayer paint={paint} tint={tint} opacity={patternOpacity} />
       ) : null}
       {variant === 'gradient' ? <GradientLayer colors={gradientColors} /> : null}

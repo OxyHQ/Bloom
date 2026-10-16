@@ -1,4 +1,5 @@
-import React, { useContext, useState } from 'react';
+import type React from 'react';
+import { useContext, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -677,6 +678,34 @@ export const Wallpapers: Story = {
       </BothModes>
     );
   },
+};
+
+/**
+ * An app's own tile in place of the glyphs. Drawn in one colour on transparent;
+ * only the alpha is used, so it takes the same ink and opacity as the glyphs.
+ */
+const STAR_TILE = `data:image/svg+xml;utf8,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" fill="none" stroke="#fff" stroke-width="2">' +
+    '<path d="M24 12l4 9 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1z"/>' +
+    '<circle cx="70" cy="64" r="10"/><path d="M60 26h20M70 16v20"/></svg>',
+)}`;
+
+export const WallpaperTile: Story = {
+  render: () => (
+    <BothModes>
+      <View style={{ height: 260, maxWidth: 320, borderRadius: 16, overflow: 'hidden' }}>
+        <ChatBackground
+          variant="pattern"
+          patternImage={{ source: STAR_TILE, width: 96, height: 96 }}
+        >
+          <View style={{ padding: 12, gap: 8 }}>
+            <Bubble text="Incoming, over the app's tile." time="09:12" />
+            <Bubble text="Outgoing, in the accent." time="09:13" outgoing />
+          </View>
+        </ChatBackground>
+      </View>
+    </BothModes>
+  ),
 };
 
 /** The two jump buttons and the floating date pill. */
