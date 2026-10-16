@@ -28,4 +28,4 @@ export type {
   TextMarks,
   TextSelection,
   ToggleableMark,
-} from './types';
+} from './model-types';

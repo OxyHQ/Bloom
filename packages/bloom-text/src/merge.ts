@@ -12,7 +12,7 @@
  * `mine` inserted goes in beside it.
  */
 import { coalesceSegments, marksEqual, marksOf } from './segments';
-import type { Segment, TextMarks } from './types';
+import type { Segment, TextMarks } from './model-types';
 
 interface Unit {
   text: string;

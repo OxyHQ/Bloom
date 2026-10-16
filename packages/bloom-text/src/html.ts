@@ -12,7 +12,7 @@
  * line breaks become `\n`.
  */
 import { coalesceSegments } from './segments';
-import type { MentionMark, Segment, TextMarks } from './types';
+import type { MentionMark, Segment, TextMarks } from './model-types';
 
 const SAFE_LINK = /^(https?:|mailto:|tel:|\/|#)/i;
 
