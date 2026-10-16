@@ -53,6 +53,13 @@ It fires once per approach to the end, not once per scroll event — but a secon
 approach can happen before the first request resolves. Guard on your own
 loading flag; the list does not know what your fetch is doing.
 
+Both platforms honour it with the same semantics. `onEndReachedThreshold` is in
+viewports and defaults to 2, as `FlatList`. The end includes `ListFooterComponent`.
+It re-arms when the user scrolls back out of range or the row count changes, so
+a page that still leaves the end in range asks again. It never fires while `data`
+is empty. On web the window is the scroller: an end marker after the footer is
+observed against the viewport, so no footer sentinel of your own is needed.
+
 ```tsx
 onEndReached={() => { if (!isFetching && hasMore) fetchNext(); }}
 ```

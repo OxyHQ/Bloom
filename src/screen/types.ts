@@ -31,4 +31,17 @@ export interface ScreenScrollOptions {
 
 export interface ScreenScrollViewProps
   extends Omit<ScrollViewProps, 'onScroll'>,
-    ScreenScrollOptions {}
+    ScreenScrollOptions {
+  /** Utilities for the content container, resolved by Bloom's own interop. */
+  contentContainerClassName?: string;
+  /**
+   * Called once each time the end of the content comes within
+   * `onEndReachedThreshold` viewports — on native from the scroll view, in a web
+   * `Screen documentScroll` from the window. Re-arms when the user scrolls back
+   * out of range or the content changes length, so a page that arrives still
+   * short of the viewport asks for the next one. Guard on your own in-flight flag.
+   */
+  onEndReached?: () => void;
+  /** Viewport-relative distance from the end that fires `onEndReached`. Default 2, as `FlatList`. */
+  onEndReachedThreshold?: number;
+}

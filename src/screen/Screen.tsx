@@ -79,6 +79,7 @@ export function Screen({
       collapseTarget,
       activeScrollerId,
       contentInsetsHandled: document,
+      documentScroll: document,
       topInset: header ? top : 0,
       bottomInset: keyboardVisible
         ? contentClearance

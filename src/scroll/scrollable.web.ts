@@ -73,6 +73,27 @@ function resolveElement(target: ScrollRestorationTarget): HTMLElement | null {
 }
 
 /**
+ * The `'window'` sentinel for a target whose node IS the document's own
+ * scroller, the target unchanged otherwise.
+ *
+ * A `ScreenScrollView` inside a web `Screen documentScroll` creates no scroll
+ * container: its ref answers `getScrollableNode()` with
+ * `document.scrollingElement`. That element's `scrollTop` is the window's
+ * offset, but its scroll EVENTS are dispatched at the document and reach the
+ * window, never the element — so it must be treated as the window, or a
+ * restore would write correctly and never record a save. Resolved when the
+ * restore session starts, by which point the ref is attached.
+ */
+export function resolveScrollTarget(target: ScrollRestorationTarget): ScrollRestorationTarget {
+  if (target === 'window' || typeof document === 'undefined') return target;
+  const element = resolveElement(target);
+  return element !== null &&
+    (element === document.scrollingElement || element === document.documentElement)
+    ? 'window'
+    : target;
+}
+
+/**
  * Build a {@link ResolvedScroller} for a target. The window sentinel reads and
  * writes the document scroller; everything else operates on the resolved
  * element's `scrollTop`.

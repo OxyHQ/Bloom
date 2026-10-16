@@ -49,9 +49,15 @@ export interface VirtualListProps<T> {
   estimatedItemSize?: number;
   /** Web: extra rows mounted beyond the viewport (virtualization overscan). */
   overscan?: number;
-  /** Called when the end of the list is approached (native pagination). */
+  /**
+   * Called once each time the end of the list (footer included) comes within
+   * `onEndReachedThreshold` viewports — native from the list's own scroller, web
+   * from the window. Re-arms when the user scrolls back out of range or the row
+   * count changes; never fires while `data` is empty. Guard on your own
+   * in-flight flag: a second approach can come before the first page lands.
+   */
   onEndReached?: () => void;
-  /** Native: viewport-relative distance from the end that fires `onEndReached`. */
+  /** Viewport-relative distance from the end that fires `onEndReached`. Default 2, as `FlatList`. */
   onEndReachedThreshold?: number;
   /** Pull-to-refresh active flag (native). */
   refreshing?: boolean;
