@@ -387,7 +387,14 @@ export interface TabsDragController {
 function useTabsContext(component: string): TabsContextValue {
   const ctx = useContext(TabsContext);
   if (!ctx) {
-    throw new Error(`${component} must be used within a Tabs`);
+    // A trigger has no geometry, underline or keyboard of its own: the strip
+    // owns all three. Say what the panel-less strip is, since that is what a
+    // caller reaching for a bare trigger usually wants.
+    throw new Error(
+      `${component} must be used within a Tabs. Tabs is the strip itself, and TabsContent is ` +
+        'optional: for a strip that switches views elsewhere, render ' +
+        '<Tabs value={…} onValueChange={…}> with TabsTrigger children and no TabsContent.',
+    );
   }
   return ctx;
 }
@@ -856,6 +863,8 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   isFocused,
   disabled = false,
   onPress: onPressProp,
+  onLongPress,
+  trailing,
   style,
   textStyle,
 }) => {
@@ -981,7 +990,102 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   );
 
   const showHoverLayer = !isUnderline && !isSelected && !disabled;
+  const hasTrailing = trailing != null;
 
+  const hoverLayer = showHoverLayer ? (
+    <View
+      pointerEvents="none"
+      {...webDataSet({ bloomTabsHover: '' })}
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        borderRadius: geometry.radius,
+        backgroundColor: paint.hover,
+        opacity: hovered || pressed ? 1 : 0,
+      }}
+    />
+  ) : null;
+
+  // With a `trailing` node the measured wrapper becomes the tab's row: the
+  // press target, then the trailing node as its SIBLING. The wrapper is what
+  // the strip measures, so the underline and the pill thumb span both, and the
+  // hover layer moves up to it so the pill it paints does too. The press
+  // target gives up its right padding to the gap before the trailing node,
+  // which carries that padding instead.
+  const tab = (
+    <Pressable
+      {...webDataSet({ bloomTabsTrigger: variant })}
+      {...webKeyboard}
+      style={[
+        triggerStyle,
+        hasTrailing && { paddingRight: geometry.labelGap },
+        fullWidth && { flex: 1 },
+        disabled && { opacity: 0.5 },
+        style,
+      ]}
+      onPress={handlePress}
+      onLongPress={disabled ? undefined : onLongPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
+      disabled={disabled}
+      accessibilityRole="tab"
+      accessibilityLabel={showCount ? `${label}, ${resolvedCount}` : label}
+      // `aria-selected`, and NOT a web-only spelling of `accessibilityState`.
+      // react-native-web's `createDOMProps` reads `aria-selected` (or the
+      // deprecated `accessibilitySelected`) and does not look at
+      // `accessibilityState` at all, so a strip that set only the latter
+      // announced no selection on web at all — every tab equally current.
+      // React Native's own `Pressable` folds `aria-selected` back into
+      // `accessibilityState.selected`, so this one prop serves both platforms
+      // and there is no second place for the answer to disagree. `disabled`
+      // needs no counterpart: both Pressables already derive that state from
+      // the `disabled` prop above.
+      aria-selected={isSelected}
+    >
+      {hasTrailing ? null : hoverLayer}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: geometry.labelGap }}>
+        {renderedIcon}
+        <Text
+          {...webDataSet({ bloomTabsLabel: '' })}
+          numberOfLines={1}
+          style={[labelTextStyle, textStyle]}
+        >
+          {label}
+        </Text>
+      </View>
+      {showCount ? (
+        <View
+          style={{
+            borderRadius: 4,
+            paddingLeft: 4,
+            paddingRight: 4,
+            paddingTop: 1,
+            paddingBottom: 1,
+            backgroundColor: isSelected ? paint.countSelectedBackground : paint.countIdleBackground,
+            opacity: isSelected ? 1 : 0.5,
+          }}
+        >
+          <Text
+            numberOfLines={1}
+            style={{
+              ...TYPE_SCALE['caption-1-medium'],
+              color: isSelected ? paint.countSelectedForeground : paint.countIdleForeground,
+            }}
+          >
+            {formatCount(resolvedCount)}
+          </Text>
+        </View>
+      ) : null}
+    </Pressable>
+  );
+
+  // The wrapper's only child is the press target unless there is a trailing node
+  // (a fragment then), so what the strip measures stays one plain trigger.
   return (
     <View
       ref={nodeRef}
@@ -989,84 +1093,31 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
         const { x, width } = e.nativeEvent.layout;
         reportTriggerLayout(value, { x, width });
       }}
-      style={fullWidth ? { flex: 1 } : undefined}
+      style={
+        fullWidth || hasTrailing
+          ? [
+              fullWidth ? { flex: 1 } : null,
+              hasTrailing ? { flexDirection: 'row', alignItems: 'center' } : null,
+            ]
+          : undefined
+      }
     >
-      <Pressable
-        {...webDataSet({ bloomTabsTrigger: variant })}
-        {...webKeyboard}
-        style={[triggerStyle, fullWidth && { flex: 1 }, disabled && { opacity: 0.5 }, style]}
-        onPress={handlePress}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
-        onHoverIn={onHoverIn}
-        onHoverOut={onHoverOut}
-        disabled={disabled}
-        accessibilityRole="tab"
-        accessibilityLabel={showCount ? `${label}, ${resolvedCount}` : label}
-        // `aria-selected`, and NOT a web-only spelling of `accessibilityState`.
-        // react-native-web's `createDOMProps` reads `aria-selected` (or the
-        // deprecated `accessibilitySelected`) and does not look at
-        // `accessibilityState` at all, so a strip that set only the latter
-        // announced no selection on web at all — every tab equally current.
-        // React Native's own `Pressable` folds `aria-selected` back into
-        // `accessibilityState.selected`, so this one prop serves both platforms
-        // and there is no second place for the answer to disagree. `disabled`
-        // needs no counterpart: both Pressables already derive that state from
-        // the `disabled` prop above.
-        aria-selected={isSelected}
-      >
-        {showHoverLayer ? (
+      {hasTrailing ? (
+        <>
+          {hoverLayer}
+          {tab}
           <View
-            pointerEvents="none"
-            {...webDataSet({ bloomTabsHover: '' })}
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0,
-              borderRadius: geometry.radius,
-              backgroundColor: paint.hover,
-              opacity: hovered || pressed ? 1 : 0,
-            }}
-          />
-        ) : null}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: geometry.labelGap }}>
-          {renderedIcon}
-          <Text
-            {...webDataSet({ bloomTabsLabel: '' })}
-            numberOfLines={1}
-            style={[labelTextStyle, textStyle]}
+            style={[
+              { flexShrink: 0, paddingRight: geometry.labelGap },
+              disabled && { opacity: 0.5 },
+            ]}
           >
-            {label}
-          </Text>
-        </View>
-        {showCount ? (
-          <View
-            style={{
-              borderRadius: 4,
-              paddingLeft: 4,
-              paddingRight: 4,
-              paddingTop: 1,
-              paddingBottom: 1,
-              backgroundColor: isSelected
-                ? paint.countSelectedBackground
-                : paint.countIdleBackground,
-              opacity: isSelected ? 1 : 0.5,
-            }}
-          >
-            <Text
-              numberOfLines={1}
-              style={{
-                ...TYPE_SCALE['caption-1-medium'],
-                color: isSelected ? paint.countSelectedForeground : paint.countIdleForeground,
-              }}
-            >
-              {formatCount(resolvedCount)}
-            </Text>
+            {trailing}
           </View>
-        ) : null}
-      </Pressable>
+        </>
+      ) : (
+        tab
+      )}
     </View>
   );
 };

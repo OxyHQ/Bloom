@@ -42,6 +42,22 @@ const [checked, setChecked] = useState(false);
 
 `indeterminate` announces as `aria-checked="mixed"` and draws a rounded bar rather than a second glyph — the icon set has no minus, and a rule is what the state means.
 
+## Read-only
+
+```tsx
+<Checkbox readOnly checked={item.done} label={item.text} />
+```
+
+`readOnly` shows the state and takes no input: a checkmark in a published,
+read-only page. It is not `disabled`. Disabled says "you could, but not now" and
+dims the box to 50%; read-only says "this is a record" and keeps the box and
+label at full strength. It renders a plain view rather than a pressable, so
+there is no press, hover or tab stop to suppress, and `onCheckedChange` never
+runs. To assistive technology it is still a `checkbox` with its state
+(`aria-checked`, `mixed` included) and `aria-readonly`. On web it is not a tab
+stop (`tabindex="-1"`), since react-native-web would otherwise give the role
+one, and a page of checkmarks is read rather than tabbed through.
+
 ## Sizes and colour
 
 `size` is `sm`, `md` (default) or `lg`. `tone` selects the shared semantic fill and its paired mark foreground; it defaults to `accent`.

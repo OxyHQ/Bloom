@@ -26,6 +26,8 @@ const ItemComponent = function Item({
   trailing,
   onPress,
   onLongPress,
+  onHoverIn: onHoverInProp,
+  onHoverOut: onHoverOutProp,
   disabled = false,
   destructive = false,
   // Deliberately NOT defaulted: a row that never mentions selection is not a
@@ -160,8 +162,22 @@ const ItemComponent = function Item({
         // types these on `Pressable` and only a platform with a real pointer
         // ever calls them, so there is no `Platform.OS` branch to write and a
         // touch never flashes a hover state on its way to a press.
-        onHoverIn={disabled ? undefined : onHoverIn}
-        onHoverOut={disabled ? undefined : onHoverOut}
+        onHoverIn={
+          disabled
+            ? undefined
+            : (event) => {
+                onHoverIn();
+                onHoverInProp?.(event);
+              }
+        }
+        onHoverOut={
+          disabled
+            ? undefined
+            : (event) => {
+                onHoverOut();
+                onHoverOutProp?.(event);
+              }
+        }
         disabled={disabled}
         android_ripple={{ color: theme.colors.border }}
         accessibilityRole={resolvedRole}

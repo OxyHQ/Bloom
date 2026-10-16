@@ -420,3 +420,52 @@ describe('controlled native Dialog: a self-dismissal reaches onClose', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 });
+
+describe('DialogAction loading', () => {
+  function openWith(actions: React.ComponentProps<typeof Dialog>['actions']) {
+    let control: ReturnType<typeof useDialogControl> | undefined;
+    const utils = renderWithTheme(
+      <Harness
+        onControl={(c) => {
+          control = c;
+        }}
+      >
+        {(c) => <Dialog control={c} title="Publish?" actions={actions} />}
+      </Harness>,
+    );
+    act(() => {
+      control?.open();
+    });
+    return utils;
+  }
+
+  it('draws the spinner, announces busy, and ignores the press: no close, no onPress', () => {
+    const onPublish = jest.fn();
+    const { getByLabelText, getByText } = openWith([
+      { label: 'Publish', onPress: onPublish, loading: true },
+    ]);
+    const host = getByLabelText('Publish');
+    expect(host.props['aria-busy']).toBe(true);
+    expect(host.props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    expect(host.props.onPress).toBeUndefined();
+    act(() => {
+      fireEvent.press(host);
+    });
+    expect(onPublish).not.toHaveBeenCalled();
+    // Still open: the press neither ran the action nor dismissed the dialog.
+    expect(getByText('Publish?')).toBeTruthy();
+  });
+
+  it('leaves an action without `loading` pressable and unannounced', () => {
+    const onPublish = jest.fn();
+    const { getByLabelText } = openWith([
+      { label: 'Publish', onPress: onPublish, shouldCloseOnPress: false },
+    ]);
+    const host = getByLabelText('Publish');
+    expect(host.props['aria-busy']).toBeUndefined();
+    act(() => {
+      fireEvent.press(host);
+    });
+    expect(onPublish).toHaveBeenCalledTimes(1);
+  });
+});

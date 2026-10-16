@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { GestureResponderEvent, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
@@ -68,7 +68,13 @@ export interface TabsProps {
    * native, where naming the container would fold its tabs into one element.
    */
   label?: string;
-  /** The tab items. Must be TabsTrigger components. */
+  /**
+   * The tab items: `TabsTrigger`s. `Tabs` IS the strip, and `TabsContent` is
+   * optional — a strip with no panels (views switched somewhere else, keyed on
+   * `value`) is `Tabs` with `value`/`onValueChange` and triggers alone. A
+   * control that is not a tab (an "add view" button) belongs beside the
+   * strip, not in it: the strip is a `tablist`, which owns tabs only.
+   */
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -109,6 +115,20 @@ export interface TabsTriggerProps {
   disabled?: boolean;
   /** Extra press handler. Runs on both paths, before any selection is reported. */
   onPress?: () => void;
+  /**
+   * Called on a long press: a tab's own menu (rename, duplicate, delete). It
+   * does not select the tab; a long press does not also fire `onPress`. A
+   * disabled tab does not call it.
+   */
+  onLongPress?: (event: GestureResponderEvent) => void;
+  /**
+   * A node after the label and count, inside the tab's chrome (the pill and
+   * the underline span it), that is NOT part of the tab's press target: a
+   * settings or close icon button. It is the tab's sibling, never its child,
+   * so pressing it does not select the tab and no button nests in another.
+   * It keeps its own interactivity; the caller disables it with the tab.
+   */
+  trailing?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
 }

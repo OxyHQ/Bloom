@@ -195,6 +195,14 @@ export type DialogAction = {
   color?: DialogActionColor;
   disabled?: boolean;
   /**
+   * Work in flight: the action draws `Button`'s spinner over its label (the
+   * label keeps its width), announces busy, and ignores presses, so the
+   * dialog neither closes nor runs `onPress` again. Pair it with
+   * `shouldCloseOnPress: false` for an async confirm that keeps the dialog up
+   * until the work settles.
+   */
+  loading?: boolean;
+  /**
    * Defaults to `true`. When `true`, the dialog closes (and runs the close
    * animation) before `onPress` is invoked, which gives the surrounding
    * screen transition a chance to start before the action's side effects

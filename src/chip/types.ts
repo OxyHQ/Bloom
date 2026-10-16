@@ -1,5 +1,11 @@
 import type { BloomAppearance, BloomSize, BloomTone } from '../appearance';
-import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type {
+  GestureResponderEvent,
+  MouseEvent as NativeMouseEvent,
+  StyleProp,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
 
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
 
@@ -21,6 +27,11 @@ export type ChipVariant = AccentFill | 'inverted';
 /**
  * Data hues: a category, a department, an objective — colours that carry
  * data rather than a status role.
+ *
+ * A select option's ten colours map onto them as default `neutral`, gray
+ * `gray`, brown `brown`, orange `orange`, yellow `yellow`, green `lime`, blue
+ * `blue`, purple `purple`, pink `pink` and red `rose`. `hue-colors.ts` has the
+ * stops each one paints.
  */
 export type ChipHue =
   | 'lime'
@@ -29,6 +40,9 @@ export type ChipHue =
   | 'cyan'
   | 'blue'
   | 'purple'
+  | 'orange'
+  | 'brown'
+  | 'pink'
   | 'neutral'
   | 'gray'
   | 'soft';
@@ -79,8 +93,30 @@ export interface ChipProps {
   startIcon?: React.ReactNode;
   /** Icon or close button rendered after the label. */
   endIcon?: React.ReactNode;
-  /** Called when the chip is pressed. Makes the chip interactive. */
-  onPress?: () => void;
+  /**
+   * Called when the chip is pressed, with the press event. Makes the chip
+   * interactive.
+   */
+  onPress?: (event: GestureResponderEvent) => void;
+  /**
+   * Called on a long press, with the press event. Makes the chip interactive,
+   * like `onPress`; a long press does not also fire `onPress`.
+   */
+  onLongPress?: (event: GestureResponderEvent) => void;
+  /**
+   * Keep a press on the chip from also activating a pressable parent (a chip in
+   * a pressable card or row). Covers `onPress` and `onLongPress`. Default
+   * false, like `Button`'s.
+   */
+  stopPropagation?: boolean;
+  /**
+   * Pointer hover over an interactive chip (one with `onPress`, `onLongPress`
+   * or `onCheckedChange`). Only a platform with a real pointer calls it, and a
+   * disabled chip does not.
+   */
+  onHoverIn?: (event: NativeMouseEvent) => void;
+  /** The pointer left an interactive chip. See {@link ChipProps.onHoverIn}. */
+  onHoverOut?: (event: NativeMouseEvent) => void;
   /** Called when the close/end icon is pressed. */
   onClose?: () => void;
   /**

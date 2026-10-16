@@ -1,7 +1,13 @@
 import { useBloomAppearance } from '../appearance';
 import { normalizeTagTone } from './shared';
 import React, { forwardRef, memo, useMemo } from 'react';
-import { View, Pressable, type ViewStyle, type TextStyle } from 'react-native';
+import {
+  View,
+  Pressable,
+  type MouseEvent as NativeMouseEvent,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
@@ -125,6 +131,10 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     trailing,
     trailingIcon: TrailingIcon,
     onPress,
+    onLongPress,
+    stopPropagation = false,
+    onHoverIn: onHoverInProp,
+    onHoverOut: onHoverOutProp,
     onClose,
     closeLabel,
     selected: selectedProp,
@@ -277,7 +287,7 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     </>
   );
 
-  if (onPress || onCheckedChange) {
+  if (onPress || onLongPress || onCheckedChange) {
     // Both spellings of the state, because neither platform reads the other's
     // and there is no single prop that serves both: react-native-web ignores
     // `accessibilityState`, while React Native has no `aria-pressed` at all
@@ -293,6 +303,24 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
         : role === 'tab'
           ? { accessibilityState: { selected, disabled }, 'aria-selected': selected }
           : { accessibilityState: { disabled, selected }, 'aria-pressed': selected };
+
+    // The border answer is wired only when the fill needs it; a caller's hover
+    // handlers whenever they are given. A disabled chip reports no hover IN, as
+    // `Button` does; the way out always runs, so nothing is left hovered.
+    const hoverHandlers =
+      paint.hoveredBorder || onHoverInProp || onHoverOutProp
+        ? {
+            onHoverIn: (event: NativeMouseEvent) => {
+              if (disabled) return;
+              if (paint.hoveredBorder) onHoverIn();
+              onHoverInProp?.(event);
+            },
+            onHoverOut: (event: NativeMouseEvent) => {
+              if (paint.hoveredBorder) onHoverOut();
+              onHoverOutProp?.(event);
+            },
+          }
+        : null;
 
     const button = (
       <StyledPressable
@@ -351,12 +379,21 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
         }
         onPress={(event) => {
           if (disabled) return;
+          if (stopPropagation) event.stopPropagation();
           onCheckedChange?.(!selected);
-          onPress?.();
+          onPress?.(event);
         }}
+        onLongPress={
+          onLongPress && !disabled
+            ? (event) => {
+                if (stopPropagation) event.stopPropagation();
+                onLongPress(event);
+              }
+            : undefined
+        }
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        {...(paint.hoveredBorder ? { onHoverIn, onHoverOut } : null)}
+        {...hoverHandlers}
         disabled={disabled}
         accessibilityLabel={accessibilityLabel}
         role={role}

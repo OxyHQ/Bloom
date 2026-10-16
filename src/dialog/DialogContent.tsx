@@ -110,6 +110,10 @@ function ActionButton({ action }: { action: DialogAction }) {
   // `onClick` on web as well; `onPress` still receives the event where one exists.
   const handlePress = useCallback(
     (e?: GestureResponderEvent) => {
+      // `Button` already refuses a press while `loading`; this is the same
+      // refusal at the action, so nothing that reaches the handler another way
+      // can close the dialog or run the work twice.
+      if (action.loading) return;
       const onPress = action.onPress;
       const event = e as GestureResponderEvent;
       if (shouldCloseOnPress) {
@@ -118,7 +122,7 @@ function ActionButton({ action }: { action: DialogAction }) {
         onPress?.(event);
       }
     },
-    [action.onPress, close, shouldCloseOnPress],
+    [action.loading, action.onPress, close, shouldCloseOnPress],
   );
 
   // Bloom's own `Button`, so a dialog's actions are the same control as every
@@ -129,6 +133,7 @@ function ActionButton({ action }: { action: DialogAction }) {
       {...ACTION_APPEARANCE[color]}
       size="lg"
       disabled={action.disabled}
+      loading={action.loading}
       onPress={() => handlePress()}
       accessibilityLabel={action.label}
       testID={action.testID}
