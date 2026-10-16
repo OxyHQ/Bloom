@@ -49,7 +49,8 @@
   "scripts": {
     "build": "bob build",
     "typescript": "tsc --noEmit -p .",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "bun run typescript && bun run test && bun run build"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

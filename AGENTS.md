@@ -4,8 +4,10 @@
 
 ```bash
 bun run build       # bob build → lib/ (commonjs + module + typescript)
-bun run test / typescript / lint / format / clean / release / verify:package
+bun run test / typescript / lint / format / clean / verify:package
 ```
+
+npm: only Actions → Release packages (Oxy's shared workflow); gates = `prepublishOnly` — `~/Oxy/docs/npm-releases.md`.
 
 RN + Web library. Families: `src/<name>/`, published subpaths and root exports.
 

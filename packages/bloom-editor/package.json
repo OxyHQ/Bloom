@@ -63,7 +63,8 @@
   "scripts": {
     "build": "bob build",
     "typescript": "tsc --noEmit -p .",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "bun run typescript && bun run test && bun run build"
   },
   "dependencies": {
     "@oxy.so/bloom-text": "workspace:^"
