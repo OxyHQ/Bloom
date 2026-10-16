@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View, type ViewStyle } from 'react-native';
+import { View, type DimensionValue, type ViewStyle } from 'react-native';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { IS_WEB } from '../styles/platform';
 import { useSurfaceFill } from '../styles/surface-levels';
@@ -35,11 +35,11 @@ function SurfaceFadeComponent({
   const physical =
     edge === 'start' ? (rtl ? 'right' : 'left') : edge === 'end' ? (rtl ? 'left' : 'right') : edge;
   const image = `linear-gradient(${ANGLE[physical]}deg, ${start} 0%, ${end} 100%)`;
-  const extent = (size <= 1 ? `${size * 100}%` : size) as ViewStyle['height'];
+  const extent: DimensionValue = size <= 1 ? `${size * 100}%` : size;
   const vertical = physical === 'top' || physical === 'bottom';
   const placement: ViewStyle = vertical
     ? { left: 0, right: 0, [physical]: 0, height: extent }
-    : { top: 0, bottom: 0, [physical]: 0, width: extent as ViewStyle['width'] };
+    : { top: 0, bottom: 0, [physical]: 0, width: extent };
   const paint: WebCssStyle = IS_WEB
     ? { backgroundImage: image }
     : { experimental_backgroundImage: image };
