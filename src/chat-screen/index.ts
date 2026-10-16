@@ -21,6 +21,7 @@ export {
 export type { ChatScreenPaint } from './shared';
 export type {
   ChatBackgroundProps,
+  ChatBackgroundPatternImage,
   ChatBackgroundVariant,
   ChatDateHeaderPlacement,
   ChatDateHeaderProps,

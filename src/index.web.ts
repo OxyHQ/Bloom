@@ -519,6 +519,7 @@ export {
 } from './chat-screen';
 export type {
   ChatBackgroundProps,
+  ChatBackgroundPatternImage,
   ChatBackgroundVariant,
   ChatDateHeaderPlacement,
   ChatDateHeaderProps,

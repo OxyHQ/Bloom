@@ -192,6 +192,21 @@ export interface PinnedMessageBarProps {
  */
 export type ChatBackgroundVariant = 'plain' | 'pattern' | 'gradient' | 'image';
 
+/**
+ * A caller's own wallpaper tile for `variant="pattern"`, drawn in place of
+ * Bloom's glyphs. Only its ALPHA is used — it is inked with `tint` at
+ * `patternOpacity`, exactly like the glyphs — so draw it in one colour on a
+ * transparent ground, and make it tile seamlessly.
+ */
+export interface ChatBackgroundPatternImage {
+  /** URL, `ImageResolver` id, or a source (`require('./wall.png')`). */
+  source: string | ImageSourcePropType;
+  /** One tile's width in points. The same on every platform. */
+  width: number;
+  /** One tile's height in points. Keep the image's aspect ratio. */
+  height: number;
+}
+
 export interface ChatBackgroundProps {
   /** Default `plain`. */
   variant?: ChatBackgroundVariant;
@@ -207,6 +222,8 @@ export interface ChatBackgroundProps {
   tint?: string;
   /** The pattern's opacity. Default `0.5`. */
   patternOpacity?: number;
+  /** `pattern` only: the caller's own tile, drawn instead of Bloom's glyphs. */
+  patternImage?: ChatBackgroundPatternImage | null;
   /** Overrides the gradient stops. 2+ colours. */
   colors?: string[];
   /** The transcript. Drawn above the wallpaper. */

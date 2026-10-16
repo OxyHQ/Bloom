@@ -7,7 +7,7 @@
  * web, and cannot see a button that was never built because a precedence rule
  * fired; both are defects this family is exposed to.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -439,6 +439,69 @@ describe('ChatBackground', () => {
   it('falls back to the plain page when `image` has no source, rather than an empty frame', () => {
     mount(<ChatBackground variant="image" testID="bg" />);
     expect(maybeTestId('chat-background-image')).toBeNull();
+    expect(normalise(getComputedStyle(byTestId('bg')).backgroundColor)).toBe(
+      normalise(paint().page),
+    );
+  });
+
+  it('draws a caller tile in place of the glyphs, inked and faded exactly like them', () => {
+    // jsdom lays nothing out, so give react-native-web a window to cover.
+    const docEl = document.documentElement;
+    const resize = (width?: number, height?: number) => {
+      if (width === undefined) {
+        Reflect.deleteProperty(docEl, 'clientWidth');
+        Reflect.deleteProperty(docEl, 'clientHeight');
+      } else {
+        Object.defineProperty(docEl, 'clientWidth', { configurable: true, value: width });
+        Object.defineProperty(docEl, 'clientHeight', { configurable: true, value: height });
+      }
+      act(() => {
+        window.dispatchEvent(new Event('resize'));
+      });
+    };
+    resize(1024, 768);
+    try {
+      mount(
+        <ChatBackground
+          variant="pattern"
+          patternImage={{ source: 'https://example.test/tile.png', width: 300, height: 500 }}
+          testID="bg"
+        />,
+      );
+      const layer = byTestId('chat-background-pattern');
+      // No glyph tile: the caller's image replaces it rather than stacking on it.
+      expect(layer.querySelector('pattern')).toBeNull();
+      expect(Number(getComputedStyle(layer).opacity)).toBeCloseTo(0.5, 5);
+      expect(layer.getAttribute('aria-hidden')).toBe('true');
+      // The grid covers the window at the size asked for: 4 columns, 2 rows.
+      const tiles = Array.from(layer.children) as HTMLElement[];
+      expect(tiles).toHaveLength(4 * 2);
+      const [, second] = tiles;
+      if (!second) throw new Error('expected a second tile');
+      expect(getComputedStyle(second).left).toBe('300px');
+      expect(getComputedStyle(second).width).toBe('300px');
+      // Only the alpha survives: every tile is flooded with the pattern ink.
+      const floods = Array.from(layer.querySelectorAll('feFlood'));
+      expect(floods).toHaveLength(tiles.length);
+      for (const flood of floods) {
+        expect(normalise(flood.getAttribute('flood-color') ?? '')).toBe(
+          normalise(paint().patternTint),
+        );
+      }
+    } finally {
+      resize();
+    }
+  });
+
+  it('draws nothing for a tile with no size, rather than a zero-sized grid', () => {
+    mount(
+      <ChatBackground
+        variant="pattern"
+        patternImage={{ source: 'https://example.test/tile.png', width: 0, height: 500 }}
+        testID="bg"
+      />,
+    );
+    expect(maybeTestId('chat-background-pattern')).toBeNull();
     expect(normalise(getComputedStyle(byTestId('bg')).backgroundColor)).toBe(
       normalise(paint().page),
     );
