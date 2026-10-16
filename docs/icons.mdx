@@ -1,6 +1,6 @@
 ---
 title: Icons
-description: Remix Icon, one component per glyph — how to import one glyph instead of all 480, how apps migrate off the retired Bloom set, and why a wrong name is invisible to the compiler.
+description: Remix Icon, one component per glyph — how to import one glyph instead of all 549, how apps migrate off the retired Bloom set, and why a wrong name is invisible to the compiler.
 order: 66
 ---
 
@@ -20,7 +20,7 @@ import { RiNotification3Line as BellIcon } from '@oxy.so/bloom/icons';
 ## Import one glyph, ship one glyph
 
 **Metro does not tree-shake.** `@oxy.so/bloom/icons` is a flat barrel over all
-480 glyphs, so an app that names one icon through it bundles all 480 — the
+549 glyphs, so an app that names one icon through it bundles all 549 — the
 import is a static graph edge to every one of them, and nothing downstream
 removes what the app never renders.
 
@@ -271,11 +271,23 @@ from the mistake it warns about, and the scan is right to flag both.
 
 ## Adding an icon
 
-Generate it from the Remix SVG rather than hand-copying a path: one
-`src/icons/remix/<RiName>.tsx` per glyph (a `createSinglePathSVG` call on the
-24×24 viewBox), and `src/icons/remix/index.ts` regenerated from the directory
-listing — never hand-edited. Use the exact Remix name, so a glyph found on
-remixicon.com is findable here by the same string.
+Generate it from the Remix SVG rather than hand-copying a path. With the
+`remixicon` npm package unpacked (`npm pack remixicon@4.9.1`, then untar it):
+
+```bash
+node scripts/add-remix-icons.mjs <unpacked>/package sort-alphabet-asc dice-5-line
+```
+
+Each kebab name, exactly as remixicon.com shows it, becomes one
+`src/icons/remix/<RiName>.tsx` named as Remix's React package names it
+(`dice-5-line` → `RiDice5Line`, `text` → `RiText`): a `createSinglePathSVG` call
+on the 24×24 viewBox, or `createMultiPathSVG` for a glyph drawn in several
+paths. The `d` strings are copied verbatim. Then `src/icons/remix/index.ts` is
+regenerated from the directory listing, sorted by code unit — never
+hand-edited. A glyph that already exists is left alone, and anything the
+template cannot draw (another SVG element, a transform, a fill rule, a name the
+package does not have) is reported and nothing is written. Use the exact Remix
+name, so a glyph found on remixicon.com is findable here by the same string.
 
 ### Brand marks Remix does not draw
 
