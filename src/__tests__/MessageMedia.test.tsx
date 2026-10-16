@@ -729,6 +729,29 @@ describe('rendered geometry', () => {
     expect(getComputedStyle(byTestId('r-frame')).borderTopLeftRadius).toBe('24px');
   });
 
+  it('shrinks a card, a poll and a place to a bubble narrower than their width', () => {
+    // A phone's bubble, with its own padding kept (`mediaFit="inset"`), is
+    // narrower than 260: a fixed width alone clipped the right edge off.
+    mount(
+      <>
+        <ContactMessage name="Ana" detail="@ana" testID="card" />
+        <PollMessage
+          question="When?"
+          options={[{ id: 'a', label: 'Now', votes: 0 }]}
+          testID="poll"
+        />
+        <LocationMessage title="Casa del Puerto" testID="place" />
+      </>,
+    );
+    for (const id of ['card', 'poll', 'place']) {
+      const style = getComputedStyle(byTestId(id));
+      expect(style.width).toBe('260px');
+      expect(style.maxWidth).toBe('100%');
+    }
+    // The map follows the block, not the 260 it was asked for.
+    expect(getComputedStyle(byTestId('place-map')).width).toBe('100%');
+  });
+
   it('draws exactly `barCount` bars', () => {
     mount(<VoiceMessage samples={SAMPLES} duration={9} barCount={18} testID="bars" />);
     const track = byTestId('bars-waveform');

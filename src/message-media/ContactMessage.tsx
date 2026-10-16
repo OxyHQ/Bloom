@@ -109,7 +109,9 @@ function ContactMessageComponent({
     <View
       role="group"
       accessibilityLabel={accessibilityLabel ?? fileMetaLine([messages.contact, name, detail])}
-      style={[{ width, borderRadius: radius }, style ?? null]}
+      // `maxWidth`: a bubble narrower than `width` (a phone, with the bubble's own
+      // padding kept) shrinks the block instead of clipping it.
+      style={[{ width, maxWidth: '100%', borderRadius: radius }, style ?? null]}
       testID={testID}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>

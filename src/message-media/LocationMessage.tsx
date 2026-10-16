@@ -1,5 +1,5 @@
-import React, { memo, useEffect, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { type LayoutChangeEvent, Pressable, View } from 'react-native';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -178,13 +178,25 @@ function LocationMessageComponent({
     [theme, tone, onColor, bubbleColor],
   );
   const [stopHovered, stopHandlers] = useHovered();
+  // The width the block is actually drawn at: `width`, or less inside a bubble
+  // that is narrower. The map is drawn for THAT width, so an app's map is not
+  // rendered wider than it is shown and cropped off-centre.
+  const [shownWidth, setShownWidth] = useState<number | null>(null);
+  const mapWidth = shownWidth ?? width;
+  const onLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const next = Math.round(event.nativeEvent.layout.width);
+      if (next > 0) setShownWidth(next >= width ? null : next);
+    },
+    [width],
+  );
 
   const name =
     accessibilityLabel ??
     fileMetaLine([live ? messages.liveLocation : messages.location, title, address]);
 
   const frame: WebCssStyle = {
-    width,
+    width: '100%',
     height: mapHeight,
     borderRadius: radius,
     overflow: 'hidden',
@@ -207,7 +219,7 @@ function LocationMessageComponent({
   };
 
   return (
-    <View style={[{ width }, style ?? null]} testID={testID}>
+    <View style={[{ width, maxWidth: '100%' }, style ?? null]} onLayout={onLayout} testID={testID}>
       <MediaPressable
         accessibilityLabel={name}
         onPress={onPress}
@@ -216,9 +228,9 @@ function LocationMessageComponent({
         testID={testID ? `${testID}-map` : undefined}
       >
         {renderMap ? (
-          renderMap({ width, height: mapHeight })
+          renderMap({ width: mapWidth, height: mapHeight })
         ) : (
-          <MapPlaceholder width={width} height={mapHeight} paint={paint} />
+          <MapPlaceholder width={mapWidth} height={mapHeight} paint={paint} />
         )}
         <View
           pointerEvents="none"

@@ -56,6 +56,12 @@ bubble has to keep its own around it: pass `mediaFit="inset"` to `MessageBubble`
 (`message-bubble`), which also stops the time pill floating over the block's
 last line. The default, `'bleed'`, is the photo.
 
+Those three take `width` (260) as a PREFERRED width with `maxWidth: '100%'`: an
+inset bubble on a phone is about 255 wide inside its padding, and a fixed 260
+had its right edge clipped off. `LocationMessage` measures what it was given and
+hands that width to `renderMap` and the placeholder, so a map is drawn at the
+size it is shown rather than cropped off-centre.
+
 **`radius`.** The BUBBLE owns the corners. A photo flush with the bubble's edge
 has to take the bubble's radius on the side it touches, or the two draw two arcs
 a pixel apart. Default 16; `message-bubble` passes its own.

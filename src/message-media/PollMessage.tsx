@@ -313,7 +313,9 @@ function PollMessageComponent({
     <View
       role="group"
       accessibilityLabel={question}
-      style={[{ width, borderRadius: radius }, style ?? null]}
+      // `maxWidth`: a bubble narrower than `width` (a phone, with the bubble's own
+      // padding kept) shrinks the block instead of clipping it.
+      style={[{ width, maxWidth: '100%', borderRadius: radius }, style ?? null]}
       testID={testID}
     >
       <Text variant="body-medium" style={{ color: paint.text }}>
