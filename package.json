@@ -3670,24 +3670,10 @@
     "clean": "rm -rf lib",
     "prepack": "bun run clean && bun run build",
     "prepare": "[ -n \"$BLOOM_VERIFY_PACKAGE_RUNNING\" ] || bun run build || true",
-    "release": "rm -rf lib && bun run build && release-it",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
-    "build:avatar-runtime": "node scripts/build-avatar-runtime.mjs"
-  },
-  "release-it": {
-    "git": {
-      "tagName": "@oxy.so/bloom@${version}",
-      "tagAnnotation": "Release @oxy.so/bloom@${version}",
-      "commitMessage": "chore: release @oxy.so/bloom@${version}"
-    },
-    "github": {
-      "release": true,
-      "releaseName": "@oxy.so/bloom@${version}"
-    },
-    "npm": {
-      "publish": true
-    }
+    "build:avatar-runtime": "node scripts/build-avatar-runtime.mjs",
+    "prepublishOnly": "bun run typescript && bun run test && bun run build"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
@@ -3728,7 +3714,6 @@
     "react-native-web": "^0.21.2",
     "react-native-worklets": "0.10.0",
     "react-test-renderer": "^19.2.0",
-    "release-it": "^19.0.6",
     "storybook": "^10",
     "tailwindcss": "4.3.2",
     "three": "^0.186.1",
