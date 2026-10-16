@@ -10,6 +10,8 @@ Two halves:
 
 - `@oxy.so/bloom-editor/model` — the document, commands, undo, Markdown,
   paste and sync. Platform-free: runs on a server and in tests.
+- `@oxy.so/bloom-editor/yjs` — the document in a `Y.Doc` and a binding that
+  keeps an editor store and a `Y.Doc` the same. Platform-free; `yjs` is a peer.
 - `@oxy.so/bloom-editor` — the React editor over it.
 
 ## Use
@@ -67,6 +69,27 @@ the end of a container, an empty one included.
   even when others edited the same block since.
 
 ## Collaboration
+
+### In Yjs (`@oxy.so/bloom-editor/yjs`)
+
+`new YjsBinding(store, ydoc)` writes every local edit, undo and redo into the
+`Y.Doc`, and applies every change the `Y.Doc` takes from elsewhere (a
+collaborator, work saved on the device, a server) to the store as a remote
+transaction: outside the undo history, the selection kept. How the `Y.Doc`
+travels (a socket, storage) is the app's.
+
+The layout (`layout.ts`): one `blocks` map from id to the block's own `Y.Map`
+with `type`, `parent`, `index` (a fractional key), `props` (a `Y.Map`) and
+`text` (a `Y.Text`, marks as attributes). There are no children arrays: a
+block's place is written on the block alone, so a block moved by two people
+at once ends up in one place. Reading the document (`materialize`) settles
+the rest the same way on every device: siblings by key then id, a block
+whose parent was removed goes with it, and a cycle made by two moves is
+broken at its smallest id. Text edits are minimal (`updateSegments`): a mark
+change reformats instead of rewriting, so text typed into that stretch at the
+same time is kept. `writeDocument` stores an existing document once.
+
+### Ordered by a server (`SyncSession`)
 
 `SyncSession` (model) sends local transactions in order under stable keys,
 rebases them over remote ones — text merged three-way (`mergeText`), so two
