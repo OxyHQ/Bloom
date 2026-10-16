@@ -416,14 +416,22 @@ export interface SidebarProps {
   team?: SidebarTeam;
 
   /**
-   * A labelled tree of expandable folders under the primary rows (the AI chat's
-   * "Repositories"). Quick search filters it too. With a tree, the header and
-   * search stay put and only the rows scroll. Hidden while collapsed.
+   * Labelled sections under the primary rows: each lists its own rows directly
+   * (a "Recently viewed" list) and/or expandable folders (the AI chat's
+   * "Repositories", a user's saved folders). One section or several, in order.
+   * Quick search filters them too. With a tree, the header and search stay put
+   * and only the rows scroll. Hidden while collapsed.
    */
-  tree?: SidebarTree;
-  /** Key of the selected tree row. */
+  tree?: SidebarTree | ReadonlyArray<SidebarTree>;
+  /** Key of the selected tree row, in any section. */
   selectedTreeItem?: string;
-  onTreeItemPress?: (item: SidebarTreeItem, folder: SidebarTreeFolder) => void;
+  /**
+   * A tree row was pressed. `folder` is the row's folder, absent for a row
+   * listed directly under its section label.
+   */
+  // Method form keeps an existing `(item, folder: SidebarTreeFolder) => …`
+  // handler assignable now that `folder` can be absent.
+  onTreeItemPress?(item: SidebarTreeItem, folder?: SidebarTreeFolder): void;
   /** The plan card at the foot of the rail, in place of the team card. */
   plan?: SidebarPlan;
 
@@ -431,7 +439,7 @@ export interface SidebarProps {
   testID?: string;
 }
 
-/** A row under a tree folder. */
+/** A row of a tree section, directly under its label or inside a folder. */
 export interface SidebarTreeItem {
   /** Secondary controls beside the row, never nested inside its press target. */
   actions?: ReactNode;
@@ -458,12 +466,22 @@ export interface SidebarTreeFolder {
   defaultOpen?: boolean;
 }
 
+/** One labelled section of the sidebar's tree. */
 export interface SidebarTree {
+  /** Identity among several sections; defaults to `label`. */
+  key?: string;
   /** Collection actions, e.g. create a project, beside the section label. */
   actions?: ReactNode;
   /** The section label, e.g. `Repositories`. */
   label: string;
-  folders: ReadonlyArray<SidebarTreeFolder>;
+  /**
+   * Rows listed directly under the label, before any folders — a section that
+   * IS its list (`Recently viewed`). Same row, selection, meta, actions, link
+   * and prefetch behaviour as a folder's rows.
+   */
+  items?: ReadonlyArray<SidebarTreeItem>;
+  /** Expandable folders, for collections the user made (saved folders). */
+  folders?: ReadonlyArray<SidebarTreeFolder>;
 }
 
 export interface SidebarFolderProps {

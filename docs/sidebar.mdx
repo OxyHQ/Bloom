@@ -131,8 +131,45 @@ The logo leads the header beside the collapse (or close) control; `account`, if 
 
 - The header, collapse control, mode switcher and quick search stay fixed; only destination rows scroll (hidden scrollbar). With a `tree`: the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
 - A folder row is p 8 with a 20px folder glyph (open while expanded) and the label; its rows are py 5 / pr 8 / pl 36 with the label and a `meta` chip (radius 4, background-tertiary, px 4 / py 1, caption-1-medium), background-secondary-hover while selected or hovered. A curved 1px icon-quaternary connector drops from the folder glyph into each row. The rows' height and opacity ease open and shut together over 300ms; collapsed rows leave the tab order.
-- Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts the tree.
+- Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts every section.
 - The tree hides while collapsed.
+
+### Sections: rows directly, or folders
+
+`tree` takes one section or an array of them, drawn in order 24 apart, each with
+its own label and `actions`. A section's `items` are rows listed directly under
+its label, before any folders: use them when the section IS the list. Keep
+`folders` for collections the user made.
+
+```tsx
+<Sidebar
+  items={NAV}
+  tree={[
+    {
+      key: 'recent',
+      label: 'Recently viewed',
+      items: recent.map((home) => ({ key: home.id, label: home.title, meta: home.viewedAgo, href: `/homes/${home.id}` })),
+    },
+    {
+      key: 'saved',
+      label: 'Saved',
+      actions: <NewFolderButton />,
+      folders: savedFolders.map((folder) => ({
+        key: folder.id,
+        label: folder.name,
+        items: folder.homes.map((home) => ({ key: home.id, label: home.title, href: `/homes/${home.id}` })),
+      })),
+    },
+  ]}
+  selectedTreeItem={homeId}
+  onTreeItemPress={(item, folder) => open(item.key)}
+/>
+```
+
+- A direct row is a folder row without the connector: the same height, radius, `meta` chip, selection, hover, `actions`, `href`, `onPrefetch` and `onLongPress`, inset 8 (to the folder glyph) instead of 36.
+- `onTreeItemPress(item, folder)` gets the row's folder, or `undefined` for a direct row. `selectedTreeItem` matches a key in any section.
+- `key` identifies a section among several (defaults to `label`). `items` and `folders` are both optional; a section with neither, or with nothing left after quick search, is not drawn.
+- Quick search filters direct rows by their label and folders as above. Collapsed, every section hides, as the single tree did.
 - `plan` replaces the team card: radius 12, background-tertiary (the panel colour on a `plain` surface), py 8 / pr 12 / pl 10, a 32px avatar (initials 18.8/22.6 medium), the name (body-medium) over the plan (body-regular text-secondary), and a small secondary button (`actionLabel`, default "Upgrade"). Collapsed, only the avatar.
 
 ## Surface and size: the app's identity
