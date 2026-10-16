@@ -111,7 +111,9 @@ it('renders content in document flow and lets the window drive the screen', () =
     ),
     domNodes,
   );
-  expect(tree.UNSAFE_root.findAll((node) => String(node.type) === 'Animated.ScrollView')).toHaveLength(0);
+  expect(
+    tree.UNSAFE_root.findAll((node) => String(node.type) === 'Animated.ScrollView'),
+  ).toHaveLength(0);
   expect(resolvedStyle(tree.getByTestId('page').props.style)).toMatchObject({
     flexGrow: 1,
     backgroundColor: 'red',
