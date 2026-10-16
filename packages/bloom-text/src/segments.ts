@@ -2,7 +2,7 @@
  * The segment model: rich text as a flat `Segment[]`, each a run of text with
  * one set of marks. Pure functions, no platform code.
  */
-import type { MentionMark, Segment, TextEdit, TextMarks } from './types';
+import type { MentionMark, Segment, TextEdit, TextMarks } from './model-types';
 
 const MARK_KEYS = [
   'bold',

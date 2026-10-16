@@ -15,7 +15,7 @@ import {
   segmentsToPlainText,
   splitSegmentsAt,
 } from './segments';
-import type { Segment, TextEdit, TextMarks } from './types';
+import type { Segment, TextEdit, TextMarks } from './model-types';
 
 /** Marks the native input renders and edits. */
 export const INPUT_MARKS = [

@@ -1,4 +1,4 @@
-import type { TextEdit, TextSelection } from './types';
+import type { TextEdit, TextSelection } from './model-types';
 
 function transformOffset(offset: number, edit: TextEdit): number {
   const end = edit.index + edit.deleteCount;
