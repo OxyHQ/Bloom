@@ -438,6 +438,78 @@ describe('AppShell aside', () => {
   });
 });
 
+describe('AppShell aside that renders nothing', () => {
+  // Data-driven widgets that each return null when they have nothing to show.
+  const Empty = () => null;
+  const layout = (node: ReturnType<ReturnType<typeof renderIn>['getByTestId']>, height: number) =>
+    fireEvent(node, 'layout', { nativeEvent: { layout: { width: 350, height } } });
+
+  it.each(['document', 'fixed', 'container'] as const)(
+    'reserves the column until measured, then gives it back while empty (scroll=%s)',
+    (scroll) => {
+      setWidth(1440);
+      const screen = renderIn(
+        <AppShell
+          testID="shell"
+          variant="feed"
+          scroll={scroll}
+          title="Home"
+          aside={<Empty />}
+          asideWidth={350}
+        />,
+      );
+      // First frame: reserved, so a non-empty aside never jumps.
+      expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({
+        width: 350,
+      });
+      layout(screen.getByTestId('shell-aside-content'), 0);
+      expect(screen.queryByTestId('shell-aside')).toBeNull();
+      // Still mounted and measured at its width — out of flow, invisible, unreachable.
+      const probe = screen.getByTestId('shell-aside-probe', { includeHiddenElements: true });
+      expect(resolvedStyle(probe.props.style)).toMatchObject({
+        position: 'absolute',
+        width: 350,
+        opacity: 0,
+      });
+      expect(probe.props.pointerEvents).toBe('none');
+      expect(probe.props['aria-hidden']).toBe(true);
+      // Content appears: the column comes back.
+      layout(screen.getByTestId('shell-aside-content', { includeHiddenElements: true }), 180);
+      expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({
+        width: 350,
+      });
+      expect(screen.queryByTestId('shell-aside-probe', { includeHiddenElements: true })).toBeNull();
+    },
+  );
+
+  it('keeps a measured non-empty aside beside the content', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell testID="shell" title="Home" aside={<ReactNative.Text>Details</ReactNative.Text>} />,
+    );
+    layout(screen.getByTestId('shell-aside-content'), 40);
+    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({
+      width: 320,
+    });
+  });
+
+  it('an empty stacked aside takes no slot either', () => {
+    setWidth(1100);
+    const screen = renderIn(<AppShell testID="shell" title="Home" aside={<Empty />} />);
+    expect(screen.getByTestId('shell-aside')).toBeTruthy();
+    layout(screen.getByTestId('shell-aside-content'), 0);
+    expect(screen.queryByTestId('shell-aside')).toBeNull();
+    expect(
+      resolvedStyle(
+        screen.getByTestId('shell-aside-probe', { includeHiddenElements: true }).props.style,
+      ),
+    ).toMatchObject({
+      position: 'absolute',
+      width: '100%',
+    });
+  });
+});
+
 describe('AppShell scroll="fixed"', () => {
   it('no page ScrollView; the content column fills the height', () => {
     setWidth(1440);

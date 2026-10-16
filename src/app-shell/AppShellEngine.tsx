@@ -1,7 +1,14 @@
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  View,
+  useWindowDimensions,
+  type LayoutChangeEvent,
+} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -239,6 +246,45 @@ export function createAppShellEngine(
     // canvas — so below `asideFrom` the aside is dropped whatever `asideCollapse`
     // says, rather than being rendered where nothing can reach it.
     const asideStacked = hasAside && !asideBeside && asideCollapse === 'stack' && !canvas;
+    // An aside built from widgets that each render nothing when they have
+    // nothing to show takes no room: its content is measured, and a zero-height
+    // result releases the column (width AND gap) or the stacked slot. The slot is
+    // reserved until the first measurement, so the common non-empty aside never
+    // jumps; an empty one shows its reserved space for that one layout pass. The
+    // content stays mounted (invisible, out of flow) so it comes back as soon as
+    // anything renders.
+    const [asideEmpty, setAsideEmpty] = useState(false);
+    const measureAside = useCallback(
+      (event: LayoutChangeEvent) => setAsideEmpty(event.nativeEvent.layout.height === 0),
+      [],
+    );
+    const asideContent = (
+      <View testID={testID ? `${testID}-aside-content` : undefined} onLayout={measureAside}>
+        {aside}
+      </View>
+    );
+    // The empty aside, still measured at the width it would take. Absolutely
+    // positioned, so no row or column gap is spent on it.
+    const asideProbe = (width: number | '100%') => (
+      <View
+        testID={testID ? `${testID}-aside-probe` : undefined}
+        pointerEvents="none"
+        aria-hidden
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{ position: 'absolute', top: 0, insetInlineStart: 0, width, opacity: 0 }}
+      >
+        {asideContent}
+      </View>
+    );
+    const asideShown = asideBeside && !asideEmpty;
+    const stackedAside = asideStacked ? (
+      asideEmpty ? (
+        asideProbe('100%')
+      ) : (
+        <View testID={testID ? `${testID}-aside` : undefined}>{asideContent}</View>
+      )
+    ) : null;
 
     const reducedMotion = useReducedMotion();
     // Insets here are logical; a `translateX` sign and a `transformOrigin` are
@@ -454,9 +500,7 @@ export function createAppShellEngine(
           style={[{ width: '100%', gap: 16, paddingBottom: drawer === 'overlay' ? 16 : 0 }, fill]}
         >
           {children}
-          {asideStacked ? (
-            <View testID={testID ? `${testID}-aside` : undefined}>{aside}</View>
-          ) : null}
+          {stackedAside}
         </View>
       </View>
     );
@@ -465,7 +509,9 @@ export function createAppShellEngine(
     // until its bottom is visible, then sticks; wheel events keep scrolling the
     // document rather than getting trapped in a second scroll container.
     const asideColumn = (inset: WebCssStyle) =>
-      asideBeside ? (
+      asideBeside && asideEmpty ? (
+        asideProbe(asideWidth)
+      ) : asideBeside ? (
         <View
           testID={testID ? `${testID}-aside` : undefined}
           onLayout={(event) => setAsideHeight(event.nativeEvent.layout.height)}
@@ -482,14 +528,14 @@ export function createAppShellEngine(
           ]}
         >
           {doc ? (
-            aside
+            asideContent
           ) : (
             <ScrollView
               style={{ flex: 1 }}
               contentContainerStyle={{ flexGrow: 1 }}
               showsVerticalScrollIndicator={false}
             >
-              {aside}
+              {asideContent}
             </ScrollView>
           )}
         </View>
@@ -730,7 +776,7 @@ export function createAppShellEngine(
     // the web does not draw.
     const plainFrame = contentAligned && flowSidebar?.surface === 'plain' && !topBarNode;
     const readingGap = Math.max(0, asideGap ?? columnGap);
-    const readingGroupWidth = contentWidth + (asideBeside ? asideWidth + readingGap : 0);
+    const readingGroupWidth = contentWidth + (asideShown ? asideWidth + readingGap : 0);
     const centredBody = (
       <View
         style={[
@@ -861,9 +907,7 @@ export function createAppShellEngine(
                   </View>
                 )}
               </BloomColorScope>
-              {asideStacked ? (
-                <View testID={testID ? `${testID}-aside` : undefined}>{aside}</View>
-              ) : null}
+              {stackedAside}
             </Scroller>
           )}
         </View>

@@ -360,6 +360,21 @@ overlapping another, and no console error.
 A second column at the end edge of the page — the right in LTR, the left in RTL (`dashboard` and `feed`; `split` has
 its `info` pane instead and `focus` has no second column at all). From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it stays in natural document flow. A tall aside scrolls with the page until its lower edge is visible, then sticks; it does not capture wheel gestures in a nested ScrollView. Container and fixed modes retain bounded aside scrolling. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
 
+**An aside that renders nothing takes no room.** Build a rail from data-driven
+widgets that each return `null` when they have nothing to show, and pass it
+unconditionally — don't pre-compute emptiness in the app. The shell measures the
+aside's content: at zero height the column gives up its width AND its gap (a
+centred feed re-centres the reading column alone), and a stacked aside takes no
+slot. The content stays mounted, invisible and out of flow, still measured at
+the aside's width, so the column returns as soon as a widget renders. Works
+beside the content in `document`, `container` and `fixed` modes, and stacked.
+
+The trade-off is deliberate: the column is reserved until the first
+measurement, so the common non-empty aside never jumps on first paint, while an
+empty one shows its reserved space for that one layout pass. Emptiness means
+zero height: a wrapper with padding or a border around empty widgets is not
+empty — put spacing in `gap`, which a lone or absent child does not spend.
+
 ## Eight shells, one component
 
 The shape (`variant`), what scrolls (`scroll`), whether the column is a panel

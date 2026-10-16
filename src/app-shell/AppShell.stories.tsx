@@ -324,3 +324,41 @@ export const IconOnlyRail: Story = {
     </AppShell>
   ),
 };
+
+/**
+ * An aside made of widgets that render nothing when they have nothing to show
+ * takes no column: the reading column centres alone until a widget appears.
+ */
+export const EmptyAside: Story = {
+  parameters: { controls: { disable: true }, bloomScroll: 'document' },
+  render: function EmptyAside() {
+    const [shown, setShown] = useState(false);
+    const theme = useTheme();
+    const Widget = () =>
+      shown ? (
+        <View
+          testID="empty-aside-widget"
+          style={{ height: 240, borderRadius: 16, backgroundColor: theme.colors.card }}
+        />
+      ) : null;
+    return (
+      <AppShell
+        testID="empty-aside"
+        variant="feed"
+        sidebar={{ items: DEMO_NAV }}
+        contentWidth={600}
+        asideWidth={350}
+        asideFrom="lg"
+        aside={
+          <View style={{ gap: 16 }}>
+            <Widget />
+          </View>
+        }
+      >
+        <Button testID="empty-aside-toggle" onPress={() => setShown((value) => !value)}>
+          {shown ? 'Hide the widget' : 'Show the widget'}
+        </Button>
+      </AppShell>
+    );
+  },
+};
