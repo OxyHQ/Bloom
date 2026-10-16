@@ -8,8 +8,8 @@ WebView.
 
 Two halves:
 
-- `@oxy.so/bloom-editor/model` — the document, commands, undo, Markdown,
-  paste and sync. Platform-free: runs on a server and in tests.
+- `@oxy.so/bloom-editor/model` — the document, commands, undo, Markdown
+  and paste. Platform-free: runs on a server and in tests.
 - `@oxy.so/bloom-editor/yjs` — the document in a `Y.Doc` and a binding that
   keeps an editor store and a `Y.Doc` the same. Platform-free; `yjs` is a peer.
 - `@oxy.so/bloom-editor` — the React editor over it.
@@ -68,9 +68,7 @@ the end of a container, an empty one included.
 - **Undo** groups typing into words and takes back only your own change,
   even when others edited the same block since.
 
-## Collaboration
-
-### In Yjs (`@oxy.so/bloom-editor/yjs`)
+## Collaboration (`@oxy.so/bloom-editor/yjs`)
 
 `new YjsBinding(store, ydoc)` writes every local edit, undo and redo into the
 `Y.Doc`, and applies every change the `Y.Doc` takes from elsewhere (a
@@ -88,16 +86,6 @@ whose parent was removed goes with it, and a cycle made by two moves is
 broken at its smallest id. Text edits are minimal (`updateSegments`): a mark
 change reformats instead of rewriting, so text typed into that stretch at the
 same time is kept. `writeDocument` stores an existing document once.
-
-### Ordered by a server (`SyncSession`)
-
-`SyncSession` (model) sends local transactions in order under stable keys,
-rebases them over remote ones — text merged three-way (`mergeText`), so two
-people typing in one block both keep their words — retries, resends stale
-ones once the newer version arrives, and undoes what the server refuses.
-`snapshot()` / `resume` hand unconfirmed work to a new session, after a reload
-or from storage, to work offline. The server decides order and versions; the
-app adapts its wire format (see Nilo's `apps/app/lib/editor/` for one).
 
 ## Schema
 

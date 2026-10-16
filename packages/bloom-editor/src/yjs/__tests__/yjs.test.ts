@@ -251,6 +251,35 @@ describe('a store bound to a Y.Doc', () => {
     expect(texts(b.store.doc)).toEqual(['mine', 'theirs, changed']);
   });
 
+  it("leaves a reader's own changes alone while keeping the page live", () => {
+    const a = peer('a');
+    const toggle = add(a, null, 'Details', 'toggle');
+    const doc = new Y.Doc();
+    Y.applyUpdate(doc, Y.encodeStateAsUpdate(a.doc));
+    const reader = new EditorStore({ document: emptyDocument(), newId: () => 'r' });
+    new YjsBinding(reader, doc, { readOnly: true });
+    const props = reader.doc.blocks[toggle]?.props ?? {};
+    reader.dispatch({
+      ops: [
+        {
+          kind: 'update',
+          id: toggle,
+          before: { props },
+          after: { props: { ...props, expanded: false } },
+        },
+      ],
+    });
+    // Nothing a reader does reaches the document.
+    expect(materialize(doc).blocks[toggle]?.props.expanded).not.toBe(false);
+
+    add(a, toggle, 'below');
+    type(a, toggle, 'Details, more');
+    Y.applyUpdate(doc, Y.encodeStateAsUpdate(a.doc, Y.encodeStateVector(doc)));
+    expect(texts(reader.doc)).toEqual(['Details, more', 'below']);
+    expect(reader.doc.blocks[toggle]?.props.expanded).toBe(false);
+    expect(validateDocument(reader.doc)).toEqual([]);
+  });
+
   it('stores an existing document once and reads it back the same', () => {
     const a = peer('a');
     const first = add(a, null, 'Uno');
