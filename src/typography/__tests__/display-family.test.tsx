@@ -53,3 +53,21 @@ describe('the big titles are set in BlomusModernus', () => {
     expect(family({ className: 'my-text-4xl' })).toBe('Inter');
   });
 });
+
+describe('an explicit font-mono className sets JetBrains Mono', () => {
+  it('beats the inline family, at any breakpoint or state', () => {
+    expect(family({ className: 'font-mono' })).toBe('JetBrains Mono');
+    expect(family({ className: 'text-xs font-mono text-muted-foreground' })).toBe('JetBrains Mono');
+    expect(family({ className: 'md:font-mono' })).toBe('JetBrains Mono');
+  });
+
+  it('beats a family implied by size or variant: an explicit family is the request', () => {
+    expect(family({ className: 'text-4xl font-mono' })).toBe('JetBrains Mono');
+    expect(family({ variant: 'display-1-bold', className: 'font-mono' })).toBe('JetBrains Mono');
+  });
+
+  it('does not read a longer class as font-mono', () => {
+    expect(family({ className: 'font-monospace-x' })).toBe('Inter');
+    expect(family({ className: 'my-font-mono' })).toBe('Inter');
+  });
+});

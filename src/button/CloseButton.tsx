@@ -62,6 +62,7 @@ const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
 function CloseButtonComponent({
   onPress,
+  stopPropagation = false,
   size = 'xs',
   disabled = false,
   accessibilityLabel,
@@ -96,7 +97,14 @@ function CloseButtonComponent({
       accessibilityState={{ disabled }}
       aria-disabled={disabled || undefined}
       disabled={disabled}
-      onPress={onPress}
+      onPress={
+        onPress || stopPropagation
+          ? (event) => {
+              if (stopPropagation) event.stopPropagation();
+              onPress?.(event);
+            }
+          : undefined
+      }
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       onHoverIn={onHoverIn}

@@ -22,6 +22,13 @@ export interface CheckboxProps {
   size?: CheckboxSize;
   /** Whether the checkbox is disabled. */
   disabled?: boolean;
+  /**
+   * Shows the state without taking input: the box and label at full strength
+   * (not dimmed like `disabled`), no press, hover or keyboard focus, and
+   * announced as a read-only checkbox. For a checkmark in a published,
+   * read-only page. `onCheckedChange` is never called.
+   */
+  readOnly?: boolean;
   /** Whether the checkbox is in an indeterminate state. */
   indeterminate?: boolean;
   /** Semantic color when checked. Uses theme primary by default. */

@@ -91,6 +91,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
     description,
     size: sizeProp,
     disabled = false,
+    readOnly = false,
     indeterminate = false,
     tone: toneProp,
     style,
@@ -137,10 +138,10 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
   const highlighted = !isDisabled && (hovered || pressed);
 
   const handlePress = useCallback(() => {
-    if (!isDisabled) {
+    if (!isDisabled && !readOnly) {
       setChecked(!checked);
     }
-  }, [checked, isDisabled, setChecked]);
+  }, [checked, isDisabled, readOnly, setChecked]);
 
   const hasLabel = labelContent != null || Boolean(label);
   const hasText = hasLabel || Boolean(description);
@@ -159,7 +160,79 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
 
   const slop = Math.max(8, Math.ceil((MIN_TOUCH_TARGET - sizeConfig.box) / 2));
 
-  const spaceKey = useChoiceSpaceKey(isDisabled, handlePress);
+  const spaceKey = useChoiceSpaceKey(isDisabled || readOnly, handlePress);
+
+  const body = (
+    <>
+      <CheckboxGlyph
+        size={size}
+        checked={checked}
+        indeterminate={indeterminate}
+        disabled={isDisabled}
+        highlighted={highlighted && !readOnly}
+        paint={paint}
+        // Centre the box on the label's first line box.
+        marginTop={hasText ? (checkboxLabelLineHeight(size) - sizeConfig.box) / 2 : 0}
+      />
+
+      {hasText && (
+        <View style={{ flex: 1 }}>
+          {labelContent != null ? (
+            <View
+              pointerEvents="none"
+              aria-hidden
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              {labelContent}
+            </View>
+          ) : (
+            label && (
+              <Text variant={sizeConfig.label} style={[{ color: paint.text }, labelStyle]}>
+                {label}
+              </Text>
+            )
+          )}
+          {description && (
+            <Text
+              variant={sizeConfig.description}
+              style={{ color: paint.description, marginTop: hasLabel ? DESCRIPTION_GAP : 0 }}
+            >
+              {description}
+            </Text>
+          )}
+        </View>
+      )}
+    </>
+  );
+
+  if (readOnly) {
+    // A presentation, not a control: a `View`, so there is no press, hover or
+    // tab stop to suppress, and nothing dims it. It still IS a checkbox to
+    // assistive technology, with its state and `aria-readonly` (ARIA 1.2
+    // allows it on `checkbox`); `accessible` keeps the box and its label one
+    // element on native, as the pressable row is. `tabIndex={-1}` because
+    // react-native-web gives every `checkbox` role a tab stop, and a published
+    // page of checkmarks is read, not tabbed through.
+    return (
+      <View
+        style={[rowStyle, style]}
+        accessible
+        tabIndex={-1}
+        role="checkbox"
+        accessibilityRole="checkbox"
+        aria-checked={indeterminate ? 'mixed' : checked}
+        aria-readonly
+        aria-disabled={isDisabled || undefined}
+        nativeID={field.nativeID}
+        aria-describedby={field.describedBy}
+        accessibilityLabel={field.accessibilityLabel}
+        testID={testID}
+      >
+        {body}
+      </View>
+    );
+  }
 
   return (
     <Pressable
@@ -195,45 +268,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
       hitSlop={{ top: slop, bottom: slop, left: slop, right: slop }}
       testID={testID}
     >
-      <CheckboxGlyph
-        size={size}
-        checked={checked}
-        indeterminate={indeterminate}
-        disabled={isDisabled}
-        highlighted={highlighted}
-        paint={paint}
-        // Centre the box on the label's first line box.
-        marginTop={hasText ? (checkboxLabelLineHeight(size) - sizeConfig.box) / 2 : 0}
-      />
-
-      {hasText && (
-        <View style={{ flex: 1 }}>
-          {labelContent != null ? (
-            <View
-              pointerEvents="none"
-              aria-hidden
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-            >
-              {labelContent}
-            </View>
-          ) : (
-            label && (
-              <Text variant={sizeConfig.label} style={[{ color: paint.text }, labelStyle]}>
-                {label}
-              </Text>
-            )
-          )}
-          {description && (
-            <Text
-              variant={sizeConfig.description}
-              style={{ color: paint.description, marginTop: hasLabel ? DESCRIPTION_GAP : 0 }}
-            >
-              {description}
-            </Text>
-          )}
-        </View>
-      )}
+      {body}
     </Pressable>
   );
 };

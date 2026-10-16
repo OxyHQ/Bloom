@@ -37,6 +37,7 @@ function fontFamilyStyle(kind: 'display' | 'sans' | 'mono'): { fontFamily: strin
 
 const SANS_FONT_FAMILY = fontFamilyStyle('sans');
 const DISPLAY_FONT_FAMILY = fontFamilyStyle('display');
+const MONO_FONT_FAMILY = fontFamilyStyle('mono');
 
 /**
  * The big titles of the scale — `large-title` and `display-1` … `display-4`, 32px and up — are
@@ -54,8 +55,21 @@ const isDisplayVariant = (variant: string): boolean =>
  */
 const DISPLAY_CLASS = /(?:^|\s)(?:[\w-]+:)*(?:font-display|text-[3-9]xl)(?=\s|$)/;
 
-/** The family a `Text` is set in: BlomusModernus for the big titles, Inter for the rest. */
+/**
+ * An explicit `font-mono`, at any breakpoint or state (`md:font-mono`). The
+ * family is set inline, and an inline style beats a utility, so without this a
+ * caller asking for mono by class got Inter. Bloom defines no serif family
+ * (`fonts/tokens.ts`), so there is no `font-serif` counterpart.
+ */
+const MONO_CLASS = /(?:^|\s)(?:[\w-]+:)*font-mono(?=\s|$)/;
+
+/**
+ * The family a `Text` is set in: JetBrains Mono when the className asks for
+ * `font-mono` (an explicit family beats one implied by size), BlomusModernus
+ * for the big titles, Inter for the rest.
+ */
 function textFamily(variant: string | undefined, className: string | undefined) {
+  if (className !== undefined && MONO_CLASS.test(className)) return MONO_FONT_FAMILY;
   const display =
     (variant !== undefined && isDisplayVariant(variant)) ||
     (className !== undefined && DISPLAY_CLASS.test(className));

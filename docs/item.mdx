@@ -36,6 +36,7 @@ import { Item } from '@oxy.so/bloom/item';
 | `selected`    | the selected state, for `option` / `radio` rows                  |
 | `active`      | the "you are here" state, for navigation rows                    |
 | `highlighted` | the keyboard's cursor, in a list a field drives                  |
+| `onHoverIn` / `onHoverOut` | pointer hover on a pressable row — move `highlighted` with it |
 | `density`     | `comfortable` (default) or `compact` for a dense list            |
 | `destructive` | paints the title in the error role                               |
 
@@ -68,6 +69,24 @@ moved to in a list the field above it drives (a combobox, a composer's
 suggestions). It paints the hover wash, because it is the same claim as the
 pointer resting on the row, and it announces nothing: the row is neither chosen
 nor current.
+
+A list with a keyboard cursor needs ONE cursor, so it moves `highlighted` when
+the pointer rests on a row as well. `onHoverIn` / `onHoverOut` report that on a
+pressable row (the row still paints its own hover wash); only a platform with a
+real pointer calls them, and a disabled row does not.
+
+```tsx
+{commands.map((command, index) => (
+  <Item
+    key={command.id}
+    role="option"
+    title={command.title}
+    highlighted={index === cursor}
+    onHoverIn={() => setCursor(index)}
+    onPress={() => run(command)}
+  />
+))}
+```
 
 ## `destructive` colours, it does not confirm
 

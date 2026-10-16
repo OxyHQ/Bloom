@@ -65,15 +65,26 @@ const UNROLED: Record<'purple' | 'pink' | 'teal', Partial<Record<ToneStop, Oklch
   },
 };
 
-function rotatedFromPrimary(primary: string, target: Oklch): string {
-  const rgba = parseRgba(primary);
-  if (!rgba) return primary;
+/**
+ * `color` moved by Tailwind's offset from `anchor` to `target`: the lightness
+ * step, the chroma ratio and the hue distance. When `color` IS the anchor (a
+ * blue primary measured from `blue-500`) the result is `target` itself; on any
+ * other theme the target keeps its place relative to the colour it was
+ * measured from.
+ */
+export function reanchored(color: string, anchor: Oklch, target: Oklch): string {
+  const rgba = parseRgba(color);
+  if (!rgba) return color;
   const base = srgbToOklch(rgba);
   return oklchToRgbString({
-    l: Math.min(0.99, Math.max(0.05, base.l + (target.l - BLUE_500.l))),
-    c: base.c * (target.c / BLUE_500.c),
-    h: (((base.h + (target.h - BLUE_500.h)) % 360) + 360) % 360,
+    l: Math.min(0.99, Math.max(0.05, base.l + (target.l - anchor.l))),
+    c: base.c * (target.c / anchor.c),
+    h: (((base.h + (target.h - anchor.h)) % 360) + 360) % 360,
   });
+}
+
+function rotatedFromPrimary(primary: string, target: Oklch): string {
+  return reanchored(primary, BLUE_500, target);
 }
 
 function roleRamp(theme: Theme, tone: Exclude<DashboardTone, 'purple' | 'pink' | 'teal'>): Ramp {

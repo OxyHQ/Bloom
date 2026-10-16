@@ -1,4 +1,10 @@
-import type { AccessibilityRole, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type {
+  AccessibilityRole,
+  MouseEvent as NativeMouseEvent,
+  StyleProp,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
 
 export interface ItemProps {
   /** Primary title text. */
@@ -18,6 +24,15 @@ export interface ItemProps {
   onPress?: () => void;
   /** Long-press handler. Only honored when the row is pressable. */
   onLongPress?: () => void;
+  /**
+   * The pointer came to rest on a pressable row. A keyboard-driven list (a
+   * command palette, a combobox) moves its `highlighted` row here, so pointer
+   * and keyboard share one cursor. Only a platform with a real pointer calls
+   * it, and a disabled row does not.
+   */
+  onHoverIn?: (event: NativeMouseEvent) => void;
+  /** The pointer left a pressable row. See {@link ItemProps.onHoverIn}. */
+  onHoverOut?: (event: NativeMouseEvent) => void;
   disabled?: boolean;
   /** Render the title in the theme's negative/error color. */
   destructive?: boolean;

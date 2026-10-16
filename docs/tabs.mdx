@@ -41,6 +41,49 @@ an ancestor of what it switches.
 | `label`         | the strip's accessible name — the `tablist`'s `aria-label` (web) |
 | `count`         | a count badge beside a trigger's label                         |
 | `leadingIcon`   | an icon component, sized and tinted by the trigger             |
+| `trailing`      | a node after a trigger's label that is NOT its press target — see below |
+| `onLongPress`   | a trigger's long press, which does not select it               |
+
+`TabsContent` is optional and most strips do without it: a strip that switches
+views somewhere else is `Tabs` holding `TabsTrigger`s and nothing more. A
+`TabsTrigger` outside a `Tabs` throws, and the message says exactly that,
+because a trigger has no geometry, indicator or keyboard of its own.
+
+## A strip of views: `trailing` and `onLongPress`
+
+A database's view strip gives each tab its own settings button and a long-press
+menu, and shows the chosen view below, outside the strip:
+
+```tsx
+<Tabs value={viewId} onValueChange={setViewId} variant="filled" label="Views">
+  {views.map((view) => (
+    <TabsTrigger
+      key={view.id}
+      value={view.id}
+      label={view.name}
+      leadingIcon={VIEW_ICONS[view.type]}
+      onLongPress={() => openViewMenu(view.id)}
+      trailing={
+        <Button iconOnly size="xs" appearance="plain" leadingIcon={RiEqualizerLine}
+          accessibilityLabel={`${view.name} settings`} onPress={() => openViewMenu(view.id)} />
+      }
+    />
+  ))}
+</Tabs>
+<Button size="xs" appearance="plain" leadingIcon={RiAddLine} onPress={addView}>New view</Button>
+```
+
+`trailing` renders as the trigger's SIBLING inside the measured wrapper, never
+inside its press target: pressing it does not select the tab, and on web no
+button nests in another. The underline and the pill thumb span the trigger and
+the trailing node together; the trigger hands the trailing node its right
+padding. The node keeps its own interactivity, so disable it with the tab. Keep
+controls that are not about one tab (the "New view" button) BESIDE the strip,
+not in it: the strip is a `tablist`, which owns tabs only.
+
+`onLongPress` receives the press event, does not select the tab, and a long
+press does not also fire `onPress`. A disabled trigger installs no long-press
+handler.
 
 ## Keyboard (web)
 

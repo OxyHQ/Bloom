@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Item } from '../item';
@@ -102,5 +102,35 @@ describe('Item', () => {
       expect(row.props['aria-pressed']).toBeUndefined();
       expect(row.props.accessibilityState.selected).toBeUndefined();
     });
+  });
+});
+
+describe('Item hover callbacks', () => {
+  it('reports pointer hover on a pressable row, alongside its own hover wash', () => {
+    const onHoverIn = jest.fn();
+    const onHoverOut = jest.fn();
+    const { getByLabelText } = renderWithTheme(
+      <Item title="Open file" onPress={() => {}} onHoverIn={onHoverIn} onHoverOut={onHoverOut} />,
+    );
+    const row = getByLabelText('Open file');
+    const event = { nativeEvent: {} };
+    act(() => row.props.onHoverIn(event));
+    expect(onHoverIn).toHaveBeenCalledWith(event);
+    // The row's own wash still follows the pointer.
+    expect(
+      row
+        .findAll((node) => typeof node.type === 'string')
+        .map((node) => resolvedStyle(node.props.style).backgroundColor)
+        .filter(Boolean),
+    ).toContain(buildTheme('teal', 'light').colors.contrast50);
+    act(() => row.props.onHoverOut(event));
+    expect(onHoverOut).toHaveBeenCalledWith(event);
+  });
+
+  it('a disabled row reports no hover', () => {
+    const { getByLabelText } = renderWithTheme(
+      <Item title="Open file" onPress={() => {}} disabled onHoverIn={() => {}} />,
+    );
+    expect(getByLabelText('Open file').props.onHoverIn).toBeUndefined();
   });
 });

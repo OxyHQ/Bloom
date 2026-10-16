@@ -46,9 +46,33 @@ import { Chip, resolveChipHueColors, type ChipHue } from '@oxy.so/bloom/chip';
 | `cyan` | 200 / 800 | 950 at 60% / 400 | `info` ramp |
 | `blue` | 200 / 800 | 950 at 60% / 300 | accent ramp |
 | `purple` | 100 / 600 | 900 at 50% / 300 | Tailwind purple re-anchored on `primary` — the same stops `AiProfileCard`'s delta chips use |
+| `orange` | 200 / 800 | 950 at 60% / 300 | Tailwind orange re-anchored on `warning` |
+| `brown` | 200 / 800 | 950 at 60% / 300 | orange at 40% of its chroma |
+| `pink` | 200 / 800 | 950 at 60% / 500 | Tailwind pink re-anchored on `negative` |
 | `neutral` | neutral-200 / neutral-500 | neutral-800 / neutral-500 | `background-tertiary` / `text-secondary` |
 | `gray` | neutral-100 / text | neutral-900 / text | `background-secondary` / `text-primary` |
 | `soft` | neutral-100 / neutral-500 | neutral-900 / neutral-500 | `background-secondary` / `text-secondary` |
+
+### Select-option colours
+
+A database select option's ten colours map onto the hues one to one:
+
+| option colour | `hue` |
+|---|---|
+| default | `neutral` |
+| gray | `gray` |
+| brown | `brown` |
+| orange | `orange` |
+| yellow | `yellow` |
+| green | `lime` |
+| blue | `blue` |
+| purple | `purple` |
+| pink | `pink` |
+| red | `rose` |
+
+Orange, brown and pink have no theme role, and each is anchored on its NEAREST one rather than on `primary`: orange and brown on `warning` (the ramp `yellow` paints from), pink on `negative` (the ramp `rose` paints from). Each keeps Tailwind's hue distance and chroma ratio from the hue the role stands for (orange from `amber-500`, pink from `red-500`), so a preset that moves the role moves it too, and the pair never collapses into one colour. The fill and label stops take the ramp table's fixed lightness, as every role hue's do. A named option has to stay that colour and stay apart from its neighbour under every preset; rotating with the brand, as `purple` does, would turn "pink" green on a red preset. Tailwind has no brown, and a brown is an orange with most of its colour taken out: 40% of orange's chroma puts the label near 0.08 and the fill near 0.02, plainly warm beside `gray` and plainly not `orange`. In dark mode, orange and brown take the fixed-lightness 300 for their label, because `warning` stays a dark tone there. `ChipHue.test.tsx` checks AA for all three in both modes, and keeps them apart from every other hue, across seven presets.
+
+`blue` is the brand ramp, so on an orange or a pink preset it is that colour by design: pick the hue for what the option MEANS, not for where it sits on the default theme.
 
 The hues sit BESIDE the accent recipe, not inside it: `resolveAccentColors` is untouched, and a chip without `hue` paints exactly as before. While `hue` is set, `color` and `variant` are ignored (no border); `selected` still promotes a pressable chip to the brand tone.
 
@@ -137,6 +161,20 @@ The fade is web only (it is a CSS gradient); the row scrolls on both platforms.
 ```
 
 The close affordance is its own control inside the pill, with its own label and its own hit slop.
+
+## Events
+
+`onPress` and `onLongPress` receive the press event; either one makes the chip interactive, and a long press does not also fire `onPress`. `stopPropagation` (default false, as on `Button`) calls `stopPropagation()` on that event before your handler runs, for a chip inside a pressable card or row. On web, react-native-web's press responder already stops a click at the first pressable ancestor, so the flag matters most for a parent that listens some other way. What the chip lacked before was the event itself: `onPress` was called with nothing, so a caller could neither stop it nor read it.
+
+`onHoverIn` / `onHoverOut` report the pointer on an interactive chip (one with `onPress`, `onLongPress` or `onCheckedChange`). Only a platform with a real pointer calls them. A disabled chip reports no hover-in, and still reports the hover-out so nothing stays hovered.
+
+```tsx
+<Card onPress={openRow}>
+  <Chip hue="pink" stopPropagation onPress={() => filterBy(tag)} onLongPress={() => editTag(tag)}>
+    {tag}
+  </Chip>
+</Card>
+```
 
 ## Sizes and icons
 

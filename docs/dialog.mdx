@@ -153,6 +153,7 @@ The bar's background is an SVG gradient Bloom paints itself. It is solid in the 
 | `color?` | `'default' \| 'cancel' \| 'destructive'` | Defaults to `'default'`. |
 | `onPress?` | `(e) => void` | Invoked **after** the dialog finishes closing. |
 | `disabled?` | `boolean` | |
+| `loading?` | `boolean` | Work in flight: `Button`'s spinner over the label (the label keeps its width), announced busy, presses ignored — the dialog neither closes nor runs `onPress` again. |
 | `shouldCloseOnPress?` | `boolean` | Defaults to `true`. Set `false` while an async action is in flight. |
 | `testID?` | `string` | |
 
@@ -254,8 +255,8 @@ const [busy, setBusy] = useState(false);
   title="Submit?"
   actions={[
     {
-      label: busy ? 'Submitting…' : 'Submit',
-      disabled: busy,
+      label: 'Submit',
+      loading: busy, // spinner, busy, presses ignored
       shouldCloseOnPress: false, // keep dialog open while we work
       onPress: async () => {
         setBusy(true);

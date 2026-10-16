@@ -282,7 +282,13 @@ export type LinkButtonProps = ButtonProps;
 export interface CloseButtonProps {
   /** Utility classes applied to the control laid out by its parent. */
   className?: string;
-  onPress?: () => void;
+  /** Called on press, with the press event. */
+  onPress?: (event: GestureResponderEvent) => void;
+  /**
+   * Keep the press from also activating a pressable parent: the dismiss X on a
+   * pressable card or row. Default false, like `Button`'s.
+   */
+  stopPropagation?: boolean;
   /** `2xs` 16 · `xs` 20 (default) · `sm` 24 · `md` 32. */
   size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
   disabled?: boolean;
