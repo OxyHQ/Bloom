@@ -37,7 +37,9 @@ const [value, setValue] = useState<Segment[]>([{ text: 'Hello ' }, { text: 'worl
 - **`value` is reconciled, not re-rendered.** The input owns its content while
   the user types. A `value` that differs from the one it last reported (a
   collaborator's edit, an undo) replaces the content and keeps the caret where
-  the same text still is.
+  the same text still is. What the person types while such a value is on its
+  way to the input (it lands after their keystroke) is merged into the value
+  and given back to the input, never lost (`InputSync`).
 - **`edit`** on every change is the single text edit that produced it
   (`{ index, deleteCount, insert }`), ready to apply to a CRDT.
 - **Marks the input cannot show survive.** The input renders bold, italic,
@@ -56,8 +58,12 @@ links) and reconciliation — for servers and tests.
 - The input reports whole values, not edits; edits are recovered with a
   prefix/suffix diff, which is exact for one input event.
 - A remote change replaces the whole content (`setValue`), then restores the
-  transformed selection.
-- No per-selection text colour in the input itself.
+  transformed selection. A keystroke that crossed it disappears for the moment
+  it takes to give the merged value back.
+- No per-selection text colour in the input itself: `react-native-enriched-html`
+  is adding foreground and background colours (software-mansion/react-native-enriched-html#817);
+  once released, the input shows `color` and `background` instead of only
+  carrying them.
 
 Closing these needs native changes in the input (an edit event, an
 `applyEdits` that preserves selection, colour marks); they are tracked for

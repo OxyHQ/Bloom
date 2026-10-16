@@ -18,17 +18,8 @@ import {
 } from 'react-native-enriched-html';
 import { htmlToSegments, segmentsToHtml } from './html';
 import { containsFocus, useKeyCapture } from './key-capture';
-import { reconcileInputValue } from './reconcile';
-import { segmentsEqual, segmentsToPlainText, diffText } from './segments';
-import { transformSelection } from './selection';
-import type {
-  ActiveMarks,
-  RichTextInputHandle,
-  RichTextInputProps,
-  Segment,
-  TextSelection,
-  ToggleableMark,
-} from './types';
+import { InputSync } from './input-sync';
+import type { ActiveMarks, RichTextInputHandle, RichTextInputProps, ToggleableMark } from './types';
 
 /** Block-level shortcuts belong to the block editor, never to one input. */
 const NO_TEXT_SHORTCUTS: [] = [];
@@ -72,46 +63,27 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
   const wrapperRef = useRef<View | null>(null);
   const focusedRef = useRef(false);
   useKeyCapture(wrapperRef, onKeyCommand);
-  // The value the input currently shows, as last reported by it or pushed to it.
-  const shownRef = useRef<Segment[]>(value);
-  /** Whether the input has loaded `shownRef`'s value since it was last set. */
-  const loadedRef = useRef(false);
-  const selectionRef = useRef<TextSelection>({ start: 0, end: 0 });
   // Mounted with the first value only; later values arrive through setValue.
   const [defaultHtml] = useState(() => segmentsToHtml(value));
+  const [sync] = useState(
+    () =>
+      new InputSync(value, {
+        setValue: (next) => inputRef.current?.setValue(segmentsToHtml(next)),
+        setSelection: ({ start, end }) => inputRef.current?.setSelection(start, end),
+      }),
+  );
 
-  // A value that differs from what the input shows came from outside (another
-  // collaborator, an undo, a programmatic edit): replace the content and keep
-  // the caret where the same text still is.
+  // A value from outside (another collaborator, an undo, a programmatic edit).
   useEffect(() => {
-    if (segmentsEqual(value, shownRef.current)) return;
-    const edit = diffText(segmentsToPlainText(shownRef.current), segmentsToPlainText(value));
-    shownRef.current = value;
-    const input = inputRef.current;
-    if (!input) return;
-    loadedRef.current = false;
-    input.setValue(segmentsToHtml(value));
-    const next = edit ? transformSelection(selectionRef.current, edit) : selectionRef.current;
-    selectionRef.current = next;
-    input.setSelection(next.start, next.end);
-  }, [value]);
+    sync.update(value);
+  }, [sync, value]);
 
   const handleHtml = useCallback(
     (html: string) => {
-      const reported = htmlToSegments(html);
-      // Until the input shows the value it was given (on mount, after
-      // setValue), what it reports is its own transient state — an empty
-      // document before the content loads — not an edit.
-      if (!loadedRef.current) {
-        if (segmentsEqual(reported, shownRef.current)) loadedRef.current = true;
-        return;
-      }
-      const { segments, edit } = reconcileInputValue(shownRef.current, reported);
-      if (segmentsEqual(segments, shownRef.current)) return;
-      shownRef.current = segments;
-      onChange({ segments, text: segmentsToPlainText(segments), edit });
+      const change = sync.report(htmlToSegments(html));
+      if (change) onChange(change);
     },
-    [onChange],
+    [sync, onChange],
   );
 
   useImperativeHandle(
@@ -121,7 +93,7 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
       blur: () => inputRef.current?.blur(),
       isFocused: () => focusedRef.current || containsFocus(wrapperRef),
       setSelection: (start, end) => {
-        selectionRef.current = { start, end };
+        sync.select({ start, end });
         inputRef.current?.setSelection(start, end);
       },
       toggleMark: (mark: ToggleableMark) => {
@@ -139,7 +111,7 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
       insertMention: (indicator, text, attributes) =>
         inputRef.current?.setMention(indicator, text, attributes),
     }),
-    [],
+    [sync],
   );
 
   const inputStyle = useMemo((): EnrichedInputStyle => {
@@ -192,7 +164,7 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
         onChangeHtml={(e) => handleHtml(e.nativeEvent.value)}
         onChangeSelection={(e) => {
           const { start, end } = e.nativeEvent;
-          selectionRef.current = { start, end };
+          sync.select({ start, end });
           onSelectionChange?.({ start, end });
         }}
         onChangeState={
