@@ -1,6 +1,6 @@
 ---
 title: Icons
-description: Remix Icon, one component per glyph — how to import one glyph instead of all 549, how apps migrate off the retired Bloom set, and why a wrong name is invisible to the compiler.
+description: Remix Icon, one component per glyph — how to import one glyph instead of all 551, how apps migrate off the retired Bloom set, and why a wrong name is invisible to the compiler.
 order: 66
 ---
 
@@ -20,7 +20,7 @@ import { RiNotification3Line as BellIcon } from '@oxy.so/bloom/icons';
 ## Import one glyph, ship one glyph
 
 **Metro does not tree-shake.** `@oxy.so/bloom/icons` is a flat barrel over all
-549 glyphs, so an app that names one icon through it bundles all 549 — the
+551 glyphs, so an app that names one icon through it bundles all 551 — the
 import is a static graph edge to every one of them, and nothing downstream
 removes what the app never renders.
 

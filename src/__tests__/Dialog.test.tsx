@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text } from 'react-native';
+import * as ReactNative from 'react-native';
+import { Modal, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { Dialog, useDialogControl } from '../dialog';
@@ -205,5 +206,130 @@ describe('Dialog nav header (rich fields)', () => {
     // Title renders in both the large title and the (collapsed) bar title.
     expect(getAllByText('Just a title').length).toBeGreaterThanOrEqual(1);
     expect(getByLabelText('Close')).toBeTruthy();
+  });
+});
+
+/**
+ * The NATIVE centred card is a detached `BottomSheet`, which takes its first
+ * visibility from `open` and its user-dismissal veto from `onDismissAttempt`.
+ * The bottom placement mapped both; the centred one mapped neither, so an
+ * uncontrolled `startOpen` card never appeared and `dismissOnBackdrop={false}`
+ * still closed on a backdrop tap.
+ */
+describe('native centred Dialog: startOpen and dismissOnBackdrop', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  function setViewportWidth(width: number) {
+    jest
+      .spyOn(ReactNative, 'useWindowDimensions')
+      .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  }
+
+  it('an uncontrolled startOpen centred dialog is open on mount', () => {
+    const { getByText } = renderWithTheme(
+      <Harness>
+        {(c) => (
+          <Dialog control={c} startOpen placement="center" title="Seeded">
+            <Text>Seeded body</Text>
+          </Dialog>
+        )}
+      </Harness>,
+    );
+    expect(getByText('Seeded body')).toBeTruthy();
+  });
+
+  it('a responsive { base: bottom, md: center } startOpen dialog is open at >= 768dp', () => {
+    setViewportWidth(1024);
+    const { getByText } = renderWithTheme(
+      <Harness>
+        {(c) => (
+          <Dialog control={c} startOpen placement={{ base: 'bottom', md: 'center' }}>
+            <Text>Wide body</Text>
+          </Dialog>
+        )}
+      </Harness>,
+    );
+    expect(getByText('Wide body')).toBeTruthy();
+  });
+
+  it('the centred branch a breakpoint crossing mounts opens when startOpen is set', () => {
+    setViewportWidth(375);
+    // A fresh element per render: an identical one would bail out of the update.
+    const tree = () => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Harness>
+          {(c) => (
+            <Dialog control={c} startOpen placement={{ base: 'bottom', md: 'center' }}>
+              <Text>Crossing body</Text>
+            </Dialog>
+          )}
+        </Harness>
+      </BloomThemeProvider>
+    );
+    const screen = render(tree());
+    // The bottom branch already honoured `startOpen`.
+    expect(screen.getByText('Crossing body')).toBeTruthy();
+    setViewportWidth(1024);
+    screen.rerender(tree());
+    expect(screen.getByText('Crossing body')).toBeTruthy();
+    // It is the centred card now: the bottom sheet's handle is gone.
+    expect(screen.UNSAFE_queryByProps({ detached: true })).not.toBeNull();
+  });
+
+  describe('backdrop and Android Back', () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => {
+      jest.runOnlyPendingTimers();
+      jest.useRealTimers();
+    });
+
+    function renderCentred(dismissOnBackdrop: boolean | undefined, onClose: () => void) {
+      let control: ReturnType<typeof useDialogControl> | undefined;
+      const screen = renderWithTheme(
+        <Harness
+          onControl={(c) => {
+            control = c;
+          }}
+        >
+          {(c) => (
+            <Dialog
+              control={c}
+              placement="center"
+              dismissOnBackdrop={dismissOnBackdrop}
+              onClose={onClose}
+            >
+              <Text>Centred body</Text>
+            </Dialog>
+          )}
+        </Harness>,
+      );
+      act(() => control?.open());
+      return { screen, control: () => control };
+    }
+
+    it('with dismissOnBackdrop={false}, a backdrop tap and Android Back leave it open', () => {
+      const onClose = jest.fn();
+      const { screen, control } = renderCentred(false, onClose);
+      fireEvent.press(screen.getByLabelText('Dismiss'));
+      act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
+      act(() => jest.advanceTimersByTime(500));
+      expect(onClose).not.toHaveBeenCalled();
+      expect(screen.getByText('Centred body')).toBeTruthy();
+      expect(screen.UNSAFE_getByType(Modal).props.visible).toBe(true);
+      // `close()` is not a user dismissal: the veto does not block it.
+      act(() => control()?.close());
+      act(() => jest.advanceTimersByTime(500));
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(screen.queryByText('Centred body')).toBeNull();
+    });
+
+    it('by default, a backdrop tap closes it', () => {
+      const onClose = jest.fn();
+      const { screen } = renderCentred(undefined, onClose);
+      fireEvent.press(screen.getByLabelText('Dismiss'));
+      act(() => jest.advanceTimersByTime(500));
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(screen.queryByText('Centred body')).toBeNull();
+    });
   });
 });

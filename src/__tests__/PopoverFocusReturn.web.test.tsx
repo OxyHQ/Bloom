@@ -121,3 +121,56 @@ it.each([false, true])(
     expect(document.activeElement).toBe(button('Outside'));
   },
 );
+
+// A NON-modal popover beside a field the user keeps working in (an @-mention
+// picker under a text input). With the default backdrop, the first click in the
+// field only closed the panel. `modal={false}` lays no backdrop: the outside
+// press closes the panel AND the field keeps the focus it was given.
+function FieldFixture({ modal }: { modal?: boolean }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <>
+      <input aria-label="Message" />
+      <Popover open={open} onOpenChange={setOpen} modal={modal}>
+        <PopoverTrigger asChild>
+          <Button>Mention</Button>
+        </PopoverTrigger>
+        <PopoverContent label="Mentions">
+          <Button>Ada</Button>
+        </PopoverContent>
+      </Popover>
+    </>
+  );
+}
+function mountField(modal?: boolean) {
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="light">
+        <FieldFixture modal={modal} />
+      </BloomThemeProvider>,
+    ),
+  );
+  flush();
+  expect(document.querySelector('[aria-label="Mentions"]')).not.toBeNull();
+}
+const dismissLayer = () => document.querySelector('[aria-label="Dismiss"]');
+it('lays a dismiss backdrop over the app by default', () => {
+  mountField();
+  expect(dismissLayer()).not.toBeNull();
+});
+it('with modal={false}, lays no backdrop and an outside press closes it without taking the field', () => {
+  mountField(false);
+  expect(dismissLayer()).toBeNull();
+  const field = document.querySelector<HTMLInputElement>('input[aria-label="Message"]');
+  if (!field) throw new Error('the field did not render');
+  // Outside the (zero-box, jsdom) anchor, so the press is not the trigger's.
+  act(() => {
+    field.dispatchEvent(
+      new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 400, clientY: 400 }),
+    );
+    field.focus();
+  });
+  flush();
+  expect(document.querySelector('[aria-label="Mentions"]')).toBeNull();
+  expect(document.activeElement).toBe(field);
+});

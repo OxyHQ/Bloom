@@ -168,8 +168,9 @@ function CenteredOrSideDialog({
     maxHeight: viewportHeight,
   });
 
-  // Imperative open state for the side placement (the BottomSheet path owns its
-  // own visibility via its ref instead).
+  // Imperative open state for the side placement. The centred BottomSheet owns
+  // its own visibility (its ref and its `open` seed below) and reads this only
+  // for the context's `isClosing`.
   const [sideOpen, setSideOpen] = useState(() => controlledOpen ?? startOpen ?? false);
 
   const theme = useTheme();
@@ -254,6 +255,14 @@ function CenteredOrSideDialog({
     () => ({ close, isWithinDialog: true, isClosing: !sideOpen }),
     [close, sideOpen],
   );
+
+  // Backdrop, Android Back and drag-down on the centred card are USER
+  // dismissals: returning `false` vetoes them before the close starts, which is
+  // how `dismissOnBackdrop={false}` maps onto the sheet. The bottom placement
+  // does the same (`DialogBottomSheet`); without it the centred card closed on a
+  // backdrop tap or a swipe whatever the prop said. `close()` and the header's
+  // close button dismiss by ref, which the veto does not see.
+  const onDismissAttempt = useCallback(() => dismissOnBackdrop, [dismissOnBackdrop]);
 
   // The array composes the plain surface styles with the morph's reanimated
   // animated style (`morphState.panelStyle` from `useAnimatedStyle`), so the
@@ -358,7 +367,13 @@ function CenteredOrSideDialog({
           : undefined
       }
       ref={ref}
+      // Seed the sheet's open state, as the bottom placement does: `BottomSheet`
+      // reads its first visibility from `open` alone, so without it an
+      // uncontrolled `startOpen` card (including the branch a responsive
+      // placement mounts when it crosses into `center`) never appeared.
+      open={isControlled ? controlledOpen : startOpen}
       onDismiss={handleDismiss}
+      onDismissAttempt={onDismissAttempt}
       enablePanDownToClose
       detached
       // Nav-header mode hides the drag handle (the nav bar sits at the very top)

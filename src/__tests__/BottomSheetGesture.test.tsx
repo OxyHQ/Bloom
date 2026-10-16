@@ -4,6 +4,7 @@ import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
+import { Dialog, useDialogControl } from '../dialog';
 
 /**
  * Pan-to-dismiss is the whole point of routing the Dialog `bottom` placement
@@ -165,4 +166,43 @@ it.each([false, true])('retains the timed close lifecycle and drag veto (veto=%s
   act(() => gesture?.onEnd?.({ velocityY: 1500, translationY: 500 }));
   expect(onDismiss).toHaveBeenCalledTimes(veto ? 0 : 1);
   expect(Boolean(screen.queryByText('Body'))).toBe(veto);
+});
+
+// The native centred Dialog is a detached `BottomSheet` with
+// `enablePanDownToClose`. A swipe down is a user dismissal, so
+// `dismissOnBackdrop={false}` has to refuse it there as it does on the bottom
+// placement; the centred card used to pass no veto and closed on the swipe.
+function CentredDialog({ allowed, onClose }: { allowed: boolean; onClose: () => void }) {
+  const control = useDialogControl();
+  return (
+    <Dialog
+      control={control}
+      startOpen
+      placement="center"
+      dismissOnBackdrop={allowed}
+      onClose={onClose}
+    >
+      <Text>Centred body</Text>
+    </Dialog>
+  );
+}
+
+it.each([
+  [false, 0],
+  [true, 1],
+])('a centred native Dialog swipe-down honours dismissOnBackdrop=%s', (allowed, closes) => {
+  mockPanGestures.length = 0;
+  const onClose = jest.fn();
+  const screen = render(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      <CentredDialog allowed={allowed} onClose={onClose} />
+    </BloomThemeProvider>,
+  );
+  const gesture = mockPanGestures.find((g) => typeof g.onEnd === 'function');
+  expect(gesture).toBeDefined();
+  act(() => gesture?.onEnd?.({ velocityY: 1500, translationY: 500 }));
+  // A refused swipe springs back with the body mounted; an allowed one settles
+  // the card closed and reports it once.
+  expect(onClose).toHaveBeenCalledTimes(closes);
+  expect(Boolean(screen.queryByText('Centred body'))).toBe(closes === 0);
 });

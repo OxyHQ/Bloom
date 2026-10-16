@@ -227,6 +227,33 @@ describe('PopoverContent (web)', () => {
   });
 });
 
+describe('Popover modal (web)', () => {
+  beforeEach(() => {
+    floatingPanelProps.length = 0;
+  });
+
+  function renderedModal(modal: boolean | undefined) {
+    render(
+      <Themed>
+        <Popover defaultOpen modal={modal}>
+          <PopoverContent label="Panel">
+            <RNText>Body</RNText>
+          </PopoverContent>
+        </Popover>
+      </Themed>,
+    );
+    return floatingPanelProps[floatingPanelProps.length - 1]?.modal;
+  }
+
+  it('stays modal by default, so existing callers keep the caught outside press', () => {
+    expect(renderedModal(undefined)).toBe(true);
+  });
+
+  it('hands modal={false} to FloatingPanel, which then lays down no backdrop', () => {
+    expect(renderedModal(false)).toBe(false);
+  });
+});
+
 describe('panel parts', () => {
   function palette() {
     let p: ReturnType<typeof resolveMenuPalette> | undefined;
