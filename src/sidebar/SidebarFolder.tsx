@@ -66,7 +66,11 @@ function TreeConnector({ count, color }: { count: number; color: string }) {
   );
 }
 
-function TreeRow({
+/**
+ * One row of the tree: inside a folder (indented past the connector) or
+ * directly under a section label (`folder` absent, inset to the folder glyph).
+ */
+export function SidebarTreeRow({
   item,
   folder,
   selected,
@@ -75,10 +79,11 @@ function TreeRow({
   palette,
 }: {
   item: SidebarTreeItem;
-  folder: SidebarTreeFolder;
+  folder?: SidebarTreeFolder;
   selected: boolean;
   focusable: boolean;
-  onPress?: (item: SidebarTreeItem, folder: SidebarTreeFolder) => void;
+  // Method form: a folder's `(item, folder) => …` handler always gets its folder here.
+  onPress?(item: SidebarTreeItem, folder?: SidebarTreeFolder): void;
   palette: SidebarPalette;
 }) {
   const { state: hovered, onIn, onOut } = useInteractionState();
@@ -92,7 +97,9 @@ function TreeRow({
     paddingTop: 5,
     paddingBottom: 5,
     paddingInlineEnd: 8,
-    paddingInlineStart: 36,
+    // In a folder the label clears the connector and lines up with the
+    // folder's own label; a section row starts where a folder's glyph does.
+    paddingInlineStart: folder ? 36 : 8,
     backgroundColor: selected || hovered ? palette.rowHover : 'transparent',
     '--bloom-sidebar-ring': palette.ring,
   };
@@ -278,7 +285,7 @@ function SidebarFolderComponent({
         >
           <TreeConnector count={folder.items.length} color={palette.iconQuaternary} />
           {folder.items.map((item) => (
-            <TreeRow
+            <SidebarTreeRow
               key={item.key}
               item={item}
               folder={folder}

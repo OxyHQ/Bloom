@@ -79,3 +79,33 @@ export const DocumentPanel: Story = {
     </AppShell>
   ),
 };
+
+/**
+ * The page every app writes once for both platforms: the window scrolls it on
+ * web, its own scroll view on native, and `onEndReached` pages it either way.
+ */
+export const DocumentScrollView: Story = {
+  parameters: { layout: 'fullscreen', bloomScroll: 'document', controls: { disable: true } },
+  render: function DocumentScrollView() {
+    const [pages, setPages] = React.useState(1);
+    return (
+      <Screen
+        documentScroll
+        testID="document-page"
+        header={<PageHeader title={`Pages loaded: ${pages}`} testID="document-page-title" />}
+      >
+        <ScreenScrollView
+          contentContainerStyle={{ padding: 16, gap: 16 }}
+          onEndReached={() => setPages((count) => Math.min(count + 1, 5))}
+          onEndReachedThreshold={0.5}
+        >
+          {Array.from({ length: pages * 20 }, (_, index) => (
+            <View key={index} style={{ padding: 20 }} testID={`document-row-${index + 1}`}>
+              <Text>Row {index + 1}</Text>
+            </View>
+          ))}
+        </ScreenScrollView>
+      </Screen>
+    );
+  },
+};

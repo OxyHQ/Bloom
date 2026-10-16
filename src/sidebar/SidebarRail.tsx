@@ -13,6 +13,7 @@ import type { SidebarNavItem, SidebarProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { sidebarItemAction } from './use-sidebar-shortcuts';
 
 /** The rail's fixed width. */
 export const SIDEBAR_RAIL_WIDTH = 80;
@@ -54,8 +55,7 @@ export function SidebarRail({
 
   const renderItem = (item: SidebarNavItem) => {
     const isSelected = selected === item.key;
-    const onPress =
-      item.onPress ?? (onNavigate && item.href != null ? () => onNavigate(item) : undefined);
+    const onPress = sidebarItemAction(item, onNavigate);
     return (
       <SidebarRailItem
         key={item.key}

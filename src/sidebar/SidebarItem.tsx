@@ -53,6 +53,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   href,
   badge,
   collapsedBadge,
+  shortcut,
   selected = false,
   collapsed = false,
   onPress,
@@ -198,6 +199,17 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
           </View>
         </Collapsible>
       </Animated.View>
+      {IS_WEB && shortcut ? (
+        <Collapsible collapsed={collapsed}>
+          <Text
+            variant="caption-2-regular"
+            numberOfLines={1}
+            style={{ color: palette.textTertiary, opacity: hovered ? 1 : 0 }}
+          >
+            {shortcut}
+          </Text>
+        </Collapsible>
+      ) : null}
       {badge != null ? <Collapsible collapsed={collapsed}>{badge}</Collapsible> : null}
       {badge != null || collapsedBadge != null ? (
         // Hangs off the square's top-end corner, over the icon's edge. The

@@ -41,7 +41,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useScrollRestorationContext } from './context';
-import { createScroller } from './scrollable.web';
+import { createScroller, resolveScrollTarget } from './scrollable.web';
 import { deriveScrollKey } from './store';
 import type {
   ScrollRestorationBinding,
@@ -160,13 +160,14 @@ export function useScrollRestoration(
         return undefined;
       }
 
-      const scroller = createScroller(target);
+      const resolved = resolveScrollTarget(target);
+      const scroller = createScroller(resolved);
       const element =
-        target === 'window'
+        resolved === 'window'
           ? typeof window === 'undefined'
             ? null
             : window
-          : resolveScrollEventTarget(target);
+          : resolveScrollEventTarget(resolved);
 
       // The last offset the live scroll listener observed for this session.
       // This — not a cleanup-time `getOffset()` — is what we persist at the

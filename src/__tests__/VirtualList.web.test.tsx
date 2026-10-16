@@ -192,3 +192,122 @@ it('drives persistent shell navigation from the focused route Screen only', () =
   expect(states.route!.scrollY.value).toBe(120);
   Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
 });
+
+describe('VirtualList (web) onEndReached', () => {
+  // jsdom has no IntersectionObserver. The stub records what the list observes
+  // and lets each test deliver what a browser would: the end marker's state on
+  // observe, and on every crossing of the extended viewport.
+  class ObserverStub {
+    static instances: ObserverStub[] = [];
+    readonly targets: Element[] = [];
+    disconnected = false;
+    constructor(
+      readonly callback: IntersectionObserverCallback,
+      readonly options: IntersectionObserverInit = {},
+    ) {
+      ObserverStub.instances.push(this);
+    }
+    observe(target: Element) {
+      this.targets.push(target);
+    }
+    unobserve() {}
+    disconnect() {
+      this.disconnected = true;
+    }
+    takeRecords() {
+      return [];
+    }
+    report(isIntersecting: boolean) {
+      act(() =>
+        this.callback(
+          [{ isIntersecting, target: this.targets[0] } as IntersectionObserverEntry],
+          this as unknown as IntersectionObserver,
+        ),
+      );
+    }
+  }
+  const live = () => ObserverStub.instances.filter((observer) => !observer.disconnected);
+  const original = globalThis.IntersectionObserver;
+  beforeAll(() => {
+    globalThis.IntersectionObserver = ObserverStub as unknown as typeof IntersectionObserver;
+  });
+  afterAll(() => {
+    globalThis.IntersectionObserver = original;
+  });
+  beforeEach(() => {
+    ObserverStub.instances = [];
+  });
+
+  const rows = (n: number): Row[] =>
+    Array.from({ length: n }, (_, i) => ({ id: String(i), label: `Row ${i}` }));
+  const list = (data: Row[], onEndReached?: () => void, threshold?: number) => (
+    <VirtualList<Row>
+      data={data}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <span>{item.label}</span>}
+      ListFooterComponent={<div>Footer</div>}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={threshold}
+    />
+  );
+
+  it('observes an end marker after the footer, threshold viewports early', () => {
+    const c = mount(list(rows(3), jest.fn(), 0.5));
+    expect(live()).toHaveLength(1);
+    const observer = live()[0]!;
+    expect(observer.options.rootMargin).toBe('0px 0px 50% 0px');
+    const marker = observer.targets[0] as HTMLElement;
+    expect(marker.getAttribute('aria-hidden')).toBe('true');
+    expect(marker.style.position).toBe('absolute');
+    expect(marker.style.bottom).toBe('0px');
+    // Last in the list, after the footer: the end includes it, as in FlatList.
+    expect(getByText(c, 'Footer').compareDocumentPosition(marker)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it('defaults to two viewports, as the native FlatList', () => {
+    mount(list(rows(3), jest.fn()));
+    expect(live()[0]!.options.rootMargin).toBe('0px 0px 200% 0px');
+  });
+
+  it('fires once per approach and re-arms when the user scrolls back up', () => {
+    const onEndReached = jest.fn();
+    mount(list(rows(3), onEndReached));
+    const observer = live()[0]!;
+    observer.report(true);
+    observer.report(true);
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+    observer.report(false);
+    observer.report(true);
+    expect(onEndReached).toHaveBeenCalledTimes(2);
+  });
+
+  it('re-arms when the row count changes, so a short page asks again', () => {
+    const onEndReached = jest.fn();
+    mount(list(rows(3), onEndReached));
+    live()[0]!.report(true);
+    mount(list(rows(3), onEndReached));
+    expect(live()).toHaveLength(1);
+    live()[0]!.report(true);
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+    mount(list(rows(6), onEndReached));
+    expect(live()).toHaveLength(1);
+    live()[0]!.report(true);
+    expect(onEndReached).toHaveBeenCalledTimes(2);
+  });
+
+  it('never fires while data is empty', () => {
+    const onEndReached = jest.fn();
+    mount(list([], onEndReached));
+    expect(live()).toHaveLength(0);
+    mount(list(rows(2), onEndReached));
+    live()[0]!.report(true);
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+  });
+
+  it('observes nothing without a handler', () => {
+    mount(list(rows(3)));
+    expect(ObserverStub.instances).toHaveLength(0);
+  });
+});

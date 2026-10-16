@@ -47,7 +47,7 @@ import { resolveSidebarGeometry, SidebarGeometryProvider } from './geometry';
 import { SidebarSizeProvider, SIDEBAR_METRICS } from './metrics';
 import { useSidebarPalette, type SidebarPalette } from './palette';
 import { Collapsible, CollapseProvider, MORPH_MS, useSidebarWebCss } from './parts';
-import { SidebarFolder } from './SidebarFolder';
+import { SidebarFolder, SidebarTreeRow } from './SidebarFolder';
 import { SidebarItem } from './SidebarItem';
 import { SidebarModeSwitcher } from './SidebarModeSwitcher';
 import { SidebarPlanCard } from './SidebarPlanCard';
@@ -57,7 +57,8 @@ import { SidebarScrollArea } from './SidebarScrollArea';
 import { SidebarTeamMenu } from './SidebarTeamMenu';
 import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarUserMenu } from './SidebarUserMenu';
-import type { SidebarNavItem, SidebarProps } from './types';
+import { sidebarItemAction, useSidebarShortcuts } from './use-sidebar-shortcuts';
+import type { SidebarNavItem, SidebarProps, SidebarTree } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
@@ -94,6 +95,12 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
 
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
+
+/** `tree` as its sections: one section or several, in order. */
+function treeSections(tree: SidebarProps['tree']): ReadonlyArray<SidebarTree> {
+  if (tree == null) return [];
+  return 'label' in tree ? [tree] : tree;
+}
 
 function matchesQuery(label: string, query: string): boolean {
   return label.toLocaleLowerCase().includes(query);
@@ -212,6 +219,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   style,
   testID,
 }) => {
+  const sections = useMemo(() => treeSections(tree), [tree]);
+  const hasSections = sections.length > 0;
   const common = useCommonMessages();
   const { messages } = useMessages(SIDEBAR_MESSAGES);
   const searchButtonLabel = searchButtonLabelProp ?? common.search;
@@ -298,9 +307,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         metrics,
         surface,
         Boolean(primaryAction),
-        Boolean(tree) || content != null,
+        hasSections || content != null,
       ),
-    [metrics, surface, primaryAction, tree, content],
+    [metrics, surface, primaryAction, hasSections, content],
   );
   const { collapsedWidth, collapsedLane, expandedInset } = geometry;
   const expandedWidth = useSharedValue(metrics.expanded);
@@ -332,7 +341,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // A worklet copies what it reads to the UI runtime, and `tree` carries the
   // app's rows, elements and data — a `Date` among them crashes native on the
   // copy. The mapper reads only whether there is one (`worklet-captures.test.ts`).
-  const treeShown = Boolean(tree);
+  const treeShown = hasSections;
   const hasHeader = header != null || toolbar != null;
   const contentMorph = useAnimatedStyle(
     () => ({
@@ -450,11 +459,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   // ---- rows --------------------------------------------------------------
   const pressFor = useCallback(
-    (item: SidebarNavItem) => {
-      if (item.onPress) return item.onPress;
-      if (onNavigate && item.href != null) return () => onNavigate(item);
-      return undefined;
-    },
+    (item: SidebarNavItem) => sidebarItemAction(item, onNavigate),
     [onNavigate],
   );
 
@@ -487,6 +492,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         collapsed={collapsed}
         onPress={pressFor(item)}
         onLongPress={item.onLongPress}
+        shortcut={item.shortcut}
         testID={`sidebar-item-${item.key}`}
         badge={
           item.badge !== undefined ? (
@@ -716,23 +722,31 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       </AnimatedPressable>
     );
 
-  // A folder matching the query keeps every row; otherwise only its matching rows.
-  const shownFolders = useMemo(
+  // Per section: its direct rows that match, and its folders — a folder
+  // matching the query keeps every row, otherwise only its matching rows. A
+  // section with nothing left is not drawn.
+  const shownSections = useMemo(
     () =>
-      (tree?.folders ?? []).flatMap((folder) => {
-        if (!normalized || matchesQuery(folder.label, normalized)) return [folder];
-        const matching = folder.items.filter((item) => matchesQuery(item.label, normalized));
-        return matching.length ? [{ ...folder, items: matching }] : [];
+      sections.flatMap((section) => {
+        const items = normalized
+          ? (section.items ?? []).filter((item) => matchesQuery(item.label, normalized))
+          : (section.items ?? []);
+        const folders = (section.folders ?? []).flatMap((folder) => {
+          if (!normalized || matchesQuery(folder.label, normalized)) return [folder];
+          const matching = folder.items.filter((item) => matchesQuery(item.label, normalized));
+          return matching.length ? [{ ...folder, items: matching }] : [];
+        });
+        return items.length || folders.length ? [{ section, items, folders }] : [];
       }),
-    [tree, normalized],
+    [sections, normalized],
   );
   const nothingMatches =
     shownItems.length === 0 &&
     shownSecondary.length === 0 &&
-    shownFolders.length === 0 &&
+    shownSections.length === 0 &&
     content == null &&
     !collapsed;
-  const hasTree = !!tree || content != null;
+  const hasTree = hasSections || content != null;
 
   // A fresh closure here would re-render the memoised switcher on every
   // keystroke in the quick-search field.
@@ -916,7 +930,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                     paddingBottom: 8,
                     paddingLeft: 8,
                     paddingRight: 8,
-                    gap: tree ? 24 : 0,
+                    gap: hasSections ? 24 : 0,
                   }}
                   showsVerticalScrollIndicator={false}
                   onScroll={onScroll}
@@ -944,38 +958,58 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                       )}
                     </Animated.View>
                   ) : null}
-                  {tree && !collapsed && shownFolders.length > 0 ? (
-                    <View style={{ width: '100%', gap: 10 }}>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        <Text variant="body-medium" style={{ color: palette.textSecondary }}>
-                          {tree.label}
-                        </Text>
-                        {tree.actions}
-                      </View>
-                      <View
-                        role="navigation"
-                        accessibilityLabel={tree.label}
-                        style={{ width: '100%', gap: 4 }}
-                      >
-                        {shownFolders.map((folder) => (
-                          <SidebarFolder
-                            key={folder.key}
-                            folder={folder}
-                            forceOpen={normalized.length > 0}
-                            selectedItem={selectedTreeItem}
-                            onItemPress={onTreeItemPress}
-                            testID={`sidebar-folder-${folder.key}`}
-                          />
-                        ))}
-                      </View>
-                    </View>
-                  ) : null}
+                  {collapsed
+                    ? null
+                    : shownSections.map(({ section, items: sectionItems, folders }) => (
+                        <View
+                          key={section.key ?? section.label}
+                          testID={`sidebar-section-${section.key ?? section.label}`}
+                          style={{ width: '100%', gap: 10 }}
+                        >
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <Text variant="body-medium" style={{ color: palette.textSecondary }}>
+                              {section.label}
+                            </Text>
+                            {section.actions}
+                          </View>
+                          <View
+                            role="navigation"
+                            accessibilityLabel={section.label}
+                            style={{ width: '100%', gap: 4 }}
+                          >
+                            {sectionItems.length > 0 ? (
+                              <View style={{ width: '100%', gap: 2 }}>
+                                {sectionItems.map((item) => (
+                                  <SidebarTreeRow
+                                    key={item.key}
+                                    item={item}
+                                    selected={item.key === selectedTreeItem}
+                                    focusable
+                                    onPress={onTreeItemPress}
+                                    palette={palette}
+                                  />
+                                ))}
+                              </View>
+                            ) : null}
+                            {folders.map((folder) => (
+                              <SidebarFolder
+                                key={folder.key}
+                                folder={folder}
+                                forceOpen={normalized.length > 0}
+                                selectedItem={selectedTreeItem}
+                                onItemPress={onTreeItemPress}
+                                testID={`sidebar-folder-${folder.key}`}
+                              />
+                            ))}
+                          </View>
+                        </View>
+                      ))}
                   {content != null ? (
                     <Animated.View
                       testID={`${testID ?? 'sidebar'}-content`}
@@ -1094,8 +1128,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 };
 
 // Two component types, so switching `variant` remounts instead of changing the hook order.
-const SidebarComponent: React.FC<SidebarProps> = ({ variant = 'panel', ...props }) =>
-  variant === 'rail' ? <SidebarRail {...props} /> : <SidebarPanel {...props} />;
+const SidebarComponent: React.FC<SidebarProps> = ({ variant = 'panel', ...props }) => {
+  // Above the variant split: one binding whichever form the navigation takes.
+  useSidebarShortcuts(props);
+  return variant === 'rail' ? <SidebarRail {...props} /> : <SidebarPanel {...props} />;
+};
 
 export const Sidebar = memo(SidebarComponent);
 Sidebar.displayName = 'Sidebar';

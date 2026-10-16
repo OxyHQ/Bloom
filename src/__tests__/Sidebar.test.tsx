@@ -477,8 +477,114 @@ describe('Sidebar tree and plan', () => {
   });
 
   it('holds a folder open and on its matching rows while a SidebarFolder is forced open', () => {
-    const { getByLabelText } = renderIn(<SidebarFolder folder={TREE.folders[0]!} forceOpen />);
+    const { getByLabelText } = renderIn(<SidebarFolder folder={TREE.folders![0]!} forceOpen />);
     expect(getByLabelText('web').props['aria-expanded']).toBe(true);
+  });
+});
+
+describe('Sidebar tree sections', () => {
+  const SECTIONS: SidebarTree[] = [
+    {
+      key: 'recent',
+      label: 'Recently viewed',
+      actions: <Pressable accessibilityLabel="Clear recently viewed" />,
+      items: [
+        { key: 'loft', label: 'Loft in Gràcia', meta: '2h', href: '/homes/loft' },
+        { key: 'flat', label: 'Two-bed flat' },
+      ],
+    },
+    {
+      key: 'saved',
+      label: 'Saved',
+      actions: <Pressable accessibilityLabel="New folder" />,
+      folders: [
+        { key: 'shortlist', label: 'Shortlist', items: [{ key: 'studio', label: 'Beach studio' }] },
+      ],
+    },
+  ];
+  const sidebar = (props: Partial<React.ComponentProps<typeof Sidebar>> = {}) => (
+    <Sidebar tree={SECTIONS} showThemeToggle={false} {...props} />
+  );
+
+  it("lists the section's own rows directly under its label, before any folder", () => {
+    const onPrefetch = jest.fn();
+    const onTreeItemPress = jest.fn();
+    const tree: SidebarTree = {
+      label: 'Recently viewed',
+      items: [
+        { key: 'loft', label: 'Loft in Gràcia', meta: '2h', href: '/homes/loft', onPrefetch },
+      ],
+      folders: [{ key: 'old', label: 'Older', items: [{ key: 'x', label: 'Barn' }] }],
+    };
+    const screen = renderIn(sidebar({ tree, selectedTreeItem: 'loft', onTreeItemPress }));
+    const row = screen.getByLabelText('Loft in Gràcia, 2h');
+    expect(row.props.accessibilityState).toMatchObject({ selected: true });
+    expect(row.props.role).toBe('link');
+    // Not inside a folder: no disclosure to open first, inset to the folder glyph.
+    expect(resolvedStyle(row.props.style)).toMatchObject({ paddingInlineStart: 8 });
+    const nav = screen.getByLabelText('Recently viewed');
+    const order = nav.findAll(
+      (node) =>
+        node !== nav && typeof node.type === 'string' && node.props.accessibilityLabel != null,
+    );
+    expect(order.map((node) => node.props.accessibilityLabel)).toEqual([
+      'Loft in Gràcia, 2h',
+      'Older',
+      'Barn',
+    ]);
+    pressHost(row);
+    expect(onPrefetch).toHaveBeenCalled();
+    expect(onTreeItemPress).toHaveBeenCalledWith(
+      expect.objectContaining({ key: 'loft' }),
+      undefined,
+    );
+  });
+
+  it('draws every section in order, each with its own label and actions', () => {
+    const onTreeItemPress = jest.fn();
+    const screen = renderIn(sidebar({ onTreeItemPress }));
+    expect(screen.getByText('Recently viewed')).toBeTruthy();
+    expect(screen.getByText('Saved')).toBeTruthy();
+    expect(screen.getByLabelText('Clear recently viewed')).toBeTruthy();
+    expect(screen.getByLabelText('New folder')).toBeTruthy();
+    const ids = screen.UNSAFE_root.findAll(
+      (node) => typeof node.type === 'string' && /^sidebar-section-/.test(node.props.testID ?? ''),
+    ).map((node) => node.props.testID);
+    expect(ids).toEqual(['sidebar-section-recent', 'sidebar-section-saved']);
+    fireEvent.press(screen.getByLabelText('Shortlist'));
+    pressHost(screen.getByLabelText('Beach studio'));
+    expect(onTreeItemPress).toHaveBeenCalledWith(
+      expect.objectContaining({ key: 'studio' }),
+      expect.objectContaining({ key: 'shortlist' }),
+    );
+  });
+
+  it('quick search filters direct rows and folders alike and drops an emptied section', () => {
+    const screen = renderIn(sidebar({ searchQuery: 'studio' }));
+    expect(screen.queryByText('Recently viewed')).toBeNull();
+    expect(screen.queryByLabelText('Loft in Gràcia, 2h')).toBeNull();
+    expect(screen.getByLabelText('Shortlist').props['aria-expanded']).toBe(true);
+    expect(screen.getByLabelText('Beach studio')).toBeTruthy();
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {sidebar({ searchQuery: 'loft' })}
+      </BloomThemeProvider>,
+    );
+    expect(screen.getByLabelText('Loft in Gràcia, 2h')).toBeTruthy();
+    expect(screen.queryByLabelText('Two-bed flat')).toBeNull();
+    expect(screen.queryByText('Saved')).toBeNull();
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {sidebar({ searchQuery: 'nothing like this' })}
+      </BloomThemeProvider>,
+    );
+    expect(screen.getByText('No results')).toBeTruthy();
+  });
+
+  it('hides every section while collapsed', () => {
+    const screen = renderIn(sidebar({ collapsed: true }));
+    expect(screen.queryByText('Recently viewed')).toBeNull();
+    expect(screen.queryByText('Saved')).toBeNull();
   });
 });
 

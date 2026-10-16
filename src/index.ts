@@ -274,7 +274,8 @@ export * as Typography from './typography';
 // Layout primitives
 export * as Skeleton from './skeleton';
 export * as Grid from './grid';
-export { Fill } from './fill';
+export { Fill, SurfaceFade } from './fill';
+export type { SurfaceFadeProps } from './fill';
 export { MediaInsetBorder } from './media-inset-border';
 export type { MediaInsetBorderProps } from './media-inset-border';
 export { IconCircle } from './icon-circle';

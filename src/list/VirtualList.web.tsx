@@ -36,6 +36,8 @@
  */
 import * as React from 'react';
 import { useScreenWindowScroll } from '../screen/use-screen-window-scroll';
+import { useDocumentEndReached } from '../screen/use-document-end-reached';
+import { DEFAULT_END_REACHED_THRESHOLD } from '../screen/use-end-reached';
 import { type CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
@@ -50,6 +52,16 @@ const DEFAULT_OVERSCAN = 8;
 // Bound the per-key ref-callback cache so a very long scroll session does not
 // accumulate one closure per key forever.
 const ROW_REF_CACHE_CAP = 500;
+
+// The list's last pixel, out of the flow so it adds no height and no gap.
+const END_MARKER_STYLE: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  bottom: 0,
+  height: 1,
+  pointerEvents: 'none',
+};
 
 function renderSlot(slot: VirtualListSlot): React.ReactElement | null {
   if (!slot) return null;
@@ -71,11 +83,24 @@ function VirtualListWebInner<T>(
     contentContainerStyle,
     estimatedItemSize,
     overscan,
+    onEndReached,
+    onEndReachedThreshold = DEFAULT_END_REACHED_THRESHOLD,
     testID,
   } = props;
 
   const items = data ?? [];
   const count = items.length;
+
+  // Pagination against the document, the scroller here: an end marker after
+  // the footer, observed `onEndReachedThreshold` viewports early. A new row
+  // count re-arms it, so a page that still leaves the end in range asks for the
+  // next one; an empty list never asks.
+  const endRef = useDocumentEndReached({
+    onEndReached,
+    threshold: onEndReachedThreshold,
+    enabled: count > 0,
+    rearmKey: count,
+  });
 
   // Wrapper element used as the virtualizer's measurement origin. The window is
   // the scroller; `scrollMargin` is the wrapper's offset from the document top
@@ -185,6 +210,7 @@ function VirtualListWebInner<T>(
   }
 
   const virtualItems = virtualizer.getVirtualItems();
+  const endMarker = onEndReached ? <div ref={endRef} aria-hidden style={END_MARKER_STYLE} /> : null;
   const totalSize = virtualizer.getTotalSize();
 
   // The measured spacer MUST contain every absolutely-positioned row; size it to
@@ -224,6 +250,7 @@ function VirtualListWebInner<T>(
         </div>
       </div>
       {footer}
+      {endMarker}
     </View>
   );
 }

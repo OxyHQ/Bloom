@@ -98,7 +98,7 @@ The logo leads the header beside the collapse (or close) control; `account`, if 
 - A switch between whole sidebar modes, rendered under the header and above quick search. Standalone it is `SidebarModeSwitcher` (`modes`, `value`, `onValueChange`).
 - Track p4, radius 20, background-tertiary (neutral-200 / neutral-800). Rows are 32 tall and 4 apart: an 18px icon in a 32 box, 4 gap, `body-2-medium`. The selected row's 32px pill — card / neutral-700 with shadow-xs, the sidebar theme toggle's thumb — slides 200ms ease between rows, instantly under reduced motion.
 - Rest is text-secondary, selected text-primary. On web a `shortcut` hint (`caption-2`, text-tertiary) appears at the row's end on hover.
-- Collapsed, labels and hints collapse and the icons stay pinned. It is a `radiogroup` of `radio` rows, named `"Mode"` unless `modesLabel` / `accessibilityLabel` says otherwise. The keyboard shortcuts themselves are the app's to bind.
+- Collapsed, labels and hints collapse and the icons stay pinned. It is a `radiogroup` of `radio` rows, named `"Mode"` unless `modesLabel` / `accessibilityLabel` says otherwise. The sidebar binds the shortcuts itself — see [Keyboard shortcuts](#keyboard-shortcuts).
 
 ## Rail
 
@@ -131,8 +131,45 @@ The logo leads the header beside the collapse (or close) control; `account`, if 
 
 - The header, collapse control, mode switcher and quick search stay fixed; only destination rows scroll (hidden scrollbar). With a `tree`: the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
 - A folder row is p 8 with a 20px folder glyph (open while expanded) and the label; its rows are py 5 / pr 8 / pl 36 with the label and a `meta` chip (radius 4, background-tertiary, px 4 / py 1, caption-1-medium), background-secondary-hover while selected or hovered. A curved 1px icon-quaternary connector drops from the folder glyph into each row. The rows' height and opacity ease open and shut together over 300ms; collapsed rows leave the tab order.
-- Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts the tree.
+- Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts every section.
 - The tree hides while collapsed.
+
+### Sections: rows directly, or folders
+
+`tree` takes one section or an array of them, drawn in order 24 apart, each with
+its own label and `actions`. A section's `items` are rows listed directly under
+its label, before any folders: use them when the section IS the list. Keep
+`folders` for collections the user made.
+
+```tsx
+<Sidebar
+  items={NAV}
+  tree={[
+    {
+      key: 'recent',
+      label: 'Recently viewed',
+      items: recent.map((home) => ({ key: home.id, label: home.title, meta: home.viewedAgo, href: `/homes/${home.id}` })),
+    },
+    {
+      key: 'saved',
+      label: 'Saved',
+      actions: <NewFolderButton />,
+      folders: savedFolders.map((folder) => ({
+        key: folder.id,
+        label: folder.name,
+        items: folder.homes.map((home) => ({ key: home.id, label: home.title, href: `/homes/${home.id}` })),
+      })),
+    },
+  ]}
+  selectedTreeItem={homeId}
+  onTreeItemPress={(item, folder) => open(item.key)}
+/>
+```
+
+- A direct row is a folder row without the connector: the same height, radius, `meta` chip, selection, hover, `actions`, `href`, `onPrefetch` and `onLongPress`, inset 8 (to the folder glyph) instead of 36.
+- `onTreeItemPress(item, folder)` gets the row's folder, or `undefined` for a direct row. `selectedTreeItem` matches a key in any section.
+- `key` identifies a section among several (defaults to `label`). `items` and `folders` are both optional; a section with neither, or with nothing left after quick search, is not drawn.
+- Quick search filters direct rows by their label and folders as above. Collapsed, every section hides, as the single tree did.
 - `plan` replaces the team card: radius 12, background-tertiary (the panel colour on a `plain` surface), py 8 / pr 12 / pl 10, a 32px avatar (initials 18.8/22.6 medium), the name (body-medium) over the plan (body-regular text-secondary), and a small secondary button (`actionLabel`, default "Upgrade"). Collapsed, only the avatar.
 
 ## Surface and size: the app's identity
@@ -192,6 +229,24 @@ defaults and what each names: [`AppShell`, Labels](/docs/bloom/main/app-shell).
 After expanding, the account trigger's hover pill stays off until the pointer leaves it, so a stationary pointer does not light it up.
 
 On web every control takes the same keyboard focus ring: one stylesheet rule on `[data-bloom-sidebar]:focus-visible` painting `var(--bloom-sidebar-ring)`. A control with the hook but without the variable matches the rule and paints nothing — the collapse button, the `mobile` close button and the flat header's search button shipped that way, focusable and invisible while focused. Each part sets the variable on itself; `SidebarFocusRingWeb.test.tsx` fails for any hooked control that resolves no ring colour.
+
+## Keyboard shortcuts
+
+A mode's or an item's `shortcut` (`⌥⌃1`, `⌘,`, `Ctrl+Shift+H`) is shown on
+hover AND bound on web: while the sidebar is mounted, the key does what pressing
+the row does — `onModeChange(key)` for a mode, the item's `onPress`, else
+`onNavigate(item)` for a link. **Don't add a `keydown` listener for them in the
+app**; the label is the single source.
+
+- Modifiers are `⌘ ⌃ ⌥ ⇧` glyphs or `Cmd`/`Ctrl`/`Alt`/`Option`/`Shift` words joined
+  with `+`; every modifier must match exactly. Digits and letters match by
+  physical key, so `⌥1` works on a Mac, where Option+1 types `¡`.
+- Keys typed into an input, a textarea or editable content are ignored.
+- One action per key press, however many sidebars render the navigation (in
+  flow and in a drawer, or the rail): the first to act marks the event handled,
+  and every listener skips a handled event — an app's older binding that calls
+  `preventDefault` included.
+- Rail items are bound too; the rail draws no hint.
 
 ## Quick search
 

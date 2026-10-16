@@ -9,6 +9,8 @@ export interface ScreenContextValue {
   activeScrollerId: SharedValue<string | null>;
   /** Document-flow Screen has already reserved its content clearance. */
   contentInsetsHandled?: boolean;
+  /** Web `documentScroll`: the window is this screen's scroller, so content stays in document flow. */
+  documentScroll?: boolean;
   topInset: number;
   bottomInset: number;
 }

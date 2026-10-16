@@ -56,3 +56,32 @@ is three siblings in the order you want them.
 - **A press layer that must not block touches.** If content underneath has to
   stay pressable, the fill needs `pointerEvents="none"` — as a **prop**, since
   the RN-only values are dropped when written as a style.
+
+## `SurfaceFade`: media that ends in the surface
+
+A photo or hero that should END in the colour of the page or panel it sits on —
+not in a black scrim — takes a `SurfaceFade` last in its container. It reads the
+current surface (`useSurfaceFill()`), so the same hero fades into a
+`ContentPanel`, a `Card` or the page, in light and dark, without being told.
+
+```tsx
+import { SurfaceFade } from '@oxy.so/bloom/fill';
+
+<View style={{ height: 300, overflow: 'hidden' }}>
+  <Image source={hero} style={{ width: '100%', height: '100%' }} />
+  <SurfaceFade />
+</View>
+```
+
+| prop    | default   | decides                                                              |
+| ------- | --------- | -------------------------------------------------------------------- |
+| `edge`  | `bottom`  | which edge ends in the colour: `bottom`, `top`, `start`, `end` (start/end follow the writing direction) |
+| `size`  | `0.5`     | how far the fade reaches: a fraction of the container (≤ 1) or points |
+| `color` | the surface | the colour to end in                                               |
+
+It is one linear gradient from that colour at zero alpha to the colour —
+`backgroundImage` on web, `experimental_backgroundImage` on native, no extra
+dependency — on an absolutely positioned view out of the hit test and the
+accessibility tree. Over a solid surface the result is the same on both
+platforms. A colour the parser cannot read (a CSS variable) starts from
+`transparent`, which CSS blends correctly on web. Storybook: **Base / Surface Fade**.

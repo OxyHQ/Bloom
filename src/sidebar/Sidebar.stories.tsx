@@ -57,6 +57,7 @@ import type {
   SidebarPlan,
   SidebarTeam,
   SidebarTree,
+  SidebarTreeFolder,
 } from './types';
 
 const meta: Meta<typeof Sidebar> = {
@@ -404,35 +405,34 @@ const CHAT_NAV: SidebarNavItem[] = [
   { key: 'customize', label: 'Customize', icon: RiGuideLine },
 ];
 
-const REPOSITORIES: SidebarTree = {
-  label: 'Repositories',
-  folders: [
-    {
-      key: 'web',
-      label: 'web',
-      items: [
-        { key: 'badge', label: 'pro badge restyle', meta: '2h' },
-        { key: 'docs', label: 'installation docs page', meta: '1d' },
-      ],
-    },
-    {
-      key: 'vibl',
-      label: 'vibl coding project',
-      defaultOpen: true,
-      items: [
-        { key: 'landing', label: 'landing page design', meta: '34m' },
-        { key: 'image', label: 'image generation', meta: 'now' },
-        { key: 'coding', label: 'coding scenario', meta: 'now' },
-        { key: 'mobile', label: 'mobile app for vuejs...', meta: '5h' },
-      ],
-    },
-    {
-      key: 'studio',
-      label: 'studio landing page work',
-      items: [{ key: 'hero', label: 'hero section animation', meta: '3d' }],
-    },
-  ],
-};
+const REPOSITORY_FOLDERS = [
+  {
+    key: 'web',
+    label: 'web',
+    items: [
+      { key: 'badge', label: 'pro badge restyle', meta: '2h' },
+      { key: 'docs', label: 'installation docs page', meta: '1d' },
+    ],
+  },
+  {
+    key: 'vibl',
+    label: 'vibl coding project',
+    defaultOpen: true,
+    items: [
+      { key: 'landing', label: 'landing page design', meta: '34m' },
+      { key: 'image', label: 'image generation', meta: 'now' },
+      { key: 'coding', label: 'coding scenario', meta: 'now' },
+      { key: 'mobile', label: 'mobile app for vuejs...', meta: '5h' },
+    ],
+  },
+  {
+    key: 'studio',
+    label: 'studio landing page work',
+    items: [{ key: 'hero', label: 'hero section animation', meta: '3d' }],
+  },
+] satisfies SidebarTreeFolder[];
+
+const REPOSITORIES: SidebarTree = { label: 'Repositories', folders: REPOSITORY_FOLDERS };
 
 const PLAN: SidebarPlan = {
   name: 'Design team',
@@ -476,13 +476,67 @@ export const Tree: Story = {
   },
 };
 
+/**
+ * Several sections: "Recently viewed" lists its homes directly — the section
+ * IS the list — while "Saved" keeps the user's own folders. Each keeps its own
+ * label and actions; quick search filters both.
+ */
+export const TreeSections: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [selected, setSelected] = useState('loft');
+    return (
+      <Frame>
+        <Sidebar
+          testID="sidebar"
+          items={DEMO_NAV}
+          account={DEMO_ACCOUNT}
+          tree={[
+            {
+              key: 'recent',
+              label: 'Recently viewed',
+              items: [
+                { key: 'loft', label: 'Loft in Gràcia', meta: '2h' },
+                { key: 'flat', label: 'Two-bed flat, Eixample', meta: '1d' },
+                { key: 'house', label: 'House with garden', meta: '3d' },
+              ],
+            },
+            {
+              key: 'saved',
+              label: 'Saved',
+              folders: [
+                {
+                  key: 'shortlist',
+                  label: 'Shortlist',
+                  defaultOpen: true,
+                  items: [
+                    { key: 'studio', label: 'Studio near the beach' },
+                    { key: 'penthouse', label: 'Penthouse, Poblenou' },
+                  ],
+                },
+                {
+                  key: 'later',
+                  label: 'Maybe later',
+                  items: [{ key: 'farm', label: 'Farmhouse' }],
+                },
+              ],
+            },
+          ]}
+          selectedTreeItem={selected}
+          onTreeItemPress={(item) => setSelected(item.key)}
+        />
+      </Frame>
+    );
+  },
+};
+
 /** `SidebarFolder` and `SidebarPlanCard` on their own. */
 export const TreeParts: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 236, gap: 16 }}>
-      <SidebarFolder folder={REPOSITORIES.folders[1]!} selectedItem="image" />
-      <SidebarFolder folder={REPOSITORIES.folders[2]!} />
+      <SidebarFolder folder={REPOSITORY_FOLDERS[1]!} selectedItem="image" />
+      <SidebarFolder folder={REPOSITORY_FOLDERS[2]!} />
       <SidebarPlanCard plan={PLAN} />
       <SidebarPlanCard plan={PLAN} collapsed />
     </View>

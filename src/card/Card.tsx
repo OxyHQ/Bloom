@@ -29,6 +29,7 @@ import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { styled } from 'react-native-css';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceGeometry } from '../surface/resolve-surface-geometry';
+import { splitCompiledStyle } from '../styles/compiled-style';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { SurfaceLevelProvider, useSurfaceLevelValue } from '../styles/surface-levels';
@@ -99,9 +100,14 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
     cornerCurveProp ?? (radius === 'panel' ? panelShape.curve : SURFACE_SHAPES.card.curve);
   const explicitRadius =
     radius === 'panel' ? panelShape.radius : radius ? RADIUS[radius] : undefined;
+  // On web the caller's `className` arrives in `style` as a compiled-CSS entry
+  // (this component is `styled()` below). Values are read from the inline part
+  // only, and the classes stay separate entries on the host — never flattened
+  // into the inline object, which react-native-web would reject wholesale.
+  const { classes, inline: callerStyle } = splitCompiledStyle(style);
   const resolvedGeometry = resolveSurfaceGeometry(
     explicitRadius,
-    style,
+    callerStyle,
     SURFACE_SHAPES.card.radius,
     cornerCurve,
   );
@@ -151,7 +157,7 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
   // by the public shape axes; clipping is explicit and keeps shadows outside.
   const shape = resolvedGeometry.shape;
   const geometry = { ...resolvedGeometry.style, borderWidth: containerStyle.borderWidth ?? 0 };
-  const resolved = StyleSheet.flatten([containerStyle, style, geometry]) ?? {};
+  const resolved = StyleSheet.flatten([containerStyle, callerStyle, geometry]) ?? {};
   const outerStyle: ViewStyle = { ...resolved };
   const material = resolveSurfaceMaterial({
     fill: String(resolved.backgroundColor ?? 'transparent'),
@@ -210,6 +216,7 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
         onLayout={onLayout}
         className={className}
         style={[
+          classes,
           outerStyle,
           pressed && !disabled && { opacity: 0.85 },
           disabled && { opacity: 0.5 },
@@ -234,7 +241,7 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
       ref={ref}
       onLayout={onLayout}
       className={className}
-      style={[outerStyle, disabled && { opacity: 0.5 }]}
+      style={[classes, outerStyle, disabled && { opacity: 0.5 }]}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >

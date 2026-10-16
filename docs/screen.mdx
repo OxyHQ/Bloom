@@ -64,6 +64,54 @@ content can scroll fully above the bottom bar. The initial declared heights stil
 apply before measurement. Without chrome slots Screen adds no content padding,
 so a composed shell can own those slots and their spacing itself.
 
+### One page for both platforms
+
+`ScreenScrollView` reads the mode from its Screen, so one page implementation
+serves web and native with no `.web.tsx` fork:
+
+```tsx
+const ref = useRef<ScrollView>(null);
+const restoration = useScrollRestoration(ref);
+
+<Screen documentScroll header={<PageHeader title="Notes" safeArea={false} />}>
+  <ScreenScrollView
+    ref={ref}
+    restoration={restoration}
+    contentContainerClassName="gap-4 p-4"
+    onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
+  >
+    {notes.map((note) => <NoteCard key={note.id} note={note} />)}
+  </ScreenScrollView>
+</Screen>
+```
+
+Inside a web `documentScroll` Screen it creates no scroll container: its content
+renders in document flow with `contentContainerStyle`/`contentContainerClassName`
+on the content View and `style` on an outer View that grows to fill the page.
+It binds the window for the screen (as Screen's own listener would), so chrome
+follows `window.scrollY`. A nested scroller would hold the document at one
+viewport and clip everything below it. Its ref answers `scrollTo`/`scrollToEnd`
+with the window, and `getScrollableNode()` returns the document's scroller,
+which `useScrollRestoration` treats as `'window'` — so the native call site above
+restores the window too. ScrollView-only props (`refreshControl`,
+`keyboardShouldPersistTaps`, a Reanimated `handler`) have nothing to act on there.
+Everywhere else — native, and web without `documentScroll` — it is the animated
+`ScrollView` it always was.
+
+`onEndReached` pages either way, with `FlatList`'s semantics and default
+(`onEndReachedThreshold` is in viewports, default 2): it fires once each time
+the end of the content comes within the threshold, re-arms when the user scrolls
+back out of range, and fires again while still in range only after the content
+changes length — so a first page too short to scroll still asks for the next.
+Native reads its own scroll, layout and content size; document flow observes an
+end marker against the viewport. It can fire while a page is in flight, so guard
+on your own loading flag. Use `VirtualList` (same two props) for long or
+uniform rows; `ScreenScrollView` is for grids and composed pages.
+
+With `contentContainerClassName` on native, the chrome footprint pads the scroll
+content and the class lays out a container inside it, since an inline padding
+would override the class's.
+
 `VirtualList screen={{ active, restoration }}` connects both platforms without a
 surrounding ScrollView. Use `useScreenWindowScroll` for another window virtualizer;
 its explicit writer takes priority over Screen's automatic listener. During a
