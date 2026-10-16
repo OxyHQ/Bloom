@@ -333,3 +333,90 @@ describe('native centred Dialog: startOpen and dismissOnBackdrop', () => {
     });
   });
 });
+
+/**
+ * Controlled mode: the host owns `open`, so a close the SURFACE makes on its
+ * own (backdrop, Android Back, a swipe) must reach `onClose`, or the host's
+ * state says open over a closed dialog and the next `open` flip is a no-op.
+ * A close the host makes (it flips `open` to false) must not echo back.
+ */
+describe('controlled native Dialog: a self-dismissal reaches onClose', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  function ControlledHost({
+    placement,
+    onClose,
+  }: {
+    placement: 'center' | 'left';
+    onClose: () => void;
+  }) {
+    const [open, setOpen] = React.useState(true);
+    return (
+      <>
+        <Text onPress={() => setOpen(true)}>Reopen</Text>
+        <Dialog
+          open={open}
+          placement={placement}
+          onClose={() => {
+            onClose();
+            setOpen(false);
+          }}
+        >
+          <Text>Controlled body</Text>
+        </Dialog>
+      </>
+    );
+  }
+
+  function settle() {
+    act(() => jest.advanceTimersByTime(600));
+  }
+
+  it.each(['center', 'left'] as const)(
+    '%s: a backdrop tap calls onClose once and the host can reopen it',
+    (placement) => {
+      const onClose = jest.fn();
+      const screen = renderWithTheme(<ControlledHost placement={placement} onClose={onClose} />);
+      fireEvent.press(
+        placement === 'left'
+          ? screen.getByTestId('bloom-dialog-sheet-backdrop', { includeHiddenElements: true })
+          : screen.getByLabelText('Dismiss'),
+      );
+      settle();
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(screen.queryByText('Controlled body')).toBeNull();
+      fireEvent.press(screen.getByText('Reopen'));
+      settle();
+      expect(screen.getByText('Controlled body')).toBeTruthy();
+    },
+  );
+
+  it('center: Android Back calls onClose once', () => {
+    const onClose = jest.fn();
+    const screen = renderWithTheme(<ControlledHost placement="center" onClose={onClose} />);
+    act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
+    settle();
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Controlled body')).toBeNull();
+  });
+
+  it('center: a host-made close does not echo back through onClose', () => {
+    const onClose = jest.fn();
+    const tree = (open: boolean) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Dialog open={open} placement="center" onClose={onClose}>
+          <Text>Host body</Text>
+        </Dialog>
+      </BloomThemeProvider>
+    );
+    const screen = render(tree(true));
+    screen.rerender(tree(false));
+    settle();
+    expect(screen.queryByText('Host body')).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});

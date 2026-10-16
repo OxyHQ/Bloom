@@ -186,6 +186,8 @@ function CenteredOrSideDialog({
   isControlledRef.current = isControlled;
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const controlledOpenRef = useRef(controlledOpen);
+  controlledOpenRef.current = controlledOpen;
 
   // Drain queued close callbacks atomically — capturing the list and
   // resetting it before invocation ensures a callback that synchronously
@@ -227,12 +229,18 @@ function CenteredOrSideDialog({
   }, []);
 
   // Fired when the underlying surface has finished closing. Drains queued
-  // callbacks, then fires `onClose` ONLY in imperative mode — controlled mode
-  // already requested the close through `onClose` (the host then flipped
-  // `open`), so firing it again here would double-call it.
+  // callbacks, then fires `onClose` in imperative mode. In controlled mode a
+  // close the HOST made (it flipped `open` to false, usually after `close()`
+  // asked it to) was already requested through `onClose`, so firing it again
+  // would double-call it — but a close the centred card made on its own (the
+  // backdrop, a swipe, Android Back: `BottomSheet` dismisses itself) arrives
+  // with `open` still true, and the host has to hear about it or its state says
+  // open over a closed dialog. The same rule as `DialogBottomSheet`. The side
+  // drawer routes its own dismissals through `close()`, so it never gets here
+  // with `open` true.
   const handleDismiss = useCallback(() => {
     callQueuedCallbacks();
-    if (!isControlledRef.current) onCloseRef.current?.();
+    if (!isControlledRef.current || controlledOpenRef.current) onCloseRef.current?.();
   }, [callQueuedCallbacks]);
 
   // In controlled mode, mirror the `open` prop onto the underlying surface so
