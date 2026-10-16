@@ -3,6 +3,11 @@
   "version": "0.4.0",
   "description": "Bloom's block editor: a headless, command-based document model and the native-first React components on top of it.",
   "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-editor"
+  },
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
   "types": "lib/typescript/commonjs/index.d.ts",

@@ -3,6 +3,11 @@
   "version": "0.1.2",
   "description": "Native rich text input for Bloom: one contract over the platform text engines of iOS, Android and the web.",
   "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-text"
+  },
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
   "types": "lib/typescript/commonjs/index.d.ts",
