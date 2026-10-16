@@ -3,7 +3,7 @@
  * takes — `dispatch(transaction)`.
  *
  * Listeners on `onTransaction` see every applied transaction with its origin,
- * which is how persistence (REST today, a CRDT later) follows the document
+ * which is how persistence (the Yjs binding, `../yjs`) follows the document
  * without diffing it. `subscribe`/`getSnapshot` fit React's
  * `useSyncExternalStore`.
  */
@@ -48,7 +48,7 @@ export type Command = (ctx: CommandContext) => Transaction | null;
 
 export class EditorStore {
   readonly schema: Schema;
-  /** Mints block ids (and, by default, sync transaction keys). */
+  /** Mints block ids. */
   readonly newId: IdFactory;
   private readonly isCollapsed: (block: Block) => boolean;
   private readonly history: History;

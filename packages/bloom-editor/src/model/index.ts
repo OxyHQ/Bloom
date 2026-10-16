@@ -39,16 +39,6 @@ export {
   type Transaction,
 } from './operations';
 export {
-  type RemoteTransaction,
-  type SendResult,
-  SyncSession,
-  type SyncSessionOptions,
-  type SyncStatus,
-  type SyncTransport,
-  type PendingTransaction,
-  type SyncSnapshot,
-} from './sync';
-export {
   applyEdit,
   backspaceAtStart,
   cloneSubtree,
