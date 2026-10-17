@@ -1,0 +1,53 @@
+---
+title: Migrating to 11.0
+description: Every breaking change between @oxy.so/bloom 10.x and 11.0.0 — AppShell's routes are made of panels (AppShellPanel, AppShellPanels); the shell's `panel`, the `split` variant and AppShellSplitPanes are gone.
+order: 0
+---
+
+# Migrating to 11.0
+
+Bloom follows its clean-cut rule: no `@deprecated` aliases, no shims. A symbol that was removed or renamed is simply gone, and the build tells you. 11.0 has one change: the shell's layout model. See [AppShell → Panels](/docs/bloom/main/app-shell#panels).
+
+## The short version
+
+There used to be three ways to put content on a rounded surface in a shell: the shell's `panel` (one `ContentPanel` around the route), the `split` variant (list, detail and info panes in one card), and `AppShellSplitPanes` (panes you wrapped in `ContentPanel`s yourself, with the shell's gutters chosen by a window-width hook). Now there is one:
+
+- `AppShell panels` — the shell FRAMES panels: its `gutter` on all four sides and between panels while framed, none at all while compact (full-bleed), framed while the nav is in flow (or from `framedFrom`, any tier or width).
+- `AppShellPanel` — one surface. Render it where the layout is declared: around the router outlet, in a route group's layout, or in a route.
+- `AppShellPanels` — several side by side: `separated` or `joined`, `width`/`minWidth`/`maxWidth`, `resizable`, `collapseBelow` + `show` measured on the group's own box, `hideBelow` for a trailing panel.
+- `useAppShellPanel()` — `{ id, alone, framed }` inside a panel.
+
+## Removed, and what replaces each
+
+| 10.x | 11.0 |
+| --- | --- |
+| `AppShell panel` | `AppShell panels` + `<AppShellPanel>` around the outlet (or per route group) |
+| `AppShell panelColorPreset` | `AppShellPanel colorPreset` |
+| `AppShell header` inside a `panel` | `AppShellPanel header` (the shell's own `header` now renders above the panels) |
+| `AppShell framedFrom` (500/640/768/1024) | `AppShell framedFrom` — any `AppShellBreakpoint` |
+| `variant="split"`, `list`, `info`, `pane`, `splitFrom`, `infoFrom` | `panels` + `<AppShellPanels collapseBelow show>` with an `AppShellPanel` each; `hideBelow` on the info panel |
+| `listWidth` / `listMinWidth` / `listMaxWidth` / `onListWidthChange` | `AppShellPanel width` / `minWidth` / `maxWidth` / `onWidthChange` |
+| `resizable`, `resizeLabel` (shell) | `AppShellPanel resizable`, `resizeLabel` |
+| `paneScroll` | `AppShellPanel scroll` — `content` (default: the content scrolls itself) or `panel` |
+| `AppShellSplitPanes` + a `ContentPanel` per pane | `AppShellPanels` + `AppShellPanel`s |
+| `variant="separated"` / `"joined"` | `AppShellPanels appearance` |
+| `detailMinWidth` | the flexible panel's own `minWidth` |
+| `listErrorBoundary` / `detailErrorBoundary` / `infoErrorBoundary` | `AppShellPanel errorBoundary` (opt-in now) |
+| `useAppShellPaneAlone()` | `useAppShellPanel().alone` |
+| `transition="slide"`, `useAppShellPaneActive()` | removed (no consumer) |
+| `AppShellPane`, `AppShellSplitPanesProps` types | `AppShellPanelProps`, `AppShellPanelsProps`, `AppShellPanelValue` |
+| `APP_SHELL_DEFAULTS.listWidth` / `listMinWidth` / `listMaxWidth` / `infoWidth` / `splitFrom` / `infoFrom` | removed; panels have no default widths |
+
+## Delete from the app
+
+- Window-width gutters (`gutter={isMobile ? 0 : 12}`, `gutter={width >= NAV_FROM ? 8 : 0}`): pass the framed gutter; compact is 0 by itself.
+- `reserveBottomBarSpace={!isMobile}` and error-boundary `bottomInset` toggles on panes: a bounded panel's content reads `useBottomEdgeInset()`.
+- Window hooks that decide whether a list or info pane shows: `collapseBelow` and `hideBelow` measure the group.
+- A per-route `scroll` switch kept only for a multi-panel route: `AppShellPanels` is one viewport tall in a document, so `scroll="page"` works for every route. (Switching still works — and no longer remounts the routes.)
+
+## Behaviour changes you will see
+
+- A shell whose plain, content-aligned nav ran flush now has the END gutter too: a page without an aside no longer reaches the window's edge, and the aside sits a gutter in from it.
+- A document `Screen` inside a panel is one region tall, not one window: short pages stop scrolling by the two gutters.
+- `AppShellPanels` measures its own box, so a tablet with the nav in its drawer may show two panels where a window breakpoint showed one.
+- `joined` panels are one framed `ContentPanel` (the panel radius and edge) rather than the split variant's 16-radius bordered card.

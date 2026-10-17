@@ -18,7 +18,7 @@
  * Rendered through react-native-web into a real document: the failure exists
  * only in the inline `style` React DOM leaves on the node.
  */
-import { act } from 'react';
+import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 let viewportWidth = 1440;
@@ -37,7 +37,7 @@ jest.mock('react-native', () => {
 
 import { Text, View } from 'react-native';
 
-import { AppShell } from '../app-shell/index.web';
+import { AppShell, AppShellPanel, AppShellPanels } from '../app-shell/index.web';
 import type { AppShellProps } from '../app-shell/types';
 
 type Scroll = NonNullable<AppShellProps['scroll']>;
@@ -53,9 +53,14 @@ const SCROLLS: Scroll[] = ['document', 'page', 'fixed', 'container', 'auto', 'ex
 const SHAPES: Record<string, Partial<AppShellProps>> = {
   // The shape that broke: a centred reading panel, aligned with its nav, plus
   // an aside and a phone bottom bar.
-  'feed, panel, reveal': {
+  'feed, panels, reveal': {
     variant: 'feed',
-    panel: true,
+    panels: true,
+    children: (
+      <AppShellPanel>
+        <Text>Page</Text>
+      </AppShellPanel>
+    ),
     drawer: 'reveal',
     header: null,
     navigationAlign: 'content',
@@ -67,9 +72,14 @@ const SHAPES: Record<string, Partial<AppShellProps>> = {
     bottomBar: <Text>Tabs</Text>,
   },
   feed: { variant: 'feed', title: 'Feed', aside: <View style={{ height: 40 }} /> },
-  'feed, panel, top bar': {
+  'feed, panels, top bar': {
     variant: 'feed',
-    panel: true,
+    panels: true,
+    children: (
+      <AppShellPanel header={<Text>Header</Text>}>
+        <Text>Page</Text>
+      </AppShellPanel>
+    ),
     title: 'Feed',
     topBar: <Text>Top</Text>,
     topBarVisibility: 'always',
@@ -84,7 +94,44 @@ const SHAPES: Record<string, Partial<AppShellProps>> = {
   },
   'dashboard, reveal': { variant: 'dashboard', drawer: 'reveal', title: 'Home' },
   focus: { variant: 'focus', title: 'Compose' },
-  split: { variant: 'split', list: <Text>List</Text>, info: <Text>Info</Text> },
+  'panels, two side by side': {
+    variant: 'feed',
+    panels: true,
+    header: null,
+    navigationAlign: 'content',
+    contentWidth: 1800,
+    gutter: 8,
+    sidebar: { items: NAV, surface: 'plain' },
+    children: (
+      <AppShellPanels collapseBelow={900}>
+        <AppShellPanel id="results" width={560} minWidth={360} resizable>
+          <Text>Results</Text>
+        </AppShellPanel>
+        <AppShellPanel id="map" minWidth={320}>
+          <Text>Map</Text>
+        </AppShellPanel>
+      </AppShellPanels>
+    ),
+  },
+  'dashboard, reveal, panels': {
+    variant: 'dashboard',
+    drawer: 'reveal',
+    panels: true,
+    header: null,
+    framedFrom: 'md',
+    gutter: 12,
+    contentMaxWidth: 'none',
+    children: (
+      <AppShellPanels appearance="joined">
+        <AppShellPanel id="list" width={380}>
+          <Text>List</Text>
+        </AppShellPanel>
+        <AppShellPanel id="message">
+          <Text>Message</Text>
+        </AppShellPanel>
+      </AppShellPanels>
+    ),
+  },
   canvas: { variant: 'canvas', floatingAction: <Text>Add</Text> },
 };
 
@@ -114,7 +161,7 @@ function render(shape: Partial<AppShellProps>, scroll: Scroll) {
     root.render(
       <BloomThemeProvider mode="light" colorPreset="teal">
         <AppShell testID="shell" sidebar={{ items: NAV }} {...shape} scroll={scroll}>
-          <Text>Page</Text>
+          {shape.children ?? <Text>Page</Text>}
         </AppShell>
       </BloomThemeProvider>,
     );
@@ -238,7 +285,7 @@ it.each([
   'the reported switch, %s → %s (map route → feed route): the reading row keeps its computed flex',
   (from, to) => {
     setViewport(1280);
-    const shape = SHAPES['feed, panel, reveal'] as Partial<AppShellProps>;
+    const shape = SHAPES['feed, panels, reveal'] as Partial<AppShellProps>;
     // The row the nav and the reading column share: the content's parent.
     const flexOfRow = () => {
       const row = container.querySelector('[data-testid="shell-content"]')?.parentElement;
@@ -258,3 +305,52 @@ it.each([
     expect(fresh).toEqual({ flexGrow: '0', flexShrink: '1', flexBasis: '2128px' });
   },
 );
+
+/**
+ * The routes are NOT remounted by a `scroll` switch: the shell's tree around
+ * its children is the same node in `document`, `page` and `fixed`, and the
+ * panels inside only read the new region. (A `container` shell scrolls in a
+ * `ScrollView`, a different element, and is outside this promise.)
+ */
+describe.each([
+  ['desktop', 1440],
+  ['phone', 390],
+])('%s: a scroll switch keeps the routes mounted', (_viewport, width) => {
+  beforeEach(() => setViewport(width));
+
+  it.each(['feed, panels, reveal', 'panels, two side by side', 'dashboard, reveal, panels'])(
+    '%s',
+    (name) => {
+      let mounts = 0;
+      function Route() {
+        const [id] = useState(() => {
+          mounts += 1;
+          return mounts;
+        });
+        return <Text>{`route ${id}`}</Text>;
+      }
+      const shape = { ...SHAPES[name], children: <Route /> } as Partial<AppShellProps>;
+      const withRoute: Partial<AppShellProps> = {
+        ...shape,
+        children:
+          name === 'feed, panels, reveal' ? (
+            <AppShellPanel>
+              <Route />
+            </AppShellPanel>
+          ) : (
+            <AppShellPanels>
+              <AppShellPanel id="a" width={400}>
+                <Route />
+              </AppShellPanel>
+              <AppShellPanel id="b">
+                <Text>B</Text>
+              </AppShellPanel>
+            </AppShellPanels>
+          ),
+      };
+      for (const scroll of ['page', 'fixed', 'document', 'fixed', 'page'] as Scroll[])
+        render(withRoute, scroll);
+      expect(mounts).toBe(1);
+    },
+  );
+});

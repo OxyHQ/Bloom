@@ -9,9 +9,11 @@ import {
   WEB_POSITION_STICKY,
   WEB_SURFACE_STICKY_TOP,
   WEB_VIEWPORT_HEIGHT,
+  webViewportHeightMinus,
   type WebCssStyle,
 } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
+import { useAppShellRegion } from '../layout/app-shell-region';
 import { ScreenContext, ScreenHeaderContext, ScreenNavigationContext } from './context';
 import { useScreenWindowBinding } from './use-screen-window-scroll';
 import type { ScreenProps } from './types';
@@ -77,6 +79,18 @@ export function Screen({
   // clears both.
   const navigationEdge = useBottomEdgeInset();
   const document = documentScroll && Platform.OS === 'web';
+  // A document page fills ONE SCREEN of the region it is in. Inside a panel
+  // shell that screen is the viewport less the shell's gutters and top bar —
+  // a full `100dvh` page inside a panel 8px down overflowed it, and every short
+  // page scrolled the document by the two gutters (and, on a phone, by the
+  // bottom bar the panel reserves under it).
+  const region = useAppShellRegion();
+  const pageMinHeight =
+    region?.flow === 'document'
+      ? webViewportHeightMinus(
+          region.viewportInset.top + region.viewportInset.bottom + region.bottomReserve,
+        )
+      : WEB_VIEWPORT_HEIGHT;
   const value = useMemo(
     () => ({
       active,
@@ -179,7 +193,7 @@ export function Screen({
           style={[
             document
               ? {
-                  minHeight: WEB_VIEWPORT_HEIGHT,
+                  minHeight: pageMinHeight,
                   width: '100%',
                   position: 'relative',
                   backgroundColor: surfaceFill,

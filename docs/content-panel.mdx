@@ -80,8 +80,8 @@ layout uses:
 </View>
 ```
 
-`AppShell` passes its own `gutter` for you. Measured in Chrome at 1280 × 900,
-`variant="feed" panel`: the frame reports `top: 16, height: 868` at scrollY 0,
+`AppShellPanel` passes its shell's own `gutter` for you. Measured in Chrome at 1280 × 900,
+`variant="feed"` with one panel: the frame reports `top: 16, height: 868` at scrollY 0,
 1, 200, 600 and 846 — the same rectangle at every one — while the surface
 behind it moves from 16 to −830.
 
@@ -125,7 +125,7 @@ scrolling inside it. It closes at the bottom of the screen, the way the
 because the frame IS that box.
 
 It needs a parent that bounds it — an `AppShell` with `scroll="fixed"` or
-`scroll="container"` (which passes `fill` for you when you ask for `panel`), or
+`scroll="container"` (an `AppShellPanel` in a bounded shell passes `fill` for you), or
 any screen that is `flex: 1`. In a document-scrolled page there is no height to
 fill and the panel keeps growing; that page wants `scroll="document"`, not this
 prop. On web the content wrapper becomes the scroller; on native the panel is
@@ -260,10 +260,10 @@ Panel corners inherit `BloomScope panelRadius` (28 by default), matching card si
 `chrome="none"` removes the border, shadow and material rim/sheen while retaining the
 framed radius and content clipping. Use it for a reader pane that should have a plain fill.
 
-For a page outside split panes, `errorBoundary` opts into themed local recovery inside
-the existing surface: `errorBoundary={{ resetKey: pathname, emptyState: { title: 'Cannot open this page' } }}`.
-The frame remains mounted while content retries. Omit it when `AppShellSplitPanes`
-already owns the pane boundary. See [Error boundary](/docs/error-boundary).
+`errorBoundary` opts into themed local recovery inside the existing surface:
+`errorBoundary={{ resetKey: pathname, emptyState: { title: 'Cannot open this page' } }}`.
+The frame remains mounted while content retries. `AppShellPanel` passes its own
+`errorBoundary` through to the panel it draws. See [Error boundary](/docs/error-boundary).
 
 ### Transparent content layout
 

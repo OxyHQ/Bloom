@@ -84,6 +84,8 @@ Two consequences, both silent:
 
 `Screen` owns scrollY; routes inherit AppShell navigation motion (`navigationScope="isolated"` for modals). AppShell measures bottom/rail/sidebar placement. `Fab` is static: position with `Screen.primaryAction` or `BottomBar.action`. **Do not revive registry→React boolean→independent FAB animation**: it lagged 1–3 frames through `runOnJS` and two renders. Pass `Screen.collapseProgress` to `BottomBar.minimizeProgress`; native frame work stays on shared values. `docs/layout.mdx` retains the measured registry history. Retained screens set `active={focused}`; virtualized lists use `AppShell scroll="external"` + `VirtualList screen={{active, restoration}}`, never an outer ScrollView.
 
+**Panels:** `AppShell panels` frames; routes RENDER `AppShellPanel(s)`, the shell never wraps children (overriding a default needs an upward signal). Keep the tree around `children` identical across scroll modes; gate: `AppShellScrollSwitch.web.test.tsx` mount count.
+
 ## Scroll restoration
 
 Router-agnostic `scroll/` core plus adapter imports no router; model: `docs/scroll.mdx`.

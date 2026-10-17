@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Button } from '../button';
-import { ContentPanel } from '../content-panel';
 import { RiAddFill, RiFilter3Fill, RiHomeLine } from '../icons/remix';
 import { DEMO_NOTIFICATIONS } from '../notification-center/NotificationCenter.stories';
 import {
@@ -19,11 +18,13 @@ import { useTheme } from '../theme/use-theme';
 import { PageHeader } from '../page-header';
 import { Screen, ScreenScrollView } from '../screen';
 import { Text } from '../typography';
-import { AiChatContainer, AiChatUserMessage } from '../ai-chat';
+import { AiChatUserMessage } from '../ai-chat';
 import {
   AppShell,
-  AppShellSplitPanes,
   AppShellHeader,
+  AppShellPanel,
+  AppShellPanels,
+  useAppShellPanel,
   NotificationBell,
   ProOfferCard,
 } from './index';
@@ -221,70 +222,129 @@ export const ProOffer: Story = {
   ),
 };
 
-export const SeparatedPanes: Story = {
-  render: () => (
-    <View style={{ height: 600, padding: 12 }}>
-      <AppShellSplitPanes
-        variant="separated"
-        testID="separated"
-        paneScroll={false}
-        list={
-          <AiChatContainer>
-            <View style={{ flex: 1 }} />
-          </AiChatContainer>
-        }
-        detail={
-          <AiChatContainer>
-            <View style={{ flex: 1 }} />
-          </AiChatContainer>
-        }
-      />
-    </View>
-  ),
-};
-
-function AnimatedPanesExample() {
-  const [selected, setSelected] = useState(false);
-  const wide = useWindowDimensions().width >= 1024;
+/** A map stand-in: fills its panel. */
+function MapFill({ label }: { label: string }) {
+  const theme = useTheme();
   return (
-    <AppShell scroll="document" header={null} contentMaxWidth="none">
-      <AppShellSplitPanes
-        variant="separated"
-        transition="slide"
-        paneScroll={false}
-        showList={wide || !selected}
-        showDetail={selected}
-        listWidth={380}
-        testID="animated-panes"
-        list={
-          <ContentPanel framed chrome="none" contentStyle={{ padding: 16 }}>
-            <AppShellHeader
-              title="Transactions"
-              actions={<Button onPress={() => setSelected(true)}>Open transaction</Button>}
-            />
-            <Placeholder height={1000} />
-          </ContentPanel>
-        }
-        detail={
-          selected ? (
-            <ContentPanel framed chrome="none" contentStyle={{ padding: 16 }}>
-              <AppShellHeader
-                title="Transaction details"
-                actions={<Button onPress={() => setSelected(false)}>Close</Button>}
-              />
-              <Placeholder height={700} />
-            </ContentPanel>
-          ) : undefined
-        }
-      />
-    </AppShell>
+    <View
+      style={{
+        flex: 1,
+        minHeight: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.colors.backgroundSecondary,
+      }}
+    >
+      <Text>{label}</Text>
+    </View>
   );
 }
 
-/** Open/close and resize the viewport: document scroll, native pane motion, no extra animation wrapper. */
-export const AnimatedPanes: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => <AnimatedPanesExample />,
+/** The Map / List switch a panel shows while it is drawn alone. */
+function PanelToggle({ label, onPress }: { label: string; onPress: () => void }) {
+  const { alone } = useAppShellPanel();
+  if (!alone) return null;
+  return (
+    <View style={{ position: 'absolute', bottom: 24, left: 0, right: 0, alignItems: 'center' }}>
+      <Button testID={`panels-toggle-${label.toLowerCase()}`} onPress={onPress}>
+        {label}
+      </Button>
+    </View>
+  );
+}
+
+/**
+ * Two separate panels in a panel shell — results and a map — with the shell's
+ * gutter around and between them, a divider that drags the results' width, and
+ * ONE panel at a time once the group's own box is narrower than 900, switched
+ * by the toggle each panel shows while it is alone. The page never scrolls.
+ */
+export const Panels: Story = {
+  parameters: { controls: { disable: true }, layout: 'fullscreen', bloomScroll: 'document' },
+  render: function Panels() {
+    const [showMap, setShowMap] = useState(false);
+    return (
+      <AppShell
+        testID="panels-shell"
+        variant="feed"
+        panels
+        scroll="page"
+        header={null}
+        drawer="reveal"
+        gutter={8}
+        navigationGap={8}
+        navigationAlign="content"
+        contentWidth={1800}
+        sidebar={{ items: DEMO_NAV, surface: 'plain' }}
+      >
+        <AppShellPanels testID="panels" collapseBelow={900} show={showMap ? 'map' : 'results'}>
+          <AppShellPanel
+            id="results"
+            testID="panels-results"
+            width={560}
+            minWidth={360}
+            maxWidth={900}
+            resizable
+          >
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, gap: 12 }}>
+              {Array.from({ length: 30 }, (_, index) => (
+                <Placeholder key={`result-${index + 1}`} height={88} />
+              ))}
+            </ScrollView>
+            <PanelToggle label="Map" onPress={() => setShowMap(true)} />
+          </AppShellPanel>
+          <AppShellPanel id="map" testID="panels-map" minWidth={320}>
+            <MapFill label="Map" />
+            <PanelToggle label="List" onPress={() => setShowMap(false)} />
+          </AppShellPanel>
+        </AppShellPanels>
+      </AppShell>
+    );
+  },
+};
+
+/**
+ * A list, a message and its details on ONE surface (`joined`), with hairline
+ * dividers; the details panel needs a 1100-wide group and leaves below it.
+ */
+export const JoinedPanels: Story = {
+  parameters: { controls: { disable: true }, layout: 'fullscreen' },
+  render: () => (
+    <AppShell
+      testID="joined-shell"
+      panels
+      scroll="fixed"
+      header={null}
+      contentMaxWidth="none"
+      sidebar={{ items: DEMO_RAIL_NAV, variant: 'rail' }}
+    >
+      <AppShellPanels testID="joined" appearance="joined" collapseBelow={640} show="message">
+        <AppShellPanel
+          id="list"
+          testID="joined-list"
+          width={360}
+          minWidth={280}
+          maxWidth={520}
+          resizable
+          scroll="panel"
+        >
+          <View style={{ padding: 16, gap: 12 }}>
+            {Array.from({ length: 20 }, (_, index) => (
+              <Placeholder key={`thread-${index + 1}`} height={64} />
+            ))}
+          </View>
+        </AppShellPanel>
+        <AppShellPanel id="message" testID="joined-message" scroll="panel">
+          <View style={{ padding: 16 }}>
+            <Placeholder height={900} />
+          </View>
+        </AppShellPanel>
+        <AppShellPanel id="info" testID="joined-info" width={320} hideBelow={1100}>
+          <MapFill label="Details" />
+        </AppShellPanel>
+      </AppShellPanels>
+    </AppShell>
+  ),
 };
 
 export const IconOnlyRail: Story = {
@@ -379,26 +439,28 @@ export const ScreenPages: Story = {
       <AppShell
         testID="screen-pages"
         variant="feed"
-        panel
+        panels
         scroll="page"
         sidebar={{ items: DEMO_NAV }}
       >
-        <Screen documentScroll header={<PageHeader title={`Pages: ${pages}`} safeArea={false} />}>
-          <ScreenScrollView
-            contentContainerStyle={{ padding: 16, gap: 12 }}
-            onEndReached={() => setPages((count) => Math.min(count + 1, 4))}
-          >
-            {Array.from({ length: pages * 15 }, (_, index) => (
-              <View
-                key={`row-${index + 1}`}
-                testID={`screen-pages-row-${index + 1}`}
-                style={{ padding: 16 }}
-              >
-                <Text>Row {index + 1}</Text>
-              </View>
-            ))}
-          </ScreenScrollView>
-        </Screen>
+        <AppShellPanel>
+          <Screen documentScroll header={<PageHeader title={`Pages: ${pages}`} safeArea={false} />}>
+            <ScreenScrollView
+              contentContainerStyle={{ padding: 16, gap: 12 }}
+              onEndReached={() => setPages((count) => Math.min(count + 1, 4))}
+            >
+              {Array.from({ length: pages * 15 }, (_, index) => (
+                <View
+                  key={`row-${index + 1}`}
+                  testID={`screen-pages-row-${index + 1}`}
+                  style={{ padding: 16 }}
+                >
+                  <Text>Row {index + 1}</Text>
+                </View>
+              ))}
+            </ScreenScrollView>
+          </Screen>
+        </AppShellPanel>
       </AppShell>
     );
   },

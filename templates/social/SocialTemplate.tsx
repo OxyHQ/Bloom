@@ -9,7 +9,7 @@ import { BottomBar } from '../../src/bottom-bar/index.web';
 import { useScreen } from '../../src/screen';
 import type { BottomBarProps } from '../../src/bottom-bar/types';
 import { Fab } from '../../src/fab/index.web';
-import { AppShell, AppShellMenuButton } from '../../src/app-shell/index.web';
+import { AppShell, AppShellMenuButton, AppShellPanel } from '../../src/app-shell/index.web';
 import { PageHeader } from '../../src/page-header';
 import { Text } from '../../src/typography';
 import { useTheme } from '../../src/theme/use-theme';
@@ -96,6 +96,43 @@ export function SocialTemplate({
     ? destinations
     : destinations.filter((item) => item.value !== 'profile');
   const title = destinations.find((item) => item.value === selected)?.label ?? 'Home';
+  const main = (
+    <View
+      testID="social-main"
+      role="main"
+      accessibilityLabel={`${title} layout`}
+      style={{ gap: 0 }}
+    >
+      <SocialFeed authenticated={authenticated} onCompose={newPost} />
+      <Text style={{ color: colors.textSecondary, padding: 24 }}>End of feed.</Text>
+    </View>
+  );
+  const socialHeader = (
+    <PageHeader
+      testID="social-header"
+      leading={<AppShellMenuButton testID="social-menu" />}
+      title={<SocialLogo size={28} />}
+      titleAlign="center"
+      presentation="floating"
+      actions={
+        <ButtonGroup accessibilityLabel="Page actions">
+          {headerActions}
+          <ButtonGroupItem
+            iconOnly
+            leadingIcon={RiSearchLine}
+            accessibilityLabel="Explore"
+            onPress={() => setSelected('explore')}
+          />
+          <ButtonGroupItem
+            iconOnly
+            leadingIcon={RiNotification3Line}
+            accessibilityLabel="Notifications"
+            onPress={() => setSelected('notifications')}
+          />
+        </ButtonGroup>
+      }
+    />
+  );
   return (
     <>
       <AppShell
@@ -140,33 +177,8 @@ export function SocialTemplate({
         }}
         contentWidth={centerWidth}
         gutter={gutter}
-        panel={framedContent}
-        header={
-          <PageHeader
-            testID="social-header"
-            leading={<AppShellMenuButton testID="social-menu" />}
-            title={<SocialLogo size={28} />}
-            titleAlign="center"
-            presentation="floating"
-            actions={
-              <ButtonGroup accessibilityLabel="Page actions">
-                {headerActions}
-                <ButtonGroupItem
-                  iconOnly
-                  leadingIcon={RiSearchLine}
-                  accessibilityLabel="Explore"
-                  onPress={() => setSelected('explore')}
-                />
-                <ButtonGroupItem
-                  iconOnly
-                  leadingIcon={RiNotification3Line}
-                  accessibilityLabel="Notifications"
-                  onPress={() => setSelected('notifications')}
-                />
-              </ButtonGroup>
-            }
-          />
-        }
+        panels={framedContent}
+        header={framedContent ? null : socialHeader}
         asideFrom={1180}
         asideWidth={rightColumnWidth}
         asideCollapse="hidden"
@@ -191,15 +203,7 @@ export function SocialTemplate({
           ) : undefined
         }
       >
-        <View
-          testID="social-main"
-          role="main"
-          accessibilityLabel={`${title} layout`}
-          style={{ gap: 0 }}
-        >
-          <SocialFeed authenticated={authenticated} onCompose={newPost} />
-          <Text style={{ color: colors.textSecondary, padding: 24 }}>End of feed.</Text>
-        </View>
+        {framedContent ? <AppShellPanel header={socialHeader}>{main}</AppShellPanel> : main}
       </AppShell>
       <Dialog
         control={compose}

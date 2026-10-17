@@ -10,7 +10,7 @@ export interface AppShellMessages {
   openNavigation: string;
   /** The backdrop and veil that close the drawer. */
   closeNavigation: string;
-  /** The split layout's draggable divider. */
+  /** A resizable panel's draggable divider (`AppShellPanel resizable`). */
   resizePanes: string;
   /** `NotificationBell`'s trigger and popover. */
   notifications: string;

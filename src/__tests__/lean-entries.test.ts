@@ -187,8 +187,8 @@ describe('lean entries stay lean', () => {
     },
   );
 
-  it('the split pane still draws the same grip', () => {
-    expect(graph('app-shell/AppShellSplit.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(true);
+  it('the panels still draw the same grip', () => {
+    expect(graph('app-shell/AppShellPanels.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(true);
     expect(graph('ai-chat/AiChatShell.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(true);
   });
 });

@@ -17,8 +17,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import type { ContentPanelProps } from '../content-panel/types';
-import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { Backdrop, OverlayRoot } from '../overlay';
@@ -26,7 +24,6 @@ import { Portal } from '../portal';
 import { Sidebar } from '../sidebar';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import {
-  webViewportHeightMinus,
   WEB_OVERFLOW_CLIP,
   WEB_POSITION_FIXED,
   WEB_POSITION_STICKY,
@@ -42,10 +39,10 @@ import {
   useShellInsets,
 } from './AppShellBars';
 import { AppShellHeader } from './AppShellHeader';
-import { AppShellSplitPanes } from './AppShellSplit';
 import { APP_SHELL_DEFAULTS as D, breakpointPx } from './constants';
 import { AppShellProvider } from './context';
 import { ScreenNavigationContext, type ScreenNavigationState } from '../screen/context';
+import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-shell-region';
 import { flexFill, resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
 import type { AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
@@ -64,7 +61,8 @@ import { useShellWidth } from './use-shell-width';
  *              by `gutter`, `reveal` sits the rail 12 from the top-start corner
  *   page       `dashboard` one fluid column capped at `contentMaxWidth`;
  *              `feed`/`focus` a `contentWidth` reading column centred in what
- *              the nav leaves; `split` a column of header over three panes
+ *              the nav leaves. With `panels` that column is the REGION the
+ *              routes' `AppShellPanel`s are framed in (`AppShellRegion`)
  *   aside      optional end-side column (right in LTR), `asideWidth` (320) wide from `asideFrom`
  *              (xl), pinned like the rail; below it stacked after the content
  *   slots      `topBar` above the columns, `bottomBar` pinned to the bottom
@@ -135,12 +133,7 @@ function Scroller({
 /** A route Screen's own clearance beyond the occupied bottom edge (Screen's default). */
 const PAGE_CLEARANCE = 16;
 
-export function createAppShellEngine(
-  ContentPanel: React.ComponentType<ContentPanelProps>,
-  BloomColorScope: React.ComponentType<
-    Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>
-  >,
-) {
+export function createAppShellEngine() {
   const AppShellComponent: React.FC<AppShellEngineProps> = ({
     variant = 'dashboard',
     safeArea = false,
@@ -163,22 +156,8 @@ export function createAppShellEngine(
     gutter: gutterProp,
     navFrom,
     navExpandedFrom,
-    panel = false,
-    panelColorPreset,
+    panels = false,
     framedFrom,
-    list,
-    info,
-    pane = 'list',
-    listWidth = D.listWidth,
-    listMinWidth = D.listMinWidth,
-    listMaxWidth = D.listMaxWidth,
-    onListWidthChange,
-    infoWidth = D.infoWidth,
-    splitFrom = D.splitFrom,
-    infoFrom = D.infoFrom,
-    resizable = true,
-    resizeLabel: resizeLabelProp,
-    paneScroll = true,
     topBar,
     topBarVisibility = 'compact',
     bottomBar,
@@ -196,7 +175,6 @@ export function createAppShellEngine(
     testID,
   }) => {
     const { messages } = useMessages(APP_SHELL_MESSAGES);
-    const resizeLabel = resizeLabelProp ?? messages.resizePanes;
     const drawerOpenLabel = drawerOpenLabelProp ?? messages.openNavigation;
     const drawerCloseLabel = drawerCloseLabelProp ?? messages.closeNavigation;
     const theme = useTheme();
@@ -232,11 +210,21 @@ export function createAppShellEngine(
     // `focus` is the one shape with no navigation at all.
     const hasNav = variant !== 'focus' && sidebar != null;
     const navInFlow = hasNav && wide;
-    // One responsive owner: a shell panel follows its in-flow navigation unless
-    // the caller explicitly requests an independent framing breakpoint.
-    const managedPanel = panel === true && hasNav && framedFrom === undefined;
-    const compactPanel = managedPanel && !navInFlow;
-    const panelFramed = managedPanel ? navInFlow : undefined;
+    // `panels`: ONE rule decides whether the routes' panels are framed (rounded,
+    // the gutter around and between them) or compact (full-bleed, no gutter at
+    // all) — read off the shell's own width, whatever the mode or the route.
+    // By default it follows the navigation, so a frameless panel never sits
+    // beside a rail that is still in flow. `canvas` is the screen itself and
+    // hosts no panels.
+    const panelHost = panels && variant !== 'canvas';
+    const framed =
+      panelHost &&
+      (framedFrom !== undefined
+        ? width >= breakpointPx(framedFrom)
+        : hasNav
+          ? navInFlow
+          : width >= BREAKPOINTS.md);
+    const compactRegion = panelHost && !framed;
     const flowSidebar = sidebar ? { ...sidebar, variant: navVariant } : undefined;
     // The drawer always opens the full panel, whatever the in-flow variant.
     const drawerSidebar = sidebar ? { ...sidebar, variant: 'panel' as const } : undefined;
@@ -246,9 +234,9 @@ export function createAppShellEngine(
     const drawerStyle = variant === 'dashboard' || variant === 'feed' ? drawer : 'overlay';
     const centred = variant === 'feed' || variant === 'focus';
     const canvas = variant === 'canvas';
-    // `focus` is a single column by definition and `split` has its `info` pane
-    // instead, so neither takes an aside in EITHER position — beside or stacked.
-    const hasAside = aside != null && variant !== 'focus' && variant !== 'split';
+    // `focus` is a single column by definition, so it takes no aside in EITHER
+    // position — beside or stacked.
+    const hasAside = aside != null && variant !== 'focus';
     const asideBeside = hasAside && width >= breakpointPx(asideFrom);
     // A canvas has no scrolling column to stack an aside into — the screen IS the
     // canvas — so below `asideFrom` the aside is dropped whatever `asideCollapse`
@@ -452,10 +440,57 @@ export function createAppShellEngine(
       children
     );
 
+    // ---- the panel region ---------------------------------------------------
+    // Where the shell's gutter goes. A plain, content-aligned or a docked nav
+    // runs the full height flush to the start edge, so the row keeps no top,
+    // bottom or start padding and the region states its own; every other frame
+    // pads the row. With `panels` the END side gets the same gutter in every
+    // case — the edge that a content-aligned row once forgot — and a compact
+    // region gets none on any side, whatever the mode.
+    const contentAligned = navigationAlign === 'content' && centred;
+    const plainFrame = contentAligned && flowSidebar?.surface === 'plain' && !showTopBar;
+    const dockedNav = navInFlow && flowSidebar?.surface === 'docked';
+    const navFlush = navInFlow && (dockedNav || plainFrame);
+    const regionOuter = framed || (navInFlow && !navFlush) ? gutter : 0;
+    const externalTopHeight = showTopBar ? topBarHeight : 0;
+    // The reveal drawer insets the sliding page by 12 while it is open.
+    const regionInset = feedRevealed ? 12 : regionOuter;
+    const regionFlow: AppShellRegionValue['flow'] =
+      mode === 'document' ? 'document' : mode === 'container' ? 'container' : 'bounded';
+    const region = useMemo<AppShellRegionValue>(
+      () => ({
+        flow: regionFlow,
+        framed,
+        gutter,
+        viewportInset: { top: externalTopHeight + regionInset, bottom: regionInset },
+        // A bounded panel's content owns its edge (`useBottomEdgeInset`); a
+        // growing one reserves the bar under its last row.
+        bottomReserve: mode === 'fixed' ? 0 : contentReserve,
+        revealed: feedRevealed,
+        maskColor: background,
+      }),
+      [
+        regionFlow,
+        framed,
+        gutter,
+        externalTopHeight,
+        regionInset,
+        mode,
+        contentReserve,
+        feedRevealed,
+        background,
+      ],
+    );
+    const regionChildren = panelHost ? (
+      <AppShellRegionContext.Provider value={region}>{pageChildren}</AppShellRegionContext.Provider>
+    ) : (
+      pageChildren
+    );
+
     const bars = (
       <SurfaceLevelProvider
-        level={compactPanel ? 1 : 0}
-        fill={compactPanel ? theme.colors.card : background}
+        level={compactRegion ? 1 : 0}
+        fill={compactRegion ? theme.colors.card : background}
       >
         {showBottomBar ? (
           <AppShellBottomBar
@@ -531,16 +566,23 @@ export function createAppShellEngine(
             width: '100%',
             maxWidth: contentMaxWidth === 'none' ? undefined : contentMaxWidth,
             alignSelf: 'center',
-            gap: 10,
+            gap: panelHost ? (framed ? gutter : 0) : 10,
           },
           fill,
         ]}
       >
         {headerNode}
         <View
-          style={[{ width: '100%', gap: 16, paddingBottom: drawer === 'overlay' ? 16 : 0 }, fill]}
+          style={[
+            {
+              width: '100%',
+              gap: 16,
+              paddingBottom: drawer === 'overlay' && !panelHost ? 16 : 0,
+            },
+            fill,
+          ]}
         >
-          {pageChildren}
+          {regionChildren}
           {stackedAside}
         </View>
       </View>
@@ -721,23 +763,38 @@ export function createAppShellEngine(
                 // the array's — so the reserve is spelled in longhands instead of
                 // layered over the shorthand, and only when there is one.
                 contentStyle={
-                  pageReserve
+                  panelHost
                     ? {
-                        paddingLeft: revealGutter,
-                        paddingRight: revealGutter,
-                        paddingTop: revealTopGutter,
-                        paddingBottom: revealGutter + pageReserve,
+                        paddingLeft: regionOuter,
+                        paddingRight: regionOuter,
+                        paddingTop: regionOuter,
+                        paddingBottom: regionOuter,
                       }
-                    : { padding: revealGutter, paddingTop: revealTopGutter }
+                    : pageReserve
+                      ? {
+                          paddingLeft: revealGutter,
+                          paddingRight: revealGutter,
+                          paddingTop: revealTopGutter,
+                          paddingBottom: revealGutter + pageReserve,
+                        }
+                      : { padding: revealGutter, paddingTop: revealTopGutter }
                 }
               >
                 {column}
               </Scroller>
-              {asideColumn({
-                paddingTop: revealTopGutter,
-                paddingBottom: revealGutter,
-                paddingInlineEnd: revealGutter,
-              })}
+              {asideColumn(
+                panelHost
+                  ? {
+                      paddingTop: regionOuter,
+                      paddingBottom: regionOuter,
+                      paddingInlineEnd: regionOuter,
+                    }
+                  : {
+                      paddingTop: revealTopGutter,
+                      paddingBottom: revealGutter,
+                      paddingInlineEnd: revealGutter,
+                    },
+              )}
               {!wide ? (
                 <Animated.View
                   pointerEvents={isOpen ? 'auto' : 'none'}
@@ -789,29 +846,22 @@ export function createAppShellEngine(
       );
     }
 
-    // A `panel` only FILLS when the shell was ASKED to bound it — `fixed` or
-    // `container`. With document scroll the page itself is the scroller and there
-    // is no height to fill, so the panel keeps growing with its content (and the
-    // frame is its own box, which is what stops it drifting under scroll).
-    //
-    // The test is the PROP, not the resolved mode: native resolves `document` to
-    // `container` because it has no document, and a page that asked for document
-    // scroll still wants its header to travel with the content there.
-    const panelFills = panel === true && scroll !== 'document' && mode !== 'document';
-
     // ---- the page region, per variant ---------------------------------------
     /** `feed` / `focus`: a fixed reading column, centred in what the nav leaves. */
-    const contentAligned = navigationAlign === 'content' && centred;
-    // Plain navigation belongs to the viewport; only the reading surfaces are inset.
-    const documentPanelInset = feedRevealed ? 12 : compactPanel ? 0 : gutter;
-    const externalTopHeight = showTopBar ? topBarHeight : 0;
-    // A property of the NAVIGATION, not of who scrolls: native resolves every
-    // shell to container scroll, and gating this on `document` left native
-    // phones with an 8px frame around the reading panel that the same layout on
-    // the web does not draw.
-    const plainFrame = contentAligned && flowSidebar?.surface === 'plain' && !topBarNode;
     const readingGap = Math.max(0, asideGap ?? columnGap);
     const readingGroupWidth = contentWidth + (asideShown ? asideWidth + readingGap : 0);
+    // The region's own vertical gutter, when the row gives it none (a flush nav).
+    // A property of the NAVIGATION, not of who scrolls: native resolves every
+    // shell to container scroll, and gating this on `document` left native
+    // phones with an 8px frame around the reading column that the same layout
+    // on the web does not draw.
+    const bodyInset = panelHost
+      ? navFlush
+        ? { paddingTop: regionOuter, paddingBottom: regionOuter }
+        : {}
+      : plainFrame
+        ? { paddingTop: gutter, paddingBottom: gutter }
+        : {};
     const centredBody = (
       <View
         style={[
@@ -828,14 +878,12 @@ export function createAppShellEngine(
             alignItems: doc ? 'flex-start' : 'stretch',
             ...(contentAligned
               ? {
-                  flexGrow: compactPanel ? 1 : 0,
-                  flexBasis: compactPanel ? 'auto' : readingGroupWidth,
-                  maxWidth: compactPanel ? undefined : readingGroupWidth,
+                  flexGrow: compactRegion ? 1 : 0,
+                  flexBasis: compactRegion ? 'auto' : readingGroupWidth,
+                  maxWidth: compactRegion ? undefined : readingGroupWidth,
                 }
               : {}),
-            ...(plainFrame
-              ? { paddingTop: compactPanel ? 0 : gutter, paddingBottom: compactPanel ? 0 : gutter }
-              : {}),
+            ...bodyInset,
           },
           fill,
         ]}
@@ -846,150 +894,47 @@ export function createAppShellEngine(
             // `flexBasis` is the reading width and `flexShrink: 1` is what keeps a
             // 600px column inside a 360px phone — a `width` would overflow.
             {
-              flexGrow: compactPanel ? 1 : 0,
+              flexGrow: compactRegion ? 1 : 0,
               flexShrink: 1,
-              flexBasis: compactPanel ? 'auto' : contentWidth,
-              maxWidth: compactPanel ? undefined : contentWidth,
+              flexBasis: compactRegion ? 'auto' : contentWidth,
+              maxWidth: compactRegion ? undefined : contentWidth,
               minWidth: 0,
             },
             doc ? null : { alignSelf: 'stretch' },
           ]}
         >
-          {panelFills ? (
-            // A bounded panel fills the screen. Container mode scrolls its body;
-            // fixed mode leaves scrolling to the child navigator/list.
-            <BloomColorScope colorPreset={panelColorPreset} asChild>
-              <ContentPanel
-                maskColor={background}
-                framed={panelFramed}
-                framedFrom={framedFrom}
-                fill
-                // The panel's box already IS the visible area here, so the frame is
-                // that box — no viewport maths, nothing to line up.
-                overlaySizing="panel"
-                surfaceStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto', minHeight: 0 }}
-                contentStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto', minHeight: 0 }}
-              >
-                <View style={{ flex: 1, minHeight: 0 }}>
-                  {headerNode}
-                  <Scroller
-                    mode={mode}
-                    testID={testID ? `${testID}-page` : undefined}
-                    style={{ ...flexFill, minHeight: 0 }}
-                    // A fixed page owns its list and edge clearance. Padding its
-                    // navigator here would charge the same occupied edge twice.
-                    contentStyle={mode === 'fixed' ? {} : { paddingBottom: contentReserve }}
-                  >
-                    {pageChildren}
-                  </Scroller>
-                </View>
-              </ContentPanel>
-            </BloomColorScope>
+          {panelHost ? (
+            // ONE tree for every mode — the Scroller is the same node in
+            // `document` and `fixed` — so switching `scroll` per route never
+            // remounts the routes: the panels inside read the new region.
+            <Scroller
+              mode={mode}
+              testID={testID ? `${testID}-page` : undefined}
+              style={{}}
+              contentStyle={mode === 'container' ? { flexGrow: 1 } : {}}
+            >
+              {headerNode ? (
+                <View style={{ paddingBottom: framed ? gutter : 0 }}>{headerNode}</View>
+              ) : null}
+              {regionChildren}
+              {stackedAside}
+            </Scroller>
           ) : (
             <Scroller
               mode={mode}
               testID={testID ? `${testID}-page` : undefined}
               style={{}}
-              contentStyle={{ paddingBottom: panel ? 0 : pageReserve }}
+              contentStyle={{ paddingBottom: pageReserve }}
             >
-              <BloomColorScope colorPreset={panelColorPreset} asChild>
-                {panel ? (
-                  <ContentPanel
-                    maskColor={background}
-                    framed={feedRevealed || panelFramed}
-                    chrome={feedRevealed ? 'none' : undefined}
-                    framedFrom={framedFrom}
-                    // The sticky frame is pinned at the shell's OWN gutter, which is
-                    // exactly where the panel starts. Left at the 8px default it
-                    // would sit 8px above the panel's real top edge and snap down on
-                    // the first scroll — the panel appearing to breathe.
-                    overlayInset={{
-                      top: externalTopHeight + documentPanelInset,
-                      bottom: documentPanelInset,
-                    }}
-                    // The panel's own `flex-1` (basis 0) would collapse to nothing in
-                    // a document-flow column, which has no free space to distribute.
-                    surfaceStyle={{
-                      flexGrow: 1,
-                      flexShrink: 1,
-                      flexBasis: 'auto',
-                      // The viewport frame must have a painted surface even when the
-                      // page is short. A minimum still lets long documents grow.
-                      minHeight: webViewportHeightMinus(externalTopHeight + documentPanelInset * 2),
-                    }}
-                    contentStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto' }}
-                  >
-                    {/* Header chrome spans the panel. Its own title/action insets
-                  belong to PageHeader; the screen owns all body padding. */}
-                    {headerNode}
-                    <View style={[{ paddingBottom: pageReserve }, fill]}>{pageChildren}</View>
-                    {feedRevealed && (
-                      <StyledView
-                        pointerEvents="none"
-                        className="absolute inset-0 z-20"
-                        style={{
-                          backgroundColor: theme.isDark
-                            ? 'rgba(255, 255, 255, 0.05)'
-                            : 'rgba(0, 0, 0, 0.1)',
-                        }}
-                      />
-                    )}
-                  </ContentPanel>
-                ) : (
-                  <View style={[{ gap: 16 }, fill]}>
-                    {headerNode}
-                    {pageChildren}
-                  </View>
-                )}
-              </BloomColorScope>
+              <View style={[{ gap: 16 }, fill]}>
+                {headerNode}
+                {pageChildren}
+              </View>
               {stackedAside}
             </Scroller>
           )}
         </View>
         {asideColumn({})}
-      </View>
-    );
-
-    const splitWide = width >= breakpointPx(splitFrom);
-    // Below the breakpoint exactly one pane renders — the one `pane` names, or
-    // the detail pane when that one was never given any content.
-    const solePane =
-      (pane === 'list' && list == null) || (pane === 'info' && info == null) ? 'detail' : pane;
-    const splitBody = (
-      <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, minHeight: 0 }}>
-        {headerNode ? <View style={{ paddingBottom: gutter }}>{headerNode}</View> : null}
-        <View
-          style={{
-            flexGrow: 1,
-            flexShrink: 1,
-            minHeight: 0,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            backgroundColor: theme.colors.card,
-            overflow: 'hidden',
-          }}
-        >
-          <AppShellSplitPanes
-            list={list}
-            detail={pageChildren}
-            info={info}
-            showList={splitWide ? list != null : solePane === 'list'}
-            showDetail={splitWide ? true : solePane === 'detail'}
-            showInfo={
-              splitWide ? info != null && width >= breakpointPx(infoFrom) : solePane === 'info'
-            }
-            listWidth={listWidth}
-            listMinWidth={listMinWidth}
-            listMaxWidth={listMaxWidth}
-            onListWidthChange={onListWidthChange}
-            infoWidth={infoWidth}
-            resizable={resizable}
-            paneScroll={paneScroll}
-            resizeLabel={resizeLabel}
-            testID={testID}
-          />
-        </View>
       </View>
     );
 
@@ -999,11 +944,13 @@ export function createAppShellEngine(
           mode={mode}
           testID={testID ? `${testID}-page` : undefined}
           style={{ ...flexFill, minWidth: 0, backgroundColor: background }}
-          contentStyle={{ paddingTop: small ? 12 : 0, paddingBottom: pageReserve }}
+          contentStyle={
+            panelHost ? bodyInset : { paddingTop: small ? 12 : 0, paddingBottom: pageReserve }
+          }
         >
           {column}
         </Scroller>
-        {asideColumn({})}
+        {asideColumn(panelHost ? bodyInset : {})}
       </>
     );
 
@@ -1035,13 +982,12 @@ export function createAppShellEngine(
       </>
     );
 
-    const body =
-      variant === 'split' ? splitBody : canvas ? canvasBody : centred ? centredBody : dashboardBody;
+    const body = canvas ? canvasBody : centred ? centredBody : dashboardBody;
 
     // A DOCKED nav is flush to the window: it takes the shell's whole height and
     // its own hairline is the separator, so the shell gives up its start and
-    // vertical padding around that column rather than framing it like a card.
-    const dockedNav = navInFlow && flowSidebar?.surface === 'docked';
+    // vertical padding around that column rather than framing it like a card
+    // (`dockedNav`, above).
     const navRegion =
       navInFlow && flowSidebar ? (
         doc ? (
@@ -1109,21 +1055,37 @@ export function createAppShellEngine(
     const rowStyle: WebCssStyle = {
       flexDirection: 'row',
       ...(contentAligned ? { justifyContent: 'center' } : {}),
-      gap: dockedNav || canvas ? 0 : Math.max(0, navigationGap ?? columnGap),
+      gap: canvas
+        ? 0
+        : dockedNav
+          ? // Panels keep their gutter off a docked nav's hairline.
+            panelHost
+            ? regionOuter
+            : 0
+          : Math.max(0, navigationGap ?? columnGap),
       // A canvas runs to the window's edge, so the row keeps no padding at all
       // and each region carries its own (the nav below, the aside in `canvasBody`).
       // A docked nav keeps only the END padding. Spelled in longhands, never the
       // `padding` shorthand plus a logical override: react-native-web expands the
       // shorthand to physical sides, and which of two declarations for one edge
       // wins is then a matter of declaration order rather than intent.
-      ...(dockedNav
-        ? {
-            paddingTop: 0,
-            paddingBottom: 0,
-            paddingInlineStart: 0,
-            paddingInlineEnd: canvas || plainFrame ? 0 : gutter,
-          }
-        : { padding: canvas || plainFrame ? 0 : gutter }),
+      ...(panelHost
+        ? navFlush
+          ? {
+              paddingTop: 0,
+              paddingBottom: 0,
+              paddingInlineStart: 0,
+              paddingInlineEnd: regionOuter,
+            }
+          : { padding: regionOuter }
+        : dockedNav
+          ? {
+              paddingTop: 0,
+              paddingBottom: 0,
+              paddingInlineStart: 0,
+              paddingInlineEnd: canvas || plainFrame ? 0 : gutter,
+            }
+          : { padding: canvas || plainFrame ? 0 : gutter }),
       backgroundColor: background,
     };
 

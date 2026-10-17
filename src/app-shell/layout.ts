@@ -19,20 +19,15 @@ export type ScrollMode = 'document' | 'container' | 'fixed';
  * Which frame a shell actually gets.
  *
  * Native has no document, so `document` falls back to `container` there, and
- * `page` to `fixed`.
- * `split` and `canvas` are the other reductions: a split's panes each own their
- * scrolling, which is only expressible inside a bounded box (a document-
- * scrolling split would have one pane growing the page and the others pinned to
- * nothing), and a canvas is the viewport itself. Both resolve `document` to
- * `fixed` (one screen) and honour `container` as-is.
+ * `page` to `fixed`. `canvas` is the other reduction: a canvas IS the viewport
+ * (a map that grew the page would pan the page instead of the map), so it
+ * resolves `document` and `page` to `fixed` (one screen) and honours
+ * `container` for a shell embedded in a bounded box. Several panels side by
+ * side need no reduction of their own: `AppShellPanels` is a viewport-tall box
+ * in a document, so the page simply has nothing to scroll.
  */
 export function resolveScrollMode(variant: AppShellVariant, scroll: AppShellScroll): ScrollMode {
-  // `split` and `canvas` are the two shapes that cannot grow a document: a
-  // split's panes each own their scrolling, and a canvas IS the viewport (a map
-  // that grew the page would pan the page instead of the map). Both honour
-  // `container` for a shell embedded in a bounded box.
-  if (variant === 'split' || variant === 'canvas')
-    return scroll === 'container' ? 'container' : 'fixed';
+  if (variant === 'canvas') return scroll === 'container' ? 'container' : 'fixed';
   // `page`: the document where there is one, else one screen whose routes'
   // own ScreenScrollViews scroll.
   if (scroll === 'page') return Platform.OS === 'web' ? 'document' : 'fixed';
