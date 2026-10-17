@@ -46,7 +46,13 @@ export function useCardMotion({
   exit: CardMotionPose;
   exitEasing: (value: number) => number;
   onExited?: () => void;
-}) {
+}): {
+  // Annotated: inferred, the declaration would spell RN 0.88's expanded colour
+  // union (`NativeColorValue`), a name RN 0.86's types do not export.
+  style: Animated.WithAnimatedValue<WebCssStyle>;
+  dismiss: () => void;
+  gone: boolean;
+} {
   const reducedMotion = useReducedMotion();
   const animateIntro = introDelay !== undefined && !reducedMotion;
   const enter = useRef(new Animated.Value(animateIntro ? 0 : 1)).current;

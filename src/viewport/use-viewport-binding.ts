@@ -9,7 +9,9 @@ export function useViewportBinding({
   onScroll,
   onLayout,
   onContentSizeChange,
-}: ViewportBindingOptions) {
+}: ViewportBindingOptions): Required<
+  Pick<ScrollViewProps, 'onScroll' | 'onLayout' | 'onContentSizeChange' | 'scrollEventThrottle'>
+> {
   const scope = useContext(ViewportContext);
   if (Platform.OS !== 'web' && !scope)
     throw new Error('Bloom useViewportBinding requires ViewportProvider on native.');

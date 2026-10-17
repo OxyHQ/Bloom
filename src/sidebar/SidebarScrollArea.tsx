@@ -3,6 +3,7 @@ import { ScrollView, View, type ScrollViewProps } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { EdgeScrim } from '../page-header/EdgeScrim';
 import { parseRgba } from '../theme/color-utils';
+import type { RefComponent } from '../styles/native-refs';
 
 interface SidebarScrollAreaProps extends ScrollViewProps {
   /** Actual opaque surface behind this scroll region. */
@@ -13,10 +14,10 @@ interface SidebarScrollAreaProps extends ScrollViewProps {
 const EDGE_THRESHOLD = 1;
 
 /** Internal scroll viewport: fades describe content beyond the visible edges. */
-export const SidebarScrollArea = forwardRef<
-  ComponentRef<typeof ScrollView>,
-  SidebarScrollAreaProps
->(function SidebarScrollArea(
+export const SidebarScrollArea: RefComponent<
+  SidebarScrollAreaProps,
+  ComponentRef<typeof ScrollView>
+> = forwardRef<ComponentRef<typeof ScrollView>, SidebarScrollAreaProps>(function SidebarScrollArea(
   {
     fadeColor,
     fadeHeight = 40,

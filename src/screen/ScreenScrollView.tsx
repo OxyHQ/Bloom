@@ -23,6 +23,7 @@ import { DEFAULT_END_REACHED_THRESHOLD, useEndReached } from './use-end-reached'
 import { useScreenScroll } from './use-screen-scroll';
 import { useScreenWindowScroll } from './use-screen-window-scroll';
 import type { ScreenScrollViewProps } from './types';
+import type { RefComponent } from '../styles/native-refs';
 
 type InnerProps = ScreenScrollViewProps & {
   forwardedRef: React.ForwardedRef<ComponentRef<typeof ScrollView>>;
@@ -34,7 +35,10 @@ type InnerProps = ScreenScrollViewProps & {
  * second scroll container (which would hold the document at one viewport and
  * clip everything below it). Everywhere else it is an animated `ScrollView`.
  */
-export const ScreenScrollView = forwardRef<ComponentRef<typeof ScrollView>, ScreenScrollViewProps>(
+export const ScreenScrollView: RefComponent<
+  ScreenScrollViewProps,
+  ComponentRef<typeof ScrollView>
+> = forwardRef<ComponentRef<typeof ScrollView>, ScreenScrollViewProps>(
   function ScreenScrollView(props, ref) {
     // Chosen by the nearest Screen; switching modes remounts, so each branch
     // keeps its own hook order.
