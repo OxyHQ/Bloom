@@ -1,0 +1,115 @@
+---
+title: PlacePicker
+description: Choose a real place by typing its name or address — a combobox over the app's own place search, the chosen place with its coordinate, and a way back.
+order: 141
+---
+
+# PlacePicker
+
+A text field that finds places as you type, a list of the places that match,
+and — once one is chosen — that place with its coordinate and a **Change**
+button. For anything that needs a point on the Earth from a person who knows
+only an address: a pickup, a delivery, a meeting place.
+
+```tsx
+import { PlacePicker, type PlacePickerOption } from '@oxy.so/bloom/place-picker';
+import { useDebouncedValue } from '@oxy.so/bloom/hooks';
+
+const [query, setQuery] = useState('');
+const [place, setPlace] = useState<PlacePickerOption | null>(null);
+const term = useDebouncedValue(query.trim(), 250);
+const search = useQuery({
+  queryKey: ['places', term],
+  queryFn: ({ signal }) => findPlaces(term, signal), // the app's own search
+  enabled: term.length >= 3,
+});
+
+<PlacePicker
+  label="Pickup address"
+  query={query}
+  onQueryChange={setQuery}
+  results={term === query.trim() ? (search.data ?? []) : []}
+  status={search.isError ? 'error' : search.isFetching || term !== query.trim() ? 'loading' : 'ready'}
+  onRetry={() => void search.refetch()}
+  value={place}
+  onValueChange={setPlace}
+/>
+```
+
+## It knows no geocoder
+
+Bloom has no data layer and no network dependency, so the picker never
+searches. The app owns the text (`query`), runs the search however it fetches —
+over GoWay's `@goway.to/sdk` (`geocode.forward`), a saved-address book, any
+places API — and hands back `results` and a `status`. A picker that called a
+provider itself would tie every app that uses it to that provider.
+
+Map each result to a `PlacePickerOption`:
+
+| field        | holds                                                      |
+| ------------ | ---------------------------------------------------------- |
+| `id`         | stable across requests — the row's key                     |
+| `title`      | the first line: a name, or the street and number           |
+| `subtitle`   | the quieter second line: locality, region, country         |
+| `coordinate` | `{ latitude, longitude }` in WGS 84 degrees                |
+
+`PlacePicker` is generic over the option type: give it options that carry more
+(the provider's structured address, its place id) and `onValueChange` hands the
+**same object** back, so the app fills its own form from it without a second
+lookup.
+
+## Which prop decides what
+
+| prop             | decides                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `query`, `onQueryChange` | the text — controlled; every keystroke                               |
+| `results`        | the answer for the CURRENT text                                              |
+| `status`         | `loading` (spinner line; results it has stay), `error` (failure + `onRetry`), `ready`, `idle` (same as loading) |
+| `onRetry`        | the button beside a failure; without it the failure is text only             |
+| `minQueryLength` | characters before any list or status appears. Default `3`                     |
+| `value`, `onValueChange` | the chosen place, or `null`; "Change" calls it with `null`           |
+| `label`          | the field's name, and its placeholder unless `placeholder` is given          |
+| `size`           | `md` (36) or `sm` (32); inherited from the nearest `BloomScope`              |
+| `disabled`, `invalid` | combined with an enclosing `Field`'s, never replaced                     |
+| `labels`         | each fixed word; defaults come from the locale (`BloomProvider locale`)       |
+| `testID`         | parts: `-input`, `-status`, `-results`, `-result-<id>`, `-selected`, `-change`, `-retry` |
+
+## Debounce before it leaves the device
+
+`onQueryChange` fires per keystroke. Key the request on
+[`useDebouncedValue`](/docs/bloom/main/hooks) so "Gran Vía" asks once. While the
+debounced term lags the typed text, report `loading` and pass no results: a
+list for "Gran" under "Gran Vía" is an answer to a question nobody is asking
+any more. Below `minQueryLength` the picker draws nothing at all, for the same
+reason.
+
+## It draws no map
+
+Bloom ships no map ([Map Marker](/docs/bloom/main/map-marker)). The chosen place
+shows its coordinate to five decimals (about a metre), so a person can check
+it; an app with a map puts the pin on its own map.
+
+## Accessibility
+
+- **Web: a combobox.** The input carries `role="combobox"`,
+  `aria-autocomplete="list"`, `aria-expanded`, `aria-controls` (the listbox)
+  and `aria-activedescendant` (the highlighted option). ArrowDown and ArrowUp
+  move the highlight and wrap, Enter chooses, Escape drops the highlight. Focus
+  never leaves the text being typed: options are not tab stops, and a press on
+  one does not blur the caret.
+- **Native: a list of options.** There is no active-descendant, so each row is
+  its own pressable option named by its title and subtitle.
+- **The status line is a polite live region on both** — "Searching…",
+  "5 places", "No places match …", the failure. Results arriving under a field
+  are otherwise silent to a screen reader.
+- **It is a `Field` member** through `TextFieldInput`: the name defers to the
+  field, `disabled`/`invalid` combine, the field's id and description reach the
+  input (`docs/composition.mdx` §Field).
+- The chosen place is announced as the field's name, its title and subtitle;
+  **Change** returns the caret to the field.
+
+## Helpers
+
+- `formatPlaceCoordinate({ latitude, longitude })` — `"40.41678, -3.70379"`.
+- `placePickerView(query, status, count, minQueryLength)` — what the picker
+  draws under the field (`hidden`, `loading`, `error`, `empty`, `results`). Pure.

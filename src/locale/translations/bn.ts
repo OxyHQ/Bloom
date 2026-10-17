@@ -2153,6 +2153,16 @@ const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
   suggestions: 'পরামর্শ',
 };
 
+const PLACE_PICKER_MESSAGES: Translations['PLACE_PICKER_MESSAGES'] = {
+  results: 'স্থান',
+  searching: 'খোঁজা হচ্ছে…',
+  noResults: (q) => `“${q}”-এর সঙ্গে মেলে এমন কোনো স্থান নেই`,
+  failed: 'স্থান খোঁজা যায়নি।',
+  retry: 'আবার চেষ্টা করুন',
+  resultCount: (n) => (n === 1 ? '1টি স্থান' : `${n}টি স্থান`),
+  change: 'পরিবর্তন করুন',
+};
+
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
     apartment: 'অ্যাপার্টমেন্ট',
@@ -2943,6 +2953,7 @@ const translations: Translations = {
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,
+  PLACE_PICKER_MESSAGES,
   STAY_FILTERS_MESSAGES,
   SETTINGS_MODAL_MESSAGES,
   EVICTION_MESSAGES,

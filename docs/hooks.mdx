@@ -49,6 +49,17 @@ A value that updates at most every N ms. For anything that re-renders a
 expensive tree on a continuous input — a drag, a scroll position, a typed
 query.
 
+## `useDebouncedValue`
+
+The value once it has stopped changing for N ms. Key a search request on it,
+so typing a place name asks once when the typing pauses rather than once per
+keystroke (`docs/place-picker.mdx`).
+
+```tsx
+const term = useDebouncedValue(query.trim(), 250);
+const places = useQuery({ queryKey: ['places', term], queryFn: …, enabled: term.length >= 3 });
+```
+
 ## `usePressAnimation`
 
 The shared press transform, so a press dip is the same everywhere.

@@ -2120,6 +2120,16 @@ const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
   suggestions: '建议',
 };
 
+const PLACE_PICKER_MESSAGES: Translations['PLACE_PICKER_MESSAGES'] = {
+  results: '地点',
+  searching: '正在搜索…',
+  noResults: (q) => `没有与“${q}”匹配的地点`,
+  failed: '无法搜索地点。',
+  retry: '重试',
+  resultCount: (n) => (n === 1 ? '1 个地点' : `${n} 个地点`),
+  change: '更改',
+};
+
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
     apartment: '公寓',
@@ -2902,6 +2912,7 @@ const translations: Translations = {
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,
+  PLACE_PICKER_MESSAGES,
   STAY_FILTERS_MESSAGES,
   SETTINGS_MODAL_MESSAGES,
   EVICTION_MESSAGES,

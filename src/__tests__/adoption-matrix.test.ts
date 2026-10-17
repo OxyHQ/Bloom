@@ -107,6 +107,7 @@ describe('the field contract', () => {
       'mail-compose',
       'payment-method',
       'phone-input',
+      'place-picker',
       'radio',
       'rating',
       'search',

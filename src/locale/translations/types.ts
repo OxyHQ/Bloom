@@ -114,6 +114,7 @@ import type { APP_SHELL_MESSAGES } from '../../app-shell/messages';
 import type { ROUTE_STOPS_MESSAGES } from '../../route-stops/messages';
 import type { SEARCH_MESSAGES } from '../../search/messages';
 import type { TAG_FIELD_MESSAGES } from '../../tag-field/messages';
+import type { PLACE_PICKER_MESSAGES } from '../../place-picker/messages';
 import type { STAY_FILTERS_MESSAGES } from '../../stay-filters/messages';
 import type { SETTINGS_MODAL_MESSAGES } from '../../settings-modal/messages';
 import type { EVICTION_MESSAGES } from '../../eviction/messages';
@@ -252,6 +253,7 @@ export interface Translations {
   readonly ROUTE_STOPS_MESSAGES: CatalogMessages<typeof ROUTE_STOPS_MESSAGES>;
   readonly SEARCH_MESSAGES: CatalogMessages<typeof SEARCH_MESSAGES>;
   readonly TAG_FIELD_MESSAGES: CatalogMessages<typeof TAG_FIELD_MESSAGES>;
+  readonly PLACE_PICKER_MESSAGES: CatalogMessages<typeof PLACE_PICKER_MESSAGES>;
   readonly STAY_FILTERS_MESSAGES: CatalogMessages<typeof STAY_FILTERS_MESSAGES>;
   readonly SETTINGS_MODAL_MESSAGES: CatalogMessages<typeof SETTINGS_MODAL_MESSAGES>;
   readonly EVICTION_MESSAGES: CatalogMessages<typeof EVICTION_MESSAGES>;
