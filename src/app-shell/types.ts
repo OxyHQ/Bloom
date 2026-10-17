@@ -58,7 +58,7 @@ export type AppShellPane = 'list' | 'detail' | 'info';
 export type AppShellBreakpoint = 'sm' | 'md' | 'lg' | 'xl' | number;
 
 /** What scrolls the page. See `AppShellProps['scroll']`. */
-export type AppShellScroll = 'document' | 'container' | 'fixed';
+export type AppShellScroll = 'document' | 'container' | 'fixed' | 'page';
 
 /**
  * When a bar slot is drawn: `compact` (the default) only while the nav is a
@@ -162,6 +162,12 @@ export interface AppShellEngineProps {
    *   header stays, and the content fills the rest of the height (`flex: 1`),
    *   so the page owns its own scrolling — a chat, a map, a board. On web the
    *   frame is `100dvh`; on native it fills its parent.
+   * - `page` — the mode for routes that are `Screen` pages: `document` on web
+   *   (the window scrolls, `Screen documentScroll` + `ScreenScrollView` stay in
+   *   document flow) and `fixed` on native, where each route's
+   *   `ScreenScrollView` is the scroller — never nested in a shell ScrollView.
+   *   A `panel` fills on native and the bottom-bar clearance reaches the
+   *   route's `ScreenScrollView`. Replaces `Platform.OS === 'web' ? 'document' : 'fixed'`.
    */
   scroll?: AppShellScroll;
 
