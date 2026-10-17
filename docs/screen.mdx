@@ -67,7 +67,13 @@ so a composed shell can own those slots and their spacing itself.
 ### One page for both platforms
 
 `ScreenScrollView` reads the mode from its Screen, so one page implementation
-serves web and native with no `.web.tsx` fork:
+serves web and native with no `.web.tsx` fork. Under an `AppShell`, use
+`scroll="page"` — the recommended mode for apps whose routes are Screen pages:
+the window scrolls on web, and on native the shell is one screen whose routes'
+`ScreenScrollView`s scroll, never nested in a shell `ScrollView`, with the
+bottom bar's clearance reaching them (`docs/app-shell.mdx`, Screen pages). It
+replaces `scroll={Platform.OS === 'web' ? 'document' : 'fixed'}`.
+
 
 ```tsx
 const ref = useRef<ScrollView>(null);

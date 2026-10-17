@@ -1,6 +1,6 @@
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -45,6 +45,7 @@ import { AppShellHeader } from './AppShellHeader';
 import { AppShellSplitPanes } from './AppShellSplit';
 import { APP_SHELL_DEFAULTS as D, breakpointPx } from './constants';
 import { AppShellProvider } from './context';
+import { ScreenNavigationContext, type ScreenNavigationState } from '../screen/context';
 import { resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
 import type { AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
@@ -126,6 +127,9 @@ function Scroller({
     </ScrollView>
   );
 }
+
+/** A route Screen's own clearance beyond the occupied bottom edge (Screen's default). */
+const PAGE_CLEARANCE = 16;
 
 export function createAppShellEngine(
   ContentPanel: React.ComponentType<ContentPanelProps>,
@@ -412,6 +416,37 @@ export function createAppShellEngine(
         ? (reserveBottomBarSpace ? bottomEdge : 0) +
           (showFloatingAction ? floatingActionHeight + gutter : 0)
         : 0;
+    // `scroll="page"` on native: each route's `ScreenScrollView` is the
+    // scroller, so the shell pads nothing and hands the occupied bottom edge to
+    // the routes' Screens instead — their content scrolls under the bar and its
+    // last row still clears it.
+    const pageNative = scroll === 'page' && mode === 'fixed' && Platform.OS !== 'web';
+    const pageReserve = pageNative ? 0 : contentReserve;
+    const inheritedNavigation = useContext(ScreenNavigationContext);
+    const pageProgress = useSharedValue(0);
+    const pageTarget = useSharedValue(0);
+    const pageScroller = useSharedValue<string | null>(null);
+    const pageNavigation = useMemo<ScreenNavigationState>(
+      () => ({
+        ...(inheritedNavigation ?? {
+          collapseProgress: pageProgress,
+          collapseTarget: pageTarget,
+          activeScrollerId: pageScroller,
+        }),
+        bottomInset: Math.max(
+          inheritedNavigation?.bottomInset ?? PAGE_CLEARANCE,
+          contentReserve + PAGE_CLEARANCE,
+        ),
+      }),
+      [inheritedNavigation, pageProgress, pageTarget, pageScroller, contentReserve],
+    );
+    const pageChildren = pageNative ? (
+      <ScreenNavigationContext.Provider value={pageNavigation}>
+        {children}
+      </ScreenNavigationContext.Provider>
+    ) : (
+      children
+    );
 
     const bars = (
       <SurfaceLevelProvider
@@ -499,7 +534,7 @@ export function createAppShellEngine(
         <View
           style={[{ width: '100%', gap: 16, paddingBottom: drawer === 'overlay' ? 16 : 0 }, fill]}
         >
-          {children}
+          {pageChildren}
           {stackedAside}
         </View>
       </View>
@@ -686,12 +721,12 @@ export function createAppShellEngine(
                 // the array's — so the reserve is spelled in longhands instead of
                 // layered over the shorthand, and only when there is one.
                 contentStyle={
-                  contentReserve
+                  pageReserve
                     ? {
                         paddingLeft: revealGutter,
                         paddingRight: revealGutter,
                         paddingTop: revealTopGutter,
-                        paddingBottom: revealGutter + contentReserve,
+                        paddingBottom: revealGutter + pageReserve,
                       }
                     : { padding: revealGutter, paddingTop: revealTopGutter }
                 }
@@ -845,7 +880,7 @@ export function createAppShellEngine(
                     // navigator here would charge the same occupied edge twice.
                     contentStyle={mode === 'fixed' ? {} : { paddingBottom: contentReserve }}
                   >
-                    {children}
+                    {pageChildren}
                   </Scroller>
                 </View>
               </ContentPanel>
@@ -855,7 +890,7 @@ export function createAppShellEngine(
               mode={mode}
               testID={testID ? `${testID}-page` : undefined}
               style={{}}
-              contentStyle={{ paddingBottom: panel ? 0 : contentReserve }}
+              contentStyle={{ paddingBottom: panel ? 0 : pageReserve }}
             >
               <BloomColorScope colorPreset={panelColorPreset} asChild>
                 {panel ? (
@@ -887,7 +922,7 @@ export function createAppShellEngine(
                     {/* Header chrome spans the panel. Its own title/action insets
                   belong to PageHeader; the screen owns all body padding. */}
                     {headerNode}
-                    <View style={[{ paddingBottom: contentReserve }, fill]}>{children}</View>
+                    <View style={[{ paddingBottom: pageReserve }, fill]}>{pageChildren}</View>
                     {feedRevealed && (
                       <StyledView
                         pointerEvents="none"
@@ -903,7 +938,7 @@ export function createAppShellEngine(
                 ) : (
                   <View style={[{ gap: 16 }, fill]}>
                     {headerNode}
-                    {children}
+                    {pageChildren}
                   </View>
                 )}
               </BloomColorScope>
@@ -937,7 +972,7 @@ export function createAppShellEngine(
         >
           <AppShellSplitPanes
             list={list}
-            detail={children}
+            detail={pageChildren}
             info={info}
             showList={splitWide ? list != null : solePane === 'list'}
             showDetail={splitWide ? true : solePane === 'detail'}
@@ -964,7 +999,7 @@ export function createAppShellEngine(
           mode={mode}
           testID={testID ? `${testID}-page` : undefined}
           style={{ flex: 1, minWidth: 0, backgroundColor: background }}
-          contentStyle={{ paddingTop: small ? 12 : 0, paddingBottom: contentReserve }}
+          contentStyle={{ paddingTop: small ? 12 : 0, paddingBottom: pageReserve }}
         >
           {column}
         </Scroller>
@@ -992,7 +1027,7 @@ export function createAppShellEngine(
           style={{ flex: 1, minWidth: 0, minHeight: 0, backgroundColor: background }}
         >
           {headerNode}
-          <View style={{ flex: 1, minHeight: 0, minWidth: 0 }}>{children}</View>
+          <View style={{ flex: 1, minHeight: 0, minWidth: 0 }}>{pageChildren}</View>
         </View>
         {asideColumn(
           canvas ? { paddingTop: gutter, paddingBottom: gutter, paddingInlineEnd: gutter } : {},

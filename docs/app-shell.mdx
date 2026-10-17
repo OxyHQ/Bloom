@@ -95,6 +95,39 @@ and fixed modes; the shell remains their sole safe-area and measurement owner.
   and snap down on the first scroll.)
 - `scroll="container"`: the panel fills the frame and owns a `ScrollView` below its pinned header.
 - `scroll="fixed"`: the panel fills the frame with a plain flex view. The child navigator, virtualized list or canvas owns scrolling and reads the shared occupied bottom edge for its own clearance. The shell never nests a `ScrollView` around it or pads its navigator a second time.
+- `scroll="page"`: **the mode for apps whose routes are `Screen` pages** (`<Screen documentScroll>` + `ScreenScrollView`). It is `document` on web and `fixed` on native, and everything else — panel, aside, bars, sticky header slot — is what each platform does in that mode. See [Screen pages](#screen-pages).
+
+### Screen pages
+
+A route written once for both platforms —
+
+```tsx
+<AppShell variant="feed" panel scroll="page" sidebar={sidebar} bottomBar={<Tabs />}>
+  {/* the router's outlet; each route is: */}
+  <Screen documentScroll header={<PageHeader title="Notes" safeArea={false} />}>
+    <ScreenScrollView contentContainerClassName="gap-4 p-4" onEndReached={fetchNextPage}>…</ScreenScrollView>
+  </Screen>
+</AppShell>
+```
+
+— needs the shell to scroll the DOCUMENT on web and to be one screen on native,
+where the route's `ScreenScrollView` is the scroller. `scroll="document"`
+cannot say that: native has no document, so it resolves to `container` and
+wraps every route in the shell's own `ScrollView`, nesting the route's scroller
+inside it. `scroll="page"` resolves to `document` on web and `fixed` on native:
+
+- **Web:** identical to `scroll="document"` (the window scrolls; the route's
+  `Screen documentScroll` keeps `ScreenScrollView` in document flow).
+- **Native:** no shell `ScrollView`. A `panel` fills the screen under its pinned
+  header, and the route's `ScreenScrollView` scrolls inside it. The shell pads
+  nothing; it hands the occupied bottom edge (bottom bar, floating action) to the
+  routes' Screens as their bottom inset, so content scrolls under the bar and the
+  last row clears it plus the Screen's 16 of clearance. A shell without its own
+  navigation scope gives its routes one, so their collapse motion is shared.
+- `split` and `canvas` stay one screen, as for every mode.
+
+Apps that wrote `scroll={Platform.OS === 'web' ? 'document' : 'fixed'}` (Noted,
+Mention) drop the ternary for `scroll="page"`.
 
 Both are right; they are different apps. A feed with the address bar collapsing
 on a phone and real anchor links wants `document`; a workspace whose regions

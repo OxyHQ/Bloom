@@ -16,6 +16,9 @@ import {
   DEMO_TEAM,
 } from '../sidebar/Sidebar.stories';
 import { useTheme } from '../theme/use-theme';
+import { PageHeader } from '../page-header';
+import { Screen, ScreenScrollView } from '../screen';
+import { Text } from '../typography';
 import { AiChatContainer, AiChatUserMessage } from '../ai-chat';
 import {
   AppShell,
@@ -358,6 +361,44 @@ export const EmptyAside: Story = {
         <Button testID="empty-aside-toggle" onPress={() => setShown((value) => !value)}>
           {shown ? 'Hide the widget' : 'Show the widget'}
         </Button>
+      </AppShell>
+    );
+  },
+};
+
+/**
+ * `scroll="page"`: routes are Screen pages, written once. The window scrolls on
+ * web; on native the shell is one screen and the route's ScreenScrollView
+ * scrolls inside the panel, clearing the bottom bar.
+ */
+export const ScreenPages: Story = {
+  parameters: { controls: { disable: true }, bloomScroll: 'document' },
+  render: function ScreenPages() {
+    const [pages, setPages] = useState(1);
+    return (
+      <AppShell
+        testID="screen-pages"
+        variant="feed"
+        panel
+        scroll="page"
+        sidebar={{ items: DEMO_NAV }}
+      >
+        <Screen documentScroll header={<PageHeader title={`Pages: ${pages}`} safeArea={false} />}>
+          <ScreenScrollView
+            contentContainerStyle={{ padding: 16, gap: 12 }}
+            onEndReached={() => setPages((count) => Math.min(count + 1, 4))}
+          >
+            {Array.from({ length: pages * 15 }, (_, index) => (
+              <View
+                key={`row-${index + 1}`}
+                testID={`screen-pages-row-${index + 1}`}
+                style={{ padding: 16 }}
+              >
+                <Text>Row {index + 1}</Text>
+              </View>
+            ))}
+          </ScreenScrollView>
+        </Screen>
       </AppShell>
     );
   },

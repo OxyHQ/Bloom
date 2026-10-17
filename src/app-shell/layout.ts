@@ -18,7 +18,8 @@ export type ScrollMode = 'document' | 'container' | 'fixed';
 /**
  * Which frame a shell actually gets.
  *
- * Native has no document, so `document` falls back to `container` there.
+ * Native has no document, so `document` falls back to `container` there, and
+ * `page` to `fixed`.
  * `split` and `canvas` are the other reductions: a split's panes each own their
  * scrolling, which is only expressible inside a bounded box (a document-
  * scrolling split would have one pane growing the page and the others pinned to
@@ -32,6 +33,9 @@ export function resolveScrollMode(variant: AppShellVariant, scroll: AppShellScro
   // `container` for a shell embedded in a bounded box.
   if (variant === 'split' || variant === 'canvas')
     return scroll === 'container' ? 'container' : 'fixed';
+  // `page`: the document where there is one, else one screen whose routes'
+  // own ScreenScrollViews scroll.
+  if (scroll === 'page') return Platform.OS === 'web' ? 'document' : 'fixed';
   if (scroll === 'document' && Platform.OS !== 'web') return 'container';
   return scroll;
 }
