@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
   Platform,
@@ -110,6 +111,7 @@ function AgentLogRevealComponent({
   style,
   testID,
 }: AgentLogRevealProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
   // Decided at mount: a unit that mounted settled never animates afterwards.
@@ -166,7 +168,7 @@ function AgentLogRevealComponent({
     };
   }, [reveal, grow, fade, measured]);
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       testID={testID}
       role={role === 'listitem' ? 'listitem' : undefined}
@@ -176,7 +178,7 @@ function AgentLogRevealComponent({
         {children}
       </View>
     </Animated.View>
-  );
+  ));
 }
 
 export const AgentLogReveal = memo(AgentLogRevealComponent);
@@ -214,6 +216,7 @@ const BRANCH_MS = 140;
  * corner. Rendered by `AgentLogRow`; exported for rows that build their own.
  */
 function AgentLogRowConnectorComponent({ first, last, reduce: reduceProp }: AgentLogRowConnectorProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
@@ -240,7 +243,7 @@ function AgentLogRowConnectorComponent({ first, last, reduce: reduceProp }: Agen
   );
   const trunkStyle = useAnimatedStyle(() => ({ transform: [{ scaleY: trunk.value }] }), [trunk]);
 
-  return (
+  return localizeBloomCopy((
     <View
       aria-hidden
       pointerEvents="none"
@@ -280,7 +283,7 @@ function AgentLogRowConnectorComponent({ first, last, reduce: reduceProp }: Agen
         />
       )}
     </View>
-  );
+  ));
 }
 
 export const AgentLogRowConnector = memo(AgentLogRowConnectorComponent);
@@ -297,6 +300,7 @@ AgentLogRowConnector.displayName = 'AgentLogRowConnector';
  * list, with the same `offset` as that list's left margin.
  */
 function AgentLogGuideBridgeComponent({ height, offset = 8, reduce: reduceProp }: AgentLogGuideBridgeProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
@@ -311,7 +315,7 @@ function AgentLogGuideBridgeComponent({ height, offset = 8, reduce: reduceProp }
   }, []);
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scaleY: scale.value }] }), [scale]);
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       aria-hidden
       pointerEvents="none"
@@ -329,7 +333,7 @@ function AgentLogGuideBridgeComponent({ height, offset = 8, reduce: reduceProp }
         animatedStyle,
       ]}
     />
-  );
+  ));
 }
 
 export const AgentLogGuideBridge = memo(AgentLogGuideBridgeComponent);
@@ -340,7 +344,8 @@ AgentLogGuideBridge.displayName = 'AgentLogGuideBridge';
  * Content box: `position: relative`, 16px left inset for the guide.
  */
 function AgentLogRowComponent({ first, last, reduce, style, children, testID }: AgentLogRowProps) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <AgentLogReveal
       reduce={reduce}
       role="listitem"
@@ -350,7 +355,7 @@ function AgentLogRowComponent({ first, last, reduce, style, children, testID }: 
       <AgentLogRowConnector first={first} last={last} reduce={reduce} />
       {children}
     </AgentLogReveal>
-  );
+  ));
 }
 
 export const AgentLogRow = memo(AgentLogRowComponent);
@@ -363,13 +368,14 @@ AgentLogRow.displayName = 'AgentLogRow';
  * yet; sitting loose on the rows' left edge it reads as the log still going.
  */
 function AgentLogWorkingRowComponent({ label, reduce, style, testID }: AgentLogWorkingRowProps) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <AgentLogReveal reduce={reduce} testID={testID} style={style}>
       <View style={{ paddingTop: 4, paddingBottom: 4 }}>
         <AgentThinking variant="stars" label={label} />
       </View>
     </AgentLogReveal>
-  );
+  ));
 }
 
 export const AgentLogWorkingRow = memo(AgentLogWorkingRowComponent);
@@ -430,6 +436,7 @@ type ShimmerStyle = TextStyle & {
  * `<span>` inherits its paragraph's `text-body-regular`.
  */
 function AgentLogShimmerTextComponent({ children, style }: AgentLogShimmerTextProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const { textSecondary, textPrimary } = resolveLogPalette(theme);
 
@@ -446,14 +453,14 @@ function AgentLogShimmerTextComponent({ children, style }: AgentLogShimmerTextPr
       }
     : { color: textSecondary };
 
-  return (
+  return localizeBloomCopy((
     <RNText
       style={[shimmerStyle, style]}
       {...(isWeb ? ({ dataSet: { bloomAgentLogShimmer: '' } } as Record<string, unknown>) : {})}
     >
       {children}
     </RNText>
-  );
+  ));
 }
 
 export const AgentLogShimmerText = memo(AgentLogShimmerTextComponent);

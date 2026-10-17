@@ -1,0 +1,13 @@
+# Component source update
+
+The local component source was refreshed with CLI 0.5.7 on 2026-09-30, including the licensed catalog. Bloom retains its own design tokens, color engine, NativeWind interop and imperative surface controls.
+
+The update adds `agent-avatar`, `agent-creator`, `project-board` and `multi-agent-chat`, plus the `direction` and `template-copy` foundations. The Project Board and Multi-agent Chat templates live outside the published source tree. Existing application components and templates now support the optional copy translator; directional controls, calendars, chat rails, sidebar rows, input adornments and chart labels receive the corresponding RTL updates.
+
+The new blocks share their layout and behavior between web, iOS and Android. Small platform bindings select Bloom's established surfaces. The procedural avatar keeps the source model, math and silhouette paths through a shared SVG renderer. Layout utilities pass through Bloom's styled primitives; consumer web builds must scan the built package as described in `styles.mdx`.
+
+The source website's analytics, marketing pages and private server routes are outside the component library. Multi-agent responses use the host's `onRespond` callback. Native speech, workspace persistence and clipboard integration are host capabilities rather than new runtime dependencies.
+
+Pixel parity has three limits: SVG grain approximates the original Canvas soft-light composition, Dialog transitions replace the original DOM-pixel genie deformation, and avatar flights reuse paused vector artwork instead of capturing a moving Canvas pose. Their component docs describe these differences. Browser checks exercise rendering, chat edits and cancellation, RTL carousel/switch behavior, and project ticket creation, comments and real-pointer/keyboard movement. Physical iOS/Android gesture, stacking and painted-output checks remain necessary.
+
+Validation completed with the package build and tarball/export verification, library and consumer TypeScript programs, template TypeScript, and browser interactions. The 273-suite initial census was exercised in three shards; the later handoff suite was checked separately. Node’s recorded V8 context crashes affected three color suites; those same suites passed under Bun’s Jest runtime with the unchanged serialized Jest configuration. Native source bundles compile for both iOS and Android; this is compilation evidence, not device rendering or NativeWind CSS-pipeline validation.

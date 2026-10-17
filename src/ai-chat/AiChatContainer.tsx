@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo, useRef } from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -44,10 +45,11 @@ export function AiChatContainer({
   style,
   testID,
 }: AiChatContainerProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -95,7 +97,7 @@ export function AiChatContainer({
         {composer}
       </View>
     </View>
-  );
+  ));
 }
 
 /**
@@ -105,6 +107,7 @@ export function AiChatContainer({
  * smooth scroll whenever the content grows.
  */
 export function AiChatThread({ children, style, testID }: AiChatThreadProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const scrollRef = useRef<ScrollView>(null);
   const lastHeight = useRef(0);
   const onContentSizeChange = useCallback((_width: number, height: number) => {
@@ -113,7 +116,7 @@ export function AiChatThread({ children, style, testID }: AiChatThreadProps) {
     lastHeight.current = height;
     if (grew && !first) scrollRef.current?.scrollToEnd({ animated: true });
   }, []);
-  return (
+  return localizeBloomCopy((
     <ScrollView
       ref={scrollRef}
       testID={testID}
@@ -134,5 +137,5 @@ export function AiChatThread({ children, style, testID }: AiChatThreadProps) {
       }}>
       {children}
     </ScrollView>
-  );
+  ));
 }

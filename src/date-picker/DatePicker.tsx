@@ -1,3 +1,4 @@
+import { useBloomLocale } from '../direction/context';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 
@@ -37,10 +38,12 @@ export function DatePicker({
   maxDate,
   isDateUnavailable,
   weekStartsOn,
-  locale,
+  locale: localeProp,
   style,
   testID,
 }: DatePickerProps) {
+  const { locale: inheritedLocale } = useBloomLocale();
+  const locale = localeProp ?? inheritedLocale;
   const palette = usePickerPalette();
   const [committed, setCommitted] = useControllableState<Date | null>({
     value,

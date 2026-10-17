@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useMemo, useState } from 'react';
 import { resolveButtonRamps } from '../../src/button/shared';
 import type { ButtonIconComponent } from '../../src/button/types';
@@ -142,13 +143,14 @@ export const CAMPAIGNS: Campaign[] = (() => {
 
 /** `<span className="text-body-medium text-text-tertiary">$0</span>`. */
 function ZeroSpend() {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const { neutral: n } = resolveButtonRamps(theme);
-  return (
+  return localizeBloomCopy((
     <Text variant="body-medium" style={{ color: theme.isDark ? n[600] : n[400] }}>
       $0
     </Text>
-  );
+  ));
 }
 
 const COLUMNS: DataTableColumn<Campaign>[] = [
@@ -217,6 +219,7 @@ const COLUMNS: DataTableColumn<Campaign>[] = [
 const DEFAULT_SELECTION = CAMPAIGNS.filter((c) => c.selected).map((c) => c.id);
 
 export function CampaignsTable({ initialQuery = '' }: { initialQuery?: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [channelFilter, setChannelFilter] = useState('all');
   const [objectiveFilter, setObjectiveFilter] = useState('all');
   const [spendFilter, setSpendFilter] = useState('all');
@@ -240,7 +243,7 @@ export function CampaignsTable({ initialQuery = '' }: { initialQuery?: string })
     setPage(1);
   };
 
-  return (
+  return localizeBloomCopy((
     <DataTable
       layout="inset"
       accessibilityLabel="Campaigns"
@@ -285,5 +288,5 @@ export function CampaignsTable({ initialQuery = '' }: { initialQuery?: string })
       emptyState="No campaigns match your filters."
       minWidth={900}
     />
-  );
+  ));
 }

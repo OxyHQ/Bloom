@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   Platform,
@@ -182,6 +183,7 @@ function AuthLink({
   palette: AuthPalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const isLink = href !== undefined;
   const { hovered, pressed, hoverHandlers, pressHandlers } = useInteractionStates();
   // react-native-web renders a `Pressable` with `href` as a real `<a>`; neither
@@ -201,7 +203,7 @@ function AuthLink({
     [isLink, href, onNavigate, onPress],
   );
 
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...webProps}
       testID={testID}
@@ -222,7 +224,7 @@ function AuthLink({
         {children}
       </Text>
     </Pressable>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -252,7 +254,8 @@ function AuthField({
   onSubmitEditing?: () => void;
   testID?: string;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ width: '100%' }}>
       <TextFieldLabel required>{label}</TextFieldLabel>
       <TextField>
@@ -272,7 +275,7 @@ function AuthField({
       </TextField>
       {hint ? <TextFieldHint>{hint}</TextFieldHint> : null}
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -315,6 +318,7 @@ function AuthCardComponent({
   style,
   testID,
 }: AuthCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, AUTH_CARD_WEB_CSS);
   const palette = useMemo(() => resolveAuthPalette(theme), [theme]);
@@ -603,7 +607,7 @@ function AuthCardComponent({
 
   if (!footnote) return card;
 
-  return (
+  return localizeBloomCopy((
     <View style={[{ width: '100%', alignItems: 'center', gap: 16 }, style]}>
       {card}
       <View style={{ maxWidth: 520 }}>
@@ -616,7 +620,7 @@ function AuthCardComponent({
         )}
       </View>
     </View>
-  );
+  ));
 }
 
 export const AuthCard = memo(AuthCardComponent);

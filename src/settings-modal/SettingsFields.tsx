@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
@@ -39,6 +40,7 @@ export function SettingsTextField({
   disabled,
   testID,
 }: SettingsTextFieldProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const showSaved = useSettingsSavedToast();
   const [draft, setDraft] = useState(value);
   const committed = useRef(value);
@@ -56,7 +58,7 @@ export function SettingsTextField({
     if (showSavedToast) showSaved();
   };
 
-  return (
+  return localizeBloomCopy((
     <View style={styles.field}>
       <TextField size="small" disabled={disabled}>
         {icon ? <TextFieldIcon icon={icon} /> : null}
@@ -74,7 +76,7 @@ export function SettingsTextField({
         />
       </TextField>
     </View>
-  );
+  ));
 }
 
 const MONTHS = [
@@ -96,6 +98,7 @@ export function SettingsDateField({
   showSavedToast = true,
   testID,
 }: SettingsDateFieldProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const showSaved = useSettingsSavedToast();
@@ -115,7 +118,7 @@ export function SettingsDateField({
         }
       : { backgroundColor: palette.secondary };
 
-  return (
+  return localizeBloomCopy((
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild label={`${label}, ${text}`} style={CENTERED}>
         <Pressable
@@ -156,7 +159,7 @@ export function SettingsDateField({
         />
       </PopoverContent>
     </Popover>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({

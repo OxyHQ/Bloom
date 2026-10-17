@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
@@ -38,6 +39,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
   style,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const { state: hovered, onIn, onOut } = useInteractionState();
@@ -51,7 +53,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
       }
     : {};
 
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...webProps}
       role={href ? 'link' : 'button'}
@@ -118,7 +120,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
         {label}
       </Text>
     </Pressable>
-  );
+  ));
 };
 
 export const SidebarRailItem = memo(SidebarRailItemComponent);

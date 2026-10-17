@@ -1,2 +1,18 @@
 export { Popover, PopoverTrigger, PopoverContent } from './Popover';
-export type { PopoverProps, PopoverTriggerProps, PopoverContentProps } from './types';
+export {
+  PopoverHeader,
+  PopoverTitle,
+  PopoverDescription,
+  PopoverFooter,
+  PopoverSeparator,
+} from './parts';
+export type {
+  PopoverProps,
+  PopoverTriggerProps,
+  PopoverContentProps,
+  PopoverHeaderProps,
+  PopoverTitleProps,
+  PopoverDescriptionProps,
+  PopoverFooterProps,
+  PopoverSeparatorProps,
+} from './types';

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 
 import { ComposerPanelBase } from './ComposerPanelBase';
@@ -10,10 +11,11 @@ import type { ComposerPanelProps } from './types';
  * The implementation is `ComposerPanelBase`; this file only binds the panel.
  */
 export function ComposerPanel(props: ComposerPanelProps) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <ComposerPopoverContext.Provider value={ComposerPopover}>
       <ComposerPanelBase {...props} />
     </ComposerPopoverContext.Provider>
-  );
+  ));
 }
 ComposerPanel.displayName = 'ComposerPanel';

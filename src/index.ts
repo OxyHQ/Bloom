@@ -187,6 +187,7 @@ export * from './important-alerts-card';
 export * from './patient-info-card';
 export * from './sidebar';
 export * from './app-shell';
+export * from './page-header';
 export * from './notification-center';
 export * from './theme-toggle';
 export * from './settings-modal';
@@ -337,3 +338,10 @@ export * as Code from './code';
 
 // Fonts
 export * as Fonts from './fonts';
+
+export * from './agent-avatar';
+export * from './agent-creator';
+export * from './multi-agent-chat';
+export * from './project-board';
+export * from './direction';
+export * from './template-copy';

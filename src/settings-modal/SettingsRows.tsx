@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { Children, Fragment, isValidElement, useContext, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -50,10 +51,11 @@ function flatChildren(children: ReactNode): ReactNode[] {
 
 /** Grouped card. Its rows separate themselves; the last carries no hairline. */
 export function SettingsCard({ children, style, testID }: SettingsCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const items = flatChildren(children);
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[styles.card, { backgroundColor: palette.secondary }, settingsRingVars(palette), style]}
@@ -68,7 +70,7 @@ export function SettingsCard({ children, style, testID }: SettingsCardProps) {
         </SettingsRowPositionContext.Provider>
       ))}
     </View>
-  );
+  ));
 }
 
 const LAST = { last: true };
@@ -81,12 +83,13 @@ export function useSettingsRowIsLast(): boolean {
 
 /** One label + control row. */
 export function SettingsRow({ label, description, children, style, testID }: SettingsRowProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const last = useSettingsRowIsLast();
   // Compact: the control wraps under its label when both do not fit on one line
   // (a switch stays beside it; a 202px value field drops below).
   const compact = useSettingsLayout() === 'compact';
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -108,19 +111,20 @@ export function SettingsRow({ label, description, children, style, testID }: Set
       </View>
       {children}
     </View>
-  );
+  ));
 }
 
 /** Muted 13px heading above a card ("Pull Requests", "Notifications"). */
 export function SettingsSectionLabel({ children, inset = 12, style }: SettingsSectionLabelProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
-  return (
+  return localizeBloomCopy((
     <View style={[{ paddingLeft: inset, paddingRight: inset }, style]}>
       <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
         {children}
       </Text>
     </View>
-  );
+  ));
 }
 
 /**
@@ -136,6 +140,7 @@ export function SettingsSection({
   style,
   testID,
 }: SettingsSectionProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const heading =
     label || description ? (
@@ -151,7 +156,7 @@ export function SettingsSection({
         ) : null}
       </View>
     ) : null;
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[styles.section, style]}>
       {action ? (
         <View style={styles.sectionHeader}>
@@ -163,14 +168,15 @@ export function SettingsSection({
       )}
       {children}
     </View>
-  );
+  ));
 }
 
 /** A grey read-only value field — presents a stored value, not an input. */
 export function SettingsValueField({ icon: Icon, children, muted = false, style, testID }: SettingsValueFieldProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const compact = useSettingsLayout() === 'compact';
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -189,14 +195,14 @@ export function SettingsValueField({ icon: Icon, children, muted = false, style,
         {children}
       </Text>
     </View>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({
   card: {
     width: '100%',
     borderRadius: 16,
-    paddingLeft: 12,
+    paddingStart: 12,
   },
   row: {
     flexDirection: 'row',
@@ -207,7 +213,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingTop: 10,
     paddingBottom: 10,
-    paddingRight: 10,
+    paddingEnd: 10,
   },
   rowText: {
     flexShrink: 1,
@@ -259,6 +265,6 @@ const styles = StyleSheet.create({
   },
   valueText: {
     flexShrink: 1,
-    paddingLeft: 4,
+    paddingStart: 4,
   },
 });

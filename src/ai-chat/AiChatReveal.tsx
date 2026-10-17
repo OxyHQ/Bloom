@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { Children, createContext, isValidElement, useContext, useEffect } from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
@@ -51,8 +52,9 @@ export function RevealSequence({
   delay?: number;
   animate: boolean;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   let index = 0;
-  return (
+  return localizeBloomCopy((
     <>
       {Children.map(children, (child) => {
         if (child === null || child === undefined || typeof child === 'boolean') return child;
@@ -65,7 +67,7 @@ export function RevealSequence({
         );
       })}
     </>
-  );
+  ));
 }
 
 /** One block rising into place from its slot's delay (`LINE_VARIANTS`). */
@@ -78,6 +80,7 @@ export function RevealLine({
   style?: StyleProp<ViewStyle>;
   delay?: number;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const slot = useRevealSlot();
   const reducedMotion = useReducedMotion();
   const animate = slot.animate && !reducedMotion;
@@ -100,7 +103,7 @@ export function RevealLine({
     }),
     [progress],
   );
-  return <Animated.View style={[style, animated]}>{children}</Animated.View>;
+  return localizeBloomCopy(<Animated.View style={[style, animated]}>{children}</Animated.View>);
 }
 
 /** A container fading in over 400ms `easeOut` (`MESSAGE_VARIANTS`' own opacity). */
@@ -117,6 +120,7 @@ export function RevealFade({
   delay?: number;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const run = animate && !reducedMotion;
   const progress = useSharedValue(run ? 0 : 1);
@@ -129,9 +133,9 @@ export function RevealFade({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const animated = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
-  return (
+  return localizeBloomCopy((
     <Animated.View testID={testID} style={[style, animated]}>
       {children}
     </Animated.View>
-  );
+  ));
 }

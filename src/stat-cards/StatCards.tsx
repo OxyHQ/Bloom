@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -93,8 +94,9 @@ const CHIP_TONES = { lime: 'success', rose: 'error', neutral: 'default' } as con
 let gradientIdCounter = 0;
 
 function GradientTile({ colors, children }: { colors: readonly [string, string]; children: React.ReactNode }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useMemo(() => `bloom-stat-tile${gradientIdCounter++}`, []);
-  return (
+  return localizeBloomCopy((
     <View style={styles.tile}>
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
         <Defs>
@@ -109,7 +111,7 @@ function GradientTile({ colors, children }: { colors: readonly [string, string];
       {/* A View, so it stacks over the absolutely-positioned gradient on web too. */}
       <View style={styles.tileGlyph}>{children}</View>
     </View>
-  );
+  ));
 }
 
 function DeltaPill({
@@ -126,13 +128,14 @@ function DeltaPill({
   surface: string;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const paint =
     deltaColor === 'neutral'
       ? { background: surfaces.secondary, foreground: surfaces.textSecondary }
       : statusPair(theme, deltaColor, surface);
   const Icon = DELTA_ICONS[deltaColor];
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[styles.pill, { backgroundColor: paint.background }]}>
       <Icon width={16} height={16} fill={paint.foreground} />
       <Text
@@ -143,7 +146,7 @@ function DeltaPill({
         {delta}
       </Text>
     </View>
-  );
+  ));
 }
 
 function StatHint({
@@ -157,6 +160,7 @@ function StatHint({
   surfaces: DashboardSurfaces;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -199,7 +203,7 @@ function StatHint({
     '--bloom-stat-hint-ring': surfaces.focusRing,
   };
 
-  return (
+  return localizeBloomCopy((
     <Tooltip position="top" visible={open} onVisibleChange={setOpen}>
       <TooltipTrigger>
         <Pressable
@@ -238,10 +242,11 @@ function StatHint({
       </TooltipTrigger>
       <TooltipTextBubble size="md">{hint}</TooltipTextBubble>
     </Tooltip>
-  );
+  ));
 }
 
 function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const surfaces = useMemo(() => resolveDashboardSurfaces(theme), [theme]);
 
@@ -253,7 +258,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
 
   if (variant === 'footer') {
     const gradient = tileGradient(theme, stat.tone ?? 'blue');
-    return (
+    return localizeBloomCopy((
       <View
         testID={testID}
         style={[styles.footerCard, { backgroundColor: surfaces.secondary }, style]}
@@ -312,10 +317,10 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
           />
         </View>
       </View>
-    );
+    ));
   }
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[styles.plainCard, { backgroundColor: surfaces.secondary }, style]}
@@ -344,7 +349,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
         </View>
       </View>
     </View>
-  );
+  ));
 }
 
 export const StatCard = memo(StatCardComponent);
@@ -373,6 +378,7 @@ function StatCardsComponent({
   style,
   testID,
 }: StatCardsProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const { width } = useWindowDimensions();
   const perRow = statCardsColumnCount(variant, columns, width);
   const items = stats.slice(0, count ?? stats.length);
@@ -380,7 +386,7 @@ function StatCardsComponent({
   const rows: StatCardsItem[][] = [];
   for (let i = 0; i < items.length; i += perRow) rows.push(items.slice(i, i + perRow));
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[styles.grid, style]}>
       {rows.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.gridRow}>
@@ -400,7 +406,7 @@ function StatCardsComponent({
         </View>
       ))}
     </View>
-  );
+  ));
 }
 
 export const StatCards = memo(StatCardsComponent);

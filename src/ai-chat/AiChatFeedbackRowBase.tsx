@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
@@ -29,6 +30,7 @@ const DEFAULT_LABELS = {
  *            for 1.6s, then dismissed even if the pointer is still over it
  */
 export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, labels, style, testID }: AiChatFeedbackRowProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
@@ -62,7 +64,7 @@ export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, labels, style
     palette,
   };
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[{ flexDirection: 'row', alignItems: 'center', gap: 6 }, style]}>
       <SurfaceAction
         {...surface}
@@ -98,5 +100,5 @@ export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, labels, style
         )}
       />
     </View>
-  );
+  ));
 }

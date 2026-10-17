@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo } from 'react';
 import { Animated, View, type StyleProp, type ViewStyle } from 'react-native';
 
@@ -110,6 +111,7 @@ export function StageBarsCard({
   style,
   testID,
 }: StageBarsCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
@@ -143,7 +145,7 @@ export function StageBarsCard({
     accessibilityLabel ??
     `${title}: ${stages.map((s) => `${s.label} ${format(s.value)} (${Math.round((s.value / top) * 100)}%)`).join(', ')}`;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height="auto" style={[{ minHeight: CHART_CARD_HEIGHT }, style]} testID={testID}>
       <ChartHeader
         label={headerLabel}
@@ -230,7 +232,7 @@ export function StageBarsCard({
         }))}
       />
     </ChartCardSurface>
-  );
+  ));
 }
 
 function StageTrack({
@@ -252,10 +254,11 @@ function StageTrack({
   hover: ReturnType<typeof hoverTarget>;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const width = useGrowWidth(percent, mounted);
   const fade = useWebTransition('opacity', 200);
   const colorEase = useWebTransition('background-color', 500);
-  return (
+  return localizeBloomCopy((
     <View
       {...hover}
       testID={testID}
@@ -276,5 +279,5 @@ function StageTrack({
         </View>
       ) : null}
     </View>
-  );
+  ));
 }

@@ -1,0 +1,22 @@
+# Direction
+
+`DirectionProvider` scopes a locale and layout direction without changing the
+phone's language or calling the global `I18nManager.forceRTL()`.
+
+```tsx
+import { DirectionProvider } from '@oxy.so/bloom/direction';
+
+<DirectionProvider locale="ar">
+  <Screen />
+</DirectionProvider>
+```
+
+Nested providers can switch individual regions. `useDirection()` returns `ltr`
+or `rtl`; `useBloomLocale()` exposes both the locale and direction. Date pickers
+use this locale unless explicitly overridden. Without a provider, direction
+follows the native device preference and the default locale is English.
+
+Web emits `dir` and `lang` and uses a `display: contents` boundary. Native applies
+the direction to its View boundary; supply `style={{ flex: 1 }}` when the provider
+owns a full-screen region. Navigation arrows and directional controls mirror;
+logos and trend arrows retain their authored orientation.

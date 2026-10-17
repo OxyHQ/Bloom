@@ -36,8 +36,8 @@ function pillStyle(palette: ReturnType<typeof useChartCardPalette>): ViewStyle {
     borderColor: palette.pill.border,
     backgroundColor: palette.pill.background,
     boxShadow: palette.pill.shadow,
-    paddingLeft: 8,
-    paddingRight: 10,
+    paddingStart: 8,
+    paddingEnd: 10,
   };
 }
 
@@ -116,7 +116,7 @@ export function ChartRangeSelect({
           onHoverOut={() => setHovered(false)}
           style={[
             pillStyle(palette),
-            { paddingRight: 6, backgroundColor: hovered ? palette.pill.hover : palette.pill.background },
+            { paddingEnd: 6, backgroundColor: hovered ? palette.pill.hover : palette.pill.background },
             transition,
             style,
           ]}>

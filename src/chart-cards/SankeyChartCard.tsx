@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Platform,
@@ -157,6 +158,7 @@ export function SankeyChartCard({
   style,
   testID,
 }: SankeyChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
@@ -313,7 +315,7 @@ export function SankeyChartCard({
       .map((n) => n.name)
       .join(', ')}`;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height={height} style={style} testID={testID}>
       <ChartHeader
         label={headerLabel}
@@ -443,7 +445,7 @@ export function SankeyChartCard({
         </View>
       ) : null}
     </ChartCardSurface>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({

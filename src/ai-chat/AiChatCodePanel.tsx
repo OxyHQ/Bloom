@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useMemo } from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -32,7 +33,8 @@ export function PanelHeader({
   label: string;
   children: React.ReactNode;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ width: '100%', height: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <View accessibilityLabel={label} style={{ flexShrink: 1, minWidth: 0 }}>
         <Tabs variant="pill" value={value} onValueChange={onValueChange}>
@@ -41,9 +43,9 @@ export function PanelHeader({
           ))}
         </Tabs>
       </View>
-      <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 1 }}>{children}</View>
+      <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8, paddingEnd: 1 }}>{children}</View>
     </View>
-  );
+  ));
 }
 
 const DEFAULT_LABELS = {
@@ -63,7 +65,8 @@ export const DEFAULT_CODE_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = [
 
 /** A panel-wide placeholder on the secondary surface (the Browser / Styles tabs). */
 export function PanelPlaceholder({ label, palette }: { label: string; palette: AiChatPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       style={{
         width: '100%',
@@ -77,7 +80,7 @@ export function PanelPlaceholder({ label, palette }: { label: string; palette: A
         {label}
       </Text>
     </View>
-  );
+  ));
 }
 
 /**
@@ -117,6 +120,7 @@ export function AiChatCodePanel({
   style,
   testID,
 }: AiChatCodePanelProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
@@ -130,7 +134,7 @@ export function AiChatCodePanel({
     { value: 'browser', label: l.browser, icon: RiGlobalLine },
   ];
 
-  return (
+  return localizeBloomCopy((
     <View
       role="complementary"
       testID={testID}
@@ -204,8 +208,8 @@ export function AiChatCodePanel({
                     backgroundColor: palette.secondary,
                     paddingTop: 4,
                     paddingBottom: 4,
-                    paddingRight: 5,
-                    paddingLeft: 6,
+                    paddingEnd: 5,
+                    paddingStart: 6,
                   }}>
                   <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                     {file.icon ? <View style={{ flexShrink: 0 }}>{file.icon}</View> : null}
@@ -242,7 +246,7 @@ export function AiChatCodePanel({
           <ScrollView
             {...dataHook('bloomAiChatScroll', 'thin')}
             style={{ minHeight: 0, width: '100%', flex: 1 }}
-            contentContainerStyle={{ paddingLeft: 6 }}>
+            contentContainerStyle={{ paddingStart: 6 }}>
             <CodeLines code={code} language={language} size="md" wrap />
           </ScrollView>
         </>
@@ -250,5 +254,5 @@ export function AiChatCodePanel({
         (browser ?? <PanelPlaceholder label={l.browserPreview} palette={palette} />)
       )}
     </View>
-  );
+  ));
 }

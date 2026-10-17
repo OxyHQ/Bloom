@@ -194,3 +194,6 @@ export const runOnJS = Reanimated.runOnJS;
 export const cancelAnimation = Reanimated.cancelAnimation;
 export const Easing = Reanimated.Easing;
 export default Reanimated.default;
+
+// Registered frame worklets do not tick without a native UI runtime.
+export const useFrameCallback = (_callback: unknown, _autostart?: boolean) => ({ setActive: jest.fn(), isActive: true });

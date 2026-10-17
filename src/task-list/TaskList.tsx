@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
@@ -189,6 +190,7 @@ function TitleSwapLayer({
   color: string;
   onExited?: (id: number) => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   // 0 = hidden below/above, 1 = settled.
   const progress = useSharedValue(phase === 'enter' && animate ? 0 : 1);
 
@@ -223,7 +225,7 @@ function TitleSwapLayer({
     };
   }, [progress, phase]);
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       aria-hidden={phase === 'exit' ? true : undefined}
       style={[
@@ -235,7 +237,7 @@ function TitleSwapLayer({
         {layer.running ? <AgentLogShimmerText>{layer.label}</AgentLogShimmerText> : layer.label}
       </Text>
     </Animated.View>
-  );
+  ));
 }
 
 /** Cross-fades the running title to the settled one in place. */
@@ -250,6 +252,7 @@ function TaskTitle({
   reduce: boolean;
   color: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const nextId = useRef(1);
   const [current, setCurrent] = useState<TitleLayer>({ id: 0, label, running });
   const [leaving, setLeaving] = useState<TitleLayer[]>([]);
@@ -270,7 +273,7 @@ function TaskTitle({
     setLeaving((list) => list.filter((layer) => layer.id !== id));
   }, []);
 
-  return (
+  return localizeBloomCopy((
     <View style={{ position: 'relative', flexDirection: 'row', minWidth: 0, overflow: 'hidden' }}>
       <View style={{ flex: 1, minWidth: 0 }}>
         <TitleSwapLayer
@@ -292,7 +295,7 @@ function TaskTitle({
         />
       ))}
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -313,6 +316,7 @@ function Collapse({
   reduce: boolean;
   children: React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const height = useSharedValue(open ? 1 : 0);
   const opacity = useSharedValue(open ? 1 : 0);
   const measured = useSharedValue(0);
@@ -348,11 +352,11 @@ function Collapse({
     [height, opacity, measured],
   );
 
-  return (
+  return localizeBloomCopy((
     <Animated.View style={[{ overflow: 'hidden' }, animatedStyle]}>
       <View onLayout={onLayout}>{children}</View>
     </Animated.View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -360,11 +364,12 @@ function Collapse({
 // ---------------------------------------------------------------------------
 
 function Chip({ chip, palette }: { chip: TaskListChip; palette: TaskListPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const hoverVars: WebCssStyle = {
     '--bloom-task-list-chip-border-hover': palette.chipBorderHover,
     '--bloom-task-list-chip-surface-hover': palette.chipSurfaceHover,
   };
-  return (
+  return localizeBloomCopy((
     <View
       {...(IS_WEB ? ({ dataSet: { bloomTaskListChip: '' } } as Record<string, unknown>) : {})}
       style={[
@@ -410,7 +415,7 @@ function Chip({ chip, palette }: { chip: TaskListChip; palette: TaskListPalette 
         {chip.label}
       </Text>
     </View>
-  );
+  ));
 }
 
 function StepRow({
@@ -430,7 +435,8 @@ function StepRow({
   palette: TaskListPalette;
   testID?: string;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <AgentLogRow first={first} last={last} reduce={reduce} testID={testID}>
       <Text
         variant="body-regular"
@@ -442,7 +448,7 @@ function StepRow({
         ))}
       </Text>
     </AgentLogRow>
-  );
+  ));
 }
 
 /**
@@ -470,6 +476,7 @@ function TaskSection({
   palette: TaskListPalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   // null until the reader touches it, so `collapseOnComplete` stays in charge
   // right up to the moment they decide otherwise.
   const [manualOpen, setManualOpen] = useState<boolean | null>(null);
@@ -495,7 +502,7 @@ function TaskSection({
 
   const ringStyle: WebCssStyle = { '--bloom-task-list-ring': palette.ring };
 
-  return (
+  return localizeBloomCopy((
     <AgentLogReveal reduce={reduce} testID={testID}>
       <Pressable
         {...(IS_WEB ? ({ dataSet: { bloomTaskListHeader: '' } } as Record<string, unknown>) : {})}
@@ -561,7 +568,7 @@ function TaskSection({
         </View>
       </Collapse>
     </AgentLogReveal>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -581,6 +588,7 @@ function TaskListComponent({
   style,
   testID,
 }: TaskListProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolveTaskListPalette(theme), [theme]);
   const systemReduce = useAgentLogMotion();
@@ -615,7 +623,7 @@ function TaskListComponent({
   });
 
   // 5px, not a scale step: collapsed, the tasks read as one column of headers.
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column', gap: 5 }, style]}>
       {spans.map(({ task, headIndex, endIndex }, taskIndex) =>
         revealed <= headIndex ? null : (
@@ -641,7 +649,7 @@ function TaskListComponent({
         />
       ) : null}
     </View>
-  );
+  ));
 }
 
 export const TaskList = memo(TaskListComponent);

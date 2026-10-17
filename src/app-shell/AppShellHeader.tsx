@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
@@ -27,11 +28,12 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
   style,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const showMenu = onMenuPress != null && width < BREAKPOINTS.lg;
 
-  return (
+  return localizeBloomCopy((
     <View role="banner" testID={testID} style={[{ width: '100%', gap: 8 }, style]}>
       {breadcrumb}
       <View
@@ -82,7 +84,7 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
         ) : null}
       </View>
     </View>
-  );
+  ));
 };
 
 export const AppShellHeader = memo(AppShellHeaderComponent);

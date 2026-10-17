@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, {
@@ -67,13 +68,14 @@ const LoaderStroke = memo(function LoaderStroke({
   rx: number;
   gradientId: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const unit = perimeter / 100;
   const { phase } = stroke;
   const animatedProps = useAnimatedProps(
     () => ({ strokeDashoffset: dashOffsetAt(time.value, phase, speed, reverse) * unit }),
     [time, phase, speed, reverse, unit],
   );
-  return (
+  return localizeBloomCopy((
     <AnimatedRect
       animatedProps={animatedProps}
       x={0}
@@ -90,7 +92,7 @@ const LoaderStroke = memo(function LoaderStroke({
       opacity={stroke.opacity}
       filter={stroke.blur > 0 ? `url(#${blurFilterId(gradientId, stroke.blur)})` : undefined}
     />
-  );
+  ));
 });
 
 function ComposerLoaderComponent({
@@ -113,6 +115,7 @@ function ComposerLoaderComponent({
   style,
   testID,
 }: ComposerLoaderProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const gradientId = `bloom-cl-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
@@ -183,7 +186,7 @@ function ComposerLoaderComponent({
     boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
   };
 
-  return (
+  return localizeBloomCopy((
     <View style={[styles.root, style]} testID={testID}>
       {surface ? (
         <View
@@ -254,7 +257,7 @@ function ComposerLoaderComponent({
 
       <View style={styles.content}>{children}</View>
     </View>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({

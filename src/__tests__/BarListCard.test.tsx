@@ -120,7 +120,7 @@ describe('BarListCard', () => {
     expect(more.props.role).toBe('button');
     expect(more.props.accessibilityLabel).toBe('Show 2 more');
     expect(more.props['aria-expanded']).toBe(false);
-    expect(resolvedStyle(more.props.style)).toMatchObject({ width: 40, height: 20, bottom: 4, marginLeft: -20 });
+    expect(resolvedStyle(more.props.style)).toMatchObject({ width: 40, height: 20, bottom: 4, marginStart: -20 });
 
     fireEvent.press(more);
     expect(getByText('Opera')).toBeTruthy();

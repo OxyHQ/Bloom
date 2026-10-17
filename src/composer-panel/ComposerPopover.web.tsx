@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 /**
  * The composer's anchored panel — WEB. `floating/FloatingPanel` on its `menu`
  * surface: popover motion (150ms `ease-out`, fade + `scale-95` +
@@ -27,10 +28,11 @@ export function ComposerPopover({
   testID,
   children,
 }: ComposerPopoverProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const anchor = useAnchorRect(anchorRef as React.RefObject<View | null>, open);
   const dismiss = useCallback(() => onOpenChange(false), [onOpenChange]);
 
-  return (
+  return localizeBloomCopy((
     <FloatingPanel
       open={open}
       anchor={anchor}
@@ -46,5 +48,5 @@ export function ComposerPopover({
       testID={testID}>
       {children}
     </FloatingPanel>
-  );
+  ));
 }

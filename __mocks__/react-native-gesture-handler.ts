@@ -24,6 +24,9 @@ const gestureBuilder = (): MockGesture => {
     };
   const builder = {
     enabled: () => builder,
+    runOnJS: () => builder,
+    minDistance: () => builder,
+    activateAfterLongPress: () => builder,
     simultaneousWithExternalGesture: () => builder,
     withRef: () => builder,
     manualActivation: () => builder,

@@ -1,0 +1,52 @@
+# Multi-agent Chat
+
+`MultiAgentChat` combines individual and group conversations, the agent creator,
+animated avatars, an editable agent library and a demo marketplace.
+
+```tsx
+import { MultiAgentChat } from '@oxy.so/bloom/multi-agent-chat';
+
+<MultiAgentChat
+  onRespond={async (agent, messages, signal) => {
+    const response = await fetch('/api/agents/respond', {
+      method: 'POST', signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent, messages }),
+    });
+    if (!response.ok) throw new Error('Agent response failed');
+    return (await response.json()).text;
+  }}
+/>
+```
+
+Without `onRespond`, the workspace returns sample responses. Each participant
+responds in conversation order. Stop cancels the request and reveal timers;
+partial replies remain visible. Chat switching keeps each draft and generation
+separate; deleting a conversation aborts its outstanding work.
+
+`initialWorkspace` supplies agents and conversations; `onWorkspaceChange` exposes
+edits for host persistence. `storageKey` defaults to `bloom:multi-agent-chat` on
+web; set it to `null` to disable browser storage. Native keeps session state until
+the host stores the workspace. Invalid stored data falls back to the initial demo.
+
+`defaultEditorId` initially opens an agent's editor on desktop. The compact editor
+uses a side surface. `voices` and `onPreviewVoice` connect a native speech provider;
+web can use device speech. `onCopy` supplies native clipboard integration; the
+default native fallback opens the share sheet.
+
+Marketplace plugin choices are workspace demo configuration. They do not authorize
+or connect external accounts. Supply real integrations through the host.
+
+The React Native layout and state are shared across platforms. Thin bindings pick
+Bloom's existing web/native Dialog, ComposerPanel and AgentCreator implementations.
+Layout utilities require the consumer NativeWind/Tailwind source scanning described
+in `docs/styles.mdx`. Theme colours come from Bloom's provider.
+
+Group creation and the first group message move the avatar artwork between
+measured positions with the source timings. Web renders the decorative journey
+through a portal; native uses a local absolute overlay that does not intercept
+touches. The journey reuses paused vector artwork rather than a browser canvas
+snapshot, so a moving face can settle into a different expression at departure.
+Reduced motion skips the flights and snaps the editor rail into place. Missing
+or unmounted measurements cancel the decoration without delaying responses.
+Reply actions appear on mouse hover or keyboard focus and remain visible on touch.

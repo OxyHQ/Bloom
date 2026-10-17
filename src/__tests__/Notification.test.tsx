@@ -90,7 +90,7 @@ describe('Notification', () => {
       (n) => hostName(n) === 'Pressable' && n.props.accessibilityLabel === 'Close it',
     )[0];
     // padding 16 + (visual 40 − close 20) / 2
-    expect(flat(close?.props.style)).toMatchObject({ top: 26, right: 12 });
+    expect(flat(close?.props.style)).toMatchObject({ top: 26, end: 12 });
   });
 
   it('names the close button and dismisses through it', () => {
@@ -100,7 +100,7 @@ describe('Notification', () => {
       (n) => hostName(n) === 'Pressable' && n.props.accessibilityLabel === 'Close it',
     )[0];
     expect(close).toBeDefined();
-    expect(flat(close?.props.style)).toMatchObject({ position: 'absolute', top: 12, right: 12, width: 20 });
+    expect(flat(close?.props.style)).toMatchObject({ position: 'absolute', top: 12, end: 12, width: 20 });
     act(() => {
       if (close) fireEvent.press(close);
     });

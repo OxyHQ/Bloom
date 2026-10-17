@@ -1,3 +1,5 @@
+import { useDirection } from '../direction';
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
@@ -69,8 +71,10 @@ export function AiChatResizeHandle({
   style,
   testID,
 }: AiChatResizeHandleProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAiChatWebCss();
   const palette = useAiChatPalette();
+  const inlineSign = useDirection() === 'rtl' ? -1 : 1;
   const [gripY, setGripY] = useState<number | null>(null);
   const [dragging, setDragging] = useState(false);
   const height = useRef(0);
@@ -94,7 +98,7 @@ export function AiChatResizeHandle({
           setDragging(true);
           callbacks.current.onResizeStart?.();
         },
-        onPanResponderMove: (_event, gesture) => callbacks.current.onResize(gesture.dx),
+        onPanResponderMove: (_event, gesture) => callbacks.current.onResize(gesture.dx * inlineSign),
         onPanResponderRelease: () => {
           setDragging(false);
           callbacks.current.onResizeEnd?.();
@@ -104,7 +108,7 @@ export function AiChatResizeHandle({
           callbacks.current.onResizeEnd?.();
         },
       }),
-    [],
+    [inlineSign],
   );
 
   type DomTarget = {
@@ -125,7 +129,7 @@ export function AiChatResizeHandle({
           const target = event.currentTarget as unknown as DomTarget;
           track(event.nativeEvent.clientY - target.getBoundingClientRect().top);
           if (target.hasPointerCapture(event.nativeEvent.pointerId)) {
-            callbacks.current.onResize(event.nativeEvent.clientX - startX.current);
+            callbacks.current.onResize((event.nativeEvent.clientX - startX.current) * inlineSign);
           }
         },
         onPointerUp: () => {
@@ -137,8 +141,8 @@ export function AiChatResizeHandle({
           callbacks.current.onResizeEnd?.();
         },
         onKeyDown: (event: { nativeEvent: { key: string } }) => {
-          if (event.nativeEvent.key === 'ArrowLeft') onNudge?.(-16);
-          if (event.nativeEvent.key === 'ArrowRight') onNudge?.(16);
+          if (event.nativeEvent.key === 'ArrowLeft') onNudge?.(-16 * inlineSign);
+          if (event.nativeEvent.key === 'ArrowRight') onNudge?.(16 * inlineSign);
         },
         tabIndex: onNudge ? (0 as const) : undefined,
       }
@@ -162,7 +166,7 @@ export function AiChatResizeHandle({
     ...(IS_WEB ? null : { opacity: dragging ? 1 : 0 }),
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       {...dataHook('bloomAiChatGrip')}
       {...web}
@@ -174,7 +178,7 @@ export function AiChatResizeHandle({
         height.current = event.nativeEvent.layout.height;
       }}
       style={[
-        { position: 'absolute', top: 0, bottom: 0, right: -10, zIndex: 10, width: 20, alignItems: 'center' },
+        { position: 'absolute', top: 0, bottom: 0, end: -10, zIndex: 10, width: 20, alignItems: 'center' },
         style,
       ]}>
       <View {...dataHook('bloomAiChatGripPill', dragging ? 'dragging' : '')} pointerEvents="none" style={grip}>
@@ -183,7 +187,7 @@ export function AiChatResizeHandle({
         ))}
       </View>
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -198,10 +202,11 @@ export function AiChatResizeHandle({
  * `AiChatShell`, or from `xl` up.
  */
 export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const shell = useAiChatShell();
   const palette = useAiChatPalette();
   if (!shell || !shell.compact) return null;
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -246,7 +251,7 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
         />
       ) : null}
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -291,8 +296,11 @@ export function AiChatShell({
   style,
   testID,
 }: AiChatShellProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAiChatWebCss();
   const palette = useAiChatPalette();
+  const direction = useDirection();
+  const inlineSign = direction === 'rtl' ? -1 : 1;
   const reducedMotion = useReducedMotion();
   const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
   const { width: windowWidth } = useWindowDimensions();
@@ -343,8 +351,8 @@ export function AiChatShell({
     [reveal],
   );
   const workspaceStyle = useAnimatedStyle(
-    () => ({ transform: [{ translateX: REVEAL_OFFSET * reveal.value }], borderRadius: 32 * reveal.value }),
-    [reveal],
+    () => ({ transform: [{ translateX: REVEAL_OFFSET * reveal.value * inlineSign }], borderRadius: 32 * reveal.value }),
+    [reveal, inlineSign],
   );
   const veilStyle = useAnimatedStyle(() => ({ opacity: reveal.value }), [reveal]);
 
@@ -358,8 +366,8 @@ export function AiChatShell({
   const drawerWidth = Math.min(410, shellWidth - 12);
   const backdropStyle = useAnimatedStyle(() => ({ opacity: drawer.value }), [drawer]);
   const drawerStyle = useAnimatedStyle(
-    () => ({ transform: [{ translateX: drawerWidth * 1.1 * (1 - drawer.value) }] }),
-    [drawer, drawerWidth],
+    () => ({ transform: [{ translateX: drawerWidth * 1.1 * (1 - drawer.value) * inlineSign }] }),
+    [drawer, drawerWidth, inlineSign],
   );
 
   const shellState: AiChatShellState = useMemo(
@@ -396,7 +404,7 @@ export function AiChatShell({
 
   const veil = palette.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.1)';
 
-  return (
+  return localizeBloomCopy((
     <AiChatShellContext.Provider value={shellState}>
       <View
         {...dataHook('bloomAiChatDragging', dragging ? 'on' : '')}
@@ -407,10 +415,10 @@ export function AiChatShell({
           <View
             aria-hidden={!navOpen}
             pointerEvents={navOpen ? 'box-none' : 'none'}
-            style={{ position: 'absolute', top: 0, bottom: 0, left: 0, zIndex: 10, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}>
+            style={{ position: 'absolute', top: 0, bottom: 0, start: 0, zIndex: 10, width: 272, paddingTop: 12, paddingBottom: 12, paddingStart: 6 }}>
             <Animated.View
               pointerEvents={navOpen ? 'auto' : 'none'}
-              style={[{ height: '100%', width: 260, transformOrigin: 'left' }, railStyle]}>
+              style={[{ height: '100%', width: 260, transformOrigin: direction === 'rtl' ? 'right' : 'left' }, railStyle]}>
               {mobileSidebar}
             </Animated.View>
           </View>
@@ -482,7 +490,7 @@ export function AiChatShell({
                   position: 'absolute',
                   top: 0,
                   bottom: 0,
-                  right: 0,
+                  end: 0,
                   width: drawerWidth,
                   flexDirection: 'column',
                   backgroundColor: palette.full,
@@ -519,7 +527,7 @@ export function AiChatShell({
         ) : null}
       </View>
     </AiChatShellContext.Provider>
-  );
+  ));
 }
 
 export type { GestureResponderEvent };

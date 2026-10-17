@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
@@ -89,28 +90,30 @@ function searchModels(providers: ReadonlyArray<ModelPickerProvider>, query: stri
 
 /** A chevron that turns to `degrees` over 200ms `ease`. */
 function TurningChevron({ degrees, color }: { degrees: number; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const rotation = useSharedValue(degrees);
   useEffect(() => {
     rotation.value = reducedMotion ? degrees : withTiming(degrees, { duration: 200, easing: EASE });
   }, [degrees, reducedMotion, rotation]);
   const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.value}deg` }] }), [rotation]);
-  return (
+  return localizeBloomCopy((
     <Animated.View style={[{ width: 18, height: 18, flexShrink: 0 }, style]}>
       <RiArrowDownSLine width={18} height={18} fill={color} />
     </Animated.View>
-  );
+  ));
 }
 
 function ProviderMark({ provider, size, palette }: { provider: ModelPickerProvider; size: number; palette: ComposerPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   if (provider.logo) {
-    return (
+    return localizeBloomCopy((
       <View style={{ width: size, height: size, flexShrink: 0 }} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
         {provider.logo({ size, color: palette.logo })}
       </View>
-    );
+    ));
   }
-  return (
+  return localizeBloomCopy((
     <View
       style={{ width: size, height: size, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}
       importantForAccessibility="no-hide-descendants"
@@ -125,7 +128,7 @@ function ProviderMark({ provider, size, palette }: { provider: ModelPickerProvid
         {provider.name.slice(0, 1)}
       </Text>
     </View>
-  );
+  ));
 }
 
 /**
@@ -137,6 +140,7 @@ function ProviderMark({ provider, size, palette }: { provider: ModelPickerProvid
  * over 200ms once the list has scrolled.
  */
 function ScrollFade({ visible, palette }: { visible: boolean; palette: ComposerPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const base: WebCssStyle = {
     position: 'absolute',
     top: 0,
@@ -169,16 +173,16 @@ function ScrollFade({ visible, palette }: { visible: boolean; palette: ComposerP
       bottom: 0,
       backgroundImage: `linear-gradient(to bottom, ${palette.surface} 0%, ${withAlpha(palette.surface, 0.7)} 50%, ${withAlpha(palette.surface, 0)} 100%)`,
     };
-    return (
+    return localizeBloomCopy((
       <View pointerEvents="none" style={base}>
         <View style={layer(1, 'black 0%, black 45%, transparent 100%')} />
         <View style={layer(3, 'black 0%, black 25%, transparent 75%')} />
         <View style={layer(8, 'black 0%, transparent 50%')} />
         <View style={wash} />
       </View>
-    );
+    ));
   }
-  return (
+  return localizeBloomCopy((
     <View pointerEvents="none" style={base}>
       <Svg width="100%" height="100%">
         <Defs>
@@ -191,11 +195,12 @@ function ScrollFade({ visible, palette }: { visible: boolean; palette: ComposerP
         <Rect x="0" y="0" width="100%" height="100%" fill="url(#bloom-composer-scroll-fade)" />
       </Svg>
     </View>
-  );
+  ));
 }
 
 /** The effort level blurs in each time it changes (350ms `ease-out`). */
 function BlurInLevel({ level, palette }: { level: string; palette: ComposerPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
@@ -209,13 +214,13 @@ function BlurInLevel({ level, palette }: { level: string; palette: ComposerPalet
     }),
     [progress],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View style={style}>
       <Text variant="body-medium" style={{ color: palette.text }}>
         {level}
       </Text>
     </Animated.View>
-  );
+  ));
 }
 
 function EffortMenu({
@@ -231,6 +236,7 @@ function EffortMenu({
   labels: Required<ModelPickerLabels>;
   palette: ComposerPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
@@ -244,8 +250,8 @@ function EffortMenu({
     borderRadius: 9999,
     paddingTop: 4,
     paddingBottom: 4,
-    paddingRight: 4,
-    paddingLeft: 8,
+    paddingEnd: 4,
+    paddingStart: 8,
     backgroundColor: hovered ? palette.tertiaryHover : palette.tertiary,
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
@@ -262,7 +268,7 @@ function EffortMenu({
     '--bloom-composer-ring': palette.focusRing,
   };
 
-  return (
+  return localizeBloomCopy((
     <>
       <Pressable
         ref={triggerRef}
@@ -289,7 +295,7 @@ function EffortMenu({
         sideOffset={10}
         style={panelStyle}>
         <View style={{ flexDirection: 'column', paddingTop: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 8, marginBottom: -2 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingStart: 8, marginBottom: -2 }}>
             <Text variant="body-medium" style={{ color: palette.textSecondary }}>
               {`${labels.effort} `}
             </Text>
@@ -320,7 +326,7 @@ function EffortMenu({
         </View>
       </Popover>
     </>
-  );
+  ));
 }
 
 function ModelRow({
@@ -338,6 +344,7 @@ function ModelRow({
   onSelect: () => void;
   effort: React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const { provider, model } = match;
   const hitStyle: WebCssStyle = {
@@ -350,7 +357,7 @@ function ModelRow({
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
-  return (
+  return localizeBloomCopy((
     <View
       style={{
         position: 'relative',
@@ -395,7 +402,7 @@ function ModelRow({
         </View>
       </View>
     </View>
-  );
+  ));
 }
 
 /**
@@ -432,6 +439,7 @@ export function ModelPickerBase({
   style,
   testID,
 }: ModelPickerProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
@@ -539,8 +547,8 @@ export function ModelPickerBase({
     borderRadius: 9999,
     paddingTop: 6,
     paddingBottom: 6,
-    paddingRight: 4,
-    paddingLeft: 8,
+    paddingEnd: 4,
+    paddingStart: 8,
     backgroundColor: hovered ? palette.hover : palette.surface,
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
@@ -560,7 +568,7 @@ export function ModelPickerBase({
     '--bloom-composer-ring': palette.focusRing,
   };
 
-  return (
+  return localizeBloomCopy((
     <>
       <Pressable
         ref={triggerRef}
@@ -604,7 +612,7 @@ export function ModelPickerBase({
           style={{
             position: 'absolute',
             top: 2,
-            left: 2,
+            start: 2,
             height: RAIL_HEIGHT,
             width: 42,
             borderRadius: 17,
@@ -626,7 +634,7 @@ export function ModelPickerBase({
         </ScrollView>
 
         {/* Header and the active lineup. */}
-        <View style={{ position: 'absolute', top: 8, right: 8, bottom: 0, left: 52, flexDirection: 'column' }}>
+        <View style={{ position: 'absolute', top: 8, end: 8, bottom: 0, start: 52, flexDirection: 'column' }}>
           <View
             style={{
               height: 20,
@@ -742,7 +750,7 @@ export function ModelPickerBase({
         </View>
       </Popover>
     </>
-  );
+  ));
 }
 
 function RailMark({
@@ -756,6 +764,7 @@ function RailMark({
   palette: ComposerPalette;
   onPress: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const markStyle: WebCssStyle = {
     height: MARK_HEIGHT,
@@ -768,7 +777,7 @@ function RailMark({
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerControl')}
       accessibilityRole="tab"
@@ -781,11 +790,12 @@ function RailMark({
       style={markStyle}>
       <ProviderMark provider={provider} size={provider.logoSize ?? 20} palette={palette} />
     </Pressable>
-  );
+  ));
 }
 
 /** "Quick Search" + glyph at 50% opacity, full on hover or keyboard focus. */
 function QuickSearch({ label, palette, onPress }: { label: string; palette: ComposerPalette; onPress: () => void }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const quickStyle: WebCssStyle = {
@@ -797,7 +807,7 @@ function QuickSearch({ label, palette, onPress }: { label: string; palette: Comp
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerControl')}
       accessibilityRole="button"
@@ -813,5 +823,5 @@ function QuickSearch({ label, palette, onPress }: { label: string; palette: Comp
       </Text>
       <RiSearchLine width={16} height={16} fill={palette.iconSecondary} />
     </Pressable>
-  );
+  ));
 }

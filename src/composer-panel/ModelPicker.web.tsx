@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 
 import { ComposerPopover } from './ComposerPopover.web';
@@ -10,10 +11,11 @@ import type { ModelPickerProps } from './types';
  * only binds the panel it opens in.
  */
 export function ModelPicker(props: ModelPickerProps) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <ComposerPopoverContext.Provider value={ComposerPopover}>
       <ModelPickerBase {...props} />
     </ComposerPopoverContext.Provider>
-  );
+  ));
 }
 ModelPicker.displayName = 'ModelPicker';

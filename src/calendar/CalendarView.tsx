@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -42,6 +43,7 @@ export function CalendarView({
   testID,
   ...header
 }: CalendarViewProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const dense = useBreakpoint() === 'base';
@@ -60,7 +62,7 @@ export function CalendarView({
     [setMonth],
   );
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[{ width: '100%', maxWidth: 1300, alignSelf: 'center', gap: 10 }, style]}>
       <View
         style={
@@ -121,5 +123,5 @@ export function CalendarView({
         />
       </View>
     </View>
-  );
+  ));
 }

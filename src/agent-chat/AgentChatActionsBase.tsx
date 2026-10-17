@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -64,6 +65,7 @@ export function AgentChatActionsBase({
   style,
   testID,
 }: AgentChatActionsProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
   const { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } =
@@ -97,7 +99,7 @@ export function AgentChatActionsBase({
     disabled,
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[{ flexDirection: 'row', alignItems: 'center', gap: 2, flexShrink: 0 }, style]}>
@@ -143,5 +145,5 @@ export function AgentChatActionsBase({
         </DropdownMenuContent>
       </DropdownMenu>
     </View>
-  );
+  ));
 }

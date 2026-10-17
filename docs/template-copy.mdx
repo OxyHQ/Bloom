@@ -1,0 +1,19 @@
+# Template Copy
+
+`TemplateCopyProvider` translates display copy in the application blocks and
+full-screen templates. IDs, callbacks, stored values, code and keyboard shortcuts
+keep their original meaning.
+
+```tsx
+import { TemplateCopyProvider } from '@oxy.so/bloom/template-copy';
+
+const translations = { 'New chat': 'Nuevo chat', 'Start chat': 'Empezar chat' };
+<TemplateCopyProvider translate={text => translations[text] ?? text}>
+  <Screen />
+</TemplateCopyProvider>
+```
+
+`useTemplateCopy()` returns a function that transforms returned JSX, including
+render callbacks and display labels in data collections. With no provider it
+returns the same nodes unchanged. Accessible labels are translated alongside
+visible text. Use `DirectionProvider` separately for layout direction.

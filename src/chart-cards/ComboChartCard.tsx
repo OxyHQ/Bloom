@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useId, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect } from 'react-native-svg';
@@ -141,6 +142,7 @@ export function ComboChartCard({
   style,
   testID,
 }: ComboChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const tones = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
@@ -196,7 +198,7 @@ export function ComboChartCard({
   const rawId = useId();
   const id = `bloom-combo-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height={tiles ? 'auto' : undefined} style={style} testID={testID}>
       <ChartHeader
         label={label}
@@ -342,5 +344,5 @@ export function ComboChartCard({
         />
       ) : null}
     </ChartCardSurface>
-  );
+  ));
 }

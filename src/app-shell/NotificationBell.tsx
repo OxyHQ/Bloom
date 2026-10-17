@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -33,6 +34,7 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
   accessibilityLabel = 'Notifications',
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const { state: hovered, onIn, onOut } = useInteractionState();
@@ -46,7 +48,7 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
     };
   }, [theme]);
 
-  return (
+  return localizeBloomCopy((
     <Popover open={open} onOpenChange={setOpen}>
       <View
         style={{ position: 'relative', flexDirection: 'row' }}
@@ -111,7 +113,7 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
         />
       </PopoverContent>
     </Popover>
-  );
+  ));
 };
 
 export const NotificationBell = memo(NotificationBellComponent);

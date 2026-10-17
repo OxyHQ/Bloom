@@ -91,6 +91,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./patient-info-card', 'patient-info-card/index.ts'],
   ['./sidebar', 'sidebar/index.ts'],
   ['./app-shell', 'app-shell/index.ts'],
+  ['./page-header', 'page-header/index.ts'],
   ['./notification-center', 'notification-center/index.ts'],
   ['./theme-toggle', 'theme-toggle/index.ts'],
   ['./settings-modal', 'settings-modal/index.ts'],
@@ -104,6 +105,12 @@ const SUBPATHS = /** @type {const} */ ([
   ['./web-search', 'web-search/index.ts'],
   ['./task-list', 'task-list/index.ts'],
   ['./agent-chat', 'agent-chat/index.ts'],
+  ['./agent-avatar', 'agent-avatar/index.ts'],
+  ['./agent-creator', 'agent-creator/index.ts'],
+  ['./multi-agent-chat', 'multi-agent-chat/index.ts'],
+  ['./project-board', 'project-board/index.ts'],
+  ['./direction', 'direction/index.ts'],
+  ['./template-copy', 'template-copy/index.ts'],
   ['./ai-chat', 'ai-chat/index.ts'],
   ['./radio-indicator', 'radio-indicator/index.ts'],
   ['./radio', 'radio/index.ts'],
@@ -222,6 +229,9 @@ const WEB_FORKED_SUBPATHS = new Set([
   './motion',
   './composer-loader',
   './composer-panel',
+  './agent-creator',
+  './multi-agent-chat',
+  './project-board',
   './agent-chat',
   './ai-chat',
   // NOT web-forked: the toast engine is ONE universal implementation that runs
@@ -429,6 +439,9 @@ const WEB_BARRELS = /** @type {const} */ ([
     // Every web-forked subpath except the root itself.
     children: [...WEB_FORKED_SUBPATHS].filter((s) => s !== '.').map((s) => s.replace(/^\.\//, '')),
   },
+  { source: 'agent-creator/index.ts', children: ['AgentCreator'] },
+  { source: 'multi-agent-chat/index.ts', children: ['MultiAgentChat'] },
+  { source: 'project-board/index.ts', children: ['ProjectBoard'] },
   {
     // `BloomColorScope` / `BloomSeedScope` fork because the web variants write
     // the resolved tokens as real CSS custom properties on an inline `style`,
@@ -463,11 +476,12 @@ function buildWebBarrel(originalSource, sourceRelPath, children) {
   const transformed = originalSource
     .split('\n')
     .map((line) => {
-      const match = line.match(/from '\.\/([a-z-]+)'(\s*;?\s*)$/);
+      const match = line.match(/from '\.\/([a-zA-Z0-9-]+)'(\s*;?\s*)$/);
       if (!match) return line;
       const folder = match[1];
       if (!children.includes(folder)) return line;
-      return line.replace(`from './${folder}'`, `from './${folder}/index.web'`);
+      const stem = /^[A-Z]/.test(folder) ? `${folder}.web` : `${folder}/index.web`;
+      return line.replace(`from './${folder}'`, `from './${stem}'`);
     })
     .join('\n');
 

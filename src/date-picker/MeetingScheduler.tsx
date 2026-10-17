@@ -1,3 +1,4 @@
+import { useBloomLocale } from '../direction/context';
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import {
   Platform,
@@ -361,11 +362,13 @@ export function MeetingScheduler({
   maxDate,
   isDateUnavailable,
   weekStartsOn,
-  locale,
+  locale: localeProp,
   style,
   testID,
 }: MeetingSchedulerProps) {
   const theme = useTheme();
+  const { locale: inheritedLocale } = useBloomLocale();
+  const locale = localeProp ?? inheritedLocale;
   const palette = usePickerPalette();
   const { width: windowWidth } = useWindowDimensions();
   const slots = useMemo(() => timeSlots ?? defaultTimeSlots(), [timeSlots]);
@@ -407,8 +410,8 @@ export function MeetingScheduler({
         gap: 16,
         paddingTop: 16,
         paddingBottom: 16,
-        paddingLeft: 16,
-        paddingRight: wide ? 0 : 16,
+        paddingStart: 16,
+        paddingEnd: wide ? 0 : 16,
       }}
     >
       <View style={{ alignItems: 'flex-start', gap: 8 }}>
@@ -552,8 +555,8 @@ export function MeetingScheduler({
         gap: 12,
         overflow: 'hidden',
         paddingTop: wide ? 16 : 0,
-        paddingRight: 16,
-        paddingLeft: wide ? 0 : 16,
+        paddingEnd: 16,
+        paddingStart: wide ? 0 : 16,
         paddingBottom: wide ? 0 : 16,
       }}
     >
@@ -567,8 +570,8 @@ export function MeetingScheduler({
               gap: 3,
               borderRadius: 10,
               backgroundColor: palette.tertiary,
-              paddingLeft: 8,
-              paddingRight: 8,
+              paddingStart: 8,
+              paddingEnd: 8,
               paddingTop: 4,
               paddingBottom: 4,
             }}

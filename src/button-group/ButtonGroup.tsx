@@ -1,3 +1,5 @@
+import { useDirection } from '../direction/context';
+import { directionalIconStyle } from '../button/directional-icon';
 import React, { Children, createContext, Fragment, isValidElement, memo, useContext, useMemo } from 'react';
 import { Platform, Pressable, View, type TextStyle } from 'react-native';
 
@@ -172,6 +174,7 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const direction = useDirection();
   const group = useContext(GroupContext);
   const palette = useMemo(() => group?.palette ?? resolveGroupPalette(theme), [group, theme]);
   const size = sizeProp ?? group?.size ?? 'medium';
@@ -222,7 +225,7 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
       testID={testID}
     >
       {LeadingIcon ? (
-        <LeadingIcon width={geometry.iconSize} height={geometry.iconSize} fill={foreground} />
+        <View style={directionalIconStyle(LeadingIcon, direction)}><LeadingIcon width={geometry.iconSize} height={geometry.iconSize} fill={foreground} /></View>
       ) : null}
       {!iconOnly && children != null ? (
         typeof children === 'string' || typeof children === 'number' ? (
@@ -234,7 +237,7 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
         )
       ) : null}
       {!iconOnly && TrailingIcon ? (
-        <TrailingIcon width={geometry.iconSize} height={geometry.iconSize} fill={foreground} />
+        <View style={directionalIconStyle(TrailingIcon, direction)}><TrailingIcon width={geometry.iconSize} height={geometry.iconSize} fill={foreground} /></View>
       ) : null}
     </Pressable>
   );

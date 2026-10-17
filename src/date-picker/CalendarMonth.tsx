@@ -1,3 +1,4 @@
+import { useDirection } from '../direction/context';
 import React, { memo } from 'react';
 import { Platform, Pressable, View, type Role, type TextStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -84,8 +85,9 @@ export function dayKey(date: Date): string {
 }
 
 function Chevron({ direction, color }: { direction: 'left' | 'right'; color: string }) {
+  const layoutDirection = useDirection();
   return (
-    <Svg width={NAV_SIZE} height={NAV_SIZE} viewBox="0 0 16 16" fill="none">
+    <Svg style={layoutDirection === 'rtl' ? { transform: [{ rotate: '180deg' }] } : undefined} width={NAV_SIZE} height={NAV_SIZE} viewBox="0 0 16 16" fill="none">
       <Path
         d={
           direction === 'left'
@@ -208,14 +210,14 @@ const DayCell = memo(function DayCell({
           position: 'absolute',
           top: 0,
           bottom: 0,
-          left: paint.band.left,
-          right: paint.band.right,
+          start: paint.band.left,
+          end: paint.band.right,
           backgroundColor: palette.rangeBand,
           opacity: paint.band.visible ? 1 : 0,
-          borderTopLeftRadius: paint.band.roundLeft ? DAY_RADIUS : 0,
-          borderBottomLeftRadius: paint.band.roundLeft ? DAY_RADIUS : 0,
-          borderTopRightRadius: paint.band.roundRight ? DAY_RADIUS : 0,
-          borderBottomRightRadius: paint.band.roundRight ? DAY_RADIUS : 0,
+          borderTopStartRadius: paint.band.roundLeft ? DAY_RADIUS : 0,
+          borderBottomStartRadius: paint.band.roundLeft ? DAY_RADIUS : 0,
+          borderTopEndRadius: paint.band.roundRight ? DAY_RADIUS : 0,
+          borderBottomEndRadius: paint.band.roundRight ? DAY_RADIUS : 0,
         }]}
       />
       <Pressable
@@ -249,10 +251,10 @@ const DayCell = memo(function DayCell({
             right: 0,
             backgroundColor: palette.rangeEdge,
             opacity: paint.edge.visible ? 1 : 0,
-            borderTopLeftRadius: paint.edge.roundLeft ? DAY_RADIUS : 0,
-            borderBottomLeftRadius: paint.edge.roundLeft ? DAY_RADIUS : 0,
-            borderTopRightRadius: paint.edge.roundRight ? DAY_RADIUS : 0,
-            borderBottomRightRadius: paint.edge.roundRight ? DAY_RADIUS : 0,
+            borderTopStartRadius: paint.edge.roundLeft ? DAY_RADIUS : 0,
+            borderBottomStartRadius: paint.edge.roundLeft ? DAY_RADIUS : 0,
+            borderTopEndRadius: paint.edge.roundRight ? DAY_RADIUS : 0,
+            borderBottomEndRadius: paint.edge.roundRight ? DAY_RADIUS : 0,
           }]}
         />
         <Text style={textStyle}>{date.getDate()}</Text>

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Platform, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
@@ -43,6 +44,7 @@ export function Collapsible({
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const context = useContext(CollapseContext);
   const local = useSharedValue(collapsed ? 1 : 0);
   useEffect(() => {
@@ -60,7 +62,7 @@ export function Collapsible({
     return base;
   }, [progress, natural]);
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden' }, style, animated]}
     >
@@ -73,7 +75,7 @@ export function Collapsible({
         {children}
       </View>
     </Animated.View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -121,8 +123,9 @@ let gradientIds = 0;
 
 /** A top-to-bottom gradient fill (opaque stops — react-native-svg drops alpha). */
 export function GradientFill({ from, to, radius }: { from: string; to: string; radius: number }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useMemo(() => `bloom-sidebar-gradient${gradientIds++}`, []);
-  return (
+  return localizeBloomCopy((
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}>
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
@@ -134,7 +137,7 @@ export function GradientFill({ from, to, radius }: { from: string; to: string; r
         <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
       </Svg>
     </View>
-  );
+  ));
 }
 
 const AVATAR_TYPE = {
@@ -156,12 +159,13 @@ export function SidebarAvatarView({
   palette: SidebarPalette;
   background?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const geometry = AVATAR_TYPE[size];
   if (avatar?.source) {
-    return <Avatar source={avatar.source} size={geometry.size} style={{ flexShrink: 0 }} />;
+    return localizeBloomCopy(<Avatar source={avatar.source} size={geometry.size} style={{ flexShrink: 0 }} />);
   }
   const tint = palette.avatar[avatar?.color ?? 'neutral'];
-  return (
+  return localizeBloomCopy((
     <View
       style={{
         width: geometry.size,
@@ -186,12 +190,13 @@ export function SidebarAvatarView({
         {avatar?.initials ?? ''}
       </Text>
     </View>
-  );
+  ));
 }
 
 /** 16×16, 2px rounded stroke. */
 export function ChevronDownSmall({ color, size = 16 }: { color: string; size?: number }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       <Path
         d="M4 7L7.29289 10.2929C7.68342 10.6834 8.31658 10.6834 8.70711 10.2929L12 7"
@@ -200,12 +205,13 @@ export function ChevronDownSmall({ color, size = 16 }: { color: string; size?: n
         strokeLinecap="round"
       />
     </Svg>
-  );
+  ));
 }
 
 /** 16×16, 1.5px rounded strokes. */
 export function ChevronUpDownSmall({ color, size = 16 }: { color: string; size?: number }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       <G transform="translate(4.25 2.56)">
         <Path
@@ -222,25 +228,23 @@ export function ChevronUpDownSmall({ color, size = 16 }: { color: string; size?:
         />
       </G>
     </Svg>
-  );
+  ));
 }
 
-/** Popover chrome for both sidebar menus: `w-[265px] rounded-2xl border p-2.5 shadow-dropdown`. */
-export function menuPanelStyle(palette: SidebarPalette): ViewStyle {
-  return {
-    width: 265,
-    padding: 10,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: palette.menu.border,
-    backgroundColor: palette.menu.surface,
-    boxShadow: palette.menu.shadow,
-  };
+/** The width both sidebar menus give their popover: `w-[265px]`. */
+export function menuPanelStyle(_palette?: SidebarPalette): ViewStyle {
+  // `w-[265px]` is the only thing these menus say differently from the popover
+  // panel itself — radius, border, surface, `p-2.5` and `shadow-dropdown` are
+  // `Popover`'s own defaults now (`popover/surface.ts`).
+  return MENU_PANEL;
 }
+
+const MENU_PANEL: ViewStyle = { width: 265 };
 
 /** Full-bleed menu divider: `-mx-2.5 h-px bg-border-button-default`. */
 export function MenuDivider({ palette, spacing }: { palette: SidebarPalette; spacing: number }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       style={{
         height: 1,
@@ -251,5 +255,5 @@ export function MenuDivider({ palette, spacing }: { palette: SidebarPalette; spa
         backgroundColor: palette.menu.border,
       }}
     />
-  );
+  ));
 }

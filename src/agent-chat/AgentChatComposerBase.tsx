@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, TextInput, View, useWindowDimensions, type TextStyle } from 'react-native';
 
@@ -73,6 +74,7 @@ function AttachButton({
   onPress?: () => void;
   palette: AgentChatPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const style: WebCssStyle = {
     width: COMPOSER_CONTROL,
@@ -84,7 +86,7 @@ function AttachButton({
     backgroundColor: hovered ? palette.addHover : palette.addBackground,
     '--bloom-agent-chat-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomAgentChatControl')}
       accessibilityRole="button"
@@ -95,7 +97,7 @@ function AttachButton({
       style={style}>
       <RiAttachment2 width={20} height={20} fill={palette.iconPrimary} />
     </Pressable>
-  );
+  ));
 }
 
 function StopButton({
@@ -107,6 +109,7 @@ function StopButton({
   onPress?: () => void;
   palette: AgentChatPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const style: WebCssStyle = {
     width: COMPOSER_CONTROL,
@@ -117,7 +120,7 @@ function StopButton({
     backgroundColor: hovered ? palette.rowHover : palette.chatSurface,
     '--bloom-agent-chat-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomAgentChatControl')}
       accessibilityRole="button"
@@ -128,7 +131,7 @@ function StopButton({
       style={style}>
       <RiStopFill width={20} height={20} fill={palette.iconSecondary} />
     </Pressable>
-  );
+  ));
 }
 
 function StatusItem({
@@ -140,14 +143,15 @@ function StatusItem({
   label: string;
   palette: AgentChatPalette;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       <Icon width={16} height={16} fill={palette.iconSecondary} />
       <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
         {label}
       </Text>
     </View>
-  );
+  ));
 }
 
 export function AgentChatComposerBase({
@@ -166,6 +170,7 @@ export function AgentChatComposerBase({
   style,
   testID,
 }: AgentChatComposerProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
   const { ComposerLoader } = useAgentChatPlatform();
@@ -210,7 +215,7 @@ export function AgentChatComposerBase({
     '--bloom-agent-chat-placeholder': palette.textTertiary,
   };
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column', gap: 10 }, style]}>
       <ComposerLoader active={busy}>
         <View style={pill}>
@@ -259,7 +264,7 @@ export function AgentChatComposerBase({
               ) : null}
             </View>
           ) : null}
-          <View style={{ flexDirection: 'row', flexShrink: 0, alignItems: 'center', gap: 8, paddingLeft: 6 }}>
+          <View style={{ flexDirection: 'row', flexShrink: 0, alignItems: 'center', gap: 8, paddingStart: 6 }}>
             {busy ? (
               <StopButton label={l.stop} onPress={onStop} palette={palette} />
             ) : (
@@ -297,5 +302,5 @@ export function AgentChatComposerBase({
         </View>
       </View>
     </View>
-  );
+  ));
 }

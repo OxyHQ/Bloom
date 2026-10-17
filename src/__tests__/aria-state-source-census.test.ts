@@ -417,6 +417,7 @@ describe('the census can see', () => {
       'AnimatedPanel',
       'AnimatedPressable',
       'AnimatedStyledView',
+      'AnimatedView',
     ]);
   });
 

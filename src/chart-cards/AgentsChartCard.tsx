@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -152,6 +153,7 @@ export function AgentsChartCard({
   style,
   testID,
 }: AgentsChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const reducedMotion = useReducedMotion();
@@ -231,7 +233,7 @@ export function AgentsChartCard({
   const summary =
     accessibilityLabel ?? `${title} bar chart: ${data.map((d) => `${d.label} ${format(Math.round(d.value))}`).join(', ')}`;
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -341,5 +343,5 @@ export function AgentsChartCard({
         </Text>
       </View>
     </View>
-  );
+  ));
 }

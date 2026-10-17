@@ -1,3 +1,5 @@
+import { PanResponder, type GestureResponderEvent, type PanResponderGestureState } from 'react-native';
+import { DirectionProvider } from '../direction';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
@@ -220,6 +222,16 @@ describe('AiChatShell', () => {
     const open = getByLabelText('Open code');
     fireEvent.press(open);
     expect(getByText('Code')).toBeTruthy();
+  });
+
+  it.each([['en', 24], ['ar', -24]] as const)('resizes from the inline end in %s', (locale, expected) => {
+    const responder = jest.spyOn(PanResponder, 'create');
+    const onResize = jest.fn();
+    const view = renderIn(<DirectionProvider locale={locale}><AiChatResizeHandle onResize={onResize} /></DirectionProvider>);
+    const config = responder.mock.calls[responder.mock.calls.length - 1]![0];
+    act(() => config.onPanResponderMove!({} as GestureResponderEvent, { dx: 24 } as PanResponderGestureState));
+    expect(onResize).toHaveBeenCalledWith(expected);
+    view.unmount(); responder.mockRestore();
   });
 
   it('names the resize separator', () => {

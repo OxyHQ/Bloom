@@ -282,6 +282,8 @@ export { RiShoppingBasket2Fill } from './RiShoppingBasket2Fill';
 export { RiShoppingBasketLine } from './RiShoppingBasketLine';
 export { RiSideBarFill } from './RiSideBarFill';
 export { RiSideBarLine } from './RiSideBarLine';
+export { RiSidebarFoldLine } from './RiSidebarFoldLine';
+export { RiSidebarUnfoldLine } from './RiSidebarUnfoldLine';
 export { RiSlideshow3Line } from './RiSlideshow3Line';
 export { RiSmartphoneLine } from './RiSmartphoneLine';
 export { RiSnowflakeLine } from './RiSnowflakeLine';

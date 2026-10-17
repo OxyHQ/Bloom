@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 
 import { Text } from '../typography';
@@ -9,9 +10,10 @@ import { IS_WEB } from './web-hooks';
  * 6px inline margin; native nested text has no margin, so a space stands in.
  */
 export function InlineAside({ color, children }: { color: string; children: string }) {
-  return (
-    <Text variant="body-medium" style={IS_WEB ? { marginLeft: 6, color } : { color }}>
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
+    <Text variant="body-medium" style={IS_WEB ? { marginStart: 6, color } : { color }}>
       {IS_WEB ? children : ` ${children}`}
     </Text>
-  );
+  ));
 }

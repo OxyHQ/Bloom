@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useEffect, useState } from 'react';
 import { Image, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
@@ -120,6 +121,7 @@ const Slide = memo(function Slide({
   width: number;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const x = useSharedValue(pose.x);
   const depth = useSharedValue(pose.depth);
   const rotate = useSharedValue(pose.rotate);
@@ -151,7 +153,7 @@ const Slide = memo(function Slide({
   const source = typeof slide.source === 'string' ? { uri: slide.source } : slide.source;
   const decorative = !slide.alt;
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       testID={testID}
       style={[
@@ -169,10 +171,11 @@ const Slide = memo(function Slide({
         style={{ width: '100%', height: '100%' }}
       />
     </Animated.View>
-  );
+  ));
 });
 
 function Dot({ active, reducedMotion }: { active: boolean; reducedMotion: boolean }) {
+  const localizeBloomCopy = useTemplateCopy();
   const progress = useSharedValue(active ? 1 : 0);
   useEffect(() => {
     const target = active ? 1 : 0;
@@ -184,14 +187,14 @@ function Dot({ active, reducedMotion }: { active: boolean; reducedMotion: boolea
     width: 6 + 14 * progress.value,
     opacity: 0.45 + 0.45 * progress.value,
   }), [progress]);
-  return (
+  return localizeBloomCopy((
     <Animated.View
       aria-hidden
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       style={[{ height: 6, borderRadius: 9999, backgroundColor: '#FFFFFF' }, style]}
     />
-  );
+  ));
 }
 
 function AuthMediaCarouselComponent({
@@ -200,6 +203,7 @@ function AuthMediaCarouselComponent({
   style,
   testID,
 }: AuthMediaCarouselProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>('idle');
@@ -226,7 +230,7 @@ function AuthMediaCarouselComponent({
   const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width);
   const beatDuration = phase === 'slide' ? SLIDE_MS : phase === 'shrink' ? SHRINK_MS : GROW_MS;
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       onLayout={onLayout}
@@ -276,7 +280,7 @@ function AuthMediaCarouselComponent({
         </View>
       ) : null}
     </View>
-  );
+  ));
 }
 
 export const AuthMediaCarousel = memo(AuthMediaCarouselComponent);

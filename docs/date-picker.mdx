@@ -73,8 +73,8 @@ A range takes two presses in either order; between them the band follows the poi
 | `onChange?` | `(value) => void` | — | Pickers: on Apply. Calendars: on press / completed range. |
 | `minDate?` / `maxDate?` | `Date \| null` | — | Disable days outside. |
 | `isDateUnavailable?` | `(date: Date) => boolean` | — | Disable arbitrary days. |
-| `weekStartsOn?` | `0 … 6` | `0` (Sunday) | First grid column. |
-| `locale?` | `string` | runtime | Month, weekday and trigger text. |
+| `weekStartsOn?` | `0 … 6` | locale week start, otherwise Sunday | First grid column. |
+| `locale?` | `string` | `DirectionProvider` locale | Month, weekday and trigger text. |
 | `DatePicker.placeholder?` | `string` | `'Select date'` | Trigger text with no value. |
 | `DateRangePicker.quickSelect?` | `boolean` | `true` | Preset column. |
 | `open?` / `defaultOpen?` / `onOpenChange?` | | — | Popup state (pickers). |

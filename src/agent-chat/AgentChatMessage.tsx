@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import Animated, {
@@ -58,6 +59,7 @@ const Line = memo(function Line({
   color: string;
   animate: boolean;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const progress = useSharedValue(animate ? 0 : 1);
   useEffect(() => {
     progress.value = withTiming(1, { duration: LINE_MS, easing: LINE_EASE });
@@ -71,13 +73,13 @@ const Line = memo(function Line({
     }),
     [progress],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View style={animatedStyle}>
       <Text variant="body-regular" style={{ color }}>
         {text}
       </Text>
     </Animated.View>
-  );
+  ));
 });
 
 function defaultCopy(text: string): Promise<void> {
@@ -123,6 +125,7 @@ function MessageActions({
   formatTime: (at: number) => string;
   labels: Required<NonNullable<AgentChatMessageProps['labels']>>;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useAgentChatPalette();
   const [copied, setCopied] = useState(false);
   const [speakingState, setSpeaking] = useState(false);
@@ -191,7 +194,7 @@ function MessageActions({
     palette,
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       {...dataHook('bloomAgentChatActions', hidden ? 'hidden' : 'shown')}
       pointerEvents={hidden ? 'none' : 'auto'}
@@ -227,12 +230,12 @@ function MessageActions({
       {at ? (
         <Text
           variant="caption-1-regular"
-          style={{ marginLeft: 4, color: palette.textTertiary }}>
+          style={{ marginStart: 4, color: palette.textTertiary }}>
           {formatTime(at)}
         </Text>
       ) : null}
     </View>
-  );
+  ));
 }
 
 const DEFAULT_LABELS = {
@@ -255,6 +258,7 @@ export function AgentChatMessage({
   style,
   testID,
 }: AgentChatMessageProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
   const reducedMotion = useReducedMotion();
@@ -275,16 +279,16 @@ export function AgentChatMessage({
       paddingBottom: 11,
       boxShadow: palette.shadowCard,
     };
-    return (
+    return localizeBloomCopy((
       <View testID={testID} style={[bubble, style]}>
         <Text variant="body-regular" style={{ color: palette.text }}>
           {text}
         </Text>
       </View>
-    );
+    ));
   }
 
-  return (
+  return localizeBloomCopy((
     <View
       {...dataHook('bloomAgentChatMessage')}
       testID={testID}
@@ -305,6 +309,6 @@ export function AgentChatMessage({
         labels={merged}
       />
     </View>
-  );
+  ));
 }
 AgentChatMessage.displayName = 'AgentChatMessage';

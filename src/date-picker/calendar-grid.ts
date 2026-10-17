@@ -11,6 +11,19 @@
  */
 
 import type { DateRange, WeekStart } from './types';
+import type { Direction } from '../direction/types';
+
+/** Locale week metadata when the runtime provides it; Sunday remains the fallback. */
+export function weekStartForLocale(locale: string): WeekStart {
+  try {
+    const value = new Intl.Locale(locale) as Intl.Locale & {
+      weekInfo?: { firstDay: number };
+      getWeekInfo?: () => { firstDay: number };
+    };
+    const firstDay = (value.getWeekInfo?.() ?? value.weekInfo)?.firstDay;
+    return firstDay === undefined ? 0 : (firstDay % 7) as WeekStart;
+  } catch { return 0; }
+}
 
 const MS_PER_DAY = 86_400_000;
 
@@ -304,12 +317,12 @@ export type CalendarNavigationKey =
   | 'PageDown';
 
 /** The day focus moves to for `key`, or `null` for any other key. */
-export function moveFocusedDate(date: Date, key: string, weekStartsOn: WeekStart = 0): Date | null {
+export function moveFocusedDate(date: Date, key: string, weekStartsOn: WeekStart = 0, direction: Direction = 'ltr'): Date | null {
   switch (key) {
     case 'ArrowLeft':
-      return addDays(date, -1);
+      return addDays(date, direction === 'rtl' ? 1 : -1);
     case 'ArrowRight':
-      return addDays(date, 1);
+      return addDays(date, direction === 'rtl' ? -1 : 1);
     case 'ArrowUp':
       return addDays(date, -7);
     case 'ArrowDown':

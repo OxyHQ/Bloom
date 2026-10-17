@@ -57,6 +57,8 @@ export type TextFieldInputProps = Omit<
    * identically. Respects reduced-motion (snaps instead of animating).
    */
   floatingLabel?: boolean;
+  /** Direction of the value; email, URL and phone values default to LTR. */
+  inputDir?: 'ltr' | 'rtl' | 'auto';
 };
 
 export type TextFieldLabelProps = React.PropsWithChildren<

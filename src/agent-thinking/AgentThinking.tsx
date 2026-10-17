@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useEffect, useState } from 'react';
 import { Platform, View, type TextStyle, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -166,12 +167,13 @@ export function dotOpacities(variant: 'wave' | 'spin', phase: number): number[] 
 }
 
 function Dot({ opacity, color }: { opacity: number; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const value = useSharedValue(opacity);
   useEffect(() => {
     value.value = withTiming(opacity, { duration: DOTS_FADE_MS, easing: EASE });
   }, [opacity, value]);
   const animatedStyle = useAnimatedStyle(() => ({ opacity: value.value }), [value]);
-  return <Animated.View style={[DOT_STYLE, { backgroundColor: color }, animatedStyle]} />;
+  return localizeBloomCopy(<Animated.View style={[DOT_STYLE, { backgroundColor: color }, animatedStyle]} />);
 }
 
 const DOT_STYLE: ViewStyle = { width: DOTS_SIZE, height: DOTS_SIZE, borderRadius: 1 };
@@ -185,6 +187,7 @@ function DotsIndicator({
   color: string;
   reducedMotion: boolean;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [opacities, setOpacities] = useState<number[]>(DOTS_SEED);
 
   useEffect(() => {
@@ -197,13 +200,13 @@ function DotsIndicator({
     return () => clearInterval(id);
   }, [variant, reducedMotion]);
 
-  return (
+  return localizeBloomCopy((
     <View aria-hidden testID="agent-thinking-dots" style={DOTS_BOX}>
       {opacities.map((opacity, i) => (
         <Dot key={i} opacity={opacity} color={color} />
       ))}
     </View>
-  );
+  ));
 }
 
 const DOTS_EDGE = DOTS_GRID * DOTS_SIZE + (DOTS_GRID - 1) * DOTS_GAP;
@@ -245,6 +248,7 @@ function Star({
   color: string;
   reducedMotion: boolean;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const size = STAR_SIZE * star.scale;
   const scale = useSharedValue(reducedMotion ? 1 : 0);
   const opacity = useSharedValue(reducedMotion ? 0.7 : 0);
@@ -283,7 +287,7 @@ function Star({
     [scale, opacity],
   );
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       style={[
         {
@@ -300,7 +304,7 @@ function Star({
         <Path d={STAR_PATH} fill={color} />
       </Svg>
     </Animated.View>
-  );
+  ));
 }
 
 function StarsIndicator({
@@ -310,7 +314,8 @@ function StarsIndicator({
   color: string;
   reducedMotion: boolean;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       aria-hidden
       testID="agent-thinking-stars"
@@ -320,7 +325,7 @@ function StarsIndicator({
         <Star key={i} index={i} star={star} color={color} reducedMotion={reducedMotion} />
       ))}
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -349,6 +354,7 @@ function InfinityIndicator({
   color: string;
   reducedMotion: boolean;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const offset = useSharedValue(0);
 
   useEffect(() => {
@@ -367,7 +373,7 @@ function InfinityIndicator({
   const animatedProps = useAnimatedProps(() => ({ strokeDashoffset: offset.value }), [offset]);
   const dash = (INFINITY_TRAIL / 100) * INFINITY_LENGTH;
 
-  return (
+  return localizeBloomCopy((
     <View
       aria-hidden
       testID="agent-thinking-infinity"
@@ -401,7 +407,7 @@ function InfinityIndicator({
         />
       </Svg>
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -411,6 +417,7 @@ function InfinityIndicator({
 const MONO_FAMILY = IS_WEB ? 'var(--bloom-font-mono)' : 'JetBrains Mono';
 
 function ElapsedTimer({ color }: { color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -419,7 +426,7 @@ function ElapsedTimer({ color }: { color: string }) {
     return () => clearInterval(id);
   }, []);
 
-  return (
+  return localizeBloomCopy((
     <Text
       testID="agent-thinking-timer"
       variant="caption-1-regular"
@@ -427,7 +434,7 @@ function ElapsedTimer({ color }: { color: string }) {
     >
       {`${elapsed.toFixed(1)}s`}
     </Text>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -443,6 +450,7 @@ function AgentThinkingComponent({
   style,
   testID,
 }: AgentThinkingProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const color = resolveTone(theme, tone ?? VARIANT_TONE[variant]);
@@ -462,7 +470,7 @@ function AgentThinkingComponent({
       }
     : { ...TYPE_SCALE['body-medium'], color };
 
-  return (
+  return localizeBloomCopy((
     <View
       role="status"
       testID={testID}
@@ -493,7 +501,7 @@ function AgentThinkingComponent({
       </Text>
       {showTimer && <ElapsedTimer color={resolveTone(theme, 'subtle')} />}
     </View>
-  );
+  ));
 }
 
 export const AgentThinking = memo(AgentThinkingComponent);

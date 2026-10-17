@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Image,
@@ -77,6 +78,7 @@ function CoverImage({
   position: { x: number; y: number };
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [box, setBox] = useState<{ width: number; height: number } | null>(null);
   const [natural, setNatural] = useState<{ width: number; height: number } | null>(null);
   const resolved: ImageSourcePropType = typeof source === 'string' ? { uri: source } : source;
@@ -98,7 +100,7 @@ function CoverImage({
     return { width, height, left: (box.width - width) * position.x, top: (box.height - height) * position.y };
   }, [box, natural, position.x, position.y]);
 
-  return (
+  return localizeBloomCopy((
     <View style={StyleSheet.absoluteFill} onLayout={onLayout} testID={testID ? `${testID}-frame` : undefined}>
       <Image
         testID={testID}
@@ -114,7 +116,7 @@ function CoverImage({
         }
       />
     </View>
-  );
+  ));
 }
 
 /**
@@ -134,16 +136,17 @@ function RollingHeadline({
   color: string;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   // Counts up 0 → the total on mount: the target flips after the first render
   // so the roll has 0 to start from.
   const [target, setTarget] = useState(duration > 0 ? 0 : value);
   useEffect(() => setTarget(value), [value]);
   const rolled = useCountUp(target, Math.max(1, duration));
-  return (
+  return localizeBloomCopy((
     <Text variant="title-1-medium" numberOfLines={1} testID={testID} style={[{ color }, TABULAR]}>
       {format(rolled)}
     </Text>
-  );
+  ));
 }
 
 function AiProfileCardComponent({
@@ -175,6 +178,7 @@ function AiProfileCardComponent({
   style,
   testID,
 }: AiProfileCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const { width: viewport } = useWindowDimensions();
   const wide = viewport >= BREAKPOINTS.sm;
@@ -218,7 +222,7 @@ function AiProfileCardComponent({
     [cells, columns, colors.grid, animateIn, wide, activeCell, onActiveCellChange, testID],
   );
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -421,7 +425,7 @@ function AiProfileCardComponent({
         </View>
       </View>
     </View>
-  );
+  ));
 }
 
 function pairs(count: number): number[][] {

@@ -1,3 +1,5 @@
+import { useDirection } from '../direction';
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
 
@@ -29,10 +31,12 @@ const FIRST_CENTER = 15;
  * right of it and running on to 11.5.
  */
 function TreeConnector({ count, color }: { count: number; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
+  const direction = useDirection();
   if (count === 0) return null;
   const height = FIRST_CENTER + ROW_PITCH * (count - 1) + 1;
-  return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 16.5, width: 12, height }}>
+  return localizeBloomCopy((
+    <View pointerEvents="none" style={{ position: 'absolute', top: 0, start: 16.5, width: 12, height, transform: [{ scaleX: direction === 'rtl' ? -1 : 1 }] }}>
       <Svg width={12} height={height} viewBox={`0 0 12 ${height}`} fill="none">
         {Array.from({ length: count }, (_, i) => {
           const y = FIRST_CENTER + ROW_PITCH * i;
@@ -40,7 +44,7 @@ function TreeConnector({ count, color }: { count: number; color: string }) {
         })}
       </Svg>
     </View>
-  );
+  ));
 }
 
 function TreeRow({
@@ -58,6 +62,7 @@ function TreeRow({
   onPress?: (item: SidebarTreeItem, folder: SidebarTreeFolder) => void;
   palette: SidebarPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const style: WebCssStyle = {
     width: '100%',
@@ -67,12 +72,12 @@ function TreeRow({
     borderRadius: borderRadius.full,
     paddingTop: 5,
     paddingBottom: 5,
-    paddingRight: 8,
-    paddingLeft: 36,
+    paddingEnd: 8,
+    paddingStart: 36,
     backgroundColor: selected || hovered ? palette.rowHover : 'transparent',
     '--bloom-sidebar-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...(IS_WEB
         ? {
@@ -115,7 +120,7 @@ function TreeRow({
         </View>
       ) : null}
     </Pressable>
-  );
+  ));
 }
 
 /**
@@ -142,6 +147,7 @@ function SidebarFolderComponent({
   style,
   testID,
 }: SidebarFolderProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const reducedMotion = useReducedMotion();
@@ -185,7 +191,7 @@ function SidebarFolderComponent({
     '--bloom-sidebar-ring': palette.ring,
   };
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column' }, style]}>
       <Pressable
         {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
@@ -224,7 +230,7 @@ function SidebarFolderComponent({
         </View>
       </Animated.View>
     </View>
-  );
+  ));
 }
 
 export const SidebarFolder = memo(SidebarFolderComponent);

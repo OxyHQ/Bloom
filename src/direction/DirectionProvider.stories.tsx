@@ -1,0 +1,11 @@
+import React from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { DirectionProvider } from './DirectionProvider';
+import { StyledView } from '../styles/styled-primitives';
+import { Button } from '../button/Button';
+import { Text } from '../typography';
+const meta: Meta<typeof DirectionProvider> = { title: 'Foundation/Direction', component: DirectionProvider, args: { locale: 'ar' } };
+export default meta;
+type Story = StoryObj<typeof DirectionProvider>;
+export const RightToLeft: Story = { render: args => <DirectionProvider {...args}><StyledView className="flex-row items-center gap-3"><Text>البداية</Text><Button icon="RiArrowRightSLine">التالي</Button><Text>النهاية</Text></StyledView></DirectionProvider> };
+export const LeftToRight: Story = { ...RightToLeft, args: { locale: 'en' } };

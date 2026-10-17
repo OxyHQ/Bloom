@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 
 import { ComposerPillBase } from './ComposerPillBase';
@@ -10,10 +11,11 @@ import type { ComposerPillProps } from './types';
  * The implementation is `ComposerPillBase`; this file only binds the panel.
  */
 export function ComposerPill(props: ComposerPillProps) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <ComposerPopoverContext.Provider value={ComposerPopover}>
       <ComposerPillBase {...props} />
     </ComposerPopoverContext.Provider>
-  );
+  ));
 }
 ComposerPill.displayName = 'ComposerPill';

@@ -1,0 +1,29 @@
+# Project Board
+
+A shared project board for web, iOS and Android. It keeps the original five-column ticket layout, compact member avatars, priority/project chips, sort/filter/display menus, empty-column illustration, create-more flow and ticket detail panel.
+
+```tsx
+import { ProjectBoard } from '@oxy.so/bloom/project-board';
+
+<ProjectBoard
+  initialColumns={columns}
+  members={members}
+  projects={['Bloom', 'Product']}
+  currentUserId="maya"
+  onColumnsChange={saveColumns}
+/>
+```
+
+`initialColumns` is copied on mount. Updates are local until `onColumnsChange` persists them. Limits are display metadata, as in the original board; reaching a limit does not reject a ticket. The package has no demo people or fake activity. The Project Board template outside `src/` supplies the original columns, people, descriptions, discussion, resources and token series.
+
+Tickets carry description, assignees, priority, project, favorite state and comments. `resources` supplies external resource chips; `tokenUsage` supplies the existing `TokensChartCard`. Opening a card calls `onTicketOpen`. `initialTicketId` opens a detail panel on mount; web also recognizes `#ticket=<id>` and hash changes. Provide `onCopyTicketLink` and `onCopyTicketId` for the product's native clipboard and routing integration; web defaults to the current URL and browser clipboard. Copy failures are announced.
+
+Creation and detail panels use `useDialogControl()` through Bloom's platform-bound Dialog. Creation trims fields, rejects a blank title and supports creating several tickets without closing. Detail edits persist immediately; description editing has Save/Cancel. Comments reject whitespace and append without replacing history.
+
+Drag uses Gesture Handler and Reanimated on both platforms: mouse movement activates after five pixels; touch activates after 180 ms. Hit testing chooses the column underneath the pointer before its ticket positions, so a short neighboring column cannot steal a drop. Empty columns accept drops; dropping outside or cancelling leaves the original order intact. Filtered moves preserve hidden tickets. Drag sets sorting back to manual. Pointer proximity scrolls columns and the board during movement.
+
+On web, Enter opens a ticket; space picks it up, arrows move it, space commits and Escape restores the previous order. Left/right follow the locale direction. Native screen-reader actions move up/down or to an adjacent column. Custom copy and `DirectionProvider` are supported through the same shared implementation.
+
+## Motion and verification
+
+The original empty-state SVG geometry and staggered card/line reveal timing are preserved. Cards enter/exit and reorder through Reanimated, respecting reduced motion. Dialog opening/closing uses Bloom's existing surface motion. The original browser genie filter warps live DOM pixels using `feDisplacementMap`; a shared React Native view does not expose those pixels as an SVG filter input, so that exact deformation is not reproduced. Real Chrome at 1600×1000 verified the full demo, opening ticket details with resources and token history, favoriting, posting a comment, creating a ticket in Done, keyboard transfer into Review, and a real mouse drag back into Done, with no page errors. Keyboard movement is intercepted during the capture phase because react-native-web Pressable consumes space events before they bubble. Eleven Jest cases verify data transitions, creation/create-more, detail comments/favorites, native accessibility actions and the imperative surface/content boundary. Real iOS/Android verification remains required for touch gesture arbitration, scrolling and painted stacking.

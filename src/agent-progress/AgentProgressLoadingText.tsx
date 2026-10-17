@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -92,6 +93,7 @@ function AgentProgressLoadingTextComponent({
   numberOfLines = 1,
   testID,
 }: AgentProgressLoadingTextProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const base = resolveButtonRamps(theme).neutral[500];
@@ -120,7 +122,7 @@ function AgentProgressLoadingTextComponent({
   const highlightRgb = useMemo(() => parseRgba(highlight), [highlight]);
 
   if (IS_WEB) {
-    return (
+    return localizeBloomCopy((
       <Text
         variant={variant}
         numberOfLines={numberOfLines}
@@ -131,7 +133,7 @@ function AgentProgressLoadingTextComponent({
       >
         {children}
       </Text>
-    );
+    ));
   }
 
   const content =
@@ -146,7 +148,7 @@ function AgentProgressLoadingTextComponent({
         })
       : children;
 
-  return (
+  return localizeBloomCopy((
     <Text
       variant={variant}
       numberOfLines={numberOfLines}
@@ -156,7 +158,7 @@ function AgentProgressLoadingTextComponent({
     >
       {content}
     </Text>
-  );
+  ));
 }
 
 export const AgentProgressLoadingText = memo(AgentProgressLoadingTextComponent);

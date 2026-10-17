@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, {
   useCallback,
   useEffect,
@@ -132,6 +133,7 @@ export function SettingsModal({
   labels,
   testID,
 }: SettingsModalProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const reducedMotion = useReducedMotion();
@@ -336,7 +338,7 @@ export function SettingsModal({
   const pageConfig = currentPage ? pages[currentPage] : undefined;
   const closeLabel = labels?.close ?? 'Close settings';
 
-  return (
+  return localizeBloomCopy((
     <ModalPortal>
       <SettingsModalContext.Provider value={context}>
         <OverlayRoot>
@@ -377,8 +379,8 @@ export function SettingsModal({
                           borderRadius: 0,
                           paddingTop: insets.top,
                           paddingBottom: insets.bottom,
-                          paddingLeft: insets.left,
-                          paddingRight: insets.right,
+                          paddingStart: insets.left,
+                          paddingEnd: insets.right,
                         }
                       : {
                           width: Math.min(PANEL_WIDTH, vw - VIEWPORT_GUTTER * 2),
@@ -496,7 +498,7 @@ export function SettingsModal({
         </OverlayRoot>
       </SettingsModalContext.Provider>
     </ModalPortal>
-  );
+  ));
 }
 
 function ringVars(palette: SettingsPalette): WebCssStyle | null {
@@ -526,8 +528,9 @@ function SettingsRail({
   layout: SettingsModalLayout;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const compact = layout === 'compact';
-  return (
+  return localizeBloomCopy((
     <ScrollView
       role="navigation"
       aria-label={label}
@@ -563,7 +566,7 @@ function SettingsRail({
         </View>
       ))}
     </ScrollView>
-  );
+  ));
 }
 
 function RailRow({
@@ -581,12 +584,13 @@ function RailRow({
   palette: SettingsPalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const Icon = item.icon;
   const onPress = item.page
     ? () => onSelect(item.page as string)
     : item.onPress;
-  return (
+  return localizeBloomCopy((
     <Pressable
       role="button"
       accessibilityLabel={item.label}
@@ -627,7 +631,7 @@ function RailRow({
         </View>
       ) : null}
     </Pressable>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -645,8 +649,9 @@ function SettingsCloseButton({
   palette: SettingsPalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
-  return (
+  return localizeBloomCopy((
     <Pressable
       role="button"
       accessibilityLabel={label}
@@ -662,7 +667,7 @@ function SettingsCloseButton({
     >
       <RiCloseLine width={16} height={16} fill={palette.iconSecondary} />
     </Pressable>
-  );
+  ));
 }
 
 /**
@@ -686,7 +691,8 @@ function CompactHeader({
   palette: SettingsPalette;
   testID?: string;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       style={[styles.compactHeader, { borderBottomColor: palette.separator }]}
       testID={testID ? `${testID}-title-row` : undefined}
@@ -719,7 +725,7 @@ function CompactHeader({
         testID={testID ? `${testID}-close` : undefined}
       />
     </View>
-  );
+  ));
 }
 
 function PageScroller({
@@ -736,6 +742,7 @@ function PageScroller({
   insetTop?: number;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [scrolled, setScrolled] = useState(false);
   const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const next = event.nativeEvent.contentOffset.y > 0;
@@ -747,7 +754,7 @@ function PageScroller({
       ? { transitionProperty: 'opacity', transitionDuration: '200ms', transitionTimingFunction: 'ease-out' }
       : null),
   };
-  return (
+  return localizeBloomCopy((
     <View style={styles.scrollHost}>
       <ScrollView
         style={styles.scroll}
@@ -770,7 +777,7 @@ function PageScroller({
         <VerticalFade color={palette.primary} />
       </View>
     </View>
-  );
+  ));
 }
 
 function SavedToast({
@@ -786,6 +793,7 @@ function SavedToast({
   reducedMotion: boolean;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const shown = phase === 'shown';
   const [box, setBox] = useState({ width: 0, height: 26 });
   // `translate-y-1/2`, `calc(50% + 12px)` (rising in) and `calc(50% - 10px)` (drifting out).
@@ -793,7 +801,7 @@ function SavedToast({
   const translateY = phase === 'shown' ? half : phase === 'hidden' ? half + 12 : half - 10;
   const motion: WebCssStyle = {
     opacity: shown ? 1 : 0,
-    marginLeft: -box.width / 2,
+    marginStart: -box.width / 2,
     transform: [{ translateY }, { scale: shown ? 1 : 0.9 }],
     ...(IS_WEB
       ? {
@@ -804,7 +812,7 @@ function SavedToast({
         }
       : null),
   };
-  return (
+  return localizeBloomCopy((
     <View
       pointerEvents="none"
       aria-live="polite"
@@ -829,7 +837,7 @@ function SavedToast({
         {label}
       </Text>
     </View>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({
@@ -859,7 +867,7 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   railChevron: {
-    marginLeft: 'auto',
+    marginStart: 'auto',
   },
   compactHeader: {
     flexDirection: 'row',
@@ -873,7 +881,7 @@ const styles = StyleSheet.create({
   compactBack: {
     width: 32,
     height: 32,
-    marginLeft: -8,
+    marginStart: -8,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 9999,
@@ -901,7 +909,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   groupLabel: {
-    paddingLeft: 8,
+    paddingStart: 8,
   },
   groupRows: {
     gap: 4,
@@ -960,7 +968,7 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     paddingTop: 4,
     paddingBottom: 4,
-    paddingRight: 10,
-    paddingLeft: 6,
+    paddingEnd: 10,
+    paddingStart: 6,
   },
 });

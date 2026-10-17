@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 import Animated, {
@@ -89,7 +90,8 @@ type Labels = typeof DEFAULT_LABELS;
 
 /** 16×16, 2px round stroke. */
 function ChevronDownSmall({ color }: { color: string }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Path
         d="M4 7L7.29289 10.2929C7.68342 10.6834 8.31658 10.6834 8.70711 10.2929L12 7"
@@ -98,10 +100,11 @@ function ChevronDownSmall({ color }: { color: string }) {
         strokeLinecap="round"
       />
     </Svg>
-  );
+  ));
 }
 
 function RotatingChevron({ open, color }: { open: boolean; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const rotation = useSharedValue(open ? 180 : 0);
   useEffect(() => {
@@ -114,11 +117,11 @@ function RotatingChevron({ open, color }: { open: boolean; color: string }) {
     () => ({ transform: [{ rotate: `${rotation.value}deg` }] }),
     [rotation],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View style={[{ width: 16, height: 16, flexShrink: 0 }, animatedStyle]}>
       <ChevronDownSmall color={color} />
     </Animated.View>
-  );
+  ));
 }
 
 /** A row that fills on hover: the rail's "New chat", the account menu's usage toggle and upgrade. */
@@ -145,6 +148,7 @@ function HoverRow({
   expanded?: boolean;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const lit = !disabled && (hovered || active);
   const merged: WebCssStyle = {
@@ -157,7 +161,7 @@ function HoverRow({
     opacity: disabled ? 0.5 : 1,
     '--bloom-agent-chat-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomAgentChatControl')}
       testID={testID}
@@ -173,7 +177,7 @@ function HoverRow({
       style={merged}>
       {children}
     </Pressable>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -201,10 +205,11 @@ function RowMenu({
   palette: AgentChatPalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } =
     useAgentChatPlatform();
   const name = labels.moreFor(title);
-  return (
+  return localizeBloomCopy((
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild label={name}>
         <IconAction
@@ -237,7 +242,7 @@ function RowMenu({
         ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  ));
 }
 
 function ThreadRow({
@@ -265,6 +270,7 @@ function ThreadRow({
   palette: AgentChatPalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(thread.title);
@@ -306,7 +312,7 @@ function ThreadRow({
       borderWidth: 0,
       backgroundColor: 'transparent',
     };
-    return (
+    return localizeBloomCopy((
       <View
         style={{
           borderRadius: ROW_RADIUS,
@@ -336,7 +342,7 @@ function ThreadRow({
           style={field}
         />
       </View>
-    );
+    ));
   }
 
   const rowStyle: WebCssStyle = {
@@ -363,13 +369,13 @@ function ThreadRow({
     gap: 6,
     paddingTop: 6,
     paddingBottom: 6,
-    paddingLeft: 8,
+    paddingStart: 8,
     borderRadius: ROW_RADIUS,
     opacity: disabled ? 0.5 : 1,
     '--bloom-agent-chat-ring': palette.ring,
   };
 
-  return (
+  return localizeBloomCopy((
     <View {...dataHook('bloomAgentChatThread')} testID={testID} style={rowStyle}>
       <Pressable
         {...dataHook('bloomAgentChatControl')}
@@ -415,7 +421,7 @@ function ThreadRow({
           flexShrink: 0,
           alignItems: 'center',
           justifyContent: 'center',
-          paddingRight: 4,
+          paddingEnd: 4,
         }}>
         <View
           {...dataHook('bloomAgentChatAge')}
@@ -460,7 +466,7 @@ function ThreadRow({
         </View>
       </View>
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -482,6 +488,7 @@ function AccountMenu({
   palette: AgentChatPalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -509,7 +516,7 @@ function AccountMenu({
     '--bloom-agent-chat-ring': palette.ring,
   };
 
-  return (
+  return localizeBloomCopy((
     <DropdownMenu
       open={open}
       onOpenChange={(next) => {
@@ -571,8 +578,8 @@ function AccountMenu({
                     gap: 8,
                     paddingTop: 2,
                     paddingBottom: 2,
-                    paddingRight: 8,
-                    paddingLeft: 36,
+                    paddingEnd: 8,
+                    paddingStart: 36,
                   }}>
                   <Text
                     variant="body-2-medium"
@@ -599,7 +606,7 @@ function AccountMenu({
                   }}
                   hoverBackground={palette.chatSurface}
                   palette={palette}
-                  style={{ gap: 8, paddingTop: 4, paddingBottom: 4, paddingRight: 8, paddingLeft: 36 }}>
+                  style={{ gap: 8, paddingTop: 4, paddingBottom: 4, paddingEnd: 8, paddingStart: 36 }}>
                   <Text
                     variant="body-2-medium"
                     numberOfLines={1}
@@ -643,7 +650,7 @@ function AccountMenu({
         ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -670,6 +677,7 @@ export function AgentChatHistoryBase({
   style,
   testID,
 }: AgentChatHistoryProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
   const l = useMemo<Labels>(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
@@ -688,7 +696,7 @@ export function AgentChatHistoryBase({
     padding: 12,
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       role="complementary"
@@ -755,7 +763,7 @@ export function AgentChatHistoryBase({
             borderTopWidth: 1,
             borderTopColor: palette.separator,
             paddingTop: 12,
-            paddingRight: 4,
+            paddingEnd: 4,
           }}>
           {account ? (
             <AccountMenu
@@ -786,5 +794,5 @@ export function AgentChatHistoryBase({
         </View>
       ) : null}
     </View>
-  );
+  ));
 }

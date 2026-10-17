@@ -1,3 +1,4 @@
+import { useBloomLocale } from '../direction/context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
@@ -18,6 +19,7 @@ import {
   startOfDay,
   startOfMonth,
   today,
+  weekStartForLocale,
   type DayCellState,
 } from './calendar-grid';
 import { CALENDAR_CSS, CalendarMonth, dayKey } from './CalendarMonth';
@@ -65,13 +67,17 @@ function CalendarFrame({
   minDate,
   maxDate,
   isDateUnavailable,
-  weekStartsOn = 0,
-  locale,
+  weekStartsOn: weekStartsOnProp,
+  locale: localeProp,
   accessibilityLabel,
   style,
   testID,
 }: CalendarFrameProps) {
   const theme = useTheme();
+  const context = useBloomLocale();
+  const locale = localeProp ?? context.locale;
+  const weekStartsOn = weekStartsOnProp ?? weekStartForLocale(locale);
+  const direction = context.direction;
   const palette = useMemo(() => resolveCalendarPalette(theme), [theme]);
   const [firstMonth, setFirstMonth] = useState(() => startOfMonth(initialDate));
   const [focusedDate, setFocusedDate] = useState(() => startOfDay(initialDate));
@@ -139,7 +145,7 @@ function CalendarFrame({
 
   const onKeyDown = useCallback(
     (key: string, preventDefault: () => void) => {
-      const next = moveFocusedDate(focusedDate, key, weekStartsOn);
+      const next = moveFocusedDate(focusedDate, key, weekStartsOn, direction);
       if (!next) return;
       preventDefault();
       focusAfterMove.current = true;
@@ -147,7 +153,7 @@ function CalendarFrame({
       showMonthOf(next);
       onPreviewDay?.(next);
     },
-    [focusedDate, weekStartsOn, showMonthOf, onPreviewDay],
+    [focusedDate, weekStartsOn, direction, showMonthOf, onPreviewDay],
   );
 
   const handlePress = useCallback(
@@ -169,7 +175,7 @@ function CalendarFrame({
   return (
     <View
       testID={testID}
-      style={[{ flexDirection: 'row', gap: MONTHS_GAP, alignSelf: 'flex-start' }, style]}
+      style={[{ direction, flexDirection: 'row', gap: MONTHS_GAP, alignSelf: 'flex-start' }, style]}
     >
       {months.map((month, index) => (
         <CalendarMonth

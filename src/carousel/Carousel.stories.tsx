@@ -6,6 +6,7 @@ import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 import { resolveButtonRamps } from '../button/shared';
 import { Carousel, CarouselItem } from './index';
+import { DirectionProvider } from '../direction';
 
 const meta: Meta<typeof Carousel> = {
   title: 'Base/Carousel',
@@ -88,6 +89,17 @@ export const MixedWidths: Story = {
       </Carousel>
     </Frame>
   ),
+};
+
+/** RTL uses physical viewport bounds for mixed-width slide alignment. */
+export const RightToLeft: Story = {
+  render: () => <DirectionProvider locale="ar"><Frame>
+    <Carousel accessibilityLabel="RTL gallery">
+      {[220, 320, 180, 440].map((width, index) => <CarouselItem key={index} width={width}>
+        <Slide label={`Slide ${index + 1}`} />
+      </CarouselItem>)}
+    </Carousel>
+  </Frame></DirectionProvider>,
 };
 
 /** No arrows, dots only; and arrows only. A single slide shows no dots. */

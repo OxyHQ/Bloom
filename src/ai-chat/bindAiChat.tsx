@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
@@ -19,38 +20,42 @@ import type {
  */
 export function bindAiChat(platform: AiChatPlatform) {
   function AiChatFeedbackRow(props: AiChatFeedbackRowProps) {
-    return (
+  const localizeBloomCopy = useTemplateCopy();
+    return localizeBloomCopy((
       <AiChatPlatformContext.Provider value={platform}>
         <AiChatFeedbackRowBase {...props} />
       </AiChatPlatformContext.Provider>
-    );
+    ));
   }
   AiChatFeedbackRow.displayName = 'AiChatFeedbackRow';
 
   function AiChatAssistantMessage(props: AiChatAssistantMessageProps) {
-    return (
+  const localizeBloomCopy = useTemplateCopy();
+    return localizeBloomCopy((
       <AiChatPlatformContext.Provider value={platform}>
         <AiChatAssistantMessageBase {...props} />
       </AiChatPlatformContext.Provider>
-    );
+    ));
   }
   AiChatAssistantMessage.displayName = 'AiChatAssistantMessage';
 
   function AiChatImageGeneration(props: AiChatImageGenerationProps) {
-    return (
+  const localizeBloomCopy = useTemplateCopy();
+    return localizeBloomCopy((
       <AiChatPlatformContext.Provider value={platform}>
         <AiChatImageGenerationBase {...props} />
       </AiChatPlatformContext.Provider>
-    );
+    ));
   }
   AiChatImageGeneration.displayName = 'AiChatImageGeneration';
 
   function AiChatGalleryPanel(props: AiChatGalleryPanelProps) {
-    return (
+  const localizeBloomCopy = useTemplateCopy();
+    return localizeBloomCopy((
       <AiChatPlatformContext.Provider value={platform}>
         <AiChatGalleryPanelBase {...props} />
       </AiChatPlatformContext.Provider>
-    );
+    ));
   }
   AiChatGalleryPanel.displayName = 'AiChatGalleryPanel';
 

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
@@ -217,6 +218,7 @@ function Presence({
   testID?: string;
   children: React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(show);
   const firstRender = useRef(true);
@@ -298,11 +300,11 @@ function Presence({
   }, [opacity, y, blur, scale, rotate]);
 
   if (!mounted && !show) return null;
-  return (
+  return localizeBloomCopy((
     <Animated.View pointerEvents={pointerEvents} testID={testID} style={[style, animatedStyle]}>
       {children}
     </Animated.View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -333,6 +335,7 @@ function ArcRing({
   color: string;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const c = viewBox / 2;
   // The dash is animated by OFFSET, not length: an animated `strokeDasharray`
   // array never reaches the DOM through react-native-svg on web (measured: it
@@ -342,7 +345,7 @@ function ArcRing({
     () => ({ strokeDashoffset: circumference * (1 - progress.value) }),
     [progress, circumference],
   );
-  return (
+  return localizeBloomCopy((
     <Svg width={size} height={size} viewBox={`0 0 ${viewBox} ${viewBox}`} aria-hidden testID={testID}>
       <G transform={`rotate(-90 ${c} ${c})`}>
         <Circle cx={c} cy={c} r={r} fill="none" stroke={track} strokeWidth={strokeWidth} />
@@ -359,20 +362,22 @@ function ArcRing({
         />
       </G>
     </Svg>
-  );
+  ));
 }
 
 function MinimizeIcon({ palette }: { palette: ProgressPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View aria-hidden style={glyph.minimize}>
       <View style={[glyph.minimizeSquare, { backgroundColor: palette.quaternary }]} />
       <View style={[glyph.minimizeBar, { backgroundColor: palette.iconSecondary }]} />
     </View>
-  );
+  ));
 }
 
 function CompletedStepIcon({ palette }: { palette: ProgressPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={15} height={15} viewBox="0 0 14 14" aria-hidden>
       <Circle cx={7} cy={7} r={7} fill={palette.quaternary} />
       <Path
@@ -383,11 +388,12 @@ function CompletedStepIcon({ palette }: { palette: ProgressPalette }) {
         strokeLinecap="round"
       />
     </Svg>
-  );
+  ));
 }
 
 function PendingStepIcon({ palette }: { palette: ProgressPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={15} height={15} viewBox="0 0 15 15" aria-hidden>
       <Circle
         cx={7.5}
@@ -398,22 +404,24 @@ function PendingStepIcon({ palette }: { palette: ProgressPalette }) {
         strokeDasharray={[2, 2]}
       />
     </Svg>
-  );
+  ));
 }
 
 function CurrentStepIcon({ palette }: { palette: ProgressPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={14} height={14} viewBox="0 0 14 14" aria-hidden style={glyph.noShrink}>
       <Path
         d="M7.47 2.47a.75.75 0 0 1 1.06 0l4.177 4.176a.5.5 0 0 1 0 .708L8.53 11.53a.75.75 0 0 1-1.06-1.06l2.72-2.72H2a.75.75 0 0 1 0-1.5h8.19L7.47 3.53a.75.75 0 0 1 0-1.06Z"
         fill={palette.iconSecondary}
       />
     </Svg>
-  );
+  ));
 }
 
 function ExpandIcon({ palette }: { palette: ProgressPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={20} height={20} viewBox="0 0 20 20" aria-hidden>
       <Rect x={1} y={1} width={18} height={18} rx={4} ry={4} fill={palette.quaternary} />
       <Path
@@ -421,7 +429,7 @@ function ExpandIcon({ palette }: { palette: ProgressPalette }) {
         fill={palette.iconSecondary}
       />
     </Svg>
-  );
+  ));
 }
 
 const glyph = StyleSheet.create({
@@ -437,6 +445,7 @@ const glyph = StyleSheet.create({
 
 /** The 24px slot the persistent ring sits over; collapses to 0 once complete (400ms). */
 function RingSpacer({ complete }: { complete: boolean }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const width = useSharedValue(complete ? 0 : SPACER_WIDTH);
   const opacity = useSharedValue(complete ? 0 : 1);
@@ -455,7 +464,7 @@ function RingSpacer({ complete }: { complete: boolean }) {
     () => ({ width: width.value, opacity: opacity.value }),
     [width, opacity],
   );
-  return <Animated.View aria-hidden style={[{ height: 16, flexShrink: 0, overflow: 'hidden' }, style]} />;
+  return localizeBloomCopy(<Animated.View aria-hidden style={[{ height: 16, flexShrink: 0, overflow: 'hidden' }, style]} />);
 }
 
 /** The header label: a new label rises in as the old one rises out (popLayout, 260ms). */
@@ -470,6 +479,7 @@ function StatusLabel({
   grow?: boolean;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [shown, setShown] = useState({ current: label, previous: null as string | null, n: 0 });
   useEffect(() => {
     setShown((s) => (s.current === label ? s : { current: label, previous: s.current, n: s.n + 1 }));
@@ -477,7 +487,7 @@ function StatusLabel({
   const textStyle = [TYPE_SCALE['body-medium'], { color }];
   const clear = useCallback(() => setShown((s) => ({ ...s, previous: null })), []);
   const timing = { duration: 260, easing: EASE };
-  return (
+  return localizeBloomCopy((
     <View style={[labelStyles.box, grow ? labelStyles.grow : null]} testID={testID}>
       <Presence
         key={`in-${shown.n}`}
@@ -498,7 +508,7 @@ function StatusLabel({
         </OutgoingLabel>
       ) : null}
     </View>
-  );
+  ));
 }
 
 function OutgoingLabel({
@@ -510,6 +520,7 @@ function OutgoingLabel({
   onDone: () => void;
   timing: Timing;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [show, setShow] = useState(true);
   useEffect(() => setShow(false), []);
   useEffect(() => {
@@ -517,7 +528,7 @@ function OutgoingLabel({
     const id = setTimeout(onDone, timing.duration);
     return () => clearTimeout(id);
   }, [show, onDone, timing.duration]);
-  return (
+  return localizeBloomCopy((
     <Presence
       show={show}
       initial={false}
@@ -529,7 +540,7 @@ function OutgoingLabel({
     >
       {children}
     </Presence>
-  );
+  ));
 }
 
 const labelStyles = StyleSheet.create({
@@ -540,6 +551,7 @@ const labelStyles = StyleSheet.create({
 
 /** The strikethrough drawn across a completed label: scaleX 0 → 1 from the left, opacity → 0.8 (380ms). */
 function StrikeLine({ color }: { color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const scale = useSharedValue(reducedMotion ? 1 : 0);
   const opacity = useSharedValue(reducedMotion ? 0.8 : 0);
@@ -552,7 +564,7 @@ function StrikeLine({ color }: { color: string }) {
     () => ({ opacity: opacity.value, transform: [{ scaleX: scale.value }] }),
     [scale, opacity],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View
       aria-hidden
       style={[
@@ -568,7 +580,7 @@ function StrikeLine({ color }: { color: string }) {
         style,
       ]}
     />
-  );
+  ));
 }
 
 function revealTiming(index: number, reopening: boolean): Timing {
@@ -586,6 +598,7 @@ function StepLoader({
   duration: number;
   palette: ProgressPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(0);
   useEffect(() => {
@@ -595,7 +608,7 @@ function StepLoader({
     }
     progress.value = withTiming(1, { duration, easing: Easing.linear });
   }, [running, duration, reducedMotion, progress]);
-  return (
+  return localizeBloomCopy((
     <ArcRing
       progress={progress}
       size={14}
@@ -606,7 +619,7 @@ function StepLoader({
       track={palette.border}
       color={palette.ring}
     />
-  );
+  ));
 }
 
 function StepRow({
@@ -630,6 +643,7 @@ function StepRow({
   palette: ProgressPalette;
   testID: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const complete = index < completedCount;
   const active = index === completedCount && completedCount < stepCount;
@@ -668,7 +682,7 @@ function StepRow({
     [padLeft, padRight],
   );
 
-  return (
+  return localizeBloomCopy((
     <Presence
       show
       from={{ opacity: 0, y: -4, blur: 6 }}
@@ -731,7 +745,7 @@ function StepRow({
         </View>
       </Animated.View>
     </Presence>
-  );
+  ));
 }
 
 /**
@@ -739,18 +753,19 @@ function StepRow({
  * over 300ms (CSS `ease`): the colour transition, as a cross-fade.
  */
 function ColorFade({ label, color }: { label: string; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const opacity = useSharedValue(1);
   useEffect(() => {
     opacity.value = withTiming(0, { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) });
   }, [opacity]);
   const style = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
-  return (
+  return localizeBloomCopy((
     <Animated.View aria-hidden pointerEvents="none" style={[rowStyles.fade, style]}>
       <Text variant="body-medium" numberOfLines={1} style={{ color }}>
         {label}
       </Text>
     </Animated.View>
-  );
+  ));
 }
 
 /**
@@ -766,6 +781,7 @@ function ActiveBorder({
   reopening: boolean;
   palette: ProgressPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const top = useSharedValue(index * (ROW_HEIGHT + ROW_GAP));
   useEffect(() => {
@@ -773,7 +789,7 @@ function ActiveBorder({
     top.value = reducedMotion ? target : withSpring(target, SPRING);
   }, [index, reducedMotion, top]);
   const style = useAnimatedStyle(() => ({ top: top.value }), [top]);
-  return (
+  return localizeBloomCopy((
     <Presence
       show
       from={{ opacity: 0, y: -4, blur: 6 }}
@@ -787,7 +803,7 @@ function ActiveBorder({
         style={[rowStyles.border, { borderColor: palette.border }, style]}
       />
     </Presence>
-  );
+  ));
 }
 
 const rowStyles = StyleSheet.create({
@@ -847,6 +863,7 @@ function AgentProgressComponent({
   style,
   testID = 'agent-progress',
 }: AgentProgressProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = resolvePalette(theme);
   const reducedMotion = useReducedMotion();
@@ -1012,7 +1029,7 @@ function AgentProgressComponent({
     : {};
   const activeIndex = complete ? -1 : completedCount;
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       aria-live="polite"
       testID={testID}
@@ -1131,7 +1148,7 @@ function AgentProgressComponent({
         />
       </Presence>
     </Animated.View>
-  );
+  ));
 }
 
 const EXPAND_TRANSITION: WebCssStyle = IS_WEB

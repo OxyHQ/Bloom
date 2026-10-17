@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -37,11 +38,12 @@ function PatientInfoCardComponent({
   style,
   testID,
 }: PatientInfoCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const surfaces = useMemo(() => resolveDashboardSurfaces(theme), [theme]);
   const letters = initials ?? name.trim().charAt(0).toUpperCase();
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[styles.card, { height, backgroundColor: surfaces.secondary }, style]}
@@ -111,7 +113,7 @@ function PatientInfoCardComponent({
         })}
       </View>
     </View>
-  );
+  ));
 }
 
 export const PatientInfoCard = memo(PatientInfoCardComponent);

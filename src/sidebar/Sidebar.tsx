@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
@@ -89,6 +90,7 @@ function SearchField({
   label: string;
   compact?: boolean;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const inputStyle: TextStyle & WebCssStyle = {
     ...TYPE_SCALE['body-medium'],
     // The mobile field carries `tracking-[-0.015em]`.
@@ -100,7 +102,7 @@ function SearchField({
     fontFamily: IS_WEB ? 'var(--bloom-font-sans)' : 'Inter',
     ...(IS_WEB ? { outlineStyle: 'none' as never } : null),
   };
-  return (
+  return localizeBloomCopy((
     <>
       <TextInput
         ref={inputRef}
@@ -126,7 +128,7 @@ function SearchField({
         style={{ backgroundColor: palette.tertiaryHover }}
       />
     </>
-  );
+  ));
 }
 
 const SidebarPanel: React.FC<SidebarProps> = ({
@@ -157,6 +159,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   style,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const reducedMotion = useReducedMotion();
@@ -324,7 +327,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         borderRadius: borderRadius.full,
         backgroundColor: palette.tertiary,
         ...(searchActive
-          ? { flex: 1, gap: 8, paddingLeft: 8, paddingRight: 10, boxShadow: searchRing }
+          ? { flex: 1, gap: 8, paddingStart: 8, paddingEnd: 10, boxShadow: searchRing }
           : { width: 36, gap: 0, paddingLeft: 8, paddingRight: 8 }),
       }}
     >
@@ -389,8 +392,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         backgroundColor: palette.tertiary,
         paddingTop: 8,
         paddingBottom: 8,
-        paddingLeft: 8,
-        paddingRight: 10,
+        paddingStart: 8,
+        paddingEnd: 10,
         boxShadow: searchRing,
       }}
       testID="sidebar-search-field"
@@ -492,7 +495,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     </View>
   );
 
-  return (
+  return localizeBloomCopy((
     <CollapseProvider value={progress}>
       <Animated.View
         role="complementary"
@@ -622,7 +625,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         </View>
       </Animated.View>
     </CollapseProvider>
-  );
+  ));
 };
 
 // Two component types, so switching `variant` remounts instead of changing the hook order.

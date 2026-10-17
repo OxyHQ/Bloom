@@ -167,7 +167,7 @@ describe('AgentChatMessage', () => {
       <AgentChatMessage role="assistant" text="Reply" at={NOW - 3 * 60_000} onCopy={jest.fn()} />,
     );
     const style = resolvedStyle(getByText('3 minutes ago').props.style);
-    expect(style).toMatchObject({ fontSize: 12, lineHeight: 16, marginLeft: 4 });
+    expect(style).toMatchObject({ fontSize: 12, lineHeight: 16, marginStart: 4 });
     expect(style.color).toBe(resolveAgentChatPalette(theme).textTertiary);
   });
 });
@@ -291,7 +291,7 @@ describe('AgentChatHistory', () => {
       borderTopWidth: 1,
       borderTopColor: resolveAgentChatPalette(theme).separator,
       paddingTop: 12,
-      paddingRight: 4,
+      paddingEnd: 4,
     });
   });
 

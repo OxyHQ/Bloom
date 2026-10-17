@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Platform,
@@ -201,8 +202,9 @@ function GradientLayer({
   fromOffset?: number;
   reverse?: boolean;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useMemo(() => `bloom-theme-toggle-gradient${gradientIds++}`, []);
-  return (
+  return localizeBloomCopy((
     <View
       pointerEvents="none"
       style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}
@@ -217,7 +219,7 @@ function GradientLayer({
         <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
       </Svg>
     </View>
-  );
+  ));
 }
 
 /**
@@ -234,6 +236,7 @@ function SwitchTrackSm({
   palette: TogglePalette;
   reducedMotion: boolean;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const progress = useSharedValue(on ? 1 : 0);
   useEffect(() => {
     progress.value = reducedMotion ? (on ? 1 : 0) : withTiming(on ? 1 : 0, { duration: THUMB_MS, easing: EASE });
@@ -250,7 +253,7 @@ function SwitchTrackSm({
     ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: `${THUMB_MS}ms` } : null),
   };
 
-  return (
+  return localizeBloomCopy((
     <View aria-hidden style={trackStyle} testID="theme-toggle-switch-track">
       {on ? <GradientLayer from={palette.switchOn[0]} to={palette.switchOn[1]} radius={borderRadius.full} /> : null}
       {on ? (
@@ -293,7 +296,7 @@ function SwitchTrackSm({
         </View>
       </Animated.View>
     </View>
-  );
+  ));
 }
 
 function SegmentButton({
@@ -309,6 +312,7 @@ function SegmentButton({
   palette: TogglePalette;
   onSelect: (mode: 'light' | 'dark', event: GestureResponderEvent, node: unknown) => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const ref = useRef<View>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = mode === 'light' ? RiSunLine : RiMoonLine;
@@ -331,7 +335,7 @@ function SegmentButton({
     '--bloom-theme-toggle-ring': palette.ring,
   };
   const label = mode === 'light' ? 'Use light mode' : 'Use dark mode';
-  return (
+  return localizeBloomCopy((
     <Pressable
       ref={ref}
       {...webHook('ring')}
@@ -351,7 +355,7 @@ function SegmentButton({
     >
       <Icon width={16} height={16} fill={color} />
     </Pressable>
-  );
+  ));
 }
 
 const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
@@ -361,6 +365,7 @@ const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
   style,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const { theme, setMode } = useBloomTheme();
   const palette = useMemo(() => resolveThemeTogglePalette(theme), [theme]);
   const reducedMotion = useReducedMotion();
@@ -382,7 +387,7 @@ const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
   );
 
   if (appearance !== 'sidebar') {
-    return (
+    return localizeBloomCopy((
       <SegmentedToggle
         appearance={appearance}
         dark={dark}
@@ -392,11 +397,11 @@ const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
         style={style}
         testID={testID}
       />
-    );
+    ));
   }
 
   if (collapsed) {
-    return (
+    return localizeBloomCopy((
       <CollapsedToggle
         dark={dark}
         palette={palette}
@@ -404,10 +409,10 @@ const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
         style={style}
         testID={testID}
       />
-    );
+    ));
   }
 
-  return (
+  return localizeBloomCopy((
     <SidebarRowToggle
       dark={dark}
       palette={palette}
@@ -416,7 +421,7 @@ const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
       style={style}
       testID={testID}
     />
-  );
+  ));
 };
 
 function SegmentedToggle({
@@ -436,6 +441,7 @@ function SegmentedToggle({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const glass = appearance === 'glass-segmented';
   const progress = useSharedValue(dark ? 1 : 0);
   useEffect(() => {
@@ -444,7 +450,7 @@ function SegmentedToggle({
   // Segment width + the 4px gap.
   const thumbStyle = useAnimatedStyle(() => ({ transform: [{ translateX: progress.value * 36 }] }), [progress]);
 
-  return (
+  return localizeBloomCopy((
     <View
       role="group"
       accessibilityLabel="Theme"
@@ -485,7 +491,7 @@ function SegmentedToggle({
       <SegmentButton mode="light" selected={!dark} glass={glass} palette={palette} onSelect={onSelect} />
       <SegmentButton mode="dark" selected={dark} glass={glass} palette={palette} onSelect={onSelect} />
     </View>
-  );
+  ));
 }
 
 function CollapsedToggle({
@@ -501,6 +507,7 @@ function CollapsedToggle({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const ref = useRef<View>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = dark ? RiSunLine : RiMoonLine;
@@ -513,7 +520,7 @@ function CollapsedToggle({
     backgroundColor: hovered ? palette.hover : 'transparent',
     '--bloom-theme-toggle-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       ref={ref}
       {...webHook('ring')}
@@ -530,7 +537,7 @@ function CollapsedToggle({
     >
       <Icon width={20} height={20} fill={hovered ? palette.iconActive : palette.icon} />
     </Pressable>
-  );
+  ));
 }
 
 function SidebarRowToggle({
@@ -548,6 +555,7 @@ function SidebarRowToggle({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const ref = useRef<View>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const row: WebCssStyle = {
@@ -560,7 +568,7 @@ function SidebarRowToggle({
     backgroundColor: hovered ? palette.hover : 'transparent',
     '--bloom-theme-toggle-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       ref={ref}
       {...webHook('inset')}
@@ -581,7 +589,7 @@ function SidebarRowToggle({
       </View>
       <SwitchTrackSm on={dark} palette={palette} reducedMotion={reducedMotion} />
     </Pressable>
-  );
+  ));
 }
 
 export const ThemeToggle = memo(ThemeToggleComponent);

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -81,7 +82,8 @@ type SortState = { key: SortKey; dir: 'asc' | 'desc' } | null;
 
 /** The sort caret. */
 function SortCaret({ color, up }: { color: string; up: boolean }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={[styles.caret, up ? styles.caretUp : null]}>
       <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
         <Path
@@ -90,7 +92,7 @@ function SortCaret({ color, up }: { color: string; up: boolean }) {
         />
       </Svg>
     </View>
-  );
+  ));
 }
 
 function SortableHeader({
@@ -104,9 +106,10 @@ function SortableHeader({
   sort: SortState;
   onSort: (key: SortKey) => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const active = sort?.key === sortKey;
-  return (
+  return localizeBloomCopy((
     <Pressable
       role="button"
       accessibilityLabel={`Sort by ${label}`}
@@ -119,11 +122,12 @@ function SortableHeader({
       </Text>
       <SortCaret color={active ? palette.textSecondary : palette.textTertiary} up={active && sort?.dir === 'asc'} />
     </Pressable>
-  );
+  ));
 }
 
 /** A hover/focus tooltip around a control that already has its own name. */
 function HoverTooltip({ label, children }: { label: string; children: ReactNode }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [visible, setVisible] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
@@ -140,7 +144,7 @@ function HoverTooltip({ label, children }: { label: string; children: ReactNode 
     if (timer.current) clearTimeout(timer.current);
     setVisible(false);
   };
-  return (
+  return localizeBloomCopy((
     <Tooltip visible={visible} onVisibleChange={setVisible} position="top">
       <TooltipTrigger>
         <View onPointerEnter={enter} onPointerLeave={leave}>
@@ -149,7 +153,7 @@ function HoverTooltip({ label, children }: { label: string; children: ReactNode 
       </TooltipTrigger>
       <TooltipTextBubble>{label}</TooltipTextBubble>
     </Tooltip>
-  );
+  ));
 }
 
 const DEFAULT_FILE_ACTIONS: SettingsMenuAction[] = [
@@ -167,11 +171,12 @@ function RowMoreMenu({
   actions: SettingsMenuAction[];
   onAction?: (fileId: string, actionId: string) => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const label = `More actions for ${file.name}`;
-  return (
+  return localizeBloomCopy((
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <HoverTooltip label="More actions">
         <DropdownMenuTrigger asChild label={label} style={CENTERED}>
@@ -208,7 +213,7 @@ function RowMoreMenu({
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  ));
 }
 
 type RowPhase = 'idle' | 'entering' | 'exiting';
@@ -219,6 +224,7 @@ type RowPhase = 'idle' | 'entering' | 'exiting';
  * structural reverse (225ms ease-in, fade 160ms).
  */
 function AnimatedRow({ phase, onExited, children }: { phase: RowPhase; onExited: () => void; children: ReactNode }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const measured = useSharedValue(0);
   const progress = useSharedValue(phase === 'entering' ? 0 : 1);
@@ -263,7 +269,7 @@ function AnimatedRow({ phase, onExited, children }: { phase: RowPhase; onExited:
     }),
     [progress, opacity, measured],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View style={outer}>
       <Animated.View
         style={inner}
@@ -274,7 +280,7 @@ function AnimatedRow({ phase, onExited, children }: { phase: RowPhase; onExited:
         {children}
       </Animated.View>
     </Animated.View>
-  );
+  ));
 }
 
 function defaultStoredIcon(kind: string, palette: SettingsPalette): ReactNode {
@@ -293,12 +299,13 @@ function ToolbarSelect({
   onChange: (value: string) => void;
   items: SettingsFileKind[];
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   // The select hands over either the stored item or its raw value, by platform.
   const labelFor = (v: unknown) => {
     const key = typeof v === 'object' && v !== null && 'value' in v ? (v as SettingsFileKind).value : v;
     return items.find((item) => item.value === key)?.label ?? String(key);
   };
-  return (
+  return localizeBloomCopy((
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger label={label}>
         <SelectValue>{labelFor}</SelectValue>
@@ -316,7 +323,7 @@ function ToolbarSelect({
         )}
       />
     </Select>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -349,6 +356,7 @@ export function SettingsStoragePage({
   style,
   testID,
 }: SettingsStoragePageProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const [selected, setSelected] = useControllableState<string[]>({
@@ -445,7 +453,7 @@ export function SettingsStoragePage({
 
   const typeItems = useMemo(() => [{ value: 'all', label: 'File type' }, ...kinds], [kinds]);
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[styles.page, settingsRingVars(palette), style]}>
       <FileUpload
         {...upload}
@@ -601,7 +609,7 @@ export function SettingsStoragePage({
         </View>
       </View>
     </View>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({
@@ -652,7 +660,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    paddingLeft: 12,
+    paddingStart: 12,
   },
   nameCell: {
     flex: 1,
@@ -695,7 +703,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '180deg' }],
   },
   rows: {
-    paddingLeft: 12,
+    paddingStart: 12,
   },
   row: {
     flexDirection: 'row',
@@ -725,7 +733,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: 40,
     paddingBottom: 40,
-    paddingRight: 12,
+    paddingEnd: 12,
   },
   footer: {
     paddingLeft: 12,

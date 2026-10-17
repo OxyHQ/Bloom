@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 import { View } from 'react-native';
 
@@ -45,11 +46,12 @@ export function CalendarViewHeader({
   style,
   testID,
 }: CalendarViewHeaderProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const breakpoint = useBreakpoint();
   const isSm = breakpoint !== 'base';
   const isLg = breakpoint === 'lg' || breakpoint === 'xl' || breakpoint === '2xl';
 
-  return (
+  return localizeBloomCopy((
     // Raised over what follows: the month switcher grows DOWN over the grid.
     <View role="banner" testID={testID} style={[{ width: '100%', gap: 4, zIndex: Z_INDEX.floating }, style]}>
       {breadcrumb}
@@ -140,5 +142,5 @@ export function CalendarViewHeader({
         </View>
       </View>
     </View>
-  );
+  ));
 }

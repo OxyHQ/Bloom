@@ -4,6 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Switch } from './index';
 import { Text } from '../typography';
+import { DirectionProvider } from '../direction';
 
 const meta: Meta<typeof Switch> = {
   title: 'Base/Switch',
@@ -28,6 +29,13 @@ export const Basic: Story = {
         accessibilityLabel="Airplane mode"
         testID="switch-basic"
       />;
+  },
+};
+
+export const RightToLeft: Story = {
+  render: function RtlSwitchStory() {
+    const [value, setValue] = useState(false);
+    return <DirectionProvider locale="ar"><Switch value={value} onValueChange={setValue} accessibilityLabel="RTL switch" /></DirectionProvider>;
   },
 };
 

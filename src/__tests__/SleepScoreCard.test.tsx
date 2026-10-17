@@ -70,9 +70,9 @@ describe('SleepScoreCard', () => {
 
   it('rules every row but the last, inset left and running to the right edge', () => {
     const { getByTestId } = renderCard(<SleepScoreCard testID="sleep" metrics={METRICS} />);
-    expect(resolvedStyle(getByTestId('sleep-metrics').props.style)).toMatchObject({ borderRadius: 10, paddingLeft: 10 });
+    expect(resolvedStyle(getByTestId('sleep-metrics').props.style)).toMatchObject({ borderRadius: 10, paddingStart: 10 });
     const first = resolvedStyle(getByTestId('sleep-metric-0').props.style);
-    expect(first).toMatchObject({ borderBottomWidth: 1, paddingRight: 10, paddingTop: 8, paddingBottom: 8, flex: 1 });
+    expect(first).toMatchObject({ borderBottomWidth: 1, paddingEnd: 10, paddingTop: 8, paddingBottom: 8, flex: 1 });
     expect(first.borderBottomColor).toBe(resolveButtonRamps(buildTheme('teal', 'light')).neutral[200]);
     expect(resolvedStyle(getByTestId('sleep-metric-2').props.style).borderBottomWidth).toBe(0);
   });

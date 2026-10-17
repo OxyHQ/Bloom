@@ -60,6 +60,8 @@ import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
 
 `TextFieldInput` on its own wraps itself in a `TextField`, so the common case is one element. Reach for the explicit `TextField` when you have more than one part to put in it, or when you need `isInvalid` or `radius` on the field.
 
+Inside a `DirectionProvider`, the label and adornments follow the form's direction. The input remains aligned to the form's start; email, URL and telephone keyboard/input modes default the editable value to LTR. Set `inputDir="ltr"`, `"rtl"` or `"auto"` to override the value's direction independently.
+
 ## With an icon
 
 ```tsx

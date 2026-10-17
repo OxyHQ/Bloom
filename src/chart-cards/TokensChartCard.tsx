@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import {
   Easing,
@@ -195,6 +196,7 @@ export function TokensChartCard({
   style,
   testID,
 }: TokensChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const reducedMotion = useReducedMotion();
@@ -263,7 +265,7 @@ export function TokensChartCard({
   const summary =
     accessibilityLabel ?? `${title} line chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -402,5 +404,5 @@ export function TokensChartCard({
         </Text>
       </View>
     </View>
-  );
+  ));
 }

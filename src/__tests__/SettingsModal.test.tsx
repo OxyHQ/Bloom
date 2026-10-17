@@ -171,7 +171,7 @@ describe('SettingsModal shell', () => {
       getByTestId('save').props.onPress();
     });
     expect(toast().opacity).toBe(1);
-    expect(toast()).toMatchObject({ borderWidth: 1, paddingLeft: 6, paddingRight: 10, paddingTop: 4, gap: 4 });
+    expect(toast()).toMatchObject({ borderWidth: 1, paddingStart: 6, paddingEnd: 10, paddingTop: 4, gap: 4 });
     act(() => {
       jest.advanceTimersByTime(2100);
     });
@@ -249,9 +249,9 @@ describe('SettingsCard rows', () => {
         </SettingsRow>
       </SettingsCard>,
     );
-    expect(resolvedStyle(getByTestId('card').props.style)).toMatchObject({ borderRadius: 16, paddingLeft: 12 });
+    expect(resolvedStyle(getByTestId('card').props.style)).toMatchObject({ borderRadius: 16, paddingStart: 12 });
     const a = resolvedStyle(getByTestId('a').props.style);
-    expect(a).toMatchObject({ borderBottomWidth: 1, minHeight: 52, paddingTop: 10, paddingBottom: 10, paddingRight: 10, gap: 16 });
+    expect(a).toMatchObject({ borderBottomWidth: 1, minHeight: 52, paddingTop: 10, paddingBottom: 10, paddingEnd: 10, gap: 16 });
     expect(resolvedStyle(getByTestId('b').props.style).borderBottomWidth).toBe(1);
     expect(resolvedStyle(getByTestId('c').props.style).borderBottomWidth).toBe(0);
     expect(resolvedStyle(getByTestId('value').props.style)).toMatchObject({ height: 32, width: 202, borderRadius: 10 });

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -29,6 +30,7 @@ export function SidebarRail({
   style,
   testID,
 }: SidebarProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSidebarPalette();
 
   const renderItem = (item: SidebarNavItem) => {
@@ -57,7 +59,7 @@ export function SidebarRail({
     );
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       role="complementary"
       accessibilityLabel="Sidebar"
@@ -100,5 +102,5 @@ export function SidebarRail({
         </View>
       ) : null}
     </View>
-  );
+  ));
 }

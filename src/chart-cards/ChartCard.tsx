@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useMemo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
@@ -99,6 +100,7 @@ export function ChartCardFrame({
   testID,
   children,
 }: ChartCardFrameProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const { width: viewportWidth } = useWindowDimensions();
   const wide = viewportWidth >= BREAKPOINTS.sm;
   const format = formatValue ?? defaultFormatValue;
@@ -111,7 +113,7 @@ export function ChartCardFrame({
   const delta = describeDelta(headlineValue, comparison);
   const label = point ? (getPointTitle ?? defaultPointTitle)(point, activeIndex ?? 0) : (title ?? defaultTitle);
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height={CARD_HEIGHT} gap={CARD_GAP} style={style} testID={testID}>
       <View
         testID={testID ? `${testID}-header` : undefined}
@@ -136,18 +138,19 @@ export function ChartCardFrame({
       </View>
       <View style={{ minHeight: 0, width: '100%', flex: 1 }}>{children}</View>
     </ChartCardSurface>
-  );
+  ));
 }
 
 function LegendDot({ color, label, palette }: { color: string; label: string; palette: ChartCardPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
       <View style={{ width: LEGEND_DOT, height: LEGEND_DOT, borderRadius: borderRadius.full, backgroundColor: color }} />
       <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
         {label}
       </Text>
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -177,10 +180,11 @@ export interface ChartPlotProps {
 }
 
 export function ChartPlot({ data, children, ...plot }: ChartPlotProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const domainMax = useMemo(() => Math.max(0, ...data.map((d) => Math.max(d.current, d.previous))) * 1.1, [data]);
   const ticks = useMemo(() => fixedDomainTicks(0, domainMax, 4), [domainMax]);
   const categories = useMemo(() => data.map((d) => d.label), [data]);
-  return (
+  return localizeBloomCopy((
     <CartesianPlot
       {...plot}
       categories={categories}
@@ -189,5 +193,5 @@ export function ChartPlot({ data, children, ...plot }: ChartPlotProps) {
       formatYTick={plot.formatAxisValue}>
       {({ size, box }) => children({ size, box, domainMax })}
     </CartesianPlot>
-  );
+  ));
 }

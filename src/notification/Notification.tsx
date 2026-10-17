@@ -1,3 +1,5 @@
+import { useDirection } from '../direction/context';
+import type { Direction } from '../direction/types';
 import React, { memo, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, View, type ViewStyle } from 'react-native';
 
@@ -92,7 +94,7 @@ function NotificationAvatarVisual({
           importantForAccessibility="no-hide-descendants"
           style={{
             position: 'absolute',
-            right: 0,
+            end: 0,
             bottom: 0,
             width: G.presence,
             height: G.presence,
@@ -108,7 +110,7 @@ function NotificationAvatarVisual({
 }
 
 /** The card chrome, shared with the toast renderer. */
-export function notificationCardStyle(paint: NotificationPaint): WebCssStyle {
+export function notificationCardStyle(paint: NotificationPaint, direction: Direction = 'ltr'): WebCssStyle {
   return {
     position: 'relative',
     flexDirection: 'row',
@@ -117,8 +119,9 @@ export function notificationCardStyle(paint: NotificationPaint): WebCssStyle {
     overflow: 'hidden',
     paddingTop: G.padding,
     paddingBottom: G.padding,
-    paddingLeft: G.padding,
-    paddingRight: G.paddingRight,
+    direction,
+    paddingLeft: direction === 'rtl' ? G.paddingRight : G.padding,
+    paddingRight: direction === 'rtl' ? G.padding : G.paddingRight,
     borderRadius: G.radius,
     borderWidth: 1,
     borderColor: paint.border,
@@ -127,7 +130,7 @@ export function notificationCardStyle(paint: NotificationPaint): WebCssStyle {
   };
 }
 
-const CLOSE_POSITION: ViewStyle = { position: 'absolute', top: G.closeInset, right: G.closeInset };
+const CLOSE_POSITION: ViewStyle = { position: 'absolute', top: G.closeInset, end: G.closeInset };
 
 function Countdown({ duration, delay, color }: { duration: number; delay: number; color: string }) {
   const progress = useRef(new Animated.Value(1)).current;
@@ -150,7 +153,7 @@ function Countdown({ duration, delay, color }: { duration: number; delay: number
       importantForAccessibility="no-hide-descendants"
       style={{
         position: 'absolute',
-        left: 0,
+        start: 0,
         bottom: 0,
         height: G.countdown,
         backgroundColor: color,
@@ -178,6 +181,7 @@ function NotificationComponent({
   testID,
 }: NotificationProps) {
   const theme = useTheme();
+  const direction = useDirection();
   const paint = useMemo(() => resolveNotificationPaint(theme), [theme]);
   const motion = useCardMotion({
     intro: NOTIFICATION_MOTION.intro,
@@ -203,7 +207,7 @@ function NotificationComponent({
       role={role ?? (status === 'error' ? 'alert' : 'status')}
       testID={testID}
       style={[
-        notificationCardStyle(paint),
+        notificationCardStyle(paint, direction),
         // A title on its own centres against the 40px visual instead of hugging
         // its top and leaving an empty band where a description would sit.
         !description && !actions?.length ? { alignItems: 'center' } : null,

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -131,6 +132,7 @@ function customerColumns(): DataTableColumn<Customer>[] {
 }
 
 export function CustomersTable() {
+  const localizeBloomCopy = useTemplateCopy();
   const [priceFilter, setPriceFilter] = useState('all');
   const [productFilter, setProductFilter] = useState('all');
   const [regionFilter, setRegionFilter] = useState('all');
@@ -155,7 +157,7 @@ export function CustomersTable() {
     setPage(1);
   };
 
-  return (
+  return localizeBloomCopy((
     <DataTable
       layout="inset"
       accessibilityLabel="Customers"
@@ -197,15 +199,16 @@ export function CustomersTable() {
       emptyState="No customers match your filters."
       minWidth={860}
     />
-  );
+  ));
 }
 
 export function HomeDashboardTemplate() {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const bp = useBreakpoints();
   const violet = useMemo(() => violetBase(theme), [theme]);
 
-  return (
+  return localizeBloomCopy((
     <DashboardShell selected="home" title="Welcome Maya" crumb="Home" crumbIcon={RiHomeLine} primaryAction="Create ticket">
       <View
         style={{
@@ -251,5 +254,5 @@ export function HomeDashboardTemplate() {
       <StatCards stats={DASHBOARD_STATS} />
       <CustomersTable />
     </DashboardShell>
-  );
+  ));
 }

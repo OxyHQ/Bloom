@@ -1,3 +1,4 @@
+import { useBloomLocale } from '../direction/context';
 import React, { useMemo, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions, type TextStyle } from 'react-native';
 
@@ -96,10 +97,12 @@ export function DateRangePicker({
   maxDate,
   isDateUnavailable,
   weekStartsOn,
-  locale,
+  locale: localeProp,
   style,
   testID,
 }: DateRangePickerProps) {
+  const { locale: inheritedLocale } = useBloomLocale();
+  const locale = localeProp ?? inheritedLocale;
   const palette = usePickerPalette();
   const { width: windowWidth } = useWindowDimensions();
   const [committed, setCommitted] = useControllableState<DateRange | null>({
@@ -150,7 +153,7 @@ export function DateRangePicker({
     >
       <View style={{ flexDirection: 'row', gap: 12 }}>
         {showQuickSelect ? (
-          <View style={{ paddingTop: 16, paddingLeft: 16 }}>
+          <View style={{ paddingTop: 16, paddingStart: 16 }}>
             <View style={{ width: 118, gap: 6 }}>
               {presets.map((preset) => (
                 <PresetRow
@@ -167,9 +170,9 @@ export function DateRangePicker({
         <View
           style={{
             paddingTop: 8,
-            paddingRight: 8,
+            paddingEnd: 8,
             paddingBottom: 12,
-            paddingLeft: showQuickSelect ? 0 : 8,
+            paddingStart: showQuickSelect ? 0 : 8,
           }}
         >
           <RangeCalendar
@@ -193,8 +196,8 @@ export function DateRangePicker({
               flexWrap: dual ? 'nowrap' : 'wrap',
               gap: dual ? 0 : 12,
               paddingTop: 12,
-              paddingRight: 16,
-              paddingLeft: showQuickSelect ? 0 : 16,
+              paddingEnd: 16,
+              paddingStart: showQuickSelect ? 0 : 16,
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -229,8 +232,8 @@ export function DateRangePicker({
                           backgroundColor: palette.tertiary,
                           paddingTop: 8,
                           paddingBottom: 8,
-                          paddingLeft: 8,
-                          paddingRight: 8,
+                          paddingStart: 8,
+                          paddingEnd: 8,
                         }}
                       >
                         <Text style={{ ...BODY, color: palette.secondaryText }}>

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useId, useMemo } from 'react';
 import Svg, { Circle, ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
@@ -52,6 +53,7 @@ export function RevenueChartCard({
   testID,
   ...frame
 }: RevenueChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const tone = useMemo(() => revenueSeriesTone(theme), [theme]);
@@ -72,7 +74,7 @@ export function RevenueChartCard({
   const label =
     accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? 'Revenue', frame.currentLabel, frame.previousLabel);
 
-  return (
+  return localizeBloomCopy((
     <ChartCardFrame
       {...frame}
       data={data}
@@ -163,5 +165,5 @@ export function RevenueChartCard({
         }}
       </ChartPlot>
     </ChartCardFrame>
-  );
+  ));
 }

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   TextInput,
@@ -57,6 +58,7 @@ const DEFAULT_LABELS: Required<ComposerPanelLabels> = {
  * unmounts once the collapse finishes. Mounted-open does not animate.
  */
 function Collapse({ open, children }: { open: boolean; children: React.ReactNode }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(open);
   const progress = useSharedValue(open ? 1 : 0);
@@ -91,11 +93,11 @@ function Collapse({ open, children }: { open: boolean; children: React.ReactNode
   );
 
   if (!mounted) return null;
-  return (
+  return localizeBloomCopy((
     <Animated.View style={[{ overflow: 'hidden' }, style]}>
       <View onLayout={onLayout}>{children}</View>
     </Animated.View>
-  );
+  ));
 }
 
 /**
@@ -145,6 +147,7 @@ export function ComposerPanelBase({
   style,
   testID,
 }: ComposerPanelProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
@@ -215,7 +218,7 @@ export function ComposerPanelBase({
     '--bloom-composer-ring': palette.focusRing,
   };
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column' }, style]}>
       {status ?? null}
 
@@ -317,5 +320,5 @@ export function ComposerPanelBase({
         </View>
       </View>
     </View>
-  );
+  ));
 }

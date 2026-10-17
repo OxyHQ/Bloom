@@ -1,3 +1,5 @@
+import { useDirection } from '../direction/context';
+import { directionalIconStyle } from './directional-icon';
 import React, { useMemo, memo, type ComponentType } from 'react';
 import {
   ActivityIndicator,
@@ -171,6 +173,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   'aria-haspopup': ariaHasPopup,
 }) => {
   const theme = useTheme();
+  const direction = useDirection();
   // The shadcn `size="icon"` shorthand also selects the icon variant unless an
   // explicit variant was given by the caller.
   const variant: ButtonVariant =
@@ -263,7 +266,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
   const IconFromProp = icon != null && isIconComponent(icon) ? icon : null;
   const iconNode = IconFromProp ? (
-    <IconFromProp width={iconSize} height={iconSize} fill={paint.foreground} />
+    <View style={directionalIconStyle(IconFromProp, direction)}><IconFromProp width={iconSize} height={iconSize} fill={paint.foreground} /></View>
   ) : (
     (icon as React.ReactNode) ?? null
   );
@@ -271,7 +274,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const content = (
     <>
       {LeadingIcon ? (
-        <LeadingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
+        <View style={directionalIconStyle(LeadingIcon, direction)}><LeadingIcon width={iconSize} height={iconSize} fill={paint.foreground} /></View>
       ) : null}
       {iconPosition === 'left' && iconNode}
       {!isSquare && children != null && (
@@ -281,7 +284,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       )}
       {iconPosition === 'right' && iconNode}
       {!isSquare && TrailingIcon ? (
-        <TrailingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
+        <View style={directionalIconStyle(TrailingIcon, direction)}><TrailingIcon width={iconSize} height={iconSize} fill={paint.foreground} /></View>
       ) : null}
     </>
   );

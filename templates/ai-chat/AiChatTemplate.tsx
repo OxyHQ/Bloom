@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -49,7 +50,8 @@ const GALLERY_REVEAL_DELAY_MS = 900;
 
 /** The React mark on the changed-file row (a raw Figma raster, no token). */
 function ReactLogo() {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={16} height={14.25} viewBox="0 0 16 15">
       <G stroke="#149ECA" strokeWidth={0.9} fill="none">
         <Ellipse cx={8} cy={7.125} rx={7.2} ry={2.85} />
@@ -58,7 +60,7 @@ function ReactLogo() {
       </G>
       <Circle cx={8} cy={7.125} r={1.4} fill="#149ECA" />
     </Svg>
-  );
+  ));
 }
 
 /** The landing-page thread, one entry per turn. */
@@ -156,7 +158,8 @@ function landingPageMessages(): { id: string; node: React.ReactNode }[] {
 
 /** The coding reply: a paragraph and the code card. */
 function CodingResponse() {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <AiChatAssistantMessage>
       <AiChatMessageLine>
         Done — the semantic dark-mode tokens and reusable theme toggle are wired. The toggle updates the root theme from
@@ -171,7 +174,7 @@ function CodingResponse() {
         highlight={['nextTheme']}
       />
     </AiChatAssistantMessage>
-  );
+  ));
 }
 
 /**
@@ -179,6 +182,7 @@ function CodingResponse() {
  * 6px and blur out (280ms), then the reply rises 8px in un-blurring (380ms).
  */
 function WorkSwap({ finished, onFinished }: { finished: boolean; onFinished: () => void }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [shown, setShown] = useState<'steps' | 'response'>(finished ? 'response' : 'steps');
   const leave = useSharedValue(0);
   const enter = useSharedValue(0);
@@ -210,13 +214,13 @@ function WorkSwap({ finished, onFinished }: { finished: boolean; onFinished: () 
     [enter],
   );
   if (shown === 'response') {
-    return (
+    return localizeBloomCopy((
       <Animated.View key="response" style={responseStyle}>
         <CodingResponse />
       </Animated.View>
-    );
+    ));
   }
-  return (
+  return localizeBloomCopy((
     <Animated.View
       key="steps"
       onLayout={(event) => {
@@ -225,7 +229,7 @@ function WorkSwap({ finished, onFinished }: { finished: boolean; onFinished: () 
       style={[{ overflow: 'hidden' }, stepsStyle]}>
       <AgentProgress onFinished={onFinished} />
     </Animated.View>
-  );
+  ));
 }
 
 /** The scripted conversation: the first turn now, then one more every 2s (0.9s outside the landing thread). */
@@ -238,6 +242,7 @@ function Thread({
   onImageGenerated: () => void;
   onWorkingChange: (working: boolean) => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [codingFinished, setCodingFinished] = useState(false);
   const finishCoding = useCallback(() => setCodingFinished(true), []);
   const messages =
@@ -295,13 +300,13 @@ function Thread({
     return () => onWorkingChange(false);
   }, [working, onWorkingChange]);
 
-  return (
+  return localizeBloomCopy((
     <AiChatThread>
       {messages.slice(0, visibleCount).map((message) => (
         <View key={message.id}>{message.node}</View>
       ))}
     </AiChatThread>
-  );
+  ));
 }
 
 /**
@@ -310,6 +315,7 @@ function Thread({
  * of the three scripted chats in the sidebar replays it.
  */
 export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatScenario }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [scenario, setScenario] = useState<AiChatScenario>(defaultScenario);
   const [navOpen, setNavOpen] = useState(false);
   const [working, setWorking] = useState(false);
@@ -351,7 +357,7 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
   // The template fills the viewport, over the preview decorator's padding.
   const frame: WebCssStyle = { position: WEB_POSITION_FIXED, top: 0, left: 0, right: 0, bottom: 0 };
 
-  return (
+  return localizeBloomCopy((
     <View style={frame}>
       <AiChatShell
         sidebar={<Sidebar {...sidebarProps} />}
@@ -400,5 +406,5 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
         </AiChatContainer>
       </AiChatShell>
     </View>
-  );
+  ));
 }

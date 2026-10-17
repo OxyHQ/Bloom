@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Platform,
@@ -162,6 +163,7 @@ export function StepsCard({
   style,
   testID,
 }: StepsCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const tone = useMemo(
@@ -231,7 +233,7 @@ export function StepsCard({
     accessibilityLabel ??
     `${title} bar chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
       <MedicalHeader>
         <MedicalHeadline
@@ -332,5 +334,5 @@ export function StepsCard({
         ) : null}
       </View>
     </ChartCardSurface>
-  );
+  ));
 }

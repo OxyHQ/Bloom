@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
@@ -117,6 +118,7 @@ export function ActivityRingsCard({
   style,
   testID,
 }: ActivityRingsCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
@@ -171,7 +173,7 @@ export function ActivityRingsCard({
   const a11y =
     accessibilityLabel ?? `${title}: ${shown.map((r) => `${r.label} ${r.value}, ${Math.round(clampPct(r.goalPct))}% of goal`).join('; ')}`;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface
       height={height}
       testID={testID}
@@ -276,5 +278,5 @@ export function ActivityRingsCard({
         </PolarSurface>
       </View>
     </ChartCardSurface>
-  );
+  ));
 }

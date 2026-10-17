@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 
@@ -38,12 +39,13 @@ import {
  * table.
  */
 export function MarketingDashboardTemplate() {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const { width } = useWindowDimensions();
   // `var(--color-chart-6)` / `-active`.
   const roasLine = useMemo<ComboSeries>(() => ({ ...ROAS_LINE, ...chartHueTone(theme, 6) }), [theme]);
 
-  return (
+  return localizeBloomCopy((
     <DashboardShell selected="marketing" title="Marketing" crumbIcon={RiMegaphoneLine} primaryAction="New campaign">
       {/* One per row on phones (`max-sm:grid-cols-1`) — a 2-up KPI grid at
           390px crushes the values. The shared 2-up from sm, 4-up from lg. */}
@@ -71,5 +73,5 @@ export function MarketingDashboardTemplate() {
       </TwoUpChartRow>
       <CampaignsTable />
     </DashboardShell>
-  );
+  ));
 }

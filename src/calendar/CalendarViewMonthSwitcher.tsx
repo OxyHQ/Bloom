@@ -1,3 +1,5 @@
+import { useDirection } from '../direction';
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import Animated, {
@@ -70,11 +72,13 @@ const CSS_ID = 'bloom-calendar-web-css';
 
 /** A `ChevronDownSmall`, turned to point left or right. */
 function Chevron({ direction, color }: { direction: 'left' | 'right'; color: string }) {
-  return (
+  const rtl = useDirection() === 'rtl';
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={NAV_SIZE} height={NAV_SIZE} viewBox="0 0 16 16" fill="none">
       <Path
         d={
-          direction === 'left'
+          (direction === 'left') !== rtl
             ? 'M9 4L5.70711 7.29289C5.31658 7.68342 5.31658 8.31658 5.70711 8.70711L9 12'
             : 'M7 4L10.2929 7.29289C10.6834 7.68342 10.6834 8.31658 10.2929 8.70711L7 12'
         }
@@ -83,7 +87,7 @@ function Chevron({ direction, color }: { direction: 'left' | 'right'; color: str
         strokeLinecap="round"
       />
     </Svg>
-  );
+  ));
 }
 
 function NavButton({
@@ -97,6 +101,7 @@ function NavButton({
   onPress: () => void;
   palette: CalendarViewPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarNav: '' } } : {};
   const style: WebCssStyle = {
@@ -109,7 +114,7 @@ function NavButton({
     backgroundColor: hovered ? palette.secondaryHover : 'transparent',
     '--bloom-calendar-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...hook}
       role="button"
@@ -122,7 +127,7 @@ function NavButton({
     >
       <Chevron direction={direction} color={palette.iconPrimary} />
     </Pressable>
-  );
+  ));
 }
 
 function SwitcherDay({
@@ -140,6 +145,7 @@ function SwitcherDay({
   onPress: (date: Date) => void;
   registerNode: (key: string, node: View | null) => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarDay: '' } } : {};
   const style: WebCssStyle = {
@@ -152,7 +158,7 @@ function SwitcherDay({
     '--bloom-calendar-ring': palette.ring,
   };
   const key = dayKey(date);
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...hook}
       ref={(node) => registerNode(key, node)}
@@ -166,7 +172,7 @@ function SwitcherDay({
     >
       <Text variant="body-medium">{date.getDate()}</Text>
     </Pressable>
-  );
+  ));
 }
 
 /** `onKeyDown` is forwarded by react-native-web and absent from React Native's `View` type. */
@@ -189,6 +195,7 @@ function SwitcherGrid({
   onPreviousMonth: () => void;
   onNextMonth: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const weeks = buildMonthGrid(month, 0);
   const weekdays = weekdayLabels(0, locale);
   const [focused, setFocused] = useState(() => (isSameMonth(today(), month) ? today() : startOfMonth(month)));
@@ -221,7 +228,7 @@ function SwitcherGrid({
     },
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       role="grid"
       accessibilityLabel="Jump to date"
@@ -262,7 +269,7 @@ function SwitcherGrid({
         </View>
       ))}
     </View>
-  );
+  ));
 }
 
 export function CalendarViewMonthSwitcher({
@@ -275,6 +282,7 @@ export function CalendarViewMonthSwitcher({
   style,
   testID,
 }: CalendarViewMonthSwitcherProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const { width: viewport } = useWindowDimensions();
@@ -346,7 +354,7 @@ export function CalendarViewMonthSwitcher({
   const titleHook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarNav: '' } } : {};
   const title = isSm ? formatMonthTitle(month, locale) : formatShortMonth(month, locale);
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -392,7 +400,7 @@ export function CalendarViewMonthSwitcher({
               style={{
                 position: 'absolute',
                 top: 0,
-                left: 0,
+                start: 0,
                 paddingLeft: 12,
                 paddingRight: 12,
                 paddingBottom: 12,
@@ -411,5 +419,5 @@ export function CalendarViewMonthSwitcher({
         ) : null}
       </View>
     </View>
-  );
+  ));
 }

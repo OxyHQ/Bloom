@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -138,6 +139,7 @@ export function HeatmapChartCard({
   style,
   testID,
 }: HeatmapChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
@@ -210,7 +212,7 @@ export function HeatmapChartCard({
 
   const labelColor = (on: boolean) => ({ color: on ? palette.text : palette.textTertiary });
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface style={style} testID={testID}>
       <ChartHeader
         label={headerLabel}
@@ -303,13 +305,13 @@ export function HeatmapChartCard({
         </Text>
       </View>
     </ChartCardSurface>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({
   grid: { width: '100%', flex: 1, minHeight: 0, flexDirection: 'row', gap: GAP },
   labelColumn: { flexDirection: 'column', gap: GAP },
-  rowLabel: { flex: 1, flexBasis: 0, minHeight: 0, flexDirection: 'row', alignItems: 'center', paddingRight: 8 },
+  rowLabel: { flex: 1, flexBasis: 0, minHeight: 0, flexDirection: 'row', alignItems: 'center', paddingEnd: 8 },
   cells: { flex: 1, minWidth: 0, flexDirection: 'column', gap: GAP },
   row: { flex: 1, flexBasis: 0, minHeight: 0, flexDirection: 'row', gap: GAP },
   columnLabels: { height: COLUMN_LABEL_HEIGHT, flexDirection: 'row', gap: GAP },

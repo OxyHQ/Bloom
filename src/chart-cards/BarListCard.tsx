@@ -1,3 +1,5 @@
+import { useDirection } from '../direction';
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -135,6 +137,7 @@ export function BarListCard({
   style,
   testID,
 }: BarListCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
   const monoTone = useMonoTone();
@@ -168,7 +171,7 @@ export function BarListCard({
     borderBottomColor: palette.track,
   };
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface
       height="auto"
       gap={12}
@@ -212,7 +215,7 @@ export function BarListCard({
         />
       ) : null}
     </ChartCardSurface>
-  );
+  ));
 }
 
 /**
@@ -230,7 +233,9 @@ function TabStrip({
   onChange: (id: string) => void;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const hostRef = useRef<View>(null);
+  const direction = useDirection();
   const [fades, setFades] = useState({ left: false, right: false });
 
   useEffect(() => {
@@ -244,7 +249,8 @@ function TabStrip({
     if (!scroller) return;
     const measure = () => {
       const max = scroller.scrollWidth - scroller.clientWidth;
-      const next = { left: scroller.scrollLeft > 1, right: max - scroller.scrollLeft > 1 };
+      const offset = Math.abs(scroller.scrollLeft);
+      const next = direction === 'rtl' ? { left: max - offset > 1, right: offset > 1 } : { left: offset > 1, right: max - offset > 1 };
       setFades((prev) => (prev.left === next.left && prev.right === next.right ? prev : next));
     };
     measure();
@@ -255,7 +261,7 @@ function TabStrip({
       scroller.removeEventListener('scroll', measure);
       ro?.disconnect();
     };
-  }, []);
+  }, [direction]);
 
   const mask =
     fades.left || fades.right
@@ -265,7 +271,7 @@ function TabStrip({
       : undefined;
   const maskStyle: WebCssStyle | null = mask ? { maskImage: mask, WebkitMaskImage: mask } : null;
 
-  return (
+  return localizeBloomCopy((
     <View ref={hostRef} style={[{ flex: 1, minWidth: 0 }, maskStyle]}>
       <Tabs variant="underline" value={value} onValueChange={onChange} style={{ borderBottomWidth: 0 }} testID={testID}>
         {lists.map((tab) => (
@@ -273,7 +279,7 @@ function TabStrip({
         ))}
       </Tabs>
     </View>
-  );
+  ));
 }
 
 function BarRows({
@@ -295,6 +301,7 @@ function BarRows({
   mounted: boolean;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
   const [expanded, setExpanded] = useState(false);
@@ -328,7 +335,7 @@ function BarRows({
     );
   };
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={{ position: 'relative', marginLeft: -8, marginRight: -8, marginBottom: -4, flexDirection: 'column' }}>
       <View style={{ flexDirection: 'column', gap: ROW_GAP }}>
         {visible.map((item, i) => row(item, i))}
@@ -344,7 +351,7 @@ function BarRows({
         />
       ) : null}
     </View>
-  );
+  ));
 }
 
 function BarRow({
@@ -366,10 +373,11 @@ function BarRow({
   hover: ReturnType<typeof hoverTarget>;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const width = useGrowWidth(percent, mounted);
   const colorEase = useWebTransition('background-color', 500);
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       {...hover}
@@ -386,7 +394,7 @@ function BarRow({
       }}>
       <Animated.View
         testID={testID ? `${testID}-bar` : undefined}
-        style={[{ position: 'absolute', top: 0, bottom: 0, left: 0, width, borderRadius: 8, backgroundColor: tint }, colorEase]}
+        style={[{ position: 'absolute', top: 0, bottom: 0, start: 0, width, borderRadius: 8, backgroundColor: tint }, colorEase]}
       />
       <View style={{ position: 'relative', minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         {icon ? (
@@ -402,7 +410,7 @@ function BarRow({
         </Text>
       </View>
     </View>
-  );
+  ));
 }
 
 /**
@@ -411,9 +419,10 @@ function BarRow({
  * paints the same pixels — and works on native, which has no `mask-image`.
  */
 function BottomFade({ color }: { color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   // `useId` yields `«r0»` / `:r0:`, which a `url(#…)` cannot reference.
   const id = `bloom-barlist-fade-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
-  return (
+  return localizeBloomCopy((
     <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: FADE_HEIGHT }}>
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
@@ -425,7 +434,7 @@ function BottomFade({ color }: { color: string }) {
         <Rect x={0} y={0} width="100%" height="100%" fill={`url(#${id})`} />
       </Svg>
     </View>
-  );
+  ));
 }
 
 /**
@@ -435,6 +444,7 @@ function BottomFade({ color }: { color: string }) {
  * `pt-1` — the list grows 4px, smoothly, while the extra rows appear at once.
  */
 function RestSpacer({ expanded, testID }: { expanded: boolean; testID?: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const [present, setPresent] = useState(expanded);
   const progress = useRef(new Animated.Value(expanded ? 1 : 0)).current;
@@ -460,12 +470,12 @@ function RestSpacer({ expanded, testID }: { expanded: boolean; testID?: string }
   }, [expanded, reducedMotion, progress]);
 
   if (!present) return null;
-  return (
+  return localizeBloomCopy((
     <Animated.View
       testID={testID}
       style={{ overflow: 'hidden', height: progress.interpolate({ inputRange: [0, 1], outputRange: [0, ROW_GAP] }), opacity: progress }}
     />
-  );
+  ));
 }
 
 function MoreButton({
@@ -479,6 +489,7 @@ function MoreButton({
   onPress: () => void;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const medical = useMedicalPalette();
   const reducedMotion = useReducedMotion();
@@ -505,7 +516,7 @@ function MoreButton({
   const label = expanded ? 'Show fewer' : `Show ${hiddenCount} more`;
   const rotate = useMemo(() => turn.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }), [turn]);
 
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...hook}
       testID={testID}
@@ -519,7 +530,7 @@ function MoreButton({
         {
           position: 'absolute',
           left: '50%',
-          marginLeft: -20,
+          marginStart: -20,
           bottom: expanded ? -8 : 4,
           width: 40,
           height: 20,
@@ -538,5 +549,5 @@ function MoreButton({
         <RiArrowDownSLine width={14} height={14} fill={palette.textSecondary} />
       </Animated.View>
     </Pressable>
-  );
+  ));
 }

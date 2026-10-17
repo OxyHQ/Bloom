@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useId, useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
@@ -81,6 +82,7 @@ export function AreaChartCard({
   style,
   testID,
 }: AreaChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
@@ -143,7 +145,7 @@ export function AreaChartCard({
   const id = `bloom-area-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const topOpacity = variant === 'overlap' ? 0.4 : 0.55;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height={tiles ? 'auto' : undefined} style={style} testID={testID}>
       <ChartHeader
         label={headerLabel}
@@ -260,5 +262,5 @@ export function AreaChartCard({
         />
       )}
     </ChartCardSurface>
-  );
+  ));
 }

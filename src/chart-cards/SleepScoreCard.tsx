@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useMemo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -71,13 +72,14 @@ const CHEVRON_LEFT = 'M9 4L5.70711 7.29289C5.31658 7.68342 5.31658 8.31658 5.707
 const CHEVRON_RIGHT = 'M7 4L10.2929 7.29289C10.6834 7.68342 10.6834 8.31658 10.2929 8.70711L7 12';
 
 function Chevron16({ d, color }: { d: string; color: string }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ width: 16, height: 16, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }} aria-hidden>
       <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
         <Path d={d} stroke={color} strokeWidth={2} strokeLinecap="round" />
       </Svg>
     </View>
-  );
+  ));
 }
 
 /**
@@ -113,6 +115,7 @@ export function SleepScoreCard({
   style,
   testID,
 }: SleepScoreCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
@@ -163,7 +166,7 @@ export function SleepScoreCard({
     accessibilityLabel ??
     `${title}: ${total} of ${totalMax}, ${verdict}. ${metrics.map((m) => `${m.label} ${m.score} of ${m.max}`).join(', ')}`;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface
       height={height}
       testID={testID}
@@ -279,7 +282,7 @@ export function SleepScoreCard({
 
       <View
         testID={testID ? `${testID}-metrics` : undefined}
-        style={{ width: '100%', flex: 1, flexDirection: 'column', borderRadius: 10, backgroundColor: palette.inner, paddingLeft: 10 }}>
+        style={{ width: '100%', flex: 1, flexDirection: 'column', borderRadius: 10, backgroundColor: palette.inner, paddingStart: 10 }}>
         {metrics.map((metric, i) => (
           <View
             key={`${metric.label}-${i}`}
@@ -292,7 +295,7 @@ export function SleepScoreCard({
               justifyContent: 'space-between',
               paddingTop: 8,
               paddingBottom: 8,
-              paddingRight: 10,
+              paddingEnd: 10,
               borderBottomWidth: i < metrics.length - 1 ? 1 : 0,
               borderBottomColor: separator,
             }}>
@@ -309,5 +312,5 @@ export function SleepScoreCard({
         ))}
       </View>
     </ChartCardSurface>
-  );
+  ));
 }

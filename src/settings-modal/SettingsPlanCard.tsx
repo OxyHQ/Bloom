@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -40,8 +41,9 @@ export function SettingsPlanCard({
   style,
   testID,
 }: SettingsPlanCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[styles.card, { backgroundColor: palette.secondary }, style]}>
       <View pointerEvents="none" aria-hidden style={styles.art}>
         {artwork ?? <SettingsPlanArt source={artworkSource} animated={animated} size={ART_SIZE} />}
@@ -68,11 +70,12 @@ export function SettingsPlanCard({
         {action ? <View style={styles.action}>{action}</View> : null}
       </View>
     </View>
-  );
+  ));
 }
 
 function Sections({ sections }: { sections: SettingsPageSection[] }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <>
       {sections.map((section) => {
         const card = (
@@ -98,26 +101,28 @@ function Sections({ sections }: { sections: SettingsPageSection[] }) {
         );
       })}
     </>
-  );
+  ));
 }
 
 /** The General page: the plan card, then labelled sections 24px apart. */
 export function SettingsGeneralPage({ plan, sections, style, testID }: SettingsGeneralPageProps) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View testID={testID} style={[styles.page, style]}>
       {plan ? <SettingsPlanCard {...plan} /> : null}
       <Sections sections={sections} />
     </View>
-  );
+  ));
 }
 
 /** The Profile page: cards of rows 24px apart (identity, account). */
 export function SettingsProfilePage({ sections, style, testID }: SettingsProfilePageProps) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View testID={testID} style={[styles.page, style]}>
       <Sections sections={sections} />
     </View>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({
@@ -143,8 +148,8 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingTop: 12,
     paddingBottom: 12,
-    paddingRight: 10,
-    paddingLeft: 12,
+    paddingEnd: 10,
+    paddingStart: 12,
   },
   head: {
     gap: 8,

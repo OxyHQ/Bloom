@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useState } from 'react';
 import { Image, Platform, View, useWindowDimensions, type ViewStyle } from 'react-native';
 
@@ -323,8 +324,9 @@ export function DashboardShell({
   testID,
   children,
 }: DashboardShellProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const [selected, setSelected] = useState(initialSelected);
-  return (
+  return localizeBloomCopy((
     <View style={TEMPLATE_FRAME}>
       <AppShell
         testID={testID}
@@ -366,7 +368,7 @@ export function DashboardShell({
         {children}
       </AppShell>
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -394,19 +396,20 @@ const STACK: ViewStyle = { width: '100%', gap: GRID_GAP };
  * `md:col-span-2 xl:col-span-1`. Cards on a row stretch to the tallest.
  */
 export function ThreeUpChartRow({ children }: { children: [React.ReactNode, React.ReactNode, React.ReactNode] }) {
+  const localizeBloomCopy = useTemplateCopy();
   const bp = useBreakpoints();
   const [a, b, c] = children;
   if (bp.xl) {
-    return (
+    return localizeBloomCopy((
       <View style={ROW}>
         <View style={TRACK}>{a}</View>
         <View style={TRACK}>{b}</View>
         <View style={TRACK}>{c}</View>
       </View>
-    );
+    ));
   }
   if (bp.md) {
-    return (
+    return localizeBloomCopy((
       <View style={STACK}>
         <View style={ROW}>
           <View style={TRACK}>{a}</View>
@@ -414,35 +417,36 @@ export function ThreeUpChartRow({ children }: { children: [React.ReactNode, Reac
         </View>
         {c}
       </View>
-    );
+    ));
   }
-  return (
+  return localizeBloomCopy((
     <View style={STACK}>
       {a}
       {b}
       {c}
     </View>
-  );
+  ));
 }
 
 /** `grid grid-cols-1 gap-4 lg:grid-cols-2`, both cards stretched to the taller. */
 export function TwoUpChartRow({ children }: { children: [React.ReactNode, React.ReactNode] }) {
+  const localizeBloomCopy = useTemplateCopy();
   const bp = useBreakpoints();
   const [a, b] = children;
   if (bp.lg) {
-    return (
+    return localizeBloomCopy((
       <View style={ROW}>
         <View style={TRACK}>{a}</View>
         <View style={TRACK}>{b}</View>
       </View>
-    );
+    ));
   }
-  return (
+  return localizeBloomCopy((
     <View style={STACK}>
       {a}
       {b}
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -457,29 +461,32 @@ export const DELETE_EDIT_ACTIONS: readonly DataTableRowActionItem[] = [
 
 /** `flex min-w-0 items-center gap-2` — a leading mark and the row's name. */
 export function NameCell({ leading, children }: { leading: React.ReactNode; children: React.ReactNode }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0, flexShrink: 1, maxWidth: '100%' }}>
       {leading}
       {children}
     </View>
-  );
+  ));
 }
 
 /** `truncate text-body-medium text-text-primary`. */
 export function CellText({ children }: { children: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
-  return (
+  return localizeBloomCopy((
     <Text numberOfLines={1} variant="body-medium" style={{ flexShrink: 1, color: theme.colors.text }}>
       {children}
     </Text>
-  );
+  ));
 }
 
 /** Name over a secondary line (an employee's role). */
 export function NameLines({ name, detail }: { name: string; detail?: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const { neutral } = resolveButtonRamps(theme);
-  return (
+  return localizeBloomCopy((
     <View style={{ minWidth: 0, flexShrink: 1 }}>
       <Text numberOfLines={1} variant="body-medium" style={{ color: theme.colors.text }}>
         {name}
@@ -490,7 +497,7 @@ export function NameLines({ name, detail }: { name: string; detail?: string }) {
         </Text>
       ) : null}
     </View>
-  );
+  ));
 }
 
 /** `Avatar size="sm"`: a photo, or initials on the neutral / blue disc. */
@@ -503,15 +510,17 @@ export function PersonAvatar({
   avatar?: string | number;
   color?: 'neutral' | 'blue';
 }) {
-  if (avatar != null) return <Avatar size="sm" source={assetUri(avatar)} alt="" />;
-  return <Avatar size="sm" color={color} initials={initialsOf(name)} />;
+  const localizeBloomCopy = useTemplateCopy();
+  if (avatar != null) return localizeBloomCopy(<Avatar size="sm" source={assetUri(avatar)} alt="" />);
+  return localizeBloomCopy(<Avatar size="sm" color={color} initials={initialsOf(name)} />);
 }
 
 /** `size-8 rounded-lg bg-background-tertiary-default`, a 16px `foreground-icon-primary` glyph. */
 export function IconTile({ icon: Icon, label }: { icon: ButtonIconComponent; label: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const { neutral: n } = resolveButtonRamps(theme);
-  return (
+  return localizeBloomCopy((
     <View
       accessibilityLabel={label}
       style={{
@@ -526,5 +535,5 @@ export function IconTile({ icon: Icon, label }: { icon: ButtonIconComponent; lab
     >
       <Icon width={16} height={16} fill={theme.colors.text} />
     </View>
-  );
+  ));
 }

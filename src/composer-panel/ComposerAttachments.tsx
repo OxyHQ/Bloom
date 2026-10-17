@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 
 import { ComposerPanel } from './ComposerPanel';
@@ -19,6 +20,7 @@ export function ComposerAttachments({
   onAllUploaded,
   ...panelProps
 }: ComposerAttachmentsProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const { visible, remove } = useAttachmentQueue({
     attachments,
     uploadDuration,
@@ -27,6 +29,6 @@ export function ComposerAttachments({
     onUploadComplete,
     onAllUploaded,
   });
-  return <ComposerPanel {...panelProps} attachments={visible} onRemoveAttachment={remove} />;
+  return localizeBloomCopy(<ComposerPanel {...panelProps} attachments={visible} onRemoveAttachment={remove} />);
 }
 ComposerAttachments.displayName = 'ComposerAttachments';

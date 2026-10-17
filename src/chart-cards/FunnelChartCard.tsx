@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useState } from 'react';
 import {
   Platform,
@@ -219,6 +220,7 @@ export function FunnelChartCard({
   style,
   testID,
 }: FunnelChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
   const monoTone = useMonoTone();
@@ -304,7 +306,7 @@ export function FunnelChartCard({
     accessibilityLabel ??
     `${title} funnel: ${stages.map((s) => `${s.label} ${format(s.value)} (${Math.round((s.value / top) * 100)}%)`).join(', ')}`;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface style={style} testID={testID}>
       <ChartHeader
         label={headerLabel}
@@ -428,5 +430,5 @@ export function FunnelChartCard({
         }))}
       />
     </ChartCardSurface>
-  );
+  ));
 }

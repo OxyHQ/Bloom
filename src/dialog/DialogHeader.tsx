@@ -331,12 +331,7 @@ function HeaderOverflowMenu({
       </PopoverTrigger>
       <PopoverContent
         label="More actions"
-        align="end"
-        // A row list, not a prose card: it opts out of the popover's `w-72 p-4`
-        // as any row-list popover does, and shadcn would build this
-        // surface out of a `DropdownMenu` rather than a `Popover` at all. A
-        // CLASS, because that is what the popover's own chrome is now.
-        className="w-auto p-space-4">
+        align="end">
         {items.map((action) => (
           <Item
             key={action.accessibilityLabel}

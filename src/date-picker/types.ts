@@ -17,9 +17,9 @@ export interface CalendarConstraintProps {
   maxDate?: Date | null;
   /** Disable arbitrary days (weekends, holidays). */
   isDateUnavailable?: (date: Date) => boolean;
-  /** First column of the grid. Defaults to `0` (Sunday). */
+  /** First column of the grid. Defaults to the locale week start when available, otherwise Sunday. */
   weekStartsOn?: WeekStart;
-  /** BCP 47 locale for month, weekday and trigger text. Defaults to the runtime's. */
+  /** BCP 47 locale for month, weekday and trigger text. Defaults to DirectionProvider's locale. */
   locale?: string;
 }
 

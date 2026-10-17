@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, {
@@ -32,6 +33,7 @@ const MIC_BARS = [
 
 /** One equalizer bar: CSS keyframes on web, a reanimated loop on native. */
 function MicBar({ bar, color }: { bar: (typeof MIC_BARS)[number]; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const scale = useSharedValue(0.7);
   useEffect(() => {
@@ -59,13 +61,14 @@ function MicBar({ bar, color }: { bar: (typeof MIC_BARS)[number]; color: string 
     const web: WebCssStyle = reducedMotion
       ? { ...base, transform: [{ scaleY: 0.7 }] }
       : { ...base, animation: `bloom-composer-mic-bars ${bar.duration}ms ease-in-out ${bar.delay}ms infinite` };
-    return <View style={web} />;
+    return localizeBloomCopy(<View style={web} />);
   }
-  return <Animated.View style={[base, nativeStyle]} />;
+  return localizeBloomCopy(<Animated.View style={[base, nativeStyle]} />);
 }
 
 /** A layer that blurs/scales out to 0.8 as it leaves and back in as it arrives (280ms ease-out). */
 function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactNode }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(shown ? 1 : 0);
   useEffect(() => {
@@ -79,7 +82,7 @@ function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactN
     }),
     [progress],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View
       pointerEvents="none"
       style={[
@@ -88,7 +91,7 @@ function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactN
       ]}>
       {children}
     </Animated.View>
-  );
+  ));
 }
 
 /**
@@ -107,6 +110,7 @@ export function MicButton({
   label: string;
   palette: ComposerPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const style: WebCssStyle = {
     position: 'relative',
@@ -122,7 +126,7 @@ export function MicButton({
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerControl')}
       accessibilityRole="button"
@@ -144,13 +148,14 @@ export function MicButton({
         <RiMic2Line width={20} height={20} fill={palette.iconPrimary} />
       </SwapLayer>
     </Pressable>
-  );
+  ));
 }
 
 let gradientId = 0;
 
 /** A two-stop top-to-bottom fill: a CSS gradient on web, an SVG rect on native. */
 function GradientFill({ paint, opacity = 1 }: { paint: ButtonStatePaint; opacity?: number }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useMemo(() => `bloom-composer-send-${gradientId++}`, []);
   const [top, bottom] = paint.gradient ?? [paint.background, paint.background];
   if (IS_WEB) {
@@ -167,9 +172,9 @@ function GradientFill({ paint, opacity = 1 }: { paint: ButtonStatePaint; opacity
       transitionDuration: `${TRANSITION_MS}ms`,
       transitionTimingFunction: 'ease',
     };
-    return <View pointerEvents="none" style={style} />;
+    return localizeBloomCopy(<View pointerEvents="none" style={style} />);
   }
-  return (
+  return localizeBloomCopy((
     <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity }}>
       <Svg width="100%" height="100%">
         <Defs>
@@ -181,7 +186,7 @@ function GradientFill({ paint, opacity = 1 }: { paint: ButtonStatePaint; opacity
         <Rect x="0" y="0" width="100%" height="100%" rx={CONTROL_SIZE / 2} fill={`url(#${id})`} />
       </Svg>
     </View>
-  );
+  ));
 }
 
 /**
@@ -200,6 +205,7 @@ export function SendButton({
   label: string;
   palette: ComposerPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
   const paint = palette.send;
@@ -215,7 +221,7 @@ export function SendButton({
     cursor: disabled ? 'auto' : 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerControl', 'send')}
       accessibilityRole="button"
@@ -236,5 +242,5 @@ export function SendButton({
         <RiArrowUpLine width={20} height={20} fill="#ffffff" />
       </View>
     </Pressable>
-  );
+  ));
 }

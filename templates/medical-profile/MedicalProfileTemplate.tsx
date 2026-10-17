@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useMemo, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
@@ -33,6 +34,7 @@ const WEEK_RANGE = weekLabel(0);
  * rings; it opens on today, Jul 10 2026.
  */
 export function MedicalProfileTemplate() {
+  const localizeBloomCopy = useTemplateCopy();
   const { width } = useWindowDimensions();
   const columns = width >= BREAKPOINTS.xl ? 3 : width >= BREAKPOINTS.md ? 2 : 1;
   const [selectedDay, setSelectedDay] = useState<ActivityDay | null>({ month: 6, day: 10 });
@@ -69,7 +71,7 @@ export function MedicalProfileTemplate() {
   const rows: React.ReactNode[][] = [];
   for (let i = 0; i < cards.length; i += columns) rows.push(cards.slice(i, i + columns));
 
-  return (
+  return localizeBloomCopy((
     <DashboardShell testID="medical" selected="medical" title="Medical Profile" crumbIcon={RiAsterisk} primaryAction="File a report">
         <View style={{ width: '100%', gap: 16 }} testID="medical-cards">
           {rows.map((row, r) => (
@@ -84,5 +86,5 @@ export function MedicalProfileTemplate() {
         </View>
         <PatientsTable testID="medical-patients" />
     </DashboardShell>
-  );
+  ));
 }

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo } from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import Svg, { Circle, G, Line, Path } from 'react-native-svg';
@@ -159,13 +160,14 @@ function AxisLabel({
   anchor: 'start' | 'middle' | 'end';
   children: React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const left = anchor === 'start' ? x : anchor === 'end' ? x - LABEL_SLOT : x - LABEL_SLOT / 2;
   const align = anchor === 'start' ? 'flex-start' : anchor === 'end' ? 'flex-end' : 'center';
-  return (
+  return localizeBloomCopy((
     <View pointerEvents="none" style={{ position: 'absolute', left, top: y, width: LABEL_SLOT, alignItems: align }}>
       {children}
     </View>
-  );
+  ));
 }
 
 /**
@@ -216,6 +218,7 @@ export function RadarChartCard({
   style,
   testID,
 }: RadarChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
@@ -470,7 +473,7 @@ export function RadarChartCard({
     </View>
   );
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height={tiles ? 'auto' : undefined} style={style} testID={testID}>
       <ChartHeader
         label={headerLabel}
@@ -524,5 +527,5 @@ export function RadarChartCard({
         />
       ) : null}
     </ChartCardSurface>
-  );
+  ));
 }

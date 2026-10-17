@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
@@ -238,6 +239,7 @@ function Collapse({
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(open);
   const progress = useSharedValue(open ? 1 : 0);
@@ -274,11 +276,11 @@ function Collapse({
   );
 
   if (!mounted) return null;
-  return (
+  return localizeBloomCopy((
     <Animated.View style={[{ overflow: 'hidden' }, style, animatedStyle]}>
       <View onLayout={onLayout}>{children}</View>
     </Animated.View>
-  );
+  ));
 }
 
 /** A chevron that rotates to `degrees` when `active`, 200ms ease-out. */
@@ -291,6 +293,7 @@ function RotatingIcon({
   degrees: number;
   children: React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const rotation = useSharedValue(active ? degrees : 0);
   useEffect(() => {
@@ -303,11 +306,11 @@ function RotatingIcon({
     () => ({ transform: [{ rotate: `${rotation.value}deg` }] }),
     [rotation],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View style={[ICON_BOX, animatedStyle]} aria-hidden>
       {children}
     </Animated.View>
-  );
+  ));
 }
 
 /** A bar fill whose width follows `percent` (0–100), 500ms ease-out on change. */
@@ -322,6 +325,7 @@ function BarFill({
   rounded?: boolean;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const width = useSharedValue(percent);
   useEffect(() => {
@@ -330,7 +334,7 @@ function BarFill({
       : withTiming(percent, { duration: BAR_MS, easing: EASE_OUT });
   }, [percent, reducedMotion, width]);
   const animatedStyle = useAnimatedStyle(() => ({ width: `${width.value}%` }), [width]);
-  return (
+  return localizeBloomCopy((
     <Animated.View
       testID={testID}
       style={[
@@ -339,7 +343,7 @@ function BarFill({
         animatedStyle,
       ]}
     />
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -378,7 +382,8 @@ function Track({
   now: number;
   testID?: string;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       testID={a11y.testID}
       accessibilityRole="progressbar"
@@ -403,7 +408,7 @@ function Track({
     >
       {children}
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -431,10 +436,11 @@ function HoverRow({
   testID?: string;
   children: (hovered: boolean) => React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const ringStyle: WebCssStyle = { '--bloom-agent-limits-ring': palette.ring };
   const webStyle = IS_WEB ? ringStyle : null;
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...(IS_WEB ? ({ dataSet: { bloomAgentLimitsRow: '' } } as Record<string, unknown>) : {})}
       onPress={onPress}
@@ -461,7 +467,7 @@ function HoverRow({
     >
       {children(hovered)}
     </Pressable>
-  );
+  ));
 }
 
 function ContextGroupRow({
@@ -473,8 +479,9 @@ function ContextGroupRow({
   palette: CardPalette;
   format: (n: number) => string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [open, setOpen] = useState(false);
-  return (
+  return localizeBloomCopy((
     <View>
       <HoverRow
         palette={palette}
@@ -531,7 +538,7 @@ function ContextGroupRow({
         </View>
       </Collapse>
     </View>
-  );
+  ));
 }
 
 function LegendRow({
@@ -547,7 +554,8 @@ function LegendRow({
   share: string;
   palette: CardPalette;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 5, paddingBottom: 5 }}
     >
@@ -564,7 +572,7 @@ function LegendRow({
         {share}
       </Text>
     </View>
-  );
+  ));
 }
 
 function ContextSection({
@@ -586,6 +594,7 @@ function ContextSection({
   freeSpaceLabel: string;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const used = context.segments.reduce((sum, s) => (s.deferred ? sum : sum + s.tokens), 0);
   const free = Math.max(0, context.max - used);
   const share = (n: number) => (n / Math.max(1, context.max)) * 100;
@@ -594,7 +603,7 @@ function ContextSection({
   const readout = `${format(used)} / ${format(context.max)}`;
   const percent = `(${Math.round(share(used))}%)`;
 
-  return (
+  return localizeBloomCopy((
     <>
       <HoverRow
         palette={palette}
@@ -678,7 +687,7 @@ function ContextSection({
         </View>
       </Collapse>
     </>
-  );
+  ));
 }
 
 /**
@@ -696,9 +705,10 @@ function PlanLink({
   accessibilityLabel: string;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const ringStyle: WebCssStyle = { '--bloom-agent-limits-ring': palette.ring };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...(IS_WEB ? ({ dataSet: { bloomAgentLimitsRow: '' } } as Record<string, unknown>) : {})}
       onPress={onPress}
@@ -728,12 +738,13 @@ function PlanLink({
         />
       </View>
     </Pressable>
-  );
+  ));
 }
 
 function LimitRow({ limit, palette }: { limit: AgentLimitsUsageLimit; palette: CardPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const pct = Math.round(Math.max(0, Math.min(1, Number.isFinite(limit.used) ? limit.used : 0)) * 100);
-  return (
+  return localizeBloomCopy((
     <View style={{ gap: 6 }}>
       <View
         style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}
@@ -754,7 +765,7 @@ function LimitRow({ limit, palette }: { limit: AgentLimitsUsageLimit; palette: C
         <BarFill percent={pct} color={palette.limitFill} rounded />
       </Track>
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -774,6 +785,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
   style,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolvePalette(theme), [theme]);
   const [expanded, setExpanded] = useControllableState({
@@ -790,7 +802,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
   const showPlan = limits !== undefined || plan !== undefined;
   const planHeading = `${labels?.planUsageLimits ?? 'Plan usage limits'}${plan ? ` · ${plan}` : ''}`;
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -861,7 +873,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
         </>
       ) : null}
     </View>
-  );
+  ));
 };
 
 export const AgentLimitsCard = memo(AgentLimitsCardComponent);

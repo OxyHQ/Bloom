@@ -1,3 +1,4 @@
+import { useDirection } from '../direction/context';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
@@ -141,6 +142,7 @@ export function TooltipContent({
   size?: TooltipSize;
 }) {
   const palette = useMenuPalette();
+  const direction = useDirection();
   const { position, visible, triggerRef } = useContext(TooltipContext);
 
   // `visible` drives an `open` → `closing` → unmounted cycle, so the exit has
@@ -215,6 +217,7 @@ export function TooltipContent({
           onLayout={(event: LayoutChangeEvent) => setBubbleWidth(event.nativeEvent.layout.width)}
           style={[
             styles.fixed,
+            { direction },
             {
               left,
               maxWidth: BUBBLE_MAX_WIDTH,

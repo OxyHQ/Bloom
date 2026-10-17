@@ -1,3 +1,4 @@
+import { useDirection } from '../direction/context';
 import {
   createContext,
   useCallback,
@@ -194,6 +195,7 @@ function Bubble({
   targetMeasurements: TargetMeasurements;
 }) {
   const palette = useMenuPalette();
+  const direction = useDirection();
   const insets = useSafeAreaInsets();
   const dimensions = useWindowDimensions();
   const [bubbleMeasurements, setBubbleMeasurements] = useState<
@@ -319,6 +321,7 @@ function Bubble({
             width: BUBBLE_MAX_WIDTH,
             opacity: bubbleMeasurements ? 1 : 0,
             top: coords.top,
+            direction,
             left: coords.left,
           },
         ]}>

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React from 'react';
 
 import {
@@ -26,7 +27,8 @@ import { TransactionsTable } from './TransactionsTable';
  * portfolio bubbles, daily spending heatmap) and the transactions data table.
  */
 export function FinanceDashboardTemplate() {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <DashboardShell selected="finance" title="Finance" crumbIcon={RiBankLine} primaryAction="Add transaction">
       <StatCards stats={FINANCE_STATS} />
       {/* Hero card: where the money comes from and where it goes. */}
@@ -53,5 +55,5 @@ export function FinanceDashboardTemplate() {
       </ThreeUpChartRow>
       <TransactionsTable />
     </DashboardShell>
-  );
+  ));
 }

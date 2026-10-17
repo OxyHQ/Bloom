@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { PanResponder, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
 
@@ -33,6 +34,7 @@ interface EffortSliderProps {
  * so at Max the slider simply rests at its last stop.
  */
 export function EffortSlider({ value, onChange, levels, label, palette, testID }: EffortSliderProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const [width, setWidth] = useState(0);
   const max = Math.max(0, levels.length - 1);
   const clamped = Math.min(Math.max(value, 0), max);
@@ -114,7 +116,7 @@ export function EffortSlider({ value, onChange, levels, label, palette, testID }
     '--bloom-composer-ring': palette.focusRing,
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       accessibilityRole="adjustable"
@@ -183,5 +185,5 @@ export function EffortSlider({ value, onChange, levels, label, palette, testID }
         <View pointerEvents="none" {...dataHook('bloomComposerThumb')} {...webThumb} style={thumbStyle} />
       </View>
     </View>
-  );
+  ));
 }

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -132,6 +133,7 @@ export interface MedicalHeadlineProps {
  * number's baseline.
  */
 export function MedicalHeadline({ label, value, format, suffix, fadeKey, testID }: MedicalHeadlineProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const rolled = useCountUp(value);
   const animated = fadeKey !== undefined;
@@ -144,7 +146,7 @@ export function MedicalHeadline({ label, value, format, suffix, fadeKey, testID 
       {format(animated ? rolled : value)}
     </Text>
   );
-  return (
+  return localizeBloomCopy((
     <View style={{ minWidth: 0, flex: 1, flexDirection: 'column', gap: 2 }}>
       <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
         {label}
@@ -158,12 +160,13 @@ export function MedicalHeadline({ label, value, format, suffix, fadeKey, testID 
         ) : null}
       </View>
     </View>
-  );
+  ));
 }
 
 /** The header row: headline on the left, the pill on the right, `px-1.5 pt-1.5`, 8px apart. */
 export function MedicalHeader({ children }: { children: React.ReactNode }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       style={{
         width: '100%',
@@ -177,7 +180,7 @@ export function MedicalHeader({ children }: { children: React.ReactNode }) {
       }}>
       {children}
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -186,7 +189,8 @@ export function MedicalHeader({ children }: { children: React.ReactNode }) {
 
 /** The date picker's 16px month-nav chevrons: a 2px round-capped stroke. */
 function Chevron16({ direction, color }: { direction: 'left' | 'right'; color: string }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Path
         d={
@@ -199,7 +203,7 @@ function Chevron16({ direction, color }: { direction: 'left' | 'right'; color: s
         strokeLinecap="round"
       />
     </Svg>
-  );
+  ));
 }
 
 const LABEL_MS = 220;
@@ -213,6 +217,7 @@ const LABEL_EASE = Easing.bezier(0, 0, 0.58, 1);
  * line box so it reads as a counter tick. Snaps under reduced motion.
  */
 function RollingLabel({ label, color }: { label: string; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const [previous, setPrevious] = useState<string | null>(null);
   const shown = useRef(label);
@@ -244,7 +249,7 @@ function RollingLabel({ label, color }: { label: string; color: string }) {
 
   const textStyle = { color, textAlign: 'center' as const };
   const layer: ViewStyle = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' };
-  return (
+  return localizeBloomCopy((
     <View style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
       {/* Invisible spacer keeps the line box for the absolute layers. */}
       <Text variant="body-medium" numberOfLines={1} style={[textStyle, { opacity: 0 }]} aria-hidden>
@@ -282,7 +287,7 @@ function RollingLabel({ label, color }: { label: string; color: string }) {
         </Text>
       </Animated.View>
     </View>
-  );
+  ));
 }
 
 function NavButton({
@@ -296,6 +301,7 @@ function NavButton({
   onPress: () => void;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const medical = useMedicalPalette();
   const [hovered, setHovered] = useState(false);
@@ -304,7 +310,7 @@ function NavButton({
     Platform.OS === 'web'
       ? { transitionProperty: 'background-color', transitionDuration: '150ms', transitionTimingFunction: 'ease' }
       : null;
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...hook}
       testID={testID}
@@ -328,7 +334,7 @@ function NavButton({
       ]}>
       <Chevron16 direction={direction} color={palette.textSecondary} />
     </Pressable>
-  );
+  ));
 }
 
 export interface WeekRangePillProps {
@@ -362,10 +368,11 @@ export function WeekRangePill({
   style,
   testID,
 }: WeekRangePillProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const interactive = !!(onPrev || onNext);
   const noop = () => {};
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -411,5 +418,5 @@ export function WeekRangePill({
         </View>
       )}
     </View>
-  );
+  ));
 }

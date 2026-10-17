@@ -1,3 +1,4 @@
+import { useDirection } from '../direction/context';
 import React, {
   createContext,
   forwardRef,
@@ -372,6 +373,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   dragRef,
 ) {
   const theme = useTheme();
+  const direction = useDirection();
   useInteractiveWebCss(STYLE_ID, BLOOM_TABS_CSS);
   const resolvedVariant = resolveVariant(variant);
   const isUnderline = resolvedVariant === 'underline';
@@ -595,6 +597,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // direction costs a handful of reads and being wrong in the other direction
   // is the bug.
   useEffect(scheduleRemeasure);
+  useEffect(scheduleRemeasure, [direction, scheduleRemeasure]);
 
   useImperativeHandle(
     dragRef,
@@ -679,6 +682,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
 
   const containerStyle = useMemo(
     (): WebCssStyle => ({
+      direction,
       flexDirection: 'row',
       alignItems: 'center',
       gap: STRIP_GAP,
@@ -690,7 +694,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       // strips carry no chrome of their own.
       ...(isUnderline ? { borderBottomWidth: 1, borderBottomColor: paint.separator } : null),
     }),
-    [isUnderline, paint.separator],
+    [direction, isUnderline, paint.separator],
   );
 
   // The underline sits OVER the baseline: it is `bottom-0` of a wrapper whose

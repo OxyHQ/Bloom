@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -197,6 +198,7 @@ function useSvgId(prefix: string): string {
 }
 
 function BlobsSvg({ size, blobs }: { size: number; blobs: Blobs }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useSvgId('bloom-plan');
   const disc = (gradientId: string, color: string) => (
     <RadialGradient id={gradientId} cx="50%" cy="50%" r="50%">
@@ -205,7 +207,7 @@ function BlobsSvg({ size, blobs }: { size: number; blobs: Blobs }) {
       <Stop offset="1" stopColor={color} stopOpacity={0} />
     </RadialGradient>
   );
-  return (
+  return localizeBloomCopy((
     <Svg width={size} height={size} viewBox="0 0 100 100">
       <Defs>
         {disc(`${id}-a`, blobs.a)}
@@ -217,10 +219,11 @@ function BlobsSvg({ size, blobs }: { size: number; blobs: Blobs }) {
       <Circle cx={83} cy={58} r={38} fill={`url(#${id}-b)`} />
       <Circle cx={50} cy={95} r={42} fill={`url(#${id}-c)`} />
     </Svg>
-  );
+  ));
 }
 
 export function SettingsPlanArt({ source, animated = true, size = 277, style }: SettingsPlanArtProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const blobs = useBlobs();
   const reducedMotion = useReducedMotion();
   const hostRef = useRef<View>(null);
@@ -351,7 +354,7 @@ export function SettingsPlanArt({ source, animated = true, size = 277, style }: 
     };
   }, [source, animated, reducedMotion, size, blobs]);
 
-  return (
+  return localizeBloomCopy((
     <View
       ref={hostRef}
       aria-hidden
@@ -360,7 +363,7 @@ export function SettingsPlanArt({ source, animated = true, size = 277, style }: 
     >
       {failed ? <BlobsSvg size={size} blobs={blobs} /> : null}
     </View>
-  );
+  ));
 }
 
 /**
@@ -370,8 +373,9 @@ export function SettingsPlanArt({ source, animated = true, size = 277, style }: 
  * that alpha on native.
  */
 export function RadialFade({ color, size }: { color: string; size: number }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useSvgId('bloom-settings-plan-fade');
-  return (
+  return localizeBloomCopy((
     <Svg width={size} height={size} style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>
         <RadialGradient id={id} cx="50%" cy="50%" r="50%">
@@ -384,13 +388,14 @@ export function RadialFade({ color, size }: { color: string; size: number }) {
       </Defs>
       <Rect x={0} y={0} width={size} height={size} fill={`url(#${id})`} />
     </Svg>
-  );
+  ));
 }
 
 /** A top-to-bottom fade from `color` to transparent, filling its parent. */
 export function VerticalFade({ color }: { color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useSvgId('bloom-settings-top-fade');
-  return (
+  return localizeBloomCopy((
     <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 1 1" style={StyleSheet.absoluteFill}>
       <Defs>
         <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
@@ -400,5 +405,5 @@ export function VerticalFade({ color }: { color: string }) {
       </Defs>
       <Rect x={0} y={0} width={1} height={1} fill={`url(#${id})`} />
     </Svg>
-  );
+  ));
 }

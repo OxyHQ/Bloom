@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 
 import { AgentChatActionsBase } from './AgentChatActionsBase';
@@ -19,38 +20,42 @@ import type {
  */
 export function bindAgentChat(platform: AgentChatPlatform) {
   function AgentChat(props: AgentChatProps) {
-    return (
+  const localizeBloomCopy = useTemplateCopy();
+    return localizeBloomCopy((
       <AgentChatPlatformContext.Provider value={platform}>
         <AgentChatBase {...props} />
       </AgentChatPlatformContext.Provider>
-    );
+    ));
   }
   AgentChat.displayName = 'AgentChat';
 
   function AgentChatActions(props: AgentChatActionsProps) {
-    return (
+  const localizeBloomCopy = useTemplateCopy();
+    return localizeBloomCopy((
       <AgentChatPlatformContext.Provider value={platform}>
         <AgentChatActionsBase {...props} />
       </AgentChatPlatformContext.Provider>
-    );
+    ));
   }
   AgentChatActions.displayName = 'AgentChatActions';
 
   function AgentChatHistory(props: AgentChatHistoryProps) {
-    return (
+  const localizeBloomCopy = useTemplateCopy();
+    return localizeBloomCopy((
       <AgentChatPlatformContext.Provider value={platform}>
         <AgentChatHistoryBase {...props} />
       </AgentChatPlatformContext.Provider>
-    );
+    ));
   }
   AgentChatHistory.displayName = 'AgentChatHistory';
 
   function AgentChatComposer(props: AgentChatComposerProps) {
-    return (
+  const localizeBloomCopy = useTemplateCopy();
+    return localizeBloomCopy((
       <AgentChatPlatformContext.Provider value={platform}>
         <AgentChatComposerBase {...props} />
       </AgentChatPlatformContext.Provider>
-    );
+    ));
   }
   AgentChatComposer.displayName = 'AgentChatComposer';
 

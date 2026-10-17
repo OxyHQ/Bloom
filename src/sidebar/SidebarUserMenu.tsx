@@ -1,3 +1,5 @@
+import { useDirection } from '../direction';
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useState } from 'react';
 import { Pressable, View, useWindowDimensions } from 'react-native';
 
@@ -45,6 +47,7 @@ function UserRow({
   palette: SidebarPalette;
   onSelect: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const style: WebCssStyle = {
     width: '100%',
@@ -59,7 +62,7 @@ function UserRow({
     backgroundColor: user.selected || hovered ? palette.menu.rowHover : 'transparent',
     '--bloom-sidebar-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...(IS_WEB ? { dataSet: { bloomSidebar: 'inset' } } : {})}
       role="button"
@@ -80,7 +83,7 @@ function UserRow({
         {user.name}
       </Text>
     </Pressable>
-  );
+  ));
 }
 
 /**
@@ -94,9 +97,10 @@ export function SidebarAccountMenuContent({
   account: SidebarAccount;
   onSelect: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSidebarPalette();
   const hasActions = account.onAddUser != null || account.onManage != null;
-  return (
+  return localizeBloomCopy((
     <View>
       {account.users?.length ? (
         <View style={{ width: '100%', gap: 6, paddingTop: 5 }}>
@@ -150,7 +154,7 @@ export function SidebarAccountMenuContent({
         </View>
       ) : null}
     </View>
-  );
+  ));
 }
 
 const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
@@ -161,6 +165,8 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
   avatarBackground,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
+  const direction = useDirection();
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const [open, setOpen] = useState(false);
@@ -180,7 +186,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
     '--bloom-sidebar-ring-offset': palette.panel,
   };
 
-  return (
+  return localizeBloomCopy((
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild label={account.name}>
         <Pressable
@@ -211,7 +217,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
           />
           <SidebarAvatarView avatar={account.avatar} size="md" palette={palette} background={avatarBackground} />
           <Collapsible collapsed={collapsed}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, paddingLeft: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, paddingStart: 8 }}>
               <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
                 {account.name}
               </Text>
@@ -222,7 +228,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
       </PopoverTrigger>
       <PopoverContent
         label="Account menu"
-        side={narrow ? 'bottom' : 'right'}
+        side={narrow ? 'bottom' : direction === 'rtl' ? 'left' : 'right'}
         align="start"
         sideOffset={8}
         maxWidth={width - 32}
@@ -232,7 +238,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
         <SidebarAccountMenuContent account={account} onSelect={() => setOpen(false)} />
       </PopoverContent>
     </Popover>
-  );
+  ));
 };
 
 export const SidebarUserMenu = memo(SidebarUserMenuComponent);

@@ -1,3 +1,5 @@
+import { useDirection } from '../direction/context';
+import { isDirectionalIcon } from './directional-icon';
 import React, {
   memo,
   useCallback,
@@ -193,6 +195,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
 }) => {
   useInteractiveWebCss(STYLE_ID, BLOOM_BUTTON_CSS);
   const theme = useTheme();
+  const direction = useDirection();
   const reactId = useId();
   const resolvedId = id ?? `bloom-btn-${reactId}`;
 
@@ -324,6 +327,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
         flexShrink: 0,
         width: iconSize,
         height: iconSize,
+        transform: isDirectionalIcon(Icon, direction) ? 'rotate(180deg)' : undefined,
       }}
     >
       <Icon width={iconSize} height={iconSize} fill="currentColor" />

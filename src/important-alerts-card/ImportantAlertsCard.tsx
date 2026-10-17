@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
@@ -81,11 +82,12 @@ const CHEVRON_LEFT = 'M9 4L5.70711 7.29289C5.31658 7.68342 5.31658 8.31658 5.707
 const CHEVRON_RIGHT = 'M7 4L10.2929 7.29289C10.6834 7.68342 10.6834 8.31658 10.2929 8.70711L7 12';
 
 function Chevron16({ d, color }: { d: string; color: string }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Path d={d} stroke={color} strokeWidth={2} strokeLinecap="round" />
     </Svg>
-  );
+  ));
 }
 
 /** The static `WeekRangePill`: decorative chevrons around a range label. */
@@ -100,7 +102,8 @@ function RangePill({
   isDark: boolean;
   testID?: string;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -126,12 +129,13 @@ function RangePill({
         <Chevron16 d={CHEVRON_RIGHT} color={surfaces.textSecondary} />
       </View>
     </View>
-  );
+  ));
 }
 
 let fadeIdCounter = 0;
 
 function TopFade({ color, visible }: { color: string; visible: boolean }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useMemo(() => `bloom-alerts-fade${fadeIdCounter++}`, []);
   const reducedMotion = useReducedMotion();
   const opacity = useSharedValue(visible ? 1 : 0);
@@ -143,7 +147,7 @@ function TopFade({ color, visible }: { color: string; visible: boolean }) {
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
 
-  return (
+  return localizeBloomCopy((
     <Animated.View pointerEvents="none" aria-hidden style={[styles.fade, animatedStyle]}>
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
@@ -156,7 +160,7 @@ function TopFade({ color, visible }: { color: string; visible: boolean }) {
         <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
       </Svg>
     </Animated.View>
-  );
+  ));
 }
 
 function ImportantAlertsCardComponent({
@@ -169,6 +173,7 @@ function ImportantAlertsCardComponent({
   style,
   testID,
 }: ImportantAlertsCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const surfaces = useMemo(() => resolveDashboardSurfaces(theme), [theme]);
   const [scrolled, setScrolled] = useState(false);
@@ -184,7 +189,7 @@ function ImportantAlertsCardComponent({
 
   const feedHook: WebDataSet = IS_WEB ? { dataSet: { bloomAlertsFeed: '' } } : {};
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -275,7 +280,7 @@ function ImportantAlertsCardComponent({
         <TopFade color={surfaces.secondary} visible={scrolled} />
       </View>
     </View>
-  );
+  ));
 }
 
 export const ImportantAlertsCard = memo(ImportantAlertsCardComponent);

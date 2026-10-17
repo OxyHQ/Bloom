@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useMemo, useState } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -58,6 +59,7 @@ export function IconAction({
   'aria-expanded': ariaExpanded,
   'aria-haspopup': ariaHaspopup,
 }: IconActionProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const lit = !disabled && (hovered || active);
   const style: WebCssStyle = {
@@ -73,7 +75,7 @@ export function IconAction({
   };
   const webAria: WebAriaProps | null =
     IS_WEB && ariaHaspopup ? { 'aria-haspopup': ariaHaspopup } : null;
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomAgentChatControl')}
       {...webAria}
@@ -90,7 +92,7 @@ export function IconAction({
       style={style}>
       {icon(lit ? hoverColor : color)}
     </Pressable>
-  );
+  ));
 }
 
 let gradientSeq = 0;
@@ -105,6 +107,7 @@ function GradientFill({
   radius: number;
   opacity?: number;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useMemo(() => `bloom-agent-chat-fill-${gradientSeq++}`, []);
   const [top, bottom] = paint.gradient ?? [paint.background, paint.background];
   if (IS_WEB) {
@@ -121,9 +124,9 @@ function GradientFill({
       transitionDuration: `${TRANSITION_MS}ms`,
       transitionTimingFunction: 'ease',
     };
-    return <View pointerEvents="none" style={style} />;
+    return localizeBloomCopy(<View pointerEvents="none" style={style} />);
   }
-  return (
+  return localizeBloomCopy((
     <View
       pointerEvents="none"
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity }}>
@@ -137,7 +140,7 @@ function GradientFill({
         <Rect x="0" y="0" width="100%" height="100%" rx={radius} fill={`url(#${id})`} />
       </Svg>
     </View>
-  );
+  ));
 }
 
 export interface PrimaryDiscProps {
@@ -169,6 +172,7 @@ export function PrimaryDisc({
   children,
   testID,
 }: PrimaryDiscProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
   const paint = palette.primary;
@@ -184,7 +188,7 @@ export function PrimaryDisc({
     opacity: disabled ? 0.4 : hovered ? hoverOpacity : 1,
     '--bloom-agent-chat-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomAgentChatControl')}
       testID={testID}
@@ -207,5 +211,5 @@ export function PrimaryDisc({
         {children}
       </View>
     </Pressable>
-  );
+  ));
 }

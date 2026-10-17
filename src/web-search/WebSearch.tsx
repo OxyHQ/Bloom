@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, {
   memo,
   useCallback,
@@ -255,34 +256,36 @@ function BrandMark({
   size: number;
   palette: WebSearchPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const meta = SOCIAL_PROVIDERS[brand];
   const fill = MONOCHROME_BRANDS.has(brand) ? palette.textPrimary : (meta.brand ?? palette.accent);
-  return (
+  return localizeBloomCopy((
     <Svg aria-hidden width={size} height={size} viewBox={meta.viewBox} style={{ flexShrink: 0 }}>
       <Path d={meta.path} fill={fill} />
     </Svg>
-  );
+  ));
 }
 
 /** The step's leading glyph: a site's own mark, a supplied icon, or an empty slot. */
 function StepGlyph({ step, palette }: { step: WebSearchStep; palette: WebSearchPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const slot = { width: 16, height: 16, marginTop: 2, flexShrink: 0 } as const;
   if (step.brand) {
     // A brand mark is solid to the edge of its box while an outline icon is
     // mostly air: drawn at 13 inside the same 16px slot the two weigh the same.
-    return (
+    return localizeBloomCopy((
       <View aria-hidden style={[slot, { alignItems: 'center', justifyContent: 'center' }]}>
         <BrandMark brand={step.brand} size={13} palette={palette} />
       </View>
-    );
+    ));
   }
   const Icon = step.icon;
-  if (!Icon) return <View aria-hidden style={slot} />;
-  return (
+  if (!Icon) return localizeBloomCopy(<View aria-hidden style={slot} />);
+  return localizeBloomCopy((
     <View aria-hidden style={slot}>
       <Icon width={16} height={16} fill={palette.iconSecondary} />
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -400,6 +403,7 @@ function SourceMark({
   reduce: boolean;
   palette: WebSearchPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const ref = useRef<HostNode>(null);
   // Read at first render: a mark arriving from somewhere starts hidden until it
   // knows where "somewhere" is, so it never paints a frame at its destination.
@@ -452,7 +456,7 @@ function SourceMark({
     [tx, ty],
   );
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       ref={ref}
       aria-hidden
@@ -490,7 +494,7 @@ function SourceMark({
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: palette.markDot }} />
       )}
     </Animated.View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -518,6 +522,7 @@ function SourceLinkRow({
   showDomain: boolean;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const height = useAutoHeight(visible, reduce ? 0 : ROW_HEIGHT_MS);
 
@@ -583,7 +588,7 @@ function SourceLinkRow({
     paddingBottom: 4,
   } as const;
 
-  return (
+  return localizeBloomCopy((
     <Animated.View role="listitem" testID={testID} style={[{ overflow: 'hidden' }, height.style]}>
       <View onLayout={height.onLayout}>
         {href ? (
@@ -613,7 +618,7 @@ function SourceLinkRow({
         )}
       </View>
     </Animated.View>
-  );
+  ));
 }
 
 /**
@@ -637,6 +642,7 @@ function SourcesRow({
   label: string;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(0);
   const [hovered, setHovered] = useState(false);
@@ -748,7 +754,7 @@ function SourcesRow({
 
   const ringStyle: WebCssStyle = { '--bloom-web-search-ring': palette.ring };
 
-  return (
+  return localizeBloomCopy((
     <AgentLogRow first={false} last reduce={reduce} testID={testID}>
       <View ref={rootRef} style={{ paddingTop: 4, paddingBottom: 4 }}>
         <Pressable
@@ -836,7 +842,7 @@ function SourcesRow({
         </View>
       </View>
     </AgentLogRow>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -853,7 +859,8 @@ function StepContent({
   active: boolean;
   palette: WebSearchPalette;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
       <StepGlyph step={step} palette={palette} />
       <Text variant="body-regular" style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}>
@@ -880,7 +887,7 @@ function StepContent({
         </Text>
       ) : null}
     </View>
-  );
+  ));
 }
 
 function StepRow({
@@ -904,7 +911,8 @@ function StepRow({
   sourcesLabel: string;
   testID?: string;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <AgentLogRow first={first} last={last} reduce={reduce} style={{ paddingLeft: STEP_INSET }} testID={testID}>
       <View style={{ paddingTop: 4, paddingBottom: 4 }}>
         <StepContent step={step} active={active} palette={palette} />
@@ -926,7 +934,7 @@ function StepRow({
         ) : null}
       </View>
     </AgentLogRow>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -951,6 +959,7 @@ function WebSearchComponent({
   style,
   testID,
 }: WebSearchProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolveWebSearchPalette(theme), [theme]);
   const systemReduce = useAgentLogMotion();
@@ -1053,15 +1062,15 @@ function WebSearchComponent({
     ) : null;
 
   if (!head) {
-    return (
+    return localizeBloomCopy((
       <View testID={testID} style={[{ width: '100%' }, style]}>
         {list}
         {indicator}
       </View>
-    );
+    ));
   }
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column' }, style]}>
       {revealed > 0 ? (
         <AgentLogReveal reduce={reduce} testID={testID ? `${testID}-heading` : undefined}>
@@ -1082,7 +1091,7 @@ function WebSearchComponent({
       ) : null}
       {indicator}
     </View>
-  );
+  ));
 }
 
 export const WebSearch = memo(WebSearchComponent);

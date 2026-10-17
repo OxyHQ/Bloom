@@ -1,3 +1,4 @@
+import { useDirection } from '../direction/context';
 import React, { memo, useCallback, useRef } from 'react';
 import { Pressable, Animated, StyleSheet } from 'react-native';
 
@@ -15,6 +16,7 @@ const SQUEEZE_RATIO = 0.75; // thumb height shrinks to 75% when pressed
 const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, SwitchProps>(
   ({ value, onValueChange, disabled, style, size = 'default', accessibilityLabel, testID }, ref) => {
     const theme = useTheme();
+    const direction = useDirection();
     useAccessibleNameWarning('Switch', accessibilityLabel);
     const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
     const pressAnim = useRef(new Animated.Value(0)).current;
@@ -64,7 +66,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
 
     const thumbX = anim.interpolate({
       inputRange: [0, 1],
-      outputRange: [PADDING, PADDING + travel],
+      outputRange: direction === 'rtl' ? [-PADDING, -(PADDING + travel)] : [PADDING, PADDING + travel],
     });
 
     const squeezedHeight = thumb * SQUEEZE_RATIO;
@@ -114,12 +116,15 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
             backgroundColor: trackBg,
             justifyContent: 'center',
             alignItems: 'flex-start',
+            direction,
           }}
         >
           <Animated.View
             style={[
               styles.thumb,
               {
+                position: 'absolute',
+                start: 0,
                 width: thumb,
                 height: thumbHeight,
                 borderRadius: thumbRadius,

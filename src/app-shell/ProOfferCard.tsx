@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, {
@@ -56,8 +57,9 @@ const WAITLIST_SHADOW = {
 let ids = 0;
 
 function DefaultBackdrop({ from, via }: { from: string; via: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const id = useMemo(() => `bloom-pro-offer-${ids++}`, []);
-  return (
+  return localizeBloomCopy((
     <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
       <Defs>
         <LinearGradient id={`${id}-fill`} x1="0" y1="0" x2="1" y2="1">
@@ -75,10 +77,11 @@ function DefaultBackdrop({ from, via }: { from: string; via: string }) {
       </Defs>
       <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}-fill)`} mask={`url(#${id}-mask)`} />
     </Svg>
-  );
+  ));
 }
 
 function Shimmer({ width }: { width: number }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const travel = useSharedValue(0);
   useEffect(() => {
@@ -95,7 +98,7 @@ function Shimmer({ width }: { width: number }) {
     [travel, barWidth],
   );
   if (reducedMotion || width === 0) return null;
-  return (
+  return localizeBloomCopy((
     <Animated.View
       pointerEvents="none"
       style={[{ position: 'absolute', top: 0, bottom: 0, left: -width * 0.55, width: barWidth }, style]}
@@ -111,7 +114,7 @@ function Shimmer({ width }: { width: number }) {
         <Rect x="0" y="0" width="100%" height="100%" fill="url(#bloom-pro-offer-shimmer)" />
       </Svg>
     </Animated.View>
-  );
+  ));
 }
 
 const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
@@ -130,6 +133,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
   style,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const { width: viewport } = useWindowDimensions();
   const reducedMotion = useReducedMotion();
@@ -184,7 +188,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
       : null),
   };
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       role="complementary"
       accessibilityLabel={accessibilityLabel}
@@ -242,7 +246,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
         testID={testID ? `${testID}-dismiss` : undefined}
       />
     </Animated.View>
-  );
+  ));
 };
 
 export const ProOfferCard = memo(ProOfferCardComponent);

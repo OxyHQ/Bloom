@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React from 'react';
 
 import { ComposerStatusBarBase } from './ComposerStatusBarBase';
@@ -10,10 +11,11 @@ import type { ComposerStatusBarProps } from './types';
  * The implementation is `ComposerStatusBarBase`; this file only binds the panel.
  */
 export function ComposerStatusBar(props: ComposerStatusBarProps) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <ComposerPopoverContext.Provider value={ComposerPopover}>
       <ComposerStatusBarBase {...props} />
     </ComposerPopoverContext.Provider>
-  );
+  ));
 }
 ComposerStatusBar.displayName = 'ComposerStatusBar';

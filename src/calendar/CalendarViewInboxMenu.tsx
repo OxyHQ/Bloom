@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 
@@ -57,6 +58,7 @@ function FeedRow({
   palette: CalendarViewPalette;
   onPress: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const swatch = feedSwatchColors(hue, feed.color);
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarFeed: '' } } : {};
@@ -72,7 +74,7 @@ function FeedRow({
     backgroundColor: hovered ? palette.rowHover : 'transparent',
     '--bloom-calendar-feed-hover': palette.rowHover,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...hook}
       role="button"
@@ -99,7 +101,7 @@ function FeedRow({
         {feed.label}
       </Text>
     </Pressable>
-  );
+  ));
 }
 
 /** The feed groups, the dividers and the footer — the panel's body on both platforms. */
@@ -118,7 +120,8 @@ function InboxBody({
   onSelect: (feed: CalendarViewFeed, account: CalendarViewFeedAccount) => void;
   onAddAccount: () => void;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ gap: 16 }}>
       {accounts.map((account, index) => (
         <React.Fragment key={account.email}>
@@ -139,7 +142,7 @@ function InboxBody({
             <Text
               variant="body-medium"
               numberOfLines={1}
-              style={{ paddingLeft: 8, color: palette.textSecondary }}
+              style={{ paddingStart: 8, color: palette.textSecondary }}
             >
               {account.email}
             </Text>
@@ -167,7 +170,7 @@ function InboxBody({
         {addAccountLabel}
       </Button>
     </View>
-  );
+  ));
 }
 
 export function CalendarViewInboxMenu({
@@ -178,6 +181,7 @@ export function CalendarViewInboxMenu({
   accessibilityLabel = 'Inbox',
   testID,
 }: CalendarViewInboxMenuProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const hue = useMemo(() => createHueResolver(theme.colors.primary), [theme.colors.primary]);
@@ -188,28 +192,19 @@ export function CalendarViewInboxMenu({
     if (IS_WEB) adoptStyleSheet(CSS_ID, FEED_CSS);
   }, []);
 
-  // Web: the panel chrome, inline so it wins over the popover's default
-  // card. Native: the sheet is the chrome.
+  // Web: the popover's own panel IS this menu's chrome (266 wide, `rounded-2xl`,
+  // border, surface, `p-2.5`, `shadow-dropdown`); only the height bound is the
+  // menu's. Native: the sheet is the chrome.
   const panelStyle: WebCssStyle | undefined = Platform.select<WebCssStyle | undefined>({
     web: {
       width: PANEL_WIDTH,
       maxWidth: viewport.width - 32,
       maxHeight: viewport.height - 32,
-      overflow: 'hidden',
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: palette.panelBorder,
-      backgroundColor: palette.panel,
-      boxShadow: palette.shadowDropdown,
-      paddingTop: 10,
-      paddingBottom: 10,
-      paddingLeft: 10,
-      paddingRight: 10,
     },
     default: undefined,
   });
 
-  return (
+  return localizeBloomCopy((
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
@@ -245,5 +240,5 @@ export function CalendarViewInboxMenu({
         />
       </PopoverContent>
     </Popover>
-  );
+  ));
 }

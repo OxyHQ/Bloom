@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
@@ -60,6 +61,7 @@ function ComposerLoaderComponent({
   style,
   testID,
 }: ComposerLoaderProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const gradientId = `bloom-cl-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const [box, setBox] = useState({ w: 640, h: 52 });
@@ -111,7 +113,7 @@ function ComposerLoaderComponent({
     mixBlendMode: blend,
   };
 
-  return (
+  return localizeBloomCopy((
     <View style={[styles.root, style]} testID={testID}>
       {surface ? (
         <View
@@ -184,7 +186,7 @@ function ComposerLoaderComponent({
 
       <View style={styles.content}>{children}</View>
     </View>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({

@@ -1,3 +1,4 @@
+import { useDirection } from '../direction/context';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type AccessibilityProps,
@@ -157,6 +158,7 @@ export function TextField({
   leadingAddon,
   style,
 }: TextFieldProps) {
+  const direction = useDirection();
   const theme = useTheme();
   const group = useContext(TextFieldGroupContext);
   const bare = group !== null;
@@ -214,7 +216,7 @@ export function TextField({
             : [
                 a.w_full,
                 hasAddon
-                  ? TEXT_FIELD_ADDON_PADDING[size]
+                  ? (direction === 'rtl' ? { paddingLeft: TEXT_FIELD_ADDON_PADDING[size].paddingRight, paddingRight: TEXT_FIELD_ADDON_PADDING[size].paddingLeft } : TEXT_FIELD_ADDON_PADDING[size])
                   : { paddingHorizontal: TEXT_FIELD_GEOMETRY[size].paddingHorizontal },
               ],
           style,
@@ -284,7 +286,7 @@ function LeadingAddon({
 
   return (
     <View
-      style={[a.z_20, { flexShrink: 0, marginRight: TEXT_FIELD_LEADING_GAP }]}
+      style={[a.z_20, { flexShrink: 0, marginEnd: TEXT_FIELD_LEADING_GAP }]}
       {...(webHandlers as Record<string, unknown> | undefined)}>
       {children}
     </View>
@@ -332,9 +334,12 @@ export function TextFieldInput({
   inputRef,
   style,
   floatingLabel = false,
+  inputDir,
   ...rest
 }: TextFieldInputProps) {
   const theme = useTheme();
+  const direction = useDirection();
+  const valueDirection = inputDir ?? (['email', 'url', 'tel'].includes(rest.inputMode ?? '') || rest.keyboardType === 'email-address' || rest.keyboardType === 'url' || rest.keyboardType === 'phone-pad' ? 'ltr' : direction);
   // Read directly rather than through `useTextFieldContext`: a missing root is
   // not an error here, it is the branch below.
   const ctx = useContext(Context);
@@ -358,6 +363,7 @@ export function TextFieldInput({
           onChangeText={onChangeText}
           isInvalid={isInvalid}
           disabled={disabled}
+          inputDir={inputDir}
           floatingLabel={floatingLabel}
           style={style}
           inputRef={inputRef}
@@ -397,6 +403,7 @@ export function TextFieldInput({
   if (floatingLabel) {
     return (
       <FloatingLabelInput
+        inputDir={valueDirection}
         label={label}
         value={value}
         onChangeText={onChangeText}
@@ -427,8 +434,10 @@ export function TextFieldInput({
       minWidth: 0,
       // Longhands, so a caller's `paddingRight` (Search's clear button) wins on
       // web too — `paddingHorizontal` becomes `padding-inline`, which outranks it.
-      paddingLeft: TEXT_FIELD_INPUT_INSET,
-      paddingRight: 0,
+      paddingLeft: direction === 'rtl' ? 0 : TEXT_FIELD_INPUT_INSET,
+      paddingRight: direction === 'rtl' ? TEXT_FIELD_INPUT_INSET : 0,
+      textAlign: direction === 'rtl' ? 'right' : 'left',
+      writingDirection: valueDirection === 'auto' ? 'auto' : valueDirection,
     },
     multiline
       ? {
@@ -479,6 +488,7 @@ export function TextFieldInput({
         placeholder={placeholder === null ? undefined : placeholder || label}
         placeholderTextColor={resolvePlaceholderColor(ctx.palette, state)}
         keyboardAppearance={theme.mode === 'light' ? 'light' : 'dark'}
+        {...(IS_WEB ? { dir: valueDirection } : {})}
         style={flattened}
       />
 
@@ -502,6 +512,7 @@ type FloatingLabelInputProps = Omit<
   onChangeText?: (value: string) => void;
   isInvalid?: boolean;
   refs: (instance: TextInput | null) => void;
+  inputDir?: 'ltr' | 'rtl' | 'auto';
 };
 
 /**
@@ -530,8 +541,10 @@ function FloatingLabelInput({
   isInvalid,
   refs,
   style,
+  inputDir,
   ...rest
 }: FloatingLabelInputProps) {
+  const direction = useDirection();
   const theme = useTheme();
   const ctx = useTextFieldContext();
   const reduceMotion = useReducedMotion();
@@ -585,6 +598,8 @@ function FloatingLabelInput({
       fontSize: TEXT_FIELD_TEXT.fontSize,
       fontWeight: TEXT_FIELD_TEXT.fontWeight,
       color: ctx.disabled ? palette.textDisabled : palette.text,
+      textAlign: direction === 'rtl' ? 'right' : 'left',
+      writingDirection: inputDir ?? direction,
       lineHeight: TEXT_FIELD_TEXT.fontSize * 1.2,
       minWidth: 0,
       paddingLeft: tokens.space.xs,
@@ -612,7 +627,7 @@ function FloatingLabelInput({
           {
             fontFamily: SANS_FONT_FAMILY,
             fontWeight: TEXT_FIELD_HINT_TEXT.fontWeight,
-            left: tokens.space.xs + tokens.space._2xs,
+            start: tokens.space.xs + tokens.space._2xs,
             top: labelTop,
             fontSize: labelSize,
             color: labelColor,
@@ -640,6 +655,7 @@ function FloatingLabelInput({
         placeholder={undefined}
         placeholderTextColor={palette.placeholder}
         keyboardAppearance={theme.mode === 'light' ? 'light' : 'dark'}
+        {...(IS_WEB ? { dir: inputDir ?? direction } : {})}
         style={inputStyle}
       />
 
@@ -737,8 +753,8 @@ export function TextFieldIcon({ icon: Comp, position = 'leading' }: TextFieldIco
       style={[
         a.z_20,
         position === 'leading'
-          ? { marginRight: TEXT_FIELD_LEADING_GAP }
-          : { marginLeft: TEXT_FIELD_TRAILING_GAP },
+          ? { marginEnd: TEXT_FIELD_LEADING_GAP }
+          : { marginStart: TEXT_FIELD_TRAILING_GAP },
       ]}>
       <Comp
         size="md"
@@ -781,7 +797,7 @@ export function TextFieldSuffix({
       style={StyleSheet.flatten([
         a.z_20,
         {
-          marginLeft: TEXT_FIELD_TRAILING_GAP,
+          marginStart: TEXT_FIELD_TRAILING_GAP,
           color,
         },
         a.pointer_events_none,

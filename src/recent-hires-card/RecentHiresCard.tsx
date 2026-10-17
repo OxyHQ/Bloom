@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useEffect, useMemo } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
@@ -92,8 +93,9 @@ function HireCard({
   palette: RecentHiresPalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const photo = hire.avatar != null;
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -138,7 +140,7 @@ function HireCard({
         {hire.role}
       </Chip>
     </View>
-  );
+  ));
 }
 
 const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
@@ -158,6 +160,7 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   style,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolveRecentHiresPalette(theme), [theme]);
 
@@ -169,7 +172,7 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   const rows = [hires.slice(0, 2), hires.slice(2, 4)].filter((row) => row.length > 0);
   const teamHook: WebDataSet = IS_WEB ? { dataSet: { bloomRecentHiresTeam: '' } } : {};
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -272,7 +275,7 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
         </Button>
       </View>
     </View>
-  );
+  ));
 };
 
 export const RecentHiresCard = memo(RecentHiresCardComponent);

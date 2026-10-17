@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, {
   memo,
   useCallback,
@@ -271,14 +272,15 @@ function OptionText({
   description?: React.ReactNode;
   palette: QuestionnairePalette;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ flex: 1, minWidth: 0 }}>
       <Text style={[BODY_MEDIUM, { color: palette.text }]}>{label}</Text>
       {description !== undefined && description !== null ? (
         <Text style={[BODY_REGULAR, { color: palette.textSecondary }]}>{description}</Text>
       ) : null}
     </View>
-  );
+  ));
 }
 
 /** The number key on single-select rows; one tone up whenever its row is lifted. */
@@ -291,7 +293,8 @@ function OptionKey({
   raised: boolean;
   palette: QuestionnairePalette;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       {...dataSet({ bloomQuestionnaireKey: '' })}
       aria-hidden
@@ -309,7 +312,7 @@ function OptionKey({
     >
       <Text style={[BODY_2_MEDIUM, { color: palette.text }]}>{index + 1}</Text>
     </View>
-  );
+  ));
 }
 
 function CheckboxRow({
@@ -325,10 +328,11 @@ function CheckboxRow({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { hovered, onHoverIn, onHoverOut } = useHover();
   const { pressed, onPressIn, onPressOut } = usePressed();
   const name = typeof option.label === 'string' ? option.label : option.value;
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataSet({ bloomQuestionnaireRow: 'check', bloomCheckboxFocusable: '' })}
       testID={testID}
@@ -354,7 +358,7 @@ function CheckboxRow({
         />
       </View>
     </Pressable>
-  );
+  ));
 }
 
 function PickRow({
@@ -372,10 +376,11 @@ function PickRow({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { hovered, onHoverIn, onHoverOut } = useHover();
   const { pressed, onPressIn, onPressOut } = usePressed();
   const name = typeof option.label === 'string' ? option.label : option.value;
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataSet({ bloomQuestionnaireRow: 'pick' })}
       testID={testID}
@@ -397,7 +402,7 @@ function PickRow({
       <OptionText label={option.label} description={option.description} palette={palette} />
       <OptionKey index={index} raised={selected || hovered} palette={palette} />
     </Pressable>
-  );
+  ));
 }
 
 function OtherToggle({
@@ -413,8 +418,9 @@ function OtherToggle({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { hovered, onHoverIn, onHoverOut } = useHover();
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataSet({ bloomQuestionnaireToggle: '', bloomCheckboxFocusable: '' })}
       testID={testID}
@@ -436,7 +442,7 @@ function OtherToggle({
           paint={palette.checkbox}
         />
     </Pressable>
-  );
+  ));
 }
 
 function OtherRow({
@@ -466,6 +472,7 @@ function OtherRow({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { hovered, onHoverIn, onHoverOut } = useHover();
   const [focused, setFocused] = useState(false);
   const lifted = focused || (mode === 'single' && selected);
@@ -483,7 +490,7 @@ function OtherRow({
     backgroundColor: 'transparent',
   };
 
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataSet({ bloomQuestionnaireRow: 'other' })}
       testID={testID}
@@ -526,7 +533,7 @@ function OtherRow({
         <OptionKey index={index} raised={selected || hovered} palette={palette} />
       )}
     </Pressable>
-  );
+  ));
 }
 
 interface PillBox {
@@ -551,6 +558,7 @@ function StepPill({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const { hovered, onHoverIn, onHoverOut } = useHover();
   const hover = useSharedValue(0);
@@ -562,7 +570,7 @@ function StepPill({
   }, [hovered, selected, reducedMotion, hover]);
   const hoverStyle = useAnimatedStyle(() => ({ opacity: hover.value }), [hover]);
 
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataSet({ bloomQuestionnairePill: '' })}
       testID={testID}
@@ -612,7 +620,7 @@ function StepPill({
         {label}
       </Text>
     </Pressable>
-  );
+  ));
 }
 
 /** The pill tab list (blue): a thumb that slides to the selected pill with a soft overshoot. */
@@ -631,6 +639,7 @@ function StepPills({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const [boxes, setBoxes] = useState<Record<number, PillBox>>({});
   const x = useSharedValue(0);
@@ -666,7 +675,7 @@ function StepPills({
     [x, y, w, h],
   );
 
-  return (
+  return localizeBloomCopy((
     <View
       role="group"
       accessibilityLabel={label}
@@ -709,7 +718,7 @@ function StepPills({
         />
       ))}
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -738,6 +747,7 @@ function SlidingPanel({
   panelRef?: React.Ref<View>;
   children: React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const progress = useSharedValue(animate ? 0 : 1);
   useEffect(() => {
     if (!animate) {
@@ -765,7 +775,7 @@ function SlidingPanel({
     return style;
   }, [progress, role, direction]);
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       ref={panelRef}
       {...dataSet({ bloomQuestionnairePanel: '' })}
@@ -783,7 +793,7 @@ function SlidingPanel({
     >
       {children}
     </Animated.View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -806,6 +816,7 @@ function QuestionnaireComponent({
   style,
   testID,
 }: QuestionnaireProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolveQuestionnairePalette(theme), [theme]);
   const reducedMotion = useReducedMotion();
@@ -1110,7 +1121,7 @@ function QuestionnaireComponent({
     '--bloom-questionnaire-placeholder': palette.textTertiary,
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       ref={rootRef}
       testID={testID}
@@ -1208,7 +1219,7 @@ function QuestionnaireComponent({
         </View>
       </View>
     </View>
-  );
+  ));
 }
 
 export const Questionnaire = memo(QuestionnaireComponent);

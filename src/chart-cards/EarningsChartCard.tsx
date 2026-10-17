@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { G, Path, Rect } from 'react-native-svg';
@@ -122,6 +123,7 @@ export function EarningsChartCard({
   style,
   testID,
 }: EarningsChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
@@ -157,7 +159,7 @@ export function EarningsChartCard({
   const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label)) : title;
   const total = headline ?? values.reduce((sum, v) => sum + v, 0);
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface gap={CARD_GAP} style={style} testID={testID}>
       <PeriodChartHeader
         label={label}
@@ -235,5 +237,5 @@ export function EarningsChartCard({
         </MultiAxisPlot>
       </View>
     </ChartCardSurface>
-  );
+  ));
 }

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useState } from 'react';
 import {
   Platform,
@@ -45,6 +46,7 @@ export interface PolarSurfaceProps {
  * `<testID>` on the measured box, `<testID>-surface` on the hit surface.
  */
 export function PolarSurface({ accessibilityLabel, onPointerAt, onPointerLeave, style, testID, children }: PolarSurfaceProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const [size, setSize] = useState<ChartSize | null>(null);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -70,7 +72,7 @@ export function PolarSurface({ accessibilityLabel, onPointerAt, onPointerLeave, 
         }),
   };
 
-  return (
+  return localizeBloomCopy((
     <View style={[StyleSheet.absoluteFill, style]} onLayout={onLayout} testID={testID}>
       {size ? (
         <>
@@ -87,7 +89,7 @@ export function PolarSurface({ accessibilityLabel, onPointerAt, onPointerLeave, 
         </>
       ) : null}
     </View>
-  );
+  ));
 }
 
 /**

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useId, useMemo } from 'react';
 import { Platform, StyleSheet, View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, G, Line, Path, Text as SvgText, TextPath } from 'react-native-svg';
@@ -168,6 +169,7 @@ export function RadialChartCard({
   style,
   testID,
 }: RadialChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
   const { width: viewportWidth } = useWindowDimensions();
@@ -375,7 +377,7 @@ export function RadialChartCard({
 
   const stackedHeightStyle: ViewStyle | null = halfFit ? { height: 'auto', minHeight: CHART_CARD_HEIGHT } : null;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height={tiles ? 'auto' : undefined} style={[stackedHeightStyle, style]} testID={testID}>
       <ChartHeader
         label={headerLabel}
@@ -441,5 +443,5 @@ export function RadialChartCard({
         />
       ) : null}
     </ChartCardSurface>
-  );
+  ));
 }

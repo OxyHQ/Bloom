@@ -1,3 +1,5 @@
+import { useDirection } from '../direction';
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useEffect, useState } from 'react';
 import { Pressable, View, useWindowDimensions, type GestureResponderEvent } from 'react-native';
 import Animated, {
@@ -53,6 +55,7 @@ function TeamMenuRow({
   palette: SidebarPalette;
   onSelect: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = item.icon;
   const style: WebCssStyle = {
@@ -65,7 +68,7 @@ function TeamMenuRow({
     backgroundColor: item.selected || hovered ? palette.menu.rowHover : 'transparent',
     '--bloom-sidebar-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...(IS_WEB
         ? {
@@ -103,7 +106,7 @@ function TeamMenuRow({
         />
       ) : null}
     </Pressable>
-  );
+  ));
 }
 
 function Group({
@@ -117,7 +120,8 @@ function Group({
   palette: SidebarPalette;
   onSelect: () => void;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <>
       {divider ? <MenuDivider palette={palette} spacing={10} /> : null}
       <View style={{ width: '100%', gap: group.label ? 6 : 4, paddingTop: group.label ? 4 : 0 }}>
@@ -133,10 +137,12 @@ function Group({
         </View>
       </View>
     </>
-  );
+  ));
 }
 
 const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collapsed = false, style, testID }) => {
+  const localizeBloomCopy = useTemplateCopy();
+  const direction = useDirection();
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const [open, setOpen] = useState(false);
@@ -179,8 +185,8 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
         backgroundColor: palette.tertiary,
         paddingTop: 8,
         paddingBottom: 8,
-        paddingLeft: 10,
-        paddingRight: 16,
+        paddingStart: 10,
+        paddingEnd: 16,
         '--bloom-sidebar-ring': palette.ring,
         '--bloom-sidebar-ring-offset': palette.panel,
       };
@@ -201,7 +207,7 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
     </>
   );
 
-  return (
+  return localizeBloomCopy((
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild label={team.name} style={collapsed ? undefined : { alignSelf: 'stretch' }}>
         <Pressable
@@ -248,7 +254,7 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
       </PopoverTrigger>
       <PopoverContent
         label={`${team.name} menu`}
-        side={narrow ? 'bottom' : 'right'}
+        side={narrow ? 'bottom' : direction === 'rtl' ? 'left' : 'right'}
         align={narrow ? 'start' : 'end'}
         sideOffset={8}
         maxWidth={width - 32}
@@ -309,7 +315,7 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
         </View>
       </PopoverContent>
     </Popover>
-  );
+  ));
 };
 
 export const SidebarTeamMenu = memo(SidebarTeamMenuComponent);

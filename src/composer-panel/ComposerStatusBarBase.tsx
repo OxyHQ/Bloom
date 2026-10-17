@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, {
@@ -30,6 +31,7 @@ const DEFAULT_LABELS = {
 };
 
 function Caret({ open, color }: { open: boolean; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const rotation = useSharedValue(open ? 180 : 0);
   useEffect(() => {
@@ -37,11 +39,11 @@ function Caret({ open, color }: { open: boolean; color: string }) {
     rotation.value = reducedMotion ? target : withTiming(target, { duration: 200, easing: EASE });
   }, [open, reducedMotion, rotation]);
   const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.value}deg` }] }), [rotation]);
-  return (
+  return localizeBloomCopy((
     <Animated.View style={[{ width: 16, height: 16, flexShrink: 0 }, style]}>
       <RiArrowDropDownLine width={16} height={16} fill={color} />
     </Animated.View>
-  );
+  ));
 }
 
 /** A 16px glyph, body-2-medium label and optional caret, 4 apart. */
@@ -66,6 +68,7 @@ function StatusItem({
   expanded?: boolean;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const style: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
@@ -74,7 +77,7 @@ function StatusItem({
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       ref={triggerRef}
       testID={testID}
@@ -92,7 +95,7 @@ function StatusItem({
         {caret ? <Caret open={open} color={palette.iconSecondary} /> : null}
       </View>
     </Pressable>
-  );
+  ));
 }
 
 function FolderRow({
@@ -106,9 +109,10 @@ function FolderRow({
   onPress: () => void;
   palette: ComposerPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerRow')}
       accessibilityRole="button"
@@ -138,7 +142,7 @@ function FolderRow({
         </Text>
       </Text>
     </Pressable>
-  );
+  ));
 }
 
 /**
@@ -171,6 +175,7 @@ export function ComposerStatusBarBase({
   style,
   testID,
 }: ComposerStatusBarProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
@@ -185,7 +190,7 @@ export function ComposerStatusBarBase({
   });
   const current = folders?.find((f) => f.name === folderName) ?? folders?.[0];
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[{ width: '100%', height: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, style]}>
@@ -233,7 +238,7 @@ export function ComposerStatusBarBase({
                 gap: 0,
               }}>
               <View style={{ width: '100%', flexDirection: 'column', gap: 6, paddingTop: 4 }}>
-                <Text variant="body-medium" style={{ paddingLeft: 8, color: palette.textSecondary }}>
+                <Text variant="body-medium" style={{ paddingStart: 8, color: palette.textSecondary }}>
                   {labels.folders}
                 </Text>
                 <View style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
@@ -277,8 +282,8 @@ export function ComposerStatusBarBase({
               backgroundColor: palette.tertiary,
               paddingTop: 4,
               paddingBottom: 4,
-              paddingRight: 8,
-              paddingLeft: 6,
+              paddingEnd: 8,
+              paddingStart: 6,
             }}>
             <ContextRing pct={context} palette={palette} />
             <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
@@ -288,5 +293,5 @@ export function ComposerStatusBarBase({
         ) : null}
       </View>
     </View>
-  );
+  ));
 }

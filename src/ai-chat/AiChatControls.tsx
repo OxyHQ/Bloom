@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
@@ -74,13 +75,14 @@ export function WithTooltip({
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { Tooltip, TooltipTrigger, TooltipTextBubble } = useAiChatPlatform();
-  return (
+  return localizeBloomCopy((
     <Tooltip position="top" visible={open} onVisibleChange={onOpenChange}>
       <TooltipTrigger>{children}</TooltipTrigger>
       <TooltipTextBubble size="sm">{label}</TooltipTextBubble>
     </Tooltip>
-  );
+  ));
 }
 
 /**
@@ -107,13 +109,14 @@ export function GlyphAction({
   hover?: boolean;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setLit] = useState(false);
   const lit = hover && hovered;
   const style: WebCssStyle = {
     flexShrink: 0,
     '--bloom-ai-chat-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomAiChatControl', 'bare')}
       testID={testID}
@@ -129,11 +132,12 @@ export function GlyphAction({
         <Icon width={size} height={size} fill={lit ? palette.iconHover : palette.iconSecondary} />
       </View>
     </Pressable>
-  );
+  ));
 }
 
 /** Cross-fades between two glyphs: blur + scale 0.75 + fade, 200ms ease-out (the copy → check swap). */
 export function SwapGlyph({ shown, size, children }: { shown: boolean; size: number; children: React.ReactNode }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(shown ? 1 : 0);
   useEffect(() => {
@@ -148,7 +152,7 @@ export function SwapGlyph({ shown, size, children }: { shown: boolean; size: num
     }),
     [progress],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View
       pointerEvents="none"
       style={[
@@ -157,7 +161,7 @@ export function SwapGlyph({ shown, size, children }: { shown: boolean; size: num
       ]}>
       {children}
     </Animated.View>
-  );
+  ));
 }
 
 /**
@@ -197,6 +201,7 @@ export function SurfaceAction({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const tip = useHoverTooltip({ open: tooltipOpen, onOpenChange: onTooltipOpenChange });
   const [hovered, setHovered] = useState(false);
   // A press focuses the control too; only keyboard focus should raise the tooltip.
@@ -210,7 +215,7 @@ export function SurfaceAction({
     backgroundColor: hovered ? hoverBackground : background,
     '--bloom-ai-chat-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <WithTooltip label={tooltip ?? label} open={tip.open} onOpenChange={tip.setOpen}>
       <Pressable
         {...dataHook('bloomAiChatControl')}
@@ -241,5 +246,5 @@ export function SurfaceAction({
         {glyph(hovered ? palette.iconPrimary : palette.iconSecondary)}
       </Pressable>
     </WithTooltip>
-  );
+  ));
 }

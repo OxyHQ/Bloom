@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo } from 'react';
 import { View } from 'react-native';
 
@@ -20,6 +21,7 @@ import type { SidebarPlanCardProps } from './types';
  *   collapsed  the avatar alone in a 36px box
  */
 function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: SidebarPlanCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSidebarPalette();
   const avatar = plan.avatar ?? { initials: plan.name.slice(0, 1).toUpperCase(), color: 'blue' as const };
 
@@ -51,14 +53,14 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
   );
 
   if (collapsed) {
-    return (
+    return localizeBloomCopy((
       <View testID={testID} accessibilityLabel={`${plan.name}, ${plan.plan}`} style={[{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }, style]}>
         {avatarNode}
       </View>
-    );
+    ));
   }
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -71,8 +73,8 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
           backgroundColor: palette.tertiary,
           paddingTop: 8,
           paddingBottom: 8,
-          paddingRight: 12,
-          paddingLeft: 10,
+          paddingEnd: 12,
+          paddingStart: 10,
         },
         style,
       ]}>
@@ -91,7 +93,7 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
         {plan.actionLabel ?? 'Upgrade'}
       </Button>
     </View>
-  );
+  ));
 }
 
 export const SidebarPlanCard = memo(SidebarPlanCardComponent);

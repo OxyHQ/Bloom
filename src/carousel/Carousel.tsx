@@ -1,3 +1,5 @@
+import { useDirection } from '../direction/context';
+import { inlineScrollOffset, scrollOffsetForItem } from './scroll-direction';
 import React, {
   Children,
   isValidElement,
@@ -281,6 +283,7 @@ const CarouselComponent = function Carousel({
   testID,
 }: CarouselProps) {
   const theme = useTheme();
+  const direction = useDirection();
   useInteractiveWebCss(STYLE_ID, BLOOM_CAROUSEL_CSS);
   const reducedMotion = useReducedMotion();
   const paint = useMemo(() => resolveCarouselPaint(theme), [theme]);
@@ -296,18 +299,23 @@ const CarouselComponent = function Carousel({
   const [active, setActive] = useState(0);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
+  const initialDirection = useRef<string | undefined>(undefined);
 
   const onIndexChangeRef = useRef(onIndexChange);
   onIndexChangeRef.current = onIndexChange;
   const activeRef = useRef(active);
+
+  const webTrack = (): HTMLElement | undefined => IS_WEB ? (scrollRef.current as (ScrollView & { getScrollableNode?: () => HTMLElement }) | null)?.getScrollableNode?.() : undefined;
 
   const measure = useCallback(() => {
     const { x, contentWidth } = scroll.current;
     const viewport = trackWidth;
     // 1px of slack: offsets are fractional on hi-DPI displays, so an exact
     // comparison leaves the end arrow enabled on a fully scrolled track.
-    const start = x <= 1;
-    const end = viewport > 0 && contentWidth > 0 && x >= contentWidth - viewport - 1;
+    const max = Math.max(0, contentWidth - viewport);
+    const distanceFromStart = IS_WEB ? inlineScrollOffset(x, direction) : direction === 'rtl' ? max - x : x;
+    const start = distanceFromStart <= 1;
+    const end = viewport > 0 && contentWidth > 0 && distanceFromStart >= max - 1;
     setAtStart(start);
     setAtEnd(end);
 
@@ -324,7 +332,11 @@ const CarouselComponent = function Carousel({
       let shortest = Number.POSITIVE_INFINITY;
       all.forEach((item, index) => {
         if (!item) return;
-        const distance = Math.abs(item.x - x);
+        const track = webTrack(), node = track?.querySelectorAll<HTMLElement>('[data-bloom-carousel-item]')[index];
+        const nativeTarget = align === 'center' ? item.x - (viewport - item.width) / 2 : direction === 'rtl' ? item.x + item.width - viewport : item.x;
+        const distance = track && node
+          ? Math.abs(scrollOffsetForItem(track.getBoundingClientRect(), node.getBoundingClientRect(), 0, direction, align))
+          : Math.abs(nativeTarget - x);
         if (distance < shortest) {
           shortest = distance;
           next = index;
@@ -336,22 +348,24 @@ const CarouselComponent = function Carousel({
       activeRef.current = next;
       onIndexChangeRef.current?.(next);
     }
-  }, [count, trackWidth]);
+  }, [count, trackWidth, direction, align]);
 
   const targetFor = useCallback(
     (item: SlideOffset) => {
-      const raw = align === 'center' ? item.x - (trackWidth - item.width) / 2 : item.x;
+      const track = webTrack(), node = track?.querySelectorAll<HTMLElement>('[data-bloom-carousel-item]')[offsets.current.indexOf(item)];
+      if (track && node) return scrollOffsetForItem(track.getBoundingClientRect(), node.getBoundingClientRect(), track.scrollLeft, direction, align);
+      const raw = align === 'center' ? item.x - (trackWidth - item.width) / 2 : direction === 'rtl' ? item.x + item.width - trackWidth : item.x;
       const max = Math.max(0, scroll.current.contentWidth - trackWidth);
       return Math.min(Math.max(0, raw), max);
     },
-    [align, trackWidth],
+    [align, trackWidth, direction],
   );
 
   const recomputeSnaps = useCallback(() => {
     if (IS_WEB) return; // CSS scroll-snap owns snapping on web.
     const all = offsets.current.slice(0, count);
     if (all.length !== count || all.some((o) => !o)) return;
-    setSnapOffsets(all.map(targetFor));
+    setSnapOffsets(all.map(targetFor).sort((a, b) => a - b));
   }, [count, targetFor]);
 
   const reportOffset = useCallback(
@@ -367,6 +381,17 @@ const CarouselComponent = function Carousel({
     recomputeSnaps();
     measure();
   }, [recomputeSnaps, measure]);
+
+  // Native scroll offsets stay physical and positive. Open the RTL track at
+  // its right-hand start rather than inheriting the leftmost scroll position.
+  useEffect(() => {
+    if (IS_WEB || initialDirection.current === direction || trackWidth <= 0 || scroll.current.contentWidth <= 0) return;
+    const x = direction === 'rtl' ? Math.max(0, scroll.current.contentWidth - trackWidth) : 0;
+    scroll.current.x = x;
+    scrollRef.current?.scrollTo({ x, animated: false });
+    initialDirection.current = direction;
+    measure();
+  }, [direction, trackWidth, snapOffsets, measure]);
 
   const scrollToIndex = (index: number) => {
     const target = offsets.current[Math.max(0, Math.min(index, count - 1))];
@@ -402,7 +427,7 @@ const CarouselComponent = function Carousel({
       role="group"
       {...(IS_WEB ? { 'aria-roledescription': 'carousel' } : {})}
       accessibilityLabel={accessibilityLabel}
-      style={[{ width: '100%', flexDirection: 'column', gap: 16 }, style]}
+      style={[{ direction, width: '100%', flexDirection: 'column', gap: 16 }, style]}
       testID={testID}
     >
       {showArrows && count > 0 ? (
@@ -445,7 +470,7 @@ const CarouselComponent = function Carousel({
           decelerationRate={IS_WEB ? undefined : 'fast'}
           disableIntervalMomentum
           style={trackStyle}
-          contentContainerStyle={{ gap }}
+          contentContainerStyle={{ gap, direction }}
         >
           {slides.map((child, index) => (
             <CarouselItemIndexContext.Provider key={child.key ?? index} value={index}>

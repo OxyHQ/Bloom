@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useId, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
@@ -150,6 +151,7 @@ export function LineChartCard({
   style,
   testID,
 }: LineChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
@@ -187,7 +189,7 @@ export function LineChartCard({
   const rawId = useId();
   const id = `bloom-line-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface gap={CARD_GAP} style={style} testID={testID}>
       <PeriodChartHeader
         label={label}
@@ -263,5 +265,5 @@ export function LineChartCard({
         </CartesianPlot>
       </View>
     </ChartCardSurface>
-  );
+  ));
 }

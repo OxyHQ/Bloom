@@ -27,6 +27,7 @@ const createSvgComponent = (name: string) => {
 };
 
 export const Svg = createSvgComponent('Svg');
+export const Pattern = createSvgComponent('Pattern');
 export const Path = createSvgComponent('Path');
 export const Circle = createSvgComponent('Circle');
 export const Rect = createSvgComponent('Rect');

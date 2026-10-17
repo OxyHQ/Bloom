@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
@@ -90,6 +91,7 @@ function SuggestionPill({
   onPress: () => void;
   palette: AgentChatPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const style: WebCssStyle = {
     borderRadius: 9999,
@@ -101,7 +103,7 @@ function SuggestionPill({
     boxShadow: palette.shadowXs,
     '--bloom-agent-chat-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomAgentChatControl')}
       accessibilityRole="button"
@@ -114,7 +116,7 @@ function SuggestionPill({
         {text}
       </Text>
     </Pressable>
-  );
+  ));
 }
 
 function EmptyState({
@@ -130,7 +132,8 @@ function EmptyState({
   onPick: (text: string) => void;
   palette: AgentChatPalette;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ flexDirection: 'column', alignItems: 'center', gap: 16 }}>
       <View style={{ flexDirection: 'column', gap: 4 }}>
         <Text
@@ -157,7 +160,7 @@ function EmptyState({
         </View>
       ) : null}
     </View>
-  );
+  ));
 }
 
 function transcriptOf(messages: ReadonlyArray<AgentChatMessageData>): string {
@@ -202,6 +205,7 @@ export function AgentChatBase({
   style,
   testID,
 }: AgentChatProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
   const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
@@ -294,7 +298,7 @@ export function AgentChatBase({
       : null),
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -321,7 +325,7 @@ export function AgentChatBase({
           </View>
           <AgentChatActionsBase
             testID={testID ? `${testID}-actions` : undefined}
-            style={{ marginLeft: 'auto' }}
+            style={{ marginStart: 'auto' }}
             transcript={transcript}
             onShare={onShare}
             onExport={onExport}
@@ -437,5 +441,5 @@ export function AgentChatBase({
         />
       ) : null}
     </View>
-  );
+  ));
 }

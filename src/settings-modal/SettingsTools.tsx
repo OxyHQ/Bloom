@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
@@ -92,7 +93,8 @@ function tileColors(tone: SettingsServerTone, theme: Theme, palette: SettingsPal
 
 /** A chevron-up-down glyph (16px, 1.5 stroke). */
 function ChevronUpDown({ color }: { color: string }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Path
         d="M5 9.99934L7.46967 12.469C7.76256 12.7619 8.23744 12.7619 8.53033 12.469L11 9.99934"
@@ -107,7 +109,7 @@ function ChevronUpDown({ color }: { color: string }) {
         strokeLinecap="round"
       />
     </Svg>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -115,6 +117,7 @@ function ChevronUpDown({ color }: { color: string }) {
 // ---------------------------------------------------------------------------
 
 function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(open);
   const progress = useSharedValue(open ? 1 : 0);
@@ -148,11 +151,11 @@ function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
     [progress, measured],
   );
   if (!mounted) return null;
-  return (
+  return localizeBloomCopy((
     <Animated.View style={[{ overflow: 'hidden' }, style]}>
       <View onLayout={onLayout}>{children}</View>
     </Animated.View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -160,9 +163,10 @@ function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
 // ---------------------------------------------------------------------------
 
 function InlineAction({ label, onPress, accessibilityLabel }: { label: string; onPress?: () => void; accessibilityLabel: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const [hovered, setHovered] = useState(false);
-  return (
+  return localizeBloomCopy((
     <Pressable
       role="button"
       accessibilityLabel={accessibilityLabel}
@@ -180,15 +184,16 @@ function InlineAction({ label, onPress, accessibilityLabel }: { label: string; o
         {label}
       </Text>
     </Pressable>
-  );
+  ));
 }
 
 function ServerTile({ server }: { server: SettingsMcpServer }) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useSettingsPalette();
   const colors = tileColors(server.tone ?? 'neutral', theme, palette);
   const initial = server.initial ?? server.name.charAt(0).toUpperCase();
-  return (
+  return localizeBloomCopy((
     <View style={styles.tileHost}>
       <View style={[styles.tile, { backgroundColor: colors.background }]}>
         <Text variant="body-2-medium" style={{ color: colors.foreground }}>
@@ -207,7 +212,7 @@ function ServerTile({ server }: { server: SettingsMcpServer }) {
         ]}
       />
     </View>
-  );
+  ));
 }
 
 function ServerMenu({
@@ -219,11 +224,12 @@ function ServerMenu({
   actions: SettingsMenuAction[];
   onAction?: (serverId: string, actionId: string) => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const label = `Actions for ${server.name}`;
-  return (
+  return localizeBloomCopy((
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild label={label} style={CENTERED}>
         <Pressable
@@ -254,7 +260,7 @@ function ServerMenu({
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  ));
 }
 
 function ServerRow({
@@ -272,12 +278,13 @@ function ServerRow({
   onShowOutput?: (serverId: string) => void;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const last = useSettingsRowIsLast();
   const [expanded, setExpanded] = useState(false);
   const [chevronHovered, setChevronHovered] = useState(false);
   const hasTools = server.tools !== undefined && server.tools.length > 0;
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -359,7 +366,7 @@ function ServerRow({
         </Collapse>
       ) : null}
     </View>
-  );
+  ));
 }
 
 function NewServerRow({
@@ -371,9 +378,10 @@ function NewServerRow({
   description: string;
   onPress?: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const [hovered, setHovered] = useState(false);
-  return (
+  return localizeBloomCopy((
     <Pressable
       role="button"
       accessibilityLabel={label}
@@ -395,7 +403,7 @@ function NewServerRow({
         </Text>
       </View>
     </Pressable>
-  );
+  ));
 }
 
 /** A card of MCP server rows, optionally ending in "New MCP Server". */
@@ -410,7 +418,8 @@ export function SettingsServerList({
   onShowOutput,
   testID,
 }: SettingsServerListProps) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <SettingsCard testID={testID}>
       {servers.map((server) => (
         <ServerRow
@@ -427,7 +436,7 @@ export function SettingsServerList({
         <NewServerRow label={addServerLabel} description={addServerDescription} onPress={onAddServer} />
       ) : null}
     </SettingsCard>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -450,6 +459,7 @@ function ScopePills({
   value: string;
   onChange: (id: string) => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useSettingsPalette();
   const reducedMotion = useReducedMotion();
   const [boxes, setBoxes] = useState<Record<string, Box>>({});
@@ -475,7 +485,7 @@ function ScopePills({
     [x, w, h, shown],
   );
 
-  return (
+  return localizeBloomCopy((
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
@@ -522,7 +532,7 @@ function ScopePills({
         })}
       </View>
     </ScrollView>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -548,6 +558,7 @@ export function SettingsToolsPage({
   style,
   testID,
 }: SettingsToolsPageProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const [scopeId, setScopeId] = useControllableState<string>({
@@ -558,7 +569,7 @@ export function SettingsToolsPage({
   const scope = scopes.find((s) => s.id === scopeId) ?? scopes[0];
   const listProps = { actions: serverActions, onServerAction, onLogout, onShowOutput };
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[styles.page, settingsRingVars(palette), style]}>
       {scopes.length > 0 ? <ScopePills scopes={scopes} value={scope?.id ?? ''} onChange={setScopeId} /> : null}
 
@@ -628,7 +639,7 @@ export function SettingsToolsPage({
         </SettingsSection>
       ) : null}
     </View>
-  );
+  ));
 }
 
 function NOOP() {}
@@ -700,7 +711,7 @@ const styles = StyleSheet.create({
   serverRow: {
     paddingTop: 10,
     paddingBottom: 10,
-    paddingRight: 10,
+    paddingEnd: 10,
   },
   serverMain: {
     flexDirection: 'row',
@@ -745,7 +756,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 6,
     paddingTop: 8,
-    paddingLeft: 42,
+    paddingStart: 42,
   },
   newRow: {
     flexDirection: 'row',
@@ -754,7 +765,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingTop: 10,
     paddingBottom: 10,
-    paddingRight: 10,
+    paddingEnd: 10,
   },
   empty: {
     alignItems: 'center',

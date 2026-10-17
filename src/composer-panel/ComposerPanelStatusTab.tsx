@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
@@ -11,10 +12,11 @@ import type { ComposerPanelStatusTabProps } from './types';
 
 /** 16px circular context meter: r 6, 2.5 stroke, starting at 12 o'clock. */
 export function ContextRing({ pct, palette }: { pct: number; palette: ComposerPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const r = 6;
   const c = 2 * Math.PI * r;
   const clamped = Math.max(0, Math.min(100, pct));
-  return (
+  return localizeBloomCopy((
     <Svg width={16} height={16} viewBox="0 0 16 16" style={{ transform: [{ rotate: '-90deg' }] }}>
       <Circle cx={8} cy={8} r={r} fill="none" stroke={palette.ringTrack} strokeWidth={2.5} />
       <Circle
@@ -28,18 +30,19 @@ export function ContextRing({ pct, palette }: { pct: number; palette: ComposerPa
         strokeDasharray={`${(clamped / 100) * c} ${c}`}
       />
     </Svg>
-  );
+  ));
 }
 
 function StatusItem({ icon, label, palette }: { icon: React.ReactNode; label: string; palette: ComposerPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       {icon}
       <Text variant="body-2-medium" numberOfLines={1} style={{ flexShrink: 1, color: palette.textSecondary }}>
         {label}
       </Text>
     </View>
-  );
+  ));
 }
 
 /**
@@ -49,9 +52,10 @@ function StatusItem({ icon, label, palette }: { icon: React.ReactNode; label: st
  * apart; the context meter on the right (py 4, pl 6 / pr 8, gap 4).
  */
 function ComposerPanelStatusTabComponent({ branch, project, context, style, testID }: ComposerPanelStatusTabProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -104,8 +108,8 @@ function ComposerPanelStatusTabComponent({ branch, project, context, style, test
             borderRadius: 40,
             paddingTop: 4,
             paddingBottom: 4,
-            paddingLeft: 6,
-            paddingRight: 8,
+            paddingStart: 6,
+            paddingEnd: 8,
           }}>
           <ContextRing pct={context} palette={palette} />
           <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
@@ -114,7 +118,7 @@ function ComposerPanelStatusTabComponent({ branch, project, context, style, test
         </View>
       ) : null}
     </View>
-  );
+  ));
 }
 
 export const ComposerPanelStatusTab = memo(ComposerPanelStatusTabComponent);

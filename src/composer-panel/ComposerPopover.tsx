@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 /**
  * The composer's anchored panel — NATIVE.
  *
@@ -55,6 +56,7 @@ export function ComposerPopover({
   testID,
   children,
 }: ComposerPopoverProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const window = useWindowDimensions();
   const reducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(open);
@@ -122,7 +124,7 @@ export function ComposerPopover({
     top = Math.min(Math.max(top, GUTTER), window.height - size.height - GUTTER);
   }
 
-  return (
+  return localizeBloomCopy((
     <Modal transparent visible animationType="none" onRequestClose={close} statusBarTranslucent>
       <Pressable
         style={StyleSheet.absoluteFill}
@@ -144,5 +146,5 @@ export function ComposerPopover({
         {children}
       </Animated.View>
     </Modal>
-  );
+  ));
 }

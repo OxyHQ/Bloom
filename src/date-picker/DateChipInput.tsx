@@ -61,6 +61,7 @@ export function DateChipInput({
     backgroundColor: palette.panel,
     boxShadow: palette.shadowXs,
     color: palette.text,
+    writingDirection: 'ltr',
     // `text-body-medium` in Inter — a `TextInput` does not inherit the face.
     ...TYPE_SCALE['body-medium'],
     ...MENU_FONT_FAMILY,
@@ -82,6 +83,7 @@ export function DateChipInput({
         if (event.nativeEvent.key === 'Escape') setText(formatted);
       }}
       inputMode="numeric"
+      {...(Platform.OS === 'web' ? { dir: 'ltr' } : {})}
       accessibilityLabel={label}
       style={[CHIP_TRANSITION, style]}
       testID={testID}

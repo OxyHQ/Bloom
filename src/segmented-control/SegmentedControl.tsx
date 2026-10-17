@@ -1,3 +1,4 @@
+import { useDirection } from '../direction/context';
 import {
   createContext,
   useCallback,
@@ -184,6 +185,7 @@ export function SegmentedControl<T extends string>({
   accessibilityHint?: string;
 }) {
   const theme = useTheme();
+  const direction = useDirection();
   useInteractiveWebCss(STYLE_ID, SEGMENTED_CSS);
   const palette = useMemo(() => resolveSegmentedPalette(theme), [theme]);
   const [selectedPosition, setSelectedPosition] = useState<{
@@ -236,6 +238,7 @@ export function SegmentedControl<T extends string>({
       style={[
         {
           position: 'relative',
+          direction,
           flexDirection: 'row',
           alignItems: 'stretch',
           alignSelf: 'flex-start',
@@ -286,6 +289,8 @@ export function SegmentedControlItem({
   testID?: string;
   disabled?: PressableProps['disabled'];
 }) {
+  useDirection();
+  const itemRef = useRef<View>(null);
   const [position, setPosition] = useState<{ x: number; width: number } | null>(
     null,
   );
@@ -300,6 +305,13 @@ export function SegmentedControlItem({
   }
 
   const active = ctx.selectedValue === value;
+  // Direction or labels can move an item without changing its dimensions.
+  useLayoutEffect(() => {
+    itemRef.current?.measure((x, _y, width) => {
+      if (width <= 0) return;
+      setPosition(current => current?.x === x && current.width === width ? current : { x, width });
+    });
+  });
 
   const needsUpdate =
     active &&
@@ -357,6 +369,7 @@ export function SegmentedControlItem({
 
   return (
     <View
+      ref={itemRef}
       style={{ flexGrow: 1, flexDirection: 'row', alignItems: 'stretch' }}
       onLayout={evt => {
         const measuredPosition = {

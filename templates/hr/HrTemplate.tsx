@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -139,6 +140,7 @@ function employeeColumns(): DataTableColumn<Employee>[] {
 }
 
 export function EmployeesTable() {
+  const localizeBloomCopy = useTemplateCopy();
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [salaryFilter, setSalaryFilter] = useState('all');
@@ -163,7 +165,7 @@ export function EmployeesTable() {
     setPage(1);
   };
 
-  return (
+  return localizeBloomCopy((
     <DataTable
       layout="inset"
       accessibilityLabel="Employees"
@@ -208,7 +210,7 @@ export function EmployeesTable() {
       emptyState="No employees match your filters."
       minWidth={900}
     />
-  );
+  ));
 }
 
 /**
@@ -217,10 +219,12 @@ export function EmployeesTable() {
  * the row's height, like a grid item without a fixed height.
  */
 function Track({ children, stretch = false }: { children: React.ReactNode; stretch?: boolean }) {
-  return <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, alignSelf: stretch ? 'stretch' : 'flex-start' }}>{children}</View>;
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy(<View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, alignSelf: stretch ? 'stretch' : 'flex-start' }}>{children}</View>);
 }
 
 export function HrTemplate() {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const bp = useBreakpoints();
   const attrition = useMemo(() => {
@@ -243,7 +247,7 @@ export function HrTemplate() {
   const combo = <ComboChartCard title="Hires" bar={HIRES_BAR} line={attrition} ranges={GROWTH_RANGES} tiles />;
   const teams = <BarListCard tabs={TEAM_TABS} metricLabel="People" metric="value" style={{ flexGrow: 1 }} />;
 
-  return (
+  return localizeBloomCopy((
     <DashboardShell selected="hr" title="HR Team" crumbIcon={RiTeamLine} primaryAction="Add employee">
       <StatCards stats={HR_STATS} />
       {bp.xl ? (
@@ -281,5 +285,5 @@ export function HrTemplate() {
       )}
       <EmployeesTable />
     </DashboardShell>
-  );
+  ));
 }

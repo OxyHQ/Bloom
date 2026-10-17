@@ -1,3 +1,5 @@
+import { useDirection } from '../direction';
+import { useTemplateCopy } from '../template-copy';
 import React, { useMemo } from 'react';
 import { Image, View, type ViewStyle } from 'react-native';
 
@@ -43,7 +45,8 @@ const ARROW_ICON = 20;
 const ROW_BUTTON_ICON = 14;
 
 function InfoChip({ children, palette }: { children: React.ReactNode; palette: CalendarViewPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       style={{
         flexShrink: 0,
@@ -59,7 +62,7 @@ function InfoChip({ children, palette }: { children: React.ReactNode; palette: C
         {children}
       </Text>
     </View>
-  );
+  ));
 }
 
 const ROW_CHROME: ViewStyle = {
@@ -68,12 +71,13 @@ const ROW_CHROME: ViewStyle = {
   borderRadius: 10,
   paddingTop: 8,
   paddingBottom: 8,
-  paddingRight: 6,
-  paddingLeft: 8,
+  paddingEnd: 6,
+  paddingStart: 8,
 };
 
 function DetailRow({ children, palette }: { children: React.ReactNode; palette: CalendarViewPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       style={{
         ...ROW_CHROME,
@@ -86,12 +90,13 @@ function DetailRow({ children, palette }: { children: React.ReactNode; palette: 
     >
       {children}
     </View>
-  );
+  ));
 }
 
 /** The leading `icon + label` half of a row. */
 function RowLead({ children }: { children: React.ReactNode }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       style={{
         flex: 1,
@@ -103,7 +108,7 @@ function RowLead({ children }: { children: React.ReactNode }) {
     >
       {children}
     </View>
-  );
+  ));
 }
 
 function RowButton({
@@ -117,7 +122,8 @@ function RowButton({
   palette: CalendarViewPalette;
   onPress?: () => void;
 }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Button
       variant="secondary"
       size="xs"
@@ -126,7 +132,7 @@ function RowButton({
       accessibilityLabel={label}
       onPress={onPress}
     />
-  );
+  ));
 }
 
 export function CalendarViewEventDetails({
@@ -141,6 +147,8 @@ export function CalendarViewEventDetails({
   style,
   testID,
 }: CalendarViewEventDetailsProps) {
+  const localizeBloomCopy = useTemplateCopy();
+  const direction = useDirection();
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const secondary = { color: palette.textSecondary };
@@ -162,7 +170,7 @@ export function CalendarViewEventDetails({
         boxShadow: palette.shadowDetails,
       };
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[chrome, { gap: 10 }, style]}>
       <View
         style={{
@@ -240,7 +248,7 @@ export function CalendarViewEventDetails({
               <Text variant="body-2-medium">{event.time}</Text>
               {event.endTime ? (
                 <>
-                  <RiArrowRightLine width={ARROW_ICON} height={ARROW_ICON} fill={palette.iconSecondary} />
+                  <RiArrowRightLine width={ARROW_ICON} height={ARROW_ICON} fill={palette.iconSecondary} style={{ transform: [{ scaleX: direction === 'rtl' ? -1 : 1 }] }} />
                   <Text variant="body-2-medium">{event.endTime}</Text>
                 </>
               ) : null}
@@ -331,5 +339,5 @@ export function CalendarViewEventDetails({
         </DetailRow>
       ) : null}
     </View>
-  );
+  ));
 }

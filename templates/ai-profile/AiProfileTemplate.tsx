@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useMemo, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
@@ -26,6 +27,7 @@ import {
  * below `lg` a hamburger sits 12 inside the profile card's top-left corner.
  */
 export function AiProfileTemplate({ initialMonth = 11 }: { initialMonth?: number }) {
+  const localizeBloomCopy = useTemplateCopy();
   const { width } = useWindowDimensions();
   const wide = width >= BREAKPOINTS.lg;
   const small = width >= BREAKPOINTS.sm;
@@ -34,7 +36,7 @@ export function AiProfileTemplate({ initialMonth = 11 }: { initialMonth?: number
   const [month, setMonth] = useState(initialMonth);
   const agents = useMemo(() => agentsFor(month), [month]);
 
-  return (
+  return localizeBloomCopy((
     <View style={TEMPLATE_FRAME}>
       <AppShell
         testID="ai-profile"
@@ -117,5 +119,5 @@ export function AiProfileTemplate({ initialMonth = 11 }: { initialMonth?: number
         </View>
       </AppShell>
     </View>
-  );
+  ));
 }

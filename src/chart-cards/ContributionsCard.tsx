@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -104,6 +105,7 @@ export function ContributionsGrid({
   style,
   testID,
 }: ContributionsGridProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const tiers = useContributionTiers(color);
   const reducedMotion = useReducedMotion();
   const [width, setWidth] = useState(0);
@@ -182,7 +184,7 @@ export function ContributionsGrid({
 
   const anchorCell = anchorIndex !== null ? (cells[anchorIndex] ?? { count: 0 }) : null;
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       onLayout={onLayout}
@@ -246,7 +248,7 @@ export function ContributionsGrid({
         </View>
       ) : null}
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -352,6 +354,7 @@ export function ContributionsCard({
   style,
   testID,
 }: ContributionsCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const theme = useTheme();
   const { width: viewport } = useWindowDimensions();
@@ -386,7 +389,7 @@ export function ContributionsCard({
     </View>
   );
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -459,7 +462,7 @@ export function ContributionsCard({
         )}
       </View>
     </View>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({

@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 import Animated, {
@@ -51,6 +52,7 @@ function TileDismiss({
   visible: boolean;
   palette: ComposerPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const glyph = 6.8;
   const inset = 0.57;
@@ -81,7 +83,7 @@ function TileDismiss({
         }
       : {}),
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerControl', 'offset')}
       accessibilityRole="button"
@@ -98,7 +100,7 @@ function TileDismiss({
         <Path d={`M${glyph - inset} ${inset}L${inset} ${glyph - inset}`} stroke={color} strokeWidth={1.6} strokeLinecap="round" />
       </Svg>
     </Pressable>
-  );
+  ));
 }
 
 /** The upload percentage's box: top 3 / right 3, blurring out as it fades. */
@@ -136,13 +138,14 @@ interface TileProps {
  * the same spot.
  */
 export const AttachmentTile = memo(function AttachmentTile({ attachment, palette, onRemove, removeLabel }: TileProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const { progress } = attachment;
   const inFlight = progress !== undefined;
   const image = attachment.kind === 'image' ? attachment.src : undefined;
   const dash = inFlight && progress < 100 ? (Math.max(0, progress) / 100) * TILE_RING_LENGTH : TILE_RING_LENGTH + 2;
   const KindIcon = attachment.kind === 'image' ? null : ATTACHMENT_KIND_ICONS[attachment.kind];
 
-  return (
+  return localizeBloomCopy((
     <View
       accessibilityLabel={attachment.name}
       {...(IS_WEB ? { title: attachment.name } : {})}
@@ -241,7 +244,7 @@ export const AttachmentTile = memo(function AttachmentTile({ attachment, palette
         />
       ) : null}
     </View>
-  );
+  ));
 });
 
 /** A tile scaling and blurring in on mount, and out again before it unmounts. */
@@ -254,6 +257,7 @@ function PresenceTile({
   onLeft: () => void;
   children: React.ReactNode;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   const onLeftRef = useRef(onLeft);
@@ -281,7 +285,7 @@ function PresenceTile({
     }),
     [progress],
   );
-  return <Animated.View style={style}>{children}</Animated.View>;
+  return localizeBloomCopy(<Animated.View style={style}>{children}</Animated.View>);
 }
 
 interface StripProps {
@@ -297,6 +301,7 @@ interface StripProps {
  * 0.36, 1)`, and play it backwards on dismissal before leaving the row.
  */
 export function AttachmentStrip({ attachments, palette, onRemove, removeLabel }: StripProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const [leaving, setLeaving] = useState<ReadonlyArray<ComposerPanelAttachment>>([]);
   const previous = useRef(attachments);
 
@@ -319,7 +324,7 @@ export function AttachmentStrip({ attachments, palette, onRemove, removeLabel }:
     rendered.push({ attachment: gone, leaving: true });
   }
 
-  return (
+  return localizeBloomCopy((
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', gap: 8 }}>
       {rendered.map(({ attachment, leaving: isLeaving }) => (
         <PresenceTile
@@ -335,5 +340,5 @@ export function AttachmentStrip({ attachments, palette, onRemove, removeLabel }:
         </PresenceTile>
       ))}
     </View>
-  );
+  ));
 }

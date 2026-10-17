@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, {
@@ -39,6 +40,7 @@ interface AddMenuProps {
  *           body-medium primary label + secondary description 6 after
  */
 export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
@@ -74,7 +76,7 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
     '--bloom-composer-ring': palette.focusRing,
   };
 
-  return (
+  return localizeBloomCopy((
     <>
       <Pressable
         ref={triggerRef}
@@ -104,7 +106,7 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
         style={panelStyle}>
         {groups.map((group) => (
           <View key={group.label} style={{ width: '100%', flexDirection: 'column', gap: 6, paddingTop: 4 }}>
-            <Text variant="body-medium" style={{ paddingLeft: 8, color: palette.textSecondary }}>
+            <Text variant="body-medium" style={{ paddingStart: 8, color: palette.textSecondary }}>
               {group.label}
             </Text>
             <View style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
@@ -124,7 +126,7 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
         ))}
       </Popover>
     </>
-  );
+  ));
 }
 
 function AddMenuRow({
@@ -136,11 +138,12 @@ function AddMenuRow({
   palette: ComposerPalette;
   onPress: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const Icon = row.icon;
   const iconSize = row.iconSize ?? 20;
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerRow')}
       accessibilityRole="button"
@@ -177,5 +180,5 @@ function AddMenuRow({
         ) : null}
       </Text>
     </Pressable>
-  );
+  ));
 }

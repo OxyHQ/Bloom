@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -139,7 +140,8 @@ export function currentMonthAt(scrollY: number, monthTops: readonly (number | un
 }
 
 function MiniActivityRings({ fractions, colors }: { fractions: readonly number[] | null; colors: readonly string[] }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <Svg width={28} height={28} viewBox="0 0 28 28" style={{ flexShrink: 0 }} aria-hidden>
       {RING_RADII.map((radius, index) => {
         const circumference = 2 * Math.PI * radius;
@@ -165,7 +167,7 @@ function MiniActivityRings({ fractions, colors }: { fractions: readonly number[]
         );
       })}
     </Svg>
-  );
+  ));
 }
 
 interface DayCellProps {
@@ -197,13 +199,14 @@ const DayCell = memo(function DayCell({
   onSelectDay,
   testID,
 }: DayCellProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const { hook, ring } = useChartFocusRing('inset', medical.focusRing);
   const ease: WebCssStyle | null =
     Platform.OS === 'web'
       ? { transitionProperty: 'background-color, border-color', transitionDuration: '150ms', transitionTimingFunction: 'ease' }
       : null;
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...hook}
       testID={testID}
@@ -243,7 +246,7 @@ const DayCell = memo(function DayCell({
       </Text>
       <MiniActivityRings fractions={fractions} colors={ringColors} />
     </Pressable>
-  );
+  ));
 });
 
 /** The calendar scrolls inside the card; its overscroll must not drag the page (web). */
@@ -265,6 +268,7 @@ export function MostActiveDaysCard({
   style,
   testID,
 }: MostActiveDaysCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useChartCardPalette();
   const medical = useMedicalPalette();
@@ -301,7 +305,7 @@ export function MostActiveDaysCard({
     setCurrentMonth((prev) => (prev === next ? prev : next));
   };
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
       <MedicalHeader>
         <MedicalHeadline label={title} value={headline} format={format} suffix={suffix} testID={testID} />
@@ -342,7 +346,7 @@ export function MostActiveDaysCard({
             }
             return (
               <View key={monthName} onLayout={onMonthLayout(month)} style={{ flexDirection: 'column', gap: 10 }}>
-                <Text variant="title-3-medium" style={{ paddingLeft: 4, color: palette.text }}>
+                <Text variant="title-3-medium" style={{ paddingStart: 4, color: palette.text }}>
                   {monthName.slice(0, 3)}
                 </Text>
                 <View>
@@ -380,5 +384,5 @@ export function MostActiveDaysCard({
         </ScrollView>
       </View>
     </ChartCardSurface>
-  );
+  ));
 }

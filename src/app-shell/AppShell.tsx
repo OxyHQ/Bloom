@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useEffect } from 'react';
 import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import Animated, {
@@ -57,6 +58,7 @@ const AppShellComponent: React.FC<AppShellProps> = ({
   style,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const small = width >= BREAKPOINTS.sm;
@@ -112,7 +114,7 @@ const AppShellComponent: React.FC<AppShellProps> = ({
   );
 
   if (drawer === 'reveal') {
-    return (
+    return localizeBloomCopy((
       <View
         testID={testID}
         style={[{ flex: 1, height: '100%', flexDirection: 'row', overflow: 'hidden', backgroundColor: background }, style]}
@@ -163,10 +165,10 @@ const AppShellComponent: React.FC<AppShellProps> = ({
         </Animated.View>
         {overlay}
       </View>
-    );
+    ));
   }
 
-  return (
+  return localizeBloomCopy((
     <View
       testID={testID}
       style={[
@@ -203,7 +205,7 @@ const AppShellComponent: React.FC<AppShellProps> = ({
       </ScrollView>
       {overlay}
     </View>
-  );
+  ));
 };
 
 export const AppShell = memo(AppShellComponent);

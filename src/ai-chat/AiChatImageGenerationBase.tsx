@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { createElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, View } from 'react-native';
 import Animated, {
@@ -148,6 +149,7 @@ function DotWaveCanvas({ palette, running }: { palette: AiChatPalette; running: 
 
 /** Native: the same field, still (react-native-svg has no per-frame canvas). */
 function DotField({ palette }: { palette: AiChatPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const grid = useMemo(() => dotGrid(FRAME_WIDTH, FRAME_HEIGHT), []);
   const dots: React.ReactNode[] = [];
   for (let row = 0; row < grid.rows; row += 1) {
@@ -161,11 +163,11 @@ function DotField({ palette }: { palette: AiChatPalette }) {
       dots.push(<Circle key={`${row}-${column}`} cx={px} cy={py} r={0.84} fill={palette.iconQuaternary} opacity={opacity} />);
     }
   }
-  return (
+  return localizeBloomCopy((
     <Svg width={FRAME_WIDTH} height={FRAME_HEIGHT} style={{ position: 'absolute', top: 0, left: 0 }}>
       {dots}
     </Svg>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -174,7 +176,8 @@ function DotField({ palette }: { palette: AiChatPalette }) {
 
 /** Half of a flap card: the whole glyph in a 16px line box, clipped to its top or bottom 8px. */
 function FlapHalf({ digit, half, palette }: { digit: string; half: 'top' | 'bottom'; palette: AiChatPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View style={{ height: 8, overflow: 'hidden', backgroundColor: palette.tertiary }}>
       <Text
         variant="body-2-medium"
@@ -189,11 +192,12 @@ function FlapHalf({ digit, half, palette }: { digit: string; half: 'top' | 'bott
         {digit}
       </Text>
     </View>
-  );
+  ));
 }
 
 /** Native leaf: `flap-fall` (150ms ease-in to −90°) or `flap-rise` (230ms, from 90° with a slap past 0°, 150ms late). */
 function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React.ReactNode }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const angle = useSharedValue(kind === 'fall' ? 0 : 90);
   useEffect(() => {
@@ -213,7 +217,7 @@ function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React
     }),
     [angle],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View
       style={[
         {
@@ -228,7 +232,7 @@ function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React
       ]}>
       {children}
     </Animated.View>
-  );
+  ));
 }
 
 /**
@@ -238,6 +242,7 @@ function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React
  * tick restarts both.
  */
 function FlapDigit({ digit, palette }: { digit: string; palette: AiChatPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [flip, setFlip] = useState({ settled: digit, from: digit, key: 0 });
   if (flip.settled !== digit) {
     setFlip({ settled: digit, from: flip.settled, key: flip.key + 1 });
@@ -246,7 +251,7 @@ function FlapDigit({ digit, palette }: { digit: string; palette: AiChatPalette }
   const leaving = stale ? flip.settled : flip.from;
   const flipKey = stale ? flip.key + 1 : flip.key;
 
-  return (
+  return localizeBloomCopy((
     <View
       {...dataHook('bloomAiChatFlapCard')}
       style={{ position: 'relative', width: 11, overflow: 'hidden', borderRadius: 3, backgroundColor: palette.tertiary }}>
@@ -276,11 +281,12 @@ function FlapDigit({ digit, palette }: { digit: string; palette: AiChatPalette }
         </View>
       ) : null}
     </View>
-  );
+  ));
 }
 
 function FlapCountdown({ seconds, label, palette }: { seconds: number; label: string; palette: AiChatPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       accessible
       accessibilityLabel={label}
@@ -294,7 +300,7 @@ function FlapCountdown({ seconds, label, palette }: { seconds: number; label: st
         s
       </Text>
     </View>
-  );
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -303,6 +309,7 @@ function FlapCountdown({ seconds, label, palette }: { seconds: number; label: st
 
 /** A transient toast over the image's bottom edge, rising 8px in and out (420ms). */
 function FrameToast({ message, leaving, palette }: { message: string; leaving: boolean; palette: AiChatPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
@@ -331,13 +338,13 @@ function FrameToast({ message, leaving, palette }: { message: string; leaving: b
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
   };
-  return (
+  return localizeBloomCopy((
     <Animated.View role="status" style={[surface, animated]}>
       <Text variant="body-2-medium" style={{ textAlign: 'center', color: '#ffffff' }}>
         {message}
       </Text>
     </Animated.View>
-  );
+  ));
 }
 
 /** Opacity (and on web the blur) of a layer that eases between two states. */
@@ -384,6 +391,7 @@ export function AiChatImageGenerationBase({
   style,
   testID,
 }: AiChatImageGenerationProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const reducedMotion = useReducedMotion();
@@ -485,7 +493,7 @@ export function AiChatImageGenerationBase({
     [feedback],
   );
 
-  return (
+  return localizeBloomCopy((
     <RevealFade animate testID={testID} style={[{ width: '100%', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }, style]}>
       {!hideHeader ? (
         <RevealSequence animate>
@@ -585,5 +593,5 @@ export function AiChatImageGenerationBase({
         </Animated.View>
       ) : null}
     </RevealFade>
-  );
+  ));
 }

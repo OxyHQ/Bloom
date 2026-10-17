@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useMemo, useState } from 'react';
 import type { ButtonIconComponent } from '../../src/button/types';
 import { Chip, type ChipHue } from '../../src/chip';
@@ -209,6 +210,7 @@ const COLUMNS: DataTableColumn<Transaction>[] = [
 const DEFAULT_SELECTION = TRANSACTIONS.filter((t) => t.selected).map((t) => t.id);
 
 export function TransactionsTable({ initialQuery = '' }: { initialQuery?: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [accountFilter, setAccountFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [amountFilter, setAmountFilter] = useState('all');
@@ -232,7 +234,7 @@ export function TransactionsTable({ initialQuery = '' }: { initialQuery?: string
     setPage(1);
   };
 
-  return (
+  return localizeBloomCopy((
     <DataTable
       layout="inset"
       accessibilityLabel="Transactions"
@@ -277,5 +279,5 @@ export function TransactionsTable({ initialQuery = '' }: { initialQuery?: string
       emptyState="No transactions match your filters."
       minWidth={900}
     />
-  );
+  ));
 }

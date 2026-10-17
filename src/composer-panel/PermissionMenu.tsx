@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useRef, useState } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
@@ -43,6 +44,7 @@ export function PermissionMenu({
   labels,
   testID,
 }: PermissionMenuProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
@@ -67,7 +69,7 @@ export function PermissionMenu({
     '--bloom-composer-ring': palette.focusRing,
   };
 
-  return (
+  return localizeBloomCopy((
     <>
       <Pressable
         ref={triggerRef}
@@ -90,8 +92,8 @@ export function PermissionMenu({
             borderRadius: 9999,
             paddingTop: 5,
             paddingBottom: 5,
-            paddingLeft: 8,
-            paddingRight: 10,
+            paddingStart: 8,
+            paddingEnd: 10,
             backgroundColor: hovered || pressed || open ? palette.hover : 'transparent',
             cursor: 'pointer',
             '--bloom-composer-ring': palette.focusRing,
@@ -144,7 +146,7 @@ export function PermissionMenu({
         </View>
       </Popover>
     </>
-  );
+  ));
 }
 
 function PermissionRow({
@@ -158,10 +160,11 @@ function PermissionRow({
   palette: ComposerPalette;
   onSelect: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const Icon = option.icon;
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerRow')}
       accessibilityRole="radio"
@@ -195,7 +198,7 @@ function PermissionRow({
         </Text>
       </View>
     </Pressable>
-  );
+  ));
 }
 
 /** A secondary small `LinkButton`, a step lighter: tertiary, underline on hover. */
@@ -208,8 +211,9 @@ function LearnMore({
   label: string;
   onPress: () => void;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerControl', 'link')}
       accessibilityRole="link"
@@ -230,5 +234,5 @@ function LearnMore({
         </Text>
       )}
     </Pressable>
-  );
+  ));
 }

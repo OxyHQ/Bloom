@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 import Animated, {
@@ -62,7 +63,8 @@ export const DEFAULT_GALLERY_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = [
  * the pill draws it at 18px beside the 20px sparkle (`[&_svg]:size-[18px]`).
  */
 function GalleryGlyph({ fill }: { width?: number; height?: number; fill?: string }) {
-  return <RiGalleryLine width={18} height={18} fill={fill} />;
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy(<RiGalleryLine width={18} height={18} fill={fill} />);
 }
 
 type Placed = AiChatGeneration & { order: number };
@@ -92,6 +94,7 @@ export function distributeGenerations(items: ReadonlyArray<AiChatGeneration>, co
 
 /** The scrim's top-to-bottom neutral-950 wash: 40% → clear → 55%. */
 function Scrim({ palette, expanded }: { palette: AiChatPalette; expanded: boolean }) {
+  const localizeBloomCopy = useTemplateCopy();
   const ink = palette.neutral[950];
   if (IS_WEB) {
     const style: WebCssStyle = {
@@ -102,9 +105,9 @@ function Scrim({ palette, expanded }: { palette: AiChatPalette; expanded: boolea
       bottom: 0,
       backgroundImage: `linear-gradient(to bottom, ${withAlpha(ink, 0.4)}, transparent, ${withAlpha(ink, 0.55)})`,
     };
-    return <View pointerEvents="none" style={style} />;
+    return localizeBloomCopy(<View pointerEvents="none" style={style} />);
   }
-  return (
+  return localizeBloomCopy((
     <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: expanded ? 1 : 1 }}>
       <Svg width="100%" height="100%">
         <Defs>
@@ -117,7 +120,7 @@ function Scrim({ palette, expanded }: { palette: AiChatPalette; expanded: boolea
         <Rect x="0" y="0" width="100%" height="100%" fill="url(#bloom-ai-chat-scrim)" />
       </Svg>
     </View>
-  );
+  ));
 }
 
 /** A 22px glass action on the scrim: neutral-950 @45% (65% hovered), blur 4, radius 6, 14px white glyph. */
@@ -132,6 +135,7 @@ function ScrimAction({
   onPress?: () => void;
   palette: AiChatPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const style: WebCssStyle = {
     flexDirection: 'row',
@@ -143,7 +147,7 @@ function ScrimAction({
     WebkitBackdropFilter: 'blur(4px)',
     '--bloom-ai-chat-ring': palette.ring,
   };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomAiChatControl')}
       accessibilityRole="button"
@@ -154,7 +158,7 @@ function ScrimAction({
       style={style}>
       <Icon width={14} height={14} fill="#ffffff" />
     </Pressable>
-  );
+  ));
 }
 
 interface TileProps {
@@ -196,6 +200,7 @@ function GenerationTile({
   palette,
   register,
 }: TileProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const run = !skipEntrance && !reducedMotion;
   const fade = useSharedValue(run ? 0 : 1);
@@ -231,7 +236,7 @@ function GenerationTile({
     '--bloom-ai-chat-ring': palette.ring,
   };
 
-  return (
+  return localizeBloomCopy((
     <View
       ref={(node) => register(generation.id, node)}
       {...dataHook('bloomAiChatTile', expanded ? '' : 'lift')}
@@ -310,7 +315,7 @@ function GenerationTile({
         </View>
       </Animated.View>
     </View>
-  );
+  ));
 }
 
 interface Box {
@@ -348,6 +353,7 @@ export function AiChatGalleryPanelBase({
   style,
   testID,
 }: AiChatGalleryPanelProps) {
+  const localizeBloomCopy = useTemplateCopy();
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const reducedMotion = useReducedMotion();
@@ -481,7 +487,7 @@ export function AiChatGalleryPanelBase({
     />
   );
 
-  return (
+  return localizeBloomCopy((
     <View
       role="complementary"
       testID={testID}
@@ -535,5 +541,5 @@ export function AiChatGalleryPanelBase({
         (stylePresets ?? <PanelPlaceholder label={l.stylePresets} palette={palette} />)
       )}
     </View>
-  );
+  ));
 }

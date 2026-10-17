@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { isValidElement, useEffect, useRef, type ComponentType } from 'react';
 import {
   Animated,
@@ -150,6 +151,7 @@ export function StageStatTiles({
   style,
   testID,
 }: StageStatTilesProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const { width } = useWindowDimensions();
   const perRow = Math.max(1, width >= BREAKPOINTS.sm ? columns : (narrowColumns ?? columns));
@@ -162,7 +164,7 @@ export function StageStatTiles({
     rows.push(Array.from({ length: Math.min(perRow, items.length - i) }, (_, k) => i + k));
   }
 
-  return (
+  return localizeBloomCopy((
     <View testID={testID} style={[{ marginLeft: -8, marginRight: -8, marginBottom: -4, flexDirection: 'column', gap: 8 }, style]}>
       {rows.map((row) => (
         <View key={row[0]} style={{ flexDirection: 'row', gap: 8 }}>
@@ -225,5 +227,5 @@ export function StageStatTiles({
         </View>
       ))}
     </View>
-  );
+  ));
 }

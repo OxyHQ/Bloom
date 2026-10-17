@@ -1,3 +1,5 @@
+import { useDirection } from '../direction';
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View, type TextStyle, type ViewStyle } from 'react-native';
 import Animated, {
@@ -113,6 +115,7 @@ function sequence(values: readonly number[]) {
 }
 
 function HighlightRing({ color, radius, onEnd }: { color: string; radius: number; onEnd: () => void }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const opacity = useSharedValue<number>(reducedMotion ? 1 : 0);
   const scale = useSharedValue<number>(1);
@@ -140,7 +143,7 @@ function HighlightRing({ color, radius, onEnd }: { color: string; radius: number
     [opacity, scale],
   );
 
-  return (
+  return localizeBloomCopy((
     <Animated.View
       aria-hidden
       pointerEvents="none"
@@ -159,7 +162,7 @@ function HighlightRing({ color, radius, onEnd }: { color: string; radius: number
         animated,
       ]}
     />
-  );
+  ));
 }
 
 function EventChip({
@@ -177,6 +180,7 @@ function EventChip({
   onPress: (event: CalendarViewEvent) => void;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const colors = eventChipColors(hue, event.color, palette.isDark);
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarEvent: '' } } : {};
   const style: WebCssStyle = {
@@ -197,7 +201,7 @@ function EventChip({
     ? // `text-[10px] leading-3` and no weight: the medium only arrives with `sm:`.
       { fontSize: 10, lineHeight: 12, fontWeight: '400', letterSpacing: 0 }
     : { ...TYPE_SCALE['body-2-medium'], lineHeight: 12 };
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...hook}
       role="button"
@@ -219,7 +223,7 @@ function EventChip({
         </Text>
       ) : null}
     </Pressable>
-  );
+  ));
 }
 
 interface DayCellProps {
@@ -256,6 +260,7 @@ const DayCell = memo(function DayCell({
   onSelectEvent,
   testID,
 }: DayCellProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const card = useRef<View>(null);
   const dense = breakpoint === 'base';
   const { visible, hidden } = visibleEvents(events);
@@ -298,7 +303,7 @@ const DayCell = memo(function DayCell({
     boxShadow: !dense && inMonth ? palette.shadowCard : undefined,
   };
 
-  return (
+  return localizeBloomCopy((
     <View role="cell" style={outer} testID={testID}>
       {highlighted ? (
         <HighlightRing color={palette.ring} radius={dense ? 0 : CARD_RADIUS} onEnd={onHighlightEnd} />
@@ -309,7 +314,7 @@ const DayCell = memo(function DayCell({
             numberStyle,
             {
               paddingTop: dense ? 6 : 8,
-              paddingLeft: dense ? 6 : 10,
+              paddingStart: dense ? 6 : 10,
               color: inMonth ? palette.text : palette.textSecondary,
             },
           ]}
@@ -358,7 +363,7 @@ const DayCell = memo(function DayCell({
         ) : null}
       </View>
     </View>
-  );
+  ));
 });
 
 export function CalendarViewMonthGrid({
@@ -378,6 +383,8 @@ export function CalendarViewMonthGrid({
   style,
   testID,
 }: CalendarViewMonthGridProps) {
+  const localizeBloomCopy = useTemplateCopy();
+  const direction = useDirection();
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const hue = useMemo(() => createHueResolver(theme.colors.primary), [theme.colors.primary]);
@@ -424,22 +431,18 @@ export function CalendarViewMonthGrid({
 
   const detailsStyle: WebCssStyle | undefined = Platform.select<WebCssStyle | undefined>({
     web: {
+      // The event-details surface is Bloom's popover panel with its own
+      // width, a 20px corner and Figma's deeper shadow; border, surface and
+      // `p-2.5` are the popover's defaults.
       width: 302,
       overflow: 'visible',
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: palette.panelBorder,
-      backgroundColor: palette.panel,
       boxShadow: palette.shadowDetails,
-      paddingTop: 10,
-      paddingBottom: 10,
-      paddingLeft: 10,
-      paddingRight: 10,
     },
     default: undefined,
   });
 
-  return (
+  return localizeBloomCopy((
     <View
       role="table"
       accessibilityLabel="Month"
@@ -540,7 +543,7 @@ export function CalendarViewMonthGrid({
         <PopoverProvider value={popover}>
           <PopoverContent
             label="Event details"
-            side="right"
+            side={direction === 'rtl' ? 'left' : 'right'}
             align="start"
             sideOffset={6}
             style={detailsStyle}
@@ -562,7 +565,7 @@ export function CalendarViewMonthGrid({
         </PopoverProvider>
       ) : null}
     </View>
-  );
+  ));
 }
 
 const NO_EVENTS: readonly CalendarViewEvent[] = [];

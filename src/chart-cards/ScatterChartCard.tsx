@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -236,6 +237,7 @@ export function ScatterChartCard({
   style,
   testID,
 }: ScatterChartCardProps) {
+  const localizeBloomCopy = useTemplateCopy();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
@@ -349,7 +351,7 @@ export function ScatterChartCard({
 
   const label = accessibilityLabel ?? `${title} ${bubble ? 'bubble' : 'scatter'} chart: ${series.map((s) => s.label).join(', ')}`;
 
-  return (
+  return localizeBloomCopy((
     <ChartCardSurface height={tiles ? 'auto' : undefined} style={style} testID={testID}>
       <ChartHeader
         label={headerLabel}
@@ -486,7 +488,7 @@ export function ScatterChartCard({
         />
       )}
     </ChartCardSurface>
-  );
+  ));
 }
 
 const styles = StyleSheet.create({

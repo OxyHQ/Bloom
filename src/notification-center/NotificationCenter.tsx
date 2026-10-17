@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../template-copy';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { ScrollView, View, type ViewStyle } from 'react-native';
 
@@ -156,11 +157,12 @@ function NotificationVisual({
   item: NotificationCenterItem;
   palette: CenterPalette;
 }) {
-  if (item.avatar) return <PersonAvatar avatar={item.avatar} palette={palette} />;
+  const localizeBloomCopy = useTemplateCopy();
+  if (item.avatar) return localizeBloomCopy(<PersonAvatar avatar={item.avatar} palette={palette} />);
   const status = item.status ?? 'neutral';
   const Icon = item.icon ?? STATUS_ICON[status];
   const tone = palette.status[status];
-  return (
+  return localizeBloomCopy((
     <View
       testID={`notification-${item.id}-disc`}
       style={{
@@ -175,16 +177,17 @@ function NotificationVisual({
     >
       <Icon width={20} height={20} fill={tone.foreground} />
     </View>
-  );
+  ));
 }
 
 /** `Avatar size="lg" className="size-10"`: 40px, 18/24 semibold initials. */
 function PersonAvatar({ avatar, palette }: { avatar: NotificationCenterAvatar; palette: CenterPalette }) {
+  const localizeBloomCopy = useTemplateCopy();
   const tint = palette.avatar[avatar.color ?? 'neutral'];
   if (avatar.source) {
-    return <Avatar source={avatar.source} size={40} style={{ flexShrink: 0 }} />;
+    return localizeBloomCopy(<Avatar source={avatar.source} size={40} style={{ flexShrink: 0 }} />);
   }
-  return (
+  return localizeBloomCopy((
     <View
       accessibilityLabel={avatar.name}
       style={{
@@ -202,11 +205,12 @@ function PersonAvatar({ avatar, palette }: { avatar: NotificationCenterAvatar; p
         {avatar.initials ?? ''}
       </Text>
     </View>
-  );
+  ));
 }
 
 function CountPill({ count, palette }: { count: number; palette: CenterPalette }) {
-  return (
+  const localizeBloomCopy = useTemplateCopy();
+  return localizeBloomCopy((
     <View
       style={{
         minWidth: 20,
@@ -224,7 +228,7 @@ function CountPill({ count, palette }: { count: number; palette: CenterPalette }
         {count}
       </Text>
     </View>
-  );
+  ));
 }
 
 const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
@@ -240,6 +244,7 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
   style,
   testID,
 }) => {
+  const localizeBloomCopy = useTemplateCopy();
   const theme = useTheme();
   const palette = useMemo(() => resolveNotificationCenterPalette(theme), [theme]);
   const [activeTab, setTab] = useControllableState<NotificationCenterTab>({
@@ -288,7 +293,7 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
 
   const scrollStyle: ViewStyle = { maxHeight: 516, backgroundColor: palette.well };
 
-  return (
+  return localizeBloomCopy((
     <View
       role="region"
       accessibilityLabel={title}
@@ -453,7 +458,7 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
         </View>
       </View>
     </View>
-  );
+  ));
 };
 
 export const NotificationCenter = memo(NotificationCenterComponent);

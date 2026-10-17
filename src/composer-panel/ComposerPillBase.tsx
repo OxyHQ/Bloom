@@ -1,3 +1,5 @@
+import { useDirection } from '../direction';
+import { useTemplateCopy } from '../template-copy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
@@ -66,6 +68,7 @@ const DEFAULT_LABELS: Required<ComposerPillLabels> = {
  * backdrop filter, so it keeps the tint alone. Fades with the glass (480ms).
  */
 function GlassChip({ shown, radius, dark }: { shown: boolean; radius: number; dark: boolean }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const opacity = useSharedValue(shown ? 1 : 0);
   useEffect(() => {
@@ -85,33 +88,35 @@ function GlassChip({ shown, radius, dark }: { shown: boolean; radius: number; da
     backgroundImage:
       'linear-gradient(155deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0) 68%, rgba(255, 255, 255, 0.32) 100%)',
   };
-  return (
+  return localizeBloomCopy((
     <Animated.View pointerEvents="none" style={[fill, fade]}>
       {IS_WEB ? <View style={frost} /> : null}
       <View style={[fill, { backgroundColor: `rgba(255, 255, 255, ${dark ? 0.06 : 0.12})` }]} />
       {IS_WEB ? <View style={sheen} /> : null}
       {IS_WEB ? <View {...dataHook('bloomComposerGlassRim')} style={fill} /> : null}
     </Animated.View>
-  );
+  ));
 }
 
 /** A chevron that turns to `degrees` over 200ms `ease`. */
 function TurningChevron({ degrees, color }: { degrees: number; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const rotation = useSharedValue(degrees);
   useEffect(() => {
     rotation.value = reducedMotion ? degrees : withTiming(degrees, { duration: 200, easing: EASE });
   }, [degrees, reducedMotion, rotation]);
   const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.value}deg` }] }), [rotation]);
-  return (
+  return localizeBloomCopy((
     <Animated.View style={[{ width: 18, height: 18, flexShrink: 0 }, style]}>
       <RiArrowDownSLine width={18} height={18} fill={color} />
     </Animated.View>
-  );
+  ));
 }
 
 /** The effort value after "Effort", blurring in (350ms ease-out) each time it changes. */
 function EffortValue({ value, color }: { value: string; color: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(1);
   const first = useRef(true);
@@ -131,13 +136,13 @@ function EffortValue({ value, color }: { value: string; color: string }) {
     }),
     [progress],
   );
-  return (
+  return localizeBloomCopy((
     <Animated.View style={style}>
       <Text variant="body-medium" style={{ color }}>
         {value}
       </Text>
     </Animated.View>
-  );
+  ));
 }
 
 function ModelRow({
@@ -151,9 +156,10 @@ function ModelRow({
   onPress: () => void;
   palette: ComposerPalette;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  return (
+  return localizeBloomCopy((
     <Pressable
       {...dataHook('bloomComposerRow')}
       accessibilityRole="radio"
@@ -183,7 +189,7 @@ function ModelRow({
         <RadioIndicator selected={selected} size={14} />
       </View>
     </Pressable>
-  );
+  ));
 }
 
 /**
@@ -227,6 +233,7 @@ function ModelMenu({
   onTriggerLayout?: (width: number) => void;
   testID?: string;
 }) {
+  const localizeBloomCopy = useTemplateCopy();
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
@@ -242,12 +249,12 @@ function ModelMenu({
     backgroundColor: hovered ? triggerPalette.hover : triggerPalette.surface,
     paddingTop: 6,
     paddingBottom: 6,
-    paddingRight: 4,
-    paddingLeft: 8,
+    paddingEnd: 4,
+    paddingStart: 8,
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
-  return (
+  return localizeBloomCopy((
     <>
       <Pressable
         ref={triggerRef}
@@ -288,7 +295,7 @@ function ModelMenu({
           gap: 0,
         }}>
         <View style={{ width: '100%', flexDirection: 'column', gap: 6, paddingTop: 4 }}>
-          <Text variant="body-medium" style={{ paddingLeft: 8, color: palette.textSecondary }}>
+          <Text variant="body-medium" style={{ paddingStart: 8, color: palette.textSecondary }}>
             {labels.models}
           </Text>
           <View role="radiogroup" accessibilityLabel={labels.modelGroup} style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
@@ -308,7 +315,7 @@ function ModelMenu({
         </View>
         <View style={{ height: 1, marginLeft: -10, marginRight: -10, marginTop: 7, marginBottom: 12, backgroundColor: palette.border }} />
         <View style={{ width: '100%', flexDirection: 'column' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingStart: 8 }}>
             <Text variant="body-medium" style={{ color: palette.textSecondary }}>
               {`${labels.effort} `}
             </Text>
@@ -340,7 +347,7 @@ function ModelMenu({
         </View>
       </Popover>
     </>
-  );
+  ));
 }
 
 /**
@@ -388,6 +395,8 @@ export function ComposerPillBase({
   style,
   testID,
 }: ComposerPillProps) {
+  const localizeBloomCopy = useTemplateCopy();
+  const direction = useDirection();
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
@@ -466,13 +475,13 @@ export function ComposerPillBase({
     flex: 1,
     ...(IS_WEB && !focused
       ? {
-          maskImage: 'linear-gradient(to right, #000 calc(100% - 32px), transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 32px), transparent 100%)',
+          maskImage: `linear-gradient(to ${direction === 'rtl' ? 'left' : 'right'}, #000 calc(100% - 32px), transparent 100%)`,
+          WebkitMaskImage: `linear-gradient(to ${direction === 'rtl' ? 'left' : 'right'}, #000 calc(100% - 32px), transparent 100%)`,
         }
       : null),
   };
 
-  return (
+  return localizeBloomCopy((
     <View {...dataHook('bloomComposerPill')} testID={testID} style={[pillStyle, style]}>
       {addMenu.length > 0 ? (
         <View style={{ position: 'relative', flexShrink: 0 }}>
@@ -537,7 +546,7 @@ export function ComposerPillBase({
         </View>
       ) : null}
 
-      <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 6 }}>
+      <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8, paddingStart: 6 }}>
         <View style={{ position: 'relative' }}>
           <GlassChip shown={glass} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
           <MicButton
@@ -550,7 +559,7 @@ export function ComposerPillBase({
         <SendButton disabled={disabled} onPress={submit} label={labels.send} palette={palette} />
       </View>
     </View>
-  );
+  ));
 }
 
 const DEFAULT_PANEL_LABELS = {

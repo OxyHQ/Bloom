@@ -1,3 +1,4 @@
+import { useTemplateCopy } from '../../src/template-copy';
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -105,6 +106,7 @@ const COLUMNS: DataTableColumn<Patient>[] = [
 ];
 
 export function PatientsTable({ testID }: { testID?: string }) {
+  const localizeBloomCopy = useTemplateCopy();
   const [statusFilter, setStatusFilter] = useState('all');
   const [conditionFilter, setConditionFilter] = useState('all');
   const [query, setQuery] = useState('');
@@ -125,7 +127,7 @@ export function PatientsTable({ testID }: { testID?: string }) {
     setPage(1);
   };
 
-  return (
+  return localizeBloomCopy((
     <DataTable
       testID={testID}
       accessibilityLabel="Patients"
@@ -162,5 +164,5 @@ export function PatientsTable({ testID }: { testID?: string }) {
       minWidth={960}
       layout="inset"
     />
-  );
+  ));
 }
