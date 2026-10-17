@@ -26,6 +26,8 @@ import {
   surfaceTextOn,
   quietText,
   contrastRatio,
+  webDataSet,
+  svgA11yProps,
 } from '@oxy.so/bloom/styles';
 ```
 
@@ -77,6 +79,27 @@ This is how a component reaches a CSS rule it cannot express inline — a hover
 state, a focus ring, a transition. A class never reaches the DOM here, so a
 `data-*` attribute is the only hook an
 [adopted sheet](/docs/bloom/main/styles) can select on.
+
+## `svgA11yProps`
+
+The accessibility props of a react-native-svg `<Svg>`, per platform. Spread it
+on every `<Svg>` you draw, and never pass `accessible`, `accessibilityRole` or
+`accessibilityLabel` to one yourself.
+
+```tsx
+<Svg width={96} height={60} viewBox="0 0 96 60" {...svgA11yProps('GoWay')}>…</Svg>
+// web:    <svg role="img" aria-label="GoWay">
+// native: accessible, accessibilityRole="image", accessibilityLabel="GoWay"
+
+<Svg width={24} height={24} {...svgA11yProps()}>…</Svg> // no label: hidden from screen readers
+```
+
+On web react-native-svg spreads every prop it does not consume onto the DOM
+`<svg>`, so React Native's props land there as invalid attributes — React logs
+"Received `true` for a non-boolean attribute `accessible`" in development — and
+the role and name never reach the accessibility tree. The ARIA spellings are no
+better on native, where react-native-svg does not read them. Only the helper
+picks the right set for each.
 
 ## `clamp` / `clamp01`
 

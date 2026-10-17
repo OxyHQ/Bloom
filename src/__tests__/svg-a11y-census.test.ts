@@ -22,6 +22,9 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
+import * as styles from '../styles';
+import { svgA11yProps } from '../styles/svg-a11y';
+
 const SRC = join(__dirname, '..');
 // React Native's own props. ARIA (`aria-hidden`, `aria-label`, `role`) is valid
 // on a DOM `<svg>`, so a decorative mark that only sets `aria-hidden` is fine.
@@ -114,5 +117,11 @@ describe('Svg accessibility props', () => {
       .filter((tag) => tag.prop !== undefined)
       .map(({ where, prop }) => `${where} passes \`${prop}\` — spread svgA11yProps() instead`);
     expect(offenders).toEqual([]);
+  });
+
+  it('is public from @oxy.so/bloom/styles, for the <Svg>s apps draw themselves', () => {
+    // An app's own <Svg> hits the same invalid-attribute warning (GoWay's logo
+    // did); without the export its only fix is a copy of the helper.
+    expect(styles.svgA11yProps).toBe(svgA11yProps);
   });
 });
