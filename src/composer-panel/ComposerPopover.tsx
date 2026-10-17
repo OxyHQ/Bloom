@@ -24,7 +24,7 @@ import {
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { parseRgba } from '../theme/color-utils';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { type ComponentRef, useCallback, useContext, useEffect, useState } from 'react';
 import {
   Modal,
   Pressable,
@@ -46,6 +46,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TRANSITION_MS } from './shared';
 import type { ComposerPopoverProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 const GUTTER = 8;
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
@@ -90,7 +91,7 @@ export function ComposerPopover({
   );
   const common = useCommonMessages();
   const window = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   const reducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(open);
   const [anchor, setAnchor] = useState<Box | null>(null);
@@ -100,7 +101,7 @@ export function ComposerPopover({
   useEffect(() => {
     if (open) {
       setMounted(true);
-      const node = anchorRef.current as View | null;
+      const node = anchorRef.current as ComponentRef<typeof View> | null;
       if (node && typeof node.measureInWindow === 'function') {
         node.measureInWindow((x, y, width, height) => setAnchor({ x, y, width, height }));
       } else {

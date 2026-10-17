@@ -1,14 +1,7 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  TextInput,
-  View,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
-} from 'react-native';
+import React, { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, ScrollView, TextInput, View, type TextInputKeyPressEvent } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -270,7 +263,7 @@ function EffortMenu({
 }) {
   const Button = useComposerButton();
   const Popover = useComposerPopover();
-  const triggerRef = useRef<View>(null);
+  const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const [open, setOpen] = useState(false);
   const level = value === null ? labels.effortAuto : (levels[value] ?? labels.effortAuto);
 
@@ -514,7 +507,7 @@ export function ModelPickerBase({
   const Popover = useComposerPopover();
   const reducedMotion = useReducedMotion();
 
-  const triggerRef = useRef<View>(null);
+  const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const [open, setOpenState] = useState(false);
   const [modelId, setModelId] = useControllableState<string>({
     value,
@@ -567,7 +560,7 @@ export function ModelPickerBase({
   }, [open, searching]);
 
   // Keep the active mark in view: instantly on open, smoothly after.
-  const railRef = useRef<ScrollView>(null);
+  const railRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const railOffset = useRef(0);
   const railShown = useRef(false);
   const activeIndex = activeProvider ? providers.indexOf(activeProvider) : 0;
@@ -592,7 +585,7 @@ export function ModelPickerBase({
   }, [open, activeIndex, reducedMotion]);
 
   // The list's top edge softens once scrolled; a new lineup starts at the top.
-  const listRef = useRef<ScrollView>(null);
+  const listRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const [scrolled, setScrolled] = useState(false);
   const listKey = searching ? 'search' : (activeProvider?.id ?? '');
   const [prevListKey, setPrevListKey] = useState(listKey);
@@ -604,7 +597,7 @@ export function ModelPickerBase({
     listRef.current?.scrollTo({ y: 0, animated: false });
   }, [listKey]);
 
-  const searchRef = useRef<TextInput>(null);
+  const searchRef = useRef<ComponentRef<typeof TextInput>>(null);
   useEffect(() => {
     if (searching) searchRef.current?.focus();
   }, [searching]);
@@ -758,7 +751,7 @@ export function ModelPickerBase({
                   {...dataHook('bloomComposerInput')}
                   value={query}
                   onChangeText={setQuery}
-                  onKeyPress={(event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+                  onKeyPress={(event: TextInputKeyPressEvent) => {
                     if (event.nativeEvent.key !== 'Escape') return;
                     // First Escape clears, the next leaves search; neither reaches
                     // the panel, which would close on it.

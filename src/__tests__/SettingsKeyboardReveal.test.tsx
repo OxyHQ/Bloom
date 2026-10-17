@@ -45,7 +45,9 @@ const keyboard = (height: number, screenY: number) => ({
 
 function mount(enabled = true) {
   const scrollTo = jest.fn();
-  const scrollRef = { current: { scrollTo } as unknown as ReactNative.ScrollView };
+  const scrollRef = {
+    current: { scrollTo } as unknown as React.ComponentRef<typeof ReactNative.ScrollView>,
+  };
   const offset = { value: 100 };
   const hook = renderHook(() => useKeyboardReveal(scrollRef, offset, enabled));
   return { hook, scrollTo };

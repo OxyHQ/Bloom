@@ -27,9 +27,9 @@ import type { VirtualListHandle, VirtualListProps, VirtualListSlot } from './typ
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList) as unknown as typeof FlatList;
 
-function renderSlot(slot: VirtualListSlot): React.ReactElement | null {
-  if (!slot) return null;
-  return typeof slot === 'function' ? slot() : slot;
+function renderSlot(slot: VirtualListSlot): React.ReactElement | undefined {
+  if (!slot) return undefined;
+  return (typeof slot === 'function' ? slot() : slot) ?? undefined;
 }
 
 function VirtualListNativeInner<T>(
@@ -56,7 +56,7 @@ function VirtualListNativeInner<T>(
     testID,
   } = props;
 
-  const listRef = React.useRef<FlatList<T>>(null);
+  const listRef = React.useRef<React.ComponentRef<typeof FlatList<T>>>(null);
 
   React.useImperativeHandle(
     ref,

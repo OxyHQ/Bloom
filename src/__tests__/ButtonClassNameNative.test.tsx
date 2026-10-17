@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Text as RNText, View } from 'react-native';
+import { ActivityIndicator, Text as RNText, View, type TextProps } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { compile } from 'react-native-css/compiler';
 import { StyleCollection, styled } from 'react-native-css/native';
@@ -135,7 +135,12 @@ it('retains native stateful content while class-driven loading changes', () => {
 });
 
 it('does not consume typography styles shared with another native primitive', () => {
-  const Label = styled(RNText, { className: 'style' });
+  // Typed through `style` alone: a dot-path union over RN 0.88's whole
+  // `TextProps` overflows the checker (TS2590).
+  const Label: React.ComponentType<TextProps> = styled(
+    RNText as (props: Pick<TextProps, 'style'>) => React.ReactNode,
+    { className: 'style' },
+  );
   const classes = 'purchase purchase-type purchase-interactive';
   const api = render(
     <BloomThemeProvider>

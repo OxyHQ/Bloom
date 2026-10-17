@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-  Image,
   Linking,
   Pressable,
   StyleSheet,
@@ -9,6 +8,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { BloomImage } from '../image';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { Button, GlyphButton } from '../button';
@@ -117,9 +117,9 @@ export function Artwork({
   if (children) content = children;
   else if (uri)
     content = (
-      <Image
+      <BloomImage
         source={{ uri }}
-        resizeMode="cover"
+        contentFit="cover"
         accessibilityIgnoresInvertColors
         style={{ width: '100%', height: '100%' }}
       />
@@ -185,7 +185,7 @@ export function Mosaic({
   if (covers.length === 1) {
     const uri = resolveArtworkUri(covers[0], resolver);
     return uri ? (
-      <Image source={{ uri }} resizeMode="cover" style={{ width, height }} testID={testID} />
+      <BloomImage source={{ uri }} contentFit="cover" style={{ width, height }} testID={testID} />
     ) : null;
   }
   const cellW = width / 2;
@@ -195,10 +195,10 @@ export function Mosaic({
       {[0, 1, 2, 3].map((index) => {
         const uri = resolveArtworkUri(covers[index], resolver);
         return uri ? (
-          <Image
+          <BloomImage
             key={index}
             source={{ uri }}
-            resizeMode="cover"
+            contentFit="cover"
             style={{ width: cellW, height: cellH }}
             testID={testID ? `${testID}-${index}` : undefined}
           />

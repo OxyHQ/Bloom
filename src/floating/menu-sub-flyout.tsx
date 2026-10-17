@@ -31,7 +31,15 @@
  * clicking a row of the PARENT menu would only dismiss the sub; and a dismissible
  * one would install the competing Escape handler this file exists to order.
  */
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -97,7 +105,7 @@ type DomNode = {
   querySelector: HTMLElement['querySelector'];
 };
 
-function domNode(node: View | null): DomNode | null {
+function domNode(node: ComponentRef<typeof View> | null): DomNode | null {
   const element = node as unknown as Partial<DomNode> | null;
   if (
     typeof element?.addEventListener !== 'function' ||
@@ -189,7 +197,10 @@ function focusFirstItem(node: DomNode | null): void {
  * (a row rendered outside a surface, a non-DOM ref), the row's own box is the
  * fallback and behaviour is what it was.
  */
-function useFlyoutAnchor(ref: React.RefObject<View | null>, open: boolean): FloatingAnchor | null {
+function useFlyoutAnchor(
+  ref: React.RefObject<ComponentRef<typeof View> | null>,
+  open: boolean,
+): FloatingAnchor | null {
   const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);
 
   const measure = useCallback(() => {
@@ -283,14 +294,14 @@ interface SubFlyoutContextValue {
   open: boolean;
   setOpen: (next: boolean) => void;
   /** The trigger row's wrapper, measured to anchor the panel. */
-  triggerRef: React.RefObject<View | null>;
+  triggerRef: React.RefObject<ComponentRef<typeof View> | null>;
   /**
    * The flyout's scroller, so the TRIGGER can tell a pointer heading for its own
    * panel from one heading for a sibling row. Written by `MenuSubContent`; null
    * whenever the panel is closed, which is exactly when there is nothing to
    * cross to.
    */
-  contentRef: React.RefObject<View | null>;
+  contentRef: React.RefObject<ComponentRef<typeof View> | null>;
   /** Cancel a scheduled close — the pointer arrived on one of the two surfaces. */
   keepOpen: () => void;
   /** Schedule a close — the pointer left one of them, and may be crossing to the other. */
@@ -323,8 +334,8 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       defaultValue: defaultOpen,
       onChange: onOpenChange,
     });
-    const triggerRef = useRef<View | null>(null);
-    const contentRef = useRef<View | null>(null);
+    const triggerRef = useRef<ComponentRef<typeof View> | null>(null);
+    const contentRef = useRef<ComponentRef<typeof View> | null>(null);
     const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const cancelTimer = useCallback(() => {
@@ -396,10 +407,10 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     const palette = useMenuPalette();
     const sub = useSubFlyout();
     const { title, body } = splitChildren(children);
-    const [node, setNode] = useState<View | null>(null);
+    const [node, setNode] = useState<ComponentRef<typeof View> | null>(null);
 
     const attach = useCallback(
-      (value: View | null) => {
+      (value: ComponentRef<typeof View> | null) => {
         setNode(value);
         sub.triggerRef.current = value;
       },
@@ -502,14 +513,14 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     const label = labelProp ?? messages.submenu;
     const sub = useSubFlyout();
     const anchor = useFlyoutAnchor(sub.triggerRef, sub.open);
-    const [node, setNode] = useState<View | null>(null);
+    const [node, setNode] = useState<ComponentRef<typeof View> | null>(null);
 
     // State for this component's own effects, a ref for the TRIGGER's leave
     // handler: that handler runs from a DOM listener, outside React's render,
     // so it needs a value it can read at event time rather than one captured
     // when the listener was attached.
     const attachContent = useCallback(
-      (value: View | null) => {
+      (value: ComponentRef<typeof View> | null) => {
         setNode(value);
         sub.contentRef.current = value;
       },

@@ -1,6 +1,5 @@
 import React, { memo, useMemo } from 'react';
 import {
-  Image,
   Linking,
   Pressable,
   StyleSheet,
@@ -8,6 +7,7 @@ import {
   View,
   type GestureResponderEvent,
 } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
 import { Chip } from '../chip';
@@ -338,9 +338,9 @@ function PlaceRow({ props, paint }: { props: PlaceCardProps; paint: PlaceCardPai
           testID={testID ? `${testID}-photo` : undefined}
         >
           {uri ? (
-            <Image
+            <BloomImage
               source={{ uri }}
-              resizeMode="cover"
+              contentFit="cover"
               accessibilityIgnoresInvertColors
               style={StyleSheet.absoluteFill}
             />
@@ -481,9 +481,9 @@ function PlaceDetail({ props, paint }: { props: PlaceCardProps; paint: PlaceCard
         }}
       >
         {uri ? (
-          <Image
+          <BloomImage
             source={{ uri }}
-            resizeMode="cover"
+            contentFit="cover"
             accessibilityIgnoresInvertColors
             aria-hidden
             style={StyleSheet.absoluteFill}

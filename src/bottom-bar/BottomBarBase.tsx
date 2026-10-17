@@ -1,4 +1,4 @@
-import { useContext, useRef, useState, type ComponentType } from 'react';
+import { type ComponentRef, useContext, useRef, useState, type ComponentType } from 'react';
 import { View, ScrollView, Keyboard, Platform } from 'react-native';
 import { useEffect } from 'react';
 import Animated, {
@@ -25,6 +25,7 @@ import {
 import type { TabBarProps, TabBarButtonProps } from '../tab-bar/types';
 import type { ProgressiveBlurProps } from '../progressive-blur/types';
 import type { BottomBarProps } from './types';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 interface Props extends BottomBarProps {
   Navigation: ComponentType<TabBarProps>;
@@ -49,7 +50,7 @@ export function BottomBarBase({
   style,
   testID,
 }: Props) {
-  const insets = useSafeAreaInsets();
+  const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   // Logical insets below; react-native-web needs the direction handed to it.
   const dirProps = useDirectionProps();
   const minimize = useMinimizeState();
@@ -57,7 +58,7 @@ export function BottomBarBase({
   const reducedMotion = useReducedMotion();
   const hideAction = actionBehavior === 'hide' && items.length > 0;
   const [actionHidden, setActionHidden] = useState(() => hideAction && progress.value > 0.01);
-  const actionRef = useRef<View>(null);
+  const actionRef = useRef<ComponentRef<typeof View>>(null);
   const [actionWidth, setActionWidth] = useState<number | null>(null);
   const [actionHeight, setActionHeight] = useState<number>(FAB_METRICS.md.diameter);
   const [rowWidth, setRowWidth] = useState(0);

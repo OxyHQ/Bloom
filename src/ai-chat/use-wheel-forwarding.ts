@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ComponentRef, type RefObject } from 'react';
 import { Platform, type View } from 'react-native';
+import type { ViewRef } from '../styles/native-refs';
 
 const SCROLLER = '[data-bloom-scroll-area]';
 
@@ -30,8 +31,8 @@ function scrollsItself(from: EventTarget | null, root: HTMLElement, down: boolea
  *
  * Give the returned ref to the root of the chat.
  */
-export function useWheelForwarding() {
-  const root = useRef<View>(null);
+export function useWheelForwarding(): RefObject<ViewRef | null> {
+  const root = useRef<ComponentRef<typeof View>>(null);
   useEffect(() => {
     if (Platform.OS !== 'web') return;
     const el = root.current as unknown as HTMLElement | null;

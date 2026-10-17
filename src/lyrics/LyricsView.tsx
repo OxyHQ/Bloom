@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import {
   ScrollView,
   View,
@@ -101,7 +102,7 @@ function LyricsViewComponent({
   const paddingH = large ? 32 : size === 'medium' ? 24 : 20;
   const paddingTop = large ? 32 : 20;
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const layouts = useRef(new Map<number, { y: number; height: number }>());
   const offset = useRef(0);
   const content = useRef(0);

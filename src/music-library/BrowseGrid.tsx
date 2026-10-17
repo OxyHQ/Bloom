@@ -1,5 +1,6 @@
 import React, { Children, memo, useEffect, useMemo, useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
@@ -102,7 +103,7 @@ function Tile({
         {item.title}
       </Text>
       {uri ? (
-        <Image
+        <BloomImage
           source={{ uri }}
           aria-hidden
           style={{
@@ -114,7 +115,7 @@ function Tile({
             borderRadius: 6,
             transform: [{ rotate: '25deg' }],
           }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       ) : null}
     </Pressable>

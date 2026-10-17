@@ -1,6 +1,6 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { type ComponentRef, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import Animated, {
   Easing,
@@ -47,7 +47,7 @@ interface AddMenuProps {
 export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuProps) {
   const Button = useComposerButton();
   const Popover = useComposerPopover();
-  const triggerRef = useRef<View>(null);
+  const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const [open, setOpen] = useState(false);
   const reducedMotion = useReducedMotion();
   const rotation = useSharedValue(0);

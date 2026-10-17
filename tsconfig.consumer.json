@@ -30,7 +30,7 @@
     "types": [],
     // The rest mirror expo/tsconfig.base.json.
     "lib": ["DOM", "ESNext"],
-    "jsx": "react-native",
+    "jsx": "react-jsx",
     "module": "preserve",
     "moduleDetection": "force",
     "moduleResolution": "bundler",

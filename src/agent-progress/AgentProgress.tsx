@@ -283,8 +283,8 @@ function Presence({
         { scale: scale.value },
         { rotate: `${rotate.value}deg` },
       ],
+      ...(IS_WEB ? { filter: `blur(${blur.value}px)` } : null),
     };
-    if (IS_WEB) out.filter = `blur(${blur.value}px)`;
     return out;
   }, [opacity, y, blur, scale, rotate]);
 
@@ -965,8 +965,8 @@ function AgentProgressComponent({
       opacity: cardOpacity.value,
       height: cardHeight.value,
       transform: [{ translateY: cardY.value }],
+      ...(IS_WEB ? { filter: `blur(${cardBlur.value}px)` } : null),
     };
-    if (IS_WEB) out.filter = `blur(${cardBlur.value}px)`;
     return out;
   }, [cardOpacity, cardY, cardBlur, cardHeight]);
 

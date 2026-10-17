@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { Image, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -180,9 +181,9 @@ export const MediaImage = memo(function MediaImage({
   return (
     <View style={frame} testID={testID}>
       {resolved ? (
-        <Image
+        <BloomImage
           source={resolved}
-          resizeMode={resizeMode}
+          contentFit={resizeMode}
           style={{ width: '100%', height: '100%' }}
           accessible={false}
         />

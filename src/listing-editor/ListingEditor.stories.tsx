@@ -240,7 +240,7 @@ function PublishFlow({
   const [showErrors, setShowErrors] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const uploadCounter = useRef(0);
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
 

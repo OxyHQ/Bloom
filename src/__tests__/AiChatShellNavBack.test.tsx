@@ -16,7 +16,9 @@ import { render } from '@testing-library/react-native';
 import { AiChatShell } from '../ai-chat';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
-type BackListener = () => boolean | null | undefined;
+type BackListener = Parameters<typeof ReactNative.BackHandler.addEventListener>[1];
+/** What React Native hands a back listener; nothing here reads it. */
+const BACK_PRESS = { type: 'hardwareBackPress', timeStamp: 0 };
 
 let listeners: BackListener[] = [];
 let os: typeof ReactNative.Platform.OS;
@@ -44,7 +46,8 @@ afterEach(() => {
 });
 
 /** What Android does: the newest listener first, until one returns true. */
-const pressBack = (): boolean => [...listeners].reverse().some((listener) => listener() === true);
+const pressBack = (): boolean =>
+  [...listeners].reverse().some((listener) => listener(BACK_PRESS) === true);
 
 function Shell({
   navOpen,

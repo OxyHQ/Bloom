@@ -169,7 +169,9 @@ describe('ambient debounce timer handle', () => {
     ambientTheme.setAmbient(RED_SEED);
 
     expect(handles).toHaveLength(1);
-    const handle = handles[0];
+    // React Native 0.88 declares the global `setTimeout` as returning a number;
+    // under jest it is Node's, whose handle is a `Timeout`.
+    const handle = handles[0] as unknown as NodeJS.Timeout | undefined;
     // Positive control on the fixture itself: a handle that never had `hasRef`
     // would make the assertion below vacuous.
     expect(typeof handle?.hasRef).toBe('function');

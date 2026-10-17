@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, type View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -122,7 +122,7 @@ export function EmotionPicker({
   const messages = useAgentCreatorMessages();
   const previewBackground = bodyPigmentHex(backgroundColor);
   const emit = onSelect;
-  const ref = useRef<View>(null);
+  const ref = useRef<ComponentRef<typeof View>>(null);
   const visible = useSharedValue(true);
   const target = useSharedValue(0);
   const reduced = useReducedMotion();

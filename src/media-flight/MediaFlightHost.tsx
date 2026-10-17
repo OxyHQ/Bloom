@@ -11,7 +11,7 @@
  * ONE API, two implementations. A consumer writes the same JSX on both
  * platforms and never learns which one it got.
  */
-import { useCallback } from 'react';
+import { type ComponentRef, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { MediaSurface } from './MediaSurface';
@@ -49,7 +49,10 @@ export function MediaFlightHost<P extends VideoPlayerLike = VideoPlayerLike>({
 }: MediaFlightHostProps<P>) {
   // A callback ref rather than an effect: the anchor must be measurable the
   // moment the box is on screen, and a tap can come one frame later.
-  const setNode = useCallback((node: View | null) => registerAnchor(id, node), [id]);
+  const setNode = useCallback(
+    (node: ComponentRef<typeof View> | null) => registerAnchor(id, node),
+    [id],
+  );
 
   return (
     <View ref={setNode} style={style} pointerEvents={pointerEvents}>

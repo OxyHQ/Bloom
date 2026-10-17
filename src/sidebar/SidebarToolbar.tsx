@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { type ComponentRef, useEffect, useRef, useState } from 'react';
 import type { TextInput } from 'react-native';
 import Animated, {
   Easing,
@@ -29,7 +29,7 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
   const palette = useSidebarPalette();
   const direction = useDirectionProps();
   const rtl = useIsRtl();
-  const input = useRef<TextInput>(null);
+  const input = useRef<ComponentRef<typeof TextInput>>(null);
   const trigger = useRef<React.ComponentRef<typeof Button>>(null);
   const [width, setWidth] = useState(0);
   const reduced = useReducedMotion();

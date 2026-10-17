@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo } from 'react';
+import React, { type ComponentRef, forwardRef, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -14,6 +14,7 @@ import {
 } from './shared';
 import type { GlyphButtonProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import type { RefComponent } from '../styles/native-refs';
 
 /**
  * `GlyphButton`: the round glyph-only control at an ARBITRARY size.
@@ -110,7 +111,7 @@ function GlyphButtonComponent(
     'aria-expanded': ariaExpanded,
     'aria-haspopup': ariaHasPopup,
   }: GlyphButtonProps,
-  ref: React.Ref<View>,
+  ref: React.Ref<ComponentRef<typeof View>>,
 ) {
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, GLYPH_BUTTON_CSS);
@@ -196,5 +197,5 @@ function GlyphButtonComponent(
   );
 }
 
-export const GlyphButton = forwardRef(GlyphButtonComponent);
+export const GlyphButton: RefComponent<GlyphButtonProps> = forwardRef(GlyphButtonComponent);
 GlyphButton.displayName = 'GlyphButton';

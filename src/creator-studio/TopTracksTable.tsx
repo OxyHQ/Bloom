@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { Image, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { BloomImage } from '../image';
 
 import { groupThousands } from '../chart-cards/primitives/format';
 import { DataTable } from '../data-table/DataTable';
@@ -90,7 +91,7 @@ function Cover({
       ]}
     >
       {uri ? (
-        <Image source={{ uri }} style={styles.coverImage} accessibilityIgnoresInvertColors />
+        <BloomImage source={{ uri }} style={styles.coverImage} accessibilityIgnoresInvertColors />
       ) : (
         <RiMusic2Line width={18} height={18} fill={paint.placeholderIcon} />
       )}

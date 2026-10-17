@@ -1,4 +1,4 @@
-import type { ReactNode, Ref } from 'react';
+import type { ComponentRef, ReactNode, Ref } from 'react';
 import type { StyleProp, View, ViewStyle } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 
@@ -47,7 +47,7 @@ export interface AudioWaveVisualizerProps {
   tone?: BloomTone;
   className?: string;
   style?: StyleProp<ViewStyle>;
-  ref?: Ref<View>;
+  ref?: Ref<ComponentRef<typeof View>>;
   testID?: string;
 }
 
@@ -76,7 +76,7 @@ export interface VoiceControlsProps {
   trailing?: ReactNode;
   className?: string;
   style?: StyleProp<ViewStyle>;
-  ref?: Ref<View>;
+  ref?: Ref<ComponentRef<typeof View>>;
   testID?: string;
 }
 

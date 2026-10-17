@@ -1,5 +1,11 @@
 import React, { useRef, useState, type ReactNode } from 'react';
-import { Platform, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  useWindowDimensions,
+  type StyleProp,
+  type TextInput,
+  type ViewStyle,
+} from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import { AgentAvatar } from '../agent-avatar';
 import { Button, CloseButton } from '../button';
@@ -186,7 +192,7 @@ export function Marketplace({
   const [detail, setDetail] = useState<MarketplaceItem | null>(
     () => MARKETPLACE_ITEMS.find((item) => item.id === initialItem) ?? null,
   );
-  const searchRef = useRef<import('react-native').TextInput>(null);
+  const searchRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const isPresent = true;
   const isAdded = (item: MarketplaceItem) =>
     item.kind === 'plugin'

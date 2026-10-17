@@ -56,7 +56,20 @@ const ItemComponent = function Item({
   const cfg = DENSITY[density];
 
   const containerStyle = useMemo((): ViewStyle => {
-    const base: ViewStyle = {
+    // Precedence, loudest first. Hover and the keyboard's cursor paint ONLY a
+    // row that had no background of its own: washing over `active` or
+    // `selected` would read as the row losing the state it is announcing,
+    // which is worse than no hover at all. `contrast50` is the same wash
+    // `SubtleHover` uses, so a hovered row and a hovered card agree — and it
+    // reads on a primary-tinted surface, where `primaryLight` does not.
+    const backgroundColor = active
+      ? theme.colors.primaryLight
+      : selected
+        ? theme.colors.backgroundSecondary
+        : highlighted || hovered
+          ? theme.colors.contrast50
+          : undefined;
+    return {
       flexDirection: 'row',
       alignItems: 'center',
       gap: space.md,
@@ -73,21 +86,8 @@ const ItemComponent = function Item({
       paddingVertical: cfg.paddingVertical,
       minHeight: cfg.minHeight,
       borderRadius: borderRadius.sm,
+      ...(backgroundColor === undefined ? null : { backgroundColor }),
     };
-    // Precedence, loudest first. Hover and the keyboard's cursor paint ONLY a
-    // row that had no background of its own: washing over `active` or
-    // `selected` would read as the row losing the state it is announcing,
-    // which is worse than no hover at all. `contrast50` is the same wash
-    // `SubtleHover` uses, so a hovered row and a hovered card agree — and it
-    // reads on a primary-tinted surface, where `primaryLight` does not.
-    if (active) {
-      base.backgroundColor = theme.colors.primaryLight;
-    } else if (selected) {
-      base.backgroundColor = theme.colors.backgroundSecondary;
-    } else if (highlighted || hovered) {
-      base.backgroundColor = theme.colors.contrast50;
-    }
-    return base;
   }, [cfg, selected, active, highlighted, hovered, theme]);
 
   const body =

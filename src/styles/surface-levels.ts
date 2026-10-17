@@ -99,7 +99,7 @@
  * reads `useSurfaceFill()` and a web-only fork may read the variable.
  */
 import { createContext, createElement, useContext, useMemo, type ReactNode } from 'react';
-import { Platform, type ViewStyle } from 'react-native';
+import { Platform } from 'react-native';
 
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -254,7 +254,7 @@ export const SURFACE_FILL_CSS = `var(${SURFACE_FILL_VAR}, var(--background))`;
  * (see `content-panel/shared.ts`) publishes no variable rather than a wrong one,
  * and the call site stays one unconditional expression.
  */
-export function surfaceFillVars(fill: string | undefined): ViewStyle | undefined {
+export function surfaceFillVars(fill: string | undefined): WebCssStyle | undefined {
   if (fill === undefined || Platform.OS !== 'web') return undefined;
   // A custom property has no key on RN's `ViewStyle`, and on web it does not
   // need one: react-native-web compiles every own key of a style object into an

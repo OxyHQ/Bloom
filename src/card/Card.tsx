@@ -23,8 +23,8 @@ import { resolveBloomColors } from '../appearance/colors';
  * An explicit axis prop wins over the appearance's default, so no combination
  * requires a new appearance name.
  */
-import React, { memo, useMemo, useContext } from 'react';
-import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import React, { type ComponentRef, memo, useMemo, useContext } from 'react';
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { styled } from 'react-native-css';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -50,6 +50,7 @@ import type {
   CardTitleProps,
   CardDescriptionProps,
 } from './types';
+import type { MemoRefComponent } from '../styles/native-refs';
 
 /** The width each border role resolves to. `none` resolves to zero. */
 const BORDER_PX: Record<Exclude<CardBorder, 'none'>, number> = {
@@ -70,185 +71,187 @@ const VARIANT_DEFAULTS: Record<BloomAppearance, { border: CardBorder; elevation:
     subtle: { border: 'none', elevation: 'none' },
   };
 
-const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootComponent(
-  {
-    children,
-    appearance: appearanceProp,
-    tone: toneProp,
-    radius,
-    cornerCurve: cornerCurveProp,
-    clipContent = false,
-    contentStyle,
-    elevation,
-    border,
-    style,
-    className,
-    onPress,
-    onLayout,
-    accessibilityRole = 'button',
-    disabled = false,
-    accessibilityLabel,
-    testID,
-  },
-  ref,
-) {
-  const theme = useTheme();
-  const layer = useSurfaceLayer();
-  const parentLevel = useSurfaceLevelValue();
-  const panelShape = usePanelShape();
-  const cornerCurve =
-    cornerCurveProp ?? (radius === 'panel' ? panelShape.curve : SURFACE_SHAPES.card.curve);
-  const explicitRadius =
-    radius === 'panel' ? panelShape.radius : radius ? RADIUS[radius] : undefined;
-  // On web the caller's `className` arrives in `style` as a compiled-CSS entry
-  // (this component is `styled()` below). Values are read from the inline part
-  // only, and the classes stay separate entries on the host — never flattened
-  // into the inline object, which react-native-web would reject wholesale.
-  const { classes, inline: callerStyle } = splitCompiledStyle(style);
-  const resolvedGeometry = resolveSurfaceGeometry(
-    explicitRadius,
-    callerStyle,
-    SURFACE_SHAPES.card.radius,
-    cornerCurve,
-  );
-  const appearance = appearanceProp ?? 'solid';
-  const { tone } = useBloomAppearance({ tone: toneProp }, { size: 'md', tone: 'neutral' });
-  const paint = resolveBloomColors(theme.colors, tone, appearance);
-  // Drive the press-opacity via state instead of Pressable's function-form
-  // `style`, which NativeWind v4's css-interop swallows (dropping the base
-  // container style: background, radius, border, shadow).
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
+const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>(
+  function CardRootComponent(
+    {
+      children,
+      appearance: appearanceProp,
+      tone: toneProp,
+      radius,
+      cornerCurve: cornerCurveProp,
+      clipContent = false,
+      contentStyle,
+      elevation,
+      border,
+      style,
+      className,
+      onPress,
+      onLayout,
+      accessibilityRole = 'button',
+      disabled = false,
+      accessibilityLabel,
+      testID,
+    },
+    ref,
+  ) {
+    const theme = useTheme();
+    const layer = useSurfaceLayer();
+    const parentLevel = useSurfaceLevelValue();
+    const panelShape = usePanelShape();
+    const cornerCurve =
+      cornerCurveProp ?? (radius === 'panel' ? panelShape.curve : SURFACE_SHAPES.card.curve);
+    const explicitRadius =
+      radius === 'panel' ? panelShape.radius : radius ? RADIUS[radius] : undefined;
+    // On web the caller's `className` arrives in `style` as a compiled-CSS entry
+    // (this component is `styled()` below). Values are read from the inline part
+    // only, and the classes stay separate entries on the host — never flattened
+    // into the inline object, which react-native-web would reject wholesale.
+    const { classes, inline: callerStyle } = splitCompiledStyle(style);
+    const resolvedGeometry = resolveSurfaceGeometry(
+      explicitRadius,
+      callerStyle,
+      SURFACE_SHAPES.card.radius,
+      cornerCurve,
+    );
+    const appearance = appearanceProp ?? 'solid';
+    const { tone } = useBloomAppearance({ tone: toneProp }, { size: 'md', tone: 'neutral' });
+    const paint = resolveBloomColors(theme.colors, tone, appearance);
+    // Drive the press-opacity via state instead of Pressable's function-form
+    // `style`, which NativeWind v4's css-interop swallows (dropping the base
+    // container style: background, radius, border, shadow).
+    const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
-  const containerStyle = useMemo((): ViewStyle => {
-    const defaults = VARIANT_DEFAULTS[appearance];
-    const resolvedBorder = border ?? defaults.border;
-    const resolvedElevation = elevation ?? defaults.elevation;
+    const containerStyle = useMemo((): ViewStyle => {
+      const defaults = VARIANT_DEFAULTS[appearance];
+      const resolvedBorder = border ?? defaults.border;
+      const resolvedElevation = elevation ?? defaults.elevation;
 
-    const base: ViewStyle = {
-      backgroundColor: tone === 'neutral' && appearance !== 'plain' ? layer.fill : paint.background,
-      ...resolvedGeometry.style,
+      return {
+        backgroundColor:
+          tone === 'neutral' && appearance !== 'plain' ? layer.fill : paint.background,
+        ...resolvedGeometry.style,
+        ...(resolvedBorder !== 'none'
+          ? {
+              borderWidth: BORDER_PX[resolvedBorder],
+              borderColor: tone === 'neutral' ? theme.colors.border : paint.border,
+            }
+          : null),
+        ...(resolvedElevation !== 'none' ? bloomShadowStyle(resolvedElevation) : null),
+      };
+    }, [
+      appearance,
+      appearanceProp,
+      tone,
+      paint,
+      radius,
+      cornerCurve,
+      border,
+      elevation,
+      theme,
+      layer.fill,
+      resolvedGeometry.radius,
+    ]);
+
+    // Resolve class utilities on the actual layout host. Geometry remains owned
+    // by the public shape axes; clipping is explicit and keeps shadows outside.
+    const shape = resolvedGeometry.shape;
+    const geometry = { ...resolvedGeometry.style, borderWidth: containerStyle.borderWidth ?? 0 };
+    const resolved: ViewStyle =
+      StyleSheet.flatten<StyleProp<ViewStyle>>([containerStyle, callerStyle, geometry]) ?? {};
+    const material = resolveSurfaceMaterial({
+      fill: String(resolved.backgroundColor ?? 'transparent'),
+      parentFill: layer.parentFill,
+      parentLevel,
+      paint: appearance !== 'plain',
+    });
+    const { paintFill: fill, painted: paintsSurface, publishedFill } = material;
+    const outerStyle: ViewStyle = {
+      ...resolved,
+      ...material.vars,
+      ...(paintsSurface ? { backgroundColor: 'transparent' } : null),
     };
+    const contents = (
+      <>
+        {paintsSurface ? (
+          <SurfacePaint fill={String(fill)} radius={resolvedGeometry.radius} shape={shape} />
+        ) : null}
+        <SurfaceLevelProvider level={material.level} fill={publishedFill}>
+          <CardForegroundContext.Provider value={tone === 'neutral' ? undefined : paint.foreground}>
+            {clipContent ? (
+              <View
+                testID={testID ? `${testID}-clip` : undefined}
+                style={[
+                  contentStyle,
+                  surfaceStyle({
+                    ...shape,
+                    radius:
+                      typeof resolvedGeometry.radius === 'number'
+                        ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth)
+                        : undefined,
+                  }),
+                  {
+                    borderRadius:
+                      typeof resolvedGeometry.radius === 'number'
+                        ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth)
+                        : resolvedGeometry.radius,
+                    overflow: 'hidden',
+                    alignSelf: 'stretch',
+                    flexGrow: 1,
+                    flexShrink: 1,
+                  },
+                ]}
+              >
+                {children}
+              </View>
+            ) : (
+              children
+            )}
+          </CardForegroundContext.Provider>
+        </SurfaceLevelProvider>
+      </>
+    );
 
-    if (resolvedBorder !== 'none') {
-      base.borderWidth = BORDER_PX[resolvedBorder];
-      base.borderColor = tone === 'neutral' ? theme.colors.border : paint.border;
+    if (onPress) {
+      return (
+        <StyledPressable
+          ref={ref}
+          onLayout={onLayout}
+          className={className}
+          style={[
+            classes,
+            outerStyle,
+            pressed && !disabled && { opacity: 0.85 },
+            disabled && { opacity: 0.5 },
+          ]}
+          onPress={onPress}
+          onPressIn={disabled ? undefined : onPressIn}
+          onPressOut={disabled ? undefined : onPressOut}
+          disabled={disabled}
+          accessibilityLabel={accessibilityLabel}
+          accessibilityRole={accessibilityRole}
+          accessibilityState={{ disabled }}
+          aria-disabled={disabled}
+          testID={testID}
+        >
+          {contents}
+        </StyledPressable>
+      );
     }
 
-    if (resolvedElevation !== 'none') {
-      Object.assign(base, bloomShadowStyle(resolvedElevation));
-    }
-
-    return base;
-  }, [
-    appearance,
-    appearanceProp,
-    tone,
-    paint,
-    radius,
-    cornerCurve,
-    border,
-    elevation,
-    theme,
-    layer.fill,
-    resolvedGeometry.radius,
-  ]);
-
-  // Resolve class utilities on the actual layout host. Geometry remains owned
-  // by the public shape axes; clipping is explicit and keeps shadows outside.
-  const shape = resolvedGeometry.shape;
-  const geometry = { ...resolvedGeometry.style, borderWidth: containerStyle.borderWidth ?? 0 };
-  const resolved = StyleSheet.flatten([containerStyle, callerStyle, geometry]) ?? {};
-  const outerStyle: ViewStyle = { ...resolved };
-  const material = resolveSurfaceMaterial({
-    fill: String(resolved.backgroundColor ?? 'transparent'),
-    parentFill: layer.parentFill,
-    parentLevel,
-    paint: appearance !== 'plain',
-  });
-  const { paintFill: fill, painted: paintsSurface, publishedFill } = material;
-  Object.assign(outerStyle, material.vars);
-  if (paintsSurface) outerStyle.backgroundColor = 'transparent';
-  const contents = (
-    <>
-      {paintsSurface ? (
-        <SurfacePaint fill={String(fill)} radius={resolvedGeometry.radius} shape={shape} />
-      ) : null}
-      <SurfaceLevelProvider level={material.level} fill={publishedFill}>
-        <CardForegroundContext.Provider value={tone === 'neutral' ? undefined : paint.foreground}>
-          {clipContent ? (
-            <View
-              testID={testID ? `${testID}-clip` : undefined}
-              style={[
-                contentStyle,
-                surfaceStyle({
-                  ...shape,
-                  radius:
-                    typeof resolvedGeometry.radius === 'number'
-                      ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth)
-                      : undefined,
-                }),
-                {
-                  borderRadius:
-                    typeof resolvedGeometry.radius === 'number'
-                      ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth)
-                      : resolvedGeometry.radius,
-                  overflow: 'hidden',
-                  alignSelf: 'stretch',
-                  flexGrow: 1,
-                  flexShrink: 1,
-                },
-              ]}
-            >
-              {children}
-            </View>
-          ) : (
-            children
-          )}
-        </CardForegroundContext.Provider>
-      </SurfaceLevelProvider>
-    </>
-  );
-
-  if (onPress) {
     return (
-      <StyledPressable
+      <StyledView
         ref={ref}
         onLayout={onLayout}
         className={className}
-        style={[
-          classes,
-          outerStyle,
-          pressed && !disabled && { opacity: 0.85 },
-          disabled && { opacity: 0.5 },
-        ]}
-        onPress={onPress}
-        onPressIn={disabled ? undefined : onPressIn}
-        onPressOut={disabled ? undefined : onPressOut}
-        disabled={disabled}
+        style={[classes, outerStyle, disabled && { opacity: 0.5 }]}
         accessibilityLabel={accessibilityLabel}
-        accessibilityRole={accessibilityRole}
-        accessibilityState={{ disabled }}
-        aria-disabled={disabled}
         testID={testID}
       >
         {contents}
-      </StyledPressable>
+      </StyledView>
     );
-  }
-
-  return (
-    <StyledView
-      ref={ref}
-      onLayout={onLayout}
-      className={className}
-      style={[classes, outerStyle, disabled && { opacity: 0.5 }]}
-      accessibilityLabel={accessibilityLabel}
-      testID={testID}
-    >
-      {contents}
-    </StyledView>
-  );
-});
+  },
+);
 
 const CardHeaderComponent: React.FC<CardHeaderProps> = ({ children, style }) => (
   <View
@@ -347,7 +350,7 @@ const CardDescriptionComponent: React.FC<CardDescriptionProps> = ({
 const StyledCard = styled(CardRootComponent as React.ComponentType<CardProps>, {
   className: 'style',
 }) as typeof CardRootComponent;
-export const Card = memo(StyledCard);
+export const Card: MemoRefComponent<CardProps> = memo(StyledCard);
 Card.displayName = 'Card';
 
 export const CardHeader = memo(CardHeaderComponent);

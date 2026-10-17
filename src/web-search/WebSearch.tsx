@@ -1,4 +1,5 @@
 import React, {
+  type ComponentRef,
   memo,
   useCallback,
   useEffect,
@@ -9,7 +10,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  Image,
   Linking,
   Platform,
   Pressable,
@@ -19,6 +19,7 @@ import {
   type LayoutChangeEvent,
   type TextStyle,
 } from 'react-native';
+import { BloomImage } from '../image';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   Easing,
@@ -307,7 +308,7 @@ interface Point {
   y: number;
 }
 
-type HostNode = View;
+type HostNode = ComponentRef<typeof View>;
 
 /**
  * A mark renders in exactly ONE place — the stack or its row — and moving it is
@@ -460,10 +461,10 @@ function SourceMark({
       ) : source.brand ? (
         <BrandMark brand={source.brand} size={12} palette={palette} />
       ) : source.faviconUrl && !faviconFailed ? (
-        <Image
+        <BloomImage
           source={{ uri: source.faviconUrl }}
           onError={() => setFaviconFailed(true)}
-          resizeMode="contain"
+          contentFit="contain"
           style={{ width: 12, height: 12, borderRadius: 2 }}
         />
       ) : (

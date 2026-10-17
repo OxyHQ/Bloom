@@ -13,7 +13,7 @@
  * when a destination host claims the node, and the node it claims has been
  * showing the media all along.
  */
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { type ComponentRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import {
@@ -46,10 +46,10 @@ export function MediaFlightHost<P extends VideoPlayerLike = VideoPlayerLike>({
 }: MediaFlightHostProps<P>) {
   // State rather than a ref, because the claim runs in a layout effect and an
   // effect cannot depend on a ref's mutation. One extra render at mount.
-  const [node, setNode] = useState<View | null>(null);
+  const [node, setNode] = useState<ComponentRef<typeof View> | null>(null);
 
   const setHost = useCallback(
-    (next: View | null) => {
+    (next: ComponentRef<typeof View> | null) => {
       registerAnchor(id, next);
       setNode(next);
     },

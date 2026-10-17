@@ -1,12 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import {
-  Image,
-  Linking,
-  Pressable,
-  View,
-  type GestureResponderEvent,
-  type ViewStyle,
-} from 'react-native';
+import { Linking, Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
 import { Chip } from '../chip';
@@ -119,9 +113,9 @@ function Cover({
       testID={testID ? `${testID}-photo` : undefined}
     >
       {uri ? (
-        <Image
+        <BloomImage
           source={{ uri }}
-          resizeMode="cover"
+          contentFit="cover"
           accessibilityIgnoresInvertColors
           style={{ width: '100%', height: '100%' }}
         />

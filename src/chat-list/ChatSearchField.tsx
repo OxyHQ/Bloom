@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
@@ -84,7 +84,7 @@ function ChatSearchFieldComponent({
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
   const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [focused, setFocused] = useState(false);
   const hasText = value.length > 0;

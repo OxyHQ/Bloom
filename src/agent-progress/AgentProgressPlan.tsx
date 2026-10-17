@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { type ComponentRef, memo, useEffect, useState } from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { Badge } from '../badge';
@@ -72,7 +72,7 @@ function AgentProgressPlanComponent({
   // Set by a press, so a decision that arrives from elsewhere moves nothing.
   const [pressed, setPressed] = useState<'approve' | 'reject' | null>(null);
   const moveFocus = pressed !== null && !pending;
-  const statusRef = useAccessibilityFocus<View>(moveFocus);
+  const statusRef = useAccessibilityFocus<ComponentRef<typeof View>>(moveFocus);
   useEffect(() => {
     if (IS_WEB && moveFocus) (statusRef.current as unknown as HTMLElement | null)?.focus();
   }, [moveFocus, statusRef]);

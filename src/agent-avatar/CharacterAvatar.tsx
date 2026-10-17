@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { AccessibilityInfo, AppState, Platform, type View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useMessages } from '../locale/messages';
@@ -53,7 +53,7 @@ function WebCharacter({
   const observeSnapshot = useContext(AvatarSnapshotObserver);
   const report = useRef(reportCapabilities);
   report.current = reportCapabilities;
-  const host = useRef<View>(null),
+  const host = useRef<ComponentRef<typeof View> | null>(null),
     controller = useRef<Controller | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const latest = useRef(value);

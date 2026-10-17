@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Image, View, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
@@ -208,10 +209,10 @@ export function CalendarViewEventDetails({
             borderRadius: 10,
           }}
         >
-          <Image
+          <BloomImage
             source={event.image}
             accessibilityIgnoresInvertColors
-            resizeMode="cover"
+            contentFit="cover"
             style={{ width: '100%', height: '100%' }}
           />
         </View>

@@ -38,6 +38,7 @@ import {
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { Z_INDEX } from '../styles/z-index';
+import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 
 /** The safe-area insets, or zeros outside a `SafeAreaProvider`. */
 export function useShellInsets(): { top: number; right: number; bottom: number; left: number } {
@@ -45,8 +46,7 @@ export function useShellInsets(): { top: number; right: number; bottom: number; 
   // hook THROWS outside a provider, and `AppShell` is mounted at an app's root,
   // where making a previously-optional provider mandatory would be a breaking
   // change for every consumer that never had a bar to inset.
-  const insets = useContext(SafeAreaInsetsContext);
-  return insets ?? { top: 0, right: 0, bottom: 0, left: 0 };
+  return useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS);
 }
 
 /** Pinned to the bottom of the viewport (document scroll) or of the frame. */

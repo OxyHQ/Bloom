@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   AdmonitionContent,
@@ -29,6 +29,7 @@ import { CART_BLOCK_GAP, CART_GEOMETRY, CART_LINE_GAP, CART_METER_HEIGHT } from 
 import { CART_PANEL_MESSAGES } from './messages';
 import { resolveCartPaint, type CartPaint } from './shared';
 import type { CartMinimumOrder, CartPanelProps } from './types';
+import { BloomImage } from '../image';
 
 /**
  * The basket, and what it costs.
@@ -99,9 +100,9 @@ function VendorHeader({
           testID={testID ? `${testID}-vendor-tile` : undefined}
         >
           {uri ? (
-            <Image
+            <BloomImage
               source={{ uri }}
-              resizeMode="cover"
+              contentFit="cover"
               accessibilityIgnoresInvertColors
               style={{ width: '100%', height: '100%' }}
             />

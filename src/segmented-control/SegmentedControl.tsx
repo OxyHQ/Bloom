@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type ComponentRef,
 } from 'react';
 import {
   type GestureResponderEvent,
@@ -256,7 +257,7 @@ export function SegmentedControl<T extends string>({
   const [release, setRelease] = useState(0);
   // Web: ONE tab stop for the whole group — the chosen segment — as the ARIA
   // radio-group and tab patterns require (`hooks/roving-focus.ts`).
-  const groupRef = useRef<View | null>(null);
+  const groupRef = useRef<ComponentRef<typeof View> | null>(null);
   useRovingTabIndex(
     () => groupRef.current as unknown as Element | null,
     SEGMENT,

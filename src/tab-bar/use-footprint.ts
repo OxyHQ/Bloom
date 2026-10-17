@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { windowEdgeGap } from '../layout/edge';
 import { EXPANDED_HEIGHT } from './shared';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 /**
  * The vertical space the tab bar OCCUPIES above the bottom of the window, in
@@ -50,7 +51,7 @@ import { EXPANDED_HEIGHT } from './shared';
  * hide the end of a list the moment the user scrolled back to it.
  */
 export function useTabBarFootprint(): number {
-  const insets = useSafeAreaInsets();
+  const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   // Gap 0: the bar hugs the safe area, the tightest any Bloom surface floats. It
   // is a compact pill, not a panel, and a detached-sheet-sized gap under it would
   // strand it mid-screen. It used to ABSORB 16px of the inset and clamp at a 12px

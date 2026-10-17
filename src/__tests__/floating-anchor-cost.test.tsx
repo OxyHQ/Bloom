@@ -30,7 +30,7 @@
  * cheapness must not buy.
  */
 import React, { Profiler, useRef } from 'react';
-import { act } from 'react';
+import { act, type ComponentRef } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -137,7 +137,10 @@ describe('useAnchorRect', () => {
 
   function Probe({ open = true }: { open?: boolean }) {
     const ref = useRef<HTMLDivElement | null>(null);
-    const anchor = useAnchorRect(ref as unknown as React.RefObject<View | null>, open);
+    const anchor = useAnchorRect(
+      ref as unknown as React.RefObject<ComponentRef<typeof View> | null>,
+      open,
+    );
     anchors.push(anchor);
     return (
       <div

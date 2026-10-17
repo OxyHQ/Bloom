@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { Image, View, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 
 import { AvatarGroup } from '../avatar-group';
 import { Badge } from '../badge';
@@ -14,6 +14,7 @@ import { PLACE_LIST_GEOMETRY, PLACE_LIST_VISIBILITY_ICON } from './constants';
 import { PLACE_LIST_MESSAGES } from './messages';
 import { composePlaceListName, resolvePlaceListPaint } from './shared';
 import type { PlaceListCardProps } from './types';
+import { BloomImage } from '../image';
 
 /**
  * A saved list of places — "Want to go", "Favourites", "Coffee, ranked".
@@ -77,9 +78,9 @@ function PlaceListCardComponent(props: PlaceListCardProps) {
     return (
       <View key={key} style={box}>
         {uri ? (
-          <Image
+          <BloomImage
             source={{ uri }}
-            resizeMode="cover"
+            contentFit="cover"
             accessibilityIgnoresInvertColors
             style={{ width: '100%', height: '100%' }}
           />

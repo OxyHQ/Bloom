@@ -8,7 +8,14 @@
  * the DOM call is synchronous — an async `measureInWindow` callback lands a
  * frame late and the surface visibly jumps into place on open.
  */
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  type ComponentRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { View } from 'react-native';
 
 import type { FloatingAnchor } from './types';
@@ -20,7 +27,7 @@ import { useFrameThrottle } from './use-frame-throttle';
  * interface, so a ref that is NOT a DOM node (a jsdom stub, a native build that
  * reached this file by accident) answers `null` instead of throwing.
  */
-export function rectOf(node: View | null): FloatingAnchor | null {
+export function rectOf(node: ComponentRef<typeof View> | null): FloatingAnchor | null {
   const element = node as unknown as { getBoundingClientRect?: () => DOMRect } | null;
   if (typeof element?.getBoundingClientRect !== 'function') return null;
   const box = element.getBoundingClientRect();
@@ -55,7 +62,7 @@ export function sameAnchor(a: FloatingAnchor | null, b: FloatingAnchor | null): 
  * and only replaces the box when it actually moved.
  */
 export function useAnchorRect(
-  ref: React.RefObject<View | null>,
+  ref: React.RefObject<ComponentRef<typeof View> | null>,
   open: boolean,
 ): FloatingAnchor | null {
   const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);

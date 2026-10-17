@@ -1,11 +1,5 @@
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import {
-  Pressable,
-  type TextInput,
-  View,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
-} from 'react-native';
+import React, { type ComponentRef, useCallback, useEffect, useId, useRef, useState } from 'react';
+import { Pressable, type TextInput, View, type TextInputKeyPressEvent } from 'react-native';
 
 import { useBloomAppearance } from '../appearance';
 import { Button } from '../button';
@@ -65,7 +59,7 @@ import type { PlacePickerLabels, PlacePickerOption, PlacePickerProps } from './t
  */
 
 /** A DOM keyboard event as react-native-web hands it to `onKeyPress`. */
-type WebKeyEvent = TextInputKeyPressEventData & { isComposing?: boolean };
+type WebKeyEvent = TextInputKeyPressEvent['nativeEvent'] & { isComposing?: boolean };
 
 /**
  * React Native's `Role` union has no `listbox`; react-native-web passes the DOM
@@ -106,7 +100,7 @@ export function PlacePicker<Option extends PlacePickerOption = PlacePickerOption
   const { messages } = useMessages(PLACE_PICKER_MESSAGES);
   const labels: Required<PlacePickerLabels> = { ...messages, ...labelsProp };
   const field = useFieldMembership({ accessibilityLabel, label, disabled, invalid, nativeID });
-  const inputRef = useRef<TextInput | null>(null);
+  const inputRef = useRef<ComponentRef<typeof TextInput> | null>(null);
   const reactId = useId();
   const baseId = field.nativeID ?? `bloom-place-picker-${reactId.replace(/:/g, '')}`;
   const listId = `${baseId}-results`;
@@ -141,7 +135,7 @@ export function PlacePicker<Option extends PlacePickerOption = PlacePickerOption
   );
 
   const handleKeyPress = useCallback(
-    (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    (event: TextInputKeyPressEvent) => {
       if (!IS_WEB || !listOpen) return;
       const native = event.nativeEvent as WebKeyEvent;
       // An IME candidate window owns Enter and the arrows while it is open.

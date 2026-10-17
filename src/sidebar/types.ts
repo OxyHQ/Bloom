@@ -1,4 +1,4 @@
-import type { ReactNode, Ref } from 'react';
+import type { ComponentRef, ReactNode, Ref } from 'react';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type {
   StyleProp,
@@ -91,7 +91,7 @@ export interface SidebarItemProps {
   className?: string;
   labelClassName?: string;
   descriptionClassName?: string;
-  ref?: Ref<View>;
+  ref?: Ref<ComponentRef<typeof View>>;
   disabled?: boolean;
   nativeID?: string;
   accessibilityLabel?: string;

@@ -26,6 +26,7 @@ import { VOICE_OVERLAY_FADE_MS } from './constants';
 import { VOICE_MESSAGES } from './messages';
 import type { VoiceOverlayProps } from './types';
 import { VoiceControls } from './VoiceControls';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 /**
  * The panel carries `className`, the safe-area padding AND the fade, so all
@@ -69,10 +70,10 @@ export function VoiceOverlay({
 }: VoiceOverlayProps) {
   const { colors } = useTheme();
   const { messages } = useMessages(VOICE_MESSAGES);
-  const insets = useSafeAreaInsets();
+  const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   const reducedMotion = useReducedMotion();
-  const panelRef = useRef<View>(null);
-  const captionRef = useRef<ScrollView>(null);
+  const panelRef = useRef<React.ComponentRef<typeof View>>(null);
+  const captionRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const [open, setOpen] = useControllableState({
     value: openProp,
     defaultValue: defaultOpen,

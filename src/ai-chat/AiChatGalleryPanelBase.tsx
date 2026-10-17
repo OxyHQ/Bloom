@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import type { ComponentRef } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
+import { BloomImage } from '../image';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -277,10 +279,10 @@ function GenerationTile({
               {...dataHook('bloomAiChatTileImage')}
               style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
             >
-              <Image
+              <BloomImage
                 source={generation.source}
                 accessibilityLabel={generation.prompt}
-                resizeMode="cover"
+                contentFit="cover"
                 style={{ width: '100%', height: '100%' }}
               />
             </View>
@@ -440,8 +442,8 @@ export function AiChatGalleryPanelBase({
   const [toggled, setToggled] = useState<ReadonlySet<string>>(new Set());
   const [flying, setFlying] = useState<ReadonlySet<string>>(new Set());
 
-  const scrollRef = useRef<ScrollView>(null);
-  const contentRef = useRef<View>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const contentRef = useRef<ComponentRef<typeof View>>(null);
   const nodes = useRef(new Map<string, unknown>());
   const boxes = useRef(new Map<string, Box>());
   const register = useCallback((id: string, node: unknown) => {

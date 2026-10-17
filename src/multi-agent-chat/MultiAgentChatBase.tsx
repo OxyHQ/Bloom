@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
 import { Platform, ScrollView, Share, useWindowDimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -110,7 +110,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const [marketItem, setMarketItem] = useState<MarketplaceItem | null>(null);
   const [feedback, setFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const surface = useDialogControl();
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
   const follow = useRef(true);
   const offsets = useRef<Record<string, number>>({});
   const chat: Conversation = workspace.chats.find((c) => c.id === workspace.activeId) ??

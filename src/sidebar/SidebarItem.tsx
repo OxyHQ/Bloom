@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { type ComponentRef, memo } from 'react';
 import { View, type GestureResponderEvent } from 'react-native';
 import { StyledPressable } from '../styles/styled-primitives';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
@@ -62,7 +62,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   testID,
 }) => {
   const palette = useSidebarPalette();
-  const tooltipRef = useBrowserTitle<View>(collapsed ? label : undefined, ref);
+  const tooltipRef = useBrowserTitle<ComponentRef<typeof View>>(collapsed ? label : undefined, ref);
   const metrics = useSidebarMetrics(size);
   useSidebarWebCss();
   const { state: hovered, onIn, onOut } = useInteractionState();

@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useContext, useMemo, useRef } from 'react';
+import { forwardRef, useCallback, useContext, useMemo, useRef, type ComponentRef } from 'react';
 import { Platform, type TextInput } from 'react-native';
 
 import { useFieldMembership } from '../field/membership';
@@ -18,8 +18,12 @@ import { GlyphButton } from '../button';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { RiSearchLine as MagnifyingGlassIcon } from '../icons/remix/RiSearchLine';
 import { RiCloseLine as X } from '../icons/remix/RiCloseLine';
+import type { RefComponent } from '../styles/native-refs';
 
-export const Search = forwardRef<TextInput, SearchProps>(function Search(
+export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> = forwardRef<
+  ComponentRef<typeof TextInput>,
+  SearchProps
+>(function Search(
   {
     value,
     label: labelProp,
@@ -58,7 +62,7 @@ export const Search = forwardRef<TextInput, SearchProps>(function Search(
   // press-driven focus selects the current query once, immediately, and a
   // programmatic focus (autoFocus, `ref.focus()`) selects nothing. Web never
   // selected on focus and still does not.
-  const inputRef = useRef<TextInput | null>(null);
+  const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const refs = useMemo(() => mergeRefs([inputRef, ref]), [ref]);
   const pressedRef = useRef(false);
   const valueRef = useRef(value);

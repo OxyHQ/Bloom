@@ -1,4 +1,5 @@
 import React, {
+  type ComponentRef,
   Children,
   isValidElement,
   memo,
@@ -19,6 +20,7 @@ import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  type KeyDownEvent,
 } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
@@ -170,7 +172,7 @@ const CarouselItemComponent = function CarouselItem({
   const index = useContext(CarouselItemIndexContext);
   const { messages } = useMessages(CAROUSEL_MESSAGES);
   const reportOffset = ctx?.reportOffset;
-  const itemRef = useRef<View>(null);
+  const itemRef = useRef<ComponentRef<typeof View>>(null);
 
   const onLayout = useCallback(
     (event: LayoutChangeEvent) => {
@@ -378,9 +380,9 @@ const CarouselComponent = function Carousel({
   const controlledIndexRef = useRef(controlledIndex);
   controlledIndexRef.current = controlledIndex;
 
-  const scrollRef = useRef<ScrollView>(null);
-  const previousArrowRef = useRef<View>(null);
-  const nextArrowRef = useRef<View>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const previousArrowRef = useRef<ComponentRef<typeof View>>(null);
+  const nextArrowRef = useRef<ComponentRef<typeof View>>(null);
   const offsets = useRef(new Map<string, SlideOffset>());
   const scroll = useRef({ x: 0, contentWidth: 0 });
   const [trackWidth, setTrackWidth] = useState(0);
@@ -722,7 +724,7 @@ const CarouselComponent = function Carousel({
   const arrow = (
     button: React.ReactElement,
     unavailable: boolean,
-    ref: React.RefObject<View | null>,
+    ref: React.RefObject<ComponentRef<typeof View> | null>,
   ) => {
     const hidden = hideUnavailableArrows && unavailable;
     return hideUnavailableArrows || (IS_WEB && arrowsVisibility === 'hover') ? (
@@ -807,19 +809,22 @@ const CarouselComponent = function Carousel({
         {...(IS_WEB
           ? {
               tabIndex: 0,
-              onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
+              // `nativeEvent` holds the key fields under React Native 0.88's
+              // `KeyDownEvent` and, on web, is the browser's KeyboardEvent.
+              onKeyDown: (event: KeyDownEvent) => {
+                const { key, altKey, ctrlKey, metaKey } = event.nativeEvent;
                 if (
                   !ownsTrackKeys ||
                   event.target !== event.currentTarget ||
-                  event.altKey ||
-                  event.ctrlKey ||
-                  event.metaKey
+                  altKey ||
+                  ctrlKey ||
+                  metaKey
                 )
                   return;
-                if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+                if (key !== 'ArrowLeft' && key !== 'ArrowRight') return;
                 event.preventDefault();
                 event.stopPropagation();
-                step((event.key === 'ArrowRight') !== rtl ? 1 : -1);
+                step((key === 'ArrowRight') !== rtl ? 1 : -1);
               },
             }
           : {})}

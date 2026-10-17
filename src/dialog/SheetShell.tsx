@@ -12,7 +12,14 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
  * Consumers needing the same behaviour for app code should use the public
  * `BottomSheet` primitive directly.
  */
-import React, { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
@@ -63,7 +70,7 @@ export function SheetShell({
   // screen-reader focus move here is what gets it right for every one of them
   // instead of four times.
   const [presented, setPresented] = useState(false);
-  const bodyRef = useAccessibilityFocus<View>(presented);
+  const bodyRef = useAccessibilityFocus<ComponentRef<typeof View>>(presented);
 
   const callQueuedCallbacks = useCallback(() => {
     const queued = closeCallbacks.current;

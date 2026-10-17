@@ -91,7 +91,7 @@ it('isolates nested motion contexts and only registers the active scroller', () 
 });
 
 it('keeps pending restored content laid out and forwards the scroll ref', () => {
-  const ref = React.createRef<import('react-native').ScrollView>();
+  const ref = React.createRef<React.ComponentRef<typeof import('react-native').ScrollView>>();
   const tree = render(
     wrap(
       <Screen>

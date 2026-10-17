@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, View, useWindowDimensions, type ViewStyle } from 'react-native';
 
 import { AppShell, useAppShell } from '../../src/app-shell';
 import { Avatar } from '../../src/avatar';
@@ -117,7 +117,7 @@ export function HousingFrame({
     () => ({ collapsed, toggle: () => setCollapsed((c) => !c) }),
     [collapsed],
   );
-  const frame: WebCssStyle = {
+  const frame: ViewStyle = {
     ...TEMPLATE_FRAME,
     backgroundColor: theme.colors.background,
   };

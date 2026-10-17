@@ -53,7 +53,7 @@ const isNative = (): boolean => Platform.OS !== 'web';
  */
 function nodeHandleOf(instance: unknown): number | null {
   if (instance == null) return null;
-  return findNodeHandle(instance as React.Component);
+  return findNodeHandle(instance as React.Component) ?? null;
 }
 
 /**

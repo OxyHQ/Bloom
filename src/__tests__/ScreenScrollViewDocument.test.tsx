@@ -3,7 +3,7 @@
 // container, the window drives the screen, a ref written for native restores
 // the window, and `onEndReached` pages from an end marker observed against the
 // viewport. Outside document mode nothing changes.
-import React, { createRef, useEffect, useRef } from 'react';
+import React, { type ComponentRef, createRef, useEffect, useRef } from 'react';
 import { Platform, View, type ScrollView } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -139,7 +139,7 @@ it('keeps a real scroll view outside document mode', () => {
 });
 
 it('answers the scroll ref with the window', () => {
-  const ref = createRef<ScrollView>();
+  const ref = createRef<ComponentRef<typeof ScrollView>>();
   render(
     wrap(
       <Screen documentScroll>
@@ -171,7 +171,7 @@ it('restores the window through the same ref-based binding a native page uses', 
   };
   const pending: boolean[] = [];
   function Page() {
-    const ref = useRef<ScrollView>(null);
+    const ref = useRef<ComponentRef<typeof ScrollView>>(null);
     const restoration = useScrollRestoration(ref);
     pending.push(restoration.restorePending);
     return (

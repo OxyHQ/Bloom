@@ -59,7 +59,6 @@ function MapSearchAreaButtonComponent(props: MapSearchAreaButtonProps) {
     backgroundColor: hovered && !disabled ? paint.hoverSurface : paint.surface,
     opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-map-ring': paint.ring,
-    ...bloomShadowStyle('m'),
   };
 
   const text = (label: string) => (
@@ -83,7 +82,7 @@ function MapSearchAreaButtonComponent(props: MapSearchAreaButtonProps) {
         onHoverIn={onIn}
         onHoverOut={onOut}
         testID={testID}
-        style={[pillStyle, style]}
+        style={[pillStyle, bloomShadowStyle('m'), style]}
       >
         <CheckboxGlyph
           size="md"
@@ -110,7 +109,7 @@ function MapSearchAreaButtonComponent(props: MapSearchAreaButtonProps) {
       onHoverIn={onIn}
       onHoverOut={onOut}
       testID={testID}
-      style={[pillStyle, style]}
+      style={[pillStyle, bloomShadowStyle('m'), style]}
     >
       <RiSearchLine width={16} height={16} fill={paint.label} />
       {text(label)}

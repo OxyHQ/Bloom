@@ -8,7 +8,8 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { parseRgba } from '../theme/color-utils';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Image, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { Avatar } from '../avatar';
@@ -153,7 +154,7 @@ function useEntrance(enabled: boolean) {
         outputRange: [`blur(${MENU_MOTION_BLUR}px)`, 'blur(0px)'],
       });
     }
-    return style as Animated.WithAnimatedObject<WebCssStyle>;
+    return style as Animated.WithAnimatedValue<WebCssStyle>;
   }, [animate, settled, progress]);
 }
 
@@ -245,10 +246,10 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
       style={[styles.cover, { backgroundColor: palette.cover }]}
     >
       {coverUri ? (
-        <Image
+        <BloomImage
           source={{ uri: coverUri }}
           style={styles.coverImage}
-          resizeMode="cover"
+          contentFit="cover"
           accessibilityIgnoresInvertColors
         />
       ) : null}

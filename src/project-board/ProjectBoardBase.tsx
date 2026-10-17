@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { type ComponentRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Platform,
@@ -227,16 +227,16 @@ export function ProjectBoardBase({
   const [detailId, setDetailId] = useState<string | null>(initialTicketId ?? null);
   const nextTicket = useRef(90);
   const [sequence, setSequence] = useState(90);
-  const columnNodes = useRef<Record<string, View | null>>({});
-  const ticketNodes = useRef<Record<string, View | null>>({});
+  const columnNodes = useRef<Record<string, ComponentRef<typeof View> | null>>({});
+  const ticketNodes = useRef<Record<string, ComponentRef<typeof View> | null>>({});
   const columnRects = useRef<Record<string, BoardRect>>({});
   const ticketRects = useRef<Record<string, BoardRect>>({});
-  const scrollView = useRef<ScrollView>(null);
-  const columnScrolls = useRef<Record<string, ScrollView | null>>({});
+  const scrollView = useRef<ComponentRef<typeof ScrollView>>(null);
+  const columnScrolls = useRef<Record<string, ComponentRef<typeof ScrollView> | null>>({});
   const scrollX = useRef(0);
   const columnScrollY = useRef<Record<string, number>>({});
   const boardRect = useRef<BoardRect | null>(null);
-  const boardNode = useRef<View>(null);
+  const boardNode = useRef<ComponentRef<typeof View>>(null);
   const [activeTicket, setActiveTicket] = useState<ProjectTicket | null>(null);
   const [droppingId, setDroppingId] = useState<string | null>(null);
   const activeId = useRef<string | null>(null);
@@ -953,7 +953,7 @@ function DraggableTicket({
   paintStyle: AnimatedStyle<ViewStyle>;
   onHeight: (height: number) => void;
   target: boolean;
-  register: (node: View | null) => void;
+  register: (node: ComponentRef<typeof View> | null) => void;
   onLayout: () => void;
   onOpen: () => void;
   onStart: (x: number, y: number) => void;

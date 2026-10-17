@@ -46,7 +46,13 @@ export function useCardMotion({
   exit: CardMotionPose;
   exitEasing: (value: number) => number;
   onExited?: () => void;
-}) {
+}): {
+  // Annotated: inferred, the declaration would spell RN 0.88's expanded colour
+  // union (`NativeColorValue`), a name RN 0.86's types do not export.
+  style: Animated.WithAnimatedValue<WebCssStyle>;
+  dismiss: () => void;
+  gone: boolean;
+} {
   const reducedMotion = useReducedMotion();
   const animateIntro = introDelay !== undefined && !reducedMotion;
   const enter = useRef(new Animated.Value(animateIntro ? 0 : 1)).current;
@@ -96,7 +102,7 @@ export function useCardMotion({
     });
   }, [reducedMotion, enter, leave, exit.duration, exitEasing]);
 
-  const style = useMemo((): Animated.WithAnimatedObject<WebCssStyle> => {
+  const style = useMemo((): Animated.WithAnimatedValue<WebCssStyle> => {
     const lerp = (value: Animated.Value, from: number, to: number) =>
       value.interpolate({ inputRange: [0, 1], outputRange: [from, to] });
     const animated: Record<string, unknown> = {
@@ -120,7 +126,7 @@ export function useCardMotion({
         outputRange: ['blur(0px)', 'blur(10px)'],
       });
     }
-    return animated as Animated.WithAnimatedObject<WebCssStyle>;
+    return animated as Animated.WithAnimatedValue<WebCssStyle>;
   }, [enter, leave, intro, exit]);
 
   return { style, dismiss, gone };

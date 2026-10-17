@@ -8,14 +8,13 @@
  * app owns drafts per conversation and a composer that kept its own would lose
  * them on every navigation.
  */
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, useCallback, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   TextInput,
   View,
-  type NativeSyntheticEvent,
-  type TextInputContentSizeChangeEventData,
-  type TextInputKeyPressEventData,
+  type TextInputContentSizeChangeEvent,
+  type TextInputKeyPressEvent,
 } from 'react-native';
 import Animated, {
   Easing,
@@ -111,7 +110,7 @@ export function createChatComposer({
   }
 
   /** A DOM keyboard event as react-native-web hands it to `onKeyPress`. */
-  type WebKeyEvent = TextInputKeyPressEventData & {
+  type WebKeyEvent = TextInputKeyPressEvent['nativeEvent'] & {
     shiftKey?: boolean;
     metaKey?: boolean;
     ctrlKey?: boolean;
@@ -180,9 +179,9 @@ export function createChatComposer({
       onChange: onValueChange,
     });
 
-    const localRef = useRef<TextInput | null>(null);
+    const localRef = useRef<ComponentRef<typeof TextInput> | null>(null);
     const setFieldRef = useCallback(
-      (node: TextInput | null) => {
+      (node: ComponentRef<typeof TextInput> | null) => {
         localRef.current = node;
         if (inputRef) inputRef.current = node;
       },
@@ -217,13 +216,10 @@ export function createChatComposer({
       onMeasure: setContentHeight,
     });
 
-    const onContentSizeChange = useCallback(
-      (event: NativeSyntheticEvent<TextInputContentSizeChangeEventData>) => {
-        if (IS_WEB) return;
-        setContentHeight(event.nativeEvent.contentSize.height);
-      },
-      [],
-    );
+    const onContentSizeChange = useCallback((event: TextInputContentSizeChangeEvent) => {
+      if (IS_WEB) return;
+      setContentHeight(event.nativeEvent.contentSize.height);
+    }, []);
 
     const trimmed = text.trim();
     const hasAttachments = !!attachments && attachments.length > 0;
@@ -240,7 +236,7 @@ export function createChatComposer({
     const openSuggestions = !!suggestions && suggestions.length > 0;
 
     const onKeyPress = useCallback(
-      (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+      (event: TextInputKeyPressEvent) => {
         if (!IS_WEB) return;
         const native = event.nativeEvent as WebKeyEvent;
         // An IME candidate window is using the same keys; committing a

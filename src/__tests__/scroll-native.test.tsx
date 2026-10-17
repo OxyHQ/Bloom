@@ -56,9 +56,9 @@ class FrameScheduler {
       this.queue.set(id, cb);
       return id;
     }) as typeof globalThis.requestAnimationFrame;
-    globalThis.cancelAnimationFrame = (id: number): void => {
+    globalThis.cancelAnimationFrame = ((id: number): void => {
       this.queue.delete(id);
-    };
+    }) as typeof globalThis.cancelAnimationFrame;
   }
 
   flushOneFrame(): void {

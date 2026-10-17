@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { type ComponentRef, useContext, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -59,8 +59,8 @@ export function ScrollAreaBar({
   const color = useContext(BloomThemeContext)?.theme.colors.textTertiary ?? '#888888';
   const reduced = useReducedMotion();
   const rtl = useIsRtl();
-  const track = useRef<View>(null);
-  const thumb = useRef<View>(null);
+  const track = useRef<ComponentRef<typeof View>>(null);
+  const thumb = useRef<ComponentRef<typeof View>>(null);
   const [scrollable, setScrollable] = useState(false);
   const [lingering, setLingering] = useState(false);
   const [inside, setInside] = useState(false);

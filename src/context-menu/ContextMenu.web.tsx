@@ -6,7 +6,7 @@
  * Everything below the anchor — portal, overlay rank, dismiss layer, placement —
  * is `floating/FloatingPanel`, shared with the other three anchored families.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';
@@ -65,7 +65,7 @@ export function ContextMenuTrigger({
   testID,
 }: ContextMenuTriggerProps) {
   const menu = useContextMenu();
-  const wrapperRef = useRef<View | null>(null);
+  const wrapperRef = useRef<ComponentRef<typeof View> | null>(null);
   const { openAt, focusIntent } = menu;
   // Focus returns here when the menu closes with it inside (`menu-keyboard.ts`).
   useReturnFocusOnClose(wrapperRef, menu.open, isInMenuSurface);
@@ -146,7 +146,7 @@ export function ContextMenuContent({
     [menu.close],
   );
   const onDismiss = useCallback(() => menu.close(), [menu]);
-  const [panel, setPanel] = useState<View | null>(null);
+  const [panel, setPanel] = useState<ComponentRef<typeof View> | null>(null);
   useMenuPanelKeys(hostElement(panel), {
     open: menu.open,
     onTab: onDismiss,

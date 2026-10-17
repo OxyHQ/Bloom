@@ -1,4 +1,12 @@
-import { useEffect, useId, useRef, useState, type ComponentType, type Ref } from 'react';
+import {
+  type ComponentRef,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ComponentType,
+  type Ref,
+} from 'react';
 import { Platform, type View, type ViewProps } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -25,7 +33,7 @@ import { svgA11yProps } from '../styles/svg-a11y';
 type ListboxViewProps = Omit<ViewProps, 'role'> & {
   role: 'listbox';
   'aria-activedescendant'?: string;
-  ref?: Ref<View>;
+  ref?: Ref<ComponentRef<typeof View>>;
 };
 const ListboxView = StyledView as unknown as ComponentType<ListboxViewProps>;
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
@@ -122,7 +130,7 @@ export function ShapeArc({
     onSelect(choices[wrap(slot, choices.length)]!.id);
   };
   const id = useId();
-  const ref = useRef<View>(null);
+  const ref = useRef<ComponentRef<typeof View>>(null);
   const initial = Math.max(
     0,
     choices.findIndex((choice) => choice.id === value),

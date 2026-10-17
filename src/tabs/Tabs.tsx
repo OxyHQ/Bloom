@@ -1,6 +1,7 @@
 import { webDataSet } from '../styles/web-data';
 import type React from 'react';
 import {
+  type ComponentRef,
   createContext,
   forwardRef,
   memo,
@@ -18,6 +19,7 @@ import {
   StyleSheet,
   type LayoutRectangle,
   type TextStyle,
+  type KeyDownEvent,
 } from 'react-native';
 import Animated, {
   Easing,
@@ -444,8 +446,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   const triggerMeasuresRef = useRef(new Map<string, TriggerMeasure>());
   const remeasureScheduledRef = useRef(false);
   const indicatorPlacedRef = useRef(false);
-  const scrollRef = useRef<ScrollView>(null);
-  const stripRef = useRef<View>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const stripRef = useRef<ComponentRef<typeof View>>(null);
   const viewportWidthRef = useRef(0);
   // The value the underline currently belongs to, from EITHER path. A ref
   // because the layout callback below must see the latest selection without
@@ -895,7 +897,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   // the strip has no way to reach a child it did not create — it receives them
   // as `children` — and because a trigger is the only thing that knows its own
   // value, which is what the geometry has to be keyed by.
-  const nodeRef = useRef<View | null>(null);
+  const nodeRef = useRef<ComponentRef<typeof View> | null>(null);
   const measureSelf = useCallback<TriggerMeasure>((report) => {
     nodeRef.current?.measure((x, _y, width) => {
       report({ x, width });
@@ -933,18 +935,23 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     () =>
       IS_WEB
         ? {
-            onKeyDown: (event: {
-              key: string;
-              currentTarget: unknown;
-              preventDefault: () => void;
-            }) => {
-              handleRovingKeyDown(event, {
-                selector: TRIGGER,
-                owner: STRIP,
-                orientation: 'horizontal',
-                homeEnd: true,
-                activate: activation,
-              });
+            // `nativeEvent.key` under React Native 0.88's `KeyDownEvent`; on
+            // web `nativeEvent` is the browser's KeyboardEvent.
+            onKeyDown: (event: KeyDownEvent) => {
+              handleRovingKeyDown(
+                {
+                  key: event.nativeEvent.key,
+                  currentTarget: event.currentTarget,
+                  preventDefault: () => event.preventDefault(),
+                },
+                {
+                  selector: TRIGGER,
+                  owner: STRIP,
+                  orientation: 'horizontal',
+                  homeEnd: true,
+                  activate: activation,
+                },
+              );
             },
           }
         : {},

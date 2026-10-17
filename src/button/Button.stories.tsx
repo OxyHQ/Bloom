@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { type ComponentRef, useState } from 'react';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { View, Text as TextForCounter } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -344,7 +344,7 @@ export const ClassNameAuthority: Story = {
 export const FocusKeyboardHover: Story = {
   parameters: { controls: { disable: true } },
   render: function EventComposition() {
-    const refs = React.useRef<Array<View | null>>([]);
+    const refs = React.useRef<Array<ComponentRef<typeof View> | null>>([]);
     const [selected, setSelected] = useState(-1);
     const [preview, setPreview] = useState(-1);
     const [presses, setPresses] = useState(0);

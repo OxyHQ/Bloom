@@ -247,7 +247,7 @@ interface DayCellProps {
   hue: HueResolver;
   moreEvents: CalendarMessages['moreEvents'];
   onHighlightEnd: () => void;
-  onSelectEvent: (event: CalendarViewEvent, card: View | null) => void;
+  onSelectEvent: (event: CalendarViewEvent, card: React.ComponentRef<typeof View> | null) => void;
   testID?: string;
 }
 
@@ -268,7 +268,7 @@ const DayCell = memo(function DayCell({
   onSelectEvent,
   testID,
 }: DayCellProps) {
-  const card = useRef<View>(null);
+  const card = useRef<React.ComponentRef<typeof View>>(null);
   const dense = breakpoint === 'base';
   const { visible, hidden } = visibleEvents(events);
   // The last dense row has no hairline under it, so its card takes that pixel.
@@ -407,7 +407,7 @@ export function CalendarViewMonthGrid({
   // `selected` outlives `open`, so the panel keeps its content while it animates out.
   const [selected, setSelected] = useState<CalendarViewEvent | null>(null);
   const [open, setOpen] = useState(false);
-  const anchorRef = useRef<View | null>(null);
+  const anchorRef = useRef<React.ComponentRef<typeof View> | null>(null);
   const popover = useMemo(() => ({ open, setOpen, anchorRef }), [open]);
 
   useEffect(() => {
@@ -415,7 +415,7 @@ export function CalendarViewMonthGrid({
   }, []);
 
   const handleSelect = useCallback(
-    (event: CalendarViewEvent, card: View | null) => {
+    (event: CalendarViewEvent, card: React.ComponentRef<typeof View> | null) => {
       onSelectEvent?.(event);
       if (!showEventDetails) return;
       anchorRef.current = card;

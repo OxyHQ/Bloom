@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react';
 import type { TextInput, TextInputProps, StyleProp, ViewStyle } from 'react-native';
 
 import type { ViewStyleProp, TextStyleProp } from '../styles';
@@ -51,5 +52,7 @@ export type TextareaProps = Omit<
     fieldClassName?: string;
     inputClassName?: string;
     fieldStyle?: StyleProp<ViewStyle>;
-    inputRef?: React.RefObject<TextInput | null> | React.ForwardedRef<TextInput>;
+    inputRef?:
+      | React.RefObject<ComponentRef<typeof TextInput> | null>
+      | React.ForwardedRef<ComponentRef<typeof TextInput>>;
   };

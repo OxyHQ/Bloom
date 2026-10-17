@@ -14,7 +14,9 @@ export function useScrollMetricsBinding({
   onScroll,
   onLayout,
   onContentSizeChange,
-}: ScrollMetricsBindingOptions = {}) {
+}: ScrollMetricsBindingOptions = {}): Required<
+  Pick<ScrollViewProps, 'onScroll' | 'onLayout' | 'onContentSizeChange' | 'scrollEventThrottle'>
+> {
   const metrics = useScrollMetricsValue();
   // Reanimated types its processed handler as a function, but returns an object.
   // Reject that mismatch before an event instead of attempting to call it on JS.

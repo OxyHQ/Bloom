@@ -2,7 +2,8 @@ import { useCardFill } from '../card/use-card-fill';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { Card } from '../card/Card';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Image, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+import { Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -170,7 +171,11 @@ function TripCardComponent({
           }}
         >
           {uri ? (
-            <Image source={{ uri }} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
+            <BloomImage
+              source={{ uri }}
+              contentFit="cover"
+              style={{ width: '100%', height: '100%' }}
+            />
           ) : null}
         </View>
         <View

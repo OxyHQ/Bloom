@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, type ComponentRef } from 'react';
 import { type View } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -11,6 +11,7 @@ import Animated, {
 import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
 import { StyledPressable } from '../styles/styled-primitives';
 import type { PressableScaleProps } from './types';
+import type { RefComponent } from '../styles/native-refs';
 
 /** Press-in / press-out timing, in ms. */
 const DURATION = 100;
@@ -40,7 +41,10 @@ const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
  * Honours the OS "reduce motion" setting and disables the effect on non-touch
  * web pointers.
  */
-export const PressableScale = forwardRef<View, PressableScaleProps>(function PressableScale(
+export const PressableScale: RefComponent<PressableScaleProps> = forwardRef<
+  ComponentRef<typeof View>,
+  PressableScaleProps
+>(function PressableScale(
   { targetScale = 0.98, className, style, onPressIn, onPressOut, ...rest },
   ref,
 ) {

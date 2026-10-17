@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react-native';
+import type { ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import { useAvatarFlights } from '../use-avatar-flights';
@@ -7,7 +8,7 @@ import type { AvatarFlightSpec } from '../types';
 const node = (x: number, y: number, w: number, h: number) =>
   ({
     measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) => cb(x, y, w, h),
-  }) as View;
+  }) as ComponentRef<typeof View>;
 
 const character = { shape: 'blob' } as unknown as AvatarFlightSpec['character'];
 const spec = (key: string, from: string, to: string): AvatarFlightSpec => ({

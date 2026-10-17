@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import type { ComponentType } from 'react';
+import type { ComponentRef, ComponentType } from 'react';
 import type { ScrollView } from 'react-native';
 import { StyledScrollView, StyledView } from '../styles/styled-primitives';
 import { ScrollBar } from './ScrollBar.web';
@@ -32,9 +32,9 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
     onContentSizeChange,
     scrollEventThrottle,
   });
-  const scroller = useRef<ScrollView | null>(null);
+  const scroller = useRef<ComponentRef<typeof ScrollView> | null>(null);
   const attach = useCallback(
-    (node: ScrollView | null) => {
+    (node: ComponentRef<typeof ScrollView> | null) => {
       scroller.current = node;
       if (typeof ref === 'function') ref(node);
       else if (ref) ref.current = node;

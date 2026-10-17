@@ -1,5 +1,6 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, {
+  type ComponentRef,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -48,6 +49,7 @@ import { useMessages } from '../locale/messages';
 import { SETTINGS_MODAL_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 /**
  * A settings modal.
@@ -143,7 +145,7 @@ export function SettingsModal({
   labels,
   testID,
 }: SettingsModalProps) {
-  const panelRef = useRef<View>(null);
+  const panelRef = useRef<ComponentRef<typeof View>>(null);
   const common = useCommonMessages();
   const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   useSettingsWebCss();
@@ -173,7 +175,7 @@ export function SettingsModal({
   const layout = settingsLayoutFor(vw);
   const layoutRef = useRef(layout);
   layoutRef.current = layout;
-  const insets = useSafeAreaInsets();
+  const insets = useCssSafeAreaInsets(useSafeAreaInsets());
 
   // `compact` layout is two levels: the section list, then a page pushed over it.
   const [compactPageOpen, setCompactPageOpen] = useState(initialView === 'page');
@@ -790,7 +792,7 @@ function PageScroller({
     },
     [scrollY],
   );
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   // The keyboard slides over an edge-to-edge modal: pad by it, and bring the
   // focused field up above it.
   const keyboardHeight = useKeyboardReveal(scrollRef, scrollY, !IS_WEB);

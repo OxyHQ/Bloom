@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { type ComponentRef, useRef } from 'react';
 import { ScrollView, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ViewportProvider, useViewportBinding, useInView } from './index';
@@ -40,7 +40,7 @@ export const DocumentReveal: Story = {
   ),
 };
 function BoundScroll() {
-  const viewportRef = useRef<ScrollView>(null);
+  const viewportRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const binding = useViewportBinding({ viewportRef });
   return (
     <ScrollView

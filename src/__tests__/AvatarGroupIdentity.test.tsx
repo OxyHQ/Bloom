@@ -22,6 +22,13 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { AvatarGroup } from '../avatar-group';
 import type { AvatarGroupItem } from '../avatar-group';
 
+/**
+ * The host a drawn avatar image renders as. Bloom draws every raster through
+ * `image/BloomImage`, which is expo-image on a device — jest's `Platform.OS` is
+ * `ios`, so that is `__mocks__/expo-image.ts`'s host, not react-native's `Image`.
+ */
+const IMAGE_HOST = 'ExpoImage';
+
 function renderGroup(items: AvatarGroupItem[]) {
   return render(
     <BloomThemeProvider>
@@ -69,7 +76,7 @@ describe('AvatarGroup identity resolution', () => {
     // image and no initial at all.
     const rendered = renderGroup([{ id: '1', displayName: '', username: 'hopper' }]);
     expect(rendered.getByText('H')).toBeTruthy();
-    expect(hostsOfType(rendered.toJSON(), 'Image')).toHaveLength(0);
+    expect(hostsOfType(rendered.toJSON(), IMAGE_HOST)).toHaveLength(0);
   });
 
   it('falls through to the handle when displayName is WHITESPACE ONLY', () => {
@@ -77,7 +84,7 @@ describe('AvatarGroup identity resolution', () => {
     // not have caught it either. `.trim()` is what does.
     const rendered = renderGroup([{ id: '1', displayName: '   ', username: 'zoe' }]);
     expect(rendered.getByText('Z')).toBeTruthy();
-    expect(hostsOfType(rendered.toJSON(), 'Image')).toHaveLength(0);
+    expect(hostsOfType(rendered.toJSON(), IMAGE_HOST)).toHaveLength(0);
   });
 
   it('prefers displayName over name, and name over the handle', () => {
@@ -99,7 +106,7 @@ describe('AvatarGroup identity resolution', () => {
     // "no Image" only means "the initial rendered" if an Image is what appears
     // when it does not.
     const rendered = renderGroup([{ id: '1', displayName: '  ', username: '   ' }]);
-    expect(hostsOfType(rendered.toJSON(), 'Image')).toHaveLength(1);
+    expect(hostsOfType(rendered.toJSON(), IMAGE_HOST)).toHaveLength(1);
   });
 
   it('trims the handle in the accessibility label too', () => {

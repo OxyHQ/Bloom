@@ -160,7 +160,7 @@ interface DayCellProps {
   palette: CalendarPalette;
   onPress: (date: Date) => void;
   onHover: (date: Date | null) => void;
-  registerNode: (key: string, node: View | null) => void;
+  registerNode: (key: string, node: React.ComponentRef<typeof View> | null) => void;
   testID?: string;
 }
 
@@ -291,7 +291,7 @@ export interface CalendarMonthProps {
   onPressDay: (date: Date) => void;
   onHoverDay: (date: Date | null) => void;
   onKeyDown: (key: string, preventDefault: () => void) => void;
-  registerNode: (key: string, node: View | null) => void;
+  registerNode: (key: string, node: React.ComponentRef<typeof View> | null) => void;
   accessibilityLabel?: string;
   /** The chevrons' names, already localised by the calendar. */
   previousLabel: string;
@@ -299,10 +299,22 @@ export interface CalendarMonthProps {
   testID?: string;
 }
 
-/** `onKeyDown` is forwarded by react-native-web and absent from React Native's `View` type. */
+/**
+ * `onKeyDown` as both platforms deliver it: react-native-web forwards the DOM
+ * event (`event.key`); React Native 0.88 types a native `KeyDownEvent` on `View`
+ * whose key is `event.nativeEvent.key`. Read it with {@link keyOf}.
+ */
 type WebKeyProps = {
-  onKeyDown?: (event: { key: string; preventDefault: () => void }) => void;
+  onKeyDown?: (event: {
+    key?: string;
+    nativeEvent?: { key?: string };
+    preventDefault: () => void;
+  }) => void;
 };
+
+function keyOf(event: { key?: string; nativeEvent?: { key?: string } }): string {
+  return event.key ?? event.nativeEvent?.key ?? '';
+}
 
 export function CalendarMonth({
   month,
@@ -332,7 +344,7 @@ export function CalendarMonth({
   const weeks = buildMonthGrid(month, weekStartsOn);
   const headerText: TextStyle = BODY_MEDIUM;
   const keyProps: WebKeyProps = {
-    onKeyDown: (event) => onKeyDown(event.key, () => event.preventDefault()),
+    onKeyDown: (event) => onKeyDown(keyOf(event), () => event.preventDefault()),
   };
 
   return (

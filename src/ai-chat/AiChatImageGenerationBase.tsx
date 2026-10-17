@@ -1,5 +1,6 @@
 import React, { createElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
+import { BloomImage } from '../image';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -641,10 +642,10 @@ export function AiChatImageGenerationBase({
               pointerEvents="none"
               style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
             >
-              <Image
+              <BloomImage
                 source={source}
                 accessibilityLabel={alt}
-                resizeMode="cover"
+                contentFit="cover"
                 style={{ width: '100%', height: '100%' }}
               />
             </View>
@@ -656,10 +657,10 @@ export function AiChatImageGenerationBase({
                 nativeRevealStyle,
               ]}
             >
-              <Image
+              <BloomImage
                 source={source}
                 accessibilityLabel={alt}
-                resizeMode="cover"
+                contentFit="cover"
                 style={{ width: '100%', height: '100%' }}
               />
             </Animated.View>

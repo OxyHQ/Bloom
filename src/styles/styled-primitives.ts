@@ -22,22 +22,36 @@
  * versions stay unanimated so an element type is not created twice for the same
  * primitive. `button/Button.tsx` is the reference.
  */
-import type { ComponentType, ForwardRefExoticComponent, Ref, RefAttributes } from 'react';
+import type { ComponentRef, ComponentType, ReactNode, Ref } from 'react';
 import {
-  Image,
   Pressable,
   ScrollView,
   Text,
   View,
-  type ImageProps,
+  type ImageStyle,
   type PressableProps,
   type ScrollViewProps,
   type StyleProp,
   type TextProps,
+  type TextStyle,
   type ViewProps,
   type ViewStyle,
 } from 'react-native';
 import { styled } from 'react-native-css';
+import { BloomImage, type BloomImageProps } from '../image';
+
+/**
+ * What `styled()` is TOLD each primitive accepts: `style`, and nothing else.
+ *
+ * `styled()` derives its mapping type from a dot-path union over the wrapped
+ * component's ENTIRE prop type. Under React Native 0.88's strict TypeScript API
+ * that union overflows the checker for `View` and `Pressable` alike
+ * (`TS2590: union type that is too complex to represent`), and the mapping only
+ * ever names `style` (and `contentContainerStyle`). The full prop type each
+ * wrapper publishes is the annotation on its export below — a component that
+ * takes `{ style }` is assignable to one that takes more.
+ */
+type StyleTarget<S, Required = unknown> = (props: Required & { style?: StyleProp<S> }) => ReactNode;
 
 /**
  * `styled()` derives its mapping type from a dot-path union over the wrapped
@@ -101,7 +115,7 @@ export interface WebAriaProps {
  */
 export type StyledPressableProps = StyledPressableBase &
   WebAriaProps & {
-    ref?: Ref<View>;
+    ref?: Ref<ComponentRef<typeof View>>;
   };
 
 /**
@@ -111,32 +125,40 @@ export type StyledPressableProps = StyledPressableBase &
  * measured node (a flyout's scroll box, a select option) a compile error while
  * the runtime forwarded it fine.
  */
-export const StyledView: ComponentType<ViewProps & { ref?: Ref<View> }> = styled(View, {
-  className: 'style',
-});
+export const StyledView: ComponentType<ViewProps & { ref?: Ref<ComponentRef<typeof View>> }> =
+  styled(View as StyleTarget<ViewStyle>, { className: 'style' });
 
-export const StyledText: ComponentType<TextProps & { ref?: Ref<Text> }> = styled(Text, {
-  className: 'style',
-});
+export const StyledText: ComponentType<TextProps & { ref?: Ref<ComponentRef<typeof Text>> }> =
+  styled(Text as StyleTarget<TextStyle>, { className: 'style' });
 
-export const StyledImage: ComponentType<ImageProps & { ref?: Ref<Image> }> = styled(Image, {
-  className: 'style',
-});
+/**
+ * `className` for {@link BloomImage} — Bloom's one raster renderer (expo-image
+ * on a device), never react-native's `Image` directly.
+ */
+export const StyledImage: ComponentType<BloomImageProps> = styled(
+  BloomImage as StyleTarget<ImageStyle, Pick<BloomImageProps, 'source'>>,
+  { className: 'style' },
+);
 
-const PressableBase: ForwardRefExoticComponent<StyledPressableBase & RefAttributes<View>> =
-  Pressable;
-export const StyledPressable: ComponentType<StyledPressableProps> = styled(PressableBase, {
-  className: 'style',
-});
+export const StyledPressable: ComponentType<StyledPressableProps> = styled(
+  Pressable as StyleTarget<ViewStyle>,
+  { className: 'style' },
+);
 
 /** `className` and `contentContainerClassName` for a ScrollView; `ref` as on the others. */
 export const StyledScrollView: ComponentType<
   ScrollViewProps & {
     className?: string;
     contentContainerClassName?: string;
-    ref?: Ref<ScrollView>;
+    ref?: Ref<ComponentRef<typeof ScrollView>>;
   }
-> = styled(ScrollView, {
-  className: 'style',
-  contentContainerClassName: 'contentContainerStyle',
-});
+> = styled(
+  ScrollView as (props: {
+    style?: StyleProp<ViewStyle>;
+    contentContainerStyle?: StyleProp<ViewStyle>;
+  }) => ReactNode,
+  {
+    className: 'style',
+    contentContainerClassName: 'contentContainerStyle',
+  },
+);

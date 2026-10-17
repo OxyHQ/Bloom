@@ -1,4 +1,5 @@
 import { useCallback, useContext, useId, useMemo } from 'react';
+import type { Animated } from 'react-native';
 import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
 import { AccordionContext } from './context';
 import type { AccordionProps } from './types';
@@ -46,7 +47,7 @@ export function useAccordionMotion(
   expanded: boolean,
   kind: 'trigger' | 'content',
   useNativeDriver: boolean,
-) {
+): Animated.Value {
   const { transition } = useContext(AccordionContext);
   return useCollapsibleMotion(expanded, transition, kind, useNativeDriver).progress;
 }

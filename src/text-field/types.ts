@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react';
 import type { TextInput, TextInputProps } from 'react-native';
 
 import type { ViewStyleProp, TextStyleProp } from '../styles';
@@ -46,7 +47,9 @@ export type TextFieldInputProps = Omit<TextInputProps, 'value' | 'onChangeText' 
   disabled?: boolean;
   /** Size of the self-wrapped field when rendered without a `TextField`. */
   size?: TextFieldSize;
-  inputRef?: React.RefObject<TextInput | null> | React.ForwardedRef<TextInput>;
+  inputRef?:
+    | React.RefObject<ComponentRef<typeof TextInput> | null>
+    | React.ForwardedRef<ComponentRef<typeof TextInput>>;
   placeholder?: string | null | undefined;
   /**
    * Render the field with a Material-style floating label. When `true`, the

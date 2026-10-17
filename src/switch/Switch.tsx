@@ -12,6 +12,7 @@ import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { useFieldMembership } from '../field/membership';
 import type { SwitchProps } from './types';
+import type { MemoRefComponent } from '../styles/native-refs';
 
 const TRACK = {
   xs: { w: 30, h: 18 },
@@ -183,7 +184,9 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
 
 SwitchComponent.displayName = 'Switch';
 
-export const Switch = memo(SwitchComponent);
+export const Switch: MemoRefComponent<SwitchProps, React.ComponentRef<typeof Pressable>> = memo(
+  SwitchComponent,
+);
 
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
 

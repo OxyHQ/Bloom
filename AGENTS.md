@@ -179,6 +179,12 @@ Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub
 - **RTL: CSS-spelled logical insets, root `useDirectionProps()`, signs via `useIsRtl`.** RNW resolves logical keys against a `dir` PROP, not `<html dir>` (none = LTR physical). RN `paddingStart` in a reanimated mapper is DROPPED on web. Transforms/floating `side` never mirror. Gate `app-shell-rtl-census.test.ts`; `docs/app-shell.mdx`.
 - Caller className replaces defaults and strips chrome: defaults belong in resolved-token inline style. Jest sees structure, not CSS/native resolution; press animation needs device build.
 
+## Images, refs, insets (RN 0.88 / Expo SDK 58)
+
+- **Raster images render through `image/BloomImage` only** (expo-image native via optional `require`, RN `Image` web/fallback): apps may drop Android GIF/WebP decoders only if nothing draws through RN `Image`. Gate `image-renderer.test.ts`.
+- **Refs are `ComponentRef<typeof View>`, never `View`/`ViewInstance`** (0.88 `View` names the function; 0.86 lacks `*Instance`). Exported components annotate with `styles/native-refs.ts`, else emit fails TS2742.
+- **Insets go through `useCssSafeAreaInsets(...)`:** SDK 58 Expo Router gives web ZERO insets; it raises them to CSS `env(safe-area-inset-*)`.
+
 ## ImageResolver
 
 Pure JS, universal. `ImageResolver = (id, variant?) => string | undefined`; `Avatar` calls it only for a non-URL string `source` (URLs/`{uri}` pass through). Consumer wiring: `~/Oxy/AGENTS.md`.

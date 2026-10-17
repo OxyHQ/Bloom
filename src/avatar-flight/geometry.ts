@@ -1,9 +1,12 @@
+import type { ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import type { AvatarRect } from './types';
 
 /** A measurement is only trusted when it is finite and has a size: an unmounted node reports zeros. */
-export function measureAvatar(node: View | undefined): Promise<AvatarRect | null> {
+export function measureAvatar(
+  node: ComponentRef<typeof View> | undefined,
+): Promise<AvatarRect | null> {
   return new Promise((resolve) => {
     if (!node?.measureInWindow) {
       resolve(null);

@@ -44,6 +44,10 @@ function MapClusterMarkerComponent({
 
   const active = state === 'active';
 
+  // The elevation is composed in the style array, not spread in here: it is a
+  // `ViewStyle`, which React Native 0.88 types wider than `WebCssStyle` (its
+  // `backgroundImage`), and the two share no key, so the order is unchanged.
+  // The other map-marker surfaces do the same.
   const bubbleStyle: WebCssStyle = {
     alignItems: 'center',
     justifyContent: 'center',
@@ -56,7 +60,6 @@ function MapClusterMarkerComponent({
     borderColor: active ? paint.activeFill : hovered ? paint.hoverBorder : paint.border,
     backgroundColor: active ? paint.activeFill : paint.surface,
     '--bloom-map-ring': paint.ring,
-    ...bloomShadowStyle(active ? 'm' : 's'),
   };
 
   return (
@@ -71,7 +74,7 @@ function MapClusterMarkerComponent({
       onHoverOut={onOut}
       hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
       testID={testID}
-      style={[bubbleStyle, style]}
+      style={[bubbleStyle, bloomShadowStyle(active ? 'm' : 's'), style]}
     >
       <Text
         variant="body-2-semibold"

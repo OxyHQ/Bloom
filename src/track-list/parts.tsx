@@ -1,5 +1,5 @@
 import React, { Fragment, memo, useMemo } from 'react';
-import { Image, View, type GestureResponderEvent } from 'react-native';
+import { View, type GestureResponderEvent } from 'react-native';
 
 import { GlyphButton } from '../button';
 import {
@@ -18,6 +18,7 @@ import { useTheme } from '../theme/use-theme';
 import { resolveTrackListPaint } from './shared';
 import type { TrackIconComponent, TrackMenuItem } from './types';
 import { IS_WEB } from '../styles/platform';
+import { BloomImage } from '../image';
 
 /** The props `DropdownMenuTrigger asChild` merges onto its child. */
 interface TrackIconButtonProps {
@@ -116,11 +117,11 @@ export const TrackCover = memo(function TrackCover({
       }}
     >
       {uri ? (
-        <Image
+        <BloomImage
           source={{ uri }}
           accessibilityIgnoresInvertColors
           style={{ width: size, height: size }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       ) : (
         <RiMusic2Line width={size / 2} height={size / 2} fill={paint.textMuted} />

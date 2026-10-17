@@ -37,14 +37,23 @@ export const sizes = {
   '3xl': 48,
 } as const;
 
-export function useCommonSVGProps(props: Props) {
+/** What {@link useCommonSVGProps} resolves; named so emitted declarations need no RN-internal path. */
+export type CommonSVGProps = Omit<Props, 'fill' | 'size' | 'gradient' | 'style'> & {
+  fill: PathProps['fill'];
+  size: number;
+  // `...rest` is spread last, so the CALLER's style wins over the flattened one.
+  style: StyleProp<IconStyle>;
+  gradient: React.JSX.Element | null;
+};
+
+export function useCommonSVGProps(props: Props): CommonSVGProps {
   const { colors } = useTheme();
   const reactId = React.useId();
   const { fill, size, gradient, ...rest } = props;
-  const style = StyleSheet.flatten<IconStyle>(rest.style);
+  const style: IconStyle | null | undefined = StyleSheet.flatten(rest.style);
   const _size = Number(size ? sizes[size] : rest.width || sizes.md);
   let _fill: PathProps['fill'] = fill ?? style?.color ?? colors.primary;
-  let gradientDef = null;
+  let gradientDef: React.JSX.Element | null = null;
 
   if (gradient && gradients[gradient]) {
     const id = `${reactId}-${gradient}`;

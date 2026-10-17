@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { useImageResolver } from '../image-resolver/context';
 import { Box as SkeletonBox } from '../skeleton';
@@ -115,9 +116,9 @@ function GenreCardComponent({
           {title}
         </Text>
         {uri ? (
-          <Image
+          <BloomImage
             source={{ uri }}
-            resizeMode="cover"
+            contentFit="cover"
             testID={testID ? `${testID}-artwork` : undefined}
             style={{
               position: 'absolute',

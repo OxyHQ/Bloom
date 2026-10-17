@@ -1,5 +1,6 @@
 import React, { useMemo, type ReactNode } from 'react';
-import { Image, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Avatar } from '../avatar';
 import { LinkButton } from '../button';
@@ -105,7 +106,7 @@ export function Cover({
   } else if (uri) {
     inner = (
       <View style={clip}>
-        <Image source={{ uri }} style={{ width: size, height }} resizeMode="cover" />
+        <BloomImage source={{ uri }} style={{ width: size, height }} contentFit="cover" />
       </View>
     );
   } else {

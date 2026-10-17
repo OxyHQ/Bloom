@@ -12,7 +12,7 @@
  * The rows come from `floating/menu-rows`, the same set `ContextMenu` and
  * `Menubar` publish under their own prefixes.
  */
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
@@ -42,7 +42,7 @@ export function DropdownMenu({
     defaultValue: defaultOpen,
     onChange: onOpenChange,
   });
-  const anchorRef = useRef<View | null>(null);
+  const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
   const value = useMemo(() => ({ open: isOpen, setOpen, anchorRef }), [isOpen, setOpen]);
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;

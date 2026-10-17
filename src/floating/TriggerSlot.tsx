@@ -22,7 +22,14 @@
  * `alignSelf: 'flex-start'` keeps that wrapper from stretching across its
  * parent, which would anchor the surface to the row rather than to the control.
  */
-import React, { Children, cloneElement, Fragment, isValidElement, useRef } from 'react';
+import React, {
+  type ComponentRef,
+  Children,
+  cloneElement,
+  Fragment,
+  isValidElement,
+  useRef,
+} from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
@@ -37,7 +44,7 @@ export interface TriggerSlotProps {
   /** Open handler + a11y state, merged onto whatever ends up rendering. */
   handle: TriggerHandleProps;
   /** Measured by the web forks to position the surface. Unused on native. */
-  anchorRef?: React.RefObject<View | null>;
+  anchorRef?: React.RefObject<ComponentRef<typeof View> | null>;
   /** Classes for the wrapper box — the node the parent lays out. */
   className?: string;
   /** Style for the wrapper box. The child styles itself. */
@@ -137,7 +144,7 @@ export function TriggerSlot({
   // rather than in each of the four native forks, and any family added later
   // gets it by construction. Native-only inside the hook; on web the browser
   // owns focus.
-  const ownRef = useRef<View | null>(null);
+  const ownRef = useRef<ComponentRef<typeof View> | null>(null);
   useRestoreAccessibilityFocus(handle['aria-expanded'] === true, ownRef);
 
   return (

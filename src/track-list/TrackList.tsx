@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { dragShift, dragTarget } from '../hooks/list-reorder';
 import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 
@@ -113,7 +113,7 @@ export function TrackList({
   // --- focus ---------------------------------------------------------------
   const [focusIndexRaw, setFocusIndex] = useState(0);
   const focusIndex = Math.max(0, Math.min(focusIndexRaw, tracks.length - 1));
-  const rows = useRef(new Map<string, View>());
+  const rows = useRef(new Map<string, ComponentRef<typeof View>>());
   const pendingFocus = useRef<string | null>(null);
   useEffect(() => {
     const id = pendingFocus.current;
@@ -290,7 +290,7 @@ export function TrackList({
               style={wrapperStyle}
             >
               <TrackRow
-                ref={(node: View | null) => {
+                ref={(node: ComponentRef<typeof View> | null) => {
                   if (node) rows.current.set(track.id, node);
                   else rows.current.delete(track.id);
                 }}

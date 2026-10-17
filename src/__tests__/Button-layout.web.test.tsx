@@ -43,7 +43,7 @@ it('forwards the DOM anchor and reports the RN layout shape when requested', () 
   jest
     .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
     .mockReturnValue({ width: 80, height: 36 } as DOMRect);
-  const ref = React.createRef<import('react-native').View>();
+  const ref = React.createRef<React.ComponentRef<typeof import('react-native').View>>();
   const layout = jest.fn();
   act(() =>
     root.render(
@@ -62,7 +62,7 @@ it('forwards the DOM anchor and reports the RN layout shape when requested', () 
   jest.restoreAllMocks();
 });
 it('composes the child ref and forwards hidden semantics without another DOM node', () => {
-  const ref = React.createRef<import('react-native').View>();
+  const ref = React.createRef<React.ComponentRef<typeof import('react-native').View>>();
   const childRef = React.createRef<HTMLAnchorElement>();
   act(() =>
     root.render(

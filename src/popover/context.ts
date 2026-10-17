@@ -5,14 +5,14 @@
  * have theirs: a dropdown menu opened from inside a popover must drive the MENU,
  * and one shared open-state context would hand it the popover instead.
  */
-import { createContext, useContext, type RefObject } from 'react';
+import { type ComponentRef, createContext, useContext, type RefObject } from 'react';
 import type { View } from 'react-native';
 
 import type { OverlayShellContextValue } from '../floating/types';
 
 interface PopoverContextValue extends OverlayShellContextValue {
   /** Web floating host; the native sheet owns its own focus lifecycle. */
-  panelRef?: RefObject<View | null>;
+  panelRef?: RefObject<ComponentRef<typeof View> | null>;
   /** Web: whether the floating panel catches the outside press (`PopoverProps.modal`). */
   modal?: boolean;
 }

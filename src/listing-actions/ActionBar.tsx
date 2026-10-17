@@ -11,6 +11,7 @@ import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ActionBarProps } from './types';
+import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 
 /**
  * The phone-width action bar pinned under any listing — a stay, a rental, a
@@ -56,7 +57,7 @@ export function ActionBarView({
 }: ActionBarProps & { ids?: ActionBarIds }) {
   const theme = useTheme();
   const palette = useMemo(() => resolveBookingPalette(theme), [theme]);
-  const insets = useContext(SafeAreaInsetsContext);
+  const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS);
   const inset = bottomInset ?? insets?.bottom ?? 0;
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 

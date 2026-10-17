@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 import Animated, {
   Easing,
@@ -261,7 +262,7 @@ function ThreadRow({
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(thread.title);
-  const inputRef = useRef<TextInput | null>(null);
+  const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const settled = useRef(false);
 
   useEffect(() => {

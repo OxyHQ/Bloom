@@ -1,6 +1,14 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentRef,
+} from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
@@ -62,7 +70,7 @@ type TooltipContextType = {
   visible: boolean;
   onVisibleChange: (open: boolean) => void;
   /** The trigger box the bubble anchors to. */
-  triggerRef: React.RefObject<View | null>;
+  triggerRef: React.RefObject<ComponentRef<typeof View> | null>;
 };
 
 const TooltipContext = createContext<TooltipContextType>({
@@ -84,7 +92,7 @@ export function Tooltip({
   visible: boolean;
   onVisibleChange: (visible: boolean) => void;
 }) {
-  const triggerRef = useRef<View | null>(null);
+  const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const ctx = useMemo(
     () => ({ position, visible, onVisibleChange, triggerRef }),
     [position, visible, onVisibleChange],
@@ -282,7 +290,7 @@ export function TooltipContent({
  * the box actually moved.
  */
 function useTrackedAnchor(
-  ref: React.RefObject<View | null>,
+  ref: React.RefObject<ComponentRef<typeof View> | null>,
   active: boolean,
 ): FloatingAnchor | null {
   const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);

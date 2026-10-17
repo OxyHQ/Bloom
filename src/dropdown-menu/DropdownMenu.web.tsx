@@ -6,7 +6,7 @@
  * `floating/menu-rows` set the native file publishes; what changes between the
  * two is stated once, as `presentation`.
  */
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';
@@ -43,7 +43,7 @@ export function DropdownMenu({
     defaultValue: defaultOpen,
     onChange: onOpenChange,
   });
-  const anchorRef = useRef<View | null>(null);
+  const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
   const focusIntent = useMenuFocusIntent();
   const value = useMemo(
     () => ({ open: isOpen, setOpen, anchorRef, focusIntent }),
@@ -121,7 +121,7 @@ export function DropdownMenuContent({
   );
   // Arrows, Home/End, Space and Tab inside the open menu, and the keyboard
   // open's landing row (`floating/menu-keyboard.ts`).
-  const [panel, setPanel] = useState<View | null>(null);
+  const [panel, setPanel] = useState<ComponentRef<typeof View> | null>(null);
   useMenuPanelKeys(hostElement(panel), { open: menu.open, onTab: close, intent: menu.focusIntent });
 
   return (

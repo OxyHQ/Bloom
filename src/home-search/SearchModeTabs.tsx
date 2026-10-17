@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import type { ComponentRef } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { resolveCategoryBarPaint, type CategoryBarPaint } from '../category-bar/CategoryBar';
@@ -62,7 +63,7 @@ interface TabProps {
   paint: CategoryBarPaint;
   onSelect: () => void;
   onKey: (event: { key: string; preventDefault: () => void }) => void;
-  registerRef: (node: View | null) => void;
+  registerRef: (node: ComponentRef<typeof View> | null) => void;
   testID?: string;
 }
 
@@ -133,7 +134,7 @@ export function SearchModeTabs<K extends string = HomeSearchMode>({
   const theme = useTheme();
   const paint = useMemo(() => resolveCategoryBarPaint(theme), [theme]);
   const keys = modes ?? (HOME_SEARCH_MODES as unknown as readonly K[]);
-  const nodes = useRef(new Map<K, View>());
+  const nodes = useRef(new Map<K, ComponentRef<typeof View>>());
   const labelOf = (key: K) =>
     labels?.[key] ?? (messages.modes as Partial<Record<string, string>>)[key] ?? key;
 

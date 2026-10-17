@@ -6,7 +6,7 @@
  * helper is how two composers end up with rings that close at different angles.
  */
 import React from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { ringPath } from '../composer-panel/shared';
@@ -22,6 +22,7 @@ import type { ChatComposerAttachment, ComposerAttachmentStripProps } from './typ
 import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 import { dataHook } from '../styles/data-hook';
+import { BloomImage } from '../image';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createComposerAttachmentStrip({
@@ -106,7 +107,7 @@ export function createComposerAttachmentStrip({
             }}
           >
             {uri ? (
-              <Image
+              <BloomImage
                 source={{ uri }}
                 accessibilityIgnoresInvertColors
                 style={{ width: size, height: size, opacity: uploading ? 0.6 : 1 }}

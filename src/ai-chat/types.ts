@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ComponentRef, ComponentType, ReactNode } from 'react';
 import type {
   ImageSourcePropType,
   NativeScrollEvent,
@@ -407,7 +407,7 @@ export interface AiChatThreadHandle {
   /** Scroll to an absolute offset, px from the top. `animated` defaults to `false`. */
   scrollToOffset: (options: { offset: number; animated?: boolean }) => void;
   /** The `ScrollView` itself, for anything this handle does not cover. */
-  getScrollView: () => ScrollView | null;
+  getScrollView: () => ComponentRef<typeof ScrollView> | null;
 }
 
 export interface AiChatThreadProps {

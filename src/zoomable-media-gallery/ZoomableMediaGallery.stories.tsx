@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react';
 import React from 'react';
 import { Image, Pressable, View, Text } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -88,7 +89,7 @@ const THUMB = 96;
  */
 function GalleryDemo({ items, ...props }: ZoomableMediaGalleryProps & { items: GalleryMedia[] }) {
   const galleryRef = React.useRef<ZoomableMediaGalleryHandle>(null);
-  const thumbRefs = React.useRef<Array<View | null>>([]);
+  const thumbRefs = React.useRef<Array<ComponentRef<typeof View> | null>>([]);
 
   const measureRect = React.useCallback(
     (index: number) =>

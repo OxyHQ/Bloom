@@ -1,5 +1,12 @@
 import type React from 'react';
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ComponentRef,
+} from 'react';
 import {
   type ScrollView,
   StyleSheet,
@@ -16,8 +23,11 @@ import { DEFAULT_END_REACHED_THRESHOLD, useEndReached } from './use-end-reached'
 import { useScreenScroll } from './use-screen-scroll';
 import { useScreenWindowScroll } from './use-screen-window-scroll';
 import type { ScreenScrollViewProps } from './types';
+import type { RefComponent } from '../styles/native-refs';
 
-type InnerProps = ScreenScrollViewProps & { forwardedRef: React.ForwardedRef<ScrollView> };
+type InnerProps = ScreenScrollViewProps & {
+  forwardedRef: React.ForwardedRef<ComponentRef<typeof ScrollView>>;
+};
 
 /**
  * The screen's scroller. Inside a web `Screen documentScroll` the WINDOW is the
@@ -25,7 +35,10 @@ type InnerProps = ScreenScrollViewProps & { forwardedRef: React.ForwardedRef<Scr
  * second scroll container (which would hold the document at one viewport and
  * clip everything below it). Everywhere else it is an animated `ScrollView`.
  */
-export const ScreenScrollView = forwardRef<ScrollView, ScreenScrollViewProps>(
+export const ScreenScrollView: RefComponent<
+  ScreenScrollViewProps,
+  ComponentRef<typeof ScrollView>
+> = forwardRef<ComponentRef<typeof ScrollView>, ScreenScrollViewProps>(
   function ScreenScrollView(props, ref) {
     // Chosen by the nearest Screen; switching modes remounts, so each branch
     // keeps its own hook order.
@@ -37,7 +50,10 @@ export const ScreenScrollView = forwardRef<ScrollView, ScreenScrollViewProps>(
   },
 );
 
-function paddingEdge(style: ViewStyle | undefined, edge: 'paddingTop' | 'paddingBottom') {
+function paddingEdge(
+  style: Readonly<ViewStyle> | null | undefined,
+  edge: 'paddingTop' | 'paddingBottom',
+) {
   return Number(style?.[edge] ?? style?.paddingVertical ?? style?.padding ?? 0);
 }
 
@@ -119,11 +135,20 @@ function ContainedScreenScrollView({
   );
 }
 
-/** `ScrollView`'s imperative surface, answered by the window. */
+type ScrollViewRef = ComponentRef<typeof ScrollView>;
+
+/**
+ * `ScrollView`'s imperative surface, answered by the window. The two node
+ * getters return what react-native-web's own `ScrollView` returns on web — DOM
+ * nodes — where React Native's types declare a native tag (`number`).
+ */
 type DocumentScrollHandle = Pick<
-  ScrollView,
-  'scrollTo' | 'scrollToEnd' | 'flashScrollIndicators' | 'getScrollableNode' | 'getInnerViewNode'
->;
+  ScrollViewRef,
+  'scrollTo' | 'scrollToEnd' | 'flashScrollIndicators'
+> & {
+  getScrollableNode: () => Element | null;
+  getInnerViewNode: () => ComponentRef<typeof View> | null;
+};
 
 function scrollWindow(top: number, animated: boolean | undefined) {
   if (typeof window === 'undefined') return;
@@ -152,7 +177,7 @@ function DocumentScreenScrollView({
   ...props
 }: InnerProps) {
   useScreenWindowScroll({ active, restoration });
-  const contentRef = useRef<View>(null);
+  const contentRef = useRef<ComponentRef<typeof View>>(null);
   useImperativeHandle(forwardedRef, () => {
     const handle: DocumentScrollHandle = {
       scrollTo: (y, _x, animated) => {
@@ -168,8 +193,9 @@ function DocumentScreenScrollView({
       getInnerViewNode: () => contentRef.current,
     };
     // Callers type this ref as a `ScrollView`; the window answers the part of
-    // it a page drives.
-    return handle as ScrollView;
+    // it a page drives. Through `unknown` because the node getters return the
+    // web DOM nodes react-native-web's ScrollView returns, not RN's declared tag.
+    return handle as unknown as ScrollViewRef;
   }, []);
   const [contentHeight, setContentHeight] = useState(0);
   const tracksEnd = onEndReached != null;

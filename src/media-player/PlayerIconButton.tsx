@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react';
+import { type ComponentRef, forwardRef, useMemo } from 'react';
 import { View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 
 import { GlyphButton } from '../button';
@@ -7,6 +7,7 @@ import { resolveMediaControlsPaint } from '../media-controls/shared';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import type { RefComponent } from '../styles/native-refs';
 
 /** A glyph component (any `Ri*` icon). */
 /** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
@@ -60,7 +61,10 @@ export interface PlayerIconButtonProps {
  * Colour change only. Forwards the trigger props `asChild` hands it
  * (`aria-expanded`, `aria-haspopup`, `onPress`, the name).
  */
-export const PlayerIconButton = forwardRef<View, PlayerIconButtonProps>(function PlayerIconButton(
+export const PlayerIconButton: RefComponent<PlayerIconButtonProps> = forwardRef<
+  ComponentRef<typeof View>,
+  PlayerIconButtonProps
+>(function PlayerIconButton(
   {
     icon: Icon,
     text,

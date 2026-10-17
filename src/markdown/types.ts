@@ -1,4 +1,4 @@
-import type { ReactNode, Ref } from 'react';
+import type { ReactNode, Ref, ComponentRef } from 'react';
 import type { StyleProp, View, ViewStyle } from 'react-native';
 
 /**
@@ -38,7 +38,7 @@ export interface MarkdownProps {
   style?: StyleProp<ViewStyle>;
   className?: string;
   testID?: string;
-  ref?: Ref<View>;
+  ref?: Ref<ComponentRef<typeof View>>;
 }
 
 /** A run of text inside a block. Links are already vetted: an unsafe URL never becomes one. */

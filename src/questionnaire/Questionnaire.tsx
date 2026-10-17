@@ -8,6 +8,7 @@ import {
   hairlineOn,
 } from '../styles/surface-levels';
 import React, {
+  type ComponentRef,
   memo,
   useCallback,
   useEffect,
@@ -26,6 +27,7 @@ import {
   type TextInput as TextInputType,
   type TextStyle,
   type ViewStyle,
+  type KeyDownEvent,
 } from 'react-native';
 import Animated, {
   Easing,
@@ -484,7 +486,7 @@ function OtherRow({
   placeholder: string;
   draft: string;
   selected: boolean;
-  inputRef: React.RefObject<TextInputType | null>;
+  inputRef: React.RefObject<ComponentRef<typeof TextInputType> | null>;
   onDraftChange: (text: string) => void;
   onSelectedChange: (selected: boolean) => void;
   onSubmit: () => void;
@@ -773,7 +775,7 @@ function SlidingPanel({
   animate: boolean;
   onExited?: () => void;
   onLayout?: (event: LayoutChangeEvent) => void;
-  panelRef?: React.Ref<View>;
+  panelRef?: React.Ref<ComponentRef<typeof View>>;
   children: React.ReactNode;
 }) {
   const progress = useSharedValue(animate ? 0 : 1);
@@ -921,9 +923,9 @@ function QuestionnaireComponent({
 
   const question = questions[step];
   const questionId = question?.id;
-  const otherInputRef = useRef<TextInputType>(null);
-  const rootRef = useRef<View>(null);
-  const panelRef = useRef<View>(null);
+  const otherInputRef = useRef<ComponentRef<typeof TextInputType>>(null);
+  const rootRef = useRef<ComponentRef<typeof View>>(null);
+  const panelRef = useRef<ComponentRef<typeof View>>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // The viewport follows the visible question's height (+4px above and below).
@@ -1122,21 +1124,18 @@ function QuestionnaireComponent({
     );
   };
 
-  const onKeyDown = (event: {
-    key: string;
-    metaKey?: boolean;
-    ctrlKey?: boolean;
-    altKey?: boolean;
-    target?: unknown;
-    preventDefault?: () => void;
-  }) => {
-    if (mode !== 'single' || event.metaKey || event.ctrlKey || event.altKey) return;
+  // `nativeEvent` holds the key fields under React Native 0.88's `KeyDownEvent`
+  // and, on web, is the browser's KeyboardEvent.
+  const onKeyDown = (event: KeyDownEvent) => {
+    const { key, metaKey, ctrlKey, altKey } = event.nativeEvent;
+    if (mode !== 'single' || metaKey || ctrlKey || altKey) return;
+    // A DOM node on web, the only platform this handler is attached on.
     const target = event.target as { tagName?: string } | undefined;
     if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return;
-    if (!/^[1-9]$/.test(event.key)) return;
-    const index = Number(event.key) - 1;
+    if (!/^[1-9]$/.test(key)) return;
+    const index = Number(key) - 1;
     if (index < question.options.length) {
-      event.preventDefault?.();
+      event.preventDefault();
       const value = question.options[index]!.value;
       clearAdvance();
       const latest = commitAnswers({ ...answersRef.current, [question.id]: { values: [value] } });
@@ -1148,7 +1147,7 @@ function QuestionnaireComponent({
         reducedMotion ? 0 : advanceDelay,
       );
     } else if (question.other && index === question.options.length) {
-      event.preventDefault?.();
+      event.preventDefault();
       otherInputRef.current?.focus();
     }
   };

@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from 'react';
+import type { ComponentRef } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -84,7 +85,7 @@ export interface AvatarGroupCellHoverHandlers {
   onHoverIn?: (item: AvatarGroupItem, index: number) => void;
   onHoverOut?: (item: AvatarGroupItem, index: number) => void;
   /** Sets the measured anchor ref for the hovered cell (web only). */
-  registerCellRef?: (index: number, node: View | null) => void;
+  registerCellRef?: (index: number, node: ComponentRef<typeof View> | null) => void;
 }
 
 interface AvatarGroupBaseProps extends AvatarGroupProps {

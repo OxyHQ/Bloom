@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
 import { useMessages } from '../locale/messages';
@@ -52,7 +52,7 @@ function ContactListComponent({
   const theme = useTheme();
   const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
-  const scroller = useRef<ScrollView | null>(null);
+  const scroller = useRef<ComponentRef<typeof ScrollView> | null>(null);
   const offsets = useRef<Map<string, number>>(new Map());
   const [, setMeasured] = useState(0);
 

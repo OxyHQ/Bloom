@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
 import { RiChat3Line } from '../icons/remix/RiChat3Line';
@@ -201,9 +202,9 @@ function MaintenanceRequestCardComponent({
               backgroundColor: palette.tile,
             };
             const image = uri ? (
-              <Image
+              <BloomImage
                 source={{ uri }}
-                resizeMode="cover"
+                contentFit="cover"
                 style={{ width: '100%', height: '100%' }}
               />
             ) : null;

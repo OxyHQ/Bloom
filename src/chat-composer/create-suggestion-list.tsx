@@ -12,7 +12,7 @@ import type { Loading as LoadingComponent } from '../loading';
  * highlight would fight the field for it the first time a pointer moved.
  */
 import React from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { RiHashtag } from '../icons/remix/RiHashtag';
 import { RiVerifiedBadgeFill } from '../icons/remix/RiVerifiedBadgeFill';
@@ -32,6 +32,7 @@ import type { ChatComposerSuggestion, SuggestionKind, SuggestionListProps } from
 
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { BloomImage } from '../image';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createSuggestionList({
@@ -71,7 +72,7 @@ export function createSuggestionList({
             ? suggestion.avatar
             : resolveImage?.(suggestion.avatar, 'thumb');
       return uri ? (
-        <Image
+        <BloomImage
           source={{ uri }}
           accessibilityIgnoresInvertColors
           style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: palette.inset }}

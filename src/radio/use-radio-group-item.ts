@@ -1,4 +1,4 @@
-import { useCallback, useContext, type KeyboardEvent } from 'react';
+import { type ComponentRef, useCallback, useContext, type KeyboardEvent } from 'react';
 import { Platform, type View } from 'react-native';
 import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import { RadioGroupContext } from './context';
@@ -7,7 +7,10 @@ import { RadioGroupContext } from './context';
 export function useRadioGroupItem(value: string, disabled: boolean, activate: () => void) {
   const group = useContext(RadioGroupContext);
   const space = useChoiceSpaceKey(disabled, activate);
-  const ref = useCallback((node: View | null) => group?.register(value, node), [group, value]);
+  const ref = useCallback(
+    (node: ComponentRef<typeof View> | null) => group?.register(value, node),
+    [group, value],
+  );
   if (Platform.OS !== 'web') return { ref };
   return {
     ...space,

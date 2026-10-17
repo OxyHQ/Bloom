@@ -23,7 +23,12 @@ import { AppState, type AppStateStatus } from 'react-native';
 
 const NOOP = () => {};
 
-const isActive = (status: AppStateStatus) => status === 'active';
+/**
+ * Takes what `AppState.currentState` can hold as well as a delivered status:
+ * React Native types the former as `string | null | undefined` (unknown before
+ * the first native report), so the comparison is the whole check.
+ */
+const isActive = (status: AppStateStatus | string | null | undefined) => status === 'active';
 
 /**
  * Subscribe to app-state changes.
@@ -54,7 +59,7 @@ export function useAppStateChange({
   onBackground: () => void;
   onForeground: () => void;
 }) {
-  const previousStatus = useRef<AppStateStatus>(AppState.currentState);
+  const previousStatus = useRef<AppStateStatus | string | null | undefined>(AppState.currentState);
 
   useEffect(() => {
     return subscribeToAppState((nextStatus) => {

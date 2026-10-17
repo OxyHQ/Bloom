@@ -1,7 +1,8 @@
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
 import React, { isValidElement, memo, useMemo } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
@@ -242,9 +243,9 @@ function ContactCardComponent({
   const logoNode = isValidElement(logo) ? (
     logo
   ) : logoUri ? (
-    <Image
+    <BloomImage
       source={{ uri: logoUri }}
-      resizeMode="contain"
+      contentFit="contain"
       accessible={false}
       importantForAccessibility="no"
       style={{ width: LOGO_SIZE - 10, height: LOGO_SIZE - 10 }}

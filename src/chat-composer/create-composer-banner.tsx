@@ -9,7 +9,7 @@
  * "here is a fact about sending".
  */
 import React from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { useImageResolver } from '../image-resolver/context';
@@ -24,6 +24,7 @@ import {
 } from './shared';
 import type { ComposerBannerProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { BloomImage } from '../image';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createComposerBanner({
@@ -148,7 +149,7 @@ export function createComposerBanner({
         />
         <Icon width={18} height={18} fill={accent} />
         {thumbUri ? (
-          <Image
+          <BloomImage
             source={{ uri: thumbUri }}
             accessibilityIgnoresInvertColors
             style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: palette.inset }}

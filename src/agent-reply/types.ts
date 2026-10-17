@@ -1,4 +1,4 @@
-import type { ReactNode, Ref } from 'react';
+import type { ComponentRef, ReactNode, Ref } from 'react';
 import type { StyleProp, View, ViewStyle } from 'react-native';
 import type { AvatarCharacter } from '../agent-avatar';
 import type { ButtonIconComponent } from '../button/types';
@@ -59,7 +59,7 @@ export interface AgentReplyIdentityProps {
   /** Hide the avatar while something else draws it (the handoff flight). */
   avatarHidden?: boolean;
   /** The avatar's box, for a caller that animates it elsewhere. */
-  avatarRef?: Ref<View>;
+  avatarRef?: Ref<ComponentRef<typeof View>>;
   /** Makes the row a button. */
   onPress?: () => void;
   /** The button's name when it is not thinking ("Edit Lumi"); `name` when absent. */
@@ -100,7 +100,7 @@ export interface AgentProfileProps {
   expanded?: boolean;
   onPress: () => void;
   /** The artwork's box, for a caller that animates it elsewhere. */
-  avatarRef?: Ref<View>;
+  avatarRef?: Ref<ComponentRef<typeof View>>;
   /** Hide the artwork while something else draws it (an avatar flying in). */
   avatarHidden?: boolean;
 }

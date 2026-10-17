@@ -1,6 +1,6 @@
 import { useBloomAppearance } from '../appearance';
 import { normalizeTagTone } from './shared';
-import React, { forwardRef, memo, useMemo } from 'react';
+import React, { forwardRef, memo, useMemo, type ComponentRef } from 'react';
 import {
   View,
   Pressable,
@@ -24,6 +24,7 @@ import { CHIP_GEOMETRY, resolveChipPaint, resolveChipRing } from './shared';
 import type { ChipProps } from './types';
 import { StyledView, StyledPressable } from '../styles/styled-primitives';
 import { IS_WEB } from '../styles/platform';
+import type { MemoRefComponent } from '../styles/native-refs';
 
 /**
  * The chip, five rungs and four fills. The rung table and the paint recipe are
@@ -114,7 +115,7 @@ const BLOOM_CHIP_CSS = interactiveWebCss({
 `,
 });
 
-const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
+const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function ChipComponent(
   {
     children,
     variant: variantProp = 'subtle',
@@ -439,5 +440,5 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   );
 });
 
-export const Chip = memo(ChipComponent);
+export const Chip: MemoRefComponent<ChipProps> = memo(ChipComponent);
 Chip.displayName = 'Chip';

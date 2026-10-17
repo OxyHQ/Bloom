@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { type ComponentRef, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { TextInput } from 'react-native';
 
 /**
@@ -82,7 +82,7 @@ export function measureTextarea(node: AutosizeNode, collapse: boolean): number {
 }
 
 export function useTextareaAutosize(
-  ref: RefObject<TextInput | null>,
+  ref: RefObject<ComponentRef<typeof TextInput> | null>,
   text: string,
   { enabled, height, minHeight, onMeasure }: TextareaAutosizeOptions,
 ): void {

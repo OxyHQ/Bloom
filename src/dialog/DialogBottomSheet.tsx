@@ -21,6 +21,7 @@ import {
 import { DialogMorphContent, useDialogMorph } from './DialogMorph';
 import { DEFAULT_DIALOG_CONTENT_PADDING, DEFAULT_MAX_HEIGHT_RATIO } from './placement';
 import type { DialogControlProps, DialogProps } from './types';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 /**
  * Shared `BottomSheet`-backed surface for the `bottom` placement, used by BOTH
@@ -81,7 +82,7 @@ export function DialogBottomSheet({
   // edge-to-edge on Android, and under the home indicator on iOS), and
   // `BottomSheet` deliberately leaves the safe area to its content. This Dialog
   // IS the content's chrome, so it owns the inset (the spacer after the body).
-  const { bottom: bottomInset } = useSafeAreaInsets();
+  const { bottom: bottomInset } = useCssSafeAreaInsets(useSafeAreaInsets());
 
   // Read the latest controlled flag / `onClose` inside stable callbacks without
   // re-binding them (the context + imperative handle depend on `close` staying

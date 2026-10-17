@@ -1,10 +1,20 @@
-import React, { forwardRef, Fragment, memo, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  forwardRef,
+  Fragment,
+  memo,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   PanResponder,
   Pressable,
   View,
   useWindowDimensions,
   type GestureResponderEvent,
+  type KeyDownEvent,
 } from 'react-native';
 
 import { mergeRefs } from '../hooks/merge-refs';
@@ -42,6 +52,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { TRACK_LIST_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import type { MemoRefComponent } from '../styles/native-refs';
 
 /**
  * One track in a table: the row `TrackList` maps, usable on its own inside a
@@ -91,7 +102,7 @@ function readPress(
   };
 }
 
-const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
+const TrackRowComponent = forwardRef<ComponentRef<typeof View>, TrackRowProps>(function TrackRow(
   {
     track,
     index,
@@ -143,7 +154,7 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
   const [focusWithin, setFocusWithin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const active = hovered || focusWithin || menuOpen;
-  const hostRef = useRef<View | null>(null);
+  const hostRef = useRef<ComponentRef<typeof View> | null>(null);
   // Focus moving from the row into one of its own buttons fires blur first; a
   // render in between would unmount the button focus is moving to.
   const blurToOutside = (event: { nativeEvent?: unknown; relatedTarget?: unknown }) => {
@@ -239,29 +250,25 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
     else if (hasMenu) setMenuOpen(true);
   };
 
-  const handleKeyDown = (event: {
-    key: string;
-    shiftKey?: boolean;
-    altKey?: boolean;
-    target?: unknown;
-    currentTarget?: unknown;
-    preventDefault?: () => void;
-  }) => {
+  // `nativeEvent` holds the key fields under React Native 0.88's `KeyDownEvent`
+  // and, on web, is the browser's KeyboardEvent.
+  const handleKeyDown = (event: KeyDownEvent) => {
     // Keys pressed inside the row's own buttons (or its portaled menu, whose
     // events bubble through React) belong to them.
     if (event.target !== event.currentTarget) return;
-    const stop = () => event.preventDefault?.();
-    const extend = event.shiftKey === true;
-    switch (event.key) {
+    const { key, shiftKey, altKey } = event.nativeEvent;
+    const stop = () => event.preventDefault();
+    const extend = shiftKey === true;
+    switch (key) {
       case 'ArrowUp':
         stop();
-        if (event.altKey) {
+        if (altKey) {
           if (reorderable) onMoveUp?.(index);
         } else onNavigate?.(index, 'previous', extend);
         return;
       case 'ArrowDown':
         stop();
-        if (event.altKey) {
+        if (altKey) {
           if (reorderable) onMoveDown?.(index);
         } else onNavigate?.(index, 'next', extend);
         return;
@@ -283,7 +290,7 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
         if (hasMenu) setMenuOpen(true);
         return;
       case 'F10':
-        if (event.shiftKey && hasMenu) {
+        if (shiftKey && hasMenu) {
           stop();
           setMenuOpen(true);
         }
@@ -598,5 +605,5 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
   );
 });
 
-export const TrackRow = memo(TrackRowComponent);
+export const TrackRow: MemoRefComponent<TrackRowProps> = memo(TrackRowComponent);
 TrackRow.displayName = 'TrackRow';

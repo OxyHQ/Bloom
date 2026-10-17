@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react';
+import React, { type ComponentRef, memo, useEffect } from 'react';
 import { Pressable, type View } from 'react-native';
 import Animated, {
   Easing,
@@ -76,7 +76,7 @@ function ModeRow({
   testID?: string;
 }) {
   const palette = useSidebarPalette();
-  const tooltipRef = useBrowserTitle<View>(collapsed ? mode.label : undefined);
+  const tooltipRef = useBrowserTitle<ComponentRef<typeof View>>(collapsed ? mode.label : undefined);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = mode.icon;
   const foreground = selected ? palette.text : palette.textSecondary;

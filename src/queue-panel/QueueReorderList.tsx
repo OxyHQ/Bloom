@@ -1,9 +1,11 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import { dragShift, dragTarget } from '../hooks/list-reorder';
 import {
   PanResponder,
   View,
   type AccessibilityActionEvent,
+  type KeyDownEvent,
   type PanResponderGestureState,
 } from 'react-native';
 
@@ -90,7 +92,7 @@ interface RowProps {
   onDragStart: (index: number) => void;
   onDragMove: (dy: number) => void;
   onDragEnd: (commit: boolean) => void;
-  registerHandle: (id: string, node: View | null) => void;
+  registerHandle: (id: string, node: ComponentRef<typeof View> | null) => void;
   removeButton: boolean;
   customPlay?: string;
   testID?: string;
@@ -140,12 +142,16 @@ function QueueReorderRow({
   );
 
   const onKeyDown = useCallback(
-    (event: { key: string; preventDefault: () => void }) => {
+    // Attached on web only, where react-native-web hands over the DOM event
+    // (`key` on the event itself); React Native types `onKeyDown` with its own
+    // event (`key` on `nativeEvent`), so both shapes are accepted and read.
+    (event: KeyDownEvent | { key: string; preventDefault: () => void }) => {
       if (!move) return;
-      if (event.key === 'ArrowUp' && canUp) {
+      const key = 'key' in event ? event.key : event.nativeEvent.key;
+      if (key === 'ArrowUp' && canUp) {
         event.preventDefault();
         move(index, index - 1);
-      } else if (event.key === 'ArrowDown' && canDown) {
+      } else if (key === 'ArrowDown' && canDown) {
         event.preventDefault();
         move(index, index + 1);
       }
@@ -305,9 +311,9 @@ function QueueReorderListComponent({
   const count = tracks.length;
   const target = drag ? dragTarget(drag.from, drag.dy, QUEUE_ROW_HEIGHT, count) : -1;
 
-  const handles = useRef(new Map<string, View>());
+  const handles = useRef(new Map<string, ComponentRef<typeof View>>());
   const pendingFocus = useRef<string | null>(null);
-  const registerHandle = useCallback((id: string, node: View | null) => {
+  const registerHandle = useCallback((id: string, node: ComponentRef<typeof View> | null) => {
     if (node) handles.current.set(id, node);
     else handles.current.delete(id);
   }, []);

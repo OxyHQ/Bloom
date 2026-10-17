@@ -8,7 +8,7 @@
  * the element under it (a link, an avatar) owns that. A touch device reaches the
  * card the way native does — see `HoverCard.tsx`.
  */
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, type ComponentRef } from 'react';
 import type { NativeSyntheticEvent, View } from 'react-native';
 
 import { useAnchorRect } from '../floating/use-anchor-rect';
@@ -39,7 +39,7 @@ export function HoverCard({
     defaultValue: defaultOpen,
     onChange: onOpenChange,
   });
-  const anchorRef = useRef<View | null>(null);
+  const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
   const intent = useHoverIntent(isOpen, setOpen, openDelay, closeDelay);
   const value = useMemo(
     () => ({ open: isOpen, setOpen, anchorRef, ...intent }),

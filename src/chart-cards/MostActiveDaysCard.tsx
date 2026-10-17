@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import {
   Platform,
   Pressable,
@@ -312,7 +313,7 @@ export function MostActiveDaysCard({
     [ringColorsProp, theme],
   );
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const monthTops = useRef<(number | undefined)[]>([]);
   const scrollY = useRef(0);
   const glided = useRef(false);

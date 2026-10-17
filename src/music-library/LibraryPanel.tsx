@@ -1,6 +1,6 @@
 import { useCardFill } from '../card/use-card-fill';
 import { Surface } from '../surface';
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 
 import { GlyphButton } from '../button';
@@ -170,7 +170,7 @@ function LibraryPanelComponent({
   const [query, setQuery] = useControllable(queryProp, '', onQueryChange);
   const [searchOpen, setSearchOpen] = useState(false);
   const [listWidth, setListWidth] = useState(0);
-  const searchRef = useRef<TextInput>(null);
+  const searchRef = useRef<ComponentRef<typeof TextInput>>(null);
   const showSearch = searchOpen || query.length > 0;
 
   const shown = useMemo(

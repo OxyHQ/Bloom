@@ -4,6 +4,7 @@ import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import type React from 'react';
 import {
+  type ComponentRef,
   forwardRef,
   useImperativeHandle,
   useRef,
@@ -15,8 +16,8 @@ import {
 import {
   View,
   StyleSheet,
-  Dimensions,
   Platform,
+  useWindowDimensions,
   type ViewStyle,
   type StyleProp,
 } from 'react-native';
@@ -47,20 +48,7 @@ import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { useTheme } from '../theme/use-theme';
 import { SheetKeyboardProvider } from './context';
 import type { BottomSheetRef, BottomSheetBaseProps } from './types';
-
-/** Hook that returns current screen dimensions and updates on rotation/resize. */
-function useScreenDimensions() {
-  const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
-
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setDimensions(window);
-    });
-    return () => subscription.remove();
-  }, []);
-
-  return dimensions;
-}
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 const SPRING_CONFIG = {
   reduceMotion: MOTION_RECIPES.expand.reduceMotion,
@@ -111,10 +99,13 @@ export const BottomSheetBase = forwardRef(
       }),
       [motion.duration, motion.easing],
     );
-    const insets = useSafeAreaInsets();
+    const insets = useCssSafeAreaInsets(useSafeAreaInsets());
     const theme = useTheme();
     const { colors } = theme;
-    const { height: screenHeight } = useScreenDimensions();
+    // The WINDOW, re-read on every change: an iPad split view, a resizable
+    // iOS 27 window and an Android desktop window all change it without a
+    // rotation.
+    const { height: screenHeight } = useWindowDimensions();
     // Seed from the controlled `open` prop so a sheet that should be open is
     // visible on its FIRST commit (no present()-in-effect race) — this is what
     // lets a responsive Dialog survive a resize placement swap without going blank.
@@ -122,8 +113,8 @@ export const BottomSheetBase = forwardRef(
     const [rendered, setRendered] = useState(() => open ?? false); // keep mounted for exit animation
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasClosedRef = useRef(false);
-    const scrollViewRef = useRef<Animated.ScrollView>(null);
-    const sheetRef = useRef<View>(null);
+    const scrollViewRef = useRef<ComponentRef<typeof Animated.ScrollView>>(null);
+    const sheetRef = useRef<ComponentRef<typeof View>>(null);
     /**
      * Monotonically increasing counter that identifies "the current close
      * attempt". Bumped every time the sheet re-opens (`present()`), so any
@@ -399,7 +390,7 @@ export const BottomSheetBase = forwardRef(
           .enabled(enablePanDownToClose)
           .withRef(bodyPanRef)
           .manualActivation(true)
-          .simultaneousWithExternalGesture(scrollViewRef, handlePanRef)
+          .simultaneousWithExternalGesture(handlePanRef)
           .onTouchesDown((e) => {
             'worklet';
             const t = e.changedTouches[0];
@@ -780,8 +771,10 @@ export const BottomSheetBase = forwardRef(
     );
 
     const scrollBody = manualActivation ? (
-      // In manualActivation mode the scroll view is referenced by the
-      // pan's simultaneous list directly; no wrapping native gesture.
+      // In manualActivation mode the scroll view is not wrapped in a native
+      // gesture. (Naming its ref in the pan's simultaneous list was a no-op:
+      // RNGH resolves an external ref to `ref.current.handlerTag`, which a
+      // react-native ScrollView does not have, and drops it.)
       scrollViewNode
     ) : (
       // Legacy mode: native gesture wraps the scroll view to coordinate

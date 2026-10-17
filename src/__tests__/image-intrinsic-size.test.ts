@@ -6,8 +6,11 @@
 
 const getSize = jest.fn();
 
+// Web: `getImageSize` measures through react-native-web's `<img>` probe there
+// (expo-image's web `loadAsync` needs CORS), which is the path this pins.
 jest.mock('react-native', () => ({
   Image: { getSize: (...args: unknown[]) => getSize(...args) },
+  Platform: { OS: 'web' },
 }));
 
 import {

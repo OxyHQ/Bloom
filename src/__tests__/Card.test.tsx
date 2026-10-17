@@ -232,7 +232,7 @@ it.each([false, true])(
   'forwards ref and measurement to the card host (interactive=%s)',
   (interactive) => {
     const handle = { measure: jest.fn() };
-    const ref = React.createRef<import('react-native').View>();
+    const ref = React.createRef<React.ComponentRef<typeof import('react-native').View>>();
     const onLayout = jest.fn();
     const screen = render(
       <BloomThemeProvider mode="light" colorPreset="oxy">

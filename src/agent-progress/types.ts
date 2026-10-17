@@ -1,4 +1,4 @@
-import type { Ref } from 'react';
+import type { ComponentRef, Ref } from 'react';
 import type { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 
 import type { TypeScaleVariant } from '../typography/scale';
@@ -90,5 +90,5 @@ export interface AgentProgressPlanProps {
   /** Card style (width, margins…). Default card is 341 wide, `max-width: 100%`, like `AgentProgress`. */
   style?: StyleProp<ViewStyle>;
   testID?: string;
-  ref?: Ref<View>;
+  ref?: Ref<ComponentRef<typeof View>>;
 }

@@ -14,7 +14,7 @@
  * neutral module naming a forked target resolves to NATIVE in every bundler
  * that is not Metro and no gate would report it.
  */
-import React, { useMemo, useRef } from 'react';
+import React, { type ComponentRef, useMemo, useRef } from 'react';
 import type { View as RNView } from 'react-native';
 
 import {
@@ -85,7 +85,7 @@ export function Menubar({
 
 export function MenubarMenu({ children, value }: MenubarMenuProps) {
   const bar = useMenubar();
-  const anchorRef = useRef<RNView | null>(null);
+  const anchorRef = useRef<ComponentRef<typeof RNView> | null>(null);
   const { setValue } = bar;
   const focusIntent = useMenuFocusIntent();
 

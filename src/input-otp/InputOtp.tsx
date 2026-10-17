@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import {
   Platform,
   TextInput,
   View,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
+  type TextInputKeyPressEvent,
   type TextStyle,
 } from 'react-native';
 
@@ -225,7 +225,7 @@ export function InputOtp({
   const invalid = membership.invalid;
   const groupName = membership.accessibilityLabel ?? messages.oneTimeCode;
 
-  const inputsRef = useRef<Array<TextInput | null>>([]);
+  const inputsRef = useRef<Array<ComponentRef<typeof TextInput> | null>>([]);
   const [internal, setInternal] = useState(() => clean(defaultValue, length, type));
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -265,7 +265,7 @@ export function InputOtp({
     focusBox(index + incoming.length);
   };
 
-  const onKeyPress = (event: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
+  const onKeyPress = (event: TextInputKeyPressEvent, index: number) => {
     const { key } = event.nativeEvent;
     if (key === 'Backspace') {
       event.preventDefault();

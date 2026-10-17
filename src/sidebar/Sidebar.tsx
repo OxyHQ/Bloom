@@ -10,7 +10,15 @@ import { parseRgba } from '../theme/color-utils';
 import { surfaceStyle } from '../shapes/surface-style';
 import { usePanelShape } from '../styles/panel-chrome';
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -118,7 +126,7 @@ function SearchField({
   compact = false,
 }: {
   palette: SidebarPalette;
-  inputRef: React.RefObject<TextInput | null>;
+  inputRef: React.RefObject<ComponentRef<typeof TextInput> | null>;
   value: string;
   onChangeText: (text: string) => void;
   onDismiss: (restoreFocus: boolean) => void;
@@ -278,13 +286,13 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     onChange: onSearchQueryChange,
   });
   const [suppressUserHover, setSuppressUserHover] = useState(false);
-  const searchFieldRef = useRef<View>(null);
-  const searchTriggerRef = useRef<View>(null);
-  const searchTooltipRef = useBrowserTitle<View>(
+  const searchFieldRef = useRef<ComponentRef<typeof View>>(null);
+  const searchTriggerRef = useRef<ComponentRef<typeof View>>(null);
+  const searchTooltipRef = useBrowserTitle<ComponentRef<typeof View>>(
     collapsed ? searchLabel : undefined,
     searchTriggerRef,
   );
-  const searchInputRef = useRef<TextInput>(null);
+  const searchInputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const normalized = query.trim().toLocaleLowerCase();
   const searchHover = useInteractionState();
 

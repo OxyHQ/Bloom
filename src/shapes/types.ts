@@ -1,4 +1,4 @@
-import type { ImageProps as NativeImageProps } from 'react-native';
+import type { BloomImageErrorInfo } from '../image';
 import type { NamedShapeName } from './paths';
 
 export type Name = 'circle' | 'squircle' | NamedShapeName;
@@ -28,7 +28,12 @@ export interface ImageProps {
   size: number;
   source: ImageSource;
   alt?: string;
-  onError?: NativeImageProps['onError'];
+  /**
+   * The image failed to load. Receives `{ error }` — the renderer's message —
+   * whichever renderer drew it (expo-image on a device, react-native's `Image`
+   * on web).
+   */
+  onError?: (info: BloomImageErrorInfo) => void;
 }
 export type GradientDirection = 'diagonal' | 'horizontal' | 'vertical';
 export interface BorderProps {

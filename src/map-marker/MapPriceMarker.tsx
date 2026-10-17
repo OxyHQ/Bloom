@@ -87,7 +87,6 @@ function MapPriceMarkerComponent({
     borderColor: border,
     backgroundColor: fill,
     '--bloom-map-ring': paint.ring,
-    ...bloomShadowStyle(active ? 'm' : 's'),
   };
 
   return (
@@ -106,7 +105,7 @@ function MapPriceMarkerComponent({
           : { top: 8, bottom: 8, left: 4, right: 4 }
       }
       testID={testID}
-      style={[pillStyle, style]}
+      style={[pillStyle, bloomShadowStyle(active ? 'm' : 's'), style]}
     >
       {saved ? (
         <View testID={testID ? `${testID}-saved` : undefined}>

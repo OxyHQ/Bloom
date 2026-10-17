@@ -1,11 +1,5 @@
-import type { ComponentType, ReactNode, RefObject } from 'react';
-import type {
-  NativeSyntheticEvent,
-  StyleProp,
-  TextInput,
-  TextInputKeyPressEventData,
-  ViewStyle,
-} from 'react-native';
+import type { ComponentRef, ComponentType, ReactNode, RefObject } from 'react';
+import type { StyleProp, TextInput, TextInputKeyPressEvent, ViewStyle } from 'react-native';
 
 import type { Props as IconProps } from '../icons/shared';
 
@@ -326,10 +320,10 @@ export interface ComposerPanelProps extends ComposerPermissionProps, ComposerDoc
    * the panel acting on that key: a suggestion list over the composer drives
    * the arrows, Enter and Escape this way.
    */
-  onKeyPress?: (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => void;
+  onKeyPress?: (event: TextInputKeyPressEvent) => void;
 
   /** The prompt field itself, for focus or a scripted demo. */
-  inputRef?: RefObject<TextInput | null>;
+  inputRef?: RefObject<ComponentRef<typeof TextInput> | null>;
   labels?: ComposerPanelLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -546,10 +540,10 @@ export interface ComposerPillProps extends ComposerPermissionProps, ComposerDock
    * Escape have to drive the list rather than the field, and without this a
    * host could only offer a list its keyboard could not reach.
    */
-  onKeyPress?: (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => void;
+  onKeyPress?: (event: TextInputKeyPressEvent) => void;
 
   /** The field itself, for focus or a scripted demo. */
-  inputRef?: RefObject<TextInput | null>;
+  inputRef?: RefObject<ComponentRef<typeof TextInput> | null>;
   labels?: ComposerPillLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;

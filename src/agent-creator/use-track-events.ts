@@ -1,9 +1,9 @@
-import { useEffect, type RefObject } from 'react';
+import { type ComponentRef, useEffect, type RefObject } from 'react';
 import { Platform, type View } from 'react-native';
 
 /** Extra browser inputs use the same state and geometry as native gestures. */
 export function useTrackEvents(
-  ref: RefObject<View | null>,
+  ref: RefObject<ComponentRef<typeof View> | null>,
   onWheel: ((deltaX: number, deltaY: number) => void) | undefined,
   onKey?: (key: string, shiftKey: boolean) => boolean,
   onFocus?: (focused: boolean) => void,

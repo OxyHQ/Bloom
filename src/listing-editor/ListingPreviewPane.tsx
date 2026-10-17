@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { resolveButtonRamps } from '../button/shared';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -159,9 +160,9 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
         }}
       >
         {cover ? (
-          <Image
+          <BloomImage
             source={{ uri: cover }}
-            resizeMode="cover"
+            contentFit="cover"
             style={{ width: '100%', height: '100%' }}
           />
         ) : null}
