@@ -41,6 +41,27 @@ export function resolveScrollMode(variant: AppShellVariant, scroll: AppShellScro
 }
 
 /**
+ * "Take the rest of the row or column", spelled in LONGHANDS — the only way the
+ * shell writes it on a node whose style changes with the scroll mode.
+ *
+ * Apps switch `scroll` per route, and a region that keeps its DOM node across
+ * that re-render receives React DOM's DIFF of its two inline styles rather than
+ * either style: a dropped key is cleared with `style[key] = ''`, and only keys
+ * whose value changed are written. Clearing a `flex` shorthand clears
+ * `flex-grow`/`flex-shrink`/`flex-basis` with it, and a longhand that kept its
+ * value is never written back — so a `flex: 1` dropped beside an unchanged
+ * `flexGrow` left the reading row with no flex at all, as wide as its
+ * content, pushing the sidebar off the page (and React warns "Removing a style
+ * property during rerender"). The same happens the other way round, clearing a
+ * longhand under an unchanged shorthand. Longhands never collide, so the diff
+ * lands what a fresh mount would. `flex` is the shorthand that matters: for an
+ * inline style react-native-web expands `padding`, `margin`, `inset`,
+ * `overflow` and the border shorthands to longhands itself, but hands `flex`
+ * to the DOM as written. Gate: `AppShellScrollSwitch.web.test.tsx`.
+ */
+export const flexFill: WebCssStyle = { flexGrow: 1, flexShrink: 1, flexBasis: 0 };
+
+/**
  * Document mode: the frame is at least one viewport tall and grows with the
  * page, so the browser scrolls the document (scroll restoration, the address
  * bar collapsing, anchor links, `window.scrollTo`) exactly as it does for a
@@ -50,7 +71,7 @@ export function resolveScrollMode(variant: AppShellVariant, scroll: AppShellScro
 export const documentRoot: WebCssStyle = { flexGrow: 1, minHeight: WEB_VIEWPORT_HEIGHT };
 
 /** Container mode: fill the parent, scroll inside. */
-export const containerRoot: WebCssStyle = { flex: 1, height: '100%', overflow: 'hidden' };
+export const containerRoot: WebCssStyle = { ...flexFill, height: '100%', overflow: 'hidden' };
 
 /**
  * Fixed mode: exactly one screen — `100dvh` on web, the parent on native — and
@@ -59,7 +80,7 @@ export const containerRoot: WebCssStyle = { flex: 1, height: '100%', overflow: '
 export const fixedRoot: WebCssStyle =
   Platform.OS === 'web'
     ? { height: WEB_VIEWPORT_HEIGHT, overflow: 'hidden' }
-    : { flex: 1, height: '100%', overflow: 'hidden' };
+    : { ...flexFill, height: '100%', overflow: 'hidden' };
 
 export function rootFrame(mode: ScrollMode): WebCssStyle {
   return mode === 'document' ? documentRoot : mode === 'fixed' ? fixedRoot : containerRoot;

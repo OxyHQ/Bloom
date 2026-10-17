@@ -46,7 +46,7 @@ import { AppShellSplitPanes } from './AppShellSplit';
 import { APP_SHELL_DEFAULTS as D, breakpointPx } from './constants';
 import { AppShellProvider } from './context';
 import { ScreenNavigationContext, type ScreenNavigationState } from '../screen/context';
-import { resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
+import { flexFill, resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
 import type { AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
 
@@ -94,6 +94,10 @@ const REVEAL_OFFSET = 272;
  * The page's scroller. `document`: a plain box, the page grows the document.
  * `fixed`: a plain box that fills the frame's height and never scrolls — the
  * page owns its scrolling. `container`: a `ScrollView` filling the frame.
+ *
+ * `document` and `fixed` are the SAME node, so a switch between them is a
+ * style diff: every flex here — and in each `style` handed in — is spelled in
+ * longhands (`flexFill`), never `flex: 1` (see `flexFill` for why).
  */
 function Scroller({
   mode,
@@ -116,13 +120,13 @@ function Scroller({
     );
   if (mode === 'fixed') {
     return (
-      <View testID={testID} style={[{ flex: 1, minHeight: 0 }, style, contentStyle]}>
+      <View testID={testID} style={[flexFill, { minHeight: 0 }, style, contentStyle]}>
         {children}
       </View>
     );
   }
   return (
-    <ScrollView testID={testID} style={[{ flex: 1 }, style]} contentContainerStyle={contentStyle}>
+    <ScrollView testID={testID} style={[flexFill, style]} contentContainerStyle={contentStyle}>
       {children}
     </ScrollView>
   );
@@ -516,7 +520,9 @@ export function createAppShellEngine(
         />
       ) : null;
 
-    const fill = fixed ? { flex: 1, minHeight: 0 } : null;
+    // Longhands: the nodes carrying `fill` keep their DOM node across a `scroll`
+    // switch, and some also spell flex longhands of their own (`flexFill`).
+    const fill = fixed ? { ...flexFill, minHeight: 0 } : null;
     const column = (
       <View
         testID={testID ? `${testID}-content` : undefined}
@@ -709,13 +715,7 @@ export function createAppShellEngine(
               <Scroller
                 mode={mode}
                 testID={testID ? `${testID}-page` : undefined}
-                style={{
-                  flex: doc ? undefined : 1,
-                  flexGrow: 1,
-                  flexShrink: 1,
-                  flexBasis: 0,
-                  minWidth: 0,
-                }}
+                style={{ ...flexFill, minWidth: 0 }}
                 // `padding: 12` is a SHORTHAND, and react-native-web ranks its CSS
                 // shorthand against `padding-bottom` by sheet order rather than by
                 // the array's — so the reserve is spelled in longhands instead of
@@ -875,7 +875,7 @@ export function createAppShellEngine(
                   <Scroller
                     mode={mode}
                     testID={testID ? `${testID}-page` : undefined}
-                    style={{ flex: 1, minHeight: 0 }}
+                    style={{ ...flexFill, minHeight: 0 }}
                     // A fixed page owns its list and edge clearance. Padding its
                     // navigator here would charge the same occupied edge twice.
                     contentStyle={mode === 'fixed' ? {} : { paddingBottom: contentReserve }}
@@ -998,7 +998,7 @@ export function createAppShellEngine(
         <Scroller
           mode={mode}
           testID={testID ? `${testID}-page` : undefined}
-          style={{ flex: 1, minWidth: 0, backgroundColor: background }}
+          style={{ ...flexFill, minWidth: 0, backgroundColor: background }}
           contentStyle={{ paddingTop: small ? 12 : 0, paddingBottom: pageReserve }}
         >
           {column}
