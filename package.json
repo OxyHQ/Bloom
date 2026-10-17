@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "11.0.0",
+  "version": "11.1.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -618,6 +618,34 @@
       "require": {
         "types": "./lib/typescript/commonjs/agent-limits-card/index.d.ts",
         "default": "./lib/commonjs/agent-limits-card/index.js"
+      }
+    },
+    "./usage-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/usage-card/index.d.ts",
+        "default": "./src/usage-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/usage-card/index.d.ts",
+        "default": "./lib/module/usage-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/usage-card/index.d.ts",
+        "default": "./lib/commonjs/usage-card/index.js"
+      }
+    },
+    "./subscription-plans": {
+      "react-native": {
+        "types": "./lib/typescript/module/subscription-plans/index.d.ts",
+        "default": "./src/subscription-plans/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/subscription-plans/index.d.ts",
+        "default": "./lib/module/subscription-plans/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/subscription-plans/index.d.ts",
+        "default": "./lib/commonjs/subscription-plans/index.js"
       }
     },
     "./carousel": {
@@ -3364,6 +3392,20 @@
         "default": "./lib/commonjs/accordion/index.js"
       }
     },
+    "./grouped-section": {
+      "react-native": {
+        "types": "./lib/typescript/module/grouped-section/index.d.ts",
+        "default": "./src/grouped-section/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/grouped-section/index.d.ts",
+        "default": "./lib/module/grouped-section/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/grouped-section/index.d.ts",
+        "default": "./lib/commonjs/grouped-section/index.js"
+      }
+    },
     "./settings-list": {
       "react-native": {
         "types": "./lib/typescript/module/settings-list/index.d.ts",
@@ -3964,6 +4006,12 @@
       "agent-limits-card": [
         "./lib/typescript/module/agent-limits-card/index.d.ts"
       ],
+      "usage-card": [
+        "./lib/typescript/module/usage-card/index.d.ts"
+      ],
+      "subscription-plans": [
+        "./lib/typescript/module/subscription-plans/index.d.ts"
+      ],
       "carousel": [
         "./lib/typescript/module/carousel/index.d.ts"
       ],
@@ -4521,6 +4569,9 @@
       ],
       "accordion": [
         "./lib/typescript/module/accordion/index.d.ts"
+      ],
+      "grouped-section": [
+        "./lib/typescript/module/grouped-section/index.d.ts"
       ],
       "settings-list": [
         "./lib/typescript/module/settings-list/index.d.ts"

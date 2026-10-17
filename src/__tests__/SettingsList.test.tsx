@@ -1,4 +1,3 @@
-import { resolveSurfaceTint } from '../surface/shared';
 jest.mock('react-native-svg', () => ({
   __esModule: true,
   default: 'Svg',
@@ -10,10 +9,15 @@ jest.mock('react-native-svg', () => ({
 }));
 
 import React from 'react';
+import { resolveSurfaceTint } from '../surface/shared';
+import { cardLayout } from './support/card-surface';
+import { useSurfaceFill } from '../styles/surface-levels';
+import { useCardFill } from '../card/use-card-fill';
 import { render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { SETTINGS_LIST_GROUP_TEST_ID } from '../settings-list/surface';
 import { SettingsListGroup, SettingsListItem } from '../settings-list/SettingsList';
 import { useTheme } from '../theme/use-theme';
 import { pressHost } from './support/press-host';
@@ -115,8 +119,15 @@ describe('SettingsListGroup', () => {
   // so the assertion names roles rather than hex values that move with presets.
   function surfaceOf(variant?: 'plain' | 'filled') {
     let colors!: ReturnType<typeof useTheme>['colors'];
+    let cardFill = '';
+    let publishedFill = '';
+    function PublishedProbe() {
+      publishedFill = useSurfaceFill();
+      return null;
+    }
     function Probe() {
       colors = useTheme().colors;
+      cardFill = useCardFill();
       return null;
     }
     const { toJSON, UNSAFE_root } = renderWithTheme(
@@ -124,6 +135,7 @@ describe('SettingsListGroup', () => {
         <Probe />
         <SettingsListGroup variant={variant}>
           <SettingsListItem title="Row" />
+          <PublishedProbe />
         </SettingsListGroup>
       </>,
     );
@@ -143,18 +155,72 @@ describe('SettingsListGroup', () => {
     )) {
       backgrounds.push(material.props.fill);
     }
-    return { backgrounds, colors };
+    return { backgrounds, colors, cardFill, publishedFill };
   }
 
-  it('paints the card colour by default', () => {
-    const { backgrounds, colors } = surfaceOf();
-    expect(backgrounds).toContain(resolveSurfaceTint(colors.card));
-    expect(backgrounds).not.toContain(resolveSurfaceTint(colors.backgroundSecondary));
+  it('paints the canonical card material by default', () => {
+    const { backgrounds, colors, cardFill, publishedFill } = surfaceOf();
+    expect(publishedFill).toBe(cardFill);
+    expect(backgrounds).not.toContain(colors.backgroundSecondary);
   });
 
   it('paints the secondary background when filled, for a card-coloured parent', () => {
     const { backgrounds, colors } = surfaceOf('filled');
     expect(backgrounds).toContain(resolveSurfaceTint(colors.backgroundSecondary));
-    expect(backgrounds).not.toContain(resolveSurfaceTint(colors.card));
+    expect(backgrounds).not.toContain(colors.card);
   });
+});
+
+describe('SettingsListGroup card radius', () => {
+  it.each([
+    [undefined, 28],
+    ['radius-28', 28],
+  ] as const)('applies %s to the actual painted card', (radius, expected) => {
+    const screen = renderWithTheme(
+      <SettingsListGroup radius={radius}>
+        <SettingsListItem title="Account" />
+      </SettingsListGroup>,
+    );
+    expect(
+      resolvedStyle(screen.getByTestId(SETTINGS_LIST_GROUP_TEST_ID).props.style).borderRadius,
+    ).toBe(expected);
+  });
+});
+
+it('separates grouped settings with parent-colored spacing by default', () => {
+  const screen = renderWithTheme(
+    <SettingsListGroup>
+      <SettingsListItem title="First" />
+      <SettingsListItem title="Second" />
+    </SettingsListGroup>,
+  );
+  const group = screen.getByTestId(SETTINGS_LIST_GROUP_TEST_ID);
+  expect(cardLayout(group)).toMatchObject({
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+    borderRadius: 28,
+  });
+  expect(resolvedStyle(screen.getByTestId('grouped-section-gap').props.style).height).toBe(2);
+  expect(screen.queryAllByTestId('grouped-section-divider')).toHaveLength(0);
+});
+
+it('keeps explicit legacy divider separation and supports no separator', () => {
+  const screen = renderWithTheme(
+    <SettingsListGroup separator="line" radius="radius-16">
+      <SettingsListItem title="First" />
+      <SettingsListItem title="Second" />
+    </SettingsListGroup>,
+  );
+  expect(screen.queryAllByTestId('grouped-section-divider')).toHaveLength(1);
+  expect(
+    resolvedStyle(screen.getByTestId(SETTINGS_LIST_GROUP_TEST_ID).props.style).borderRadius,
+  ).toBe(16);
+  screen.unmount();
+  const plain = renderWithTheme(
+    <SettingsListGroup separator="none">
+      <SettingsListItem title="First" />
+      <SettingsListItem title="Second" />
+    </SettingsListGroup>,
+  );
+  expect(plain.queryAllByTestId('grouped-section-divider')).toHaveLength(0);
 });

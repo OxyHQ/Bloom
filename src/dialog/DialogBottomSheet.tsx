@@ -1,3 +1,4 @@
+import { useDialogFrameScrollReset } from './DialogFrameContent';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
@@ -78,6 +79,10 @@ export function DialogBottomSheet({
   const titleId = useId();
   const descriptionId = useId();
   const headerController = useDialogHeaderController();
+  useDialogFrameScrollReset(scrollable !== false, () => {
+    ref.current?.scrollTo(0, false);
+    headerController.scrollY.value = 0;
+  });
   // The sheet is flush with the bottom of the window (a `<Modal>` drawn
   // edge-to-edge on Android, and under the home indicator on iOS), and
   // `BottomSheet` deliberately leaves the safe area to its content. This Dialog
@@ -184,7 +189,7 @@ export function DialogBottomSheet({
     return [
       {
         backgroundColor: theme.colors.background,
-        ...surfaceStyle(SURFACE_SHAPES.sheet),
+        ...surfaceStyle(SURFACE_SHAPES.dialogSheet),
         maxHeight: maxHeightPercent,
       },
       panelStyle,
@@ -281,7 +286,6 @@ export function DialogBottomSheet({
       headerOverlay={
         header ? (
           <DialogNavHeader
-            flatSurface={surfaceMaterial === 'flat'}
             controller={headerController}
             header={header}
             onDismiss={close}

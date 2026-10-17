@@ -1,5 +1,7 @@
 export {
   Text,
+  Title,
+  Subtitle,
   Span,
   H1,
   H2,
@@ -18,3 +20,6 @@ export {
 export type { TextProps, BlockquoteProps } from './types';
 export { TYPE_SCALE, typeScale } from './scale';
 export type { TypeScaleFamily, TypeScaleStyle, TypeScaleVariant, TypeScaleWeight } from './scale';
+
+export { TypographyScope } from './TypographyScope';
+export type { TypographyScopeProps, TypographyMode } from './TypographyScope';

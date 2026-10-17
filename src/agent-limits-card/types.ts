@@ -1,6 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 
 /** One bucket of the context window. */
+/** @deprecated Use UsageSegment from @oxy.so/bloom/usage-card. */
 export interface AgentLimitsContextSegment {
   label: string;
   /** Tokens the bucket holds. */
@@ -15,6 +16,7 @@ export interface AgentLimitsContextSegment {
 }
 
 /** A collapsible breakdown row (MCP tools, memory files…) listing its members. */
+/** @deprecated Use UsageGroup from @oxy.so/bloom/usage-card. */
 export interface AgentLimitsContextGroup {
   label: string;
   tokens: number;
@@ -22,6 +24,7 @@ export interface AgentLimitsContextGroup {
 }
 
 /** The context-window section: a stacked usage bar with an expandable breakdown. */
+/** @deprecated Use UsageData from @oxy.so/bloom/usage-card. */
 export interface AgentLimitsContext {
   /** Window size in tokens (e.g. `1_000_000`). */
   max: number;
@@ -30,6 +33,7 @@ export interface AgentLimitsContext {
 }
 
 /** One rolling plan limit. */
+/** @deprecated Use UsageLimit from @oxy.so/bloom/usage-card. */
 export interface AgentLimitsUsageLimit {
   label: string;
   /** 0–1 share of the limit already used. Clamped. */
@@ -39,6 +43,7 @@ export interface AgentLimitsUsageLimit {
 }
 
 /** The card's fixed strings, localised via `BloomProvider locale`; each key here wins. */
+/** @deprecated Use UsageCardLabels from @oxy.so/bloom/usage-card. */
 export interface AgentLimitsCardLabels {
   /** `'Context window'` in English. */
   contextWindow?: string;
@@ -50,6 +55,7 @@ export interface AgentLimitsCardLabels {
   managePlan?: string;
 }
 
+/** @deprecated Use UsageCardProps from @oxy.so/bloom/usage-card. */
 export interface AgentLimitsCardProps {
   /** Context-window usage. Omit to show only the plan limits. */
   context?: AgentLimitsContext;

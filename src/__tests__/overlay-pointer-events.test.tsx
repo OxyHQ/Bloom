@@ -12,7 +12,9 @@
 // Backdrops didn't dismiss, panels didn't press, and clicks landed on the app
 // behind the overlay.
 //
-// `OverlayRoot` / `Backdrop` encode the working contract; these tests pin it.
+// `OverlayRoot` / `Backdrop` now use the shared StyleSheet.create entries:
+// these compile the same class pair without the deprecated View prop. These
+// tests pin that emitted CSS, rather than assuming raw inline styles work.
 
 import { createElement } from 'react';
 import { act } from 'react';

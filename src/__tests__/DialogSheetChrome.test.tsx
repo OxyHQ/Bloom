@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 // The sheet's keyboard tracker, as jest maps it (the package is an optional
@@ -6,15 +6,11 @@ import { act, render } from '@testing-library/react-native';
 import { useKeyboardHandler } from '../../__mocks__/react-native-keyboard-controller';
 
 import { Dialog, useDialogControl } from '../dialog';
-import {
-  DIALOG_HEADER_CONTENT_TOP,
-  DIALOG_HEADER_INLINE_CONTENT_TOP,
-  DIALOG_NAV_BAR_HEIGHT,
-  isInlineCloseHeader,
-} from '../dialog/DialogHeader';
+import { DIALOG_HEADER_CONTENT_TOP, DIALOG_NAV_BAR_HEIGHT } from '../dialog/DialogHeader';
 import type { DialogHeaderConfig } from '../dialog/types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
+import { SCRIM_STOPS } from '../page-header/EdgeScrim';
 import { resolvedStyle } from './support/rendered-style';
 
 /**
@@ -128,66 +124,25 @@ describe('bottom-placement Dialog keeps its content off the system gesture bar',
   });
 });
 
-describe('a large-title header whose nav row holds only the ✕', () => {
-  it('starts the title level with the ✕ instead of below an empty bar', () => {
-    const { getByTestId } = openDialog({ header: { title: 'Sign in with Oxy' } });
-    expect(resolvedStyle(getByTestId('dialog-large-title-inset').props.style).height).toBe(
-      DIALOG_HEADER_INLINE_CONTENT_TOP,
-    );
-    // The first line (38px) is centred on the 52px nav row.
-    expect(DIALOG_HEADER_INLINE_CONTENT_TOP).toBe((DIALOG_NAV_BAR_HEIGHT - 38) / 2);
-    expect(DIALOG_HEADER_INLINE_CONTENT_TOP).toBeLessThan(DIALOG_HEADER_CONTENT_TOP);
-  });
-
-  it('keeps the bar’s opaque scrim off the title until content scrolls under it', () => {
-    const inline = openDialog({ header: { title: 'Sign in with Oxy' } });
-    expect(resolvedStyle(inline.getByTestId('dialog-nav-scrim').props.style).opacity).toBe(0);
-    inline.unmount();
-
-    const stacked = openDialog({ header: { title: 'Create your account', onBack: () => {} } });
-    expect(resolvedStyle(stacked.getByTestId('dialog-nav-scrim').props.style).opacity).toBe(1);
-  });
-
-  it('wraps the title before the ✕ it shares the row with', () => {
-    const { getAllByText } = openDialog({ header: { title: 'Sign in with Oxy' } });
-    const large = getAllByText('Sign in with Oxy').find(
-      (node) => resolvedStyle(node.props.style).fontSize === 32,
-    );
-    expect(resolvedStyle(large?.props.style).marginInlineEnd).toBeGreaterThan(0);
-  });
-
-  it('keeps the stacked layout when the bar has a back button', () => {
-    const { getByTestId } = openDialog({
-      header: { title: 'Create your account', onBack: () => {} },
-    });
-    expect(resolvedStyle(getByTestId('dialog-large-title-inset').props.style).height).toBe(
+describe('consistent large-title navigation geometry', () => {
+  const cases: Array<[string, DialogHeaderConfig]> = [
+    ['root close', { title: 'Manage your Oxy Account' }],
+    ['nested back', { title: 'Edit Profile', onBack: () => {} }],
+    ['no close', { title: 'Account', showClose: false }],
+    ['primary action', { title: 'Account', primaryAction: { label: 'Save', onPress: () => {} } }],
+  ];
+  it.each(cases)('%s keeps the title below navigation at full width', (_name, header) => {
+    const screen = openDialog({ header });
+    expect(resolvedStyle(screen.getByTestId('dialog-large-title-inset').props.style).height).toBe(
       DIALOG_HEADER_CONTENT_TOP,
     );
-  });
-});
-
-describe('isInlineCloseHeader', () => {
-  const Icon = () => null;
-  const cases: Array<[string, DialogHeaderConfig, boolean]> = [
-    ['title only', { title: 'T' }, true],
-    ['title + subtitle', { title: 'T', subtitle: 'S' }, true],
-    ['no close at all', { title: 'T', showClose: false }, true],
-    ['back button', { title: 'T', onBack: () => {} }, false],
-    ['custom left', { title: 'T', left: <Text>L</Text> }, false],
-    ['custom right', { title: 'T', right: <Text>R</Text> }, false],
-    ['primary action', { title: 'T', primaryAction: { label: 'Save', onPress: () => {} } }, false],
-    [
-      'icon actions',
-      { title: 'T', actions: [{ icon: Icon, accessibilityLabel: 'A', onPress: () => {} }] },
-      false,
-    ],
-    ['branded titleContent', { title: 'T', titleContent: <Text>Logo</Text> }, false],
-    ['no large title', { title: 'T', largeTitle: false }, false],
-    ['no title', {}, false],
-    ['over media', { title: 'T', tone: 'onImage' }, false],
-  ];
-  it.each(cases)('%s → %s', (_name, config, expected) => {
-    expect(isInlineCloseHeader(config)).toBe(expected);
+    expect(DIALOG_HEADER_CONTENT_TOP).toBeGreaterThan(DIALOG_NAV_BAR_HEIGHT);
+    const large = screen
+      .getAllByText(header.title!)
+      .find((node) => resolvedStyle(node.props.style).fontSize === 32);
+    expect(large).toBeDefined();
+    expect(resolvedStyle(large!.props.style).marginInlineEnd).toBeUndefined();
+    expect(resolvedStyle(screen.getByTestId('dialog-nav-scrim').props.style).opacity).toBe(1);
   });
 });
 
@@ -212,11 +167,11 @@ describe('the nav bar paints its own background', () => {
         opacity: n.props.stopOpacity,
       }));
 
-  it('is solid in the surface colour across the nav row, then fades out', () => {
+  it('uses the shared PageHeader edge ramp in the surface colour', () => {
     const { getByTestId } = openDialog({ header: { title: 'Manage', onBack: () => {} } });
     const scrim = getByTestId('dialog-nav-scrim') as unknown as Node;
     expect(scrim.props.className).toBeUndefined();
-    expect(getByTestId('dialog-nav-scrim-fill')).toBeTruthy();
+    expect(getByTestId('dialog-nav')).toBeTruthy();
     // The sheet's own fill: the `colors.background` the sheet paints.
     let background: string | undefined;
     function Probe() {
@@ -231,18 +186,16 @@ describe('the nav bar paints its own background', () => {
     expect(typeof background).toBe('string');
 
     const stops = stopsIn(scrim);
-    const barBottom = DIALOG_NAV_BAR_HEIGHT / (DIALOG_NAV_BAR_HEIGHT + 20);
-    expect(stops).toEqual([
-      { offset: 0, color: background, opacity: 1 },
-      { offset: barBottom, color: background, opacity: 1 },
-      { offset: 1, color: background, opacity: 0 },
-    ]);
+    const normalize = (color: unknown) => String(color).replace(/[ ,]+/g, '');
+    expect(stops.map((stop) => ({ ...stop, color: normalize(stop.color) }))).toEqual(
+      SCRIM_STOPS.map(({ offset, opacity }) => ({ offset, opacity, color: normalize(background) })),
+    );
   });
 
   it('swaps to a dark scrim over media', () => {
     const { getByTestId } = openDialog({ header: { title: 'Photo', tone: 'onImage' } });
     const stops = stopsIn(getByTestId('dialog-nav-scrim') as unknown as Node);
-    expect(stops[0]).toEqual({ offset: 0, color: '#000000', opacity: 0.6 });
+    expect(stops[0]).toEqual({ offset: 0, color: '#000000', opacity: 1 });
     expect(stops[stops.length - 1]).toMatchObject({ offset: 1, opacity: 0 });
   });
 });

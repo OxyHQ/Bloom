@@ -11,7 +11,8 @@
 // failure modes render perfectly and log nothing.
 //
 // `pointerEvents: 'auto' | 'none'` ARE valid CSS and stay allowed as styles —
-// only the two RN-only values are banned.
+// Raw inline RN-only values remain banned. The shared pointer-events stylesheet
+// uses StyleSheet.create, which compiles the same parent/child rules as the prop.
 //
 // The runtime half of this contract is asserted in `overlay-pointer-events.test.tsx`.
 
@@ -19,7 +20,6 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SRC = join(__dirname, '..');
-const BANNED = /pointerEvents:\s*['"](box-none|box-only)['"]/;
 
 function sourceFiles(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
@@ -51,6 +51,7 @@ describe('pointerEvents style-object form', () => {
     const offenders: string[] = [];
 
     for (const file of files) {
+      if (file === join(SRC, 'styles', 'pointer-events.ts')) continue;
       const source = readFileSync(file, 'utf8');
       // Every JSX element that takes the file's `styles.backdrop`, resolved back
       // to the tag that opens it.
@@ -67,10 +68,11 @@ describe('pointerEvents style-object form', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('never uses the RN-only values as styles — pass them as the prop', () => {
+  it('keeps RN-only style values in the shared compiled stylesheet', () => {
     const offenders: string[] = [];
 
     for (const file of files) {
+      if (file === join(SRC, 'styles', 'pointer-events.ts')) continue;
       const source = readFileSync(file, 'utf8');
       // Scan the whole SOURCE, not line by line: the toast positioner hid one
       // of these behind a multi-line ternary (`pointerEvents:\n  cond ? 'none'

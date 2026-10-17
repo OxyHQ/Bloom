@@ -61,7 +61,9 @@ export type PageHeaderScrim = 'auto' | 'always' | 'none';
 /**
  * When the title is visible.
  *
- * `always` (default) is the ordinary screen header. `onScroll` holds the title
+ * `auto` (default) follows a supplied heading offset or registered docking
+ * section; without either relationship the title stays visible.
+ * `always` is the ordinary screen header. `onScroll` holds the title
  * back and fades it in with the scrim — the shape a header over a hero photo
  * wants, where the photo already names the screen. `onDock` uses the paired
  * StickySection arrival instead, inside HeaderDockProvider.
@@ -70,7 +72,7 @@ export type PageHeaderScrim = 'auto' | 'always' | 'none';
  * the two are different questions and conflating them is how every header that
  * turned transparent also lost its title.
  */
-export type PageHeaderTitleReveal = 'always' | 'onScroll' | 'onDock';
+export type PageHeaderTitleReveal = 'auto' | 'always' | 'onScroll' | 'onDock';
 
 export interface PageHeaderProps {
   /** A string renders as the heading; a node renders as-is (and owns its own semantics). */
@@ -81,10 +83,14 @@ export interface PageHeaderProps {
   titleAlign?: PageHeaderTitleAlign;
   /** The title's heading level. Default 1. */
   headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
-  /** Default `always`. */
+  /** Default `auto`: reveal after a paired content heading; otherwise stay visible. */
   titleReveal?: PageHeaderTitleReveal;
-  /** Scroll distance before title and subtitle begin revealing. Default0; fade spans scrollThreshold. */
-  titleRevealOffset?: number;
+  /** Scroll distance before title and subtitle begin revealing. Supplying an offset pairs a content heading with this header; auto mode fades after it. */
+  titleRevealOffset?: number | SharedValue<number>;
+  /** Fade distance for the title, independently of the scrim. Defaults to scrollThreshold. */
+  titleRevealDistance?: number | SharedValue<number>;
+  /** Light title and supporting text over media; controls keep their own island material. */
+  tone?: 'default' | 'onImage';
 
   /** Default `floating`. */
   presentation?: PageHeaderPresentation;

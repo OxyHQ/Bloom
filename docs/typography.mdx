@@ -88,3 +88,13 @@ Every other variant applies its size, weight and colour ONLY when no `className`
 Because the family is inline, a family utility cannot beat it, so `Text` reads the ones it can answer from `className` itself: `font-display` (or a size from `text-3xl` up) sets BlomusModernus, and `font-mono` sets JetBrains Mono, at any breakpoint or state prefix (`md:font-mono`). An explicit `font-mono` wins over a family implied by size or variant: `text-4xl font-mono` is mono. Bloom defines no serif family (`fonts/tokens.ts` has `sans`, `display` and `mono`), so `font-serif` has no counterpart.
 
 Layout classes on web need the consumer's Tailwind pipeline to be scanning Bloom's `lib/`. Colours work regardless, because Bloom applies those inline — which is what makes a missing pipeline look like a layout bug rather than a missing stylesheet.
+
+## Local system-font scope
+
+`<TypographyScope mode="system">` changes the font family of Bloom text and composed controls in its subtree to the platform system font. Semantic variants retain their size, weight and spacing. It applies to headings, body text, buttons and segmented controls without changing global fonts. `mode="default"` explicitly returns to Bloom families; omitted mode inherits the enclosing scope. The provider is stable across mode changes, preserving mounted controls and media.
+
+## Titles and subtitles
+
+Bloom uses BlomusModernus for semantic titles and subtitles: H1–H6, `large-title-*`, `display-*`, `title-1-*`, `title-2-*` and `title-3-*`. `Title` and `Subtitle` also select this family when their chosen size is a smaller headline/body variant. `Text` marked as an accessible heading follows the same rule. Plain headline/body/caption variants and control labels remain sans; a small button label does not become a display title merely because it uses `headline-medium`.
+
+Use `Title`/`Subtitle` for a screen's heading pair and ordinary `Text` for description, price and terms. Dialog headers, page headers and subscription hero headings share this policy.

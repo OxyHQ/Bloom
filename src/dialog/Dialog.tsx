@@ -1,3 +1,9 @@
+import { BloomColorScope } from '../theme/color-scope/ColorScope';
+import {
+  DialogFrameContent,
+  DialogFrameProvider,
+  useDialogFrameScrollReset,
+} from './DialogFrameContent';
 import { useSurfaceTransition } from '../motion/use-surface-transition';
 import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
@@ -92,7 +98,12 @@ const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
  *   2. Custom children — caller passes JSX, bloom renders the chrome.
  *   3. Pure children — no `title`/`description`/`actions`.
  */
-export function Dialog({ placement, ...rest }: DialogProps) {
+export function Dialog({ placement, frame, children, header, ...props }: DialogProps) {
+  const rest = {
+    ...props,
+    header: frame ? { ...header, ...frame.header } : header,
+    children: <DialogFrameContent frame={frame}>{children}</DialogFrameContent>,
+  };
   const resolvedPlacement = useResolvedPlacement(placement);
 
   // `bottom` routes to the shared cross-platform `BottomSheet` surface — one
@@ -102,13 +113,29 @@ export function Dialog({ placement, ...rest }: DialogProps) {
   // keeping the rules-of-hooks contract intact across a responsive placement
   // change.
   if (resolvedPlacement === 'bottom') {
-    return <DialogBottomSheet {...rest} />;
+    return (
+      <DialogFrameProvider
+        frameKey={frame?.key}
+        colorPreset={frame?.colorPreset}
+        typography={frame?.typography}
+        ColorScope={BloomColorScope}
+      >
+        <DialogBottomSheet {...rest} />
+      </DialogFrameProvider>
+    );
   }
   return (
-    <CenteredOrSideDialog
-      {...rest}
-      placement={rest.presentation === 'custom' ? 'end' : resolvedPlacement}
-    />
+    <DialogFrameProvider
+      frameKey={frame?.key}
+      colorPreset={frame?.colorPreset}
+      typography={frame?.typography}
+      ColorScope={BloomColorScope}
+    >
+      <CenteredOrSideDialog
+        {...rest}
+        placement={rest.presentation === 'custom' ? 'end' : resolvedPlacement}
+      />
+    </DialogFrameProvider>
   );
 }
 
@@ -175,6 +202,10 @@ function CenteredOrSideDialog({
 
   const theme = useTheme();
   const ref = useRef<BottomSheetRef>(null);
+  useDialogFrameScrollReset(scrollableResolved && !isSide, () => {
+    ref.current?.scrollTo(0, false);
+    headerController.scrollY.value = 0;
+  });
   const closeCallbacks = useRef<(() => void)[]>([]);
   const titleId = useId();
   const descriptionId = useId();
@@ -284,7 +315,7 @@ function CenteredOrSideDialog({
         // All four corners rounded — bloom's BottomSheet defaults to top-only
         // radius in flush mode, but we use `detached` so the whole card is
         // floating and rounded uniformly.
-        ...surfaceStyle(SURFACE_SHAPES.panel),
+        ...surfaceStyle(SURFACE_SHAPES.dialog),
       },
       // Drives the card's `height` only while a morph is in flight; at rest it
       // resolves to `height: 'auto'` — the card's normal content sizing.
@@ -393,7 +424,6 @@ function CenteredOrSideDialog({
       headerOverlay={
         header ? (
           <DialogNavHeader
-            flatSurface={surfaceMaterial === 'flat'}
             controller={headerController}
             header={header}
             onDismiss={close}
@@ -609,13 +639,13 @@ function SideSheet({
       bottom: insetBottom,
       [anchorKey]: anchorInset,
       width: sideWidth,
-      ...surfaceStyle(SURFACE_SHAPES.panel),
+      ...surfaceStyle(SURFACE_SHAPES.dialog),
     }),
     [insetTop, insetBottom, anchorKey, anchorInset, sideWidth],
   );
 
   const panelRadius =
-    StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius;
+    StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.dialog.radius;
   const material = resolveSurfaceMaterial({
     fill: String(
       StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background,
@@ -682,7 +712,7 @@ function SideSheet({
         {presentation !== 'custom' && surfaceMaterial !== 'flat' && (
           <SurfacePaint
             fill={paintFill}
-            shape={{ curve: SURFACE_SHAPES.panel.curve }}
+            shape={{ curve: SURFACE_SHAPES.dialog.curve }}
             radius={panelRadius}
           />
         )}
@@ -693,7 +723,6 @@ function SideSheet({
             // below the bar.
             <View style={{ flex: 1, minHeight: 0, borderRadius: panelRadius, overflow: 'hidden' }}>
               <DialogNavHeader
-                flatSurface={surfaceMaterial === 'flat'}
                 controller={headerController}
                 header={header}
                 onDismiss={onHeaderDismiss}

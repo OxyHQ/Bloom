@@ -141,7 +141,7 @@ Per-placement behavior:
 
 ## Nav header: the title beside the ✕
 
-In `header` mode the large title normally starts below the 52px nav row. When that row would hold **only** the close button, the title starts level with the ✕ and wraps before it. That means no `onBack`, `left`, `right`, `actions` or `primaryAction`, and no `titleContent` or `tone: 'onImage'`. The row's scrim fades in once content scrolls under it. Without this, every entry view of a flow began with an empty band above its title. As soon as a back button or trailing actions appear, the title returns to its own row below the bar. `isInlineCloseHeader()` in `dialog/DialogHeader.tsx` is the rule.
+In `header` mode every large title starts below the 56px navigation row and its 20px gradient tail. Root and nested screens share the same full-width title area, regardless of back, close or trailing actions. The title therefore keeps its position and wrapping when navigation controls change. As content scrolls, the small title still appears in the navigation row.
 
 The bar's background is an SVG gradient Bloom paints itself. It is solid in the surface colour across the nav row and fades out over the 20px below it. Do not bring back the old Tailwind gradient class. On native it compiles to a CSS gradient with Tailwind v4's `in oklab` interpolation, which React Native cannot parse, so the bar was transparent and a collapsed title sat on top of the rows scrolling under it. On web it also depended on the consumer scanning Bloom's `lib/`.
 
@@ -420,3 +420,71 @@ cannot move backwards relative to the preceding stop; fewer than two stops,
 non-finite offsets, empty colors or invalid directions fall back to `dimColor`.
 Blur intensity clamps to 0..100 and dim opacity to 0..1; non-finite values retain
 the default. Both options also exist on the underlying `BottomSheet`.
+
+
+## Screens inside one dialog
+
+Use `frame` when a dialog hosts a sequence of screens. Keep the `Dialog` and its
+control mounted; change `frame.key` as your router or local state changes. Bloom
+owns the shared floating page header, grouped actions, title reveal on scroll,
+and panel size morph. No app-side animation or header renderer is needed.
+
+```tsx
+const control = useDialogControl();
+const [screen, setScreen] = useState('summary');
+
+<Dialog
+  control={control}
+  frame={{
+    key: screen,
+    header: {
+      title: screen === 'summary' ? 'Summary' : 'Details',
+      onBack: screen === 'details' ? () => setScreen('summary') : undefined,
+    },
+  }}
+>
+  {screen === 'summary' ? <Summary onDetails={() => setScreen('details')} /> : <Details />}
+</Dialog>
+```
+
+`frame.header` merges over `header` defaults. A frame enables screen-header mode
+even when its header is initially empty, keeping the content host stable during
+navigation. Natural content height is measured; `frame.size` can declare
+`height` and `maxWidth` in pixels for an independently scrolling screen.
+`frame.morph={false}` opts one frame out; `morph={false}` disables panel resizing
+for the dialog. Side drawers retain their fixed geometry. Reduced-motion policy
+continues to follow the shared motion implementation.
+
+A changed frame key resets the dialog-owned scroller and header reveal to the top.
+A rerender or size change within the same key preserves scroll and form state.
+With `scrollable={false}`, the screen owns scroll restoration.
+
+The router remains yours: Bloom does not depend on Expo Router, application
+routes, authentication, or a navigation store. For deeply nested route hosts,
+`useDialogFrame` and `useDialogHeader` remain the advanced equivalent. Use one
+frame owner per dialog; do not combine a `frame` prop with another frame writer.
+The same `frame` option is accepted when presenting a Bloom surface.
+
+
+Dialog cards use the shared 28px dialog shape; bottom placement applies the same
+radius to its top corners. Content and surface paint share this geometry so
+images, scroll content and the header clip together. `style`/`panelStyle` can
+still override the radius for a particular dialog.
+
+### Screen-to-screen content motion
+
+Changing `frame.key` (or the key declared with `useDialogFrame`) gives the incoming
+screen a brief 160ms settle alongside the existing size morph. Real children mount
+immediately, remain interactive, and never pass through a blank opacity-zero state.
+`direction: 'forward'` is the default; use `'backward'` when returning through
+history or `'none'` to disable content motion while retaining size morphing.
+Reduced motion skips the content transition. First mount and unchanged frame keys
+do not trigger this transition; Dialog's entrance animation is independent.
+
+Header icon `actions` and the close button share one trailing `ButtonGroup`. Back stays in the leading PageHeader island, and `primaryAction` renders separately beside the trailing group. Close remains available alongside back and actions unless `showClose: false`; a custom `right` replaces the entire trailing slot.
+
+A frame can set `colorPreset` to scope the entire dialog, including its navigation, to a Bloom recipe. Use either `frame={{ key, colorPreset }}` or the existing single `useDialogFrame({ key, colorPreset })` declaration. Leaving the preset out on the next frame restores the enclosing palette; changing it preserves mounted content and media.
+
+For content that supplies its own hero heading, declare `header={{ title, titleLayout: 'hero' }}` (also supported by `useDialogHeader`). The content starts under the floating navigation without a duplicate large title or top spacer. The navigation title and scrim appear as the hero scrolls away. `titleLayout: 'large'` uses the standard in-content large title and `titleLayout: 'bar'` keeps the small title visible. Existing `largeTitle` behavior is unchanged when `titleLayout` is omitted.
+
+A frame may also declare `typography: 'system'` to use the platform system font throughout its body and navigation while preserving Bloom's semantic type scale. Omitting it on the next frame restores the enclosing typography. The same scoped policy is available independently as `TypographyScope` from `@oxy.so/bloom/typography`; `mode="system"` uses system-ui on web, System on iOS, and sans-serif on Android. The default remains Bloom typography.

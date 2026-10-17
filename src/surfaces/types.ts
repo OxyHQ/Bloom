@@ -4,6 +4,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type {
   DialogAction,
   DialogHeaderConfig,
+  DialogScreenFrame,
   DialogInset,
   ResponsiveDialogPlacement,
 } from '../dialog/types';
@@ -19,6 +20,8 @@ import type {
  * props — only stacked/coordinated by {@link SurfaceHost}.
  */
 export interface SurfacePresentation {
+  /** Declarative screen identity/header/geometry, forwarded to Dialog. */
+  frame?: DialogScreenFrame;
   /**
    * Surface anchor. Defaults to `{ base: 'bottom', md: 'center' }` — a bottom
    * sheet on narrow viewports that becomes a centered modal on wide ones (the

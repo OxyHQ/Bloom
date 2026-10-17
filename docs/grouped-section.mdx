@@ -1,0 +1,284 @@
+---
+title: GroupedSection
+description: Grouped sections for menus, accounts, preferences, and custom content — items, groups, dividers.
+order: 18
+---
+
+# GroupedSection
+
+Grouped sections for menus, accounts, preferences, and custom content. Items, groups (with optional headers and footers), and dividers. Built for the dense, list-heavy screens common in account / preferences UIs.
+
+## Basic
+
+```tsx
+import {
+  GroupedSection,
+  GroupedSectionItem,
+} from '@oxy.so/bloom/grouped-section';
+
+<GroupedSection title="General">
+  <GroupedSectionItem
+    icon={<PersonIcon />}
+    title="Account"
+    value="ada@oxy.so"
+    onPress={() => navigate('Account')}
+  />
+  <GroupedSectionItem
+    icon={<GlobeIcon />}
+    title="Language"
+    value="English"
+    onPress={() => navigate('Language')}
+  />
+</GroupedSection>
+```
+
+The group renders a rounded card on iOS-style platforms and on web. The first item rounds top corners, the last item rounds bottom corners.
+
+## With description
+
+```tsx
+<GroupedSectionItem
+  icon={<ShieldIcon />}
+  title="Two-factor authentication"
+  description="Add a second sign-in step with an authenticator app."
+  value="On"
+  onPress={() => navigate('TwoFactor')}
+/>
+```
+
+`description` is multi-line and styled in muted text under the title.
+
+## Toggle row
+
+```tsx
+<GroupedSectionItem
+  icon={<MoonIcon />}
+  title="Dark mode"
+  rightElement={<Switch checked={darkMode} onCheckedChange={setDarkMode} />}
+/>
+```
+
+When `rightElement` is set, the chevron is hidden automatically (you can override with `showChevron`).
+
+## Destructive
+
+```tsx
+<GroupedSection title="Danger zone">
+  <GroupedSectionItem
+    icon={<TrashIcon />}
+    title="Delete account"
+    destructive
+    onPress={confirmDelete}
+  />
+</GroupedSection>
+```
+
+`destructive` switches the title to the negative color and uses the destructive icon tint.
+
+## Disabled
+
+```tsx
+<GroupedSectionItem
+  icon={<KeyIcon />}
+  title="Reset password"
+  description="Coming soon"
+  disabled
+/>
+```
+
+## Shared card surface
+
+The default uses the same neutral material backing as `Card` and `UsageCard`,
+resolved from the surrounding surface's published fill and depth. Sibling cards
+therefore share a background in light and dark modes, including inside dialogs
+and nested panels. Row descendants receive that same fill and the new depth.
+
+One real Card paints the continuous material behind the entire group. Rows stay
+transparent, so there are no per-row optical rims. The 2px spacers paint the
+actual parent fill between rows; they are gaps, not border strokes.
+`separator="line"` uses legacy dividers inside the same Card. Card owns clipping,
+material, and the fill/depth context for all descendants.
+
+Explicit `variant="plain"` retains the `card` token, and `variant="filled"`
+retains `backgroundSecondary`. These compatibility overrides are normally unnecessary.
+Custom surrounding surfaces can publish their fill using `SurfaceLevelProvider`.
+
+## Footer / header text
+
+```tsx
+<GroupedSection
+  title="Notifications"
+  footer="Push notifications require an enabled device permission."
+>
+  <GroupedSectionItem title="Marketing emails" rightElement={<Switch checked={mktg} onCheckedChange={setMktg} />} />
+  <GroupedSectionItem title="Product updates" rightElement={<Switch checked={prod} onCheckedChange={setProd} />} />
+</GroupedSection>
+```
+
+`title` is the group header (uppercase muted label on iOS-style platforms); `footer` is a soft explanatory line under the card.
+
+## Components
+
+### `GroupedSection`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `title?` | `string` | Section header. |
+| `footer?` | `string` | Section footer. |
+| `children` | `React.ReactNode` | Direct children become rows; arbitrary custom row content is supported. |
+| `radius?` | `CardProps['radius']` | Outer silhouette; defaults to `radius-28`. |
+| `separator?` | `'space' \| 'line' \| 'none'` | Defaults to 2px transparent spacing; `line` restores dividers. |
+| `style?` | `StyleProp<ViewStyle>` | Override group container style. |
+| `variant?` | `'plain' \| 'filled'` | Overrides the surface the group would resolve from the container's published fill — `card` or `backgroundSecondary`. Normally left unset; see [above](#the-group-knows-what-it-is-sitting-on). |
+
+### `GroupedSectionItem`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `icon?` | `React.ReactNode` | Leading icon. |
+| `title` | `string` | Primary label. |
+| `description?` | `string` | Multi-line secondary text. |
+| `value?` | `string` | Right-side value string. |
+| `rightElement?` | `React.ReactNode` | Replaces value / chevron with a custom node. |
+| `showChevron?` | `boolean` | Defaults to `true` when `onPress` is set. |
+| `destructive?` | `boolean` | Negative palette for title + icon. |
+| `onPress?` | `() => void` | Tap handler. |
+| `disabled?` | `boolean` | |
+| `accessibilityLabel?` | `string` | Override the derived label. |
+| `accessibilityHint?` | `string` | |
+| `accessibilityRole?` | `'button' \| 'link' \| 'none'` | Defaults to `'button'` when pressable. |
+| `leftInset?` | `number` | Left inset to align text when no icon is set. |
+
+### `GroupedSectionDivider`
+
+An explicit divider for custom compositions. In a group, prefer `separator="line"`; use `separator="none"` if inserting your own dividers.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `inset?` | `number` | Left inset to align with text (default `52`). |
+
+## Recipes
+
+### Mixed read / link rows
+
+```tsx
+<GroupedSection title="About">
+  <GroupedSectionItem title="Version" value="1.4.2" />
+  <GroupedSectionItem title="Build" value="231" />
+  <GroupedSectionItem title="Terms" onPress={() => navigate('Terms')} />
+  <GroupedSectionItem title="Privacy" onPress={() => navigate('Privacy')} />
+</GroupedSection>
+```
+
+### Sign-out section
+
+```tsx
+<GroupedSection>
+  <GroupedSectionItem
+    title="Sign out"
+    onPress={signOut}
+    accessibilityRole="button"
+  />
+</GroupedSection>
+```
+
+### Account switcher
+
+```tsx
+<GroupedSection title="Accounts">
+  {accounts.map((a, i) => (
+    <Fragment key={a.id}>
+      {i > 0 ? <GroupedSectionDivider /> : null}
+      <GroupedSectionItem
+        icon={<Avatar uri={a.avatarUrl} size={28} />}
+        title={a.name}
+        description={a.handle}
+        rightElement={a.id === activeId ? <CheckIcon /> : null}
+        onPress={() => switchTo(a.id)}
+      />
+    </Fragment>
+  ))}
+</GroupedSection>
+```
+
+
+### Group corners
+
+`GroupedSection` accepts the same `radius` tokens as `Card`. The default is
+`radius-28`. This controls the group's outer silhouette and clipping, while `style` continues to style the outer
+container (including its title and footer).
+
+```tsx
+<GroupedSection>
+  <GroupedSectionItem title="Account" onPress={openAccount} />
+</GroupedSection>
+```
+
+
+### Row separation
+
+Groups use `separator="space"` by default: 2px parent-colored spacers separate
+transparent rows above one continuous Card material. The outside silhouette uses
+28px corners. Rows have no independent surface, border, rim, or shadow.
+These defaults belong to Bloom, so consumers need no radius or separator props.
+
+Use `separator="line"` for the previous single-card divider treatment, with
+`radius="radius-16"` when preserving its previous geometry. `separator="none"`
+keeps a continuous card with no divisions. Titles and footers remain outside
+the clipped group.
+
+
+## Compatibility
+
+`SettingsListGroup`, `SettingsListItem`, and `SettingsListDivider` remain aliases
+of these exact components under `@oxy.so/bloom/settings-list`. They share the
+same defaults and implementation; new compositions use the neutral names.
+
+
+### Leading icons
+
+`GroupedSectionIcon` uses a real Bloom `Surface` for its 28px filled circle
+(including the shared tint, sheen, and rim) and passes a darkened
+color and 16px glyph size to its renderer. Semantic `tone` defaults to `primary`;
+use `default` for neutral, or `info`, `success`, `warning`, and `error` for status.
+An explicit accent `color`, `size`, and `iconSize` are available when needed.
+Existing icon nodes, logos, and avatars are never tinted implicitly.
+
+```tsx
+<GroupedSectionItem title="Security" icon={
+  <GroupedSectionIcon tone="info">
+    {({ color, size }) => <ShieldIcon color={color} size={size} />}
+  </GroupedSectionIcon>
+} />
+```
+
+Items reserve a 28px icon column, use 16px horizontal and 12px vertical padding,
+and have a 52px minimum height. Descriptions sit 2px below titles. `leftInset`
+still overrides only the leading padding. Fragments are flattened into rows;
+custom components and arbitrary row content remain intact.
+
+### Animated rows
+
+Keep expandable rows mounted in `GroupedSectionCollapse` and toggle `open`.
+Bloom animates their measured height and opacity using the same `Collapsible`
+primitive as UsageCard, respecting reduced motion and hiding closed content
+from focus and accessibility. Spacers participate in the reveal; the group
+continues to paint exactly one material.
+
+```tsx
+<GroupedSection>
+  <GroupedSectionItem title="Accounts" onPress={() => setExpanded(!expanded)} />
+  <GroupedSectionCollapse open={expanded}>
+    <GroupedSectionItem title="Another account" />
+    <GroupedSectionItem title="Add account" />
+  </GroupedSectionCollapse>
+  <GroupedSectionItem title="Manage account" />
+</GroupedSection>
+```
+
+Place the collapse directly inside the group (fragments are supported).
+Optional `transition` and `returnFocusRef` use the shared Collapsible API.
+The default reveal is 320ms with an ease-out curve; restored open content
+starts settled. Closing leaves one normal gap between surrounding rows.
+
+Rows accept `accessibilityState` for selection, busy, expanded and checked state, and `testID` on the interactive row itself. `disabled` and `accessibilityState.disabled` combine: either disables the row without discarding its other states. Static rows receive the same accessibility state without becoming buttons.
