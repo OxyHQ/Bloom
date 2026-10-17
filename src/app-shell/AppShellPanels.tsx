@@ -45,6 +45,7 @@ import { useIsRtl } from '../hooks/use-is-rtl';
 import { useAppShellRegion, type AppShellRegionValue } from '../layout/app-shell-region';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { useMessages } from '../locale/messages';
+import { useOptionalSurfaceFill } from '../styles/surface-levels';
 import { webViewportHeightMinus, type WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
@@ -147,6 +148,7 @@ export function createAppShellPanels(
     children: React.ReactNode;
   }) {
     const bottomEdge = useBottomEdgeInset();
+    const fill = useOptionalSurfaceFill();
     if (scroll === 'panel' && bottomReserve === null) {
       return (
         <ScrollView style={GROW} contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomEdge }}>
@@ -154,7 +156,22 @@ export function createAppShellPanels(
         </ScrollView>
       );
     }
-    return <View style={[GROW, { paddingBottom: bottomReserve ?? 0 }]}>{children}</View>;
+    return (
+      <View style={GROW}>
+        {children}
+        {bottomReserve ? (
+          // The bottom chrome's clearance, painted in the fill the panel
+          // publishes — the colour a `Screen` page paints — rather than left as
+          // padding over the panel's material: a framed panel's sheen darkens
+          // toward its foot, and padding showed it as a band under every short
+          // page once the page stopped overflowing the panel.
+          <View
+            testID="app-shell-panel-reserve"
+            style={{ height: bottomReserve, flexShrink: 0, backgroundColor: fill }}
+          />
+        ) : null}
+      </View>
+    );
   }
 
   /** A panel that is the whole region: grows with a document, fills a bounded one. */
