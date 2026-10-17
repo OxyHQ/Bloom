@@ -40,3 +40,14 @@ export const AppShellPaneActiveContext = createContext(true);
 export function useAppShellPaneActive(): boolean {
   return useContext(AppShellPaneActiveContext);
 }
+
+/** Whether `AppShellSplitPanes` currently draws this pane alone. */
+export const AppShellPaneAloneContext = createContext(false);
+/**
+ * True inside a split pane drawn ALONE — below `splitFrom`, or when it is the
+ * only pane shown — and false beside another pane or outside split panes. A
+ * pane shows its own way to the other one (a Map / List toggle) exactly then.
+ */
+export function useAppShellPaneAlone(): boolean {
+  return useContext(AppShellPaneAloneContext);
+}

@@ -29,6 +29,7 @@ import { APP_SHELL_DEFAULTS as D, breakpointPx } from './constants';
 import { useShellWidth } from './use-shell-width';
 import { SplitPane as Pane } from './SplitPane';
 import { AppShellSplitMotion } from './AppShellSplitMotion';
+import { AppShellPaneAloneContext } from './context';
 
 const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
   variant = 'joined',
@@ -128,21 +129,95 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
         testID={testID ? `${testID}-split` : undefined}
         style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, flexDirection: 'row' }}
       >
-        {(showList || showDetail) && (
-          <AppShellSplitMotion
-            list={list}
-            detail={detail}
-            showList={showList}
-            showDetail={showDetail}
-            width={listDrawnWidth}
-            gap={divider.width}
-            paneScroll={paneScroll}
-            listErrorBoundary={listErrorBoundary}
-            detailErrorBoundary={detailErrorBoundary}
-            dividerStyle={divider}
-            testID={testID}
-            resizeHandle={
-              resizable ? (
+        <AppShellPaneAloneContext.Provider value={solo}>
+          {(showList || showDetail) && (
+            <AppShellSplitMotion
+              list={list}
+              detail={detail}
+              showList={showList}
+              showDetail={showDetail}
+              width={listDrawnWidth}
+              gap={divider.width}
+              paneScroll={paneScroll}
+              listErrorBoundary={listErrorBoundary}
+              detailErrorBoundary={detailErrorBoundary}
+              dividerStyle={divider}
+              testID={testID}
+              resizeHandle={
+                resizable ? (
+                  <AiChatResizeHandle
+                    label={resizeLabel}
+                    onResizeStart={onResizeStart}
+                    onResize={onResize}
+                    onNudge={onNudge}
+                    testID={testID ? `${testID}-divider` : undefined}
+                  />
+                ) : null
+              }
+            />
+          )}
+          {showInfo && (showList || showDetail) ? (
+            <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} />
+          ) : null}
+          {showInfo ? (
+            <Pane
+              testID={testID ? `${testID}-pane-info` : undefined}
+              errorBoundary={infoErrorBoundary}
+              scroll={paneScroll}
+              style={
+                solo
+                  ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 }
+                  : { width: infoWidth, flexShrink: 0 }
+              }
+            >
+              {info}
+            </Pane>
+          ) : null}
+        </AppShellPaneAloneContext.Provider>
+      </View>
+    );
+  }
+
+  return (
+    <View
+      onLayout={onLayout}
+      testID={testID ? `${testID}-split` : undefined}
+      style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, flexDirection: 'row' }}
+    >
+      <AppShellPaneAloneContext.Provider value={solo}>
+        {showList ? (
+          <Pane
+            testID={testID ? `${testID}-pane-list` : undefined}
+            errorBoundary={listErrorBoundary}
+            scroll={paneScroll}
+            style={
+              solo
+                ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 }
+                : { width: listDrawnWidth, flexShrink: 0 }
+            }
+          >
+            {list}
+          </Pane>
+        ) : null}
+        {showList && !solo ? (
+          <View style={divider} testID={testID ? `${testID}-list-gap` : undefined}>
+            {resizable ? (
+              <View
+                pointerEvents="box-none"
+                testID={testID ? `${testID}-resize-anchor` : undefined}
+                style={
+                  separated
+                    ? {
+                        position: 'absolute',
+                        top: 0,
+                        bottom: 0,
+                        left: '50%',
+                        right: '50%',
+                        width: 0,
+                      }
+                    : { flex: 1 }
+                }
+              >
                 <AiChatResizeHandle
                   label={resizeLabel}
                   onResizeStart={onResizeStart}
@@ -150,11 +225,21 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
                   onNudge={onNudge}
                   testID={testID ? `${testID}-divider` : undefined}
                 />
-              ) : null
-            }
-          />
-        )}
-        {showInfo && (showList || showDetail) ? (
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+        {showDetail ? (
+          <Pane
+            testID={testID ? `${testID}-pane-detail` : undefined}
+            errorBoundary={detailErrorBoundary}
+            scroll={paneScroll}
+            style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}
+          >
+            {detail}
+          </Pane>
+        ) : null}
+        {showInfo && showDetail && !solo ? (
           <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} />
         ) : null}
         {showInfo ? (
@@ -171,80 +256,7 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
             {info}
           </Pane>
         ) : null}
-      </View>
-    );
-  }
-
-  return (
-    <View
-      onLayout={onLayout}
-      testID={testID ? `${testID}-split` : undefined}
-      style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, flexDirection: 'row' }}
-    >
-      {showList ? (
-        <Pane
-          testID={testID ? `${testID}-pane-list` : undefined}
-          errorBoundary={listErrorBoundary}
-          scroll={paneScroll}
-          style={
-            solo
-              ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 }
-              : { width: listDrawnWidth, flexShrink: 0 }
-          }
-        >
-          {list}
-        </Pane>
-      ) : null}
-      {showList && !solo ? (
-        <View style={divider} testID={testID ? `${testID}-list-gap` : undefined}>
-          {resizable ? (
-            <View
-              pointerEvents="box-none"
-              testID={testID ? `${testID}-resize-anchor` : undefined}
-              style={
-                separated
-                  ? { position: 'absolute', top: 0, bottom: 0, left: '50%', right: '50%', width: 0 }
-                  : { flex: 1 }
-              }
-            >
-              <AiChatResizeHandle
-                label={resizeLabel}
-                onResizeStart={onResizeStart}
-                onResize={onResize}
-                onNudge={onNudge}
-                testID={testID ? `${testID}-divider` : undefined}
-              />
-            </View>
-          ) : null}
-        </View>
-      ) : null}
-      {showDetail ? (
-        <Pane
-          testID={testID ? `${testID}-pane-detail` : undefined}
-          errorBoundary={detailErrorBoundary}
-          scroll={paneScroll}
-          style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}
-        >
-          {detail}
-        </Pane>
-      ) : null}
-      {showInfo && showDetail && !solo ? (
-        <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} />
-      ) : null}
-      {showInfo ? (
-        <Pane
-          testID={testID ? `${testID}-pane-info` : undefined}
-          errorBoundary={infoErrorBoundary}
-          scroll={paneScroll}
-          style={
-            solo
-              ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 }
-              : { width: infoWidth, flexShrink: 0 }
-          }
-        >
-          {info}
-        </Pane>
-      ) : null}
+      </AppShellPaneAloneContext.Provider>
     </View>
   );
 };

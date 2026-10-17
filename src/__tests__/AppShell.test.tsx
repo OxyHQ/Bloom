@@ -8,6 +8,7 @@ import { PortalOutlet, PortalProvider } from '../portal';
 import {
   AppShell,
   AppShellSplitPanes,
+  useAppShellPaneAlone,
   AppShellHeader,
   AppShellMenuButton,
   NotificationBell,
@@ -1529,6 +1530,24 @@ describe('AppShellSplitPanes pane / splitFrom / detailMinWidth', () => {
       </BloomThemeProvider>,
     );
     expect(resolvedStyle(screen.getByTestId('panes-pane-list').props.style).width).toBe(300);
+  });
+
+  it('useAppShellPaneAlone tells a pane whether it is drawn alone', () => {
+    function Probe({ id }: { id: string }) {
+      return <ReactNative.Text testID={id}>{String(useAppShellPaneAlone())}</ReactNative.Text>;
+    }
+    const probes = {
+      list: <Probe id="list-alone" />,
+      detail: <Probe id="detail-alone" />,
+    };
+    setWidth(700);
+    const narrow = renderIn(panes({ pane: 'list', splitFrom: 'md', ...probes }));
+    expect(narrow.getByTestId('list-alone').props.children).toBe('true');
+    narrow.unmount();
+    setWidth(1200);
+    const wide = renderIn(panes({ pane: 'list', splitFrom: 'md', ...probes }));
+    expect(wide.getByTestId('list-alone').props.children).toBe('false');
+    expect(wide.getByTestId('detail-alone').props.children).toBe('false');
   });
 
   it('without detailMinWidth the resting width is kept', () => {

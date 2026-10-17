@@ -751,6 +751,9 @@ counts the room it has, and the app keeps no width of its own — a map/list
 toggle only flips `pane`. Explicit `showList` / `showDetail` still win.
 `detailMinWidth` keeps the detail from being squeezed: the list's width, resting
 or dragged, gives way (never below `listMinWidth`) so the detail keeps it.
+Inside a pane, `useAppShellPaneAlone()` is true while that pane is drawn alone,
+so the pane shows its own way to the other one (a Map / List toggle) exactly
+then and never beside it.
 
 ```tsx
 <AppShellSplitPanes
