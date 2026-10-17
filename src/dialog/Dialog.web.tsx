@@ -18,6 +18,7 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * (`WEB_BARREL_EXTRAS` in `scripts/generate-platform-exports.mjs`).
  */
 import React, {
+  type ComponentRef,
   createContext,
   useCallback,
   useEffect,
@@ -225,7 +226,7 @@ function CenterOrSideDialog({
   // the imperative `control.close()` still drives the exit + post-exit onClose.
   const [isOpen, setIsOpen] = useState(() => controlledOpen ?? startOpen ?? false);
   const [isClosing, setIsClosing] = useState(false);
-  const panelRef = useRef<View>(null);
+  const panelRef = useRef<ComponentRef<typeof View>>(null);
   const closeCallbacksRef = useRef<(() => void)[]>([]);
   // Read the latest controlled flag inside stable callbacks without re-binding.
   const isControlledRef = useRef(isControlled);
@@ -474,7 +475,7 @@ function DialogPanel({
   material?: DialogProps['material'];
   transition?: DialogProps['transition'];
   presentation?: DialogProps['presentation'];
-  panelRef: React.RefObject<View | null>;
+  panelRef: React.RefObject<ComponentRef<typeof View> | null>;
   testID?: string;
   label?: string;
   title?: string;
@@ -697,7 +698,7 @@ function SheetSurface({
   material?: DialogProps['material'];
   backdrop?: DialogProps['backdrop'];
   transition?: DialogProps['transition'];
-  panelRef: React.RefObject<View | null>;
+  panelRef: React.RefObject<ComponentRef<typeof View> | null>;
   testID?: string;
   label?: string;
   title?: string;

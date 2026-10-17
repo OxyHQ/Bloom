@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { AgentAvatar } from '../agent-avatar/AgentAvatar';
 import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
@@ -101,10 +102,10 @@ export function CharacterFace({
     return (
       <View style={box}>
         {ready ? null : provided ? (
-          <Image
+          <BloomImage
             source={provided}
             style={box}
-            resizeMode="contain"
+            contentFit="contain"
             accessible={false}
             accessibilityIgnoresInvertColors
           />
@@ -126,10 +127,10 @@ export function CharacterFace({
   }
   if (!still) return <>{placeholder}</>;
   return (
-    <Image
+    <BloomImage
       source={still}
       style={box}
-      resizeMode="contain"
+      contentFit="contain"
       accessible={label !== undefined}
       accessibilityRole="image"
       accessibilityLabel={label}

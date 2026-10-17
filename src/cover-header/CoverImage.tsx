@@ -1,13 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  Image,
-  StyleSheet,
-  View,
-  type ImageLoadEventData,
-  type ImageSourcePropType,
-  type LayoutChangeEvent,
-  type NativeSyntheticEvent,
-} from 'react-native';
+import { StyleSheet, View, type ImageSourcePropType, type LayoutChangeEvent } from 'react-native';
+import { BloomImage, type BloomImageLoadInfo } from '../image';
 
 /** `object-fit: cover` with an `object-position`: the image sized to cover the box, offset by the fractions. */
 export function CoverImage({
@@ -29,9 +22,8 @@ export function CoverImage({
       prev && prev.width === width && prev.height === height ? prev : { width, height },
     );
   }, []);
-  const onLoad = useCallback((event: NativeSyntheticEvent<ImageLoadEventData>) => {
-    const s = event.nativeEvent?.source;
-    if (s && s.width > 0 && s.height > 0) setNatural({ width: s.width, height: s.height });
+  const onLoad = useCallback(({ width, height }: BloomImageLoadInfo) => {
+    if (width > 0 && height > 0) setNatural({ width, height });
   }, []);
 
   const frame = useMemo(() => {
@@ -53,13 +45,13 @@ export function CoverImage({
       onLayout={onLayout}
       testID={testID ? `${testID}-frame` : undefined}
     >
-      <Image
+      <BloomImage
         testID={testID}
         source={resolved}
         onLoad={onLoad}
         accessibilityIgnoresInvertColors
         aria-hidden
-        resizeMode="cover"
+        contentFit="cover"
         style={
           frame
             ? {

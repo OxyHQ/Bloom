@@ -5,7 +5,10 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Avatar } from '../avatar';
 import { ImageResolverProvider } from '../image-resolver';
 import { PATHS, PATH_VIEW_BOX, resolve } from '../shapes';
-import { Image } from 'react-native';
+// `image/BloomImage` draws with expo-image on a device, and jest's `Platform.OS`
+// is `ios` — so the rendered image is `__mocks__/expo-image.ts`'s component,
+// not react-native's `Image`.
+import { Image } from 'expo-image';
 import { SQUIRCLE_PATH } from '../shapes/squircle-path';
 
 function renderAvatar(ui: React.ReactElement) {

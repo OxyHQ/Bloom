@@ -1,6 +1,6 @@
 import { surfaceFillOn } from '../styles/surface-levels';
 import React, { useEffect, useMemo } from 'react';
-import { Image, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { webDataSet } from '../styles/web-data';
@@ -12,6 +12,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MEDIA_PLAYER_CSS, MEDIA_PLAYER_STYLE_ID } from './shared';
 import type { MediaArtist, MediaPlayerTrack } from './types';
+import { BloomImage } from '../image';
 
 /** The cover: an `Image` for a URL or a resolved id, a neutral well with a note glyph otherwise. */
 export function Artwork({
@@ -48,11 +49,11 @@ export function Artwork({
       testID={testID}
     >
       {uri ? (
-        <Image
+        <BloomImage
           source={{ uri }}
           accessibilityIgnoresInvertColors
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       ) : (
         <View pointerEvents="none">

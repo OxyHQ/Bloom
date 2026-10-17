@@ -56,6 +56,7 @@ import { AiChatResizeHandle } from './AiChatResizeHandle';
 import { clamp01 } from '../styles/clamp';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 
 const NO_SAFE_INSETS = { top: 0, right: 0, bottom: 0, left: 0 };
 
@@ -289,7 +290,9 @@ export function AiChatShell({
 }: AiChatShellProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
-  const deviceInsets = useContext(SafeAreaInsetsContext);
+  const deviceInsets = useCssSafeAreaInsets(
+    useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS,
+  );
   const inheritedBottomInset = useContext(BottomBarSlotContext);
   const ownsSafeArea = safeArea && Platform.OS !== 'web';
   const safeInsets = ownsSafeArea ? (deviceInsets ?? NO_SAFE_INSETS) : NO_SAFE_INSETS;

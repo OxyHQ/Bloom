@@ -1,13 +1,13 @@
 /**
  * `HoverCard`'s own state, plus the one fact a child card needs to know.
  */
-import { createContext, useContext, type RefObject } from 'react';
+import { createContext, useContext, type RefObject, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 export interface HoverCardContextValue {
   open: boolean;
   setOpen: (open: boolean) => void;
-  anchorRef: RefObject<View | null>;
+  anchorRef: RefObject<ComponentRef<typeof View> | null>;
   /** Open after the open delay (restarts nothing if already pending). */
   show: () => void;
   /** Close after the close delay. */

@@ -12,7 +12,7 @@ import { isTopmostOverlayLayer } from './stack';
 
 export interface ModalKeyboardProps {
   /** The surface's panel: where focus goes, and what Tab stays inside. */
-  panelRef: React.RefObject<View | null>;
+  panelRef: React.RefObject<React.ComponentRef<typeof View> | null>;
   /** The surface has started its exit: focus goes back now, Escape is spent. */
   closing?: boolean;
   /** Whether Escape may dismiss it (a dialog's `dismissOnBackdrop`). */

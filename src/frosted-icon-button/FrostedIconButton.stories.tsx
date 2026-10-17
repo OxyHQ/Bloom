@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, ImageBackground } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { FrostedIconButton } from './FrostedIconButton';
 import * as Icons from '../icons';
+import { BloomImage } from '../image';
 
 const meta: Meta<typeof FrostedIconButton> = {
   title: 'Base/Frosted Icon Button',
@@ -51,8 +52,9 @@ export const Active: Story = {
 /** Frosting over an image (the reason it exists) — blur shows the banner behind. */
 export const OverImage: Story = {
   render: (args) => (
-    <ImageBackground
-      source={{ uri: 'https://picsum.photos/600/300' }}
+    // A View with an absolutely positioned image behind its content — React
+    // Native 0.88 deprecates `ImageBackground` in favour of exactly this.
+    <View
       style={{
         maxWidth: '100%',
         width: 320,
@@ -61,8 +63,13 @@ export const OverImage: Story = {
         justifyContent: 'flex-start',
       }}
     >
+      <BloomImage
+        source={{ uri: 'https://picsum.photos/600/300' }}
+        style={StyleSheet.absoluteFill}
+        aria-hidden
+      />
       <FrostedIconButton {...args} />
-    </ImageBackground>
+    </View>
   ),
 };
 

@@ -1,6 +1,13 @@
 import { useBloomAppearance } from '../appearance';
-import React, { useRef, useState } from 'react';
-import { StyleSheet, TextInput, type TextStyle, type TextInputProps, View } from 'react-native';
+import React, { type ComponentRef, type ReactNode, useRef, useState } from 'react';
+import {
+  StyleSheet,
+  TextInput,
+  type StyleProp,
+  type TextStyle,
+  type TextInputProps,
+  View,
+} from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -26,8 +33,15 @@ import type { TextareaProps } from './types';
 import { styled } from 'react-native-css';
 import { StyledView } from '../styles/styled-primitives';
 import { IS_WEB } from '../styles/platform';
-const StyledTextInput: React.ComponentType<TextInputProps & { ref?: React.Ref<TextInput> }> =
-  styled(TextInput, { className: 'style' });
+// `styled()` is told only about `style`: its mapping type is a dot-path union
+// over the wrapped component's whole prop type, which overflows the checker for
+// React Native 0.88's `TextInputProps` (TS2590). The export annotation is the
+// real contract — `styles/styled-primitives.ts` does the same.
+const StyledTextInput: React.ComponentType<
+  TextInputProps & { ref?: React.Ref<ComponentRef<typeof TextInput>> }
+> = styled(TextInput as (props: { style?: StyleProp<TextStyle> }) => ReactNode, {
+  className: 'style',
+});
 
 /** The shell is `p-2` (8px) at `medium` and `px-1.5 py-2` at `small`. */
 const SHELL_PADDING_VERTICAL = 8;
@@ -109,7 +123,7 @@ export function Textarea({
     describedBy: (rest as Record<string, unknown>)['aria-describedby'] as string | undefined,
   });
   const palette = useTextFieldPalette();
-  const innerRef = useRef<TextInput>(null);
+  const innerRef = useRef<ComponentRef<typeof TextInput>>(null);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: focused, onIn: onFocusIn, onOut: onFocusOut } = useInteractionState();
 

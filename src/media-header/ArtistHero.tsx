@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { RiVerifiedBadgeFill } from '../icons/remix/RiVerifiedBadgeFill';
 import { Text } from '../typography';
@@ -65,7 +66,11 @@ function ArtistHeroComponent({
             style={StyleSheet.absoluteFill}
             testID={testID ? `${testID}-banner` : undefined}
           >
-            <Image source={{ uri: bannerUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            <BloomImage
+              source={{ uri: bannerUri }}
+              style={StyleSheet.absoluteFill}
+              contentFit="cover"
+            />
             <View style={[StyleSheet.absoluteFill, gradientStyle(SCRIM)]} />
           </View>
         ) : undefined

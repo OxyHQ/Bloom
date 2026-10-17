@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ComponentType, type PropsWithChildren } from 'react';
+import {
+  type ComponentRef,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type PropsWithChildren,
+} from 'react';
 import { Platform, useWindowDimensions, type View } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -35,7 +42,7 @@ function Figure({ flight, paused = true }: { flight: ActiveAvatarFlight; paused?
     <StyledImage
       source={flight.snapshot}
       accessible={false}
-      resizeMode="contain"
+      contentFit="contain"
       style={{ width, height }}
     />
   ) : (
@@ -121,7 +128,7 @@ function Flights({ layer }: { layer: AvatarFlightLayerState }) {
   const { flights, arrived, node, arrive, finish } = layer;
   const [targets, setTargets] = useState<Record<string, AvatarRect>>({});
   const [origin, setOrigin] = useState<AvatarRect | null>(null);
-  const surface = useRef<View>(null);
+  const surface = useRef<ComponentRef<typeof View>>(null);
   const { width, height } = useWindowDimensions();
 
   useEffect(() => {

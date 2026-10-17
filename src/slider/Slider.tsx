@@ -1,6 +1,6 @@
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, memo, useCallback, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
   View,
@@ -225,7 +225,7 @@ function SliderBase({
   // focus that follows a pointer-down, but this follows React Aria's modality:
   // rings only keyboard focus, so the sheet skips a pointer-focused thumb until a key.
   const [pointerFocusIndex, setPointerFocusIndex] = useState<number | null>(null);
-  const thumbRefs = useRef<Array<View | null>>([]);
+  const thumbRefs = useRef<Array<ComponentRef<typeof View> | null>>([]);
 
   // Latest props captured in refs so the PanResponder (created once) always
   // reads current values without being re-created mid-gesture.

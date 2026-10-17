@@ -62,7 +62,15 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
  * than to the ones it reads, so an omitted value runs the mapper once and
  * freezes it.
  */
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
@@ -233,7 +241,7 @@ export function FloatingPanel({
   // and `Portal` renders null on its first pass (it resolves its host in its own
   // layout effect), so the node lands one render after the panel mounts. An
   // effect keyed only on `open` would measure nothing.
-  const [panelNode, setPanelNode] = useState<View | null>(null);
+  const [panelNode, setPanelNode] = useState<ComponentRef<typeof View> | null>(null);
   const [placement, setPlacement] = useState<DropdownPlacement | null>(null);
   // What was last published, mirrored so a pass that resolves to the position
   // the panel already holds never reaches the dispatcher. Returning the current
@@ -248,7 +256,7 @@ export function FloatingPanel({
 
   const panelRefRef = useRef(panelRef);
   panelRefRef.current = panelRef;
-  const attach = useCallback((node: View | null) => {
+  const attach = useCallback((node: ComponentRef<typeof View> | null) => {
     setPanelNode(node);
     panelRefRef.current?.(node);
   }, []);

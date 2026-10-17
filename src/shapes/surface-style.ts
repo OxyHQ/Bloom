@@ -14,20 +14,24 @@ function radius(value: number = 0): number {
  * Does not clip children or paint a background, border, shadow or focus indicator.
  */
 export function surfaceStyle(shape: SurfaceShape, direction: 'ltr' | 'rtl' = 'ltr'): SurfaceStyle {
-  const style: SurfaceStyle = {};
-  if (typeof shape.radius === 'number') {
-    style.borderRadius = radius(shape.radius);
-  } else if (shape.radius) {
-    const rtl = direction === 'rtl';
-    // RNW resolves RN logical radii using its own dir prop, not the document's
-    // direction. Resolve once here so the same policy works on raw DOM and RNW.
-    style.borderTopLeftRadius = radius(rtl ? shape.radius.topEnd : shape.radius.topStart);
-    style.borderTopRightRadius = radius(rtl ? shape.radius.topStart : shape.radius.topEnd);
-    style.borderBottomLeftRadius = radius(rtl ? shape.radius.bottomEnd : shape.radius.bottomStart);
-    style.borderBottomRightRadius = radius(rtl ? shape.radius.bottomStart : shape.radius.bottomEnd);
-  }
+  const rtl = direction === 'rtl';
+  const corners: SurfaceStyle =
+    typeof shape.radius === 'number'
+      ? { borderRadius: radius(shape.radius) }
+      : shape.radius
+        ? // RNW resolves RN logical radii using its own dir prop, not the document's
+          // direction. Resolve once here so the same policy works on raw DOM and RNW.
+          {
+            borderTopLeftRadius: radius(rtl ? shape.radius.topEnd : shape.radius.topStart),
+            borderTopRightRadius: radius(rtl ? shape.radius.topStart : shape.radius.topEnd),
+            borderBottomLeftRadius: radius(rtl ? shape.radius.bottomEnd : shape.radius.bottomStart),
+            borderBottomRightRadius: radius(
+              rtl ? shape.radius.bottomStart : shape.radius.bottomEnd,
+            ),
+          }
+        : {};
   const smooth = shape.curve === 'smooth';
-  if (Platform.OS === 'web') style.cornerShape = smooth ? 'squircle' : 'round';
-  else if (Platform.OS === 'ios') style.borderCurve = smooth ? 'continuous' : 'circular';
-  return style;
+  if (Platform.OS === 'web') return { ...corners, cornerShape: smooth ? 'squircle' : 'round' };
+  if (Platform.OS === 'ios') return { ...corners, borderCurve: smooth ? 'continuous' : 'circular' };
+  return corners;
 }

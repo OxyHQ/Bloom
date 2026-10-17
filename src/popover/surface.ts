@@ -154,28 +154,31 @@ export function resolvePopoverSurfaceStyle(
   overridden: ReadonlySet<PopoverChromeKey>,
   viewportWidth?: number,
 ): WebCssStyle {
-  const style: WebCssStyle = {};
-  if (!overridden.has('width')) style.width = POPOVER_WIDTH;
-  if (!overridden.has('maxWidth') && viewportWidth !== undefined) {
-    style.maxWidth = Math.max(0, viewportWidth - POPOVER_VIEWPORT_INSET);
-  }
+  const keep = (key: PopoverChromeKey) => !overridden.has(key);
   // Longhands, one side at a time: a caller's `style` override of one side must
   // not lose to a shorthand react-native-web ranks above it (AGENTS.md,
   // "Style"), and a caller who writes `px-4` is claiming the sides, not the top.
-  if (!overridden.has('paddingTop')) style.paddingTop = POPOVER_PADDING;
-  if (!overridden.has('paddingBottom')) style.paddingBottom = POPOVER_PADDING;
-  if (!overridden.has('paddingLeft')) style.paddingLeft = POPOVER_PADDING;
-  if (!overridden.has('paddingRight')) style.paddingRight = POPOVER_PADDING;
-  if (!overridden.has('radius')) style.borderRadius = POPOVER_RADIUS;
-  if (!overridden.has('borderWidth')) style.borderWidth = 1;
-  if (!overridden.has('borderColor')) style.borderColor = palette.border;
-  if (!overridden.has('background')) style.backgroundColor = palette.surface;
-  if (!overridden.has('shadow')) style.boxShadow = palette.shadow;
+  //
   // The panel's `overflow-y-auto` clips a full-bleed child to the 16px corner and
   // scrolls once something bounds the height. React Native types no
   // `overflowY`, and the panel has no default height bound for `auto` to act
   // on, so the default is the clip; a caller that sets `maxHeight` wraps its
   // body in a `ScrollView` (the calendar inbox menu does).
-  if (!overridden.has('overflow')) style.overflow = 'hidden';
+  const style: WebCssStyle = {
+    ...(keep('width') ? { width: POPOVER_WIDTH } : null),
+    ...(keep('maxWidth') && viewportWidth !== undefined
+      ? { maxWidth: Math.max(0, viewportWidth - POPOVER_VIEWPORT_INSET) }
+      : null),
+    ...(keep('paddingTop') ? { paddingTop: POPOVER_PADDING } : null),
+    ...(keep('paddingBottom') ? { paddingBottom: POPOVER_PADDING } : null),
+    ...(keep('paddingLeft') ? { paddingLeft: POPOVER_PADDING } : null),
+    ...(keep('paddingRight') ? { paddingRight: POPOVER_PADDING } : null),
+    ...(keep('radius') ? { borderRadius: POPOVER_RADIUS } : null),
+    ...(keep('borderWidth') ? { borderWidth: 1 } : null),
+    ...(keep('borderColor') ? { borderColor: palette.border } : null),
+    ...(keep('background') ? { backgroundColor: palette.surface } : null),
+    ...(keep('shadow') ? { boxShadow: palette.shadow } : null),
+    ...(keep('overflow') ? { overflow: 'hidden' as const } : null),
+  };
   return style;
 }

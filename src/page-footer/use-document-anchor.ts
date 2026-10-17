@@ -1,11 +1,24 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import {
+  type ComponentRef,
+  type RefObject,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Platform, type View, type ViewStyle } from 'react-native';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import type { ViewRef } from '../styles/native-refs';
 
 /** A document footer follows its column without owning the page's scroller. */
-export function useDocumentAnchor(documentPosition: boolean) {
+export function useDocumentAnchor(documentPosition: boolean): {
+  enabled: boolean;
+  ref: RefObject<ViewRef | null>;
+  measure: () => void;
+  style: ViewStyle | undefined;
+} {
   const enabled = documentPosition && Platform.OS === 'web';
-  const ref = useRef<View>(null);
+  const ref = useRef<ComponentRef<typeof View>>(null);
   const [bounds, setBounds] = useState<{ left: number; width: number } | null>(null);
   const measure = useCallback(() => {
     const node: unknown = ref.current;

@@ -17,7 +17,22 @@ export interface SurfaceShape {
   readonly curve?: CornerCurve;
 }
 
-export interface SurfaceStyle extends ViewStyle {
+/**
+ * Exactly the keys {@link surfaceStyle} writes. A subset of `ViewStyle`, not all
+ * of it: spread into a web style object, the whole `ViewStyle` would carry React
+ * Native 0.88's array-typed `backgroundImage` into a key the web type spells as a
+ * CSS string.
+ */
+export interface SurfaceStyle
+  extends Pick<
+    ViewStyle,
+    | 'borderRadius'
+    | 'borderTopLeftRadius'
+    | 'borderTopRightRadius'
+    | 'borderBottomLeftRadius'
+    | 'borderBottomRightRadius'
+    | 'borderCurve'
+  > {
   /** CSS geometry; ignored by browsers without corner-shape support. */
   cornerShape?: 'round' | 'squircle';
 }

@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type ComponentRef,
 } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { Easing, ZoomIn } from 'react-native-reanimated';
@@ -29,6 +30,7 @@ import {
 } from './constants';
 import { createTextBubble } from './TextBubble';
 import { TooltipCaret } from './TooltipCaret';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 type TooltipContextType = {
   position: 'top' | 'bottom';
@@ -114,7 +116,7 @@ export function Tooltip({
 export function TooltipTrigger({ children }: { children: React.ReactNode }) {
   const { shouldMeasure, setTargetMeasurements } = useContext(TargetContext);
   const [hasLayedOut, setHasLayedOut] = useState(false);
-  const targetRef = useRef<View>(null);
+  const targetRef = useRef<ComponentRef<typeof View>>(null);
 
   useEffect(() => {
     if (!shouldMeasure || !hasLayedOut) return;
@@ -193,7 +195,7 @@ function Bubble({
     fill: palette.surface,
     parentFill: parentFill,
   }).publishedFill;
-  const insets = useSafeAreaInsets();
+  const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   const dimensions = useWindowDimensions();
   const [bubbleMeasurements, setBubbleMeasurements] = useState<
     | {

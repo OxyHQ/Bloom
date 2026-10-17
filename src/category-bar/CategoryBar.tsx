@@ -1,4 +1,12 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Pressable,
   ScrollView,
@@ -177,7 +185,7 @@ interface CategoryBarTabProps {
   onSelect: (key: string) => void;
   onKey: (key: string, event: { key: string; preventDefault: () => void }) => void;
   onItemLayout: (key: string, event: LayoutChangeEvent) => void;
-  registerRef: (key: string, node: View | null) => void;
+  registerRef: (key: string, node: ComponentRef<typeof View> | null) => void;
   testID?: string;
 }
 
@@ -283,10 +291,10 @@ function CategoryBarComponent({
   const paint = useMemo(() => resolveCategoryBarPaint(theme), [theme]);
   const fade = fadeColor ?? theme.colors.background;
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const scroll = useRef<CategoryBarScroll>({ x: 0, viewport: 0, content: 0 });
   const layouts = useRef(new Map<string, ItemLayout>());
-  const nodes = useRef(new Map<string, View>());
+  const nodes = useRef(new Map<string, ComponentRef<typeof View>>());
   /** The key still waiting to be revealed, and whether that may animate. */
   const pendingReveal = useRef<{ key: string; animated: boolean } | null>(
     value !== undefined ? { key: value, animated: false } : null,
@@ -344,7 +352,7 @@ function CategoryBarComponent({
     [flushReveal],
   );
 
-  const registerRef = useCallback((key: string, node: View | null) => {
+  const registerRef = useCallback((key: string, node: ComponentRef<typeof View> | null) => {
     if (node) nodes.current.set(key, node);
     else nodes.current.delete(key);
   }, []);

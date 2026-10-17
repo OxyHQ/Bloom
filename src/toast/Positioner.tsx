@@ -31,6 +31,7 @@ import {
   getInsetValues,
 } from './container-geometry';
 import type { ToasterProps } from './types';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 /**
  * Web `initialWindowMetrics` is `null`, and on native it is null until the
@@ -58,7 +59,7 @@ export const Positioner: React.FC<
 > = ({ children, position, style }) => {
   const { offset, gap, visibleToasts } = useToastContext();
   const { isExpanded, collapse, toastHeights } = useDynamicToastContext();
-  const insets = React.useContext(SafeAreaInsetsContext) ?? FALLBACK_INSETS;
+  const insets = useCssSafeAreaInsets(React.useContext(SafeAreaInsetsContext) ?? FALLBACK_INSETS);
 
   const resolvedPosition = position ?? 'bottom-right';
   // Whatever already owns the bottom edge — a floating tab bar, typically. The

@@ -1,7 +1,15 @@
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { useMessages } from '../locale/messages';
 import { ZOOMABLE_MEDIA_GALLERY_MESSAGES } from './messages';
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   Text,
@@ -70,6 +78,7 @@ import type {
   ZoomableMediaGalleryHandle,
   ZoomableMediaGalleryProps,
 } from './types';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 /**
  * The still-frame URI of an item: the image itself, or a video's poster.
@@ -252,7 +261,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
       const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
       // The viewer is full-bleed, so its chrome must clear the status bar, the
       // cutout and the home indicator itself — nothing above it applies them.
-      const insets = useSafeAreaInsets();
+      const insets = useCssSafeAreaInsets(useSafeAreaInsets());
 
       const radiusFor = useCallback(
         (fit: FittedSize) => resolveCornerRadius(cornerRadius, fit),
@@ -309,7 +318,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
       // shrinks back to it. Never overwritten by the drag gesture.
       const originScale = useSharedValue(1);
 
-      const pagerRef = useRef<ScrollView>(null);
+      const pagerRef = useRef<ComponentRef<typeof ScrollView>>(null);
       // Mirror of `activeIndex` readable synchronously from callbacks/worklets
       // (`handleDismiss` runs via `runOnJS` and from `Pressable.onPress`, where the
       // state closure can be stale). Kept in lockstep by `setActiveIndexBoth`.

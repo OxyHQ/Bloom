@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import type { FloatingAnchor } from '../floating/types';
@@ -38,10 +39,10 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
   const { messages } = useMessages(AVATAR_GROUP_MESSAGES);
   const [target, setTarget] = useState<HoverTarget | null>(null);
   const [open, setOpen] = useState(false);
-  const cellRefs = useRef<Map<number, View>>(new Map());
+  const cellRefs = useRef<Map<number, ComponentRef<typeof View>>>(new Map());
   const { show, hide, hold } = useHoverIntent(open, setOpen, 0, HOVER_CARD_CLOSE_DELAY);
 
-  const registerCellRef = useCallback((index: number, node: View | null) => {
+  const registerCellRef = useCallback((index: number, node: ComponentRef<typeof View> | null) => {
     if (node) cellRefs.current.set(index, node);
     else cellRefs.current.delete(index);
   }, []);

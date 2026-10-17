@@ -30,12 +30,12 @@ const nodeMock = { createNodeMock: () => ({}) };
 const setFocus = AccessibilityInfo.setAccessibilityFocus as jest.Mock;
 
 function Surface({ open }: { open: boolean }) {
-  const ref = useAccessibilityFocus<View>(open);
+  const ref = useAccessibilityFocus<React.ComponentRef<typeof View>>(open);
   return <View ref={ref} />;
 }
 
 function Trigger({ open }: { open: boolean }) {
-  const ref = useRef<View | null>(null);
+  const ref = useRef<React.ComponentRef<typeof View> | null>(null);
   useRestoreAccessibilityFocus(open, ref);
   return <View ref={ref} />;
 }

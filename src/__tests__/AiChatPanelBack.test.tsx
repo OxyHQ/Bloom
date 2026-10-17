@@ -22,7 +22,8 @@ function Harness({ open = true, close }: { open?: boolean; close: () => void }) 
 }
 it('Android back closes the panel, yields to an inner overlay, and unregisters', () => {
   const remove = jest.fn();
-  let back: (() => boolean | null | undefined) | undefined;
+  let back: Parameters<typeof BackHandler.addEventListener>[1] | undefined;
+  const press = { type: 'hardwareBackPress', timeStamp: 0 };
   const spy = jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_name, callback) => {
     back = callback;
     return { remove };
@@ -31,10 +32,10 @@ it('Android back closes the panel, yields to an inner overlay, and unregisters',
   const screen = render(<Harness close={close} />);
   const rank = acquireOverlayRank();
   registerOverlayRank(rank);
-  expect(back?.()).toBe(false);
+  expect(back?.(press)).toBe(false);
   expect(close).not.toHaveBeenCalled();
   releaseOverlayRank(rank);
-  expect(back?.()).toBe(true);
+  expect(back?.(press)).toBe(true);
   expect(close).toHaveBeenCalledTimes(1);
   screen.rerender(<Harness open={false} close={close} />);
   expect(remove).toHaveBeenCalledTimes(1);

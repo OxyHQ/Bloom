@@ -1,6 +1,6 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import Animated, {
   Easing,
@@ -64,7 +64,7 @@ function StatusItem({
   open?: boolean;
   onPress?: () => void;
   palette: ComposerPalette;
-  triggerRef?: React.RefObject<View | null>;
+  triggerRef?: React.RefObject<ComponentRef<typeof View> | null>;
   expanded?: boolean;
   testID?: string;
 }) {
@@ -188,7 +188,7 @@ export function ComposerStatusBarBase({
     [messages, labelOverrides],
   );
   const Popover = useComposerPopover();
-  const triggerRef = useRef<View>(null);
+  const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const [open, setOpen] = useState(false);
   const [folderName, setFolder] = useControllableState<string>({
     value: folder,

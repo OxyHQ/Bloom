@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState, type Ref } from 'react';
+import { type ComponentRef, useCallback, useLayoutEffect, useRef, useState, type Ref } from 'react';
 import type { LayoutChangeEvent, View } from 'react-native';
 
 function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
@@ -7,7 +7,7 @@ function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
 }
 /** DOM anchor ref and the RN onLayout shape, measured only when requested. */
 export function useButtonLayout(
-  ref: Ref<View> | undefined,
+  ref: Ref<ComponentRef<typeof View>> | undefined,
   onLayout?: (event: LayoutChangeEvent) => void,
   childRef?: Ref<HTMLElement>,
 ) {
@@ -19,7 +19,7 @@ export function useButtonLayout(
   const setRef = useCallback(
     (element: HTMLElement | null) => {
       if (enabled) setNode(element);
-      assignRef(ref, element as unknown as View | null);
+      assignRef(ref, element as unknown as ComponentRef<typeof View> | null);
       assignRef(childRef, element);
     },
     [ref, childRef, enabled],

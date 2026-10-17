@@ -1,13 +1,21 @@
-import React, { forwardRef, type ComponentType, type RefAttributes } from 'react';
+import React, {
+  type ComponentRef,
+  forwardRef,
+  type ComponentType,
+  type RefAttributes,
+} from 'react';
 import type { View } from 'react-native';
 import type { ButtonProps } from '../button/types';
 import { useTheme } from '../theme/use-theme';
 import { CONTROL_SIZE, resolveChatComposerPalette } from './shared';
 import type { ComposerIconButtonProps } from './types';
+import type { RefComponent } from '../styles/native-refs';
 
 /** Geometry adapter; Button owns paint, interaction, focus and disabled state. */
-export function createComposerIconButton(Button: ComponentType<ButtonProps & RefAttributes<View>>) {
-  return forwardRef<View, ComposerIconButtonProps>(function ComposerIconButton(
+export function createComposerIconButton(
+  Button: ComponentType<ButtonProps & RefAttributes<ComponentRef<typeof View>>>,
+): RefComponent<ComposerIconButtonProps> {
+  return forwardRef<ComponentRef<typeof View>, ComposerIconButtonProps>(function ComposerIconButton(
     {
       icon,
       accessibilityLabel,

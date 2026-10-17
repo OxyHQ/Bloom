@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -241,7 +242,7 @@ export function AgentChatBase({
   }, []);
 
   // --- Follow the newest message --------------------------------------------
-  const scrollRef = useRef<ScrollView | null>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const pendingScroll = useRef(false);
   useEffect(() => {
     pendingScroll.current = true;

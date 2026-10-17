@@ -2,7 +2,8 @@ import { useCardFill } from '../card/use-card-fill';
 import { Card } from '../card/Card';
 import { surfaceFillOn } from '../styles/surface-levels';
 import React, { memo, useMemo } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
 import { GlyphButton } from '../button';
@@ -142,7 +143,7 @@ function ReleaseCardComponent({
       style={[row ? styles.rowCover : styles.gridCover, { backgroundColor: paint.placeholder }]}
     >
       {uri ? (
-        <Image source={{ uri }} style={styles.coverImage} accessibilityIgnoresInvertColors />
+        <BloomImage source={{ uri }} style={styles.coverImage} accessibilityIgnoresInvertColors />
       ) : (
         <RiAlbumLine width={row ? 24 : 40} height={row ? 24 : 40} fill={paint.placeholderIcon} />
       )}

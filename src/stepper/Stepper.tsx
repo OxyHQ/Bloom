@@ -122,7 +122,6 @@ function OutlineAction({ size, ...props }: ButtonProps) {
     if (IS_WEB) return;
     scale.value = reduced ? 1 : withTiming(pressed ? 0.95 : 1, { duration: 150 });
   };
-  const Action = IS_WEB ? Button : AnimatedButton;
   const side = size === 'sm' ? 18 : 20;
   const actionStyle: WebCssStyle = {
     width: side,
@@ -134,20 +133,24 @@ function OutlineAction({ size, ...props }: ButtonProps) {
     '--bloom-stepper-action-ring': colors.primary,
     '--bloom-stepper-action-press-scale': '.95',
   };
-  return (
-    <Action
-      {...props}
-      size={size}
-      appearance="plain"
-      material="flat"
-      colors={{ background: 'transparent', foreground: colors.text }}
-      iconSize={side}
-      hitSlop={12}
-      className={IS_WEB ? 'bloom-stepper-outline-action' : undefined}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-      style={[actionStyle, !IS_WEB && animated]}
-    />
+  const shared = {
+    ...props,
+    size,
+    appearance: 'plain',
+    material: 'flat',
+    colors: { background: 'transparent', foreground: colors.text },
+    iconSize: side,
+    hitSlop: 12,
+    onPressIn: () => setPressed(true),
+    onPressOut: () => setPressed(false),
+  } satisfies ButtonProps;
+  // Two elements rather than one `IS_WEB ? Button : AnimatedButton` type: a
+  // union element type must accept the INTERSECTION of both prop types, and
+  // plain `Button` takes no animated style.
+  return IS_WEB ? (
+    <Button {...shared} className="bloom-stepper-outline-action" style={actionStyle} />
+  ) : (
+    <AnimatedButton {...shared} style={[actionStyle, animated]} />
   );
 }
 

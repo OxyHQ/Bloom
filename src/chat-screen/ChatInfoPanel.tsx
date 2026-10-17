@@ -8,7 +8,8 @@ import {
   useSurfaceLevelValue,
 } from '../styles/surface-levels';
 import React, { memo, useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { AvatarPresence } from '../chat-indicators/AvatarPresence';
 import { Button } from '../button';
@@ -217,9 +218,9 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
           >
             {cover ??
               (coverImage ? (
-                <Image
+                <BloomImage
                   source={coverImage}
-                  resizeMode="cover"
+                  contentFit="cover"
                   accessibilityIgnoresInvertColors
                   aria-hidden
                   accessibilityElementsHidden

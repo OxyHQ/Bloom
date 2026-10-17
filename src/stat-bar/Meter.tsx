@@ -62,7 +62,6 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
 
   const fraction = meterFraction(value, max);
   const revealedWidth = useMeterReveal(fraction, reveal);
-  const Fill = reveal ? Animated.View : View;
 
   const fillStyle: WebCssStyle = {
     width: `${fraction * 100}%`,
@@ -72,11 +71,18 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
     ...(transitionMs > 0 ? { [METER_DURATION_VAR]: `${transitionMs}ms` } : null),
   };
 
-  const bar = (
-    <Fill
-      {...(transitionMs > 0 ? webDataSet({ bloomMeterFill: '' }) : null)}
+  const fillDataSet = transitionMs > 0 ? webDataSet({ bloomMeterFill: '' }) : null;
+  const bar = reveal ? (
+    <Animated.View
+      {...fillDataSet}
       testID={fillTestID}
-      style={[fillStyle, callerFillStyle, { width: reveal ? revealedWidth : fillStyle.width }]}
+      style={[fillStyle, callerFillStyle, { width: revealedWidth }]}
+    />
+  ) : (
+    <View
+      {...fillDataSet}
+      testID={fillTestID}
+      style={[fillStyle, callerFillStyle, { width: fillStyle.width }]}
     />
   );
 

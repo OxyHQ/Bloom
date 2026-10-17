@@ -38,6 +38,7 @@ import { Text } from '../typography';
 import { EdgeScrim, SCRIM_TAIL_RATIO } from './EdgeScrim';
 import type { PageHeaderProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 /**
  * `PageHeader`: a screen's top chrome.
@@ -146,7 +147,7 @@ function PageHeaderComponent({
   const overlay = placement === 'overlay';
   const theme = useTheme();
   const surfaceFill = useSurfaceFill() ?? theme.colors.background;
-  const insets = useContext(SafeAreaInsetsContext) ?? NO_INSETS;
+  const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_INSETS);
   const padTop = (safeArea ?? !isWeb) ? insets.top : 0;
 
   // The header sizes itself against its CONTAINER, not the window: a desktop

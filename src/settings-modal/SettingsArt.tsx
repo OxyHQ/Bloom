@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop, Circle } from 'react-native-svg';
@@ -228,7 +228,7 @@ export function SettingsPlanArt({
 }: SettingsPlanArtProps) {
   const blobs = useBlobs();
   const reducedMotion = useReducedMotion();
-  const hostRef = useRef<View>(null);
+  const hostRef = useRef<ComponentRef<typeof View>>(null);
   const [failed, setFailed] = useState(!IS_WEB);
 
   useEffect(() => {

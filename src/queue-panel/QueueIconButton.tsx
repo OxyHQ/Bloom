@@ -1,4 +1,5 @@
 import React, { forwardRef, useMemo } from 'react';
+import type { ComponentRef } from 'react';
 import type { GestureResponderEvent, View } from 'react-native';
 
 import { GlyphButton } from '../button';
@@ -7,6 +8,7 @@ import type { WebAriaProps } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { resolveQueuePanelPaint } from './shared';
+import type { RefComponent } from '../styles/native-refs';
 
 export interface QueueIconButtonProps {
   icon: ButtonIconComponent;
@@ -33,10 +35,10 @@ export interface QueueIconButtonProps {
  * `aria-expanded`, `aria-haspopup`, the name — are NAMED here, because a
  * component that destructures a known prop list drops whatever it does not.
  */
-export const QueueIconButton = forwardRef<View, QueueIconButtonProps>(function QueueIconButton(
-  { icon, accessibilityLabel, size = 32, style, testID, ...rest },
-  ref,
-) {
+export const QueueIconButton: RefComponent<QueueIconButtonProps> = forwardRef<
+  ComponentRef<typeof View>,
+  QueueIconButtonProps
+>(function QueueIconButton({ icon, accessibilityLabel, size = 32, style, testID, ...rest }, ref) {
   const theme = useTheme();
   const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
 

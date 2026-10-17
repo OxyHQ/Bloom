@@ -143,7 +143,7 @@ export type SelectScrollButtonProps = {
 };
 
 export type SelectItemProps = {
-  ref?: React.Ref<View>;
+  ref?: React.Ref<React.ComponentRef<typeof View>>;
   value: string;
   label: string;
   /** Not choosable: `text-disabled`, `cursor-not-allowed`, no press. */

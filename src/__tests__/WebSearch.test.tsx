@@ -276,7 +276,7 @@ describe('WebSearch', () => {
 
   it('a source with href is a link; on native pressing it opens the URL', () => {
     jest.useFakeTimers();
-    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     const { getByTestId } = renderSearch(
       <WebSearch testID="ws" steps={STEPS} revealed={99} reduce />,
     );

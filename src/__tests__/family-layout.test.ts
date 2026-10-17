@@ -171,7 +171,13 @@ describe('one family layout', () => {
     // consumer (`Button`) has landed on it so far. Whether apps should be able
     // to build their own blurred surfaces is a real question and not one this gate
     // should answer by default.
-    const INTERNAL_DIRECTORIES: readonly string[] = ['blur', 'floating'];
+    //
+    // `image/` is `BloomImage`, the ONE raster renderer every family draws
+    // through — expo-image on a device (so no Bloom image depends on React
+    // Native's GIF/WebP decoders), react-native's `Image` on web. Internal for
+    // the same reason: it is the families' renderer, not a component an app
+    // should build on, and its props are shaped by what the families need.
+    const INTERNAL_DIRECTORIES: readonly string[] = ['blur', 'floating', 'image'];
 
     const pkg = JSON.parse(readFileSync(join(SRC, '..', 'package.json'), 'utf8')) as {
       exports: Record<string, Record<string, unknown> | string>;

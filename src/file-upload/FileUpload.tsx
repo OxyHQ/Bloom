@@ -1,4 +1,12 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Animated,
   Easing,
@@ -499,7 +507,7 @@ const FileUploadComponent = function FileUpload({
   const [box, setBox] = useState({ width: 533, height: BOX_HEIGHT });
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ComponentRef<typeof View>>(null);
   const inputRef = useRef<{ click: () => void } | null>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 

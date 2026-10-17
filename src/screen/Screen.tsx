@@ -15,6 +15,7 @@ import { Z_INDEX } from '../styles/z-index';
 import { ScreenContext, ScreenHeaderContext, ScreenNavigationContext } from './context';
 import { useScreenWindowBinding } from './use-screen-window-scroll';
 import type { ScreenProps } from './types';
+import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 
 /** One continuous canvas; chrome overlays it and content reserves its measured footprint. */
 export function Screen({
@@ -53,7 +54,7 @@ export function Screen({
     [navigationScope, inheritedNavigation, localProgress, localTarget, localScroller],
   );
   const { collapseProgress, collapseTarget, activeScrollerId } = navigation;
-  const insets = useContext(SafeAreaInsetsContext);
+  const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS);
   const [measuredTop, setTop] = useState<number | null>(null);
   const [measuredBottom, setBottom] = useState<number | null>(null);
   const top = measuredTop ?? headerHeight ?? 56 + (Platform.OS === 'web' ? 0 : (insets?.top ?? 0));

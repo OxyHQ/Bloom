@@ -78,6 +78,7 @@ import {
   type TabBarSurfaceComponent,
 } from './shared';
 import type { TabBarButtonProps, TabBarProps, TabBarTheme } from './types';
+import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 /**
  * What a `TabBarButton` needs from the bar it sits in. `null` when a button is
@@ -173,7 +174,7 @@ function TabBarBody({
   style,
   ...viewProps
 }: TabBarBodyProps) {
-  const insets = useSafeAreaInsets();
+  const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   const [containerWidth, setContainerWidth] = useState(0);
   const minimized = useMinimizeState();
   const progress = minimizeProgress ?? minimized.progress;

@@ -4,7 +4,14 @@ import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
-import React, { memo, useCallback, useMemo, useRef, type KeyboardEvent } from 'react';
+import React, {
+  type ComponentRef,
+  memo,
+  useCallback,
+  useMemo,
+  useRef,
+  type KeyboardEvent,
+} from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -306,11 +313,11 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
   const size = scopedSize;
   const rtl = useIsRtl();
   const direction = useDirectionProps();
-  const nodes = useRef(new Map<string, React.RefObject<View | null>>());
+  const nodes = useRef(new Map<string, React.RefObject<ComponentRef<typeof View> | null>>());
   const controlRef = useCallback((option: string) => {
     let ref = nodes.current.get(option);
     if (!ref) {
-      ref = React.createRef<View>();
+      ref = React.createRef<ComponentRef<typeof View>>();
       nodes.current.set(option, ref);
     }
     return ref;
@@ -324,7 +331,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
     .map((option) => option.value);
   const tabValue = value !== undefined && enabledValues.includes(value) ? value : enabledValues[0];
   const register = useCallback(
-    (option: string, node: View | null) => {
+    (option: string, node: ComponentRef<typeof View> | null) => {
       controlRef(option).current = node;
     },
     [controlRef],

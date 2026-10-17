@@ -1,5 +1,6 @@
 import React, { memo, useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
@@ -95,7 +96,7 @@ function TrackRow({
         }}
       >
         {uri ? (
-          <Image source={{ uri }} style={{ width: 40, height: 40 }} />
+          <BloomImage source={{ uri }} style={{ width: 40, height: 40 }} />
         ) : (
           <RiMusic2Line width={18} height={18} fill={paint.placeholderGlyph} />
         )}

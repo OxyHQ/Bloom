@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
@@ -52,7 +53,7 @@ export function QueueCover({ cover, size = QUEUE_COVER_SIZE }: { cover?: string;
   return (
     <View style={box}>
       {uri ? (
-        <Image
+        <BloomImage
           source={{ uri }}
           style={{ width: size, height: size }}
           accessibilityIgnoresInvertColors

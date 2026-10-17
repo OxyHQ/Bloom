@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { useImageResolver } from '../image-resolver/context';
 import { borderRadius } from '../styles/tokens';
@@ -102,9 +103,9 @@ function MixCardComponent({
                     }}
                   >
                     {uri ? (
-                      <Image
+                      <BloomImage
                         source={{ uri }}
-                        resizeMode="cover"
+                        contentFit="cover"
                         style={{ width: face, height: face, borderRadius: borderRadius.full }}
                       />
                     ) : null}

@@ -10,7 +10,7 @@
  * menubar menu hang under its trigger the way a desktop menu bar does, rather
  * than centring like a popover.
  */
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import {
@@ -57,7 +57,7 @@ export function MenubarContent({
     () => ({ close, presentation: 'dropdown' }),
     [close],
   );
-  const [panel, setPanel] = useState<View | null>(null);
+  const [panel, setPanel] = useState<ComponentRef<typeof View> | null>(null);
   useMenuPanelKeys(hostElement(panel), { open: menu.open, onTab: close, intent: menu.focusIntent });
 
   return (

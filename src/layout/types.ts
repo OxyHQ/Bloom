@@ -1,4 +1,4 @@
-import type { Ref, RefObject } from 'react';
+import type { ComponentRef, Ref, RefObject } from 'react';
 import type { ScrollView, ScrollViewProps } from 'react-native';
 
 /**
@@ -21,12 +21,12 @@ export interface ScrollAreaProps extends ScrollViewProps {
   /** The bar's thickness: `sm` 4px (default) or `md` 6px, each growing 2px under the pointer. */
   size?: 'sm' | 'md';
   /** The underlying `ScrollView`: `scrollTo`, `scrollToEnd` and the rest work on it. */
-  ref?: Ref<ScrollView>;
+  ref?: Ref<ComponentRef<typeof ScrollView>>;
 }
 
 export interface ScrollBarProps {
   /** The scroller this bar belongs to: a `ScrollView` ref (a reanimated one works). */
-  target: RefObject<Pick<ScrollView, 'getScrollableNode'> | null>;
+  target: RefObject<Pick<ComponentRef<typeof ScrollView>, 'getScrollableNode'> | null>;
   /** When the bar shows. Default `'scroll'`. */
   scrollbar?: Exclude<ScrollAreaScrollbar, 'never'>;
   /** The bar's thickness: `sm` 4px (default) or `md` 6px. */

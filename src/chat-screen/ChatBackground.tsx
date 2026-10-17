@@ -1,6 +1,7 @@
 import type React from 'react';
 import { memo, useId } from 'react';
-import { Image, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { BloomImage } from '../image';
 import Svg, { Defs, LinearGradient, Path, Pattern, Rect, Stop } from 'react-native-svg';
 
 import {
@@ -105,11 +106,11 @@ function PatternImageLayer({
   for (let row = 0; row < rows; row += 1) {
     for (let column = 0; column < columns; column += 1) {
       tiles.push(
-        <Image
+        <BloomImage
           key={`${row}:${column}`}
           source={source}
           tintColor={ink}
-          resizeMode="stretch"
+          contentFit="fill"
           style={{
             position: 'absolute',
             left: column * image.width,
@@ -215,9 +216,9 @@ function ChatBackgroundComponent({
       {variant === 'gradient' ? <GradientLayer colors={gradientColors} /> : null}
       {variant === 'image' && image ? (
         <>
-          <Image
+          <BloomImage
             source={image}
-            resizeMode="cover"
+            contentFit="cover"
             accessibilityIgnoresInvertColors
             aria-hidden
             accessibilityElementsHidden

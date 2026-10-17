@@ -312,7 +312,9 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
 
   React.useImperativeHandle(ref, () => ({ wiggle: handleWiggle }));
 
-  const measuredRef = React.useRef<(View & { getBoundingClientRect?: () => DOMRect }) | null>(null);
+  const measuredRef = React.useRef<
+    (React.ComponentRef<typeof View> & { getBoundingClientRect?: () => DOMRect }) | null
+  >(null);
 
   // Tiers 1 and 2 of the ladder — see the W6 note in the file header.
   React.useLayoutEffect(() => {

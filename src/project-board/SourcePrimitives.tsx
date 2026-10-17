@@ -1,4 +1,4 @@
-import { Children, type ComponentType, type ReactNode, type Ref } from 'react';
+import { Children, type ComponentRef, type ComponentType, type ReactNode, type Ref } from 'react';
 import type { View as NativeView, TextProps, ViewProps } from 'react-native';
 import { styled } from 'react-native-css';
 import { Avatar as BloomAvatar } from '../avatar';
@@ -56,7 +56,7 @@ export function SourceView({
   className,
   children,
   ...props
-}: ViewProps & { ref?: Ref<NativeView> }) {
+}: ViewProps & { ref?: Ref<ComponentRef<typeof NativeView>> }) {
   return (
     <StyledView {...props} className={rowClass(className)}>
       {textChildren(children)}

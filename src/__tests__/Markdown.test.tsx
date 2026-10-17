@@ -21,7 +21,7 @@ describe('Markdown', () => {
   });
 
   it('hands a link to onLinkPress, and opens it itself when there is none', () => {
-    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     const onLinkPress = jest.fn();
     const first = renderMarkdown(
       <Markdown onLinkPress={onLinkPress}>{'[go](https://x.dev)'}</Markdown>,

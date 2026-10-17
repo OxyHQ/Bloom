@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { type ComponentRef, useEffect, useRef, useState } from 'react';
 import { Platform, type View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -18,7 +18,7 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
  * done with it (end), both flush with the reply's own edges. Actions appear on hover or focus on web, and stay shown elsewhere.
  */
 export function AgentReply({ children, identity, actions, style }: AgentReplyProps) {
-  const ref = useRef<View>(null);
+  const ref = useRef<ComponentRef<typeof View>>(null);
   const reduced = useReducedMotion();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);

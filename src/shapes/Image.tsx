@@ -1,11 +1,12 @@
 import React from 'react';
-import { Image as NativeImage, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 import { resolve } from './resolve';
 import { assertSize, assertImageSource } from './validation';
 import { useSvgId } from './use-svg-id';
 import type { ImageProps } from './types';
 import { svgA11yProps } from '../styles/svg-a11y';
+import { BloomImage } from '../image';
 
 /** Clips an image on every platform. SVG cannot clip arbitrary React Native views. */
 export function Image({ shape = 'circle', source, size, alt, onError }: ImageProps) {
@@ -15,12 +16,12 @@ export function Image({ shape = 'circle', source, size, alt, onError }: ImagePro
   const outline = resolve(shape);
   if (!outline)
     return (
-      <NativeImage
+      <BloomImage
         source={source}
         accessibilityLabel={alt}
         accessible={alt ? true : undefined}
         onError={onError}
-        resizeMode="cover"
+        contentFit="cover"
         style={{ width: size, height: size, borderRadius: size / 2 }}
       />
     );
@@ -28,7 +29,7 @@ export function Image({ shape = 'circle', source, size, alt, onError }: ImagePro
     <>
       {/* SVG has no portable onError; this hidden native image observes the same source. */}
       {onError && (
-        <NativeImage
+        <BloomImage
           source={source}
           accessible={false}
           aria-hidden

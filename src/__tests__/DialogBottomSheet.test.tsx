@@ -1,4 +1,4 @@
-import React, { createRef } from 'react';
+import React, { createRef, type ComponentRef } from 'react';
 import { Text, type View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
@@ -162,7 +162,7 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
 
   it('threads panelStyle (brand surface) and containerStyle (theme scope) onto the sheet content', () => {
     let control: ReturnType<typeof useDialogControl> | undefined;
-    const panelRef = createRef<View>();
+    const panelRef = createRef<ComponentRef<typeof View>>();
     const { getByTestId } = renderWithTheme(
       <Harness>
         {(c) => {

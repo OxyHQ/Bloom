@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import { avatarFlightPoint, centeredLanding, measureAvatar } from '../geometry';
@@ -31,12 +32,12 @@ describe('avatar flight geometry', () => {
     expect(await measureAvatar(undefined)).toBeNull();
     const zero = {
       measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) => cb(0, 0, 0, 0),
-    } as View;
+    } as ComponentRef<typeof View>;
     expect(await measureAvatar(zero)).toBeNull();
     const valid = {
       measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) =>
         cb(20, 200, 80, 80),
-    } as View;
+    } as ComponentRef<typeof View>;
     expect(await measureAvatar(valid)).toEqual(from);
   });
 });

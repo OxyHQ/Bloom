@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react';
+import React, { type ComponentRef, memo, useEffect } from 'react';
 import Animated, {
   Easing,
   interpolateColor,
@@ -58,7 +58,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
   const { state: hovered, onIn, onOut } = useInteractionState();
   const SelectedGlyph = ActiveIcon ?? Icon;
   const iconOnly = labelVisibility === 'hidden';
-  const tooltipRef = useBrowserTitle<View>(iconOnly ? label : undefined);
+  const tooltipRef = useBrowserTitle<ComponentRef<typeof View>>(iconOnly ? label : undefined);
   const selectedFill =
     selectedAppearance === 'icon' ? (hovered ? palette.rowHover : 'transparent') : palette.selected;
   const reducedMotion = useReducedMotion();

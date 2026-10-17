@@ -1,7 +1,7 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -29,6 +29,7 @@ import type { ComposerPanelAttachment } from './types';
 import { IS_WEB } from '../styles/platform';
 import { mixColors } from '../styles/color-contrast';
 import { dataHook } from '../styles/data-hook';
+import { BloomImage } from '../image';
 
 const QUINT = Easing.bezier(...EASE_OUT_QUINT);
 const TILE_MS = 280;
@@ -254,10 +255,10 @@ export const AttachmentTile = memo(function AttachmentTile({
             fade('opacity'),
           ]}
         >
-          <Image
+          <BloomImage
             source={{ uri: image }}
             accessibilityLabel={attachment.name}
-            resizeMode="cover"
+            contentFit="cover"
             style={{
               position: 'absolute',
               top: 0,

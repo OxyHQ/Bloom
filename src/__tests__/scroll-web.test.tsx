@@ -66,9 +66,9 @@ class FrameScheduler {
       this.queue.set(id, cb);
       return id;
     }) as typeof window.requestAnimationFrame;
-    window.cancelAnimationFrame = (id: number): void => {
+    window.cancelAnimationFrame = ((id: number): void => {
       this.queue.delete(id);
-    };
+    }) as typeof window.cancelAnimationFrame;
   }
 
   /** Run one frame's worth of scheduled callbacks (those queued before now). */

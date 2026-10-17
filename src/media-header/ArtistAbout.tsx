@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Text } from '../typography';
 import { ArtistStats } from './ArtistStats';
@@ -43,7 +44,7 @@ function ArtistAboutComponent({
       <View style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: paint.card }}>
         {uri ? (
           <View style={{ width: '100%', aspectRatio: 16 / 9 }}>
-            <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            <BloomImage source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" />
             <View
               pointerEvents="none"
               style={[

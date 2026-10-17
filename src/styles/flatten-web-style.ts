@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 // ---------------------------------------------------------------------------
 //  flattenWebStyle — StyleProp → plain CSSProperties, for raw-DOM web forks.
@@ -37,15 +37,9 @@ import type { TextStyle, ViewStyle } from 'react-native';
 //  passed to a raw-DOM fork in practice) are skipped.
 // ---------------------------------------------------------------------------
 
-type StyleNode =
-  | ViewStyle
-  | TextStyle
-  | number
-  | false
-  | null
-  | undefined
-  | ''
-  | ReadonlyArray<StyleNode>;
+//  React Native 0.88's `StyleProp` also admits `void`, so the union is spelled
+//  through `StyleProp` itself rather than restating its holes.
+type StyleNode = StyleProp<ViewStyle | TextStyle> | number | ReadonlyArray<StyleNode>;
 
 export function flattenWebStyle(style: StyleNode): CSSProperties {
   if (Array.isArray(style)) {

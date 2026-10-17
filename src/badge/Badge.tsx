@@ -142,12 +142,8 @@ const BadgeComponent: React.FC<BadgeProps> = ({
         ? { alignSelf: 'flex-start', flexShrink: 1, minWidth: 0 }
         : { minWidth: geometry.height, flexShrink: 0 }),
       ...(paint.shadow ? bloomShadowStyle(paint.shadow) : null),
+      ...(variant === 'outlined' ? { borderWidth: 1, borderColor: paint.border } : null),
     };
-
-    if (variant === 'outlined') {
-      base.borderWidth = 1;
-      base.borderColor = paint.border;
-    }
 
     return base;
   }, [dot, attached, geometry, paint, halo, variant, Icon]);

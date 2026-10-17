@@ -26,7 +26,14 @@
  * falls back to painting its own `MediaSurface`, which is what every flight did
  * before hosts existed.
  */
-import { useCallback, useEffect, useLayoutEffect, useState, useSyncExternalStore } from 'react';
+import {
+  type ComponentRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { StyleSheet, type View } from 'react-native';
 import { createPortal } from 'react-dom';
 import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
@@ -208,8 +215,8 @@ function MediaFlightSurface({ flight, shared }: { flight: MediaFlight; shared: b
  * ancestor.
  */
 function FlyingSharedNode({ id, style }: { id: string; style: MediaSurfaceStyle }) {
-  const [node, setNode] = useState<View | null>(null);
-  const setBox = useCallback((next: View | null) => setNode(next), []);
+  const [node, setNode] = useState<ComponentRef<typeof View> | null>(null);
+  const setBox = useCallback((next: ComponentRef<typeof View> | null) => setNode(next), []);
 
   // A POSITION-ONLY claim: it says where the node lives for the length of the
   // leg and nothing about what is painted in it. A flight that published a

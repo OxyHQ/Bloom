@@ -1,5 +1,6 @@
 import React, { memo, useMemo, useState } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Button } from '../button';
 import { FileUpload } from '../file-upload/FileUpload';
@@ -96,7 +97,7 @@ function ArtworkUploaderComponent({
             style={[styles.preview, { backgroundColor: paint.placeholder }]}
             testID={id('preview')}
           >
-            <Image
+            <BloomImage
               source={{ uri: uri! }}
               style={styles.fill}
               role="img"

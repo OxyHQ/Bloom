@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import {
   Animated,
   Easing,
@@ -259,7 +260,7 @@ function TabStrip({
   onChange: (id: string) => void;
   testID?: string;
 }) {
-  const hostRef = useRef<View>(null);
+  const hostRef = useRef<ComponentRef<typeof View>>(null);
   const [fades, setFades] = useState({ left: false, right: false });
 
   useEffect(() => {

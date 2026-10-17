@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useRef } from 'react';
+import React, { type ComponentRef, memo, useCallback, useEffect, useRef } from 'react';
 import { View } from 'react-native';
 
 import { Chip, ChipRow } from '../chip';
@@ -41,8 +41,8 @@ function SearchResultTabsComponent({
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
   }, []);
-  const nodes = useRef(new Map<string, View>());
-  const register = useCallback((key: string, node: View | null) => {
+  const nodes = useRef(new Map<string, ComponentRef<typeof View>>());
+  const register = useCallback((key: string, node: ComponentRef<typeof View> | null) => {
     if (node) nodes.current.set(key, node);
     else nodes.current.delete(key);
   }, []);
@@ -89,7 +89,7 @@ function SearchResultTabsComponent({
         return (
           <Chip
             key={tab.value}
-            ref={(node: View | null) => register(tab.value, node)}
+            ref={(node: ComponentRef<typeof View> | null) => register(tab.value, node)}
             size="xl"
             role="tab"
             selected={selected}

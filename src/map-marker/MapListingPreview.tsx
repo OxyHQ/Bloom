@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo } from 'react';
-import { Image, Pressable, View, type ViewStyle } from 'react-native';
+import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { Button } from '../button';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -25,6 +25,7 @@ import {
 } from './shared';
 import type { MapListingPreviewProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { BloomImage } from '../image';
 
 /**
  * The small card a map shows when a marker is pressed.
@@ -84,7 +85,6 @@ function FavoriteButton({
     borderColor: paint.border,
     backgroundColor: hovered ? paint.hoverSurface : paint.surface,
     '--bloom-map-ring': paint.ring,
-    ...bloomShadowStyle('s'),
   };
   return (
     <Pressable
@@ -98,7 +98,7 @@ function FavoriteButton({
       onHoverOut={onOut}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       testID={testID}
-      style={style}
+      style={[style, bloomShadowStyle('s')]}
     >
       <Icon width={14} height={14} fill={favorite ? paint.heart : paint.label} />
     </Pressable>
@@ -145,7 +145,7 @@ function MapListingPreviewComponent({
   const uri = image ? (isImageUrl(image) ? image : resolver?.(image, imageVariant)) : undefined;
   const showRating = rating !== undefined;
 
-  const cardStyle: WebCssStyle = {
+  const cardStyle: ViewStyle = {
     width,
     maxWidth: '100%',
     flexDirection: compact ? 'row' : 'column',
@@ -211,9 +211,9 @@ function MapListingPreviewComponent({
     <View testID={testID} style={[cardStyle, style]}>
       <View style={photoStyle} testID={testID ? `${testID}-image` : undefined}>
         {uri ? (
-          <Image
+          <BloomImage
             source={{ uri }}
-            resizeMode="cover"
+            contentFit="cover"
             accessibilityIgnoresInvertColors
             style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
           />

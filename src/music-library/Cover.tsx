@@ -1,5 +1,6 @@
 import React, { useState, type ComponentType } from 'react';
-import { Image, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 
 import { RiBookOpenLine } from '../icons/remix/RiBookOpenLine';
 import { RiFolderLine } from '../icons/remix/RiFolderLine';
@@ -79,11 +80,11 @@ export function Cover({
       ]}
     >
       {uri && !failed ? (
-        <Image
+        <BloomImage
           source={{ uri }}
           onError={() => setFailed(true)}
           style={{ width: size, height: size }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       ) : (
         <Glyph width={glyph} height={glyph} fill={glyphColor} />

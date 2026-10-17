@@ -1,7 +1,7 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import { Surface } from '../surface';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Pressable,
@@ -9,8 +9,7 @@ import {
   TextInput,
   View,
   useWindowDimensions,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
+  type TextInputKeyPressEvent,
   type ViewProps,
 } from 'react-native';
 import Animated, {
@@ -247,7 +246,7 @@ function ModelMenu({
 }) {
   const Button = useComposerButton();
   const Popover = useComposerPopover();
-  const triggerRef = useRef<View>(null);
+  const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const [open, setOpen] = useState(false);
   // An id with no entry (a model the lineup no longer carries) shows as itself
   // rather than as an empty trigger.
@@ -551,11 +550,12 @@ export function ComposerPillBase({
   const [contentHeight, setContentHeight] = useState(LINE_HEIGHT);
   const [modelWidth, setModelWidth] = useState(0);
 
-  const fieldRef = useRef<TextInput | null>(null);
+  const fieldRef = useRef<ComponentRef<typeof TextInput> | null>(null);
   const setFieldRef = useCallback(
-    (node: TextInput | null) => {
+    (node: ComponentRef<typeof TextInput> | null) => {
       fieldRef.current = node;
-      if (inputRef) (inputRef as React.MutableRefObject<TextInput | null>).current = node;
+      if (inputRef)
+        (inputRef as React.MutableRefObject<ComponentRef<typeof TextInput> | null>).current = node;
     },
     [inputRef],
   );
@@ -580,7 +580,7 @@ export function ComposerPillBase({
   }, [disabled, busy, onSubmit, text]);
 
   const onKeyPress = useCallback(
-    (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    (event: TextInputKeyPressEvent) => {
       /*
        * The host sees the key first, and may take it.
        *
@@ -594,8 +594,10 @@ export function ComposerPillBase({
       onKeyPressProp?.(event);
       if (event.defaultPrevented) return;
 
-      const native: TextInputKeyPressEventData & { shiftKey?: boolean; isComposing?: boolean } =
-        event.nativeEvent;
+      const native: TextInputKeyPressEvent['nativeEvent'] & {
+        shiftKey?: boolean;
+        isComposing?: boolean;
+      } = event.nativeEvent;
       /*
        * Shift+Enter is a NEWLINE, not a send.
        *

@@ -1,4 +1,5 @@
 import React, { createContext, memo, useContext, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import { Platform, StyleSheet, type View } from 'react-native';
 import { BlurTargetView } from 'expo-blur';
 
@@ -73,7 +74,9 @@ const isAndroid = () => Platform.OS === 'android';
  * The app-root target. Deliberately NOT exported as a hook — reading this
  * without crossing a window boundary is the crash.
  */
-const RootBlurTargetContext = createContext<React.RefObject<View | null> | undefined>(undefined);
+const RootBlurTargetContext = createContext<
+  React.RefObject<ComponentRef<typeof View> | null> | undefined
+>(undefined);
 
 /**
  * True only inside a declared separate native window. Default `false` is what
@@ -94,7 +97,7 @@ export const BlurTargetProvider = memo(function BlurTargetProvider({
   children,
   style,
 }: BlurTargetProviderProps) {
-  const ref = useRef<View | null>(null);
+  const ref = useRef<ComponentRef<typeof View>>(null);
   // `BlurView` resolves `findNodeHandle(blurTarget.current)` in
   // `componentDidMount` and re-resolves only when `blurTarget.current` DIFFERS
   // from the previous render's — a comparison a stable ref object can never
@@ -145,7 +148,9 @@ export const BlurWindow = memo(function BlurWindow({ children }: BlurWindowProps
  * `undefined` is a normal answer, not a failure: the caller paints its
  * tint-only material, exactly as it did before any of this existed.
  */
-export function useWindowedBlurTarget(): React.RefObject<View | null> | undefined {
+export function useWindowedBlurTarget():
+  | React.RefObject<ComponentRef<typeof View> | null>
+  | undefined {
   const target = useContext(RootBlurTargetContext);
   const inSeparateWindow = useContext(SeparateWindowContext);
   if (!isAndroid()) return undefined;

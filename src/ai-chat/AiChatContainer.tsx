@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
 import React, {
@@ -640,7 +641,7 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
   ref,
 ) {
   const chrome = useContext(AiChatFloatingChromeContext);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const lastHeight = useRef(0);
   /**
    * The latest content height from ANY source, for the chrome report only.
@@ -892,7 +893,7 @@ const DocumentThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(functio
   ref,
 ) {
   const chrome = useContext(AiChatFloatingChromeContext);
-  const nodeRef = useRef<View>(null);
+  const nodeRef = useRef<ComponentRef<typeof View>>(null);
   const lastHeight = useRef(0);
   /** An `onStartReached` is out and its page has not landed yet. */
   const pageOut = useRef(false);

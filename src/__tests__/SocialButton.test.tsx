@@ -166,7 +166,7 @@ describe('SocialButton — render', () => {
 
   it('presses, and opens href on native after onPress', () => {
     const onPress = jest.fn();
-    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     const { getByTestId } = renderWithTheme(
       <SocialButton testID="b" brand="github" href="https://example.com/auth" onPress={onPress} />,
     );

@@ -88,7 +88,7 @@ function CalendarFrame({
   const palette = useMemo(() => resolveCalendarPalette(theme), [theme]);
   const [firstMonth, setFirstMonth] = useState(() => startOfMonth(initialDate));
   const [focusedDate, setFocusedDate] = useState(() => startOfDay(initialDate));
-  const nodes = useRef(new Map<string, View>());
+  const nodes = useRef(new Map<string, React.ComponentRef<typeof View>>());
   const focusAfterMove = useRef(false);
 
   useEffect(() => {
@@ -143,7 +143,7 @@ function CalendarFrame({
     if (!focusAfterMove.current) return;
     focusAfterMove.current = false;
     const node = nodes.current.get(dayKey(focusedDate)) as
-      | (View & { focus?: () => void })
+      | (React.ComponentRef<typeof View> & { focus?: () => void })
       | undefined;
     node?.focus?.();
   }, [focusedDate, firstMonth]);
@@ -169,7 +169,7 @@ function CalendarFrame({
     [onPressDay],
   );
 
-  const registerNode = useCallback((key: string, node: View | null) => {
+  const registerNode = useCallback((key: string, node: React.ComponentRef<typeof View> | null) => {
     if (node) nodes.current.set(key, node);
     else nodes.current.delete(key);
   }, []);

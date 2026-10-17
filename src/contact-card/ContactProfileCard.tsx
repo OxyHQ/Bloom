@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo } from 'react';
-import { Image, Pressable, StyleSheet, View, type TextStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type TextStyle } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Avatar } from '../avatar';
 import { AvatarGroup } from '../avatar-group';
@@ -364,9 +365,9 @@ function ContactProfileCardComponent({
         }}
       >
         {coverSource ? (
-          <Image
+          <BloomImage
             source={typeof coverSource === 'string' ? { uri: coverSource } : coverSource}
-            resizeMode="cover"
+            contentFit="cover"
             accessibilityIgnoresInvertColors
             aria-hidden
             style={StyleSheet.absoluteFill}

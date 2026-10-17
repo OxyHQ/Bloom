@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { type ComponentRef, type RefObject, useEffect, useRef } from 'react';
 import { BackHandler, Keyboard, Platform, type View } from 'react-native';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { listenForEscape, tabbablesWithin, wrapTab } from '../overlay/modal-keyboard';
 import { hasActiveOverlays } from '../overlay/stack';
+import type { ViewRef } from '../styles/native-refs';
 
 /**
  * Interaction only: the shell continues to own the drawer's layout and motion.
@@ -18,8 +19,12 @@ import { hasActiveOverlays } from '../overlay/stack';
  *
  * Any portaled overlay above (a dialog, a menu) takes all of it first.
  */
-export function usePanelInteraction(open: boolean, modal: boolean, close: () => void) {
-  const ref = useAccessibilityFocus<View>(modal);
+export function usePanelInteraction(
+  open: boolean,
+  modal: boolean,
+  close: () => void,
+): RefObject<ViewRef | null> {
+  const ref = useAccessibilityFocus<ComponentRef<typeof View>>(modal);
   const closeRef = useRef(close);
   closeRef.current = close;
 

@@ -90,7 +90,9 @@ describe('AiProfileCard', () => {
       });
     });
     act(() => {
-      fireEvent(image, 'load', { nativeEvent: { source: { width: 1356, height: 400, uri: 'x' } } });
+      // The cover draws through BloomImage → expo-image on a device, whose load
+      // event carries the intrinsic size as `source`, not `nativeEvent.source`.
+      fireEvent(image, 'load', { source: { width: 1356, height: 400, url: 'x' } });
     });
     // Cover scale max(678/1356, 165/400) = 0.5 → 678 × 200, 35px of overflow, 45% of it above.
     expect(

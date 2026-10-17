@@ -8,7 +8,7 @@
  * The chrome — width, radius, padding, border, surface, shadow — is the
  * caller's inline `style`, which outranks the surface's own classes.
  */
-import React, { useCallback } from 'react';
+import React, { type ComponentRef, useCallback } from 'react';
 import type { View } from 'react-native';
 
 import { FloatingPanel } from '../floating/FloatingPanel';
@@ -27,7 +27,10 @@ export function ComposerPopover({
   testID,
   children,
 }: ComposerPopoverProps) {
-  const anchor = useAnchorRect(anchorRef as React.RefObject<View | null>, open);
+  const anchor = useAnchorRect(
+    anchorRef as React.RefObject<ComponentRef<typeof View> | null>,
+    open,
+  );
   const dismiss = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   return (

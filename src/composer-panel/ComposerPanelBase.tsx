@@ -1,12 +1,11 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { type ComponentRef, useCallback, useMemo, useRef, useState } from 'react';
 import { Surface } from '../surface';
 import {
   Text as RNText,
   TextInput,
   View,
   type LayoutChangeEvent,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
+  type TextInputKeyPressEvent,
 } from 'react-native';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useTextareaAutosize } from '../hooks/use-textarea-autosize';
@@ -134,11 +133,12 @@ export function ComposerPanelBase({
     onChange: onVoiceStateChange,
   });
 
-  const fieldRef = useRef<TextInput | null>(null);
+  const fieldRef = useRef<ComponentRef<typeof TextInput> | null>(null);
   const setFieldRef = useCallback(
-    (node: TextInput | null) => {
+    (node: ComponentRef<typeof TextInput> | null) => {
       fieldRef.current = node;
-      if (inputRef) (inputRef as React.MutableRefObject<TextInput | null>).current = node;
+      if (inputRef)
+        (inputRef as React.MutableRefObject<ComponentRef<typeof TextInput> | null>).current = node;
     },
     [inputRef],
   );
@@ -168,12 +168,14 @@ export function ComposerPanelBase({
   }, [disabled, busy, onSubmit, text, value, setText]);
 
   const onKeyPress = useCallback(
-    (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    (event: TextInputKeyPressEvent) => {
       // The host sees the key first and may take it (a suggestion list).
       onKeyPressProp?.(event);
       if (event.defaultPrevented) return;
-      const native: TextInputKeyPressEventData & { shiftKey?: boolean; isComposing?: boolean } =
-        event.nativeEvent;
+      const native: TextInputKeyPressEvent['nativeEvent'] & {
+        shiftKey?: boolean;
+        isComposing?: boolean;
+      } = event.nativeEvent;
       if (!IS_WEB || native.key !== 'Enter' || native.shiftKey || native.isComposing) return;
       event.preventDefault();
       submit();

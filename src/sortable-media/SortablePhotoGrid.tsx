@@ -7,7 +7,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
@@ -235,7 +236,7 @@ function SortablePhotoGridComponent({
 
   const [drag, setDrag] = useState<DragState | null>(null);
   const [announcement, setAnnouncement] = useState('');
-  const gridRef = useRef<View>(null);
+  const gridRef = useRef<React.ComponentRef<typeof View>>(null);
   const pendingFocus = useRef<{ id: string; direction: MoveDirection } | null>(null);
 
   const latest = useRef({ photos, columns, cell, gap, disabled, onReorder, labels });
@@ -444,10 +445,10 @@ function SortablePhotoGridComponent({
               } satisfies WebCssStyle
             }
           >
-            <Image
+            <BloomImage
               source={{ uri: resolvePhoto(dragged.uri, resolver, photoVariant) }}
               style={{ width: cell, height: cell }}
-              resizeMode="cover"
+              contentFit="cover"
             />
           </View>
         ) : null}
@@ -528,11 +529,11 @@ const PhotoTile = memo(function PhotoTile({
       {slot ? null : (
         <>
           {resolvedUri ? (
-            <Image
+            <BloomImage
               source={{ uri: resolvedUri }}
               accessibilityIgnoresInvertColors
               style={{ position: 'absolute', top: 0, left: 0, width: size, height: size }}
-              resizeMode="cover"
+              contentFit="cover"
             />
           ) : null}
 

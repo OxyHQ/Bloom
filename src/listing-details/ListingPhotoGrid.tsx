@@ -1,5 +1,6 @@
 import React, { memo, useMemo, useState } from 'react';
-import { Image, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Button } from '../button';
 import { Carousel, CarouselItem } from '../carousel';
@@ -74,9 +75,9 @@ interface PhotoTileProps {
 function PhotoTile({ photo, uri, label, palette, onPress, style, testID }: PhotoTileProps) {
   const { state: hovered, onIn, onOut } = useInteractionState();
   const image = uri ? (
-    <Image
+    <BloomImage
       source={{ uri }}
-      resizeMode="cover"
+      contentFit="cover"
       style={StyleSheet.absoluteFill}
       // The pressable (or the tile) carries the name; the image itself is decoration.
       accessible={false}

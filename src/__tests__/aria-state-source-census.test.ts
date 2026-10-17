@@ -175,6 +175,11 @@ const RN_HOSTS = new Set([
   'StyledText',
   'StyledPressable',
   'StyledImage',
+  // `image/BloomImage.tsx`, the one raster renderer: every prop but its own
+  // five (`contentFit`, `transition`, `onLoad`, `onError`, `source`) reaches
+  // expo-image or react-native's `Image` unchanged, so it forwards like the
+  // styled wrappers above.
+  'BloomImage',
 ]);
 
 /**

@@ -1,5 +1,21 @@
-import { useCallback, useEffect, useId, useRef, useState, type ComponentType } from 'react';
-import { Platform, TextInput, type TextInputProps, type View } from 'react-native';
+import {
+  type ComponentRef,
+  type ComponentType,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
+import {
+  Platform,
+  TextInput,
+  type StyleProp,
+  type TextInputProps,
+  type TextStyle,
+  type View,
+} from 'react-native';
 import { styled } from 'react-native-css';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -12,9 +28,13 @@ import { hexToHsv, hsvToHex, type Hsv } from './shared';
 import { useTrackEvents } from './use-track-events';
 import { svgA11yProps } from '../styles/svg-a11y';
 
-const StyledTextInput: ComponentType<TextInputProps> = styled(TextInput, {
-  className: 'style',
-});
+// `styled()` is told only about `style`: a dot-path union over React Native
+// 0.88's whole `TextInputProps` overflows the checker (TS2590). The annotation
+// is the real contract — `styles/styled-primitives.ts` does the same.
+const StyledTextInput: ComponentType<TextInputProps> = styled(
+  TextInput as (props: { style?: StyleProp<TextStyle> }) => ReactNode,
+  { className: 'style' },
+);
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 const THUMB =
   'pointer-events-none absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white bg-white/0 ' +
@@ -34,8 +54,8 @@ export function CustomColorPicker({
   const membership = useFieldMembership({ label: messages.hexColor });
   const { colors } = useTheme();
   const id = useId().replace(/:/g, '');
-  const fieldRef = useRef<View>(null);
-  const railRef = useRef<View>(null);
+  const fieldRef = useRef<ComponentRef<typeof View>>(null);
+  const railRef = useRef<ComponentRef<typeof View>>(null);
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(value) ?? { h: 259, s: 0.83, v: 1 });
   const [hexDraft, setHexDraft] = useState(() => value.toLowerCase());
   const [seenValue, setSeenValue] = useState(() => value.toLowerCase());

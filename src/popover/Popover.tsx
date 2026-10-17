@@ -35,7 +35,7 @@ export function Popover({ children, open, defaultOpen = false, onOpenChange }: P
     defaultValue: defaultOpen,
     onChange: onOpenChange,
   });
-  const anchorRef = useRef<View | null>(null);
+  const anchorRef = useRef<React.ComponentRef<typeof View> | null>(null);
   const value = useMemo(() => ({ open: isOpen, setOpen, anchorRef }), [isOpen, setOpen]);
 
   return <PopoverProvider value={value}>{children}</PopoverProvider>;

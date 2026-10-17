@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { type ComponentRef, useEffect, useRef, useState, type RefObject } from 'react';
 import { Keyboard, Platform, TextInput, type KeyboardEvent, type ScrollView } from 'react-native';
 
 /** Clearance kept between the focused field and the keyboard's top, px. */
@@ -22,7 +22,7 @@ type Measurable = {
  * `offset` is the page's current scroll offset (its scroll handler keeps it).
  */
 export function useKeyboardReveal(
-  scrollRef: RefObject<ScrollView | null>,
+  scrollRef: RefObject<ComponentRef<typeof ScrollView> | null>,
   offset: { value: number },
   enabled: boolean,
 ): number {

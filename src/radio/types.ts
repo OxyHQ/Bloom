@@ -1,4 +1,4 @@
-import type { ReactNode, ReactElement, RefObject } from 'react';
+import type { ComponentRef, ReactNode, ReactElement, RefObject } from 'react';
 import type { BloomAppearance, BloomSize } from '../appearance';
 import type { BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle, View } from 'react-native';
@@ -68,7 +68,7 @@ export interface RadioOptionState {
   checked: boolean;
   disabled: boolean;
   /** The group's actual radio host, suitable for Collapsible.returnFocusRef. Do not replace it. */
-  controlRef: RefObject<View | null>;
+  controlRef: RefObject<ComponentRef<typeof View> | null>;
 }
 
 export interface RadioGroupProps<Value extends string = string> {

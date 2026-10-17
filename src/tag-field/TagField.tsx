@@ -3,8 +3,7 @@ import {
   Pressable,
   TextInput,
   View,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
+  type TextInputKeyPressEvent,
   type TextStyle,
 } from 'react-native';
 
@@ -95,7 +94,7 @@ import { IS_WEB } from '../styles/platform';
  */
 
 /** A DOM keyboard event as react-native-web hands it to `onKeyPress`. */
-type WebKeyEvent = TextInputKeyPressEventData & { isComposing?: boolean };
+type WebKeyEvent = TextInputKeyPressEvent['nativeEvent'] & { isComposing?: boolean };
 
 /**
  * React Native's `Role` union has no `listbox`; react-native-web passes the DOM
@@ -151,7 +150,7 @@ export function TagField({
   const menu = useMenuPalette();
   const { messages } = useMessages(TAG_FIELD_MESSAGES);
   const labels: Required<TagFieldLabels> = { ...messages, ...labelsProp };
-  const inputRef = useRef<TextInput | null>(null);
+  const inputRef = useRef<React.ComponentRef<typeof TextInput> | null>(null);
   const reactId = useId();
   const listId = `${nativeID ?? reactId}-suggestions`;
 
@@ -238,7 +237,7 @@ export function TagField({
   }, [activeIndex, offered, add, text, setText]);
 
   const handleKeyPress = useCallback(
-    (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    (event: TextInputKeyPressEvent) => {
       const native = event.nativeEvent as WebKeyEvent;
       // An IME candidate window owns Enter and the arrows while it is open.
       if (native.isComposing === true) return;

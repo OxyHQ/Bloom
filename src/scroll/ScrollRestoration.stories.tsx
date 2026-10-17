@@ -64,7 +64,7 @@ const ROWS = Array.from({ length: 40 }, (_, index) => index);
 
 function ScreenBody({ label }: { label: string }) {
   const { colors } = useTheme();
-  const ref = useRef<ScrollView | null>(null);
+  const ref = useRef<React.ComponentRef<typeof ScrollView> | null>(null);
   const [offset, setOffset] = useState(0);
   const scroll = useScrollRestoration(ref);
 

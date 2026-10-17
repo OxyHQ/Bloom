@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import type { ComponentRef } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -329,7 +330,7 @@ function SegmentButton({
   onSelect: (mode: 'light' | 'dark', event: GestureResponderEvent, node: unknown) => void;
 }) {
   const { messages } = useMessages(THEME_TOGGLE_MESSAGES);
-  const ref = useRef<View>(null);
+  const ref = useRef<ComponentRef<typeof View>>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = mode === 'light' ? RiSunLine : RiMoonLine;
   const color = bare
@@ -542,7 +543,7 @@ function CollapsedToggle({
   testID?: string;
 }) {
   const { messages } = useMessages(THEME_TOGGLE_MESSAGES);
-  const ref = useRef<View>(null);
+  const ref = useRef<ComponentRef<typeof View>>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = dark ? RiSunLine : RiMoonLine;
   const box: WebCssStyle = {
@@ -590,7 +591,7 @@ function SidebarRowToggle({
   testID?: string;
 }) {
   const { messages } = useMessages(THEME_TOGGLE_MESSAGES);
-  const ref = useRef<View>(null);
+  const ref = useRef<ComponentRef<typeof View>>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const row: WebCssStyle = {
     width: '100%',

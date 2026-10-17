@@ -1,6 +1,7 @@
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import type { LinkButtonProps } from './types';
 import React, {
+  type ComponentRef,
   forwardRef,
   useMemo,
   useRef,
@@ -104,6 +105,7 @@ export type {
   ButtonHoverEvent,
   ButtonIconComponent,
 } from './types';
+import type { MemoRefComponent } from '../styles/native-refs';
 
 /**
  * Native fork of the button. Geometry and every state's colours come
@@ -238,44 +240,43 @@ const ContentStyleContext = createContext<{ text?: TextStyle; layout?: ViewStyle
 
 // Resolve utilities without mixing Bloom's defaults into their input. The
 // defaults are merged only after interop, so caller classes have final say.
-const ButtonPressable = forwardRef<View, ButtonPressableProps>(function ButtonPressable(
-  { baseStyle, style, children, ...props },
-  ref,
-) {
-  const resolved = StyleSheet.flatten(style) as TextStyle | undefined;
-  const layout: TextStyle = { ...resolved };
-  const text: TextStyle = {};
-  // Read a copy: the CSS resolver can share its cached style objects with
-  // other controls. Moving properties out of that cache changes their styles.
-  for (const key of CONTENT_TEXT_KEYS) {
-    if (resolved?.[key] !== undefined) Object.assign(text, { [key]: resolved[key] });
-    delete layout[key];
-  }
-  // Keep the persistent content wrapper in a column host. Stretch owns its
-  // width and vertical growth fills a definite button height. Growing the
-  // wrapper horizontally makes RN's compatibility Yoga mode measure a wrapped
-  // row as one full-width button per line, despite correct final positions.
-  // Caller direction/alignment belong to the content slots below.
-  return (
-    <Pressable
-      {...props}
-      ref={ref}
-      style={[
-        baseStyle,
-        layout,
-        {
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-      ]}
-    >
-      <ContentStyleContext.Provider value={{ text, layout }}>
-        {children}
-      </ContentStyleContext.Provider>
-    </Pressable>
-  );
-});
+const ButtonPressable = forwardRef<ComponentRef<typeof View>, ButtonPressableProps>(
+  function ButtonPressable({ baseStyle, style, children, ...props }, ref) {
+    const resolved = StyleSheet.flatten(style) as TextStyle | undefined;
+    const layout: TextStyle = { ...resolved };
+    const text: TextStyle = {};
+    // Read a copy: the CSS resolver can share its cached style objects with
+    // other controls. Moving properties out of that cache changes their styles.
+    for (const key of CONTENT_TEXT_KEYS) {
+      if (resolved?.[key] !== undefined) Object.assign(text, { [key]: resolved[key] });
+      delete layout[key];
+    }
+    // Keep the persistent content wrapper in a column host. Stretch owns its
+    // width and vertical growth fills a definite button height. Growing the
+    // wrapper horizontally makes RN's compatibility Yoga mode measure a wrapped
+    // row as one full-width button per line, despite correct final positions.
+    // Caller direction/alignment belong to the content slots below.
+    return (
+      <Pressable
+        {...props}
+        ref={ref}
+        style={[
+          baseStyle,
+          layout,
+          {
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+        ]}
+      >
+        <ContentStyleContext.Provider value={{ text, layout }}>
+          {children}
+        </ContentStyleContext.Provider>
+      </Pressable>
+    );
+  },
+);
 
 function ButtonContent({
   loading,
@@ -322,14 +323,13 @@ function ButtonLoading({ color, fallback }: { color?: string; fallback: string }
 }
 
 const ButtonInterop: ComponentType<ButtonPressableProps> = ButtonPressable;
-const StyledPressable: ComponentType<ButtonPressableProps & React.RefAttributes<View>> = styled(
-  ButtonInterop,
-  {
-    className: 'style',
-  },
-);
+const StyledPressable: ComponentType<
+  ButtonPressableProps & React.RefAttributes<ComponentRef<typeof View>>
+> = styled(ButtonInterop, {
+  className: 'style',
+});
 
-const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent(
+const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(function ButtonComponent(
   {
     onPress,
     onFocus,
@@ -469,7 +469,10 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent(
         : palette.rest;
 
   const baseStyles = useMemo((): ViewStyle => {
-    const styles: ViewStyle = {
+    // Composed by spreading, never by assigning: React Native's style types are
+    // readonly, and each override below must still land after the base it
+    // replaces.
+    return {
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
@@ -481,26 +484,22 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent(
       borderColor: paint.border,
       // The gradient is a child layer, so the box itself stays clear of it.
       backgroundColor: paint.surface ? 'transparent' : paint.background,
-    };
-    if (palette.shadow) {
-      styles.boxShadow = BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'];
-    }
-    if (disabled && palette.disabledOpacity != null) {
-      styles.opacity = palette.disabledOpacity;
-    }
-    if (isSquare) {
-      styles.width = wide ? Math.round(geometry.height * 1.5) : geometry.height;
-      styles.paddingHorizontal = 0;
-    }
-    if (isLink && !isSquare) {
+      ...(palette.shadow ? { boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] } : null),
+      ...(disabled && palette.disabledOpacity != null
+        ? { opacity: palette.disabledOpacity }
+        : null),
+      ...(isSquare
+        ? {
+            width: wide ? Math.round(geometry.height * 1.5) : geometry.height,
+            paddingHorizontal: 0,
+          }
+        : null),
       // LinkButton: no container — the label's own line box and a 4px
       // gap. The touch target comes back through `hitSlop`.
-      styles.height = undefined;
-      styles.paddingHorizontal = 0;
-      styles.gap = LINK_BUTTON_GAP;
-      styles.borderRadius = 4;
-    }
-    return styles;
+      ...(isLink && !isSquare
+        ? { height: undefined, paddingHorizontal: 0, gap: LINK_BUTTON_GAP, borderRadius: 4 }
+        : null),
+    };
   }, [geometry, palette, paint, theme.isDark, disabled, isSquare, isIconVariant, isLink]);
 
   // The type ramp step (size, line height, tracking, weight) comes from the
@@ -659,7 +658,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const Button = memo(ButtonComponent);
+export const Button: MemoRefComponent<ButtonProps> = memo(ButtonComponent);
 Button.displayName = 'Button';
 
 export const PrimaryButton = memo((props: ButtonProps) => (

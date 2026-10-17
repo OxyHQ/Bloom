@@ -46,7 +46,7 @@ export function GlossArt({
         <StyledImage
           source={{ uri: isDark ? RAINBOW_DARK : RAINBOW_LIGHT }}
           className="object-cover"
-          resizeMode="cover"
+          contentFit="cover"
           style={{ width: size, height: size }}
         />
       </StyledView>

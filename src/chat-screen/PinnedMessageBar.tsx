@@ -1,7 +1,8 @@
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
 import React, { memo } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
@@ -76,7 +77,7 @@ function PinThumbnail({ source }: { source: ChatPinnedMessage['thumbnail'] }) {
   const resolved = useResolvedImageSource(source, 'thumb');
   if (!resolved) return null;
   return (
-    <Image
+    <BloomImage
       source={resolved}
       accessibilityIgnoresInvertColors
       style={{

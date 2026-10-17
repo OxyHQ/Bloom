@@ -1,4 +1,4 @@
-import React, { useRef, useState, type ReactNode, type Ref } from 'react';
+import React, { type ComponentRef, useRef, useState, type ReactNode, type Ref } from 'react';
 import { Platform, type ScrollView, type ScrollViewProps } from 'react-native';
 import { EdgeScrim } from '../page-header/EdgeScrim';
 import { StyledView } from '../styles/styled-primitives';
@@ -22,7 +22,7 @@ export function ScrollSurface({
   className?: string;
   contentClassName?: string;
   surface?: 'primary' | 'secondary' | 'full';
-  scrollRef?: Ref<ScrollView>;
+  scrollRef?: Ref<ComponentRef<typeof ScrollView>>;
   label?: string;
   chatId?: string;
   fadeBottom?: boolean;

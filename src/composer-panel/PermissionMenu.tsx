@@ -1,6 +1,6 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import React, { useRef, useState } from 'react';
+import React, { type ComponentRef, useRef, useState } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -58,7 +58,7 @@ export function PermissionMenu({
   const Button = useComposerButton();
   const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
   const Popover = useComposerPopover();
-  const triggerRef = useRef<View>(null);
+  const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useControllableState<string>({
     value,

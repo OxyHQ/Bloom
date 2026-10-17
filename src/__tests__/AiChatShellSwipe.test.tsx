@@ -30,6 +30,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolvedStyle } from './support/rendered-style';
 
 type PanConfig = Parameters<typeof ReactNative.PanResponder.create>[0];
+type PanHandlers = ReturnType<typeof ReactNative.PanResponder.create>['panHandlers'];
 
 /** Stands in for the whole `panHandlers` bundle: present iff the gesture is armed. */
 const ATTACHED = () => false;
@@ -40,7 +41,23 @@ beforeEach(() => {
   created = [];
   jest.spyOn(ReactNative.PanResponder, 'create').mockImplementation((config) => {
     created.push(config);
-    return { panHandlers: { onMoveShouldSetResponder: ATTACHED } };
+    const inert = () => false;
+    // Every handler React Native's type requires; only the marker is asserted on.
+    const panHandlers: PanHandlers = {
+      onMoveShouldSetResponder: ATTACHED,
+      onMoveShouldSetResponderCapture: inert,
+      onResponderEnd: inert,
+      onResponderGrant: inert,
+      onResponderMove: inert,
+      onResponderReject: inert,
+      onResponderRelease: inert,
+      onResponderStart: inert,
+      onResponderTerminate: inert,
+      onResponderTerminationRequest: inert,
+      onStartShouldSetResponder: inert,
+      onStartShouldSetResponderCapture: inert,
+    };
+    return { getInteractionHandle: () => undefined, panHandlers };
   });
 });
 
@@ -67,7 +84,6 @@ function gesture(over: Partial<PanResponderGestureState> = {}): PanResponderGest
     vx: 0,
     vy: 0,
     numberActiveTouches: 1,
-    _accountsForMovesUpTo: 0,
     ...over,
   };
 }

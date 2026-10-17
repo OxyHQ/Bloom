@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { type ComponentRef, useCallback, useEffect, useRef } from 'react';
 import { Platform, View, type ViewProps } from 'react-native';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { Z_INDEX } from '../styles/z-index';
@@ -20,8 +20,8 @@ export function StickySection({ children, offset, style, onLayout, ...props }: S
   const dock = useHeaderDockContext();
   const top = useTopEdgeInset();
   const fill = useSurfaceFill();
-  const marker = useRef<View>(null);
-  const section = useRef<View>(null);
+  const marker = useRef<ComponentRef<typeof View>>(null);
+  const section = useRef<ComponentRef<typeof View>>(null);
   const owner = useRef({});
   const measure = useCallback(() => {
     if (!dock) return;

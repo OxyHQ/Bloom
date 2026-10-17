@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from 'react';
+import type { ComponentRef, ReactNode, RefObject } from 'react';
 import type { StyleProp, TextInput, TextStyle, ViewStyle } from 'react-native';
 
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -197,7 +197,7 @@ export interface ChatComposerProps extends PartProps {
   /** Draws the keyboard hint line under the bar (web only). Default `false`. */
   showKeyboardHint?: boolean;
   /** The field, for focusing it from a reply action. */
-  inputRef?: RefObject<TextInput | null>;
+  inputRef?: RefObject<ComponentRef<typeof TextInput> | null>;
   onFocus?: () => void;
   onBlur?: () => void;
   labels?: Partial<ChatComposerLabels>;

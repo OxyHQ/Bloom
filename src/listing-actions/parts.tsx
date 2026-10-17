@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, type ReactNode } from 'react';
-import { Image, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 import Svg, { Path } from 'react-native-svg';
 
 import {
@@ -259,11 +260,11 @@ export function HomeTile({
         </View>
       )}
       {uri ? (
-        <Image
+        <BloomImage
           source={{ uri }}
           accessibilityIgnoresInvertColors
           style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       ) : null}
     </View>

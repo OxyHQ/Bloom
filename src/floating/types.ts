@@ -17,6 +17,7 @@
  *  - `menu-rows` — the row vocabulary all THREE menu families render.
  *  - `context` — the contexts those rows read.
  */
+import type { ComponentRef } from 'react';
 import type { GestureResponderEvent, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 
 import type { MenuFocusIntent } from './menu-keyboard';
@@ -32,7 +33,7 @@ export interface OverlayShellContextValue {
   open: boolean;
   setOpen: (next: boolean) => void;
   /** The trigger wrapper. Measured by the web forks, unused on native. */
-  anchorRef: React.RefObject<View | null>;
+  anchorRef: React.RefObject<ComponentRef<typeof View> | null>;
   /**
    * Web menus only: where a keyboard open lands focus, handed from the trigger
    * to the panel (`menu-keyboard.ts`). Absent on native and on `Popover`.
@@ -140,7 +141,7 @@ export interface FloatingPanelProps extends FloatingPositionProps {
    * Receives the panel's own node as it mounts and unmounts — for a family that
    * attaches keyboard handling to the rows inside it (`menu-keyboard.ts`).
    */
-  panelRef?: (node: View | null) => void;
+  panelRef?: (node: ComponentRef<typeof View> | null) => void;
 }
 
 /**

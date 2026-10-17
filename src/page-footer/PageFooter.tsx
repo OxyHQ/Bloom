@@ -19,6 +19,7 @@ import { useTheme } from '../theme/use-theme';
 import { PageFooterContext } from './context';
 import type { PageFooterProps } from './types';
 import { useDocumentAnchor } from './use-document-anchor';
+import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 
 const BAR_HEIGHT = 56;
 
@@ -49,7 +50,7 @@ function PageFooterComponent({
   const occupied = useBottomEdgeInset();
   const rawBottom = bottomInset ?? occupied;
   const bottom = Number.isFinite(rawBottom) ? Math.max(0, rawBottom) : 0;
-  const insets = useContext(SafeAreaInsetsContext);
+  const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS);
   const padBottom = (safeArea ?? Platform.OS !== 'web') && bottom === 0 ? (insets?.bottom ?? 0) : 0;
   const windowWidth = useWindowDimensions().width;
   const [width, setWidth] = useState<number | null>(null);

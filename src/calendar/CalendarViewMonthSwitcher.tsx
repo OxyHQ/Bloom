@@ -142,7 +142,7 @@ function SwitcherDay({
   locale?: string;
   palette: CalendarViewPalette;
   onPress: (date: Date) => void;
-  registerNode: (key: string, node: View | null) => void;
+  registerNode: (key: string, node: React.ComponentRef<typeof View> | null) => void;
 }) {
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarDay: '' } } : {};
@@ -173,10 +173,22 @@ function SwitcherDay({
   );
 }
 
-/** `onKeyDown` is forwarded by react-native-web and absent from React Native's `View` type. */
+/**
+ * `onKeyDown` as both platforms deliver it: react-native-web forwards the DOM
+ * event (`event.key`); React Native 0.88 types a native `KeyDownEvent` on `View`
+ * whose key is `event.nativeEvent.key`. Read it with {@link keyOf}.
+ */
 type WebKeyProps = {
-  onKeyDown?: (event: { key: string; preventDefault: () => void }) => void;
+  onKeyDown?: (event: {
+    key?: string;
+    nativeEvent?: { key?: string };
+    preventDefault: () => void;
+  }) => void;
 };
+
+function keyOf(event: { key?: string; nativeEvent?: { key?: string } }): string {
+  return event.key ?? event.nativeEvent?.key ?? '';
+}
 
 function SwitcherGrid({
   month,
@@ -200,25 +212,27 @@ function SwitcherGrid({
   const [focused, setFocused] = useState(() =>
     isSameMonth(today(), month) ? today() : startOfMonth(month),
   );
-  const nodes = useRef(new Map<string, View>());
+  const nodes = useRef(new Map<string, React.ComponentRef<typeof View>>());
   const focusAfterMove = useRef(false);
   const tabStop = isSameMonth(focused, month) ? focused : startOfMonth(month);
 
   useEffect(() => {
     if (!focusAfterMove.current) return;
     focusAfterMove.current = false;
-    const node = nodes.current.get(dayKey(focused)) as (View & { focus?: () => void }) | undefined;
+    const node = nodes.current.get(dayKey(focused)) as
+      | (React.ComponentRef<typeof View> & { focus?: () => void })
+      | undefined;
     node?.focus?.();
   }, [focused, month]);
 
-  const registerNode = useCallback((key: string, node: View | null) => {
+  const registerNode = useCallback((key: string, node: React.ComponentRef<typeof View> | null) => {
     if (node) nodes.current.set(key, node);
     else nodes.current.delete(key);
   }, []);
 
   const keyProps: WebKeyProps = {
     onKeyDown: (event) => {
-      const next = moveFocusedDate(focused, event.key, 0);
+      const next = moveFocusedDate(focused, keyOf(event), 0);
       if (!next) return;
       event.preventDefault();
       focusAfterMove.current = true;

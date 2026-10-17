@@ -36,8 +36,8 @@ export function Popover({
     defaultValue: defaultOpen,
     onChange: onOpenChange,
   });
-  const anchorRef = useRef<View | null>(null);
-  const panelRef = useRef<View | null>(null);
+  const anchorRef = useRef<React.ComponentRef<typeof View> | null>(null);
+  const panelRef = useRef<React.ComponentRef<typeof View> | null>(null);
   // The root survives conditionally mounted content, so a caller removing the
   // panel on close still gets the same focus return as an animated exit.
   useReturnFocusOnClose(
@@ -105,7 +105,7 @@ export function PopoverContent({
   const popover = usePopover();
   const anchor = useAnchorRect(popover.anchorRef, popover.open);
   const attachPanel = useCallback(
-    (node: View | null) => {
+    (node: React.ComponentRef<typeof View> | null) => {
       if (popover.panelRef) popover.panelRef.current = node;
     },
     [popover.panelRef],

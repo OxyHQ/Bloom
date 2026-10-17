@@ -1,4 +1,4 @@
-import { useRef, useState, type ComponentType, type ReactNode } from 'react';
+import { type ComponentRef, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import {
   Platform,
   ScrollView,
@@ -88,7 +88,7 @@ export function CreateTicketDialog({
   const [assignee, setAssignee] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(null);
   const [keepCreating, setKeepCreating] = useState(false);
-  const titleRef = useRef<TextInput>(null);
+  const titleRef = useRef<ComponentRef<typeof TextInput>>(null);
   const member = assignee ? members[assignee] : undefined;
   const selectedColumn = columns.find((column) => column.id === columnId);
   const priorityChip = (value: TicketPriority) => (

@@ -1,6 +1,13 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
-  Image,
   Linking,
   Pressable,
   ScrollView,
@@ -57,6 +64,7 @@ import { useMessages } from '../locale/messages';
 import { LISTING_CARD_MESSAGES, type ListingCardMessages } from './messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { IS_WEB } from '../styles/platform';
+import { BloomImage } from '../image';
 
 /**
  * A home in a results grid — a stay, a rental, a home for sale or a swap.
@@ -124,7 +132,7 @@ interface PhotoTrackProps {
   variant?: string;
   layout: ListingCardLayout;
   paint: ListingCardPaint;
-  scrollRef: React.RefObject<ScrollView | null>;
+  scrollRef: React.RefObject<ComponentRef<typeof ScrollView> | null>;
   width: number;
   onWidth: (width: number) => void;
   onIndex: (index: number) => void;
@@ -209,9 +217,9 @@ function PhotoTrack({
                 style={{ width, height: '100%' }}
               >
                 {uri ? (
-                  <Image
+                  <BloomImage
                     source={{ uri }}
-                    resizeMode="cover"
+                    contentFit="cover"
                     accessibilityIgnoresInvertColors
                     {...webDataSet({ bloomListingCardPhoto: '' })}
                     style={{ width: '100%', height: '100%' }}
@@ -565,9 +573,9 @@ function CompactRow(props: CompactRowProps) {
           testID={testID ? `${testID}-photo` : undefined}
         >
           {cover ? (
-            <Image
+            <BloomImage
               source={{ uri: cover }}
-              resizeMode="cover"
+              contentFit="cover"
               accessibilityIgnoresInvertColors
               style={{ width: '100%', height: '100%' }}
             />
@@ -722,7 +730,7 @@ function ListingCardComponent(props: ListingCardProps) {
   const paint = useMemo(() => resolveListingCardPaint(theme), [theme]);
   const reducedMotion = useReducedMotion();
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const [width, setWidth] = useState(0);
   const [active, setActive] = useState(0);
   const [mountedThrough, setMountedThrough] = useState(1);

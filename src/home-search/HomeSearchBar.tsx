@@ -1,4 +1,5 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import { Pressable, TextInput, View, type TextStyle, type ViewStyle } from 'react-native';
 
 import { Button } from '../button';
@@ -123,7 +124,7 @@ export function HomeSearchBar<K extends string = string>({
   const [barWidth, setBarWidth] = useState<number | null>(null);
   const compact = barWidth !== null && barWidth < 640;
   const [hovered, setHovered] = useState<K | null>(null);
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ComponentRef<typeof View>>(null);
   const open = activeSegment !== null;
   const lastIndex = segments.length - 1;
 

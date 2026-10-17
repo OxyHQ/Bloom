@@ -1,5 +1,8 @@
 import React from 'react';
-import { Image } from 'react-native';
+// `image/BloomImage` draws with expo-image on a device, and jest's `Platform.OS`
+// is `ios` — so the rendered image is `__mocks__/expo-image.ts`'s component,
+// not react-native's `Image`.
+import { Image } from 'expo-image';
 import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

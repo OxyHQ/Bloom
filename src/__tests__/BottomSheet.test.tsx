@@ -1,5 +1,6 @@
 import React, { createRef } from 'react';
-import { Dimensions, Modal, Text, View } from 'react-native';
+import * as ReactNative from 'react-native';
+import { Modal, Text, View } from 'react-native';
 import { act, render, within } from '@testing-library/react-native';
 
 import { useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
@@ -123,8 +124,11 @@ describe('BottomSheet', () => {
   });
 
   describe('rotation bug fix', () => {
-    it('uses Dimensions.addEventListener for screen dimension updates', () => {
-      const addEventSpy = jest.spyOn(Dimensions, 'addEventListener');
+    it('reads the window size through useWindowDimensions, which follows every resize', () => {
+      // React Native's hook re-renders on every window change — rotation, an
+      // iPad split view, a resizable iOS 27 window — where a one-off
+      // `Dimensions.get` would keep the first height for the sheet's lifetime.
+      const windowSpy = jest.spyOn(ReactNative, 'useWindowDimensions');
 
       const ref = createRef<BottomSheetRef>();
       renderWithTheme(
@@ -133,16 +137,15 @@ describe('BottomSheet', () => {
         </BottomSheet>,
       );
 
-      // The useScreenDimensions hook should have registered a listener
-      expect(addEventSpy).toHaveBeenCalledWith('change', expect.any(Function));
+      expect(windowSpy).toHaveBeenCalled();
 
-      addEventSpy.mockRestore();
+      windowSpy.mockRestore();
     });
 
     it('does not use module-level cached screen dimensions', () => {
       // This test verifies the fix: the component should NOT reference
-      // a module-level SCREEN_HEIGHT constant. Instead it uses
-      // useScreenDimensions() which subscribes to Dimensions changes.
+      // a module-level SCREEN_HEIGHT constant. Instead it reads
+      // useWindowDimensions(), which follows window changes.
 
       // We verify this indirectly by checking that the component renders
       // successfully even after a simulated dimension change.
@@ -153,7 +156,7 @@ describe('BottomSheet', () => {
         </BottomSheet>,
       );
 
-      // Unmounting should clean up the Dimensions listener without error
+      // Unmounting should clean up without error
       unmount();
     });
   });

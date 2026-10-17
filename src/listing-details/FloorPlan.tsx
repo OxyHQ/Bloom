@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { BloomImage } from '../image';
 
 import { resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -87,9 +88,9 @@ function PlanTile({ plan, uri, name, aspectRatio, onPress, testID }: PlanTilePro
             { paddingTop: 16, paddingBottom: 16, paddingLeft: 16, paddingRight: 16 },
           ]}
         >
-          <Image
+          <BloomImage
             source={{ uri }}
-            resizeMode="contain"
+            contentFit="contain"
             accessible={false}
             importantForAccessibility="no"
             style={{ width: '100%', height: '100%' }}

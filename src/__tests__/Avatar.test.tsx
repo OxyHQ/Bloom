@@ -68,8 +68,10 @@ describe('Avatar variant resolution', () => {
       resolver,
     );
 
-    // The rendered RN Image (mocked) carries the resolved uri.
-    const { Image } = require('react-native');
+    // The rendered image carries the resolved uri. `image/BloomImage` draws with
+    // expo-image on a device and jest's `Platform.OS` is `ios`, so it is the
+    // expo-image mock's component, not react-native's `Image`.
+    const { Image } = require('expo-image');
     const image = UNSAFE_getByType(Image);
     expect(image.props.source).toEqual({
       uri: 'https://cloud.oxy.so/file_789?variant=thumb',

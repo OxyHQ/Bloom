@@ -29,6 +29,10 @@ jest.mock('react-native-reanimated', () => {
   return { __esModule: true, default: { View } };
 });
 jest.mock('expo-image', () => ({ Image: () => null }));
+// expo-modules-core 58 ships `build/` as ES modules, which this suite's
+// transform does not cover. expo-video's web player names one hook from it,
+// and never calls it on the path under test (Bloom creates no player here).
+jest.mock('expo-modules-core', () => ({ useReleasingSharedObjectWithLifecycle: () => null }));
 // expo-video's web player reaches React Native's Flow-typed asset resolver for
 // numeric `require()` sources only; none is used here, and jest cannot parse it.
 jest.mock('react-native/Libraries/Image/resolveAssetSource', () => ({

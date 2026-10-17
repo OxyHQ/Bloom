@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { BloomImage } from '../image';
 
 import { Chip } from '../chip';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -195,9 +196,9 @@ export function MenuItemThumb({
     >
       <View style={{ flex: 1, borderRadius: radius, overflow: 'hidden' }}>
         {uri ? (
-          <Image
+          <BloomImage
             source={{ uri }}
-            resizeMode="cover"
+            contentFit="cover"
             accessibilityIgnoresInvertColors
             style={{ width: '100%', height: '100%' }}
           />

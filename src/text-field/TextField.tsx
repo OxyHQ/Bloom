@@ -1,6 +1,14 @@
 import { useBloomAppearance } from '../appearance';
 import { FieldBox } from './FieldBox';
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ComponentRef,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   type AccessibilityProps,
   Animated,
@@ -60,7 +68,7 @@ import { useFieldMembership } from '../field/membership';
 import { IS_WEB } from '../styles/platform';
 
 interface TextFieldContextValue {
-  inputRef: React.RefObject<TextInput | null>;
+  inputRef: React.RefObject<ComponentRef<typeof TextInput> | null>;
   invalid: boolean;
   /** Disabled by the root's `disabled` OR by the input reporting itself disabled. */
   disabled: boolean;
@@ -187,7 +195,7 @@ export function TextField({
   );
   const inheritedSize = scopedSize;
   const size = group?.size ?? inheritedSize;
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const [inputDisabled, setInputDisabled] = useState(false);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
@@ -711,7 +719,7 @@ type FloatingLabelInputProps = Omit<TextInputProps, 'value' | 'onChangeText' | '
   value?: string;
   onValueChange?: (value: string) => void;
   invalid?: boolean;
-  refs: (instance: TextInput | null) => void;
+  refs: (instance: ComponentRef<typeof TextInput> | null) => void;
 };
 
 /**

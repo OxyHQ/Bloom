@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { type ComponentRef, useCallback, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
@@ -12,7 +12,7 @@ export interface AvatarFlights {
    * `AgentReplyIdentity` / `AgentProfile`, or to the `ref` of any `View` wrapping an avatar. Stable
    * per key.
    */
-  anchor: (key: string) => (node: View | null) => void;
+  anchor: (key: string) => (node: ComponentRef<typeof View> | null) => void;
   /**
    * Hand this to `AvatarSnapshotObserver.Provider` around the avatar at `key` and the flight leaves
    * as the picture the avatar had at that moment, not a second 3D render.
@@ -42,9 +42,9 @@ export interface AvatarFlights {
  */
 export function useAvatarFlights(): AvatarFlights {
   const reduced = useReducedMotion();
-  const nodes = useRef(new Map<string, View>());
+  const nodes = useRef(new Map<string, ComponentRef<typeof View>>());
   const captures = useRef(new Map<string, CaptureAvatarSnapshot>());
-  const anchors = useRef(new Map<string, (node: View | null) => void>());
+  const anchors = useRef(new Map<string, (node: ComponentRef<typeof View> | null) => void>());
   const observers = useRef(new Map<string, (capture: CaptureAvatarSnapshot | null) => void>());
   const generation = useRef(0);
   const [state, setState] = useState<{
@@ -55,7 +55,7 @@ export function useAvatarFlights(): AvatarFlights {
   const anchor = useCallback((key: string) => {
     let ref = anchors.current.get(key);
     if (!ref) {
-      ref = (node: View | null) => {
+      ref = (node: ComponentRef<typeof View> | null) => {
         if (node) nodes.current.set(key, node);
         else nodes.current.delete(key);
       };

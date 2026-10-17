@@ -1,4 +1,13 @@
-import React, { Children, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  Children,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Pressable,
   ScrollView,
@@ -93,7 +102,7 @@ function ShelfComponent({
   const items = Children.toArray(children);
 
   // ---- row scrolling -------------------------------------------------------
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const scroll = useRef<ShelfScroll>({ x: 0, viewport: 0, content: 0 });
   const [overflow, setOverflow] = useState({ previous: false, next: false });
 

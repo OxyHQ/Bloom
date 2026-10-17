@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useState } from 'react';
-import { Image, View, type LayoutChangeEvent } from 'react-native';
+import { View, type LayoutChangeEvent } from 'react-native';
+import { BloomImage } from '../image';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -171,9 +172,9 @@ const Slide = memo(function Slide({
         animatedStyle,
       ]}
     >
-      <Image
+      <BloomImage
         source={source}
-        resizeMode="cover"
+        contentFit="cover"
         accessibilityLabel={slide.alt}
         accessibilityIgnoresInvertColors
         accessibilityElementsHidden={decorative}

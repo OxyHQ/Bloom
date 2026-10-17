@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { type ComponentRef, useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -253,7 +253,7 @@ function OwnedScrollerDemo({
   header?: boolean;
 }) {
   const control = useDialogControl();
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
   return (
     <>
       <Button onPress={() => control.open()}>Open owned scroller</Button>

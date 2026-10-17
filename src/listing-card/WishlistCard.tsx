@@ -1,12 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import {
-  Image,
-  Linking,
-  Pressable,
-  View,
-  type GestureResponderEvent,
-  type ViewStyle,
-} from 'react-native';
+import { Linking, Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
 
 import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -24,6 +17,7 @@ import {
 } from './shared';
 import type { WishlistCardProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { BloomImage } from '../image';
 
 /**
  * A saved collection of stays.
@@ -53,9 +47,9 @@ function Tile({ uri, paint, style }: { uri?: string; paint: ListingCardPaint; st
   return (
     <View style={[{ backgroundColor: paint.photoPlaceholder, overflow: 'hidden' }, style]}>
       {uri ? (
-        <Image
+        <BloomImage
           source={{ uri }}
-          resizeMode="cover"
+          contentFit="cover"
           accessibilityIgnoresInvertColors
           style={{ width: '100%', height: '100%' }}
         />

@@ -97,7 +97,7 @@ const VIDEO_CONTENT: MediaSurfaceContent = {
   poster: PHOTO,
 };
 
-function measure(node: View | null): Promise<MeasuredRect | null> {
+function measure(node: React.ComponentRef<typeof View> | null): Promise<MeasuredRect | null> {
   return new Promise((resolve) => {
     if (!node) {
       resolve(null);
@@ -117,8 +117,8 @@ function measure(node: View | null): Promise<MeasuredRect | null> {
  */
 function FlightDemo() {
   const flight = useMediaFlight();
-  const thumbRef = React.useRef<View | null>(null);
-  const targetRef = React.useRef<View | null>(null);
+  const thumbRef = React.useRef<React.ComponentRef<typeof View> | null>(null);
+  const targetRef = React.useRef<React.ComponentRef<typeof View> | null>(null);
   const [flying, setFlying] = React.useState(false);
 
   const send = React.useCallback(async () => {
@@ -256,7 +256,7 @@ export const FlyToAndBack: Story = {
  */
 function ClickThroughDemo() {
   const flight = useMediaFlight();
-  const targetRef = React.useRef<View | null>(null);
+  const targetRef = React.useRef<React.ComponentRef<typeof View> | null>(null);
   const [result, setResult] = React.useState('idle');
 
   const cover = React.useCallback(async () => {
@@ -315,7 +315,7 @@ export const ClickThrough: Story = {
  */
 function PaintLatencyDemo() {
   const flight = useMediaFlight();
-  const targetRef = React.useRef<View | null>(null);
+  const targetRef = React.useRef<React.ComponentRef<typeof View> | null>(null);
 
   const fly = React.useCallback(
     async (id: string, uri: string) => {
@@ -426,7 +426,7 @@ const DESTINATION_BOX = { width: 320, height: 240, borderRadius: 4, overflow: 'h
  */
 function RouteChangeDemo({ reparent }: { reparent: boolean }) {
   const flight = useMediaFlight();
-  const targetRef = React.useRef<View | null>(null);
+  const targetRef = React.useRef<React.ComponentRef<typeof View> | null>(null);
   const [stage, setStage] = React.useState<'origin' | 'gap' | 'destination'>('origin');
 
   const go = React.useCallback(() => {

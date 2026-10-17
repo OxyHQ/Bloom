@@ -26,7 +26,7 @@ function CollapsibleFrameComponent({
   returnFocusId,
 }: CollapsibleFrameProps) {
   const visible = useCollapsibleVisibility() && open;
-  const panel = useRef<View>(null);
+  const panel = useRef<React.ComponentRef<typeof View>>(null);
   const initiallyOpen = useRef(open).current;
   const focusWithin = useRef(false);
   const [height, setHeight] = useState(0);

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useMemo } from 'react';
-import { Image } from 'react-native';
+import { prefetchImage } from '../image';
 
 /**
  * Hook to preload images for better perceived performance
@@ -22,9 +22,10 @@ export function useImagePreload(urls: (string | undefined)[], enabled: boolean =
       if (preloadedRef.current.has(url)) return;
 
       preloadedRef.current.add(url);
-      Image.prefetch(url).catch(() => {
-        // Silently handle prefetch errors - remove from set on error to allow retry
-        preloadedRef.current.delete(url);
+      // `prefetchImage` resolves false instead of rejecting; a failed URL
+      // leaves the set so a later render can retry it.
+      void prefetchImage(url).then((ok) => {
+        if (!ok) preloadedRef.current.delete(url);
       });
     });
   }, [validUrls, enabled]);
@@ -45,7 +46,6 @@ export function useImagePreload(urls: (string | undefined)[], enabled: boolean =
 export function preloadImage(url: string | undefined): void {
   if (!url || !url.startsWith('http')) return;
 
-  Image.prefetch(url).catch(() => {
-    // Silently handle prefetch errors
-  });
+  // Resolves false instead of rejecting, so a failed prefetch is silent.
+  void prefetchImage(url);
 }

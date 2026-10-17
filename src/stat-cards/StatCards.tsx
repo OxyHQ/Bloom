@@ -163,7 +163,7 @@ function StatHint({
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const triggerRef = useRef<View>(null);
+  const triggerRef = useRef<React.ComponentRef<typeof View>>(null);
 
   const clearTimer = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);

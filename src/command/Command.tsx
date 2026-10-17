@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import { ScrollArea } from '../layout/ScrollArea';
 import {
   Platform,
@@ -92,7 +93,7 @@ export function createCommand(Dialog: DialogComponent) {
     const placeholder = placeholderProp ?? messages.placeholder;
     const emptyText = emptyTextProp ?? messages.empty;
     const control = useDialogControl();
-    const searchRef = useRef<TextInput>(null);
+    const searchRef = useRef<ComponentRef<typeof TextInput>>(null);
     const [activeIndex, setActiveIndex] = useState(0);
 
     const [query, setQuery] = useControllableState<string>({
@@ -220,7 +221,7 @@ export function createCommand(Dialog: DialogComponent) {
         : {};
 
     // Keep the keyboard-highlighted row inside the scroll viewport (web).
-    const listRef = useRef<ScrollView | null>(null);
+    const listRef = useRef<ComponentRef<typeof ScrollView>>(null);
     useEffect(() => {
       if (Platform.OS !== 'web') return undefined;
       const frame = requestAnimationFrame(() => {

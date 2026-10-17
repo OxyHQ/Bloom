@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import type { AvatarCharacter } from '../agent-avatar';
@@ -45,7 +46,7 @@ export interface ActiveAvatarFlight {
 export interface AvatarFlightLayerState {
   flights: ReadonlyArray<ActiveAvatarFlight>;
   arrived: ReadonlyArray<string>;
-  node: (anchor: string) => View | undefined;
+  node: (anchor: string) => ComponentRef<typeof View> | undefined;
   arrive: (key: string) => void;
   finish: () => void;
 }

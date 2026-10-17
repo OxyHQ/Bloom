@@ -11,6 +11,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type ComponentRef,
 } from 'react';
 import { type ScrollView, StyleSheet, View } from 'react-native';
 import { ScrollArea } from '../layout/ScrollArea.web';
@@ -134,7 +135,7 @@ type SelectContextValue = Pick<SelectProps, 'value' | 'onValueChange' | 'disable
   open: () => void;
   close: () => void;
   /** The trigger box, so `SelectContent` can anchor itself against it. */
-  triggerRef: React.RefObject<View | null>;
+  triggerRef: React.RefObject<ComponentRef<typeof View> | null>;
   /**
    * Set by a key on the trigger (Enter, Space, ArrowDown, ArrowUp) and consumed
    * by `SelectContent`, which moves focus into the list only when the key asked
@@ -204,7 +205,7 @@ export function Select(props: SelectProps) {
   useLayoutEffect(() => {
     if (!visible) setIsOpen(false);
   }, [visible]);
-  const triggerRef = useRef<View | null>(null);
+  const triggerRef = useRef<ComponentRef<typeof View> | null>(null);
   const valueStoreState = useState<unknown>(undefined);
   const keyboardIntent = useRef(false);
   const [focusRequest, setFocusRequest] = useState(0);
@@ -473,12 +474,12 @@ export function SelectContent<T>({
     setStoredItem(() => item);
   }, [items, ctx.value, valueExtractor, setStoredItem]);
   const anchor = useAnchorRect(ctx.triggerRef, ctx.isOpen);
-  const listRef = useRef<ScrollView | null>(null);
+  const listRef = useRef<ComponentRef<typeof ScrollView> | null>(null);
   // The list's DOM node as STATE as well: the panel portals in a render after it
   // opens, and the keyboard listener and the initial focus both need the node.
   const [listNode, setListNode] = useState<HTMLElement | null>(null);
   const listNodeRef = useRef<HTMLElement | null>(null);
-  const attachList = useCallback((scrollView: ScrollView | null) => {
+  const attachList = useCallback((scrollView: ComponentRef<typeof ScrollView> | null) => {
     listRef.current = scrollView;
     const node = hostElement(scrollView);
     listNodeRef.current = node;

@@ -7,7 +7,7 @@
  *
  * `openDelay` / `closeDelay` do nothing here: a long press is its own intent.
  */
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
@@ -28,7 +28,7 @@ export function HoverCard({ children, open, defaultOpen = false, onOpenChange }:
     defaultValue: defaultOpen,
     onChange: onOpenChange,
   });
-  const anchorRef = useRef<View | null>(null);
+  const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
   const value = useMemo(
     () => ({
       open: isOpen,
