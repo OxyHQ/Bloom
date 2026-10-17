@@ -49,3 +49,20 @@ export interface AvatarFlightLayerState {
   arrive: (key: string) => void;
   finish: () => void;
 }
+
+/** Where joining avatars fly: out of each one's own anchor, into one shared target. */
+export interface AvatarJoinRoute<T> {
+  /** The anchor an avatar leaves — the reply it is writing, the slot it was waiting in. */
+  from: (agent: T) => string;
+  /** The anchor they all join: the profile, the header. */
+  to: string;
+  /** Who flies. */
+  character: (agent: T) => AvatarCharacter;
+}
+
+/** Somebody who is part of the group, and whether they are arriving now or were already there. */
+export interface AvatarJoinArrival<T> {
+  agent: T;
+  /** Arriving now: it flies in. Otherwise it was there when the screen opened, and simply is. */
+  live: boolean;
+}

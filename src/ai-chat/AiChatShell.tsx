@@ -51,7 +51,7 @@ import {
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES } from './messages';
-import type { AiChatMobileHeaderProps, AiChatShellProps } from './types';
+import type { AiChatHeaderProps, AiChatMobileHeaderProps, AiChatShellProps } from './types';
 import { AiChatResizeHandle } from './AiChatResizeHandle';
 import { clamp01 } from '../styles/clamp';
 import { IS_WEB } from '../styles/platform';
@@ -111,6 +111,36 @@ const NAV_SETTLE_MIN_MS = 120;
 //  Mobile header
 // ---------------------------------------------------------------------------
 
+/** The shell's menu button, where its sidebar is a closed drawer. */
+function ShellNavButton({ shell }: { shell: AiChatShellState }) {
+  if (!shell.navCollapsed || !shell.hasNav) return null;
+  return (
+    <Button
+      size="md"
+      icon={RiMenuLine}
+      accessibilityLabel={shell.labels.openNavigation}
+      onPress={shell.openNav}
+      appearance="plain"
+      tone="neutral"
+    />
+  );
+}
+
+/** The shell's button opening its panel drawer, when it has a panel. */
+function ShellPanelButton({ shell }: { shell: AiChatShellState }) {
+  if (!shell.hasPanel) return null;
+  return (
+    <Button
+      size="md"
+      icon={shell.panelIcon}
+      accessibilityLabel={shell.labels.openPanel(shell.panelLabel)}
+      onPress={shell.openPanel}
+      appearance="plain"
+      tone="neutral"
+    />
+  );
+}
+
 /**
  * The in-container header below `xl`: at least 48 tall, px 12 / pt 11. The menu
  * button (below `lg`, where the sidebar is a drawer) and the chat's name in
@@ -142,16 +172,7 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
       <View
         style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}
       >
-        {shell.navCollapsed && shell.hasNav ? (
-          <Button
-            size="md"
-            icon={RiMenuLine}
-            accessibilityLabel={shell.labels.openNavigation}
-            onPress={shell.openNav}
-            appearance="plain"
-            tone="neutral"
-          />
-        ) : null}
+        <ShellNavButton shell={shell} />
         <Text
           variant="headline-medium"
           numberOfLines={1}
@@ -160,16 +181,47 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
           {title}
         </Text>
       </View>
-      {shell.hasPanel ? (
-        <Button
-          size="md"
-          icon={shell.panelIcon}
-          accessibilityLabel={shell.labels.openPanel(shell.panelLabel)}
-          onPress={shell.openPanel}
-          appearance="plain"
-          tone="neutral"
-        />
-      ) : null}
+      <ShellPanelButton shell={shell} />
+    </View>
+  );
+}
+
+/** The width each side of `AiChatHeader` keeps, so its title stays centred: one 36px button + 4. */
+const HEADER_SIDE_WIDTH = 40;
+
+/**
+ * A chat header whose title is a NODE of the caller's, centred — the conversation's participants,
+ * say, which are its title. At least 48 tall, px 12 / pt 12, at every width. On a compact shell
+ * the same menu and panel buttons as `AiChatMobileHeader` sit either side; outside an
+ * `AiChatShell` it is the title alone.
+ */
+export function AiChatHeader({ children, style, testID }: AiChatHeaderProps) {
+  const shell = useAiChatShell();
+  const compact = shell?.compact === true;
+  return (
+    <View
+      testID={testID}
+      style={[
+        {
+          minHeight: 48,
+          flexShrink: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingLeft: 12,
+          paddingRight: 12,
+          paddingTop: 12,
+        },
+        style,
+      ]}
+    >
+      <View style={{ width: HEADER_SIDE_WIDTH }}>
+        {compact && shell ? <ShellNavButton shell={shell} /> : null}
+      </View>
+      <View style={{ minWidth: 0, flexShrink: 1, alignItems: 'center' }}>{children}</View>
+      <View style={{ width: HEADER_SIDE_WIDTH, alignItems: 'flex-end' }}>
+        {compact && shell ? <ShellPanelButton shell={shell} /> : null}
+      </View>
     </View>
   );
 }

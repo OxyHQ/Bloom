@@ -3,7 +3,7 @@ import type { View } from 'react-native';
 import { Platform, ScrollView, Share, useWindowDimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
-import { AvatarFlightLayer, centeredLanding, useAvatarFlights } from '../avatar-flight';
+import { AvatarFlightLayer, avatarJoinFlights, useAvatarFlights } from '../avatar-flight';
 import { StreamedText } from '../agent-chat/AgentChatMessage';
 import { Button, IconButton } from '../button';
 import { useDialogControl } from '../dialog/context';
@@ -308,16 +308,11 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
               to: `reply:${responder.id}`,
               duration: REPLY_DELAY_MS,
             },
-            ...waiting.map((agent, index) => ({
-              key: agent.id,
-              character: agent.avatar,
-              from: `empty:${agent.id}`,
+            ...avatarJoinFlights(waiting, {
+              from: (agent) => `empty:${agent.id}`,
               to: 'profile',
-              landing: centeredLanding(14),
-              duration: 950,
-              delay: index * 120,
-              merge: true,
-            })),
+              character: (agent) => agent.avatar,
+            }),
           ]
         : [],
     );

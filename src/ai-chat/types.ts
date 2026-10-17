@@ -559,6 +559,13 @@ export interface AiChatShellProps {
   testID?: string;
 }
 
+export interface AiChatHeaderProps {
+  /** The title, drawn as is and centred: the conversation's participants, say. */
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
 export interface AiChatMobileHeaderProps {
   /** The chat's name beside the menu button ("Agentic chat"). */
   title: string;
