@@ -550,7 +550,6 @@ export const RevealAfterContentHeading: Story = {
               testID="revealed-header"
               onBack={back}
               sticky={false}
-              titleReveal="onScroll"
               titleRevealOffset={headingHeight}
               actions={<PageActions />}
             />
@@ -586,7 +585,6 @@ export const ProfileDocking: Story = {
             <PageHeader
               testID="profile-header"
               placement="overlap"
-              titleReveal="onDock"
               title="Alex Morgan"
               onBack={back}
               actions={<PageActions />}

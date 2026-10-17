@@ -1,3 +1,4 @@
+import { pointerEventsStyle } from '../styles/pointer-events';
 import type React from 'react';
 import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 import { styled } from 'react-native-css';
@@ -89,7 +90,10 @@ function FieldBoxComponent({
   useInteractiveWebCss('bloom-field-box', FIELD_BOX_CSS);
   if (Platform.OS !== 'web')
     return (
-      <View pointerEvents={pointerEvents} testID={testID} style={[baseStyle, style, stateStyle]}>
+      <View
+        testID={testID}
+        style={[[baseStyle, style, stateStyle], pointerEventsStyle(pointerEvents)]}
+      >
         {children}
       </View>
     );

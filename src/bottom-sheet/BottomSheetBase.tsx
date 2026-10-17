@@ -1,3 +1,4 @@
+import { pointerEventsStyles } from '../styles/pointer-events';
 import { useSurfaceTransition } from '../motion/use-surface-transition';
 import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
@@ -872,18 +873,22 @@ export const BottomSheetBase = forwardRef(
                 backgroundComponent({ style: styles.background })
               ) : surfaceMaterial === 'flat' ? null : (
                 <View
-                  pointerEvents="none"
-                  style={[StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }]}
+                  style={[
+                    [StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }],
+                    pointerEventsStyles.none,
+                  ]}
                 >
                   <View
-                    pointerEvents="none"
                     style={[
-                      StyleSheet.absoluteFill,
-                      {
-                        bottom: detached
-                          ? 0
-                          : -(typeof surfaceRadius === 'number' ? surfaceRadius : 24),
-                      },
+                      [
+                        StyleSheet.absoluteFill,
+                        {
+                          bottom: detached
+                            ? 0
+                            : -(typeof surfaceRadius === 'number' ? surfaceRadius : 24),
+                        },
+                      ],
+                      pointerEventsStyles.none,
                     ]}
                   >
                     <SurfacePaint

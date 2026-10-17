@@ -1,3 +1,4 @@
+import { pointerEventsStyles } from '../styles/pointer-events';
 import React from 'react';
 import { View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -13,18 +14,20 @@ export function Fill({ shape = 'circle', size, color }: FillProps) {
   if (!outline)
     return (
       <View
-        pointerEvents="none"
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: color,
-        }}
+        style={[
+          pointerEventsStyles.none,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: color,
+          },
+        ]}
       />
     );
   return (
     <Svg
-      pointerEvents="none"
+      style={pointerEventsStyles.none}
       {...svgA11yProps()}
       width={size}
       height={size}

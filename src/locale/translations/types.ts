@@ -119,6 +119,7 @@ import type { STAY_FILTERS_MESSAGES } from '../../stay-filters/messages';
 import type { SETTINGS_MODAL_MESSAGES } from '../../settings-modal/messages';
 import type { EVICTION_MESSAGES } from '../../eviction/messages';
 import type { BOOKING_MESSAGES } from '../../booking/messages';
+import type { USAGE_CARD_MESSAGES } from '../../usage-card/messages';
 import type { AGENT_LIMITS_CARD_MESSAGES } from '../../agent-limits-card/messages';
 import type { SWIPE_ROW_MESSAGES } from '../../swipe-row/messages';
 import type { PATIENT_INFO_CARD_MESSAGES } from '../../patient-info-card/messages';
@@ -258,6 +259,7 @@ export interface Translations {
   readonly SETTINGS_MODAL_MESSAGES: CatalogMessages<typeof SETTINGS_MODAL_MESSAGES>;
   readonly EVICTION_MESSAGES: CatalogMessages<typeof EVICTION_MESSAGES>;
   readonly BOOKING_MESSAGES: CatalogMessages<typeof BOOKING_MESSAGES>;
+  readonly USAGE_CARD_MESSAGES: CatalogMessages<typeof USAGE_CARD_MESSAGES>;
   readonly AGENT_LIMITS_CARD_MESSAGES: CatalogMessages<typeof AGENT_LIMITS_CARD_MESSAGES>;
   readonly SWIPE_ROW_MESSAGES: CatalogMessages<typeof SWIPE_ROW_MESSAGES>;
   readonly PATIENT_INFO_CARD_MESSAGES: CatalogMessages<typeof PATIENT_INFO_CARD_MESSAGES>;

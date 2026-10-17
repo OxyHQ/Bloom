@@ -1,4 +1,8 @@
-import React, {
+import type { TypographyMode } from '../typography/TypographyScope';
+import { FrameAppearanceContext } from './frame-appearance';
+import type { AppColorName } from '../theme/color-presets';
+import type React from 'react';
+import {
   createContext,
   useCallback,
   useContext,
@@ -7,6 +11,7 @@ import React, {
   useMemo,
   useRef,
 } from 'react';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import type { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -49,7 +54,7 @@ export const DIALOG_MORPH_DURATION = 260;
  * Incoming-frame fade-in (ms). Deliberately shorter than the reshape so the new
  * content has landed by the time the panel finishes settling.
  */
-export const DIALOG_MORPH_FADE_DURATION = 150;
+export const DIALOG_MORPH_FADE_DURATION = 160;
 
 /**
  * How long the panel stays pinned at the outgoing size waiting for the incoming
@@ -84,11 +89,16 @@ const MIN_MEASURABLE_CONTENT = 40;
  * declared by that content via {@link useDialogFrame}.
  */
 export interface DialogFrame {
+  /** Local palette for the entire panel and header; omitted restores inheritance. */
+  colorPreset?: AppColorName;
+  typography?: TypographyMode;
   /**
    * Stable identity of the current content. A CHANGE while the surface stays
    * open is what marks an in-place swap and triggers the morph.
    */
   key: string;
+  /** Incoming content travel. Defaults forward; none disables content motion only. */
+  direction?: 'forward' | 'backward' | 'none';
   /**
    * Opt this frame OUT of the size morph — the panel keeps its normal sizing
    * and the swap hard-cuts (the incoming content still fades in). Defaults to
@@ -180,8 +190,16 @@ const DialogFrameContext = createContext<DialogFrameChannel | null>(null);
  */
 export function useDialogFrame(frame: DialogFrame | null | undefined): void {
   const channel = useContext(DialogFrameContext);
+  const contributeAppearance = useContext(FrameAppearanceContext);
   const key = frame?.key;
+  const colorPreset = frame?.colorPreset;
+  const typography = frame?.typography;
+  useLayoutEffect(() => {
+    if (key === undefined || !contributeAppearance) return;
+    return contributeAppearance(colorPreset, typography);
+  }, [key, colorPreset, typography, contributeAppearance]);
   const morph = frame?.morph;
+  const direction = frame?.direction;
   const sizeHeight = frame?.size?.height;
   const sizeMaxWidth = frame?.size?.maxWidth;
   // Declared in the commit's layout phase, BEFORE the browser paints the new
@@ -195,8 +213,8 @@ export function useDialogFrame(frame: DialogFrame | null | undefined): void {
       sizeHeight !== undefined || sizeMaxWidth !== undefined
         ? { height: sizeHeight, maxWidth: sizeMaxWidth }
         : undefined;
-    channel.setFrame({ key, morph, size });
-  }, [channel, key, morph, sizeHeight, sizeMaxWidth]);
+    channel.setFrame({ key, morph, size, direction });
+  }, [channel, key, morph, direction, sizeHeight, sizeMaxWidth]);
 }
 
 /** Options a surface passes when it wires up morphing for its panel. */
@@ -261,8 +279,19 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
    */
   const declaredHeight = useSharedValue(0);
   const declaredMaxWidth = useSharedValue(0);
-  /** Incoming-frame opacity. Rests at 1; dips to 0 and fades back on a swap. */
+  /** Incoming content remains visible throughout a short directional settle. */
   const fade = useSharedValue(1);
+  const travel = useSharedValue(0);
+  const reducedMotion = usePrefersReducedMotion();
+  const reducedRef = useRef(reducedMotion);
+  reducedRef.current = reducedMotion;
+  useLayoutEffect(() => {
+    if (!reducedMotion) return;
+    cancelAnimation(fade);
+    cancelAnimation(travel);
+    fade.value = 1;
+    travel.value = 0;
+  }, [reducedMotion, fade, travel]);
 
   /** Last laid-out panel height — the size a morph starts FROM. */
   const panelHeight = useRef(0);
@@ -358,14 +387,22 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
     return channel.setHandler((next) => {
       if (!enabledRef.current) return;
 
-      // The incoming frame always fades in, morph or not — a hard content cut
-      // inside a surface that stays put is the jarring part.
+      // Content mounts immediately and stays readable/interactive; no blank
+      // opacity-zero interval or waiting for the incoming size measurement.
       cancelAnimation(fade);
-      fade.value = 0;
-      fade.value = withTiming(1, {
-        duration: DIALOG_MORPH_FADE_DURATION,
-        easing: MORPH_EASING,
-      });
+      cancelAnimation(travel);
+      if (reducedRef.current || next.direction === 'none') {
+        fade.value = 1;
+        travel.value = 0;
+      } else {
+        fade.value = 0.92;
+        travel.value = next.direction === 'backward' ? -8 : 8;
+        fade.value = withTiming(1, { duration: DIALOG_MORPH_FADE_DURATION, easing: MORPH_EASING });
+        travel.value = withTiming(0, {
+          duration: DIALOG_MORPH_FADE_DURATION,
+          easing: MORPH_EASING,
+        });
+      }
 
       if (next.morph === false) {
         release();
@@ -434,7 +471,18 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
       clearReleaseTimer();
       releaseTimer.current = setTimeout(release, MORPH_MEASURE_TIMEOUT_MS);
     });
-  }, [channel, clearReleaseTimer, fade, height, maxWidth, pinned, release, width, widthPinned]);
+  }, [
+    channel,
+    clearReleaseTimer,
+    fade,
+    travel,
+    height,
+    maxWidth,
+    pinned,
+    release,
+    width,
+    widthPinned,
+  ]);
 
   useEffect(
     () => () => {
@@ -442,8 +490,9 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
       cancelAnimation(height);
       cancelAnimation(width);
       cancelAnimation(fade);
+      cancelAnimation(travel);
     },
-    [clearReleaseTimer, fade, height, width],
+    [clearReleaseTimer, fade, travel, height, width],
   );
 
   /** Re-derive the panel's own chrome height whenever it can be sampled cleanly. */
@@ -509,7 +558,10 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
     // must be listed here or it runs once and freezes at the first frame.
   }, [pinned, height, declaredHeight, widthPinned, width, declaredMaxWidth, maxWidth]);
 
-  const contentStyle = useAnimatedStyle<ViewStyle>(() => ({ opacity: fade.value }), [fade]);
+  const contentStyle = useAnimatedStyle<ViewStyle>(
+    () => ({ opacity: fade.value, transform: [{ translateX: travel.value }] }),
+    [fade, travel],
+  );
 
   return {
     channel,
@@ -543,7 +595,11 @@ export function DialogMorphContent({
 }): React.ReactElement {
   return (
     <DialogFrameContext.Provider value={morph.channel}>
-      <Animated.View onLayout={morph.onContentLayout} style={[style, morph.contentStyle]}>
+      <Animated.View
+        testID="bloom-dialog-frame-content"
+        onLayout={morph.onContentLayout}
+        style={[style, morph.contentStyle]}
+      >
         {children}
       </Animated.View>
     </DialogFrameContext.Provider>

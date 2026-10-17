@@ -1,3 +1,4 @@
+import { pointerEventsStyle } from '../styles/pointer-events';
 import { pickMessages, useMessages } from '../locale/messages';
 import { SOCIAL_BUTTON_MESSAGES } from './messages';
 import React, { memo, useCallback, useMemo, type ComponentType } from 'react';
@@ -175,8 +176,10 @@ export function createSocialButton(Button: ComponentType<ButtonProps>) {
         iconOnly={iconOnly}
         icon={
           <View
-            pointerEvents="none"
-            style={{ width: geometry.glyph, height: geometry.glyph, flexShrink: 0 }}
+            style={[
+              { width: geometry.glyph, height: geometry.glyph, flexShrink: 0 },
+              pointerEventsStyle('none'),
+            ]}
           >
             {glyph}
           </View>

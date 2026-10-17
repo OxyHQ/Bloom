@@ -28,6 +28,7 @@ import {
   useTextFieldPalette,
 } from '../text-field/shared';
 
+import { useFieldControl } from '../field/context';
 import { useFieldMembership } from '../field/membership';
 import type { TextareaProps } from './types';
 import { styled } from 'react-native-css';
@@ -110,6 +111,8 @@ export function Textarea({
     { size: 'md', tone: 'neutral' },
   );
   const size = scopedSize;
+  const parentField = useFieldControl();
+  const fieldOwnsLabel = parentField?.controlId != null && parentField.labelId != null;
   const field = useFieldMembership({
     accessibilityLabel,
     label: label ?? placeholder,
@@ -177,7 +180,7 @@ export function Textarea({
 
   return (
     <StyledView className={className} style={[{ width: '100%' }, style]} testID={testID}>
-      {label ? (
+      {label && !fieldOwnsLabel ? (
         <TextFieldLabel required={field.required} tooltip={tooltip}>
           {label}
         </TextFieldLabel>

@@ -193,3 +193,38 @@ it('publishes an explicit dialog background rather than the nominal page token',
     `custom-fill=${resolveSurfaceMaterial({ fill: '#123456', parentFill: buildTheme('teal', 'dark').colors.background, level: 0 }).publishedFill}`,
   );
 });
+
+describe('declarative dialog screen frames', () => {
+  it('changes shared chrome without remounting the centered dialog content', () => {
+    // jsdom has no element scrollTo; the RN mock forwards the host ref directly.
+    const originalScrollTo = HTMLElement.prototype.scrollTo;
+    const scrollTo = jest.fn();
+    HTMLElement.prototype.scrollTo = scrollTo;
+
+    let mounts = 0;
+    function StatefulBody() {
+      React.useEffect(() => {
+        mounts += 1;
+      }, []);
+      return <input aria-label="Draft" defaultValue="Keep this draft" />;
+    }
+    const draw = (key: string, title: string) => (
+      <Dialog open frame={{ key, header: { title }, size: { maxWidth: 620 } }}>
+        <StatefulBody />
+      </Dialog>
+    );
+    mount(draw('first', 'First screen'));
+    const input = document.querySelector('input[aria-label="Draft"]') as HTMLInputElement;
+    expect(input).not.toBeNull();
+    input.value = 'Unsaved edit';
+    const initialMounts = mounts;
+    mount(draw('second', 'Second screen'));
+    expect(document.body.textContent).toContain('Second screen');
+    expect(document.body.textContent).not.toContain('First screen');
+    expect(document.querySelector('input[aria-label="Draft"]')).toBe(input);
+    expect(input.value).toBe('Unsaved edit');
+    expect(mounts).toBe(initialMounts);
+    expect(scrollTo).toHaveBeenCalledWith({ y: 0, animated: false });
+    HTMLElement.prototype.scrollTo = originalScrollTo;
+  });
+});

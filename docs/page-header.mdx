@@ -40,7 +40,7 @@ Three things that used to be one flag are three props now:
 | --- | --- | --- |
 | `presentation` | `'floating'` | `'bar'` is the original opaque strip. |
 | `placement` | `'inline'` | `'overlay'` floats the header over the content. |
-| `scrim` / `titleReveal` | `'auto'` / `'always'` | the edge effect and the title, decided separately. |
+| `scrim` / `titleReveal` | `'auto'` / `'auto'` | the edge effect and the title, decided separately. |
 
 ### The islands are yours to declare
 
@@ -70,12 +70,13 @@ It is an opacity ramp of one flat colour, not a blur of varying intensity. `back
 
 **The colour is the PAGE's, and the header cannot read it.** The ramp's job is to fade content into the surface it is leaving, so its colour has to be that surface — `theme.colors.background` by default. A screen that paints its own background (a tinted section, a brand panel, a dark surface inside a light app) hands it over with `scrimColor`; without it the ramp is a wash of the wrong hue rather than a fade. Pass an **opaque** colour: the alpha belongs to the ramp, and a colour carrying its own would multiply with it.
 
-**The islands protect themselves; the title does not.** An island carries its own material and is legible over both ends of the backdrop range (measured, in [Blur](/docs/blur)). A title is bare text on whatever is behind it, and with `scrim="auto"` there is nothing behind it until the page scrolls. So a header that sits over a photograph **at rest** needs one of two explicit answers:
+**The islands protect themselves; the title does not.** An island carries its own material and is legible over both ends of the backdrop range (measured, in [Blur](/docs/blur)). A title is bare text on whatever is behind it, and with `scrim="auto"` there is nothing behind it until the page scrolls. So a header that sits over a photograph **at rest** needs a declared heading relationship or a choice that keeps its title readable:
 
+- `titleReveal="auto"` (default) — a declared heading offset or registered docking section supplies the relationship automatically. Without that relationship, the title stays visible.
 - `titleReveal="onScroll"` — the photo already names the screen, and the title arrives with the scrim. This is what the hero pattern wants.
 - `scrim="always"` — the title is the name of the screen and must be readable from the first frame, so the gradient is there from the first frame too.
 
-Leaving both at their defaults over a hero photo is the one combination that reads as a bug, and it is a combination the header cannot resolve for you: it does not know what is behind it.
+When the photo has no declared heading or docking relationship, choose an explicit reveal mode or a persistent scrim. The header cannot infer text inside arbitrary images.
 
 ### The same edge at the bottom
 
@@ -103,7 +104,7 @@ The scrim sizes to its parent, so the parent carries the height — extend it AB
 | `subtitle` | — | A string is a secondary line; a node renders as-is. |
 | `titleAlign` | `'start'` | `'center'` centres the title on the container whatever the two sides hold. |
 | `headingLevel` | `1` | |
-| `titleReveal` | `'always'` | `'onScroll'` holds the title back and fades it in — for a header over a hero the photo already names. |
+| `titleReveal` | `'auto'` | Follows a declared heading offset or registered docking section; otherwise remains visible. Explicit modes override it. |
 | `presentation` | `'floating'` | `'bar'` for the flat strip. |
 | `placement` | `'inline'` | `'overlay'` positions the header over the content and claims the top edge. |
 | `onBack` / `backLabel` | — / `"Back"` | `backLabel` is the button's accessible name — localise it. |
@@ -256,9 +257,9 @@ provides the interior spacing.
 
 ### Reveal after an in-content heading
 
-`titleReveal="onScroll" titleRevealOffset={headingHeight}` holds both title and subtitle until that scroll distance, then fades them in across `scrollThreshold` (default20px). The scrim remains independent. Hidden header titles leave the accessibility tree until they start appearing; back and action islands remain available.
+`titleRevealOffset={headingHeight}` holds both title and subtitle until that scroll distance, then fades them in across `titleRevealDistance` (defaults to `scrollThreshold`, 20px). The scrim remains independent. Hidden header titles leave the accessibility tree until they start appearing; back and action islands remain available.
 
-Measure the in-content heading block with its `onLayout` and pass its height as `titleRevealOffset` when it is the first block below the header. For later headings include the preceding content height. `Screen` and `ScreenScrollView` supply the shared offset; no consumer scroll listener is needed. See **Blocks / Page Header / Reveal After Content Heading** for the complete live composition. The default offset0 preserves existing reveal timing.
+Measure the in-content heading block with its `onLayout` and pass its height as `titleRevealOffset` when it is the first block below the header. For later headings include the preceding content height. `Screen` and `ScreenScrollView` supply the shared offset; no consumer scroll listener is needed. See **Blocks / Page Header / Reveal After Content Heading** for the complete live composition. An omitted offset does not imply a duplicated content heading.
 
 ### Banner and docked tabs
 
@@ -266,8 +267,8 @@ Use `placement="overlap"` inside `HeaderDockProvider` when a banner should flow
 behind the header. Unlike `overlay`, it retains document stickiness on web.
 Pair it with `StickySection` from `@oxy.so/bloom/layout`: the section docks below
 the measured header and both converge to the inherited opaque surface fill.
-`titleReveal="onDock"` reveals the title and subtitle with this shared docking
-progress, without an application scroll threshold. At rest the hidden title is
+The default `titleReveal="auto"` reveals the title and subtitle with this shared docking
+progress once the section has registered, without an application scroll threshold. At rest the hidden title is
 also excluded from accessibility and hit testing. It requires a docking provider
 and section; without a target the title remains hidden.
 
@@ -289,3 +290,26 @@ to `auto`. The provider supplies the local offset to the header and the remainin
 content distance to the footer. It takes precedence over an enclosing Screen's
 scroll owner, so a nested panel follows its own content. See `layout.mdx` for
 list bindings and resizing behavior.
+
+
+`titleRevealOffset` and `titleRevealDistance` also accept Reanimated shared values.
+Use these when the title block is measured on the UI thread: the header responds
+to the measurement without copying each scroll frame into React state. Dialog's
+navigation header uses this same API, `PageHeader` and `ButtonGroup`; dialog
+screens do not maintain a separate chrome renderer. `tone="onImage"` selects
+light title and supporting text while the action islands keep their own material.
+
+
+### Automatic title reveal
+
+`PageHeader` defaults to `titleReveal="auto"`. A supplied `titleRevealOffset`
+pairs it with an in-content heading and enables scroll reveal automatically.
+A registered `StickySection` inside `HeaderDockProvider` enables docking reveal
+without a mode prop. Dialog's large-title layout supplies its measured heading
+offset, so every frame gets the same behavior through the base header.
+
+A scroll container, transparent background, or provider without a registered
+section does not hide the title by itself. Without a content-heading relationship
+the header remains visible, including static dialogs and caller-owned scrollers.
+`always`, `onScroll`, and `onDock` remain explicit overrides. When both an offset
+and a docking target exist, the explicit heading offset takes precedence.

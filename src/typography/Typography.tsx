@@ -15,6 +15,7 @@ import { space } from '../styles/tokens';
 import { mergeTypographyStyle, typographyDefaultsWhenNoClassName } from './defaults';
 import { TYPE_SCALE } from './scale';
 import { StyledText } from '../styles/styled-primitives';
+import { useTypographySystemFamily } from './TypographyScope';
 import type { BlockquoteProps, TextProps } from './types';
 
 /**
@@ -40,20 +41,22 @@ const DISPLAY_FONT_FAMILY = fontFamilyStyle('display');
 const MONO_FONT_FAMILY = fontFamilyStyle('mono');
 
 /**
- * The big titles of the scale — `large-title` and `display-1` … `display-4`, 32px and up — are
- * set in BlomusModernus, Oxy's brand face, as `H1`–`H4` are; everything below them (`title-*`,
- * `headline`, `body`, `caption`) is Inter. The face is a property of the variant, so a screen
+ * The titles of the scale — `large-title` and `display-1` … `display-4`, 32px and up — are
+ * set in BlomusModernus, Oxy's brand face, as `H1`–`H4` are; `title-*` also uses the display face; `headline`, `body` and `caption` remain Inter unless rendered as a semantic Title/Subtitle. The face is a property of the variant, so a screen
  * that asks for a big title gets the brand face without naming it.
  */
 const isDisplayVariant = (variant: string): boolean =>
-  variant.startsWith('large-title-') || variant.startsWith('display-');
+  variant.startsWith('large-title-') ||
+  variant.startsWith('display-') ||
+  /^title-[123]-/.test(variant);
 
 /**
  * The same by className, for a title sized with utilities instead of a variant: an explicit
  * `font-display`, or a size from `text-3xl` (30px) up, at any breakpoint or state
  * (`md:text-5xl`, `dark:font-display`).
  */
-const DISPLAY_CLASS = /(?:^|\s)(?:[\w-]+:)*(?:font-display|text-[3-9]xl)(?=\s|$)/;
+const DISPLAY_CLASS =
+  /(?:^|\s)(?:[\w-]+:)*(?:font-display|text-[3-9]xl|text-title-[123]-(?:regular|medium|semibold|bold))(?=\s|$)/;
 
 /**
  * An explicit `font-mono`, at any breakpoint or state (`md:font-mono`). The
@@ -88,6 +91,7 @@ const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
  */
 const TextComponent = function Text({ children, style, className, variant, ...rest }: TextProps) {
   const { colors } = useTheme();
+  const systemFamily = useTypographySystemFamily();
   const trimmedClassName = className?.trim() ? className : undefined;
 
   return (
@@ -97,8 +101,10 @@ const TextComponent = function Text({ children, style, className, variant, ...re
       style={mergeTypographyStyle(
         trimmedClassName,
         { ...(variant ? TYPE_SCALE[variant] : DEFAULT_TEXT_TYPOGRAPHY), color: colors.text },
-        textFamily(variant, trimmedClassName),
-        style,
+        rest.accessibilityRole === 'header' || rest.role === 'heading'
+          ? DISPLAY_FONT_FAMILY
+          : textFamily(variant, trimmedClassName),
+        [style, systemFamily],
       )}
     >
       {children}
@@ -194,6 +200,23 @@ export function P({ style, className, ...rest }: TextProps) {
   );
 }
 P.displayName = 'P';
+
+/** Semantic heading with Bloom's display family at any standard type-scale size. */
+export function Title({ style, variant = 'title-1-semibold', ...rest }: TextProps) {
+  return (
+    <Text
+      accessibilityRole="header"
+      {...rest}
+      variant={variant}
+      style={[DISPLAY_FONT_FAMILY, style]}
+    />
+  );
+}
+
+/** Secondary title text; its role is distinct from ordinary body and control copy. */
+export function Subtitle({ style, variant = 'body-regular', ...rest }: TextProps) {
+  return <Text {...rest} variant={variant} style={[DISPLAY_FONT_FAMILY, style]} />;
+}
 
 export { Text as Span };
 

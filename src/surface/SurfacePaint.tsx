@@ -1,3 +1,4 @@
+import { pointerEventsStyle } from '../styles/pointer-events';
 import { surfaceStyle } from '../shapes/surface-style';
 import type { SurfaceShape } from '../shapes/corner-types';
 import React, { memo, useEffect } from 'react';
@@ -67,25 +68,26 @@ export const SurfacePaint = memo(function SurfacePaint({
     return (
       <StyledView
         testID={testID}
-        pointerEvents="none"
         className={`bloom-surface-paint${sheen ? '' : ' bloom-surface-paint--no-sheen'}`}
-        style={paintStyle}
+        style={[paintStyle, pointerEventsStyle('none')]}
       />
     );
   }
   return (
     <View
       testID={testID}
-      pointerEvents="none"
       style={[
-        StyleSheet.absoluteFill,
-        geometry,
-        {
-          overflow: 'hidden',
-          backgroundColor: fill === undefined ? 'transparent' : resolvedFill,
-          boxShadow: optics.rim,
-          ...(sheen ? { experimental_backgroundImage: optics.sheenCss } : null),
-        },
+        [
+          StyleSheet.absoluteFill,
+          geometry,
+          {
+            overflow: 'hidden',
+            backgroundColor: fill === undefined ? 'transparent' : resolvedFill,
+            boxShadow: optics.rim,
+            ...(sheen ? { experimental_backgroundImage: optics.sheenCss } : null),
+          },
+        ],
+        pointerEventsStyle('none'),
       ]}
     />
   );

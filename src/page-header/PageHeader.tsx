@@ -1,4 +1,5 @@
-import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
+import { pointerEventsStyle } from '../styles/pointer-events';
+import { memo, useContext, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
   StyleSheet,
@@ -13,6 +14,7 @@ import Animated, {
   useAnimatedReaction,
   runOnJS,
   useSharedValue,
+  useDerivedValue,
 } from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
@@ -34,7 +36,7 @@ import {
 } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
+import { Title, Subtitle } from '../typography';
 import { EdgeScrim, SCRIM_TAIL_RATIO } from './EdgeScrim';
 import type { PageHeaderProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
@@ -121,8 +123,10 @@ function PageHeaderComponent({
   subtitle,
   titleAlign = 'start',
   headingLevel = 1,
-  titleReveal = 'always',
-  titleRevealOffset = 0,
+  titleReveal: requestedTitleReveal = 'auto',
+  titleRevealOffset,
+  titleRevealDistance,
+  tone = 'default',
   presentation = 'floating',
   placement = 'inline',
   onBack,
@@ -212,6 +216,24 @@ function PageHeaderComponent({
     contextScrollY ??
     internalScrollY;
   const followsWindow = !externalScrollY && !dock && !screen && !contextScrollY;
+  // A scroll container alone does not prove that content repeats the title.
+  // Only a measured heading offset or a registered docking section establishes
+  // that relationship. Otherwise keep the screen's sole accessible title.
+  const hasScrollOwner = !!(
+    isWeb ||
+    externalScrollY ||
+    dock ||
+    metrics ||
+    screen ||
+    contextScrollY
+  );
+  const dockTarget = dock?.sectionOffset;
+  const titleReveal = useDerivedValue(() => {
+    if (requestedTitleReveal !== 'auto') return requestedTitleReveal;
+    if (titleRevealOffset !== undefined && hasScrollOwner) return 'onScroll';
+    if (dockTarget && Number.isFinite(dockTarget.value)) return 'onDock';
+    return 'always';
+  }, [requestedTitleReveal, titleRevealOffset, hasScrollOwner, dockTarget]);
 
   useEffect(() => {
     if (!isWeb || !followsWindow || typeof window === 'undefined') return undefined;
@@ -227,24 +249,35 @@ function PageHeaderComponent({
     1,
     Number.isFinite(scrollThreshold) ? scrollThreshold : DEFAULT_THRESHOLD,
   );
-  const revealOffset = Math.max(0, Number.isFinite(titleRevealOffset) ? titleRevealOffset : 0);
+  const revealOffset = useDerivedValue(() => {
+    const value =
+      typeof titleRevealOffset === 'number' ? titleRevealOffset : (titleRevealOffset?.value ?? 0);
+    return Math.max(0, Number.isFinite(value) ? value : 0);
+  }, [titleRevealOffset]);
+  const revealDistance = useDerivedValue(() => {
+    const value =
+      typeof titleRevealDistance === 'object'
+        ? titleRevealDistance.value
+        : (titleRevealDistance ?? threshold);
+    return Math.max(1, Number.isFinite(value) ? value : threshold);
+  }, [titleRevealDistance, threshold]);
   const [titleHidden, setTitleHidden] = useState(() =>
-    titleReveal === 'onDock'
+    titleReveal.value === 'onDock'
       ? (dockProgress?.value ?? 0) <= 0
-      : titleReveal === 'onScroll' && scrollY.value <= revealOffset,
+      : titleReveal.value === 'onScroll' && scrollY.value <= revealOffset.value,
   );
   useEffect(() => {
     setTitleHidden(
-      titleReveal === 'onDock'
+      titleReveal.value === 'onDock'
         ? (dockProgress?.value ?? 0) <= 0
-        : titleReveal === 'onScroll' && scrollY.value <= revealOffset,
+        : titleReveal.value === 'onScroll' && scrollY.value <= revealOffset.value,
     );
   }, [titleReveal, scrollY, revealOffset, dockProgress]);
   useAnimatedReaction(
     () =>
-      titleReveal === 'onDock'
+      titleReveal.value === 'onDock'
         ? (dockProgress?.value ?? 0) <= 0
-        : titleReveal === 'onScroll' && scrollY.value <= revealOffset,
+        : titleReveal.value === 'onScroll' && scrollY.value <= revealOffset.value,
     (hidden, previous) => {
       if (hidden !== previous) runOnJS(setTitleHidden)(hidden);
     },
@@ -285,13 +318,13 @@ function PageHeaderComponent({
   const titleStyle = useAnimatedStyle(
     () => ({
       opacity:
-        titleReveal === 'always'
+        titleReveal.value === 'always'
           ? 1
-          : titleReveal === 'onDock'
+          : titleReveal.value === 'onDock'
             ? (dockProgress?.value ?? 0)
-            : Math.min(1, Math.max(0, (scrollY.value - revealOffset) / threshold)),
+            : Math.min(1, Math.max(0, (scrollY.value - revealOffset.value) / revealDistance.value)),
     }),
-    [scrollY, threshold, titleReveal, revealOffset, dockProgress],
+    [scrollY, titleReveal, revealOffset, revealDistance, dockProgress],
   );
 
   const borderStyle = useAnimatedStyle(
@@ -332,38 +365,46 @@ function PageHeaderComponent({
         aria-hidden={titleHidden}
         accessibilityElementsHidden={titleHidden}
         importantForAccessibility={titleHidden ? 'no-hide-descendants' : 'auto'}
-        pointerEvents={titleHidden ? 'none' : 'auto'}
         {...(isWeb && titleHidden ? { inert: true } : {})}
         style={[
-          styles.titleBlock,
-          centered ? styles.titleBlockCentered : styles.titleBlockStart,
-          titleStyle,
+          [
+            styles.titleBlock,
+            centered ? styles.titleBlockCentered : styles.titleBlockStart,
+            titleStyle,
+          ],
+          pointerEventsStyle(titleHidden ? 'none' : 'auto'),
         ]}
         testID={testID ? `${testID}-title-block` : undefined}
       >
         {typeof title === 'string' || typeof title === 'number' ? (
-          <Text
+          <Title
             role="heading"
             aria-level={headingLevel}
             variant="headline-medium"
             numberOfLines={1}
-            style={{ color: theme.colors.text, textAlign: centered ? 'center' : 'left' }}
+            style={{
+              color: tone === 'onImage' ? '#FFFFFF' : theme.colors.text,
+              textAlign: centered ? 'center' : 'left',
+            }}
             testID={testID ? `${testID}-title` : undefined}
           >
             {title}
-          </Text>
+          </Title>
         ) : (
           title
         )}
         {typeof subtitle === 'string' || typeof subtitle === 'number' ? (
-          <Text
+          <Subtitle
             variant="body-2-regular"
             numberOfLines={1}
-            style={{ color: paint.textSecondary, textAlign: centered ? 'center' : 'left' }}
+            style={{
+              color: tone === 'onImage' ? 'rgba(255,255,255,0.82)' : paint.textSecondary,
+              textAlign: centered ? 'center' : 'left',
+            }}
             testID={testID ? `${testID}-subtitle` : undefined}
           >
             {subtitle}
-          </Text>
+          </Subtitle>
         ) : (
           subtitle
         )}
@@ -429,10 +470,10 @@ function PageHeaderComponent({
   );
   const chrome = floating ? (
     <Animated.View
-      // A PROP: react-native-web resolves `none` from the prop path only, and
-      // the scrim must never take a press meant for the content under it.
-      pointerEvents="none"
-      style={[styles.scrim, { height: height * (1 + SCRIM_TAIL_RATIO) }, scrimStyle]}
+      style={[
+        [styles.scrim, { height: height * (1 + SCRIM_TAIL_RATIO) }, scrimStyle],
+        pointerEventsStyle('none'),
+      ]}
       testID={testID ? `${testID}-scrim` : undefined}
     >
       <EdgeScrim
@@ -445,18 +486,24 @@ function PageHeaderComponent({
   ) : (
     <>
       <Animated.View
-        pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { boxShadow: paint.shadow }, shadowStyle]}
+        style={[
+          [StyleSheet.absoluteFill, { boxShadow: paint.shadow }, shadowStyle],
+          pointerEventsStyle('none'),
+        ]}
         testID={testID ? `${testID}-shadow` : undefined}
       />
       <Animated.View
-        pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backgroundColor: paint.background }, backgroundStyle]}
+        style={[
+          [StyleSheet.absoluteFill, { backgroundColor: paint.background }, backgroundStyle],
+          pointerEventsStyle('none'),
+        ]}
         testID={testID ? `${testID}-background` : undefined}
       />
       <Animated.View
-        pointerEvents="none"
-        style={[styles.border, { backgroundColor: paint.separator }, borderStyle]}
+        style={[
+          [styles.border, { backgroundColor: paint.separator }, borderStyle],
+          pointerEventsStyle('none'),
+        ]}
         testID={testID ? `${testID}-border` : undefined}
       />
     </>
@@ -464,18 +511,11 @@ function PageHeaderComponent({
 
   const actionsSlot = actions ? (
     <View
-      style={[styles.actions, { gap: floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP }]}
+      style={[
+        [styles.actions, { gap: floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP }],
+        pointerEventsStyle(floating ? 'box-none' : undefined),
+      ]}
       onLayout={centered ? onEndLayout : undefined}
-      // `box-none` so the gaps BETWEEN islands stay transparent to touch. A
-      // floating header covers content it does not own, and an invisible
-      // rectangle that swallows presses across the width of the screen is the
-      // defect this presentation could most easily ship.
-      //
-      // FLOATING ONLY, and the asymmetry is the point: a `bar` is an OPAQUE
-      // strip, and letting presses through the part of it that draws no control
-      // would hand a click on solid chrome to whatever list row is scrolled
-      // underneath.
-      pointerEvents={floating ? 'box-none' : undefined}
       testID={testID ? `${testID}-actions` : undefined}
     >
       {floating ? <BloomScope>{actions}</BloomScope> : actions}
@@ -486,57 +526,67 @@ function PageHeaderComponent({
     <View
       testID={testID}
       onLayout={onContainerLayout}
-      pointerEvents={overlay || (floating && screen) ? 'box-none' : undefined}
       style={[
-        styles.container,
-        { paddingTop: padTop },
-        overlay
-          ? [
-              styles.overlay,
-              {
-                zIndex: Z_INDEX.floating,
-                // Android's native scroll surfaces also participate in elevation.
-                // Keep this local chrome above its sibling list without a portal.
-                ...(!isWeb ? { elevation: Z_INDEX.floating } : {}),
-              },
-            ]
-          : null,
-        containerWeb,
-        placement === 'overlap' ? { marginBottom: -height, zIndex: Z_INDEX.floating } : null,
-        style,
+        [
+          styles.container,
+          { paddingTop: padTop },
+          overlay
+            ? [
+                styles.overlay,
+                {
+                  zIndex: Z_INDEX.floating,
+                  // Android's native scroll surfaces also participate in elevation.
+                  // Keep this local chrome above its sibling list without a portal.
+                  ...(!isWeb ? { elevation: Z_INDEX.floating } : {}),
+                },
+              ]
+            : null,
+          containerWeb,
+          placement === 'overlap' ? { marginBottom: -height, zIndex: Z_INDEX.floating } : null,
+          style,
+        ],
+        pointerEventsStyle(overlay || (floating && screen) ? 'box-none' : undefined),
       ]}
     >
       {chrome}
       {floating && dock ? (
         <Animated.View
-          pointerEvents="none"
           testID={testID ? `${testID}-docked-fill` : undefined}
-          style={[StyleSheet.absoluteFill, { backgroundColor: surfaceFill }, dockFillStyle]}
+          style={[
+            [StyleSheet.absoluteFill, { backgroundColor: surfaceFill }, dockFillStyle],
+            pointerEventsStyle('none'),
+          ]}
         />
       ) : null}
       <View
-        style={[styles.bar, { paddingLeft: sideInset, paddingRight: sideInset }]}
-        pointerEvents={floating ? 'box-none' : undefined}
+        style={[
+          [styles.bar, { paddingLeft: sideInset, paddingRight: sideInset }],
+          pointerEventsStyle(floating ? 'box-none' : undefined),
+        ]}
         testID={testID ? `${testID}-bar` : undefined}
       >
         <View
-          style={[styles.start, !centered && styles.startFill]}
+          style={[
+            [styles.start, !centered && styles.startFill],
+            pointerEventsStyle(floating ? 'box-none' : undefined),
+          ]}
           onLayout={centered ? onStartLayout : undefined}
-          pointerEvents={floating ? 'box-none' : undefined}
           testID={testID ? `${testID}-start` : undefined}
         >
           {backButton}
           {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
           {centered ? null : titleBlock}
         </View>
-        {centered ? <View style={styles.spacer} pointerEvents="none" /> : null}
+        {centered ? <View style={[styles.spacer, pointerEventsStyle('none')]} /> : null}
         {actionsSlot}
         {centered && titleBlock ? (
           <View
-            pointerEvents="box-none"
             style={[
-              styles.centerSlot,
-              { left: sideInset + centerInset, right: sideInset + centerInset },
+              [
+                styles.centerSlot,
+                { left: sideInset + centerInset, right: sideInset + centerInset },
+              ],
+              pointerEventsStyle('box-none'),
             ]}
             testID={testID ? `${testID}-center` : undefined}
           >

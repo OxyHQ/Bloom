@@ -6,6 +6,8 @@ export const SURFACE_SHAPES = {
   card: { radius: RADIUS['radius-20'], curve: 'round' },
   sidebar: { radius: RADIUS['radius-28'], curve: 'round' },
   panel: { radius: RADIUS['radius-20'], curve: 'round' },
+  dialog: { radius: RADIUS['radius-28'], curve: 'round' },
+  dialogSheet: { radius: { topStart: RADIUS['radius-28'], topEnd: RADIUS['radius-28'] }, curve: 'round' },
   menu: { radius: RADIUS['radius-16'], curve: 'round' },
   sheet: { radius: { topStart: RADIUS['radius-24'], topEnd: RADIUS['radius-24'] }, curve: 'round' },
   chart: { curve: 'smooth' },

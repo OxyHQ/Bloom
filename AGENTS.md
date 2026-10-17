@@ -97,7 +97,7 @@ Router-agnostic `scroll/` core plus adapter imports no router; model: `docs/scro
 
 ## Overlay (`overlay/`)
 
-`docs/overlay.mdx`, `docs/styles.mdx` Z_INDEX: OverlayRoot/Backdrop is the ONLY stacking authority, never per-component zIndex. `pointerEvents="box-none"|"box-only"` must be a PROP; style entries silently drop, disastrous beneath web Portal's inherited pointer-events:none.
+`docs/overlay.mdx`, `docs/styles.mdx` Z_INDEX: OverlayRoot/Backdrop is the ONLY stacking authority, never per-component zIndex. `box-none`/`box-only` use compiled `pointerEventsStyles` from `styles/pointer-events.ts`; raw inline style values silently drop beneath web Portal's inherited pointer-events:none. The legacy View prop works but warns on RNW; evidence: `overlay-pointer-events.test.tsx`.
 
 - Read stacking rank on MOUNT via useState initializer; memoization can retain stale ranks.
 - **Modal surfaces pass `modal`; apps wrap content (NOT the outlet) in `OverlayInertBoundary`**: only an app-side view can hide content from TalkBack. Gate `overlay-inert-boundary.test.tsx`.

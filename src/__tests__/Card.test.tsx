@@ -189,14 +189,14 @@ describe('Card content clipping', () => {
 });
 
 describe('the surfaces that compose Card keep their own chrome', () => {
-  it('settings-list group: radius-16, no border, no shadow, clipped', () => {
+  it('grouped section compatibility alias: radius-28, no border, no shadow, clipped', () => {
     const { toJSON } = renderWithTheme(
       <SettingsListGroup title="Account">
         <SettingsListItem title="Profile" onPress={() => {}} />
       </SettingsListGroup>,
     );
     const style = resolvedStyle(roundedNode(toJSON()).props.style);
-    expect(style.borderRadius).toBe(RADIUS['radius-16']);
+    expect(style.borderRadius).toBe(RADIUS['radius-28']);
     expect(style.borderWidth).toBe(0);
     expect(style.boxShadow).toBeUndefined();
     expect(style.overflow).toBeUndefined();

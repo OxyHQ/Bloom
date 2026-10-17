@@ -1,0 +1,34 @@
+# Subscription plans
+
+`SubscriptionPlans` is a neutral plan-selection body. It composes Bloom typography, a radio segmented selector, benefit rows and buttons. The host owns navigation and vertical scrolling; the component adds no dialog, billing requests, currency rules or subscription state.
+
+```tsx
+import { SubscriptionPlans } from '@oxy.so/bloom/subscription-plans';
+
+<SubscriptionPlans
+  productName={t('product')}
+  plans={plans}
+  value={selectedPlanId}
+  onValueChange={setSelectedPlanId}
+  selectorLabel={t('choosePlan')}
+  controls={billingPeriodControl}
+  terms={localizedTerms}
+  primaryAction={{ label: t('continue'), onPress: continueWithSelectedPlan }}
+/>
+```
+
+Each plan has `id`, `label`, optional `subtitle` and localized `price`, and `benefits` with stable `id`, `title`, optional `description` and decorative `icon`. Provide localized strings and preformatted prices. No default visible English copy is supplied.
+
+`controls` accommodates consumer audience or billing-period choices. `moreBenefits` supplies an optional secondary action. `terms` supports text and inline links; `footer` accepts custom content. `primaryAction.loading` is opt-in for an explicit operation. An unknown selected value renders `fallback` and disables the primary action; disabled plans cannot be selected or purchased.
+
+The centered body has a maximum width of 640px and fluid mobile width. Benefit copy wraps, and the plan selector scrolls horizontally when labels exceed the available width. The same component works within a page, dialog or sheet on web and native.
+
+Typography uses Bloom’s standard title, headline, body and caption variants throughout. Product and selected plan share one title scale; this family introduces no font family, size, line-height or weight overrides.
+
+`heroBackground` accepts decorative artwork or host-owned video. Bloom fills the top of the body with this slot, excludes it from pointer/accessibility interaction, and fades it into the actual enclosing surface using the shared edge scrim. `heroBackgroundHeight` defaults to 260px. The host provides media sizing (`cover`), playback and reduced-motion policy; no video dependency enters the Bloom root export.
+
+Inside a dialog, pair the media slot with `header.titleLayout: 'hero'` to let artwork start beneath the navigation buttons, without a second video player. On web, the artwork itself fades to transparency, revealing the enclosing material rather than painting an opaque color approximation over it. Native uses the shared surface-colored edge scrim.
+
+### Localized animated prices
+
+Pass `price={{ amount: 29.99, currency: 'USD', locale: 'en-US', suffix: '/ month', description: 'Billed monthly' }}` for localized currency formatting and rolling digit transitions. `SubscriptionPrice` is also exported from the same subpath. Its amount uses the standard 20px UI scale; supporting copy fades when it changes. Reduced motion updates immediately. Assistive technology receives one formatted amount, never the decorative digit columns. Plain text or custom React content remains supported for nonnumeric prices.

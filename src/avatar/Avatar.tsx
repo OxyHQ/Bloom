@@ -1,3 +1,4 @@
+import { pointerEventsStyles } from '../styles/pointer-events';
 import { useContext } from 'react';
 import { BloomAppearanceContext } from '../appearance/context';
 import React, { memo, useMemo, useState } from 'react';
@@ -82,7 +83,7 @@ function ShapeFallback({
         alignItems: 'center',
       }}
     >
-      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <View style={[StyleSheet.absoluteFill, pointerEventsStyles.none]}>
         <ShapeFill shape={shape} size={size} color={fallbackColor} />
       </View>
       {/* Positioned foreground paints after the absolute background on web,

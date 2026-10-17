@@ -1,3 +1,4 @@
+import { pointerEventsStyles } from '../styles/pointer-events';
 import React from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, ClipPath, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
@@ -27,21 +28,23 @@ export function Border({
   if (!outline && !gradient)
     return (
       <View
-        pointerEvents="none"
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderWidth: thickness,
-          borderColor: list[0] ?? 'transparent',
-        }}
+        style={[
+          pointerEventsStyles.none,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            borderWidth: thickness,
+            borderColor: list[0] ?? 'transparent',
+          },
+        ]}
       />
     );
   const span = outline?.viewBox ?? size;
   const stroke = gradient ? `url(#${id}-gradient)` : (list[0] ?? 'transparent');
   return (
     <Svg
-      pointerEvents="none"
+      style={pointerEventsStyles.none}
       {...svgA11yProps()}
       width={size}
       height={size}

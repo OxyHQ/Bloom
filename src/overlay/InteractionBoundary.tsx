@@ -1,3 +1,4 @@
+import { pointerEventsStyle } from '../styles/pointer-events';
 import type { ReactNode } from 'react';
 import { Platform, View } from 'react-native';
 
@@ -12,8 +13,10 @@ export function InteractionBoundary({
   return (
     <View
       collapsable={false}
-      style={Platform.OS === 'web' ? { display: 'contents' } : undefined}
-      pointerEvents={disabled ? 'none' : 'auto'}
+      style={[
+        Platform.OS === 'web' ? { display: 'contents' } : undefined,
+        pointerEventsStyle(disabled ? 'none' : 'auto'),
+      ]}
       accessibilityElementsHidden={disabled}
       importantForAccessibility={disabled ? 'no-hide-descendants' : 'auto'}
       {...(Platform.OS === 'web' && disabled ? { inert: true } : null)}
