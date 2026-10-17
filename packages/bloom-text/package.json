@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-text",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Native rich text input for Bloom: one contract over the platform text engines of iOS, Android and the web.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
