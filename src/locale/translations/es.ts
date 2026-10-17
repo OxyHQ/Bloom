@@ -2254,6 +2254,16 @@ const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
   suggestions: 'Sugerencias',
 };
 
+const PLACE_PICKER_MESSAGES: Translations['PLACE_PICKER_MESSAGES'] = {
+  results: 'Lugares',
+  searching: 'Buscando…',
+  noResults: (q) => `No hay lugares que coincidan con «${q}»`,
+  failed: 'No se han podido buscar lugares.',
+  retry: 'Reintentar',
+  resultCount: (n) => (n === 1 ? '1 lugar' : `${n} lugares`),
+  change: 'Cambiar',
+};
+
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
     apartment: 'Piso',
@@ -3063,6 +3073,7 @@ const translations: Translations = {
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,
+  PLACE_PICKER_MESSAGES,
   STAY_FILTERS_MESSAGES,
   SETTINGS_MODAL_MESSAGES,
   EVICTION_MESSAGES,

@@ -70,6 +70,7 @@ import { Stepper } from '../stepper';
 import { Switch } from '../switch';
 import { Textarea } from '../textarea';
 import { TagField } from '../tag-field';
+import { PlacePicker } from '../place-picker';
 import { TextField, TextFieldInput } from '../text-field';
 import { TimeField } from '../date-picker';
 
@@ -300,6 +301,26 @@ const SUBJECTS: Subject[] = [
     render: (p) => <TimeField testID={TID} value={null} onChange={() => {}} {...p} />,
     ownNameProp: 'accessibilityLabel',
     isInert: inputInert,
+    describedBy: true,
+    invalid: true,
+    id: true,
+  },
+  {
+    name: 'place-picker',
+    render: (p) => (
+      <PlacePicker
+        label="Place"
+        value={null}
+        onValueChange={() => {}}
+        query=""
+        onQueryChange={() => {}}
+        results={[]}
+        {...p}
+      />
+    ),
+    ownNameProp: 'accessibilityLabel',
+    isInert: inputInert,
+    node: 'textInput',
     describedBy: true,
     invalid: true,
     id: true,

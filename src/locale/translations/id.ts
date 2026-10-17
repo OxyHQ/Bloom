@@ -2217,6 +2217,16 @@ const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
   suggestions: 'Saran',
 };
 
+const PLACE_PICKER_MESSAGES: Translations['PLACE_PICKER_MESSAGES'] = {
+  results: 'Tempat',
+  searching: 'Mencari…',
+  noResults: (q) => `Tidak ada tempat yang cocok dengan “${q}”`,
+  failed: 'Tempat tidak dapat dicari.',
+  retry: 'Coba lagi',
+  resultCount: (n) => (n === 1 ? '1 tempat' : `${n} tempat`),
+  change: 'Ubah',
+};
+
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
     apartment: 'Apartemen',
@@ -3023,6 +3033,7 @@ const translations: Translations = {
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,
+  PLACE_PICKER_MESSAGES,
   STAY_FILTERS_MESSAGES,
   SETTINGS_MODAL_MESSAGES,
   EVICTION_MESSAGES,

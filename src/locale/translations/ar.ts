@@ -2527,6 +2527,16 @@ const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
   suggestions: 'اقتراحات',
 };
 
+const PLACE_PICKER_MESSAGES: Translations['PLACE_PICKER_MESSAGES'] = {
+  results: 'الأماكن',
+  searching: 'جارٍ البحث…',
+  noResults: (q) => `لا توجد أماكن تطابق «${q}»`,
+  failed: 'تعذّر البحث عن الأماكن.',
+  retry: 'إعادة المحاولة',
+  resultCount: (n) => (n === 1 ? 'مكان واحد' : n === 2 ? 'مكانان' : `${n} أماكن`),
+  change: 'تغيير',
+};
+
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
     apartment: 'شقة',
@@ -3415,6 +3425,7 @@ const translations: Translations = {
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,
+  PLACE_PICKER_MESSAGES,
   STAY_FILTERS_MESSAGES,
   SETTINGS_MODAL_MESSAGES,
   EVICTION_MESSAGES,

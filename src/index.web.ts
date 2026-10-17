@@ -2192,6 +2192,8 @@ export * from './note-card';
 export * from './note-editor';
 export * from './outline-nav';
 export * from './tag-field';
+// Choosing a real place by name or address
+export * from './place-picker';
 
 export * from './agent-avatar';
 export * from './agent-creator/index.web';

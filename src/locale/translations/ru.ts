@@ -2498,6 +2498,22 @@ const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
   suggestions: 'Подсказки',
 };
 
+const PLACE_PICKER_MESSAGES: Translations['PLACE_PICKER_MESSAGES'] = {
+  results: 'Места',
+  searching: 'Поиск…',
+  noResults: (q) => `Нет мест по запросу «${q}»`,
+  failed: 'Не удалось выполнить поиск мест.',
+  retry: 'Повторить',
+  resultCount: (n) => {
+    const d = n % 10;
+    const h = n % 100;
+    if (d === 1 && h !== 11) return `${n} место`;
+    if (d >= 2 && d <= 4 && (h < 12 || h > 14)) return `${n} места`;
+    return `${n} мест`;
+  },
+  change: 'Изменить',
+};
+
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
     apartment: 'Квартира',
@@ -3353,6 +3369,7 @@ const translations: Translations = {
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,
+  PLACE_PICKER_MESSAGES,
   STAY_FILTERS_MESSAGES,
   SETTINGS_MODAL_MESSAGES,
   EVICTION_MESSAGES,

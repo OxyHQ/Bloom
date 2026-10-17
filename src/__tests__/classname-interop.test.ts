@@ -100,6 +100,8 @@ const CAST_EXEMPTIONS = [
   // and `focusable={false}` does not reach the DOM through `Pressable`) and an
   // `onMouseDown` that keeps the press from blurring the caret.
   'tag-field/TagField.tsx',
+  // `TagField`'s combobox option attributes, for a place list's rows.
+  'place-picker/PlacePicker.tsx',
 ];
 
 /** A line that is only a comment — the rule's own prose quotes what it forbids. */

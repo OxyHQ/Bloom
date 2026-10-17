@@ -32,13 +32,13 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **220 families** in `src/`, **218** published (a subpath, the root barrel, or both). **52** carry a web fork.
+- **221 families** in `src/`, **219** published (a subpath, the root barrel, or both). **52** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the per-family counts are in the table below.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
-| Field membership | 49 | 23 | 0 | 21 | 5 |
-| Control presentation | 42 | 41 | 1 | 0 | 0 |
+| Field membership | 50 | 24 | 0 | 21 | 5 |
+| Control presentation | 43 | 42 | 1 | 0 | 0 |
 | Trigger composition | 10 | 8 | 0 | 2 | 0 |
 | Controlled / uncontrolled state | 57 | 48 | 1 | 1 | 7 |
 
@@ -258,6 +258,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `place-card` | `@oxy.so/bloom/place-card` + barrel | universal | `place-card.mdx` | yes | 3 |  | reads |  |  |
 | `place-details` | `@oxy.so/bloom/place-details` + barrel | universal | `place-details.mdx` | yes | 2 |  |  |  | reads |
 | `place-list` | `@oxy.so/bloom/place-list` + barrel | universal | `place-list.mdx` | yes | 2 |  |  |  |  |
+| `place-picker` | `@oxy.so/bloom/place-picker` + barrel | universal | `place-picker.mdx` | yes | 2 | reads | reads |  |  |
 | `place-reviews` | `@oxy.so/bloom/place-reviews` + barrel | universal | `place-reviews.mdx` | yes | 2 |  |  |  | reads |
 | `popover` | `@oxy.so/bloom/popover` + barrel | web fork | `popover.mdx` | yes | 10 |  |  | reads | reads |
 | `portal` | `@oxy.so/bloom/portal` + barrel | web fork | `portal.mdx` | yes | 30 |  |  |  |  |
@@ -311,7 +312,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `tenancy` | `@oxy.so/bloom/tenancy` + barrel | universal | `tenancy.mdx` | yes | 5 |  | reads |  |  |
 | `text-field` | `@oxy.so/bloom/text-field` + barrel | universal | `text-field.mdx` | yes | 18 | reads | reads |  |  |
 | `textarea` | `@oxy.so/bloom/textarea` + barrel | universal | `textarea.mdx` | yes | 4 | reads | reads |  | n/a¹ |
-| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 416 |  |  | n/a¹ | reads |
+| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 417 |  |  | n/a¹ | reads |
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | 2 | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | 18 |  |  |  |  |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | 1 |  |  |  |  |

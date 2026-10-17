@@ -2229,6 +2229,16 @@ const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
   suggestions: 'Suggeriments',
 };
 
+const PLACE_PICKER_MESSAGES: Translations['PLACE_PICKER_MESSAGES'] = {
+  results: 'Llocs',
+  searching: 'Cercant…',
+  noResults: (q) => `Cap lloc coincideix amb «${q}»`,
+  failed: "No s'han pogut cercar llocs.",
+  retry: 'Torna-ho a provar',
+  resultCount: (n) => (n === 1 ? '1 lloc' : `${n} llocs`),
+  change: 'Canvia',
+};
+
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
     apartment: 'Pis',
@@ -3035,6 +3045,7 @@ const translations: Translations = {
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,
+  PLACE_PICKER_MESSAGES,
   STAY_FILTERS_MESSAGES,
   SETTINGS_MODAL_MESSAGES,
   EVICTION_MESSAGES,

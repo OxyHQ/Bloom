@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "10.17.0",
+  "version": "10.18.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -2911,6 +2911,20 @@
         "default": "./lib/commonjs/vehicle-picker/index.js"
       }
     },
+    "./place-picker": {
+      "react-native": {
+        "types": "./lib/typescript/module/place-picker/index.d.ts",
+        "default": "./src/place-picker/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/place-picker/index.d.ts",
+        "default": "./lib/module/place-picker/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/place-picker/index.d.ts",
+        "default": "./lib/commonjs/place-picker/index.js"
+      }
+    },
     "./payment-method": {
       "react-native": {
         "types": "./lib/typescript/module/payment-method/index.d.ts",
@@ -4411,6 +4425,9 @@
       ],
       "vehicle-picker": [
         "./lib/typescript/module/vehicle-picker/index.d.ts"
+      ],
+      "place-picker": [
+        "./lib/typescript/module/place-picker/index.d.ts"
       ],
       "payment-method": [
         "./lib/typescript/module/payment-method/index.d.ts"
