@@ -11,6 +11,11 @@ Standalone Screens use the page fill. `header` and `bottomBar` overlay the conte
 `ScreenScrollView` reserves their measured footprints, adding its own content padding.
 Safe-area padding belongs to the chrome, so it is included exactly once in those measurements.
 
+Under an `AppShell` with a bottom bar, the app's navigation already owns the bottom
+edge. A route's own `bottomBar` (a listing's `BookingBar`, a wizard's footer) stacks
+on top of that navigation, never under it, and the content clears both. Off a phone
+layout the shell publishes no bottom edge and the bar sits at the bottom.
+
 ```tsx
 import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 

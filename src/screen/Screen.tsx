@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Keyboard, Platform, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSurfaceFill } from '../styles/surface-levels';
@@ -70,6 +71,10 @@ export function Screen({
     };
   }, []);
   const hasBottom = !keyboardVisible && Boolean(bottomBar || primaryAction);
+  // The app's own bottom navigation (an `AppShell` bottom bar) already owns the
+  // bottom edge. This screen's bar stacks ON it, never under it, and the content
+  // clears both.
+  const navigationEdge = useBottomEdgeInset();
   const document = documentScroll && Platform.OS === 'web';
   const value = useMemo(
     () => ({
@@ -84,7 +89,7 @@ export function Screen({
       bottomInset: keyboardVisible
         ? contentClearance
         : hasBottom
-          ? bottom + contentClearance
+          ? bottom + navigationEdge + contentClearance
           : navigationScope === 'inherit'
             ? (inheritedNavigation?.bottomInset ?? contentClearance)
             : contentClearance,
@@ -104,6 +109,7 @@ export function Screen({
       inheritedNavigation?.bottomInset,
       document,
       keyboardVisible,
+      navigationEdge,
     ],
   );
   useScreenWindowBinding(value, { active: document });
@@ -135,11 +141,11 @@ export function Screen({
         document
           ? {
               position: WEB_POSITION_STICKY,
-              bottom: 0,
+              bottom: navigationEdge,
               zIndex: Z_INDEX.floating,
               marginTop: -bottom,
             }
-          : { position: 'absolute', bottom: 0, left: 0, right: 0 }
+          : { position: 'absolute', bottom: navigationEdge, left: 0, right: 0 }
       }
     >
       {bottomBar ?? (
@@ -189,7 +195,7 @@ export function Screen({
                 flexGrow: 1,
                 flexShrink: 0,
                 paddingTop: header ? top : 0,
-                paddingBottom: hasBottom ? bottom + contentClearance : 0,
+                paddingBottom: hasBottom ? bottom + navigationEdge + contentClearance : 0,
               }}
             >
               {children}

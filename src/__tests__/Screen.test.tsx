@@ -9,6 +9,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Screen, ScreenScrollView, useScreen } from '../screen';
 import type { ScreenContextValue } from '../screen/context';
 import { resolvedStyle } from './support/rendered-style';
+import { BottomEdgeProvider, useClaimBottomEdge } from '../layout/bottom-edge';
 
 function wrap(children: React.ReactNode) {
   return <BloomThemeProvider fonts={false}>{children}</BloomThemeProvider>;
@@ -34,6 +35,33 @@ it('reserves measured chrome once and preserves consumer content padding', () =>
   expect(resolvedStyle(tree.getByTestId('scroll').props.contentContainerStyle)).toMatchObject({
     paddingTop: 78,
     paddingBottom: 120,
+  });
+});
+
+it("stacks its own bar on the app's bottom navigation and clears both", () => {
+  function Navigation() {
+    useClaimBottomEdge(64);
+    return null;
+  }
+  const tree = render(
+    wrap(
+      <BottomEdgeProvider>
+        <Navigation />
+        <Screen testID="screen" bottomBar={<View />}>
+          <ScreenScrollView testID="scroll" />
+        </Screen>
+      </BottomEdgeProvider>,
+    ),
+  );
+  fireEvent(tree.getByTestId('screen-bottom'), 'layout', {
+    nativeEvent: { layout: { height: 72 } },
+  });
+  expect(resolvedStyle(tree.getByTestId('screen-bottom').props.style)).toMatchObject({
+    position: 'absolute',
+    bottom: 64,
+  });
+  expect(resolvedStyle(tree.getByTestId('scroll').props.contentContainerStyle)).toMatchObject({
+    paddingBottom: 72 + 64 + 16,
   });
 });
 
