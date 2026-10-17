@@ -144,9 +144,9 @@ const stay = {
 // ---------------------------------------------------------------------------
 
 describe('pure helpers', () => {
-  it('listingGridColumns: 1 < 640 ≤ 2 < 950 ≤ 3 < 1280 ≤ 4', () => {
-    expect([375, 639, 640, 949, 950, 1279, 1280, 1920].map(listingGridColumns)).toEqual([
-      1, 1, 2, 2, 3, 3, 4, 4,
+  it('listingGridColumns: 1 < 500 ≤ 2 < 950 ≤ 3 < 1280 ≤ 4', () => {
+    expect([375, 430, 499, 500, 640, 949, 950, 1279, 1280, 1920].map(listingGridColumns)).toEqual([
+      1, 1, 1, 2, 2, 2, 3, 3, 4, 4,
     ]);
   });
 

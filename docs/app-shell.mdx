@@ -743,6 +743,30 @@ ProOfferCard retains its animated complementary host and decorative artwork, wit
 />
 ```
 
+On their own, the panes can also choose for themselves. Give `pane` (`list` or
+`detail`) and they MEASURE THEIR OWN BOX: from `splitFrom` (default `md`, 768,
+or a width in pixels) list and detail render side by side, and below it only the
+pane `pane` names renders, filling the row. A split beside a sidebar therefore
+counts the room it has, and the app keeps no width of its own — a map/list
+toggle only flips `pane`. Explicit `showList` / `showDetail` still win.
+`detailMinWidth` keeps the detail from being squeezed: the list's width, resting
+or dragged, gives way (never below `listMinWidth`) so the detail keeps it.
+
+```tsx
+<AppShellSplitPanes
+  variant="separated"
+  pane={showMap ? 'detail' : 'list'}
+  splitFrom={1000}
+  listWidth={760}
+  listMinWidth={520}
+  listMaxWidth={1200}
+  detailMinWidth={400}
+  paneScroll={false}
+  list={<Results />}
+  detail={<ResultsMap />}
+/>
+```
+
 The detail remains mounted while `showList` changes; hiding a pane explicitly unmounts that pane. Defaults match AppShell's split layout: list width 360 (range 280–520), info width 320, scrolling and resizing enabled. `showDetail` defaults to true; list/info visibility follows the supplied content. Set `paneScroll={false}` when routes or virtualized lists own their scrolling. The surrounding Bloom container must provide a bounded height.
 
 Use `variant="separated"` when each pane supplies its own `AiChatContainer`. Bloom inserts 12px transparent gutters and centers the existing resize handle in the list gutter; there is no extra surface around the panels. A single visible pane has no gutter. The default `joined` variant retains hairline dividers for panes inside one shared surface.
