@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
-import type { ContentPanelFramedBreakpoint } from '../content-panel/types';
+import type { ContentPanelChrome, ContentPanelProps } from '../content-panel/types';
 import type { NotificationCenterItem, NotificationCenterTab } from '../notification-center/types';
 import type { SidebarProps } from '../sidebar/types';
 
@@ -28,10 +28,6 @@ export type AppShellDrawer = 'overlay' | 'reveal';
  *   `contentWidth`, with the optional `aside` beside it and the pair centred in
  *   what the nav leaves. Wrap the column in a `ContentPanel` with `panel` and
  *   the page background reads as a gutter around it.
- * - `split` — a list pane, a detail pane and an optional info pane, each
- *   scrolling on its own, with a draggable divider. One screen, never a
- *   document scroll (see `scroll`). Below `splitFrom` exactly one pane renders,
- *   chosen by `pane`.
  * - `focus` — a single centred column of `contentWidth` and NO nav: sign-in,
  *   onboarding, a reader. It keeps the header, `topBar`, `bottomBar` and
  *   `floatingAction` slots, so a sign-up flow still gets its footer CTA.
@@ -39,13 +35,14 @@ export type AppShellDrawer = 'overlay' | 'reveal';
  *   column, no max width and no padding, exactly one viewport tall, and the
  *   chrome floats over it. A map, a board, an editor, a photo viewer. Each
  *   region keeps its own inset (the nav is still a card with a gutter around
- *   it) so only the canvas runs to the edge. Like `split`, it never scrolls the
- *   document — the canvas owns its own panning and zooming.
+ *   it) so only the canvas runs to the edge. It never scrolls the document —
+ *   the canvas owns its own panning and zooming.
+ *
+ * Panels — one reading surface, or several side by side (results and a map, a
+ * list, a message and its details) — are not a variant: any of `dashboard`,
+ * `feed` and `focus` hosts them with `panels`.
  */
-export type AppShellVariant = 'dashboard' | 'feed' | 'split' | 'focus' | 'canvas';
-
-/** Which single pane a `split` shell shows below `splitFrom`. */
-export type AppShellPane = 'list' | 'detail' | 'info';
+export type AppShellVariant = 'dashboard' | 'feed' | 'focus' | 'canvas';
 
 /** A tier from `BREAKPOINTS`, the one source of truth for widths. */
 /**
@@ -207,48 +204,21 @@ export interface AppShellEngineProps {
 
   // -- feed ------------------------------------------------------------------
   /**
-   * `feed`: wrap the centre column in a `ContentPanel`, so the page background
-   * reads as a gutter around a framed surface. The shell renders the panel —
-   * a page that renders its own inside this one trips `ContentPanel`'s nesting
-   * guard. Screens own their content padding; the shell adds no horizontal inset.
+   * The region holds PANELS: the routes render `AppShellPanel` (one surface)
+   * or `AppShellPanels` (several side by side), and the shell frames them —
+   * `gutter` on all four sides and between them while framed, nothing at all
+   * while compact (full-bleed), and the viewport geometry each mode needs.
+   * Put the panel where the layout is declared: around the router outlet when
+   * every page is one panel, in a route group's layout, or in a route made of
+   * several. The shell never wraps its children in a surface itself, so its
+   * tree around them is the same for every route and every `scroll`.
    */
-  panel?: boolean;
-  /** Theme only the central reading column; navigation, aside and framing retain the app theme. */
-  panelColorPreset?: AppColorName;
-  /** Optional independent framing breakpoint. By default a shell with navigation
-   * frames its panel exactly while the sidebar/rail is in flow. */
-  framedFrom?: ContentPanelFramedBreakpoint;
-
-  // -- split -----------------------------------------------------------------
-  /** `split`: the first pane. `children` is the detail pane beside it. */
-  list?: ReactNode;
-  /** `split`: an optional third pane, from `infoFrom`. */
-  info?: ReactNode;
-  /** `split`: which single pane renders below `splitFrom`. Default `list`. */
-  pane?: AppShellPane;
-  /** `split`: the list pane's resting width (360); a drag moves it in range. */
-  listWidth?: number;
-  /** `split`: the range a drag may reach. Defaults 280 and 520. */
-  listMinWidth?: number;
-  listMaxWidth?: number;
-  /** `split`: reports the width a drag settled on. */
-  onListWidthChange?: (width: number) => void;
-  /** `split`: the info pane's width. Default 320. */
-  infoWidth?: number;
-  /** `split`: the width two panes fit from. Default `md` (768). */
-  splitFrom?: AppShellBreakpoint;
-  /** `split`: the width the third pane fits from. Default `xl` (1280). */
-  infoFrom?: AppShellBreakpoint;
-  /** `split`: whether the divider drags. Default `true`. */
-  resizable?: boolean;
-  /** `split`: names the divider (`"Resize panes"` in English). */
-  resizeLabel?: string;
+  panels?: boolean;
   /**
-   * `split`: the shell gives each pane its own `ScrollView` (default). Turn it
-   * off when the pane's own content scrolls — a `FlatList`, a virtualizer —
-   * rather than nesting two scrollers.
+   * `panels`: the width (of the shell's own box) its panels are framed from.
+   * Default: exactly while the navigation is in flow — `md` without navigation.
    */
-  paneScroll?: boolean;
+  framedFrom?: AppShellBreakpoint;
 
   // -- pinned slots ----------------------------------------------------------
   /**
@@ -391,58 +361,66 @@ export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> &
     scroll?: AppShellScroll | 'auto' | 'external';
   };
 
-/** A bounded list/detail/info layout, independent of navigation or surfaces. */
-export interface AppShellSplitPanesProps {
-  /** Each visible pane isolates render errors by default. false delegates to an outer boundary. */
-  listErrorBoundary?: false | PanelErrorBoundaryOptions;
-  detailErrorBoundary?: false | PanelErrorBoundaryOptions;
-  infoErrorBoundary?: false | PanelErrorBoundaryOptions;
-  /** Joined uses hairline dividers (default); separated leaves a 12px gutter for independent panel surfaces. */
-  variant?: 'joined' | 'separated';
+/** One panel: a rounded surface in a `panels` shell, alone or in `AppShellPanels`. */
+export interface AppShellPanelProps {
+  /** Names the panel for `AppShellPanels`' `show` and `useAppShellPanel()`. */
+  id?: string;
+  children?: ReactNode;
+  /** Chrome that spans the panel above its content (a page header, a toolbar). */
+  header?: ReactNode;
   /**
-   * Animate list/detail visibility using live layout geometry. Defaults to none.
-   * Showing both panes reveals detail beside a shrinking list; hiding the list
-   * slides between full-width panes. Exiting content remains mounted until the
-   * expansion motion settles, but is immediately inactive/inaccessible.
-   * Info visibility is unchanged. Respects the system reduced-motion setting.
+   * Who scrolls the panel's content. `content` (default): the content does —
+   * a `ScreenScrollView`, a `FlatList`, a map, a navigator — and in a growing
+   * (document) region a sole panel grows with the page. `panel`: Bloom wraps
+   * the content in a `ScrollView` that clears the bottom bar (bounded regions).
    */
-  transition?: 'none' | 'slide';
-  list?: ReactNode;
-  detail?: ReactNode;
-  info?: ReactNode;
+  scroll?: 'content' | 'panel';
   /**
-   * The pane shown ALONE while the panes' own width is below `splitFrom`; from
-   * `splitFrom` up, list and detail render side by side. The panes measure
-   * themselves, so a split beside a sidebar counts the room it has, and the app
-   * needs no width of its own. Explicit `showList` / `showDetail` win over it.
+   * In `AppShellPanels`: the panel's resting width. It gives way (down to
+   * `minWidth`) before a flexible panel goes below its own `minWidth`. Without
+   * a width the panel takes the room the others leave.
    */
-  pane?: 'list' | 'detail';
-  /** With `pane`: the width (of the panes' own box) two panes fit from. Default `md` (768). */
-  splitFrom?: AppShellBreakpoint;
-  /** Defaults to whether list content was supplied. Hidden panes unmount. */
-  showList?: boolean;
-  /** Defaults to true. Keep true across breakpoints to retain routed detail state. */
-  showDetail?: boolean;
-  /** Defaults to whether info content was supplied. */
-  showInfo?: boolean;
-  /** Initial list width (360), constrained by listMinWidth/listMaxWidth (280/520). */
-  listWidth?: number;
-  listMinWidth?: number;
-  listMaxWidth?: number;
-  onListWidthChange?: (width: number) => void;
-  /**
-   * The narrowest the detail pane may get beside the list. The list's width
-   * (resting or dragged) gives way so the detail keeps it — a map beside a
-   * results list stays a map on a smaller screen. Unset: no floor.
-   */
-  detailMinWidth?: number;
-  /** Info column width, defaults to 320. */
-  infoWidth?: number;
-  /** Show the shared draggable/keyboard divider, defaults to true. */
+  width?: number;
+  minWidth?: number;
+  maxWidth?: number;
+  /** In `AppShellPanels`: a divider on this panel's end edge drags its `width`. */
   resizable?: boolean;
-  /** Wrap each pane in a ScrollView (default true); false for a navigator or virtual list. */
-  paneScroll?: boolean;
-  /** Accessible divider name, defaults to "Resize panes". */
+  /** Reports the width a drag or an arrow key settled on. */
+  onWidthChange?: (width: number) => void;
+  /** Names the divider (`"Resize panes"` in English). */
   resizeLabel?: string;
+  /** In `AppShellPanels`: the group width (its own box) this panel needs; below it, it is not drawn. */
+  hideBelow?: AppShellBreakpoint;
+  /** `ContentPanel`'s: `plain` keeps layout and clipping without painting a surface. */
+  appearance?: ContentPanelProps['appearance'];
+  /** `ContentPanel`'s edge while framed. */
+  chrome?: ContentPanelChrome;
+  /** Theme only this panel; navigation, aside and framing keep the app theme. */
+  colorPreset?: AppColorName;
+  /**
+   * Isolate render errors to this panel with a themed, localized retry state.
+   * Off by default; give `resetKey` (the route) when the panel outlives a route.
+   */
+  errorBoundary?: boolean | PanelErrorBoundaryOptions;
+  testID?: string;
+}
+
+/** Several panels side by side, laid out and collapsed by the shell's rules. */
+export interface AppShellPanelsProps {
+  /** `AppShellPanel` elements; conditional ones (`{open && <AppShellPanel …/>}`) are fine. */
+  children?: ReactNode;
+  /**
+   * `separated` (default): each panel its own surface, the shell's `gutter`
+   * between them. `joined`: one surface with hairline dividers. While the shell
+   * is compact (panels full-bleed) both draw hairlines.
+   */
+  appearance?: 'separated' | 'joined';
+  /**
+   * Below this width — of the group's OWN box, so a sidebar beside it counts —
+   * exactly one panel renders: the one `show` names, else the first.
+   */
+  collapseBelow?: AppShellBreakpoint;
+  /** The `id` of the panel shown alone while collapsed. */
+  show?: string;
   testID?: string;
 }

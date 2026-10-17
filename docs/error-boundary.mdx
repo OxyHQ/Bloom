@@ -99,9 +99,9 @@ The default fallback scrolls when space is short and clears the inherited occupi
 bottom edge. Set `bottomInset={0}` when its parent already reserves that space.
 An explicit `bottomInset` takes precedence over the inherited occupancy.
 
-`AppShellSplitPanes` installs independent boundaries for its list, detail and info
-panes by default. Configure each through `listErrorBoundary`, `detailErrorBoundary`
-and `infoErrorBoundary`, using the same options as `PanelErrorBoundary`; pass `false`
-to delegate that pane to an outer boundary. Shell navigation and healthy panes remain
-mounted. `ContentPanel errorBoundary` provides the same recovery inside the framed
-surface for pages outside a split; it is opt-in to avoid redundant boundaries.
+`AppShellPanel errorBoundary` isolates one panel: `true` for the default recovery,
+or the same options as `PanelErrorBoundary` (give `resetKey` the route when the
+panel outlives it). Shell navigation and the healthy panels beside it stay mounted.
+It is opt-in, like `ContentPanel errorBoundary` (the same recovery for a bare
+surface), to avoid redundant boundaries; without it a failure reaches the next
+boundary up.

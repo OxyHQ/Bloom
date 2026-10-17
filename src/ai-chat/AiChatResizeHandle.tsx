@@ -1,6 +1,6 @@
 /**
  * The divider grip between two resizable panes. Its own module because three
- * families draw it — `AiChatShell`, `AppShell`'s `split` variant and
+ * families draw it — `AiChatShell`, a resizable `AppShellPanel` and
  * `ChatSplitLayout` — and the two that are not the AI chat must not link the
  * chat shell (Metro does not tree-shake): importing it from `AiChatShell` put
  * that module, its reanimated drawers and the whole ai-chat message catalog in

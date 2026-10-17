@@ -6,7 +6,7 @@ import React from 'react';
 import * as ReactNative from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
-import { AppShell } from '../app-shell';
+import { AppShell, AppShellPanel } from '../app-shell';
 import { resolveScrollMode } from '../app-shell/layout';
 import { RiHomeLine } from '../icons/remix';
 import { PortalOutlet, PortalProvider } from '../portal';
@@ -59,13 +59,12 @@ function Route({ probe }: { probe?: (screen: ScreenContextValue) => void }) {
   );
 }
 
-it('resolves to document on web and fixed on native, like split/canvas otherwise', () => {
+it('resolves to document on web and fixed on native, like canvas otherwise', () => {
   jest.replaceProperty(ReactNative.Platform, 'OS', 'ios');
   expect(resolveScrollMode('feed', 'page')).toBe('fixed');
   expect(resolveScrollMode('dashboard', 'page')).toBe('fixed');
   jest.replaceProperty(ReactNative.Platform, 'OS', 'web');
   expect(resolveScrollMode('feed', 'page')).toBe('document');
-  expect(resolveScrollMode('split', 'page')).toBe('fixed');
   expect(resolveScrollMode('canvas', 'page')).toBe('fixed');
 });
 
@@ -81,10 +80,16 @@ describe('native', () => {
           testID="shell"
           variant={variant}
           scroll="page"
-          panel={variant === 'feed'}
+          panels={variant === 'feed'}
           bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}
         >
-          <Route />
+          {variant === 'feed' ? (
+            <AppShellPanel>
+              <Route />
+            </AppShellPanel>
+          ) : (
+            <Route />
+          )}
         </AppShell>,
       );
       // One scroller: the route's own, not nested in a shell ScrollView.
@@ -107,8 +112,10 @@ describe('native', () => {
   it('a panel fills the screen and its routes own the scrolling', () => {
     setWidth(1440);
     const screen = renderIn(
-      <AppShell testID="shell" variant="feed" scroll="page" panel sidebar={{ items: NAV }}>
-        <Route />
+      <AppShell testID="shell" variant="feed" scroll="page" panels sidebar={{ items: NAV }}>
+        <AppShellPanel>
+          <Route />
+        </AppShellPanel>
       </AppShell>,
     );
     expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({
@@ -147,8 +154,10 @@ describe('web', () => {
     setWidth(1440);
     const states: ScreenContextValue[] = [];
     const screen = renderIn(
-      <AppShell testID="shell" variant="feed" scroll="page" panel sidebar={{ items: NAV }}>
-        <Route probe={(state) => states.push(state)} />
+      <AppShell testID="shell" variant="feed" scroll="page" panels sidebar={{ items: NAV }}>
+        <AppShellPanel>
+          <Route probe={(state) => states.push(state)} />
+        </AppShellPanel>
       </AppShell>,
     );
     expect(scrollViews(screen)).toHaveLength(0);
@@ -160,10 +169,51 @@ describe('web', () => {
     setWidth(1440);
     const ui = (scroll: 'page' | 'document') =>
       renderIn(
-        <AppShell testID="shell" variant="feed" scroll={scroll} panel sidebar={{ items: NAV }}>
-          <Route />
+        <AppShell testID="shell" variant="feed" scroll={scroll} panels sidebar={{ items: NAV }}>
+          <AppShellPanel>
+            <Route />
+          </AppShellPanel>
         </AppShell>,
       ).toJSON();
     expect(JSON.stringify(ui('page'))).toBe(JSON.stringify(ui('document')));
+  });
+
+  /**
+   * A page fills one screen of the REGION, not of the window: a `100dvh` page
+   * in a panel that starts a gutter down overflowed it, and every short page
+   * scrolled the document by the two gutters.
+   */
+  it.each([
+    [1440, 'calc(100dvh - 16px)'],
+    [390, 'calc(100dvh - 0px)'],
+  ])('a document Screen in a panel at %ipx is one region tall: %s', (width, minHeight) => {
+    setWidth(width);
+    const screen = renderIn(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        scroll="page"
+        panels
+        gutter={8}
+        sidebar={{ items: NAV }}
+      >
+        <AppShellPanel>
+          <Screen documentScroll testID="route">
+            <ReactNative.Text>Short</ReactNative.Text>
+          </Screen>
+        </AppShellPanel>
+      </AppShell>,
+    );
+    expect(resolvedStyle(screen.getByTestId('route').props.style).minHeight).toBe(minHeight);
+  });
+
+  it('outside a panel shell a document Screen stays one window tall', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <Screen documentScroll testID="route">
+        <ReactNative.Text>Short</ReactNative.Text>
+      </Screen>,
+    );
+    expect(resolvedStyle(screen.getByTestId('route').props.style).minHeight).toBe('100dvh');
   });
 });

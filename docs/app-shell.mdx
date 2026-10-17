@@ -1,12 +1,12 @@
 ---
 title: AppShell
-description: Page frame with five layout variants, the sidebar and a responsive drawer, pinned top/bottom/floating slots, a breadcrumb + title header, a notification bell and a floating Pro offer card.
+description: Page frame with four layout variants and panels (one reading surface or several side by side), the sidebar and a responsive drawer, pinned top/bottom/floating slots, a breadcrumb + title header, a notification bell and a floating Pro offer card.
 order: 83
 ---
 
 # AppShell
 
-`AppShell`, with `AppShellHeader`, `AppShellMenuButton`, `useAppShell`, `NotificationBell` and `ProOfferCard`.
+`AppShell`, with `AppShellPanel`, `AppShellPanels`, `useAppShellPanel`, `AppShellHeader`, `AppShellMenuButton`, `useAppShell`, `NotificationBell` and `ProOfferCard`.
 
 ```tsx
 import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shell';
@@ -27,15 +27,14 @@ import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shel
 
 ## Variants
 
-One engine, five shapes. `variant` picks the shape; everything else — the nav,
-the drawer, the pinned regions, the slots, the sizes — works the same in all
-five.
+One engine, four shapes. `variant` picks the shape; everything else — the nav,
+the drawer, the pinned regions, the slots, the sizes, and the [panels](#panels)
+the routes are made of — works the same in all four.
 
 | `variant` | The page | Scroll |
 | --- | --- | --- |
 | `dashboard` (default) | nav + one fluid column capped at `contentMaxWidth`, optional `aside` | `document` / `container` / `fixed` |
-| `feed` | nav + a `contentWidth` reading column CENTRED in what the nav leaves, optional `aside` beside it, optionally in a `ContentPanel` | `document` / `container` / `fixed` |
-| `split` | a list pane, a detail pane and an optional info pane, each scrolling on its own, with a draggable divider | always one screen |
+| `feed` | nav + a `contentWidth` reading column CENTRED in what the nav leaves, optional `aside` beside it | `document` / `container` / `fixed` |
 | `focus` | one centred `contentWidth` column and NO nav | `document` / `container` / `fixed` |
 | `canvas` | ONE edge-to-edge area — no column, no cap, no padding — with the chrome floating over it | always one screen |
 
@@ -61,52 +60,21 @@ themselves (`position: sticky`) and the centre column scrolls the page. Measured
 in Chrome at 1440: after scrolling 406px the nav stayed at `y = 121` and the
 aside at `y = 16` while the content moved from `16` to `-390`.
 
-`panel` wraps the centre column in a [`ContentPanel`](/docs/bloom/main/content-panel),
-so the page background reads as a gutter around a framed surface. With navigation,
-its frame follows the same breakpoint as the in-flow sidebar/rail. Once navigation
-moves to the bottom, the reading column fills the compact layout. An explicit
-`framedFrom` overrides this coordination; a panel without navigation retains
-ContentPanel’s own responsive default.
-
-`panelColorPreset` scopes the central reading column to a Bloom color preset.
-Navigation and right-hand widgets retain the app theme, as does the panel’s outer
-mask. Changing the preset does not remount the routed content.
-
-This prevents a frameless panel beside a still-visible rail: the social template
-uses 700px for both, instead of independently changing the panel at 768px. Resizing
-keeps the same content node mounted and does not replace the document scroller.
-
-**The panel occupies the screen either way — what differs is what scrolls.**
-
-In document mode the painted surface has a viewport minimum height, subtracting
-the shell insets and any measured external top bar. Short pages fill the frame;
-long pages keep growing with the document. Header and bottom-bar clearance inside
-the surface count toward that minimum, so empty pages do not gain extra scroll.
-Reveal drawers move the bottom-bar and FAB slots with the page in both document
-and fixed modes; the shell remains their sole safe-area and measurement owner.
-
-- `scroll="document"` (the default): the page scrolls, and the panel's frame is
-  a screen-tall sticky rectangle pinned at the shell's own `gutter`, so the
-  panel reads as a surface filling the window while the content moves inside
-  it. Measured in Chrome at 1280 × 900: the frame reports `top: 16, height: 868`
-  at scrollY 0, 1, 200, 600 and 846 — the same rectangle every time — while the
-  content behind it travels from 16 to −830. (The inset is what makes that
-  true: at the 8px default the frame would sit above the panel's real top edge
-  and snap down on the first scroll.)
-- `scroll="container"`: the panel fills the frame and owns a `ScrollView` below its pinned header.
-- `scroll="fixed"`: the panel fills the frame with a plain flex view. The child navigator, virtualized list or canvas owns scrolling and reads the shared occupied bottom edge for its own clearance. The shell never nests a `ScrollView` around it or pads its navigator a second time.
-- `scroll="page"`: **the mode for apps whose routes are `Screen` pages** (`<Screen documentScroll>` + `ScreenScrollView`). It is `document` on web and `fixed` on native, and everything else — panel, aside, bars, sticky header slot — is what each platform does in that mode. See [Screen pages](#screen-pages).
+With `panels` the reading column is the REGION the routes' [panels](#panels)
+are framed in: one `AppShellPanel` for a reading page, or several side by side.
 
 ### Screen pages
 
 A route written once for both platforms —
 
 ```tsx
-<AppShell variant="feed" panel scroll="page" sidebar={sidebar} bottomBar={<Tabs />}>
-  {/* the router's outlet; each route is: */}
-  <Screen documentScroll header={<PageHeader title="Notes" safeArea={false} />}>
-    <ScreenScrollView contentContainerClassName="gap-4 p-4" onEndReached={fetchNextPage}>…</ScreenScrollView>
-  </Screen>
+<AppShell variant="feed" panels scroll="page" sidebar={sidebar} bottomBar={<Tabs />}>
+  <AppShellPanel>
+    {/* the router's outlet; each route is: */}
+    <Screen documentScroll header={<PageHeader title="Notes" safeArea={false} />}>
+      <ScreenScrollView contentContainerClassName="gap-4 p-4" onEndReached={fetchNextPage}>…</ScreenScrollView>
+    </Screen>
+  </AppShellPanel>
 </AppShell>
 ```
 
@@ -118,13 +86,18 @@ inside it. `scroll="page"` resolves to `document` on web and `fixed` on native:
 
 - **Web:** identical to `scroll="document"` (the window scrolls; the route's
   `Screen documentScroll` keeps `ScreenScrollView` in document flow).
-- **Native:** no shell `ScrollView`. A `panel` fills the screen under its pinned
+- **Native:** no shell `ScrollView`. A panel fills the screen under its pinned
   header, and the route's `ScreenScrollView` scrolls inside it. The shell pads
   nothing; it hands the occupied bottom edge (bottom bar, floating action) to the
   routes' Screens as their bottom inset, so content scrolls under the bar and the
   last row clears it plus the Screen's 16 of clearance. A shell without its own
   navigation scope gives its routes one, so their collapse motion is shared.
-- `split` and `canvas` stay one screen, as for every mode.
+- `canvas` stays one screen, as for every mode, and `AppShellPanels` is one
+  viewport tall in a document, so a route made of several panels never scrolls it.
+- In a panel, a document `Screen` is one REGION tall (`100dvh` less the shell's
+  gutters, top bar and reserved bottom bar), not one window: a `100dvh` page in a
+  panel that starts a gutter down overflowed it, and every short page scrolled
+  the document by the two gutters.
 
 Apps that wrote `scroll={Platform.OS === 'web' ? 'document' : 'fixed'}` (Noted,
 Mention) drop the ternary for `scroll="page"`.
@@ -134,8 +107,8 @@ on a phone and real anchor links wants `document`; a workspace whose regions
 each keep their own position wants `fixed`. The panel adds no content padding:
 `gutter` controls the outside frame, while each screen owns its title and body
 insets. `contentWidth` is the full column width. Only measured bottom chrome
-clearance is reserved automatically. Do not render your own
-`ContentPanel` inside this one; it trips the nesting guard.
+clearance is reserved automatically. Do not render a `ContentPanel` inside an
+`AppShellPanel`; it trips the nesting guard.
 
 ### `canvas`
 
@@ -161,44 +134,9 @@ still a card with a gutter around it and the aside keeps its inset while the
 canvas alone runs to the window's edge — no negative margins anywhere: each
 region states its own inset.
 
-**`canvas` never scrolls the document**, for the same reason `split` doesn't: a
-canvas that grew the page would pan the page instead of the canvas.
+**`canvas` never scrolls the document**: a canvas that grew the page would pan
+the page instead of the canvas.
 `scroll="document"` resolves to `fixed`, `scroll="container"` is honoured.
-
-### `split`
-
-```tsx
-<AppShell
-  variant="split"
-  sidebar={sidebar}
-  title="Inbox"
-  list={<ThreadList />}
-  info={<ThreadDetails />}
-  pane={selected ? 'detail' : 'list'}
->
-  <Thread id={selected} />
-</AppShell>
-```
-
-`list`, then `children` as the detail pane, then `info`. Each pane gets its own
-`ScrollView` (`paneScroll={false}` when the pane's content already scrolls — a
-`FlatList`, a virtualizer). The divider between the first two is `ai-chat`'s
-`AiChatResizeHandle`, reused rather than rewritten: pointer-capture dragging on
-web, a `PanResponder` on native, arrow keys, and the same grip. The grip is its
-own module (`ai-chat/AiChatResizeHandle`), so a `split` shell does not link the
-AI chat shell or its message catalog. It is named
-`resizeLabel` (`"Resize panes"`) with `role="separator"`. `listWidth` (360) is
-the resting width and a drag is clamped to `listMinWidth`/`listMaxWidth`
-(280/520); `onListWidthChange` reports where it settled.
-
-Two panes from `splitFrom` (`md`, 768), three from `infoFrom` (`xl`, 1280).
-Below `splitFrom` EXACTLY ONE pane renders — the one `pane` names, falling back
-to the detail pane when that one was never given content.
-
-**`split` never scrolls the document**, whatever `scroll` says: there is one
-document, so at most one region could scroll it, and three columns that each
-keep their own position is a bounded-box layout by definition. `scroll="document"`
-resolves to `fixed` (one screen) and `scroll="container"` is honoured as-is.
 
 ### `focus`
 
@@ -213,6 +151,114 @@ bar slots still work, so a sign-up flow gets its pinned footer CTA:
   {form}
 </AppShell>
 ```
+
+## Panels
+
+A route is made of PANELS: rounded surfaces on the page background — one reading
+panel, or several side by side (results and a map; a list, a message and its
+details). The shell frames them; the routes say how many.
+
+```tsx
+// The frame: `panels` says the region holds AppShellPanel surfaces.
+<AppShell variant="feed" panels scroll="page" sidebar={sidebar} aside={<RightBar />}
+  gutter={8} navigationGap={8} navigationAlign="content" contentWidth={1800}>
+  <Slot />
+</AppShell>
+
+// A layout whose every page is ONE reading panel (an Expo Router group: no URL segment).
+export default function PagesLayout() {
+  return <AppShellPanel><Slot /></AppShellPanel>;
+}
+
+// A route made of TWO.
+<AppShellPanels collapseBelow={900} show={showMap ? 'map' : 'results'}>
+  <AppShellPanel id="results" width={900} minWidth={520} maxWidth={1200} resizable>
+    <Results />
+    <Toggle to="map" />            {/* `useAppShellPanel().alone` → shown only alone */}
+  </AppShellPanel>
+  <AppShellPanel id="map" minWidth={380}>
+    <Map />
+  </AppShellPanel>
+</AppShellPanels>
+```
+
+**Who owns what.** The SHELL owns the frame and publishes it to the panels (one
+context, downward; nothing below ever reports back):
+
+- **The gutter, on all four sides.** While framed, the region is `gutter` from
+  the window's top, bottom and end edge and from the nav. A plain or docked nav
+  runs flush to the start edge, so the row keeps only its END padding and the
+  region pads its own top and bottom — the end side is the one a content-aligned
+  row once forgot (a page without an aside ran to the window's edge). The aside
+  column takes the same end gutter.
+- **Framed or compact.** ONE rule, read off the shell's own width: framed while
+  the navigation is in flow (`md` without navigation), or from `framedFrom` (a
+  tier or any width). Compact means full-bleed panels and NO gutter on any side,
+  in every mode — a phone never shows a strip of page background above a panel.
+- **The gap between panels** is the same `gutter`. Separated panels each draw
+  their own surface with the page background between them; `joined` panels
+  share one surface with hairline dividers; compact panels are full-bleed with
+  hairlines either way.
+- **Viewport geometry and bottom clearance** per mode — below.
+
+A PANEL (`AppShellPanel`) draws a surface (a [`ContentPanel`](/docs/bloom/main/content-panel)
+underneath) and nothing else: `header` (chrome spanning it), `scroll`,
+`colorPreset`, `appearance`, `chrome`, `errorBoundary`. A GROUP
+(`AppShellPanels`) lays several out:
+
+- **Sizes without arithmetic.** A panel with `width` rests at it and shrinks
+  down to its `minWidth`; a panel without one takes the room left, never below
+  its own `minWidth`. Flexbox sums the min-clamped bases first, so a narrow group
+  shrinks the SIZED panel before the flexible one gives up its minimum — a map
+  beside a results list stays a map.
+- **`resizable`** puts the grip (`AiChatResizeHandle`: pointer capture on web, a
+  `PanResponder` on native, arrow keys ±16) on the panel's end edge, centred in
+  the gap. A drag starts from the width the panel is DRAWN at and is clamped to
+  `minWidth`/`maxWidth`; `onWidthChange` reports where it settled.
+- **`collapseBelow`** — a width of the group's OWN box, so a sidebar or an aside
+  beside it counts — below which exactly ONE panel renders: the one `show` names,
+  else the first. The others unmount. No window width anywhere.
+- **`useAppShellPanel()`** inside a panel returns `{ id, alone, framed }`.
+  `alone` is true while the group is collapsed (or has one panel): a panel shows
+  its own way to the other one — a Map / List toggle — exactly then.
+- **`hideBelow`** on a trailing panel (a message's details) drops it below the
+  group width it needs.
+
+What a group knows about its panels is their POSITION, never their props: each
+direct child is handed its index and the count (`Children.toArray`, so a
+conditional `{open && <AppShellPanel …/>}` is fine). That is how the first panel
+is the default `show`, a panel after the first draws the divider before itself,
+and a group of one is `alone`. No effects, no registration, no measuring of
+siblings.
+
+### Scroll ownership
+
+| Region (`scroll`) | A sole `AppShellPanel` | `AppShellPanels` |
+| --- | --- | --- |
+| `document` / `page` on web | grows with the page; its frame is a screen-tall sticky rectangle pinned at the gutter; reserves the bottom bar under its content | one viewport tall less the gutters and top bar — the document has nothing to scroll |
+| `fixed` / `page` on native | fills the region; the content (a `ScreenScrollView`, a `FlatList`, a navigator) scrolls itself and clears the bar with `useBottomEdgeInset()` | fills the region; each panel's content scrolls itself |
+| `container` | grows inside the shell's `ScrollView` | fills the scroller's viewport |
+
+`scroll="panel"` on a panel in a bounded region wraps its content in Bloom's own
+`ScrollView`, padded clear of the bottom bar, for content that does not scroll
+itself. The default, `scroll="content"`, never nests a second scroller.
+
+Because a group bounds itself, a route made of several panels needs no `scroll`
+of its own: the shell stays `page` for every route. (Switching `scroll` per route
+is still supported — and never remounts the routes, see below.)
+
+### Where the panel goes
+
+Put it where the layout is DECLARED: around the outlet when every page is one
+panel; in a route group's layout for a section (Homiio: every page in an
+`app/(pages)/` group whose layout is `<AppShellPanel><Slot/></AppShellPanel>`,
+and `/explore` outside it rendering two); in a route that is several. The shell
+never wraps its children in a surface itself, which is what lets a route choose:
+a shell that drew a default panel could only learn that a route wanted two by
+being told from below. A route can also change its mind per state — explore
+renders one panel for an error and two for results.
+
+`canvas` hosts no panels: the screen is the canvas.
 
 ## Pinned slots
 
@@ -294,7 +340,7 @@ Every `*From` prop takes a named tier (`sm` 640 · `md` 768 · `lg` 1024 · `xl`
 ```tsx
 <AppShell
   variant="feed"
-  panel                     // the reading column inside a framed ContentPanel
+  panels                    // the routes are AppShellPanels the shell frames
   navFrom={500}             // rail in flow from 500, a drawer below it
   navExpandedFrom={1300}    // icons until 1300, labels past it
   asideFrom={990}
@@ -323,10 +369,7 @@ defaults.
 | `navFrom` | `lg` for the panel, `sm` for a rail | Where the nav sits in FLOW; below it the same props drive the drawer. |
 | `navExpandedFrom` | unset | Icons below, labels above: the shell swaps `sidebar.variant` between `rail` and `panel`. Setting it also makes `navFrom` default to `sm`, because below that tier the nav IS a rail. |
 | `gutter` | 12 (`dashboard`), 16 (others) | The space between the shell's edge and its regions, and between the regions. `dashboard` keeps the 12-padding/16-gap pair it shipped with, because changing either moves every existing page by four pixels. |
-| `splitFrom` | `md` (768) | 360 of list still leaves ~380 of detail (~280 once a nav rail takes its share) — a phone's worth of reading width. Below it a second pane is a sliver, not a pane. |
-| `infoFrom` | `xl` (1280) | Same headroom the aside needs. |
-| `listWidth` / `listMinWidth` / `listMaxWidth` | 360 / 280 / 520 | |
-| `infoWidth` | 320 | |
+| `framedFrom` | the nav's own tier (`md` without nav) | `panels`: where panels turn from full-bleed to framed. |
 
 ## The shell measures ITSELF
 
@@ -368,7 +411,7 @@ of that is in the shell, and none of it is left for a consumer:
   the shell fills what it is given — no per-story CSS.
 
 Verified in Chrome across `dashboard`, `dashboard + aside`, `feed`,
-`feed + panel`, `feed + chrome`, `split` and `focus`, at 360, 390, 414, 768,
+`feed + panel`, `feed + chrome`, `split` (now `panels`) and `focus`, at 360, 390, 414, 768,
 834, 1024, 1280, 1440 and 1920, in light and dark: 126 renders, no sideways
 scroll anywhere (`scrollWidth === innerWidth` in every one), no sibling region
 overlapping another, and no console error.
@@ -390,8 +433,8 @@ overlapping another, and no console error.
 </AppShell>
 ```
 
-A second column at the end edge of the page — the right in LTR, the left in RTL (`dashboard` and `feed`; `split` has
-its `info` pane instead and `focus` has no second column at all). From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it stays in natural document flow. A tall aside scrolls with the page until its lower edge is visible, then sticks; it does not capture wheel gestures in a nested ScrollView. Container and fixed modes retain bounded aside scrolling. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
+A second column at the end edge of the page — the right in LTR, the left in RTL (`dashboard` and `feed`; a
+route's own extra column is a trailing [panel](#panels) instead, and `focus` has no second column at all). From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it stays in natural document flow. A tall aside scrolls with the page until its lower edge is visible, then sticks; it does not capture wheel gestures in a nested ScrollView. Container and fixed modes retain bounded aside scrolling. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
 
 **An aside that renders nothing takes no room.** Build a rail from data-driven
 widgets that each return `null` when they have nothing to show, and pass it
@@ -410,26 +453,26 @@ empty — put spacing in `gap`, which a lone or absent child does not spend.
 
 ## Eight shells, one component
 
-The shape (`variant`), what scrolls (`scroll`), whether the column is a panel
-(`panel`) and the nav's own look (`sidebar.surface` / `sidebar.size`) are
+The shape (`variant`), what scrolls (`scroll`), whether the routes are panels
+(`panels`) and the nav's own look (`sidebar.surface` / `sidebar.size`) are
 independent. That is the point: an app picks a row from this table and does not
 look like the app that picked the row above it.
 
 | The app | variant | scroll | nav |
 | --- | --- | --- | --- |
 | Product dashboard | `dashboard` | `document` | `card`, `medium` |
-| Social reader | `feed` + `panel` | `fixed` | `plain`, `large` |
+| Social reader | `feed` + `panels` | `fixed` | `plain`, `large` |
 | Long-form feed | `feed` | `document` | `card`, `medium` |
 | Workspace (channels, files) | `dashboard` | `fixed` | `docked`, `small` |
-| Messenger | `split` | one screen | `docked`, `small` |
+| Messenger | `dashboard` + `panels`, `joined` | `fixed` | `docked`, `small` |
 | Map / board / editor | `canvas` | one screen | `docked`, `medium` |
 | Marketplace | `dashboard`, no `sidebar`, `topBar` `always` | `document` | — |
 | Sign-in, onboarding, reader | `focus` | `document` | none |
 
 ```tsx
 // Social reader: a framed column that fills the screen, a nav with no edge.
-<AppShell variant="feed" panel scroll="fixed" sidebar={{ items, surface: 'plain', size: 'large' }} title="Home">
-  {feed}
+<AppShell variant="feed" panels scroll="fixed" sidebar={{ items, surface: 'plain', size: 'large' }}>
+  <AppShellPanel header={<PageHeader title="Home" />}>{feed}</AppShellPanel>
 </AppShell>
 
 // Workspace: a column flush to the window, the page bounded, its own scrollers.
@@ -499,14 +542,14 @@ Give the page `flex: 1` and `minHeight: 0`, or a tall child grows the column pas
 An app whose routes differ can pick the mode per route — a map screen fixed, the rest of the app a page:
 
 ```tsx
-<AppShell variant="feed" panel scroll={isMapRoute ? 'fixed' : 'page'} sidebar={sidebar}>
+<AppShell variant="feed" panels scroll={isMapRoute ? 'fixed' : 'page'} sidebar={sidebar}>
   <Slot />
 </AppShell>
 ```
 
 That is supported: after any switch the shell lays out exactly as a fresh mount in the new mode would. The regions that change with the mode keep their DOM node across the switch, so on web what lands is React DOM's DIFF of their two inline styles — a dropped key is cleared with `style[key] = ''`, and only keys whose value changed are written. The shell therefore spells every mode-dependent flex in longhands (`flexGrow`/`flexShrink`/`flexBasis`), never `flex: 1`: clearing a `flex` shorthand also clears the longhands beside it, and an unchanged longhand is never written back. That is how a switch from `fixed` to `page` once left the reading row with no flex at all — as wide as its content, pushing the sidebar off the page — with React warning "Removing a style property during rerender (flex) when a conflicting property is set (flexShrink)". Gate: `AppShellScrollSwitch.web.test.tsx` switches every variant between every pair of modes, at a desktop and a phone width, and compares each against a fresh mount.
 
-What a switch does NOT keep, with `panel`: a bounded panel (`fixed`/`container`) and a document one are different trees, so the page's children remount when the mode crosses that line. A route change that switches the mode replaces the page anyway; a mode switched WITHOUT a route change loses the page's local state.
+**A switch never remounts the routes** between `document`, `page` and `fixed`: the shell's tree around its children is the same node in all three, and the panels inside only read the new region (gate: the same suite mounts a route through `page → fixed → document → fixed → page` and counts one mount). `container` scrolls in a `ScrollView`, a different element, and is outside that promise. Before panels, a shell `panel` built different trees for bounded and document modes, and an app switching per route remounted its router outlet every time.
 
 ## Scrolling on web
 
@@ -537,9 +580,9 @@ never the arrangement:
   mounted at an app's root, and making a previously optional provider mandatory
   would break every consumer that never had a bar to inset. Outside one the
   insets are zero.
-- `split`'s divider drags through a `PanResponder` (`ai-chat`'s handle owns both
-  paths).
-- `panel` resolves to `ContentPanel`'s native variant — a plain rounded,
+- A resizable panel's divider drags through a `PanResponder` (`ai-chat`'s handle
+  owns both paths).
+- An `AppShellPanel` resolves to `ContentPanel`'s native variant — a plain rounded,
   bordered surface, with none of the web sticky-overlay machinery, which is what
   it should be where there is no document to bleed into.
 
@@ -602,7 +645,7 @@ via `BloomProvider locale`; a prop still wins:
 | --- | --- | --- |
 | `drawerOpenLabel` | `"Open navigation"` | the header's hamburger (also `AppShellHeader` `menuLabel`, `AppShellMenuButton` `accessibilityLabel`) |
 | `drawerCloseLabel` | `"Close navigation"` | the overlay drawer's backdrop and the `reveal` page veil |
-| `resizeLabel` | `"Resize panes"` | the `split` divider |
+| `resizeLabel` (`AppShellPanel`) | `"Resize panes"` | a resizable panel's divider |
 | `sidebar.accessibilityLabel` | `"Sidebar"` | the navigation landmark (panel and rail) |
 | `sidebar.collapseLabel` / `expandLabel` | `"Collapse sidebar"` / `"Expand sidebar"` | the collapse control, per state |
 | `sidebar.closeLabel` | `"Close sidebar"` | the drawer sidebar's own close button |
@@ -691,7 +734,7 @@ transition the animated width resets explicitly to `auto`: returning an empty
 style or an undefined width retained the old width in the browser, leaving a
 260px space after the sidebar itself collapsed to 52px.
 
-The navigation convenience entry point is selected when `navigation`, `navigationPlacement`, `primaryAction`, or `scroll="auto" | "external"` is supplied. On web it defaults to `scroll="document"` and adapts navigation/actions into the same layout engine used by `dashboard`, `feed`, `split`, `focus`, and `canvas`: aside, width, drawer and slot props remain effective. Native defaults to `scroll="auto"`. Explicit `auto` keeps the animated adaptive container for navigation-only shells. Supplying a layout variant, aside, list or info pane uses the layout engine instead: `auto` becomes container scrolling, and `external` a fixed frame whose child owns scrolling. Document scrolling shares Screen navigation motion with the bottom bar and FAB. Explicit slots override the generated bottom bar or floating action, including `null` to suppress one. A primary action remains a separate floating action when a custom bottom bar replaces the generated bar. The focus variant never generates navigation.
+The navigation convenience entry point is selected when `navigation`, `navigationPlacement`, `primaryAction`, or `scroll="auto" | "external"` is supplied. On web it defaults to `scroll="document"` and adapts navigation/actions into the same layout engine used by `dashboard`, `feed`, `focus`, and `canvas`: aside, width, drawer and slot props remain effective. Native defaults to `scroll="auto"`. Explicit `auto` keeps the animated adaptive container for navigation-only shells. Supplying a layout variant, aside or `panels` uses the layout engine instead: `auto` becomes container scrolling, and `external` a fixed frame whose child owns scrolling. Document scrolling shares Screen navigation motion with the bottom bar and FAB. Explicit slots override the generated bottom bar or floating action, including `null` to suppress one. A primary action remains a separate floating action when a custom bottom bar replaces the generated bar. The focus variant never generates navigation.
 
 For a centered feed whose navigation belongs beside the reading column, use
 `navigationAlign="content"`. The shell centers navigation, content and the visible
@@ -700,7 +743,7 @@ aside as one group; `"edge"` preserves the existing edge-aligned layout.
 
 ### Header width inside a panel
 
-In a centered `panel` layout, the header spans the full ContentPanel width. The
+An `AppShellPanel`'s `header` spans the full panel width. The
 shell leaves body padding to the screen; PageHeader owns the insets of its title
 and action islands. Padding a shared header/body wrapper shortened the scrim by
 one gutter on each side (32px total at gutter16), leaving scrolling content
@@ -730,107 +773,9 @@ through the shared edge registry; document/container content receives no duplica
 
 ProOfferCard retains its animated complementary host and decorative artwork, with shared SurfacePaint beneath it and contextual backing published for descendant controls. Explicit background overrides remain supported.
 
-### Split panes inside another Bloom shell
-
-`AppShellSplitPanes` is also exported from `@oxy.so/bloom/app-shell` and the root barrel. It owns only the bounded pane layout and divider, not navigation, surfaces or a second shell context. Compose it inside `AiChatShell` + `AiChatContainer` to use that template's reveal navigation and surfaces.
-
-```tsx
-<AppShellSplitPanes
-  list={<MailboxList />}
-  showList={desktop}
-  detail={<Slot />}
-  paneScroll={false}
-/>
-```
-
-On their own, the panes can also choose for themselves. Give `pane` (`list` or
-`detail`) and they MEASURE THEIR OWN BOX: from `splitFrom` (default `md`, 768,
-or a width in pixels) list and detail render side by side, and below it only the
-pane `pane` names renders, filling the row. A split beside a sidebar therefore
-counts the room it has, and the app keeps no width of its own — a map/list
-toggle only flips `pane`. Explicit `showList` / `showDetail` still win.
-`detailMinWidth` keeps the detail from being squeezed: the list's width, resting
-or dragged, gives way (never below `listMinWidth`) so the detail keeps it.
-Inside a pane, `useAppShellPaneAlone()` is true while that pane is drawn alone,
-so the pane shows its own way to the other one (a Map / List toggle) exactly
-then and never beside it.
-
-```tsx
-<AppShellSplitPanes
-  variant="separated"
-  pane={showMap ? 'detail' : 'list'}
-  splitFrom={1000}
-  listWidth={760}
-  listMinWidth={520}
-  listMaxWidth={1200}
-  detailMinWidth={400}
-  paneScroll={false}
-  list={<Results />}
-  detail={<ResultsMap />}
-/>
-```
-
-The detail remains mounted while `showList` changes; hiding a pane explicitly unmounts that pane. Defaults match AppShell's split layout: list width 360 (range 280–520), info width 320, scrolling and resizing enabled. `showDetail` defaults to true; list/info visibility follows the supplied content. Set `paneScroll={false}` when routes or virtualized lists own their scrolling. The surrounding Bloom container must provide a bounded height.
-
-Use `variant="separated"` when each pane supplies its own `AiChatContainer`. Bloom inserts 12px transparent gutters and centers the existing resize handle in the list gutter; there is no extra surface around the panels. A single visible pane has no gutter. The default `joined` variant retains hairline dividers for panes inside one shared surface.
+### Full-width content
 
 To fill wide displays without a reading-column cap, set
 `contentMaxWidth="none"`. The default remains 1300. Dashboard reveal layouts
 honor an explicit `gutter`, including `gutter={0}` for edge-to-edge compact
 content; omitting it preserves the existing 12px frame and wider-screen top gap.
-
-### Pane error recovery
-
-### Animated list/detail visibility
-
-`transition="slide"` opts into coordinated pane motion. Keep `showList` true
-when opening detail to shrink the list and reveal detail beside it. Set
-`showList={!selected}` and `showDetail={selected}` on compact layouts to slide
-between full-width panes. The last open layout determines the return direction.
-Existing callers default to `transition="none"` and keep their immediate layout.
-
-```tsx
-<AppShellSplitPanes
-  variant="separated"
-  transition="slide"
-  list={<Results />}
-  detail={selected ? <Details /> : undefined}
-  showList={wide || !selected}
-  showDetail={selected}
-  paneScroll={false}
-/>
-```
-
-The expansion transition moves the actual panes with full opacity; it does not make
-screenshots or float an overlay above the list. The list retains its component
-state while it remains visible. Exiting panes stay mounted only until the transition
-settles, become inert immediately, then unmount. Rapid reversals continue from the
-current live position. System reduced motion settles immediately. Pane widths remain
-resizable; the optional info column keeps its existing immediate behavior.
-
-Use `useAppShellPaneActive()` inside a pane to suspend window-level shortcuts,
-subscriptions or screen effects as soon as that pane becomes logically hidden,
-including during its retained exit. The hook returns true outside split panes.
-DOM focus/pointer input and native accessibility are already disabled by the
-pane itself. Motion owns no scroll view: `paneScroll={false}` continues to leave
-scrolling to the surrounding document or to the pane's own virtualized list.
-
-`AppShellSplitPanes` isolates list, detail and info rendering failures independently.
-The default localized, themed EmptyState offers retry while the other panes and
-shell navigation keep working. Pass options per pane to customize the presentation
-and clear a failed pane when navigation changes:
-
-```tsx
-<AppShellSplitPanes
-  list={<MessageList />}
-  detail={<MessageRoute />}
-  detailErrorBoundary={{
-    resetKey: pathname,
-    emptyState: { illustration: <BrandSticker />, title: 'Cannot open this message' },
-  }}
-/>
-```
-
-`listErrorBoundary`, `detailErrorBoundary` and `infoErrorBoundary` accept
-`PanelErrorBoundaryOptions` or `false` to disable local recovery. These boundaries
-catch render/lifecycle errors; expected request failures remain normal content state.

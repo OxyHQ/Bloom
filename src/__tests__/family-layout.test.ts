@@ -121,9 +121,13 @@ describe('one family layout', () => {
     const offenders = FACTORY_BARRELS.map((rel) => [rel, declaredNames(rel)] as const)
       .filter(([, names]) => names.length !== 1)
       .map(([rel, names]) => `${rel}: declares ${names.length} (${names.join(', ')})`);
-    // `tab-bar` binds two components from two factories; everything else binds
-    // one. Recorded as the shape it has rather than waved through.
+    // `tab-bar` binds two components from two factories, and `app-shell` binds
+    // the shell plus the panels it frames (one factory, built from the
+    // platform's own ContentPanel); everything else binds one. Recorded as the
+    // shape each has rather than waved through.
     expect(offenders).toEqual([
+      'app-shell/index.ts: declares 2 (AppShell, { AppShellPanel, AppShellPanels })',
+      'app-shell/index.web.ts: declares 2 (AppShell, { AppShellPanel, AppShellPanels })',
       'tab-bar/index.ts: declares 2 (TabBar, TabBarButton)',
       'tab-bar/index.web.ts: declares 2 (TabBar, TabBarButton)',
     ]);

@@ -8,12 +8,17 @@ import { BottomBar } from '../bottom-bar/index.web';
 import { Fab } from '../fab/index.web';
 import { ContentPanel } from '../content-panel/index.web';
 import { BloomColorScope } from '../theme/color-scope/index.web';
-export const AppShell = createAppShell(BottomBar, Fab, ContentPanel, BloomColorScope);
+import { createAppShellPanels } from './AppShellPanels';
+export const AppShell = createAppShell(BottomBar, Fab);
+export const { AppShellPanel, AppShellPanels } = createAppShellPanels(
+  ContentPanel,
+  BloomColorScope,
+);
 export { AppShellHeader } from './AppShellHeader';
 export { AppShellMenuButton } from './AppShellMenuButton';
 export { APP_SHELL_DEFAULTS } from './constants';
-export { useAppShell, useAppShellPaneActive, useAppShellPaneAlone } from './context';
-export type { AppShellContextValue } from './context';
+export { useAppShell, useAppShellPanel } from './context';
+export type { AppShellContextValue, AppShellPanelValue } from './context';
 export { NotificationBell } from './NotificationBell';
 export { ProOfferCard } from './ProOfferCard';
 
@@ -23,15 +28,13 @@ export type {
   AppShellBarVisibility,
   AppShellBreakpoint,
   AppShellDrawer,
-  AppShellPane,
   AppShellScroll,
   AppShellVariant,
   AppShellHeaderProps,
   AppShellMenuButtonProps,
   AppShellProps,
+  AppShellPanelProps,
+  AppShellPanelsProps,
   NotificationBellProps,
   ProOfferCardProps,
 } from './types';
-
-export { AppShellSplitPanes } from './AppShellSplit';
-export type { AppShellSplitPanesProps } from './types';

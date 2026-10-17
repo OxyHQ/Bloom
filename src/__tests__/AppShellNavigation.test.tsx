@@ -8,7 +8,13 @@ import { ContentPanel } from '../content-panel';
 import { ScreenScrollView } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
-import { AppShell, AppShellHeader, NotificationBell, ProOfferCard } from '../app-shell';
+import {
+  AppShell,
+  AppShellHeader,
+  AppShellPanel,
+  NotificationBell,
+  ProOfferCard,
+} from '../app-shell';
 import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
 import { resolvedStyle, sheenStops, surfaceSheens } from './support/rendered-style';
@@ -306,14 +312,16 @@ describe('navigation convenience with document layout on web', () => {
       <AppShell
         testID="short"
         variant="feed"
-        panel
+        panels
         scroll="document"
         gutter={8}
         navigationAlign="content"
         sidebar={{ items: NAV, surface: 'plain' }}
         navFrom={700}
       >
-        <ReactNative.Text>Short</ReactNative.Text>
+        <AppShellPanel>
+          <ReactNative.Text>Short</ReactNative.Text>
+        </AppShellPanel>
       </AppShell>,
     );
     const panel = screen.UNSAFE_root.findByType(
@@ -330,15 +338,16 @@ describe('navigation convenience with document layout on web', () => {
       <AppShell
         testID="external"
         variant="feed"
-        panel
+        panels
         scroll="document"
         gutter={8}
         topBarVisibility="always"
         topBar={<ReactNative.Text>External</ReactNative.Text>}
-        header={<ReactNative.Text>Internal</ReactNative.Text>}
         sidebar={{ items: NAV }}
       >
-        <ReactNative.Text>Short</ReactNative.Text>
+        <AppShellPanel header={<ReactNative.Text>Internal</ReactNative.Text>}>
+          <ReactNative.Text>Short</ReactNative.Text>
+        </AppShellPanel>
       </AppShell>,
     );
     fireEvent(screen.getByTestId('external-top-bar'), 'layout', {

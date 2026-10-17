@@ -3,7 +3,7 @@ import { ScrollView, Text } from 'react-native';
 import * as ReactNative from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { AppShell, AppShellSplitPanes } from '../app-shell';
+import { AppShell, AppShellPanel, AppShellPanels } from '../app-shell';
 import { ErrorBoundary, PanelErrorBoundary } from '../error-boundary';
 import { ContentPanel as NativePanel } from '../content-panel/ContentPanel';
 import { ContentPanel as WebPanel } from '../content-panel/ContentPanel.web';
@@ -36,7 +36,7 @@ function Counter() {
 beforeEach(() => jest.spyOn(console, 'error').mockImplementation(() => {}));
 afterEach(() => jest.restoreAllMocks());
 
-it('isolates list, detail and info independently while keeping shell navigation usable', () => {
+it('isolates each panel independently while keeping shell navigation usable', () => {
   jest
     .spyOn(ReactNative, 'useWindowDimensions')
     .mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 });
@@ -48,14 +48,17 @@ it('isolates list, detail and info independently while keeping shell navigation 
         bottomBar={<Text>Bottom navigation</Text>}
         sidebar={{ items: [{ key: 'home', label: 'Home', icon: RiHomeLine }] }}
       >
-        <AppShellSplitPanes
-          paneScroll={false}
-          list={<Counter />}
-          detail={<Bomb name="detail" />}
-          info={<Bomb name="info" />}
-          detailErrorBoundary={{ emptyState: { title: 'Detail failed' } }}
-          infoErrorBoundary={{ emptyState: { title: 'Info failed' } }}
-        />
+        <AppShellPanels>
+          <AppShellPanel width={360} errorBoundary>
+            <Counter />
+          </AppShellPanel>
+          <AppShellPanel errorBoundary={{ emptyState: { title: 'Detail failed' } }}>
+            <Bomb name="detail" />
+          </AppShellPanel>
+          <AppShellPanel width={320} errorBoundary={{ emptyState: { title: 'Info failed' } }}>
+            <Bomb name="info" />
+          </AppShellPanel>
+        </AppShellPanels>
       </AppShell>
     </Provider>,
   );
@@ -67,30 +70,34 @@ it('isolates list, detail and info independently while keeping shell navigation 
   expect(view.getByText('1')).toBeTruthy();
 });
 
-it('retries only the failed pane and preserves sibling state', () => {
+it('retries only the failed panel and preserves sibling state', () => {
   let fail = true;
   function Recoverable() {
     return <Bomb fail={fail} name="Message" />;
   }
   const tree = (route: string) => (
     <Provider>
-      <AppShellSplitPanes
-        paneScroll={false}
-        list={<Counter />}
-        detail={<Recoverable />}
-        detailErrorBoundary={{
-          resetKey: route,
-          emptyState: {
-            action: {
-              testID: 'reload',
-              label: 'Reload message',
-              onPress: () => {
-                fail = false;
+      <AppShellPanels>
+        <AppShellPanel width={360}>
+          <Counter />
+        </AppShellPanel>
+        <AppShellPanel
+          errorBoundary={{
+            resetKey: route,
+            emptyState: {
+              action: {
+                testID: 'reload',
+                label: 'Reload message',
+                onPress: () => {
+                  fail = false;
+                },
               },
             },
-          },
-        }}
-      />
+          }}
+        >
+          <Recoverable />
+        </AppShellPanel>
+      </AppShellPanels>
     </Provider>
   );
   const view = render(tree('one'));
@@ -103,15 +110,17 @@ it('retries only the failed pane and preserves sibling state', () => {
   expect(view.getByText('1')).toBeTruthy();
 });
 
-it('resets a failed pane on navigation while healthy pane state survives', () => {
+it('resets a failed panel on navigation while healthy panel state survives', () => {
   const tree = (route: string) => (
     <Provider>
-      <AppShellSplitPanes
-        paneScroll={false}
-        list={<Counter />}
-        detail={<Bomb fail={route === 'bad'} name="Opened message" />}
-        detailErrorBoundary={{ resetKey: route }}
-      />
+      <AppShellPanels>
+        <AppShellPanel width={360}>
+          <Counter />
+        </AppShellPanel>
+        <AppShellPanel errorBoundary={{ resetKey: route }}>
+          <Bomb fail={route === 'bad'} name="Opened message" />
+        </AppShellPanel>
+      </AppShellPanels>
     </Provider>
   );
   const view = render(tree('bad'));
@@ -173,11 +182,15 @@ it('lets fallback failures escape to the provider-free catastrophic boundary', (
   expect(view.getByText('Root recovery')).toBeTruthy();
 });
 
-it('can delegate pane failure to an outer boundary', () => {
+it('leaves panel failure to an outer boundary unless the panel opts in', () => {
   const view = render(
     <ErrorBoundary fallback={<Text>Outer recovery</Text>}>
       <Provider>
-        <AppShellSplitPanes detailErrorBoundary={false} detail={<Bomb />} />
+        <AppShellPanels>
+          <AppShellPanel>
+            <Bomb />
+          </AppShellPanel>
+        </AppShellPanels>
       </Provider>
     </ErrorBoundary>,
   );

@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Screen, ScreenScrollView } from './index';
 import { PageHeader } from '../page-header';
-import { AppShell } from '../app-shell';
+import { AppShell, AppShellPanel } from '../app-shell';
 
 const meta: Meta<typeof Screen> = { title: 'Foundations/Screen', component: Screen };
 export default meta;
@@ -59,23 +59,25 @@ export const DocumentPanel: Story = {
     <AppShell
       variant="feed"
       scroll="document"
-      panel
+      panels
       header={null}
       gutter={8}
       contentWidth={1100}
       testID="document-shell"
     >
-      <Screen
-        documentScroll
-        testID="document-route"
-        header={<PageHeader title="A continuous panel" testID="document-header" />}
-      >
-        {Array.from({ length: 40 }, (_, index) => (
-          <View key={index} style={{ padding: 24 }}>
-            <Text>Row {index + 1}</Text>
-          </View>
-        ))}
-      </Screen>
+      <AppShellPanel>
+        <Screen
+          documentScroll
+          testID="document-route"
+          header={<PageHeader title="A continuous panel" testID="document-header" />}
+        >
+          {Array.from({ length: 40 }, (_, index) => (
+            <View key={index} style={{ padding: 24 }}>
+              <Text>Row {index + 1}</Text>
+            </View>
+          ))}
+        </Screen>
+      </AppShellPanel>
     </AppShell>
   ),
 };

@@ -34,20 +34,26 @@ export function useOptionalAppShell(): AppShellContextValue | null {
   return useContext(AppShellContext);
 }
 
-/** Logical pane visibility, including while its exit animation is retained. */
-export const AppShellPaneActiveContext = createContext(true);
-/** Suspend pane-local global shortcuts/effects as soon as a pane is hidden. */
-export function useAppShellPaneActive(): boolean {
-  return useContext(AppShellPaneActiveContext);
+/** What a panel knows about itself — see `useAppShellPanel`. */
+export interface AppShellPanelValue {
+  /** The panel's `id`, when it was given one. */
+  id?: string;
+  /**
+   * Drawn ALONE: the only panel of its group, or the one a collapsed group
+   * shows. A panel offers its own way to the others (a Map / List toggle)
+   * exactly then, and never beside them.
+   */
+  alone: boolean;
+  /** Rounded with the gutter around it, or full-bleed. */
+  framed: boolean;
 }
 
-/** Whether `AppShellSplitPanes` currently draws this pane alone. */
-export const AppShellPaneAloneContext = createContext(false);
-/**
- * True inside a split pane drawn ALONE — below `splitFrom`, or when it is the
- * only pane shown — and false beside another pane or outside split panes. A
- * pane shows its own way to the other one (a Map / List toggle) exactly then.
- */
-export function useAppShellPaneAlone(): boolean {
-  return useContext(AppShellPaneAloneContext);
+const OUTSIDE_PANEL: AppShellPanelValue = { alone: false, framed: false };
+
+export const AppShellPanelContext = createContext<AppShellPanelValue | null>(null);
+AppShellPanelContext.displayName = 'BloomAppShellPanelContext';
+
+/** The enclosing `AppShellPanel`: its id, whether it is drawn alone and framed. */
+export function useAppShellPanel(): AppShellPanelValue {
+  return useContext(AppShellPanelContext) ?? OUTSIDE_PANEL;
 }

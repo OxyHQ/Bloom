@@ -31,9 +31,8 @@ export function resolveNavigationPlacement(
 export function createAppShell(
   BottomBar: ComponentType<BottomBarProps>,
   Fab: ComponentType<FabProps>,
-  ...panelComponents: Parameters<typeof createAppShellEngine>
 ) {
-  const AppShellEngine = createAppShellEngine(...panelComponents);
+  const AppShellEngine = createAppShellEngine();
   function NavigationBottom({
     navigation = [],
     value = '',
@@ -354,12 +353,9 @@ export function createAppShell(
     const scroll = props.scroll ?? (Platform.OS === 'web' ? 'document' : 'auto');
     const usesLayout =
       props.safeArea !== undefined ||
-      props.panel !== undefined ||
-      props.panelColorPreset !== undefined ||
+      props.panels !== undefined ||
       props.variant !== undefined ||
       props.aside !== undefined ||
-      props.list !== undefined ||
-      props.info !== undefined ||
       props.contentWidth !== undefined ||
       props.navigationAlign !== undefined ||
       props.navigationGap !== undefined ||
