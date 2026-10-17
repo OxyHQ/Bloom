@@ -533,7 +533,7 @@ function DialogPanel({
   const titleId = useId();
   const descriptionId = useId();
   const headerController = useDialogHeaderController();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   useDialogFrameScrollReset(scrollable !== false, () => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
     headerController.scrollY.value = 0;
@@ -766,7 +766,7 @@ function SheetSurface({
   const titleId = useId();
   const descriptionId = useId();
   const headerController = useDialogHeaderController();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   useDialogFrameScrollReset(scrollable !== false, () => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
     headerController.scrollY.value = 0;
