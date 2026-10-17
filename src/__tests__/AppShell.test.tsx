@@ -527,7 +527,10 @@ describe('AppShell scroll="fixed"', () => {
       overflow: 'hidden',
     });
     expect(resolvedStyle(hostParent(screen.getByTestId('page'))?.props.style)).toMatchObject({
-      flex: 1,
+      // Longhands, never `flex: 1` — see `flexFill` in app-shell/layout.ts.
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 0,
       minHeight: 0,
     });
   });
@@ -683,7 +686,10 @@ describe('AppShell panel fill', () => {
     expect(pageScrollers).toHaveLength(scroll === 'container' ? 1 : 0);
     if (scroll === 'fixed')
       expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({
-        flex: 1,
+        // Longhands, never `flex: 1` — see `flexFill` in app-shell/layout.ts.
+        flexGrow: 1,
+        flexShrink: 1,
+        flexBasis: 0,
         minHeight: 0,
       });
   });

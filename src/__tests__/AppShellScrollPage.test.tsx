@@ -112,7 +112,10 @@ describe('native', () => {
       </AppShell>,
     );
     expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({
-      flex: 1,
+      // Longhands, never `flex: 1` — see `flexFill` in app-shell/layout.ts.
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 0,
       minHeight: 0,
     });
     expect(scrollViews(screen)).toHaveLength(1);

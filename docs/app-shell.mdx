@@ -494,6 +494,20 @@ function MyHeader() {
 
 Give the page `flex: 1` and `minHeight: 0`, or a tall child grows the column past the screen instead of scrolling inside it.
 
+### Switching `scroll` per route
+
+An app whose routes differ can pick the mode per route — a map screen fixed, the rest of the app a page:
+
+```tsx
+<AppShell variant="feed" panel scroll={isMapRoute ? 'fixed' : 'page'} sidebar={sidebar}>
+  <Slot />
+</AppShell>
+```
+
+That is supported: after any switch the shell lays out exactly as a fresh mount in the new mode would. The regions that change with the mode keep their DOM node across the switch, so on web what lands is React DOM's DIFF of their two inline styles — a dropped key is cleared with `style[key] = ''`, and only keys whose value changed are written. The shell therefore spells every mode-dependent flex in longhands (`flexGrow`/`flexShrink`/`flexBasis`), never `flex: 1`: clearing a `flex` shorthand also clears the longhands beside it, and an unchanged longhand is never written back. That is how a switch from `fixed` to `page` once left the reading row with no flex at all — as wide as its content, pushing the sidebar off the page — with React warning "Removing a style property during rerender (flex) when a conflicting property is set (flexShrink)". Gate: `AppShellScrollSwitch.web.test.tsx` switches every variant between every pair of modes, at a desktop and a phone width, and compares each against a fresh mount.
+
+What a switch does NOT keep, with `panel`: a bounded panel (`fixed`/`container`) and a document one are different trees, so the page's children remount when the mode crosses that line. A route change that switches the mode replaces the page anyway; a mode switched WITHOUT a route change loses the page's local state.
+
 ## Scrolling on web
 
 The page scrolls the **document**, like a [`ContentPanel`](/docs/bloom/main/content-panel) page — not a scroll view inside the frame. The shell is at least one viewport tall and grows with its content; the in-flow sidebar is `position: sticky`, so it stays put while the page moves under it. That is what makes scroll restoration, the mobile address bar collapsing, anchor links and `window.scrollTo` behave as they do on any web page.
