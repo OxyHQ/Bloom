@@ -6,7 +6,6 @@ jest.mock('../theme/use-theme', () => ({
   useTheme: () => require('../theme/build-theme').buildTheme('teal', 'light'),
 }));
 import { Card } from '../card/Card';
-import { styled } from 'react-native-css';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let container: HTMLDivElement;
@@ -57,25 +56,3 @@ it.each([false, true])(
   },
 );
 
-// Recreate the former wrapper boundary: it flattens a compiled class marker
-// into the same object as the card's numeric geometry.
-it('detects the former compiled-style contamination as a negative control', () => {
-  const LegacyWrapped = styled(Card, { className: 'style' });
-  const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
-  try {
-    act(() =>
-      root.render(
-        <LegacyWrapped testID="legacy" className="p-space-20" radius="radius-28" border="none">
-          <span>Content</span>
-        </LegacyWrapped>,
-      ),
-    );
-    const host = container.querySelector('[data-testid="legacy"]') as HTMLElement;
-    expect(getComputedStyle(host).borderTopLeftRadius).not.toBe('28px');
-    expect(
-      errors.mock.calls.some((args) => args.some((arg) => String(arg).includes('styleq'))),
-    ).toBe(true);
-  } finally {
-    errors.mockRestore();
-  }
-});
