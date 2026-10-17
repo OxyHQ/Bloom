@@ -23,6 +23,7 @@ import {
   AiChatContainer,
   AiChatFeedbackRow,
   AiChatGalleryPanel,
+  AiChatHeader,
   AiChatImageGeneration,
   AiChatLinkChip,
   AiChatMessageLine,
@@ -545,6 +546,36 @@ describe('AiChatShell', () => {
     const open = getByLabelText('Open code');
     fireEvent.press(open);
     expect(getByText('Code')).toBeTruthy();
+  });
+
+  it("centres a header's own title node between the shell's buttons", () => {
+    const { getByLabelText, getByText, getByTestId } = renderIn(
+      <AiChatShell
+        sidebar={null}
+        mobileSidebar={<Text>nav</Text>}
+        panel={() => null}
+        panelLabel="Code"
+      >
+        <AiChatHeader testID="header">
+          <Text>Alia + Sindi</Text>
+        </AiChatHeader>
+      </AiChatShell>,
+    );
+    expect(getByText('Alia + Sindi')).toBeTruthy();
+    expect(resolvedStyle(getByTestId('header').props.style)).toMatchObject({ minHeight: 48 });
+    expect(getByLabelText('Open navigation')).toBeTruthy();
+    fireEvent.press(getByLabelText('Open code'));
+    expect(getByText('Code')).toBeTruthy();
+  });
+
+  it('draws a header with its title alone outside a shell', () => {
+    const { getByText, queryByLabelText } = renderIn(
+      <AiChatHeader>
+        <Text>Alia</Text>
+      </AiChatHeader>,
+    );
+    expect(getByText('Alia')).toBeTruthy();
+    expect(queryByLabelText('Open navigation')).toBeNull();
   });
 
   it('lets the mobile header and the panel drawer header grow with the system font', () => {

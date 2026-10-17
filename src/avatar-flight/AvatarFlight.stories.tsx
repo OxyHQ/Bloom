@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { AgentAvatar } from '../agent-avatar';
 import {
@@ -11,7 +11,13 @@ import {
 } from '../agent-reply';
 import { Button } from '../button';
 import { Text } from '../typography';
-import { AvatarAnchor, AvatarFlightLayer, centeredLanding, useAvatarFlights } from './index';
+import {
+  AvatarAnchor,
+  AvatarFlightLayer,
+  avatarJoinFlights,
+  useAvatarFlights,
+  useAvatarJoin,
+} from './index';
 
 const meta: Meta = {
   title: 'Agents/Avatar Flight',
@@ -57,16 +63,11 @@ export const FirstMessage: Story = {
           to: `reply:${RESPONDER.id}`,
           duration: 800,
         },
-        ...WAITING.map((agent, index) => ({
-          key: agent.id,
-          character: agent.avatar,
-          from: `empty:${agent.id}`,
+        ...avatarJoinFlights(WAITING, {
+          from: (agent) => `empty:${agent.id}`,
           to: 'profile',
-          landing: centeredLanding(14),
-          duration: 950,
-          delay: index * 120,
-          merge: true,
-        })),
+          character: (agent) => agent.avatar,
+        }),
       ]);
       setSent(true);
     };
@@ -113,6 +114,79 @@ export const FirstMessage: Story = {
         <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
           <Button onPress={() => void send()} disabled={sent}>
             Send
+          </Button>
+          <Button appearance="outline" onPress={reset}>
+            Reset
+          </Button>
+        </View>
+        <AvatarFlightLayer flights={flights} />
+      </View>
+    );
+  },
+};
+
+/**
+ * Agents joining a conversation already under way: each one that starts answering flies from its
+ * reply into the header's profile, which gains it as it lands (`useAvatarJoin`). Several answering
+ * together fly as one staggered batch; one answering while a batch is in the air waits for it.
+ */
+export const AgentsJoin: Story = {
+  render: () => {
+    const flights = useAvatarFlights();
+    const [answering, setAnswering] = useState(0);
+    const [round, setRound] = useState(0);
+    const arrivals = useMemo(
+      () => WAITING.slice(0, answering).map((agent) => ({ agent, live: true })),
+      [answering],
+    );
+    const joined = useAvatarJoin({
+      arrivals,
+      flights,
+      from: (agent) => `reply:${agent.id}`,
+      to: 'profile',
+      character: (agent) => agent.avatar,
+      resetKey: round,
+    });
+    const reset = () => {
+      flights.cancel();
+      setAnswering(0);
+      setRound((value) => value + 1);
+    };
+
+    return (
+      <View style={{ width: 420, minHeight: 360, gap: 16, padding: 16 }}>
+        <View style={{ alignItems: 'center' }}>
+          <AgentProfile
+            agents={[RESPONDER, ...joined]}
+            onPress={() => {}}
+            avatarRef={flights.anchor('profile')}
+            avatarHidden={flights.isLanding('profile')}
+          />
+        </View>
+
+        {WAITING.slice(0, answering).map((agent) => (
+          <AgentReply
+            key={agent.id}
+            identity={
+              <AgentReplyIdentity
+                character={agent.avatar}
+                name={agent.name}
+                avatarRef={flights.anchor(`reply:${agent.id}`)}
+              />
+            }
+          >
+            <AgentReplyBubble>
+              <Text>{`${agent.name} joins the conversation.`}</Text>
+            </AgentReplyBubble>
+          </AgentReply>
+        ))}
+
+        <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
+          <Button
+            onPress={() => setAnswering((count) => Math.min(count + 1, WAITING.length))}
+            disabled={answering >= WAITING.length}
+          >
+            Consult the next agent
           </Button>
           <Button appearance="outline" onPress={reset}>
             Reset

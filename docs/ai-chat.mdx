@@ -14,6 +14,7 @@ The pieces of the AI chat and AI image generation screens. Everything is data an
 | --- | --- |
 | `AiChatShell` | The page frame: sidebar, chat container, resizable right panel, and the phone / tablet drawers |
 | `AiChatMobileHeader` | The in-container header below `xl` (menu button, title, panel button), wired to the shell |
+| `AiChatHeader` | A header with a title node of yours centred between the shell's menu and panel buttons, at every width |
 | `AiChatResizeHandle` | The grip on the chat's right edge |
 | `AiChatContainer` | The chat card: breadcrumb header, thread, composer slot, `AgentThinking` while working |
 | `AiChatThread` | The bottom-anchored, self-following scroll of turns — with the follow, upward pagination and `ref` a host with history needs |
@@ -218,6 +219,8 @@ Semantic tokens resolved onto Bloom's ramps (`ai-chat/shared.ts`): background-fu
 - The gallery re-baselines rather than animating when the panel's own width changes during a resize drag.
 
 ### Custom chat header
+
+`AiChatHeader` is a header whose title is a node of yours, centred — the conversation's participants (an `AgentProfile`), say, when they are its title. It is at least 48 tall with px 12 / pt 12 and shows at every width. On a compact shell the same menu and panel buttons as `AiChatMobileHeader` sit either side of the title, each side keeping 40px so it stays centred; outside an `AiChatShell` it is the title alone. `AiChatMobileHeader` remains the string-titled header below `xl`.
 
 `AiChatContainer` can receive a `header` such as Bloom's `PageHeader` with the
 application's real actions. Omit `title` and `project` to omit its breadcrumb;

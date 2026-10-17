@@ -74,8 +74,39 @@ With reduced motion nothing flies and nothing is hidden. A flight whose source c
 - **Web and native.** On web the layer is portaled to the document, so no scroller or clipped panel cuts a flight; on native it sits in the screen's own absolute overlay.
 - **Stale launches.** `cancel()` ends every flight and any `launch` still capturing: it resolves `false` and never lands.
 
+## Joining a group
+
+Two pieces cover avatars that JOIN something — a group's profile, a conversation's header — rather than landing on a place of their own.
+
+**`avatarJoinFlights(agents, route)`** builds their flights: each leaves `route.from(agent)`, shrinks into a 14px square at the centre of `route.to` (`centeredLanding(14)`) and merges into it over 950ms, the next leaving 120ms after the last. Keys are `join:<id>`.
+
+**`useAvatarJoin({ arrivals, flights, from, to, character, resetKey })`** is the group itself, for one whose members arrive while it is on screen — a conversation's participants as agents start answering. Pass everybody who belongs (`arrivals`, each `{ agent, live }`, in the order they arrived) on every render; it returns who has joined.
+
+- An agent arriving **live** flies from its own anchor and joins only when its avatar lands, so the target gains it exactly as the flight arrives. Hide the target's artwork with `isLanding(to)` meanwhile.
+- **One batch flies at a time.** Agents arriving while a batch — or any other flight into `to` — is in the air wait for it to land, then fly together, staggered.
+- The source is measured **two frames** after the arrival, so a reply that mounts with the arrival has laid out first.
+- With reduced motion, nothing measurable, a superseded launch or `flights={null}`, they join at once. An agent that was there before (`live: false`) is simply joined.
+- A new `resetKey` is a new group: nobody has joined it.
+
+```tsx
+const joined = useAvatarJoin({
+  arrivals: answered.map((agent) => ({ agent, live: agent.id === streamingId })),
+  flights,
+  from: (agent) => `reply:${agent.id}`,
+  to: 'profile',
+  character: (agent) => agent.avatar,
+  resetKey: conversationId,
+});
+
+<AgentProfile
+  agents={[lead, ...joined]}
+  avatarRef={flights.anchor('profile')}
+  avatarHidden={flights.isLanding('profile')}
+/>
+```
+
 ## Not part of it
 
-The choreography is yours: which avatars fly, where, in what order. [`MultiAgentChat`](./multi-agent-chat.mdx) flies the group's avatars from the picker to the new conversation, and on a first message the answering agent to its reply and the others into the header profile.
+The rest of the choreography is yours: which avatars fly, where, in what order. [`MultiAgentChat`](./multi-agent-chat.mdx) flies the group's avatars from the picker to the new conversation, and on a first message the answering agent to its reply and the others into the header profile (`avatarJoinFlights`).
 
 [`MediaFlight`](./media-flight.mdx) is the same idea for one picture or video that survives a route change; it shares no code with this one.

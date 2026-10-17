@@ -16,7 +16,7 @@ export {
   AiChatStrong,
 } from './AiChatMessages';
 export { AiChatResizeHandle } from './AiChatResizeHandle';
-export { AiChatMobileHeader, AiChatShell } from './AiChatShell';
+export { AiChatHeader, AiChatMobileHeader, AiChatShell } from './AiChatShell';
 export { useAiChatChromeInsets, useAiChatShell } from './context';
 export type { AiChatChromeInsets, AiChatShellState } from './context';
 export type {
@@ -39,6 +39,7 @@ export type {
   AiChatImageGenerationProps,
   AiChatLinkChipProps,
   AiChatMessageLineProps,
+  AiChatHeaderProps,
   AiChatMobileHeaderProps,
   AiChatPanelAction,
   AiChatPanelTab,
