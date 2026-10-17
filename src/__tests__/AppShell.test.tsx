@@ -8,6 +8,7 @@ import { PortalOutlet, PortalProvider } from '../portal';
 import {
   AppShell,
   AppShellSplitPanes,
+  useAppShellPaneAlone,
   AppShellHeader,
   AppShellMenuButton,
   NotificationBell,
@@ -1460,6 +1461,99 @@ describe('standalone AppShellSplitPanes', () => {
     expect(mounted).toHaveBeenCalledTimes(1);
     expect(unmounted).not.toHaveBeenCalled();
     expect(screen.UNSAFE_queryAllByType(ReactNative.ScrollView)).toHaveLength(0);
+  });
+});
+
+describe('AppShellSplitPanes pane / splitFrom / detailMinWidth', () => {
+  const panes = (extra: Partial<React.ComponentProps<typeof AppShellSplitPanes>>) => (
+    <AppShellSplitPanes
+      testID="panes"
+      paneScroll={false}
+      list={<ReactNative.Text>List</ReactNative.Text>}
+      detail={<ReactNative.Text>Detail</ReactNative.Text>}
+      {...extra}
+    />
+  );
+
+  it.each([
+    ['list', 'panes-pane-list', 'panes-pane-detail'],
+    ['detail', 'panes-pane-detail', 'panes-pane-list'],
+  ] as const)(
+    'below splitFrom only the %s pane renders, filling the row',
+    (pane, shown, hidden) => {
+      setWidth(700);
+      const screen = renderIn(panes({ pane, splitFrom: 'md' }));
+      expect(screen.getByTestId(shown)).toBeTruthy();
+      expect(screen.queryByTestId(hidden)).toBeNull();
+      expect(screen.queryByTestId('panes-divider')).toBeNull();
+    },
+  );
+
+  it('from splitFrom both panes render side by side, whichever pane is named', () => {
+    setWidth(1200);
+    const screen = renderIn(panes({ pane: 'detail', splitFrom: 1000 }));
+    expect(screen.getByTestId('panes-pane-list')).toBeTruthy();
+    expect(screen.getByTestId('panes-pane-detail')).toBeTruthy();
+  });
+
+  it('reads its OWN measured width, not the window', () => {
+    setWidth(1440);
+    const screen = renderIn(panes({ pane: 'list', splitFrom: 1000 }));
+    expect(screen.getByTestId('panes-pane-detail')).toBeTruthy();
+    fireEvent(screen.getByTestId('panes-split'), 'layout', {
+      nativeEvent: { layout: { width: 800, height: 600 } },
+    });
+    expect(screen.queryByTestId('panes-pane-detail')).toBeNull();
+  });
+
+  it('explicit showList / showDetail win over pane', () => {
+    setWidth(700);
+    const screen = renderIn(panes({ pane: 'list', showDetail: true }));
+    expect(screen.getByTestId('panes-pane-list')).toBeTruthy();
+    expect(screen.getByTestId('panes-pane-detail')).toBeTruthy();
+  });
+
+  it('the list gives way so the detail keeps detailMinWidth, never below listMinWidth', () => {
+    setWidth(1000);
+    const screen = renderIn(
+      panes({ listWidth: 760, listMinWidth: 300, listMaxWidth: 1200, detailMinWidth: 400 }),
+    );
+    // 1000 - 400 - the 1px joined divider
+    expect(resolvedStyle(screen.getByTestId('panes-pane-list').props.style).width).toBe(599);
+    setWidth(600);
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <PortalProvider>
+          {panes({ listWidth: 760, listMinWidth: 300, listMaxWidth: 1200, detailMinWidth: 400 })}
+          <PortalOutlet />
+        </PortalProvider>
+      </BloomThemeProvider>,
+    );
+    expect(resolvedStyle(screen.getByTestId('panes-pane-list').props.style).width).toBe(300);
+  });
+
+  it('useAppShellPaneAlone tells a pane whether it is drawn alone', () => {
+    function Probe({ id }: { id: string }) {
+      return <ReactNative.Text testID={id}>{String(useAppShellPaneAlone())}</ReactNative.Text>;
+    }
+    const probes = {
+      list: <Probe id="list-alone" />,
+      detail: <Probe id="detail-alone" />,
+    };
+    setWidth(700);
+    const narrow = renderIn(panes({ pane: 'list', splitFrom: 'md', ...probes }));
+    expect(narrow.getByTestId('list-alone').props.children).toBe('true');
+    narrow.unmount();
+    setWidth(1200);
+    const wide = renderIn(panes({ pane: 'list', splitFrom: 'md', ...probes }));
+    expect(wide.getByTestId('list-alone').props.children).toBe('false');
+    expect(wide.getByTestId('detail-alone').props.children).toBe('false');
+  });
+
+  it('without detailMinWidth the resting width is kept', () => {
+    setWidth(1000);
+    const screen = renderIn(panes({ listWidth: 760, listMaxWidth: 1200 }));
+    expect(resolvedStyle(screen.getByTestId('panes-pane-list').props.style).width).toBe(760);
   });
 });
 

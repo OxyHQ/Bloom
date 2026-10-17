@@ -200,7 +200,7 @@ export interface ListingCardGridProps {
   children: ReactNode;
   /**
    * A fixed column count. Without it the grid measures its OWN width:
-   * 1 column below 640, 2 below 950, 3 below 1280, 4 from there.
+   * 1 column below 500, 2 below 950, 3 below 1280, 4 from there.
    */
   columns?: number;
   /** Horizontal gap between cells. Default `24`. */

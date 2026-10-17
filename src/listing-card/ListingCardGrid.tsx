@@ -8,7 +8,7 @@ import { IS_WEB } from '../styles/platform';
 /**
  * A results grid for `ListingCard`s.
  *
- *   columns   1 below 640, 2 below 950, 3 below 1280, 4 from there — of the
+ *   columns   1 below 500, 2 below 950, 3 below 1280, 4 from there — of the
  *             GRID's own width, so a grid beside a map or inside a sheet counts
  *             the room it actually has; `columns` fixes the count instead
  *   gaps      24 between columns, 40 between rows

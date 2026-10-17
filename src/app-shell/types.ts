@@ -410,6 +410,15 @@ export interface AppShellSplitPanesProps {
   list?: ReactNode;
   detail?: ReactNode;
   info?: ReactNode;
+  /**
+   * The pane shown ALONE while the panes' own width is below `splitFrom`; from
+   * `splitFrom` up, list and detail render side by side. The panes measure
+   * themselves, so a split beside a sidebar counts the room it has, and the app
+   * needs no width of its own. Explicit `showList` / `showDetail` win over it.
+   */
+  pane?: 'list' | 'detail';
+  /** With `pane`: the width (of the panes' own box) two panes fit from. Default `md` (768). */
+  splitFrom?: AppShellBreakpoint;
   /** Defaults to whether list content was supplied. Hidden panes unmount. */
   showList?: boolean;
   /** Defaults to true. Keep true across breakpoints to retain routed detail state. */
@@ -421,6 +430,12 @@ export interface AppShellSplitPanesProps {
   listMinWidth?: number;
   listMaxWidth?: number;
   onListWidthChange?: (width: number) => void;
+  /**
+   * The narrowest the detail pane may get beside the list. The list's width
+   * (resting or dragged) gives way so the detail keeps it — a map beside a
+   * results list stays a map on a smaller screen. Unset: no floor.
+   */
+  detailMinWidth?: number;
   /** Info column width, defaults to 320. */
   infoWidth?: number;
   /** Show the shared draggable/keyboard divider, defaults to true. */
