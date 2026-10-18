@@ -1748,7 +1748,9 @@ describe('AppShellPanels', () => {
       return false;
     });
     expect(inGroup).toHaveLength(0); // Web uses Screen's shared DOM owner, not another RN ScrollView.
-    const owners = screen.UNSAFE_root.findAll((node) => node.props.dataSet?.bloomScreenViewport === 'element');
+    const owners = screen.UNSAFE_root.findAll(
+      (node) => node.props.dataSet?.bloomScreenViewport === 'element',
+    );
     expect(owners.length).toBeGreaterThan(0);
     expect(screen.queryByTestId('app-shell-panel-reserve')).toBeNull();
   });

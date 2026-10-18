@@ -29,9 +29,13 @@ export function usePrefersReducedMotion(): boolean {
       changed = true;
       if (active) setReduced(value);
     });
-    void AccessibilityInfo.isReduceMotionEnabled().then((value) => {
-      if (active && !changed) setReduced(value);
-    }).catch(() => { /* Keep the conservative preference if the OS query fails. */ });
+    void AccessibilityInfo.isReduceMotionEnabled()
+      .then((value) => {
+        if (active && !changed) setReduced(value);
+      })
+      .catch(() => {
+        /* Keep the conservative preference if the OS query fails. */
+      });
     return () => {
       active = false;
       subscription.remove();

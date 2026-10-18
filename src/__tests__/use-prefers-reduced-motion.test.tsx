@@ -13,14 +13,20 @@ describe('usePrefersReducedMotion', () => {
     let change!: (value: boolean) => void;
     let resolve!: (value: boolean) => void;
     const remove = jest.fn();
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockReturnValue(new Promise<boolean>((done) => { resolve = done; }));
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockReturnValue(
+      new Promise<boolean>((done) => {
+        resolve = done;
+      }),
+    );
     jest.spyOn(AccessibilityInfo, 'addEventListener').mockImplementation((_event, listener) => {
       change = listener as (value: boolean) => void;
       return { remove };
     });
     const hook = renderHook(usePrefersReducedMotion);
     expect(hook.result.current).toBe(true);
-    await act(async () => { resolve(false); });
+    await act(async () => {
+      resolve(false);
+    });
     expect(hook.result.current).toBe(false);
     act(() => change(true));
     expect(hook.result.current).toBe(true);
@@ -31,14 +37,20 @@ describe('usePrefersReducedMotion', () => {
   it('does not overwrite a newer OS event with a stale initial query', async () => {
     let change!: (value: boolean) => void;
     let resolve!: (value: boolean) => void;
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockReturnValue(new Promise<boolean>((done) => { resolve = done; }));
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockReturnValue(
+      new Promise<boolean>((done) => {
+        resolve = done;
+      }),
+    );
     jest.spyOn(AccessibilityInfo, 'addEventListener').mockImplementation((_event, listener) => {
       change = listener as (value: boolean) => void;
       return { remove: jest.fn() };
     });
     const hook = renderHook(usePrefersReducedMotion);
     act(() => change(true));
-    await act(async () => { resolve(false); });
+    await act(async () => {
+      resolve(false);
+    });
     expect(hook.result.current).toBe(true);
   });
 });

@@ -65,14 +65,17 @@ describe('Skeleton.Region', () => {
   it('shares one non-interactive animation across shapes and nested regions', () => {
     const stop = jest.fn();
     const loop = jest.spyOn(Animated, 'loop').mockReturnValue({
-      start: jest.fn(), stop, reset: jest.fn(),
+      start: jest.fn(),
+      stop,
+      reset: jest.fn(),
     });
     const timing = jest.spyOn(Animated, 'timing');
     const screen = renderWithTheme(
       <Skeleton.Region label="Loading feed" testID="loading" style={{ gap: 12 }}>
         <Skeleton.Circle size={40} />
         <Skeleton.Region label="Nested loading" testID="nested">
-          <Skeleton.Text /><Skeleton.Box width={100} height={48} />
+          <Skeleton.Text />
+          <Skeleton.Box width={100} height={48} />
         </Skeleton.Region>
       </Skeleton.Region>,
     );
@@ -83,7 +86,9 @@ describe('Skeleton.Region', () => {
     expect(screen.getByTestId('loading').props.accessibilityLabel).toBe('Loading feed');
     expect(screen.getByTestId('nested').props.accessibilityState).toBeUndefined();
     expect(screen.getByTestId('nested').props.accessibilityLabel).toBeUndefined();
-    expect(screen.UNSAFE_getAllByProps({ importantForAccessibility: 'no-hide-descendants' }).length).toBeGreaterThanOrEqual(3);
+    expect(
+      screen.UNSAFE_getAllByProps({ importantForAccessibility: 'no-hide-descendants' }).length,
+    ).toBeGreaterThanOrEqual(3);
     screen.unmount();
     expect(stop).toHaveBeenCalledTimes(1);
   });

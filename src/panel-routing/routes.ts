@@ -22,8 +22,15 @@ export function resolvePanelHref(href: PanelHref, current = '/'): string {
       const token = `[${key}]`;
       const rest = `[...${key}]`;
       if (path.includes(token)) path = path.replace(token, encodeURIComponent(String(value)));
-      else if (path.includes(rest)) path = path.replace(rest, (Array.isArray(value) ? value : [value]).map((part) => encodeURIComponent(String(part))).join('/'));
-      else if (value != null) for (const item of Array.isArray(value) ? value : [value]) query.append(key, String(item));
+      else if (path.includes(rest))
+        path = path.replace(
+          rest,
+          (Array.isArray(value) ? value : [value])
+            .map((part) => encodeURIComponent(String(part)))
+            .join('/'),
+        );
+      else if (value != null)
+        for (const item of Array.isArray(value) ? value : [value]) query.append(key, String(item));
     }
     if (query.size) path += `${path.includes('?') ? '&' : '?'}${query}`;
   }
@@ -34,7 +41,10 @@ export function resolvePanelHref(href: PanelHref, current = '/'): string {
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
-export function matchPanelRoute(routes: readonly PanelRouteDefinition[], href: string): PanelRouteMatch | null {
+export function matchPanelRoute(
+  routes: readonly PanelRouteDefinition[],
+  href: string,
+): PanelRouteMatch | null {
   const url = new URL(href, 'https://panel.invalid');
   const segments = url.pathname.split('/').filter(Boolean);
   let best: (PanelRouteMatch & { score: number }) | null = null;
@@ -48,15 +58,23 @@ export function matchPanelRoute(routes: readonly PanelRouteDefinition[], href: s
       const rest = /^\[\.\.\.(.+)\]$/.exec(part);
       const parameter = /^\[(.+)\]$/.exec(part);
       if (rest) {
-        if (index >= segments.length) { matched = false; break; }
+        if (index >= segments.length) {
+          matched = false;
+          break;
+        }
         params[rest[1]!] = segments.slice(index).map(decodeURIComponent);
         index = segments.length;
         score += 1;
       } else if (parameter && segments[index] !== undefined) {
         params[parameter[1]!] = decodeURIComponent(segments[index++]!);
         score += 10;
-      } else if (part === segments[index]) { index++; score += 100; }
-      else { matched = false; break; }
+      } else if (part === segments[index]) {
+        index++;
+        score += 100;
+      } else {
+        matched = false;
+        break;
+      }
     }
     if (!matched || index !== segments.length || (best && best.score >= score)) continue;
     for (const key of new Set(url.searchParams.keys())) {

@@ -1,7 +1,13 @@
 import React, { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { useAppShellPanel } from '../app-shell/context';
 import { usePanelNavigation } from '../app-shell/PanelNavigation';
-import { matchPanelRoute, resolvePanelHref, type PanelHref, type PanelRouteDefinition, type PanelRouteParams } from './routes';
+import {
+  matchPanelRoute,
+  resolvePanelHref,
+  type PanelHref,
+  type PanelRouteDefinition,
+  type PanelRouteParams,
+} from './routes';
 
 export interface PanelRouter {
   active: boolean;
@@ -25,11 +31,20 @@ export interface PanelRouter {
 }
 const RouterContext = createContext<PanelRouter | null>(null);
 const OutletContext = createContext<ReactNode>(null);
-export function useOptionalPanelRouter() { return useContext(RouterContext); }
-export function PanelRouteSlot() { return <>{useContext(OutletContext)}</>; }
+export function useOptionalPanelRouter() {
+  return useContext(RouterContext);
+}
+export function PanelRouteSlot() {
+  return <>{useContext(OutletContext)}</>;
+}
 
 /** One routing scope per panel, backed by AppShell's independent history. */
-export function PanelRouterProvider({ routes, children, entryParams, notFound = null }: {
+export function PanelRouterProvider({
+  routes,
+  children,
+  entryParams,
+  notFound = null,
+}: {
   routes: readonly PanelRouteDefinition[];
   children?: ReactNode;
   /** App-owned metadata copied to new history entries. */
@@ -45,13 +60,23 @@ export function PanelRouterProvider({ routes, children, entryParams, notFound = 
     const entry = (target: PanelHref) => ({ name: resolve(target), params: entryParams });
     const back = (count = 1) => navigation.go(-count);
     return {
-      active, href, pathname: (href.split(/[?#]/)[0] ?? '/').split('/').map(decodeURIComponent).join('/'), params: match?.params ?? {}, key: navigation.entry.key,
+      active,
+      href,
+      pathname: (href.split(/[?#]/)[0] ?? '/').split('/').map(decodeURIComponent).join('/'),
+      params: match?.params ?? {},
+      key: navigation.entry.key,
       push: (target) => navigation.push(entry(target)),
       replace: (target) => navigation.replace(entry(target)),
-      navigate: (target) => { if (resolve(target) !== href) navigation.push(entry(target)); },
-      back: navigation.back, forward: navigation.forward,
-      canGoBack: () => navigation.canGoBack, canGoForward: () => navigation.canGoForward,
-      dismiss: back, dismissAll: () => back(navigation.index), canDismiss: () => navigation.canGoBack,
+      navigate: (target) => {
+        if (resolve(target) !== href) navigation.push(entry(target));
+      },
+      back: navigation.back,
+      forward: navigation.forward,
+      canGoBack: () => navigation.canGoBack,
+      canGoForward: () => navigation.canGoForward,
+      dismiss: back,
+      dismissAll: () => back(navigation.index),
+      canDismiss: () => navigation.canGoBack,
       dismissTo: (target) => {
         const name = resolve(target);
         let index = navigation.index - 1;
@@ -63,9 +88,14 @@ export function PanelRouterProvider({ routes, children, entryParams, notFound = 
         const url = new URL(href, 'https://panel.invalid');
         for (const [key, value] of Object.entries(params)) {
           url.searchParams.delete(key);
-          if (value != null) for (const item of Array.isArray(value) ? value : [value]) url.searchParams.append(key, String(item));
+          if (value != null)
+            for (const item of Array.isArray(value) ? value : [value])
+              url.searchParams.append(key, String(item));
         }
-        navigation.replace({ ...navigation.entry, name: `${url.pathname}${url.search}${url.hash}` });
+        navigation.replace({
+          ...navigation.entry,
+          name: `${url.pathname}${url.search}${url.hash}`,
+        });
       },
       prefetch: () => {},
     };
@@ -75,8 +105,16 @@ export function PanelRouterProvider({ routes, children, entryParams, notFound = 
     const Component = match.route.component;
     outlet = <Component key={navigation.entry.key} />;
     for (const Layout of [...(match.route.layouts ?? [])].reverse()) {
-      outlet = <OutletContext.Provider value={outlet}><Layout /></OutletContext.Provider>;
+      outlet = (
+        <OutletContext.Provider value={outlet}>
+          <Layout />
+        </OutletContext.Provider>
+      );
     }
   }
-  return <RouterContext.Provider value={router}><OutletContext.Provider value={outlet}>{children ?? outlet}</OutletContext.Provider></RouterContext.Provider>;
+  return (
+    <RouterContext.Provider value={router}>
+      <OutletContext.Provider value={outlet}>{children ?? outlet}</OutletContext.Provider>
+    </RouterContext.Provider>
+  );
 }

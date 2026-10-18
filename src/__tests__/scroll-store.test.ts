@@ -145,7 +145,11 @@ it('encodes separators and percent signs without emitting SQL-incompatible contr
   const store = new ScrollOffsetStore();
   store.save('panel:entry\0screen%tab', 44);
   expect(store.snapshot()).toEqual({ 'panel%3Aentry%00screen%25tab': 44 });
-  expect(Object.keys(store.snapshot()).every((key) => !/[\x00-\x1f]/.test(key))).toBe(true);
+  expect(
+    Object.keys(store.snapshot()).every((key) =>
+      [...key].every((char) => char.charCodeAt(0) >= 32),
+    ),
+  ).toBe(true);
   const restored = new ScrollOffsetStore(store.snapshot());
   expect(restored.read('panel:entry\0screen%tab')).toBe(44);
   expect(new ScrollOffsetStore({ '%broken': 2 }).size).toBe(0);

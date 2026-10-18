@@ -72,7 +72,7 @@ export function Region({ children, label, testID, className, style }: SkeletonRe
       <StyledView
         accessible={inherited ? undefined : true}
         role={inherited ? undefined : 'group'}
-        accessibilityLabel={inherited ? undefined : label ?? common.loading}
+        accessibilityLabel={inherited ? undefined : (label ?? common.loading)}
         accessibilityState={inherited ? undefined : { busy: true }}
         aria-busy={inherited ? undefined : true}
         testID={testID}
