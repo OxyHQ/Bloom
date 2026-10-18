@@ -1,8 +1,10 @@
 import { Text } from '../typography';
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Screen, ScreenScrollView } from './index';
+import { Button } from '../button';
+import { PageFooter } from '../page-footer';
 import { PageHeader } from '../page-header';
 import { AppShell, AppShellPanel } from '../app-shell';
 
@@ -108,6 +110,55 @@ export const DocumentScrollView: Story = {
           ))}
         </ScreenScrollView>
       </Screen>
+    );
+  },
+};
+
+/** One screen declaration survives document and bounded panel hosts. */
+export const DeclarativeHost: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => {
+    const [document, setDocument] = useState(false);
+    return (
+      <View style={{ height: 680 }}>
+        <AppShell
+          testID="declarative-shell"
+          panelLayout={{
+            flow: document ? 'document' : 'bounded',
+            panels: [
+              {
+                id: 'conversation',
+                headerActions: (
+                  <Button
+                    testID="declarative-toggle"
+                    onPress={() => setDocument((value) => !value)}
+                  >
+                    Change host
+                  </Button>
+                ),
+                content: (
+                  <Screen
+                    scroll="auto"
+                    testID="declarative-screen"
+                    header={<PageHeader title="Conversation" />}
+                    bottomBar={
+                      <PageFooter testID="declarative-footer" actions={<Button>Reply</Button>} />
+                    }
+                  >
+                    <ScreenScrollView testID="declarative-body">
+                      <View testID="declarative-content" style={{ padding: 20, gap: 16 }}>
+                        {Array.from({ length: 80 }, (_, index) => (
+                          <Text key={index}>Message {index + 1}</Text>
+                        ))}
+                      </View>
+                    </ScreenScrollView>
+                  </Screen>
+                ),
+              },
+            ],
+          }}
+        />
+      </View>
     );
   },
 };

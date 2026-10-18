@@ -574,9 +574,11 @@ export interface AiChatMobileHeaderProps {
 }
 
 export interface AiChatResizeHandleProps {
+  /** Separator orientation; horizontal separators resize panel heights. */
+  orientation?: 'vertical' | 'horizontal';
   /** Pointer went down on the grip. */
   onResizeStart?: () => void;
-  /** Horizontal distance from where the drag started, px. */
+  /** Distance along the resize axis from the drag start, px. */
   onResize: (dx: number) => void;
   onResizeEnd?: () => void;
   /** Names the separator. `'Resize panels'` in English. */

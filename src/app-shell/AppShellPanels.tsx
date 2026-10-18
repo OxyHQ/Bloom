@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 /**
  * `AppShellPanel` and `AppShellPanels` — the surfaces a `panels` shell frames.
  *
@@ -24,37 +25,32 @@
  * the flexible one goes below its minimum — a map beside a results list stays
  * a map — with no "room" subtraction anywhere.
  *
- * The divider is `AiChatResizeHandle`, the grip `ai-chat` already ships
- * (pointer capture on web, a `PanResponder` on native, arrow keys), anchored
- * on the resizable panel's end edge in the middle of the gap.
+ * Resizable dividers are owned by `AppShellPanelLayout`, which reuses
+ * `AiChatResizeHandle` for pointer capture, native gestures and arrow keys.
+ * This legacy surface delegates modular layout to that shared owner.
  */
-import React, {
-  Children,
-  createContext,
-  isValidElement,
-  useContext,
-  useRef,
-  useState,
-} from 'react';
-import { ScrollView, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+import React, { Children, isValidElement, useId } from 'react';
+import { Platform, View, type ViewStyle } from 'react-native';
 
-import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import type { ContentPanelProps } from '../content-panel/types';
-import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
-import { useIsRtl } from '../hooks/use-is-rtl';
-import { useAppShellRegion, type AppShellRegionValue } from '../layout/app-shell-region';
+import {
+  AppShellRegionContext,
+  useAppShellRegion,
+  type AppShellRegionValue,
+} from '../layout/app-shell-region';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
-import { useMessages } from '../locale/messages';
 import { useOptionalSurfaceFill } from '../styles/surface-levels';
 import { webViewportHeightMinus, type WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import { useTheme } from '../theme/use-theme';
-import { breakpointPx } from './constants';
 import { AppShellPanelContext } from './context';
-import { APP_SHELL_MESSAGES } from './messages';
 import type { AppShellPanelProps, AppShellPanelsProps } from './types';
+import { useMessages } from '../locale/messages';
+import { APP_SHELL_MESSAGES } from './messages';
 import { useShellWidth } from './use-shell-width';
+import { PanelCssContext, panelCssScope } from './panel-layout-css';
+import type { PanelLayoutViewProps } from './AppShellPanelLayout';
 
 /** The gap a panel shell uses outside one (a group composed on its own). */
 const STANDALONE_GUTTER = 12;
@@ -86,23 +82,6 @@ function useRegion(): AppShellRegionValue {
 }
 
 /** Where a panel sits in its group — positions, never the siblings' props. */
-interface PanelSlot {
-  index: number;
-  count: number;
-  /** The group's measured width. */
-  width: number;
-  collapsed: boolean;
-  show?: string;
-  joined: boolean;
-  /** The space between two panels: the gutter, or a hairline. */
-  gap: number;
-  /** The space is a hairline (joined, or full-bleed panels). */
-  hairline: boolean;
-}
-
-const PanelSlotContext = createContext<PanelSlot | null>(null);
-PanelSlotContext.displayName = 'BloomAppShellPanelSlotContext';
-
 type ContentPanelComponent = React.ComponentType<ContentPanelProps>;
 type ColorScopeComponent = React.ComponentType<
   Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>
@@ -111,6 +90,7 @@ type ColorScopeComponent = React.ComponentType<
 export function createAppShellPanels(
   ContentPanel: ContentPanelComponent,
   BloomColorScope: ColorScopeComponent,
+  PanelLayoutView: React.ComponentType<PanelLayoutViewProps>,
 ) {
   /** The page veil while the reveal drawer is open — pressing it is the shell's job. */
   function RevealVeil() {
@@ -151,9 +131,9 @@ export function createAppShellPanels(
     const fill = useOptionalSurfaceFill();
     if (scroll === 'panel' && bottomReserve === null) {
       return (
-        <ScrollView style={GROW} contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomEdge }}>
+        <ScrollArea style={GROW} contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomEdge }}>
           {children}
-        </ScrollView>
+        </ScrollArea>
       );
     }
     return (
@@ -225,175 +205,13 @@ export function createAppShellPanels(
   }
 
   /** A panel inside a group, once it is known to be drawn. */
-  function GroupPanel({
-    slot,
-    alone,
-    id,
-    header,
-    scroll = 'content',
-    width,
-    minWidth,
-    maxWidth,
-    resizable = false,
-    onWidthChange,
-    resizeLabel: resizeLabelProp,
-    appearance,
-    chrome,
-    colorPreset,
-    errorBoundary = false,
-    children,
-    testID,
-  }: AppShellPanelProps & { slot: PanelSlot; alone: boolean }) {
-    const region = useRegion();
-    const theme = useTheme();
-    const rtl = useIsRtl();
-    const { messages } = useMessages(APP_SHELL_MESSAGES);
-    const [size, setSize] = useState(width);
-    // The width the panel is DRAWN at, which a narrow group can make smaller
-    // than `size`; a drag starts from what the person sees. Written by the
-    // layout event, read by the drag handlers — never rendered.
-    const drawn = useRef(width ?? 0);
-    const dragStart = useRef(0);
-
-    const clamp = (next: number) =>
-      Math.min(maxWidth ?? Number.POSITIVE_INFINITY, Math.max(minWidth ?? 0, next));
-    const commit = (next: number) => {
-      const settled = clamp(next);
-      setSize(settled);
-      onWidthChange?.(settled);
-    };
-    // A drag toward the end edge widens a panel whose handle is on its end.
-    const toward = (dx: number) => (rtl ? -dx : dx);
-
-    const sizing: ViewStyle = alone
-      ? FILL_ROW
-      : size !== undefined
-        ? { flexGrow: 0, flexShrink: 1, flexBasis: size, minWidth: minWidth ?? 0, maxWidth }
-        : { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: minWidth ?? 0, maxWidth };
-    const handle = resizable && size !== undefined && !alone && slot.index < slot.count - 1;
-
-    const body = (
-      <View style={GROW}>
-        {header}
-        {/* A group is always bounded: its panels' content owns the bottom edge. */}
-        <PanelBody scroll={scroll} bottomReserve={null}>
-          {children}
-        </PanelBody>
-      </View>
-    );
-    const surface = slot.joined ? (
-      // One shared surface: the panel is a plain column inside it.
-      <View style={GROW}>
-        {errorBoundary === false ? (
-          body
-        ) : (
-          <PanelErrorBoundary {...(errorBoundary === true ? {} : errorBoundary)}>
-            {body}
-          </PanelErrorBoundary>
-        )}
-      </View>
-    ) : (
-      <ContentPanel
-        appearance={appearance}
-        errorBoundary={errorBoundary}
-        maskColor={region.maskColor}
-        framed={region.framed || region.revealed}
-        chrome={region.revealed ? 'none' : chrome}
-        fill
-        overlaySizing="panel"
-        surfaceStyle={GROW}
-        contentStyle={GROW}
-      >
-        {body}
-        {region.revealed ? <RevealVeil /> : null}
-      </ContentPanel>
-    );
-
-    return (
-      <>
-        {slot.index > 0 && !alone ? (
-          <View
-            testID={testID ? `${testID}-gap` : undefined}
-            style={{
-              width: slot.gap,
-              flexShrink: 0,
-              alignSelf: 'stretch',
-              backgroundColor: slot.hairline ? theme.colors.border : 'transparent',
-            }}
-          />
-        ) : null}
-        <View
-          testID={testID}
-          onLayout={(event: LayoutChangeEvent) => {
-            drawn.current = event.nativeEvent.layout.width;
-          }}
-          // The handle reaches into the gap and the next panel; RN-web makes
-          // every View a stacking context, so the panel carrying it ranks
-          // above its later sibling or the next panel paints over the grip.
-          style={[
-            { alignSelf: 'stretch', minHeight: 0 },
-            sizing,
-            handle ? { zIndex: Z_INDEX.floating } : null,
-          ]}
-        >
-          <AppShellPanelContext.Provider value={{ id, alone, framed: region.framed }}>
-            <BloomColorScope colorPreset={colorPreset} asChild>
-              {surface}
-            </BloomColorScope>
-          </AppShellPanelContext.Provider>
-          {handle ? (
-            <View
-              pointerEvents="box-none"
-              testID={testID ? `${testID}-resize-anchor` : undefined}
-              style={
-                {
-                  position: 'absolute',
-                  top: 0,
-                  bottom: 0,
-                  insetInlineEnd: -slot.gap / 2,
-                  width: 0,
-                } as WebCssStyle
-              }
-            >
-              <AiChatResizeHandle
-                label={resizeLabelProp ?? messages.resizePanes}
-                onResizeStart={() => {
-                  dragStart.current = drawn.current;
-                }}
-                onResize={(dx) => commit(dragStart.current + toward(dx))}
-                onNudge={(dx) => commit(drawn.current + toward(dx))}
-                testID={testID ? `${testID}-divider` : undefined}
-              />
-            </View>
-          ) : null}
-        </View>
-      </>
-    );
-  }
-
-  /**
-   * One panel. Alone in a `panels` shell it is the whole region (a reading
-   * page); inside `AppShellPanels` it is one of the group, drawn only when the
-   * group's width and `show` say so.
-   */
+  /** Compatibility singleton; groups below delegate to the shared panel renderer. */
   function AppShellPanel(props: AppShellPanelProps) {
-    const slot = useContext(PanelSlotContext);
-    if (!slot) return <SolePanel {...props} />;
-    const shown = slot.collapsed
-      ? slot.show !== undefined
-        ? props.id === slot.show
-        : slot.index === 0
-      : props.hideBelow === undefined || slot.width >= breakpointPx(props.hideBelow);
-    if (!shown) return null;
-    return <GroupPanel {...props} slot={slot} alone={slot.collapsed || slot.count === 1} />;
+    return <SolePanel {...props} />;
   }
   AppShellPanel.displayName = 'AppShellPanel';
 
-  /**
-   * Several panels side by side. Always a bounded box: it fills a bounded
-   * region, and in a document region it is one viewport tall less the shell's
-   * insets — so the document has nothing to scroll and each panel owns its own.
-   */
+  /** The JSX family is an adapter: one renderer owns group geometry, chrome and scroll. */
   function AppShellPanels({
     children,
     appearance = 'separated',
@@ -402,53 +220,62 @@ export function createAppShellPanels(
     testID,
   }: AppShellPanelsProps) {
     const region = useRegion();
-    // The group's OWN box: a sidebar or an aside beside it counts.
     const { width, onLayout } = useShellWidth();
-    const panels = Children.toArray(children).filter(isValidElement);
-    const joined = appearance === 'joined';
-    const hairline = joined || !region.framed;
-    const slotBase = {
-      count: panels.length,
-      width,
-      collapsed: collapseBelow !== undefined && width < breakpointPx(collapseBelow),
-      show,
-      joined,
-      gap: hairline ? 1 : region.gutter,
-      hairline,
-    };
-    const { top, bottom } = region.viewportInset;
-    const box: ViewStyle =
+    const scope = panelCssScope(useId());
+    const { messages } = useMessages(APP_SHELL_MESSAGES);
+    const css =
+      Platform.OS === 'web' &&
+      typeof CSS !== 'undefined' &&
+      CSS.supports?.('container-type', 'inline-size');
+    const panels = Children.toArray(children)
+      .filter(isValidElement)
+      .map((child, index) => {
+        const { children: content, id, ...props } = child.props as AppShellPanelProps;
+        return {
+          ...props,
+          resizeLabel: props.resizeLabel ?? messages.resizePanes,
+          id: id ?? String(child.key ?? `panel-${index}`),
+          content,
+        };
+      });
+    const gap = appearance === 'joined' || !region.framed ? 1 : region.gutter;
+    const box =
       region.flow === 'document'
-        ? { height: webViewportHeightMinus(top + bottom), flexShrink: 0 }
+        ? {
+            height: webViewportHeightMinus(region.viewportInset.top + region.viewportInset.bottom),
+            flexShrink: 0,
+          }
         : GROW;
-
-    const row = (
-      <View
-        testID={testID}
-        onLayout={onLayout}
-        style={[{ flexDirection: 'row', alignSelf: 'stretch', minWidth: 0 }, joined ? GROW : box]}
-      >
-        {panels.map((panel, index) => (
-          <PanelSlotContext.Provider key={panel.key ?? index} value={{ ...slotBase, index }}>
-            {panel}
-          </PanelSlotContext.Provider>
-        ))}
-      </View>
-    );
-    if (!joined) return row;
     return (
-      <ContentPanel
-        maskColor={region.maskColor}
-        framed={region.framed || region.revealed}
-        chrome={region.revealed ? 'none' : undefined}
-        fill
-        overlaySizing="panel"
-        surfaceStyle={[box, { alignSelf: 'stretch' }]}
-        contentStyle={GROW}
+      <View
+        testID={testID ? `${testID}-frame` : undefined}
+        onLayout={css ? undefined : onLayout}
+        {...(css ? { dataSet: { bloomLayout: scope } } : {})}
+        style={[
+          box,
+          { minWidth: 0, alignSelf: 'stretch' },
+          css ? ({ containerType: 'inline-size', containerName: scope } as WebCssStyle) : null,
+        ]}
       >
-        {row}
-        {region.revealed ? <RevealVeil /> : null}
-      </ContentPanel>
+        <PanelCssContext.Provider value={css ? scope : null}>
+          <AppShellRegionContext.Provider value={{ ...region, flow: 'bounded' }}>
+            <PanelLayoutView
+              eligibilityFromGroup
+              layout={{
+                panels,
+                appearance,
+                collapseBelow,
+                activePanel: show,
+                flow: 'bounded',
+                gap,
+              }}
+              shellWidth={width}
+              gap={gap}
+              testID={testID}
+            />
+          </AppShellRegionContext.Provider>
+        </PanelCssContext.Provider>
+      </View>
     );
   }
   AppShellPanels.displayName = 'AppShellPanels';

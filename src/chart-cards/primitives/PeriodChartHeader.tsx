@@ -49,7 +49,11 @@ export function PeriodChartHeader({
           : { width: '100%', flexDirection: 'column', gap: 12 }
       }
     >
-      <ChartHeadline {...headline} testID={testID} style={wide ? { flex: 1 } : { width: '100%' }} />
+      <ChartHeadline
+        {...headline}
+        testID={testID}
+        style={wide ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 } : { width: '100%' }}
+      />
       {ranges && ranges.length > 0 ? (
         <View testID={testID ? `${testID}-range` : undefined}>
           <SegmentedControl

@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
-import { router, usePathname, type Href } from 'expo-router';
+import { useRouter, usePathname, type Href } from '../../panel-routing/expo-router';
 
 import { Tabs, TabsTrigger, type TabsDragController } from '../Tabs';
 import type { TabsIconComponent, TabsProps } from '../types';
@@ -130,6 +130,7 @@ export function RouterTabs({
   swipeEnabled = true,
   ...tabsProps
 }: RouterTabsProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const activeValue = useMemo(() => matchActiveValue(items, pathname), [items, pathname]);
   const dragRef = useRef<TabsDragController>(null);

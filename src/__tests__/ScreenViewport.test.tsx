@@ -1,0 +1,231 @@
+/** @jest-environment jsdom */
+import React, { useEffect, useRef } from 'react';
+import { Platform, View } from 'react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { Screen, ScreenScrollView, useScreenViewport } from '../screen';
+import { PageHeader } from '../page-header';
+import { useScreen } from '../screen/context';
+import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-shell-region';
+import { useSharedValue } from 'react-native-reanimated';
+import { usePanelScrollContainer } from '../app-shell/context';
+import { ScreenHostContext } from '../screen/context';
+import { resolvedStyle } from './support/rendered-style';
+const originalOS = Platform.OS;
+beforeAll(() => Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' }));
+afterAll(() => Object.defineProperty(Platform, 'OS', { configurable: true, value: originalOS }));
+const region: AppShellRegionValue = {
+  flow: 'bounded',
+  framed: true,
+  gutter: 8,
+  viewportInset: { top: 8, bottom: 8 },
+  bottomReserve: 0,
+  revealed: false,
+  maskColor: '#fff',
+};
+function wrap(children: React.ReactNode, flow: AppShellRegionValue['flow'] = 'bounded') {
+  return (
+    <BloomThemeProvider fonts={false}>
+      <AppShellRegionContext.Provider value={{ ...region, flow }}>
+        {children}
+      </AppShellRegionContext.Provider>
+    </BloomThemeProvider>
+  );
+}
+it('declares local chrome once, and overlay headers reserve no content inset', () => {
+  let owner: ReturnType<typeof useScreenViewport>;
+  function Probe() {
+    owner = useScreenViewport();
+    return null;
+  }
+  const ui = (overlay: boolean) =>
+    wrap(
+      <Screen
+        scroll="auto"
+        testID="screen"
+        headerPlacement={overlay ? 'overlay' : 'inset'}
+        header={<View />}
+        bottomBar={<View />}
+      >
+        <Probe />
+      </Screen>,
+    );
+  const tree = render(ui(false));
+  fireEvent(tree.getByTestId('screen-header'), 'layout', {
+    nativeEvent: { layout: { height: 72 } },
+  });
+  fireEvent(tree.getByTestId('screen-bottom'), 'layout', {
+    nativeEvent: { layout: { height: 80 } },
+  });
+  expect(owner!.kind).toBe('element');
+  expect(resolvedStyle(tree.getByTestId('screen-scroll-content').props.style)).toMatchObject({
+    paddingTop: 72,
+    paddingBottom: 96,
+  });
+  tree.rerender(ui(true));
+  expect(resolvedStyle(tree.getByTestId('screen-scroll-content').props.style)).toMatchObject({
+    paddingTop: 0,
+    paddingBottom: 96,
+  });
+});
+it('retains declared content and scroll wrapper when its host changes document/column ownership', () => {
+  const mounts = jest.fn();
+  let owner: ReturnType<typeof useScreenViewport>;
+  function Probe() {
+    useEffect(mounts, []);
+    owner = useScreenViewport();
+    return <View testID="content" />;
+  }
+  const ui = (flow: AppShellRegionValue['flow']) =>
+    wrap(
+      <Screen scroll="auto">
+        <ScreenScrollView>
+          <Probe />
+        </ScreenScrollView>
+      </Screen>,
+      flow,
+    );
+  const tree = render(ui('document'));
+  expect(owner!.kind).toBe('document');
+  tree.rerender(ui('bounded'));
+  expect(owner!.kind).toBe('element');
+  tree.rerender(ui('document'));
+  expect(mounts).toHaveBeenCalledTimes(1);
+});
+it('uses the same metrics for document chrome and stops inactive screen writers', () => {
+  let owner: ReturnType<typeof useScreenViewport>;
+  let screen: ReturnType<typeof useScreen>;
+  function Probe() {
+    owner = useScreenViewport();
+    screen = useScreen();
+    return null;
+  }
+  const ui = (active: boolean) =>
+    wrap(
+      <Screen scroll="auto" active={active}>
+        <Probe />
+      </Screen>,
+      'document',
+    );
+  const tree = render(ui(true));
+  act(() => {
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 120 });
+    window.dispatchEvent(new Event('scroll'));
+  });
+  expect(owner!.metrics.scrollY).toBe(screen!.scrollY);
+  expect(screen!.scrollY.value).toBe(120);
+  tree.rerender(ui(false));
+  act(() => {
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 240 });
+    window.dispatchEvent(new Event('scroll'));
+  });
+  expect(screen!.scrollY.value).toBe(120);
+});
+
+it('shares the host owner with route hooks above Screen without adding a scroller', () => {
+  let before: ReturnType<typeof usePanelScrollContainer>;
+  let inside: ReturnType<typeof useScreenViewport>;
+  function Probe() {
+    inside = useScreenViewport();
+    return null;
+  }
+  function Route() {
+    before = usePanelScrollContainer();
+    return (
+      <Screen scroll="auto">
+        <Probe />
+      </Screen>
+    );
+  }
+  function Host() {
+    const scrollRef = useRef<unknown>(null);
+    const scrollY = useSharedValue(0);
+    const contentHeight = useSharedValue(0);
+    const viewportHeight = useSharedValue(0);
+    return (
+      <ScreenHostContext.Provider
+        value={{
+          active: true,
+          kind: 'element',
+          scrollRef,
+          metrics: { scrollY, contentHeight, viewportHeight },
+        }}
+      >
+        <Route />
+      </ScreenHostContext.Provider>
+    );
+  }
+  render(wrap(<Host />));
+  expect(before!).not.toBeNull();
+  expect(inside!.scrollRef).toBe(before!);
+});
+
+it('composes host history and actions into the screen header without duplicate back controls', () => {
+  const back = jest.fn();
+  const forward = jest.fn();
+  const routeBack = jest.fn();
+  const ui = (canGoBack: boolean, canGoForward: boolean) =>
+    wrap(
+      <ScreenHostContext.Provider
+        value={{
+          active: true,
+          kind: 'element',
+          headerActions: <View testID="source-action" />,
+          navigation: { canGoBack, canGoForward, back, forward },
+        }}
+      >
+        <Screen
+          scroll="auto"
+          header={
+            <PageHeader
+              testID="route-header"
+              title="Profile"
+              onBack={routeBack}
+              actions={<View testID="route-action" />}
+            />
+          }
+        >
+          <View />
+        </Screen>
+      </ScreenHostContext.Provider>,
+    );
+  const tree = render(ui(true, true));
+  expect(tree.getAllByTestId('route-header-back')).toHaveLength(1);
+  expect(tree.getByTestId('source-action')).toBeTruthy();
+  expect(tree.getByTestId('route-action')).toBeTruthy();
+  fireEvent.press(tree.getByTestId('route-header-back'));
+  expect(back).toHaveBeenCalledTimes(1);
+  expect(tree.queryByTestId('route-header-forward')).toBeNull();
+  expect(routeBack).not.toHaveBeenCalled();
+  tree.rerender(ui(false, false));
+  expect(tree.queryByTestId('route-header-back')).toBeNull();
+});
+
+it('declares and releases its color recipe on its own host without replacing content', () => {
+  const release = jest.fn();
+  const claimColorPreset = jest.fn(() => release);
+  let mounts = 0;
+  function Body() {
+    useEffect(() => {
+      mounts += 1;
+    }, []);
+    return <View testID="color-body" />;
+  }
+  const ui = (preset: 'teal' | undefined) =>
+    wrap(
+      <ScreenHostContext.Provider value={{ active: true, claimColorPreset }}>
+        <Screen colorPreset={preset}>
+          <Body />
+        </Screen>
+      </ScreenHostContext.Provider>,
+    );
+  const tree = render(ui('teal'));
+  expect(claimColorPreset).toHaveBeenCalledWith('teal');
+  expect(mounts).toBe(1);
+  tree.rerender(ui(undefined));
+  expect(release).toHaveBeenCalledTimes(1);
+  expect(mounts).toBe(1);
+  tree.rerender(ui('teal'));
+  tree.unmount();
+  expect(release).toHaveBeenCalledTimes(2);
+});

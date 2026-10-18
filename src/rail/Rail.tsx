@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 /**
  * `Rail` — a full-height, sticky desktop sidebar navigation column.
  *
@@ -41,7 +42,7 @@
  *    unnoticed anywhere else.
  */
 import React, { memo } from 'react';
-import { Platform, ScrollView, type ViewStyle } from 'react-native';
+import { Platform, type ViewStyle } from 'react-native';
 
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { WEB_POSITION_STICKY } from '../styles/web-view-style';
@@ -75,7 +76,7 @@ const RailComponent: React.FC<RailProps> = ({
       className="h-full shrink-0"
       style={[webStickyStyle, { width }, style]}
     >
-      <ScrollView
+      <ScrollArea
         style={{ flex: 1 }}
         contentInsetAdjustmentBehavior="never"
         showsVerticalScrollIndicator={false}
@@ -117,7 +118,7 @@ const RailComponent: React.FC<RailProps> = ({
             </StyledPressable>
           );
         })}
-      </ScrollView>
+      </ScrollArea>
     </StyledView>
   );
 };

@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Platform } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
-/** Reanimated supplies the launch value; OS changes must also settle live motion. */
+function initialPreference(): boolean {
+  if (Platform.OS === 'web') {
+    return typeof window === 'undefined' || !window.matchMedia
+      ? true
+      : window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  // Native exposes an async query. Keep motion still until the OS answers.
+  return true;
+}
+
+/** Observe the OS preference without loading an animation runtime. */
 export function usePrefersReducedMotion(): boolean {
-  const initial = useReducedMotion();
-  const [reduced, setReduced] = useState(initial);
+  const [reduced, setReduced] = useState(initialPreference);
   useEffect(() => {
     if (Platform.OS === 'web') {
       if (typeof window === 'undefined' || !window.matchMedia) return;
@@ -15,8 +23,23 @@ export function usePrefersReducedMotion(): boolean {
       media.addEventListener('change', update);
       return () => media.removeEventListener('change', update);
     }
-    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
-    return () => subscription.remove();
+    let active = true;
+    let changed = false;
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', (value) => {
+      changed = true;
+      if (active) setReduced(value);
+    });
+    void AccessibilityInfo.isReduceMotionEnabled()
+      .then((value) => {
+        if (active && !changed) setReduced(value);
+      })
+      .catch(() => {
+        /* Keep the conservative preference if the OS query fails. */
+      });
+    return () => {
+      active = false;
+      subscription.remove();
+    };
   }, []);
   return reduced;
 }

@@ -56,7 +56,7 @@ function hasGetScrollableNode(
  * DOM node directly. We never cache the node because RNW can swap it across
  * renders — we re-resolve on every read/write.
  */
-function resolveElement(target: ScrollRestorationTarget): HTMLElement | null {
+export function resolveScrollElement(target: ScrollRestorationTarget): HTMLElement | null {
   if (target === 'window') return null;
 
   const current = (target as { current: unknown }).current;
@@ -69,6 +69,8 @@ function resolveElement(target: ScrollRestorationTarget): HTMLElement | null {
     if (isElement(node)) return node;
   }
 
+  const nativeRef = (current as { getNativeScrollRef?: () => unknown }).getNativeScrollRef?.();
+  if (nativeRef && nativeRef !== current) return resolveScrollElement({ current: nativeRef });
   return null;
 }
 
@@ -86,7 +88,7 @@ function resolveElement(target: ScrollRestorationTarget): HTMLElement | null {
  */
 export function resolveScrollTarget(target: ScrollRestorationTarget): ScrollRestorationTarget {
   if (target === 'window' || typeof document === 'undefined') return target;
-  const element = resolveElement(target);
+  const element = resolveScrollElement(target);
   return element !== null &&
     (element === document.scrollingElement || element === document.documentElement)
     ? 'window'
@@ -116,15 +118,15 @@ export function createScroller(target: ScrollRestorationTarget): ResolvedScrolle
 
   return {
     getOffset: () => {
-      const element = resolveElement(target);
+      const element = resolveScrollElement(target);
       return element ? element.scrollTop : 0;
     },
     setOffset: (offset) => {
-      const element = resolveElement(target);
+      const element = resolveScrollElement(target);
       if (element) element.scrollTop = offset;
     },
     getMaxOffset: () => {
-      const element = resolveElement(target);
+      const element = resolveScrollElement(target);
       if (!element) return 0;
       return Math.max(0, element.scrollHeight - element.clientHeight);
     },

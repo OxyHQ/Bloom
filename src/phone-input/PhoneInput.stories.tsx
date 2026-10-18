@@ -125,25 +125,16 @@ export const Controlled: Story = {
   },
 };
 
-/** Additional Catalunya artwork, independent of phone calling-code entries. */
-export const Catalunya: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Page>
-      <CountryFlag iso2="ES-CT" size={28} accessibilityLabel="Catalunya" />
-    </Page>
-  ),
-};
-
-/** Every phone-country flag, at 18 × 12; Catalunya has its own story. */
+/** Every country flag and additional regional artwork, at 18 × 12. */
 export const Flags: Story = {
   parameters: { controls: { disable: true } },
   render: function FlagsStory() {
+    const flags = [...COUNTRIES, { iso2: 'ES-CT', name: 'Catalunya' }];
     const color = useTheme().colors.text;
     return (
       <Page width={720}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {COUNTRIES.map((c) => (
+          {flags.map((c) => (
             <View
               key={c.iso2}
               style={{ width: 64, flexDirection: 'row', alignItems: 'center', gap: 6 }}

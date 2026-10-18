@@ -1,5 +1,6 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import React, { Children, Fragment, isValidElement, memo, useMemo } from 'react';
-import { Linking, Pressable, ScrollView, View, type GestureResponderEvent } from 'react-native';
+import { Linking, Pressable, View, type GestureResponderEvent } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
@@ -141,7 +142,7 @@ const BreadcrumbComponent: React.FC<BreadcrumbProps> = ({
       testID={testID}
       style={[{ width: '100%', flexDirection: 'row', alignItems: 'center' }, style]}
     >
-      <ScrollView
+      <ScrollArea
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ alignItems: 'center' }}
@@ -163,7 +164,7 @@ const BreadcrumbComponent: React.FC<BreadcrumbProps> = ({
             </Fragment>
           ))}
         </View>
-      </ScrollView>
+      </ScrollArea>
     </View>
   );
 };

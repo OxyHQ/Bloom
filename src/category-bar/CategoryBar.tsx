@@ -1,12 +1,5 @@
-import React, {
-  type ComponentRef,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { ScrollArea } from '../layout/ScrollArea';
+import { type ComponentRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -454,7 +447,7 @@ function CategoryBarComponent({
   return (
     <View testID={testID} style={[{ flexDirection: 'row', alignItems: 'center' }, style]}>
       <View style={{ flex: 1, minWidth: 0, position: 'relative' }}>
-        <ScrollView
+        <ScrollArea
           ref={scrollRef}
           {...webDataSet({ bloomCategoryBarTrack: '' })}
           horizontal
@@ -483,7 +476,7 @@ function CategoryBarComponent({
               testID={testID ? `${testID}-item-${item.key}` : undefined}
             />
           ))}
-        </ScrollView>
+        </ScrollArea>
         {IS_WEB && overflow.previous ? (
           <View pointerEvents="box-none" style={edgeStyle('left')}>
             <Button

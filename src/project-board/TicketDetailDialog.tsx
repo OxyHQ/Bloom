@@ -1,5 +1,6 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { useEffect, useRef, useState } from 'react';
-import { Linking, Platform, ScrollView, useWindowDimensions } from 'react-native';
+import { Linking, Platform, useWindowDimensions } from 'react-native';
 import { TicketTokenChart } from './TicketTokenChart';
 import { useDialogControl } from '../dialog/context';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -294,7 +295,7 @@ export function TicketDetailDialog({
               </Text>
             </View>
             <View className="relative min-h-0 flex-1">
-              <ScrollView
+              <ScrollArea
                 accessibilityLabel={m.properties}
                 style={{ flex: 1, minHeight: 0 }}
                 onScroll={(e) =>
@@ -629,7 +630,7 @@ export function TicketDetailDialog({
                     </View>
                   </View>
                 </View>
-              </ScrollView>
+              </ScrollArea>
               <View
                 pointerEvents="none"
                 className="pointer-events-none absolute inset-x-0 top-0 z-10 h-6"

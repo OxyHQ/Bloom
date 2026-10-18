@@ -398,6 +398,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           <StyledView
             key="border-frame"
             testID="content-panel-border-frame"
+            {...{ dataSet: { bloomPanelBorder: 'true' } }}
             pointerEvents="none"
             // The shadow rides the SAME element as the hairline, so the lift and
             // the edge can never disagree about where the panel ends. It paints
@@ -425,6 +426,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         <StyledView
           key="content"
           testID="content-panel-content"
+          {...{ dataSet: { bloomPanelContent: 'true' } }}
           className={contentClass}
           style={[
             curveStyle,

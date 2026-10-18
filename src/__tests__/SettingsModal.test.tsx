@@ -117,7 +117,7 @@ describe('SettingsModal shell', () => {
     expect(getByTestId('settings-header')).toBeTruthy();
   });
 
-  it('renders the shared header inside the page viewport with no separate fade', () => {
+  it('composes one shared header alongside its Screen-owned scroll content', () => {
     const { getByTestId, queryByTestId } = renderWithTheme(<Controlled />);
     flush();
     expect(resolvedStyle(getByTestId('settings-header').props.style).paddingTop).toBe(0);
@@ -127,8 +127,8 @@ describe('SettingsModal shell', () => {
     expect(queryByTestId('settings-title-row')).toBeNull();
     expect(queryByTestId('settings-fade')).toBeNull();
     const page = getByTestId('settings-page');
-    expect(page.findByProps({ testID: 'settings-header' })).toBeTruthy();
-    expect(page.props.contentContainerStyle).toBeUndefined();
+    expect(page.findAllByProps({ testID: 'settings-header' })).toHaveLength(0);
+    expect(page.props.onScroll).toBeDefined();
     expect(page.props.automaticallyAdjustContentInsets).toBe(false);
   });
 

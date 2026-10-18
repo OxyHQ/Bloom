@@ -1,7 +1,8 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { useCardFill } from '../card/use-card-fill';
 import { Surface } from '../surface';
-import React, { type ComponentRef, memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
+import { type ComponentRef, memo, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 
 import { GlyphButton } from '../button';
 import { Chip, ChipRow } from '../chip';
@@ -267,7 +268,7 @@ function LibraryPanelComponent({
             />
           ) : null}
         </View>
-        <ScrollView
+        <ScrollArea
           style={{ flex: 1 }}
           contentContainerStyle={{ alignItems: 'center', paddingBottom: 8 }}
           showsVerticalScrollIndicator={false}
@@ -278,7 +279,7 @@ function LibraryPanelComponent({
               {renderItem(item, 'rail')}
             </View>
           ))}
-        </ScrollView>
+        </ScrollArea>
       </Surface>
     );
   }
@@ -580,7 +581,7 @@ function LibraryPanelComponent({
       </View>
 
       {/* List */}
-      <ScrollView
+      <ScrollArea
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }}
         onLayout={(event) => setListWidth(Math.floor(event.nativeEvent.layout.width))}
@@ -615,7 +616,7 @@ function LibraryPanelComponent({
             ))}
           </View>
         )}
-      </ScrollView>
+      </ScrollArea>
     </Surface>
   );
 }

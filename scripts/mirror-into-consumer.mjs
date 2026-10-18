@@ -63,6 +63,8 @@ const KEPT = '.bloom-published';
 /** Every `node_modules/@oxy.so/bloom` under the consumer (root and each workspace package). */
 function bloomInstalls(dir, found = []) {
   if (!existsSync(dir)) return found;
+  // Nested checkouts belong to other sessions, not this consumer install.
+  if (dir !== CONSUMER && existsSync(join(dir, '.git'))) return found;
   for (const name of readdirSync(dir)) {
     if (name === '.git' || name === 'bloom-local') continue;
     const full = join(dir, name);

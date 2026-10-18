@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { type ComponentRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
@@ -695,7 +696,7 @@ export function ProjectBoardBase({
       </SourceView>
       <StyledView
         ref={boardNode}
-        className="-mx-3 min-h-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:thin] sm:-mx-6 lg:-me-7"
+        className="-mx-3 min-h-0 flex-1 overflow-hidden sm:-mx-6 lg:-me-7"
         style={{
           marginLeft: width >= 640 ? -24 : -12,
           marginRight: width >= 1024 ? -28 : width >= 640 ? -24 : -12,
@@ -705,7 +706,7 @@ export function ProjectBoardBase({
           measure();
         }}
       >
-        <ScrollView
+        <ScrollArea
           ref={scrollView}
           horizontal
           style={{ flex: 1 }}
@@ -780,7 +781,7 @@ export function ProjectBoardBase({
                 </StyledView>
               </StyledView>
               <StyledView className="relative min-h-0 flex-1">
-                <ScrollView
+                <ScrollArea
                   ref={(node) => {
                     columnScrolls.current[column.id] = node;
                   }}
@@ -867,12 +868,12 @@ export function ProjectBoardBase({
                   {over?.columnId === column.id && over.index >= column.tickets.length && (
                     <StyledView style={{ height: 3, backgroundColor: colors.primary }} />
                   )}
-                </ScrollView>
+                </ScrollArea>
                 {column.tickets.length === 0 && <ProjectBoardEmptyState />}
               </StyledView>
             </StyledView>
           ))}
-        </ScrollView>
+        </ScrollArea>
       </StyledView>
       {activeTicket && (
         <Portal>

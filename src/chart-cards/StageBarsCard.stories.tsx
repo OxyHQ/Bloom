@@ -17,6 +17,7 @@ const meta: Meta<typeof StageBarsCard> = {
     title: { control: 'text' },
     mono: { control: 'boolean' },
     showIcons: { control: 'boolean' },
+    showPercentages: { control: 'boolean' },
     headline: { control: 'number' },
     delta: { control: 'number' },
     range: { control: 'text' },
@@ -138,6 +139,23 @@ export const Narrow: Story = {
   render: () => (
     <Frame width={320}>
       <StageBarsCard ranges={RANGES} />
+    </Frame>
+  ),
+};
+
+/** Independent categories: counts without conversion percentages. */
+export const Categories: Story = {
+  render: () => (
+    <Frame>
+      <StageBarsCard
+        title="Post types"
+        headline={42}
+        showPercentages={false}
+        stages={[
+          { label: 'Text', value: 24 },
+          { label: 'Image', value: 18 },
+        ]}
+      />
     </Frame>
   ),
 };

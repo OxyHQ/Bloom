@@ -1,3 +1,4 @@
+import { ScrollBar } from '../layout/ScrollBar';
 import { useCardFill } from '../card/use-card-fill';
 import type { Surface as SurfaceComponent } from '../surface';
 /**
@@ -17,7 +18,7 @@ import type { Surface as SurfaceComponent } from '../surface';
  * dozen are mounted, and the exact offsets are what let a category tab jump
  * straight to its header instead of estimating.
  */
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Button as ButtonComponent } from '../button';
 import { FlatList, Pressable, TextInput, View } from 'react-native';
 
@@ -424,21 +425,24 @@ export function createEmojiPicker({
                 </Text>
               </View>
             ) : (
-              <FlatList
-                ref={listRef}
-                {...dataHook('bloomChatComposerScroll')}
-                data={rows}
-                keyExtractor={(row) => row.key}
-                renderItem={renderRow}
-                getItemLayout={(_data, index) => ({
-                  length: heights[index] ?? EMOJI_CELL,
-                  offset: offsets[index] ?? 0,
-                  index,
-                })}
-                style={{ height }}
-                showsVerticalScrollIndicator={false}
-                testID={testID ? `${testID}-grid` : undefined}
-              />
+              <View style={{ position: 'relative', height }}>
+                <FlatList
+                  ref={listRef}
+                  {...dataHook('bloomChatComposerScroll')}
+                  data={rows}
+                  keyExtractor={(row) => row.key}
+                  renderItem={renderRow}
+                  getItemLayout={(_data, index) => ({
+                    length: heights[index] ?? EMOJI_CELL,
+                    offset: offsets[index] ?? 0,
+                    index,
+                  })}
+                  style={{ height }}
+                  showsVerticalScrollIndicator={false}
+                  testID={testID ? `${testID}-grid` : undefined}
+                />
+                <ScrollBar target={listRef} />
+              </View>
             )}
           </>
         )}

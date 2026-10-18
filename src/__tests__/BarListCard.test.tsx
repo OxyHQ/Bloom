@@ -209,3 +209,43 @@ describe('BarListCard', () => {
     ).toBe(mixColors(palette.surface, 'rgb(10 20 30)', 0.14));
   });
 });
+
+describe('summary stats and raw-value shares', () => {
+  it('includes hidden rows in shares and recalculates them on tab change, including zeros', () => {
+    const { getByTestId, getByText, UNSAFE_getAllByProps } = renderCard(
+      <BarListCard
+        testID="summary"
+        metric="value"
+        showShares
+        limit={1}
+        tabs={[
+          {
+            id: 'first',
+            label: 'First',
+            items: [
+              { label: 'Likes', value: 60 },
+              { label: 'Replies', value: 40 },
+            ],
+          },
+          { id: 'zero', label: 'Zero', items: [{ label: 'Likes', value: 0 }] },
+        ]}
+        stats={[{ label: 'Summary metric', value: '100' }]}
+      />,
+    );
+    expect(getByText('60%')).toBeTruthy();
+    expect(getByTestId('summary-rows-row-0').props.accessibilityLabel).toBe('Likes: 60 (60%)');
+    expect(getByTestId('summary-stats')).toBeTruthy();
+    fireEvent(UNSAFE_getAllByProps({ variant: 'underline' })[0]!, 'valueChange', 'zero');
+    expect(getByText('0%')).toBeTruthy();
+    expect(getByTestId('summary-rows-row-0').props.accessibilityLabel).toBe('Likes: 0 (0%)');
+    expect(getByText('Summary metric')).toBeTruthy();
+  });
+  it('leaves raw values and the original footer unchanged by default', () => {
+    const { queryByText, queryByTestId, getByText } = renderCard(
+      <BarListCard testID="plain" metric="value" items={[{ label: 'Likes', value: 60 }]} />,
+    );
+    expect(getByText('60')).toBeTruthy();
+    expect(queryByText('100%')).toBeNull();
+    expect(queryByTestId('plain-stats')).toBeNull();
+  });
+});

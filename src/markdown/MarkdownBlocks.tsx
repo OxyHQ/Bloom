@@ -1,5 +1,6 @@
-import React, { memo } from 'react';
-import { ScrollView, View, type TextStyle } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo } from 'react';
+import { View, type TextStyle } from 'react-native';
 
 import { CodeBlock } from '../code';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
@@ -265,7 +266,7 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
     });
 
   return (
-    <ScrollView horizontal contentContainerStyle={{ flexGrow: 1 }}>
+    <ScrollArea horizontal contentContainerStyle={{ flexGrow: 1 }}>
       <View
         role="table"
         style={{
@@ -292,6 +293,6 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
           </View>
         ))}
       </View>
-    </ScrollView>
+    </ScrollArea>
   );
 }

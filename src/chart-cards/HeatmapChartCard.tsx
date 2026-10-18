@@ -14,6 +14,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { resolveTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
+import { ChartStatTiles, type ChartStatTile } from './primitives/ChartStatTiles';
 import { ChartHeader } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
@@ -73,6 +74,8 @@ export interface HeatmapChartCardProps {
   /** The hovered cell. Controlled when set (`null` = none). */
   activeCell?: HeatmapCell | null;
   onActiveCellChange?: (cell: HeatmapCell | null) => void;
+  /** Optional summary tiles below the chart. */
+  stats?: readonly ChartStatTile[];
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -142,6 +145,7 @@ export function HeatmapChartCard({
   legendLabels = LEGEND_LABELS,
   activeCell: controlled,
   onActiveCellChange,
+  stats,
   style,
   testID,
 }: HeatmapChartCardProps) {
@@ -223,8 +227,10 @@ export function HeatmapChartCard({
 
   const labelColor = (on: boolean) => ({ color: on ? palette.text : palette.textTertiary });
 
+  const hasStats = !!stats?.length;
+
   return (
-    <ChartCardSurface style={style} testID={testID}>
+    <ChartCardSurface height={hasStats ? 'auto' : undefined} style={style} testID={testID}>
       <ChartHeader
         label={headerLabel}
         value={headlineValue}
@@ -243,7 +249,7 @@ export function HeatmapChartCard({
       />
 
       <View
-        style={styles.grid}
+        style={[styles.grid, hasStats ? { flexBasis: 'auto', minHeight: 221 } : undefined]}
         onPointerLeave={() => setActive(null)}
         testID={testID ? `${testID}-grid` : undefined}
       >
@@ -332,12 +338,23 @@ export function HeatmapChartCard({
           {legendLabels[1]}
         </Text>
       </View>
+      {hasStats ? (
+        <ChartStatTiles items={stats} testID={testID ? `${testID}-stats` : undefined} />
+      ) : null}
     </ChartCardSurface>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: { width: '100%', flex: 1, minHeight: 0, flexDirection: 'row', gap: GAP },
+  grid: {
+    width: '100%',
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minHeight: 0,
+    flexDirection: 'row',
+    gap: GAP,
+  },
   labelColumn: { flexDirection: 'column', gap: GAP },
   rowLabel: {
     flex: 1,

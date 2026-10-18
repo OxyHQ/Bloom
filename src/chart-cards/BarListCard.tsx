@@ -20,6 +20,7 @@ import { Tabs, TabsTrigger } from '../tabs';
 import { Text } from '../typography';
 import { resolveTone, type ChartSeriesTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
+import { ChartStatTiles, type ChartStatTile } from './primitives/ChartStatTiles';
 import { TABULAR } from './primitives/ChartHeader';
 import { groupThousands } from './primitives/format';
 import {
@@ -96,6 +97,8 @@ export interface BarListCardProps {
   metricLabel?: string;
   /** Each row's share of the tab total (default) or its raw value. */
   metric?: 'share' | 'value';
+  /** Also display each row's share of the current tab total with raw values. */
+  showShares?: boolean;
   /** Raw values (`metric="value"`). Default en-US grouping. */
   format?: (value: number) => string;
   /** Bar tint; any colour. Default chart-6 (blue). */
@@ -107,6 +110,8 @@ export interface BarListCardProps {
   /** Initially selected tab id (defaults to the first). */
   defaultTab?: string;
   onTabChange?: (id: string) => void;
+  /** Optional summary tiles below the chart. */
+  stats?: readonly ChartStatTile[];
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -135,12 +140,14 @@ export function BarListCard({
   title,
   metricLabel: metricLabelProp,
   metric = 'share',
+  showShares = false,
   format: formatProp,
   color,
   mono = false,
   limit = 5,
   defaultTab,
   onTabChange,
+  stats,
   style,
   testID,
 }: BarListCardProps) {
@@ -233,6 +240,7 @@ export function BarListCard({
           key={current.id}
           items={current.items}
           metric={metric}
+          showShares={showShares}
           format={format}
           tone={tone}
           mono={mono}
@@ -240,6 +248,11 @@ export function BarListCard({
           mounted={mounted}
           testID={testID ? `${testID}-rows` : undefined}
         />
+      ) : null}
+      {stats?.length ? (
+        <View style={{ marginTop: 'auto', paddingTop: 4 }}>
+          <ChartStatTiles items={stats} testID={testID ? `${testID}-stats` : undefined} />
+        </View>
       ) : null}
     </ChartCardSurface>
   );
@@ -315,6 +328,7 @@ function TabStrip({
 function BarRows({
   items,
   metric,
+  showShares,
   format,
   tone,
   mono,
@@ -324,6 +338,7 @@ function BarRows({
 }: {
   items: readonly BarListItem[];
   metric: 'share' | 'value';
+  showShares: boolean;
   format: (value: number) => string;
   tone: ChartSeriesTone;
   mono: boolean;
@@ -350,6 +365,7 @@ function BarRows({
         key={`${item.label}-${index}`}
         label={item.label}
         value={metric === 'share' ? shareLabel(item.value, total) : format(item.value)}
+        share={metric === 'value' && showShares ? shareLabel(item.value, total) : undefined}
         percent={(item.value / top) * 100}
         tint={
           active === index
@@ -397,6 +413,7 @@ function BarRows({
 function BarRow({
   label,
   value,
+  share,
   percent,
   tint,
   icon,
@@ -406,6 +423,7 @@ function BarRow({
 }: {
   label: string;
   value: string;
+  share?: string;
   percent: number;
   tint: string;
   icon: React.ReactNode;
@@ -420,6 +438,8 @@ function BarRow({
     <View
       testID={testID}
       {...hover}
+      accessible={share ? true : undefined}
+      accessibilityLabel={share ? `${label}: ${value} (${share})` : undefined}
       style={{
         position: 'relative',
         height: ROW_HEIGHT,
@@ -478,10 +498,23 @@ function BarRow({
           {label}
         </Text>
       </View>
-      <View style={{ position: 'relative', flexShrink: 0 }}>
+      <View
+        style={{
+          position: 'relative',
+          flexShrink: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
         <Text variant="body-medium" numberOfLines={1} style={[{ color: palette.text }, TABULAR]}>
           {value}
         </Text>
+        {share ? (
+          <Text variant="caption-1-medium" style={[{ color: palette.textSecondary }, TABULAR]}>
+            {share}
+          </Text>
+        ) : null}
       </View>
     </View>
   );

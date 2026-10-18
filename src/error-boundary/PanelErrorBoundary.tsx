@@ -1,5 +1,4 @@
-import React from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
 import { EmptyState } from '../empty-state';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { useMessages } from '../locale/messages';
@@ -25,7 +24,7 @@ export function PanelErrorBoundary({
         fallback !== undefined
           ? fallback
           : ({ retry }) => (
-              <ScrollView
+              <ScrollArea
                 style={{ flex: 1, minHeight: 0 }}
                 contentContainerStyle={{
                   flexGrow: 1,
@@ -48,7 +47,7 @@ export function PanelErrorBoundary({
                     },
                   }}
                 />
-              </ScrollView>
+              </ScrollArea>
             )
       }
     >

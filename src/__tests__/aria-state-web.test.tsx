@@ -560,7 +560,11 @@ describe('Slider', () => {
     // react-native-web has no handling for `accessibilityValue` at all, so the
     // slider announced its role and no value whatsoever.
     const c = mount(<Slider value={40} min={0} max={100} onValueChange={() => {}} testID="sl" />);
-    const el = byTestId(c, 'sl');
+    const area = byTestId(c, 'sl');
+    expect(area.hasAttribute('role')).toBe(false);
+    expect(area.querySelectorAll('[role="slider"]')).toHaveLength(1);
+    const el = area.querySelector('[role="slider"]')!;
+    expect(el.getAttribute('tabindex')).toBe('0');
     expect(el.getAttribute('role')).toBe('slider');
     expect(el.getAttribute('aria-valuenow')).toBe('40');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
@@ -571,7 +575,9 @@ describe('Slider', () => {
     const c = mount(
       <Slider value={0} min={0} max={10} onValueChange={() => {}} disabled testID="sl" />,
     );
-    expect(byTestId(c, 'sl').getAttribute('aria-disabled')).toBe('true');
+    expect(byTestId(c, 'sl').querySelector('[role="slider"]')!.getAttribute('aria-disabled')).toBe(
+      'true',
+    );
   });
 
   it('emits the accessible NAME as aria-label', () => {
@@ -588,7 +594,9 @@ describe('Slider', () => {
         testID="sl"
       />,
     );
-    expect(byTestId(c, 'sl').getAttribute('aria-label')).toBe('Volume');
+    expect(byTestId(c, 'sl').querySelector('[role="slider"]')!.getAttribute('aria-label')).toBe(
+      'Volume',
+    );
   });
 });
 

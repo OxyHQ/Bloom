@@ -375,11 +375,13 @@ function SliderBase({
   return (
     <View
       testID={testID}
-      nativeID={field.nativeID}
-      aria-describedby={field.describedBy}
-      aria-invalid={field.invalid || undefined}
-      {...(isRange
-        ? { accessibilityLabel: field.accessibilityLabel }
+      nativeID={IS_WEB && !isRange ? undefined : field.nativeID}
+      aria-describedby={IS_WEB && !isRange ? undefined : field.describedBy}
+      aria-invalid={IS_WEB && !isRange ? undefined : field.invalid || undefined}
+      {...(isRange || IS_WEB
+        ? isRange
+          ? { accessibilityLabel: field.accessibilityLabel }
+          : {}
         : {
             accessibilityRole: 'adjustable' as const,
             accessibilityLabel: field.accessibilityLabel,
@@ -540,10 +542,19 @@ function SliderBase({
               }}
               pointerEvents="none"
               {...webThumbProps}
-              {...(isRange
+              {...(isRange || IS_WEB
                 ? {
                     accessibilityRole: 'adjustable' as const,
-                    accessibilityLabel: thumbLabels[index] ?? messages.value(index + 1),
+                    accessibilityLabel: isRange
+                      ? (thumbLabels[index] ?? messages.value(index + 1))
+                      : field.accessibilityLabel,
+                    ...(!isRange
+                      ? {
+                          nativeID: field.nativeID,
+                          'aria-describedby': field.describedBy,
+                          'aria-invalid': field.invalid || undefined,
+                        }
+                      : {}),
                     'aria-valuemin': index > 0 ? (values[index - 1] as number) : min,
                     'aria-valuemax':
                       index < values.length - 1 ? (values[index + 1] as number) : max,

@@ -1,4 +1,5 @@
 export {
+  Region,
   Text,
   Circle,
   Pill,
@@ -6,3 +7,5 @@ export {
   Col,
   Row,
 } from './Skeleton';
+
+export type { SkeletonRegionProps } from './types';

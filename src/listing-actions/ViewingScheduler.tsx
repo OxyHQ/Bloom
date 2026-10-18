@@ -1,5 +1,6 @@
-import React, { memo, useCallback, useState } from 'react';
-import { ScrollView, View, type LayoutChangeEvent } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo, useCallback, useState } from 'react';
+import { View, type LayoutChangeEvent } from 'react-native';
 
 import { ActionCardShell } from '../booking/ActionCard';
 import { Button } from '../button';
@@ -119,7 +120,7 @@ function ViewingSchedulerComponent({
       ) : null}
 
       {caption(dayLabel)}
-      <ScrollView
+      <ScrollArea
         horizontal
         showsHorizontalScrollIndicator={false}
         accessibilityLabel={dayLabel}
@@ -157,7 +158,7 @@ function ViewingSchedulerComponent({
             )}
           </SelectChip>
         ))}
-      </ScrollView>
+      </ScrollArea>
 
       <View style={{ marginTop: 20 }}>{caption(timeLabel)}</View>
       {slots.length === 0 ? (

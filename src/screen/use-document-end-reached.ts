@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import type { ViewStyle } from 'react-native';
 
 /**
@@ -15,6 +15,7 @@ export const END_SENTINEL_STYLE: ViewStyle = {
 };
 
 interface DocumentEndReachedOptions {
+  rootRef?: RefObject<unknown>;
   onEndReached: (() => void) | undefined;
   /** Viewport-relative distance from the end, as in `FlatList`. */
   threshold: number;
@@ -42,6 +43,7 @@ export function useDocumentEndReached({
   threshold,
   enabled,
   rearmKey,
+  rootRef,
 }: DocumentEndReachedOptions) {
   const [node, setNode] = useState<Element | null>(null);
   const ref = useCallback((value: unknown) => {
@@ -70,10 +72,13 @@ export function useDocumentEndReached({
         armed = false;
         latest.current?.();
       },
-      { rootMargin: `0px 0px ${Math.max(0, threshold) * 100}% 0px` },
+      {
+        root: rootRef?.current instanceof Element ? rootRef.current : null,
+        rootMargin: `0px 0px ${Math.max(0, threshold) * 100}% 0px`,
+      },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [active, node, threshold, rearmKey]);
+  }, [active, node, threshold, rearmKey, rootRef]);
   return ref;
 }

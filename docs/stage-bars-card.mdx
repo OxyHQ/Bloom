@@ -31,7 +31,10 @@ import { RiEyeLine, RiUserAddLine } from '@oxy.so/bloom/icons';
 | `title` | `"Pipeline"` | header label at rest |
 | `mono` | `false` | every pill in the mono ink, no tile swatches |
 | `showIcons` | `true` | draw each stage's `icon` inside its bar |
-| `headline` | first stage's value | |
+| `showPercentages` | `true` | show percentages of the first stage in rows and their accessible summary; false keeps raw values |
+| `percentageBase` | `first` | denominator for bar lengths and percentage labels: `total` uses the sum of all categories (zero total gives zero percentages) |
+| `stats` | — | optional `ChartStatTile[]` summaries replacing interactive stage tiles; empty array hides tiles |
+| `headline` | first stage's value, or sum in total mode | |
 | `delta` | — | ratio for the chip (`0.061` → `+6.1%`) |
 | `range` / `ranges` / `defaultRange` / `onRangeChange` | — | static pill, or a period dropdown whose fields override the props |
 | `format` | en-US grouping | headline, rows, tiles |
@@ -57,3 +60,16 @@ The rows read as a CSS grid (`auto minmax(0,1fr) auto`); every cell is 20px tall
 ## Interaction and motion
 
 Hovering any cell of a row, or its tile, swaps the header to that stage (count-up + fade, delta chip hidden), darkens its fill, fades the other rows to 35% and the other tiles to 50% (200ms). Fills grow from 0 over 500ms `ease-out` 60ms after mount and ease to new widths on a range change; their colour eases 500ms on web. Native: press and hold a row or tile. Reduced motion snaps.
+
+
+For independent categories such as post types, use `showPercentages={false}`,
+sort the stages largest first, and pass their sum as `headline`. Bar lengths
+still compare to the first (largest) category; they are not shares of the total.
+
+
+For a category distribution with visible percentages, set `percentageBase="total"`.
+The default headline becomes the sum; an explicit `headline` still overrides it.
+Whole-percent labels are rounded individually, so their displayed sum can differ
+slightly from 100%. `stats` accepts preformatted summary tiles such as formats
+used or posts per day. These summaries do not fade or activate when a row is
+hovered. With `stats` omitted, the existing per-stage interactive tiles remain.

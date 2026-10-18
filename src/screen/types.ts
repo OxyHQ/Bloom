@@ -1,10 +1,17 @@
-import type { ReactNode } from 'react';
-import type { ScrollViewProps, ViewProps } from 'react-native';
+import type { AppColorName } from '../theme/color-presets';
+import type { ReactNode, Ref } from 'react';
+import type { ScrollViewProps, ViewProps, StyleProp, ViewStyle } from 'react-native';
 import type { ScrollRestorationBinding } from '../scroll/types';
 import type { ScrollHandlerProcessed } from 'react-native-reanimated';
 
 export interface ScreenProps extends ViewProps {
+  /** Local screen recipe, including its enclosing panel surface. Restored on departure. */
+  colorPreset?: AppColorName;
   header?: ReactNode;
+  /** auto uses the host's document/column viewport on web. Native content keeps its own list. */
+  scroll?: 'auto' | 'content';
+  /** Overlay chrome paints above content without reserving its height. */
+  headerPlacement?: 'inset' | 'overlay';
   /** Disable all descendant scroll writers when a navigator retains this screen. */
   active?: boolean;
   /** inherit shell navigation motion; shared establishes a shell; isolated resets it for a modal. */
@@ -44,4 +51,22 @@ export interface ScreenScrollViewProps
   onEndReached?: () => void;
   /** Viewport-relative distance from the end that fires `onEndReached`. Default 2, as `FlatList`. */
   onEndReachedThreshold?: number;
+}
+
+export interface ScreenPagerHandle {
+  scrollToIndex(index: number, options?: { animated?: boolean }): void;
+}
+export interface ScreenPagerProps<Item> {
+  data: readonly Item[];
+  keyExtractor(item: Item, index: number): string;
+  renderItem(info: { item: Item; index: number; viewportHeight: number }): ReactNode;
+  onIndexChange?(index: number): void;
+  onEndReached?(): void;
+  /** Number of useful viewports before the end. */
+  onEndReachedThreshold?: number;
+  /** Keep distant items as correctly sized placeholders on web. */
+  renderRadius?: number;
+  ref?: Ref<ScreenPagerHandle>;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
 }

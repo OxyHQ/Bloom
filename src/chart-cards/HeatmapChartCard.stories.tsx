@@ -164,3 +164,23 @@ export const Narrow: Story = {
     </Frame>
   ),
 };
+
+/** Summary metrics stay visible while exploring the plot. */
+export const WithSummaryStats: Story = {
+  render: () => (
+    <View style={{ width: 480, maxWidth: '100%' }}>
+      <HeatmapChartCard
+        title="Interactions"
+        rows={[
+          { label: 'Likes', values: [12, 8] },
+          { label: 'Replies', values: [3, 7] },
+        ]}
+        columns={['Mon', 'Tue']}
+        stats={[
+          { label: 'Total', value: '30' },
+          { label: 'Largest cell', value: '12' },
+        ]}
+      />
+    </View>
+  ),
+};

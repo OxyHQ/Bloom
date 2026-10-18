@@ -346,8 +346,39 @@ export function resolveCanonicalButtonPalette(
   tone: BloomTone = 'accent',
   colors?: { background: string; foreground: string },
   neutralFill?: string,
-  material: 'surface' | 'flat' = 'surface',
+  material: 'surface' | 'flat' | 'shared' = 'surface',
 ): ButtonPalette {
+  if (material === 'shared') {
+    const base = resolveCanonicalButtonPalette(
+      appearance,
+      theme,
+      tone,
+      colors,
+      neutralFill,
+      'surface',
+    );
+    return {
+      ...base,
+      rest: {
+        ...base.rest,
+        background: 'transparent',
+        border: TRANSPARENT,
+        gradient: null,
+        surface: false,
+      },
+      hover: { ...base.hover, border: TRANSPARENT, gradient: null, surface: false },
+      active: { ...base.active, border: TRANSPARENT, gradient: null, surface: false },
+      disabled: {
+        ...base.disabled,
+        background: 'transparent',
+        border: TRANSPARENT,
+        gradient: null,
+        surface: false,
+      },
+      borderWidth: 0,
+      shadow: false,
+    };
+  }
   const c = theme.colors;
   const pair = colors ?? resolveBloomColors(c, tone, appearance);
   if (material === 'flat' && appearance !== 'plain') {

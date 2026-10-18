@@ -373,6 +373,8 @@ export interface SidebarProps {
   collapsed?: boolean;
   defaultCollapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
+  /** Disable the collapse control while the containing layout requires its current size. */
+  collapseDisabled?: boolean;
 
   /** Rendered inside a mobile drawer: always expanded, close button instead of collapse. */
   mobile?: boolean;

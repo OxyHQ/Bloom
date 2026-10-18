@@ -1,5 +1,6 @@
-import React, { memo, useEffect, useMemo } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo, useEffect, useMemo } from 'react';
+import { View } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { webDataSet } from '../styles/web-data';
@@ -78,7 +79,7 @@ function StoriesRowComponent({
   );
 
   return (
-    <ScrollView
+    <ScrollArea
       {...webDataSet({ bloomChatScrollX: '' })}
       horizontal
       showsHorizontalScrollIndicator={false}
@@ -143,7 +144,7 @@ function StoriesRowComponent({
           </View>
         ))}
       </View>
-    </ScrollView>
+    </ScrollArea>
   );
 }
 

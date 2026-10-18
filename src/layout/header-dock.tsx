@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { Platform } from 'react-native';
 import { useDerivedValue, useSharedValue, type SharedValue } from 'react-native-reanimated';
+import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
 import { useScreenContext } from '../screen/context';
 import { useScrollOffset } from './scroll-offset';
 import { TopEdgeProvider, useTopEdgeInset } from './top-edge';
@@ -41,8 +42,16 @@ export function HeaderDockProvider({
 }: PropsWithChildren<{ scrollY?: SharedValue<number> }>) {
   const screen = useScreenContext();
   const contextual = useScrollOffset();
+  const viewport = useContext(ScreenViewportContext);
+  const host = useContext(ScreenHostContext);
   const rest = useSharedValue(0);
-  const scrollY = supplied ?? screen?.scrollY ?? contextual ?? rest;
+  const scrollY =
+    supplied ??
+    viewport?.metrics.scrollY ??
+    host.metrics?.scrollY ??
+    screen?.scrollY ??
+    contextual ??
+    rest;
   const headerHeight = useSharedValue(0);
   const overlay = useSharedValue(false);
   const [overlaps, setOverlaps] = useState(false);

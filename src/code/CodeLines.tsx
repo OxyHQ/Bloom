@@ -1,5 +1,6 @@
-import React, { createElement, memo, useMemo } from 'react';
-import { ScrollView, Text as RNText, View } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { createElement, memo, useMemo } from 'react';
+import { Text as RNText, View } from 'react-native';
 
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import { tokenizeCode } from './highlight';
@@ -39,14 +40,14 @@ function CodeLinesComponent({
   const metrics = LINE_METRICS[size];
 
   if (IS_WEB) {
-    return createElement(
+    const pre = createElement(
       'pre',
       {
         'data-testid': testID,
         'data-bloom-code-scroll': wrap ? undefined : '',
         style: {
           margin: 0,
-          overflowX: wrap ? 'visible' : 'auto',
+          overflowX: 'visible',
           fontFamily: MONO_FAMILY,
           fontSize: metrics.fontSize,
           lineHeight: `${metrics.lineHeight}px`,
@@ -110,6 +111,13 @@ function CodeLinesComponent({
         ),
       ),
     );
+    return wrap ? (
+      pre
+    ) : (
+      <ScrollArea horizontal style={{ flexGrow: 0 }}>
+        {pre}
+      </ScrollArea>
+    );
   }
 
   const rows = lines.map((line, index) => (
@@ -168,7 +176,7 @@ function CodeLinesComponent({
     );
   }
   return (
-    <ScrollView
+    <ScrollArea
       horizontal
       testID={testID}
       {...dataHook('bloomCodeScroll')}
@@ -176,7 +184,7 @@ function CodeLinesComponent({
       contentContainerStyle={[{ flexDirection: 'column' }, style]}
     >
       {rows}
-    </ScrollView>
+    </ScrollArea>
   );
 }
 

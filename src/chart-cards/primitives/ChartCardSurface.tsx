@@ -1,5 +1,6 @@
-import React from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import { useContext, type ReactNode } from 'react';
+import { StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from 'react-native';
+import { GridItemStretchContext } from '../../grid/context';
 
 import { type CardProps, Card } from '../../card';
 
@@ -22,7 +23,8 @@ export interface ChartCardSurfaceProps {
   gap?: number;
   style?: StyleProp<ViewStyle>;
   testID?: string;
-  children: React.ReactNode;
+  onLayout?: ViewProps['onLayout'];
+  children: ReactNode;
 }
 
 /**
@@ -37,28 +39,43 @@ export function ChartCardSurface({
   gap = CHART_CARD_GAP,
   style,
   testID,
+  onLayout,
   children,
 }: ChartCardSurfaceProps) {
+  const stretch = useContext(GridItemStretchContext);
+  const resolved: ViewStyle =
+    StyleSheet.flatten<StyleProp<ViewStyle>>([
+      {
+        height: height === 'auto' ? undefined : height,
+        minWidth: 0,
+        flexDirection: 'column',
+        gap,
+        paddingTop: 16,
+        paddingLeft: 16,
+        paddingRight: 16,
+        paddingBottom: 12,
+      },
+      style,
+    ]) ?? {};
+  const heightFloor = typeof resolved.height === 'number' ? resolved.height : 0;
+  const minimum =
+    typeof resolved.minHeight === 'number'
+      ? Math.max(resolved.minHeight, heightFloor)
+      : (resolved.minHeight ?? heightFloor);
   return (
     <Card
       radius={radius}
       elevation="none"
       testID={testID}
+      onLayout={onLayout}
       style={[
-        {
-          height: height === 'auto' ? undefined : height,
-          minWidth: 0,
-          flexDirection: 'column',
-          gap,
-          paddingTop: 16,
-          paddingLeft: 16,
-          paddingRight: 16,
-          paddingBottom: 12,
-        },
-        style,
+        resolved,
+        stretch
+          ? { height: 'auto', minHeight: minimum, flexGrow: 1, flexShrink: 1, flexBasis: 'auto' }
+          : undefined,
       ]}
     >
-      {children}
+      <GridItemStretchContext.Provider value={false}>{children}</GridItemStretchContext.Provider>
     </Card>
   );
 }

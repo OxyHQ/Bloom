@@ -7,6 +7,7 @@ import { BloomScope } from '../appearance';
 import { Button } from '../button';
 import { PageFooter, PageFooterProvider, usePageFooterInset } from '../page-footer';
 import { BottomEdgeProvider, useBottomEdgeInset, useClaimBottomEdge } from '../layout/bottom-edge';
+import { Screen } from '../screen';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { SCRIM_STOPS } from '../page-header/EdgeScrim';
 import { resolvedStyle } from './support/rendered-style';
@@ -43,6 +44,22 @@ function layout(node: Parameters<typeof fireEvent>[0], width: number, height: nu
 }
 
 describe('PageFooter', () => {
+  it('delegates positioning and clearance to its enclosing Screen footer slot', () => {
+    const tree = render(
+      <Providers>
+        <Screen
+          scroll="auto"
+          bottomBar={<PageFooter testID="footer" actions={<Button>Reply</Button>} />}
+        >
+          <Clearance />
+        </Screen>
+      </Providers>,
+    );
+    expect(resolvedStyle(tree.getByTestId('footer').props.style).position).toBe('relative');
+    layout(tree.getByTestId('footer-row'), 390, 72);
+    expect(tree.getByTestId('clearance').props.children).toBe(0);
+  });
+
   it('stacks above navigation without publishing into the registry it reads', () => {
     const screen = render(
       <Providers>

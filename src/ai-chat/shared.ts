@@ -248,6 +248,7 @@ export const AI_CHAT_WEB_CSS = `
 [data-bloom-ai-chat-grip]:hover [data-bloom-ai-chat-grip-pill],
 [data-bloom-ai-chat-grip-pill="dragging"] { opacity: 1; }
 [data-bloom-ai-chat-grip] { cursor: col-resize; touch-action: none; outline: none; }
+[data-bloom-ai-chat-grip][aria-orientation="horizontal"] { cursor: row-resize; }
 [data-bloom-ai-chat-dragging="on"] { cursor: col-resize; user-select: none; }
 @media (hover: hover) {
   [data-bloom-ai-chat-turn] [data-bloom-ai-chat-turn-actions] {

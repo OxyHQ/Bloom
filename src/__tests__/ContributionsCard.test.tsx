@@ -6,6 +6,8 @@ import { resolvedStyle } from './support/rendered-style';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
+import { Tooltip, TooltipTextBubble } from '../tooltip';
+import { ResponsiveGrid } from '../grid';
 import { resolveButtonRamps } from '../button/shared';
 import { ContributionsCard, ContributionsGrid } from '../chart-cards/ContributionsCard';
 import {
@@ -86,6 +88,7 @@ describe('ContributionsCard', () => {
     const { getByTestId } = renderCard(
       <ContributionsCard testID="c" total={958} delta={0.148} stats={STATS} cells={CELLS} />,
     );
+    fireEvent(getByTestId('c'), 'layout', { nativeEvent: { layout: { width: 720, height: 337 } } });
     expect(cardLayout(getByTestId('c'))).toMatchObject({
       height: 337,
       borderRadius: 16,
@@ -109,6 +112,69 @@ describe('ContributionsCard', () => {
     );
     expect(cardLayout(getByTestId('c')).height).toBeUndefined();
     expect(resolvedStyle(getByTestId('c-grid-cell-0').props.style)).toMatchObject({
+      width: 13,
+      height: 13,
+    });
+  });
+
+  it.each(['start', 'end'] as const)(
+    'initializes compact scrolling at %s and reapplies it on data changes',
+    (initialScrollPosition) => {
+      const scrollToEnd = jest.fn();
+      const frame = (cells: typeof CELLS) => (
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <ContributionsCard
+            testID="c"
+            cells={cells}
+            initialScrollPosition={initialScrollPosition}
+          />
+        </BloomThemeProvider>
+      );
+      const screen = render(frame(CELLS), { createNodeMock: () => ({ scrollToEnd }) });
+      fireEvent(screen.getByTestId('c-scroller'), 'contentSizeChange', 625, 140);
+      if (initialScrollPosition === 'end')
+        expect(scrollToEnd).toHaveBeenCalledWith({ animated: false });
+      else expect(scrollToEnd).not.toHaveBeenCalled();
+      scrollToEnd.mockClear();
+      screen.rerender(frame([...CELLS]));
+      if (initialScrollPosition === 'end')
+        expect(scrollToEnd).toHaveBeenCalledWith({ animated: false });
+      else expect(scrollToEnd).not.toHaveBeenCalled();
+    },
+  );
+
+  it('uses its measured card width and never shrinks cells below 13px', () => {
+    const screen = renderCard(<ContributionsCard testID="c" cells={CELLS} />);
+    for (const width of [480, 640, 656, 720, 400]) {
+      fireEvent(screen.getByTestId('c'), 'layout', {
+        nativeEvent: { layout: { width, height: 337 } },
+      });
+      const cell = resolvedStyle(screen.getByTestId('c-grid-cell-0').props.style);
+      if (width < 657) {
+        expect(cell).toMatchObject({ width: 13, height: 13 });
+        expect(screen.getByTestId('c-scroller')).toBeTruthy();
+      } else {
+        expect(cell.aspectRatio).toBe(1);
+        expect(screen.queryByTestId('c-scroller')).toBeNull();
+      }
+    }
+  });
+
+  it('participates in grid row stretching without changing compact cell geometry', () => {
+    const screen = renderCard(
+      <ResponsiveGrid testID="grid" stretchItems>
+        <ContributionsCard testID="c" cells={CELLS} />
+        <ContributionsCard testID="other" cells={CELLS} />
+      </ResponsiveGrid>,
+    );
+    fireEvent(screen.getByTestId('grid-layout'), 'layout', {
+      nativeEvent: { layout: { width: 1000, height: 337 } },
+    });
+    fireEvent(screen.getByTestId('c'), 'layout', {
+      nativeEvent: { layout: { width: 492, height: 337 } },
+    });
+    expect(cardLayout(screen.getByTestId('c'))).toMatchObject({ height: 'auto', flexGrow: 1 });
+    expect(resolvedStyle(screen.getByTestId('c-grid-cell-0').props.style)).toMatchObject({
       width: 13,
       height: 13,
     });
@@ -195,6 +261,32 @@ describe('ContributionsCard', () => {
     expect(
       [1, 5].map((i) => resolvedStyle(dark.getByTestId(`g-cell-${i}`).props.style).backgroundColor),
     ).toEqual([dr[950], dr[500]]);
+  });
+
+  it.each(['grid', 'card'])('uses custom cell names in the %s and its tooltip', (kind) => {
+    const getCellLabel = (cell: { count: number; date?: string }, index: number) =>
+      cell.date
+        ? `${cell.count} interactions for posts published ${cell.date}`
+        : `Outside period ${index}`;
+    const props = { cells: [{ count: 12, date: 'Oct 18' }], columns: 1, getCellLabel, testID: 'g' };
+    const screen = renderCard(
+      kind === 'grid' ? <ContributionsGrid {...props} compact /> : <ContributionsCard {...props} />,
+    );
+    const gridId = kind === 'grid' ? 'g' : 'g-grid';
+    expect(screen.getByTestId(`${gridId}-cell-0`).props.accessibilityLabel).toBe(
+      '12 interactions for posts published Oct 18',
+    );
+    expect(screen.getByTestId(`${gridId}-cell-1`).props.accessibilityLabel).toBe(
+      'Outside period 1',
+    );
+    fireEvent(screen.getByTestId(gridId), 'layout', {
+      nativeEvent: { layout: { width: 120, height: 120 } },
+    });
+    fireEvent(screen.getByTestId(`${gridId}-cell-0`), 'pointerEnter');
+    const bubble = React.Children.toArray(screen.UNSAFE_getByType(Tooltip).props.children).find(
+      (child) => React.isValidElement(child) && child.type === TooltipTextBubble,
+    ) as React.ReactElement<{ children: string }>;
+    expect(bubble.props.children).toBe('12 interactions for posts published Oct 18');
   });
 
   it('names every cell and reports the hovered one', () => {

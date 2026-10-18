@@ -7,6 +7,7 @@ import { curvePath, fixedDomainTicks, type Point } from './geometry';
 import { chartHueTone } from './palette';
 import { CartesianPlot } from './primitives/CartesianPlot';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
+import { ChartStatTiles, type ChartStatTile } from './primitives/ChartStatTiles';
 import { describeDeltaRatio, groupThousands } from './primitives/format';
 import { PeriodChartHeader } from './primitives/PeriodChartHeader';
 import { PulsingDot } from './primitives/PulsingDot';
@@ -90,6 +91,8 @@ export interface LineChartCardProps {
   activeIndex?: number | null;
   onActiveIndexChange?: (index: number | null) => void;
   accessibilityLabel?: string;
+  /** Optional summary tiles below the chart. */
+  stats?: readonly ChartStatTile[];
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -161,6 +164,7 @@ export function LineChartCard({
   activeIndex: controlledIndex,
   onActiveIndexChange,
   accessibilityLabel,
+  stats,
   style,
   testID,
 }: LineChartCardProps) {
@@ -218,8 +222,15 @@ export function LineChartCard({
   const rawId = useId();
   const id = `bloom-line-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
 
+  const hasStats = !!stats?.length;
+
   return (
-    <ChartCardSurface gap={CARD_GAP} style={style} testID={testID}>
+    <ChartCardSurface
+      height={hasStats ? 'auto' : undefined}
+      gap={CARD_GAP}
+      style={style}
+      testID={testID}
+    >
       <PeriodChartHeader
         label={label}
         value={point ? point.value : total}
@@ -233,7 +244,15 @@ export function LineChartCard({
         rangesLabel={rangesLabel ?? `${title} period`}
         testID={testID}
       />
-      <View style={{ width: '100%', flex: 1, minHeight: 0 }}>
+      <View
+        style={{
+          width: '100%',
+          flexGrow: 1,
+          flexShrink: 1,
+          flexBasis: hasStats ? 'auto' : 0,
+          minHeight: hasStats ? 221 : 0,
+        }}
+      >
         <CartesianPlot
           categories={categories}
           yAxisWidth={Y_AXIS_WIDTH}
@@ -309,6 +328,9 @@ export function LineChartCard({
           }}
         </CartesianPlot>
       </View>
+      {hasStats ? (
+        <ChartStatTiles items={stats} testID={testID ? `${testID}-stats` : undefined} />
+      ) : null}
     </ChartCardSurface>
   );
 }

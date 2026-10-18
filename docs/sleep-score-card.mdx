@@ -51,3 +51,7 @@ Hovering an arc swaps the centre for its score and drops the other arcs to 70% (
 ## Motion
 
 The arcs grow in turn from twelve o'clock over 450ms on mount (recharts' pie entrance) and morph on a data change. Snaps under reduced motion.
+
+## Summary tiles
+
+Pass `stats: readonly ChartStatTile[]` to show formatted summary tiles below the chart. Omitted or empty stats preserve the original layout. Summary tiles remain independent of plot hover; cards grow naturally to fit them and support `ResponsiveGrid stretchItems`.

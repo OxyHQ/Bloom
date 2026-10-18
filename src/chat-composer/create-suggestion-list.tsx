@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useCardFill } from '../card/use-card-fill';
 import type { Surface as SurfaceComponent } from '../surface';
@@ -12,7 +13,7 @@ import type { Loading as LoadingComponent } from '../loading';
  * highlight would fight the field for it the first time a pointer moved.
  */
 import React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { RiHashtag } from '../icons/remix/RiHashtag';
 import { RiVerifiedBadgeFill } from '../icons/remix/RiVerifiedBadgeFill';
@@ -197,7 +198,7 @@ export function createSuggestionList({
             {emptyLabel ?? messages.noSuggestions[kind]}
           </Text>
         ) : (
-          <ScrollView
+          <ScrollArea
             {...dataHook('bloomChatComposerScroll')}
             {...listRole}
             accessibilityLabel={accessibilityLabel ?? messages.suggestions[kind]}
@@ -299,7 +300,7 @@ export function createSuggestionList({
                 </Pressable>
               );
             })}
-          </ScrollView>
+          </ScrollArea>
         )}
       </Surface>
     );

@@ -188,7 +188,19 @@ describe('lean entries stay lean', () => {
   );
 
   it('the panels still draw the same grip', () => {
-    expect(graph('app-shell/AppShellPanels.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(true);
+    expect(graph('app-shell/AppShellPanelLayout.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(
+      true,
+    );
     expect(graph('ai-chat/AiChatShell.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(true);
+  });
+});
+
+describe('panel navigation hook entry', () => {
+  it('shares navigation state without importing shell rendering or sidebar components', () => {
+    const reached = graph('app-shell/hooks/index.ts');
+    expect(reached.has('app-shell/PanelNavigation.tsx')).toBe(true);
+    expect(reached.has('app-shell/AppShell.tsx')).toBe(false);
+    expect(reached.has('app-shell/AppShellEngine.tsx')).toBe(false);
+    expect(reached.has('sidebar/Sidebar.tsx')).toBe(false);
   });
 });

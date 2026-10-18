@@ -6,6 +6,7 @@ import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
 import type { ContentPanelChrome, ContentPanelProps } from '../content-panel/types';
 import type { NotificationCenterItem, NotificationCenterTab } from '../notification-center/types';
 import type { SidebarProps } from '../sidebar/types';
+import type { AppShellPanelLayout } from './panel-layout-types';
 
 /**
  * How the sidebar reaches a narrow screen (below `lg`):
@@ -175,6 +176,14 @@ export interface AppShellEngineProps {
    * screen: the column shrinks to the space it has rather than overflowing.
    */
   contentWidth?: number;
+  /**
+   * Feed layouts: let content occupy the configured aside's existing track.
+   * Keeps the outer column envelope and navigation capacity unchanged. The
+   * aside stays mounted but hidden/inert; below asideFrom no extra track is
+   * reserved and a stacked aside is hidden. Bloom animates the transfer.
+   * Default `content`.
+   */
+  contentSpan?: 'content' | 'content-aside';
   /** edge keeps navigation at the shell edge; content centers it with the reading column and aside. */
   navigationAlign?: 'edge' | 'content';
   /** Gap between the in-flow navigation and content. Defaults to the column gap. */
@@ -190,15 +199,19 @@ export interface AppShellEngineProps {
   gutter?: number;
   /**
    * The width the nav sits in FLOW from; below it the same nav is a drawer.
-   * Defaults to the tier the sidebar's own variant implies — `sm` for a rail
+   * Without navigation overrides, defaults to `md`, with a tablet rail below
+   * `lg` and a desktop panel above it. The desktop panel collapses when its
+   * expanded width, reading column, visible aside and gaps do not fit.
+   * An explicit sidebar variant defaults to the tier that variant implies — `sm` for a rail
    * (80px fits early), `lg` for the full panel — and to `sm` whenever
    * `navExpandedFrom` is set, because below that tier the nav IS a rail.
    */
   navFrom?: AppShellBreakpoint;
   /**
    * Icons below, labels from here up: the shell swaps `sidebar.variant` between
-   * `rail` and `panel` at this width. Unset (the default) the sidebar keeps
-   * whatever variant it was given at every width.
+   * `rail` and `panel` at this width. Unset (the default), navigation adapts automatically. An explicit sidebar
+   * variant keeps that variant at every width. Panel collapse is independent
+   * of this tier; `sidebar.collapsed` overrides the automatic capacity decision.
    */
   navExpandedFrom?: AppShellBreakpoint;
 
@@ -358,6 +371,8 @@ export interface AppShellNavigationProps {
 /** Additive entry point: legacy layout variants and adaptive navigation share the same chrome. */
 export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> &
   AppShellNavigationProps & {
+    /** Modular root content: split panes or an independently scrolling deck. */
+    panelLayout?: AppShellPanelLayout;
     scroll?: AppShellScroll | 'auto' | 'external';
   };
 

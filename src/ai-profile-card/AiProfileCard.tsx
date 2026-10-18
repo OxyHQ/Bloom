@@ -1,12 +1,12 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
 import { violetBase } from '../chart-cards/ai-profile-hues';
 import { ContributionsGrid } from '../chart-cards/ContributionsCard';
 import { TABULAR } from '../chart-cards/primitives/ChartHeader';
-import { groupThousands } from '../chart-cards/primitives/format';
 import { useCountUp } from '../chart-cards/use-count-up';
 import { Chip } from '../chip';
 import { CoverHeader } from '../cover-header';
@@ -369,9 +369,9 @@ function AiProfileCardComponent({
         {wide ? (
           grid
         ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
+          <ScrollArea horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
             {grid}
-          </ScrollView>
+          </ScrollArea>
         )}
       </View>
     </CoverHeader>

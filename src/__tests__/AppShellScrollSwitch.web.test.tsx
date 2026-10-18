@@ -354,3 +354,38 @@ describe.each([
     },
   );
 });
+
+it('keeps navigation and the primary panel mounted across document split and bounded deck routes', () => {
+  setViewport(1440);
+  let mounts = 0;
+  function Page() {
+    const [id] = useState(() => ++mounts);
+    return <Text testID="retained-page">{id}</Text>;
+  }
+  const shape: Partial<AppShellProps> = {
+    variant: 'feed',
+    navigationAlign: 'content',
+    gutter: 8,
+    sidebar: { items: NAV, surface: 'plain' },
+    panelLayout: {
+      flow: 'document',
+      mode: 'split',
+      panels: [
+        { id: 'main', width: 620, content: <Page /> },
+        { id: 'context', width: 350 },
+      ],
+    },
+  };
+  render(shape, 'document');
+  const navigation = container.querySelector('[data-testid="shell-navigation"]');
+  const page = container.querySelector('[data-testid="retained-page"]');
+  render(
+    { ...shape, panelLayout: { ...shape.panelLayout!, mode: 'deck', flow: 'bounded' } },
+    'fixed',
+  );
+  expect(container.querySelector('[data-testid="shell-navigation"]')).toBe(navigation);
+  expect(container.querySelector('[data-testid="retained-page"]')).toBe(page);
+  render(shape, 'document');
+  expect(container.querySelector('[data-testid="shell-navigation"]')).toBe(navigation);
+  expect(mounts).toBe(1);
+});

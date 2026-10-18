@@ -1,3 +1,5 @@
+import { Screen, ScreenScrollView, useScreen } from '../screen';
+import { ScrollArea } from '../layout/ScrollArea';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, {
   type ComponentRef,
@@ -12,8 +14,6 @@ import { Pressable, StyleSheet, View, useWindowDimensions, type ScrollView } fro
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useAnimatedScrollHandler,
-  type SharedValue,
   useReducedMotion,
   useSharedValue,
   withTiming,
@@ -576,73 +576,72 @@ function SettingsRail({
   testID?: string;
 }) {
   const compact = layout === 'compact';
-  const scrollY = useSharedValue(0);
-  const onScroll = useAnimatedScrollHandler(
-    (event) => {
-      scrollY.value = Math.max(0, event.contentOffset.y);
-    },
-    [scrollY],
+  const content = (
+    <View style={header ? [styles.railContent, styles.railContentCompact] : { gap: 20 }}>
+      {groups.map((group) => (
+        <View key={group.key ?? group.label} style={styles.group}>
+          <Text variant="body-medium" style={[styles.groupLabel, { color: palette.textSecondary }]}>
+            {group.label}
+          </Text>
+          <View style={styles.groupRows}>
+            {group.items.map((item) => (
+              <RailRow
+                key={item.key}
+                item={item}
+                // A list, not a selection, when the rows ARE the navigation.
+                selected={!compact && item.page !== undefined && item.page === page}
+                showChevron={compact && item.page !== undefined}
+                onSelect={onSelect}
+                palette={palette}
+                testID={testID ? `${testID}-nav-${item.key}` : undefined}
+              />
+            ))}
+          </View>
+        </View>
+      ))}
+    </View>
   );
   return (
     <SurfaceLevelProvider level={1} fill={palette.secondary}>
-      <Animated.ScrollView
-        role="navigation"
-        aria-label={label}
-        style={[
-          compact
-            ? styles.railCompact
-            : [styles.rail, { width: layout === 'medium' ? RAIL_WIDTH_MEDIUM : RAIL_WIDTH }],
-          {
-            backgroundColor: palette.secondary,
-            ...surfaceFillVars(palette.secondary),
-            borderRightColor: palette.separator,
-          },
-        ]}
-        contentContainerStyle={header ? undefined : styles.railContent}
-        stickyHeaderIndices={header && !IS_WEB ? [0] : undefined}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        contentInsetAdjustmentBehavior="never"
-        automaticallyAdjustContentInsets={false}
-        showsVerticalScrollIndicator={false}
-        testID={testID ? `${testID}-rail` : undefined}
-      >
-        {header ? (
-          <SettingsHeader
-            {...header}
+      {header ? (
+        <View
+          role="navigation"
+          aria-label={label}
+          style={styles.railCompact}
+          testID={testID ? `${testID}-rail` : undefined}
+        >
+          <PageScroller
+            header={header}
             palette={palette}
+            inset={0}
             scrimColor={palette.secondary}
-            scrollY={scrollY}
             testID={testID}
-          />
-        ) : null}
-        <View style={header ? [styles.railContent, styles.railContentCompact] : { gap: 20 }}>
-          {groups.map((group) => (
-            <View key={group.key ?? group.label} style={styles.group}>
-              <Text
-                variant="body-medium"
-                style={[styles.groupLabel, { color: palette.textSecondary }]}
-              >
-                {group.label}
-              </Text>
-              <View style={styles.groupRows}>
-                {group.items.map((item) => (
-                  <RailRow
-                    key={item.key}
-                    item={item}
-                    // A list, not a selection, when the rows ARE the navigation.
-                    selected={!compact && item.page !== undefined && item.page === page}
-                    showChevron={compact && item.page !== undefined}
-                    onSelect={onSelect}
-                    palette={palette}
-                    testID={testID ? `${testID}-nav-${item.key}` : undefined}
-                  />
-                ))}
-              </View>
-            </View>
-          ))}
+          >
+            {content}
+          </PageScroller>
         </View>
-      </Animated.ScrollView>
+      ) : (
+        <ScrollArea
+          role="navigation"
+          aria-label={label}
+          style={[
+            compact
+              ? styles.railCompact
+              : [styles.rail, { width: layout === 'medium' ? RAIL_WIDTH_MEDIUM : RAIL_WIDTH }],
+            {
+              backgroundColor: palette.secondary,
+              ...surfaceFillVars(palette.secondary),
+              borderRightColor: palette.separator,
+            },
+          ]}
+          contentContainerStyle={styles.railContent}
+          contentInsetAdjustmentBehavior="never"
+          automaticallyAdjustContentInsets={false}
+          testID={testID ? `${testID}-rail` : undefined}
+        >
+          {content}
+        </ScrollArea>
+      )}
     </SurfaceLevelProvider>
   );
 }
@@ -731,12 +730,10 @@ function SettingsHeader({
   closeLabel,
   onClose,
   palette,
-  scrollY,
   scrimColor = palette.full,
   testID,
 }: SettingsHeaderProps & {
   palette: SettingsPalette;
-  scrollY: SharedValue<number>;
   scrimColor?: string;
   testID?: string;
 }) {
@@ -747,11 +744,8 @@ function SettingsHeader({
       onBack={onBack}
       backLabel={backLabel}
       safeArea={false}
-      sticky={IS_WEB}
-      placement="inline"
       scrim="auto"
       scrimColor={scrimColor}
-      scrollY={scrollY}
       actions={
         <ButtonGroup accessibilityLabel={closeLabel}>
           <ButtonGroupItem
@@ -775,40 +769,56 @@ function PageScroller({
   palette,
   inset,
   insetTop = 0,
+  scrimColor,
   testID,
 }: {
   children: React.ReactNode;
   header: SettingsHeaderProps;
   palette: SettingsPalette;
   inset: number;
-  /** Body spacing below the header; compact-title pages keep their smaller gap. */
   insetTop?: number;
+  scrimColor?: string;
   testID?: string;
 }) {
-  const scrollY = useSharedValue(0);
-  const onScroll = useAnimatedScrollHandler(
-    (event) => {
-      scrollY.value = Math.max(0, event.contentOffset.y);
-    },
-    [scrollY],
+  return (
+    <Screen
+      scroll="auto"
+      documentScroll={false}
+      navigationScope="isolated"
+      contentClearance={0}
+      header={
+        <SettingsHeader {...header} palette={palette} scrimColor={scrimColor} testID={testID} />
+      }
+      style={styles.scroll}
+    >
+      <SettingsPageContent inset={inset} insetTop={insetTop} testID={testID}>
+        {children}
+      </SettingsPageContent>
+    </Screen>
   );
+}
+
+function SettingsPageContent({
+  children,
+  inset,
+  insetTop,
+  testID,
+}: {
+  children: React.ReactNode;
+  inset: number;
+  insetTop: number;
+  testID?: string;
+}) {
+  const { scrollY } = useScreen();
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
-  // The keyboard slides over an edge-to-edge modal: pad by it, and bring the
-  // focused field up above it.
   const keyboardHeight = useKeyboardReveal(scrollRef, scrollY, !IS_WEB);
   return (
-    <Animated.ScrollView
+    <ScreenScrollView
       ref={scrollRef}
       style={styles.scroll}
       keyboardShouldPersistTaps="handled"
-      stickyHeaderIndices={IS_WEB ? undefined : [0]}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
-      contentInsetAdjustmentBehavior="never"
-      automaticallyAdjustContentInsets={false}
       testID={testID ? `${testID}-page` : undefined}
     >
-      <SettingsHeader {...header} palette={palette} scrollY={scrollY} testID={testID} />
       <View
         style={{
           paddingLeft: inset,
@@ -819,7 +829,7 @@ function PageScroller({
       >
         {children}
       </View>
-    </Animated.ScrollView>
+    </ScreenScrollView>
   );
 }
 

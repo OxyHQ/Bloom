@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "12.1.0",
+  "version": "12.3.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -301,6 +301,34 @@
       "require": {
         "types": "./lib/typescript/commonjs/screen/index.d.ts",
         "default": "./lib/commonjs/screen/index.js"
+      }
+    },
+    "./panel-routing": {
+      "react-native": {
+        "types": "./lib/typescript/module/panel-routing/index.d.ts",
+        "default": "./src/panel-routing/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/panel-routing/index.d.ts",
+        "default": "./lib/module/panel-routing/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/panel-routing/index.d.ts",
+        "default": "./lib/commonjs/panel-routing/index.js"
+      }
+    },
+    "./panel-routing/expo-router": {
+      "react-native": {
+        "types": "./lib/typescript/module/panel-routing/expo-router/index.d.ts",
+        "default": "./src/panel-routing/expo-router/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/panel-routing/expo-router/index.d.ts",
+        "default": "./lib/module/panel-routing/expo-router/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/panel-routing/expo-router/index.d.ts",
+        "default": "./lib/commonjs/panel-routing/expo-router/index.js"
       }
     },
     "./bottom-bar": {
@@ -880,6 +908,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/app-shell/index.d.ts",
         "default": "./lib/commonjs/app-shell/index.js"
+      }
+    },
+    "./app-shell/hooks": {
+      "react-native": {
+        "types": "./lib/typescript/module/app-shell/hooks/index.d.ts",
+        "default": "./src/app-shell/hooks/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/app-shell/hooks/index.d.ts",
+        "default": "./lib/module/app-shell/hooks/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/app-shell/hooks/index.d.ts",
+        "default": "./lib/commonjs/app-shell/hooks/index.js"
       }
     },
     "./page-header": {
@@ -3967,6 +4009,12 @@
       "screen": [
         "./lib/typescript/module/screen/index.d.ts"
       ],
+      "panel-routing": [
+        "./lib/typescript/module/panel-routing/index.d.ts"
+      ],
+      "panel-routing/expo-router": [
+        "./lib/typescript/module/panel-routing/expo-router/index.d.ts"
+      ],
       "bottom-bar": [
         "./lib/typescript/module/bottom-bar/index.d.ts"
       ],
@@ -4074,6 +4122,9 @@
       ],
       "app-shell": [
         "./lib/typescript/module/app-shell/index.d.ts"
+      ],
+      "app-shell/hooks": [
+        "./lib/typescript/module/app-shell/hooks/index.d.ts"
       ],
       "page-header": [
         "./lib/typescript/module/page-header/index.d.ts"
