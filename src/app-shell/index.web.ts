@@ -12,7 +12,13 @@ import { createAppShellPanels } from './AppShellPanels';
 import { createPanelLayoutView } from './AppShellPanelLayout';
 import { ScrollArea, ScrollBar } from '../layout/index.web';
 import { useScrollRestoration } from '../scroll/index.web';
-const PanelLayoutView = createPanelLayoutView(ContentPanel, BloomColorScope, ScrollArea, ScrollBar, useScrollRestoration);
+const PanelLayoutView = createPanelLayoutView(
+  ContentPanel,
+  BloomColorScope,
+  ScrollArea,
+  ScrollBar,
+  useScrollRestoration,
+);
 export const AppShell = createAppShell(BottomBar, Fab, PanelLayoutView);
 export const { AppShellPanel, AppShellPanels } = createAppShellPanels(
   ContentPanel,
