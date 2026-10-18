@@ -118,6 +118,15 @@ provide `height: 100%` through `html`, `body` and the application root; using
 `100vh` for bounded children can include a classic scrollbar's height and create
 unwanted vertical overflow. Native retains native scrolling behavior.
 
+Selection is state; revealing a panel is an explicit action. Persist `activePanel`
+when needed, but keep `revealPanel: { id, requestKey }` transient. Use a new string
+or number `requestKey` after actions such as adding a column; Bloom reveals it
+once when eligible. Restoring a workspace or entering Deck never scrolls to the
+last selected panel. To select and reveal, update both fields. In 13.0 this replaces
+12.2's implicit reveal on selection changes, preventing account hydration from
+moving the whole page to the last column. Native/contained/vertical layouts retain
+their own scrolling and do not consume a document-Deck reveal request.
+
 `ScreenScrollView` reuses the document or bounded owner on web. Do not put a
 second ScrollView around it. Virtualizers bind to `useScreenViewport()` or the
 panel's existing container; they retain virtualization rather than being wrapped

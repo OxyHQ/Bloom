@@ -29,6 +29,7 @@ export type {
   PanelAxis,
   ResponsivePanelAxis,
   AppShellPanelLayout,
+  PanelRevealRequest,
   AppShellPanelDefinition,
   PanelNavigationEntry,
   PanelNavigationState,
