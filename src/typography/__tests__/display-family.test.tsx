@@ -16,6 +16,9 @@ const family = (props: { variant?: TypeScaleVariant; className?: string }) => {
 describe('the big titles are set in BlomusModernus', () => {
   it('sets large-title and display-1 … display-4 in the display family, at every weight', () => {
     for (const variant of [
+      'title-1-bold',
+      'title-2-medium',
+      'title-3-regular',
       'large-title-regular',
       'large-title-bold',
       'display-1-semibold',
@@ -26,15 +29,8 @@ describe('the big titles are set in BlomusModernus', () => {
       expect(family({ variant })).toBe('BlomusModernus');
   });
 
-  it('sets everything below them in Inter', () => {
-    for (const variant of [
-      'title-1-bold',
-      'title-2-medium',
-      'title-3-regular',
-      'headline-medium',
-      'body-regular',
-      'caption-1-regular',
-    ] as const)
+  it('keeps control labels and body copy in Inter', () => {
+    for (const variant of ['headline-medium', 'body-regular', 'caption-1-regular'] as const)
       expect(family({ variant })).toBe('Inter');
     expect(family({})).toBe('Inter');
   });

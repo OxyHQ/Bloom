@@ -1,5 +1,6 @@
 export {
   layerForRank,
+  isTopmostOverlayLayer,
   OVERLAY_STACK_BAND,
   OVERLAY_STACK_BASE,
   OVERLAY_STACK_MAX_RANK,

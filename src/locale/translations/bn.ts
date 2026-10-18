@@ -2315,6 +2315,13 @@ const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
   managePlan: 'প্ল্যান পরিচালনা করুন',
 };
 
+const USAGE_CARD_MESSAGES: Translations['USAGE_CARD_MESSAGES'] = {
+  usage: 'ব্যবহার',
+  freeSpace: 'খালি জায়গা',
+  planUsageLimits: 'প্ল্যানের ব্যবহারের সীমা',
+  managePlan: 'প্ল্যান পরিচালনা করুন',
+};
+
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'অ্যাকশন বন্ধ করুন',
 };
@@ -2959,6 +2966,7 @@ const translations: Translations = {
   EVICTION_MESSAGES,
   BOOKING_MESSAGES,
   AGENT_LIMITS_CARD_MESSAGES,
+  USAGE_CARD_MESSAGES,
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,

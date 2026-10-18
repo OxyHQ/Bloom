@@ -16,6 +16,8 @@ import { resolveCreatorStudioPaint } from '../creator-studio/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { resolveMediaHeaderPaint } from '../media-header/shared';
 import { resolveInsightPalette } from '../property-insights/shared';
+import { resolveSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveCardFill } from '../card/use-card-fill';
 import { settingsGroupSurface } from '../settings-list/surface';
 import { contrastRatio } from '../styles/color-contrast';
 import {
@@ -189,23 +191,13 @@ describe('quiet text is read off the surface it lands on', () => {
 });
 
 /**
- * `SettingsListGroup`'s default fill — the first component to resolve its
- * surface from the one its container PUBLISHED instead of taking a prop for it.
- *
- * The rule (`settings-list/surface.ts`): `theme.colors.card` on the page, one
- * ladder step off the published fill anywhere else. It belongs in this file
- * rather than beside the component's render tests for the reason the file
- * comment gives — and two of its three properties are invisible in one mode, so
- * every assertion below walks both.
- */
-/**
  * Exact negative-control failures under the tonal policy: mono and purple still
  * miss the menu JND in dark. The other sampled presets now clear it; preserving
  * an equality makes improvements and regressions equally visible.
  */
 const FAILS_IN_DARK = ['mono', 'purple'];
 
-describe('a settings group resolves a surface it cannot see', () => {
+describe('a grouped section shares canonical card material', () => {
   it('never lands on the surface behind it, at any rung', () => {
     const offenders: string[] = [];
     for (const { theme, preset, mode } of THEMES) {
@@ -215,36 +207,23 @@ describe('a settings group resolves a surface it cannot see', () => {
         // paints `colors.card`, which in dark is ~1.27:1 off rung 1.
         const rung = resolveSurfaceLevel(theme, level).background;
         for (const behind of level === 1 ? [rung, theme.colors.card] : [rung]) {
-          const ratio = contrastRatio(settingsGroupSurface(theme, behind), behind);
-          if (ratio < FILL_JND)
-            offenders.push(`${preset}/${mode} level ${level}: ${ratio.toFixed(3)}`);
+          const chosen = settingsGroupSurface(theme, behind, undefined, level);
+          expect(chosen).toBe(resolveCardFill(resolveSurfaceLayer(theme, behind, level)));
+          const ratio = contrastRatio(chosen, behind);
+          if (ratio <= 1) offenders.push(`${preset}/${mode} level ${level}: ${ratio.toFixed(3)}`);
         }
       }
     }
     expect(offenders).toEqual([]);
   });
 
-  it('paints the `card` ROLE on the page, and `card` is the stronger answer there', () => {
-    // WHY the page is a named branch rather than another step. In LIGHT rung 1
-    // IS `colors.card`, so the two answers coincide and the branch is invisible;
-    // in DARK they differ and `card` separates from the page further (1.55-1.58
-    // against the step's 1.23-1.24 over the 64 presets), so taking the step
-    // would flatten every settings screen in the fleet against its own page.
-    // Both directions fail: if the two stop coinciding in light, or `card` stops
-    // winning in dark, the branch needs re-deciding rather than keeping.
-    const offenders: string[] = [];
-    for (const { theme, preset, mode } of THEMES) {
+  it('uses the canonical tinted/composited card backing on the page', () => {
+    for (const { theme } of THEMES) {
       const page = theme.colors.background;
-      const chosen = settingsGroupSurface(theme, page);
-      if (chosen !== theme.colors.card) offenders.push(`${preset}/${mode}: not the card role`);
-      const step = resolveSurfaceLevel(theme, 1).background;
-      if (mode === 'light') {
-        if (step !== theme.colors.card) offenders.push(`${preset}/light: rung 1 is not card`);
-      } else if (contrastRatio(chosen, page) <= contrastRatio(step, page)) {
-        offenders.push(`${preset}/dark: the step is not weaker`);
-      }
+      expect(settingsGroupSurface(theme, page)).toBe(
+        resolveCardFill(resolveSurfaceLayer(theme, page)),
+      );
     }
-    expect(offenders).toEqual([]);
   });
 
   it('is a step and not `backgroundSecondary`, which is calibrated on `card` alone', () => {

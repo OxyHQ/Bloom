@@ -198,9 +198,11 @@ describe('PageHeader, floating', () => {
     });
     // A floating header covers content it does not own. A decoration that ate
     // presses across the width of the screen would be invisible and total.
-    expect(screen.getByTestId('h-scrim').props.pointerEvents).toBe('none');
-    expect(screen.getByTestId('h-bar').props.pointerEvents).toBe('box-none');
-    expect(screen.getByTestId('h-actions').props.pointerEvents).toBe('box-none');
+    expect(resolvedStyle(screen.getByTestId('h-scrim').props.style).pointerEvents).toBe('none');
+    expect(resolvedStyle(screen.getByTestId('h-bar').props.style).pointerEvents).toBe('box-none');
+    expect(resolvedStyle(screen.getByTestId('h-actions').props.style).pointerEvents).toBe(
+      'box-none',
+    );
   });
 
   it('inline placement occupies layout and claims nothing', () => {
@@ -238,7 +240,7 @@ describe('PageHeader, floating', () => {
     );
     const style = resolvedStyle(screen.getByTestId('h').props.style);
     expect(style.position).toBe('absolute');
-    expect(screen.getByTestId('h').props.pointerEvents).toBe('box-none');
+    expect(resolvedStyle(screen.getByTestId('h').props.style).pointerEvents).toBe('box-none');
     // The resting claim: the safe-area inset (0 here) plus the 56pt bar, before
     // any measurement has landed.
     expect(seen).toBe(56);

@@ -12,5 +12,6 @@ export type {
   DialogInset,
   DialogPlacement,
   DialogProps,
+  DialogScreenFrame,
   ResponsiveDialogPlacement,
 } from './types';

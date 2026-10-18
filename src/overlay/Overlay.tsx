@@ -1,3 +1,4 @@
+import { pointerEventsStyle } from '../styles/pointer-events';
 import { ScreenScope } from '../layout/screen-scope';
 /**
  * The shared plumbing every portaled surface needs: an interactive ROOT and a
@@ -216,10 +217,9 @@ function OverlayRootView({
           the modal view's SIBLINGS, and at the native outlet this root is the
           sibling of the app content, where the panel is not. */}
       <StyledView
-        pointerEvents="box-none"
         accessibilityViewIsModal={modal && Platform.OS !== 'web' ? true : undefined}
         className={className}
-        style={[styles.root, { zIndex: layer.root }, style]}
+        style={[[styles.root, { zIndex: layer.root }, style], pointerEventsStyle('box-none')]}
         testID={testID}
       >
         {/*
@@ -311,13 +311,14 @@ function AnimatedBackdropLayers({
           // at all. `blur/blur-target.tsx` is what guarantees this is
           // `undefined` anywhere it would be unsafe.
           {...(blurTarget ? { blurMethod: 'dimezisBlurView' as const, blurTarget } : null)}
-          pointerEvents="none"
-          style={[StyleSheet.absoluteFill, layerStyle, blurFade]}
+          style={[[StyleSheet.absoluteFill, layerStyle, blurFade], pointerEventsStyle('none')]}
         />
       ) : null}
       <Animated.View
-        pointerEvents="none"
-        style={[StyleSheet.absoluteFill, dimStyle, layerStyle, dimFade]}
+        style={[
+          [StyleSheet.absoluteFill, dimStyle, layerStyle, dimFade],
+          pointerEventsStyle('none'),
+        ]}
       />
     </>
   );
@@ -356,19 +357,18 @@ function StaticBackdropLayers({
           tint={blurTint}
           // Blur method and target travel together — see the animated pair.
           {...(blurTarget ? { blurMethod: 'dimezisBlurView' as const, blurTarget } : null)}
-          pointerEvents="none"
           // Opacity last, as in the animated pair: the level this component
           // resolved wins over anything `layerStyle` happens to carry.
-          style={[StyleSheet.absoluteFill, layerStyle, { opacity: staticOpacity }]}
+          style={[
+            [StyleSheet.absoluteFill, layerStyle, { opacity: staticOpacity }],
+            pointerEventsStyle('none'),
+          ]}
         />
       ) : null}
       <View
-        pointerEvents="none"
         style={[
-          StyleSheet.absoluteFill,
-          dimStyle,
-          layerStyle,
-          { opacity: staticOpacity * dimOpacity },
+          [StyleSheet.absoluteFill, dimStyle, layerStyle, { opacity: staticOpacity * dimOpacity }],
+          pointerEventsStyle('none'),
         ]}
       />
     </>
@@ -441,9 +441,8 @@ export const Backdrop = memo(function Backdrop({
   return (
     // `box-none` so this box never takes a press itself: the hit box below and
     // `children` above are what receive them.
-    <View pointerEvents="box-none" style={[StyleSheet.absoluteFill, rootStyle]}>
+    <View style={[[StyleSheet.absoluteFill, rootStyle], pointerEventsStyle('box-none')]}>
       <Pressable
-        pointerEvents="auto"
         onPress={inert ? undefined : onPress}
         disabled={inert}
         // A dimming layer is not a focus stop on web: Escape and the panel's own
@@ -453,7 +452,7 @@ export const Backdrop = memo(function Backdrop({
         accessibilityRole={inert ? undefined : 'button'}
         accessibilityLabel={inert ? undefined : accessibilityLabel}
         testID={testID}
-        style={StyleSheet.absoluteFill}
+        style={[StyleSheet.absoluteFill, pointerEventsStyle('auto')]}
       >
         {/* Split into two components rather than branching inside one, so the
             reanimated hooks stay unconditional AND a caller without a shared

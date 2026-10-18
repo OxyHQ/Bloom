@@ -1,3 +1,4 @@
+import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import {
   surfaceFillOn,
@@ -11,6 +12,15 @@ export function useSurfaceLayer() {
   const theme = useTheme();
   const parentFill = useSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
+  return resolveSurfaceLayer(theme, parentFill, parentLevel);
+}
+
+/** Shared pure layer decision for card material consumers. */
+export function resolveSurfaceLayer(
+  theme: Theme,
+  parentFill: string,
+  parentLevel: SurfaceLevel = 0,
+) {
   return {
     parentFill,
     parentLevel,

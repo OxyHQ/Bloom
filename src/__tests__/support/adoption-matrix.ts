@@ -432,6 +432,11 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     },
   },
   'controlled-state': {
+    'agent-limits-card': {
+      verdict: 'delegated',
+      reason:
+        'Deprecated compatibility adapter forwards expanded/defaultExpanded and change callbacks to UsageCard, which reconciles controlled and uncontrolled state with the shared hook.',
+    },
     'map-controls': {
       verdict: 'delegated',
       reason:

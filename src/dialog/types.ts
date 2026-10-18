@@ -1,3 +1,5 @@
+import type { TypographyMode } from '../typography/TypographyScope';
+import type { AppColorName } from '../theme/color-presets';
 import type { BackdropAppearance } from '../overlay/types';
 import type { SurfaceTransition } from '../motion/types';
 import type { ReactNode } from 'react';
@@ -40,6 +42,8 @@ export interface DialogHeaderConfig {
    * visible, no collapse) and the content starts flush under the bar.
    */
   largeTitle?: boolean;
+  /** Hero content owns its heading/media beneath the nav; nav title reveals on scroll. */
+  titleLayout?: 'large' | 'bar' | 'hero';
   /** Custom left slot node. Overrides the default back button. */
   left?: ReactNode;
   /** Custom right slot node. Overrides the default close button. */
@@ -70,11 +74,9 @@ export interface DialogHeaderConfig {
 
   /**
    * The ONE trailing call-to-action (Upload / Use photo / Save / Done) — a
-   * proper Bloom `Button` rendered at the trailing edge of the nav row, AFTER
-   * any `actions`. Standardizes what screens used to cram into `right`; supports
-   * `disabled` and a `loading` spinner (async submit). When set (and no explicit
-   * `right`), the default close affordance moves to the leading edge if the
-   * screen has no `onBack`, so there is always exactly one dismiss control.
+   * proper Bloom `Button` rendered alongside the trailing actions/close group. Standardizes what screens used to cram into `right`; supports
+   * `disabled` and a `loading` spinner (async submit). The close affordance remains in the trailing icon group unless
+   * `showClose` is false or a custom `right` owns the controls.
    */
   primaryAction?: {
     label: string;
@@ -241,6 +243,8 @@ export type DialogAction = {
  * be a responsive map that collapses to a bottom-sheet on narrow viewports.
  */
 export type DialogProps = React.PropsWithChildren<{
+  /** Screen mode: shared header and animated in-place navigation, independent of the router. */
+  frame?: DialogScreenFrame;
   /** Standard optical surface, or a plain fill without blur/sheen. Default surface. */
   material?: 'surface' | 'flat';
   /** Backdrop paint; the surface continues to own dismissal and layering. */
@@ -394,3 +398,21 @@ export type DialogProps = React.PropsWithChildren<{
 export type DialogWebOptions = {
   alignCenter?: boolean;
 };
+
+/** Declarative identity, header and geometry for a screen inside a Dialog. */
+export interface DialogScreenFrame {
+  /** Local palette for the entire panel and header. */
+  colorPreset?: AppColorName;
+  /** Optional local font-family policy, retaining the semantic Bloom type scale. */
+  typography?: TypographyMode;
+  /** Change on navigation, retaining the same Dialog/control instance. */
+  key: string;
+  /** Incoming screen travel; defaults forward. none disables content motion. */
+  direction?: 'forward' | 'backward' | 'none';
+  /** Shared page header; omitted fields inherit the Dialog's header defaults. */
+  header?: DialogHeaderConfig;
+  /** Optional pixel target for content with its own scroller. */
+  size?: { height?: number; maxWidth?: number };
+  /** Defaults to true. false skips resizing for this frame. */
+  morph?: boolean;
+}

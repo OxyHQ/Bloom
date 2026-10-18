@@ -139,6 +139,7 @@ export type {
   DialogInset,
   DialogPlacement,
   DialogProps,
+  DialogScreenFrame,
   ResponsiveDialogPlacement,
 } from './dialog';
 // Surface stack — the ONE coordinated overlay system, and the ONE imperative
@@ -199,6 +200,8 @@ export * from './divider';
 export * from './breadcrumb';
 export * from './pagination';
 export * from './agent-limits-card';
+export * from './usage-card';
+export * from './subscription-plans';
 export { Carousel, CarouselItem } from './carousel';
 export type { CarouselProps, CarouselItemProps } from './carousel';
 export { FileUpload, formatFileSize } from './file-upload';
@@ -2042,6 +2045,7 @@ export { ActivityHeatmap, bucketByDay } from './activity-heatmap';
 export type { ActivityHeatmapProps, ActivityHeatmapDay } from './activity-heatmap';
 
 // Settings / Grouped list
+export * from './grouped-section';
 export * from './settings-list';
 export { Item } from './item';
 export type { ItemProps } from './item';

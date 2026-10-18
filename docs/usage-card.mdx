@@ -1,0 +1,35 @@
+# UsageCard
+
+A shared expandable card for storage, quotas, budgets, and other measured usage.
+Import `UsageCard` from `@oxy.so/bloom/usage-card` or the root package.
+
+```tsx
+<UsageCard
+  title="Storage"
+  usage={{ max: capacityBytes, segments: [{ label: 'Used', value: usedBytes }] }}
+  formatValue={formatBytes}
+  footer={<Button onPress={manageStorage}>Manage storage</Button>}
+/>
+```
+
+The header shows used / capacity and a percentage. Press it to expand the segment
+legend and free space. Deferred segments appear in the legend but do not count
+as used. Optional `groups` contain `{ label, value, items: [{ label, value }] }`
+and expand independently. All values use the same units and `formatValue`.
+
+Omit `usage` while data is unknown and supply `fallback={<Text>Unavailable</Text>}`
+or a loading indicator. The title and footer remain available; no zero usage or
+progress bar is invented. `expanded`, `defaultExpanded`, and `onExpandedChange`
+control the breakdown. `radius` defaults to `radius-28`.
+
+`labels.usage` supplies the default heading (`Usage`), while `title` overrides it.
+`labels.freeSpace` customizes the free-space label. Fixed strings use Bloom's locale.
+Optional `plan`, `limits`, and `onPlanPress` retain the rolling-limit section.
+
+`AgentLimitsCard` remains a compatibility adapter to this same implementation:
+`context` maps to `usage`, `tokens` to `value`, and `formatTokens` to `formatValue`.
+It keeps the localized Context window heading and its original radius16.
+
+Breakdowns use Bloom `Collapsible` for measured height and opacity, the same
+primitive behind `GroupedSectionCollapse`, including reduced-motion and
+closed-content focus/accessibility behavior.

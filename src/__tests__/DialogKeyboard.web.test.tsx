@@ -30,6 +30,9 @@ import { Pressable, Text, TextInput } from 'react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Dialog } from '../dialog/Dialog.web';
+import { createSurfaceHost } from '../surfaces/SurfaceHost';
+import { present, getSnapshot, resetSurfaces } from '../surfaces/surface-store';
+import { BottomSheet } from '../bottom-sheet/BottomSheet.web';
 import { resetOverlayStack } from '../overlay/stack';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -52,6 +55,7 @@ beforeEach(() => {
 
 afterEach(() => {
   act(() => root.unmount());
+  resetSurfaces();
   container.remove();
   opener.remove();
   resetOverlayStack();
@@ -486,4 +490,48 @@ it('preserves the opener when Escape dismisses a nested child before its autofoc
   act(() => jest.runAllTimers());
   expect(document.querySelector('[aria-label="Transient child"]')).toBeNull();
   expect(document.activeElement).toBe(trigger);
+});
+
+it('Escape closes only a standalone sheet above a managed dialog, then the dialog', () => {
+  const { SurfaceHost } = createSurfaceHost(Dialog);
+  const onSheetDismiss = jest.fn();
+  function Help() {
+    const [open, setOpen] = React.useState(false);
+    return (
+      <>
+        <Pressable testID="open-alia" onPress={() => setOpen(true)}>
+          <Text>Ask Alia</Text>
+        </Pressable>
+        {open ? (
+          <BottomSheet
+            open={open}
+            accessibilityLabel="Alia"
+            onDismiss={() => {
+              setOpen(false);
+              onSheetDismiss();
+            }}
+          >
+            <Text>How can I help?</Text>
+          </BottomSheet>
+        ) : null}
+      </>
+    );
+  }
+  mount(<SurfaceHost />);
+  act(() => {
+    void present(() => <Help />, { placement: 'center', label: 'Help' });
+  });
+  act(() => jest.runOnlyPendingTimers());
+  act(() => byTestId('open-alia').click());
+  act(() => jest.runOnlyPendingTimers());
+  expect(dialogNamed('Alia')).toBeTruthy();
+  press('Escape');
+  act(() => jest.runOnlyPendingTimers());
+  expect(onSheetDismiss).toHaveBeenCalledTimes(1);
+  expect(getSnapshot()).toHaveLength(1);
+  expect(getSnapshot()[0]?.status).toBe('open');
+  expect(dialogNamed('Help')).toBeTruthy();
+  press('Escape');
+  act(() => jest.runOnlyPendingTimers());
+  expect(getSnapshot()).toHaveLength(0);
 });

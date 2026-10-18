@@ -178,3 +178,5 @@ control according to direction.
 A modal that has begun closing stops its entry autofocus and Tab trap. Its
 exit animation may keep the panel mounted, but cannot take focus back from
 the opener that closing already restored.
+
+Managed `surfaces.present` dialogs and standalone sheets use the same overlay order for Escape and Android Back. `SurfaceHost` delegates dismissal to each dialog instead of intercepting keys for its own store. Custom navigation handlers can read `useOverlayLayerContext()` and check `isTopmostOverlayLayer(layer)` at event time before handling a key, so a newer sheet or floating surface retains control.

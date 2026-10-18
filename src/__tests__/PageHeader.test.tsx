@@ -6,7 +6,6 @@
  * would have gone on measuring whatever the default happened to be, which is
  * the one thing a gate on a default must not do.
  */
-import React from 'react';
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -15,6 +14,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PageHeader } from '../page-header';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
+import { HeaderDockProvider, useHeaderDockContext } from '../layout/header-dock';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import type { PageHeaderProps } from '../page-header';
 import { resolvedStyle } from './support/rendered-style';
@@ -287,7 +287,7 @@ describe('PageHeader', () => {
       expect(opacity(block)).toBe(expected);
       if (offset === 20) expect(opacity(tree.getByTestId('h-scrim'))).toBe(1);
       expect(block.props['aria-hidden']).toBe(expected === 0);
-      expect(block.props.pointerEvents).toBe(expected === 0 ? 'none' : 'auto');
+      expect(resolvedStyle(block.props.style).pointerEvents).toBe(expected === 0 ? 'none' : 'auto');
       expect(tree.getByTestId('h-subtitle', { includeHiddenElements: true })).toBeTruthy();
       tree.unmount();
     }
@@ -383,7 +383,7 @@ it.each(['android', 'ios', 'web'] as const)(
     expect(style).toMatchObject({ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 });
     expect(style.elevation).toBe(platform === 'web' ? undefined : 10);
     expect(style.marginBottom).toBeUndefined();
-    expect(header.props.pointerEvents).toBe('box-none');
+    expect(resolvedStyle(header.props.style).pointerEvents).toBe('box-none');
     expect(screen.getByLabelText('Back')).toBeTruthy();
   },
 );
@@ -417,4 +417,95 @@ it('keeps Android floating back and action controls mounted and operable while i
   fireEvent.press(screen.getByLabelText('Search profile'));
   expect(onBack).toHaveBeenCalledTimes(1);
   expect(onAction).toHaveBeenCalledTimes(1);
+});
+
+describe('measured title reveal', () => {
+  it('takes UI-thread measurements without tying the title fade to the scrim', () => {
+    const screen = renderHeader({
+      title: 'Account',
+      titleReveal: 'onScroll',
+      titleRevealOffset: { value: 10 } as never,
+      titleRevealDistance: { value: 20 } as never,
+      scrollY: { value: 20 } as never,
+      scrollThreshold: 20,
+    });
+    expect(opacity(screen.getByTestId('h-title-block'))).toBe(0.5);
+    expect(opacity(screen.getByTestId('h-scrim'))).toBe(1);
+  });
+
+  it('keeps media titles readable with the same header primitive', () => {
+    const screen = renderHeader({ title: 'Photo', subtitle: 'Album', tone: 'onImage' });
+    expect(resolvedStyle(screen.getByTestId('h-title').props.style).color).toBe('#FFFFFF');
+    expect(resolvedStyle(screen.getByTestId('h-subtitle').props.style).color).toBe(
+      'rgba(255,255,255,0.82)',
+    );
+  });
+});
+
+describe('automatic title reveal', () => {
+  it('uses a declared content heading without a titleReveal prop', () => {
+    const screen = renderHeader({
+      title: 'Account',
+      titleRevealOffset: 10,
+      titleRevealDistance: 20,
+      scrollY: { value: 20 } as never,
+    });
+    expect(opacity(screen.getByTestId('h-title-block'))).toBe(0.5);
+  });
+
+  it('keeps the sole title visible in a scroll container without a heading relationship', () => {
+    const screen = renderHeader({ title: 'Account', scrollY: { value: 0 } as never });
+    expect(opacity(screen.getByTestId('h-title-block'))).toBe(1);
+    expect(screen.getByTestId('h-title-block').props['aria-hidden']).toBe(false);
+  });
+
+  it('keeps a native title visible when an offset has no scroll owner', () => {
+    (ReactNative.Platform as { OS: string }).OS = 'ios';
+    const screen = renderHeader({ title: 'Account', titleRevealOffset: 100 });
+    expect(opacity(screen.getByTestId('h-title-block'))).toBe(1);
+  });
+
+  it('honors always as an override of the automatic heading relationship', () => {
+    const screen = renderHeader({
+      title: 'Account',
+      titleReveal: 'always',
+      titleRevealOffset: 100,
+      scrollY: { value: 0 } as never,
+    });
+    expect(opacity(screen.getByTestId('h-title-block'))).toBe(1);
+  });
+
+  it('follows only a registered docking target, reverting when the target disappears', () => {
+    let dock: ReturnType<typeof useHeaderDockContext>;
+    function Probe() {
+      dock = useHeaderDockContext();
+      return null;
+    }
+    const draw = (revision: number) => (
+      <BloomThemeProvider>
+        <HeaderDockProvider>
+          <Probe />
+          <PageHeader title="Account" subtitle={String(revision)} testID="auto-dock" />
+        </HeaderDockProvider>
+      </BloomThemeProvider>
+    );
+    const screen = render(draw(0));
+    expect(opacity(screen.getByTestId('auto-dock-title-block'))).toBe(1);
+    act(() => {
+      if (!dock) throw new Error('Dock provider missing');
+      dock.sectionOffset.value = 200;
+      dock.progress.value = 0.5;
+    });
+    screen.rerender(draw(1));
+    expect(
+      opacity(screen.getByTestId('auto-dock-title-block', { includeHiddenElements: true })),
+    ).toBe(0);
+    act(() => {
+      if (!dock) throw new Error('Dock provider missing');
+      dock.sectionOffset.value = Infinity;
+      dock.progress.value = 0;
+    });
+    screen.rerender(draw(2));
+    expect(opacity(screen.getByTestId('auto-dock-title-block'))).toBe(1);
+  });
 });

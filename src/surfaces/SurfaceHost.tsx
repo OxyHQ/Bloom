@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
-import { BackHandler, Platform } from 'react-native';
 
 import { useDialogControl } from '../dialog/context';
-import { hasOpenFloatingSurface } from '../floating/escape-stack';
 import { useBloomLocale } from '../locale/context';
 import type { DialogProps } from '../dialog/types';
 import {
@@ -40,6 +38,7 @@ function dialogPropsFor(p: SurfacePresentation): Partial<DialogProps> {
     dismissOnBackdrop: p.dismissOnBackdrop,
     contentPadding: p.contentPadding,
     header: p.header,
+    frame: p.frame,
     scrollable: p.scrollable,
     morph: p.morph,
     style: p.style,
@@ -137,8 +136,8 @@ export function createSurfaceHost(Dialog: DialogComponent) {
   function SurfaceHost() {
     const stack = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
-    useAndroidBackDismissesTop();
-    useEscapeDismissesTop();
+    // Each Dialog owns keyboard dismissal through the global overlay stack.
+    // Host-level listeners cannot see standalone sheets opened above this store.
 
     return (
       <>
@@ -172,55 +171,4 @@ export function createSurfaceHost(Dialog: DialogComponent) {
   SurfaceProvider.displayName = 'SurfaceProvider';
 
   return { SurfaceHost, SurfaceProvider };
-}
-
-/**
- * ONE Android hardware-back handler for the whole stack → dismiss the TOP
- * surface. Reads the live top from the store so a single registration always
- * targets the current top. Returns `false` when the stack is empty so app-level
- * back navigation is untouched.
- */
-function useAndroidBackDismissesTop(): void {
-  useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      const stack = getSnapshot();
-      const top = stack[stack.length - 1];
-      if (!top) return false;
-      if (top.presentation.dismissOnBackdrop === false) return true;
-      requestDismiss(top.id);
-      return true;
-    });
-    return () => sub.remove();
-  }, []);
-}
-
-/**
- * Web-only: route Escape to the TOP surface only. A window-CAPTURE listener runs
- * before each `Dialog`'s own document-level keydown, so `stopImmediatePropagation`
- * prevents the lower stacked dialogs from ALSO handling Escape (they each add a
- * document listener) — Escape dismisses strictly the top, LIFO. No-op on native.
- */
-function useEscapeDismissesTop(): void {
-  useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    if (typeof window === 'undefined' || typeof document === 'undefined') return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      // An open anchored surface (a Select's list, a menu, a popover) takes
-      // Escape first — `floating/escape-stack.ts` closes it and keeps the key
-      // from the dialog underneath. Dismissing the top dialog here would close
-      // the dialog UNDER the open list, and the list with it.
-      if (hasOpenFloatingSurface()) return;
-      const stack = getSnapshot();
-      const top = stack[stack.length - 1];
-      if (!top) return;
-      if (top.presentation.dismissOnBackdrop === false) return;
-      e.stopImmediatePropagation();
-      e.preventDefault();
-      requestDismiss(top.id);
-    };
-    window.addEventListener('keydown', handler, true);
-    return () => window.removeEventListener('keydown', handler, true);
-  }, []);
 }

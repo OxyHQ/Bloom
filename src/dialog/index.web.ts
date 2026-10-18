@@ -17,6 +17,7 @@ export type {
   DialogInset,
   DialogPlacement,
   DialogProps,
+  DialogScreenFrame,
   ResponsiveDialogPlacement,
 } from './types';
 export { BLOOM_DIALOG_CSS } from './Dialog.web';

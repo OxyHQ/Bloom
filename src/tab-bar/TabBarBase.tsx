@@ -1,3 +1,4 @@
+import { pointerEventsStyle } from '../styles/pointer-events';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { TabBarSurface } from './surface';
 import { surfaceStyle } from '../shapes/surface-style';
@@ -593,8 +594,7 @@ function TabBarBody({
         setContainerWidth(event.nativeEvent.layout.width);
         onLayout?.(event);
       }}
-      pointerEvents="box-none"
-      style={[embedded ? { width: '100%' } : styles.root, style]}
+      style={[[embedded ? { width: '100%' } : styles.root, style], pointerEventsStyle('box-none')]}
     >
       {/* Progressive blur rising from the screen's bottom edge behind the pill.
           Rendered CONDITIONALLY, and as nothing at all when off: the band is
@@ -618,11 +618,13 @@ function TabBarBody({
         />
       )}
       <View
-        pointerEvents="box-none"
         style={[
-          embedded ? undefined : styles.barWrap,
-          { marginBottom: bottomOffset },
-          constrainedWrapStyle,
+          [
+            embedded ? undefined : styles.barWrap,
+            { marginBottom: bottomOffset },
+            constrainedWrapStyle,
+          ],
+          pointerEventsStyle('box-none'),
         ]}
       >
         <OptionalGesture enabled={!scrollable} gesture={gesture}>
@@ -830,12 +832,8 @@ export function createTabBarButton(Glyph: ComponentType<TabBarGlyphProps>) {
 
 const styles = StyleSheet.create({
   root: {
-    // `pointerEvents="box-none"` is passed as a PROP on the views using these
-    // styles, NOT as a style entry: react-native-web resolves the RN-only
-    // `box-none` value only from the prop path, so as a style it silently does
-    // nothing and this full-width bottom band swallows every click in it. RNW
-    // logs a deprecation notice for the prop exactly once per session — the
-    // trade against a dead strip across the bottom of every page is not close.
+    // The shared compiled pointer stylesheet keeps the bar's gaps transparent
+    // to input while its children stay interactive, without deprecated props.
     position: 'absolute',
     left: 0,
     right: 0,

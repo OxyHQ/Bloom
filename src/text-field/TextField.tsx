@@ -1,3 +1,4 @@
+import { pointerEventsStyle } from '../styles/pointer-events';
 import { useBloomAppearance } from '../appearance';
 import { FieldBox } from './FieldBox';
 import {
@@ -351,7 +352,6 @@ function Chrome({ invalid }: { invalid: boolean }) {
   });
   return (
     <FieldBox
-      pointerEvents="none"
       className={ctx.chromeClassName}
       stateStyle={
         ctx.disabled || invalid
@@ -371,6 +371,7 @@ function Chrome({ invalid }: { invalid: boolean }) {
         },
         TEXT_FIELD_WEB_TRANSITION,
       ]}
+      style={pointerEventsStyle('none')}
     />
   );
 }

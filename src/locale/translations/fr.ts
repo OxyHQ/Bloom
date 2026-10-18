@@ -2438,6 +2438,13 @@ const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
   managePlan: 'Gérer l’abonnement',
 };
 
+const USAGE_CARD_MESSAGES: Translations['USAGE_CARD_MESSAGES'] = {
+  usage: 'Utilisation',
+  freeSpace: 'Espace libre',
+  planUsageLimits: 'Limites d’utilisation de l’abonnement',
+  managePlan: 'Gérer l’abonnement',
+};
+
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'Fermer les actions',
 };
@@ -3096,6 +3103,7 @@ const translations: Translations = {
   EVICTION_MESSAGES,
   BOOKING_MESSAGES,
   AGENT_LIMITS_CARD_MESSAGES,
+  USAGE_CARD_MESSAGES,
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,

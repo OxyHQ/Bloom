@@ -86,7 +86,7 @@ function flattenStyle(style: unknown): Record<string, unknown> {
 function barRoot(tree: RenderedTree): ReactTestRendererJSON {
   const found = hostNodes(tree).find((node) => {
     const style = flattenStyle(node.props.style);
-    return style.position === 'absolute' && node.props.pointerEvents === 'box-none';
+    return style.position === 'absolute' && style.pointerEvents === 'box-none';
   });
   if (!found) throw new Error('The bar rendered no absolute box-none root');
   return found;

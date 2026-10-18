@@ -1,3 +1,9 @@
+import { BloomColorScope } from '../theme/color-scope/ColorScope.web';
+import {
+  DialogFrameContent,
+  DialogFrameProvider,
+  useDialogFrameScrollReset,
+} from './DialogFrameContent';
 import { useSurfaceTransition } from '../motion/use-surface-transition';
 import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
@@ -32,6 +38,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   View,
+  type ScrollView,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -152,7 +159,12 @@ function useDialogCss(): void {
  * node. The bottom placement animates via `BottomSheet`'s shared-value/gesture
  * animation (no `exiting` layout animation).
  */
-export function Dialog({ placement, ...rest }: DialogProps) {
+export function Dialog({ placement, frame, children, header, ...props }: DialogProps) {
+  const rest = {
+    ...props,
+    header: frame ? { ...header, ...frame.header } : header,
+    children: <DialogFrameContent frame={frame}>{children}</DialogFrameContent>,
+  };
   const resolvedPlacement = useResolvedPlacement(placement);
 
   // `bottom` routes to the shared cross-platform `BottomSheet` surface — the
@@ -162,9 +174,27 @@ export function Dialog({ placement, ...rest }: DialogProps) {
   // component so the dispatcher only ever calls `useResolvedPlacement`, keeping
   // the rules-of-hooks contract intact across a responsive placement change.
   if (resolvedPlacement === 'bottom') {
-    return <DialogBottomSheet {...rest} />;
+    return (
+      <DialogFrameProvider
+        frameKey={frame?.key}
+        colorPreset={frame?.colorPreset}
+        typography={frame?.typography}
+        ColorScope={BloomColorScope}
+      >
+        <DialogBottomSheet {...rest} />
+      </DialogFrameProvider>
+    );
   }
-  return <CenterOrSideDialog {...rest} placement={resolvedPlacement} />;
+  return (
+    <DialogFrameProvider
+      frameKey={frame?.key}
+      colorPreset={frame?.colorPreset}
+      typography={frame?.typography}
+      ColorScope={BloomColorScope}
+    >
+      <CenterOrSideDialog {...rest} placement={resolvedPlacement} />
+    </DialogFrameProvider>
+  );
 }
 
 /**
@@ -503,6 +533,11 @@ function DialogPanel({
   const titleId = useId();
   const descriptionId = useId();
   const headerController = useDialogHeaderController();
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  useDialogFrameScrollReset(scrollable !== false, () => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+    headerController.scrollY.value = 0;
+  });
   const { height: viewportHeight } = useWindowDimensions();
   const heightRatio = maxHeightRatio ?? DEFAULT_MAX_HEIGHT_RATIO;
   const material = resolveSurfaceMaterial({
@@ -558,7 +593,7 @@ function DialogPanel({
       style={[
         {
           position: 'relative',
-          ...(presentation === 'custom' ? {} : surfaceStyle(SURFACE_SHAPES.panel)),
+          ...(presentation === 'custom' ? {} : surfaceStyle(SURFACE_SHAPES.dialog)),
           width: '100%',
           maxWidth,
           // The Dialog OWNS the size cap + scroll boundary (its content renders
@@ -598,8 +633,8 @@ function DialogPanel({
       {presentation !== 'custom' && surfaceMaterial !== 'flat' && (
         <SurfacePaint
           fill={paintFill}
-          shape={{ curve: SURFACE_SHAPES.panel.curve }}
-          radius={StyleSheet.flatten(style)?.borderRadius ?? 20}
+          shape={{ curve: SURFACE_SHAPES.dialog.curve }}
+          radius={StyleSheet.flatten(style)?.borderRadius ?? SURFACE_SHAPES.dialog.radius}
         />
       )}
       <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
@@ -610,7 +645,6 @@ function DialogPanel({
           // the shared scroll offset that drives the small-title cross-fade.
           <>
             <DialogNavHeader
-              flatSurface={surfaceMaterial === 'flat'}
               controller={headerController}
               header={header}
               onDismiss={close}
@@ -623,6 +657,7 @@ function DialogPanel({
               </DialogMorphContent>
             ) : (
               <ScrollArea
+                ref={scrollRef}
                 style={{ flexShrink: 1 }}
                 contentContainerStyle={{ paddingBottom: contentPadding }}
                 scrollEventThrottle={16}
@@ -650,7 +685,11 @@ function DialogPanel({
             {body}
           </DialogMorphContent>
         ) : (
-          <ScrollArea style={{ flexShrink: 1 }} contentContainerStyle={{ padding: contentPadding }}>
+          <ScrollArea
+            ref={scrollRef}
+            style={{ flexShrink: 1 }}
+            contentContainerStyle={{ padding: contentPadding }}
+          >
             <DialogMorphContent morph={morphState}>{body}</DialogMorphContent>
           </ScrollArea>
         )}
@@ -727,6 +766,11 @@ function SheetSurface({
   const titleId = useId();
   const descriptionId = useId();
   const headerController = useDialogHeaderController();
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  useDialogFrameScrollReset(scrollable !== false, () => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+    headerController.scrollY.value = 0;
+  });
   const { width: viewportWidth } = useWindowDimensions();
   const rtl = useIsRtl();
 
@@ -790,7 +834,7 @@ function SheetSurface({
       bottom: insetBottom,
       [edge]: anchorInset,
       width: cappedWidth,
-      ...surfaceStyle(SURFACE_SHAPES.panel),
+      ...surfaceStyle(SURFACE_SHAPES.dialog),
       transform: [{ translateX: visible ? 0 : hiddenSign }],
       opacity: visible ? 1 : 0,
     };
@@ -877,9 +921,9 @@ function SheetSurface({
         {surfaceMaterial !== 'flat' && (
           <SurfacePaint
             fill={paintFill}
-            shape={{ curve: SURFACE_SHAPES.panel.curve }}
+            shape={{ curve: SURFACE_SHAPES.dialog.curve }}
             radius={
-              StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius
+              StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.dialog.radius
             }
           />
         )}
@@ -890,7 +934,6 @@ function SheetSurface({
             // the content, which is inset below the bar.
             <View style={{ flex: 1, minHeight: 0 }}>
               <DialogNavHeader
-                flatSurface={surfaceMaterial === 'flat'}
                 controller={headerController}
                 header={header}
                 onDismiss={onDismiss}
@@ -913,6 +956,7 @@ function SheetSurface({
                 </View>
               ) : (
                 <ScrollArea
+                  ref={scrollRef}
                   style={{ flexShrink: 1 }}
                   contentContainerStyle={{
                     paddingTop: DIALOG_NAV_BAR_HEIGHT,

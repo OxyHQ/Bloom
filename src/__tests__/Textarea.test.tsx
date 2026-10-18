@@ -6,6 +6,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import { Textarea } from '../textarea';
+import { Field } from '../field';
 import { resolveTextFieldPalette } from '../text-field/shared';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -117,4 +118,40 @@ describe('Textarea', () => {
     );
     expect(root.getByText('3')).toBeTruthy();
   });
+});
+
+it('renders one Field-owned label and retains textarea name, association and error', () => {
+  const screen = renderWithTheme(
+    <Field label="What happened?" error="Describe the issue" nativeID="report-description">
+      <Textarea label="What happened?" />
+    </Field>,
+  );
+  expect(screen.getAllByText('What happened?')).toHaveLength(1);
+  const input = screen.UNSAFE_getByType(TextInput);
+  const label = screen.getByText('What happened?');
+  expect(input.props.nativeID).toBe('report-description');
+  expect(label.props.htmlFor ?? label.props.nativeID).toContain(input.props.nativeID);
+  expect(input.props.accessibilityLabel).toBe('What happened?');
+  expect(input.props['aria-invalid']).toBe(true);
+  expect(input.props['aria-describedby']).toContain(
+    screen.getByText('Describe the issue').props.nativeID,
+  );
+});
+
+it('keeps its visible label in an unlabeled Field or a multiple-control group', () => {
+  const screen = renderWithTheme(
+    <Field>
+      <Textarea label="Details" />
+    </Field>,
+  );
+  expect(screen.getByText('Details')).toBeTruthy();
+  screen.rerender(
+    <BloomThemeProvider>
+      <Field label="Report" multiple>
+        <Textarea label="Details" />
+      </Field>
+    </BloomThemeProvider>,
+  );
+  expect(screen.getByText('Details')).toBeTruthy();
+  expect(screen.getByText('Report')).toBeTruthy();
 });

@@ -2684,6 +2684,13 @@ const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
   managePlan: 'Управление тарифом',
 };
 
+const USAGE_CARD_MESSAGES: Translations['USAGE_CARD_MESSAGES'] = {
+  usage: 'Использование',
+  freeSpace: 'Свободно',
+  planUsageLimits: 'Лимиты тарифа',
+  managePlan: 'Управление тарифом',
+};
+
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'Скрыть действия',
 };
@@ -3375,6 +3382,7 @@ const translations: Translations = {
   EVICTION_MESSAGES,
   BOOKING_MESSAGES,
   AGENT_LIMITS_CARD_MESSAGES,
+  USAGE_CARD_MESSAGES,
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,
