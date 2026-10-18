@@ -65,6 +65,79 @@ describe('StageBarsCard', () => {
     );
   });
 
+  it('omits percentages from visible rows and the accessible summary for independent categories', () => {
+    const { getByTestId, queryAllByText, getAllByText } = renderCard(
+      <StageBarsCard
+        testID="stage"
+        title="Post types"
+        stages={[
+          { label: 'Text', value: 24 },
+          { label: 'Image', value: 18 },
+        ]}
+        headline={42}
+        showPercentages={false}
+      />,
+    );
+    expect(queryAllByText(/%/)).toHaveLength(0);
+    expect(getAllByText('24')).toHaveLength(2);
+    expect(getByTestId('stage-headline').props.children).toBe('42');
+    expect(getByTestId('stage-rows').props.accessibilityLabel).toBe(
+      'Post types: Text 24, Image 18',
+    );
+    fireEvent(getByTestId('stage-bar-1'), 'pointerEnter');
+    expect(getByTestId('stage-headline').props.children).toBe('18');
+    expect(queryAllByText(/%/)).toHaveLength(0);
+  });
+
+  it('uses total shares for independent categories and keeps summary tiles independent of row hover', () => {
+    const screen = renderCard(
+      <StageBarsCard
+        testID="stage"
+        title="Publishing mix"
+        percentageBase="total"
+        stages={[
+          { label: 'Text', value: 24 },
+          { label: 'Image', value: 16 },
+        ]}
+        stats={[
+          { label: 'Formats used', value: '2' },
+          { label: 'Posts/day', value: '1.3' },
+        ]}
+      />,
+    );
+    expect(screen.getByTestId('stage-headline').props.children).toBe('40');
+    expect(screen.getByText('60%')).toBeTruthy();
+    expect(screen.getByText('40%')).toBeTruthy();
+    expect(screen.getByTestId('stage-rows').props.accessibilityLabel).toBe(
+      'Publishing mix: Text 24 (60%), Image 16 (40%)',
+    );
+    expect(screen.queryByTestId('stage-tiles')).toBeNull();
+    expect(screen.getByTestId('stage-stats-tile-0').props.onPointerEnter).toBeUndefined();
+    fireEvent(screen.getByTestId('stage-bar-1'), 'pointerEnter');
+    expect(screen.getByTestId('stage-headline').props.children).toBe('16');
+    expect(screen.getByText('1.3')).toBeTruthy();
+    expect(resolvedStyle(screen.getByTestId('stage-stats-tile-0').props.style).opacity).toBe(1);
+  });
+
+  it('reports zero total shares for an all-zero category set and allows hiding tiles', () => {
+    const screen = renderCard(
+      <StageBarsCard
+        testID="stage"
+        percentageBase="total"
+        stages={[
+          { label: 'Text', value: 0 },
+          { label: 'Image', value: 0 },
+        ]}
+        stats={[]}
+      />,
+    );
+    expect(screen.getByTestId('stage-headline').props.children).toBe('0');
+    expect(screen.getAllByText('0%')).toHaveLength(2);
+    expect(screen.getByTestId('stage-rows').props.accessibilityLabel).not.toMatch(/NaN|Infinity/);
+    expect(screen.queryByTestId('stage-stats')).toBeNull();
+    expect(screen.queryByTestId('stage-tiles')).toBeNull();
+  });
+
   it('draws 20px round tracks with palette fills and a neutral-950 icon pinned 4px in', () => {
     const { getByTestId, UNSAFE_getAllByType } = renderCard(
       <StageBarsCard testID="stage" stages={STAGES} />,

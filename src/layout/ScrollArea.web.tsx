@@ -1,10 +1,10 @@
 import { useCallback, useRef } from 'react';
 import type { ComponentRef, ComponentType } from 'react';
 import type { ScrollView } from 'react-native';
-import { StyledScrollView, StyledView } from '../styles/styled-primitives';
+import { StyledView } from '../styles/styled-primitives';
+import { ScrollViewport } from './ScrollViewport';
 import { ScrollBar } from './ScrollBar.web';
 import type { ScrollAreaProps } from './types';
-import { useScrollAreaEvents } from './use-scroll-area-events';
 
 /**
  * A ScrollView that publishes its measurements to surrounding page chrome, with Bloom's
@@ -22,16 +22,11 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
   horizontal = false,
   scrollIndicatorInsets,
   style,
+  containerClassName,
   testID,
   ref,
   ...props
 }: ScrollAreaProps) {
-  const events = useScrollAreaEvents({
-    onScroll,
-    onLayout,
-    onContentSizeChange,
-    scrollEventThrottle,
-  });
   const scroller = useRef<ComponentRef<typeof ScrollView> | null>(null);
   const attach = useCallback(
     (node: ComponentRef<typeof ScrollView> | null) => {
@@ -44,13 +39,16 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
 
   return (
     <StyledView
-      className="relative min-h-0 min-w-0"
+      className={`relative min-h-0 min-w-0 ${containerClassName ?? ''}`}
       style={[{ flexShrink: 1 }, style]}
       testID={testID}
     >
-      <StyledScrollView
+      <ScrollViewport
         {...props}
-        {...events}
+        onScroll={onScroll}
+        onLayout={onLayout}
+        onContentSizeChange={onContentSizeChange}
+        scrollEventThrottle={scrollEventThrottle}
         ref={attach}
         {...(horizontal ? { horizontal: true } : null)}
         showsVerticalScrollIndicator={false}

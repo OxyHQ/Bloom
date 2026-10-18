@@ -77,9 +77,17 @@ const BottomEdgeContext = createContext<EdgeStore | null>(null);
  * want: a bottom-edge surface inside a full-screen modal should not be offset by
  * the tab bar the modal is covering.
  */
-export function BottomEdgeProvider({ children }: PropsWithChildren) {
+export function BottomEdgeProvider({
+  children,
+  inherit = false,
+}: PropsWithChildren<{ inherit?: boolean }>) {
+  const parent = useContext(BottomEdgeContext);
   const [store] = useState(createEdgeStore);
-  return <BottomEdgeContext.Provider value={store}>{children}</BottomEdgeContext.Provider>;
+  return (
+    <BottomEdgeContext.Provider value={inherit ? parent : store}>
+      {children}
+    </BottomEdgeContext.Provider>
+  );
 }
 
 BottomEdgeProvider.displayName = 'BottomEdgeProvider';

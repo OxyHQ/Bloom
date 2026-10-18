@@ -8,6 +8,8 @@ import {
   useReducedMotion,
   useSharedValue,
 } from 'react-native-reanimated';
+import { useScrollMetricsValue } from '../layout/scroll-metrics';
+import { recordScrollMetrics } from '../layout/scroll-metrics-events';
 import { useScreen } from './context';
 import type { ScreenScrollOptions } from './types';
 
@@ -18,6 +20,7 @@ export function useScreenScroll({
   restoration,
 }: ScreenScrollOptions = {}) {
   const screen = useScreen();
+  const metrics = useScrollMetricsValue();
   const active = requestedActive && screen.active;
   const restoring = restoration?.restorePending ?? false;
   const id = useId();
@@ -40,6 +43,7 @@ export function useScreenScroll({
     {
       onScroll: (event) => {
         if (!active || screen.activeScrollerId.value !== id) return;
+        recordScrollMetrics(metrics, event);
         if (hasRestoration) runOnJS(record)(event);
         const y = Math.min(
           Math.max(0, event.contentOffset.y),
@@ -56,7 +60,7 @@ export function useScreenScroll({
         }
       },
     },
-    [screen, active, id, previousY, reducedMotion, hasRestoration, record, restoring],
+    [screen, metrics, active, id, previousY, reducedMotion, hasRestoration, record, restoring],
   );
   const onScroll = useComposedEventHandler([ownHandler, handler]);
   return {

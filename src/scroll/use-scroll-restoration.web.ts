@@ -257,8 +257,11 @@ export function useScrollRestoration(
       if (isReset) resetKeyRef.current = scrollKey;
 
       let rafId: number | null = null;
+      let stopWaitingForContent: (() => void) | undefined;
 
       const stopRestore = () => {
+        stopWaitingForContent?.();
+        stopWaitingForContent = undefined;
         if (rafId !== null) {
           cancelAnimationFrame(rafId);
           rafId = null;
@@ -304,6 +307,25 @@ export function useScrollRestoration(
             rafId = requestAnimationFrame(applyOffset);
           } else {
             setRestorePending(false);
+            if (reached) {
+              stopWaitingForContent?.();
+              stopWaitingForContent = undefined;
+            } else if (!stopWaitingForContent) {
+              // A cold reload may still be showing a skeleton after the frame
+              // budget. Retry only when real content changes size, without
+              // hiding the screen or spinning an animation-frame loop.
+              const node =
+                resolved === 'window'
+                  ? typeof document === 'undefined'
+                    ? null
+                    : document.documentElement
+                  : element;
+              if (typeof HTMLElement !== 'undefined' && node instanceof HTMLElement) {
+                stopWaitingForContent = observeContentGrowth(node, () => {
+                  if (rafId === null) rafId = requestAnimationFrame(applyOffset);
+                });
+              }
+            }
           }
         };
         rafId = requestAnimationFrame(applyOffset);
@@ -331,6 +353,7 @@ export function useScrollRestoration(
         if (lastObservedOffset !== null) {
           store.save(scrollKey, lastObservedOffset);
         }
+        store.flush();
       };
     }, [store, scrollKey, enabled, target]),
   );
@@ -358,4 +381,27 @@ function resolveScrollEventTarget(
     }
   }
   return null;
+}
+
+/** Observe layout growth only while a previously saved position is unreachable. */
+function observeContentGrowth(node: HTMLElement, retry: () => void): () => void {
+  const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(retry);
+  const observeChildren = () => {
+    resize?.disconnect();
+    resize?.observe(node);
+    for (const child of Array.from(node.children)) resize?.observe(child);
+  };
+  observeChildren();
+  const mutation =
+    typeof MutationObserver === 'undefined'
+      ? null
+      : new MutationObserver(() => {
+          observeChildren();
+          retry();
+        });
+  mutation?.observe(node, { childList: true, subtree: true, characterData: true });
+  return () => {
+    resize?.disconnect();
+    mutation?.disconnect();
+  };
 }

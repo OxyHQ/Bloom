@@ -67,3 +67,23 @@ export const LowScore: Story = {
     </Frame>
   ),
 };
+
+/** Summary metrics stay visible while exploring the plot. */
+export const WithSummaryStats: Story = {
+  render: () => (
+    <View style={{ width: 480, maxWidth: '100%' }}>
+      <SleepScoreCard
+        title="Publishing days"
+        metrics={[
+          { label: 'Weekdays', detail: '4 of 5', score: 4, max: 5 },
+          { label: 'Weekend', detail: '1 of 2', score: 1, max: 2 },
+        ]}
+        scoreLabel="5 active days"
+        stats={[
+          { label: 'Longest streak', value: '3 days' },
+          { label: 'Coverage', value: '71%' },
+        ]}
+      />
+    </View>
+  ),
+};

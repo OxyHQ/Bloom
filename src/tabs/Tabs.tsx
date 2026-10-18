@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { webDataSet } from '../styles/web-data';
 import type React from 'react';
 import {
@@ -27,7 +28,6 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withTiming,
-  type SharedValue,
 } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
@@ -40,13 +40,7 @@ import { hairlineOn, surfaceFillOn, useSurfaceFill } from '../styles/surface-lev
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
 import type { WebCssStyle } from '../styles/web-view-style';
-import type {
-  TabsContentProps,
-  TabsIconComponent,
-  TabsProps,
-  TabsTriggerProps,
-  TabsVariant,
-} from './types';
+import type { TabsContentProps, TabsProps, TabsTriggerProps, TabsVariant } from './types';
 import { IS_WEB } from '../styles/platform';
 
 /**
@@ -827,7 +821,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
           {isUnderline ? indicator : null}
         </View>
       ) : (
-        <ScrollView
+        <ScrollArea
           ref={scrollRef}
           {...stripA11y}
           horizontal
@@ -850,7 +844,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
           {isUnderline ? null : indicator}
           {children}
           {isUnderline ? indicator : null}
-        </ScrollView>
+        </ScrollArea>
       )}
     </TabsContext.Provider>
   );

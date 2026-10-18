@@ -48,10 +48,9 @@ export function deriveScrollKey(contentId: string | null, subKey?: string): stri
 /**
  * In-memory map of `scrollKey -> last-known scroll offset`.
  *
- * Offsets live only for the lifetime of the document/session. We never persist
- * them — a full reload should start at the top — and we never auto-evict,
- * because an entry can be revisited via browser Forward/Back long after it
- * blurred.
+ * Memory is the default. Hosts can explicitly seed and observe serializable
+ * snapshots; the store never chooses a storage backend. The most recently
+ * updated 256 content keys are retained to bound long-lived workspaces.
  *
  * Deliberately an instance held in React context rather than a module-level
  * singleton: a dependency tree can legitimately contain two copies of Bloom
@@ -59,12 +58,69 @@ export function deriveScrollKey(contentId: string | null, subKey?: string): stri
  * module-global would then exist twice with no way for either half to see the
  * other's offsets.
  */
+/** URI-encoded keys keep internal separators portable across JSON stores, including SQL JSON. */
+export type ScrollRestorationSnapshot = Readonly<Record<string, number>>;
+
 export class ScrollOffsetStore {
   private readonly offsets = new Map<string, number>();
 
-  /** Persist the offset for a key. A negative offset is clamped to 0. */
+  private readonly listeners = new Set<() => void>();
+  private readonly flushListeners = new Set<() => void>();
+
+  constructor(snapshot?: ScrollRestorationSnapshot) {
+    for (const [encodedKey, offset] of Object.entries(snapshot ?? {})) {
+      try {
+        this.save(decodeURIComponent(encodedKey), offset);
+      } catch {
+        /* Ignore malformed external keys. */
+      }
+    }
+  }
+
+  snapshot(): ScrollRestorationSnapshot {
+    return Object.fromEntries(
+      Array.from(this.offsets, ([key, offset]) => [encodeURIComponent(key), offset]),
+    );
+  }
+
+  subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  subscribeFlush(listener: () => void): () => void {
+    this.flushListeners.add(listener);
+    return () => {
+      this.flushListeners.delete(listener);
+    };
+  }
+
+  /** Flush pending host notification at navigation/lifecycle boundaries. */
+  flush(): void {
+    for (const listener of this.flushListeners) listener();
+  }
+
+  private changed(): void {
+    for (const listener of this.listeners) listener();
+  }
+
+  /** Persist finite offsets only; bounce overscroll is clamped to zero. */
   save(key: string, offset: number): void {
-    this.offsets.set(key, offset > 0 ? offset : 0);
+    if (!key || !Number.isFinite(offset)) return;
+    // Router ids with invalid Unicode cannot be represented by the portable codec.
+    try {
+      encodeURIComponent(key);
+    } catch {
+      return;
+    }
+    const value = Math.max(0, offset);
+    if (this.offsets.get(key) === value) return;
+    this.offsets.delete(key);
+    this.offsets.set(key, value);
+    if (this.offsets.size > 256) this.offsets.delete(this.offsets.keys().next().value!);
+    this.changed();
   }
 
   /**
@@ -88,12 +144,27 @@ export class ScrollOffsetStore {
 
   /** Drop a saved offset (e.g. when an entry is permanently removed). */
   forget(key: string): void {
-    this.offsets.delete(key);
+    if (this.offsets.delete(key)) this.changed();
+  }
+
+  /** Drop offsets belonging to entries removed from an owned navigation history. */
+  retainContentIds(ids: readonly string[]): void {
+    const allowed = new Set(ids);
+    let changed = false;
+    for (const key of this.offsets.keys()) {
+      if (!allowed.has(key.split(COMPOSITE_KEY_SEPARATOR)[0]!)) {
+        this.offsets.delete(key);
+        changed = true;
+      }
+    }
+    if (changed) this.changed();
   }
 
   /** Clear every saved offset. Primarily for tests and full resets. */
   clear(): void {
+    if (!this.offsets.size) return;
     this.offsets.clear();
+    this.changed();
   }
 
   /** Number of distinct keys currently tracked. */

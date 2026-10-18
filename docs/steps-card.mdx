@@ -28,6 +28,7 @@ import { StepsCard } from '@oxy.so/bloom/chart-cards';
 | `getPointTitle` | `Mon` → `Monday` | header label while a day is hovered |
 | `headline` | sum of `data` | |
 | `totalSuffix` / `pointSuffix` | `"total steps"` / `"steps"` | caption after the number |
+| `stats` | — | `ChartStatTile[]` (`label`, preformatted `value`, optional `color`/`activeColor`); shared stat tiles below the plot |
 | `format` | en-US grouping | |
 | `range` | — | the pill's label; no pill when omitted |
 | `onPrevRange` / `onNextRange` | — | with either, the chevrons become buttons and the label rolls on change |
@@ -51,3 +52,8 @@ import { StepsCard } from '@oxy.so/bloom/chart-cards';
 ## Interaction and motion
 
 Hovering (web) or pressing and scrubbing (native) inside the plot picks the day whose band is under the pointer; over the label row it clears. The header number counts up to the hovered day and replays the `animate-number-fade`. Bars grow from the base over 450ms on mount and morph on a data change (`useChartProgress`). The week label rolls: the old label lifts 10px and fades while the new one rises in, 220ms `ease-out`, clipped. Reduced motion snaps all of it.
+
+
+With nonempty `stats`, the card grows to fit the tiles and retains a 232px minimum
+plot height. Empty or omitted stats preserve the default 330px card. For example,
+`stats={[{ label: 'Daily average', value: '420' }, { label: 'Posts', value: '12' }]}`.

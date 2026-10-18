@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -529,7 +530,7 @@ function ScopePills({
   );
 
   return (
-    <ScrollView
+    <ScrollArea
       horizontal
       showsHorizontalScrollIndicator={false}
       {...webDataSet({ bloomSettingsScroll: '' })}
@@ -577,7 +578,7 @@ function ScopePills({
           );
         })}
       </View>
-    </ScrollView>
+    </ScrollArea>
   );
 }
 

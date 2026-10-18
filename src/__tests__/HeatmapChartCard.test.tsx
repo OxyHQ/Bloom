@@ -121,3 +121,26 @@ describe('HeatmapChartCard', () => {
     expect(getByTestId('heatmap-headline').props.children).toBe('5');
   });
 });
+
+describe('summary tiles', () => {
+  it('grows for summaries and preserves the original height for empty stats', () => {
+    const { getByTestId, getByText, rerender, queryByTestId } = renderCard(
+      <HeatmapChartCard
+        testID="summary"
+        rows={ROWS}
+        columns={COLUMNS}
+        stats={[{ label: 'Summary metric', value: '42' }]}
+      />,
+    );
+    expect(getByText('Summary metric')).toBeTruthy();
+    expect(getByTestId('summary-stats')).toBeTruthy();
+    expect(resolvedStyle(getByTestId('summary').props.style).height).toBeUndefined();
+    rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <HeatmapChartCard testID="summary" rows={ROWS} columns={COLUMNS} stats={[]} />
+      </BloomThemeProvider>,
+    );
+    expect(queryByTestId('summary-stats')).toBeNull();
+    expect(resolvedStyle(getByTestId('summary').props.style).height).toBe(329);
+  });
+});

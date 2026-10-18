@@ -1,12 +1,6 @@
-import { type ComponentRef, useRef, useState, type ComponentType, type ReactNode } from 'react';
-import {
-  Platform,
-  ScrollView,
-  useWindowDimensions,
-  type ScrollViewProps,
-  type TextInput,
-} from 'react-native';
-import { styled } from 'react-native-css';
+import { ScrollArea } from '../layout/ScrollArea';
+import { type ComponentRef, useRef, useState, type ReactNode } from 'react';
+import { Platform, useWindowDimensions, type TextInput } from 'react-native';
 import { useDialogControl } from '../dialog/context';
 import { useMessages } from '../locale/messages';
 import { Switch } from '../switch';
@@ -32,23 +26,21 @@ const PRIORITY_STYLES = {
   High: 'bg-status-orange-background text-status-orange-text',
   Urgent: 'bg-status-rose-background text-status-rose-text',
 };
-const ScrollBodyBase: ComponentType<Pick<ScrollViewProps, 'style' | 'contentContainerStyle'>> =
-  ScrollView;
-const StyledScrollView: ComponentType<ScrollViewProps> = styled(ScrollBodyBase, {
-  className: 'style',
-});
 
 function TicketFormBody({ children }: { children: ReactNode }) {
   const { height } = useWindowDimensions();
   if (Platform.OS === 'web')
     return (
-      <View className="max-h-[calc(100dvh-56px)] overflow-y-auto rounded-3xl bg-background-primary-default p-4 outline-none">
+      <ScrollArea
+        containerClassName="max-h-[calc(100dvh-56px)] rounded-3xl bg-background-primary-default outline-none"
+        contentContainerStyle={{ padding: 16 }}
+      >
         {children}
-      </View>
+      </ScrollArea>
     );
   return (
-    <StyledScrollView
-      className="rounded-3xl bg-background-primary-default"
+    <ScrollArea
+      containerClassName="rounded-3xl bg-background-primary-default"
       testID="project-board-create-scroll"
       style={{ maxHeight: height - 56, flexGrow: 0, flexShrink: 1 }}
       contentContainerStyle={{ padding: 16 }}
@@ -56,7 +48,7 @@ function TicketFormBody({ children }: { children: ReactNode }) {
       keyboardDismissMode="interactive"
     >
       {children}
-    </StyledScrollView>
+    </ScrollArea>
   );
 }
 export function CreateTicketDialog({

@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import React, { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
@@ -687,7 +688,7 @@ export function ModelPickerBase({
         style={panelStyle}
       >
         {/* Provider rail. */}
-        <ScrollView
+        <ScrollArea
           ref={railRef}
           {...dataHook('bloomComposerScroll')}
           accessibilityRole="tablist"
@@ -720,7 +721,7 @@ export function ModelPickerBase({
               }}
             />
           ))}
-        </ScrollView>
+        </ScrollArea>
 
         {/* Header and the active lineup. */}
         <View
@@ -821,7 +822,7 @@ export function ModelPickerBase({
             }}
           >
             <ScrollFade visible={scrolled} palette={palette} />
-            <ScrollView
+            <ScrollArea
               ref={listRef}
               {...dataHook('bloomComposerScroll')}
               accessibilityRole="radiogroup"
@@ -872,7 +873,7 @@ export function ModelPickerBase({
                   />
                 );
               })}
-            </ScrollView>
+            </ScrollArea>
           </View>
         </View>
       </Popover>

@@ -1,3 +1,4 @@
+import { ScrollBar } from '../layout/ScrollBar.web';
 /**
  * The WEB sub-menu: a FLYOUT panel beside its trigger row.
  *
@@ -624,6 +625,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         <StyledView ref={attachContent} className={MENU_SUB_SCROLL_CLASS}>
           {children}
         </StyledView>
+        <ScrollBar target={sub.contentRef} />
       </FloatingPanel>
     );
   }

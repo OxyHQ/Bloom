@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -167,7 +168,7 @@ export function VoiceOverlay({
             </Text>
           </View>
 
-          <ScrollView
+          <ScrollArea
             ref={captionRef}
             style={styles.caption}
             contentContainerStyle={styles.captionContent}
@@ -185,7 +186,7 @@ export function VoiceOverlay({
                   {transcript}
                 </Text>
               ) : null)}
-          </ScrollView>
+          </ScrollArea>
 
           <VoiceControls
             state={state}

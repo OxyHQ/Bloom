@@ -25,6 +25,7 @@ import { dataHook } from '../styles/data-hook';
  * dragging reports the horizontal distance from where the drag started.
  */
 export function AiChatResizeHandle({
+  orientation = 'vertical',
   onResizeStart,
   onResize,
   onResizeEnd,
@@ -34,6 +35,7 @@ export function AiChatResizeHandle({
   testID,
 }: AiChatResizeHandleProps) {
   useAiChatWebCss();
+  const horizontal = orientation === 'horizontal';
   const palette = useAiChatPalette();
   const common = useCommonMessages();
   const label = labelProp ?? common.resizePanels;
@@ -56,7 +58,7 @@ export function AiChatResizeHandle({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
         onPanResponderGrant: (event) => {
-          track(event.nativeEvent.locationY);
+          track(horizontal ? event.nativeEvent.locationX : event.nativeEvent.locationY);
           setDragging(true);
           callbacks.current.onResizeStart?.();
         },
@@ -70,11 +72,11 @@ export function AiChatResizeHandle({
           callbacks.current.onResizeEnd?.();
         },
       }),
-    [],
+    [horizontal],
   );
 
   type DomTarget = {
-    getBoundingClientRect: () => { top: number };
+    getBoundingClientRect: () => { top: number; left: number };
     setPointerCapture: (id: number) => void;
     hasPointerCapture: (id: number) => boolean;
   };
@@ -82,7 +84,7 @@ export function AiChatResizeHandle({
     ? {
         onPointerDown: (event: PointerEvent) => {
           event.preventDefault();
-          startX.current = event.nativeEvent.clientX;
+          startX.current = horizontal ? event.nativeEvent.clientY : event.nativeEvent.clientX;
           setDragging(true);
           callbacks.current.onResizeStart?.();
           (event.currentTarget as unknown as DomTarget).setPointerCapture(
@@ -91,9 +93,15 @@ export function AiChatResizeHandle({
         },
         onPointerMove: (event: PointerEvent) => {
           const target = event.currentTarget as unknown as DomTarget;
-          track(event.nativeEvent.clientY - target.getBoundingClientRect().top);
+          track(
+            horizontal
+              ? event.nativeEvent.clientX - target.getBoundingClientRect().left
+              : event.nativeEvent.clientY - target.getBoundingClientRect().top,
+          );
           if (target.hasPointerCapture(event.nativeEvent.pointerId)) {
-            callbacks.current.onResize(event.nativeEvent.clientX - startX.current);
+            callbacks.current.onResize(
+              (horizontal ? event.nativeEvent.clientY : event.nativeEvent.clientX) - startX.current,
+            );
           }
         },
         onPointerUp: () => {
@@ -104,9 +112,18 @@ export function AiChatResizeHandle({
           setDragging(false);
           callbacks.current.onResizeEnd?.();
         },
-        onKeyDown: (event: { nativeEvent: { key: string } }) => {
-          if (event.nativeEvent.key === 'ArrowLeft') onNudge?.(-16);
-          if (event.nativeEvent.key === 'ArrowRight') onNudge?.(16);
+        onKeyDown: (event: { nativeEvent: { key: string }; preventDefault?: () => void }) => {
+          const key = event.nativeEvent.key;
+          const delta =
+            key === (horizontal ? 'ArrowUp' : 'ArrowLeft')
+              ? -16
+              : key === (horizontal ? 'ArrowDown' : 'ArrowRight')
+                ? 16
+                : 0;
+          if (delta && onNudge) {
+            event.preventDefault?.();
+            onNudge(delta);
+          }
         },
         tabIndex: onNudge ? (0 as const) : undefined,
       }
@@ -114,11 +131,17 @@ export function AiChatResizeHandle({
 
   const grip: WebCssStyle = {
     position: 'absolute',
-    ...(gripY === null ? { top: '50%' } : { top: gripY }),
-    width: 15,
-    height: 25,
-    marginTop: -12.5,
-    flexDirection: 'row',
+    ...(horizontal
+      ? gripY === null
+        ? { left: '50%' }
+        : { left: gripY }
+      : gripY === null
+        ? { top: '50%' }
+        : { top: gripY }),
+    width: horizontal ? 25 : 15,
+    height: horizontal ? 15 : 25,
+    ...(horizontal ? { marginLeft: -12.5 } : { marginTop: -12.5 }),
+    flexDirection: horizontal ? 'column' : 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
@@ -135,20 +158,21 @@ export function AiChatResizeHandle({
       {...dataHook('bloomAiChatGrip')}
       {...web}
       role="separator"
-      aria-orientation="vertical"
+      aria-orientation={orientation}
       accessibilityLabel={label}
       testID={testID}
       onLayout={(event: LayoutChangeEvent) => {
-        height.current = event.nativeEvent.layout.height;
+        height.current = horizontal
+          ? event.nativeEvent.layout.width
+          : event.nativeEvent.layout.height;
       }}
       style={[
         {
           position: 'absolute',
-          top: 0,
-          bottom: 0,
-          right: -10,
+          ...(horizontal
+            ? { left: 0, right: 0, bottom: -10, height: 20 }
+            : { top: 0, bottom: 0, right: -10, width: 20 }),
           zIndex: 10,
-          width: 20,
           alignItems: 'center',
         },
         style,
@@ -162,7 +186,11 @@ export function AiChatResizeHandle({
         {[0, 1, 2].map((line) => (
           <View
             key={line}
-            style={{ width: 1, height: 13, backgroundColor: palette.iconQuaternary }}
+            style={{
+              width: horizontal ? 13 : 1,
+              height: horizontal ? 1 : 13,
+              backgroundColor: palette.iconQuaternary,
+            }}
           />
         ))}
       </View>

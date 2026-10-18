@@ -1,3 +1,4 @@
+import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
 import { ScreenContext, ScreenNavigationContext } from '../screen/context';
 /**
  * A surface that is its OWN screen, for the two contracts that are screen-scoped.
@@ -43,19 +44,26 @@ import { ScrollMetricsContext } from './scroll-metrics';
 import { ScrollOffsetProvider } from './scroll-offset';
 import { TopEdgeProvider } from './top-edge';
 
-export function ScreenScope({ children }: PropsWithChildren) {
+export function ScreenScope({
+  children,
+  inheritBottomEdge = false,
+}: PropsWithChildren<{ inheritBottomEdge?: boolean }>) {
   return (
-    <ScreenContext.Provider value={null}>
-      <ScreenNavigationContext.Provider value={null}>
-        <TopEdgeProvider>
-          <BottomEdgeProvider>
-            {/* null means no scroller has claimed this scope yet. */}
-            <ScrollMetricsContext.Provider value={null}>
-              <ScrollOffsetProvider value={null}>{children}</ScrollOffsetProvider>
-            </ScrollMetricsContext.Provider>
-          </BottomEdgeProvider>
-        </TopEdgeProvider>
-      </ScreenNavigationContext.Provider>
-    </ScreenContext.Provider>
+    <ScreenHostContext.Provider value={{ active: true, kind: 'element', restoreScroll: false }}>
+      <ScreenViewportContext.Provider value={null}>
+        <ScreenContext.Provider value={null}>
+          <ScreenNavigationContext.Provider value={null}>
+            <TopEdgeProvider>
+              <BottomEdgeProvider inherit={inheritBottomEdge}>
+                {/* null means no scroller has claimed this scope yet. */}
+                <ScrollMetricsContext.Provider value={null}>
+                  <ScrollOffsetProvider value={null}>{children}</ScrollOffsetProvider>
+                </ScrollMetricsContext.Provider>
+              </BottomEdgeProvider>
+            </TopEdgeProvider>
+          </ScreenNavigationContext.Provider>
+        </ScreenContext.Provider>
+      </ScreenViewportContext.Provider>
+    </ScreenHostContext.Provider>
   );
 }

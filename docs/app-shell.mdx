@@ -4,6 +4,9 @@ description: Page frame with four layout variants and panels (one reading surfac
 order: 83
 ---
 
+Start with [Compose application layouts](/docs/bloom/main/compose-layouts) for the complete ownership model and migration guide.
+
+
 # AppShell
 
 `AppShell`, with `AppShellPanel`, `AppShellPanels`, `useAppShellPanel`, `AppShellHeader`, `AppShellMenuButton`, `useAppShell`, `NotificationBell` and `ProOfferCard`.
@@ -335,7 +338,7 @@ For centred feed layouts, `navigationGap` and `asideGap` control the gaps on
 either side of the reading column independently of the panel's `gutter`.
 Set both to the same value for symmetric columns.
 
-Every `*From` prop takes a named tier (`sm` 640 · `md` 768 · `lg` 1024 · `xl` 1280) **or a width in pixels**, because a real app's layout rarely lands on the tiers. A feed whose side column earns its place at 990 and whose rail goes in flow at 500 says so:
+Leave navigation tiers unset for automatic drawer, tablet rail and capacity-aware desktop panel behavior. For exceptional layouts, every `*From` prop accepts a named tier (`sm` 640 · `md` 768 · `lg` 1024 · `xl` 1280) **or a width in pixels**. This example deliberately overrides the standard navigation placement:
 
 ```tsx
 <AppShell
@@ -366,8 +369,8 @@ defaults.
 | `contentWidth` | 600 | `feed`/`focus`. The measure a single column of `body-regular` holds at ~75 characters — wider loses the line, narrower breaks too often. |
 | `asideWidth` | 320 | |
 | `asideFrom` | `xl` (1280) | 272 (panel) + 600 + 320 + three gutters is 1216: `xl` is the first tier where three columns fit without squeezing the content. |
-| `navFrom` | `lg` for the panel, `sm` for a rail | Where the nav sits in FLOW; below it the same props drive the drawer. |
-| `navExpandedFrom` | unset | Icons below, labels above: the shell swaps `sidebar.variant` between `rail` and `panel`. Setting it also makes `navFrom` default to `sm`, because below that tier the nav IS a rail. |
+| `navFrom` | `md` automatically; `lg` for an explicit panel, `sm` for an explicit rail | Where the nav sits in FLOW; below it the same props drive the drawer. |
+| `navExpandedFrom` | `lg` automatically | Icons below, labels above: the shell swaps `sidebar.variant` between `rail` and `panel`. Setting it also makes `navFrom` default to `sm`, because below that tier the nav IS a rail. |
 | `gutter` | 12 (`dashboard`), 16 (others) | The space between the shell's edge and its regions, and between the regions. `dashboard` keeps the 12-padding/16-gap pair it shipped with, because changing either moves every existing page by four pixels. |
 | `framedFrom` | the nav's own tier (`md` without nav) | `panels`: where panels turn from full-bleed to framed. |
 
@@ -779,3 +782,237 @@ To fill wide displays without a reading-column cap, set
 `contentMaxWidth="none"`. The default remains 1300. Dashboard reveal layouts
 honor an explicit `gutter`, including `gutter={0}` for edge-to-edge compact
 content; omitting it preserves the existing 12px frame and wider-screen top gap.
+
+
+### Automatic sidebar capacity
+
+With no navigation overrides, AppShell owns the whole progression: a drawer below
+`md`, a rail from `md` to `lg`, then a panel. The desktop panel collapses when its
+expanded size plus the preferred `contentWidth`, visible aside and layout gaps
+cannot fit the shell's measured container. It expands again when space returns;
+a manual collapse remains collapsed. While capacity requires collapse, the expand
+control is disabled. No window-width hook or app breakpoint is
+needed. `sidebar.collapsed` explicitly overrides automatic collapse. Explicit
+`sidebar.variant`, `navFrom` and `navExpandedFrom` preserve custom placement tiers;
+panel capacity still applies unless its collapsed state is controlled.
+
+
+### Content spanning the aside track
+
+For a feed route that needs a wider content panel, set
+`contentSpan="content-aside"`. Keep `contentWidth`, `aside`, `asideWidth`,
+`asideFrom`, and the gaps unchanged. The shell transfers the aside's width and
+its gap to the content inside the same outer envelope; sidebar placement and
+automatic collapse continue to use that envelope. No aside width is added below
+`asideFrom`, and any stacked aside is hidden. The aside stays mounted while
+spanning, but is inert and hidden from accessibility. Bloom animates its width
+and opacity with the expand motion recipe, honoring reduced motion. Switching
+back to `contentSpan="content"` restores the normal two-column layout.
+
+## Modular root panels
+
+`panelLayout` lets the shell own the complete content layout. Existing `children`,
+`AppShellPanel`, `AppShellPanels`, `aside`, and `contentSpan` compositions remain supported
+when this prop is absent. Do not put a second `AppShellPanel` around descriptor content:
+the root supplies its surface, framing, scroll scope and optional navigation history.
+
+```tsx
+<AppShell variant="feed" navigationAlign="content" gutter={8}
+  panelLayout={{
+    flow: 'document', gap: 0, activePanel: 'main',
+    expandedPanel: expanded ? 'main' : undefined,
+    panels: [
+      { id: 'main', width: 620, content: <Page /> },
+      { id: 'context', width: 350, hideBelow: 990, content: <Context /> },
+    ],
+  }}
+/>
+```
+
+Routes declare `Screen scroll="auto"` with their own `header` and `bottomBar`;
+set their descriptor's `scroll` to `content` (the default). The same route then
+owns document scrolling in a feed and its column scrolling in a Deck. Persistent
+workspace controls can use descriptor `headerActions`, composed into the route's
+existing PageHeader actions inside the panel navigation scope. Descriptor `header` and
+`scroll="panel"` remain compatibility adapters for content that does not declare
+a Screen. Do not supply a second route header through those legacy props.
+
+The JSX `AppShellPanels` family now translates its children into this same shared
+renderer; it retains its own-container breakpoint semantics. Its panels use the
+same resizing, visibility, screen scopes and scroll contracts as root descriptors.
+
+The preferred feed envelope is the sum of eligible base widths and gaps. Expansion
+transfers that existing envelope to one panel; it does not move navigation or change
+its automatic capacity threshold. `hideBelow` and `collapseBelow` use the measured
+**shell** width, not the capped reading column. Hidden panels mount lazily on first
+eligibility and then stay mounted, inert, inaccessible and inactive. The
+`useAppShellPanel()` result includes `visible` and `active` for suspending background work.
+
+`mode="split"` fits the available region. Fixed `width` tracks coexist with flexible
+tracks; positive `span` weights (including fractions) divide remaining space. `minWidth`
+and `maxWidth` constrain tracks, including both sides of a resize. If their minima
+cannot fit, only `activePanel` (or the first eligible panel) is shown. A sole compact or
+expanded panel fills the available region, overriding its ordinary maximum width.
+`appearance="joined"` draws a shared surface and separators; `separated` draws individual
+surfaces. Appearance is a structural choice: keep it stable to preserve mounted content.
+
+`resizable` adds Bloom's existing pointer, native pan and keyboard grip. In split mode
+resizing transfers room to the next visible panel, preserving their combined width.
+Use `widths` and `onWidthsChange` for controlled sizes; descriptor `width` is the resting
+size. `onWidthChange` on a descriptor also reports changes. The feed envelope uses
+resting widths, so resizing cannot move navigation. `gap` defaults to the shell gutter
+(or a hairline for joined panels).
+
+`mode="deck"` keeps track widths. On web, horizontal decks use the **document's
+horizontal scrollbar** by default; the navigation stays sticky at the inline-start
+edge while each column keeps its own bounded vertical scroll. The shell's vertical
+gutters remain above and below the panels, including clearance above bottom chrome.
+Bounded modular web shells fill their containing block with percentage heights.
+The host page should give `html`, `body`, and its root element `height: 100%`
+and allow document overflow. This uses the viewport available above a classic
+horizontal scrollbar; `100vh` would include the scrollbar and create a second,
+unwanted vertical scroll range. Document-flow panels still grow naturally.
+
+The sticky navigation gains Bloom's panel surface, border and shadow as document
+scroll moves panels underneath it. A CSS inline scroll timeline drives the visual
+change in either reading direction; reduced motion switches it without a fade.
+Browsers without scroll timelines retain the opaque surface for legibility.
+No navigation nodes or layout dimensions change.
+
+Use `horizontalScroll="contained"` for an explicitly embedded horizontal workspace.
+Native uses its native scroll viewport; a vertical deck owns its vertical group
+viewport. Navigation capacity never uses the sum of offscreen columns. A widthless
+deck track defaults to 360px.
+
+`flow="document"` selects document **vertical** scrolling for split layouts on web.
+The viewport host and keyed content survive split/deck, expanded/compact and
+bounded/document switches. Web geometry uses CSS flex and container queries,
+with NativeWind transitions and reduced-motion rules. Native uses Bloom's shared
+motion recipe. The root reading envelope also transitions when changing layouts;
+no app resize hook or measured-width interpolation is required.
+
+A descriptor with `visible: false` releases its track and retains previously mounted
+content, inert and hidden from accessibility. `keepMounted: true` also mounts it
+when initially hidden, useful for the one permanent host router. Keep descriptors
+and their IDs stable when routes select different groups of panels. Semantic
+visibility changes release obsolete tracks immediately, so outgoing deck columns
+cannot add their widths to the incoming layout.
+
+Use `scroll="panel"` for Bloom-owned vertical scrolling and restoration; leave it as
+`content` for a map, virtualized list or route that owns its scroll. Never wrap an
+already scrolling list in panel scrolling. A document-flow main panel grows the web
+page; a deck or bounded split keeps vertical scrolling inside its panels.
+`usePanelScrollContainer<HTMLElement>()` (also available from `app-shell/hooks`)
+returns the stable ref to that existing viewport for a virtualizer or scroll listener;
+`null` means document/outside. Do not add a second scroller or a second restoration
+owner around a virtualized list using this ref.
+
+### Independent panel navigation
+
+```tsx
+const panel = {
+  id: 'inbox', width: 380, minWidth: 320, resizable: true, scroll: 'panel',
+  header: <PanelToolbar />,
+  navigation: {
+    initialEntries: [{ key: 'inbox', name: 'list' }],
+    render: (entry, navigation) => entry.name === 'list'
+      ? <Messages onSelect={id => navigation.push({ name: 'message', params: { id } })} />
+      : <Message id={entry.params.id} />,
+  },
+};
+```
+
+Both header and content can call `usePanelNavigation()`. Shared link adapters can call
+`useOptionalPanelNavigation()` to use a panel history when present and fall back to their
+host router outside a panel. The controller exposes `entry`,
+`entries`, `index`, `push`, `replace`, `back`, `forward`, `canGoBack`, and `canGoForward`.
+Each panel owns a memory history and a separate restoration store; entry keys are
+namespaced by panel ID. `scroll="panel"` binds the actual viewport to this adapter,
+so back/forward restores that viewport. Hidden panels cannot write scroll offsets.
+
+Panel IDs and history entry keys must be nonempty and unique within their collection.
+The same entry key in different panels is valid. Supply `state` and
+`onNavigationChange` to control a history or persist it in a host URL. Memory histories
+never modify global browser history and do not create Expo Router roots. Existing
+router content without a `navigation` descriptor keeps its host router adapter in an
+independent panel restoration scope.
+
+Storybook: **Modular Deck**, **Modular Inbox**, **Modular Map**, and
+**Modular Expanding Feed** demonstrate these contracts. Existing map/results users can
+keep `AppShellPanels`; an older two-pane mailbox can migrate its list width/min/max
+and `resizable` props directly into root panel descriptors.
+
+### Vertical and responsive layouts
+
+`axis` defaults to `horizontal`. Use `vertical` for stacked panels, or a responsive
+map such as `axis={{ base: 'vertical', lg: 'horizontal' }}`. The shell resolves
+`sm`, `md`, `lg`, and `xl` against its own measured width. Orientation changes
+preserve panel mounts, histories and both sets of resized dimensions.
+
+```tsx
+<AppShell panelLayout={{
+  axis: { base: 'vertical', lg: 'horizontal' },
+  panels: [
+    { id: 'editor', width: 480, minWidth: 300,
+      height: 300, minHeight: 160, maxHeight: 450,
+      resizable: true, scroll: 'panel', content: <Editor /> },
+    { id: 'preview', span: 1, minWidth: 250, minHeight: 180,
+      scroll: 'panel', content: <Preview /> },
+  ],
+}} />
+```
+
+A bounded vertical split divides available **height**. `height`, `minHeight`,
+`maxHeight`, and `span` follow the horizontal width rules. A horizontal separator
+uses vertical pointer/native drag distance and Up/Down keys; horizontal panel
+layouts keep their Left/Right behavior and RTL handling. Control vertical sizes
+with `heights` / `onHeightsChange`; `onHeightChange` on each panel reports its size.
+Width and height maps remain independent when the axis changes.
+
+A panel with `sticky: true` in a horizontal document layout stays attached to the
+shared page scroll. Short panels stick below top chrome; tall panels first travel
+with the page until their bottom clears the viewport's bottom chrome, then stick.
+Bloom measures the panel and applies the shell insets. It creates no inner vertical
+scroller. The option is ignored in bounded and vertically stacked layouts.
+
+A vertical `flow="document"` split stacks natural-height sections; it never adds
+one viewport of height per section. Explicit heights and minimum heights remain
+available. Its preferred horizontal envelope is the widest base panel width;
+heights do not influence navigation capacity. Deck columns remain vertically bounded;
+horizontal scrolling belongs to the document by default on web. This is a linear panel model, not an arbitrary nested grid.
+
+The **Modular Responsive Workspace** story retains an interactive counter while
+changing orientation and demonstrates height resizing. **Modular Vertical Document**
+shows a short summary above a long activity section sharing the page scroll.
+Responsive and expanded-panel exits use CSS discrete display transitions on web;
+native retains the previous measured height through its shared exit animation.
+Explicit semantic visibility releases the track immediately. Reduced motion settles
+immediately, without timers or app-owned transition state.
+
+The web compiler emits rules from the descriptors, not from measured viewport
+widths. Container queries choose the axis, visible tracks, navigation tier and
+capacity, and framing; CSS allocates the space. Observers only synchronize those
+CSS states with lazy mounting, inert/accessibility and navigation effects. Pointer
+and keyboard resizing may read the current boxes during interaction. Existing
+intrinsic measurements still account for bottom chrome and tall sticky panels.
+Native and browsers without container-query support use the shared native resolver.
+The `verify-css-panel-layout.mjs` browser gate pauses application JavaScript and
+verifies that width changes still update panel geometry and framing.
+
+### Deck edge action
+
+`panelLayout.trailingAction` accepts the application's action (for example, an
+add-column button opening a dialog). In a web document Deck it occupies no
+track width. At the logical horizontal end, hovering the screen edge or
+focusing the action reveals it. The reveal uses CSS scroll timelines and
+respects reduced motion. Browsers without timelines place the action at the
+actual end of the group instead of showing it over unrelated panels.
+
+After adding a panel, change `activePanel` to its ID to reveal the existing
+panel host. This is a selection-triggered scroll command, not a layout
+measurement; an unchanged ID or the initial default does not move the page.
+
+The sticky navigation's raised surface follows actual horizontal overlap.
+When the Deck fits, CSS scroll-state queries keep that elevation absent;
+browsers lacking those queries retain the opaque navigation background without
+an unconditional shadow.

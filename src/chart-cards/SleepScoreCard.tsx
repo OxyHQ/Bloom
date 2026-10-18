@@ -8,6 +8,7 @@ import { chartHueTone, resolveTone, type ChartHue } from './palette';
 import { animatedPieAngles, pieSectorAngles, sectorIndexAt, sectorPath } from './polar-geometry';
 import { PolarSurface, svgTransition } from './PolarSurface';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
+import { ChartStatTiles, type ChartStatTile } from './primitives/ChartStatTiles';
 import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { useActiveIndex } from './primitives/use-active-index';
@@ -44,6 +45,8 @@ export interface SleepScoreCardProps {
   onActiveIndexChange?: (index: number | null) => void;
   /** Names the ring for assistive tech. Defaults to the total and each sub-score. */
   accessibilityLabel?: string;
+  /** Optional summary tiles below the score metrics. */
+  stats?: readonly ChartStatTile[];
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -120,6 +123,7 @@ export function SleepScoreCard({
   activeIndex: controlledIndex,
   onActiveIndexChange,
   accessibilityLabel,
+  stats,
   style,
   testID,
 }: SleepScoreCardProps) {
@@ -181,10 +185,12 @@ export function SleepScoreCard({
     accessibilityLabel ??
     `${title}: ${chartText.scoreOf(String(total), String(totalMax))}, ${verdict}. ${metrics.map((m) => `${m.label} ${chartText.scoreOf(String(m.score), String(m.max))}`).join(', ')}`;
 
+  const hasStats = !!stats?.length;
+
   return (
     <ChartCardSurface
       radius="radius-20"
-      height={height}
+      height={hasStats ? 'auto' : height}
       testID={testID}
       style={[{ paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}
     >
@@ -324,7 +330,12 @@ export function SleepScoreCard({
         testID={testID ? `${testID}-metrics` : undefined}
         style={{
           width: '100%',
-          flex: 1,
+          flexGrow: 1,
+          flexShrink: 1,
+          flexBasis: hasStats ? 'auto' : 0,
+          minHeight: hasStats
+            ? metrics.length * (20 + 8 * 2) + Math.max(0, height - SLEEP_CARD_HEIGHT)
+            : undefined,
           flexDirection: 'column',
           borderRadius: 10,
           backgroundColor: palette.inner,
@@ -384,6 +395,9 @@ export function SleepScoreCard({
           </View>
         ))}
       </View>
+      {hasStats ? (
+        <ChartStatTiles items={stats} testID={testID ? `${testID}-stats` : undefined} />
+      ) : null}
     </ChartCardSurface>
   );
 }

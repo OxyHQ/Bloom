@@ -97,6 +97,8 @@ export type {
   ScreenFocusEffect,
   ScrollableHandle,
   ScrollRestorationBinding,
+  ScrollRestorationSnapshot,
+  ScrollRestorationPersistence,
   ScrollRestorationProviderProps,
   ScrollRestorationTarget,
   ScrollRouterAdapter,
@@ -2200,3 +2202,5 @@ export * from './multi-agent-chat';
 export * from './viewport';
 
 export * from './collapsible';
+
+export * from './panel-routing';

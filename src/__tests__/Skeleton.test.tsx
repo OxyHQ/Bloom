@@ -1,4 +1,6 @@
 import React from 'react';
+import { Animated } from 'react-native';
+import * as MotionPreference from '../hooks/use-prefers-reduced-motion';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -53,5 +55,56 @@ describe('Skeleton.Box', () => {
     expect(typeof Skeleton.Text).toBe('function');
     expect(typeof Skeleton.Row).toBe('function');
     expect(typeof Skeleton.Col).toBe('function');
+  });
+});
+
+describe('Skeleton.Region', () => {
+  beforeEach(() => jest.spyOn(MotionPreference, 'usePrefersReducedMotion').mockReturnValue(false));
+  afterEach(() => jest.restoreAllMocks());
+
+  it('shares one non-interactive animation across shapes and nested regions', () => {
+    const stop = jest.fn();
+    const loop = jest.spyOn(Animated, 'loop').mockReturnValue({
+      start: jest.fn(),
+      stop,
+      reset: jest.fn(),
+    });
+    const timing = jest.spyOn(Animated, 'timing');
+    const screen = renderWithTheme(
+      <Skeleton.Region label="Loading feed" testID="loading" style={{ gap: 12 }}>
+        <Skeleton.Circle size={40} />
+        <Skeleton.Region label="Nested loading" testID="nested">
+          <Skeleton.Text />
+          <Skeleton.Box width={100} height={48} />
+        </Skeleton.Region>
+      </Skeleton.Region>,
+    );
+    expect(loop).toHaveBeenCalledTimes(1);
+    expect(timing).toHaveBeenCalledTimes(2);
+    for (const call of timing.mock.calls) expect(call[1].isInteraction).toBe(false);
+    expect(screen.getByTestId('loading').props.accessibilityState).toEqual({ busy: true });
+    expect(screen.getByTestId('loading').props.accessibilityLabel).toBe('Loading feed');
+    expect(screen.getByTestId('nested').props.accessibilityState).toBeUndefined();
+    expect(screen.getByTestId('nested').props.accessibilityLabel).toBeUndefined();
+    expect(
+      screen.UNSAFE_getAllByProps({ importantForAccessibility: 'no-hide-descendants' }).length,
+    ).toBeGreaterThanOrEqual(3);
+    screen.unmount();
+    expect(stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps reduced-motion placeholders static, including standalone shapes', () => {
+    jest.spyOn(MotionPreference, 'usePrefersReducedMotion').mockReturnValue(true);
+    const loop = jest.spyOn(Animated, 'loop');
+    const screen = renderWithTheme(
+      <Skeleton.Region testID="loading">
+        <Skeleton.Box width={100} height={40} />
+      </Skeleton.Region>,
+    );
+    expect(loop).not.toHaveBeenCalled();
+    expect(screen.getByTestId('loading').props.accessibilityLabel).toBe('Loading');
+    screen.unmount();
+    renderWithTheme(<Skeleton.Pill size={20} />);
+    expect(loop).not.toHaveBeenCalled();
   });
 });

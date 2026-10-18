@@ -1,3 +1,4 @@
+import { resolveScrollElement } from '../scroll/scrollable.web';
 import { useEffect, useState } from 'react';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { ScrollAreaBar } from './ScrollAreaBar.web';
@@ -9,6 +10,7 @@ const CSS = `
 [data-bloom-scroll-area] { scrollbar-width: none; }
 [data-bloom-scroll-area]::-webkit-scrollbar { display: none; }
 `;
+const owners = new WeakMap<HTMLElement, number>();
 const THICKNESS = { sm: 4, md: 6 } as const;
 
 /**
@@ -25,6 +27,7 @@ export function ScrollBar({
   size = 'sm',
   horizontal = false,
   insets,
+  offset,
 }: ScrollBarProps) {
   const [scroller, setScroller] = useState<HTMLElement | null>(null);
   useEffect(() => {
@@ -33,18 +36,35 @@ export function ScrollBar({
   // Every commit: a scroller that remounts is a new node, and the bar must follow it.
   useEffect(() => {
     const node =
-      (target.current?.getScrollableNode?.() as unknown as HTMLElement | undefined) ?? null;
+      target === 'document'
+        ? ((document.scrollingElement ?? document.documentElement) as HTMLElement)
+        : resolveScrollElement(target);
     setScroller((was) => (was === node ? was : node));
   });
   useEffect(() => {
-    scroller?.setAttribute('data-bloom-scroll-area', '');
-    return () => scroller?.removeAttribute('data-bloom-scroll-area');
+    if (!scroller) return;
+    owners.set(scroller, (owners.get(scroller) ?? 0) + 1);
+    scroller.setAttribute('data-bloom-scroll-area', '');
+    return () => {
+      const remaining = (owners.get(scroller) ?? 1) - 1;
+      if (remaining > 0) owners.set(scroller, remaining);
+      else {
+        owners.delete(scroller);
+        scroller.removeAttribute('data-bloom-scroll-area');
+      }
+    };
   }, [scroller]);
 
   return (
     <ScrollAreaBar
       scroller={scroller}
-      area={scroller?.parentElement ?? null}
+      area={
+        target === 'document' && typeof document !== 'undefined'
+          ? document.documentElement
+          : (scroller?.parentElement ?? null)
+      }
+      viewport={target === 'document'}
+      offset={offset}
       horizontal={Boolean(horizontal)}
       mode={scrollbar}
       thickness={THICKNESS[size]}

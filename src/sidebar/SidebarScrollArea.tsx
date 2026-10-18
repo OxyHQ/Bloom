@@ -1,6 +1,7 @@
 import React, { type ComponentRef, forwardRef, useCallback, useRef, useState } from 'react';
 import { ScrollView, View, type ScrollViewProps } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { ScrollBar } from '../layout';
 import { EdgeScrim } from '../page-header/EdgeScrim';
 import { parseRgba } from '../theme/color-utils';
 import type { RefComponent } from '../styles/native-refs';
@@ -32,6 +33,15 @@ export const SidebarScrollArea: RefComponent<
   },
   ref,
 ) {
+  const scrollRef = useRef<ComponentRef<typeof ScrollView> | null>(null);
+  const bindRef = useCallback(
+    (node: ComponentRef<typeof ScrollView> | null) => {
+      scrollRef.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref],
+  );
   const topFade = useSharedValue(0);
   const bottomFade = useSharedValue(0);
   const metrics = useRef({ height: 0, content: 0, offset: 0 });
@@ -66,7 +76,7 @@ export const SidebarScrollArea: RefComponent<
     <View testID={`${prefix}-viewport`} style={[{ minHeight: 0, position: 'relative' }, style]}>
       <ScrollView
         {...props}
-        ref={ref}
+        ref={bindRef}
         testID={testID}
         style={{ flexGrow: 1, flexShrink: 1, minHeight: 0 }}
         scrollEventThrottle={scrollEventThrottle}
@@ -90,6 +100,7 @@ export const SidebarScrollArea: RefComponent<
       >
         {children}
       </ScrollView>
+      <ScrollBar target={scrollRef} />
       {edges.top && (
         <Animated.View
           testID={`${prefix}-fade-top`}

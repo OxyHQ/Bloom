@@ -1,5 +1,6 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { Pressable, View } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
 import { UnreadBadge } from '../chat-indicators';
@@ -70,7 +71,7 @@ function ChatFolderTabsComponent({
       style={[divider ? { borderBottomWidth: 1, borderBottomColor: paint.divider } : null, style]}
       testID={testID}
     >
-      <ScrollView
+      <ScrollArea
         {...webDataSet({ bloomChatScrollX: '' })}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -148,7 +149,7 @@ function ChatFolderTabsComponent({
             );
           })}
         </View>
-      </ScrollView>
+      </ScrollArea>
     </View>
   );
 }

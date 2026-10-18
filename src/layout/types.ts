@@ -1,3 +1,4 @@
+import type { ScrollHandlerProcessed } from 'react-native-reanimated';
 import type { ComponentRef, Ref, RefObject } from 'react';
 import type { ScrollView, ScrollViewProps } from 'react-native';
 
@@ -12,8 +13,12 @@ import type { ScrollView, ScrollViewProps } from 'react-native';
 export type ScrollAreaScrollbar = 'scroll' | 'hover' | 'always' | 'never';
 
 export interface ScrollAreaProps extends ScrollViewProps {
+  /** Reanimated scroll handler, composed on the UI thread with Bloom metrics. onScroll remains a plain JS observer. */
+  animatedHandler?: ScrollHandlerProcessed<Record<string, unknown>>;
   /** Utilities for the scrolling viewport, resolved by Bloom's own interop. */
   className?: string;
+  /** Utilities for the outer sized area on web; shares the viewport on native. */
+  containerClassName?: string;
   /** Utilities for the inner content container. */
   contentContainerClassName?: string;
   /** When the scrollbar shows. Default `'scroll'`. */
@@ -25,8 +30,10 @@ export interface ScrollAreaProps extends ScrollViewProps {
 }
 
 export interface ScrollBarProps {
-  /** The scroller this bar belongs to: a `ScrollView` ref (a reanimated one works). */
-  target: RefObject<Pick<ComponentRef<typeof ScrollView>, 'getScrollableNode'> | null>;
+  /** Existing scroll owner: DOM element, ScrollView or virtualized list ref. No extra viewport is created. */
+  target: RefObject<unknown> | 'document';
+  /** Cross-axis clearance for persistent viewport chrome (document bars). */
+  offset?: number;
   /** When the bar shows. Default `'scroll'`. */
   scrollbar?: Exclude<ScrollAreaScrollbar, 'never'>;
   /** The bar's thickness: `sm` 4px (default) or `md` 6px. */

@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ScrollArea } from '../layout/ScrollArea';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import {
   Pressable,
@@ -347,7 +348,7 @@ export function AgentChatBase({
           <View style={{ flex: 1, minHeight: 0 }}>{emptyState}</View>
         ) : (
           <>
-            <ScrollView
+            <ScrollArea
               ref={scrollRef}
               testID={testID ? `${testID}-transcript` : undefined}
               style={{ flex: 1, minHeight: 0 }}
@@ -417,7 +418,7 @@ export function AgentChatBase({
                   </Text>
                 ) : null}
               </View>
-            </ScrollView>
+            </ScrollArea>
 
             <View style={{ flexShrink: 0, paddingLeft: 12, paddingRight: 12, paddingBottom: 12 }}>
               <View style={{ width: '100%', maxWidth: COLUMN_MAX_WIDTH, alignSelf: 'center' }}>

@@ -3,7 +3,49 @@ title: Screen
 description: Continuous content with coordinated header, scrolling and bottom chrome.
 ---
 
+Start with [Compose application layouts](/docs/bloom/main/compose-layouts) for the complete ownership model and migration guide.
+
+
 # Screen
+
+## Declarative screens in any host
+
+A route declares its own chrome once. The shell supplies the surface and available
+region; the same screen can render as a document page or inside a Deck column.
+
+```tsx
+<Screen scroll="auto"
+  header={<PageHeader title="Conversation" />}
+  bottomBar={<PageFooter><ReplyComposer /></PageFooter>}
+>
+  <ScreenScrollView><Messages /></ScreenScrollView>
+</Screen>
+```
+
+On web, `scroll="auto"` uses the document in a document-flow host and one local
+viewport in a bounded host. `ScreenScrollView` reuses that owner; it never adds
+another scroller. Changing host flow preserves the screen's content tree.
+`headerPlacement="overlay"` lets a profile hero or media page extend under its
+header. Insets otherwise reserve the measured header/footer once.
+
+On native, auto reserves chrome space but the screen's list or `ScreenScrollView`
+continues owning scrolling. `scroll="content"` (the compatibility default) keeps
+existing explicit list/inset bindings. `documentScroll` remains an explicit override.
+
+`useScreenViewport()` exposes the existing owner (`kind`, `scrollRef`, `metrics`,
+`active`, `scrollTo`). Virtualizers bind to that ref rather than assuming a window.
+The host publishes the same stable ref above the Screen for route-level hooks;
+the Screen fulfills it without a portal or a global registry. Scroll restoration
+uses the enclosing adapter when available, scoped to a panel's own history.
+`--bloom-screen-viewport-height` and `--bloom-screen-viewport-top` describe the
+usable web content region for shared CSS components such as a pager.
+
+A `PageFooter` in `bottomBar` draws only its content and scrim. Screen owns its
+position and clearance; it does not create a second sticky footer or register
+another inset. Host controls that persist across routes use the panel's `headerActions`.
+The Screen's PageHeader composes them with its existing actions in one header.
+
+## Explicit content-owned scrolling
 
 `Screen` owns a continuous page canvas. It paints the containing surface fill,
 so a Screen inside an AppShell panel matches that panel in light and dark mode.
@@ -159,3 +201,35 @@ visible, both owned and inherited bottom chrome leave only content clearance.
 `ScreenScope` also isolates navigation progress and scroll ownership; overlays
 mount this shared boundary automatically while retaining theme, locale and
 `BloomScope` appearance.
+
+### Shared scroll indicators
+
+Web `Screen` viewports, `ScreenScrollView`, AppShell document scrolling, and
+Deck's document horizontal axis use Bloom's existing `ScrollBar`. It observes
+and controls the actual scroll owner; it does not add a scroll container.
+`ScrollArea` and sidebar scrolling use the same indicator. Native keeps its
+platform scroll indicator. A custom external scroll implementation can attach
+`ScrollBar` to its ref, or use `target="document"` for a standalone document owner.
+
+Panel history supplies the existing PageHeader Back slot. It is absent
+at the initial entry; forward navigation remains available through the history
+controller without adding another header button. Host `headerActions` remain
+separate from the screen's own action groups.
+
+### Screen color recipe
+
+`<Screen colorPreset="teal">` applies the existing Bloom recipe to its content,
+header, footer and enclosing panel surface. The declaration belongs to that
+panel host: sibling columns and the application theme do not change. Leaving
+the screen restores the prior host recipe. Retained route wrappers should omit
+`colorPreset` when their own screen is not active. The scope keeps its subtree
+mounted while the recipe changes.
+
+In a bounded web panel the Screen viewport fills the entire panel. Header and
+footer are overlay siblings; their insets pad the scrollable content, so content
+passes beneath the chrome while scrolling, exactly as in document flow.
+
+A modular shell in document flow restores the shared document once, using the
+outer route adapter. Its Screen instances read that owner without competing
+restoration writes. Bounded Deck columns restore their own element and history;
+a standalone document Screen remains its own restoration owner.

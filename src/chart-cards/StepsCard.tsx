@@ -20,6 +20,7 @@ import { TYPE_SCALE } from '../typography/scale';
 import { barPositions, niceTicks } from './geometry';
 import { chartHueTone, resolveTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
+import { ChartStatTiles, type ChartStatTile } from './primitives/ChartStatTiles';
 import { groupThousands } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
 import {
@@ -80,6 +81,8 @@ export interface StepsCardProps {
   pointSuffix?: string;
   /** Headline formatting. Default en-US grouping. */
   format?: (value: number) => string;
+  /** Optional preformatted stat tiles under the plot; the card grows to fit. */
+  stats?: readonly ChartStatTile[];
   /** The period pill's label ("29 Jun - 5 Jul"). No pill when omitted. */
   range?: string;
   /** Chevron handlers — with either, the pill's chevrons become buttons and its label rolls. */
@@ -154,6 +157,7 @@ export function StepsCard({
   totalSuffix: totalSuffixProp,
   pointSuffix: pointSuffixProp,
   format: formatProp,
+  stats,
   range,
   onPrevRange,
   onNextRange,
@@ -245,6 +249,7 @@ export function StepsCard({
     return domainMax > 0 ? (v / domainMax) * plotHeight : 0;
   };
 
+  const hasStats = stats !== undefined && stats.length > 0;
   const summary =
     accessibilityLabel ??
     `${title} bar chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
@@ -252,7 +257,7 @@ export function StepsCard({
   return (
     <ChartCardSurface
       radius="radius-20"
-      height={MEDICAL_CARD_HEIGHT}
+      height={hasStats ? 'auto' : MEDICAL_CARD_HEIGHT}
       style={[MEDICAL_CARD_STYLE, style]}
       testID={testID}
     >
@@ -277,7 +282,14 @@ export function StepsCard({
 
       <View
         {...svgEase}
-        style={{ flex: 1, minHeight: 0, marginLeft: -STEPS_BLEED, marginRight: -STEPS_BLEED }}
+        style={{
+          flexGrow: 1,
+          flexShrink: 1,
+          flexBasis: hasStats ? 'auto' : 0,
+          minHeight: hasStats ? 232 : 0,
+          marginLeft: -STEPS_BLEED,
+          marginRight: -STEPS_BLEED,
+        }}
         onLayout={onLayout}
         testID={testID ? `${testID}-plot` : undefined}
       >
@@ -363,6 +375,9 @@ export function StepsCard({
           </>
         ) : null}
       </View>
+      {hasStats ? (
+        <ChartStatTiles items={stats} testID={testID ? `${testID}-stats` : undefined} />
+      ) : null}
     </ChartCardSurface>
   );
 }

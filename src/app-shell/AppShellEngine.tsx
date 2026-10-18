@@ -1,10 +1,10 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
   Pressable,
-  ScrollView,
   View,
   useWindowDimensions,
   type LayoutChangeEvent,
@@ -22,6 +22,8 @@ import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { Sidebar } from '../sidebar';
+import { animateMotion } from '../motion/recipes';
+import { useSidebarMetrics } from '../sidebar/metrics';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import {
   WEB_OVERFLOW_CLIP,
@@ -29,7 +31,9 @@ import {
   WEB_POSITION_STICKY,
   type WebCssStyle,
 } from '../styles/web-view-style';
+import { ScrollBar } from '../layout';
 import { useTheme } from '../theme/use-theme';
+import { resolvePanelChrome } from '../styles/panel-chrome';
 import { useMessages } from '../locale/messages';
 import { APP_SHELL_MESSAGES } from './messages';
 import {
@@ -46,6 +50,8 @@ import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-s
 import { flexFill, resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
 import type { AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
+import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
+import { useCssShellLayout } from './shell-layout-css';
 
 /**
  * The page frame — one engine, four shapes (`variant`).
@@ -124,14 +130,17 @@ function Scroller({
     );
   }
   return (
-    <ScrollView testID={testID} style={[flexFill, style]} contentContainerStyle={contentStyle}>
+    <ScrollArea testID={testID} style={[flexFill, style]} contentContainerStyle={contentStyle}>
       {children}
-    </ScrollView>
+    </ScrollArea>
   );
 }
 
 /** A route Screen's own clearance beyond the occupied bottom edge (Screen's default). */
 const PAGE_CLEARANCE = 16;
+const AnimatedLayoutView = Animated.createAnimatedComponent(StyledView);
+const READING_TRANSITION =
+  'web:transition-[width,flex-basis,max-width,flex-grow] web:duration-[380ms] web:ease-in-out web:motion-reduce:transition-none';
 
 export function createAppShellEngine() {
   const AppShellComponent: React.FC<AppShellEngineProps> = ({
@@ -153,6 +162,7 @@ export function createAppShellEngine() {
     children,
     contentMaxWidth = D.contentMaxWidth,
     contentWidth = D.contentWidth,
+    contentSpan = 'content',
     gutter: gutterProp,
     navFrom,
     navExpandedFrom,
@@ -178,6 +188,7 @@ export function createAppShellEngine() {
     const drawerOpenLabel = drawerOpenLabelProp ?? messages.openNavigation;
     const drawerCloseLabel = drawerCloseLabelProp ?? messages.closeNavigation;
     const theme = useTheme();
+    const navigationChrome = resolvePanelChrome(theme);
     const { height: viewportHeight } = useWindowDimensions();
     const [asideHeight, setAsideHeight] = useState(0);
     const { width, onLayout } = useShellWidth();
@@ -186,7 +197,8 @@ export function createAppShellEngine() {
     const mode = resolveScrollMode(variant, scroll);
     const doc = mode === 'document';
     const fixed = mode === 'fixed';
-    const small = width >= BREAKPOINTS.sm;
+    const cssScope = useContext(PanelCssContext);
+    const cssLayout = useContext(PanelCssLayoutContext);
 
     // `dashboard` keeps the 12/16 pair it shipped with; one number drives both
     // for every other shape.
@@ -195,18 +207,50 @@ export function createAppShellEngine() {
     // Historical reveal geometry stays the default; an explicit gutter owns
     // every frame edge, including the old extra top gap at wider breakpoints.
     const revealGutter = gutterProp ?? 12;
-    const revealTopGutter = gutterProp ?? (small ? 24 : 12);
 
-    // The nav: `navExpandedFrom` decides which sidebar variant is drawn, and the
-    // variant decides how early it can sit in flow (a rail is narrow enough at
-    // `sm`; the panel needs `lg`). `navFrom` overrides the tier outright.
-    const navVariant = navExpandedFrom
-      ? width >= breakpointPx(navExpandedFrom)
-        ? ('panel' as const)
-        : ('rail' as const)
-      : sidebar?.variant;
-    const navTier = navFrom ?? (navExpandedFrom || navVariant === 'rail' ? 'sm' : 'lg');
-    const wide = width >= breakpointPx(navTier);
+    // Explicit navigation tiers keep their existing contract. Otherwise the
+    // shell supplies a tablet rail before a desktop panel; collapse is a
+    // separate capacity decision, never a different navigation component.
+    const automaticNavigation =
+      navFrom === undefined && navExpandedFrom === undefined && sidebar?.variant === undefined;
+    const panelFrom = navExpandedFrom ?? (automaticNavigation ? 'lg' : undefined);
+    const nativeNavVariant =
+      panelFrom !== undefined
+        ? width >= breakpointPx(panelFrom)
+          ? ('panel' as const)
+          : ('rail' as const)
+        : sidebar?.variant;
+    const navTier =
+      navFrom ??
+      (automaticNavigation
+        ? 'md'
+        : panelFrom !== undefined || nativeNavVariant === 'rail'
+          ? 'sm'
+          : 'lg');
+    const sidebarMetrics = useSidebarMetrics(sidebar?.size);
+    const [userCollapsed, setUserCollapsed] = useState(sidebar?.defaultCollapsed ?? false);
+    const cssShell = useCssShellLayout(cssScope, {
+      sidebar,
+      navFrom,
+      navExpandedFrom,
+      framedFrom,
+      panels,
+      variant,
+      navigationAlign,
+      topBar,
+      topBarVisibility,
+      metrics: sidebarMetrics,
+      layout: cssLayout?.layout ?? { panels: [] },
+      gap: cssLayout?.gap ?? gutter,
+      gutter,
+      navigationGap: Math.max(0, navigationGap ?? columnGap),
+      contentWidth,
+      userCollapsed,
+    });
+    const navVariant = cssShell ? (cssShell.mode === 'rail' ? 'rail' : 'panel') : nativeNavVariant;
+    const wide = cssShell ? cssShell.mode !== 'drawer' : width >= breakpointPx(navTier);
+    const small = cssShell ? cssShell.small : width >= BREAKPOINTS.sm;
+    const revealTopGutter = gutterProp ?? (small ? 24 : 12);
     // `focus` is the one shape with no navigation at all.
     const hasNav = variant !== 'focus' && sidebar != null;
     const navInFlow = hasNav && wide;
@@ -218,14 +262,15 @@ export function createAppShellEngine() {
     // hosts no panels.
     const panelHost = panels && variant !== 'canvas';
     const framed =
-      panelHost &&
-      (framedFrom !== undefined
-        ? width >= breakpointPx(framedFrom)
-        : hasNav
-          ? navInFlow
-          : width >= BREAKPOINTS.md);
+      cssShell?.framed ??
+      (panelHost &&
+        (framedFrom !== undefined
+          ? width >= breakpointPx(framedFrom)
+          : hasNav
+            ? navInFlow
+            : width >= BREAKPOINTS.md));
     const compactRegion = panelHost && !framed;
-    const flowSidebar = sidebar ? { ...sidebar, variant: navVariant } : undefined;
+    const stretchReading = compactRegion || contentMaxWidth === 'none';
     // The drawer always opens the full panel, whatever the in-flow variant.
     const drawerSidebar = sidebar ? { ...sidebar, variant: 'panel' as const } : undefined;
 
@@ -241,7 +286,9 @@ export function createAppShellEngine() {
     // A canvas has no scrolling column to stack an aside into — the screen IS the
     // canvas — so below `asideFrom` the aside is dropped whatever `asideCollapse`
     // says, rather than being rendered where nothing can reach it.
-    const asideStacked = hasAside && !asideBeside && asideCollapse === 'stack' && !canvas;
+    const spanAside = variant === 'feed' && contentSpan === 'content-aside';
+    const asideStacked =
+      hasAside && !asideBeside && asideCollapse === 'stack' && !canvas && !spanAside;
     // An aside built from widgets that each render nothing when they have
     // nothing to show takes no room: its content is measured, and a zero-height
     // result releases the column (width AND gap) or the stacked slot. The slot is
@@ -268,12 +315,44 @@ export function createAppShellEngine() {
         aria-hidden
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
-        style={{ position: 'absolute', top: 0, insetInlineStart: 0, width, opacity: 0 }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          insetInlineStart: 0,
+          width,
+          opacity: 0,
+        }}
       >
         {asideContent}
       </View>
     );
     const asideShown = asideBeside && !asideEmpty;
+    // Reserve the reading measure and the aside actually drawn, rather than
+    // measuring the already-shrunk content (which would oscillate on resize).
+    const preferredContent = contentWidth;
+    const expandedRequired =
+      sidebarMetrics.expanded +
+      preferredContent +
+      (asideShown ? asideWidth + Math.max(0, asideGap ?? columnGap) : 0) +
+      Math.max(0, navigationGap ?? columnGap) +
+      gutter * 2;
+    const capacityCollapsed =
+      cssShell?.capacityCollapsed ?? (navVariant !== 'rail' && width < expandedRequired);
+    const flowSidebar = sidebar
+      ? {
+          ...sidebar,
+          variant: navVariant,
+          collapsed:
+            cssShell?.collapsed ?? sidebar.collapsed ?? (capacityCollapsed || userCollapsed),
+          collapseDisabled:
+            sidebar.collapseDisabled ?? (sidebar.collapsed === undefined && capacityCollapsed),
+          onCollapsedChange: (collapsed: boolean) => {
+            setUserCollapsed(collapsed);
+            sidebar.onCollapsedChange?.(collapsed);
+          },
+        }
+      : undefined;
+
     const stackedAside = asideStacked ? (
       asideEmpty ? (
         asideProbe('100%')
@@ -283,6 +362,27 @@ export function createAppShellEngine() {
     ) : null;
 
     const reducedMotion = useReducedMotion();
+    const spanProgress = useSharedValue(spanAside ? 1 : 0);
+    useEffect(() => {
+      animateMotion(spanProgress, spanAside ? 1 : 0, 'expand', reducedMotion);
+    }, [spanAside, spanProgress, reducedMotion]);
+    const readingGap = Math.max(0, asideGap ?? columnGap);
+    const readingGapStyle = useAnimatedStyle(
+      () => ({
+        gap: readingGap * (1 - spanProgress.value),
+      }),
+      [readingGap, spanProgress],
+    );
+    const asideSpanStyle = useAnimatedStyle(
+      () => ({
+        width: asideWidth * (1 - spanProgress.value),
+        opacity: 1 - spanProgress.value,
+        overflow: spanProgress.value > 0 ? ('hidden' as const) : ('visible' as const),
+        maxHeight: spanProgress.value >= 1 ? 0 : undefined,
+      }),
+      [asideWidth, spanProgress],
+    );
+
     // Insets here are logical; a `translateX` sign and a `transformOrigin` are
     // not, so the reveal reads the direction once here.
     const rtl = useIsRtl();
@@ -447,7 +547,8 @@ export function createAppShellEngine() {
     // pads the row. With `panels` the END side gets the same gutter in every
     // case — the edge that a content-aligned row once forgot — and a compact
     // region gets none on any side, whatever the mode.
-    const contentAligned = navigationAlign === 'content' && centred;
+    const contentAligned =
+      navigationAlign === 'content' && centred && (!!cssScope || !compactRegion);
     const plainFrame = contentAligned && flowSidebar?.surface === 'plain' && !showTopBar;
     const dockedNav = navInFlow && flowSidebar?.surface === 'docked';
     const navFlush = navInFlow && (dockedNav || plainFrame);
@@ -462,7 +563,10 @@ export function createAppShellEngine() {
         flow: regionFlow,
         framed,
         gutter,
-        viewportInset: { top: externalTopHeight + regionInset, bottom: regionInset },
+        viewportInset: {
+          top: externalTopHeight + regionInset,
+          bottom: regionInset,
+        },
         // A bounded panel's content owns its edge (`useBottomEdgeInset`); a
         // growing one reserves the bar under its last row.
         bottomReserve: mode === 'fixed' ? 0 : contentReserve,
@@ -481,6 +585,71 @@ export function createAppShellEngine() {
         background,
       ],
     );
+    // Native animates a numeric reading envelope. Web uses NativeWind CSS flex
+    // transitions against its actual siblings, with no navigation measurement.
+    // Both keep the same alignment, gutter ownership and mounted host tree.
+    const [measuredNavigationWidth, setMeasuredNavigationWidth] = useState<number | null>(null);
+    const navigationWidth = navInFlow ? (measuredNavigationWidth ?? sidebarMetrics.expanded) : 0;
+    const rowNavigationGap = !navInFlow
+      ? 0
+      : dockedNav
+        ? panelHost
+          ? regionOuter
+          : 0
+        : Math.max(0, navigationGap ?? columnGap);
+    const rowHorizontalPadding = panelHost
+      ? regionOuter * (navFlush ? 1 : 2)
+      : canvas
+        ? 0
+        : gutter * (dockedNav ? 1 : 2);
+    const availableReadingWidth = Math.max(
+      0,
+      width - navigationWidth - rowNavigationGap - rowHorizontalPadding,
+    );
+    const numericReading = Platform.OS !== 'web' && panelHost && centred && !compactRegion;
+    const asideReadingWidth = asideShown ? asideWidth + readingGap : 0;
+    const targetReadingWidth = stretchReading ? availableReadingWidth : contentWidth;
+    const readingWidth = useSharedValue(targetReadingWidth);
+    useEffect(() => {
+      animateMotion(readingWidth, targetReadingWidth, 'expand', reducedMotion);
+    }, [readingWidth, targetReadingWidth, reducedMotion]);
+    const readingEnvelopeStyle = useAnimatedStyle(
+      () =>
+        numericReading && contentAligned
+          ? {
+              flexGrow: 0,
+              flexBasis: readingWidth.value + asideReadingWidth,
+              maxWidth: readingWidth.value + asideReadingWidth,
+            }
+          : {},
+      [numericReading, contentAligned, readingWidth, asideReadingWidth],
+    );
+    const contentSpanStyle = useAnimatedStyle(() => {
+      const extra = asideReadingWidth * spanProgress.value;
+      return numericReading
+        ? {
+            flexGrow: 0,
+            flexBasis: readingWidth.value + extra,
+            maxWidth: readingWidth.value + extra,
+          }
+        : {
+            flexBasis: stretchReading ? ('100%' as const) : contentWidth + extra,
+            maxWidth: stretchReading
+              ? compactRegion
+                ? undefined
+                : ('100%' as const)
+              : contentWidth + extra,
+          };
+    }, [
+      numericReading,
+      compactRegion,
+      readingWidth,
+      asideReadingWidth,
+      spanProgress,
+      stretchReading,
+      contentWidth,
+    ]);
+
     const regionChildren = panelHost ? (
       <AppShellRegionContext.Provider value={region}>{pageChildren}</AppShellRegionContext.Provider>
     ) : (
@@ -492,6 +661,9 @@ export function createAppShellEngine() {
         level={compactRegion ? 1 : 0}
         fill={compactRegion ? theme.colors.card : background}
       >
+        {Platform.OS === 'web' && doc ? (
+          <ScrollBar target="document" insets={{ start: gutter, end: bottomEdge + gutter }} />
+        ) : null}
         {showBottomBar ? (
           <AppShellBottomBar
             doc={doc && !revealAvailable}
@@ -595,8 +767,13 @@ export function createAppShellEngine() {
       asideBeside && asideEmpty ? (
         asideProbe(asideWidth)
       ) : asideBeside ? (
-        <View
+        <AnimatedLayoutView
           testID={testID ? `${testID}-aside` : undefined}
+          pointerEvents={spanAside ? 'none' : 'auto'}
+          aria-hidden={spanAside || undefined}
+          accessibilityElementsHidden={spanAside}
+          importantForAccessibility={spanAside ? 'no-hide-descendants' : 'auto'}
+          {...(Platform.OS === 'web' && spanAside ? { inert: true } : {})}
           onLayout={(event) => setAsideHeight(event.nativeEvent.layout.height)}
           style={[
             { width: asideWidth, flexShrink: 0 },
@@ -608,23 +785,44 @@ export function createAppShellEngine() {
                 }
               : { alignSelf: 'stretch' },
             inset,
+            variant === 'feed' ? asideSpanStyle : undefined,
           ]}
         >
-          {doc ? (
-            asideContent
-          ) : (
-            <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{ flexGrow: 1 }}
-              showsVerticalScrollIndicator={false}
-            >
-              {asideContent}
-            </ScrollView>
-          )}
-        </View>
+          <View
+            style={
+              variant === 'feed'
+                ? {
+                    width: asideWidth,
+                    minHeight: 0,
+                    ...(doc ? {} : { flexGrow: 1, flexShrink: 1, flexBasis: 0 }),
+                  }
+                : {
+                    minHeight: 0,
+                    ...(doc ? {} : { flexGrow: 1, flexShrink: 1, flexBasis: 0 }),
+                  }
+            }
+          >
+            {doc ? (
+              asideContent
+            ) : (
+              <ScrollArea
+                style={{ flex: 1 }}
+                contentContainerStyle={{ flexGrow: 1 }}
+                showsVerticalScrollIndicator={false}
+              >
+                {asideContent}
+              </ScrollArea>
+            )}
+          </View>
+        </AnimatedLayoutView>
       ) : null;
 
-    const frame = rootFrame(mode);
+    // Modular web roots establish a percentage-height chain. Unlike dvh,
+    // this uses the viewport left above a classic document scrollbar.
+    const frame =
+      cssScope && mode === 'fixed'
+        ? { ...rootFrame(mode), height: '100%' as const }
+        : rootFrame(mode);
 
     // ---- the reveal drawer (dashboard's whole-page slide) -------------------
     const reveal = useSharedValue(isOpen ? 1 : 0);
@@ -644,7 +842,9 @@ export function createAppShellEngine() {
 
     const feedChromeTransition: WebCssStyle =
       Platform.OS === 'web'
-        ? { '--bloom-panel-inset-duration': reducedMotion ? '0ms' : `${REVEAL_MS}ms` }
+        ? {
+            '--bloom-panel-inset-duration': reducedMotion ? '0ms' : `${REVEAL_MS}ms`,
+          }
         : {};
     const feedInsetsStyle = useAnimatedStyle(
       () => ({
@@ -663,7 +863,10 @@ export function createAppShellEngine() {
     );
 
     const railStyle = useAnimatedStyle(
-      () => ({ opacity: reveal.value, transform: [{ scale: 0.94 + 0.06 * reveal.value }] }),
+      () => ({
+        opacity: reveal.value,
+        transform: [{ scale: 0.94 + 0.06 * reveal.value }],
+      }),
       [reveal],
     );
     const pageStyle = useAnimatedStyle(
@@ -680,6 +883,7 @@ export function createAppShellEngine() {
         <AppShellProvider value={shell}>
           <View
             {...dirProps}
+            {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
             testID={testID}
             onLayout={onLayout}
             style={[
@@ -799,7 +1003,13 @@ export function createAppShellEngine() {
                 <Animated.View
                   pointerEvents={isOpen ? 'auto' : 'none'}
                   style={[
-                    { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+                    {
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                    },
                     veilStyle,
                   ]}
                 >
@@ -848,7 +1058,6 @@ export function createAppShellEngine() {
 
     // ---- the page region, per variant ---------------------------------------
     /** `feed` / `focus`: a fixed reading column, centred in what the nav leaves. */
-    const readingGap = Math.max(0, asideGap ?? columnGap);
     const readingGroupWidth = contentWidth + (asideShown ? asideWidth + readingGap : 0);
     // The region's own vertical gutter, when the row gives it none (a flush nav).
     // A property of the NAVIGATION, not of who scrolls: native resolves every
@@ -863,7 +1072,11 @@ export function createAppShellEngine() {
         ? { paddingTop: gutter, paddingBottom: gutter }
         : {};
     const centredBody = (
-      <View
+      <AnimatedLayoutView
+        className={READING_TRANSITION}
+        {...(Platform.OS === 'web'
+          ? { dataSet: { bloomReadingEnvelope: cssScope ?? 'legacy' } }
+          : {})}
         style={[
           {
             flexGrow: 1,
@@ -878,29 +1091,36 @@ export function createAppShellEngine() {
             alignItems: doc ? 'flex-start' : 'stretch',
             ...(contentAligned
               ? {
-                  flexGrow: compactRegion ? 1 : 0,
-                  flexBasis: compactRegion ? 'auto' : readingGroupWidth,
-                  maxWidth: compactRegion ? undefined : readingGroupWidth,
+                  flexGrow: stretchReading ? 1 : 0,
+                  flexBasis: stretchReading ? '100%' : readingGroupWidth,
+                  maxWidth: stretchReading ? '100%' : readingGroupWidth,
                 }
               : {}),
             ...bodyInset,
           },
-          fill,
+          fixed ? { minHeight: 0 } : null,
+          readingGapStyle,
+          readingEnvelopeStyle,
         ]}
       >
-        <View
+        <AnimatedLayoutView
+          className={READING_TRANSITION}
+          {...(Platform.OS === 'web'
+            ? { dataSet: { bloomReadingContent: cssScope ?? 'legacy' } }
+            : {})}
           testID={testID ? `${testID}-content` : undefined}
           style={[
             // `flexBasis` is the reading width and `flexShrink: 1` is what keeps a
             // 600px column inside a 360px phone — a `width` would overflow.
             {
-              flexGrow: compactRegion ? 1 : 0,
+              flexGrow: stretchReading ? 1 : 0,
               flexShrink: 1,
-              flexBasis: compactRegion ? 'auto' : contentWidth,
-              maxWidth: compactRegion ? undefined : contentWidth,
+              flexBasis: stretchReading ? 'auto' : contentWidth,
+              maxWidth: stretchReading ? undefined : contentWidth,
               minWidth: 0,
             },
             doc ? null : { alignSelf: 'stretch' },
+            contentSpanStyle,
           ]}
         >
           {panelHost ? (
@@ -933,9 +1153,9 @@ export function createAppShellEngine() {
               {stackedAside}
             </Scroller>
           )}
-        </View>
+        </AnimatedLayoutView>
         {asideColumn({})}
-      </View>
+      </AnimatedLayoutView>
     );
 
     const dashboardBody = (
@@ -971,13 +1191,24 @@ export function createAppShellEngine() {
       <>
         <View
           testID={testID ? `${testID}-page` : undefined}
-          style={{ flex: 1, minWidth: 0, minHeight: 0, backgroundColor: background }}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            minHeight: 0,
+            backgroundColor: background,
+          }}
         >
           {headerNode}
           <View style={{ flex: 1, minHeight: 0, minWidth: 0 }}>{pageChildren}</View>
         </View>
         {asideColumn(
-          canvas ? { paddingTop: gutter, paddingBottom: gutter, paddingInlineEnd: gutter } : {},
+          canvas
+            ? {
+                paddingTop: gutter,
+                paddingBottom: gutter,
+                paddingInlineEnd: gutter,
+              }
+            : {},
         )}
       </>
     );
@@ -989,29 +1220,59 @@ export function createAppShellEngine() {
     // vertical padding around that column rather than framing it like a card
     // (`dockedNav`, above).
     const navRegion =
-      navInFlow && flowSidebar ? (
-        doc ? (
-          <View
-            testID={testID ? `${testID}-navigation` : undefined}
-            style={stickyRail(dockedNav || plainFrame ? 0 : gutter)}
-          >
-            {safeNavigation(<Sidebar {...flowSidebar} />)}
-          </View>
-        ) : canvas && !dockedNav ? (
-          // The canvas row has no padding of its own, so the nav states its.
-          <View
-            style={{
-              paddingTop: gutter,
-              paddingBottom: gutter,
-              paddingInlineStart: gutter,
+      cssScope && hasNav && flowSidebar ? (
+        <View
+          testID={testID ? `${testID}-navigation` : undefined}
+          {...{ dataSet: { bloomShellNav: cssScope } }}
+          style={[
+            {
               flexShrink: 0,
-            }}
+              '--bloom-nav-overlay-surface': navigationChrome.surface,
+              '--bloom-nav-overlay-border': navigationChrome.border,
+              '--bloom-nav-overlay-shadow': navigationChrome.shadow,
+            } as WebCssStyle,
+            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
+          ]}
+        >
+          <View
+            {...{ dataSet: { bloomShellNavMode: 'panel' } }}
+            aria-hidden={cssShell?.mode !== 'panel'}
+            {...(cssShell?.mode !== 'panel' ? { inert: true } : {})}
+            style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
           >
-            {safeNavigation(<Sidebar {...flowSidebar} />)}
+            {safeNavigation(<Sidebar {...flowSidebar} variant="panel" />)}
           </View>
-        ) : (
-          safeNavigation(<Sidebar {...flowSidebar} />)
-        )
+          <View
+            {...{ dataSet: { bloomShellNavMode: 'rail' } }}
+            aria-hidden={cssShell?.mode !== 'rail'}
+            {...(cssShell?.mode !== 'rail' ? { inert: true } : {})}
+            style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
+          >
+            {safeNavigation(<Sidebar {...flowSidebar} variant="rail" />)}
+          </View>
+        </View>
+      ) : navInFlow && flowSidebar ? (
+        <View
+          testID={testID ? `${testID}-navigation` : undefined}
+          onLayout={
+            Platform.OS === 'web'
+              ? undefined
+              : (event) => setMeasuredNavigationWidth(event.nativeEvent.layout.width)
+          }
+          style={[
+            { flexShrink: 0 },
+            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
+            !doc && canvas && !dockedNav
+              ? {
+                  paddingTop: gutter,
+                  paddingBottom: gutter,
+                  paddingInlineStart: gutter,
+                }
+              : null,
+          ]}
+        >
+          {safeNavigation(<Sidebar {...flowSidebar} />)}
+        </View>
       ) : null;
 
     const drawerRegion =
@@ -1094,11 +1355,15 @@ export function createAppShellEngine() {
         <AppShellProvider value={shell}>
           <View
             {...dirProps}
+            {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
             testID={testID}
             onLayout={onLayout}
             style={[
               frame,
-              { overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden', backgroundColor: background },
+              {
+                overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden',
+                backgroundColor: background,
+              },
               style,
             ]}
           >
@@ -1146,11 +1411,25 @@ export function createAppShellEngine() {
             >
               {topBarNode}
               <StyledView className={doc ? undefined : 'flex-1 min-h-0'}>
-                <View style={[rowStyle, { flexGrow: 1, minWidth: 0 }]}>{body}</View>
+                <View
+                  {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
+                  style={[rowStyle, { flexGrow: 1, minWidth: 0 }]}
+                >
+                  {body}
+                </View>
               </StyledView>
               <Animated.View
                 pointerEvents={isOpen ? 'auto' : 'none'}
-                style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, veilStyle]}
+                style={[
+                  {
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                  },
+                  veilStyle,
+                ]}
               >
                 <Pressable
                   role="button"
@@ -1209,7 +1488,10 @@ export function createAppShellEngine() {
             style={[frame, { flexDirection: 'column', backgroundColor: background }, style]}
           >
             {topBarNode}
-            <View style={[rowStyle, { flexGrow: 1, flexShrink: 1, minHeight: 0 }]}>
+            <View
+              {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
+              style={[rowStyle, { flexGrow: 1, flexShrink: 1, minHeight: 0 }]}
+            >
               {navRegion}
               {drawerRegion}
               {body}
@@ -1223,7 +1505,13 @@ export function createAppShellEngine() {
 
     return safeFrame(
       <AppShellProvider value={shell}>
-        <View {...dirProps} testID={testID} onLayout={onLayout} style={[frame, rowStyle, style]}>
+        <View
+          {...dirProps}
+          {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
+          testID={testID}
+          onLayout={cssScope ? undefined : onLayout}
+          style={[frame, rowStyle, style]}
+        >
           {navRegion}
           {drawerRegion}
           {body}

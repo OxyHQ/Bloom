@@ -45,3 +45,7 @@ Cell colour: the accent mixed into `chart-track` by share of `max` — 8% floor,
 Hover: the cell takes its `-active` colour and a 2px `chart-cursor` ring (`boxShadow` spread), its row and column labels turn text-primary (150ms ease on web), the delta chip hides and the headline swaps to the cell. Leaving the grid clears; the gaps between cells keep the last cell, since only a grid-level leave clears it. Native: press and scrub, letting go clears.
 
 Every cell is `role="img"` named `"Thu 14: 64"`.
+
+## Summary tiles
+
+Pass `stats: readonly ChartStatTile[]` to show formatted summary tiles below the chart. Omitted or empty stats preserve the original layout. Summary tiles remain independent of plot hover; cards grow naturally to fit them and support `ResponsiveGrid stretchItems`.

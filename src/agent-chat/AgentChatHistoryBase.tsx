@@ -1,6 +1,7 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
-import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
+import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -759,7 +760,7 @@ export function AgentChatHistoryBase({
         </Text>
       </HoverRow>
 
-      <ScrollView
+      <ScrollArea
         {...dataHook('bloomAgentChatScrollHidden')}
         style={{ flex: 1, minHeight: 0 }}
         contentContainerStyle={{ flexDirection: 'column', gap: 4 }}
@@ -796,7 +797,7 @@ export function AgentChatHistoryBase({
             />
           ))
         )}
-      </ScrollView>
+      </ScrollArea>
 
       {account || onExport ? (
         <View

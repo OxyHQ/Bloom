@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { useMessages } from '../locale/messages';
 import { ZOOMABLE_MEDIA_GALLERY_MESSAGES } from './messages';
@@ -21,7 +22,6 @@ import {
   useWindowDimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  type ViewStyle,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -1211,7 +1211,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
                       >{`${activeIndex + 1} / ${items.length}`}</Text>
                     </View>
                     {indicatorVariant === 'thumbnails' ? (
-                      <ScrollView
+                      <ScrollArea
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         style={styles.thumbStripScroll}
@@ -1245,7 +1245,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
                             />
                           </Pressable>
                         ))}
-                      </ScrollView>
+                      </ScrollArea>
                     ) : (
                       <View style={styles.dotsRow} pointerEvents="none">
                         {items.map((item, idx) => (

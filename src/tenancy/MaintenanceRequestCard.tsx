@@ -1,5 +1,6 @@
-import React, { memo } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo } from 'react';
+import { Pressable, View } from 'react-native';
 import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
@@ -186,7 +187,7 @@ function MaintenanceRequestCardComponent({
       ) : null}
 
       {photos && photos.length > 0 ? (
-        <ScrollView
+        <ScrollArea
           horizontal
           showsHorizontalScrollIndicator={false}
           testID={id('photos')}
@@ -234,7 +235,7 @@ function MaintenanceRequestCardComponent({
               </View>
             );
           })}
-        </ScrollView>
+        </ScrollArea>
       ) : null}
 
       {showTimeline ? (

@@ -206,3 +206,25 @@ export const RestoresAnOffset: Story = {
     </ScrollRestorationProvider>
   ),
 };
+
+function PersistedWorkspace() {
+  const [snapshot, setSnapshot] = useState<import('./store').ScrollRestorationSnapshot>({});
+  const [generation, setGeneration] = useState(0);
+  return (
+    <View style={{ gap: 12 }}>
+      <Text>Scroll, wait for the snapshot, then remount the screen.</Text>
+      <Button onPress={() => setGeneration((value) => value + 1)}>Remount workspace</Button>
+      <Text>{JSON.stringify(snapshot)}</Text>
+      <ScrollRestorationProvider
+        adapter={storyAdapter}
+        scopeKey={String(generation)}
+        initialSnapshot={snapshot}
+        onSnapshotChange={setSnapshot}
+      >
+        <Screen contentId="persisted-feed" label="Persisted feed" focused />
+      </ScrollRestorationProvider>
+    </View>
+  );
+}
+
+export const Persisted: Story = { render: () => <PersistedWorkspace /> };

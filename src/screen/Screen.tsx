@@ -1,3 +1,4 @@
+import { BloomColorScope } from '../theme';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Keyboard, Platform, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -14,19 +15,41 @@ import {
 } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import { useAppShellRegion } from '../layout/app-shell-region';
-import { ScreenContext, ScreenHeaderContext, ScreenNavigationContext } from './context';
+import { ScrollBar } from '../layout';
+import { ScrollMetricsContext } from '../layout/scroll-metrics';
+import { ScrollOffsetProvider, useScrollOffset } from '../layout/scroll-offset';
+import { ScreenHostContext, ScreenViewportContext } from './context';
+import { useOptionalScrollRestorationContext } from '../scroll/context';
+import { useScreenViewportBinding, ScreenViewportRestoration } from './use-screen-viewport';
+import {
+  ScreenContext,
+  ScreenFooterContext,
+  ScreenHeaderContext,
+  ScreenNavigationContext,
+} from './context';
 import { useScreenWindowBinding } from './use-screen-window-scroll';
 import type { ScreenProps } from './types';
 import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 
 /** One continuous canvas; chrome overlays it and content reserves its measured footprint. */
-export function Screen({
+export function Screen(props: ScreenProps) {
+  return (
+    <BloomColorScope colorPreset={props.colorPreset} asChild>
+      <ScreenCanvas {...props} />
+    </BloomColorScope>
+  );
+}
+
+function ScreenCanvas({
+  colorPreset,
   header,
+  scroll = 'content',
+  headerPlacement = 'inset',
   bottomBar,
   primaryAction,
   active: requestedActive = true,
   navigationScope = 'inherit',
-  documentScroll = false,
+  documentScroll,
   headerHeight,
   bottomBarHeight,
   contentClearance = 16,
@@ -37,9 +60,24 @@ export function Screen({
 }: ScreenProps) {
   const surfaceFill = useSurfaceFill();
   const parentScreen = useContext(ScreenContext);
+  const parentViewport = useContext(ScreenViewportContext);
+  const inheritedMetrics = useContext(ScrollMetricsContext);
+  const inheritedOffset = useScrollOffset();
+  const host = useContext(ScreenHostContext);
+  const ownsViewport = scroll === 'auto';
+  const ownWebViewport = ownsViewport && Platform.OS === 'web';
+  const restoration = useOptionalScrollRestorationContext();
+  const region = useAppShellRegion();
   const active =
-    requestedActive && (navigationScope === 'isolated' ? true : (parentScreen?.active ?? true));
-  const scrollY = useSharedValue(0);
+    requestedActive &&
+    host.active &&
+    (navigationScope === 'isolated' ? true : (parentScreen?.active ?? true));
+  useEffect(() => {
+    if (active && colorPreset) return host.claimColorPreset?.(colorPreset);
+  }, [active, colorPreset, host.claimColorPreset]);
+  const localScrollY = useSharedValue(0);
+  const scrollY =
+    ownsViewport && !parentViewport && host.metrics ? host.metrics.scrollY : localScrollY;
   const localProgress = useSharedValue(0);
   const localTarget = useSharedValue(0);
   const localScroller = useSharedValue<string | null>(null);
@@ -78,13 +116,17 @@ export function Screen({
   // bottom edge. This screen's bar stacks ON it, never under it, and the content
   // clears both.
   const navigationEdge = useBottomEdgeInset();
-  const document = documentScroll && Platform.OS === 'web';
+  const document =
+    (documentScroll ??
+      (ownsViewport &&
+        (host.kind ? host.kind === 'document' : !region || region.flow === 'document'))) &&
+    Platform.OS === 'web';
+  const reservedTop = header && headerPlacement === 'inset' ? top : 0;
   // A document page fills ONE SCREEN of the region it is in. Inside a panel
   // shell that screen is the viewport less the shell's gutters and top bar —
   // a full `100dvh` page inside a panel 8px down overflowed it, and every short
   // page scrolled the document by the two gutters (and, on a phone, by the
   // bottom bar the panel reserves under it).
-  const region = useAppShellRegion();
   const pageMinHeight =
     region?.flow === 'document'
       ? webViewportHeightMinus(
@@ -98,9 +140,9 @@ export function Screen({
       collapseProgress,
       collapseTarget,
       activeScrollerId,
-      contentInsetsHandled: document,
+      contentInsetsHandled: document || ownsViewport,
       documentScroll: document,
-      topInset: header ? top : 0,
+      topInset: reservedTop,
       bottomInset: keyboardVisible
         ? contentClearance
         : hasBottom
@@ -123,11 +165,36 @@ export function Screen({
       navigationScope,
       inheritedNavigation?.bottomInset,
       document,
+      ownsViewport,
+      reservedTop,
       keyboardVisible,
       navigationEdge,
     ],
   );
-  useScreenWindowBinding(value, { active: document });
+  useScreenWindowBinding(value, { active: document && !ownsViewport });
+  const reservedBottom = hasBottom ? bottom + navigationEdge + contentClearance : 0;
+  const shellInset = region
+    ? region.viewportInset.top + region.viewportInset.bottom + region.bottomReserve
+    : 0;
+  const viewport = useScreenViewportBinding(
+    value,
+    ownsViewport,
+    document,
+    shellInset + reservedTop + reservedBottom,
+    !parentViewport ? host : undefined,
+  );
+  const scrollbarTarget = useMemo(
+    () => ({ current: { getScrollableNode: () => viewport.scrollRef.current } }),
+    [viewport.scrollRef],
+  );
+  const viewportCss = ownWebViewport
+    ? ({
+        '--bloom-screen-viewport-height': document
+          ? `calc(100dvh - ${shellInset + reservedTop + reservedBottom}px)`
+          : `calc(100cqh - ${reservedTop + reservedBottom}px)`,
+        '--bloom-screen-viewport-top': `${(document ? (region?.viewportInset.top ?? 0) : 0) + reservedTop}px`,
+      } as WebCssStyle)
+    : undefined;
   const documentHeaderStyle: WebCssStyle = {
     position: WEB_POSITION_STICKY,
     top: WEB_SURFACE_STICKY_TOP,
@@ -142,7 +209,11 @@ export function Screen({
       testID={testID ? `${testID}-header` : undefined}
       pointerEvents="box-none"
       onLayout={(event) => setTop(event.nativeEvent.layout.height)}
-      style={document ? documentHeaderStyle : { position: 'absolute', top: 0, left: 0, right: 0 }}
+      style={
+        document
+          ? documentHeaderStyle
+          : { position: 'absolute', top: 0, left: 0, right: 0, zIndex: Z_INDEX.floating }
+      }
     >
       <ScreenHeaderContext.Provider value={value}>{header}</ScreenHeaderContext.Provider>
     </View>
@@ -163,19 +234,21 @@ export function Screen({
           : { position: 'absolute', bottom: navigationEdge, left: 0, right: 0 }
       }
     >
-      {bottomBar ?? (
-        <View
-          pointerEvents="box-none"
-          style={{
-            alignItems: 'flex-end',
-            paddingHorizontal: 16,
-            paddingBottom: windowEdgeGap(insets?.bottom ?? 0),
-            minHeight: bottom,
-          }}
-        >
-          {primaryAction}
-        </View>
-      )}
+      <ScreenFooterContext.Provider value={value}>
+        {bottomBar ?? (
+          <View
+            pointerEvents="box-none"
+            style={{
+              alignItems: 'flex-end',
+              paddingHorizontal: 16,
+              paddingBottom: windowEdgeGap(insets?.bottom ?? 0),
+              minHeight: bottom,
+            }}
+          >
+            {primaryAction}
+          </View>
+        )}
+      </ScreenFooterContext.Provider>
     </View>
   ) : null;
   return (
@@ -187,40 +260,123 @@ export function Screen({
       }
     >
       <ScreenContext.Provider value={value}>
-        <View
-          {...props}
-          testID={testID}
-          style={[
-            document
-              ? {
-                  minHeight: pageMinHeight,
-                  width: '100%',
-                  position: 'relative',
-                  backgroundColor: surfaceFill,
-                }
-              : { flex: 1, minHeight: 0, position: 'relative', backgroundColor: surfaceFill },
-            style,
-          ]}
-        >
-          {document ? headerNode : null}
-          {document ? (
-            <View
-              testID={testID ? `${testID}-content` : undefined}
-              style={{
-                flexGrow: 1,
-                flexShrink: 0,
-                paddingTop: header ? top : 0,
-                paddingBottom: hasBottom ? bottom + navigationEdge + contentClearance : 0,
-              }}
-            >
-              {children}
-            </View>
-          ) : (
-            children
-          )}
-          {document ? null : headerNode}
-          {bottomNode}
-        </View>
+        <ScreenViewportContext.Provider value={ownsViewport ? viewport.value : parentViewport}>
+          <ScrollMetricsContext.Provider
+            value={ownsViewport ? viewport.value.metrics : inheritedMetrics}
+          >
+            <ScrollOffsetProvider value={ownsViewport ? value.scrollY : inheritedOffset}>
+              <View
+                {...props}
+                testID={testID}
+                style={[
+                  document
+                    ? {
+                        minHeight: pageMinHeight,
+                        width: '100%',
+                        position: 'relative',
+                        backgroundColor: surfaceFill,
+                      }
+                    : {
+                        flexGrow: 1,
+                        flexShrink: 1,
+                        flexBasis: 0,
+                        minHeight: 0,
+                        position: 'relative',
+                        backgroundColor: surfaceFill,
+                      },
+                  viewportCss,
+                  style,
+                ]}
+              >
+                {ownWebViewport &&
+                restoration &&
+                host.restoreScroll !== false &&
+                !(document && host.restoresDocument) ? (
+                  <ScreenViewportRestoration
+                    target={document ? 'window' : viewport.scrollRef}
+                    active={active}
+                    restoring={viewport.restoring}
+                  />
+                ) : null}
+                {headerNode}
+                <View
+                  testID={testID ? `${testID}-content` : undefined}
+                  style={
+                    document
+                      ? {
+                          flexGrow: 1,
+                          flexShrink: 0,
+                          paddingTop: reservedTop,
+                          paddingBottom: hasBottom ? bottom + navigationEdge + contentClearance : 0,
+                        }
+                      : {
+                          flexGrow: 1,
+                          flexShrink: 1,
+                          flexBasis: 0,
+                          minHeight: 0,
+                          minWidth: 0,
+                          ...(ownsViewport && !ownWebViewport
+                            ? { paddingTop: reservedTop, paddingBottom: reservedBottom }
+                            : {}),
+                        }
+                  }
+                >
+                  {ownWebViewport ? (
+                    <View
+                      ref={viewport.scrollRef as React.Ref<React.ElementRef<typeof View>>}
+                      {...{ dataSet: { bloomScreenViewport: document ? 'document' : 'element' } }}
+                      testID={testID ? `${testID}-viewport` : undefined}
+                      style={[
+                        {
+                          minHeight: 0,
+                          minWidth: 0,
+                          flexGrow: 1,
+                          flexShrink: document ? 0 : 1,
+                          flexBasis: document ? 'auto' : 0,
+                        },
+                        {
+                          overflowX: document ? 'visible' : 'hidden',
+                          overflowY: document ? 'visible' : 'auto',
+                          ...(document ? {} : { containerType: 'size' }),
+                        } as WebCssStyle,
+                      ]}
+                    >
+                      <View
+                        ref={viewport.contentRef as React.Ref<React.ElementRef<typeof View>>}
+                        testID={testID ? `${testID}-scroll-content` : undefined}
+                        style={{
+                          minWidth: 0,
+                          flexGrow: 1,
+                          flexShrink: 0,
+                          ...(!document
+                            ? { paddingTop: reservedTop, paddingBottom: reservedBottom }
+                            : {}),
+                        }}
+                      >
+                        {children}
+                      </View>
+                    </View>
+                  ) : (
+                    children
+                  )}
+                  {ownWebViewport && active && !document ? (
+                    <ScrollBar
+                      target={scrollbarTarget}
+                      insets={{ start: reservedTop, end: reservedBottom }}
+                    />
+                  ) : null}
+                  {ownWebViewport && active && document && region?.flow !== 'document' ? (
+                    <ScrollBar
+                      target="document"
+                      insets={{ start: reservedTop, end: reservedBottom }}
+                    />
+                  ) : null}
+                </View>
+                {bottomNode}
+              </View>
+            </ScrollOffsetProvider>
+          </ScrollMetricsContext.Provider>
+        </ScreenViewportContext.Provider>
       </ScreenContext.Provider>
     </ScreenNavigationContext.Provider>
   );

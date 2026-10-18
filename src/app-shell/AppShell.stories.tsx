@@ -25,6 +25,7 @@ import {
   AppShellPanel,
   AppShellPanels,
   useAppShellPanel,
+  usePanelNavigation,
   NotificationBell,
   ProOfferCard,
 } from './index';
@@ -464,4 +465,320 @@ export const ScreenPages: Story = {
       </AppShell>
     );
   },
+};
+
+function DeckPage({ column }: { column: string }) {
+  const navigation = usePanelNavigation();
+  return (
+    <Screen
+      scroll="auto"
+      testID={`modular-deck-panels-${column}-scroll`}
+      header={<PageHeader title={`${column}: ${navigation.entry.name}`} />}
+      bottomBar={
+        <View style={{ padding: 12 }}>
+          <Text>{column} workspace actions</Text>
+        </View>
+      }
+    >
+      <ScreenScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+        <Text variant="title-2-medium">
+          {column}: {navigation.entry.name}
+        </Text>
+        <Button testID={`deck-${column}-open`} onPress={() => navigation.push({ name: 'Detail' })}>
+          Open detail
+        </Button>
+        {Array.from({ length: 80 }, (_, index) => (
+          <Text key={index}>
+            {column} item {index + 1}
+          </Text>
+        ))}
+      </ScreenScrollView>
+    </Screen>
+  );
+}
+function DeckHeader({ column }: { column: string }) {
+  const navigation = usePanelNavigation();
+  return (
+    <View style={{ padding: 12, flexDirection: 'row', gap: 8 }}>
+      <Button
+        testID={`deck-${column}-back`}
+        disabled={!navigation.canGoBack}
+        onPress={navigation.back}
+      >
+        Back
+      </Button>
+      <Button
+        testID={`deck-${column}-forward`}
+        disabled={!navigation.canGoForward}
+        onPress={navigation.forward}
+      >
+        Forward
+      </Button>
+    </View>
+  );
+}
+/** Each column owns its memory history and restores its scroll independently. */
+export const ModularDeck: Story = {
+  render: function Deck() {
+    const [columns, setColumns] = useState(['Home', 'Mentions', 'Saved', 'Activity']);
+    const [activePanel, setActivePanel] = useState<string>();
+    return (
+      <View style={{ height: 680 }}>
+        <AppShell
+          testID="modular-deck"
+          navigationAlign="content"
+          sidebar={{ items: DEMO_NAV, surface: 'plain' }}
+          panelLayout={{
+            mode: 'deck',
+            activePanel,
+            trailingAction: (
+              <Button
+                accessibilityLabel="Add column"
+                onPress={() => {
+                  const id = `Column ${columns.length + 1}`;
+                  setColumns([...columns, id]);
+                  setActivePanel(id);
+                }}
+              >
+                Add
+              </Button>
+            ),
+            panels: columns.map((id) => ({
+              id,
+              width: 360,
+              minWidth: 280,
+              maxWidth: 520,
+              resizable: true,
+              scroll: 'content',
+              headerActions: <DeckHeader column={id} />,
+              navigation: {
+                initialEntries: [{ key: 'home', name: 'Home' }],
+                render: () => <DeckPage column={id} />,
+              },
+            })),
+          }}
+        />
+      </View>
+    );
+  },
+};
+/** Joined or separated tracks use the same accessible resize grip and pair constraints. */
+export const ModularInbox: Story = {
+  render: () => (
+    <View style={{ height: 680 }}>
+      <AppShell
+        testID="modular-inbox"
+        variant="dashboard"
+        contentMaxWidth="none"
+        panelLayout={{
+          appearance: 'joined',
+          collapseBelow: 700,
+          activePanel: 'message',
+          panels: [
+            {
+              id: 'list',
+              width: 380,
+              minWidth: 320,
+              maxWidth: 480,
+              resizable: true,
+              scroll: 'panel',
+              content: (
+                <View style={{ padding: 16, gap: 16 }}>
+                  {Array.from({ length: 30 }, (_, i) => (
+                    <Text key={i}>Message {i + 1}</Text>
+                  ))}
+                </View>
+              ),
+            },
+            {
+              id: 'message',
+              span: 2,
+              minWidth: 300,
+              content: (
+                <View style={{ padding: 24 }}>
+                  <Text variant="title-1-medium">A message with room to read</Text>
+                </View>
+              ),
+            },
+          ],
+        }}
+      />
+    </View>
+  ),
+};
+export const ModularMap: Story = {
+  render: () => (
+    <View style={{ height: 680 }}>
+      <AppShell
+        testID="modular-map"
+        variant="dashboard"
+        contentMaxWidth="none"
+        panelLayout={{
+          collapseBelow: 800,
+          activePanel: 'results',
+          panels: [
+            {
+              id: 'results',
+              width: 400,
+              minWidth: 320,
+              maxWidth: 520,
+              resizable: true,
+              scroll: 'panel',
+              content: (
+                <View style={{ padding: 16, gap: 20 }}>
+                  {Array.from({ length: 80 }, (_, i) => (
+                    <Text key={i}>Property {i + 1}</Text>
+                  ))}
+                </View>
+              ),
+            },
+            {
+              id: 'map',
+              span: 1,
+              minWidth: 320,
+              content: (
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text variant="title-1-medium">Map canvas</Text>
+                </View>
+              ),
+            },
+          ],
+        }}
+      />
+    </View>
+  ),
+};
+function ExpandingFeedDemo() {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <AppShell
+      testID="modular-feed"
+      variant="feed"
+      navigationAlign="content"
+      gutter={8}
+      navigationGap={0}
+      panelLayout={{
+        flow: 'document',
+        gap: 0,
+        expandedPanel: expanded ? 'main' : undefined,
+        panels: [
+          {
+            id: 'main',
+            width: 620,
+            content: (
+              <View style={{ padding: 20, gap: 16 }}>
+                <Button testID="modular-expand" onPress={() => setExpanded((value) => !value)}>
+                  Toggle full content
+                </Button>
+                {Array.from({ length: 30 }, (_, i) => (
+                  <Text key={i}>Feed item {i + 1}</Text>
+                ))}
+              </View>
+            ),
+          },
+          {
+            id: 'context',
+            sticky: true,
+            width: 350,
+            hideBelow: 990,
+            content: (
+              <View style={{ padding: 20 }}>
+                <Text variant="title-2-medium">Context panel</Text>
+              </View>
+            ),
+          },
+        ],
+      }}
+    />
+  );
+}
+export const ModularExpandingFeed: Story = { render: () => <ExpandingFeedDemo /> };
+
+function WorkspacePanel({ id }: { id: string }) {
+  const [count, setCount] = useState(0);
+  return (
+    <View style={{ padding: 20, gap: 16 }}>
+      <Text variant="title-2-medium">{id}</Text>
+      <Button testID={`workspace-${id}-count`} onPress={() => setCount((value) => value + 1)}>
+        Count {count}
+      </Button>
+      {Array.from({ length: 20 }, (_, index) => (
+        <Text key={index}>
+          {id} row {index + 1}
+        </Text>
+      ))}
+    </View>
+  );
+}
+/** Same mounted workspace stacks below lg and shares a row when its shell has room. */
+export const ModularResponsiveWorkspace: Story = {
+  render: () => (
+    <View style={{ height: 680 }}>
+      <AppShell
+        testID="responsive-workspace"
+        variant="dashboard"
+        contentMaxWidth="none"
+        panelLayout={{
+          axis: { base: 'vertical', lg: 'horizontal' },
+          appearance: 'joined',
+          gap: 1,
+          panels: [
+            {
+              id: 'editor',
+              width: 480,
+              minWidth: 300,
+              height: 300,
+              minHeight: 160,
+              maxHeight: 450,
+              resizable: true,
+              scroll: 'panel',
+              content: <WorkspacePanel id="editor" />,
+            },
+            {
+              id: 'preview',
+              span: 1,
+              minWidth: 250,
+              minHeight: 180,
+              scroll: 'panel',
+              content: <WorkspacePanel id="preview" />,
+            },
+          ],
+        }}
+      />
+    </View>
+  ),
+};
+/** Natural height sections share the page's document scroll without viewport-sized rows. */
+export const ModularVerticalDocument: Story = {
+  render: () => (
+    <AppShell
+      testID="vertical-document"
+      panelLayout={{
+        axis: 'vertical',
+        flow: 'document',
+        panels: [
+          {
+            id: 'summary',
+            width: 620,
+            content: (
+              <View style={{ padding: 20 }}>
+                <Text variant="title-1-medium">Natural-height summary</Text>
+              </View>
+            ),
+          },
+          {
+            id: 'activity',
+            width: 620,
+            content: (
+              <View style={{ padding: 20, gap: 16 }}>
+                {Array.from({ length: 60 }, (_, index) => (
+                  <Text key={index}>Activity {index + 1}</Text>
+                ))}
+              </View>
+            ),
+          },
+        ],
+      }}
+    />
+  ),
 };

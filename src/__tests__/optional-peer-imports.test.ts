@@ -94,8 +94,8 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
   },
   {
     peer: 'expo-router',
-    file: 'tabs/expo-router/RouterTabs.tsx',
-    why: 'same shape as the scroll binding above — this file exists to BE the expo-router binding for the tab strip and is reachable only from `@oxy.so/bloom/tabs/expo-router`; the tabs core imports no router, so a consumer on a different router (or none) still gets `@oxy.so/bloom/tabs`',
+    file: 'panel-routing/expo-router/PanelRouterAdapter.tsx',
+    why: 'the explicit Expo adapter is reachable only from panel-routing/expo-router and tabs/expo-router; panel-routing and tabs cores import no Expo router, so other routers remain supported',
   },
 ];
 

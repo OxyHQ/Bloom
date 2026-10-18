@@ -18,6 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
+import { ScreenHostContext } from '../screen/context';
 import { useHeaderDockContext } from '../layout/header-dock';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { ScreenHeaderContext, useScreenContext } from '../screen/context';
@@ -129,10 +130,10 @@ function PageHeaderComponent({
   tone = 'default',
   presentation = 'floating',
   placement = 'inline',
-  onBack,
+  onBack: screenOnBack,
   backLabel: backLabelProp,
   leading,
-  actions,
+  actions: screenActions,
   border = 'auto',
   transparent = false,
   scrim = 'auto',
@@ -205,6 +206,23 @@ function PageHeaderComponent({
   const screen = useScreenContext();
   const headerScreen = useContext(ScreenHeaderContext);
   const positionedByScreen = screen != null && headerScreen === screen;
+  const host = useContext(ScreenHostContext);
+  const hostActions = positionedByScreen ? host.headerActions : undefined;
+  const navigation = positionedByScreen ? host.navigation : undefined;
+  const onBack = navigation ? (navigation.canGoBack ? navigation.back : undefined) : screenOnBack;
+  const actions = hostActions ? (
+    <>
+      {screenActions}
+      <View
+        testID={testID ? `${testID}-host-actions` : undefined}
+        style={[styles.actions, { gap: floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP }]}
+      >
+        {hostActions}
+      </View>
+    </>
+  ) : (
+    screenActions
+  );
   const contextScrollY = useScrollOffset();
   const metrics = useScrollMetricsValue();
   const internalScrollY = useSharedValue(0);
@@ -385,6 +403,7 @@ function PageHeaderComponent({
             style={{
               color: tone === 'onImage' ? '#FFFFFF' : theme.colors.text,
               textAlign: centered ? 'center' : 'left',
+              maxWidth: '100%',
             }}
             testID={testID ? `${testID}-title` : undefined}
           >
@@ -400,6 +419,7 @@ function PageHeaderComponent({
             style={{
               color: tone === 'onImage' ? 'rgba(255,255,255,0.82)' : paint.textSecondary,
               textAlign: centered ? 'center' : 'left',
+              maxWidth: '100%',
             }}
             testID={testID ? `${testID}-subtitle` : undefined}
           >
@@ -418,7 +438,8 @@ function PageHeaderComponent({
       // One shared pane; the back action is plain so it adds no second material.
       <BlurIsland testID={testID ? `${testID}-back-island` : undefined}>
         <Button
-          appearance="plain"
+          appearance="outline"
+          material="shared"
           tone="neutral"
           size="md"
           iconOnly
@@ -435,18 +456,21 @@ function PageHeaderComponent({
           leadingIcon={RiArrowLeftLine}
           accessibilityLabel={backLabel}
           onPress={onBack}
+          disabled={navigation ? !navigation.canGoBack : undefined}
           hitSlop={CAPSULE_HIT_SLOP}
           testID={testID ? `${testID}-back` : undefined}
         />
       </BlurIsland>
     ) : (
       <Button
-        appearance="plain"
+        appearance="outline"
+        material="shared"
         tone="neutral"
         size="md"
         icon={RiArrowLeftLine}
         accessibilityLabel={backLabel}
         onPress={onBack}
+        disabled={navigation ? !navigation.canGoBack : undefined}
         testID={testID ? `${testID}-back` : undefined}
       />
     )
@@ -652,9 +676,11 @@ const styles = StyleSheet.create({
   },
   titleBlockCentered: {
     alignItems: 'center',
+    maxWidth: '100%',
   },
   centerSlot: {
     position: 'absolute',
+    alignItems: 'center',
     top: 0,
     bottom: 0,
     justifyContent: 'center',
