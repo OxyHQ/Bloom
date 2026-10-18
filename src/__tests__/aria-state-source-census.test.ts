@@ -143,7 +143,7 @@ const NAMED_BY_SPREAD = ['pressable-scale/PressableScale.tsx <AnimatedPressable 
 const NAMED_BY_CONTENTS = [
   'accordion/Accordion.tsx <Pressable role="button">',
   // A Markdown link is its label: the nodes inside it are the text.
-  'markdown/MarkdownInline.tsx <Text role="link">',
+  'markdown/InlineMarkdown.tsx <Text role="link">',
 ];
 
 /**
