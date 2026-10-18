@@ -3729,7 +3729,7 @@
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
     "build:avatar-runtime": "node scripts/build-avatar-runtime.mjs",
-    "prepublishOnly": "bun run typescript && bun run test && bun run build"
+    "prepublishOnly": "bun run typescript && node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=4 && bun run build"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
