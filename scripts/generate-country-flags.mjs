@@ -13,7 +13,7 @@
  *
  * The country filter: a real ISO country
  * that ships a flag AND a dial code, `dial` = its first phone code, sorted by
- * `name.localeCompare`. Regional additions below inherit their country’s dial code.
+ * `name.localeCompare`. Additional regional artwork does not add phone-code entries.
  *
  * Flags are stored as shape tuples rendered by one `CountryFlag` component with
  * react-native-svg (native + web), not as SVG strings: no XML parse at render
@@ -38,8 +38,8 @@ const OUT = join(HERE, '..', 'src', 'phone-input');
 const FLAGS_PKG = 'country-flag-icons@1.6.20';
 const COUNTRIES_PKG = 'countries-list@3.4.1';
 
-/** Regional additions use subdivision identifiers and share their country's dial code. */
-const REGIONS = [{ iso2: 'ES-CT', name: 'Catalunya', country: 'ES' }];
+/** Additional artwork only: these identifiers never enter the phone-country list. */
+const EXTRA_FLAGS = ['ES-CT'];
 
 /** The viewBox 198 of the flags share; only the others store their own. */
 const DEFAULT_VIEWBOX = '0 0 513 342';
@@ -81,14 +81,6 @@ const countries = countriesList
   .getCountryDataList()
   .filter((c) => flagFiles.has(c.iso2) && c.phone.length > 0)
   .map((c) => ({ iso2: c.iso2, name: c.name, dial: String(c.phone[0]) }));
-for (const region of REGIONS) {
-  const country = countries.find((entry) => entry.iso2 === region.country);
-  if (!country) throw new Error(`${region.iso2}: missing calling-code country ${region.country}`);
-  if (countries.some((entry) => entry.iso2 === region.iso2)) {
-    throw new Error(`${region.iso2}: duplicate identifier`);
-  }
-  countries.push({ iso2: region.iso2, name: region.name, dial: country.dial });
-}
 countries.sort((a, b) => a.name.localeCompare(b.name));
 
 // ---------------------------------------------------------------------------
@@ -126,7 +118,7 @@ function attributes(source) {
  *   kind 2 ellipse  geometry = [cx, cy, rx, ry]
  */
 function convert(iso2) {
-  const source = REGIONS.some((region) => region.iso2 === iso2)
+  const source = EXTRA_FLAGS.includes(iso2)
     ? join(HERE, 'country-flags', `${iso2}.svg`)
     : join(flagsDir, '3x2', `${iso2}.svg`);
   const svg = readFileSync(source, 'utf8');
@@ -207,8 +199,8 @@ const countriesTs =
   ) +
   `\nimport type { Country } from './types';\n\n` +
   `/**\n` +
-  ` * Countries with a flag and dial code, plus supported regions, sorted by name.\n` +
-  ` * \`dial\` is the country's first calling code, without the \`+\`.\n` +
+  ` * Every ISO 3166-1 country that has both a flag and a dial code, sorted by\n` +
+  ` * name. \`dial\` is the country's first calling code, without the \`+\`.\n` +
   ` */\n` +
   `export const COUNTRIES: readonly Country[] = [\n` +
   countries
@@ -222,12 +214,12 @@ const countriesTs =
 const flagsTs =
   HEADER(`country-flag-icons@${flagsVersion} (MIT), 3x2 set, plus regional artwork.`) +
   `\nimport type { FlagArt } from './flag-art';\n\n` +
-  `/** Shape data for each listed country's 3x2 flag, keyed by country or subdivision identifier. */\n` +
+  `/** Shape data for phone-country flags and additional regional artwork, keyed by country or subdivision identifier. */\n` +
   `export const COUNTRY_FLAGS: Readonly<Record<string, FlagArt>> = {\n` +
-  countries
+  [...countries.map((country) => country.iso2), ...EXTRA_FLAGS]
     .map(
-      (c) =>
-        `  ${c.iso2.includes('-') ? JSON.stringify(c.iso2) : c.iso2}: ${JSON.stringify(convert(c.iso2))},`,
+      (code) =>
+        `  ${code.includes('-') ? JSON.stringify(code) : code}: ${JSON.stringify(convert(code))},`,
     )
     .join('\n') +
   `\n};\n`;

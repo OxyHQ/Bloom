@@ -3,18 +3,18 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type { Props as SVGIconProps } from '../icons/shared';
 import type { TextFieldSize } from '../text-field/shared';
 
-/** One country or region in the phone-code list. */
+/** One entry of the vendored country list. */
 export interface Country {
-  /** Upper-case country or supported subdivision identifier (`US`, `ES-CT`). */
+  /** ISO 3166-1 alpha-2, upper case (`US`). */
   iso2: string;
-  /** Display name (`United States`, `Catalunya`). */
+  /** English short name (`United States`). */
   name: string;
   /** First calling code, digits only (`1`, `44`, `1809`). */
   dial: string;
 }
 
 export interface CountryFlagProps {
-  /** Country or supported subdivision identifier (`US`, `ES-CT`). Unknown codes render nothing. */
+  /** Country or supported subdivision flag identifier (`US`, `ES-CT`). Unknown codes render nothing. */
   iso2: string;
   /** Width in px; the flag is 3:2, so height is two thirds of it. Default `18` (`w-[18px] h-3`). */
   size?: number;
@@ -28,12 +28,12 @@ export interface CountryFlagProps {
 }
 
 export interface CountryCodeSelectProps {
-  /** Selected country or region identifier (controlled). */
+  /** Selected ISO code (controlled). */
   value?: string;
-  /** Initial country or region identifier when uncontrolled. Default `US`. */
+  /** Initial ISO code when uncontrolled. Default `US`. */
   defaultValue?: string;
   onValueChange?: (iso2: string, country: Country) => void;
-  /** The choosable countries. Default: every listed country and region, by name. */
+  /** The choosable countries. Default: every vendored country, by name. */
   countries?: readonly Country[];
   /** Accessible name of the trigger and the list (`Country code` in English). */
   label?: string;
@@ -64,12 +64,12 @@ export interface PhoneInputProps {
   defaultValue?: string;
   onValueChange?: (value: string) => void;
 
-  /** Selected country or region identifier (controlled). */
+  /** Selected ISO code (controlled). */
   country?: string;
-  /** Initial country or region identifier when uncontrolled. Default `US`. */
+  /** Initial ISO code when uncontrolled. Default `US`. */
   defaultCountry?: string;
   onCountryChange?: (iso2: string, country: Country) => void;
-  /** The choosable countries. Default: every listed country and region, by name. */
+  /** The choosable countries. Default: every vendored country, by name. */
   countries?: readonly Country[];
   /** Accessible name of the country-code select (`Country code` in English). */
   countrySelectLabel?: string;

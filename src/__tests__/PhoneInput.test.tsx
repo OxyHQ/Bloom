@@ -61,21 +61,23 @@ function shellStyle(root: Root) {
 
 describe('country data', () => {
   it('vendors every country with a flag and a dial code, sorted by name', () => {
-    expect(COUNTRIES.length).toBe(253);
+    expect(COUNTRIES.length).toBe(252);
     const names = COUNTRIES.map((c) => c.name);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
     for (const country of COUNTRIES) {
       expect(COUNTRY_FLAGS[country.iso2]).toBeDefined();
       expect(country.dial).toMatch(/^\d+$/);
     }
-    expect(Object.keys(COUNTRY_FLAGS).sort()).toEqual(COUNTRIES.map((c) => c.iso2).sort());
+    expect(Object.keys(COUNTRY_FLAGS).sort()).toEqual(
+      [...COUNTRIES.map((c) => c.iso2), 'ES-CT'].sort(),
+    );
+    expect(findCountry('ES-CT')).toBeUndefined();
   });
 
   it.each([
     ['US', '1'],
     ['GB', '44'],
     ['ES', '34'],
-    ['ES-CT', '34'],
     ['CA', '1'],
     ['JP', '81'],
     ['IN', '91'],
@@ -199,26 +201,14 @@ describe('PhoneInput', () => {
     expect(triggerDrawsFlag(root, 'US')).toBe(true);
   });
 
-  it('offers Catalunya in the default list and preserves its shared calling code', () => {
-    const onCountryChange = jest.fn();
-    const root = renderLight(
-      <PhoneInput defaultCountry="ES-CT" onCountryChange={onCountryChange} />,
-    );
+  it('keeps Catalunya artwork outside the phone-country selector', () => {
+    const root = renderLight(<PhoneInput defaultCountry="ES" />);
     expect(triggerText(root)).toBe('+34');
-    expect(triggerDrawsFlag(root, 'ES-CT')).toBe(true);
-    fireEvent.press(root.getByLabelText('Country code'));
-    expect(root.getByLabelText('Canada')).toBeTruthy();
-    fireEvent.press(root.getByLabelText('Spain'));
     expect(triggerDrawsFlag(root, 'ES')).toBe(true);
     fireEvent.press(root.getByLabelText('Country code'));
-    fireEvent.press(root.getByLabelText('Catalunya'));
-    expect(onCountryChange).toHaveBeenLastCalledWith('ES-CT', {
-      iso2: 'ES-CT',
-      name: 'Catalunya',
-      dial: '34',
-    });
-    expect(triggerText(root)).toBe('+34');
-    expect(triggerDrawsFlag(root, 'ES-CT')).toBe(true);
+    expect(root.queryByLabelText('Catalunya')).toBeNull();
+    expect(root.getByLabelText('Spain')).toBeTruthy();
+    expect(root.getByLabelText('Canada')).toBeTruthy();
   });
 
   it('a controlled country change updates the trigger text and flag', () => {

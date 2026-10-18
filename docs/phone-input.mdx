@@ -24,7 +24,7 @@ import { RiQuestionLine } from '@oxy.so/bloom/icons';
 
 ## Subpath only
 
-`PhoneInput`, `CountryCodeSelect`, `CountryFlag` and `COUNTRIES` are published at `@oxy.so/bloom/phone-input` and are **not** on the root barrel. The family carries the flag artwork for 253 country and region entries (`flags.ts`, ~145 KB of source) and Metro does not tree-shake: on the root barrel, every app importing `Button` would bundle every flag.
+`PhoneInput`, `CountryCodeSelect`, `CountryFlag` and `COUNTRIES` are published at `@oxy.so/bloom/phone-input` and are **not** on the root barrel. The family carries the flag artwork for 252 phone-country entries plus Catalunya (`flags.ts`, ~145 KB of source) and Metro does not tree-shake: on the root barrel, every app importing `Button` would bundle every flag.
 
 ## Value and country
 
@@ -78,14 +78,14 @@ import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
 - `CountryFlag` — `iso2`, `size` (width; height is ⅔ of it, default 18). Drawn with react-native-svg on both platforms. Unknown codes render nothing.
 - `COUNTRIES` — `{ iso2, name, dial }[]`, sorted by name; `findCountry(iso2)` looks one up case-insensitively.
 
-`ES-CT` identifies Catalunya and draws the blue estelada. It appears in the default
-selector with the shared `+34` calling code; `ES` (Spain) and `CA` (Canada, `+1`)
-remain available. The legacy `iso2` prop and data field accept country identifiers
-and this supported subdivision identifier; `ES-CT` is not an alpha-2 country code.
+`CountryFlag iso2="ES-CT"` draws Catalunya's blue estelada. This is additional
+artwork only: Catalunya is not an entry in `COUNTRIES` or the default phone-code
+selector, and no calling code is assigned to it. `ES` (Spain) and `CA` (Canada)
+remain unchanged. The flag's legacy `iso2` prop also accepts this subdivision
+identifier; the phone-country fields retain their existing country-code contract.
 
 ```tsx
 <CountryFlag iso2="ES-CT" size={28} accessibilityLabel="Catalunya" />
-<PhoneInput defaultCountry="ES-CT" />
 ```
 
 ## Accessibility
@@ -96,7 +96,7 @@ and this supported subdivision identifier; `ES-CT` is not an alpha-2 country cod
 
 ## Data
 
-`countries.ts` and `flags.ts` are GENERATED — never edit them by hand. `scripts/generate-country-flags.mjs` packs `country-flag-icons` (3x2 SVGs) and `countries-list` at pinned versions into a temp directory and writes plain TypeScript, so neither package is a dependency. The filter keeps a country with a flag and a dial code, `dial` = its first calling code, sorted by name. The generator also appends Catalunya (`ES-CT`) using the maintained SVG in `scripts/country-flags/ES-CT.svg` and inherits Spain’s calling code. Both packages are MIT; their licences are in `src/phone-input/LICENSES.md`.
+`countries.ts` and `flags.ts` are GENERATED — never edit them by hand. `scripts/generate-country-flags.mjs` packs `country-flag-icons` (3x2 SVGs) and `countries-list` at pinned versions into a temp directory and writes plain TypeScript, so neither package is a dependency. The filter keeps a country with a flag and a dial code, `dial` = its first calling code, sorted by name. The generator adds Catalunya (`ES-CT`) only to the flag artwork, using the maintained SVG in `scripts/country-flags/ES-CT.svg`; it does not change the phone-country list. Both packages are MIT; their licences are in `src/phone-input/LICENSES.md`.
 
 ```bash
 node scripts/generate-country-flags.mjs
