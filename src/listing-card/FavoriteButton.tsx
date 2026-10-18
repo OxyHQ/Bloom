@@ -1,19 +1,12 @@
 import React, { memo, useMemo } from 'react';
-import { Pressable, View, type GestureResponderEvent } from 'react-native';
+import { View, type GestureResponderEvent } from 'react-native';
 
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
-import { DISABLED_OPACITY } from '../styles/tokens';
+import { Button } from '../button';
 import { RiHeart3Line } from '../icons/remix/RiHeart3Line';
-import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
-import {
-  HEART_SCRIM_OPACITY,
-  LISTING_CARD_CSS,
-  LISTING_CARD_STYLE_ID,
-  resolveListingCardPaint,
-} from './shared';
+import { HEART_SCRIM_OPACITY, resolveListingCardPaint } from './shared';
 import { useMessages } from '../locale/messages';
 import { LISTING_CARD_MESSAGES } from './messages';
 import type { FavoriteButtonProps } from './types';
@@ -26,7 +19,8 @@ import { IS_WEB } from '../styles/platform';
  *           over a bright or a dark photo alike
  *   saved   the body turns red-500 (the theme's `error` hue); the outline stays
  *
- * Colour change only: no scale, no bounce. The target is at least 32 square.
+ * Base Button owns interaction, focus and disabled feedback. The target is at
+ * least 32 square.
  * It is a toggle button — `aria-pressed` for web, `accessibilityState.selected`
  * for native — and its NAME says what pressing does ("Save to wishlist" /
  * "Remove from wishlist").
@@ -48,7 +42,6 @@ function FavoriteButtonComponent({
   const saveLabel = saveLabelProp ?? messages.saveToWishlist;
   const removeLabel = removeLabelProp ?? messages.removeFromWishlist;
   const theme = useTheme();
-  useInteractiveWebCss(LISTING_CARD_STYLE_ID, LISTING_CARD_CSS);
   const paint = useMemo(() => resolveListingCardPaint(theme), [theme]);
   const box = Math.max(32, size + 8);
 
@@ -57,18 +50,16 @@ function FavoriteButtonComponent({
     height: box,
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: disabled ? DISABLED_OPACITY : 1,
-    '--bloom-listing-card-ring': paint.ring,
   };
 
   return (
-    <Pressable
-      {...webDataSet({ bloomFavoriteButton: '' })}
-      role="button"
+    <Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
+      stopPropagation
       accessibilityLabel={favorite ? removeLabel : saveLabel}
-      aria-pressed={favorite}
-      accessibilityState={{ selected: favorite, disabled }}
-      aria-disabled={disabled || undefined}
+      pressed={favorite}
       disabled={disabled}
       onPress={(event: GestureResponderEvent) => {
         if (IS_WEB) {
@@ -95,7 +86,7 @@ function FavoriteButtonComponent({
           <RiHeart3Line width={size} height={size} fill={paint.onMedia} />
         </View>
       </View>
-    </Pressable>
+    </Button>
   );
 }
 

@@ -1,3 +1,8 @@
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../../src/segmented-control';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -15,7 +20,6 @@ import {
   FloorFilter,
   PriceRangeFilter,
   PropertyTypeFilter,
-  SegmentedFilter,
   SwitchFilterRow,
 } from '../../src/stay-filters';
 import {
@@ -159,12 +163,20 @@ function FilterSections({ mode, value, set }: { mode: HomeSearchMode; value: Fil
             title="Type of place"
             description="Search rooms, entire homes, or any type of place."
           >
-            <SegmentedFilter
-              options={PLACE_TYPES}
+            <SegmentedControl
+              type="radio"
+              size="lg"
+              label="Type of place"
               value={value.placeType}
-              onValueChange={(placeType) => set({ placeType })}
-              accessibilityLabel="Type of place"
-            />
+              onChange={(placeType) => set({ placeType })}
+              style={{ alignSelf: 'stretch' }}
+            >
+              {PLACE_TYPES.map((option) => (
+                <SegmentedControlItem key={option.value} value={option.value}>
+                  <SegmentedControlItemText>{option.label}</SegmentedControlItemText>
+                </SegmentedControlItem>
+              ))}
+            </SegmentedControl>
           </FilterSection>
           <PriceSection mode={mode} value={value} set={set} />
           <Rooms value={value} set={set} beds />
@@ -193,12 +205,20 @@ function FilterSections({ mode, value, set }: { mode: HomeSearchMode; value: Fil
             title="Kind of exchange"
             description="Swap homes at the same time, or stay with guest points."
           >
-            <SegmentedFilter
-              options={SWAP_KINDS}
+            <SegmentedControl
+              type="radio"
+              size="lg"
+              label="Kind of exchange"
               value={value.swapKind}
-              onValueChange={(swapKind) => set({ swapKind })}
-              accessibilityLabel="Kind of exchange"
-            />
+              onChange={(swapKind) => set({ swapKind })}
+              style={{ alignSelf: 'stretch' }}
+            >
+              {SWAP_KINDS.map((option) => (
+                <SegmentedControlItem key={option.value} value={option.value}>
+                  <SegmentedControlItemText>{option.label}</SegmentedControlItemText>
+                </SegmentedControlItem>
+              ))}
+            </SegmentedControl>
           </FilterSection>
           <Rooms value={value} set={set} />
           <FilterSection title="Features">

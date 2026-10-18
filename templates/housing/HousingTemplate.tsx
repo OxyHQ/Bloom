@@ -1,9 +1,16 @@
 import React, { useCallback, useState } from 'react';
 
+import { ScreenScope } from '../../src/layout';
 import type { HomeSearchMode } from '../../src/home-search';
 import { EvictionsPage } from './EvictionsPage';
 import { ExplorePage } from './ExplorePage';
-import { HousingNavProvider, HousingPageProvider, IS_WEB, type HousingPage } from './HousingHeader';
+import {
+  HousingNavProvider,
+  HousingPageProvider,
+  HousingShell,
+  IS_WEB,
+  type HousingPage,
+} from './HousingHeader';
 import { RentListingPage, SaleListingPage, StayListingPage, SwapListingPage } from './ListingPages';
 import { MyHomePage } from './MyHomePage';
 import { PublishPage } from './PublishPage';
@@ -14,7 +21,7 @@ export interface HousingTemplateProps {
   initialPage?: HousingPage;
   /** The Explore page's search mode. */
   initialMode?: HomeSearchMode;
-  /** Opens Explore in the list-and-map view. */
+  /** Shows the map first when Explore has room for only one panel. */
   initialMap?: boolean;
 }
 
@@ -35,20 +42,24 @@ export function HousingTemplate({
   }, []);
 
   return (
-    <HousingNavProvider value={go}>
-      <HousingPageProvider value={page}>
-        {page === 'explore' ? (
-          <ExplorePage initialMode={initialMode} initialMap={initialMap} />
-        ) : null}
-        {page === 'rent' ? <RentListingPage /> : null}
-        {page === 'sale' ? <SaleListingPage /> : null}
-        {page === 'stay' ? <StayListingPage /> : null}
-        {page === 'swap' ? <SwapListingPage /> : null}
-        {page === 'my-home' ? <MyHomePage /> : null}
-        {page === 'evictions' ? <EvictionsPage /> : null}
-        {page === 'publish' ? <PublishPage /> : null}
-        {page === 'saved' ? <SavedPage /> : null}
-      </HousingPageProvider>
-    </HousingNavProvider>
+    <ScreenScope>
+      <HousingNavProvider value={go}>
+        <HousingPageProvider value={page}>
+          <HousingShell>
+            {page === 'explore' ? (
+              <ExplorePage initialMode={initialMode} initialMap={initialMap} />
+            ) : null}
+            {page === 'rent' ? <RentListingPage /> : null}
+            {page === 'sale' ? <SaleListingPage /> : null}
+            {page === 'stay' ? <StayListingPage /> : null}
+            {page === 'swap' ? <SwapListingPage /> : null}
+            {page === 'my-home' ? <MyHomePage /> : null}
+            {page === 'evictions' ? <EvictionsPage /> : null}
+            {page === 'publish' ? <PublishPage /> : null}
+            {page === 'saved' ? <SavedPage /> : null}
+          </HousingShell>
+        </HousingPageProvider>
+      </HousingNavProvider>
+    </ScreenScope>
   );
 }

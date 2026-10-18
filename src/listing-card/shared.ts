@@ -232,7 +232,6 @@ const TRACK = '[data-bloom-listing-card-track]';
 const PHOTO = '[data-bloom-listing-card-photo]';
 const ARROW = '[data-bloom-listing-card-arrow]';
 const DOT = '[data-bloom-listing-card-dot]';
-const FAVORITE = '[data-bloom-favorite-button]';
 const WISHLIST = '[data-bloom-wishlist-card]';
 
 export const LISTING_CARD_CSS = `
@@ -274,14 +273,6 @@ ${ARROW} {
 }
 ${DOT} {
   transition: width 200ms ease-out, height 200ms ease-out, opacity 200ms ease-out;
-}
-${FAVORITE} {
-  outline: none;
-  cursor: pointer;
-}
-${FAVORITE}:focus-visible {
-  outline: 2px solid var(--bloom-listing-card-ring, currentColor);
-  outline-offset: 0;
 }
 ${CARD}[data-bloom-listing-card-zoom] ${PHOTO} {
   transition: transform 400ms cubic-bezier(0.2, 0, 0.2, 1);

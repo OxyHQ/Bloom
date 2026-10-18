@@ -73,19 +73,17 @@ hand them back.
 | `labels` | override by key. Defaults Rent, Buy, Vacation rentals, Swap |
 | `variant` | `tabs` (default) or `segmented` |
 | `accessibilityLabel` | the tablist's name, default "Search mode" |
-| `testID` | derives `-<key>` per tab (and `-<key>-bar` for the underline) |
+| `testID` | derives `-<key>` per tab; `tabs` uses one shared `-indicator` |
 
-- **`tabs`** — text tabs with the same selected underline as `CategoryBar`:
-  a `body-medium` label, text-secondary at rest and text-primary on hover or
-  when selected, with a 2px text-primary bar the width of the label under the
-  selected one. 24 between labels. The label weight never changes, so
-  switching does not reflow the row.
+- **`tabs`** — Bloom's `Tabs` and `TabsTrigger`, with the standard accent
+  underline, focus treatment and horizontal scrolling. Search mode keys and
+  localized labels are the only housing-specific behavior.
 - **`segmented`** — Bloom's `SegmentedControl` at `large`, a full pill
   stretched to the width. Use it on a phone above `StaySearchCompact`.
 
 Both are a `tablist` of `tab`s with `aria-selected`. The `tabs` variant is one
 tab stop on web (the selected tab); ArrowLeft/ArrowRight, Home and End move
-focus, Enter and Space select.
+focus and selection (wrapping at the ends); Enter and Space also select.
 
 ## HomeSearchBar
 

@@ -1,9 +1,8 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
-import { Pressable, TextInput, View, type TextStyle, type ViewStyle } from 'react-native';
+import { TextInput, View, type TextStyle, type ViewStyle } from 'react-native';
 
 import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import {
   STAY_SEARCH_BAR_HEIGHT,
@@ -18,7 +17,6 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import { webDataSet } from '../styles/web-data';
 import { SANS_FONT_FAMILY } from '../text-field/shared';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import type { HomeSearchBarProps, HomeSearchSegment } from './types';
@@ -52,12 +50,6 @@ const HOME_SEARCH_BAR_CSS = `
 }
 [data-bloom-stay-separator] {
   transition: background-color 150ms ease;
-}
-[data-bloom-stay-segment-hit] {
-  outline: none;
-}
-[data-bloom-stay-segment-hit]:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--bloom-stay-search-ring, currentColor);
 }
 @media (prefers-reduced-motion: reduce) {
   [data-bloom-stay-segment], [data-bloom-stay-separator] {
@@ -118,9 +110,7 @@ export function HomeSearchBar<K extends string = string>({
 }: HomeSearchBarProps<K>) {
   const common = useCommonMessages();
   const searchLabel = searchLabelProp ?? common.search;
-  const theme = useTheme();
   const palette = useStaySearchPalette();
-  const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const [barWidth, setBarWidth] = useState<number | null>(null);
   const compact = barWidth !== null && barWidth < 640;
   const [hovered, setHovered] = useState<K | null>(null);
@@ -169,7 +159,6 @@ export function HomeSearchBar<K extends string = string>({
     boxShadow: palette.barShadow,
     flexDirection: 'row',
     alignItems: 'stretch',
-    '--bloom-stay-search-ring': accent[500],
   };
 
   return (
@@ -274,20 +263,24 @@ export function HomeSearchBar<K extends string = string>({
                     {text}
                   </View>
                 ) : (
-                  <Pressable
-                    {...webDataSet({ bloomStaySegmentHit: '' })}
+                  <Button
+                    appearance="plain"
+                    tone="neutral"
+                    material="flat"
                     testID={segmentTestID}
                     onPress={() => onActiveSegmentChange(key)}
                     onHoverIn={() => setHovered(key)}
                     onHoverOut={() => setHovered((h) => (h === key ? null : h))}
                     accessibilityRole="button"
                     accessibilityLabel={`${label}, ${value || placeholder}`}
-                    accessibilityState={{ expanded: active }}
                     aria-expanded={active}
-                    style={hitStyle}
+                    style={[
+                      hitStyle,
+                      { height: 'auto', flexDirection: 'column', alignItems: 'stretch' },
+                    ]}
                   >
                     {text}
-                  </Pressable>
+                  </Button>
                 )}
                 {isLast ? (
                   <Button

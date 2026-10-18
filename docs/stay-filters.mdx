@@ -22,9 +22,9 @@ import {
   FilterSection,
   FilterTriggerButton,
   PriceRangeFilter,
-  SegmentedFilter,
   SwitchFilterRow,
 } from '@oxy.so/bloom/stay-filters';
+import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '@oxy.so/bloom/segmented-control';
 import { Dialog, useDialogControl } from '@oxy.so/bloom/dialog';
 import { RiWifiLine } from '@oxy.so/bloom/icons';
 ```
@@ -56,16 +56,24 @@ function Filters() {
       >
         <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}>
           <FilterSection title="Type of place">
-            <SegmentedFilter
-              options={[
-                { value: 'any', label: 'Any type' },
-                { value: 'room', label: 'Room' },
-                { value: 'entire', label: 'Entire home' },
-              ]}
+            <SegmentedControl
+              type="radio"
+              size="lg"
+              label="Type of place"
               value={draft.type}
-              onValueChange={(type) => setDraft({ ...draft, type })}
-              accessibilityLabel="Type of place"
-            />
+              onChange={(type) => setDraft({ ...draft, type })}
+              style={{ alignSelf: 'stretch' }}
+            >
+              <SegmentedControlItem value="any">
+                <SegmentedControlItemText>Any type</SegmentedControlItemText>
+              </SegmentedControlItem>
+              <SegmentedControlItem value="room">
+                <SegmentedControlItemText>Room</SegmentedControlItemText>
+              </SegmentedControlItem>
+              <SegmentedControlItem value="entire">
+                <SegmentedControlItemText>Entire home</SegmentedControlItemText>
+              </SegmentedControlItem>
+            </SegmentedControl>
           </FilterSection>
           <FilterSection title="Price range" description="Nightly prices before fees and taxes">
             <PriceRangeFilter
@@ -175,11 +183,16 @@ numbers, and `formatPrice` is where the app's currency and locale come in.
   parsed ("$1,200" reads as 1200), snapped, clamped to its own side of the
   range and committed. Unparseable text restores the committed value.
 
-### `SegmentedFilter`
+### Single-choice segments
 
-Bloom's `SegmentedControl` at `large`, stretched to the full width.
-`options`, `value`, `onValueChange`, and a required `accessibilityLabel` naming
-the radio group.
+Compose `SegmentedControl`, `SegmentedControlItem` and
+`SegmentedControlItemText` directly from `@oxy.so/bloom/segmented-control`.
+Use `type="radio"`, a group `label`, and the app's controlled `value` / `onChange`.
+
+`SegmentedFilter` and `SegmentedFilterProps` have been removed. Migrate
+`accessibilityLabel` to `label`, `onValueChange` to `onChange`, and map `options`
+to `SegmentedControlItem` children. Set `size="lg"` and
+`style={{ alignSelf: 'stretch' }}` to retain the previous geometry.
 
 ### `CountFilter`
 

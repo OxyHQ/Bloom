@@ -1114,7 +1114,6 @@ export {
   PriceHistogram,
   PriceRangeFilter,
   PropertyTypeFilter,
-  SegmentedFilter,
   SwitchFilterRow,
   ToggleChipGroup,
 } from './stay-filters';
@@ -1141,7 +1140,6 @@ export type {
   PropertyTypeFilterProps,
   PropertyTypeOption,
   PropertyTypeTilesProps,
-  SegmentedFilterProps,
   SwitchFilterRowProps,
   ToggleChipGroupProps,
   ToggleChipOption,

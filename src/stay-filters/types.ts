@@ -92,17 +92,6 @@ export interface FilterOption<T extends string = string> {
   label: string;
 }
 
-export interface SegmentedFilterProps<T extends string = string> {
-  /** The segments, in order ("Any type", "Room", "Entire home"). */
-  options: FilterOption<T>[];
-  value: T;
-  onValueChange: (value: T) => void;
-  /** Names the radio group. Required: segments name themselves, not the choice. */
-  accessibilityLabel: string;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
 export interface CountFilterProps {
   /** The row title ("Bedrooms"); also the radio group's name unless one is given. */
   title: ReactNode;

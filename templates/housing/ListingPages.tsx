@@ -43,8 +43,6 @@ import {
   RentHistoryList,
 } from '../../src/property-insights';
 import { GuestPicker, type GuestCounts } from '../../src/stay-search';
-import { WEB_POSITION_FIXED } from '../../src/styles/web-view-style';
-import { Z_INDEX } from '../../src/styles/z-index';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import {
@@ -89,7 +87,6 @@ import {
 import {
   HousingFrame,
   HousingHeader,
-  IS_WEB,
   PageColumn,
   useHousingLayout,
   webSticky,
@@ -137,13 +134,14 @@ function ListingFrame({
   const bar = !lg && narrowAside === 'bar' && mobileBar;
 
   return (
-    <HousingFrame testID={testID}>
+    <HousingFrame
+      testID={testID}
+      bottomBar={bar ? <View testID={`${testID}-bar`}>{mobileBar}</View> : undefined}
+    >
       <HousingHeader maxWidth={LISTING_WIDTH} />
       <PageColumn
         maxWidth={LISTING_WIDTH}
-        // The mobile action bar is fixed over the page, so the column reserves
-        // its height rather than ending under it.
-        style={{ paddingTop: md ? 24 : 16, paddingBottom: bar ? 136 : 48, gap: md ? 24 : 16 }}
+        style={{ paddingTop: md ? 24 : 16, paddingBottom: 48, gap: md ? 24 : 16 }}
       >
         <ListingHeader
           title={title}
@@ -190,20 +188,6 @@ function ListingFrame({
           ) : null}
         </View>
       </PageColumn>
-      {bar ? (
-        <View
-          style={{
-            position: IS_WEB ? WEB_POSITION_FIXED : 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: Z_INDEX.floating,
-          }}
-          testID={`${testID}-bar`}
-        >
-          {mobileBar}
-        </View>
-      ) : null}
     </HousingFrame>
   );
 }
