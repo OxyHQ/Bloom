@@ -196,6 +196,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   collapsed: collapsedProp,
   defaultCollapsed = false,
   onCollapsedChange,
+  collapseDisabled = false,
   mobile = false,
   onClose,
   accessibilityLabel: accessibilityLabelProp,
@@ -636,6 +637,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         role="button"
         accessibilityLabel={collapsed ? expandLabel : collapseLabel}
         aria-expanded={!collapsed}
+        disabled={collapseDisabled}
+        aria-disabled={collapseDisabled || undefined}
         onPress={toggleCollapse}
         style={[{ width: '100%', alignItems: 'center', justifyContent: 'center' }, iconButtonRing]}
         testID="sidebar-collapse"

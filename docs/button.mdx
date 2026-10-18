@@ -192,3 +192,12 @@ around three 40dp rows; the corrected layout measures 136dp including gaps.
 Text widths are explicit fixture metrics, not claims about a platform font.
 `BLOOM_NATIVE_YOGA_PATH` can point to another installed RN's `ReactCommon/yoga`
 to verify the same trees against a consumer's engine.
+
+`material="shared"` keeps the button's appearance, foreground and interaction
+palette while an enclosing surface supplies its resting material. It removes
+the button's own rim, shadow and resting fill, rather than changing the action
+to the lower-emphasis `plain` recipe. ButtonGroup uses this same Button base for
+ordinary joined actions; selected items retain their selection surface.
+PageHeader's Back button uses it inside its existing island as well, so grouped
+and standalone neutral outline icons have the same foreground in light and
+dark themes. Plain text and link actions keep their existing emphasis.

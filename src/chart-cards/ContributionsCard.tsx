@@ -1,18 +1,19 @@
-import { Card } from '../card';
+import { ChartCardSurface } from './primitives/ChartCardSurface';
+import { useContainerWidth } from '../hooks/use-container-width';
+import { ScrollArea } from '../layout';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
   Platform,
-  ScrollView,
   StyleSheet,
   View,
-  useWindowDimensions,
   type GestureResponderEvent,
   type LayoutChangeEvent,
   type StyleProp,
   type ViewProps,
   type ViewStyle,
+  type ScrollView,
 } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
@@ -64,6 +65,8 @@ export interface ContributionsGridProps {
   /** The hovered cell index. Controlled when set (`null` = none). */
   activeCell?: number | null;
   onActiveCellChange?: (index: number | null) => void;
+  /** Cell tooltip and accessible name; overrides the default contribution wording. Index includes empty padding cells. */
+  getCellLabel?: (cell: ContributionCell, index: number) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -111,6 +114,7 @@ export function ContributionsGrid({
   compact = false,
   activeCell: controlled,
   onActiveCellChange,
+  getCellLabel,
   style,
   testID,
 }: ContributionsGridProps) {
@@ -219,7 +223,7 @@ export function ContributionsGrid({
               : { flex: 1, flexBasis: 0, minWidth: 0, aspectRatio: 1 };
             const common = {
               role: 'img' as const,
-              accessibilityLabel: contributionLabel(cell, gridText),
+              accessibilityLabel: getCellLabel?.(cell, index) ?? contributionLabel(cell, gridText),
               testID: testID ? `${testID}-cell-${index}` : undefined,
               onPointerEnter: () => enter(index),
               onPointerLeave: leave,
@@ -266,7 +270,9 @@ export function ContributionsGrid({
             <TooltipTrigger>
               <View style={{ width: cellSize, height: cellSize }} />
             </TooltipTrigger>
-            <TooltipTextBubble>{contributionLabel(anchorCell, gridText)}</TooltipTextBubble>
+            <TooltipTextBubble>
+              {getCellLabel?.(anchorCell, anchorIndex) ?? contributionLabel(anchorCell, gridText)}
+            </TooltipTextBubble>
           </Tooltip>
         </View>
       ) : null}
@@ -311,6 +317,8 @@ export interface ContributionsCardProps {
   periods?: readonly ContributionsPeriod[];
   defaultPeriod?: string;
   onPeriodChange?: (id: string) => void;
+  /** Compact calendar's initial position; end shows recent dates. Reapplied when data/period changes. Default start. */
+  initialScrollPosition?: 'start' | 'end';
   /** Default `"Activity"`. */
   activityLabel?: string;
   /** Labels spread under the grid. Default Jan … Dec. */
@@ -319,6 +327,8 @@ export interface ContributionsCardProps {
   /** The hovered cell index. Controlled when set (`null` = none). */
   activeCell?: number | null;
   onActiveCellChange?: (index: number | null) => void;
+  /** Cell tooltip and accessible name; overrides the default contribution wording. Index includes empty padding cells. */
+  getCellLabel?: (cell: ContributionCell, index: number) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -363,11 +373,13 @@ export function ContributionsCard({
   periods: periodsProp,
   defaultPeriod,
   onPeriodChange,
+  initialScrollPosition = 'start',
   activityLabel: activityLabelProp,
   months: monthsProp,
   animateIn = false,
   activeCell,
   onActiveCellChange,
+  getCellLabel,
   style,
   testID,
 }: ContributionsCardProps) {
@@ -390,12 +402,23 @@ export function ContributionsCard({
   );
   const palette = useChartCardSurfacePalette(style);
   const theme = useTheme();
-  const { width: viewport } = useWindowDimensions();
-  const wide = viewport >= BREAKPOINTS.sm;
+  const { width: cardWidth, onLayout: measureCard } = useContainerWidth();
+  // Compact until measured. A desktop viewport can still contain a narrow
+  // dashboard column; never squeeze a calendar cell below its 13px recipe.
+  const requiredGridWidth = columns * COMPACT_CELL + Math.max(0, columns - 1) * GAP;
+  const wide = (cardWidth ?? 0) >= Math.max(BREAKPOINTS.sm, requiredGridWidth + 32);
   const { selected, selectedId, select } = useChartRange(periods, defaultPeriod, onPeriodChange);
 
   const cells = selected?.cells ?? cellsProp ?? NO_CELLS;
   const stats = selected?.stats ?? statsProp;
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const scrollToInitial = useCallback(() => {
+    if (initialScrollPosition === 'end') scrollRef.current?.scrollToEnd({ animated: false });
+  }, [initialScrollPosition]);
+  useEffect(() => {
+    if (!wide) scrollToInitial();
+  }, [cells, selectedId, wide, scrollToInitial]);
+
   const delta = selected?.delta ?? deltaProp;
   const total = selected?.total ?? totalProp ?? cells.reduce((s, c) => s + c.count, 0);
   const cardShadow = theme.isDark
@@ -412,6 +435,7 @@ export function ContributionsCard({
         compact={!wide}
         activeCell={activeCell}
         onActiveCellChange={onActiveCellChange}
+        getCellLabel={getCellLabel}
         testID={testID ? `${testID}-grid` : undefined}
       />
       <View style={styles.months}>
@@ -429,13 +453,11 @@ export function ContributionsCard({
   );
 
   return (
-    <Card
-      radius="radius-16"
-      clipContent
-      contentStyle={styles.cardContent}
-      elevation="none"
+    <ChartCardSurface
+      height={wide ? CONTRIBUTIONS_CARD_HEIGHT : 'auto'}
       testID={testID}
-      style={[styles.card, { height: wide ? CONTRIBUTIONS_CARD_HEIGHT : undefined }, style]}
+      onLayout={measureCard}
+      style={[styles.cardContent, { overflow: 'hidden' }, style]}
     >
       <ChartHeadline
         label={title}
@@ -513,19 +535,22 @@ export function ContributionsCard({
         {wide ? (
           grid
         ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scroller}>
+          <ScrollArea
+            ref={scrollRef}
+            onContentSizeChange={scrollToInitial}
+            horizontal
+            testID={testID ? `${testID}-scroller` : undefined}
+            style={styles.scroller}
+          >
             {grid}
-          </ScrollView>
+          </ScrollArea>
         )}
       </View>
-    </Card>
+    </ChartCardSurface>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    minWidth: 0,
-  },
   cardContent: {
     flexDirection: 'column',
     gap: 16,

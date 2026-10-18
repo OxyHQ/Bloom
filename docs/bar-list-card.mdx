@@ -64,3 +64,9 @@ Item: `{ label, value, color?, icon? }`. `icon` is an icon COMPONENT (`RiCompute
 - **The fade is an overlay, not a mask.** The card behind the rows is one known colour, so a gradient of that colour over the rows paints the same pixels on web AND native (which has no `mask-image`). A `style` that changes the card's `backgroundColor` therefore needs the matching surface — the gradient reads `useChartCardPalette().surface`.
 - **The tab strip's edge fades are web only.** They read the strip's scroll position from the DOM; Bloom's `Tabs` exposes no scroll events, so native tabs scroll without the 28px fades.
 - Hover: rows respond to pointer enter / leave; on native a press-and-hold highlights a row.
+
+## Summary tiles
+
+Pass `stats: readonly ChartStatTile[]` to show formatted summary tiles below the chart. Omitted or empty stats preserve the original layout. Summary tiles remain independent of plot hover; cards grow naturally to fit them and support `ResponsiveGrid stretchItems`.
+
+With `metric="value"`, set `showShares` to display each raw count alongside its percentage of the current tab total. Shares include all rows, even those hidden by `limit`; zero totals display `0%`.

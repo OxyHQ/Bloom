@@ -1,8 +1,17 @@
-import React, { cloneElement, isValidElement, useMemo, useState, type ComponentType } from 'react';
+import React, {
+  cloneElement,
+  isValidElement,
+  useMemo,
+  useState,
+  useId,
+  type ComponentType,
+} from 'react';
 import { Platform, View, useWindowDimensions } from 'react-native';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { Screen, ScreenScrollView, useScreen } from '../screen';
 import { Sidebar } from '../sidebar';
+import { useSidebarMetrics } from '../sidebar/metrics';
+import { APP_SHELL_DEFAULTS } from './constants';
 import { useTheme } from '../theme/use-theme';
 import { PageHeader } from '../page-header';
 import type { BottomBarProps } from '../bottom-bar/types';
@@ -13,6 +22,11 @@ import { createAppShellEngine } from './AppShellEngine';
 import { resolveScrollMode } from './layout';
 import { AppShellMenuButton } from './AppShellMenuButton';
 import { breakpointPx } from './constants';
+import type { PanelLayoutViewProps } from './AppShellPanelLayout';
+import { panelEnvelope } from './panel-layout';
+import { useShellWidth } from './use-shell-width';
+import { PanelCssContext, PanelCssLayoutContext, panelCssScope } from './panel-layout-css';
+import type { WebCssStyle } from '../styles/web-view-style';
 
 export function resolveNavigationPlacement(
   width: number,
@@ -31,6 +45,7 @@ export function resolveNavigationPlacement(
 export function createAppShell(
   BottomBar: ComponentType<BottomBarProps>,
   Fab: ComponentType<FabProps>,
+  PanelLayoutView?: ComponentType<PanelLayoutViewProps>,
 ) {
   const AppShellEngine = createAppShellEngine();
   function NavigationBottom({
@@ -79,6 +94,17 @@ export function createAppShell(
     const width = containerWidth ?? windowWidth;
     const { colors } = useTheme();
     const placement = resolveNavigationPlacement(width, navigationPlacement);
+    const sidebarMetrics = useSidebarMetrics(sidebar?.size);
+    const [userCollapsed, setUserCollapsed] = useState(sidebar?.defaultCollapsed ?? false);
+    const navigationPadding = APP_SHELL_DEFAULTS.dashboardGutter;
+    const contentPadding = APP_SHELL_DEFAULTS.gutter;
+    const capacityCollapsed =
+      width <
+      sidebarMetrics.expanded +
+        APP_SHELL_DEFAULTS.contentWidth +
+        navigationPadding * 2 +
+        contentPadding * 2;
+
     // One navigation model supplies every placement. Existing sidebar data is also accepted.
     const items =
       navigation ??
@@ -144,8 +170,8 @@ export function createAppShell(
               minHeight: 0,
               paddingTop: docked ? 0 : 12,
               paddingBottom: docked ? 0 : 12,
-              paddingLeft: docked ? 0 : 12,
-              paddingRight: docked ? 0 : 12,
+              paddingLeft: docked ? 0 : navigationPadding,
+              paddingRight: docked ? 0 : navigationPadding,
               gap: 12,
             }}
           >
@@ -154,6 +180,15 @@ export function createAppShell(
                 {...(navigation ? { showSearch: false, showThemeToggle: false } : {})}
                 {...sidebar}
                 variant={shownPlacement === 'rail' ? 'rail' : 'panel'}
+                collapsed={sidebar?.collapsed ?? (capacityCollapsed || userCollapsed)}
+                collapseDisabled={
+                  sidebar?.collapseDisabled ??
+                  (sidebar?.collapsed === undefined && capacityCollapsed)
+                }
+                onCollapsedChange={(collapsed) => {
+                  setUserCollapsed(collapsed);
+                  sidebar?.onCollapsedChange?.(collapsed);
+                }}
                 items={sidebarItems ?? sidebar?.items}
                 selected={selected}
                 onNavigate={(item) =>
@@ -190,7 +225,7 @@ export function createAppShell(
                   width: '100%',
                   maxWidth: contentMaxWidth === 'none' ? undefined : contentMaxWidth,
                   alignSelf: 'center',
-                  padding: 16,
+                  padding: contentPadding,
                   gap: 16,
                 }}
               >
@@ -342,7 +377,69 @@ export function createAppShell(
     );
   }
   const AdaptiveAppShell = AppShell;
+  function ModularAppShell(props: AppShellProps) {
+    const { width, onLayout } = useShellWidth();
+    const scope = panelCssScope(useId());
+    const cssLayout =
+      Platform.OS === 'web' &&
+      typeof CSS !== 'undefined' &&
+      CSS.supports?.('container-type', 'inline-size');
+    const layout = props.panelLayout!;
+    const gap =
+      layout.gap ??
+      (layout.appearance === 'joined' ? 1 : (props.gutter ?? APP_SHELL_DEFAULTS.gutter));
+    const envelope = panelEnvelope(layout, cssLayout ? Number.MAX_SAFE_INTEGER : width, gap);
+    const document = layout.flow === 'document' && layout.mode !== 'deck' && Platform.OS === 'web';
+    const deck = layout.mode === 'deck';
+    const normalized: AppShellProps = {
+      ...props,
+      panelLayout: undefined,
+      panels: true,
+      variant: props.variant ?? 'feed',
+      scroll: document ? 'document' : 'fixed',
+      aside: undefined,
+      contentSpan: undefined,
+      contentWidth: deck ? undefined : envelope,
+      contentMaxWidth: deck ? 'none' : props.contentMaxWidth,
+      children: PanelLayoutView ? (
+        <PanelLayoutView
+          layout={layout}
+          shellWidth={width}
+          gap={gap}
+          testID={props.testID ? `${props.testID}-panels` : undefined}
+        />
+      ) : (
+        props.children
+      ),
+    };
+    return (
+      <View
+        onLayout={cssLayout ? undefined : onLayout}
+        {...(cssLayout ? { dataSet: { bloomLayout: scope } } : {})}
+        style={
+          {
+            flexGrow: 1,
+            flexShrink: 1,
+            flexBasis: 'auto',
+            minWidth: 0,
+            minHeight: 0,
+            // Percentages follow the document's usable viewport, excluding a
+            // classic horizontal scrollbar; viewport units include that bar.
+            ...(cssLayout && !document ? { height: '100%' } : {}),
+            ...(cssLayout ? { containerType: 'inline-size', containerName: scope } : {}),
+          } as WebCssStyle
+        }
+      >
+        <PanelCssContext.Provider value={cssLayout ? scope : null}>
+          <PanelCssLayoutContext.Provider value={{ layout, gap }}>
+            <ComposedAppShell {...normalized} />
+          </PanelCssLayoutContext.Provider>
+        </PanelCssContext.Provider>
+      </View>
+    );
+  }
   function ComposedAppShell(props: AppShellProps) {
+    if (props.panelLayout) return <ModularAppShell {...props} />;
     const adaptive =
       props.navigation !== undefined ||
       props.navigationPlacement !== undefined ||
@@ -357,6 +454,7 @@ export function createAppShell(
       props.variant !== undefined ||
       props.aside !== undefined ||
       props.contentWidth !== undefined ||
+      props.contentSpan !== undefined ||
       props.navigationAlign !== undefined ||
       props.navigationGap !== undefined ||
       props.drawer !== undefined ||

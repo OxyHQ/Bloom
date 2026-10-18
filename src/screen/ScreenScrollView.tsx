@@ -9,6 +9,7 @@ import {
 } from 'react';
 import {
   type ScrollView,
+  Platform,
   StyleSheet,
   View,
   type LayoutChangeEvent,
@@ -16,8 +17,10 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Animated, { useComposedEventHandler } from 'react-native-reanimated';
+import { ScrollBar } from '../layout';
 import { StyledView } from '../styles/styled-primitives';
 import { useScreen } from './context';
+import { useScreenViewport } from './context';
 import { END_SENTINEL_STYLE, useDocumentEndReached } from './use-document-end-reached';
 import { DEFAULT_END_REACHED_THRESHOLD, useEndReached } from './use-end-reached';
 import { useScreenScroll } from './use-screen-scroll';
@@ -42,7 +45,11 @@ export const ScreenScrollView: RefComponent<
   function ScreenScrollView(props, ref) {
     // Chosen by the nearest Screen; switching modes remounts, so each branch
     // keeps its own hook order.
-    return useScreen().documentScroll ? (
+    const screen = useScreen();
+    const viewport = useScreenViewport();
+    return viewport?.kind === 'element' ||
+      viewport?.kind === 'document' ||
+      screen.documentScroll ? (
       <DocumentScreenScrollView {...props} forwardedRef={ref} />
     ) : (
       <ContainedScreenScrollView {...props} forwardedRef={ref} />
@@ -72,6 +79,8 @@ function ContainedScreenScrollView({
   style,
   ...props
 }: InnerProps) {
+  const viewport = useScreenViewport();
+  const localRef = useRef<ScrollViewRef | null>(null);
   const end = useEndReached(onEndReached, onEndReachedThreshold);
   const withEnd = useComposedEventHandler([handler ?? null, end.handler]);
   const scroll = useScreenScroll({
@@ -82,16 +91,18 @@ function ContainedScreenScrollView({
   const handleLayout = useCallback(
     (event: LayoutChangeEvent) => {
       end.onLayout(event);
+      if (viewport) viewport.metrics.viewportHeight.value = event.nativeEvent.layout.height;
       onLayout?.(event);
     },
-    [end.onLayout, onLayout],
+    [end.onLayout, onLayout, viewport],
   );
   const handleContentSizeChange = useCallback(
     (width: number, height: number) => {
       end.onContentSizeChange(width, height);
+      if (viewport) viewport.metrics.contentHeight.value = height;
       onContentSizeChange?.(width, height);
     },
-    [end.onContentSizeChange, onContentSizeChange],
+    [end.onContentSizeChange, onContentSizeChange, viewport],
   );
   // A class's padding cannot be read back to add the chrome footprint to it, and
   // an inline padding would override it — so with a class the footprint pads
@@ -111,11 +122,20 @@ function ContainedScreenScrollView({
           paddingBottom: scroll.contentInsets.bottom + paddingEdge(contentStyle, 'paddingBottom'),
         },
       ];
-  return (
+  const content = (
     <Animated.ScrollView
       {...props}
-      ref={forwardedRef}
-      style={[style, restoration?.restorePending ? { opacity: 0 } : null]}
+      ref={(node) => {
+        localRef.current = node;
+        if (viewport?.kind === 'native' && viewport.scrollRef)
+          (viewport.scrollRef as React.MutableRefObject<unknown>).current = node;
+        if (typeof forwardedRef === 'function') forwardedRef(node);
+        else if (forwardedRef) forwardedRef.current = node;
+      }}
+      style={[
+        Platform.OS === 'web' ? { flexGrow: 1, flexShrink: 1, minHeight: 0 } : style,
+        restoration?.restorePending ? { opacity: 0 } : null,
+      ]}
       onScroll={scroll.onScroll}
       onLayout={handleLayout}
       onContentSizeChange={handleContentSizeChange}
@@ -132,6 +152,14 @@ function ContainedScreenScrollView({
         children
       )}
     </Animated.ScrollView>
+  );
+  return Platform.OS === 'web' ? (
+    <View style={[{ flexGrow: 1, flexShrink: 1, minHeight: 0, minWidth: 0 }, style]}>
+      {content}
+      <ScrollBar target={localRef} horizontal={Boolean(props.horizontal)} />
+    </View>
+  ) : (
+    content
   );
 }
 
@@ -176,33 +204,46 @@ function DocumentScreenScrollView({
   style,
   ...props
 }: InnerProps) {
-  useScreenWindowScroll({ active, restoration });
+  const viewport = useScreenViewport();
+  useScreenWindowScroll({
+    active: !viewport && active !== false,
+    restoration: viewport ? undefined : restoration,
+  });
   const contentRef = useRef<ComponentRef<typeof View>>(null);
   useImperativeHandle(forwardedRef, () => {
     const handle: DocumentScrollHandle = {
       scrollTo: (y, _x, animated) => {
         const options = typeof y === 'object' ? y : { y, animated };
-        scrollWindow(options?.y ?? 0, options?.animated);
+        if (viewport) viewport.scrollTo({ y: options?.y ?? 0, animated: options?.animated });
+        else scrollWindow(options?.y ?? 0, options?.animated);
       },
-      scrollToEnd: (options) =>
-        scrollWindow(documentScroller()?.scrollHeight ?? 0, options?.animated),
+      scrollToEnd: (options) => {
+        if (viewport)
+          viewport.scrollTo({
+            y: viewport.metrics.contentHeight.value,
+            animated: options?.animated,
+          });
+        else scrollWindow(documentScroller()?.scrollHeight ?? 0, options?.animated);
+      },
       flashScrollIndicators: () => undefined,
       // The document's own scroller, which `useScrollRestoration` recognises
       // as the window — so a call site written for native restores here too.
-      getScrollableNode: () => documentScroller(),
+      getScrollableNode: () =>
+        (viewport?.scrollRef?.current as Element | null) ?? documentScroller(),
       getInnerViewNode: () => contentRef.current,
     };
     // Callers type this ref as a `ScrollView`; the window answers the part of
     // it a page drives. Through `unknown` because the node getters return the
     // web DOM nodes react-native-web's ScrollView returns, not RN's declared tag.
     return handle as unknown as ScrollViewRef;
-  }, []);
+  }, [viewport]);
   const [contentHeight, setContentHeight] = useState(0);
   const tracksEnd = onEndReached != null;
   const endRef = useDocumentEndReached({
     onEndReached,
     threshold: onEndReachedThreshold,
-    enabled: true,
+    enabled: active !== false && (viewport?.active ?? true),
+    rootRef: viewport?.scrollRef ?? undefined,
     rearmKey: contentHeight,
   });
   const handleContentLayout = useCallback(

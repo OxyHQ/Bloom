@@ -11,7 +11,8 @@
  * clear button on an empty field is a dead target, and one missing on a full
  * field strands the user with no way back to the unfiltered list.
  */
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
+import { Animated } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -27,6 +28,45 @@ function renderWithTheme(ui: React.ReactElement) {
 }
 
 describe('Switch', () => {
+  it('starts controlled visual synchronization after commit, without firing onCheckedChange', () => {
+    let committed = false;
+    const phases: boolean[] = [];
+    const spring = jest.spyOn(Animated, 'spring').mockImplementation(() => {
+      phases.push(committed);
+      return { start: jest.fn(), stop: jest.fn(), reset: jest.fn() };
+    });
+    const onChange = jest.fn();
+    function Controlled({ checked }: { checked: boolean }) {
+      committed = false;
+      useLayoutEffect(() => {
+        committed = true;
+      });
+      return (
+        <Switch
+          accessibilityLabel="Resizable"
+          checked={checked}
+          onCheckedChange={onChange}
+          testID="controlled"
+        />
+      );
+    }
+    try {
+      const tree = renderWithTheme(<Controlled checked={false} />);
+      tree.rerender(
+        <BloomThemeProvider>
+          <Controlled checked />
+        </BloomThemeProvider>,
+      );
+      expect(tree.getByTestId('controlled').props['aria-checked']).toBe(true);
+      expect(phases.length).toBeGreaterThan(0);
+      expect(phases.every(Boolean)).toBe(true);
+      expect(onChange).not.toHaveBeenCalled();
+      tree.unmount();
+    } finally {
+      spring.mockRestore();
+    }
+  });
+
   it('announces its state through aria-checked, the spelling both platforms read', () => {
     const off = renderWithTheme(<Switch checked={false} onCheckedChange={() => {}} testID="s" />);
     expect(off.getByTestId('s').props['aria-checked']).toBe(false);

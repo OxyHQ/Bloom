@@ -98,6 +98,7 @@ export function useScrollRestoration(
     return () => {
       if (frame !== null) cancelAnimationFrame(frame);
       recordingKeyRef.current = null;
+      store.flush();
       setRestorePending(false);
     };
   }, [store, scrollKey, enabled, target]);

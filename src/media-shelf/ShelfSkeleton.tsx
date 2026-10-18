@@ -1,5 +1,6 @@
-import React, { memo, useCallback, useState } from 'react';
-import { ScrollView, View, type LayoutChangeEvent } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo, useCallback, useState } from 'react';
+import { View, type LayoutChangeEvent } from 'react-native';
 
 import * as Skeleton from '../skeleton';
 import { SHELF_GAP, shelfGridColumns } from './shared';
@@ -81,14 +82,14 @@ function ShelfSkeletonComponent({
           {grid.columns > 0 ? tiles : null}
         </View>
       ) : (
-        <ScrollView
+        <ScrollArea
           horizontal
           scrollEnabled={false}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap }}
         >
           {tiles}
-        </ScrollView>
+        </ScrollArea>
       )}
     </View>
   );

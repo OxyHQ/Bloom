@@ -64,3 +64,49 @@ flag.
 - `history.scrollRestoration` is set to `'manual'` only while the provider is
   mounted, and handed back on `pagehide` — so an app that unmounts it does not
   leave the browser's own restoration disabled.
+
+
+## Persist an opt-in workspace
+
+The default store is session memory. Hosts may pass `initialSnapshot` and
+`onSnapshotChange` to `ScrollRestorationProvider`, or place them in a panel's
+`navigation.scrollRestoration` options. `ScrollRestorationSnapshot` is a JSON-safe
+`Readonly<Record<string, number>>`. Keys are URI-encoded by Bloom, so internal
+separators never appear as control characters in SQL JSON storage. Treat keys
+as opaque and store the snapshot unchanged. Bloom decodes them when hydrating
+and ignores malformed encodings. Bloom never reads local storage or calls a backend.
+
+```tsx
+navigation: {
+  initialEntries: panel.navigation.entries,
+  state: panel.navigation,
+  onNavigationChange: saveNavigation,
+  scrollRestoration: {
+    scopeKey: acceptedWorkspaceIdentity,
+    initialSnapshot: panel.scrollOffsets,
+    onSnapshotChange: saveScrollOffsets,
+  },
+  render: renderScreen,
+}
+```
+
+Offsets hydrate before descendants render. The callback coalesces scroll updates
+for 200ms and flushes on navigation, unmount, pagehide, hidden documents and
+native backgrounding. No React render is scheduled for each scroll event. Hosts
+should persist locally in the callback and independently batch their network writes.
+
+`initialSnapshot` is read once per scope. Change `scopeKey` only when replacing
+an accepted workspace or account; this resets just the panel's restoration scope
+and screen, preserving the surrounding shell. Do not derive it from every saved
+revision. Ignore outgoing callbacks from a superseded workspace generation.
+
+Snapshots reject nonfinite offsets, clamp bounce overscroll to zero and retain
+at most 256 recently updated keys. Panel histories prune offsets for removed
+entries. Each panel's store is independent, including nested panels. Panel keys
+include the history entry so Back and Forward restore the particular visit.
+
+On web, when cold-loading content is still too short after the initial frame
+budget, restoration waits for content growth through size/content observations.
+The screen remains visible and no animation loop runs while waiting. The first
+user scroll input cancels this waiting, so newly loaded content cannot pull the
+user back. On native, enable restoration when the content is ready, as above.

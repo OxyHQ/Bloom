@@ -122,12 +122,13 @@ describe('one family layout', () => {
       .filter(([, names]) => names.length !== 1)
       .map(([rel, names]) => `${rel}: declares ${names.length} (${names.join(', ')})`);
     // `tab-bar` binds two components from two factories, and `app-shell` binds
-    // the shell plus the panels it frames (one factory, built from the
-    // platform's own ContentPanel); everything else binds one. Recorded as the
+    // a shared panel renderer, the shell and its JSX compatibility adapter
+    // from the platform's own ContentPanel. Both shell entry points reuse that
+    // renderer instead of constructing different hosts. Recorded as the
     // shape each has rather than waved through.
     expect(offenders).toEqual([
-      'app-shell/index.ts: declares 2 (AppShell, { AppShellPanel, AppShellPanels })',
-      'app-shell/index.web.ts: declares 2 (AppShell, { AppShellPanel, AppShellPanels })',
+      'app-shell/index.ts: declares 3 (PanelLayoutView, AppShell, { AppShellPanel, AppShellPanels })',
+      'app-shell/index.web.ts: declares 3 (PanelLayoutView, AppShell, { AppShellPanel, AppShellPanels })',
       'tab-bar/index.ts: declares 2 (TabBar, TabBarButton)',
       'tab-bar/index.web.ts: declares 2 (TabBar, TabBarButton)',
     ]);

@@ -1,3 +1,4 @@
+import type { ScrollRestorationSnapshot } from './store';
 import type { ReactNode, RefObject } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
@@ -107,14 +108,16 @@ export interface ScrollRestorationBinding {
    */
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   /**
-   * Whether a write to the scroller is still coming. Lets a caller hold the
+   * Whether the initial bounded restoration attempt is in flight. Lets a caller hold the
    * content invisible until the offset has landed, so the settle is never seen
    * — keep it LAID OUT (`opacity: 0`), never `display: none`, which collapses
    * the document and makes every write clamp to 0.
    *
    * It falls to `false` on whichever comes first: the restore sticks, it
    * exhausts the frame budget, or the user takes over. Waiting past any of
-   * those is waiting for something that has already stopped trying.
+   * those would leave cold-loading content invisible. On web a saved offset
+   * that is still unreachable may retry when content grows, without making
+   * this flag pending again; user input cancels that deferred retry.
    *
    * The two platforms answer it honestly rather than identically, because the
    * thing being waited for differs. WEB: `true` only while the multi-frame
@@ -126,7 +129,16 @@ export interface ScrollRestorationBinding {
   restorePending: boolean;
 }
 
-export interface ScrollRestorationProviderProps {
+export interface ScrollRestorationPersistence {
+  /** Change only when replacing a workspace/account, to remount this scroll scope. */
+  scopeKey?: string;
+  /** Read once before descendants render. Remount the scope to load another workspace. */
+  initialSnapshot?: ScrollRestorationSnapshot;
+  /** Coalesced after scrolling; flushed on navigation, pagehide and unmount. Host owns storage. */
+  onSnapshotChange?: (snapshot: ScrollRestorationSnapshot) => void;
+}
+
+export interface ScrollRestorationProviderProps extends ScrollRestorationPersistence {
   children: ReactNode;
   /**
    * Binds the store to a router. Must be referentially stable — see

@@ -1,12 +1,5 @@
-/**
- * The pending-attachment strip between the banner stack and the bar.
- *
- * The tile geometry and the rounded-rect progress path are `composer-panel`'s —
- * imported rather than retyped, because a second ring drawn from a second path
- * helper is how two composers end up with rings that close at different angles.
- */
-import React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { Pressable, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { ringPath } from '../composer-panel/shared';
@@ -182,7 +175,7 @@ export function createComposerAttachmentStrip({
     const accessibilityLabel = accessibilityLabelProp ?? messages.attachments;
     if (attachments.length === 0) return null;
     return (
-      <ScrollView
+      <ScrollArea
         {...dataHook('bloomChatComposerScroll')}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -213,7 +206,7 @@ export function createComposerAttachmentStrip({
             testID={testID ? `${testID}-${attachment.id}` : undefined}
           />
         ))}
-      </ScrollView>
+      </ScrollArea>
     );
   }
 

@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import React, { type ComponentRef, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
@@ -141,14 +142,14 @@ function ContactListComponent({
 
   return (
     <View style={[{ backgroundColor: paint.surface, position: 'relative' }, style]} testID={testID}>
-      <ScrollView
+      <ScrollArea
         ref={scroller}
         style={height === undefined ? undefined : { height }}
         stickyHeaderIndices={stickyHeaders ? stickyIndices : undefined}
         testID={testID ? `${testID}-scroll` : undefined}
       >
         {children}
-      </ScrollView>
+      </ScrollArea>
 
       {railVisible ? (
         <View

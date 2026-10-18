@@ -62,3 +62,40 @@ content (a label that hugs its text beside a field that takes the rest), and a
 rendering different structures at the breakpoint, rather than by letting a row
 reflow — a wrapped grid loses the alignment the gutter maths exists to
 preserve.
+
+## ResponsiveGrid
+
+`ResponsiveGrid` chooses equal-width columns from its own available width, not
+the window. It uses one column until two minimum-width items and their gap fit;
+additional columns follow the same rule up to `maxColumns`. Incomplete rows keep
+the same cell width. Child components stay mounted when the column count changes.
+
+```tsx
+import { ResponsiveGrid } from '@oxy.so/bloom/grid';
+
+<ResponsiveGrid minItemWidth={320} maxColumns={2} gap={16}>
+  <ViewsCard />
+  <InteractionsCard />
+</ResponsiveGrid>
+```
+
+Defaults: `minItemWidth={320}`, `maxColumns={2}`, `gap={16}`. Containers narrower
+than the minimum use a single full-width cell. `style` applies to the outer
+container; its padding is excluded from the inner width measurement. With
+`testID="metrics"`, the measured wrapping row is `metrics-layout`, and cells are
+`metrics-cell-0`, `metrics-cell-1`, etc. Also available as `Grid.ResponsiveGrid`
+from the root namespace.
+
+
+### Equal chart heights
+
+Set `stretchItems` to align participating `ChartCardSurface` cards to the tallest
+surface in each row. The grid uses native/web flex layout, without measuring
+heights. Fixed card heights become minimum heights; auto cards retain their
+intrinsic content size and expand to match their neighbor. The behavior only
+applies with multiple columns, so stacked mobile cards keep their usual height.
+Place chart components directly in the grid cells. Chart surfaces reset this
+context for their own children, so nested cards do not also stretch.
+
+Column count is capped by the number of rendered children: a single card fills
+the whole container even when room for multiple columns exists.

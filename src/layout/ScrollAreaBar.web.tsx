@@ -15,6 +15,9 @@ const EDGE = 2;
 const GRAB = 6;
 
 export interface ScrollAreaBarProps {
+  /** Document scroll stays on the document; only its indicator is viewport-fixed. */
+  viewport?: boolean;
+  offset?: number;
   /** The element that scrolls; `null` until it is mounted. */
   scroller: HTMLElement | null;
   /** The container the pointer must be over for `hover`. */
@@ -54,6 +57,8 @@ export function ScrollAreaBar({
   mode,
   thickness,
   insets,
+  viewport = false,
+  offset = 0,
 }: ScrollAreaBarProps) {
   // Optional, like the native fork: outside a provider the bar is a plain grey.
   const color = useContext(BloomThemeContext)?.theme.colors.textTertiary ?? '#888888';
@@ -94,17 +99,21 @@ export function ScrollAreaBar({
       timer = setTimeout(() => setLingering(false), LINGER_MS);
     };
     measure();
-    scroller.addEventListener('scroll', onScroll, { passive: true });
+    const scrollTarget = viewport ? window : scroller;
+    scrollTarget.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', measure);
     // Without it (an old browser, a test DOM) the thumb follows scroll events alone.
     const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
     resize?.observe(scroller);
+    resize?.observe(trackEl);
     if (scroller.firstElementChild) resize?.observe(scroller.firstElementChild);
     return () => {
-      scroller.removeEventListener('scroll', onScroll);
+      scrollTarget.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', measure);
       resize?.disconnect();
       clearTimeout(timer);
     };
-  }, [scroller, horizontal, rtl]);
+  }, [scroller, horizontal, rtl, viewport]);
 
   useEffect(() => {
     if (!area) return;
@@ -191,9 +200,16 @@ export function ScrollAreaBar({
       ref={track}
       aria-hidden
       {...dataHook('bloomScrollbar')}
+      {...{
+        dataSet: {
+          bloomScrollbar: '',
+          bloomScrollbarAxis: horizontal ? 'horizontal' : 'vertical',
+          bloomScrollbarOwner: viewport ? 'document' : 'element',
+        },
+      }}
       style={
         {
-          position: 'absolute',
+          position: viewport ? 'fixed' : 'absolute',
           zIndex: 1,
           // The grab strip is live whenever there is something to scroll, shown or not: a hidden
           // bar that took no pointer could never be woken by moving to the edge, only caught in
@@ -204,14 +220,14 @@ export function ScrollAreaBar({
             ? {
                 insetInlineStart: EDGE + (insets?.start ?? 0),
                 insetInlineEnd: EDGE + (insets?.end ?? 0),
-                bottom: EDGE,
+                bottom: EDGE + offset,
                 height: thickness + GRAB,
                 justifyContent: 'flex-end',
               }
             : {
                 top: EDGE + (insets?.start ?? 0),
                 bottom: EDGE + (insets?.end ?? 0),
-                insetInlineEnd: EDGE,
+                insetInlineEnd: EDGE + offset,
                 width: thickness + GRAB,
                 alignItems: 'flex-end',
               }),

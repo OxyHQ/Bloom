@@ -1,13 +1,8 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
-import React, { memo, useEffect, useMemo, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-} from 'react-native';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { StyleSheet, View, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -235,7 +230,7 @@ function ImportantAlertsCardComponent({
       </View>
 
       <View style={styles.feedFrame}>
-        <ScrollView
+        <ScrollArea
           {...feedHook}
           testID={testID ? `${testID}-feed` : undefined}
           style={styles.feed}
@@ -280,7 +275,7 @@ function ImportantAlertsCardComponent({
               </View>
             );
           })}
-        </ScrollView>
+        </ScrollArea>
         <TopFade color={surfaces.secondary} visible={scrolled} />
       </View>
     </Card>

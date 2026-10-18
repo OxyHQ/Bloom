@@ -9,15 +9,31 @@ import { Fab } from '../fab/index.web';
 import { ContentPanel } from '../content-panel/index.web';
 import { BloomColorScope } from '../theme/color-scope/index.web';
 import { createAppShellPanels } from './AppShellPanels';
-export const AppShell = createAppShell(BottomBar, Fab);
+import { createPanelLayoutView } from './AppShellPanelLayout';
+import { ScrollArea, ScrollBar } from '../layout/index.web';
+import { useScrollRestoration } from '../scroll/index.web';
+const PanelLayoutView = createPanelLayoutView(ContentPanel, BloomColorScope, ScrollArea, ScrollBar, useScrollRestoration);
+export const AppShell = createAppShell(BottomBar, Fab, PanelLayoutView);
 export const { AppShellPanel, AppShellPanels } = createAppShellPanels(
   ContentPanel,
   BloomColorScope,
+  PanelLayoutView,
 );
 export { AppShellHeader } from './AppShellHeader';
 export { AppShellMenuButton } from './AppShellMenuButton';
 export { APP_SHELL_DEFAULTS } from './constants';
-export { useAppShell, useAppShellPanel } from './context';
+export { useAppShell, useAppShellPanel, usePanelScrollContainer } from './context';
+export { usePanelNavigation, useOptionalPanelNavigation } from './PanelNavigation';
+export type {
+  PanelAxis,
+  ResponsivePanelAxis,
+  AppShellPanelLayout,
+  AppShellPanelDefinition,
+  PanelNavigationEntry,
+  PanelNavigationState,
+  PanelNavigationController,
+  PanelNavigationOptions,
+} from './panel-layout-types';
 export type { AppShellContextValue, AppShellPanelValue } from './context';
 export { NotificationBell } from './NotificationBell';
 export { ProOfferCard } from './ProOfferCard';

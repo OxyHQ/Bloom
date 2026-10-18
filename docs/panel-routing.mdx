@@ -1,0 +1,58 @@
+---
+title: Panel routing
+description: Independent route scopes inside AppShell panels.
+---
+
+`AppShell.panelLayout.panels[].navigation` owns one memory history per panel.
+`PanelRouterProvider` adds URL matching and persistent nested route layouts to
+that history. The host supplies the same screen components it uses in its main
+router. No browser history, global router or DOM link handler is replaced.
+
+```tsx
+import { PanelRouterProvider, PanelRouteSlot } from '@oxy.so/bloom/panel-routing';
+
+const routes = [
+  { path: '/p/[id]', component: PostScreen },
+  { path: '/[username]', component: ProfileScreen, layouts: [ProfileLayout] },
+  { path: '/[username]/replies', component: RepliesScreen, layouts: [ProfileLayout] },
+];
+
+const panel = {
+  id: 'feed',
+  navigation: {
+    initialEntries: [{ key: 'root', name: '/explore' }],
+    render: () => <PanelRouterProvider routes={routes} notFound={<NotFound />} />,
+  },
+};
+```
+
+A layout renders its child through `PanelRouteSlot`. Layout component identity
+is retained between sibling routes; each history entry gets its own screen
+identity and scroll offset. Static paths take precedence over dynamic segments.
+Dynamic `[id]` and `[...parts]` paths, structured hrefs and repeated query
+parameters are supported. Supply a route for every destination the app exposes.
+Lazy screen components can use a host `Suspense` boundary around the slot.
+Optional `entryParams` supplies app-owned metadata for new history entries;
+URL parameters remain separate and are read through the routing hooks.
+
+For Expo apps, import `Link`, `Redirect`, `Slot`, `useRouter`, `usePathname`,
+`useLocalSearchParams`, `useGlobalSearchParams`, `useIsFocused` and
+`useFocusEffect` from `@oxy.so/bloom/panel-routing/expo-router`. Outside a panel
+these delegate to Expo. Inside one they use its own route and history. Reusable
+screens must use `useRouter()` instead of Expo's global `router` singleton.
+Bloom's `tabs/expo-router` adapter uses this same scope. Modifier clicks and
+`target="_blank"` keep normal canonical links; external hrefs remain external.
+The core `panel-routing` entry does not import Expo.
+
+The controller supports push, replace, navigate, back, forward, dismiss,
+dismissAll, dismissTo and setParams. A new navigation after Back truncates the
+forward history. The lower-level panel controller exposes `go(delta)` for one
+atomic history movement, including controlled histories.
+
+Use `usePanelScrollContainer<HTMLElement>()` from `app-shell/hooks` to bind virtualized
+lists to an existing bounded panel viewport. It returns a stable ref, or null
+for document flow/outside a panel. Do not introduce another scroll container.
+The panel owns restoration, so nested lists must disable their own window
+restoration. App-specific scroll, reselect or color contexts should also be
+scoped to the panel if their consumers can navigate independently. Document
+metadata and browser navigation controls continue to belong to the main route.

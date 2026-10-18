@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import {
   Platform,
@@ -379,7 +380,7 @@ export function MostActiveDaysCard({
           paddingRight: 10,
         }}
       >
-        <ScrollView
+        <ScrollArea
           ref={scrollRef}
           testID={testID ? `${testID}-scroll` : undefined}
           style={SCROLL_STYLE}
@@ -434,7 +435,7 @@ export function MostActiveDaysCard({
               </View>
             );
           })}
-        </ScrollView>
+        </ScrollArea>
       </View>
     </ChartCardSurface>
   );

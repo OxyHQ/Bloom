@@ -46,11 +46,11 @@ The grid is not a calendar: cells spread `columns × 7` column-major over the ye
 
 ## Geometry
 
-- Card: radius 16, padding 16 all round, gap 16, `background-secondary`; 337 tall from `sm` (640) with overflow clipped — the month row runs ~2px past the padding and is clipped the same way — auto height below.
+- Card: radius 16, padding 16 all round, gap 16, `background-secondary`; 337 tall when its measured container is at least `sm` (640) and fits 13px cells with overflow clipped — the month row runs ~2px past the padding and is clipped the same way — auto height below.
 - Header: `ChartHeadline` — label body-medium text-secondary, number title-1-medium, delta `Chip` 8px after it.
 - Stat cards: bleed 8px past the padding, 8px gaps, one row from `sm` and 2 × 2 below; radius 10, padding 10, `background-inner`, `shadow-card` (0 1px 1px black 5% / dark 14%); value body-medium text-primary over label body-medium text-secondary, both truncating.
 - Activity: 8px closer (`-mt-2`), header row "Activity" + `SegmentedControl variant="plain"`, 4px, then the grid and the month row (body-2-medium text-tertiary, spread edge to edge) 6px under it.
-- Grid: 4px gaps, radius 3. From `sm` equal columns kept square (`aspectRatio: 1`); below, fixed 13px cells in a horizontal `ScrollView`.
+- Grid: 4px gaps, radius 3. When the measured card fits the grid, equal columns kept square (`aspectRatio: 1`); below, fixed 13px cells in a horizontal Bloom `ScrollArea`.
 - Tiers: `chart-neutral` for 0, then the accent ramp — light 200 / 400 / 500 / 600 / 700, dark 950 / 800 / 700 / 600 / 500, so more activity always means more contrast.
 
 ## Tooltip
@@ -58,3 +58,27 @@ The grid is not a calendar: cells spread `columns × 7` column-major over the ye
 One Bloom `Tooltip` (position top) anchored on the hovered cell rather than one per cell — 259 triggers would each measure themselves. Moving between cells moves the bubble; the clear on leaving a cell is deferred a frame so crossing a gap doesn't close and reopen it. Native: a press shows the day, dragging moves it, the tooltip's own outside-press dismisses.
 
 Cells are named `role="img"` views excluded from tab order (still announced, not focusable).
+
+
+### Other daily counts
+
+Both `ContributionsGrid` and `ContributionsCard` accept
+`getCellLabel={(cell, index) => ...}` to name each cell and its tooltip for the
+metric actually shown. The default remains contribution wording. The callback
+also receives empty padding cells (`{ count: 0 }`), which can be named as outside
+the selected period using their index. For a small number of weeks, compose
+`ContributionsGrid compact` inside `ChartCardSurface height="auto"`: its fixed
+13px cells avoid stretching a short range into a tall full-width grid.
+
+
+Sizing follows the card itself, never the viewport. With the default 37 columns,
+wide mode starts at 657px (625px grid plus 32px padding); narrower dashboard
+columns keep 13px cells and scroll horizontally. The card uses `ChartCardSurface`,
+so `ResponsiveGrid stretchItems` aligns it with neighboring chart cards while
+retaining these cell sizes. Before first measurement it uses compact mode.
+
+
+Set `initialScrollPosition="end"` to open a compact calendar at its most recent
+cells. Bloom positions the shared scroller after content measurement and when
+its data or selected period changes; otherwise the reader can scroll freely.
+The default `start` preserves chronological browsing from the first cell.

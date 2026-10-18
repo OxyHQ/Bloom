@@ -27,7 +27,8 @@
  * it.
  */
 import React, { memo, useCallback, useContext, useRef, useState } from 'react';
-import { View, type LayoutChangeEvent } from 'react-native';
+import { Platform, View, type LayoutChangeEvent } from 'react-native';
+import { PanelCssContext } from './panel-layout-css';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import {
@@ -81,6 +82,7 @@ const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
   testID,
 }) => {
   const insets = useShellInsets();
+  const cssScope = useContext(PanelCssContext);
   const [height, setHeight] = useState(0);
   const measuredHeight = useRef(0);
   // Layout already includes the safe-area padding. Publish, but never read,
@@ -102,6 +104,9 @@ const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
   return (
     <View
       testID={testID}
+      {...(Platform.OS === 'web' && cssScope
+        ? { dataSet: { bloomShellViewportChrome: cssScope } }
+        : {})}
       pointerEvents="box-none"
       onLayout={onLayout}
       style={[anchorBottom(doc), { paddingBottom: insets.bottom }]}
@@ -139,26 +144,32 @@ const AppShellFloatingActionComponent: React.FC<AppShellFloatingActionProps> = (
   placement,
   onHeightChange,
   testID,
-}) => (
-  <View
-    testID={testID}
-    pointerEvents="box-none"
-    onLayout={(event: LayoutChangeEvent) =>
-      onHeightChange(Math.round(event.nativeEvent.layout.height))
-    }
-    style={[
-      anchorBottom(doc),
-      {
-        bottom: offset,
-        paddingLeft: gutter,
-        paddingRight: gutter,
-        alignItems: placement === 'end' ? 'flex-end' : 'flex-start',
-      },
-    ]}
-  >
-    {children}
-  </View>
-);
+}) => {
+  const cssScope = useContext(PanelCssContext);
+  return (
+    <View
+      testID={testID}
+      {...(Platform.OS === 'web' && cssScope
+        ? { dataSet: { bloomShellViewportChrome: cssScope } }
+        : {})}
+      pointerEvents="box-none"
+      onLayout={(event: LayoutChangeEvent) =>
+        onHeightChange(Math.round(event.nativeEvent.layout.height))
+      }
+      style={[
+        anchorBottom(doc),
+        {
+          bottom: offset,
+          paddingLeft: gutter,
+          paddingRight: gutter,
+          alignItems: placement === 'end' ? 'flex-end' : 'flex-start',
+        },
+      ]}
+    >
+      {children}
+    </View>
+  );
+};
 export const AppShellFloatingAction = memo(AppShellFloatingActionComponent);
 AppShellFloatingAction.displayName = 'AppShellFloatingAction';
 

@@ -1,5 +1,6 @@
-import React, { memo, useContext, useMemo, useState } from 'react';
-import { Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo, useContext, useMemo, useState } from 'react';
+import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
@@ -328,7 +329,7 @@ function FullScreenPlayerBody({
       style={[{ flex: 1, backgroundColor: surface.base }, style]}
       testID={testID}
     >
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 24 }}>
+      <ScrollArea style={{ flex: 1 }} contentContainerStyle={{ gap: 24 }}>
         <View
           style={[
             {
@@ -368,7 +369,7 @@ function FullScreenPlayerBody({
           )}
         </View>
         {belowFold}
-      </ScrollView>
+      </ScrollArea>
     </View>
   );
 }

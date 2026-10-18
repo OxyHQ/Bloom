@@ -998,6 +998,132 @@ describe('AppShell pinned slots', () => {
 });
 
 describe('AppShell nav sizing', () => {
+  it.each([
+    [1440, 'expanded'],
+    [1262, 'expanded'],
+    [1261, 'collapsed'],
+    [1200, 'collapsed'],
+    [1024, 'collapsed'],
+    [1023, 'rail'],
+    [768, 'rail'],
+    [767, 'drawer'],
+  ] as const)('automatically uses %s pixels for %s navigation', (width, mode) => {
+    setWidth(width);
+    const screen = renderIn(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        contentWidth={620}
+        asideWidth={350}
+        asideFrom={990}
+        gutter={8}
+        aside={<ReactNative.Text>Aside</ReactNative.Text>}
+        sidebar={{ items: NAV }}
+      />,
+    );
+    const toggle = screen.queryByTestId('sidebar-collapse');
+    if (mode === 'expanded' || mode === 'collapsed') {
+      expect(toggle?.props['aria-expanded']).toBe(mode === 'expanded');
+      expect(screen.queryByTestId('sidebar-rail-scroll')).toBeNull();
+    } else if (mode === 'rail') {
+      expect(toggle).toBeNull();
+      expect(screen.getByTestId('sidebar-rail-scroll')).toBeTruthy();
+    } else {
+      expect(screen.queryByTestId('sidebar-item-home')).toBeNull();
+    }
+  });
+
+  it('honors controlled expansion and releases aside capacity when the aside is empty', () => {
+    setWidth(1100);
+    const makeShell = (collapsed?: boolean) => (
+      <AppShell
+        testID="shell"
+        variant="feed"
+        contentWidth={620}
+        asideWidth={350}
+        asideFrom={990}
+        gutter={8}
+        aside={<ReactNative.Text>Aside</ReactNative.Text>}
+        sidebar={{ items: NAV, collapsed }}
+      />
+    );
+    const screen = renderIn(makeShell(false));
+    expect(screen.getByTestId('sidebar-collapse').props['aria-expanded']).toBe(true);
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <PortalProvider>
+          {makeShell()}
+          <PortalOutlet />
+        </PortalProvider>
+      </BloomThemeProvider>,
+    );
+    expect(screen.getByTestId('sidebar-collapse').props['aria-expanded']).toBe(false);
+    expect(screen.getByTestId('sidebar-collapse').props['aria-disabled']).toBe(true);
+    fireEvent(screen.getByTestId('shell-aside-content'), 'layout', {
+      nativeEvent: { layout: { width: 350, height: 0, x: 0, y: 0 } },
+    });
+    expect(screen.getByTestId('sidebar-collapse').props['aria-expanded']).toBe(true);
+  });
+
+  it('resizes its measured container and preserves a manual collapse without allowing expansion to squeeze content', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell testID="shell" variant="feed" contentWidth={900} sidebar={{ items: NAV }} />,
+    );
+    const resize = (width: number) =>
+      fireEvent(screen.getByTestId('shell'), 'layout', {
+        nativeEvent: { layout: { width, height: 900, x: 0, y: 0 } },
+      });
+    resize(1100);
+    expect(screen.getByTestId('sidebar-collapse').props['aria-expanded']).toBe(false);
+    fireEvent.press(screen.getByTestId('sidebar-collapse'));
+    expect(screen.getByTestId('sidebar-collapse').props['aria-expanded']).toBe(false);
+    resize(1440);
+    expect(screen.getByTestId('sidebar-collapse').props['aria-expanded']).toBe(true);
+    fireEvent.press(screen.getByTestId('sidebar-collapse'));
+    resize(1100);
+    resize(1440);
+    expect(screen.getByTestId('sidebar-collapse').props['aria-expanded']).toBe(false);
+  });
+
+  it.each([1440, 1200, 1024, 989, 767])(
+    'spans the existing aside track at %ipx without changing navigation capacity',
+    (width) => {
+      setWidth(width);
+      const shell = (span: 'content' | 'content-aside') => (
+        <AppShell
+          testID="shell"
+          variant="feed"
+          panels
+          navigationAlign="content"
+          contentWidth={620}
+          contentSpan={span}
+          aside={<ReactNative.Text>Side</ReactNative.Text>}
+          asideWidth={350}
+          asideFrom={990}
+          asideGap={0}
+          gutter={8}
+          sidebar={{ items: NAV }}
+        />
+      );
+      const normal = renderIn(shell('content'));
+      const before = normal.queryByTestId('sidebar-collapse')?.props['aria-expanded'];
+      normal.unmount();
+      const expanded = renderIn(shell('content-aside'));
+      expect(expanded.queryByTestId('sidebar-collapse')?.props['aria-expanded']).toBe(before);
+      expect(resolvedStyle(expanded.getByTestId('shell-content').props.style).maxWidth).toBe(
+        width < 768 ? undefined : width >= 990 ? 970 : 620,
+      );
+      if (width >= 990) {
+        const aside = expanded.getByTestId('shell-aside', { includeHiddenElements: true });
+        expect(aside.props['aria-hidden']).toBe(true);
+        expect(resolvedStyle(aside.props.style)).toMatchObject({ width: 0, opacity: 0 });
+      } else {
+        expect(expanded.queryByText('Side')).toBeNull();
+      }
+    },
+  );
+
   it('navFrom moves the tier the rail sits in flow from', () => {
     setWidth(800);
     const md = renderIn(
@@ -1007,7 +1133,9 @@ describe('AppShell nav sizing', () => {
     expect(md.queryByTestId('shell-header-menu')).toBeNull();
     md.unmount();
 
-    const lg = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);
+    const lg = renderIn(
+      <AppShell testID="shell" title="Home" navFrom="lg" sidebar={{ items: NAV }} />,
+    );
     expect(lg.queryByTestId('sidebar-item-home')).toBeNull();
     expect(lg.getByTestId('shell-header-menu')).toBeTruthy();
   });
@@ -1395,8 +1523,7 @@ describe('AppShellPanels', () => {
   it('separated: the gap between panels is the shell gutter, each its own framed surface', () => {
     setWidth(1440);
     const screen = renderIn(twoPanels());
-    const gap = resolvedStyle(screen.getByTestId('map-gap').props.style);
-    expect(gap).toMatchObject({ width: 8, flexShrink: 0, backgroundColor: 'transparent' });
+    expect(resolvedStyle(screen.getByTestId('map').props.style).marginInlineStart).toBe(8);
     const panels = screen.UNSAFE_root.findAllByType(
       (ContentPanel as unknown as { type: React.ComponentType }).type,
     );
@@ -1404,22 +1531,14 @@ describe('AppShellPanels', () => {
     for (const panel of panels) expect(panel.props).toMatchObject({ framed: true, fill: true });
   });
 
-  it('sizes with flex alone: the sized panel shrinks to its minimum before the flexible one', () => {
+  it('uses the shared track resolver while preserving declared widths and minimums', () => {
     setWidth(1440);
     const screen = renderIn(twoPanels());
-    expect(resolvedStyle(screen.getByTestId('results').props.style)).toMatchObject({
-      flexGrow: 0,
-      flexShrink: 1,
-      flexBasis: 560,
-      minWidth: 360,
-      maxWidth: 900,
-    });
-    expect(resolvedStyle(screen.getByTestId('map').props.style)).toMatchObject({
-      flexGrow: 1,
-      flexShrink: 1,
-      flexBasis: 0,
-      minWidth: 400,
-    });
+    const results = resolvedStyle(screen.getByTestId('results').props.style);
+    const map = resolvedStyle(screen.getByTestId('map').props.style);
+    expect(results.width).toBe(560);
+    expect(Number(map.width)).toBeGreaterThanOrEqual(400);
+    expect(Number(results.width) + Number(map.width) + 8).toBe(1440);
   });
 
   it('collapses below collapseBelow, measured on the group OWN box, to the panel `show` names', () => {
@@ -1432,11 +1551,8 @@ describe('AppShellPanels', () => {
     expect(screen.queryByTestId('results')).toBeNull();
     expect(screen.getByTestId('map')).toBeTruthy();
     expect(screen.queryByTestId('map-gap')).toBeNull();
-    // Alone it fills the row.
-    expect(resolvedStyle(screen.getByTestId('map').props.style)).toMatchObject({
-      flexGrow: 1,
-      flexBasis: 0,
-    });
+    // Hidden tracks cannot receive input while their exit sizing animates.
+    expect(screen.getByTestId('map').props.pointerEvents).toBe('auto');
   });
 
   it('collapsed without `show`: the first panel', () => {
@@ -1537,7 +1653,7 @@ describe('AppShellPanels', () => {
         (ContentPanel as unknown as { type: React.ComponentType }).type,
       ),
     ).toHaveLength(1);
-    expect(resolvedStyle(wide.getByTestId('message-gap').props.style).width).toBe(1);
+    expect(resolvedStyle(wide.getByTestId('message').props.style).marginInlineStart).toBe(1);
     wide.unmount();
     const narrow = three(1000);
     expect(narrow.queryByTestId('info')).toBeNull();
@@ -1545,7 +1661,7 @@ describe('AppShellPanels', () => {
   });
 
   it('compact: separated panels go full-bleed with hairlines, no gutter', () => {
-    setWidth(900);
+    setWidth(767);
     const screen = renderIn(
       <AppShell variant="feed" panels scroll="fixed" gutter={8} sidebar={{ items: NAV }}>
         <AppShellPanels>
@@ -1558,7 +1674,7 @@ describe('AppShellPanels', () => {
         </AppShellPanels>
       </AppShell>,
     );
-    expect(resolvedStyle(screen.getByTestId('b-gap').props.style).width).toBe(1);
+    expect(resolvedStyle(screen.getByTestId('b').props.style).marginInlineStart).toBe(1);
     for (const panel of screen.UNSAFE_root.findAllByType(
       (ContentPanel as unknown as { type: React.ComponentType }).type,
     ))
@@ -1624,14 +1740,16 @@ describe('AppShellPanels', () => {
       </AppShell>,
     );
     // One viewport less the 8 + 8 gutters: the document has nothing to scroll.
-    expect(resolvedStyle(screen.getByTestId('group').props.style).height).toBe(
+    expect(resolvedStyle(screen.getByTestId('group-frame').props.style).height).toBe(
       'calc(100dvh - 16px)',
     );
     const inGroup = screen.UNSAFE_queryAllByType(ReactNative.ScrollView).filter((node) => {
       for (let n = node.parent; n; n = n.parent) if (n.props.testID === 'group') return true;
       return false;
     });
-    expect(inGroup).toHaveLength(1);
+    expect(inGroup).toHaveLength(0); // Web uses Screen's shared DOM owner, not another RN ScrollView.
+    const owners = screen.UNSAFE_root.findAll((node) => node.props.dataSet?.bloomScreenViewport === 'element');
+    expect(owners.length).toBeGreaterThan(0);
     expect(screen.queryByTestId('app-shell-panel-reserve')).toBeNull();
   });
 
@@ -1646,7 +1764,7 @@ describe('AppShellPanels', () => {
         </AppShellPanel>
       </AppShellPanels>,
     );
-    expect(resolvedStyle(screen.getByTestId('b-gap').props.style).width).toBe(12);
+    expect(resolvedStyle(screen.getByTestId('b').props.style).marginInlineStart).toBe(12);
   });
 });
 

@@ -38,7 +38,7 @@ export const Primitives: Story = {
 export const FeedRow: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ gap: 20, width: 360, maxWidth: '100%' }}>
+    <Skeleton.Region label="Loading feed" style={{ gap: 20, width: 360, maxWidth: '100%' }}>
       {[0, 1, 2].map((i) => (
         <Skeleton.Row key={i} style={{ gap: 12 }}>
           <Skeleton.Circle size={40} />
@@ -49,7 +49,7 @@ export const FeedRow: Story = {
           </Skeleton.Col>
         </Skeleton.Row>
       ))}
-    </View>
+    </Skeleton.Region>
   ),
 };
 

@@ -1,5 +1,6 @@
-import React, { memo } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo } from 'react';
+import { View } from 'react-native';
 
 import { Chip, ChipRow } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -127,7 +128,7 @@ function PipelineBoardComponent({
 
   return (
     <View onLayout={onLayout} style={[{ minWidth: 0 }, style]} testID={testID}>
-      <ScrollView
+      <ScrollArea
         horizontal
         showsHorizontalScrollIndicator={false}
         accessibilityLabel={accessibilityLabel}
@@ -140,7 +141,7 @@ function PipelineBoardComponent({
         testID={id('scroller')}
       >
         {stages.map((stage) => column(stage, columnWidth))}
-      </ScrollView>
+      </ScrollArea>
     </View>
   );
 }

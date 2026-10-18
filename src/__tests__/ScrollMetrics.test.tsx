@@ -189,3 +189,35 @@ it('maps viewport and content utilities without a consumer JSX transform', () =>
   expect(resolvedStyle(area.props.style).minHeight).toBe(0);
   expect(resolvedStyle(area.props.contentContainerStyle).gap).toBe(12);
 });
+
+it('horizontal areas preserve surrounding vertical metrics for layout, content and scroll', () => {
+  let metrics: ScrollMetrics | null = null;
+  function Probe() {
+    metrics = useScrollMetricsValue();
+    return null;
+  }
+  const observe = jest.fn();
+  const view = render(
+    <ScrollMetricsProvider>
+      <Probe />
+      <ScrollArea testID="vertical" />
+      <ScrollArea
+        testID="horizontal"
+        horizontal
+        onLayout={observe}
+        onContentSizeChange={observe}
+        onScroll={observe}
+      />
+    </ScrollMetricsProvider>,
+  );
+  layout(view, 'vertical', 400);
+  content(view, 'vertical', 1600);
+  scroll(view, 'vertical', 450, 1600, 400);
+  layout(view, 'horizontal', 40);
+  content(view, 'horizontal', 40);
+  scroll(view, 'horizontal', 0, 40, 40);
+  expect(metrics!.scrollY.value).toBe(450);
+  expect(metrics!.viewportHeight.value).toBe(400);
+  expect(metrics!.contentHeight.value).toBe(1600);
+  expect(observe).toHaveBeenCalledTimes(3);
+});

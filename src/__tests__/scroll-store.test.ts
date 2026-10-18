@@ -105,3 +105,48 @@ describe('ScrollOffsetStore', () => {
     expect(store.has('a')).toBe(false);
   });
 });
+
+describe('portable scroll snapshots', () => {
+  it('round trips JSON including zero, composite keys and prototype-like route names', () => {
+    const store = new ScrollOffsetStore(JSON.parse('{"__proto__":12,"route%00feed":120,"top":0}'));
+    const restored = new ScrollOffsetStore(JSON.parse(JSON.stringify(store.snapshot())));
+    expect(restored.read('__proto__')).toBe(12);
+    expect(restored.read('route\0feed')).toBe(120);
+    expect(restored.has('top')).toBe(true);
+  });
+  it('rejects nonfinite values and bounds the most recently updated entries', () => {
+    const store = new ScrollOffsetStore({ nan: NaN, infinite: Infinity, bounce: -20 });
+    expect(store.snapshot()).toEqual({ bounce: 0 });
+    for (let i = 0; i < 256; i++) store.save(`route-${i}`, i);
+    store.save('route-0', 1);
+    store.save('new', 2);
+    expect(store.size).toBe(256);
+    expect(store.has('bounce')).toBe(false);
+    expect(store.has('route-1')).toBe(false);
+    expect(store.read('route-0')).toBe(1);
+  });
+  it('notifies only changes, unsubscribes, and keeps snapshots detached', () => {
+    const store = new ScrollOffsetStore();
+    const listener = jest.fn();
+    const remove = store.subscribe(listener);
+    store.save('route', 4);
+    const snapshot = store.snapshot();
+    store.save('route', 4);
+    expect(listener).toHaveBeenCalledTimes(1);
+    store.save('route', 8);
+    expect(snapshot.route).toBe(4);
+    remove();
+    store.clear();
+    expect(listener).toHaveBeenCalledTimes(2);
+  });
+});
+
+it('encodes separators and percent signs without emitting SQL-incompatible control keys', () => {
+  const store = new ScrollOffsetStore();
+  store.save('panel:entry\0screen%tab', 44);
+  expect(store.snapshot()).toEqual({ 'panel%3Aentry%00screen%25tab': 44 });
+  expect(Object.keys(store.snapshot()).every((key) => !/[\x00-\x1f]/.test(key))).toBe(true);
+  const restored = new ScrollOffsetStore(store.snapshot());
+  expect(restored.read('panel:entry\0screen%tab')).toBe(44);
+  expect(new ScrollOffsetStore({ '%broken': 2 }).size).toBe(0);
+});

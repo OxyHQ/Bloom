@@ -1,4 +1,4 @@
-/** One shared Surface paint per group, with actual plain Buttons flush inside. */
+/** One shared Surface paint per group, with actual Buttons sharing that material. */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 

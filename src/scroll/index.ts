@@ -10,3 +10,6 @@ export type {
   ScrollRouterAdapter,
   UseScrollRestorationOptions,
 } from './types';
+
+export type { ScrollRestorationSnapshot } from './store';
+export type { ScrollRestorationPersistence } from './types';

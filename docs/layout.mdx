@@ -355,3 +355,24 @@ every scroll event, so scrolling renders nothing in React.
 ```
 
 It hides the scroller's own bar and draws Bloom's over it; on native it renders nothing. `ScrollArea` is a `ScrollView` and one of these, and `scrollIndicatorInsets` (`top` / `bottom`, or `left` / `right` when `horizontal`) keeps the bar clear of chrome that floats over the scroller. Do not style `::-webkit-scrollbar` per component: that is how nine surfaces ended up with nine different bars, some hidden outright.
+
+
+### Shared scroll owners
+
+Ordinary vertical and horizontal content uses `ScrollArea`. On web its sized
+outer area owns `style`, `className` and `testID`; `contentContainerStyle` and
+`contentContainerClassName` belong to the scrolling body. Its forwarded ref is
+the actual ScrollView, preserving keyboard reveal and imperative navigation.
+Bloom's overlay scrollbar is the default and reserves no content width.
+
+Pass Reanimated handlers through `animatedHandler`. They compose with Bloom's
+UI-thread metrics; optional `onScroll` remains a plain JS observer. A virtualized
+list or existing DOM scrolling element keeps its own viewport: attach
+`ScrollBar target={ref}` beside it. DOM refs, ScrollView refs and list refs
+exposing `getNativeScrollRef` are supported, without a nested scroll container.
+Discrete image pagers keep their dedicated paging controls.
+
+Settings pages compose `Screen` with a header slot and `ScreenScrollView`.
+Header material, sticky placement and scrolling follow the same contract as app
+pages, including compact section navigation. Overlay screen scopes isolate
+metrics, header actions and route restoration from the underlying page.

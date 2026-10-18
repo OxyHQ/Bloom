@@ -55,6 +55,29 @@ describe('steps bar geometry matches recharts', () => {
 });
 
 describe('StepsCard', () => {
+  it('adds shared stat tiles without squeezing the plot and restores default sizing when empty', () => {
+    const frame = (stats: { label: string; value: string }[]) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <StepsCard testID="steps" data={WEEK} stats={stats} />
+      </BloomThemeProvider>
+    );
+    const screen = render(
+      frame([
+        { label: 'Daily average', value: '420' },
+        { label: 'Posts', value: '12' },
+      ]),
+    );
+    expect(screen.getByText('Daily average')).toBeTruthy();
+    expect(screen.getByText('420')).toBeTruthy();
+    expect(screen.getByTestId('steps-stats-tile-1')).toBeTruthy();
+    expect(cardLayout(screen.getByTestId('steps')).height).toBeUndefined();
+    expect(resolvedStyle(screen.getByTestId('steps-plot').props.style).minHeight).toBe(232);
+    screen.rerender(frame([]));
+    expect(screen.queryByTestId('steps-stats')).toBeNull();
+    expect(cardLayout(screen.getByTestId('steps')).height).toBe(330);
+    expect(resolvedStyle(screen.getByTestId('steps-plot').props.style).minHeight).toBe(0);
+  });
+
   it('keeps the medical card shell: 330 tall, radius 20, 10px inset, header 16px in', () => {
     const { getByTestId } = renderCard(
       <StepsCard testID="steps" data={WEEK} range="29 Jun - 5 Jul" />,

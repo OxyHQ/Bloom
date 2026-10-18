@@ -7,6 +7,7 @@ import { Text } from '../typography';
 import { resolveTone, type ChartSeriesTone } from './palette';
 import { ChartCardSurface, CHART_CARD_HEIGHT } from './primitives/ChartCardSurface';
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
+import { ChartStatTiles, type ChartStatTile } from './primitives/ChartStatTiles';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
 import {
@@ -70,7 +71,13 @@ export interface StageBarsCardProps {
   mono?: boolean;
   /** Draw each stage's `icon` inside its bar. Default `true`. */
   showIcons?: boolean;
-  /** Headline number at rest; defaults to the first stage's value. */
+  /** Show each value's percentage using percentageBase. Default true. */
+  showPercentages?: boolean;
+  /** Denominator for percentage labels and bar lengths. Default first (pipeline); total compares independent categories. */
+  percentageBase?: 'first' | 'total';
+  /** Optional summary tiles replacing the interactive per-stage tiles. Empty array hides tiles. */
+  stats?: readonly ChartStatTile[];
+  /** Headline at rest; defaults to the first stage's value, or the sum in total mode. */
   headline?: number;
   /** Delta ratio for the chip, e.g. `0.052` → "+5.2%". No chip when omitted. */
   delta?: number;
@@ -102,6 +109,9 @@ export function StageBarsCard({
   stages: stagesProp,
   mono = false,
   showIcons = true,
+  showPercentages = true,
+  percentageBase = 'first',
+  stats,
   headline: headlineProp,
   delta: deltaProp,
   range,
@@ -146,14 +156,19 @@ export function StageBarsCard({
     mono ? monoTone : resolveTone(palettes, i, s.color, s.activeColor),
   );
   const top = Math.max(1, stages[0]?.value ?? 1);
+  const total = stages.reduce((sum, stage) => sum + stage.value, 0);
+  const denominator = percentageBase === 'total' ? total : top;
+  const share = (value: number) => (denominator > 0 ? (value / denominator) * 100 : 0);
   const hovering = activeIndex !== null;
   const headerLabel = hovering ? stages[activeIndex]!.label : title;
-  const headlineValue = hovering ? stages[activeIndex]!.value : (headline ?? top);
+  const headlineValue = hovering
+    ? stages[activeIndex]!.value
+    : (headline ?? (percentageBase === 'total' ? total : top));
   const dim = (i: number) => (hovering && activeIndex !== i ? ROW_DIM : 1);
 
   const summary =
     accessibilityLabel ??
-    `${title}: ${stages.map((s) => `${s.label} ${format(s.value)} (${Math.round((s.value / top) * 100)}%)`).join(', ')}`;
+    `${title}: ${stages.map((s) => `${s.label} ${format(s.value)}${showPercentages ? ` (${Math.round(share(s.value))}%)` : ''}`).join(', ')}`;
 
   return (
     <ChartCardSurface
@@ -213,7 +228,7 @@ export function StageBarsCard({
             {stages.map((stage, i) => (
               <StageTrack
                 key={`bar-${stage.label}-${i}`}
-                percent={Math.max(2, (stage.value / top) * 100)}
+                percent={Math.max(percentageBase === 'first' ? 2 : 0, share(stage.value))}
                 mounted={mounted}
                 color={activeIndex === i ? tones[i]!.activeColor : tones[i]!.color}
                 track={palette.track}
@@ -261,32 +276,40 @@ export function StageBarsCard({
                 >
                   {format(stage.value)}
                 </Text>
-                <Text
-                  variant="caption-1-medium"
-                  numberOfLines={1}
-                  style={[{ color: palette.textTertiary }, TABULAR]}
-                >
-                  {`${Math.round((stage.value / top) * 100)}%`}
-                </Text>
+                {showPercentages ? (
+                  <Text
+                    variant="caption-1-medium"
+                    numberOfLines={1}
+                    style={[{ color: palette.textTertiary }, TABULAR]}
+                  >
+                    {`${Math.round(share(stage.value))}%`}
+                  </Text>
+                ) : null}
               </View>
             ))}
           </View>
         </View>
       </View>
 
-      <StageStatTiles
-        columns={3}
-        swatches={!mono}
-        activeIndex={activeIndex}
-        onActiveChange={setActiveIndex}
-        testID={testID ? `${testID}-tiles` : undefined}
-        items={stages.map((stage, i) => ({
-          label: stage.label,
-          value: format(stage.value),
-          color: tones[i]!.color,
-          activeColor: tones[i]!.activeColor,
-        }))}
-      />
+      {stats !== undefined ? (
+        stats.length > 0 ? (
+          <ChartStatTiles items={stats} testID={testID ? `${testID}-stats` : undefined} />
+        ) : null
+      ) : (
+        <StageStatTiles
+          columns={3}
+          swatches={!mono}
+          activeIndex={activeIndex}
+          onActiveChange={setActiveIndex}
+          testID={testID ? `${testID}-tiles` : undefined}
+          items={stages.map((stage, i) => ({
+            label: stage.label,
+            value: format(stage.value),
+            color: tones[i]!.color,
+            activeColor: tones[i]!.activeColor,
+          }))}
+        />
+      )}
     </ChartCardSurface>
   );
 }

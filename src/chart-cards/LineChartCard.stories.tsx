@@ -133,3 +133,24 @@ export const Narrow: Story = {
     </Frame>
   ),
 };
+
+/** Summary metrics stay visible while exploring the plot. */
+export const WithSummaryStats: Story = {
+  render: () => (
+    <View style={{ width: 480, maxWidth: '100%' }}>
+      <LineChartCard
+        title="Views"
+        data={[
+          { label: 'Mon', value: 40 },
+          { label: 'Tue', value: 60 },
+        ]}
+        format={String}
+        formatAxisValue={String}
+        stats={[
+          { label: 'Daily average', value: '50' },
+          { label: 'Peak day', value: 'Tue' },
+        ]}
+      />
+    </View>
+  ),
+};

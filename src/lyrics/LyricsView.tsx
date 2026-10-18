@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import {
   ScrollView,
@@ -226,7 +227,7 @@ function LyricsViewComponent({
           </Text>
         </View>
       ) : (
-        <ScrollView
+        <ScrollArea
           ref={scrollRef}
           {...webDataSet({ bloomLyricsScroll: '' })}
           showsVerticalScrollIndicator={false}
@@ -273,7 +274,7 @@ function LyricsViewComponent({
             );
           })}
           {footerNode ? <View style={{ marginTop: large ? 32 : 24 }}>{footerNode}</View> : null}
-        </ScrollView>
+        </ScrollArea>
       )}
       {detached && synced && active >= 0 ? (
         <View

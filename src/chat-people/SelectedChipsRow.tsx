@@ -1,5 +1,6 @@
-import React, { memo, useMemo } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollArea } from '../layout/ScrollArea';
+import { memo, useMemo } from 'react';
+import { Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar/Avatar';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
@@ -128,7 +129,7 @@ function SelectedChipsRowComponent({
   }
 
   return (
-    <ScrollView
+    <ScrollArea
       horizontal
       showsHorizontalScrollIndicator={false}
       style={style}
@@ -136,7 +137,7 @@ function SelectedChipsRowComponent({
       testID={testID}
     >
       {chips}
-    </ScrollView>
+    </ScrollArea>
   );
 }
 

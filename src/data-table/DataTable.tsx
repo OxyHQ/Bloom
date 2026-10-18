@@ -1,8 +1,8 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { useBloomAppearance } from '../appearance';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
-  ScrollView,
   View,
   type LayoutChangeEvent,
   type TextStyle,
@@ -314,7 +314,7 @@ export function DataTable<T>({
               narrow ? (
                 // `-mx-3 w-[calc(100%+1.5rem)] overflow-x-auto px-3`: the
                 // controls scroll edge to edge under the title on a phone.
-                <ScrollView
+                <ScrollArea
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={{ marginLeft: -12, marginRight: -12, alignSelf: 'stretch' }}
@@ -326,7 +326,7 @@ export function DataTable<T>({
                   }}
                 >
                   {toolbar}
-                </ScrollView>
+                </ScrollArea>
               ) : (
                 <View
                   style={{

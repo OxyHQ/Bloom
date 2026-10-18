@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useRef } from 'react';
 import {
   Animated,
   View,
@@ -8,6 +8,11 @@ import {
   StyleSheet,
 } from 'react-native';
 
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { StyledView } from '../styles/styled-primitives';
+import { useCommonMessages } from '../locale/common-messages';
+import type { SkeletonRegionProps } from './types';
+
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
@@ -16,30 +21,70 @@ const SHIMMER_DURATION = 1500;
 const SHIMMER_MIN_OPACITY = 0.4;
 const SHIMMER_MAX_OPACITY = 1;
 
+const ShimmerContext = createContext<Animated.Value | null>(null);
+const decorative = {
+  'aria-hidden': true,
+  accessibilityElementsHidden: true,
+  importantForAccessibility: 'no-hide-descendants' as const,
+};
+
 function useShimmer() {
+  const inherited = useContext(ShimmerContext);
+  const reducedMotion = usePrefersReducedMotion();
   const opacity = useRef(new Animated.Value(SHIMMER_MAX_OPACITY)).current;
 
   useEffect(() => {
+    if (inherited) return;
+    if (reducedMotion) {
+      opacity.setValue(SHIMMER_MAX_OPACITY);
+      return;
+    }
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(opacity, {
           toValue: SHIMMER_MIN_OPACITY,
           duration: SHIMMER_DURATION / 2,
           useNativeDriver: SUPPORTS_NATIVE_DRIVER,
+          isInteraction: false,
         }),
         Animated.timing(opacity, {
           toValue: SHIMMER_MAX_OPACITY,
           duration: SHIMMER_DURATION / 2,
           useNativeDriver: SUPPORTS_NATIVE_DRIVER,
+          isInteraction: false,
         }),
       ]),
     );
     loop.start();
     return () => loop.stop();
-  }, [opacity]);
+  }, [opacity, inherited, reducedMotion]);
 
-  return opacity;
+  return inherited ?? opacity;
 }
+
+/** One loading announcement and animation driver for a composed placeholder. */
+export function Region({ children, label, testID, className, style }: SkeletonRegionProps) {
+  const inherited = useContext(ShimmerContext);
+  const shimmer = useShimmer();
+  const common = useCommonMessages();
+  return (
+    <ShimmerContext.Provider value={shimmer}>
+      <StyledView
+        accessible={inherited ? undefined : true}
+        role={inherited ? undefined : 'group'}
+        accessibilityLabel={inherited ? undefined : label ?? common.loading}
+        accessibilityState={inherited ? undefined : { busy: true }}
+        aria-busy={inherited ? undefined : true}
+        testID={testID}
+        className={className}
+        style={style}
+      >
+        {children}
+      </StyledView>
+    </ShimmerContext.Provider>
+  );
+}
+Region.displayName = 'Skeleton.Region';
 
 export function Text({ blend, style }: { style?: TextStyle | TextStyle[]; blend?: boolean }) {
   const { colors } = useTheme();
@@ -50,6 +95,7 @@ export function Text({ blend, style }: { style?: TextStyle | TextStyle[]; blend?
 
   return (
     <View
+      {...decorative}
       style={[
         styles.textOuter,
         { maxWidth: width as number },
@@ -87,6 +133,7 @@ export function Circle({
 
   return (
     <Animated.View
+      {...decorative}
       style={[
         styles.circle,
         {
@@ -118,6 +165,7 @@ export function Pill({
 
   return (
     <Animated.View
+      {...decorative}
       style={[
         styles.pill,
         {
@@ -164,6 +212,7 @@ export function Box({
 
   return (
     <Animated.View
+      {...decorative}
       style={[
         {
           backgroundColor: colors.contrast50,

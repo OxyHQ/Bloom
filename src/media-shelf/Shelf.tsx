@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import React, {
   type ComponentRef,
   Children,
@@ -274,7 +275,7 @@ function ShelfComponent({
       '--bloom-shelf-inset': `${contentInset}px`,
     };
     body = (
-      <ScrollView
+      <ScrollArea
         ref={scrollRef}
         {...webDataSet({ bloomShelfTrack: '' })}
         horizontal
@@ -304,7 +305,7 @@ function ShelfComponent({
             {child}
           </View>
         ))}
-      </ScrollView>
+      </ScrollArea>
     );
   }
 

@@ -54,3 +54,7 @@ Hover (web) / press-and-scrub (native) swaps the header to the point and hides t
 
 - **The halo is a frame clock, not SMIL.** SVG's `<animate>` isn't implemented by react-native-svg; `PulsingDot` re-renders itself every frame while a point is active (only itself). Under reduced motion it holds r 5 at 30%.
 - **The phone header keeps the switcher's track padding.** Dropping it below `sm` would shrink `SegmentedControl`'s thumb, which pins 4px inside the track. The selected segment sits 4px right of the heading on phones.
+
+## Summary tiles
+
+Pass `stats: readonly ChartStatTile[]` to show formatted summary tiles below the chart. Omitted or empty stats preserve the original layout. Summary tiles remain independent of plot hover; cards grow naturally to fit them and support `ResponsiveGrid stretchItems`.

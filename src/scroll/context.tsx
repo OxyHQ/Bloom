@@ -7,10 +7,16 @@
  * from the native barrel and a hook imported from the web barrel would
  * otherwise read two different contexts and the hook would throw.
  */
-import { createContext, useContext, useEffect, useMemo } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+
+import { AppState } from 'react-native';
 
 import { ScrollOffsetStore } from './store';
-import type { ScrollRestorationProviderProps, ScrollRouterAdapter } from './types';
+import type {
+  ScrollRestorationPersistence,
+  ScrollRestorationProviderProps,
+  ScrollRouterAdapter,
+} from './types';
 
 export interface ScrollRestorationContextValue {
   store: ScrollOffsetStore;
@@ -20,20 +26,41 @@ export interface ScrollRestorationContextValue {
 const ScrollRestorationContext = createContext<ScrollRestorationContextValue | null>(null);
 ScrollRestorationContext.displayName = 'BloomScrollRestorationContext';
 
+/** Internal nested scope: independent offsets without changing browser history ownership. */
+export function ScrollRestorationScope(
+  props: ScrollRestorationProviderProps & { contentIds?: readonly string[] },
+) {
+  return <PersistentScrollScope key={props.scopeKey} {...props} />;
+}
+
+function PersistentScrollScope({
+  children,
+  adapter,
+  contentIds,
+  ...persistence
+}: ScrollRestorationProviderProps & { contentIds?: readonly string[] }) {
+  const store = usePersistentScrollStore(persistence);
+  const value = useMemo(() => ({ store, adapter }), [store, adapter]);
+  useEffect(() => {
+    if (contentIds) store.retainContentIds(contentIds);
+  }, [store, contentIds]);
+  return (
+    <ScrollRestorationContext.Provider value={value}>{children}</ScrollRestorationContext.Provider>
+  );
+}
+
+export function useOptionalScrollRestorationContext() {
+  return useContext(ScrollRestorationContext);
+}
+
 /**
  * Holds the offset map and the router binding for the subtree. One provider
  * near the app root is enough; the store lives as long as the provider, so
  * offsets survive navigating away and back (including browser Back/Forward).
  */
-export function ScrollRestorationProvider({ children, adapter }: ScrollRestorationProviderProps) {
-  const store = useMemo(() => new ScrollOffsetStore(), []);
-  const value = useMemo(() => ({ store, adapter }), [store, adapter]);
-
+export function ScrollRestorationProvider(props: ScrollRestorationProviderProps) {
   useManualBrowserScrollRestoration();
-
-  return (
-    <ScrollRestorationContext.Provider value={value}>{children}</ScrollRestorationContext.Provider>
-  );
+  return <PersistentScrollScope key={props.scopeKey} {...props} />;
 }
 
 export function useScrollRestorationContext(): ScrollRestorationContextValue {
@@ -93,4 +120,47 @@ function useManualBrowserScrollRestoration(): void {
       history.scrollRestoration = previous;
     };
   }, []);
+}
+
+/** No React updates per scroll frame: only the host's settled snapshot callback runs. */
+function usePersistentScrollStore(options: ScrollRestorationPersistence): ScrollOffsetStore {
+  const [store] = useState(() => new ScrollOffsetStore(options.initialSnapshot));
+  const callback = useRef(options.onSnapshotChange);
+  callback.current = options.onSnapshotChange;
+  const observed = options.onSnapshotChange !== undefined;
+  useEffect(() => {
+    if (!observed) return undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let dirty = false;
+    const flush = () => {
+      if (timer !== undefined) clearTimeout(timer);
+      timer = undefined;
+      if (!dirty) return;
+      dirty = false;
+      callback.current?.(store.snapshot());
+    };
+    const unsubscribe = store.subscribe(() => {
+      dirty = true;
+      if (timer !== undefined) clearTimeout(timer);
+      timer = setTimeout(flush, 200);
+    });
+    const unsubscribeFlush = store.subscribeFlush(flush);
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') flush();
+    });
+    const hide = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    if (typeof window !== 'undefined') window.addEventListener('pagehide', flush);
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', hide);
+    return () => {
+      unsubscribe();
+      unsubscribeFlush();
+      appState.remove();
+      if (typeof window !== 'undefined') window.removeEventListener('pagehide', flush);
+      if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', hide);
+      flush();
+    };
+  }, [store, observed]);
+  return store;
 }

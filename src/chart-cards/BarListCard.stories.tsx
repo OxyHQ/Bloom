@@ -177,3 +177,25 @@ export const Narrow: Story = {
     </Frame>
   ),
 };
+
+/** Summary metrics stay visible while exploring the plot. */
+export const WithSummaryStats: Story = {
+  render: () => (
+    <View style={{ width: 480, maxWidth: '100%' }}>
+      <BarListCard
+        title="Interactions"
+        metricLabel="Count"
+        metric="value"
+        showShares
+        items={[
+          { label: 'Likes', value: 60 },
+          { label: 'Replies', value: 40 },
+        ]}
+        stats={[
+          { label: 'Total', value: '100' },
+          { label: 'Leading action', value: 'Likes' },
+        ]}
+      />
+    </View>
+  ),
+};

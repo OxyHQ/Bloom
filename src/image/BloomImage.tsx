@@ -66,13 +66,22 @@ export function BloomImage({
           ? (event) => {
               // RN emits source dimensions; RNW forwards a DOM Image load event.
               // Read intrinsic pixels from its target, never rendered box size.
-              const loaded: {
-                source?: { width: number; height: number };
-                target?: { naturalWidth?: number; naturalHeight?: number } | null;
-              } = event.nativeEvent;
+              const loaded:
+                | {
+                    source?: { width: number; height: number };
+                    target?: { naturalWidth?: number; naturalHeight?: number } | null;
+                  }
+                | undefined = event.nativeEvent;
+              const target =
+                loaded?.target ??
+                (
+                  event as unknown as {
+                    target?: { naturalWidth?: number; naturalHeight?: number };
+                  }
+                ).target;
               onLoad({
-                width: loaded.source?.width ?? loaded.target?.naturalWidth ?? 0,
-                height: loaded.source?.height ?? loaded.target?.naturalHeight ?? 0,
+                width: loaded?.source?.width ?? target?.naturalWidth ?? 0,
+                height: loaded?.source?.height ?? target?.naturalHeight ?? 0,
               });
             }
           : undefined

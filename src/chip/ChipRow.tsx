@@ -1,6 +1,6 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import {
-  ScrollView,
   View,
   type LayoutChangeEvent,
   type NativeScrollEvent,
@@ -130,7 +130,7 @@ function ChipRowComponent({
       style={[{ position: 'relative', minWidth: 0 }, style]}
       testID={testID}
     >
-      <ScrollView
+      <ScrollArea
         {...(IS_WEB ? ({ dataSet: { bloomChipRowTrack: '' } } as Record<string, unknown>) : {})}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -164,7 +164,7 @@ function ChipRowComponent({
         testID={testID ? `${testID}-track` : undefined}
       >
         {children}
-      </ScrollView>
+      </ScrollArea>
       {IS_WEB && overflow.previous ? (
         <View
           pointerEvents="none"

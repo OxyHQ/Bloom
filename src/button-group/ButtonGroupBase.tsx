@@ -252,20 +252,14 @@ export function createButtonGroup(
       <Button
         {...props}
         onLayout={group ? onLayout : undefined}
-        appearance={
-          group?.separated
-            ? checked
-              ? 'outline'
-              : 'subtle'
-            : checked && !group?.moving
-              ? 'outline'
-              : 'plain'
-        }
+        appearance={group?.separated ? (checked ? 'outline' : 'subtle') : 'outline'}
         tone="neutral"
         size={size}
         iconOnly={iconOnly}
         wide={pill}
-        material={group?.separated ? 'flat' : undefined}
+        material={
+          group?.separated ? 'flat' : group && !(checked && !group.moving) ? 'shared' : undefined
+        }
         pressed={checked}
         disabled={disabled}
         hitSlop={

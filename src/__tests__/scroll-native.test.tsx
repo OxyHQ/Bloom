@@ -23,6 +23,7 @@ import type {
   ScreenFocusEffect,
   ScrollRestorationBinding,
   ScrollRouterAdapter,
+  ScrollRestorationPersistence,
 } from '../scroll/types';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -124,7 +125,7 @@ class Harness {
   private readonly container: HTMLElement;
   private bindingRef: ScrollRestorationBinding | null = null;
 
-  constructor() {
+  constructor(private readonly persistence: ScrollRestorationPersistence = {}) {
     this.container = document.createElement('div');
     document.body.appendChild(this.container);
     this.root = createRoot(this.container);
@@ -133,7 +134,11 @@ class Harness {
   private render(children: ReactNode): void {
     act(() => {
       this.root.render(
-        createElement(ScrollRestorationProvider, { adapter: testAdapter, children }),
+        createElement(ScrollRestorationProvider, {
+          adapter: testAdapter,
+          ...this.persistence,
+          children,
+        }),
       );
     });
   }
@@ -516,4 +521,22 @@ describe('native scroll-restoration hook', () => {
       consoleError.mockRestore();
     }
   });
+});
+
+it('restores a persisted native offset only when content is ready, then captures updates', () => {
+  const frames = new FrameScheduler();
+  frames.install();
+  const changed = jest.fn();
+  const harness = new Harness({ initialSnapshot: { 'feed%00': 620 }, onSnapshotChange: changed });
+  const list = new FakeList();
+  harness.show({ content: 'feed', list, enabled: false });
+  expect(frames.pending).toBe(0);
+  expect(list.scrolls).toEqual([]);
+  harness.show({ content: 'feed', list, enabled: true });
+  act(() => frames.flushOneFrame());
+  expect(list.lastScroll).toBe(620);
+  harness.scroll(900);
+  harness.unmountScreen();
+  expect(changed).toHaveBeenCalledWith({ 'feed%00': 900 });
+  harness.teardown();
 });

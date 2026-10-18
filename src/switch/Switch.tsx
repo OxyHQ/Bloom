@@ -3,7 +3,7 @@ import { MOTION_RECIPES } from '../motion/recipes';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
-import React, { memo, useCallback, useRef } from 'react';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
 import { Pressable, Animated, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -57,21 +57,22 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
     const anim = useRef(new Animated.Value(checked ? 1 : 0)).current;
     const pressAnim = useRef(new Animated.Value(0)).current;
 
-    // Track last checked to detect external changes and animate accordingly.
-    // This avoids useEffect while still handling controlled checked changes.
-    const prevValueRef = useRef(checked);
-    if (prevValueRef.current !== checked) {
-      prevValueRef.current = checked;
+    // Animated values notify mounted subscribers. Synchronize only after commit,
+    // never while React is rendering a controlled update (or an abandoned render).
+    useEffect(() => {
       if (reducedMotion) {
         anim.stopAnimation();
         anim.setValue(checked ? 1 : 0);
-      } else
-        Animated.spring(anim, {
-          toValue: checked ? 1 : 0,
-          useNativeDriver: false,
-          ...animation.spring.gentle,
-        }).start();
-    }
+        return;
+      }
+      const transition = Animated.spring(anim, {
+        toValue: checked ? 1 : 0,
+        useNativeDriver: false,
+        ...animation.spring.gentle,
+      });
+      transition.start();
+      return () => transition.stop();
+    }, [anim, checked, reducedMotion]);
 
     const handlePress = useCallback(() => {
       if (isDisabled) return;

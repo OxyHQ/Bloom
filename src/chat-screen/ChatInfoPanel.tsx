@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { StyleSheet } from 'react-native';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
@@ -7,8 +8,8 @@ import {
   surfaceFillVars,
   useSurfaceLevelValue,
 } from '../styles/surface-levels';
-import React, { memo, useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { memo, useMemo, useState } from 'react';
+import { Pressable, View } from 'react-native';
 import { BloomImage } from '../image';
 
 import { AvatarPresence } from '../chat-indicators/AvatarPresence';
@@ -501,13 +502,13 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
           ) : null}
         </View>
         {scrollable ? (
-          <ScrollView
+          <ScrollArea
             style={{ flexGrow: 1, flexShrink: 1 }}
             contentContainerStyle={{ flexGrow: 1 }}
             testID={testID ? `${testID}-scroll` : undefined}
           >
             {body}
-          </ScrollView>
+          </ScrollArea>
         ) : (
           body
         )}

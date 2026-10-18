@@ -16,6 +16,7 @@ import { BREAKPOINTS } from '../styles/breakpoints';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
+import { ScreenFooterContext, useScreenContext } from '../screen/context';
 import { PageFooterContext } from './context';
 import type { PageFooterProps } from './types';
 import { useDocumentAnchor } from './use-document-anchor';
@@ -37,7 +38,10 @@ function PageFooterComponent({
   testID,
 }: PageFooterProps) {
   const theme = useTheme();
-  const documentAnchor = useDocumentAnchor(position === 'document');
+  const screen = useScreenContext();
+  const footerScreen = useContext(ScreenFooterContext);
+  const positionedByScreen = screen != null && screen === footerScreen;
+  const documentAnchor = useDocumentAnchor(!positionedByScreen && position === 'document');
   const metrics = useScrollMetricsValue();
   const threshold = Math.max(1, Number.isFinite(scrollThreshold) ? scrollThreshold : 20);
   const scrimStyle = useAnimatedStyle(
@@ -62,9 +66,10 @@ function PageFooterComponent({
   const store = useContext(PageFooterContext);
   const id = useId();
   useEffect(() => {
+    if (positionedByScreen) return;
     store?.claim(id, height + bottom);
     return () => store?.release(id);
-  }, [store, id, height, bottom]);
+  }, [store, id, height, bottom, positionedByScreen]);
 
   const onLayout = (event: LayoutChangeEvent) => {
     const layout = event.nativeEvent.layout;
@@ -88,7 +93,9 @@ function PageFooterComponent({
         pointerEvents="box-none"
         style={[
           styles.container,
-          { bottom, paddingBottom: padBottom },
+          positionedByScreen
+            ? { position: 'relative', left: undefined, right: undefined, paddingBottom: padBottom }
+            : { bottom, paddingBottom: padBottom },
           documentAnchor.style,
           style,
         ]}

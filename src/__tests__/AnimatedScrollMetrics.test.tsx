@@ -1,4 +1,3 @@
-import React from 'react';
 import { act, render } from '@testing-library/react-native';
 import type { NativeScrollEvent } from 'react-native';
 import * as Reanimated from 'react-native-reanimated';
@@ -11,6 +10,7 @@ jest.mock('react-native-reanimated', () => {
   const React = jest.requireActual('react');
   return {
     ...base,
+    __esModule: true,
     runOnJS: jest.fn(base.runOnJS),
     useAnimatedScrollHandler: (listeners: Record<string, Function>) => {
       const context = React.useRef({}).current;
@@ -21,6 +21,7 @@ jest.mock('react-native-reanimated', () => {
 });
 
 import {
+  ScrollArea,
   ScrollMetricsProvider,
   useAnimatedScrollMetricsBinding,
   useScrollMetricsBinding,
@@ -225,4 +226,47 @@ it('bridges a normal RN observer only when supplied, preserving the animated pat
   } finally {
     bridge.mockClear();
   }
+});
+
+it('ScrollArea keeps non-callable animated handlers on its single native viewport', () => {
+  const scroll = jest.fn();
+  const drag = jest.fn();
+  const observer = jest.fn();
+  function Area() {
+    const handler = useAnimatedScrollHandler({ onScroll: scroll, onBeginDrag: drag });
+    return <ScrollArea testID="animated-area" animatedHandler={handler} onScroll={observer} />;
+  }
+  const view = render(
+    <ScrollMetricsProvider>
+      <Area />
+    </ScrollMetricsProvider>,
+  );
+  const viewport = view.getByTestId('animated-area');
+  dispatch(viewport.props.onScroll, 'onScroll', 120);
+  dispatch(viewport.props.onScroll, 'onBeginDrag');
+  expect(scroll).toHaveBeenCalledTimes(1);
+  expect(drag).toHaveBeenCalledTimes(1);
+  expect(observer).toHaveBeenCalledTimes(1);
+});
+
+it('animated horizontal areas cannot overwrite vertical screen metrics', () => {
+  let metrics: ScrollMetrics | null = null;
+  const observe = jest.fn();
+  function Probe() {
+    metrics = useScrollMetricsValue();
+    const handler = useAnimatedScrollHandler({ onScroll: observe });
+    return <ScrollArea horizontal animatedHandler={handler} testID="strip" />;
+  }
+  const view = render(
+    <ScrollMetricsProvider>
+      <Probe />
+    </ScrollMetricsProvider>,
+  );
+  metrics!.scrollY.value = 450;
+  metrics!.viewportHeight.value = 400;
+  metrics!.contentHeight.value = 1600;
+  dispatch(view.getByTestId('strip').props.onScroll, 'onScroll', 0, 40, 40);
+  expect(metrics!.scrollY.value).toBe(450);
+  expect(metrics!.viewportHeight.value).toBe(400);
+  expect(observe).toHaveBeenCalledTimes(1);
 });

@@ -1,7 +1,8 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { parseRgba } from '../theme/color-utils';
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { AccessibilityInfo, ScrollView, View } from 'react-native';
+import { AccessibilityInfo, View } from 'react-native';
 
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { StyleSheet } from 'react-native';
@@ -205,7 +206,7 @@ function QueuePanelComponent({
         ) : null}
       </View>
 
-      <ScrollView
+      <ScrollArea
         style={{ flex: 1, minHeight: 0 }}
         contentContainerStyle={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 16 }}
         scrollEnabled={!dragActive}
@@ -315,7 +316,7 @@ function QueuePanelComponent({
             ) : null}
           </>
         )}
-      </ScrollView>
+      </ScrollArea>
 
       {IS_WEB ? (
         <View

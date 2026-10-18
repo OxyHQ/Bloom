@@ -1,12 +1,6 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import React, { createContext, useContext, useMemo, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  View,
-  useWindowDimensions,
-  type TextStyle,
-  type ViewStyle,
-} from 'react-native';
+import { Pressable, View, useWindowDimensions, type TextStyle, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { Avatar } from '../avatar';
@@ -617,14 +611,14 @@ export function MeetingScheduler({
         />
       </View>
       {wide ? (
-        <ScrollView
+        <ScrollArea
           role="radiogroup"
           accessibilityLabel={accessibilityLabel}
           style={[{ flex: 1, minHeight: 0 }, maskStyle]}
           contentContainerStyle={{ gap: 8, paddingBottom: 12 }}
         >
           {slotList}
-        </ScrollView>
+        </ScrollArea>
       ) : (
         <View role="radiogroup" accessibilityLabel={accessibilityLabel} style={{ gap: 8 }}>
           {slotList}
@@ -657,11 +651,11 @@ export function MeetingScheduler({
             {slotsColumn}
           </View>
         ) : (
-          <ScrollView testID={testID ? `${testID}-panel` : undefined} style={{ maxHeight: 640 }}>
+          <ScrollArea testID={testID ? `${testID}-panel` : undefined} style={{ maxHeight: 640 }}>
             {hostColumn}
             {calendarColumn}
             {slotsColumn}
-          </ScrollView>
+          </ScrollArea>
         )}
       </PickerShell>
     </TriggerChevronContext.Provider>

@@ -1,3 +1,4 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { useBloomAppearance } from '../appearance';
 import React, {
   Children,
@@ -7,14 +8,7 @@ import React, {
   useEffect,
   useMemo,
 } from 'react';
-import {
-  Platform,
-  Pressable,
-  ScrollView,
-  View,
-  type TextStyle,
-  type ViewStyle,
-} from 'react-native';
+import { Platform, Pressable, View, type TextStyle, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -295,13 +289,13 @@ export function Table({
   return (
     <TableContext.Provider value={context}>
       {minWidth != null ? (
-        <ScrollView
+        <ScrollArea
           horizontal
           style={[{ width: '100%' }, containerStyle]}
           contentContainerStyle={{ flexGrow: 1 }}
         >
           {table}
-        </ScrollView>
+        </ScrollArea>
       ) : (
         <View style={[{ width: '100%' }, containerStyle]}>{table}</View>
       )}

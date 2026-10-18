@@ -45,8 +45,8 @@ export interface ButtonProps {
   /** Keep an embedded action from also activating its parent. Default false. */
   stopPropagation?: boolean;
   appearance?: BloomAppearance;
-  /** Shared surface paint (default), or a flat semantic fill without sheen, rim or blur. */
-  material?: 'surface' | 'flat';
+  /** Own surface (default), flat fill, or shared material painted by an enclosing control group. */
+  material?: 'surface' | 'flat' | 'shared';
   tone?: BloomTone;
   leading?: ReactNode;
   trailing?: ReactNode;

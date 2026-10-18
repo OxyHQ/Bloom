@@ -1,5 +1,6 @@
+import { ScrollArea } from '../layout/ScrollArea';
 import { type ComponentRef, useContext, useRef, useState, type ComponentType } from 'react';
-import { View, ScrollView, Keyboard, Platform } from 'react-native';
+import { View, Keyboard, Platform } from 'react-native';
 import { useEffect } from 'react';
 import Animated, {
   useAnimatedReaction,
@@ -182,7 +183,7 @@ export function BottomBarBase({
             testID={testID ? `${testID}-navigation` : undefined}
             style={{ width: navigationWidth, minWidth: 0 }}
           >
-            <ScrollView
+            <ScrollArea
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ minWidth: '100%' }}
@@ -211,7 +212,7 @@ export function BottomBarBase({
                   ))}
                 </Navigation>
               </View>
-            </ScrollView>
+            </ScrollArea>
           </View>
         )}
         {action && (

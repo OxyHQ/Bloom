@@ -33,12 +33,6 @@ const CSS = `
 [data-bloom-settings-press][data-ring-offset]:focus-visible {
   box-shadow: 0 0 0 2px var(--bloom-settings-ring-offset), 0 0 0 4px var(--bloom-settings-ring);
 }
-[data-bloom-settings-scroll] {
-  scrollbar-width: none;
-}
-[data-bloom-settings-scroll]::-webkit-scrollbar {
-  display: none;
-}
 [data-bloom-settings-dialog]:focus {
   outline: none;
 }

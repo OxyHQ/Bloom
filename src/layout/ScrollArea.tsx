@@ -1,8 +1,7 @@
 import { useContext, type ComponentType } from 'react';
-import { StyledScrollView } from '../styles/styled-primitives';
+import { ScrollViewport } from './ScrollViewport';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import type { ScrollAreaProps } from './types';
-import { useScrollAreaEvents } from './use-scroll-area-events';
 
 /**
  * A ScrollView that publishes its measurements to surrounding page chrome, with a scrollbar
@@ -23,20 +22,17 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
 }: ScrollAreaProps) {
   // Optional: a scroller must work outside a provider, with the system's own indicator.
   const isDark = useContext(BloomThemeContext)?.theme.isDark;
-  const events = useScrollAreaEvents({
-    onScroll,
-    onLayout,
-    onContentSizeChange,
-    scrollEventThrottle,
-  });
   return (
-    <StyledScrollView
+    <ScrollViewport
       indicatorStyle={isDark === undefined ? 'default' : isDark ? 'white' : 'black'}
       persistentScrollbar={scrollbar === 'always'}
       showsVerticalScrollIndicator={scrollbar !== 'never'}
       showsHorizontalScrollIndicator={scrollbar !== 'never'}
       {...props}
-      {...events}
+      onScroll={onScroll}
+      onLayout={onLayout}
+      onContentSizeChange={onContentSizeChange}
+      scrollEventThrottle={scrollEventThrottle}
       ref={ref}
     />
   );

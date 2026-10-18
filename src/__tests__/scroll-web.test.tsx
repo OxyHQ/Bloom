@@ -29,6 +29,7 @@ import type {
   ScreenFocusEffect,
   ScrollRestorationBinding,
   ScrollRouterAdapter,
+  ScrollRestorationPersistence,
 } from '../scroll/types';
 
 // React 19's `act` requires this flag to be set when driving updates manually
@@ -190,7 +191,7 @@ class Harness {
   readonly root: Root;
   private readonly container: HTMLElement;
 
-  constructor() {
+  constructor(private readonly persistence: ScrollRestorationPersistence = {}) {
     this.container = document.createElement('div');
     document.body.appendChild(this.container);
     this.root = createRoot(this.container);
@@ -202,6 +203,7 @@ class Harness {
       this.root.render(
         createElement(ScrollRestorationProvider, {
           adapter: testAdapter,
+          ...this.persistence,
           children: null,
         }),
       );
@@ -214,6 +216,7 @@ class Harness {
       this.root.render(
         createElement(ScrollRestorationProvider, {
           adapter: testAdapter,
+          ...this.persistence,
           children: createElement(
             FocusContext.Provider,
             { value: focused },
@@ -1133,5 +1136,66 @@ describe('manual browser scroll restoration', () => {
     root = null;
     installed = null;
     expect(history.scrollRestoration).toBe('auto');
+  });
+});
+
+describe('persisted web scroll on cold reload', () => {
+  it('rehydrates before first restore and flushes current scroll on pagehide', () => {
+    const frames = new FrameScheduler();
+    frames.install();
+    const changed = jest.fn();
+    const harness = new Harness({
+      initialSnapshot: { 'saved%00': 800 },
+      onSnapshotChange: changed,
+    });
+    const node = new FakeScrollNode();
+    node.growTo(FULL_CONTENT_HEIGHT);
+    harness.show({ node, content: 'saved' });
+    act(() => frames.flushOneFrame());
+    expect(node.scrollTop).toBe(800);
+    scrollTo(node, 1200);
+    expect(changed).not.toHaveBeenCalled();
+    act(() => window.dispatchEvent(new Event('pagehide')));
+    expect(changed).toHaveBeenCalledWith({ 'saved%00': 1200 });
+    harness.teardown();
+  });
+
+  it('restores after asynchronous content replaces a skeleton beyond the frame budget', async () => {
+    const frames = new FrameScheduler();
+    frames.install();
+    const harness = new Harness({ initialSnapshot: { 'saved%00': 1400 } });
+    const node = new FakeScrollNode();
+    harness.show({ node, content: 'saved' });
+    act(() => {
+      for (let i = 0; i < 30; i++) frames.flushOneFrame();
+    });
+    expect(frames.pending).toBe(0);
+    expect(node.scrollTop).toBe(0);
+    await act(async () => {
+      node.growTo(FULL_CONTENT_HEIGHT);
+      node.el.appendChild(document.createElement('div'));
+    });
+    act(() => frames.flushOneFrame());
+    expect(node.scrollTop).toBe(1400);
+    harness.teardown();
+  });
+
+  it('abandons delayed restoration when the user takes over', async () => {
+    const frames = new FrameScheduler();
+    frames.install();
+    const harness = new Harness({ initialSnapshot: { 'saved%00': 1400 } });
+    const node = new FakeScrollNode();
+    harness.show({ node, content: 'saved' });
+    act(() => {
+      for (let i = 0; i < 30; i++) frames.flushOneFrame();
+      node.el.dispatchEvent(new Event('wheel'));
+    });
+    await act(async () => {
+      node.growTo(FULL_CONTENT_HEIGHT);
+      node.el.appendChild(document.createElement('div'));
+    });
+    expect(frames.pending).toBe(0);
+    expect(node.scrollTop).toBe(0);
+    harness.teardown();
   });
 });

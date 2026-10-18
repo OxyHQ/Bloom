@@ -2,7 +2,8 @@
  * What `AppShell` tells the page inside it about its navigation drawer, so a
  * page without a `title` — or with its own `header` — can still open it.
  */
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type RefObject } from 'react';
+import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
 
 export interface AppShellContextValue {
   /**
@@ -36,6 +37,9 @@ export function useOptionalAppShell(): AppShellContextValue | null {
 
 /** What a panel knows about itself — see `useAppShellPanel`. */
 export interface AppShellPanelValue {
+  /** Root modular panels retain hidden content; use this to suspend background work. */
+  visible?: boolean;
+  active?: boolean;
   /** The panel's `id`, when it was given one. */
   id?: string;
   /**
@@ -56,4 +60,18 @@ AppShellPanelContext.displayName = 'BloomAppShellPanelContext';
 /** The enclosing `AppShellPanel`: its id, whether it is drawn alone and framed. */
 export function useAppShellPanel(): AppShellPanelValue {
   return useContext(AppShellPanelContext) ?? OUTSIDE_PANEL;
+}
+
+/** The actual panel viewport, not a second scrolling wrapper. */
+export const PanelScrollContainerContext = createContext<RefObject<unknown> | null>(null);
+/** Null means document/outside; web current is an HTMLElement, native a ScrollArea handle. */
+export function usePanelScrollContainer<T = unknown>(): RefObject<T | null> | null {
+  const screen = useContext(ScreenViewportContext);
+  const legacy = useContext(PanelScrollContainerContext);
+  const host = useContext(ScreenHostContext);
+  return (
+    screen
+      ? screen.scrollRef
+      : (legacy ?? (host.kind === 'document' ? null : (host.scrollRef ?? null)))
+  ) as RefObject<T | null> | null;
 }

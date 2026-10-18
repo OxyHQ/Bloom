@@ -33,3 +33,14 @@ it('does not crash if a renderer cannot provide intrinsic dimensions', () => {
   fireEvent(screen.getByTestId('image'), 'load', { nativeEvent: { target: null } });
   expect(onLoad.mock.calls).toEqual([[{ width: 0, height: 0 }]]);
 });
+
+it('also accepts browser load events without a nativeEvent wrapper', () => {
+  const onLoad = jest.fn();
+  const screen = render(
+    <BloomImage testID="image" source="https://example.com/photo.png" onLoad={onLoad} />,
+  );
+  fireEvent(screen.getByTestId('image'), 'load', {
+    target: { naturalWidth: 640, naturalHeight: 480 },
+  });
+  expect(onLoad).toHaveBeenCalledWith({ width: 640, height: 480 });
+});

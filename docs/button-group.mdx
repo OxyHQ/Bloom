@@ -6,7 +6,7 @@ order: 11
 
 # ButtonGroup
 
-A row of buttons declared as one control, with one shared Surface. Unselected items remain plain; a checked item gains a rounded inset capsule. Dividers separate items by default.
+A row of buttons declared as one control, with one shared Surface. Unselected items share the group material; a checked item gains a rounded inset capsule. Dividers separate items by default.
 
 ```tsx
 import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
@@ -98,8 +98,13 @@ Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a 
 
 Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
 
-Each `ButtonGroupItem` now composes the actual `Button`, including icon render slots, toggle state, disabled state and trigger events. The group owns joining, dividers and inherited density. The group uses one shared `Surface`. With one checked item, a measured rounded capsule moves behind the plain Buttons and resizes to their actual bounds. It shares the same spring and visibility transition as BottomBar, respects reduced motion, and fades in place when selection disappears. Until layout is available, or when multiple items are checked, each checked Button paints its own material instead. Each platform binding injects its own Surface and Button, so browser packages resolve the web implementations directly.
+Each `ButtonGroupItem` now composes the actual `Button`, including icon render slots, toggle state, disabled state and trigger events. The group owns joining, dividers and inherited density. The group uses one shared `Surface`. With one checked item, a measured rounded capsule moves behind the Buttons sharing its material and resizes to their actual bounds. It shares the same spring and visibility transition as BottomBar, respects reduced motion, and fades in place when selection disappears. Until layout is available, or when multiple items are checked, each checked Button paints its own material instead. Each platform binding injects its own Surface and Button, so browser packages resolve the web implementations directly.
 
 ## Separated
 
 `separated` keeps the group semantics (one named `role="group"`, inherited size, `checked` items) and drops the joined surface: the whole group reads as one pill cut into straight segments 2px apart. It is what a reply's action row is — [`AgentReplyActions`](./agent-reply.mdx) is a separated `xs` group.
+
+Joined action items use the same neutral outline Button foreground as standalone
+IconButton. `material="shared"` delegates only the resting surface to the group;
+it does not lower icon emphasis. Hover, press, disabled and selected states
+remain Button behavior, not a separate group implementation.

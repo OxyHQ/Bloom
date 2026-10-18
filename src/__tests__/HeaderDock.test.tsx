@@ -7,6 +7,8 @@ import { useHeaderDockContext } from '../layout/header-dock';
 import { PageHeader } from '../page-header';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { ScreenHostContext } from '../screen/context';
+import { Screen } from '../screen';
 import { resolvedStyle } from './support/rendered-style';
 
 function Probe() {
@@ -136,4 +138,41 @@ it('restores the mounted original when a native list removes its sticky clone', 
   position.value = 0;
   tree.rerender(clones(false));
   expect(tree.getByTestId('progress').props.children).toBe(0);
+});
+
+it('uses the stable panel metrics above a route Screen instead of an inherited screen offset', () => {
+  const hostScroll = { value: 320 } as SharedValue<number>;
+  const metrics = {
+    scrollY: hostScroll,
+    contentHeight: { value: 1200 } as SharedValue<number>,
+    viewportHeight: { value: 700 } as SharedValue<number>,
+  };
+  let observed: SharedValue<number> | undefined;
+  function Read() {
+    observed = useHeaderDockContext()?.scrollY;
+    return null;
+  }
+  const ui = () => (
+    <BloomThemeProvider fonts={false}>
+      <Screen>
+        <ScreenHostContext.Provider value={{ active: true, kind: 'element', metrics }}>
+          <HeaderDockProvider>
+            <Screen
+              header={<PageHeader testID="host-header" title="Profile" titleReveal="onDock" />}
+            >
+              <StickySection offset={300}>
+                <Text>Tabs</Text>
+              </StickySection>
+              <Read />
+            </Screen>
+          </HeaderDockProvider>
+        </ScreenHostContext.Provider>
+      </Screen>
+    </BloomThemeProvider>
+  );
+  const tree = render(ui());
+  tree.rerender(ui());
+  tree.rerender(ui());
+  expect(observed).toBe(hostScroll);
+  expect(resolvedStyle(tree.getByTestId('host-header-docked-fill').props.style).opacity).toBe(1);
 });
