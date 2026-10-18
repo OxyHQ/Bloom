@@ -310,3 +310,25 @@ describe('streaming prefixes', () => {
     expect(final.map((s) => s.block)).toEqual(parseMarkdown(SAMPLE).map((s) => s.block));
   });
 });
+
+it.each([
+  ['www.example.com/path,', 'https://www.example.com/path', 'www.example.com/path', ','],
+  ['WWW.example.com/path.', 'https://WWW.example.com/path', 'WWW.example.com/path', '.'],
+  ['HTTPS://example.com/path!', 'HTTPS://example.com/path', 'HTTPS://example.com/path', '!'],
+  ['HTTP://example.com/path)', 'HTTP://example.com/path', 'HTTP://example.com/path', ')'],
+])('autolinks %s without changing its displayed spelling', (source, url, label, punctuation) => {
+  expect(parseInline(source)).toEqual([
+    { type: 'link', url, children: [text(label)] },
+    text(punctuation),
+  ]);
+});
+
+it('does not autolink www text inside code, explicit labels, email addresses or words', () => {
+  expect(parseInline('`www.example.com`')).toEqual([{ type: 'code', value: 'www.example.com' }]);
+  expect(parseInline('email@www.example.com wordwww.example.com')).toEqual([
+    text('email@www.example.com wordwww.example.com'),
+  ]);
+  expect(parseInline('[www.example.com](/own)')).toEqual([
+    { type: 'link', url: '/own', label: 'www.example.com', children: [text('www.example.com')] },
+  ]);
+});

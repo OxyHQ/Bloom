@@ -57,3 +57,15 @@ describe('inline Markdown clipping', () => {
     });
   });
 });
+
+it.each([
+  ['www.example.com/long/path', 'https://www.example.com/long/path'],
+  ['WWW.example.com/long/path', 'https://WWW.example.com/long/path'],
+  ['HTTPS://example.com/long/path', 'HTTPS://example.com/long/path'],
+  ['HTTP://example.com/long/path', 'HTTP://example.com/long/path'],
+])('retains the entire autolink destination while clipping %s', (source, url) => {
+  expect(truncateInlineMarkdown(parseInlineMarkdown(source), 4)).toEqual({
+    isTruncated: true,
+    nodes: [{ type: 'link', url, children: [{ type: 'text', value: `${source.slice(0, 4)}…` }] }],
+  });
+});

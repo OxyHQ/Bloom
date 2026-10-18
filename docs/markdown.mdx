@@ -149,6 +149,10 @@ const { nodes: excerpt, isTruncated } = truncateInlineMarkdown(nodes, 280);
 </Text>
 ```
 
+Bare HTTP(S) URLs and `www.` URLs are recognized case-insensitively. `www.`
+links retain their visible spelling and open the complete `https://` destination,
+even when the displayed text is clipped.
+
 Visible length counts Unicode code points, including a line break as one; markers
 and link destinations do not consume the budget. Clipping retains at most the
 requested number of points and adds an ellipsis within the final retained style

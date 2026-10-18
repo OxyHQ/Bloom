@@ -17,7 +17,7 @@ type Token = MarkdownInline | Delimiter;
 const ESCAPABLE = /[!-/:-@[-`{-~]/;
 const PUNCTUATION = /[!-/:-@[-`{-~¡-¿ -⁯]/;
 const WHITESPACE = /\s/;
-const BARE_URL = /https?:\/\/[^\s<]+/y;
+const BARE_URL = /(?:https?:\/\/|www\.)[^\s<]+/iy;
 
 const isDelimiter = (token: Token): token is Delimiter => token.type === 'delimiter';
 
@@ -105,11 +105,18 @@ function tokenize(source: string, streaming: boolean, insideLink: boolean): Toke
         tokens.push(delimiterAt(source, i, count, char));
       }
       i += count;
-    } else if (!insideLink && char === 'h' && !isWordChar(source.charAt(i - 1))) {
+    } else if (
+      !insideLink &&
+      (char.toLowerCase() === 'h' || char.toLowerCase() === 'w') &&
+      !isWordChar(source.charAt(i - 1)) &&
+      source.charAt(i - 1) !== '@'
+    ) {
       const url = readBareUrl(source, i);
       if (url) {
         flush();
-        tokens.push(...makeLink(url, [{ type: 'text', value: url }]));
+        tokens.push(
+          ...makeLink(/^www\./i.test(url) ? `https://${url}` : url, [{ type: 'text', value: url }]),
+        );
         i += url.length;
       } else {
         text += char;
@@ -268,7 +275,7 @@ function makeLink(url: string, children: MarkdownInline[], label?: string): Mark
     : children;
 }
 
-/** A bare `https://…` with the punctuation that ends a sentence (or closes a span) left off. */
+/** A bare HTTP(S) or www URL, excluding punctuation ending its sentence or span. */
 function readBareUrl(source: string, from: number): string | undefined {
   BARE_URL.lastIndex = from;
   const match = BARE_URL.exec(source);
@@ -280,7 +287,8 @@ function readBareUrl(source: string, from: number): string | undefined {
     if (!unbalanced && !/[.,;:!?*_~'"]/.test(last ?? '')) break;
     url = url.slice(0, -1);
   }
-  return url.length > 'https://'.length ? url : undefined;
+  const prefix = /^(?:https?:\/\/|www\.)/i.exec(url)?.[0];
+  return prefix && url.length > prefix.length ? url : undefined;
 }
 
 const count = (value: string, char: string): number => value.split(char).length - 1;
