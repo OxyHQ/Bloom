@@ -869,6 +869,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   trailing,
   style,
   textStyle,
+  testID,
 }) => {
   const {
     selectedValue,
@@ -1024,6 +1025,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   // which carries that padding instead.
   const tab = (
     <Pressable
+      testID={testID}
       {...webDataSet({ bloomTabsTrigger: variant })}
       {...webKeyboard}
       style={[

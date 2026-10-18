@@ -1,23 +1,17 @@
 import React, { memo, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
+import { Button } from '../button';
 import { Chip } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RiArrowUpSLine } from '../icons/remix/RiArrowUpSLine';
 import { useContainerWidth } from '../hooks/use-container-width';
-import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import type { AccentTone } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import {
-  PROPERTY_INSIGHTS_CSS,
-  PROPERTY_INSIGHTS_STYLE_ID,
-  formatEuros,
-  resolveInsightPalette,
-} from './shared';
+import { formatEuros, resolveInsightPalette } from './shared';
 import { useMessages } from '../locale/messages';
 import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
 import type { PropertyInsightsMessages } from './messages';
@@ -145,7 +139,6 @@ function PriceEstimateComponent({
   const reasonsLabel = reasonsLabelProp ?? messages.whyThisEstimate;
   const comparablesLabel = comparablesLabelProp ?? messages.comparables;
   const theme = useTheme();
-  useInteractiveWebCss(PROPERTY_INSIGHTS_STYLE_ID, PROPERTY_INSIGHTS_CSS);
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
   const { width, onLayout } = useContainerWidth();
   const [expanded, setExpanded] = useControllableState({
@@ -176,7 +169,6 @@ function PriceEstimateComponent({
     return { position: 'absolute', left, width: slot, alignItems: align };
   };
 
-  const ring: WebCssStyle = { '--bloom-insight-ring': palette.ring };
   const barName = [
     `${title} ${rangeText}`,
     asking != null ? `${askingLabel} ${format(asking)}` : undefined,
@@ -401,34 +393,19 @@ function PriceEstimateComponent({
 
       {hasReasons ? (
         <View style={{ gap: 10 }}>
-          <Pressable
-            {...webDataSet({ bloomInsightPress: '' })}
-            accessibilityRole="button"
+          <Button
+            appearance="plain"
+            linkTone="text"
+            textVariant="body-semibold"
+            trailingIcon={expanded ? RiArrowUpSLine : RiArrowDownSLine}
             accessibilityLabel={reasonsLabel}
             aria-expanded={expanded}
-            accessibilityState={{ expanded }}
             onPress={() => setExpanded(!expanded)}
-            style={[
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 4,
-                alignSelf: 'flex-start',
-                borderRadius: 4,
-              },
-              ring,
-            ]}
+            style={{ alignSelf: 'flex-start' }}
             testID={testID ? `${testID}-reasons-toggle` : undefined}
           >
-            <Text variant="body-semibold" style={{ color: palette.text }}>
-              {reasonsLabel}
-            </Text>
-            {expanded ? (
-              <RiArrowUpSLine width={18} height={18} fill={palette.text} />
-            ) : (
-              <RiArrowDownSLine width={18} height={18} fill={palette.text} />
-            )}
-          </Pressable>
+            {reasonsLabel}
+          </Button>
           {expanded ? (
             <View style={{ gap: 8 }} testID={testID ? `${testID}-reasons` : undefined}>
               {reasons && reasons.length > 0 ? (

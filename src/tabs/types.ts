@@ -131,6 +131,8 @@ export interface TabsTriggerProps {
   trailing?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
+  /** Identifier on the interactive tab. */
+  testID?: string;
 }
 
 export interface TabsContentProps {

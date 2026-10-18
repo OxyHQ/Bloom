@@ -1,3 +1,11 @@
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../../src/segmented-control';
+import { useMessages } from '../../src/locale/messages';
+import { HOME_SEARCH_MESSAGES } from '../../src/home-search/messages';
+import { HOME_SEARCH_MODES } from '../../src/home-search/constants';
 import React, { useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 
@@ -401,14 +409,22 @@ export function DesktopSearchBar({ search }: { search: HomeSearchState }) {
 // ---------------------------------------------------------------------------
 
 export function MobileModeTabs({ search }: { search: HomeSearchState }) {
+  const { messages } = useMessages(HOME_SEARCH_MESSAGES);
   return (
-    <SearchModeTabs
-      variant="segmented"
+    <SegmentedControl
+      type="tabs"
+      size="lg"
+      label={messages.searchMode}
       value={search.mode}
-      onValueChange={search.setMode}
-      labels={{ stays: 'Holidays' }}
-      testID="housing-modes-segmented"
-    />
+      onChange={search.setMode}
+      style={{ alignSelf: 'stretch' }}
+    >
+      {HOME_SEARCH_MODES.map((mode) => (
+        <SegmentedControlItem key={mode} value={mode} testID={`housing-modes-segmented-${mode}`}>
+          <SegmentedControlItemText>{messages.modes[mode]}</SegmentedControlItemText>
+        </SegmentedControlItem>
+      ))}
+    </SegmentedControl>
   );
 }
 

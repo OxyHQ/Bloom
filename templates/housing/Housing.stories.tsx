@@ -8,7 +8,8 @@ import { HousingTemplate } from './HousingTemplate';
  * home swaps in one marketplace, the listing page for each, the tenant's own
  * home, community eviction reports, the listing wizard and the saved page.
  * Each story opens one page; the logo, the account menu, the cards and the
- * sidebar move between them. Pages scroll the document on web.
+ * sidebar move between them inside one persistent panel shell. Reading pages
+ * scroll the document on web; Explore has a scrolling results panel and a map.
  */
 const meta: Meta = {
   title: 'Templates/Housing',
@@ -21,15 +22,15 @@ type Story = StoryObj;
 
 /**
  * The marketplace: mode tabs (Rent / Buy / Vacation rentals / Swap) over the
- * search bar with its panels, the category strip with filters and "Save
- * search", the results grid and the "Show map" pill. Below `lg` the compact
- * trigger opens the step-by-step search.
+ * search bar, the category strip with filters and "Save search", and separate
+ * results/map panels. When the panel group is narrower than 900px, the
+ * "Show map" / "Show list" control switches between them.
  */
 export const Explore: Story = {
   render: () => <HousingTemplate initialPage="explore" />,
 };
 
-/** Explore in buy mode, split into the list and the map. */
+/** Explore in buy mode; starts on the map when only one panel fits. */
 export const ExploreMap: Story = {
   name: 'Explore — Map',
   render: () => <HousingTemplate initialPage="explore" initialMode="buy" initialMap />,

@@ -1,20 +1,13 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { Pressable, View, type LayoutChangeEvent } from 'react-native';
+import { View, type LayoutChangeEvent } from 'react-native';
 
+import { Button } from '../button';
 import { Avatar } from '../avatar';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiStarFill } from '../icons/remix/RiStarFill';
-import { useInteractiveWebCss } from '../styles/interactive-web-css';
-import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import {
-  LISTING_DETAILS_CSS,
-  LISTING_DETAILS_STYLE_ID,
-  resolveListingPalette,
-  type ListingPalette,
-} from './shared';
+import { resolveListingPalette, type ListingPalette } from './shared';
 import { useMessages } from '../locale/messages';
 import { LISTING_DETAILS_MESSAGES } from './messages';
 import type { ReviewCardProps } from './types';
@@ -92,7 +85,6 @@ function ReviewCardComponent({
   const showMoreLabel = showMoreLabelProp ?? common.showMore;
   const showLessLabel = showLessLabelProp ?? common.showLess;
   const theme = useTheme();
-  useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);
   const [expanded, setExpanded] = useControllableState({
     value: expandedProp,
@@ -114,12 +106,6 @@ function ReviewCardComponent({
     setFullHeight(Math.round(event.nativeEvent.layout.height));
   }, []);
   const truncatable = clamps && clampedHeight > 0 && fullHeight > clampedHeight + 1;
-
-  const ring: WebCssStyle = {
-    '--bloom-listing-ring': palette.ring,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-  };
 
   return (
     <View style={[{ gap: 12 }, style]} testID={testID}>
@@ -194,23 +180,19 @@ function ReviewCardComponent({
           ) : null}
         </View>
         {truncatable ? (
-          <Pressable
-            {...webDataSet({ bloomListingPress: '' })}
-            accessibilityRole="button"
+          <Button
+            appearance="plain"
+            linkTone="text"
+            underline="rest"
+            textVariant="body-semibold"
             accessibilityLabel={expanded ? showLessLabel : showMoreLabel}
             aria-expanded={expanded}
-            accessibilityState={{ expanded }}
             onPress={() => setExpanded(!expanded)}
-            style={ring}
+            style={{ alignSelf: 'flex-start' }}
             testID={testID ? `${testID}-toggle` : undefined}
           >
-            <Text
-              variant="body-semibold"
-              style={{ color: palette.text, textDecorationLine: 'underline' }}
-            >
-              {expanded ? showLessLabel : showMoreLabel}
-            </Text>
-          </Pressable>
+            {expanded ? showLessLabel : showMoreLabel}
+          </Button>
         ) : null}
       </View>
 

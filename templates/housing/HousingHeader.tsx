@@ -1,13 +1,15 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { Platform, Pressable, View, useWindowDimensions, type ViewStyle } from 'react-native';
+import type React from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { Platform, View, useWindowDimensions, type ViewStyle } from 'react-native';
 
-import { AppShell, useAppShell } from '../../src/app-shell';
+import { AppShell, AppShellPanel, useAppShell } from '../../src/app-shell';
+import { Screen, ScreenScrollView } from '../../src/screen';
+import { BottomBar } from '../../src/bottom-bar';
+import { useContainerWidth } from '../../src/hooks/use-container-width';
 import { Avatar } from '../../src/avatar';
 import { Button } from '../../src/button';
 import { resolveButtonRamps } from '../../src/button/shared';
 import { Divider } from '../../src/divider';
-import { resolveMenuPalette } from '../../src/floating/menu-palette';
-import { useInteractionState } from '../../src/hooks/use-interaction-state';
 import {
   RiAlarmWarningLine,
   RiBookmarkLine,
@@ -86,33 +88,13 @@ interface HousingNavControls {
 
 const NavControlContext = createContext<HousingNavControls | null>(null);
 
-/**
- * The page frame — and the app's NAVIGATION. The brand lives here, in the
- * rail's `logo`, not in the top bar: a marketplace header that repeats the mark
- * on every page spends its most valuable corner on something the rail already
- * says, and below `lg` the rail becomes the drawer that same corner opens.
- *
- * Edge to edge over the preview's padding, the page background, the DOCUMENT
- * scrolling on web (`AppShell`'s own mode), so the rail pins itself and the
- * pages keep their sticky headers.
- *
- * `aside` is the widget column: the shell keeps it beside the page from
- * `xl` and drops it below that, where the page needs the width more than the
- * widgets do.
- */
-export function HousingFrame({
-  children,
-  aside,
-  testID,
-}: {
-  children: React.ReactNode;
-  aside?: React.ReactNode;
-  testID?: string;
-}) {
+/** The persistent app shell; each route declares its own panels. */
+export function HousingShell({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   const go = useHousingNav();
   const page = useHousingPage();
   const [collapsed, setCollapsed] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const nav = useMemo<HousingNavControls>(
     () => ({ collapsed, toggle: () => setCollapsed((c) => !c) }),
     [collapsed],
@@ -122,15 +104,20 @@ export function HousingFrame({
     backgroundColor: theme.colors.background,
   };
 
+  const navigate = (next: HousingPage) => {
+    setDrawerOpen(false);
+    go(next);
+  };
+
   const items: SidebarNavItem[] = [
-    { key: 'explore', label: 'Explore', icon: RiCompass3Line, onPress: () => go('explore') },
-    { key: 'saved', label: 'Saved', icon: RiBookmarkLine, onPress: () => go('saved') },
-    { key: 'my-home', label: 'My home', icon: RiHome4Line, onPress: () => go('my-home') },
+    { key: 'explore', label: 'Explore', icon: RiCompass3Line, onPress: () => navigate('explore') },
+    { key: 'saved', label: 'Saved', icon: RiBookmarkLine, onPress: () => navigate('saved') },
+    { key: 'my-home', label: 'My home', icon: RiHome4Line, onPress: () => navigate('my-home') },
     {
       key: 'evictions',
       label: 'Evictions',
       icon: RiAlarmWarningLine,
-      onPress: () => go('evictions'),
+      onPress: () => navigate('evictions'),
     },
   ];
   const secondaryItems: SidebarNavItem[] = [
@@ -138,14 +125,23 @@ export function HousingFrame({
       key: 'publish',
       label: 'List your home',
       icon: RiMegaphoneLine,
-      onPress: () => go('publish'),
+      onPress: () => navigate('publish'),
     },
   ];
 
   return (
-    <View style={frame} testID={testID}>
+    <View style={frame} testID="housing-shell">
       <AppShell
-        scroll="document"
+        variant="feed"
+        panels
+        scroll="page"
+        drawer="reveal"
+        drawerOpen={drawerOpen}
+        onDrawerOpenChange={setDrawerOpen}
+        contentWidth={1800}
+        navigationAlign="content"
+        navigationGap={8}
+        gutter={8}
         // The pages draw their own top bar (search, tabs, actions), so the
         // shell's header slot stays empty rather than stacking a second one.
         header={null}
@@ -153,7 +149,7 @@ export function HousingFrame({
           logo: {
             icon: <HousingMark size={28} />,
             wordmark: 'Homes',
-            onPress: () => go('explore'),
+            onPress: () => navigate('explore'),
           },
           items,
           secondaryItems,
@@ -162,17 +158,44 @@ export function HousingFrame({
           collapsed,
           onCollapsedChange: setCollapsed,
         }}
-        aside={aside}
-        asideWidth={332}
-        // 1440, not `xl`: at 1280 the rail, a 332 column and the results left
-        // the cards a single column each — the widgets have to be free width,
-        // not width the page needed.
-        asideFrom={1440}
-        asideCollapse="hidden"
+        bottomBar={
+          <BottomBar
+            items={items.map((item) => ({
+              name: item.key,
+              label: item.label,
+              icon: item.icon ? <item.icon /> : null,
+            }))}
+            value={page}
+            onValueChange={(value) => {
+              setDrawerOpen(false);
+              go(value as HousingPage);
+            }}
+            testID="housing-bottom-bar"
+          />
+        }
       >
         <NavControlContext.Provider value={nav}>{children}</NavControlContext.Provider>
       </AppShell>
     </View>
+  );
+}
+
+/** A reading route owns one panel and one scrolling surface. */
+export function HousingFrame({
+  children,
+  testID,
+  bottomBar,
+}: {
+  children: React.ReactNode;
+  testID?: string;
+  bottomBar?: React.ReactNode;
+}) {
+  return (
+    <AppShellPanel testID={testID}>
+      <Screen documentScroll bottomBar={bottomBar}>
+        <ScreenScrollView>{children}</ScreenScrollView>
+      </Screen>
+    </AppShellPanel>
   );
 }
 
@@ -259,9 +282,6 @@ export function HousingMark({ size = 32 }: { size?: number }) {
  * destinations live in the rail it opens rather than being spelled twice.
  */
 export function NavToggle() {
-  const theme = useTheme();
-  const palette = resolveMenuPalette(theme).trigger;
-  const { state: hovered, onIn, onOut } = useInteractionState();
   // Always inside `HousingFrame`'s shell, so the drawer is never a question.
   const shell = useAppShell();
   const nav = useContext(NavControlContext);
@@ -274,30 +294,24 @@ export function NavToggle() {
   }, [drawer, nav, shell]);
 
   return (
-    <Pressable
+    <Button
       onPress={onPress}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
-      role="button"
+      size="lg"
+      tone="neutral"
+      appearance="outline"
+      leadingIcon={RiMenuLine}
       accessibilityLabel={drawer ? 'Navigation' : 'Collapse navigation'}
       aria-expanded={expanded}
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
         gap: 10,
-        height: 44,
         paddingLeft: 14,
         paddingRight: 5,
         borderRadius: 999,
-        borderWidth: 1,
-        borderColor: hovered ? palette.hoverBorder : palette.border,
-        backgroundColor: hovered ? palette.hoverBackground : palette.background,
       }}
       testID="housing-nav-toggle"
     >
-      <RiMenuLine width={18} height={18} fill={theme.colors.text} />
       <Avatar size="sm" source={PEOPLE.you.avatar} name={PEOPLE.you.name} />
-    </Pressable>
+    </Button>
   );
 }
 
@@ -363,7 +377,11 @@ export function HousingHeader({
   maxWidth = 1280,
 }: HousingHeaderProps) {
   const theme = useTheme();
-  const { md, lg } = useHousingLayout();
+  const windowLayout = useHousingLayout();
+  const measured = useContainerWidth();
+  const width = measured.width ?? windowLayout.width;
+  const md = width >= BREAKPOINTS.md;
+  const lg = width >= BREAKPOINTS.lg;
 
   return (
     // Above the content that follows (a sticky category row), so an open
@@ -371,6 +389,7 @@ export function HousingHeader({
     <View
       style={{ zIndex: Z_INDEX.dropdown, backgroundColor: theme.colors.background }}
       testID="housing-header"
+      onLayout={measured.onLayout}
     >
       {lg ? (
         <PageColumn maxWidth={maxWidth} style={{ paddingBottom: search ? 20 : 0 }}>

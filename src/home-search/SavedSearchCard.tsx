@@ -1,25 +1,21 @@
 import { useCardFill } from '../card/use-card-fill';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { Card } from '../card/Card';
-import React, { memo, useEffect, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import React, { memo } from 'react';
+import { View } from 'react-native';
 
 import { Badge } from '../badge';
 import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
 import { Chip } from '../chip';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiNotification3Line } from '../icons/remix/RiNotification3Line';
 import { RiNotificationOffLine } from '../icons/remix/RiNotificationOffLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { STAY_SEARCH_TILE_RADIUS } from '../stay-search/constants';
 import { useStaySearchPalette } from '../stay-search/palette';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useMessages } from '../locale/messages';
 import { HOME_SEARCH_MESSAGES } from './messages';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { SavedSearchCardProps } from './types';
@@ -39,19 +35,8 @@ import { useCommonMessages } from '../locale/common-messages';
  *              "Edit" secondary button and a secondary delete icon button on the right
  *
  * With `onPress` the header is a named `button` ("<title>, 12 new") that fills
- * neutral on hover; the footer's buttons are its SIBLINGS, never nested in it.
+ * uses Bloom's Button interaction; the footer's buttons are its siblings.
  */
-
-const STYLE_ID = 'bloom-saved-search-card-web-css';
-const CSS = `
-[data-bloom-saved-search-open] {
-  outline: none;
-  cursor: pointer;
-}
-[data-bloom-saved-search-open]:focus-visible {
-  box-shadow: 0 0 0 2px var(--bloom-saved-search-ring, currentColor);
-}
-`;
 
 export const SAVED_SEARCH_CARD_RADIUS = 16;
 const TILE = 44;
@@ -83,13 +68,7 @@ function SavedSearchCardComponent({
   const fill = useCardFill(style);
   const inner = surfaceFillOn(theme, fill);
   const palette = { ...basePalette, barSurface: fill, tile: inner, rowHighlight: inner };
-  const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
-  const hover = useInteractionState();
   const hasNew = newCount > 0;
-
-  useEffect(() => {
-    adoptStyleSheet(STYLE_ID, CSS);
-  }, []);
 
   const card: WebCssStyle = {
     paddingTop: 16,
@@ -144,8 +123,6 @@ function SavedSearchCardComponent({
     paddingBottom: 6,
     paddingLeft: 6,
     paddingRight: 6,
-    backgroundColor: onPress && hover.state ? palette.rowHighlight : 'transparent',
-    '--bloom-saved-search-ring': accent[500],
   };
 
   const name = hasNew ? `${title}, ${formatNewCount(newCount)}` : title;
@@ -153,18 +130,16 @@ function SavedSearchCardComponent({
   return (
     <Card radius="radius-16" elevation="none" testID={testID} style={[card, style]}>
       {onPress ? (
-        <Pressable
-          {...webDataSet({ bloomSavedSearchOpen: '' })}
-          role="button"
+        <Button
+          appearance="plain"
+          tone="neutral"
           accessibilityLabel={name}
           onPress={onPress}
-          onHoverIn={hover.onIn}
-          onHoverOut={hover.onOut}
           testID={testID ? `${testID}-open` : undefined}
-          style={headerStyle}
+          style={[headerStyle, { height: 'auto', justifyContent: 'flex-start' }]}
         >
           {headerContent}
-        </Pressable>
+        </Button>
       ) : (
         <View style={headerStyle}>{headerContent}</View>
       )}

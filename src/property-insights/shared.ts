@@ -153,21 +153,4 @@ export function formatEurosCompact(value: number, locale?: string): string {
   return formatCompactCurrency(value, 'EUR', locale);
 }
 
-// ---------------------------------------------------------------------------
-//  Web CSS — the keyboard ring on the pressable parts
-// ---------------------------------------------------------------------------
-
-export const PROPERTY_INSIGHTS_STYLE_ID = 'bloom-property-insights-web-css';
-
-export const PROPERTY_INSIGHTS_CSS = `
-[data-bloom-insight-press] {
-  outline: none;
-  cursor: pointer;
-}
-[data-bloom-insight-press]:focus-visible {
-  outline: 2px solid var(--bloom-insight-ring, currentColor);
-  outline-offset: 2px;
-}
-`;
-
 export { contrastRatio, relativeLuminance };

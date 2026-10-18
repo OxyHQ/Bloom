@@ -1,12 +1,8 @@
-import React, { memo, useEffect, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import React, { memo } from 'react';
+import { View } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
-import { useInteractionState } from '../hooks/use-interaction-state';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
-import { useTheme } from '../theme/use-theme';
+import { Button } from '../button';
 import { Text } from '../typography';
 import { STAY_SEARCH_STEP_RADIUS } from './constants';
 import { useStaySearchPalette } from './palette';
@@ -23,16 +19,6 @@ import type { StaySearchStepProps } from './types';
  * carries the bar's soft shadow.
  */
 
-const STYLE_ID = 'bloom-stay-search-step-web-css';
-const CSS = `
-[data-bloom-stay-step] {
-  outline: none;
-}
-[data-bloom-stay-step]:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--bloom-stay-step-ring, currentColor);
-}
-`;
-
 function StaySearchStepComponent({
   label,
   summary,
@@ -43,15 +29,7 @@ function StaySearchStepComponent({
   style,
   testID,
 }: StaySearchStepProps) {
-  const theme = useTheme();
   const palette = useStaySearchPalette();
-  const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
-  const hover = useInteractionState();
-
-  useEffect(() => {
-    adoptStyleSheet(STYLE_ID, CSS);
-  }, []);
-
   const card: WebCssStyle = {
     borderRadius: STAY_SEARCH_STEP_RADIUS,
     borderWidth: 1,
@@ -86,20 +64,19 @@ function StaySearchStepComponent({
     paddingLeft: 20,
     paddingRight: 20,
     borderRadius: STAY_SEARCH_STEP_RADIUS - 1,
-    backgroundColor: hover.state ? palette.segmentHover : 'transparent',
-    '--bloom-stay-step-ring': accent[500],
+    height: 'auto',
+    justifyContent: 'flex-start',
   };
 
   return (
     <View style={[card, style]}>
-      <Pressable
-        {...webDataSet({ bloomStayStep: '' })}
+      <Button
+        appearance="plain"
+        tone="neutral"
+        material="flat"
         onPress={onPress}
-        onHoverIn={hover.onIn}
-        onHoverOut={hover.onOut}
         accessibilityRole="button"
         accessibilityLabel={summary ? `${label}, ${summary}` : label}
-        accessibilityState={{ expanded: false }}
         aria-expanded={false}
         testID={testID}
         style={row}
@@ -114,7 +91,7 @@ function StaySearchStepComponent({
         >
           {summary ?? ''}
         </Text>
-      </Pressable>
+      </Button>
     </View>
   );
 }

@@ -1,3 +1,8 @@
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -27,7 +32,6 @@ import { FloorFilter } from './FloorFilter';
 import { PriceHistogram } from './PriceHistogram';
 import { PriceRangeFilter } from './PriceRangeFilter';
 import { PropertyTypeFilter } from './PropertyTypeFilter';
-import { SegmentedFilter } from './SegmentedFilter';
 import { SwitchFilterRow } from './SwitchFilterRow';
 import type {
   EnergyRating,
@@ -137,13 +141,24 @@ function FilterSections({
         title="Type of place"
         description="Search rooms, entire homes, or any type of place."
       >
-        <SegmentedFilter
-          options={PLACE_TYPES}
+        <SegmentedControl
+          type="radio"
+          size="lg"
+          label="Type of place"
           value={state.type}
-          onValueChange={(type) => set({ type })}
-          accessibilityLabel="Type of place"
-          testID="type"
-        />
+          onChange={(type) => set({ type })}
+          style={{ alignSelf: 'stretch' }}
+        >
+          {PLACE_TYPES.map((option) => (
+            <SegmentedControlItem
+              key={option.value}
+              value={option.value}
+              testID={`type-${option.value}`}
+            >
+              <SegmentedControlItemText>{option.label}</SegmentedControlItemText>
+            </SegmentedControlItem>
+          ))}
+        </SegmentedControl>
       </FilterSection>
       <FilterSection title="Price range" description="Nightly prices before fees and taxes">
         <PriceRangeFilter
@@ -390,23 +405,6 @@ export const Histogram: Story = {
       />
     </View>
   ),
-};
-
-/** `SegmentedFilter`, full width. */
-export const Segmented: Story = {
-  render: function SegmentedStory() {
-    const [value, setValue] = useState<PlaceType>('any');
-    return (
-      <View style={{ width: 560, maxWidth: '100%' }}>
-        <SegmentedFilter
-          options={PLACE_TYPES}
-          value={value}
-          onValueChange={setValue}
-          accessibilityLabel="Type of place"
-        />
-      </View>
-    );
-  },
 };
 
 /**

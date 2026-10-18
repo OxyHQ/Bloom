@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 
+import { AppShellPanel, AppShellPanels, useAppShellPanel } from '../../src/app-shell';
+import { ScrollArea, useBottomEdgeInset } from '../../src/layout';
 import { Button, InverseButton } from '../../src/button';
 import { resolveButtonRamps } from '../../src/button/shared';
 import { CategoryBar } from '../../src/category-bar';
@@ -16,11 +18,7 @@ import {
 } from '../../src/map-marker';
 import { EnergyBadge } from '../../src/property-insights';
 import { FilterTriggerButton } from '../../src/stay-filters';
-import {
-  WEB_POSITION_FIXED,
-  webViewportHeightMinus,
-  type WebCssStyle,
-} from '../../src/styles/web-view-style';
+import type { WebCssStyle } from '../../src/styles/web-view-style';
 import { Z_INDEX } from '../../src/styles/z-index';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
@@ -35,15 +33,7 @@ import {
   type Home,
 } from './data';
 import { FiltersDialog } from './HousingFilters';
-import {
-  HousingFrame,
-  HousingHeader,
-  IS_WEB,
-  PageColumn,
-  useHousingLayout,
-  useHousingNav,
-  webSticky,
-} from './HousingHeader';
+import { HousingHeader, PageColumn, useHousingLayout, useHousingNav } from './HousingHeader';
 import {
   DesktopModeTabs,
   DesktopSearchBar,
@@ -51,7 +41,6 @@ import {
   MobileSearch,
   useHomeSearch,
 } from './HousingSearch';
-import { HousingWidgets } from './HousingWidgets';
 
 // ---------------------------------------------------------------------------
 //  Cards
@@ -133,18 +122,22 @@ const centred = (x: number, y: number) =>
 function MockMap({
   homes,
   favourites,
+  active,
+  visited,
+  onActiveChange,
   style,
 }: {
   homes: Home[];
   favourites: Favourites;
+  active: string | null;
+  visited: ReadonlySet<string>;
+  onActiveChange: (id: string | null) => void;
   style?: WebCssStyle;
 }) {
   const theme = useTheme();
   const go = useHousingNav();
   const { neutral: n } = resolveButtonRamps(theme);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [active, setActive] = useState<string | null>(null);
-  const [visited, setVisited] = useState<Set<string>>(() => new Set());
   const road = theme.isDark ? n[800] : n[50];
   const water = theme.isDark ? n[700] : n[300];
   const current = homes.find((home) => home.id === active);
@@ -155,10 +148,7 @@ function MockMap({
     setSize({ width, height });
   };
 
-  const open = (id: string) => {
-    if (active && active !== id) setVisited((v) => new Set(v).add(active));
-    setActive(id);
-  };
+  const open = (id: string) => onActiveChange(id);
 
   const state = (id: string): MapMarkerState =>
     active === id ? 'active' : visited.has(id) ? 'visited' : 'default';
@@ -285,8 +275,7 @@ function MockMap({
                 favorite={favourites.saved.has(current.id)}
                 onFavoriteChange={(next) => favourites.toggle(current.id, next)}
                 onClose={() => {
-                  setVisited((v) => new Set(v).add(current.id));
-                  setActive(null);
+                  onActiveChange(null);
                 }}
                 onPress={() => go(LISTING_PAGE_FOR_MODE[current.mode])}
                 testID="housing-map-preview"
@@ -315,7 +304,8 @@ export interface ExplorePageProps {
  */
 export function ExplorePage({ initialMode = 'rent', initialMap = false }: ExplorePageProps) {
   const theme = useTheme();
-  const { md, lg, xl } = useHousingLayout();
+  const { md, lg } = useHousingLayout();
+  const bottomEdge = useBottomEdgeInset();
   const search = useHomeSearch(initialMode);
   const { mode } = search;
   const favourites = useFavourites();
@@ -339,6 +329,12 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
     swap: false,
   });
   const [showMap, setShowMap] = useState(initialMap);
+  const [active, setActive] = useState<string | null>(null);
+  const [visited, setVisited] = useState<Set<string>>(() => new Set());
+  const changeActive = (id: string | null) => {
+    if (active && active !== id) setVisited((previous) => new Set(previous).add(active));
+    setActive(id);
+  };
 
   const homes = useMemo(() => HOMES.filter((home) => home.mode === mode), [mode]);
   const filterCount = appliedFilterCount(mode, filters[mode]);
@@ -353,10 +349,7 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
   );
 
   const toolbar = (
-    <View
-      style={[{ zIndex: Z_INDEX.raised, backgroundColor: theme.colors.background }, webSticky(0)]}
-      testID="housing-toolbar"
-    >
+    <View style={{ zIndex: Z_INDEX.raised }} testID="housing-toolbar">
       <PageColumn>
         <CategoryBar
           items={CATEGORIES[mode]}
@@ -381,98 +374,73 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
     </View>
   );
 
-  // The split view's map sits under the sticky category strip (about 88 tall).
-  const mapTop = 104;
-  const split = showMap && lg;
-
-  return (
-    // The widgets sit beside the results — but never beside the MAP: the split
-    // view already spends the right half of the page on it, and a third column
-    // would leave the list too narrow for a card.
-    <HousingFrame testID="housing-explore" aside={split ? undefined : <HousingWidgets />}>
+  const header = (
+    <>
       <HousingHeader
         tabs={<DesktopModeTabs search={search} />}
         search={<DesktopSearchBar search={search} />}
-        compact={<MobileSearch search={search} onFilterPress={md ? undefined : openFilters} />}
+        compact={<MobileSearch search={search} onFilterPress={openFilters} />}
         compactBelow={<MobileModeTabs search={search} />}
       />
       {toolbar}
+    </>
+  );
 
-      <PageColumn
-        maxWidth={split ? 1920 : 1280}
-        style={{ paddingTop: 16, paddingBottom: 96, gap: 20 }}
+  return (
+    <>
+      <AppShellPanels
+        collapseBelow={900}
+        show={showMap ? 'map' : 'results'}
+        testID="housing-explore"
       >
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            minHeight: 36,
-          }}
+        <AppShellPanel
+          id="results"
+          width={900}
+          minWidth={520}
+          maxWidth={1200}
+          resizable
+          testID="housing-results-panel"
         >
-          <Text
-            variant="headline-semibold"
-            style={{ color: theme.colors.text, flexShrink: 1 }}
-            role="heading"
-            aria-level={1}
-          >
-            {RESULT_HEADINGS[mode]}
-          </Text>
-          {lg ? null : saveButton}
-        </View>
-
-        {split ? (
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 24 }}>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Results homes={homes} favourites={favourites} columns={xl ? 2 : 1} />
-            </View>
-            <MockMap
-              homes={homes}
-              favourites={favourites}
-              style={{
-                width: '48%',
-                ...webSticky(mapTop),
-                height: IS_WEB ? webViewportHeightMinus(mapTop + 24) : 640,
-              }}
-            />
-          </View>
-        ) : showMap ? (
+          {header}
+          <ScrollArea style={{ flex: 1, minHeight: 0 }} testID="housing-results-scroll">
+            <PageColumn style={{ paddingTop: 16, paddingBottom: bottomEdge + 80, gap: 20 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  minHeight: 36,
+                }}
+              >
+                <Text
+                  variant="headline-semibold"
+                  style={{ color: theme.colors.text, flexShrink: 1 }}
+                  role="heading"
+                  aria-level={1}
+                >
+                  {RESULT_HEADINGS[mode]}
+                </Text>
+                {lg ? null : saveButton}
+              </View>
+              <Results homes={homes} favourites={favourites} />
+            </PageColumn>
+          </ScrollArea>
+          <PanelViewToggle map={false} onPress={() => setShowMap(true)} />
+        </AppShellPanel>
+        <AppShellPanel id="map" minWidth={380} testID="housing-map-panel">
+          <WhenPanelAlone>{header}</WhenPanelAlone>
           <MockMap
             homes={homes}
             favourites={favourites}
-            style={{
-              width: '100%',
-              height: IS_WEB ? webViewportHeightMinus(300) : 560,
-              minHeight: 420,
-            }}
+            active={active}
+            visited={visited}
+            onActiveChange={changeActive}
+            style={{ flex: 1, minHeight: 0, borderRadius: 0 }}
           />
-        ) : (
-          <Results homes={homes} favourites={favourites} />
-        )}
-      </PageColumn>
-
-      {/* The list / map switch floats over the results. */}
-      <View
-        pointerEvents="box-none"
-        style={{
-          position: IS_WEB ? WEB_POSITION_FIXED : 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 24,
-          alignItems: 'center',
-          zIndex: Z_INDEX.floating,
-        }}
-      >
-        <InverseButton
-          size="lg"
-          leadingIcon={showMap ? RiListUnordered : RiMap2Line}
-          onPress={() => setShowMap((s) => !s)}
-          testID="housing-map-toggle"
-        >
-          {showMap ? 'Show list' : 'Show map'}
-        </InverseButton>
-      </View>
+          <PanelViewToggle map onPress={() => setShowMap(false)} />
+        </AppShellPanel>
+      </AppShellPanels>
 
       <FiltersDialog
         control={filtersControl}
@@ -480,6 +448,39 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
         applied={filters[mode]}
         onApply={(next) => setFilters((f) => ({ ...f, [mode]: next }))}
       />
-    </HousingFrame>
+    </>
+  );
+}
+
+/** The compact map keeps search reachable without duplicating wide chrome. */
+function WhenPanelAlone({ children }: { children: React.ReactNode }) {
+  return useAppShellPanel().alone ? <>{children}</> : null;
+}
+
+function PanelViewToggle({ map, onPress }: { map: boolean; onPress: () => void }) {
+  const { alone } = useAppShellPanel();
+  const bottomEdge = useBottomEdgeInset();
+  if (!alone) return null;
+  return (
+    <View
+      pointerEvents="box-none"
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: bottomEdge + 16,
+        alignItems: 'center',
+        zIndex: Z_INDEX.floating,
+      }}
+    >
+      <InverseButton
+        size="lg"
+        leadingIcon={map ? RiListUnordered : RiMap2Line}
+        onPress={onPress}
+        testID="housing-map-toggle"
+      >
+        {map ? 'Show list' : 'Show map'}
+      </InverseButton>
+    </View>
   );
 }

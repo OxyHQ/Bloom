@@ -1,12 +1,9 @@
 import React, { memo, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
-import { LinkButton } from '../button';
-import { useInteractionState } from '../hooks/use-interaction-state';
+import { Button, LinkButton } from '../button';
 import { Rating } from '../rating';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
-import { borderRadius } from '../styles/tokens';
-import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LISTING_HEADER_WIDE_MIN_WIDTH } from './constants';
@@ -16,7 +13,6 @@ import {
   resolveListingPalette,
   type ListingPalette,
 } from './shared';
-import { webDataSet as webData } from '../styles/web-data';
 import type { ListingHeaderActionProps, ListingHeaderProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { IS_WEB } from '../styles/platform';
@@ -97,45 +93,23 @@ function ListingHeaderActionComponent({
   style,
   testID,
 }: ListingHeaderActionProps) {
-  const theme = useTheme();
-  useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
-  const palette = useMemo(() => resolveListingPalette(theme), [theme]);
-  const { state: hovered, onIn, onOut } = useInteractionState();
-  const base: WebCssStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    minHeight: 36,
-    paddingLeft: iconOnly ? 8 : 10,
-    paddingRight: iconOnly ? 8 : 12,
-    borderRadius: borderRadius.full,
-    backgroundColor: hovered ? palette.hover : 'transparent',
-    '--bloom-listing-ring': palette.ring,
-  };
   return (
-    <Pressable
-      {...webData({ bloomListingPress: '' })}
-      accessibilityRole="button"
+    <Button
+      appearance="plain"
+      tone="neutral"
+      size="sm"
+      leadingIcon={Icon}
+      iconOnly={iconOnly}
       accessibilityLabel={accessibilityLabel ?? label}
-      {...(pressed === undefined
-        ? null
-        : { 'aria-pressed': pressed, accessibilityState: { selected: pressed } })}
+      pressed={pressed}
       onPress={onPress}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
-      style={[base, style]}
+      underline="rest"
+      textVariant="body-semibold"
+      style={style}
       testID={testID}
     >
-      {Icon ? <Icon width={16} height={16} fill={palette.text} /> : null}
-      {iconOnly ? null : (
-        <Text
-          variant="body-semibold"
-          style={{ color: palette.text, textDecorationLine: 'underline' }}
-        >
-          {label}
-        </Text>
-      )}
-    </Pressable>
+      {iconOnly ? null : label}
+    </Button>
   );
 }
 

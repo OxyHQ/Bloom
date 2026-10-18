@@ -151,7 +151,6 @@ describe('ReviewCard "Show more"', () => {
     act(() => fireEvent(full, 'layout', layout(300, 100)));
     const toggle = api.getByTestId('rv-toggle');
     expect(toggle.props['aria-expanded']).toBe(false);
-    expect(toggle.props.accessibilityState).toEqual({ expanded: false });
     expect(toggle.props.accessibilityLabel).toBe('Show more');
 
     act(() => fireEvent.press(toggle));

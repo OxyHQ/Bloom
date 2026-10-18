@@ -6,6 +6,11 @@
  * accessibility attributes (a prop-level test cannot see what react-native-web
  * does with `aria-*`).
  */
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import React, { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -30,7 +35,6 @@ import {
   FilterTriggerButton,
   PriceHistogram,
   PriceRangeFilter,
-  SegmentedFilter,
   SwitchFilterRow,
   ToggleChipGroup,
 } from '../stay-filters';
@@ -280,25 +284,30 @@ describe('PriceRangeFilter', () => {
   });
 });
 
-describe('SegmentedFilter', () => {
+describe('SegmentedControl in filters', () => {
   it('is a named, full-width radiogroup whose segments report aria-checked', () => {
     const onChange = jest.fn();
     function H() {
       const [v, setV] = useState<'any' | 'room'>('any');
       return (
-        <SegmentedFilter
-          options={[
-            { value: 'any', label: 'Any type' },
-            { value: 'room', label: 'Room' },
-          ]}
+        <SegmentedControl
+          type="radio"
+          size="lg"
+          label="Type of place"
+          style={{ alignSelf: 'stretch' }}
           value={v}
-          onValueChange={(n) => {
+          onChange={(n) => {
             onChange(n);
             setV(n);
           }}
-          accessibilityLabel="Type of place"
-          testID="t"
-        />
+        >
+          <SegmentedControlItem value="any" testID="t-any">
+            <SegmentedControlItemText>Any type</SegmentedControlItemText>
+          </SegmentedControlItem>
+          <SegmentedControlItem value="room" testID="t-room">
+            <SegmentedControlItemText>Room</SegmentedControlItemText>
+          </SegmentedControlItem>
+        </SegmentedControl>
       );
     }
     mount(<H />);

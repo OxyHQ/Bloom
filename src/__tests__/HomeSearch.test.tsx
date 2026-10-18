@@ -226,23 +226,45 @@ describe('SearchModeTabs', () => {
     );
   }
 
-  it('tabs: a named tablist of aria-selected tabs with a text-colour underline on the selected one', () => {
+  it('tabs: a named shared tablist with controlled selection', () => {
     const onChange = jest.fn();
     mount(<Tabs onChange={onChange} />);
     const list = byTestId('modes');
-    expect(list.getAttribute('role')).toBe('tablist');
-    expect(list.getAttribute('aria-label')).toBe('Search mode');
+    const tablist = list.matches('[role="tablist"]')
+      ? list
+      : list.querySelector('[role="tablist"]')!;
+    expect(tablist.getAttribute('aria-label')).toBe('Search mode');
     const tabs = Array.from(list.querySelectorAll('[role="tab"]'));
     expect(tabs.map((t) => t.textContent)).toEqual(['Rent', 'Buy', 'Vacation rentals', 'Swap']);
     expect(byTestId('modes-buy').getAttribute('aria-selected')).toBe('true');
     expect(byTestId('modes-rent').getAttribute('aria-selected')).toBe('false');
-    expect(byTestId('modes-buy-bar').style.backgroundColor).toBe(css(theme.colors.text));
-    expect(byTestId('modes-rent-bar').style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(byTestId('modes-buy').getAttribute('data-bloom-tabs-trigger')).toBe('underline');
     expect(byTestId('modes-buy').getAttribute('tabindex')).toBe('0');
     expect(byTestId('modes-rent').getAttribute('tabindex')).toBe('-1');
     click('modes-swap');
     expect(onChange).toHaveBeenLastCalledWith('swap');
     expect(byTestId('modes-swap').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('uses shared keyboard navigation to select modes and wrap at the ends', () => {
+    const onChange = jest.fn();
+    mount(<Tabs onChange={onChange} />);
+    act(() => {
+      byTestId('modes-buy').focus();
+      byTestId('modes-buy').dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'End', bubbles: true }),
+      );
+    });
+    expect(document.activeElement).toBe(byTestId('modes-swap'));
+    expect(onChange).toHaveBeenLastCalledWith('swap');
+    act(() => {
+      byTestId('modes-swap').dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      );
+    });
+    expect(document.activeElement).toBe(byTestId('modes-rent'));
+    expect(byTestId('modes-rent').getAttribute('aria-selected')).toBe('true');
+    expect(onChange).toHaveBeenLastCalledWith('rent');
   });
 
   it('honours a subset, order and labels', () => {

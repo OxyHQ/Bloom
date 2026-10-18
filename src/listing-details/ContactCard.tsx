@@ -1,7 +1,7 @@
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
 import React, { isValidElement, memo, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { BloomImage } from '../image';
 
 import { Avatar } from '../avatar';
@@ -15,7 +15,6 @@ import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { HOST_CARD_AVATAR_SIZE } from './constants';
@@ -302,12 +301,6 @@ function ContactCardComponent({
       : []),
   ];
 
-  const linkStyle: WebCssStyle = {
-    alignSelf: 'flex-start',
-    borderRadius: 4,
-    '--bloom-listing-ring': palette.ring,
-  };
-
   const revealPhone = () => {
     if (!phoneRevealed) setPhoneRevealed(true);
     else onCall?.();
@@ -418,15 +411,17 @@ function ContactCardComponent({
             return (
               <View key={id} role="listitem" testID={testID ? `${testID}-${id}` : undefined}>
                 {onPress ? (
-                  <Pressable
-                    {...webDataSet({ bloomListingPress: '' })}
+                  <Button
+                    appearance="plain"
+                    linkTone="text"
+                    underline="none"
                     accessibilityRole="link"
                     accessibilityLabel={text}
                     onPress={onPress}
-                    style={[rowStyle, linkStyle]}
+                    style={{ ...rowStyle, alignSelf: 'flex-start' }}
                   >
                     {content}
-                  </Pressable>
+                  </Button>
                 ) : (
                   <View style={rowStyle}>{content}</View>
                 )}

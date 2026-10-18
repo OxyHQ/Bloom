@@ -17,7 +17,6 @@ export { FloorFilter } from './FloorFilter';
 export { PriceHistogram } from './PriceHistogram';
 export { PriceRangeFilter } from './PriceRangeFilter';
 export { PropertyTypeFilter } from './PropertyTypeFilter';
-export { SegmentedFilter } from './SegmentedFilter';
 export { SwitchFilterRow } from './SwitchFilterRow';
 export { ToggleChipGroup } from './ToggleChipGroup';
 export type {
@@ -43,7 +42,6 @@ export type {
   PropertyTypeFilterProps,
   PropertyTypeOption,
   PropertyTypeTilesProps,
-  SegmentedFilterProps,
   SwitchFilterRowProps,
   ToggleChipGroupProps,
   ToggleChipOption,

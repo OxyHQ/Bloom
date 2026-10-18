@@ -671,7 +671,8 @@ describe('stay-search, stay-filters and home-search', () => {
   describe('home-search speaks the locale', () => {
     it('labels the mode tabs, the save button and the budget in Spanish', () => {
       const tabs = renderIn('es', <SearchModeTabs value="rent" onValueChange={noop} />);
-      expect(tabs.getByLabelText('Modo de búsqueda')).toBeTruthy();
+      // Native Tabs names each trigger; naming its container would fold the tabs together.
+      expect(tabs.getByLabelText('Alquilar')).toBeTruthy();
       expect(tabs.getByText('Alquilar')).toBeTruthy();
 
       expect(
