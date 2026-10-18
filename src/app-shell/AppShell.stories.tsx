@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -522,6 +523,7 @@ export const ModularDeck: Story = {
   render: function Deck() {
     const [columns, setColumns] = useState(['Home', 'Mentions', 'Saved', 'Activity']);
     const [activePanel, setActivePanel] = useState<string>();
+    const [revealPanel, setRevealPanel] = useState<{ id: string; requestKey: number }>();
     return (
       <View style={{ height: 680 }}>
         <AppShell
@@ -531,6 +533,7 @@ export const ModularDeck: Story = {
           panelLayout={{
             mode: 'deck',
             activePanel,
+            revealPanel,
             trailingAction: (
               <Button
                 accessibilityLabel="Add column"
@@ -538,6 +541,7 @@ export const ModularDeck: Story = {
                   const id = `Column ${columns.length + 1}`;
                   setColumns([...columns, id]);
                   setActivePanel(id);
+                  setRevealPanel({ id, requestKey: columns.length });
                 }}
               >
                 Add

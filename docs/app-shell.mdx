@@ -1008,9 +1008,24 @@ focusing the action reveals it. The reveal uses CSS scroll timelines and
 respects reduced motion. Browsers without timelines place the action at the
 actual end of the group instead of showing it over unrelated panels.
 
-After adding a panel, change `activePanel` to its ID to reveal the existing
-panel host. This is a selection-triggered scroll command, not a layout
-measurement; an unchanged ID or the initial default does not move the page.
+After adding a panel, set `revealPanel: { id, requestKey }` to reveal its existing
+host. `PanelRevealRequest` is exported from `@oxy.so/bloom/app-shell`.
+`requestKey` is a string or number identifying the action: change it to reveal
+the same panel again. Bloom consumes each new id/key request once, when the panel is
+eligible in a horizontal document Deck. Rerenders and leaving/re-entering Deck
+do not repeat a consumed request. The browser scrolls the nearest edges using
+smooth motion, or instant motion when reduced motion is enabled. A request does
+not change selection: set `activePanel` separately when the action also selects.
+
+`activePanel` is passive selection state. Loading a workspace, restoring the last
+active panel, or switching layout modes must not move the document horizontally.
+Keep reveal requests transient and outside persisted workspace snapshots.
+
+**Migration from 12.2:** selection no longer implicitly scrolls a document Deck.
+Where an explicit action should reveal its panel (for example, adding a column),
+issue a fresh `revealPanel` request along with the selection update. Do not issue
+requests while hydrating account state, and do not reset document scroll in the
+application to counteract restoration.
 
 The sticky navigation's raised surface follows actual horizontal overlap.
 When the Deck fits, CSS scroll-state queries keep that elevation absent;

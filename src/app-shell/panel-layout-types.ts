@@ -55,6 +55,12 @@ export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'child
   span?: number;
   navigation?: PanelNavigationOptions;
 }
+/** A transient user action, not persisted selection or restoration state. */
+export interface PanelRevealRequest {
+  id: string;
+  /** Change this key to reveal the same panel again. */
+  requestKey: string | number;
+}
 export interface AppShellPanelLayout {
   panels: readonly AppShellPanelDefinition[];
   mode?: 'split' | 'deck';
@@ -70,8 +76,10 @@ export interface AppShellPanelLayout {
   gap?: number;
   /** Measured shell width, rather than the capped reading envelope. */
   collapseBelow?: AppShellBreakpoint;
-  /** Compact selection; in a document Deck, changing this also reveals that panel. */
+  /** Compact selection only. Restoring or changing selection never scrolls the document. */
   activePanel?: string;
+  /** Explicitly reveal a panel in a horizontal document Deck, once per id/key pair. */
+  revealPanel?: PanelRevealRequest;
   /** Occupies the eligible tracks without changing the shell envelope. */
   expandedPanel?: string;
   /** Controlled resting widths, shared by pointer and keyboard resizing. */

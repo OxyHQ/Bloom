@@ -36,6 +36,7 @@ import { useTheme } from '../theme/use-theme';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webViewportHeightMinus, WEB_POSITION_STICKY } from '../styles/web-view-style';
 import { useShellWidth } from './use-shell-width';
+import { usePanelReveal } from './use-panel-reveal';
 import { PanelCssContext, panelLayoutCss } from './panel-layout-css';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { AppShellPanelContext, PanelScrollContainerContext } from './context';
@@ -519,22 +520,6 @@ export function createPanelLayoutView(
     const documentHorizontal =
       !!cssScope && deck && !vertical && layout.horizontalScroll !== 'contained';
     const reducedMotion = useReducedMotion();
-    const previousSelection = useRef(layout.activePanel);
-    useEffect(() => {
-      if (previousSelection.current === layout.activePanel) return;
-      previousSelection.current = layout.activePanel;
-      if (!documentHorizontal || !layout.activePanel || !cssScope) return;
-      const index = layout.panels.findIndex((panel) => panel.id === layout.activePanel);
-      if (index < 0) return;
-      const node = (rootRef.current as unknown as HTMLElement | null)?.querySelector<HTMLElement>(
-        `[data-bloom-panel-owner="${cssScope}"][data-bloom-panel-index="${index}"]`,
-      );
-      node?.scrollIntoView?.({
-        block: 'nearest',
-        inline: 'nearest',
-        behavior: reducedMotion ? 'instant' : 'smooth',
-      });
-    }, [documentHorizontal, layout.activePanel, layout.panels, cssScope, reducedMotion]);
     const room = vertical
       ? Math.max(0, (measuredHeight ?? window.height) - (document ? 0 : bottomEdge))
       : width;
@@ -547,6 +532,15 @@ export function createPanelLayoutView(
           actualGap,
           dimensions,
         );
+    usePanelReveal({
+      rootRef,
+      request: layout.revealPanel,
+      enabled: documentHorizontal,
+      scope: cssScope,
+      panels: layout.panels,
+      tracks,
+      reducedMotion,
+    });
     const cssRules = cssScope
       ? panelLayoutCss(
           cssScope,
