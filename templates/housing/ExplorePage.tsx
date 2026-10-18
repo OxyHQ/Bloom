@@ -122,18 +122,22 @@ const centred = (x: number, y: number) =>
 function MockMap({
   homes,
   favourites,
+  active,
+  visited,
+  onActiveChange,
   style,
 }: {
   homes: Home[];
   favourites: Favourites;
+  active: string | null;
+  visited: ReadonlySet<string>;
+  onActiveChange: (id: string | null) => void;
   style?: WebCssStyle;
 }) {
   const theme = useTheme();
   const go = useHousingNav();
   const { neutral: n } = resolveButtonRamps(theme);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [active, setActive] = useState<string | null>(null);
-  const [visited, setVisited] = useState<Set<string>>(() => new Set());
   const road = theme.isDark ? n[800] : n[50];
   const water = theme.isDark ? n[700] : n[300];
   const current = homes.find((home) => home.id === active);
@@ -144,10 +148,7 @@ function MockMap({
     setSize({ width, height });
   };
 
-  const open = (id: string) => {
-    if (active && active !== id) setVisited((v) => new Set(v).add(active));
-    setActive(id);
-  };
+  const open = (id: string) => onActiveChange(id);
 
   const state = (id: string): MapMarkerState =>
     active === id ? 'active' : visited.has(id) ? 'visited' : 'default';
@@ -274,8 +275,7 @@ function MockMap({
                 favorite={favourites.saved.has(current.id)}
                 onFavoriteChange={(next) => favourites.toggle(current.id, next)}
                 onClose={() => {
-                  setVisited((v) => new Set(v).add(current.id));
-                  setActive(null);
+                  onActiveChange(null);
                 }}
                 onPress={() => go(LISTING_PAGE_FOR_MODE[current.mode])}
                 testID="housing-map-preview"
@@ -329,6 +329,12 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
     swap: false,
   });
   const [showMap, setShowMap] = useState(initialMap);
+  const [active, setActive] = useState<string | null>(null);
+  const [visited, setVisited] = useState<Set<string>>(() => new Set());
+  const changeActive = (id: string | null) => {
+    if (active && active !== id) setVisited((previous) => new Set(previous).add(active));
+    setActive(id);
+  };
 
   const homes = useMemo(() => HOMES.filter((home) => home.mode === mode), [mode]);
   const filterCount = appliedFilterCount(mode, filters[mode]);
@@ -427,6 +433,9 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
           <MockMap
             homes={homes}
             favourites={favourites}
+            active={active}
+            visited={visited}
+            onActiveChange={changeActive}
             style={{ flex: 1, minHeight: 0, borderRadius: 0 }}
           />
           <PanelViewToggle map onPress={() => setShowMap(false)} />

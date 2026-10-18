@@ -393,6 +393,16 @@ describe('FavoriteButton', () => {
     },
   );
 
+  it('dims the custom heart and blocks interaction when disabled', () => {
+    const onFavoriteChange = jest.fn();
+    mount(<FavoriteButton favorite disabled onFavoriteChange={onFavoriteChange} testID="f" />);
+    const button = byTestId('f');
+    expect(getComputedStyle(button).opacity).toBe('0.5');
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    act(() => button.click());
+    expect(onFavoriteChange).not.toHaveBeenCalled();
+  });
+
   it('labels are overridable and the target is at least 32', () => {
     mount(
       <FavoriteButton

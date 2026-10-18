@@ -11,6 +11,7 @@ import { useMessages } from '../locale/messages';
 import { LISTING_CARD_MESSAGES } from './messages';
 import type { FavoriteButtonProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * A heart that saves an item, drawn over a photo.
@@ -19,7 +20,7 @@ import { IS_WEB } from '../styles/platform';
  *           over a bright or a dark photo alike
  *   saved   the body turns red-500 (the theme's `error` hue); the outline stays
  *
- * Base Button owns interaction, focus and disabled feedback. The target is at
+ * Base Button owns interaction and focus; the custom heart fades when disabled. The target is at
  * least 32 square.
  * It is a toggle button — `aria-pressed` for web, `accessibilityState.selected`
  * for native — and its NAME says what pressing does ("Save to wishlist" /
@@ -50,6 +51,7 @@ function FavoriteButtonComponent({
     height: box,
     alignItems: 'center',
     justifyContent: 'center',
+    opacity: disabled ? DISABLED_OPACITY : 1,
   };
 
   return (
