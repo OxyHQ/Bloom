@@ -1,0 +1,223 @@
+---
+title: Compose application layouts
+description: One shell, reusable screens, independent panel navigation and shared scroll ownership.
+---
+
+# Compose application layouts
+
+Declare the regions an application needs; let Bloom compose their surfaces,
+responsive tracks, chrome and scroll ownership. The API is composition through
+React props and slots, not a second router or a separate screen definition language.
+Start with `AppShell.panelLayout` and `Screen`, then add navigation or persistence
+only where the product needs them.
+
+## Ownership contract
+
+| Layer | Owns | Application supplies |
+| --- | --- | --- |
+| `AppShell` | Sidebar, responsive envelope, panel geometry and transitions | Navigation and panel descriptors |
+| Panel descriptor | Surface, visibility, optional history and scroll scope | Stable id, screen content, optional persistent actions |
+| `Screen` | One scroll owner, header/footer placement, clearance, recipe | `header`, `bottomBar`, body and active state |
+| `PageHeader` / `PageFooter` | Shared chrome material and controls | Title, actions, footer content |
+| `ScreenScrollView` | Content bound to the enclosing Screen's owner | Body content and pagination |
+| `ScrollArea` / `ScrollBar` | Shared scrolling primitive / indicator | Independently scrolling content / existing viewport ref |
+| Application store | Account policy and durable persistence | Controlled histories, snapshot storage, conflict handling |
+
+A header belongs to its screen. A panel containing that screen does not add
+another header. Scrolling belongs to one owner; an indicator observes that owner
+without introducing another scroll container.
+
+## A reusable screen
+
+This complete component can be a document route, a Deck column, or the body of
+an isolated modal. Native uses the same screen structure.
+
+```tsx
+import { Text } from 'react-native';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { PageFooter } from '@oxy.so/bloom/page-footer';
+import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
+
+export function ActivityScreen() {
+  return (
+    <Screen
+      scroll="auto"
+      header={<PageHeader title="Activity" />}
+      bottomBar={<PageFooter><Text>All times are local</Text></PageFooter>}
+    >
+      <ScreenScrollView contentContainerClassName="gap-4 p-4">
+        {Array.from({ length: 40 }, (_, index) => (
+          <Text key={index}>Activity {index + 1}</Text>
+        ))}
+      </ScreenScrollView>
+    </Screen>
+  );
+}
+```
+
+`PageHeader` follows this Screen's offset, including its surface change while
+scrolling. Insets clear measured chrome once. Use `headerPlacement="overlay"`
+for a hero that extends beneath the header. `colorPreset` on Screen scopes the
+recipe to content, chrome and the enclosing panel, including its border; it does
+not recolor sibling panels. Retained screens must publish their focused `active`
+state so background lists cannot drive foreground navigation.
+
+## Compose the workspace
+
+```tsx
+import { AppShell } from '@oxy.so/bloom/app-shell';
+
+export function Workspace() {
+  return (
+    <AppShell
+      header={null}
+      scroll="page"
+      panelLayout={{
+        mode: 'split',
+        flow: 'document',
+        axis: { base: 'vertical', lg: 'horizontal' },
+        appearance: 'joined',
+        activePanel: 'activity',
+        panels: [
+          { id: 'activity', span: 2, content: <ActivityScreen /> },
+          { id: 'context', span: 1, content: <ActivityScreen /> },
+        ],
+      }}
+    />
+  );
+}
+```
+
+`split` fits available space; `deck` preserves track widths. `axis` accepts
+`horizontal`, `vertical`, or a responsive map resolved against the shell.
+`appearance: 'joined'` gives panels a shared surface and separators;
+`'separated'` gives them individual surfaces. Keep that structural choice stable
+across route changes. `expandedPanel` reallocates the existing envelope instead
+of widening the application when a contextual panel disappears.
+
+Use `width`, `minWidth`, `maxWidth`, `span`, `height`, `minHeight`, `maxHeight`,
+and `resizable` to describe constraints. Controlled `widths`/`heights` and their
+change callbacks persist user resizing. `hideBelow`, `collapseBelow` and
+`activePanel` express responsive eligibility and compact selection. Bloom resolves
+layout through shared CSS/container-query rules on web; applications do not
+measure the window and calculate column positions themselves. See
+[AppShell](/docs/bloom/main/app-shell) for exact sizing and collapse semantics.
+
+### Choose scrolling explicitly
+
+| Layout | Configuration | Web scroll owner |
+| --- | --- | --- |
+| Normal page or multiple document panels | `flow: 'document'`, Screen `scroll="auto"` | Document vertical axis |
+| Horizontal Deck | `mode: 'deck'`, `flow: 'bounded'`, `horizontalScroll: 'document'` | Document horizontal axis; each Screen owns its column's vertical axis |
+| Embedded bounded workspace | `flow: 'bounded'`; opt into `horizontalScroll: 'contained'` if needed | Bounded Screen viewport; contained horizontal axis only when requested |
+
+For Deck, give panels resting widths, for example `width: 390`. Keep the shell
+mounted when switching workspace configurations. The shell owns vertical gutters
+and the last panel's trailing gap. Web hosts must allow document overflow and
+provide `height: 100%` through `html`, `body` and the application root; using
+`100vh` for bounded children can include a classic scrollbar's height and create
+unwanted vertical overflow. Native retains native scrolling behavior.
+
+`ScreenScrollView` reuses the document or bounded owner on web. Do not put a
+second ScrollView around it. Virtualizers bind to `useScreenViewport()` or the
+panel's existing container; they retain virtualization rather than being wrapped
+in a nonvirtualized scroller. [Screen](/docs/bloom/main/screen) documents native
+list bindings, pagination and inset ownership.
+
+## Independent routes, one header
+
+Add `navigation` to each descriptor requiring independent history:
+
+```tsx
+import { PanelRouterProvider } from '@oxy.so/bloom/panel-routing';
+
+const routes = [{ path: '/activity', component: ActivityScreen }];
+const activityPanel = {
+  id: 'activity',
+  width: 390,
+  navigation: {
+    initialEntries: [{ key: 'activity-root', name: '/activity' }],
+    render: () => <PanelRouterProvider routes={routes} />,
+  },
+};
+```
+
+Supply every destination the screen can open. Reuse actual application screens,
+including their route layouts, rather than building reduced Deck versions. Expo
+screens import routing hooks and links from
+`@oxy.so/bloom/panel-routing/expo-router`; outside a panel these delegate to Expo,
+inside one they use that panel's history. Avoid the global Expo `router` singleton
+in reusable screens. Nested layouts render `PanelRouteSlot`.
+
+History provides Back to the existing PageHeader only when Back is possible.
+Forward remains available on the controller; it need not be another visible
+button. Use descriptor `headerActions` for persistent column settings controls,
+which compose with the route's actions. Keep independent actions separate from
+intentional button groups. `usePanelNavigation` requires a navigation-enabled
+panel; shared optional consumers use `useOptionalPanelNavigation`.
+See [Panel routing](/docs/bloom/main/panel-routing).
+
+## Persist history and scroll without coupling Bloom to storage
+
+Control `navigation.state` and `onNavigationChange` in the host application.
+Persist both `entries` and `index`, retaining stable entry keys. Add
+`navigation.scrollRestoration` with these fields:
+
+| Field | Contract |
+| --- | --- |
+| `scopeKey` | Change when replacing an account/workspace snapshot; resets this scope, not the whole shell |
+| `initialSnapshot` | Seed read when the scope mounts |
+| `onSnapshotChange` | Receives coalesced offset snapshots; application decides storage |
+
+Snapshot keys are opaque URI-encoded Bloom keys. Store them unchanged as JSON;
+do not split, decode, reconstruct or derive them from a URL. Bloom bounds its
+store to 256 offsets and reports settled changes after 200 ms, flushing at
+navigation/lifecycle boundaries. The web restore path can retry when delayed
+content grows; user input cancels that retry. Native callers must wait until
+list data is ready before enabling restoration.
+
+Scope local records to the authenticated account. Fence asynchronous callbacks
+from an old account and change only the panel scope when installing a new
+snapshot. Server revisions, offline retries, privacy preferences and concurrent
+edits are application concerns. Bloom does not access localStorage or choose an
+API. See [Scroll restoration](/docs/bloom/main/scroll).
+
+## Settings, dialogs and the shared scrollbar
+
+SettingsModal's ordinary pages use `Screen`, its header slot and
+`ScreenScrollView`; section navigation uses the same Screen composition. Its
+scroll-linked header and Bloom scrollbar observe the modal's own viewport.
+Overlay `ScreenScope` boundaries isolate chrome, panel actions and restoration
+from the page underneath, while retaining appearance and theme.
+
+A SettingsModal page with `fullBleed: true` can supply its own Screen through the
+content callback, composing the provided Back and close actions into its existing
+header. It must also own its content insets and scrolling. Do not render a second
+PageHeader outside that Screen. See [SettingsModal](/docs/bloom/main/settings-modal).
+
+For independently scrolling component content, use `ScrollArea` from
+`@oxy.so/bloom/layout`. Its web outer wrapper takes `style`, `containerClassName` and
+`testID`; `className` stays on the actual scroll viewport for compatibility.
+Content padding belongs to `contentContainerStyle` or
+`contentContainerClassName`. Pass processed Reanimated handlers through
+`animatedHandler`; `onScroll` remains an ordinary JS observer. For a virtualized
+list or existing DOM viewport, attach `ScrollBar target={ref}` to that owner
+instead of adding ScrollArea. Native keeps platform indicators. Discrete media
+pagers retain their paging controls. Do not add component-specific scrollbar CSS.
+
+## Migrate incrementally
+
+Existing `children`, `AppShellPanel` and `AppShellPanels` compositions remain
+supported when `panelLayout` is absent. The JSX panel family uses the same shared
+renderer. Descriptor `header` and `scroll="panel"` remain compatibility adapters
+for content without a Screen; new screens use Screen slots and descriptor
+`scroll="content"` (the default). `Screen` keeps its compatibility `scroll="content"`
+default, so opt into `scroll="auto"` explicitly.
+
+Replace manual viewport arithmetic and nested scroll containers with ownership
+props. Remove duplicate panel/screen headers, repeated safe-area padding,
+per-screen sidebar positioning, and global scroll listeners for panel headers.
+Check document flow, bounded Deck, compact layout, Back, delayed loading and
+account switching before removing a legacy adapter. Cached data can render
+immediately; a cold network request still needs an accurate skeleton and error
+state rather than a promise of zero latency.

@@ -25,9 +25,9 @@ import { ScrollArea } from '../layout/ScrollArea';
  * the flexible one goes below its minimum — a map beside a results list stays
  * a map — with no "room" subtraction anywhere.
  *
- * The divider is `AiChatResizeHandle`, the grip `ai-chat` already ships
- * (pointer capture on web, a `PanResponder` on native, arrow keys), anchored
- * on the resizable panel's end edge in the middle of the gap.
+ * Resizable dividers are owned by `AppShellPanelLayout`, which reuses
+ * `AiChatResizeHandle` for pointer capture, native gestures and arrow keys.
+ * This legacy surface delegates modular layout to that shared owner.
  */
 import React, { Children, isValidElement, useId } from 'react';
 import { Platform, View, type ViewStyle } from 'react-native';

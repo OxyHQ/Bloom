@@ -17,6 +17,8 @@ export interface ScrollAreaProps extends ScrollViewProps {
   animatedHandler?: ScrollHandlerProcessed<Record<string, unknown>>;
   /** Utilities for the scrolling viewport, resolved by Bloom's own interop. */
   className?: string;
+  /** Utilities for the outer sized area on web; shares the viewport on native. */
+  containerClassName?: string;
   /** Utilities for the inner content container. */
   contentContainerClassName?: string;
   /** When the scrollbar shows. Default `'scroll'`. */

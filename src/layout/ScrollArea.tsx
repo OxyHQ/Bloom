@@ -18,6 +18,8 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
   scrollbar = 'scroll',
   size: _size,
   ref,
+  className,
+  containerClassName,
   ...props
 }: ScrollAreaProps) {
   // Optional: a scroller must work outside a provider, with the system's own indicator.
@@ -29,6 +31,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
       showsVerticalScrollIndicator={scrollbar !== 'never'}
       showsHorizontalScrollIndicator={scrollbar !== 'never'}
       {...props}
+      className={[containerClassName, className].filter(Boolean).join(' ') || undefined}
       onScroll={onScroll}
       onLayout={onLayout}
       onContentSizeChange={onContentSizeChange}

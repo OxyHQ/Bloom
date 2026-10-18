@@ -4,6 +4,9 @@ description: Window-edge geometry and screen-scope coordination — how far a fl
 order: 76
 ---
 
+Start with [Compose application layouts](/docs/bloom/main/compose-layouts) for the complete ownership model and migration guide.
+
+
 # Layout
 
 The questions every floating surface and every piece of scroll-linked chrome has
@@ -339,7 +342,7 @@ mirrors the position and can be dragged, and a click on the bare track jumps the
 | `size` | `'sm' \| 'md'` | `'sm'` | The bar's thickness. |
 | `horizontal` | `boolean` | `false` | The bar lies along the bottom edge. |
 
-On web the area is a `View` that takes `style` and `testID` (give it the size: `flex: 1`, a height) around the scroller, which takes `className`, `contentContainerClassName` and the rest; `ref` is the `ScrollView`.
+On web the outer `View` takes `style`, `containerClassName` and `testID` (give it the size: `flex: 1`, a height). `className` stays on the actual scroll viewport. The content takes `contentContainerClassName` and `contentContainerStyle`; `ref` is the actual `ScrollView`.
 On native the system's indicator already floats and hides itself, so `scrollbar` maps onto what
 the platform has (`never` hides it, `always` keeps it on Android), `indicatorStyle` follows the
 theme on iOS, and `size` does nothing. The thumb's size and place are written to its element on
@@ -360,7 +363,8 @@ It hides the scroller's own bar and draws Bloom's over it; on native it renders 
 ### Shared scroll owners
 
 Ordinary vertical and horizontal content uses `ScrollArea`. On web its sized
-outer area owns `style`, `className` and `testID`; `contentContainerStyle` and
+outer area owns `style`, `containerClassName` and `testID`; `className` remains
+on the actual scroll viewport. `contentContainerStyle` and
 `contentContainerClassName` belong to the scrolling body. Its forwarded ref is
 the actual ScrollView, preserving keyboard reveal and imperative navigation.
 Bloom's overlay scrollbar is the default and reserves no content width.

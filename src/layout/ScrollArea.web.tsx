@@ -22,7 +22,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
   horizontal = false,
   scrollIndicatorInsets,
   style,
-  className,
+  containerClassName,
   testID,
   ref,
   ...props
@@ -39,7 +39,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
 
   return (
     <StyledView
-      className={`relative min-h-0 min-w-0 ${className ?? ''}`}
+      className={`relative min-h-0 min-w-0 ${containerClassName ?? ''}`}
       style={[{ flexShrink: 1 }, style]}
       testID={testID}
     >

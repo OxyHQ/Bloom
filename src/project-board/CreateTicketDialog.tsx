@@ -32,7 +32,7 @@ function TicketFormBody({ children }: { children: ReactNode }) {
   if (Platform.OS === 'web')
     return (
       <ScrollArea
-        className="max-h-[calc(100dvh-56px)] rounded-3xl bg-background-primary-default outline-none"
+        containerClassName="max-h-[calc(100dvh-56px)] rounded-3xl bg-background-primary-default outline-none"
         contentContainerStyle={{ padding: 16 }}
       >
         {children}
@@ -40,7 +40,7 @@ function TicketFormBody({ children }: { children: ReactNode }) {
     );
   return (
     <ScrollArea
-      className="rounded-3xl bg-background-primary-default"
+      containerClassName="rounded-3xl bg-background-primary-default"
       testID="project-board-create-scroll"
       style={{ maxHeight: height - 56, flexGrow: 0, flexShrink: 1 }}
       contentContainerStyle={{ padding: 16 }}
