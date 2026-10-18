@@ -125,18 +125,17 @@ export const Controlled: Story = {
   },
 };
 
-/** Catalunya uses the blue estelada and shares Spain's +34 calling code. */
+/** Additional Catalunya artwork, independent of phone calling-code entries. */
 export const Catalunya: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <CountryFlag iso2="ES-CT" size={28} accessibilityLabel="Catalunya" />
-      <PhoneInput defaultCountry="ES-CT" label="Phone number" />
     </Page>
   ),
 };
 
-/** Every country and region flag, at 18 × 12. */
+/** Every phone-country flag, at 18 × 12; Catalunya has its own story. */
 export const Flags: Story = {
   parameters: { controls: { disable: true } },
   render: function FlagsStory() {
