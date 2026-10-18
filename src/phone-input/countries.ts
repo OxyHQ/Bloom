@@ -5,8 +5,8 @@
 import type { Country } from './types';
 
 /**
- * Every ISO 3166-1 country that has both a flag and a dial code, sorted by
- * name. `dial` is the country's first calling code, without the `+`.
+ * Countries with a flag and dial code, plus supported regions, sorted by name.
+ * `dial` is the country's first calling code, without the `+`.
  */
 export const COUNTRIES: readonly Country[] = [
   { iso2: "AF", name: "Afghanistan", dial: "93" },
@@ -52,6 +52,7 @@ export const COUNTRIES: readonly Country[] = [
   { iso2: "KH", name: "Cambodia", dial: "855" },
   { iso2: "CM", name: "Cameroon", dial: "237" },
   { iso2: "CA", name: "Canada", dial: "1" },
+  { iso2: "ES-CT", name: "Catalunya", dial: "34" },
   { iso2: "KY", name: "Cayman Islands", dial: "1345" },
   { iso2: "CF", name: "Central African Republic", dial: "236" },
   { iso2: "TD", name: "Chad", dial: "235" },

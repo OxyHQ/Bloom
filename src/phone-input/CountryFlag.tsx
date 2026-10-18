@@ -28,7 +28,7 @@ function Shape({ shape }: { shape: FlagShape }) {
 }
 
 /**
- * A country's 3x2 flag (`country-flag-icons`), drawn with react-native-svg so
+ * A country's or region's 3x2 flag, drawn with react-native-svg so
  * it is the same artwork on native and web: `h-3 w-[18px] shrink-0
  * overflow-hidden rounded-[2px]` by default.
  *

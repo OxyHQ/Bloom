@@ -1,5 +1,6 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -124,7 +125,18 @@ export const Controlled: Story = {
   },
 };
 
-/** Every vendored flag (`country-flag-icons` 3x2), at 18 × 12. */
+/** Catalunya uses the blue estelada and shares Spain's +34 calling code. */
+export const Catalunya: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Page>
+      <CountryFlag iso2="ES-CT" size={28} accessibilityLabel="Catalunya" />
+      <PhoneInput defaultCountry="ES-CT" label="Phone number" />
+    </Page>
+  ),
+};
+
+/** Every country and region flag, at 18 × 12. */
 export const Flags: Story = {
   parameters: { controls: { disable: true } },
   render: function FlagsStory() {

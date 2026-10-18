@@ -1,7 +1,7 @@
 /**
  * The encoding `flags.ts` is generated in (`scripts/generate-country-flags.mjs`).
  *
- * A tuple rather than an object per shape keeps the 252-flag table compact —
+ * A tuple rather than an object per shape keeps the 253-flag table compact —
  * the path data is most of its bytes, and a key name repeated on every one of
  * ~1,300 shapes would be pure overhead.
  */
