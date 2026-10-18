@@ -64,8 +64,16 @@ export function BloomImage({
       onLoad={
         onLoad
           ? (event) => {
-              const loaded = event.nativeEvent.source;
-              onLoad({ width: loaded.width, height: loaded.height });
+              // RN emits source dimensions; RNW forwards a DOM Image load event.
+              // Read intrinsic pixels from its target, never rendered box size.
+              const loaded: {
+                source?: { width: number; height: number };
+                target?: { naturalWidth?: number; naturalHeight?: number } | null;
+              } = event.nativeEvent;
+              onLoad({
+                width: loaded.source?.width ?? loaded.target?.naturalWidth ?? 0,
+                height: loaded.source?.height ?? loaded.target?.naturalHeight ?? 0,
+              });
             }
           : undefined
       }
