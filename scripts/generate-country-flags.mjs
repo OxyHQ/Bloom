@@ -13,7 +13,7 @@
  *
  * The country filter: a real ISO country
  * that ships a flag AND a dial code, `dial` = its first phone code, sorted by
- * `name.localeCompare`.
+ * `name.localeCompare`. Regional additions below inherit their country’s dial code.
  *
  * Flags are stored as shape tuples rendered by one `CountryFlag` component with
  * react-native-svg (native + web), not as SVG strings: no XML parse at render
@@ -37,6 +37,9 @@ const OUT = join(HERE, '..', 'src', 'phone-input');
 
 const FLAGS_PKG = 'country-flag-icons@1.6.20';
 const COUNTRIES_PKG = 'countries-list@3.4.1';
+
+/** Regional additions use subdivision identifiers and share their country's dial code. */
+const REGIONS = [{ iso2: 'ES-CT', name: 'Catalunya', country: 'ES' }];
 
 /** The viewBox 198 of the flags share; only the others store their own. */
 const DEFAULT_VIEWBOX = '0 0 513 342';
@@ -77,8 +80,16 @@ const flagFiles = new Set(
 const countries = countriesList
   .getCountryDataList()
   .filter((c) => flagFiles.has(c.iso2) && c.phone.length > 0)
-  .map((c) => ({ iso2: c.iso2, name: c.name, dial: String(c.phone[0]) }))
-  .sort((a, b) => a.name.localeCompare(b.name));
+  .map((c) => ({ iso2: c.iso2, name: c.name, dial: String(c.phone[0]) }));
+for (const region of REGIONS) {
+  const country = countries.find((entry) => entry.iso2 === region.country);
+  if (!country) throw new Error(`${region.iso2}: missing calling-code country ${region.country}`);
+  if (countries.some((entry) => entry.iso2 === region.iso2)) {
+    throw new Error(`${region.iso2}: duplicate identifier`);
+  }
+  countries.push({ iso2: region.iso2, name: region.name, dial: country.dial });
+}
+countries.sort((a, b) => a.name.localeCompare(b.name));
 
 // ---------------------------------------------------------------------------
 // Flags
@@ -115,7 +126,10 @@ function attributes(source) {
  *   kind 2 ellipse  geometry = [cx, cy, rx, ry]
  */
 function convert(iso2) {
-  const svg = readFileSync(join(flagsDir, '3x2', `${iso2}.svg`), 'utf8');
+  const source = REGIONS.some((region) => region.iso2 === iso2)
+    ? join(HERE, 'country-flags', `${iso2}.svg`)
+    : join(flagsDir, '3x2', `${iso2}.svg`);
+  const svg = readFileSync(source, 'utf8');
   let viewBox = DEFAULT_VIEWBOX;
   /** @type {Record<string, string>[]} */
   const stack = [{}];
@@ -136,7 +150,7 @@ function convert(iso2) {
       if (
         !(name in INHERITED) &&
         !IGNORED.has(name) &&
-        !['viewBox', 'd', 'cx', 'cy', 'r', 'rx', 'ry'].includes(name)
+        !['viewBox', 'd', 'points', 'cx', 'cy', 'r', 'rx', 'ry'].includes(name)
       ) {
         throw new Error(`${iso2}: unhandled attribute "${name}" on <${tag}>`);
       }
@@ -158,7 +172,17 @@ function convert(iso2) {
     const num = (name) => Number(attrs[name]);
     let shape;
     if (tag === 'path') shape = [0, fill, attrs.d];
-    else if (tag === 'circle') shape = [1, fill, [num('cx'), num('cy'), num('r')]];
+    else if (tag === 'polygon') {
+      const points = attrs.points
+        .trim()
+        .split(/[\s,]+/)
+        .map(Number);
+      if (points.length < 6 || points.length % 2 !== 0 || !points.every(Number.isFinite)) {
+        throw new Error(`${iso2}: invalid polygon points`);
+      }
+      // A closed path preserves the polygon exactly without adding a runtime shape kind.
+      shape = [0, fill, `M${points[0]} ${points[1]}L${points.slice(2).join(' ')}Z`];
+    } else if (tag === 'circle') shape = [1, fill, [num('cx'), num('cy'), num('r')]];
     else if (tag === 'ellipse') shape = [2, fill, [num('cx'), num('cy'), num('rx'), num('ry')]];
     else throw new Error(`${iso2}: unhandled element <${tag}>`);
     if (Object.keys(paint).length > 0) shape.push(paint);
@@ -183,8 +207,8 @@ const countriesTs =
   ) +
   `\nimport type { Country } from './types';\n\n` +
   `/**\n` +
-  ` * Every ISO 3166-1 country that has both a flag and a dial code, sorted by\n` +
-  ` * name. \`dial\` is the country's first calling code, without the \`+\`.\n` +
+  ` * Countries with a flag and dial code, plus supported regions, sorted by name.\n` +
+  ` * \`dial\` is the country's first calling code, without the \`+\`.\n` +
   ` */\n` +
   `export const COUNTRIES: readonly Country[] = [\n` +
   countries
@@ -196,18 +220,23 @@ const countriesTs =
   `\n];\n`;
 
 const flagsTs =
-  HEADER(`country-flag-icons@${flagsVersion} (MIT), 3x2 set.`) +
+  HEADER(`country-flag-icons@${flagsVersion} (MIT), 3x2 set, plus regional artwork.`) +
   `\nimport type { FlagArt } from './flag-art';\n\n` +
-  `/** Shape data for each listed country's 3x2 flag, keyed by ISO 3166-1 alpha-2. */\n` +
+  `/** Shape data for each listed country's 3x2 flag, keyed by country or subdivision identifier. */\n` +
   `export const COUNTRY_FLAGS: Readonly<Record<string, FlagArt>> = {\n` +
-  countries.map((c) => `  ${c.iso2}: ${JSON.stringify(convert(c.iso2))},`).join('\n') +
+  countries
+    .map(
+      (c) =>
+        `  ${c.iso2.includes('-') ? JSON.stringify(c.iso2) : c.iso2}: ${JSON.stringify(convert(c.iso2))},`,
+    )
+    .join('\n') +
   `\n};\n`;
 
 const licenses =
   `# Third-party licences — \`src/phone-input\`\n\n` +
   `\`countries.ts\` and \`flags.ts\` are generated by \`scripts/generate-country-flags.mjs\` from the two\n` +
   `packages below. Neither package is a dependency of \`@oxy.so/bloom\`; their data is vendored under\n` +
-  `their MIT licences, reproduced here.\n\n` +
+  `their MIT licences, reproduced here. Regional additions are maintained separately in\n\`scripts/country-flags/\` and are not attributed to these upstream packages.\n\n` +
   `## country-flag-icons ${flagsVersion}\n\nhttps://gitlab.com/catamphetamine/country-flag-icons\n\n\`\`\`\n` +
   readFileSync(join(flagsDir, 'LICENSE'), 'utf8').trim() +
   `\n\`\`\`\n\n## countries-list ${countriesVersion}\n\nhttps://github.com/annexare/Countries\n\n\`\`\`\n` +
