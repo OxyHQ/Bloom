@@ -1016,3 +1016,12 @@ The sticky navigation's raised surface follows actual horizontal overlap.
 When the Deck fits, CSS scroll-state queries keep that elevation absent;
 browsers lacking those queries retain the opaque navigation background without
 an unconditional shadow.
+
+### Lightweight panel hooks
+
+Route screens and reusable headers should import `useAppShell`, `useAppShellPanel`,
+`usePanelScrollContainer`, `usePanelNavigation`, and `useOptionalPanelNavigation`
+from `@oxy.so/bloom/app-shell/hooks`. This entry shares the shell contexts and
+panel history without pulling shell rendering and sidebar components into the
+route's bundle. The full `app-shell` entry continues to export these hooks for
+compatibility.
