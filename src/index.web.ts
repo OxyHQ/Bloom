@@ -208,7 +208,12 @@ export * from './agent-limits-card';
 export * from './usage-card';
 export * from './subscription-plans';
 export { Carousel, CarouselItem } from './carousel';
-export type { CarouselProps, CarouselItemProps } from './carousel';
+export type {
+  CarouselProps,
+  CarouselItemProps,
+  CarouselControlProps,
+  CarouselControls,
+} from './carousel';
 export { FileUpload, formatFileSize } from './file-upload';
 export type { FileUploadFile, FileUploadLabels, FileUploadProps } from './file-upload';
 export { SocialButton, SOCIAL_PROVIDERS } from './social-button/index.web';
