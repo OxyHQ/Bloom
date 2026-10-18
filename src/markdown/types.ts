@@ -46,7 +46,7 @@ export type MarkdownInline =
   | { type: 'text'; value: string }
   | { type: 'code'; value: string }
   | { type: 'emphasis' | 'strong' | 'delete'; children: MarkdownInline[] }
-  | { type: 'link'; url: string; children: MarkdownInline[] }
+  | { type: 'link'; url: string; label?: string; children: MarkdownInline[] }
   | { type: 'break' };
 
 export type MarkdownColumnAlign = 'left' | 'center' | 'right';
@@ -81,3 +81,26 @@ export interface MarkdownSegment {
   source: string;
   block: MarkdownBlock;
 }
+
+export interface InlineMarkdownLink {
+  /** Validated destination; unsafe schemes never reach this callback. */
+  url: string;
+  /** Original bracket label, before Markdown parsing or clipping; absent for bare URLs. */
+  label?: string;
+  children: ReactNode;
+}
+
+export type InlineMarkdownProps = (
+  | { source: string; nodes?: never }
+  | { nodes: readonly MarkdownInline[]; source?: never }
+) & {
+  /** Close unfinished trailing Markdown while text is arriving. Ignored with nodes. */
+  streaming?: boolean;
+  onLinkPress?: (url: string) => void;
+  /** Enhance plain runs, including inside emphasis; not called inside links or code. */
+  renderText?: (text: string) => ReactNode;
+  /** Custom inline link, or undefined to retain Bloom's default link. */
+  renderLink?: (link: InlineMarkdownLink) => ReactNode;
+  /** Inline content after the parsed runs, for example a Read more action. */
+  suffix?: ReactNode;
+};

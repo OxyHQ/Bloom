@@ -29,6 +29,7 @@ import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
 | `header` | | Leading content of the arrows row, e.g. a section title. Header at the start, arrows at the end — one row, not two. |
 | `showArrows` | `true` | Prev/next buttons. They disable at each end; use your app's breakpoint to hide them on small screens. |
 | `arrowsPlacement` | `'header'` | `'header'` shares the title row; `'overlay'` centers controls on the track edges; `'footer'` shares a row below the track. |
+| `renderControls` | | Replace arrows with composed controls using carousel-owned handlers, disabled state, localised names and RTL-aware icons. Rendered only with `showArrows` and at least one slide. |
 | `arrowButtonProps` | | Visual options for both buttons: `className`, `material`, `appearance`, `tone`, `size`, `iconSize`. Names, events and disabled state stay carousel-owned. |
 | `hideUnavailableArrows` | `false` | Hide each unavailable control while retaining its layout slot; excludes it from focus and accessibility. |
 | `showDots` | `true` | Position indicator, one dot per stop (see below); never shown for a single stop. Each dot is a button. |
@@ -204,3 +205,48 @@ same boundaries as its buttons, including RTL. Keys on interactive slide content
 are left to that control. Native arrows use the same measured destinations;
 native swipe/snap offsets remain per-slide. Reduced motion retains immediate
 scroll behavior.
+
+
+## Group navigation with another action
+
+Use `renderControls` to put an app action alongside navigation without managing
+scroll offsets or edge state outside the carousel. The renderer occupies the
+existing header, footer or overlay control slot and replaces the default arrows.
+
+```tsx
+import { Carousel } from '@oxy.so/bloom/carousel';
+import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
+
+<Carousel
+  accessibilityLabel={title}
+  header={<Text>{title}</Text>}
+  showArrows={isDesktop}
+  renderControls={({ previous, next }) => (
+    <ButtonGroup size="sm">
+      <ButtonGroupItem onPress={openAll}>{seeMoreLabel}</ButtonGroupItem>
+      <ButtonGroupItem
+        onPress={previous.onPress}
+        disabled={previous.disabled}
+        accessibilityLabel={previous.accessibilityLabel}
+        leadingIcon={previous.icon}
+        iconOnly
+      />
+      <ButtonGroupItem
+        onPress={next.onPress}
+        disabled={next.disabled}
+        accessibilityLabel={next.accessibilityLabel}
+        leadingIcon={next.icon}
+        iconOnly
+      />
+    </ButtonGroup>
+  )}
+>
+  {slides}
+</Carousel>
+```
+
+Custom controls own their visual recipe and visibility. `arrowButtonProps`,
+`hideUnavailableArrows` and `arrowsVisibility` apply to the default arrow buttons.
+The supplied previous/next props retain navigation semantics, including grouped
+stops, controlled indices and looping. No controls render for an empty carousel;
+a single non-scrollable slide disables both directions.

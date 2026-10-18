@@ -3,7 +3,9 @@ import { Platform } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Carousel, CarouselItem } from '../carousel';
+import { Carousel, CarouselItem, type CarouselControls } from '../carousel';
+import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { Text } from '../typography';
 import { resolveCarouselPaint } from '../carousel/Carousel';
 import type { Theme } from '../theme/types';
@@ -864,4 +866,62 @@ it('steps from the accepted controlled destination after fractional native scrol
   fireEvent.press(api.getByLabelText('Next slide'));
   expect(change).toHaveBeenCalledTimes(1);
   expect(change).toHaveBeenLastCalledWith(0);
+});
+
+describe('Carousel composed controls', () => {
+  const controls = ({ previous, next }: CarouselControls) => (
+    <ButtonGroup size="sm" testID="custom-controls">
+      <ButtonGroupItem>See more</ButtonGroupItem>
+      <ButtonGroupItem {...previous} leadingIcon={previous.icon} iconOnly />
+      <ButtonGroupItem {...next} leadingIcon={next.icon} iconOnly />
+    </ButtonGroup>
+  );
+
+  it('replaces default arrows with grouped actions while preserving navigation and edges', () => {
+    const api = renderWithTheme(gallery({ renderControls: controls }));
+    const scroll = layOut(api);
+    expect(api.getAllByLabelText('Previous slide')).toHaveLength(1);
+    expect(api.getAllByLabelText('Next slide')).toHaveLength(1);
+    expect(api.getByText('See more')).toBeTruthy();
+    expect(api.getByLabelText('Previous slide').props.disabled).toBe(true);
+    fireEvent.press(api.getByLabelText('Next slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 416, animated: true });
+    scroll(1248);
+    expect(api.getByLabelText('Next slide').props.disabled).toBe(true);
+    expect(api.getByLabelText('Previous slide').props.disabled).toBe(false);
+    fireEvent.press(api.getByLabelText('Previous slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 832, animated: true });
+  });
+
+  it('omits custom controls when explicitly hidden or empty and disables a single slide', () => {
+    const renderControls = jest.fn(controls);
+    const empty = renderWithTheme(gallery({ renderControls }, 0));
+    expect(renderControls).not.toHaveBeenCalled();
+    expect(empty.queryByTestId('custom-controls')).toBeNull();
+    empty.unmount();
+    const hidden = renderWithTheme(gallery({ renderControls, showArrows: false }));
+    expect(renderControls).not.toHaveBeenCalled();
+    hidden.unmount();
+    const single = renderWithTheme(gallery({ renderControls }, 1));
+    layOut(single, 1);
+    expect(single.getByLabelText('Previous slide').props.disabled).toBe(true);
+    expect(single.getByLabelText('Next slide').props.disabled).toBe(true);
+  });
+
+  it('provides localised names and logical RTL icons', () => {
+    mockRtl = true;
+    try {
+      const renderControls = jest.fn(controls);
+      const api = renderWithTheme(
+        gallery({ renderControls, previousLabel: 'Anterior', nextLabel: 'Siguiente' }),
+      );
+      expect(api.getByLabelText('Anterior')).toBeTruthy();
+      expect(api.getByLabelText('Siguiente')).toBeTruthy();
+      expect(
+        renderControls.mock.calls[renderControls.mock.calls.length - 1]?.[0].previous.icon,
+      ).toBe(RiArrowRightSLine);
+    } finally {
+      mockRtl = false;
+    }
+  });
 });

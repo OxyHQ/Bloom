@@ -412,3 +412,34 @@ and their state. `asChild` retains its existing single-child style contract.
 An omitted token inherits; an empty color, unknown token, CSS variable reference
 or color that React Native cannot parse is rejected. Resolve app-specific colors
 before passing them; do not restate Bloom's standard palette.
+
+### Persisted profile colours
+
+Account services persist a named preset or an RGB hex value. Resolve those values
+with the React-free `@oxy.so/bloom/color-presets` entry point, and pass the result
+to the shared scope:
+
+```tsx
+import { resolveProfileColor } from '@oxy.so/bloom/color-presets';
+import { BloomColorScope } from '@oxy.so/bloom/theme';
+
+<BloomColorScope {...resolveProfileColor(account.color)}>
+  <Profile />
+</BloomColorScope>
+```
+
+Names retain their full preset recipe, including curated secondary and tertiary
+colours. Historical `amber` resolves to `yellow`. Three- or six-digit hex values
+retain their exact RGB seed; they are never rounded to a preset or randomly
+reassigned. Missing or unknown values inherit the surrounding theme.
+
+`BloomColorScope.seed` takes precedence over `colorPreset`. Both its JS theme and
+CSS/native variables derive from Bloom's existing seed engine; nested mode and
+exact-token scopes retain that seed. An asynchronously arriving colour does not
+replace the scope's element tree. `Screen` does not accept seed values; scope the
+screen with `BloomColorScope` when rendering an account identity.
+
+The resolver displays existing identities, including reserved or premium presets.
+Permission to choose one is separate: account services must use Bloom's gate
+catalogue (`FREE_COLOR_NAMES`, `HANDLE_COLOR_NAMES`, `PREMIUM_COLOR_NAMES`) when
+assigning or validating selections.

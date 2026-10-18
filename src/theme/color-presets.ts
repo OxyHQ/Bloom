@@ -940,3 +940,34 @@ export const HANDLE_COLOR_NAMES: readonly AppColorName[] = namesGatedBy('handle'
 
 /** Sold with a subscription. */
 export const PREMIUM_COLOR_NAMES: readonly AppColorName[] = namesGatedBy('premium');
+
+/** A persisted profile identity resolved without choosing a replacement colour. */
+export type ProfileColor =
+  | { colorPreset: AppColorName; seed?: never }
+  | { seed: string; colorPreset?: never };
+
+/**
+ * Resolve persisted names and legacy RGB values for BloomColorScope.
+ * Missing/unknown values inherit the surrounding theme. Hex colours retain
+ * their exact RGB identity, even when they match a named preset's primary seed.
+ * Rendering an existing identity does not grant permission to select gated presets.
+ */
+export function resolveProfileColor(value: string | null | undefined): ProfileColor | undefined {
+  if (!value) return undefined;
+  const normalized = value.trim().toLowerCase();
+  const name = normalized === 'amber' ? 'yellow' : normalized;
+  if (Object.prototype.hasOwnProperty.call(APP_COLOR_PRESETS, name)) {
+    return { colorPreset: name as AppColorName };
+  }
+  if (/^#[0-9a-f]{6}$/.test(normalized)) return { seed: normalized };
+  if (/^#[0-9a-f]{3}$/.test(normalized)) {
+    return {
+      seed: `#${normalized
+        .slice(1)
+        .split('')
+        .map((digit) => digit + digit)
+        .join('')}`,
+    };
+  }
+  return undefined;
+}

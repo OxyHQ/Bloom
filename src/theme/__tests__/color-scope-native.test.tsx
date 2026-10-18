@@ -4,6 +4,7 @@ import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../BloomThemeProvider';
 import { BloomColorScope } from '../color-scope/ColorScope';
 import { useTheme } from '../use-theme';
+import { buildThemeFromSeed } from '../build-theme-from-seed';
 import { Portal, PortalOutlet, PortalProvider } from '../../portal/Portal';
 
 jest.mock('nativewind', () => {
@@ -83,4 +84,24 @@ it('provides exact native variables and JS theme through a plain scope and an ex
   rerender(<Fixture />);
   expect(read('portal')).toEqual(read('outside'));
   expect(mounts).toBe(3);
+});
+
+it('publishes the same exact seed through native variables and theme without remounting', () => {
+  function SeedFixture({ seed }: { seed?: string }) {
+    return (
+      <BloomThemeProvider colorPreset="blue" mode="dark" fonts={false}>
+        <BloomColorScope seed={seed}>
+          <Probe id="seed" />
+        </BloomColorScope>
+      </BloomThemeProvider>
+    );
+  }
+  const { getByTestId, rerender } = render(<SeedFixture />);
+  rerender(<SeedFixture seed="#123456" />);
+  const result = JSON.parse(getByTestId('seed').props.children as string);
+  const expected = buildThemeFromSeed('#123456', 'dark');
+  expect(result.theme.colors).toEqual(expected.colors);
+  expect(result.vars['--background']).toBe(expected.colors.background);
+  expect(result.vars['--color-primary']).toBe(expected.colors.primary);
+  expect(mounts).toBe(1);
 });

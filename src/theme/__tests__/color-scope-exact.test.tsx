@@ -8,6 +8,7 @@ import { useTheme } from '../use-theme';
 import { Portal } from '../../portal/Portal.web';
 import { applyScopeTokens } from '../color-scope/resolve-scope';
 import { buildTheme } from '../build-theme';
+import { buildThemeFromSeed } from '../build-theme-from-seed';
 import { buildScopeVars } from '../color-scope/style-builder';
 import type { BloomColorScopeTokens } from '../color-scope/types';
 
@@ -162,4 +163,39 @@ it('rejects unknown and unresolved colors rather than letting CSS and native dis
   expect(() => applyScopeTokens(base, { invented: '#fff' } as BloomColorScopeTokens)).toThrow(
     'unknown canonical token',
   );
+});
+
+it('keeps exact seed roles across modes, overrides and late arrival without remounting', () => {
+  const paint = (seed?: string) =>
+    act(() =>
+      root.render(
+        <BloomThemeProvider mode="light" colorPreset="blue" fonts={false}>
+          <BloomColorScope seed={seed} colorPreset="orange" asChild>
+            <div data-testid="seed-scope">
+              <Probe id="seed" />
+              <BloomColorScope mode="dark" tokens={{ primary: '#123456' }}>
+                <Probe id="seed-dark" />
+              </BloomColorScope>
+            </div>
+          </BloomColorScope>
+        </BloomThemeProvider>,
+      ),
+    );
+  paint();
+  const before = mounts;
+  paint('#234567');
+  const light = buildThemeFromSeed('#234567', 'light');
+  const dark = buildThemeFromSeed('#234567', 'dark');
+  expect(read('seed').colors).toEqual(light.colors);
+  expect(read('seed-dark').colors.background).toBe(dark.colors.background);
+  expect(read('seed-dark').colors.primary).toBe('#123456');
+  expect(
+    document
+      .querySelector<HTMLElement>('[data-testid="seed-scope"]')!
+      .style.getPropertyValue('--background'),
+  ).toBe(light.colors.background);
+  expect(mounts).toBe(before);
+  paint();
+  expect(read('seed').colors).toEqual(buildTheme('orange', 'light').colors);
+  expect(mounts).toBe(before);
 });
