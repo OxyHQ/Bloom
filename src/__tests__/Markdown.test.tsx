@@ -26,12 +26,18 @@ describe('Markdown', () => {
     const first = renderMarkdown(
       <Markdown onLinkPress={onLinkPress}>{'[go](https://x.dev)'}</Markdown>,
     );
-    fireEvent.press(first.getByText('go'), { preventDefault: jest.fn() });
+    fireEvent.press(first.getByText('go'), {
+      preventDefault: jest.fn(),
+      stopPropagation: jest.fn(),
+    });
     expect(onLinkPress).toHaveBeenCalledWith('https://x.dev');
     expect(open).not.toHaveBeenCalled();
 
     const second = renderMarkdown(<Markdown>{'[go](https://y.dev)'}</Markdown>);
-    fireEvent.press(second.getByText('go'), { preventDefault: jest.fn() });
+    fireEvent.press(second.getByText('go'), {
+      preventDefault: jest.fn(),
+      stopPropagation: jest.fn(),
+    });
     expect(open).toHaveBeenCalledWith('https://y.dev');
     open.mockRestore();
   });

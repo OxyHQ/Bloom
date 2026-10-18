@@ -1078,6 +1078,20 @@
         "default": "./lib/commonjs/markdown/index.js"
       }
     },
+    "./markdown/inline": {
+      "react-native": {
+        "types": "./lib/typescript/module/markdown/inline.d.ts",
+        "default": "./src/markdown/inline.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/markdown/inline.d.ts",
+        "default": "./lib/module/markdown/inline.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/markdown/inline.d.ts",
+        "default": "./lib/commonjs/markdown/inline.js"
+      }
+    },
     "./agent-progress": {
       "react-native": {
         "types": "./lib/typescript/module/agent-progress/index.d.ts",
@@ -4102,6 +4116,9 @@
       ],
       "markdown": [
         "./lib/typescript/module/markdown/index.d.ts"
+      ],
+      "markdown/inline": [
+        "./lib/typescript/module/markdown/inline.d.ts"
       ],
       "agent-progress": [
         "./lib/typescript/module/agent-progress/index.d.ts"

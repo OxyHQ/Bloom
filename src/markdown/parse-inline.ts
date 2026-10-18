@@ -257,13 +257,15 @@ function buildLink(link: LinkMatch): MarkdownInline[] {
   if (link.url === undefined) return children;
   const labelled: MarkdownInline[] =
     children.length > 0 ? children : [{ type: 'text', value: link.url }];
-  return makeLink(link.url, labelled);
+  return makeLink(link.url, labelled, link.label);
 }
 
 /** A link when `url` is safe; otherwise only its label, as plain content. */
-function makeLink(url: string, children: MarkdownInline[]): MarkdownInline[] {
+function makeLink(url: string, children: MarkdownInline[], label?: string): MarkdownInline[] {
   const safe = safeUrl(url);
-  return safe ? [{ type: 'link', url: safe, children }] : children;
+  return safe
+    ? [{ type: 'link', url: safe, children, ...(label !== undefined ? { label } : {}) }]
+    : children;
 }
 
 /** A bare `https://…` with the punctuation that ends a sentence (or closes a span) left off. */

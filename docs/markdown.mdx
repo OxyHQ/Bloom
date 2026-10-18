@@ -104,3 +104,55 @@ Every block is a Bloom `Text` that sets the sans face from its variant (display 
 ## Verified, and not
 
 The parser and the elements react-native-web produces are covered by `markdown-parse.test.ts` and `Markdown.web.test.tsx`; the native render is covered through the repo's `react-native` mock in `Markdown.test.tsx`. Native layout on a device (the marker column, the sideways-scrolling table, selection across nested text) has not been looked at.
+
+## Inline text and feed excerpts
+
+`InlineMarkdown` uses the same parser and renderer as document paragraphs, but
+returns a fragment of text runs. Put it inside an existing `Text` to inherit the
+app's size and line height without introducing document blocks:
+
+```tsx
+import { InlineMarkdown } from '@oxy.so/bloom/markdown';
+
+<Text>
+  <InlineMarkdown source="Use **Deck** to follow several feeds." />
+</Text>
+```
+
+It accepts `source` plus optional `streaming`, or a pre-parsed `nodes` tree.
+`onLinkPress(url)` replaces default navigation; default link presses stop bubbling
+into a surrounding clickable card. `renderText(text)` enhances plain runs (for
+example hashtags), including inside emphasis, but never runs inside code or links.
+`renderLink({ url, label, children })` can replace a safe link; returning `undefined`
+keeps Bloom's default. `label` is the original bracket source for explicit links,
+absent for bare URLs. Custom link renderers own their press handling and should
+also stop propagation. `suffix` appends an inline app action such as Read more.
+
+Parse and clip the tree rather than slicing Markdown source mid-marker or
+mid-link. These helpers have a React-free entry point:
+
+```tsx
+import {
+  parseInlineMarkdown,
+  inlineMarkdownTextLength,
+  truncateInlineMarkdown,
+} from '@oxy.so/bloom/markdown/inline';
+
+const nodes = parseInlineMarkdown(source);
+const { nodes: excerpt, isTruncated } = truncateInlineMarkdown(nodes, 280);
+
+<Text>
+  <InlineMarkdown
+    nodes={excerpt}
+    suffix={isTruncated ? readMoreAction : undefined}
+  />
+</Text>
+```
+
+Visible length counts Unicode code points, including a line break as one; markers
+and link destinations do not consume the budget. Clipping retains at most the
+requested number of points and adds an ellipsis within the final retained style
+or link. It preserves the full destination and raw label and never mutates the
+input tree. A non-positive or NaN budget yields only an ellipsis for nonempty
+text; an empty tree remains empty. Infinity and an exact fit remain untruncated.
+Apps can normalize their own semantic labels in the parsed tree before counting.

@@ -155,10 +155,11 @@ describe('markdown inline', () => {
       {
         type: 'link',
         url: 'https://x.dev/a_(b)',
+        label: 'a **b**',
         children: [text('a '), { type: 'strong', children: [text('b')] }],
       },
       text(' '),
-      { type: 'link', url: '/i.png', children: [text('alt')] },
+      { type: 'link', url: '/i.png', label: 'alt', children: [text('alt')] },
     ]);
   });
 
