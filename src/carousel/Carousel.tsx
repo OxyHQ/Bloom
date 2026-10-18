@@ -39,7 +39,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { CarouselContext, CarouselItemIndexContext } from './context';
 import { CAROUSEL_MESSAGES } from './messages';
-import type { CarouselItemProps, CarouselProps } from './types';
+import type { CarouselControls, CarouselItemProps, CarouselProps } from './types';
 import { IS_WEB } from '../styles/platform';
 
 /**
@@ -339,6 +339,7 @@ const CarouselComponent = function Carousel({
   arrowsInset = 8,
   arrowsVisibility = 'always',
   arrowButtonProps,
+  renderControls,
   hideUnavailableArrows = false,
   showDots = true,
   align = 'start',
@@ -758,7 +759,25 @@ const CarouselComponent = function Carousel({
       }
     }
   }, [previousUnavailable, nextUnavailable, hideUnavailableArrows]);
-  const arrowButtons = (
+  const controls: CarouselControls = {
+    previous: {
+      icon: rtl ? RiArrowRightSLine : RiArrowLeftSLine,
+      accessibilityLabel: previousLabel,
+      disabled: previousUnavailable,
+      onPress: () => step(-1),
+    },
+    next: {
+      icon: rtl ? RiArrowLeftSLine : RiArrowRightSLine,
+      accessibilityLabel: nextLabel,
+      disabled: nextUnavailable,
+      onPress: () => step(1),
+    },
+  };
+  const arrowButtons = renderControls ? (
+    arrowsVisible ? (
+      renderControls(controls)
+    ) : null
+  ) : (
     <>
       {arrow(
         <Button
@@ -766,10 +785,7 @@ const CarouselComponent = function Carousel({
           appearance="subtle"
           tone="neutral"
           {...arrowButtonProps}
-          icon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
-          accessibilityLabel={previousLabel}
-          disabled={previousUnavailable}
-          onPress={() => step(-1)}
+          {...controls.previous}
         />,
         previousUnavailable,
         previousArrowRef,
@@ -780,10 +796,7 @@ const CarouselComponent = function Carousel({
           appearance="subtle"
           tone="neutral"
           {...arrowButtonProps}
-          icon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
-          accessibilityLabel={nextLabel}
-          disabled={nextUnavailable}
-          onPress={() => step(1)}
+          {...controls.next}
         />,
         nextUnavailable,
         nextArrowRef,

@@ -1,12 +1,22 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import type { ButtonProps } from '../button/types';
+import type { ButtonProps, ButtonIconComponent } from '../button/types';
 
 /** Visual options only; the carousel retains navigation, names and disabled state. */
 export type CarouselArrowButtonProps = Pick<
   ButtonProps,
   'className' | 'material' | 'appearance' | 'tone' | 'size' | 'iconSize'
 >;
+
+/** Spread onto a Bloom Button; carousel owns logical direction and edge state. */
+export type CarouselControlProps = Required<
+  Pick<ButtonProps, 'onPress' | 'disabled' | 'accessibilityLabel'>
+> & { icon: ButtonIconComponent };
+
+export interface CarouselControls {
+  previous: CarouselControlProps;
+  next: CarouselControlProps;
+}
 
 export interface CarouselProps {
   /** `CarouselItem`s. Each is labelled "N of M" for assistive technology. */
@@ -47,6 +57,15 @@ export interface CarouselProps {
   arrowsVisibility?: 'always' | 'hover';
   /** Optional visual recipe for both arrow buttons. Navigation remains carousel-owned. */
   arrowButtonProps?: CarouselArrowButtonProps;
+  /**
+   * Replace the default arrows with composed controls (for example a ButtonGroup
+   * containing previous, See more, and next). Called only when showArrows is true
+   * and slides exist, in the arrowsPlacement slot. Supplied Button props retain
+   * carousel navigation, disabled state, localised names and RTL-aware icons.
+   * The renderer owns styling and visibility; arrowButtonProps,
+   * hideUnavailableArrows and arrowsVisibility style only the default buttons.
+   */
+  renderControls?: (controls: CarouselControls) => ReactNode;
   /** Hide unavailable arrows without moving their slots; hidden controls are not focusable. Defaults to false. */
   hideUnavailableArrows?: boolean;
   /** Position indicator below the track. Defaults to `true`. */

@@ -33,6 +33,8 @@ export interface BloomColorScopeProps {
    * the subtree.
    */
   colorPreset?: AppColorName;
+  /** Exact RGB seed. Takes precedence over colorPreset; roles use Bloom’s colour engine. */
+  seed?: string;
   /** Local resolved mode; does not change the app mode, storage or document. */
   mode?: 'light' | 'dark';
   /** Exact canonical colors. Unspecified roles inherit the selected preset or parent scope. */
@@ -82,13 +84,14 @@ interface StyleableProps {
  */
 export function BloomColorScope({
   colorPreset,
+  seed,
   mode,
   tokens,
   asChild = false,
   style,
   children,
 }: BloomColorScopeProps) {
-  const { context, state, vars: nativeVars } = useScope(colorPreset, mode, tokens);
+  const { context, state, vars: nativeVars } = useScope(colorPreset, mode, tokens, seed);
   const VariableProvider = getVariableContextProvider();
 
   let content: React.ReactNode;

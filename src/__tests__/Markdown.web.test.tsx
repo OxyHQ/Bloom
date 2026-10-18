@@ -11,7 +11,9 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { Markdown } from '../markdown';
+import { Markdown, InlineMarkdown } from '../markdown';
+import { Text } from 'react-native';
+import { parseInlineMarkdown, truncateInlineMarkdown } from '../markdown/inline';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -113,4 +115,27 @@ describe('Markdown on web', () => {
     );
     expect(states).toEqual(['Completed', 'Not completed']);
   });
+});
+
+it('renders a clipped inline post in one text flow and isolates link clicks from its parent', () => {
+  const onParentPress = jest.fn();
+  const onLinkPress = jest.fn();
+  const nodes = truncateInlineMarkdown(
+    parseInlineMarkdown('Use **Deck** [Alice](/@alice) today'),
+    11,
+  ).nodes;
+  const host = mount(
+    <div onClick={onParentPress}>
+      <Text>
+        <InlineMarkdown nodes={nodes} onLinkPress={onLinkPress} suffix=" Read more" />
+      </Text>
+    </div>,
+  );
+  expect(host.textContent).toBe('Use Deck Al… Read more');
+  const link = host.querySelector('a')!;
+  expect(link.getAttribute('href')).toBe('/@alice');
+  expect(link.textContent).toBe('Al…');
+  act(() => link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
+  expect(onLinkPress).toHaveBeenCalledWith('/@alice');
+  expect(onParentPress).not.toHaveBeenCalled();
 });
