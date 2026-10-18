@@ -50,7 +50,10 @@ The core `panel-routing` entry does not import Expo.
 The controller supports push, replace, navigate, back, forward, dismiss,
 dismissAll, dismissTo and setParams. A new navigation after Back truncates the
 forward history. The lower-level panel controller exposes `go(delta)` for one
-atomic history movement, including controlled histories.
+atomic history movement, including controlled histories. Import
+`usePanelNavigation` or `useOptionalPanelNavigation` from the lightweight
+`@oxy.so/bloom/app-shell/hooks` entry when only the controller is needed;
+this keeps shell rendering and sidebar code out of route-only imports.
 
 Use `usePanelScrollContainer<HTMLElement>()` from `app-shell/hooks` to bind virtualized
 lists to an existing bounded panel viewport. It returns a stable ref, or null

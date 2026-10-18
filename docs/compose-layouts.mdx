@@ -153,7 +153,10 @@ History provides Back to the existing PageHeader only when Back is possible.
 Forward remains available on the controller; it need not be another visible
 button. Use descriptor `headerActions` for persistent column settings controls,
 which compose with the route's actions. Keep independent actions separate from
-intentional button groups. `usePanelNavigation` requires a navigation-enabled
+intentional button groups. Import `usePanelNavigation` and
+`useOptionalPanelNavigation` from `@oxy.so/bloom/app-shell/hooks` in reusable
+headers and route components, so they share history without importing the shell
+renderer. `usePanelNavigation` requires a navigation-enabled
 panel; shared optional consumers use `useOptionalPanelNavigation`.
 See [Panel routing](/docs/bloom/main/panel-routing).
 
