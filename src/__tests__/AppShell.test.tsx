@@ -1325,9 +1325,18 @@ describe('AppShellPanel alone in the region', () => {
       fireEvent(screen.getByTestId('shell-bottom-bar'), 'layout', {
         nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 80 } },
       });
-      expect(resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style).paddingBottom).toBe(
-        reserve ? 80 : 0,
-      );
+      // Painted in the panel's published fill (what a Screen page paints), never
+      // left as padding over the material.
+      const spacer = screen.queryByTestId('app-shell-panel-reserve');
+      if (reserve) {
+        expect(resolvedStyle(spacer?.props.style)).toMatchObject({ height: 80, flexShrink: 0 });
+        expect(resolvedStyle(spacer?.props.style).backgroundColor).toBeTruthy();
+      } else {
+        expect(spacer).toBeNull();
+      }
+      expect(
+        resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style).paddingBottom ?? 0,
+      ).toBe(0);
     },
   );
 
@@ -1623,9 +1632,7 @@ describe('AppShellPanels', () => {
       return false;
     });
     expect(inGroup).toHaveLength(1);
-    expect(resolvedStyle(hostParent(screen.getByTestId('b-body'))?.props.style).paddingBottom).toBe(
-      0,
-    );
+    expect(screen.queryByTestId('app-shell-panel-reserve')).toBeNull();
   });
 
   it('works outside a shell as a bounded, framed group with a 12 gap', () => {
