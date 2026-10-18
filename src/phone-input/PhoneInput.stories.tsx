@@ -1,5 +1,6 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -124,15 +125,16 @@ export const Controlled: Story = {
   },
 };
 
-/** Every vendored flag (`country-flag-icons` 3x2), at 18 × 12. */
+/** Every country flag and additional regional artwork, at 18 × 12. */
 export const Flags: Story = {
   parameters: { controls: { disable: true } },
   render: function FlagsStory() {
+    const flags = [...COUNTRIES, { iso2: 'ES-CT', name: 'Catalunya' }];
     const color = useTheme().colors.text;
     return (
       <Page width={720}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {COUNTRIES.map((c) => (
+          {flags.map((c) => (
             <View
               key={c.iso2}
               style={{ width: 64, flexDirection: 'row', alignItems: 'center', gap: 6 }}

@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
@@ -68,13 +68,17 @@ describe('country data', () => {
       expect(COUNTRY_FLAGS[country.iso2]).toBeDefined();
       expect(country.dial).toMatch(/^\d+$/);
     }
-    expect(Object.keys(COUNTRY_FLAGS).sort()).toEqual(COUNTRIES.map((c) => c.iso2).sort());
+    expect(Object.keys(COUNTRY_FLAGS).sort()).toEqual(
+      [...COUNTRIES.map((c) => c.iso2), 'ES-CT'].sort(),
+    );
+    expect(findCountry('ES-CT')).toBeUndefined();
   });
 
   it.each([
     ['US', '1'],
     ['GB', '44'],
     ['ES', '34'],
+    ['CA', '1'],
     ['JP', '81'],
     ['IN', '91'],
     ['DO', '1809'],
@@ -110,6 +114,25 @@ describe('CountryFlag', () => {
     expect(resolvedStyle(named.props.style)).toMatchObject({ width: 30, height: 20 });
     expect(root.UNSAFE_getAllByType('Circle' as never)).toHaveLength(1);
     expect(root.UNSAFE_getAllByType('Path' as never).length).toBeGreaterThan(1);
+  });
+
+  it('preserves the Catalunya artwork and subdivision identifier', () => {
+    const root = renderLight(<CountryFlag iso2="es-ct" size={28} accessibilityLabel="Catalunya" />);
+    expect(root.getByLabelText('Catalunya').props.role).toBe('img');
+    expect(root.UNSAFE_getByType('Svg' as never).props.viewBox).toBe('0 0 22.5 15');
+    const paths = root.UNSAFE_getAllByType('Path' as never);
+    expect(paths.map((path) => [path.props.fill, path.props.d])).toEqual([
+      ['#FCDD09', 'M0 0h22.5v15H0V0z'],
+      ['#DA121A', 'M0 1.6667h22.5v1.6667H0V1.6667z'],
+      ['#DA121A', 'M0 5h22.5v1.6667H0V5z'],
+      ['#DA121A', 'M0 8.3333h22.5v1.6667H0V8.3333z'],
+      ['#DA121A', 'M0 11.6667h22.5v1.6667H0v-1.6667z'],
+      ['#0038A8', 'M0 0L8 7.5L0 15V0z'],
+      [
+        '#FFFFFF',
+        'M3.4 5.4L3.9 6.81 5.4 6.85 4.21 7.76 4.63 9.2 3.4 8.35 2.17 9.2 2.59 7.76 1.4 6.85 2.9 6.81Z',
+      ],
+    ]);
   });
 
   it('renders nothing for an unknown code', () => {
@@ -176,6 +199,16 @@ describe('PhoneInput', () => {
     const root = renderLight(<PhoneInput label="Phone Number" />);
     expect(triggerText(root)).toBe('+1');
     expect(triggerDrawsFlag(root, 'US')).toBe(true);
+  });
+
+  it('keeps Catalunya artwork outside the phone-country selector', () => {
+    const root = renderLight(<PhoneInput defaultCountry="ES" />);
+    expect(triggerText(root)).toBe('+34');
+    expect(triggerDrawsFlag(root, 'ES')).toBe(true);
+    fireEvent.press(root.getByLabelText('Country code'));
+    expect(root.queryByLabelText('Catalunya')).toBeNull();
+    expect(root.getByLabelText('Spain')).toBeTruthy();
+    expect(root.getByLabelText('Canada')).toBeTruthy();
   });
 
   it('a controlled country change updates the trigger text and flag', () => {

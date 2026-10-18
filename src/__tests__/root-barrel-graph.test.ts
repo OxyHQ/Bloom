@@ -45,7 +45,7 @@ const FORBIDDEN: Record<string, string> = {
  * for a peer — so no package scan would notice them. Each is subpath-only.
  */
 const FORBIDDEN_FAMILIES: Record<string, string> = {
-  // 252 vendored flags as shape data (`flags.ts`, ~145 KB of source): on the
+  // 253 vendored flags as shape data (`flags.ts`, ~145 KB of source): on the
   // root barrel every app importing `Button` would bundle every flag.
   'phone-input': '@oxy.so/bloom/phone-input',
 };

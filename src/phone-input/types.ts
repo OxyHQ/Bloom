@@ -14,7 +14,7 @@ export interface Country {
 }
 
 export interface CountryFlagProps {
-  /** ISO 3166-1 alpha-2. An unknown code renders nothing. */
+  /** Country or supported subdivision flag identifier (`US`, `ES-CT`). Unknown codes render nothing. */
   iso2: string;
   /** Width in px; the flag is 3:2, so height is two thirds of it. Default `18` (`w-[18px] h-3`). */
   size?: number;
