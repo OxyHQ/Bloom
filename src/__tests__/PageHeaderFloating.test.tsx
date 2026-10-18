@@ -200,7 +200,9 @@ describe('PageHeader, floating', () => {
     // presses across the width of the screen would be invisible and total.
     expect(resolvedStyle(screen.getByTestId('h-scrim').props.style).pointerEvents).toBe('none');
     expect(resolvedStyle(screen.getByTestId('h-bar').props.style).pointerEvents).toBe('box-none');
-    expect(resolvedStyle(screen.getByTestId('h-actions').props.style).pointerEvents).toBe('box-none');
+    expect(resolvedStyle(screen.getByTestId('h-actions').props.style).pointerEvents).toBe(
+      'box-none',
+    );
   });
 
   it('inline placement occupies layout and claims nothing', () => {

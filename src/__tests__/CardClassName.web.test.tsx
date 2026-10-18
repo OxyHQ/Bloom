@@ -55,4 +55,3 @@ it.each([false, true])(
     }
   },
 );
-

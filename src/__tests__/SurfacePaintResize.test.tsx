@@ -15,7 +15,7 @@ describe('native surface paint', () => {
     );
     const paint = view.getByTestId('paint');
     expect(paint.props.onLayout).toBeUndefined();
-    expect(paint.props.pointerEvents).toBe('none');
+    expect(resolvedStyle(paint.props.style).pointerEvents).toBe('none');
     expect(paint.children).toHaveLength(0);
   });
 

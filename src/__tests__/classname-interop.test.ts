@@ -68,7 +68,7 @@ const CAST_EXEMPTIONS = [
   'breadcrumb/Breadcrumb.tsx',
   'pagination/Pagination.tsx',
   'divider/Divider.tsx',
-  'agent-limits-card/AgentLimitsCard.tsx',
+  'usage-card/UsageCard.tsx',
   // The same `dataSet` focus-ring hook.
   'radio/Radio.tsx',
   'segmented-control/SegmentedControl.tsx',

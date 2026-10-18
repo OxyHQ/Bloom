@@ -24,7 +24,7 @@ function PriceDigit({ digit, reduced }: { digit: number; reduced: boolean }) {
       ? target
       : withTiming(target, { duration: 350, easing: Easing.out(Easing.cubic) });
   }, [digit, reduced, offset]);
-  const motion = useAnimatedStyle(() => ({ transform: [{ translateY: offset.value }] }));
+  const motion = useAnimatedStyle(() => ({ transform: [{ translateY: offset.value }] }), [offset]);
   return (
     <View style={styles.digit}>
       <Animated.View style={motion}>
@@ -60,7 +60,7 @@ export function SubscriptionPrice({
     copyOpacity.value = 0;
     copyOpacity.value = withTiming(1, { duration: 300 });
   }, [suffix, description, reduced, copyOpacity]);
-  const copyStyle = useAnimatedStyle(() => ({ opacity: copyOpacity.value }));
+  const copyStyle = useAnimatedStyle(() => ({ opacity: copyOpacity.value }), [copyOpacity]);
   return (
     <View style={styles.root}>
       <View accessible accessibilityLabel={accessibleAmount} accessibilityLiveRegion="polite">

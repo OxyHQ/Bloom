@@ -118,9 +118,7 @@ describe('density adoption', () => {
     expect(padding).toBeUndefined(); // the testID is on the outer box
     const shell = screen
       .UNSAFE_getAllByType(require('react-native').View)
-      .map((node: { props: { style?: unknown } }) =>
-        Object.assign({}, ...[node.props.style].flat(3).filter(Boolean)),
-      )
+      .map((node: { props: { style?: unknown } }) => resolvedStyle(node.props.style))
       .find(
         (style: { borderRadius?: number; paddingHorizontal?: number }) =>
           style.paddingHorizontal !== undefined,
@@ -136,9 +134,7 @@ describe('density adoption', () => {
     );
     const shell = screen
       .UNSAFE_getAllByType(require('react-native').View)
-      .map((node: { props: { style?: unknown } }) =>
-        Object.assign({}, ...[node.props.style].flat(3).filter(Boolean)),
-      )
+      .map((node: { props: { style?: unknown } }) => resolvedStyle(node.props.style))
       .find((style: { paddingHorizontal?: number }) => style.paddingHorizontal !== undefined);
     expect(shell?.paddingHorizontal).toBe(medium - 2);
   });
@@ -163,9 +159,7 @@ describe('density adoption', () => {
     const paddingOf = (screen: ReturnType<typeof themed>) =>
       screen
         .UNSAFE_getAllByType(require('react-native').View)
-        .map((node: { props: { style?: unknown } }) =>
-          Object.assign({}, ...[node.props.style].flat(3).filter(Boolean)),
-        )
+        .map((node: { props: { style?: unknown } }) => resolvedStyle(node.props.style))
         .find((style: { paddingHorizontal?: number }) => style.paddingHorizontal !== undefined)
         ?.paddingHorizontal;
     expect(paddingOf(inherited)).toBe(small);
