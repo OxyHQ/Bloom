@@ -30,7 +30,16 @@ import {
 } from './document';
 import type { EditorSelection, Operation, Transaction } from './operations';
 import { anchorAt, anchorOf, applyOperation } from './operations';
-import { acceptsChildren, isToggle, propsFor, type Schema, specOf } from './schema';
+import {
+  acceptsChildren,
+  canHold,
+  isToggle,
+  parentOf,
+  placeAfter,
+  propsFor,
+  type Schema,
+  specOf,
+} from './schema';
 
 export type IdFactory = () => BlockId;
 
@@ -233,6 +242,7 @@ export function canTurnInto(
 export function turnInto(ctx: CommandContext, id: BlockId, type: string): Transaction | null {
   const block = getBlock(ctx.doc, id);
   if (block.type === type || !canTurnInto(ctx, id, type)) return null;
+  if (!canHold(ctx.schema, parentOf(ctx.doc, id), type)) return null;
   const spec = specOf(ctx.schema, type);
   const b = new Builder(ctx.doc);
   const after: { type: string; text?: Segment[]; props?: Readonly<Record<string, unknown>> } = {
@@ -260,13 +270,7 @@ export function insertBlockAfter(
   init: { text?: Segment[]; props?: Readonly<Record<string, unknown>> } = {},
 ): Transaction {
   const b = new Builder(ctx.doc);
-  let parent: BlockId | null = null;
-  let index = ctx.doc.root.length;
-  if (afterId !== null) {
-    const pos = positionOf(ctx.doc, afterId);
-    parent = pos.parent;
-    index = pos.index + 1;
-  }
+  const { parent, index } = placeAfter(ctx.doc, ctx.schema, afterId, [type]);
   const block = newBlock(ctx, type, parent, init);
   b.insert(block, index);
   const sel = specOf(ctx.schema, type).hasText
@@ -549,6 +553,10 @@ export function moveBlocks(
   if (roots.length === 0) return null;
   if (roots.some((id) => isWithin(ctx.doc, target, id))) return null;
   if (position === 'inside' && !acceptsChildren(ctx.schema, getBlock(ctx.doc, target))) return null;
+  // A row stays in its table, a cell in its row, and nothing else goes in.
+  const destination = position === 'inside' ? getBlock(ctx.doc, target) : parentOf(ctx.doc, target);
+  if (roots.some((id) => !canHold(ctx.schema, destination, getBlock(ctx.doc, id).type)))
+    return null;
 
   const b = new Builder(ctx.doc);
   for (const [i, id] of roots.entries()) {

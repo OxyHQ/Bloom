@@ -201,7 +201,10 @@ const BlockRow = memo(function BlockRow({
           dropHere === 'inside' && { backgroundColor: theme.selection },
         ]}
       >
-        {Platform.OS === 'web' && !readOnly ? <Gutter id={id} visible={hovered} /> : null}
+        {/* A row, cell or column is its container's: it has no handle of its own. */}
+        {Platform.OS === 'web' && !readOnly && !spec.parentTypes ? (
+          <Gutter id={id} visible={hovered} />
+        ) : null}
         {block.type === 'quote' ? (
           <View style={[styles.quoteBar, { backgroundColor: theme.text }]} />
         ) : null}

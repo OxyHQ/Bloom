@@ -40,7 +40,7 @@ import { type Block, childrenOf, getBlock, positionOf } from '../model/document'
 import { applyBlockShortcut, applyInlineShortcut, detectBlockShortcut } from '../model/markdown';
 import { pasteIntoBlock } from '../model/paste';
 import type { EditorSelection, Transaction } from '../model/operations';
-import { specOf } from '../model/schema';
+import { isStructural, specOf } from '../model/schema';
 import { filterSlashItems, type SlashItem, slashQuery, slashTriggerAt } from '../model/slash';
 import { type MentionItem, useEditorContext } from './context';
 import { FormatBar } from './FormatBar';
@@ -392,7 +392,14 @@ export function TextBlock({ block }: { block: Block }) {
       }
       if (key.key === 'Escape') {
         inputRef.current?.blur();
-        ui.set({ selectedBlocks: [id] });
+        // A table cell selects its table: a cell on its own is not a block.
+        let selected = id;
+        while (isStructural(store.schema, getBlock(store.doc, selected).type)) {
+          const parent = getBlock(store.doc, selected).parent;
+          if (parent === null) break;
+          selected = parent;
+        }
+        ui.set({ selectedBlocks: [selected] });
         return true;
       }
       return false;
