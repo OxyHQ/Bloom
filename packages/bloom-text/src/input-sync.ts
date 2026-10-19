@@ -79,7 +79,16 @@ export class InputSync {
     if (segmentsEqual(next, this.value)) return;
     const before = this.value;
     this.value = next;
-    if (sameInInput(next, before)) return;
+    if (sameInInput(next, before)) {
+      // Only marks the input cannot show changed (a colour): it shows the
+      // same, but what it shows now carries them, or the next keystroke —
+      // reconciled against what the input shows — would take them back.
+      if (this.shown && sameInInput(this.shown, next)) this.shown = next;
+      for (const [i, value] of this.pending.entries()) {
+        if (sameInInput(value, next)) this.pending[i] = next;
+      }
+      return;
+    }
     this.push(next, diffText(segmentsToPlainText(before), segmentsToPlainText(next)));
   }
 

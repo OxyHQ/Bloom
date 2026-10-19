@@ -17,6 +17,14 @@ export interface EditorLabels {
   outdent: string;
   color: string;
   background: string;
+  /** The format bar's button for text colour and highlight. */
+  textColor: string;
+  /** The block menu's action that copies a link to the block (`onCopyBlockLink`). */
+  copyBlockLink: string;
+  /** A code block's language button and menu. */
+  codeLanguage: string;
+  /** The search field of the code language menu. */
+  codeLanguageSearch: string;
   colorNames: Readonly<Record<string, string>>;
   bold: string;
   italic: string;
@@ -65,6 +73,10 @@ export const DEFAULT_LABELS: EditorLabels = {
   outdent: 'Outdent',
   color: 'Color',
   background: 'Background',
+  textColor: 'Text color',
+  copyBlockLink: 'Copy link to block',
+  codeLanguage: 'Language',
+  codeLanguageSearch: 'Search languages',
   colorNames: {
     default: 'Default',
     gray: 'Gray',

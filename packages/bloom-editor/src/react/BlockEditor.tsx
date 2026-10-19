@@ -1,4 +1,5 @@
-import { type ReactNode, useEffect, useMemo } from 'react';
+import type { PastedImage } from '@oxy.so/bloom-text';
+import { type ComponentRef, type ReactNode, useEffect, useMemo, useRef } from 'react';
 import type { MentionMark } from '@oxy.so/bloom-text/model';
 import {
   Linking,
@@ -9,20 +10,38 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
-import { duplicateBlocks, insertBlockAfter, removeBlocks } from '../model/commands';
+import {
+  duplicateBlocks,
+  indentBlocks,
+  insertBlockAfter,
+  outdentBlocks,
+  removeBlocks,
+} from '../model/commands';
 import { exportSnapshot, snapshotToMarkdown } from '../model/snapshot';
 import { getBlock } from '../model/document';
 import type { BlockId } from '../model/document';
 import { specOf } from '../model/schema';
 import type { SlashItem } from '../model/slash';
 import type { EditorStore } from '../model/store';
+import { BLOCK_DOM_PREFIX, GUTTER_DOM_PREFIX } from './block-dom';
 import { BlockMenu } from './BlockMenu';
+import {
+  clearBlockSelection,
+  extendBlockSelection,
+  selectBlocks,
+  stepBlockSelection,
+} from './block-selection';
+import { CodeLanguageMenu } from './CodeLanguageMenu';
 import { type EditorController, useEditorController } from './controller';
 import { BlockList } from './BlockRow';
+import { blockRange } from '../model/selection';
 import {
   type BlockAction,
   type BlockRenderer,
+  type CodeHighlighter,
+  type CodeLanguage,
   EditorContext,
+  type InlineEquations,
   type MentionSource,
   type EditorContextValue,
   useEditorContext,
@@ -55,6 +74,27 @@ export interface BlockEditorProps {
   onOpenLink?: (href: string) => void;
   /** Follow a mention from its popover (open the page, show the person). */
   onOpenMention?: (mention: MentionMark, text: string) => void;
+  /**
+   * Copy a link to a block (the app knows its URL): the block menu offers
+   * "Copy link to block" when given.
+   */
+  onCopyBlockLink?: (blockId: BlockId) => void;
+  /**
+   * Images pasted into a block's text (a screenshot, a copied picture), for
+   * the app to upload and insert after `blockId`: `blob:` URLs on web, file
+   * URIs on native. Without it, pasted images are ignored.
+   */
+  onPasteImages?: (images: PastedImage[], blockId: BlockId) => void;
+  /** The languages a code block offers in its language menu (stored as `props.language`). */
+  codeLanguages?: readonly CodeLanguage[];
+  /** Highlights code blocks while they are not being edited. */
+  highlightCode?: CodeHighlighter;
+  /**
+   * Typing `$$…$$` makes an inline equation: a mention whose attributes are
+   * `{ kind: 'equation', latex }`, shown and followed like any mention
+   * (`onOpenMention`).
+   */
+  inlineEquations?: InlineEquations;
   theme?: EditorTheme;
   labels?: Partial<EditorLabels>;
   readOnly?: boolean;
@@ -149,6 +189,11 @@ export function EditorSurface({
   mentions,
   onOpenLink = openWithLinking,
   onOpenMention,
+  onCopyBlockLink,
+  onPasteImages,
+  codeLanguages,
+  highlightCode,
+  inlineEquations,
   theme = DEFAULT_THEME,
   labels,
   readOnly = false,
@@ -177,6 +222,11 @@ export function EditorSurface({
       onOpenMention,
       slashItems,
       onSlashAction,
+      onCopyBlockLink,
+      onPasteImages,
+      codeLanguages,
+      highlightCode,
+      inlineEquations,
       readOnly,
       inputs,
     }),
@@ -195,33 +245,50 @@ export function EditorSurface({
       onOpenMention,
       slashItems,
       onSlashAction,
+      onCopyBlockLink,
+      onPasteImages,
+      codeLanguages,
+      highlightCode,
+      inlineEquations,
       readOnly,
       inputs,
     ],
   );
 
-  // Whole-block selection (Escape, then arrows / Backspace / ⌘D) on web.
+  // Whole-block selection on web: arrows move it (Shift extends it),
+  // Backspace deletes, ⌘D duplicates, Tab and Shift-Tab nest, Return edits.
   useEffect(() => {
     if (Platform.OS !== 'web' || readOnly) return;
     const onKey = (event: KeyboardEvent) => {
-      const selected = ui.get().selectedBlocks;
-      if (selected.length === 0) return;
+      const { selectedBlocks: selected, blockMenu, codeLanguageMenu } = ui.get();
+      // An open menu has the keyboard.
+      if (selected.length === 0 || blockMenu !== null || codeLanguageMenu !== null) return;
+      // A field of the editor's own (a menu's search, the link field) types.
+      const target = event.target as HTMLElement | null;
+      if (target?.closest?.('input, textarea, [contenteditable="true"]')) return;
       const mod = event.metaKey || event.ctrlKey;
       if (event.key === 'Backspace' || event.key === 'Delete') {
         event.preventDefault();
-        ui.set({ selectedBlocks: [] });
+        clearBlockSelection(ui);
         store.sealHistory();
         store.run((c) => removeBlocks(c, selected));
       } else if (mod && event.key.toLowerCase() === 'd') {
         event.preventDefault();
         store.sealHistory();
         store.run((c) => duplicateBlocks(c, selected));
+      } else if (event.key === 'Tab') {
+        event.preventDefault();
+        store.sealHistory();
+        store.run((c) => (event.shiftKey ? outdentBlocks(c, selected) : indentBlocks(c, selected)));
+      } else if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && !mod) {
+        event.preventDefault();
+        stepBlockSelection(store, ui, event.key === 'ArrowUp' ? 'up' : 'down', event.shiftKey);
       } else if (event.key === 'Escape') {
-        ui.set({ selectedBlocks: [] });
+        clearBlockSelection(ui);
       } else if (event.key === 'Enter') {
         event.preventDefault();
         const first = selected[0];
-        ui.set({ selectedBlocks: [] });
+        clearBlockSelection(ui);
         if (first && store.doc.blocks[first]?.text) {
           store.setSelection({ kind: 'text', blockId: first, start: 0, end: 0 });
         }
@@ -235,6 +302,92 @@ export function EditorSurface({
     return () => window.removeEventListener('keydown', onKey);
   }, [readOnly, store, ui]);
 
+  // Selecting blocks with the pointer (web): Shift-click extends a selection
+  // to the block clicked (from the selected blocks, or from the block being
+  // edited); dragging out of one block's text into another selects the
+  // blocks between them, as Notion does.
+  const root = useRef<ComponentRef<typeof View> | null>(null);
+  useEffect(() => {
+    const node = root.current as unknown as HTMLElement | null;
+    if (Platform.OS !== 'web' || readOnly || !node?.addEventListener) return;
+    const blockAt = (target: EventTarget | null): string | null => {
+      const element = (target as HTMLElement | null)?.closest?.(`[id^="${BLOCK_DOM_PREFIX}"]`);
+      const id = element?.id.slice(BLOCK_DOM_PREFIX.length);
+      return id && store.doc.blocks[id] ? id : null;
+    };
+    const inGutter = (target: EventTarget | null) =>
+      Boolean((target as HTMLElement | null)?.closest?.(`[id^="${GUTTER_DOM_PREFIX}"]`));
+    let drag: { from: string; selecting: boolean } | null = null;
+    let suppressMouseDown = false;
+
+    const endDrag = () => {
+      if (drag?.selecting) node.style.userSelect = '';
+      drag = null;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', endDrag);
+      window.removeEventListener('pointercancel', endDrag);
+    };
+    const onMove = (event: PointerEvent) => {
+      if (!drag || event.buttons === 0) {
+        endDrag();
+        return;
+      }
+      if (ui.get().drag) return;
+      const over = blockAt(document.elementFromPoint(event.clientX, event.clientY));
+      if (!over) return;
+      if (!drag.selecting) {
+        if (over === drag.from) return;
+        // Out of the block the drag began in: whole blocks from here on.
+        drag.selecting = true;
+        node.style.userSelect = 'none';
+        const focused = ui.get().focused;
+        if (focused) controller.inputs.get(focused)?.blur();
+      }
+      window.getSelection?.()?.removeAllRanges();
+      selectBlocks(ui, blockRange(store.doc, store.schema, drag.from, over), drag.from, over);
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.button !== 0 || inGutter(event.target)) return;
+      const id = blockAt(event.target);
+      if (!id) {
+        clearBlockSelection(ui);
+        return;
+      }
+      const state = ui.get();
+      const fromElsewhere =
+        state.selectedBlocks.length > 0 || (state.focused !== null && state.focused !== id);
+      if (event.shiftKey && fromElsewhere) {
+        // Not a click into the text: its mousedown (which would focus it and
+        // place a caret) is cancelled below.
+        suppressMouseDown = true;
+        if (extendBlockSelection(store, ui, id) && state.focused) {
+          controller.inputs.get(state.focused)?.blur();
+        }
+        return;
+      }
+      clearBlockSelection(ui);
+      if (!(event.target as HTMLElement).closest?.('[contenteditable="true"]')) return;
+      drag = { from: id, selecting: false };
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+    };
+    const onMouseDown = (event: MouseEvent) => {
+      if (!suppressMouseDown) return;
+      suppressMouseDown = false;
+      // Neither the browser nor the editing surface below acts on it.
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    node.addEventListener('pointerdown', onPointerDown, true);
+    node.addEventListener('mousedown', onMouseDown, true);
+    return () => {
+      endDrag();
+      node.removeEventListener('pointerdown', onPointerDown, true);
+      node.removeEventListener('mousedown', onMouseDown, true);
+    };
+  }, [controller, readOnly, store, ui]);
+
   // Copying and cutting selected blocks (web): as Markdown, which pasting
   // turns back into blocks — in this editor or any other.
   useEffect(() => {
@@ -246,7 +399,7 @@ export function EditorSurface({
       event.clipboardData.setData('text/plain', snapshotToMarkdown(exportSnapshot(store.doc, ids)));
       event.preventDefault();
       if (cut && !readOnly) {
-        ui.set({ selectedBlocks: [] });
+        clearBlockSelection(ui);
         store.sealHistory();
         store.run((c) => removeBlocks(c, ids));
       }
@@ -263,9 +416,10 @@ export function EditorSurface({
 
   return (
     <EditorContext.Provider value={value}>
-      <View style={[styles.editor, style]}>
+      <View ref={root} style={[styles.editor, style]}>
         {children}
         <BlockMenu />
+        <CodeLanguageMenu />
       </View>
     </EditorContext.Provider>
   );

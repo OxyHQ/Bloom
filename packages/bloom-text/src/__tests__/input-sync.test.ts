@@ -135,6 +135,27 @@ describe('InputSync', () => {
     expect(input.text).toBe('rojos fin');
   });
 
+  it('keeps a colour set from outside through the keystrokes that follow', () => {
+    const plainValue: Segment[] = [{ text: 'rojo fin' }];
+    const input = new FakeInput(plainValue);
+    input.mount(plainValue);
+    // The app colours a word: the input shows nothing new.
+    const coloured: Segment[] = [{ text: 'rojo', color: 'red' }, { text: ' fin' }];
+    input.sync.update(coloured);
+    input.value = coloured;
+    input.flush();
+    input.selection = { start: 4, end: 4 };
+    input.type('s');
+    expect(input.value).toEqual([{ text: 'rojos', color: 'red' }, { text: ' fin' }]);
+    // And while a value is still on its way to the input.
+    input.sync.update([{ text: 'Xrojos', color: 'red' }, { text: ' fin' }]);
+    input.sync.update([{ text: 'Xrojos', color: 'blue' }, { text: ' fin' }]);
+    input.flush();
+    input.selection = { start: 6, end: 6 };
+    input.type('!');
+    expect(input.value).toEqual([{ text: 'Xrojos!', color: 'blue' }, { text: ' fin' }]);
+  });
+
   it('never loses a word, however typing and changes from elsewhere interleave', () => {
     let seed = 7;
     const random = () => {

@@ -4,10 +4,11 @@ import {
   type CommandContext,
   composeCommands,
   duplicateBlocks,
-  indent,
+  indentBlocks,
   moveBlocks,
-  outdent,
+  outdentBlocks,
   removeBlocks,
+  setBlocksProps,
   setProps,
   canTurnInto,
   turnInto,
@@ -15,6 +16,7 @@ import {
 import { childrenOf, positionOf } from '../model/document';
 import { type Schema, specOf } from '../model/schema';
 import type { Transaction } from '../model/operations';
+import { clearBlockSelection } from './block-selection';
 import { useEditorContext } from './context';
 import { BLOCK_COLOR_NAMES } from './theme';
 import { useUi } from './ui-store';
@@ -35,10 +37,15 @@ function isCurrent(
   return !key || Boolean(action.props?.[key]) === Boolean(block.props[key]);
 }
 
-/** Options for one block: turn into, colours, duplicate, move, delete. */
+/**
+ * Options for a block — turn into, colours, duplicate, move, delete — and,
+ * when it is one of the selected blocks, for all of them.
+ */
 export function BlockMenu() {
-  const { store, ui, theme, labels, slashItems, blockActions } = useEditorContext();
+  const { store, ui, theme, labels, slashItems, blockActions, onCopyBlockLink } =
+    useEditorContext();
   const id = useUi(ui, (s) => s.blockMenu);
+  const selected = useUi(ui, (s) => s.selectedBlocks);
   const turnIntoItems = useMemo(
     () => slashItems.filter((item) => item.action.kind === 'block'),
     [slashItems],
@@ -53,6 +60,8 @@ export function BlockMenu() {
     store.sealHistory();
     store.run(command);
   };
+  const targets = selected.includes(id) ? selected.filter((b) => store.doc.blocks[b]) : [id];
+  const many = targets.length > 1;
   const { parent, index } = positionOf(store.doc, id);
   const siblings = childrenOf(store.doc, parent);
   const before = siblings[index - 1];
@@ -96,25 +105,40 @@ export function BlockMenu() {
                 }}
               />
             ))}
-            <Row label={labels.duplicate} onPress={() => act((c) => duplicateBlocks(c, [id]))} />
-            <Row label={labels.delete} onPress={() => act((c) => removeBlocks(c, [id]))} />
-            {before ? (
+            {onCopyBlockLink && !many ? (
+              <Row
+                label={labels.copyBlockLink}
+                onPress={() => {
+                  close();
+                  onCopyBlockLink(id);
+                }}
+              />
+            ) : null}
+            <Row label={labels.duplicate} onPress={() => act((c) => duplicateBlocks(c, targets))} />
+            <Row
+              label={labels.delete}
+              onPress={() => {
+                clearBlockSelection(ui);
+                act((c) => removeBlocks(c, targets));
+              }}
+            />
+            {before && !many ? (
               <Row
                 label={labels.moveUp}
                 onPress={() => act((c) => moveBlocks(c, [id], before, 'before'))}
               />
             ) : null}
-            {after ? (
+            {after && !many ? (
               <Row
                 label={labels.moveDown}
                 onPress={() => act((c) => moveBlocks(c, [id], after, 'after'))}
               />
             ) : null}
-            {before ? (
-              <Row label={labels.indent} onPress={() => act((c) => indent(c, id))} />
+            {before || many ? (
+              <Row label={labels.indent} onPress={() => act((c) => indentBlocks(c, targets))} />
             ) : null}
-            {parent !== null ? (
-              <Row label={labels.outdent} onPress={() => act((c) => outdent(c, id))} />
+            {parent !== null || many ? (
+              <Row label={labels.outdent} onPress={() => act((c) => outdentBlocks(c, targets))} />
             ) : null}
 
             <Text style={[styles.section, { color: theme.textMuted }]}>{labels.turnInto}</Text>
@@ -128,10 +152,14 @@ export function BlockMenu() {
                     const action = item.action;
                     if (action.kind !== 'block') return;
                     act((c) =>
-                      composeCommands(c, [
-                        (cc) => turnInto(cc, id, action.type),
-                        (cc) => (action.props ? setProps(cc, id, action.props) : null),
-                      ]),
+                      composeCommands(
+                        c,
+                        targets.flatMap((target) => [
+                          (cc: CommandContext) => turnInto(cc, target, action.type),
+                          (cc: CommandContext) =>
+                            action.props ? setProps(cc, target, action.props) : null,
+                        ]),
+                      ),
                     );
                   }}
                 />
@@ -146,7 +174,9 @@ export function BlockMenu() {
                   accessibilityRole="button"
                   accessibilityLabel={`${labels.color}: ${labels.colorNames[name] ?? name}`}
                   onPress={() =>
-                    act((c) => setProps(c, id, { color: name === 'default' ? undefined : name }))
+                    act((c) =>
+                      setBlocksProps(c, targets, { color: name === 'default' ? undefined : name }),
+                    )
                   }
                   style={[styles.swatch, { borderColor: theme.border }]}
                 >
@@ -170,7 +200,9 @@ export function BlockMenu() {
                   accessibilityLabel={`${labels.background}: ${labels.colorNames[name] ?? name}`}
                   onPress={() =>
                     act((c) =>
-                      setProps(c, id, { backgroundColor: name === 'default' ? undefined : name }),
+                      setBlocksProps(c, targets, {
+                        backgroundColor: name === 'default' ? undefined : name,
+                      }),
                     )
                   }
                   style={[

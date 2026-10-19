@@ -1,4 +1,4 @@
-import type { RichTextInputHandle } from '@oxy.so/bloom-text';
+import type { PastedImage, RichTextInputHandle } from '@oxy.so/bloom-text';
 import type { MentionMark } from '@oxy.so/bloom-text/model';
 import { createContext, type ReactNode, useContext, useSyncExternalStore } from 'react';
 import type { Block, BlockId } from '../model/document';
@@ -46,6 +46,35 @@ export interface BlockAction {
   onPress: (blockId: BlockId) => void;
 }
 
+/** A language a code block can be in, as the app names it. */
+export interface CodeLanguage {
+  /** Stored as the block's `language` prop. */
+  id: string;
+  label: string;
+}
+
+/** One run of highlighted code: its text and the colour the app gives it. */
+export interface CodeToken {
+  text: string;
+  color?: string;
+}
+
+/**
+ * Highlights code for display: the lines of `code` (split at `\n`), each a
+ * list of tokens whose texts join up to that line exactly.
+ */
+export type CodeHighlighter = (code: string, language: string) => readonly (readonly CodeToken[])[];
+
+/** Inline equations typed as `$$…$$`: mentions under `indicator`. */
+export interface InlineEquations {
+  /**
+   * The mention indicator the equation is stored under. Each platform's
+   * input styles only the indicators it listens for, so pass one of
+   * `mentions.indicators`.
+   */
+  indicator: string;
+}
+
 export interface EditorContextValue {
   store: EditorStore;
   controller: EditorController;
@@ -63,6 +92,15 @@ export interface EditorContextValue {
   onOpenMention?: (mention: MentionMark, text: string) => void;
   slashItems: readonly SlashItem[];
   onSlashAction?: (id: string, blockId: BlockId) => void;
+  /** Copy a link to a block; without it the block menu offers no such action. */
+  onCopyBlockLink?: (blockId: BlockId) => void;
+  /** Images pasted into a block's text, for the app to upload and insert. */
+  onPasteImages?: (images: PastedImage[], blockId: BlockId) => void;
+  /** The languages a code block offers; without them it shows no language button. */
+  codeLanguages?: readonly CodeLanguage[];
+  /** Highlights a code block while it is not being edited. */
+  highlightCode?: CodeHighlighter;
+  inlineEquations?: InlineEquations;
   readOnly: boolean;
   /** Live input handles by block, for focus and formatting commands. */
   inputs: Map<BlockId, RichTextInputHandle>;

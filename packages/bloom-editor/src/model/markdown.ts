@@ -168,3 +168,37 @@ export function applyInlineShortcut(
   }
   return null;
 }
+
+/** What an inline equation is, as a mention's `attributes.kind`. */
+export const INLINE_EQUATION_KIND = 'equation';
+
+/**
+ * When `edit` typed the closing `$$` of `$$…$$`, the segments with it made an
+ * inline equation — a mention under `indicator` whose attributes are
+ * `{ kind: 'equation', latex }`, showing the LaTeX — and where the caret
+ * goes. Null otherwise, and inside inline code or across a mention.
+ */
+export function applyInlineEquation(
+  segments: Segment[],
+  edit: TextEdit | null,
+  indicator: string,
+): { segments: Segment[]; caret: number } | null {
+  if (edit?.deleteCount !== 0 || edit.insert !== '$') return null;
+  const caret = edit.index + 1;
+  const before = segmentsToPlainText(segments).slice(0, caret);
+  const match = /(?:^|[^$])\$\$([^$\n]*[^$\s\n][^$\n]*)\$\$$/.exec(before);
+  const latex = match?.[1];
+  if (!match || latex === undefined) return null;
+  const start = caret - latex.length - 4;
+  const [head, rest] = splitSegmentsAt(segments, start);
+  const [typed, tail] = splitSegmentsAt(rest, caret - start);
+  if (typed.some((segment) => segment.code || segment.mention)) return null;
+  const equation: Segment = {
+    text: latex.trim(),
+    mention: { indicator, attributes: { kind: INLINE_EQUATION_KIND, latex: latex.trim() } },
+  };
+  return {
+    segments: [...head.filter((s) => s.text), equation, ...tail.filter((s) => s.text)],
+    caret: start + equation.text.length,
+  };
+}

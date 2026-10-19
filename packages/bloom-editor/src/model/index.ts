@@ -55,6 +55,11 @@ export {
   formatText,
   type IdFactory,
   indent,
+  indentBlocks,
+  insertMention,
+  type MentionInsert,
+  outdentBlocks,
+  setBlocksProps,
   appendChild,
   insertBlockAfter,
   moveBlocks,
@@ -84,7 +89,13 @@ export {
   insertSnapshot,
   snapshotToMarkdown,
 } from './snapshot';
-export { applyBlockShortcut, applyInlineShortcut, detectBlockShortcut } from './markdown';
+export {
+  applyBlockShortcut,
+  applyInlineEquation,
+  applyInlineShortcut,
+  detectBlockShortcut,
+  INLINE_EQUATION_KIND,
+} from './markdown';
 export {
   filterSlashItems,
   type SlashAction,
@@ -92,4 +103,6 @@ export {
   slashQuery,
   slashTriggerAt,
 } from './slash';
-export { pasteIntoBlock } from './paste';
+export { pasteIntoBlock, pasteSnapshot } from './paste';
+export { type HtmlToSnapshotOptions, htmlToSnapshot, isPlainSnapshot } from './html';
+export { blockRange, blockStep, selectableBlock } from './selection';

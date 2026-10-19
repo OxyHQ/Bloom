@@ -19,6 +19,7 @@ import {
 import { htmlToSegments, segmentsToHtml } from './html';
 import { containsFocus, useKeyCapture } from './key-capture';
 import { InputSync } from './input-sync';
+import { usePasteCapture } from './paste-capture';
 import type { ActiveMarks, RichTextInputHandle, RichTextInputProps, ToggleableMark } from './types';
 
 /** Block-level shortcuts belong to the block editor, never to one input. */
@@ -47,6 +48,8 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
     onKeyPress,
     onKeyCommand,
     onSubmit,
+    onPasteImages,
+    onPaste,
     mentionIndicators,
     onMentionQuery,
     placeholder,
@@ -63,6 +66,7 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
   const wrapperRef = useRef<View | null>(null);
   const focusedRef = useRef(false);
   useKeyCapture(wrapperRef, onKeyCommand);
+  usePasteCapture(wrapperRef, onPaste);
   // Mounted with the first value only; later values arrive through setValue.
   const [defaultHtml] = useState(() => segmentsToHtml(value));
   const [sync] = useState(
@@ -184,6 +188,11 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
             : undefined
         }
         onSubmitEditing={onSubmit ? () => onSubmit() : undefined}
+        onPasteImages={
+          onPasteImages
+            ? (e) => onPasteImages(e.nativeEvent.images.map((i) => ({ ...i })))
+            : undefined
+        }
         onFocus={() => {
           focusedRef.current = true;
           onFocus?.();
