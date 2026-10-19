@@ -11,6 +11,7 @@
 import {
   applyMarks,
   applyTextEdit,
+  coalesceSegments,
   segmentsToPlainText,
   splitSegmentsAt,
   type Segment,
@@ -469,6 +470,97 @@ export function outdent(
   }
   const sel = selection ?? (specOf(ctx.schema, block.type).hasText ? caret(id, 0) : null);
   return b.done(sel, sel);
+}
+
+/**
+ * Tab on selected blocks: each nests under the block before it, so a run of
+ * siblings goes under the one above the first. Null when the first cannot
+ * nest (it is the first of its list), as in Notion.
+ */
+export function indentBlocks(ctx: CommandContext, ids: readonly BlockId[]): Transaction | null {
+  const roots = selectionRoots(ctx.doc, ids);
+  if (roots.length === 0) return null;
+  let doc = ctx.doc;
+  const ops: Operation[] = [];
+  for (const [i, id] of roots.entries()) {
+    const tx = indent({ ...ctx, doc }, id);
+    if (!tx) {
+      if (i === 0) return null;
+      continue;
+    }
+    for (const op of tx.ops) {
+      doc = applyOperation(doc, op);
+      ops.push(op);
+    }
+  }
+  const sel: EditorSelection = { kind: 'blocks', ids: roots };
+  return { ops, selectionBefore: sel, selectionAfter: sel };
+}
+
+/**
+ * Shift-Tab on selected blocks: each moves out of its parent, last first, so
+ * they stay in their order and none takes another as a child. Null when none
+ * can move out.
+ */
+export function outdentBlocks(ctx: CommandContext, ids: readonly BlockId[]): Transaction | null {
+  const roots = selectionRoots(ctx.doc, ids);
+  let doc = ctx.doc;
+  const ops: Operation[] = [];
+  for (const id of [...roots].reverse()) {
+    const tx = outdent({ ...ctx, doc }, id);
+    if (!tx) continue;
+    for (const op of tx.ops) {
+      doc = applyOperation(doc, op);
+      ops.push(op);
+    }
+  }
+  if (ops.length === 0) return null;
+  const sel: EditorSelection = { kind: 'blocks', ids: roots };
+  return { ops, selectionBefore: sel, selectionAfter: sel };
+}
+
+/** Merge `patch` into the props of every block in `ids`, as one edit. */
+export function setBlocksProps(
+  ctx: CommandContext,
+  ids: readonly BlockId[],
+  patch: Record<string, unknown>,
+): Transaction | null {
+  return composeCommands(
+    ctx,
+    ids.map((id) => (c: CommandContext) => setProps(c, id, patch)),
+  );
+}
+
+/** A mention to put in a block's text: what it shows and what it points at. */
+export interface MentionInsert {
+  indicator: string;
+  /** The text the mention shows. */
+  text: string;
+  attributes: Readonly<Record<string, string>>;
+}
+
+/**
+ * Put a mention over `[start, end)` of a block's text (at the caret when they
+ * are equal): an atomic run, the caret after it. Null for an empty mention.
+ */
+export function insertMention(
+  ctx: CommandContext,
+  id: BlockId,
+  start: number,
+  end: number,
+  mention: MentionInsert,
+): Transaction | null {
+  if (!mention.text) return null;
+  const block = getBlock(ctx.doc, id);
+  if (!specOf(ctx.schema, block.type).hasText) return null;
+  const [head, rest] = splitSegmentsAt(textOf(block), start);
+  const [, tail] = splitSegmentsAt(rest, Math.max(0, end - start));
+  const run: Segment = {
+    text: mention.text,
+    mention: { indicator: mention.indicator, attributes: { ...mention.attributes } },
+  };
+  const next = coalesceSegments([...head, run, ...tail]);
+  return editText(ctx, id, next, caret(id, start + mention.text.length));
 }
 
 /** Top-level blocks of a selection: drop any block whose ancestor is also selected. */

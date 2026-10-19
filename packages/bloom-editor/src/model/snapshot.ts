@@ -105,6 +105,9 @@ function inlineMarkdown(segments: readonly Segment[] | undefined): string {
   if (!segments) return '';
   return segments
     .map((seg) => {
+      if (seg.mention?.attributes.kind === 'equation') {
+        return `$${seg.mention.attributes.latex ?? seg.text}$`;
+      }
       let text = seg.text;
       if (seg.code) text = `\`${text}\``;
       if (seg.bold) text = `**${text}**`;
