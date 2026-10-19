@@ -6,10 +6,9 @@
  *
  * This module names no PLATFORM package. It is resolved by a consumer's `tsc`,
  * by Metro, and by every web bundler alike, so an import here of
- * expo-symbols / expo-router / react-native-screens would
- * break all three at once. Platform behaviour lives in `surface.native.tsx` /
- * `glyph.native.tsx` / `surface.web.tsx` and the `expo-router/` adapter; the
- * gate is `src/__tests__/TabBarWebFork.test.ts`.
+ * expo-router / react-native-screens would break all three at once. Router
+ * behaviour lives in the `expo-router/` adapter; the gate is
+ * `src/__tests__/TabBarWebFork.test.ts`.
  *
  * `react-native-reanimated` is exempt and always was: it is a REQUIRED peer that
  * every neutral module in this family already imports at runtime
@@ -52,18 +51,8 @@ export type TabBarItem = {
    * bar tints a glyph by cloning it with a `fill` prop (see `applyIconColor`),
    * so an icon set that paints from a `color` prop instead never lights up, with
    * no error. Pre-color both nodes yourself and the crossfade still works.
-   *
-   * On iOS an item carrying `sfSymbol` renders the symbol on both layers and
-   * ignores this — a symbol is tinted natively, so the tint crossfade is the
-   * right expression there.
    */
   activeIcon?: ReactNode;
-  /**
-   * Optional SF Symbol name, used INSTEAD of `icon` on iOS only. A pure
-   * enhancement handled solely in `glyph.native.tsx`; the neutral and web
-   * glyphs ignore it and render `icon`, so every platform stays covered.
-   */
-  sfSymbol?: string;
 };
 
 export type TabBarTheme = {

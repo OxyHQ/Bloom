@@ -10,12 +10,11 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
  * The platform-agnostic body of the floating tab bar: gestures, springs, every
  * animated style, the highlight geometry and the button. The only pieces that
  * differ per platform are injected as component props — the `Blur` behind
- * the bar, and the `Glyph` (SF Symbol on iOS, the
- * item's own icon node elsewhere). Same shape as `BottomSheetBase`'s `Shell`.
+ * the bar, and the `Glyph` (the item's own Bloom icon node). Same shape as
+ * `BottomSheetBase`'s `Shell`.
  *
- * Nothing here imports expo-symbols, expo-router or
- * react-native-screens, so this file is safe in a web bundle and in a
- * consumer's type-check.
+ * Nothing here imports expo-router or react-native-screens, so this file is
+ * safe in a web bundle and in a consumer's type-check.
  */
 import {
   Children,

@@ -12,25 +12,20 @@ It works with or without a router. `@oxy.so/bloom/tab-bar` has no router depende
 
 ## Install
 
-The tab bar adds two peers on top of Bloom's usual ones:
+The tab bar adds one peer on top of Bloom's usual ones, and only for the router adapter:
 
 ```bash
-bunx expo install expo-symbols react-native-screens
+bunx expo install react-native-screens
 ```
 
 | Peer | Used by | Needed when |
 |------|---------|-------------|
-| `expo-symbols` | `tab-bar/glyph.native` | Any native build that renders the bar. Apple-only as well: it draws `item.sfSymbol` as a real SF Symbol on iOS, and the bar falls back to `item.icon` everywhere else. |
 | `react-native-screens` | `tab-bar/expo-router` | Only if you use `renderFadingTabScreen`. |
 
 The bar also uses Bloom's existing `expo-blur`, `react-native-reanimated`, `react-native-gesture-handler` and `react-native-safe-area-context` peers. Native apps must wrap their root in `GestureHandlerRootView` — the bar is scrubbable, so it needs gesture-handler mounted.
 
-<Callout variant="info" title="Web builds pull none of the native packages">
-`expo-symbols` is imported only from a `.native` file, and the router packages only from the `expo-router` subpath. A web bundle of `@oxy.so/bloom/tab-bar` reaches none of them, so nothing about them ends up in a web app's output.
-
-`expo-symbols` is nonetheless declared as a **required** peer, deliberately. It is a static import, so omitting them from a native build that imports the tab bar does not degrade to anything — Metro fails to resolve the specifier and the build dies. The only thing marking them optional would buy is silencing the one warning that says so in advance. That applies on Android too: the native module there is Apple-only (`"platforms": ["apple"]`), but the JS package still has to be installed for the bundle to resolve.
-
-That degrade-to-nothing only follows once you import the tab bar. An app that never imports `@oxy.so/bloom/tab-bar` at all — on native or web — never reaches these files, so leaving the peer unmet costs nothing; don't install two Apple-only packages just to quiet a warning about a surface you don't use. In practice bun never shows the gap: it installs a required peer itself, so both packages land in the lockfile of an app that does not list them, with no warning either way (measured on bun 1.4.3).
+<Callout variant="info" title="Web builds pull none of the router packages">
+The router packages are imported only from the `expo-router` subpath. A bundle of `@oxy.so/bloom/tab-bar` reaches none of them, so an app with no router at all — native or web — can use the bar.
 </Callout>
 
 ## Usage without a router
@@ -235,24 +230,7 @@ On web without the react-native-worklets babel plugin — the production reality
 
 `item.icon` is the primary API and takes any node — a Bloom icon, an SVG, your own component — exactly like `TabsTrigger` and `FrostedIconButton`. The bar renders it twice per tab (an inactive layer with the active layer crossfading on top) and injects the layer's tint as the icon's `fill`. An icon that sets its own `fill` (a brand mark, say) keeps it, so both layers render it identically and it never flickers.
 
-`item.sfSymbol` is an **iOS-only enhancement**: when present, iOS renders the real system glyph instead, weight-matched to the platform and tinted natively. Android, web and every non-Metro resolver ignore it and render `item.icon`, so every item still needs one.
-
-```tsx
-const TABS = [
-  {
-    name: 'home',
-    label: 'Home',
-    icon: <Icons.RiHomeLine />,
-    sfSymbol: 'house.fill',
-  },
-  {
-    name: 'you',
-    label: 'You',
-    icon: <Icons.RiAccountCircleLine />,
-    sfSymbol: 'person.crop.circle',
-  },
-];
-```
+The same node renders on iOS, Android and web: there is no platform-specific glyph path (Bloom 15 removed the iOS-only system-symbol option — see [Migrating to 15.0](/docs/bloom/main/migrating-to-15.0)).
 
 ### Icon sets that change SHAPE when selected
 
@@ -271,7 +249,7 @@ const TABS = [
 ];
 ```
 
-It is optional and additive: an item with only `icon` renders it on both layers exactly as before. On iOS an item carrying `sfSymbol` renders the symbol on both layers and ignores `activeIcon` — a symbol is tinted natively, so the tint crossfade is still the right expression there.
+It is optional and additive: an item with only `icon` renders it on both layers exactly as before.
 
 <Callout variant="warning" title="An icon that paints from a `color` prop never lights up">
 The bar tints a glyph by cloning the element with a `fill` prop. That is how Bloom's own icons (and raw SVG) take paint — they resolve `fill ?? style.color`. An icon set whose components read a **`color` prop** instead simply ignores the injected `fill`, and the result is a glyph that renders fine and never changes between the two layers. Nothing throws and nothing warns.
@@ -435,7 +413,7 @@ Everything `View` accepts is forwarded.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `item` | `TabBarItem` | — | `{ name, label, icon, activeIcon?, sfSymbol? }`. |
+| `item` | `TabBarItem` | — | `{ name, label, icon, activeIcon? }`. |
 | `index` | `number` | — | Position in the bar. Must match the child order. |
 | `isFocused?` | `boolean` | — | **Focus-driven path**, supplied by the router adapter. When present it wins over the bar's `activeIndex` and this button drives the highlight. |
 

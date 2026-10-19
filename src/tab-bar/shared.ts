@@ -4,7 +4,7 @@
  *
  * Geometry, motion constants, theme resolution and the contracts for the two
  * injected platform components. Everything here is platform-neutral — no
- * expo-symbols, expo-router or react-native-screens — because
+ * expo-router or react-native-screens — because
  * this module is pulled into the native bundle, the web bundle and a consumer's
  * `tsc` alike.
  */
