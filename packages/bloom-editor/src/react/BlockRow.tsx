@@ -181,6 +181,7 @@ const BlockRow = memo(function BlockRow({
       }
       style={[
         styles.block,
+        spec.grow && styles.grow,
         { marginTop: blockSpacing(block.type) },
         selected && { backgroundColor: theme.selection },
         decoration && [styles.decorated, { borderLeftColor: decoration.color }],
@@ -201,7 +202,10 @@ const BlockRow = memo(function BlockRow({
           dropHere === 'inside' && { backgroundColor: theme.selection },
         ]}
       >
-        {Platform.OS === 'web' && !readOnly ? <Gutter id={id} visible={hovered} /> : null}
+        {/* A row, cell or column is its container's: it has no handle of its own. */}
+        {Platform.OS === 'web' && !readOnly && !spec.parentTypes ? (
+          <Gutter id={id} visible={hovered} />
+        ) : null}
         {block.type === 'quote' ? (
           <View style={[styles.quoteBar, { backgroundColor: theme.text }]} />
         ) : null}
@@ -261,6 +265,7 @@ function Gutter({ id, visible }: { id: BlockId; visible: boolean }) {
 
 const styles = StyleSheet.create({
   block: { position: 'relative', borderRadius: 4 },
+  grow: { flex: 1, minWidth: 0 },
   raised: { zIndex: 1 },
   // A collaborator's caret: an edge that does not move the content.
   decorated: { borderLeftWidth: 2, marginLeft: -2 },

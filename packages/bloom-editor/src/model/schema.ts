@@ -1,3 +1,5 @@
+import { type BlockId, type EditorDocument, getBlock, positionOf } from './document';
+
 /**
  * What each block type does under the editor's commands. The schema is data,
  * so an application adds its own block types without touching the commands.
@@ -20,6 +22,19 @@ export interface BlockSpec {
    * indented under it; nothing indents into or out of such a block.
    */
   isContainer?: boolean;
+  /** The only types its children may be: a table's rows, a row's cells. */
+  childTypes?: readonly string[];
+  /**
+   * A part of its parent's layout (a row, a cell, a column): it lives only in
+   * a block of one of these types, never at the top or elsewhere, and is not
+   * dragged or handled on its own.
+   */
+  parentTypes?: readonly string[];
+  /**
+   * Takes an equal share of its parent's width (a table's cell, a column):
+   * the application lays such a parent's children out in a row.
+   */
+  grow?: boolean;
   /**
    * The type of the block Return creates after this one when the caret is at
    * the end. Lists continue themselves; headings and quotes give a paragraph.
@@ -154,6 +169,51 @@ export function propsFor(
 /** The spec for `type`; unknown types behave as plain, childless, textless blocks. */
 export function specOf(schema: Schema, type: string): BlockSpec {
   return schema[type] ?? { type, hasText: false, canHaveChildren: false };
+}
+
+/**
+ * Whether a block of `type` may sit in `parent` (null: the top of the page),
+ * as far as either one's `childTypes` and `parentTypes` say.
+ */
+export function canHold(schema: Schema, parent: { type: string } | null, type: string): boolean {
+  const parents = specOf(schema, type).parentTypes;
+  if (parents && (parent === null || !parents.includes(parent.type))) return false;
+  const children = parent ? specOf(schema, parent.type).childTypes : undefined;
+  return !children || children.includes(type);
+}
+
+/** The block `id` sits in; null at the top of the page. */
+export function parentOf(doc: EditorDocument, id: BlockId): { type: string } | null {
+  const { parent } = getBlock(doc, id);
+  return parent === null ? null : getBlock(doc, parent);
+}
+
+/**
+ * Where blocks of `types` go after `afterId` (null: the end of the page):
+ * just after it, or — when its parent cannot hold them (a cell's row, a
+ * row's table) — just after the nearest ancestor whose parent can.
+ */
+export function placeAfter(
+  doc: EditorDocument,
+  schema: Schema,
+  afterId: BlockId | null,
+  types: readonly string[],
+): { parent: BlockId | null; index: number } {
+  let anchor = afterId;
+  while (anchor !== null) {
+    const parent = parentOf(doc, anchor);
+    if (types.every((type) => canHold(schema, parent, type))) {
+      const pos = positionOf(doc, anchor);
+      return { parent: pos.parent, index: pos.index + 1 };
+    }
+    anchor = getBlock(doc, anchor).parent;
+  }
+  return { parent: null, index: doc.root.length };
+}
+
+/** Whether blocks of `type` are part of their parent's layout (`parentTypes`). */
+export function isStructural(schema: Schema, type: string): boolean {
+  return specOf(schema, type).parentTypes !== undefined;
 }
 
 /** Whether `block` may hold children now (its type always, or while a prop says so). */

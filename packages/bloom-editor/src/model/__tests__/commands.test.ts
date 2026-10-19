@@ -15,6 +15,7 @@ import {
   EditorStore,
   extendSchema,
   getBlock,
+  insertBlockAfter,
   indent,
   insertSnapshot,
   invertTransaction,
@@ -613,5 +614,75 @@ describe('appendChild', () => {
   it('refuses a block that takes no children', () => {
     const doc = build([['divider']]);
     expect(appendChild(ctx(doc), doc.root[0] as string, 'paragraph')).toBeNull();
+  });
+});
+
+describe('a table keeps its shape', () => {
+  const TABLES = extendSchema(SCHEMA, [
+    {
+      type: 'table',
+      hasText: false,
+      canHaveChildren: true,
+      isContainer: true,
+      childTypes: ['table_row'],
+    },
+    {
+      type: 'table_row',
+      hasText: false,
+      canHaveChildren: true,
+      isContainer: true,
+      childTypes: ['table_cell'],
+      parentTypes: ['table'],
+    },
+    {
+      type: 'table_cell',
+      hasText: true,
+      multiline: true,
+      canHaveChildren: false,
+      parentTypes: ['table_row'],
+    },
+  ]);
+  const at = (doc: EditorDocument): CommandContext => ({ ...ctx(doc), schema: TABLES });
+  // b1 paragraph, b2 table > b3 row > b4, b5 cells, b6 row > b7 cell, b8 paragraph.
+  const doc = build([
+    ['paragraph', 'before'],
+    [
+      'table',
+      undefined,
+      [
+        [
+          'table_row',
+          undefined,
+          [
+            ['table_cell', 'a'],
+            ['table_cell', 'b'],
+          ],
+        ],
+        ['table_row', undefined, [['table_cell', 'c']]],
+      ],
+    ],
+    ['paragraph', 'after'],
+  ]);
+
+  it('never moves a cell or a row out, nor anything else in', () => {
+    expect(moveBlocks(at(doc), ['b4'], 'b1', 'after')).toBeNull();
+    expect(moveBlocks(at(doc), ['b3'], 'b8', 'after')).toBeNull();
+    expect(moveBlocks(at(doc), ['b8'], 'b4', 'after')).toBeNull();
+    expect(moveBlocks(at(doc), ['b1'], 'b3', 'inside')).toBeNull();
+    // Rows and cells reorder within their own kind of parent.
+    expect(moveBlocks(at(doc), ['b6'], 'b3', 'before')).not.toBeNull();
+    expect(moveBlocks(at(doc), ['b5'], 'b4', 'before')).not.toBeNull();
+  });
+
+  it('puts what is inserted in a cell after the table', () => {
+    const next = run(doc, insertBlockAfter(at(doc), 'b4', 'paragraph'));
+    expect(next.root).toHaveLength(4);
+    expect(next.root[1]).toBe('b2');
+    expect(getBlock(next, next.root[2] as string).type).toBe('paragraph');
+    expect(getBlock(next, 'b3').children).toEqual(['b4', 'b5']);
+  });
+
+  it('does not turn a cell into another kind of block', () => {
+    expect(turnInto(at(doc), 'b4', 'heading_1')).toBeNull();
   });
 });

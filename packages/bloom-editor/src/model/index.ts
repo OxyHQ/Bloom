@@ -16,8 +16,12 @@ export {
 export {
   acceptsChildren,
   type BlockSpec,
+  canHold,
   DEFAULT_SCHEMA,
+  isStructural,
   isToggle,
+  parentOf,
+  placeAfter,
   defineSchema,
   extendSchema,
   type Schema,

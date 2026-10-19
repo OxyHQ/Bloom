@@ -7,16 +7,9 @@
  */
 import { segmentsToPlainText, type Segment } from '@oxy.so/bloom-text/model';
 import type { IdFactory } from './commands';
-import {
-  type Block,
-  type BlockId,
-  childrenOf,
-  type EditorDocument,
-  getBlock,
-  positionOf,
-} from './document';
+import { type Block, type BlockId, childrenOf, type EditorDocument, getBlock } from './document';
 import type { Transaction } from './operations';
-import { propsFor, type Schema, specOf } from './schema';
+import { placeAfter, propsFor, type Schema, specOf } from './schema';
 
 export interface BlockSnapshot {
   type: string;
@@ -79,13 +72,13 @@ export function insertSnapshot(
   schema?: Schema,
 ): Transaction | null {
   if (snapshot.length === 0) return null;
-  let parent: BlockId | null = null;
-  let index = doc.root.length;
-  if (afterId !== null) {
-    const pos = positionOf(doc, afterId);
-    parent = pos.parent;
-    index = pos.index + 1;
-  }
+  // Pasted into a table cell, the blocks go after the table, not into its row.
+  const { parent, index } = placeAfter(
+    doc,
+    schema ?? {},
+    afterId,
+    snapshot.map((s) => s.type),
+  );
   const inserted = documentFromSnapshot(snapshot, newId, schema);
   const ops = inserted.root.map((topId, i) => {
     const subtree: Block[] = [];
