@@ -7,13 +7,7 @@
  */
 import { segmentsToPlainText, type Segment } from '@oxy.so/bloom-text/model';
 import type { IdFactory } from './commands';
-import {
-  type Block,
-  type BlockId,
-  childrenOf,
-  type EditorDocument,
-  getBlock,
-} from './document';
+import { type Block, type BlockId, childrenOf, type EditorDocument, getBlock } from './document';
 import type { Transaction } from './operations';
 import { placeAfter, propsFor, type Schema, specOf } from './schema';
 
