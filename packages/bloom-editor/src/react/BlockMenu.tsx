@@ -9,13 +9,31 @@ import {
   outdent,
   removeBlocks,
   setProps,
+  canTurnInto,
   turnInto,
 } from '../model/commands';
 import { childrenOf, positionOf } from '../model/document';
+import { type Schema, specOf } from '../model/schema';
 import type { Transaction } from '../model/operations';
 import { useEditorContext } from './context';
 import { BLOCK_COLOR_NAMES } from './theme';
 import { useUi } from './ui-store';
+
+/**
+ * Whether `block` is what turning it into `action` would make it. A heading
+ * and a toggle heading share a type; the prop that lets one hold children
+ * (`childrenWhen`) tells them apart, and nothing else does (a collapsed
+ * toggle heading is still one).
+ */
+function isCurrent(
+  schema: Schema,
+  block: { type: string; props: Readonly<Record<string, unknown>> },
+  action: { type: string; props?: Readonly<Record<string, unknown>> },
+): boolean {
+  if (block.type !== action.type) return false;
+  const key = specOf(schema, action.type).childrenWhen;
+  return !key || Boolean(action.props?.[key]) === Boolean(block.props[key]);
+}
 
 /** Options for one block: turn into, colours, duplicate, move, delete. */
 export function BlockMenu() {
@@ -101,11 +119,11 @@ export function BlockMenu() {
 
             <Text style={[styles.section, { color: theme.textMuted }]}>{labels.turnInto}</Text>
             {turnIntoItems.map((item) =>
-              item.action.kind === 'block' ? (
+              item.action.kind === 'block' && canTurnInto(store, id, item.action.type) ? (
                 <Row
                   key={item.id}
                   label={item.label}
-                  active={block.type === item.action.type}
+                  active={isCurrent(store.schema, block, item.action)}
                   onPress={() => {
                     const action = item.action;
                     if (action.kind !== 'block') return;
