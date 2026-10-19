@@ -283,7 +283,7 @@ export const Favorite: Story = {
 export const Wishlists: Story = {
   render: () => (
     <Page>
-      <ListingCardGrid columns={4} columnGap={20} rowGap={32}>
+      <ListingCardGrid density="compact">
         <WishlistCard
           name="Coast weekends"
           description="12 saved"
@@ -356,7 +356,7 @@ export const HoverZoomAndLongPress: Story = {
 export const WishlistIdentity: Story = {
   render: () => (
     <Page>
-      <ListingCardGrid columns={4} columnGap={20} rowGap={32}>
+      <ListingCardGrid density="compact">
         <WishlistCard
           name="Coast weekends"
           description="12 saved"

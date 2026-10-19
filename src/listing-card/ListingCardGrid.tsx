@@ -1,66 +1,54 @@
-import React, { Children, isValidElement, memo, useState } from 'react';
-import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import React, { Children, isValidElement, memo } from 'react';
 
-import { listingGridColumns } from './shared';
-import type { ListingCardGridProps } from './types';
-import { IS_WEB } from '../styles/platform';
+import { StyledView } from '../styles/styled-primitives';
+import type { ListingCardGridDensity, ListingCardGridProps } from './types';
 
 /**
- * A results grid for `ListingCard`s.
+ * A results grid for `ListingCard`s, laid out by CONTAINER QUERIES.
  *
- *   columns   1 below 500, 2 below 950, 3 below 1280, 4 from there — of the
- *             GRID's own width, so a grid beside a map or inside a sheet counts
- *             the room it actually has; `columns` fixes the count instead
- *   gaps      24 between columns, 40 between rows
+ * The grid is a `@container`, so its columns follow its OWN width — a grid
+ * beside a map or inside a sheet counts the room it actually has — and the
+ * browser (web) or react-native-css (native) resolves them. Nothing is measured
+ * or counted in JavaScript.
  *
- * Bloom's `Grid` (`Row`/`Col`) is a single fixed row of fractional columns: it
- * neither wraps nor responds to width, which is what a results page needs, so
- * this measures and wraps instead. Until the first layout it counts from the
- * window, so the first frame is already close.
+ *   results   1 column, 2 from 500, 3 from 950, 4 from 1280; gaps 24 × 40
+ *   compact   2 columns, 3 from 640, 4 from 950; gaps 16 × 24 (collections)
  *
- * Cells are sized in pixels from the measured width less one pixel (the web
- * measures a fractional width as a whole number), rounded DOWN to a
- * hundredth: a fraction that rounds up can push the last cell of a row onto
- * the next.
+ * Gutters are the cell's own padding inside a row pulled out by the same
+ * amount, so `w-1/2` is exactly half the grid less one gutter with no `calc()`.
+ * The class strings are written out whole: the app's Tailwind scans Bloom's
+ * `lib` for them.
  */
+const LAYOUT: Record<ListingCardGridDensity, { row: string; cell: string }> = {
+  results: {
+    row: '-mx-3 flex-row flex-wrap gap-y-10',
+    cell: 'w-full px-3 @min-[500px]:w-1/2 @min-[950px]:w-1/3 @min-[1280px]:w-1/4',
+  },
+  compact: {
+    row: '-mx-2 flex-row flex-wrap gap-y-6',
+    cell: 'w-1/2 px-2 @min-[640px]:w-1/3 @min-[950px]:w-1/4',
+  },
+};
+
 function ListingCardGridComponent({
   children,
-  columns: fixedColumns,
-  columnGap = 24,
-  rowGap = 40,
+  density = 'results',
   style,
   testID,
 }: ListingCardGridProps) {
-  const window = useWindowDimensions();
-  const [measured, setMeasured] = useState(0);
-  const width = measured > 0 ? measured : window.width;
-  const columns = Math.max(1, fixedColumns ?? listingGridColumns(width));
-  // react-native-web reports layout from `offsetWidth`, an INTEGER: a grid
-  // 591.69px wide measures 592, and cells sized from that overflow the row by
-  // a fraction and wrap one per row. Keep a pixel back whenever a row holds
-  // more than one cell (a lone cell cannot wrap).
-  const usable = columns > 1 ? width - 1 : width;
-  const cell = Math.max(
-    0,
-    Math.floor(((usable - columnGap * (columns - 1)) / columns) * 100) / 100,
-  );
-
-  const items = Children.toArray(children).filter(isValidElement);
-
+  const { row, cell } = LAYOUT[density];
   return (
-    <View
-      role="list"
-      onLayout={(event: LayoutChangeEvent) => setMeasured(event.nativeEvent.layout.width)}
-      style={[{ width: '100%', flexDirection: 'row', flexWrap: 'wrap', columnGap, rowGap }, style]}
-      testID={testID}
-      {...(IS_WEB ? { dataSet: { bloomListingCardGrid: String(columns) } } : null)}
-    >
-      {items.map((child, index) => (
-        <View key={child.key ?? index} role="listitem" style={{ width: cell }}>
-          {child}
-        </View>
-      ))}
-    </View>
+    <StyledView className="@container w-full" style={style} testID={testID}>
+      <StyledView role="list" className={row}>
+        {Children.toArray(children)
+          .filter(isValidElement)
+          .map((child, index) => (
+            <StyledView key={child.key ?? index} role="listitem" className={cell}>
+              {child}
+            </StyledView>
+          ))}
+      </StyledView>
+    </StyledView>
   );
 }
 

@@ -195,18 +195,22 @@ export interface FavoriteButtonProps {
   testID?: string;
 }
 
+/**
+ * How densely a `ListingCardGrid` packs its cells. `results`: listings, one
+ * full-width card on a phone. `compact`: collection tiles, two to a row on a
+ * phone.
+ */
+export type ListingCardGridDensity = 'results' | 'compact';
+
 export interface ListingCardGridProps {
   /** The cards. Each child becomes one cell. */
   children: ReactNode;
   /**
-   * A fixed column count. Without it the grid measures its OWN width:
-   * 1 column below 500, 2 below 950, 3 below 1280, 4 from there.
+   * Columns follow the grid's OWN width (container queries). `results`
+   * (default): 1 column, 2 from 500, 3 from 950, 4 from 1280. `compact`: 2, 3
+   * from 640, 4 from 950.
    */
-  columns?: number;
-  /** Horizontal gap between cells. Default `24`. */
-  columnGap?: number;
-  /** Vertical gap between rows. Default `40`. */
-  rowGap?: number;
+  density?: ListingCardGridDensity;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

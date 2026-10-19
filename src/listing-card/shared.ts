@@ -174,20 +174,6 @@ export function resolvePhoto(
   return isImageUrl(photo) ? photo : resolver?.(photo, variant);
 }
 
-/**
- * The responsive column count of a results grid of the given width.
- *
- * Two columns from 500, as Airbnb's results do: a phone (≤ 430) keeps one
- * full-width card, but a list beside a map or a small tablet already fits two
- * cards of ~240 — one card 600 wide is a poster, not a result.
- */
-export function listingGridColumns(width: number): number {
-  if (width < 500) return 1;
-  if (width < 950) return 2;
-  if (width < 1280) return 3;
-  return 4;
-}
-
 export interface DotSlot {
   /** The photo this dot stands for. */
   index: number;

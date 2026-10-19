@@ -1276,6 +1276,7 @@ export { FavoriteButton, ListingCard, ListingCardGrid, WishlistCard } from './li
 export type {
   FavoriteButtonProps,
   ListingCardDensity,
+  ListingCardGridDensity,
   ListingCardGridProps,
   ListingCardLayout,
   ListingCardProps,

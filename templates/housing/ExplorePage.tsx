@@ -80,18 +80,10 @@ function useFavourites() {
 
 type Favourites = ReturnType<typeof useFavourites>;
 
-function Results({
-  homes,
-  favourites,
-  columns,
-}: {
-  homes: Home[];
-  favourites: Favourites;
-  columns?: number;
-}) {
+function Results({ homes, favourites }: { homes: Home[]; favourites: Favourites }) {
   const go = useHousingNav();
   return (
-    <ListingCardGrid columns={columns} testID="housing-results">
+    <ListingCardGrid testID="housing-results">
       {homes.map((home) => (
         <ListingCard
           key={home.id}
