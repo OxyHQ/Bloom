@@ -31,6 +31,11 @@ export interface BlockSpec {
    */
   parentTypes?: readonly string[];
   /**
+   * Takes an equal share of its parent's width (a table's cell, a column):
+   * the application lays such a parent's children out in a row.
+   */
+  grow?: boolean;
+  /**
    * The type of the block Return creates after this one when the caret is at
    * the end. Lists continue themselves; headings and quotes give a paragraph.
    * Defaults to `'paragraph'`.

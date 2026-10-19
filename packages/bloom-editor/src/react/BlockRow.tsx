@@ -181,6 +181,7 @@ const BlockRow = memo(function BlockRow({
       }
       style={[
         styles.block,
+        spec.grow && styles.grow,
         { marginTop: blockSpacing(block.type) },
         selected && { backgroundColor: theme.selection },
         decoration && [styles.decorated, { borderLeftColor: decoration.color }],
@@ -264,6 +265,7 @@ function Gutter({ id, visible }: { id: BlockId; visible: boolean }) {
 
 const styles = StyleSheet.create({
   block: { position: 'relative', borderRadius: 4 },
+  grow: { flex: 1, minWidth: 0 },
   raised: { zIndex: 1 },
   // A collaborator's caret: an edge that does not move the content.
   decorated: { borderLeftWidth: 2, marginLeft: -2 },
