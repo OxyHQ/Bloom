@@ -49,6 +49,19 @@ export interface RichTextInputProps {
    * multi-line input where Return inserts a newline.
    */
   onSubmit?: () => void;
+  /**
+   * Images pasted into the input (a screenshot, a copied picture), for the
+   * app to upload: a `blob:` URL on web, a file URI on native. Without it
+   * the input does not take pasted images.
+   */
+  onPasteImages?: (images: PastedImage[]) => void;
+  /**
+   * Web: a paste, before the input acts on it, with what the clipboard holds
+   * as HTML and as plain text. Return true to claim it: the input then pastes
+   * nothing. Pasted image files go to `onPasteImages` instead. Native inputs
+   * paste on their own and never call it.
+   */
+  onPaste?: (paste: PasteData) => boolean;
   /** Characters that start a mention, e.g. `['@']`. */
   mentionIndicators?: string[];
   onMentionQuery?: (query: { indicator: string; text: string } | null) => void;
@@ -90,4 +103,20 @@ export interface RichTextInputHandle {
   startMention(indicator: string): void;
   /** Replace the open mention query with a finished mention. */
   insertMention(indicator: string, text: string, attributes: Record<string, string>): void;
+}
+
+/** An image pasted into the input. */
+export interface PastedImage {
+  /** A `blob:` URL on web (revoke it when done), a file URI on native. */
+  uri: string;
+  /** Its media type, e.g. `image/png`. */
+  type: string;
+  width: number;
+  height: number;
+}
+
+/** What a paste carries: the clipboard's HTML (empty when it has none) and plain text. */
+export interface PasteData {
+  html: string;
+  text: string;
 }

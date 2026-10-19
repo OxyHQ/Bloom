@@ -45,7 +45,12 @@ const [value, setValue] = useState<Segment[]>([{ text: 'Hello ' }, { text: 'worl
 - **Marks the input cannot show survive.** The input renders bold, italic,
   underline, strike, inline code, links and mentions. `color` and `background`
   live only in the value and are carried across every keystroke
-  (`reconcileInputValue`).
+  (`reconcileInputValue`), including a colour set from outside while the
+  input shows the same text.
+- **Pasting.** `onPasteImages` receives pasted images (`blob:` URLs on web,
+  file URIs on native) for the app to upload. On web, `onPaste` sees the
+  clipboard's HTML and plain text before the input pastes, and may claim it
+  (a block editor turning HTML into blocks).
 
 ## The model, without React Native
 
