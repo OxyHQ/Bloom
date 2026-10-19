@@ -1,6 +1,8 @@
 // Drives the BlockEditor story in a real Chrome and asserts Notion-style
 // editing end to end: typing, Return, Backspace, Tab, markdown and slash
-// shortcuts, checkboxes, toggles, the block menu, drag and drop, and undo.
+// shortcuts, checkboxes, toggles, the block menu, drag and drop, undo, and
+// the collaboration surface (range decorations, format actions, confirming
+// removals).
 //
 // Jest cannot see any of this: it is the browser's editing surface, focus and
 // pointer hit-testing that are under test.
@@ -749,6 +751,186 @@ const textOf = (page, needle) =>
     ),
     `$$…$$ makes an inline equation (${JSON.stringify(eq.text)})`,
   );
+  await page.close();
+}
+
+// Collaboration: text-range decorations (drawn over the text while it is not
+// being edited, measured on the input while it is), format actions, and
+// confirming before blocks are removed.
+{
+  const page = await open();
+  const HIGHLIGHT = 'rgb(255, 230, 150)';
+  const CARET = 'rgb(200, 0, 0)';
+  const quoteId = await page.evaluate(
+    () =>
+      Object.values(globalThis.__bloomEditorStore.doc.blocks).find((b) => b.type === 'quote').id,
+  );
+  await page.evaluate((id) => {
+    globalThis.__bloomDecorations.set(
+      new Map([
+        [
+          id,
+          {
+            ranges: [
+              { start: 0, end: 6, background: 'rgb(255, 230, 150)' },
+              { start: 13, end: 13, caret: { color: 'rgb(200, 0, 0)', label: 'Ana' } },
+            ],
+          },
+        ],
+      ]),
+    );
+  }, quoteId);
+  await sleep(200);
+
+  /** Where the input draws characters `from`–`to` of the quote's text. */
+  const inputBox = (from, to) =>
+    page.evaluate(
+      (id, a, b) => {
+        const surface = document
+          .getElementById(`bloom-block-${id}`)
+          .querySelector('[contenteditable]');
+        const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
+        const node = walker.nextNode();
+        const range = document.createRange();
+        range.setStart(node, a);
+        range.setEnd(node, b);
+        const r = range.getClientRects()[0];
+        return { x: r.left, y: r.top, width: r.width, height: r.height };
+      },
+      quoteId,
+      from,
+      to,
+    );
+  /** Boxes painted `color` in the quote's row, outside its input. */
+  const painted = (color, prop) =>
+    page.evaluate(
+      (id, c, p) =>
+        [...document.getElementById(`bloom-block-${id}`).querySelectorAll('span, div')]
+          .filter((el) => !el.closest('[contenteditable]') && getComputedStyle(el)[p] === c)
+          .map((el) => {
+            const r = el.getBoundingClientRect();
+            return { text: el.textContent, x: r.left, y: r.top, width: r.width, height: r.height };
+          }),
+      quoteId,
+      color,
+      prop,
+    );
+  const near = (a, b) => Math.abs(a - b) <= 1.5;
+
+  // Not being edited: drawn with the text, exactly where the input draws it.
+  let marks = await painted(HIGHLIGHT, 'backgroundColor');
+  let expected = await inputBox(0, 6);
+  await check(
+    page,
+    marks.length === 1 &&
+      marks[0].text === 'Simple' &&
+      near(marks[0].x, expected.x) &&
+      near(marks[0].width, expected.width),
+    `a highlight is drawn behind its text while not editing (${JSON.stringify(marks)} vs ${JSON.stringify(expected)})`,
+  );
+  let carets = await painted(CARET, 'borderLeftColor');
+  let at = await inputBox(13, 13);
+  await check(
+    page,
+    carets.length === 1 && near(carets[0].x + 1, at.x) && carets[0].text.includes('Ana'),
+    `a caret is drawn at its offset with its name (${JSON.stringify(carets)} vs ${JSON.stringify(at)})`,
+  );
+  const flag = await page.evaluate(() =>
+    [...document.querySelectorAll('[id^="bloom-block-"] span')].some((el) => {
+      const box = el.getBoundingClientRect();
+      return (
+        el.textContent === 'Ana' &&
+        getComputedStyle(el).backgroundColor === 'rgb(200, 0, 0)' &&
+        box.width > 10 &&
+        box.height < 20
+      );
+    }),
+  );
+  await check(page, flag, 'the caret’s name is on a flag of its colour, on one line');
+  if (process.env.SCREENSHOT_DIR) {
+    await page.screenshot({ path: `${process.env.SCREENSHOT_DIR}/ranges-drawn.png` });
+  }
+
+  // Being edited (web): measured on the input and drawn over it.
+  await clickInto(page, 'Simple things should be simple.');
+  await sleep(150);
+  marks = await painted(HIGHLIGHT, 'backgroundColor');
+  expected = await inputBox(0, 6);
+  await check(
+    page,
+    marks.length === 1 &&
+      marks[0].text === '' &&
+      near(marks[0].x, expected.x) &&
+      near(marks[0].y, expected.y) &&
+      near(marks[0].width, expected.width) &&
+      near(marks[0].height, expected.height),
+    `a highlight is measured on the input while editing (${JSON.stringify(marks)} vs ${JSON.stringify(expected)})`,
+  );
+  if (process.env.SCREENSHOT_DIR) {
+    await page.screenshot({ path: `${process.env.SCREENSHOT_DIR}/ranges-measured.png` });
+  }
+  carets = await painted(CARET, 'backgroundColor');
+  at = await inputBox(13, 13);
+  const caretBar = carets.find((c) => c.width <= 3);
+  await check(
+    page,
+    caretBar !== undefined && near(caretBar.x + 1, at.x) && near(caretBar.y, at.y),
+    `a caret is measured on the input while editing (${JSON.stringify(carets)} vs ${JSON.stringify(at)})`,
+  );
+  // Typing before it moves the text; the app's offsets are where they were.
+  await press(page, 'Home');
+  await type(page, 'So ');
+  marks = await painted(HIGHLIGHT, 'backgroundColor');
+  expected = await inputBox(0, 6);
+  await check(
+    page,
+    marks.length === 1 && near(marks[0].x, expected.x) && near(marks[0].width, expected.width),
+    `the measured highlight follows the input's text as it changes (${JSON.stringify(marks)} vs ${JSON.stringify(expected)})`,
+  );
+  await press(page, 'z', 'Control');
+
+  // A format action receives the selected text's block and offsets.
+  await press(page, 'Home');
+  for (let i = 0; i < 6; i += 1) await press(page, 'ArrowRight', 'Shift');
+  await page.waitForSelector('[aria-label="Formatting"] [aria-label="Comment"]', {
+    timeout: 2000,
+  });
+  await (await page.$('[aria-label="Formatting"] [aria-label="Comment"]')).click();
+  await sleep(150);
+  const opened = await page.evaluate(() => globalThis.__bloomOpened ?? []);
+  await check(
+    page,
+    opened.includes(`comment:${quoteId}:0-6`),
+    `the format action gets the selection (${opened})`,
+  );
+
+  // Removing selected blocks asks first; a no keeps them.
+  await page.evaluate(() => {
+    globalThis.__bloomConfirm = false;
+  });
+  await clickInto(page, 'Simple things should be simple.');
+  await press(page, 'Escape');
+  await press(page, 'Backspace');
+  let doc = await outline(page);
+  await check(
+    page,
+    doc.includes('quote:Simple things should be simple.'),
+    'Backspace on selected blocks keeps them when the app says no',
+  );
+  await page.evaluate(() => {
+    globalThis.__bloomConfirm = true;
+  });
+  await press(page, 'Backspace');
+  doc = await outline(page);
+  await check(
+    page,
+    !doc.some((l) => l.includes('Simple things')),
+    'Backspace removes them when the app agrees',
+  );
+  const asked = await page.evaluate(
+    () => (globalThis.__bloomOpened ?? []).filter((o) => o.startsWith('confirm:')).length,
+  );
+  await check(page, asked === 2, `the app is asked each time (${asked})`);
   await page.close();
 }
 

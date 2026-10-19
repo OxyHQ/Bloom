@@ -1,5 +1,5 @@
 import type { PastedImage } from '@oxy.so/bloom-text';
-import { type ComponentRef, type ReactNode, useEffect, useMemo, useRef } from 'react';
+import { type ComponentRef, type ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { MentionMark } from '@oxy.so/bloom-text/model';
 import {
   Linking,
@@ -23,7 +23,7 @@ import type { BlockId } from '../model/document';
 import { specOf } from '../model/schema';
 import type { SlashItem } from '../model/slash';
 import type { EditorStore } from '../model/store';
-import { BLOCK_DOM_PREFIX, GUTTER_DOM_PREFIX } from './block-dom';
+import { BLOCK_DOM_PREFIX, blockElementAt, GUTTER_DOM_PREFIX } from './block-dom';
 import { BlockMenu } from './BlockMenu';
 import {
   clearBlockSelection,
@@ -32,6 +32,7 @@ import {
   stepBlockSelection,
 } from './block-selection';
 import { CodeLanguageMenu } from './CodeLanguageMenu';
+import { afterConfirm } from './confirm-remove';
 import { type EditorController, useEditorController } from './controller';
 import { BlockList } from './BlockRow';
 import { blockRange } from '../model/selection';
@@ -40,8 +41,11 @@ import {
   type BlockRenderer,
   type CodeHighlighter,
   type CodeLanguage,
+  type ConfirmRemove,
   EditorContext,
+  type FormatAction,
   type InlineEquations,
+  type PasteTextInput,
   type MentionSource,
   type EditorContextValue,
   useEditorContext,
@@ -95,6 +99,32 @@ export interface BlockEditorProps {
    * (`onOpenMention`).
    */
   inlineEquations?: InlineEquations;
+  /**
+   * The application's actions on selected text (comment on it), after the
+   * marks in the web selection bubble and in `EditorToolbar`, while text is
+   * selected.
+   */
+  formatActions?: readonly FormatAction[];
+  /**
+   * A paste into a block's text, before the editor's own handling (HTML to
+   * blocks, lines to blocks): return true when the app took it, and the
+   * editor pastes nothing. Web only — native inputs paste on their own and
+   * the text arrives as an edit.
+   */
+  onPasteText?: (input: PasteTextInput) => boolean;
+  /**
+   * Asked before whole blocks are removed — Backspace or Delete on selected
+   * blocks, cutting them, the block menu's Delete — with the blocks the
+   * removal would take (each block's children go with it). Nothing is removed
+   * unless it answers, or resolves to, true; a cut still copies.
+   */
+  confirmRemove?: ConfirmRemove;
+  /**
+   * The DOM id prefix of this editor's block rows on web (`blockDomId`):
+   * give each surface that can show the same block as another (a synced
+   * block's) its own. `'bloom-block-'` by default.
+   */
+  domIdPrefix?: string;
   theme?: EditorTheme;
   labels?: Partial<EditorLabels>;
   readOnly?: boolean;
@@ -119,6 +149,7 @@ const openWithLinking = (href: string) => {
   void Linking.openURL(href);
 };
 const NO_ACTIONS: readonly BlockAction[] = [];
+const NO_FORMAT_ACTIONS: readonly FormatAction[] = [];
 
 /**
  * A Notion-style block editor over an `EditorStore`, the document laid out
@@ -194,6 +225,10 @@ export function EditorSurface({
   codeLanguages,
   highlightCode,
   inlineEquations,
+  formatActions = NO_FORMAT_ACTIONS,
+  onPasteText,
+  confirmRemove,
+  domIdPrefix = BLOCK_DOM_PREFIX,
   theme = DEFAULT_THEME,
   labels,
   readOnly = false,
@@ -205,6 +240,37 @@ export function EditorSurface({
   const controller = given ?? own;
   const { ui, inputs } = controller;
   const mergedLabels = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+
+  // The format bar is drawn inside the editor and in `EditorToolbar` outside
+  // it: both read the actions from the controller's UI state.
+  useEffect(() => {
+    ui.set({ formatActions });
+    return () => {
+      if (ui.get().formatActions === formatActions) ui.set({ formatActions: NO_FORMAT_ACTIONS });
+    };
+  }, [ui, formatActions]);
+
+  // Removing whole blocks waits for the app's word; one question at a time.
+  const confirming = useRef(false);
+  const requestRemove = useCallback(
+    (ids: readonly BlockId[]) => {
+      if (readOnly || ids.length === 0 || confirming.current) return;
+      const answer = afterConfirm(confirmRemove, ids, () => {
+        const present = ids.filter((id) => store.doc.blocks[id]);
+        if (present.length === 0) return;
+        clearBlockSelection(ui);
+        store.sealHistory();
+        store.run((c) => removeBlocks(c, present));
+      });
+      if (typeof answer !== 'boolean') {
+        confirming.current = true;
+        void answer.finally(() => {
+          confirming.current = false;
+        });
+      }
+    },
+    [confirmRemove, readOnly, store, ui],
+  );
 
   const value: EditorContextValue = useMemo(
     () => ({
@@ -227,6 +293,9 @@ export function EditorSurface({
       codeLanguages,
       highlightCode,
       inlineEquations,
+      onPasteText,
+      requestRemove,
+      domIdPrefix,
       readOnly,
       inputs,
     }),
@@ -250,6 +319,9 @@ export function EditorSurface({
       codeLanguages,
       highlightCode,
       inlineEquations,
+      onPasteText,
+      requestRemove,
+      domIdPrefix,
       readOnly,
       inputs,
     ],
@@ -269,9 +341,7 @@ export function EditorSurface({
       const mod = event.metaKey || event.ctrlKey;
       if (event.key === 'Backspace' || event.key === 'Delete') {
         event.preventDefault();
-        clearBlockSelection(ui);
-        store.sealHistory();
-        store.run((c) => removeBlocks(c, selected));
+        requestRemove(selected);
       } else if (mod && event.key.toLowerCase() === 'd') {
         event.preventDefault();
         store.sealHistory();
@@ -300,7 +370,7 @@ export function EditorSurface({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [readOnly, store, ui]);
+  }, [readOnly, requestRemove, store, ui]);
 
   // Selecting blocks with the pointer (web): Shift-click extends a selection
   // to the block clicked (from the selected blocks, or from the block being
@@ -310,11 +380,8 @@ export function EditorSurface({
   useEffect(() => {
     const node = root.current as unknown as HTMLElement | null;
     if (Platform.OS !== 'web' || readOnly || !node?.addEventListener) return;
-    const blockAt = (target: EventTarget | null): string | null => {
-      const element = (target as HTMLElement | null)?.closest?.(`[id^="${BLOCK_DOM_PREFIX}"]`);
-      const id = element?.id.slice(BLOCK_DOM_PREFIX.length);
-      return id && store.doc.blocks[id] ? id : null;
-    };
+    const blockAt = (target: EventTarget | null): string | null =>
+      blockElementAt(target, domIdPrefix, (id) => store.doc.blocks[id] !== undefined)?.id ?? null;
     const inGutter = (target: EventTarget | null) =>
       Boolean((target as HTMLElement | null)?.closest?.(`[id^="${GUTTER_DOM_PREFIX}"]`));
     let drag: { from: string; selecting: boolean } | null = null;
@@ -386,7 +453,7 @@ export function EditorSurface({
       node.removeEventListener('pointerdown', onPointerDown, true);
       node.removeEventListener('mousedown', onMouseDown, true);
     };
-  }, [controller, readOnly, store, ui]);
+  }, [controller, domIdPrefix, readOnly, store, ui]);
 
   // Copying and cutting selected blocks (web): as Markdown, which pasting
   // turns back into blocks — in this editor or any other.
@@ -398,11 +465,7 @@ export function EditorSurface({
       const ids = selected.filter((id) => !selected.includes(store.doc.blocks[id]?.parent ?? ''));
       event.clipboardData.setData('text/plain', snapshotToMarkdown(exportSnapshot(store.doc, ids)));
       event.preventDefault();
-      if (cut && !readOnly) {
-        clearBlockSelection(ui);
-        store.sealHistory();
-        store.run((c) => removeBlocks(c, ids));
-      }
+      if (cut) requestRemove(ids);
     };
     const copy = onCopy(false);
     const cut = onCopy(true);
@@ -412,7 +475,7 @@ export function EditorSurface({
       document.removeEventListener('copy', copy);
       document.removeEventListener('cut', cut);
     };
-  }, [readOnly, store, ui]);
+  }, [requestRemove, store, ui]);
 
   return (
     <EditorContext.Provider value={value}>

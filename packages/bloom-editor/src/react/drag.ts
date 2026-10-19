@@ -8,4 +8,5 @@ export function startBlockDrag(
   _ui: UiStore,
   _id: BlockId,
   _start: { x: number; y: number },
+  _prefix: string,
 ): void {}

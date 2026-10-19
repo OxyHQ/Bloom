@@ -46,6 +46,41 @@ export interface BlockAction {
   onPress: (blockId: BlockId) => void;
 }
 
+/** A stretch of one block's text, as a format action receives it. */
+export interface TextRangeSelection {
+  blockId: BlockId;
+  start: number;
+  end: number;
+}
+
+/**
+ * An application action on selected text (comment on it, ask about it),
+ * shown after the marks in the web selection bubble and in `EditorToolbar`
+ * while text is selected.
+ */
+export interface FormatAction {
+  id: string;
+  /** Its accessible name, and what the button shows without an icon. */
+  label: string;
+  /** Draws the button's icon in the toolbar's colour and size. */
+  icon?: (props: { color: string; size: number }) => ReactNode;
+  onPress: (selection: TextRangeSelection) => void;
+}
+
+/** What is being pasted into a block's text, before the editor pastes it. */
+export interface PasteTextInput {
+  text: string;
+  /** The clipboard's HTML, when it has some. */
+  html?: string;
+  blockId: BlockId;
+}
+
+/**
+ * Asked before blocks are removed; nothing is removed unless it answers true
+ * (or resolves to true).
+ */
+export type ConfirmRemove = (ids: readonly BlockId[]) => boolean | Promise<boolean>;
+
 /** A language a code block can be in, as the app names it. */
 export interface CodeLanguage {
   /** Stored as the block's `language` prop. */
@@ -101,6 +136,15 @@ export interface EditorContextValue {
   /** Highlights a code block while it is not being edited. */
   highlightCode?: CodeHighlighter;
   inlineEquations?: InlineEquations;
+  /** A paste into a block's text, for the app to take before the editor does (web). */
+  onPasteText?: (input: PasteTextInput) => boolean;
+  /**
+   * Remove whole blocks, once the app's `confirmRemove` agrees: the selection
+   * of blocks is cleared and one undoable edit removes those still there.
+   */
+  requestRemove: (ids: readonly BlockId[]) => void;
+  /** The DOM id prefix of this surface's block rows (web). */
+  domIdPrefix: string;
   readOnly: boolean;
   /** Live input handles by block, for focus and formatting commands. */
   inputs: Map<BlockId, RichTextInputHandle>;

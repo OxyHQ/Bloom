@@ -2,7 +2,7 @@ import { moveBlocks } from '../model/commands';
 import type { BlockId } from '../model/document';
 import { acceptsChildren } from '../model/schema';
 import type { EditorStore } from '../model/store';
-import { BLOCK_DOM_PREFIX } from './block-dom';
+import { blockElementAt } from './block-dom';
 import type { UiStore } from './ui-store';
 
 const THRESHOLD = 4;
@@ -10,14 +10,18 @@ const THRESHOLD = 4;
 /** The block under a point and where a drop there would land. */
 function dropTarget(
   store: EditorStore,
+  prefix: string,
   x: number,
   y: number,
 ): { target: BlockId; position: 'before' | 'after' | 'inside' } | null {
-  const element = document.elementFromPoint(x, y)?.closest(`[id^="${BLOCK_DOM_PREFIX}"]`);
-  const target = element?.id.slice(BLOCK_DOM_PREFIX.length);
-  if (!element || !target) return null;
-  const block = store.doc.blocks[target];
-  if (!block) return null;
+  const found = blockElementAt(
+    document.elementFromPoint(x, y),
+    prefix,
+    (id) => store.doc.blocks[id] !== undefined,
+  );
+  const block = found && store.doc.blocks[found.id];
+  if (!found || !block) return null;
+  const { element, id: target } = found;
   // Measure the block's own row, not its children below it.
   const row = (element.firstElementChild as HTMLElement | null) ?? (element as HTMLElement);
   const rect = row.getBoundingClientRect();
@@ -38,6 +42,7 @@ export function startBlockDrag(
   ui: UiStore,
   id: BlockId,
   start: { x: number; y: number },
+  prefix: string,
 ): void {
   const startX = start.x;
   const startY = start.y;
@@ -52,7 +57,7 @@ export function startBlockDrag(
       document.body.style.cursor = 'grabbing';
     }
     e.preventDefault();
-    const drop = dropTarget(store, e.clientX, e.clientY);
+    const drop = dropTarget(store, prefix, e.clientX, e.clientY);
     ui.set({ drag: { ids, target: drop?.target ?? null, position: drop?.position ?? 'after' } });
   };
 

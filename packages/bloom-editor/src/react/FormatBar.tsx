@@ -33,6 +33,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
     s.marks && s.marks.blockId === selection?.blockId ? s.marks.marks : null,
   );
   const linking = useUi(ui, (s) => s.linking);
+  const formatActions = useUi(ui, (s) => s.formatActions);
   const [url, setUrl] = useState('');
   const [invalid, setInvalid] = useState(false);
   const [palette, setPalette] = useState(false);
@@ -209,9 +210,39 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
           A
         </Text>
       </BarButton>
+      {hasRange && formatActions.length > 0 ? (
+        <>
+          <View style={[styles.separator, { backgroundColor: theme.border }]} />
+          {formatActions.map((action) => (
+            <BarButton
+              key={action.id}
+              label={action.label}
+              theme={theme}
+              onPress={() => {
+                const current = controller.textSelection;
+                if (!current || current.start === current.end) return;
+                action.onPress({
+                  blockId: current.blockId,
+                  start: Math.min(current.start, current.end),
+                  end: Math.max(current.start, current.end),
+                });
+              }}
+            >
+              {action.icon ? (
+                action.icon({ color: theme.text, size: ICON_SIZE })
+              ) : (
+                <Text style={[styles.word, { color: theme.text }]}>{action.label}</Text>
+              )}
+            </BarButton>
+          ))}
+        </>
+      ) : null}
     </KeepFocus>
   );
 }
+
+/** The size an application's format action draws its icon at. */
+const ICON_SIZE = 16;
 
 export function BarButton({
   label,
@@ -265,6 +296,7 @@ const styles = StyleSheet.create({
   swatchGlyph: { fontSize: 15, fontWeight: '600' },
   swatch: { width: 18, height: 18, borderRadius: 4, borderWidth: 1 },
   word: { fontSize: 14 },
+  separator: { width: StyleSheet.hairlineWidth, height: 20, marginHorizontal: 4 },
   field: {
     minWidth: 200,
     height: 32,

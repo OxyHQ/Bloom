@@ -17,6 +17,8 @@ import {
   type OnChangeStateEvent,
 } from 'react-native-enriched-html';
 import { htmlToSegments, segmentsToHtml } from './html';
+import { segmentsToPlainText } from './segments';
+import { measureRanges } from './text-geometry';
 import { containsFocus, useKeyCapture } from './key-capture';
 import { InputSync } from './input-sync';
 import { usePasteCapture } from './paste-capture';
@@ -114,6 +116,8 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
       startMention: (indicator) => inputRef.current?.startMention(indicator),
       insertMention: (indicator, text, attributes) =>
         inputRef.current?.setMention(indicator, text, attributes),
+      measureRanges: (ranges) =>
+        measureRanges(wrapperRef.current, segmentsToPlainText(sync.current), ranges),
     }),
     [sync],
   );

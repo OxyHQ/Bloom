@@ -7,4 +7,5 @@ export type {
   RichTextInputHandle,
   RichTextInputProps,
   RichTextStyle,
+  TextRect,
 } from './types';

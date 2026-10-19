@@ -8,5 +8,12 @@ export { diffDocuments } from './diff';
 export { isFractionalKey, keyBetween } from './fractional';
 export { BLOCKS_KEY, blocksMap } from './layout';
 export { Materializer, materialize } from './materialize';
+export {
+  type BlockTextSelection,
+  type RelativePositionJSON,
+  type RelativeSelection,
+  relativeToSelection,
+  selectionToRelative,
+} from './selection';
 export { readSegments, updateSegments, writeSegments } from './text';
 export { writeDocument, writeTransaction } from './write';

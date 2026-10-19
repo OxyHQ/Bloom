@@ -39,6 +39,10 @@ const controller = useEditorController(store);
   codeLanguages={[{ id: 'ts', label: 'TypeScript' }]}     // a code block's language menu
   highlightCode={(code, language) => tokenLines(code, language)} // lines of { text, color }
   inlineEquations={{ indicator: '@' }}                   // `$$x^2$$` makes an equation mention
+  formatActions={[{ id: 'comment', label: 'Comment', onPress: openComposer }]} // on selected text
+  onPasteText={({ text, html, blockId }) => unfurl(text, blockId)} // true: the app took it (web)
+  confirmRemove={(ids) => confirmDelete(ids)}            // before whole blocks go; may be async
+  domIdPrefix="bloom-block-"                             // per surface; see "DOM ids"
   theme={theme}
   labels={labels}
 />
@@ -103,6 +107,76 @@ the end of a container, an empty one included.
 - **Undo** groups typing into words and takes back only your own change,
   even when others edited the same block since.
 
+## Marking text (`BlockDecoration.ranges`)
+
+`decorations` (a `BlockDecorations` store, set as often as carets move)
+gives each block an optional coloured edge (`color`, with `label` for
+assistive technology) and marks on stretches of its text:
+
+```ts
+decorations.set(new Map([[blockId, {
+  ranges: [
+    { start: 6, end: 11, background: 'rgba(255, 212, 0, 0.35)' },               // a commented passage
+    { start: 20, end: 14, background: tint, caret: { color, label: 'Ana' } },   // Ana's selection, made backwards
+  ],
+}]]));
+```
+
+Offsets are the block's plain-text offsets (its selection's). `background`
+is drawn behind `start`–`end`; `caret` is a thin bar at `end` (a backwards
+selection has `end` before `start`) with a flag naming `label`. Where ranges
+overlap, the last one's colour shows. Offsets past the text are clamped.
+
+- **Not being edited** (every platform): drawn into the text the editor
+  draws over the block (`RunsText`, the same drawing as colours the input
+  cannot show), so they sit exactly on the characters.
+- **Being edited, web**: measured on the input (`RichTextInputHandle.measureRanges`
+  — `Range.getClientRects()` on the editing surface's own text nodes) and
+  drawn over it: highlights under the text, carets over it. Measured again
+  when the text, the ranges or the block's size change.
+- **Being edited, native**: not drawn. `react-native-enriched-html` tells
+  nothing of where its characters are (no caret or range rectangles, only the
+  whole view's size), and a position guessed from the font would be wrong
+  wherever a line wraps, a mention or code run is wider, or the font
+  differs. They show again as soon as the block is left.
+
+On web the drawn text uses the input's own font when the theme names none
+(`fontFamily: inherit`): a react-native-web `Text` otherwise sets a system
+font of its own, and the text drawn over the input, with every mark in it,
+was wider or narrower than the text under it.
+
+## Actions, paste and removal
+
+- **`formatActions`**: `{ id, label, icon?, onPress(selection) }[]`, shown
+  after the marks in the web selection bubble and in `EditorToolbar` while
+  text is selected; `onPress` gets `{ blockId, start, end }` (ordered).
+  `icon({ color, size })` draws the button; without it the label does.
+  `EditorToolbar` reads them from the shared controller, so pass the same
+  `controller` to both.
+- **`onPasteText({ text, html?, blockId })`**: called before the editor's own
+  paste handling (HTML to blocks, lines to blocks); return true and the
+  editor pastes nothing. Web only: native inputs paste on their own, and the
+  text arrives as an ordinary edit. Pasted image files still go to
+  `onPasteImages`.
+- **`confirmRemove(ids)`**: asked before whole blocks are removed —
+  Backspace or Delete on selected blocks, cutting them, the block menu's
+  Delete — with the blocks the removal would take (children go with their
+  block). Returns a boolean or a promise of one; anything but true removes
+  nothing (a cut still copies). One question at a time: keys pressed while a
+  promise is pending ask nothing more. Blocks gone by the time it agrees are
+  skipped; the rest go in one undoable edit.
+
+## DOM ids (web)
+
+Every block row's DOM id is `blockDomId(id, domIdPrefix)` —
+`'bloom-block-' + id` by default (`BLOCK_DOM_PREFIX`); scroll to a block with
+`document.getElementById(blockDomId(id, prefix))`. A block shown by two
+surfaces at once (a synced block, in the page that holds it and in a page that
+references it) needs a prefix per surface, or the page has one id twice and
+pointer selection, drag and drop and scrolling find the wrong one. A surface
+finds its own rows by its prefix and looks through another surface's rows
+nested in one of its blocks to the block they are in.
+
 ## Collaboration (`@oxy.so/bloom-editor/yjs`)
 
 `new YjsBinding(store, ydoc)` writes every local edit, undo and redo into the
@@ -122,6 +196,17 @@ broken at its smallest id. Text edits are minimal (`updateSegments`): a mark
 change reformats instead of rewriting, so text typed into that stretch at the
 same time is kept. `writeDocument` stores an existing document once.
 
+**Carets that survive concurrent edits.** An offset is right only for the
+text it was read from. `selectionToRelative(ydoc, { blockId, start, end })`
+turns a selection into Yjs relative positions in that block's `Y.Text`, as
+plain JSON to broadcast (awareness, a socket); `relativeToSelection(ydoc,
+relative)` reads it back as `{ blockId, start, end }` against the document as
+it is now — or null when the block or its text is gone, when this document
+lacks the edits the positions were made after (try again once they arrive),
+or for anything malformed. Text typed at either end of a range stays outside
+it; a caret moves on past text typed where it is. The offsets returned are
+ordered; draw them with `BlockDecoration.ranges`.
+
 ## Schema
 
 `DEFAULT_SCHEMA` describes the built-in types; `extendSchema` adds an app's.
@@ -132,8 +217,10 @@ what Return continues as, and its default props.
 ## Develop
 
 ```bash
-npx jest                      # model and React unit tests
+npx jest                      # model and React unit tests; component suites render
+                              # on react-native-web in jsdom (web forks, a stand-in input)
 npx tsc --noEmit -p .
 bun run storybook             # Editor/BlockEditor stories
-node scripts/verify-editor.mjs  # browser checks against a built Storybook
+node scripts/verify-editor.mjs  # browser checks against a built Storybook (ranges measured
+                                # against the input's own text boxes, format actions, removal)
 ```
