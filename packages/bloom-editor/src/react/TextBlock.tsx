@@ -10,6 +10,7 @@ import {
   type TextSelection,
 } from '@oxy.so/bloom-text';
 import {
+  type ComponentRef,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -51,10 +52,12 @@ import { isStructural, specOf } from '../model/schema';
 import { filterSlashItems, type SlashItem, slashQuery, slashTriggerAt } from '../model/slash';
 import { clearBlockSelection, selectBlocks } from './block-selection';
 import { type MentionItem, useEditorContext } from './context';
+import { useBlockDecoration } from './decorations';
 import { FormatBar } from './FormatBar';
 import { InlinePopover } from './InlinePopover';
 import { inlineTargetAt } from './inline-target';
 import { MentionMenu } from './MentionMenu';
+import { MeasuredCarets, MeasuredHighlights, useMeasuredMarks } from './RangeMarks';
 import { MONO_FONT, RunsText } from './RunsText';
 import { SlashMenu } from './SlashMenu';
 import { useUi } from './ui-store';
@@ -84,8 +87,11 @@ export function TextBlock({ block }: { block: Block }) {
     codeLanguages,
     highlightCode,
     inlineEquations,
+    decorations,
+    onPasteText,
   } = useEditorContext();
   const id = block.id;
+  const hostRef = useRef<ComponentRef<typeof View> | null>(null);
   const spec = specOf(store.schema, block.type);
   const inputRef = useRef<RichTextInputHandle | null>(null);
   const selectionRef = useRef<TextSelection>({ start: 0, end: 0 });
@@ -238,8 +244,11 @@ export function TextBlock({ block }: { block: Block }) {
   // (and their Markdown prefixes) make blocks in `onChange`; code takes
   // plain text.
   const onPaste = useCallback(
-    ({ html }: PasteData): boolean => {
-      if (!html || readOnly) return false;
+    ({ html, text }: PasteData): boolean => {
+      if (readOnly) return false;
+      // The app's first: a link it unfurls, a page it recognises.
+      if (onPasteText?.({ text, ...(html ? { html } : {}), blockId: id })) return true;
+      if (!html) return false;
       const current = store.doc.blocks[id];
       if (!current || specOf(store.schema, current.type).multiline) return false;
       const snapshot = htmlToSnapshot(html, { schema: store.schema });
@@ -250,7 +259,7 @@ export function TextBlock({ block }: { block: Block }) {
       store.sealHistory();
       return pasted;
     },
-    [id, readOnly, store],
+    [id, onPasteText, readOnly, store],
   );
 
   const onSelectionChange = useCallback(
@@ -552,6 +561,10 @@ export function TextBlock({ block }: { block: Block }) {
   // While the block is not being edited, what its input cannot draw is drawn
   // over it: colours and highlights in its text, or highlighted code. The
   // input stays in place, unseen, and takes the press that starts editing.
+  // The app's highlights and carets in the text: drawn with the runs while
+  // the block is not being edited, and measured on the input while it is.
+  const ranges = useBlockDecoration(decorations, id)?.ranges;
+  const hasRanges = ranges !== undefined && ranges.length > 0;
   const isCode = block.type === 'code';
   const language = typeof block.props.language === 'string' ? block.props.language : 'plain';
   const runs = useMemo(() => {
@@ -559,10 +572,15 @@ export function TextBlock({ block }: { block: Block }) {
     const text = block.text ?? [];
     if (isCode && highlightCode) {
       const code = segmentsToPlainText(text);
-      return code ? codeRuns(code, highlightCode(code, language)) : null;
+      const highlighted = code ? codeRuns(code, highlightCode(code, language)) : null;
+      if (highlighted || !hasRanges) return highlighted;
     }
-    return hasValueOnlyMarks(text) ? segmentRuns(text, theme, textStyle, MONO_FONT) : null;
-  }, [focused, block.text, isCode, highlightCode, language, theme, textStyle]);
+    return hasValueOnlyMarks(text) || hasRanges
+      ? segmentRuns(text, theme, textStyle, MONO_FONT)
+      : null;
+  }, [focused, block.text, isCode, highlightCode, language, theme, textStyle, hasRanges]);
+  const plainText = useMemo(() => segmentsToPlainText(block.text ?? []), [block.text]);
+  const measured = useMeasuredMarks(inputRef, hostRef, ranges, plainText, focused && hasRanges);
   const hovered = useUi(ui, (s) => s.hovered === block.id);
   const languageLabel = codeLanguages?.find((l) => l.id === language)?.label ?? language;
   const showLanguage =
@@ -574,7 +592,9 @@ export function TextBlock({ block }: { block: Block }) {
     (Platform.OS !== 'web' || hovered || focused);
 
   return (
-    <View>
+    <View ref={hostRef}>
+      {/* Under the input's text: the highlights measured on it. */}
+      <MeasuredHighlights marks={measured} />
       <View style={runs ? styles.unseen : undefined}>
         <RichTextInput
           ref={inputRef}
@@ -615,8 +635,15 @@ export function TextBlock({ block }: { block: Block }) {
           testID={`block-input-${id}`}
         />
       </View>
+      <MeasuredCarets marks={measured} textColor={theme.background} />
       {runs ? (
-        <RunsText runs={runs} textStyle={textStyle} style={isCode ? styles.codeInput : undefined} />
+        <RunsText
+          runs={runs}
+          ranges={ranges}
+          textStyle={textStyle}
+          flagTextColor={theme.background}
+          style={isCode ? styles.codeInput : undefined}
+        />
       ) : null}
       {showLanguage ? (
         <Pressable

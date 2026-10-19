@@ -12,9 +12,13 @@ export type {
   CodeHighlighter,
   CodeLanguage,
   CodeToken,
+  ConfirmRemove,
+  FormatAction,
   InlineEquations,
   MentionItem,
   MentionSource,
+  PasteTextInput,
+  TextRangeSelection,
 } from './context';
 export { DEFAULT_LABELS, type EditorLabels } from './labels';
 export {
@@ -24,6 +28,11 @@ export {
   DEFAULT_THEME,
   type EditorTheme,
 } from './theme';
-export { type BlockDecoration, BlockDecorations } from './decorations';
+export {
+  type BlockDecoration,
+  BlockDecorations,
+  type TextRangeDecoration,
+} from './decorations';
+export { BLOCK_DOM_PREFIX, blockDomId } from './block-dom';
 export { EditorController, normalizeLink, useEditorController } from './controller';
 export { EditorToolbar, type EditorToolbarProps } from './EditorToolbar';

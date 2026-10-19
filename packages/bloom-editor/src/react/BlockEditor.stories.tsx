@@ -11,8 +11,9 @@ import {
 import { EditorStore } from '../model/store';
 import { BlockEditor, EditorSurface } from './BlockEditor';
 import { BlockList } from './BlockRow';
-import type { MentionSource } from './context';
+import type { FormatAction, MentionSource } from './context';
 import { useEditorController } from './controller';
+import { BlockDecorations } from './decorations';
 import { EditorToolbar } from './EditorToolbar';
 
 let counter = 0;
@@ -145,6 +146,22 @@ function recordOpened(what: string) {
   g.__bloomOpened = [...(g.__bloomOpened ?? []), what];
 }
 
+/** An action on selected text, as an app adds one (comment on it). */
+const FORMAT_ACTIONS: readonly FormatAction[] = [
+  {
+    id: 'comment',
+    label: 'Comment',
+    onPress: ({ blockId, start, end }) => recordOpened(`comment:${blockId}:${start}-${end}`),
+  },
+];
+
+/** Removing blocks asks first; the verification scripts answer through `__bloomConfirm`. */
+function confirmRemove(ids: readonly string[]): boolean {
+  const answer = (globalThis as { __bloomConfirm?: boolean }).__bloomConfirm ?? true;
+  recordOpened(`confirm:${ids.length}`);
+  return answer;
+}
+
 function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
   const store = useMemo(
     () =>
@@ -196,8 +213,11 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
       }),
     [],
   );
+  // Collaborators' carets and commented passages: set by the verification scripts.
+  const decorations = useMemo(() => new BlockDecorations(), []);
   // Exposed for the browser verification scripts.
   (globalThis as { __bloomEditorStore?: EditorStore }).__bloomEditorStore = store;
+  (globalThis as { __bloomDecorations?: BlockDecorations }).__bloomDecorations = decorations;
   const controller = useEditorController(store);
   return (
     <View style={{ flex: 1, height: '100vh' as unknown as number }}>
@@ -224,6 +244,9 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
             codeLanguages={CODE_LANGUAGES}
             highlightCode={highlightKeywords}
             inlineEquations={{ indicator: '@' }}
+            decorations={decorations}
+            formatActions={FORMAT_ACTIONS}
+            confirmRemove={confirmRemove}
           />
         </View>
       </ScrollView>

@@ -43,7 +43,7 @@ const BlockRow = memo(function BlockRow({
   depth: number;
   number: number;
 }) {
-  const { store, ui, theme, labels, renderers, markers, decorations, readOnly } =
+  const { store, ui, theme, labels, renderers, markers, decorations, domIdPrefix, readOnly } =
     useEditorContext();
   const decoration = useBlockDecoration(decorations, id);
   const block = useBlock(store, id);
@@ -169,7 +169,7 @@ const BlockRow = memo(function BlockRow({
 
   return (
     <View
-      nativeID={blockDomId(id)}
+      nativeID={blockDomId(id, domIdPrefix)}
       onPointerEnter={
         Platform.OS === 'web' && !readOnly ? () => ui.set({ hovered: id }) : undefined
       }
@@ -185,7 +185,10 @@ const BlockRow = memo(function BlockRow({
         spec.grow && styles.grow,
         { marginTop: blockSpacing(block.type) },
         selected && { backgroundColor: theme.selection },
-        decoration && [styles.decorated, { borderLeftColor: decoration.color }],
+        decoration?.color !== undefined && [
+          styles.decorated,
+          { borderLeftColor: decoration.color },
+        ],
         raised !== null && styles.raised,
       ]}
       accessibilityHint={decoration?.label}
@@ -228,9 +231,12 @@ const BlockRow = memo(function BlockRow({
 
 /** The web gutter: add-below and the drag handle that also opens the block menu. */
 function Gutter({ id, visible }: { id: BlockId; visible: boolean }) {
-  const { store, ui, theme, labels } = useEditorContext();
+  const { store, ui, theme, labels, domIdPrefix } = useEditorContext();
   return (
-    <View nativeID={gutterDomId(id)} style={[styles.gutter, { opacity: visible ? 1 : 0 }]}>
+    <View
+      nativeID={gutterDomId(id, domIdPrefix)}
+      style={[styles.gutter, { opacity: visible ? 1 : 0 }]}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={labels.addBelow}
@@ -246,7 +252,13 @@ function Gutter({ id, visible }: { id: BlockId; visible: boolean }) {
           and cancels it when the pointer moves, so a quick drag never began. */}
       <View
         onPointerDown={(event) =>
-          startBlockDrag(store, ui, id, { x: event.nativeEvent.pageX, y: event.nativeEvent.pageY })
+          startBlockDrag(
+            store,
+            ui,
+            id,
+            { x: event.nativeEvent.pageX, y: event.nativeEvent.pageY },
+            domIdPrefix,
+          )
         }
       >
         <Pressable

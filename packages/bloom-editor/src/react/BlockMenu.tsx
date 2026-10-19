@@ -7,7 +7,6 @@ import {
   indentBlocks,
   moveBlocks,
   outdentBlocks,
-  removeBlocks,
   setBlocksProps,
   setProps,
   canTurnInto,
@@ -16,7 +15,6 @@ import {
 import { childrenOf, positionOf } from '../model/document';
 import { type Schema, specOf } from '../model/schema';
 import type { Transaction } from '../model/operations';
-import { clearBlockSelection } from './block-selection';
 import { useEditorContext } from './context';
 import { BLOCK_COLOR_NAMES } from './theme';
 import { useUi } from './ui-store';
@@ -42,7 +40,7 @@ function isCurrent(
  * when it is one of the selected blocks, for all of them.
  */
 export function BlockMenu() {
-  const { store, ui, theme, labels, slashItems, blockActions, onCopyBlockLink } =
+  const { store, ui, theme, labels, slashItems, blockActions, onCopyBlockLink, requestRemove } =
     useEditorContext();
   const id = useUi(ui, (s) => s.blockMenu);
   const selected = useUi(ui, (s) => s.selectedBlocks);
@@ -118,8 +116,8 @@ export function BlockMenu() {
             <Row
               label={labels.delete}
               onPress={() => {
-                clearBlockSelection(ui);
-                act((c) => removeBlocks(c, targets));
+                close();
+                requestRemove(targets);
               }}
             />
             {before && !many ? (
