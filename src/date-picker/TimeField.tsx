@@ -2,6 +2,8 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Platform, TextInput, type TextStyle } from 'react-native';
 
 import { MENU_FONT_FAMILY } from '../floating/menu-type';
+import { useIsRtl } from '../hooks/use-is-rtl';
+import { LEFT_TO_RIGHT_VALUE_IN_RTL } from '../styles/left-to-right-value';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -121,6 +123,7 @@ function TimeFieldComponent({
     if (next !== value) onChange(next);
   };
 
+  const rtl = useIsRtl();
   const fieldStyle: TextStyle = {
     width: width ?? config.width,
     height: config.height,
@@ -138,6 +141,8 @@ function TimeFieldComponent({
     ...MENU_FONT_FAMILY,
     // `outline-none`: the border change is the focus indicator.
     outlineWidth: 0,
+    // `09:30`, `9:30 PM`.
+    ...(rtl ? LEFT_TO_RIGHT_VALUE_IN_RTL : null),
   };
 
   return (

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useIsRtl } from '../hooks/use-is-rtl';
 import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useTheme } from '../theme/use-theme';
@@ -148,9 +149,10 @@ function CalendarFrame({
     node?.focus?.();
   }, [focusedDate, firstMonth]);
 
+  const rtl = useIsRtl();
   const onKeyDown = useCallback(
     (key: string, preventDefault: () => void) => {
-      const next = moveFocusedDate(focusedDate, key, weekStartsOn);
+      const next = moveFocusedDate(focusedDate, key, weekStartsOn, rtl);
       if (!next) return;
       preventDefault();
       focusAfterMove.current = true;
@@ -158,7 +160,7 @@ function CalendarFrame({
       showMonthOf(next);
       onPreviewDay?.(next);
     },
-    [focusedDate, weekStartsOn, showMonthOf, onPreviewDay],
+    [focusedDate, weekStartsOn, rtl, showMonthOf, onPreviewDay],
   );
 
   const handlePress = useCallback(

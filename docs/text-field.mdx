@@ -269,6 +269,10 @@ Greyed completion text drawn behind the input, for "type `acme`, see `acme.oxy.s
 - `invalid` and `disabled` reach the input as `aria-invalid` / `aria-disabled` — react-native-web reads only the `aria-*` spellings.
 - Invalid state paints the chrome. Surface the reason as text under the field — colour alone is not an announcement.
 
+## Right to left
+
+The field mirrors with the document (`<html dir="rtl">` on web, `I18nManager` on native): the inset, the addons and the floating label move to the right. A value that reads left to right in every script stays LTR inside it: `inputMode` `email`, `url` or `tel`, or `keyboardType` `email-address`, `url` or `phone-pad`. Without that, bidi moves its neutrals, so a leading `+` jumps to the far end and a half-typed `name@` shows as `@name`. The value is still aligned to the right edge, with the rest of the form.
+
 ## Recipes
 
 ### Password with visibility toggle

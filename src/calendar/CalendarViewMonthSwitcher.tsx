@@ -22,6 +22,7 @@ import {
 } from '../date-picker/calendar-grid';
 import { CALENDAR_CSS } from '../date-picker/CalendarMonth';
 import { borderRadius } from '../styles/tokens';
+import { useIsRtl } from '../hooks/use-is-rtl';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
@@ -230,9 +231,10 @@ function SwitcherGrid({
     else nodes.current.delete(key);
   }, []);
 
+  const rtl = useIsRtl();
   const keyProps: WebKeyProps = {
     onKeyDown: (event) => {
-      const next = moveFocusedDate(focused, keyOf(event), 0);
+      const next = moveFocusedDate(focused, keyOf(event), 0, rtl);
       if (!next) return;
       event.preventDefault();
       focusAfterMove.current = true;
