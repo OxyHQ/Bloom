@@ -211,14 +211,28 @@ export function setProps(
 }
 
 /**
+ * Whether `id` can become `type` without losing anything: a type without text
+ * (an image, a divider) only takes a block whose text is empty.
+ */
+export function canTurnInto(
+  ctx: Pick<CommandContext, 'doc' | 'schema'>,
+  id: BlockId,
+  type: string,
+): boolean {
+  const block = getBlock(ctx.doc, id);
+  return specOf(ctx.schema, type).hasText || lengthOf(block) === 0;
+}
+
+/**
  * Change a block's type, keeping its text and props (so turning a to-do into a
  * paragraph and back keeps `checked`, as Notion does) unless the new type
  * lists the props it keeps. The new type's default props fill gaps; text is
- * added or kept per the new type.
+ * added or kept per the new type. Refused (null) when the new type has no
+ * text and the block has some: it would be gone once the document is saved.
  */
 export function turnInto(ctx: CommandContext, id: BlockId, type: string): Transaction | null {
   const block = getBlock(ctx.doc, id);
-  if (block.type === type) return null;
+  if (block.type === type || !canTurnInto(ctx, id, type)) return null;
   const spec = specOf(ctx.schema, type);
   const b = new Builder(ctx.doc);
   const after: { type: string; text?: Segment[]; props?: Readonly<Record<string, unknown>> } = {

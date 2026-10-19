@@ -26,6 +26,7 @@ import {
   snapshotToMarkdown,
   splitBlock,
   type Transaction,
+  canTurnInto,
   turnInto,
   validateDocument,
 } from '../index';
@@ -257,6 +258,21 @@ describe('turnInto', () => {
     let next = run(doc, turnInto(ctx(doc), 'b1', 'paragraph'));
     next = run(next, turnInto(ctx(next), 'b1', 'todo'));
     expect(getBlock(next, 'b1').props.checked).toBe(true);
+  });
+
+  it('never turns a block with text into a type without any, which would lose it', () => {
+    const doc = build([
+      ['paragraph', 'keep me'],
+      ['paragraph', ''],
+    ]);
+    expect(canTurnInto(ctx(doc), 'b1', 'divider')).toBe(false);
+    expect(turnInto(ctx(doc), 'b1', 'divider')).toBeNull();
+    expect(canTurnInto(ctx(doc), 'b1', 'heading_1')).toBe(true);
+    // An empty block becomes anything.
+    expect(outline(run(doc, turnInto(ctx(doc), 'b2', 'divider')))).toEqual([
+      'paragraph:keep me',
+      'divider:',
+    ]);
   });
 
   it('hands children on when the new type cannot hold them', () => {

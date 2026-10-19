@@ -60,6 +60,7 @@ export {
   removeBlocks,
   setProps,
   splitBlock,
+  canTurnInto,
   turnInto,
 } from './commands';
 export { History, type HistoryOptions } from './history';
