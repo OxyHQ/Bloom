@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Platform, TextInput, type TextStyle } from 'react-native';
 
 import { MENU_FONT_FAMILY } from '../floating/menu-type';
+import { useIsRtl } from '../hooks/use-is-rtl';
+import { LEFT_TO_RIGHT_VALUE_IN_RTL } from '../styles/left-to-right-value';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { TYPE_SCALE } from '../typography';
 
@@ -53,6 +55,7 @@ export function DateChipInput({
     else setText(formatted);
   };
 
+  const rtl = useIsRtl();
   const style: TextStyle = {
     width: 104,
     height: 38,
@@ -71,6 +74,8 @@ export function DateChipInput({
     ...MENU_FONT_FAMILY,
     // `outline-none`: the border change is the focus indicator.
     outlineWidth: 0,
+    // `DD/MM/YYYY`.
+    ...(rtl ? LEFT_TO_RIGHT_VALUE_IN_RTL : null),
   };
 
   return (

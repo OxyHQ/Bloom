@@ -25,6 +25,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
+import { LEFT_TO_RIGHT_VALUE_IN_RTL } from '../styles/left-to-right-value';
 import { useFieldControl } from '../field/context';
 import { mergeRefs } from '../hooks/merge-refs';
 import { atoms as a, web, android, platform, tokens, type TextStyleProp } from '../styles';
@@ -557,6 +558,7 @@ export function TextFieldInput({
       paddingLeft: rtl ? 0 : TEXT_FIELD_INPUT_INSET,
       paddingRight: rtl ? TEXT_FIELD_INPUT_INSET : 0,
     },
+    rtl && isLeftToRightValue(rest) ? LEFT_TO_RIGHT_VALUE_IN_RTL : undefined,
     multiline
       ? {
           lineHeight: TEXT_FIELD_TEXT.lineHeight,
@@ -714,6 +716,7 @@ const FLOAT_TRAVEL = 11;
 /** Resting label size (matches the input text) vs. floated caption size. */
 const FLOAT_LABEL_REST_SIZE = TEXT_FIELD_TEXT.fontSize;
 const FLOAT_LABEL_FLOAT_SIZE = TEXT_FIELD_HINT_TEXT.fontSize;
+const FLOAT_LABEL_INSET = tokens.space.xs + tokens.space._2xs;
 
 type FloatingLabelInputProps = Omit<TextInputProps, 'value' | 'onChangeText' | 'placeholder'> & {
   label: string;
@@ -754,6 +757,7 @@ function FloatingLabelInput({
   const theme = useTheme();
   const ctx = useTextFieldContext();
   const reduceMotion = useReducedMotion();
+  const rtl = useIsRtl();
 
   const hasValue = (value?.length ?? 0) > 0;
   const floated = ctx.focused || hasValue;
@@ -814,6 +818,7 @@ function FloatingLabelInput({
       paddingTop: 26,
       paddingBottom: 8,
     },
+    rtl && isLeftToRightValue(rest) ? LEFT_TO_RIGHT_VALUE_IN_RTL : undefined,
     android({ paddingTop: 24, paddingBottom: 6 }),
     web({ paddingTop: 25, paddingBottom: 7 }),
     WEB_INPUT_OUTLINE_RESET,
@@ -834,7 +839,8 @@ function FloatingLabelInput({
           {
             fontFamily: SANS_FONT_FAMILY,
             fontWeight: TEXT_FIELD_HINT_TEXT.fontWeight,
-            left: tokens.space.xs + tokens.space._2xs,
+            // Over the input's text start, which is the right edge in RTL.
+            ...(rtl ? { right: FLOAT_LABEL_INSET } : { left: FLOAT_LABEL_INSET }),
             top: labelTop,
             fontSize: labelSize,
             color: labelColor,
@@ -1063,5 +1069,19 @@ export function TextFieldGhost({ children, value }: { children: string; value: s
         </Text>
       </Text>
     </View>
+  );
+}
+
+/** The values `LEFT_TO_RIGHT_VALUE_IN_RTL` covers, read from the keyboard asked for. */
+const LEFT_TO_RIGHT_INPUT_MODES = new Set(['email', 'url', 'tel']);
+const LEFT_TO_RIGHT_KEYBOARDS = new Set(['email-address', 'url', 'phone-pad']);
+
+function isLeftToRightValue({
+  inputMode,
+  keyboardType,
+}: Pick<TextInputProps, 'inputMode' | 'keyboardType'>): boolean {
+  return (
+    (inputMode !== undefined && LEFT_TO_RIGHT_INPUT_MODES.has(inputMode)) ||
+    (keyboardType !== undefined && LEFT_TO_RIGHT_KEYBOARDS.has(keyboardType))
   );
 }

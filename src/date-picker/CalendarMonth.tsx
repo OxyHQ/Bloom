@@ -3,6 +3,7 @@ import { Pressable, View, type Role, type TextStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { borderRadius } from '../styles/tokens';
+import { useIsRtl } from '../hooks/use-is-rtl';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text, TYPE_SCALE } from '../typography';
 import {
@@ -158,6 +159,7 @@ interface DayCellProps {
   isTabStop: boolean;
   label: string;
   palette: CalendarPalette;
+  rtl: boolean;
   onPress: (date: Date) => void;
   onHover: (date: Date | null) => void;
   registerNode: (key: string, node: React.ComponentRef<typeof View> | null) => void;
@@ -174,13 +176,14 @@ const DayCell = memo(function DayCell({
   isTabStop,
   label,
   palette,
+  rtl,
   onPress,
   onHover,
   registerNode,
   testID,
 }: DayCellProps) {
   const [hovered, setHovered] = React.useState(false);
-  const paint = dayCellPaint(state, column, isRange, DAY_SIZE);
+  const paint = dayCellPaint(state, column, isRange, DAY_SIZE, rtl);
   const key = dayKey(date);
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarDay: '' } } : {};
   const current: WebCurrentProps = isToday ? { 'aria-current': 'date' } : {};
@@ -339,6 +342,8 @@ export function CalendarMonth({
   nextLabel,
   testID,
 }: CalendarMonthProps) {
+  // Read once for the panel rather than in each of its 42 cells.
+  const rtl = useIsRtl();
   const title = formatMonthTitle(month, locale);
   const weekdays = weekdayLabels(weekStartsOn, locale);
   const weeks = buildMonthGrid(month, weekStartsOn);
@@ -366,8 +371,9 @@ export function CalendarMonth({
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         {onPrevious ? (
+          // The earlier month lies to the right in RTL, so its chevron points there.
           <NavButton
-            direction="left"
+            direction={rtl ? 'right' : 'left'}
             label={previousLabel}
             onPress={onPrevious}
             disabled={previousDisabled}
@@ -384,7 +390,7 @@ export function CalendarMonth({
         </Text>
         {onNext ? (
           <NavButton
-            direction="right"
+            direction={rtl ? 'left' : 'right'}
             label={nextLabel}
             onPress={onNext}
             disabled={nextDisabled}
@@ -434,6 +440,7 @@ export function CalendarMonth({
                   isTabStop={key === tabStopKey}
                   label={formatAccessibleDate(date, locale)}
                   palette={palette}
+                  rtl={rtl}
                   onPress={onPressDay}
                   onHover={onHoverDay}
                   registerNode={registerNode}

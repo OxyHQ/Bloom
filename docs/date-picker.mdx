@@ -109,6 +109,15 @@ A range takes two presses in either order; between them the band follows the poi
 
 `daysSelected` and `duration` are functions of the count. The trigger's empty text and the popup's name are the `placeholder` and `accessibilityLabel` props (`triggerLabel` on `MeetingScheduler`), localised when unset. `TimeField` draws no fixed text of its own: its name is `accessibilityLabel` (or an enclosing `Field`'s label) and its empty text is `placeholder`.
 
+## Right to left
+
+Under `<html dir="rtl">` (web) or `I18nManager` RTL (native) the week row mirrors, and the calendar follows it:
+- **Range band:** a selected range runs right to left, starting from the right edge of its first day.
+- **Month chevrons:** they point toward the earlier and later months, so the previous-month chevron points right.
+- **Arrow keys:** they move the way the days are drawn, so `ArrowLeft` goes to the next day.
+
+The date chips and `TimeField` keep `DD/MM/YYYY` and `09:30` left to right.
+
 ## TimeField
 
 `DatePicker` is the day; `TimeField` is the hour and minute. It is a **field,

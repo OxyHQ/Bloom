@@ -10,6 +10,7 @@ import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
+import { useIsRtl } from '../hooks/use-is-rtl';
 import { useFieldMembership } from '../field/membership';
 import type { SwitchProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
@@ -46,6 +47,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
     });
     const theme = useTheme();
     const reducedMotion = useReducedMotion();
+    const rtl = useIsRtl();
     const { size, tone } = useBloomAppearance(
       { size: sizeProp, tone: toneProp },
       { size: 'md', tone: 'accent' },
@@ -105,9 +107,13 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
       outputRange: [theme.colors.border, paint.background],
     });
 
+    // `alignItems: 'flex-start'` parks the thumb at the inline start, which is
+    // the RIGHT edge in RTL, while a `translateX` stays physical: the travel
+    // has to point back across the track.
+    const toward = rtl ? -1 : 1;
     const thumbX = anim.interpolate({
       inputRange: [0, 1],
-      outputRange: [PADDING, PADDING + travel],
+      outputRange: [toward * PADDING, toward * (PADDING + travel)],
     });
 
     const squeezedHeight = thumb * SQUEEZE_RATIO;

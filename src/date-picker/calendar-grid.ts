@@ -259,6 +259,9 @@ export function rangeCellState(date: Date, range: DateRange | null | undefined):
  *
  * `edge` is the darker pill on a range end or a single selected day: rounded all
  * round for a single day, on the outer side only for a range end.
+ *
+ * `left`/`right` are physical. The week row mirrors in RTL, so there the range
+ * runs right to left and its start side is the cell's RIGHT.
  */
 export interface DayCellPaint {
   band: {
@@ -283,26 +286,41 @@ export function dayCellPaint(
   column: number,
   isRange: boolean,
   cellSize: number,
+  rtl = false,
 ): DayCellPaint {
   const { isSelected, isSelectionStart, isSelectionEnd } = state;
   const isSingleDay = isRange ? isSelectionStart && isSelectionEnd : isSelected;
   const isEdge = isRange ? isSelectionStart || isSelectionEnd : isSelected;
-  const extendLeft = isRange && isSelected && !isSelectionStart && column !== 0;
-  const extendRight = isRange && isSelected && !isSelectionEnd && column !== 6;
+  const extendBefore = isRange && isSelected && !isSelectionStart && column !== 0;
+  const extendAfter = isRange && isSelected && !isSelectionEnd && column !== 6;
   const half = cellSize / 2;
+
+  // The side toward the earlier day, then the side toward the later one.
+  const before = {
+    inset: isSelectionStart ? half : extendBefore ? -RANGE_BRIDGE : 0,
+    roundBand: !isSelectionStart && column === 0,
+    roundEdge: isSingleDay || (isSelectionStart && !isSingleDay),
+  };
+  const after = {
+    inset: isSelectionEnd ? half : extendAfter ? -RANGE_BRIDGE : 0,
+    roundBand: !isSelectionEnd && column === 6,
+    roundEdge: isSingleDay || (isSelectionEnd && !isSingleDay),
+  };
+  const left = rtl ? after : before;
+  const right = rtl ? before : after;
 
   return {
     band: {
       visible: isSelected && !isSingleDay,
-      left: isSelectionStart ? half : extendLeft ? -RANGE_BRIDGE : 0,
-      right: isSelectionEnd ? half : extendRight ? -RANGE_BRIDGE : 0,
-      roundLeft: !isSelectionStart && column === 0,
-      roundRight: !isSelectionEnd && column === 6,
+      left: left.inset,
+      right: right.inset,
+      roundLeft: left.roundBand,
+      roundRight: right.roundBand,
     },
     edge: {
       visible: isEdge,
-      roundLeft: isSingleDay || (isSelectionStart && !isSingleDay),
-      roundRight: isSingleDay || (isSelectionEnd && !isSingleDay),
+      roundLeft: left.roundEdge,
+      roundRight: right.roundEdge,
     },
   };
 }
@@ -318,13 +336,22 @@ export type CalendarNavigationKey =
   | 'PageUp'
   | 'PageDown';
 
-/** The day focus moves to for `key`, or `null` for any other key. */
-export function moveFocusedDate(date: Date, key: string, weekStartsOn: WeekStart = 0): Date | null {
+/**
+ * The day focus moves to for `key`, or `null` for any other key. The week row
+ * mirrors in RTL, so the horizontal arrows follow what is drawn: `ArrowLeft`
+ * is the next day there.
+ */
+export function moveFocusedDate(
+  date: Date,
+  key: string,
+  weekStartsOn: WeekStart = 0,
+  rtl = false,
+): Date | null {
   switch (key) {
     case 'ArrowLeft':
-      return addDays(date, -1);
+      return addDays(date, rtl ? 1 : -1);
     case 'ArrowRight':
-      return addDays(date, 1);
+      return addDays(date, rtl ? -1 : 1);
     case 'ArrowUp':
       return addDays(date, -7);
     case 'ArrowDown':

@@ -101,6 +101,10 @@ silently overwritten.
 Neither of these is visible to a prop-level test. Assert the rendered
 attribute.
 
+## Right to left
+
+Under `<html dir="rtl">` (web) or `I18nManager` RTL (native) the thumb rests at the right edge and travels left when on. The track places it at the inline start, and the travel is a physical `translateX`, so its sign comes from `useIsRtl()`.
+
 ## API migration
 
 Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).

@@ -47,6 +47,7 @@ import { StyledView, StyledPressable } from '../styles/styled-primitives';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
 import { webDataSet } from '../styles/web-data';
 import { IS_WEB } from '../styles/platform';
+import { useIsRtl } from '../hooks/use-is-rtl';
 
 /**
  * A segmented control using Bloom's canonical surface and text roles.
@@ -499,6 +500,20 @@ export function SegmentedControlItem({
     }
   }, [needsUpdate]);
 
+  // A direction flip moves every segment without resizing one, and web's
+  // `onLayout` only reports size changes, so the measured `x` would go stale
+  // and the thumb would stay under the old segment. Measure again on the flip.
+  const itemRef = useRef<ComponentRef<typeof Pressable> | null>(null);
+  const rtl = useIsRtl();
+  const measuredRtl = useRef(rtl);
+  useLayoutEffect(() => {
+    if (measuredRtl.current === rtl) return;
+    measuredRtl.current = rtl;
+    itemRef.current?.measure((x, _y, width) => {
+      if (width > 0) setPosition({ x, width });
+    });
+  }, [rtl]);
+
   const isDisabled = ctx.disabled || disabled === true;
 
   useLayoutEffect(() => {
@@ -572,6 +587,7 @@ export function SegmentedControlItem({
 
   return (
     <StyledPressable
+      ref={itemRef}
       className={className}
       onLayout={(evt) => {
         const measuredPosition = {
