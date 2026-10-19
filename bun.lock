@@ -109,7 +109,7 @@
     },
     "packages/bloom-text": {
       "name": "@oxy.so/bloom-text",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "devDependencies": {
         "@types/jest": "^30.0.0",
         "@types/react": "~19.1.0",

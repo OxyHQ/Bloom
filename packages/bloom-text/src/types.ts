@@ -103,6 +103,26 @@ export interface RichTextInputHandle {
   startMention(indicator: string): void;
   /** Replace the open mention query with a finished mention. */
   insertMention(indicator: string, text: string, attributes: Record<string, string>): void;
+  /**
+   * Where stretches of the text are drawn, for marking them over the input
+   * (a collaborator's selection, a commented passage): for each range, its
+   * boxes relative to the input's top-left corner — one per line it is drawn
+   * on, or one of no width where a collapsed range (a caret) is.
+   *
+   * Web only. Null on native, where `react-native-enriched-html` exposes no
+   * text layout, and whenever the input does not show the current `value`
+   * (a value given a moment ago and not yet applied): a box is never drawn
+   * where the text it marks is not.
+   */
+  measureRanges(ranges: readonly TextSelection[]): TextRect[][] | null;
+}
+
+/** A box in the input's coordinates. */
+export interface TextRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 /** An image pasted into the input. */

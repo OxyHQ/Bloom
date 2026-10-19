@@ -66,6 +66,11 @@ export class InputSync {
     this.pending = [initial];
   }
 
+  /** The value: last given, or last made from what the person typed. */
+  get current(): readonly Segment[] {
+    return this.value;
+  }
+
   /** Where the caret is: as the input last said, or as the app set it. */
   select(selection: TextSelection): void {
     this.selection = selection;

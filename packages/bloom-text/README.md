@@ -52,6 +52,19 @@ const [value, setValue] = useState<Segment[]>([{ text: 'Hello ' }, { text: 'worl
   clipboard's HTML and plain text before the input pastes, and may claim it
   (a block editor turning HTML into blocks).
 
+## Measuring the text (web)
+
+`ref.measureRanges([{ start, end }, …])` returns, for each range, the boxes
+it occupies relative to the input's top-left corner — one per line it is
+drawn on, or one of no width where a collapsed range (a caret) is — for
+drawing marks over the input while it is edited (a collaborator's selection,
+a commented passage). It reads the editing surface's own text nodes
+(`Range.getClientRects()`), counting offsets as the input does (one `\n`
+between paragraphs), and measures only when the surface shows the current
+`value` exactly: otherwise, and always on native, it returns null.
+`react-native-enriched-html` exposes no text layout on iOS or Android (no
+caret or range rectangles), so there is nothing true to return there.
+
 ## The model, without React Native
 
 `@oxy.so/bloom-text/model` exports the pure half — segments, edits, the HTML
@@ -65,6 +78,8 @@ links) and reconciliation — for servers and tests.
 - A remote change replaces the whole content (`setValue`), then restores the
   transformed selection. A keystroke that crossed it disappears for the moment
   it takes to give the merged value back.
+- No text geometry on native: `measureRanges` is null on iOS and Android
+  until the input reports where it draws its characters.
 - No per-selection text colour in the input itself: `react-native-enriched-html`
   is adding foreground and background colours (software-mansion/react-native-enriched-html#817);
   once released, the input shows `color` and `background` instead of only
