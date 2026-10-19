@@ -57,7 +57,6 @@ import {
   DOT_EDGE_SIZE,
   DOT_SIZE,
   dotWindow,
-  listingGridColumns,
   locationText,
   resolveListingCardPaint,
   resolvePhoto,
@@ -144,12 +143,6 @@ const stay = {
 // ---------------------------------------------------------------------------
 
 describe('pure helpers', () => {
-  it('listingGridColumns: 1 < 500 ≤ 2 < 950 ≤ 3 < 1280 ≤ 4', () => {
-    expect([375, 430, 499, 500, 640, 949, 950, 1279, 1280, 1920].map(listingGridColumns)).toEqual([
-      1, 1, 1, 2, 2, 2, 3, 3, 4, 4,
-    ]);
-  });
-
   it('dotWindow: every dot up to five; beyond, a window of five with shrinking edges', () => {
     expect(dotWindow(1, 0)).toEqual([]);
     expect(dotWindow(3, 1).map((d) => [d.index, d.size, d.active])).toEqual([
@@ -438,64 +431,59 @@ describe('FavoriteButton', () => {
 // ---------------------------------------------------------------------------
 
 describe('ListingCardGrid', () => {
-  it.each([
-    [375, 1, 375],
-    [800, 2, (799 - 24) / 2],
-    [1100, 3, (1099 - 48) / 3],
-    [1440, 4, (1439 - 72) / 4],
-  ])(
-    'at %ipx: %i columns, cells sized from the width (a pixel kept back for rounding) with 24/40 gaps',
-    async (width, columns, cell) => {
-      layoutWidth = width;
-      mount(
-        <ListingCardGrid testID="g">
-          {Array.from({ length: 5 }, (_, i) => (
-            <span key={i}>{i}</span>
-          ))}
-        </ListingCardGrid>,
-      );
-      await flushLayout();
-      const grid = byTestId('g');
-      expect(grid.getAttribute('role')).toBe('list');
-      expect(grid.getAttribute('data-bloom-listing-card-grid')).toBe(String(columns));
-      expect(getComputedStyle(grid).columnGap).toBe('24px');
-      expect(getComputedStyle(grid).rowGap).toBe('40px');
-      const items = grid.querySelectorAll(':scope > [role="listitem"]');
-      expect(items).toHaveLength(5);
-      expect(parseFloat(getComputedStyle(items[0] as HTMLElement).width)).toBe(
-        Math.floor(cell * 100) / 100,
-      );
-    },
-  );
+  // Columns are CONTAINER QUERIES resolved by the browser / react-native-css,
+  // so jsdom (no Tailwind) sees the structure and the classes, never a width.
+  const classOf = (el: Element | null) => el?.getAttribute('class') ?? '';
 
-  it('keeps a row whole when the measured width was rounded UP from a fraction', async () => {
-    // A column 591.69px wide (48% of a row) measures 592 on web.
-    layoutWidth = 592;
+  it('is a container holding a list with one listitem per card', () => {
     mount(
-      <ListingCardGrid columns={2} testID="g">
-        <span>a</span>
-        <span>b</span>
+      <ListingCardGrid testID="g">
+        {Array.from({ length: 5 }, (_, i) => (
+          <span key={i}>{i}</span>
+        ))}
       </ListingCardGrid>,
     );
-    await flushLayout();
-    const items = byTestId('g').querySelectorAll(':scope > [role="listitem"]');
-    const cell = parseFloat(getComputedStyle(items[0] as HTMLElement).width);
-    expect(cell * 2 + 24).toBeLessThanOrEqual(591.5);
+    const grid = byTestId('g');
+    expect(classOf(grid)).toContain('@container');
+    const list = grid.querySelector(':scope > [role="list"]');
+    expect(list).not.toBeNull();
+    expect(list?.querySelectorAll(':scope > [role="listitem"]')).toHaveLength(5);
   });
 
-  it('a fixed column count wins over the width', async () => {
-    layoutWidth = 1440;
+  it.each([
+    [
+      'results',
+      ['w-full', '@min-[500px]:w-1/2', '@min-[950px]:w-1/3', '@min-[1280px]:w-1/4', 'px-3'],
+      ['-mx-3', 'gap-y-10'],
+    ],
+    [
+      'compact',
+      ['w-1/2', '@min-[640px]:w-1/3', '@min-[950px]:w-1/4', 'px-2'],
+      ['-mx-2', 'gap-y-6'],
+    ],
+  ] as const)('%s: its cells take their columns from the grid width', (density, cell, row) => {
     mount(
-      <ListingCardGrid columns={2} testID="g">
+      <ListingCardGrid density={density} testID="g">
         <span>a</span>
       </ListingCardGrid>,
     );
-    await flushLayout();
-    expect(byTestId('g').getAttribute('data-bloom-listing-card-grid')).toBe('2');
+    const list = byTestId('g').querySelector(':scope > [role="list"]');
+    for (const name of row) expect(classOf(list).split(' ')).toContain(name);
+    const item = list?.querySelector(':scope > [role="listitem"]') ?? null;
+    for (const name of cell) expect(classOf(item).split(' ')).toContain(name);
+  });
+
+  it('skips what is not an element', () => {
+    mount(
+      <ListingCardGrid testID="g">
+        {null}
+        <span>a</span>
+        {false}
+      </ListingCardGrid>,
+    );
+    expect(byTestId('g').querySelectorAll('[role="listitem"]')).toHaveLength(1);
   });
 });
-
-// ---------------------------------------------------------------------------
 
 describe('WishlistCard', () => {
   it.each([

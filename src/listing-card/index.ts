@@ -5,6 +5,7 @@ export { WishlistCard } from './WishlistCard';
 export type {
   FavoriteButtonProps,
   ListingCardDensity,
+  ListingCardGridDensity,
   ListingCardGridProps,
   ListingCardLayout,
   ListingCardProps,

@@ -196,14 +196,23 @@ only — no scale. The target is at least 32 square (`size` sets the heart, defa
 
 ```tsx
 <ListingCardGrid>{cards}</ListingCardGrid>
-<ListingCardGrid columns={2} columnGap={16} rowGap={24}>{cards}</ListingCardGrid>
+<ListingCardGrid density="compact">{collections}</ListingCardGrid>
 ```
 
-Wraps its children into columns by its **own measured width** — 1 below 500, 2
-below 950, 3 below 1280, 4 from there — so a grid beside a map counts the room it
-has, not the window's. Gaps default to 24 between columns and 40 between rows.
-`columns` fixes the count. Rendered as a list (`role="list"`, one `listitem` per
-card).
+Wraps its children into columns by its **own width**, as CSS container queries
+(`@container` + `@min-[…]:`) that the browser resolves on web and
+react-native-css resolves on native — nothing is measured or counted in
+JavaScript, and a grid beside a map counts the room it has, not the window's.
+
+| `density` | columns | gaps (column × row) |
+| --- | --- | --- |
+| `results` (default) | 1, 2 from 500, 3 from 950, 4 from 1280 | 24 × 40 |
+| `compact` (collections) | 2, 3 from 640, 4 from 950 | 16 × 24 |
+
+Gutters are each cell's padding inside a row pulled out by the same amount, so a
+half-width cell is exactly half the grid less one gutter. Rendered as a list
+(`role="list"`, one `listitem` per card). The classes are Tailwind utilities the
+app's pipeline generates from Bloom's `lib` (see the consumer CSS pipeline).
 
 Bloom's `Grid` (`Row`/`Col`) is not a fit here: it is one fixed row of fractional
 columns that neither wraps nor responds to width.
