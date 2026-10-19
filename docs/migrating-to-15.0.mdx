@@ -1,0 +1,23 @@
+---
+title: Migrating to 15.0
+description: Every breaking change between @oxy.so/bloom 14.x and 15.0.0 — TabBarItem's iOS-only `sfSymbol` is gone, and with it the `expo-symbols` peer.
+order: 0
+---
+
+# Migrating to 15.0
+
+Bloom follows its clean-cut rule: no `@deprecated` aliases, no shims. 15.0 has one change, in the tab bar. Coming straight from 13.x, also apply 14.0's change: `ListingCardGrid` lost `columns`, `columnGap` and `rowGap` (and `listingGridColumns`) for `density` — see [ListingCard](/docs/bloom/main/listing-card).
+
+## Removed: `TabBarItem.sfSymbol` and the `expo-symbols` peer
+
+`TabBarItem.sfSymbol` drew an SF Symbol in place of `item.icon` on iOS, through the `expo-symbols` package. No Oxy app set it, and every item already had to carry a Bloom icon for Android and web. The tab glyph now renders `item.icon` (or `activeIcon` on the active layer) on every platform, so an item looks the same on iOS as everywhere else.
+
+| 14.x | 15.0 |
+| --- | --- |
+| `item.sfSymbol` | removed — `item.icon` / `item.activeIcon` render on iOS too |
+| `expo-symbols` peer dependency | removed — Bloom no longer imports it |
+
+## In the app
+
+- An item that still passes `sfSymbol` fails to typecheck: delete the field. The item's `icon` is what renders.
+- After adopting 15.0 you can drop a direct `expo-symbols` dependency (and its config, if any), unless the app imports `expo-symbols` itself or another dependency needs it. Expo Router lists it only as an optional peer.

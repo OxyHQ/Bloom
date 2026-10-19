@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -7,9 +7,8 @@ import { join } from 'node:path';
  * `@oxy.so/bloom/tab-bar` has to resolve cleanly in four places at once: Metro on
  * iOS/Android (platform extensions), a web bundler (the `browser` export
  * condition), a non-Metro bundler reading the published `lib/`, and a consumer's
- * `tsc` (which follows the `"react-native"` source condition). Three packages
- * break that the moment they appear outside a `.native` file:
- * `expo-symbols` is native-only, and `expo-router` /
+ * `tsc` (which follows the `"react-native"` source condition). Two packages
+ * break that the moment they appear in the core bar: `expo-router` and
  * `react-native-screens` belong solely to the opt-in
  * `@oxy.so/bloom/tab-bar/expo-router` subpath so the core bar stays usable in an
  * app with no router at all.
@@ -19,8 +18,8 @@ import { join } from 'node:path';
  * one. Hence source/contract assertions.
  *
  * Every assertion below matches on real import/export/require STATEMENTS, never
- * on bare substrings: the doc comments in these files name all four packages on
- * purpose (explaining why they are absent), so `includes('expo-symbols')` would
+ * on bare substrings: the doc comments in these files name these packages on
+ * purpose (explaining why they are absent), so `includes('expo-router')` would
  * report a failure that is actually the documentation doing its job.
  */
 
@@ -30,7 +29,7 @@ const REPO_ROOT = join(SRC, '..');
 const read = (rel: string) => readFileSync(join(SRC, rel), 'utf8');
 
 /** Packages that must never be reached from a neutral or web module. */
-const PLATFORM_ONLY = ['expo-symbols', 'expo-router', 'react-native-screens'] as const;
+const PLATFORM_ONLY = ['expo-router', 'react-native-screens'] as const;
 
 /**
  * Files resolved by a web bundler, a non-Metro bundler, or a consumer's `tsc`.
@@ -89,13 +88,13 @@ describe('tab-bar platform split', () => {
     // Self-check: if `moduleSpecifiers` breaks, every assertion below would
     // pass vacuously by finding nothing.
     const probe = [
-      '/* a doc comment naming expo-symbols and expo-router */',
+      '/* a doc comment naming expo-router and react-native-screens */',
       "// import { Nope } from 'react-native-screens';",
       "import { A } from 'react-native';",
       "export type { B } from './types';",
-      "const c = require('expo-symbols');",
+      "const c = require('expo-router');",
     ].join('\n');
-    expect(moduleSpecifiers(probe).sort()).toEqual(['./types', 'expo-symbols', 'react-native']);
+    expect(moduleSpecifiers(probe).sort()).toEqual(['./types', 'expo-router', 'react-native']);
   });
 
   it.each(NEUTRAL_AND_WEB_FILES)('%s imports no native-only or router package', (file) => {
@@ -112,10 +111,14 @@ describe('tab-bar platform split', () => {
     expect(moduleSpecifiers(read('progressive-blur/ProgressiveBlur.tsx'))).toContain('expo-blur');
   });
 
-  it('the native glyph is the ONLY holder of the native packages', () => {
-    // The guard above only proves absence; this proves the split is real rather
-    // than the feature having quietly lost its native path.
-    expect(moduleSpecifiers(read('tab-bar/glyph.native.tsx'))).toContain('expo-symbols');
+  it('the glyph has no platform fork: every platform renders the Bloom icon', () => {
+    // One `glyph.tsx` for Metro, web bundlers, `tsc` and Jest alike. A `.native`
+    // or `.web` sibling would be picked up silently by Metro or the web build and
+    // diverge from what this suite renders.
+    for (const fork of ['glyph.native.tsx', 'glyph.native.ts', 'glyph.web.tsx', 'glyph.web.ts']) {
+      expect(existsSync(join(SRC, 'tab-bar', fork))).toBe(false);
+    }
+    expect(moduleSpecifiers(read('tab-bar/glyph.tsx'))).toContain('../frosted-icon-button/shared');
   });
 
   it('the router packages live only under tab-bar/expo-router', () => {
@@ -170,16 +173,6 @@ describe('tab-bar published surface', () => {
     const entry = pkg.exports['./tab-bar/expo-router'];
     expect(entry).toBeDefined();
     expect(entry?.browser).toBeUndefined();
-  });
-
-  it('declares the Apple-only native peer REQUIRED, keeping its range', () => {
-    // `expo-symbols` is imported STATICALLY by `tab-bar/glyph.native`. Optional
-    // means "you may omit this", but omitting it does not degrade: the native
-    // bundle fails to RESOLVE the specifier and the build dies. An optional peer
-    // plus a static import is an incoherent pair, so it is declared required,
-    // the same way `expo-blur` is.
-    expect(pkg.peerDependencies['expo-symbols']).toMatch(/^>=\d/);
-    expect(pkg.peerDependenciesMeta['expo-symbols']).toBeUndefined();
   });
 
   it('keeps the cross-platform native peers REQUIRED', () => {

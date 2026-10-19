@@ -7,8 +7,8 @@ import { dirname, join, relative, resolve } from 'node:path';
  * Metro does not tree-shake, so `import { Button } from '@oxy.so/bloom'` links
  * every module this barrel can reach. A peer that only some apps install is
  * therefore a build failure for the rest — not a degradation, not a warning.
- * That is the whole reason `./tab-bar`, `./provider`,
- * `./zoomable-media-gallery` and `./media-flight` are subpath-only, and until
+ * That is the whole reason `./provider`, `./zoomable-media-gallery` and
+ * `./media-flight` are subpath-only, and until
  * this gate existed the
  * reason was recorded nowhere: `src/index.ts` simply didn't mention them, which
  * reads identically to an oversight (and `image-resolver`, `scroll`, `overlay`
@@ -28,7 +28,6 @@ const SRC = join(__dirname, '..');
  * `src/index.ts` is the mistake this catches.
  */
 const FORBIDDEN: Record<string, string> = {
-  'expo-symbols': '@oxy.so/bloom/tab-bar',
   'expo-router': '@oxy.so/bloom/provider (and ./scroll/expo-router)',
   // Reached from BOTH families: `media-flight/MediaSurface.tsx` is the one
   // renderer the gallery and the flight layer share, and it is what names

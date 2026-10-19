@@ -67,7 +67,7 @@ Required by specific surfaces, and by more of them than you would guess:
 | `react-native-gesture-handler` | `>=2.16.1` | `Dialog`, `BottomSheet`, swipe to dismiss on toasts |
 | `react-native-svg` | `>=13.0.0` | icons, `Avatar` in any non-circular shape |
 | `react-native-keyboard-controller` | `>=1.11.4` | keyboard aware surfaces |
-| `expo`, `expo-blur`, `expo-font`, `expo-haptics`, `expo-image`, `expo-symbols` | see `package.json` | native effects, fonts, haptics, images and SF Symbols |
+| `expo`, `expo-blur`, `expo-font`, `expo-haptics`, `expo-image` | see `package.json` | native effects, fonts, haptics and images |
 | `expo-router` | `>=3.0.0` | the `expo-router` variants of `tabs`, `scroll` and `tab-bar` |
 | `@react-native-community/netinfo` | `>=11.1.0` | `connection-status` |
 

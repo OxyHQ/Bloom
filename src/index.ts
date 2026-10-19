@@ -7,10 +7,10 @@
 //     everything this file can reach — and an unmet REQUIRED peer is a build
 //     failure, not a degradation. Measured today exactly four families fail
 //     this, and each is reachable only through its own subpath:
-//       · `./tab-bar` — statically imports `expo-symbols`
-//         from its `.native` files. Both ship Apple-only native modules, and the
-//         "a consumer that never imports @oxy.so/bloom/tab-bar never reaches
-//         them" rule in AGENTS.md is true only while this stays off the barrel.
+//       · `./tab-bar` — stays a subpath. It no longer links a native-only
+//         peer (Bloom 15 dropped its SF Symbols glyph); its router bindings
+//         live in `./tab-bar/expo-router`, which reaches `expo-router` and
+//         `react-native-screens`.
 //       · `./provider` remains an explicit subpath. BloomProvider is universal;
 //         router restoration is supplied explicitly.
 //       · `./zoomable-media-gallery` and `./media-flight` — both reach

@@ -9,7 +9,7 @@ import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { SurfaceLevelProvider, useSurfaceFill, surfaceFillOn } from '../styles/surface-levels';
 import { TabBar, TabBarButton } from '../tab-bar';
-import { TabBarGlyph as NativeTabBarGlyph } from '../tab-bar/glyph.native';
+import { TabBarGlyph } from '../tab-bar/glyph';
 import { resolveTabBarTheme } from '../tab-bar/shared';
 import type { TabBarItem, TabBarTheme } from '../tab-bar/types';
 
@@ -18,10 +18,9 @@ import type { TabBarItem, TabBarTheme } from '../tab-bar/types';
  *
  * Three properties of the environment shape every assertion here:
  *
- *  1. Jest has no platform-extension resolution, so `../tab-bar` binds the
- *     NEUTRAL `glyph.tsx`. The `.native` variant is pulled in by its full path
- *     where it is asserted on directly — which is also what makes the
- *     `expo-symbols` mock load-bearing rather than decorative.
+ *  1. The glyph has no platform fork: `glyph.tsx` is the one file Metro, web
+ *     bundlers and Jest all resolve, so what renders here is what every
+ *     platform renders — the item's own Bloom icon node.
  *  2. Labels render through `Animated.Text`, a plain host string under the
  *     reanimated mock, so testing-library's text queries cannot see them.
  *     `labelFor` walks the tree instead.
@@ -148,11 +147,6 @@ function labelFor(root: ReactTestInstance, label: string): ReactTestInstance {
   const first = found[0];
   if (!first) throw new Error(`No tab label rendered with text "${label}"`);
   return first;
-}
-
-/** Every host node rendered as `tag`. */
-function hosts(root: ReactTestInstance, tag: string): ReactTestInstance[] {
-  return root.findAll((node) => hostName(node) === tag);
 }
 
 /**
@@ -392,35 +386,19 @@ describe('TabBar', () => {
       expect(fills).toEqual(expect.arrayContaining([theme.inactiveTint, theme.activeTint]));
     });
 
-    it('is honoured by the native glyph too, per crossfade layer', () => {
+    it('is honoured by the glyph itself, per crossfade layer', () => {
       const theme = readTheme();
       const active = renderWithTheme(
-        <NativeTabBarGlyph item={SHAPE_ITEM} tint={theme.activeTint} size={21} active />,
+        <TabBarGlyph item={SHAPE_ITEM} tint={theme.activeTint} size={21} active />,
       );
       expect(active.queryByTestId('filled-icon')).toBeTruthy();
       expect(active.queryByTestId('outline-icon')).toBeNull();
 
       const inactive = renderWithTheme(
-        <NativeTabBarGlyph item={SHAPE_ITEM} tint={theme.inactiveTint} size={21} active={false} />,
+        <TabBarGlyph item={SHAPE_ITEM} tint={theme.inactiveTint} size={21} active={false} />,
       );
       expect(inactive.queryByTestId('outline-icon')).toBeTruthy();
       expect(inactive.queryByTestId('filled-icon')).toBeNull();
-    });
-
-    it('keeps the SF Symbol path on iOS, which is tinted natively', () => {
-      // A symbol IS tinted per layer by the system, so the tint crossfade is
-      // still the right expression there and `activeIcon` stays unused.
-      const theme = readTheme();
-      const { UNSAFE_root, queryByTestId } = renderWithTheme(
-        <NativeTabBarGlyph
-          item={{ ...SHAPE_ITEM, sfSymbol: 'house.fill' }}
-          tint={theme.activeTint}
-          size={21}
-          active
-        />,
-      );
-      expect(hosts(UNSAFE_root, 'SymbolView')).toHaveLength(1);
-      expect(queryByTestId('filled-icon')).toBeNull();
     });
   });
 
@@ -469,32 +447,18 @@ describe('TabBar', () => {
     });
   });
 
-  describe('native platform variants', () => {
-    it('renders an SF Symbol on iOS when the item carries one', () => {
-      const theme = readTheme();
-      const item: TabBarItem = { ...(ITEMS[0] as TabBarItem), sfSymbol: 'house.fill' };
-      const { UNSAFE_root } = renderWithTheme(
-        <NativeTabBarGlyph item={item} tint={theme.activeTint} size={21} active />,
-      );
-      const symbol = hosts(UNSAFE_root, 'SymbolView')[0];
-      expect(symbol?.props.name).toBe('house.fill');
-      expect(symbol?.props.tintColor).toBe(theme.activeTint);
-      expect(symbol?.props.size).toBe(21);
-    });
-
-    it('falls back to the item icon when no SF Symbol is given', () => {
-      const theme = readTheme();
-      const { queryByTestId, UNSAFE_root } = renderWithTheme(
-        <NativeTabBarGlyph
-          item={ITEMS[0] as TabBarItem}
-          tint={theme.activeTint}
-          size={21}
-          active
-        />,
-      );
-      expect(hosts(UNSAFE_root, 'SymbolView')).toHaveLength(0);
-      expect(queryByTestId('home-icon')).toBeTruthy();
-    });
+  describe('glyph on every platform', () => {
+    it.each(['ios', 'android', 'web'] as const)(
+      'renders the item icon, tinted for its layer, on %s',
+      (os) => {
+        jest.replaceProperty(Platform, 'OS', os);
+        const theme = readTheme();
+        const { getByTestId } = renderWithTheme(
+          <TabBarGlyph item={ITEMS[0] as TabBarItem} tint={theme.activeTint} size={21} active />,
+        );
+        expect(getByTestId('home-icon').props.fill).toBe(theme.activeTint);
+      },
+    );
   });
 });
 

@@ -2,15 +2,13 @@
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
  * (MIT © 2026 David Mokos).
  *
- * NEUTRAL default variant of a tab glyph: renders the item's own `icon` node —
- * or its `activeIcon` on the active layer — tinted for this crossfade layer.
+ * The tab glyph on EVERY platform: renders the item's own `icon` node — or its
+ * `activeIcon` on the active layer — tinted for this crossfade layer.
  *
- * `item.icon` is the primary icon API for the whole family — a Bloom icon
- * element, exactly like `TabsTrigger` and `FrostedIconButton` take. `sfSymbol`
- * is an iOS-only enhancement and is deliberately ignored here: this file is
- * resolved by web bundlers and by a consumer's `tsc`, where a static
- * `expo-symbols` import would break resolution. See `glyph.native.tsx` for the
- * variant that consumes it. Both implement `TabBarGlyphProps` exactly.
+ * `item.icon` is the icon API for the whole family — a Bloom icon element,
+ * exactly like `TabsTrigger` and `FrostedIconButton` take. There is no platform
+ * fork: Metro, web bundlers, a consumer's `tsc` and Jest all resolve this one
+ * file (gate: `TabBarWebFork.test.ts`).
  */
 import { View } from 'react-native';
 
