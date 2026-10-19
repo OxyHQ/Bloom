@@ -1,11 +1,19 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
+import type { PluginBuild } from 'esbuild';
 import tailwindcss from '@tailwindcss/vite';
 import { mergeConfig, type ViteDevServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// `resolve.alias` reaches Rollup (`storybook build`) but not a relative import
+// inside a dependency the dev optimizer pre-bundles, so the optimizer gets the
+// same resolution as an esbuild plugin. The pattern spans the whole specifier:
+// an alias replaces only the part a RegExp matches, which kept the `../`.
+const SVG_SOUND_MODULE = /^.*\/fabric\/NativeSvgSoundModule$/;
+const SVG_SOUND_MODULE_WEB = path.resolve(__dirname, 'web/android-sound-module.ts');
 
 const config: StorybookConfig = {
   // `templates/` holds full-screen templates as stories only: composed
@@ -130,6 +138,17 @@ const config: StorybookConfig = {
             find: 'react-native/Libraries/Image/AssetRegistry',
             replacement: 'react-native-web/dist/modules/AssetRegistry',
           },
+          // Expo SDK 58's `build/` keeps type-only imports as value imports
+          // (`ts-declarations/global.js`), which the dep optimizer rejects.
+          // Render it from its shipped TypeScript source, as Metro does through
+          // the `expo-source` condition. That condition cannot be set globally:
+          // most Expo packages advertise it without publishing `src/`.
+          {
+            find: /^expo-modules-core$/,
+            replacement: path.resolve(__dirname, '../node_modules/expo-modules-core/src/index.ts'),
+          },
+          // react-native-svg's Android-only touch-sound module (see the file).
+          { find: SVG_SOUND_MODULE, replacement: SVG_SOUND_MODULE_WEB },
           // The workspace packages render from source, not their last build.
           {
             find: /^@oxy\.so\/bloom-text\/model$/,
@@ -175,6 +194,16 @@ const config: StorybookConfig = {
         include: ['react-native-web'],
         exclude: ['react-native'],
         esbuildOptions: {
+          plugins: [
+            {
+              name: 'bloom-svg-sound-module-web',
+              setup(build: PluginBuild) {
+                build.onResolve({ filter: SVG_SOUND_MODULE }, () => ({
+                  path: SVG_SOUND_MODULE_WEB,
+                }));
+              },
+            },
+          ],
           loader: { '.js': 'jsx' },
           resolveExtensions: [
             '.web.tsx',
