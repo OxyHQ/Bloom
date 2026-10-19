@@ -9,6 +9,10 @@ export type {
   BlockAction,
   BlockRenderer,
   BlockRendererProps,
+  CodeHighlighter,
+  CodeLanguage,
+  CodeToken,
+  InlineEquations,
   MentionItem,
   MentionSource,
 } from './context';

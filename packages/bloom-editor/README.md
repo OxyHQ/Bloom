@@ -34,6 +34,11 @@ const controller = useEditorController(store);
   onOpenMention={(mention) => openPage(mention.attributes.id)}
   renderers={{ image: ImageBlock }} // block types the app draws
   decorations={collaboratorCarets}  // per-block marks that change often
+  onCopyBlockLink={(id) => copy(blockUrl(id))}            // "Copy link to block" in the block menu
+  onPasteImages={(images, afterId) => upload(images, afterId)} // pasted screenshots and pictures
+  codeLanguages={[{ id: 'ts', label: 'TypeScript' }]}     // a code block's language menu
+  highlightCode={(code, language) => tokenLines(code, language)} // lines of { text, color }
+  inlineEquations={{ indicator: '@' }}                   // `$$x^2$$` makes an equation mention
   theme={theme}
   labels={labels}
 />
@@ -53,16 +58,46 @@ the end of a container, an empty one included.
 ## What it does
 
 - **Blocks**: Return splits and continues lists; Backspace at the start
-  reverts, outdents, then merges; Tab / Shift-Tab nest; `⌘⇧↑/↓` move;
-  whole-block selection (Escape) to delete, duplicate, copy and cut.
+  reverts, outdents, then merges; Tab / Shift-Tab nest; `⌘⇧↑/↓` move.
+- **Selecting blocks** (web): Escape selects the block being edited;
+  Shift-click (a block or its handle) and Shift-↑/↓ extend the selection,
+  ↑/↓ move it, and dragging out of one block's text into another selects the
+  blocks between (`blockRange`: whole blocks of one list, each end taken up
+  to the other's level). Selected blocks delete, duplicate (`⌘D`), copy and
+  cut as Markdown, nest and un-nest together (`indentBlocks`,
+  `outdentBlocks`), and the block menu's colours, turn into, duplicate and
+  delete act on all of them.
 - **Toggles**: toggles and toggle headings (`toggleable` on a heading) fold
   what is under them; Return at the end of an open one writes inside.
 - **Markdown**: typed (`# `, `- `, `1. `, `[] `, `> `, `**bold**`…) and pasted —
   several lines pasted become blocks, prefixes included, code fences one code
   block; selected blocks copy as Markdown.
+- **Pasting HTML** (web): a page, Google Docs, Word or another editor pastes
+  as blocks — headings, nested lists, to-dos (checkboxes, `[x]`), quotes,
+  code with its language, dividers, tables (when the schema has them),
+  `<details>` toggles, images as `image` blocks — with bold, italic,
+  underline, strike, code and safe links (`htmlToSnapshot`, a DOM-free
+  parser, then `pasteSnapshot`). A paste that holds only plain text is left
+  to the Markdown lines. Pasted image files go to `onPasteImages`, on every
+  platform.
 - **Formatting**: a bubble over a selection on the web, `EditorToolbar` on
-  touch (marks, link, block menu, mention, indent, undo, redo); links and
-  mentions under the caret get a popover to open them.
+  touch (marks, link, text colour and highlight, block menu, mention, indent,
+  undo, redo); `⌘K` opens the link field for the selection or the link at
+  the caret; links and mentions under the caret get a popover to open them.
+- **Colours the input cannot draw**: the native input shows no per-run
+  colour yet (see `@oxy.so/bloom-text`), so a block whose text has `color`
+  or `background` marks is drawn with them while it is not being edited —
+  over its input, which stays in place and takes the press. While the block
+  is being edited the colours are kept but not shown.
+- **Code**: `codeLanguages` gives a code block a language button and menu
+  (`props.language`); `highlightCode(code, language)` returns lines of
+  `{ text, color }` tokens, drawn the same way while the block is not being
+  edited — tokens that do not spell the code exactly are not drawn.
+- **Inline equations**: with `inlineEquations`, typing `$$…$$` makes a
+  mention `{ kind: 'equation', latex }` (`INLINE_EQUATION_KIND`) under the
+  indicator given — one of `mentions.indicators`, so each platform's input
+  styles it as a mention. The app shows and edits it from `onOpenMention`;
+  its own slash item can put one in with `controller.insertMention`.
 - **Mentions**: `mentions.search` answers what an indicator finds; the
   mention is stored on the text (`mention.attributes`).
 - **Undo** groups typing into words and takes back only your own change,

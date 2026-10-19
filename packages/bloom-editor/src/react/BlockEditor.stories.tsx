@@ -183,6 +183,11 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
             { type: 'numbered_list_item', text: [{ text: 'Second' }] },
             { type: 'quote', text: [{ text: 'Simple things should be simple.' }] },
             { type: 'callout', text: [{ text: 'Callouts stand out.' }], props: { icon: '💡' } },
+            {
+              type: 'code',
+              text: [{ text: 'const answer = "42";' }],
+              props: { language: 'javascript' },
+            },
             { type: 'divider' },
             { type: 'paragraph', text: [] },
           ],
@@ -215,12 +220,40 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
             onOpenMention={(mention) =>
               recordOpened(`${mention.attributes.kind}:${mention.attributes.id}`)
             }
+            onCopyBlockLink={(id) => recordOpened(`block:${id}`)}
+            codeLanguages={CODE_LANGUAGES}
+            highlightCode={highlightKeywords}
+            inlineEquations={{ indicator: '@' }}
           />
         </View>
       </ScrollView>
       {toolbar ? <EditorToolbar controller={controller} mentionIndicator="@" /> : null}
     </View>
   );
+}
+
+const CODE_LANGUAGES = [
+  { id: 'plain', label: 'Plain text' },
+  { id: 'javascript', label: 'JavaScript' },
+  { id: 'typescript', label: 'TypeScript' },
+  { id: 'python', label: 'Python' },
+];
+
+/** A stand-in highlighter: keywords purple, strings green, the rest as typed. */
+function highlightKeywords(code: string): { text: string; color?: string }[][] {
+  const pattern = /(\b(?:const|let|function|return|if|else|import|from|def)\b)|("[^"]*"|'[^']*')/g;
+  return code.split('\n').map((line) => {
+    const tokens: { text: string; color?: string }[] = [];
+    let at = 0;
+    for (const match of line.matchAll(pattern)) {
+      const index = match.index ?? 0;
+      if (index > at) tokens.push({ text: line.slice(at, index) });
+      tokens.push({ text: match[0], color: match[1] ? 'rgb(144, 101, 176)' : 'rgb(68, 131, 97)' });
+      at = index + match[0].length;
+    }
+    if (at < line.length) tokens.push({ text: line.slice(at) });
+    return tokens;
+  });
 }
 
 /** Notes the app lays out itself: containers whose blocks it places side by side. */

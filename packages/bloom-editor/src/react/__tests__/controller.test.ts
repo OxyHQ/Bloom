@@ -92,6 +92,63 @@ describe('EditorController.startMention', () => {
   });
 });
 
+describe('EditorController colours, links and mentions', () => {
+  it('colours and highlights the selected text, and reads what is there', () => {
+    const { store, controller, id } = setup([
+      { type: 'paragraph', text: [{ text: 'hello world' }] },
+    ]);
+    store.setSelection({ kind: 'text', blockId: id, start: 2, end: 2 });
+    expect(controller.setTextColor('red')).toBe(false);
+    store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+    expect(controller.setTextColor('red')).toBe(true);
+    expect(controller.setTextColor('yellow', 'background')).toBe(true);
+    expect(store.doc.blocks[id]?.text).toEqual([
+      { text: 'hello', color: 'red', background: 'yellow' },
+      { text: ' world' },
+    ]);
+    expect(controller.textColors()).toEqual({ color: 'red', background: 'yellow' });
+    // One undo step each, and `default` clears.
+    controller.setTextColor('default');
+    expect(store.doc.blocks[id]?.text?.[0]).toEqual({ text: 'hello', background: 'yellow' });
+    store.undo();
+    expect(controller.textColors()).toEqual({ color: 'red', background: 'yellow' });
+  });
+
+  it('opens the link field for a selection, or the whole link a caret is in', () => {
+    const { store, controller, calls, id } = setup([
+      {
+        type: 'paragraph',
+        text: [{ text: 'see ' }, { text: 'docs', link: 'https://d.test' }, { text: ' now' }],
+      },
+    ]);
+    store.setSelection({ kind: 'text', blockId: id, start: 0, end: 0 });
+    expect(controller.openLinkEditor()).toBe(false);
+    expect(controller.ui.get().linking).toBeNull();
+    store.setSelection({ kind: 'text', blockId: id, start: 6, end: 6 });
+    expect(controller.openLinkEditor()).toBe(true);
+    expect(store.selection).toEqual({ kind: 'text', blockId: id, start: 4, end: 8 });
+    expect(calls).toEqual([['setSelection', 4, 8]]);
+    expect(controller.ui.get().linking).toBe(id);
+    expect(controller.linkAtSelection()).toBe('https://d.test');
+  });
+
+  it('puts a mention (an inline equation) at the selection', () => {
+    const { store, controller, id } = setup([{ type: 'paragraph', text: [{ text: 'a  b' }] }]);
+    store.setSelection({ kind: 'text', blockId: id, start: 2, end: 2 });
+    controller.insertMention({
+      indicator: '@',
+      text: 'x^2',
+      attributes: { kind: 'equation', latex: 'x^2' },
+    });
+    expect(store.doc.blocks[id]?.text).toEqual([
+      { text: 'a ' },
+      { text: 'x^2', mention: { indicator: '@', attributes: { kind: 'equation', latex: 'x^2' } } },
+      { text: ' b' },
+    ]);
+    expect(store.selection).toEqual({ kind: 'text', blockId: id, start: 5, end: 5 });
+  });
+});
+
 describe('normalizeLink', () => {
   it.each([
     ['https://a.test/x', 'https://a.test/x'],

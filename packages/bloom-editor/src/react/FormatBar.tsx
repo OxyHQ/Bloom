@@ -1,10 +1,10 @@
 import type { ToggleableMark } from '@oxy.so/bloom-text/model';
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Pressable, StyleSheet, Text, type TextStyle, TextInput, View } from 'react-native';
 import type { EditorController } from './controller';
 import { KeepFocus } from './KeepFocus';
 import type { EditorLabels } from './labels';
-import type { EditorTheme } from './theme';
+import { BLOCK_COLOR_NAMES, type EditorTheme } from './theme';
 import { useUi } from './ui-store';
 
 const MARKS: readonly { mark: ToggleableMark; glyph: string; style: TextStyle }[] = [
@@ -35,6 +35,24 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
   const linking = useUi(ui, (s) => s.linking);
   const [url, setUrl] = useState('');
   const [invalid, setInvalid] = useState(false);
+  const [palette, setPalette] = useState(false);
+  // The colours where the selection starts, for the palette to show.
+  const colors = useSyncExternalStore(store.subscribe, () => {
+    const { color, background } = controller.textColors();
+    return `${color ?? 'default'}|${background ?? 'default'}`;
+  });
+  const [currentColor, currentBackground] = colors.split('|');
+  const hasRange = selection !== null && selection.start !== selection.end;
+  const editingLink = linking !== null && selection?.blockId === linking;
+
+  // The link field opens on the link already there (⌘K on a link edits it).
+  useEffect(() => {
+    if (editingLink) setUrl(controller.linkAtSelection() ?? '');
+  }, [editingLink, controller]);
+  // A collapsed selection has nothing to colour.
+  useEffect(() => {
+    if (!hasRange) setPalette(false);
+  }, [hasRange]);
 
   const closeLink = (refocus: boolean) => {
     ui.set({ linking: null });
@@ -43,7 +61,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
     if (refocus) controller.refocus();
   };
 
-  if (linking && selection?.blockId === linking) {
+  if (editingLink) {
     const apply = () => {
       if (controller.setLink(url)) closeLink(true);
       else setInvalid(true);
@@ -86,7 +104,60 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
     );
   }
 
-  const hasRange = selection !== null && selection.start !== selection.end;
+  if (palette && hasRange) {
+    const choose = (name: string, kind: 'color' | 'background') => {
+      controller.setTextColor(name, kind);
+      setPalette(false);
+    };
+    return (
+      <KeepFocus style={styles.palette}>
+        <View style={styles.row}>
+          <Text style={[styles.paletteLabel, { color: theme.textMuted }]}>{labels.color}</Text>
+          {BLOCK_COLOR_NAMES.map((name) => (
+            <BarButton
+              key={`c-${name}`}
+              label={`${labels.color}: ${labels.colorNames[name] ?? name}`}
+              active={currentColor === name}
+              theme={theme}
+              onPress={() => choose(name, 'color')}
+            >
+              <Text
+                style={[
+                  styles.swatchGlyph,
+                  { color: name === 'default' ? theme.text : theme.colors[name]?.text },
+                ]}
+              >
+                A
+              </Text>
+            </BarButton>
+          ))}
+        </View>
+        <View style={styles.row}>
+          <Text style={[styles.paletteLabel, { color: theme.textMuted }]}>{labels.background}</Text>
+          {BLOCK_COLOR_NAMES.map((name) => (
+            <BarButton
+              key={`b-${name}`}
+              label={`${labels.background}: ${labels.colorNames[name] ?? name}`}
+              active={currentBackground === name}
+              theme={theme}
+              onPress={() => choose(name, 'background')}
+            >
+              <View
+                style={[
+                  styles.swatch,
+                  {
+                    borderColor: theme.border,
+                    backgroundColor: theme.colors[name]?.background ?? theme.background,
+                  },
+                ]}
+              />
+            </BarButton>
+          ))}
+        </View>
+      </KeepFocus>
+    );
+  }
+
   return (
     <KeepFocus style={styles.row}>
       {MARKS.map(({ mark, glyph, style }) => (
@@ -111,6 +182,32 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
         }}
       >
         <Text style={[styles.word, { color: theme.text }]}>{labels.link}</Text>
+      </BarButton>
+      <BarButton
+        label={labels.textColor}
+        active={currentColor !== 'default' || currentBackground !== 'default'}
+        disabled={!hasRange}
+        theme={theme}
+        onPress={() => setPalette(true)}
+      >
+        <Text
+          style={[
+            styles.glyph,
+            styles.colorGlyph,
+            {
+              color:
+                currentColor !== undefined && currentColor !== 'default'
+                  ? theme.colors[currentColor]?.text
+                  : theme.text,
+              borderBottomColor:
+                currentBackground !== undefined && currentBackground !== 'default'
+                  ? theme.colors[currentBackground]?.text
+                  : theme.textMuted,
+            },
+          ]}
+        >
+          A
+        </Text>
       </BarButton>
     </KeepFocus>
   );
@@ -162,6 +259,11 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.4 },
   glyph: { fontSize: 15 },
+  colorGlyph: { fontWeight: '600', borderBottomWidth: 2, lineHeight: 18 },
+  palette: { gap: 2 },
+  paletteLabel: { fontSize: 11, fontWeight: '600', width: 72, paddingLeft: 6 },
+  swatchGlyph: { fontSize: 15, fontWeight: '600' },
+  swatch: { width: 18, height: 18, borderRadius: 4, borderWidth: 1 },
   word: { fontSize: 14 },
   field: {
     minWidth: 200,

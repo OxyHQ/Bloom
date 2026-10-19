@@ -26,6 +26,11 @@ export interface UiState {
   blockMenu: BlockId | null;
   /** Blocks selected as whole blocks (Escape, Shift-click, drag selection). */
   selectedBlocks: readonly BlockId[];
+  /** Where a block selection started, and where Shift-click or Shift-arrows took it. */
+  selectionAnchor: BlockId | null;
+  selectionHead: BlockId | null;
+  /** The code block whose language menu is open. */
+  codeLanguageMenu: BlockId | null;
   /** The block under the pointer (web), for its gutter handle. */
   hovered: BlockId | null;
   /** A block being dragged and where it would drop. */
@@ -45,6 +50,9 @@ export class UiStore {
     linking: null,
     blockMenu: null,
     selectedBlocks: [],
+    selectionAnchor: null,
+    selectionHead: null,
+    codeLanguageMenu: null,
     hovered: null,
     drag: null,
   };

@@ -8,7 +8,8 @@ import { useBlockDecoration } from './decorations';
 import { TextBlock } from './TextBlock';
 import { blockSpacing } from './typography';
 import { useUi } from './ui-store';
-import { blockDomId } from './block-dom';
+import { blockDomId, gutterDomId } from './block-dom';
+import { extendBlockSelection, selectBlocks } from './block-selection';
 import { startBlockDrag } from './drag';
 
 const INDENT = 26;
@@ -229,7 +230,7 @@ const BlockRow = memo(function BlockRow({
 function Gutter({ id, visible }: { id: BlockId; visible: boolean }) {
   const { store, ui, theme, labels } = useEditorContext();
   return (
-    <View style={[styles.gutter, { opacity: visible ? 1 : 0 }]}>
+    <View nativeID={gutterDomId(id)} style={[styles.gutter, { opacity: visible ? 1 : 0 }]}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={labels.addBelow}
@@ -251,8 +252,16 @@ function Gutter({ id, visible }: { id: BlockId; visible: boolean }) {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={labels.blockMenu}
-          onPress={() => {
-            if (!ui.get().drag) ui.set({ blockMenu: id });
+          onPress={(event) => {
+            if (ui.get().drag) return;
+            // Shift-click extends the selection to this block instead.
+            if ((event.nativeEvent as { shiftKey?: boolean }).shiftKey) {
+              if (!extendBlockSelection(store, ui, id)) selectBlocks(ui, [id]);
+              return;
+            }
+            // The menu acts on the selection this block is in, else on it alone.
+            if (!ui.get().selectedBlocks.includes(id)) selectBlocks(ui, [id]);
+            ui.set({ blockMenu: id });
           }}
           style={styles.gutterButton}
         >

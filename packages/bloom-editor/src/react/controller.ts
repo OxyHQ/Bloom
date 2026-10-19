@@ -1,7 +1,12 @@
 import type { RichTextInputHandle } from '@oxy.so/bloom-text';
-import { isSafeLink, segmentsToPlainText, type ToggleableMark } from '@oxy.so/bloom-text/model';
+import {
+  isSafeLink,
+  segmentsToPlainText,
+  splitSegmentsAt,
+  type ToggleableMark,
+} from '@oxy.so/bloom-text/model';
 import { useMemo } from 'react';
-import { applyEdit } from '../model/commands';
+import { applyEdit, formatText, insertMention, type MentionInsert } from '../model/commands';
 import { type BlockId, getBlock } from '../model/document';
 import type { EditorStore } from '../model/store';
 import { inlineTargetAt } from './inline-target';
@@ -77,6 +82,79 @@ export class EditorController {
         deleteCount: selection.end - selection.start,
         insert: `${space}${indicator}`,
       }),
+    );
+  }
+
+  /**
+   * Colour the selected text (`'default'` clears it): the text colour, or the
+   * highlight behind it with `background`. False when no text is selected.
+   */
+  setTextColor(name: string, kind: 'color' | 'background' = 'color'): boolean {
+    const selection = this.textSelection;
+    if (!selection || selection.start === selection.end) return false;
+    this.store.sealHistory();
+    return this.store.run((c) =>
+      formatText(c, selection.blockId, selection.start, selection.end, {
+        [kind]: name === 'default' ? null : name,
+      }),
+    );
+  }
+
+  /** The text colour and highlight where the selected text starts. */
+  textColors(): { color?: string; background?: string } {
+    const selection = this.textSelection;
+    if (!selection || selection.start === selection.end) return {};
+    const text = getBlock(this.store.doc, selection.blockId).text ?? [];
+    const [, rest] = splitSegmentsAt(text, selection.start);
+    const first = rest[0];
+    return {
+      ...(first?.color && { color: first.color }),
+      ...(first?.background && { background: first.background }),
+    };
+  }
+
+  /** The link the selection is in or starts in, for the link field to show. */
+  linkAtSelection(): string | null {
+    const selection = this.textSelection;
+    if (!selection) return null;
+    const text = getBlock(this.store.doc, selection.blockId).text ?? [];
+    const target = inlineTargetAt(
+      text,
+      selection.start + (selection.start === selection.end ? 0 : 1),
+    );
+    return target?.kind === 'link' ? target.href : null;
+  }
+
+  /**
+   * Open the link field (⌘K): for the selected text, or — at a caret inside a
+   * link — for that whole link. False when there is nothing to link.
+   */
+  openLinkEditor(): boolean {
+    const selection = this.textSelection;
+    if (!selection) return false;
+    if (selection.start === selection.end) {
+      const target = inlineTargetAt(
+        getBlock(this.store.doc, selection.blockId).text ?? [],
+        selection.start,
+      );
+      if (target?.kind !== 'link') return false;
+      this.store.setSelection({ ...selection, start: target.start, end: target.end });
+      this.inputs.get(selection.blockId)?.setSelection(target.start, target.end);
+    }
+    this.ui.set({ linking: selection.blockId });
+    return true;
+  }
+
+  /**
+   * Put a mention at the selection (an inline equation an app's slash item
+   * inserts, a page picked elsewhere), replacing selected text.
+   */
+  insertMention(mention: MentionInsert): boolean {
+    const selection = this.textSelection;
+    if (!selection) return false;
+    this.store.sealHistory();
+    return this.store.run((c) =>
+      insertMention(c, selection.blockId, selection.start, selection.end, mention),
     );
   }
 

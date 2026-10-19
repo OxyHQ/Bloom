@@ -515,6 +515,243 @@ async function press(page, key, modifier) {
   await page.close();
 }
 
+// Notion parity: colour, ⌘K, HTML paste, block selection, code, block links, equations.
+const SELECTED = 'rgba(35, 131, 226, 0.14)';
+const selectedRows = (page) =>
+  page.$$eval(
+    '[id^="bloom-block-"]',
+    (els, bg) =>
+      els
+        .filter((el) => getComputedStyle(el).backgroundColor === bg)
+        .map((el) => el.querySelector('[contenteditable]')?.innerText.trim() ?? ''),
+    SELECTED,
+  );
+const textOf = (page, needle) =>
+  page.evaluate((t) => {
+    const s = globalThis.__bloomEditorStore;
+    return Object.values(s.doc.blocks).find((b) =>
+      (b.text || [])
+        .map((x) => x.text)
+        .join('')
+        .includes(t),
+    );
+  }, needle);
+
+{
+  const page = await open();
+  // Text colour from the format bar, kept through typing, drawn when not editing.
+  await clickInto(page, 'Real-time collaboration');
+  await press(page, 'Home');
+  await page.keyboard.down('Shift');
+  await press(page, 'End');
+  await page.keyboard.up('Shift');
+  await sleep(150);
+  await page.click('[aria-label="Text color"]');
+  await sleep(150);
+  await page.click('[aria-label="Color: Red"]');
+  await sleep(150);
+  let todo = await textOf(page, 'Real-time');
+  await check(
+    page,
+    todo.text.every((x) => x.color === 'red'),
+    'the format bar colours the selection',
+  );
+  await press(page, 'End');
+  await type(page, '!');
+  todo = await textOf(page, 'Real-time');
+  await check(
+    page,
+    todo.text.length === 1 && todo.text[0].color === 'red' && todo.text[0].text.endsWith('!'),
+    `a colour survives typing (${JSON.stringify(todo.text)})`,
+  );
+  await clickInto(page, 'Project plan');
+  const drawn = await page.evaluate(() =>
+    [...document.querySelectorAll('[id^="bloom-block-"] span, [id^="bloom-block-"] div')].some(
+      (el) =>
+        !el.closest('[contenteditable]') &&
+        el.textContent === 'Real-time collaboration!' &&
+        getComputedStyle(el).color === 'rgb(212, 76, 71)',
+    ),
+  );
+  await check(page, drawn, 'a coloured block shows its colour while not being edited');
+
+  // ⌘K / Ctrl-K links the selection.
+  await press(page, 'Home');
+  await page.keyboard.down('Shift');
+  await press(page, 'End');
+  await page.keyboard.up('Shift');
+  await press(page, 'k', 'Control');
+  await check(
+    page,
+    await page.$('[aria-label="Link"][placeholder]'),
+    'Ctrl-K opens the link field',
+  );
+  await type(page, 'example.org');
+  await press(page, 'Enter');
+  await sleep(200);
+  const heading = await textOf(page, 'Project plan');
+  await check(
+    page,
+    heading.text[0]?.link === 'https://example.org',
+    `the link field links the selection (${JSON.stringify(heading.text)})`,
+  );
+
+  // HTML paste makes blocks.
+  await clickInto(page, 'Callouts stand out.');
+  await press(page, 'End');
+  await page.evaluate(() => {
+    const target = document.activeElement;
+    const data = new DataTransfer();
+    data.setData(
+      'text/html',
+      '<h2>Pasted</h2><ul><li><input type="checkbox" checked> done</li><li>item <b>bold</b></li></ul><pre><code class="language-python">print(1)</code></pre>',
+    );
+    data.setData('text/plain', 'Pasted');
+    target.dispatchEvent(
+      new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+    );
+  });
+  await sleep(300);
+  let doc = await outline(page);
+  const at = doc.indexOf('callout:Callouts stand out.Pasted');
+  await check(
+    page,
+    at >= 0 &&
+      doc[at + 1] === 'todo[x]:done' &&
+      doc[at + 2] === 'bulleted_list_item:item bold' &&
+      doc[at + 3] === 'code:print(1)',
+    'pasted HTML becomes blocks',
+  );
+  for (let i = 0; i < 1; i += 1) await press(page, 'z', 'Control');
+  doc = await outline(page);
+  await check(
+    page,
+    doc.includes('callout:Callouts stand out.') && !doc.includes('todo[x]:done'),
+    'one undo takes the paste back',
+  );
+
+  // Block selection: Escape, Shift-arrows, Tab, Shift-Tab, Backspace.
+  await clickInto(page, 'Second');
+  await press(page, 'Escape');
+  await press(page, 'ArrowUp', 'Shift');
+  await check(
+    page,
+    JSON.stringify(await selectedRows(page)) === JSON.stringify(['First', 'Second']),
+    `Shift-↑ extends the block selection (${await selectedRows(page)})`,
+  );
+  await press(page, 'Tab');
+  doc = await outline(page);
+  await check(
+    page,
+    doc.includes('  numbered_list_item:First') && doc.includes('  numbered_list_item:Second'),
+    'Tab nests every selected block',
+  );
+  await press(page, 'Tab', 'Shift');
+  doc = await outline(page);
+  await check(
+    page,
+    doc.includes('numbered_list_item:First') && doc.includes('numbered_list_item:Second'),
+    'Shift-Tab takes them out again',
+  );
+  await press(page, 'Backspace');
+  doc = await outline(page);
+  await check(
+    page,
+    !doc.some((l) => l.includes('First') || l.includes('Second')),
+    'Backspace deletes the selected blocks',
+  );
+  await press(page, 'z', 'Control');
+  doc = await outline(page);
+  await check(page, doc.includes('numbered_list_item:First'), 'undo brings them back');
+
+  // Shift-click from the block being edited.
+  await clickInto(page, 'Ship the editor');
+  await page.keyboard.down('Shift');
+  await (await input(page, 'First')).click();
+  await page.keyboard.up('Shift');
+  await sleep(200);
+  let rows = await selectedRows(page);
+  await check(
+    page,
+    rows[0] === 'Ship the editor' && rows[rows.length - 1] === 'First',
+    `Shift-click selects the blocks between (${rows})`,
+  );
+
+  // Dragging out of one block's text into another.
+  const from = await (await input(page, 'Ship the editor')).boundingBox();
+  const to = await (await input(page, 'Second')).boundingBox();
+  await page.mouse.move(from.x + 20, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(from.x + 60, from.y + from.height / 2, { steps: 3 });
+  await page.mouse.move(to.x + 20, to.y + to.height / 2, { steps: 10 });
+  await page.mouse.up();
+  await sleep(200);
+  rows = await selectedRows(page);
+  await check(
+    page,
+    rows[0] === 'Ship the editor' && rows[rows.length - 1] === 'Second',
+    `a drag across blocks selects them (${rows})`,
+  );
+  await press(page, 'Escape');
+
+  // Code: highlighted while not edited, a language menu.
+  const highlighted = await page.evaluate(() =>
+    [...document.querySelectorAll('[id^="bloom-block-"] span, [id^="bloom-block-"] div')].some(
+      (el) =>
+        !el.closest('[contenteditable]') &&
+        el.textContent === 'const' &&
+        getComputedStyle(el).color === 'rgb(144, 101, 176)',
+    ),
+  );
+  await check(page, highlighted, 'a code block is highlighted while not being edited');
+  const code = await row(page, 'const answer = "42";');
+  await code.hover();
+  await sleep(150);
+  await (await code.$('[aria-label="Language: JavaScript"]')).click();
+  await sleep(250);
+  const python = await page.evaluateHandle(() =>
+    [...document.querySelectorAll('[role="menuitem"]')].find((e) => e.innerText === 'Python'),
+  );
+  await python.click();
+  await sleep(200);
+  const codeBlock = await textOf(page, 'const answer');
+  await check(page, codeBlock.props.language === 'python', 'the language menu sets the language');
+
+  // Copy link to block.
+  const quote = await row(page, 'Simple things should be simple.');
+  await quote.hover();
+  await sleep(150);
+  await (await quote.$('[aria-label="Block options"]')).click();
+  await sleep(250);
+  const copy = await page.evaluateHandle(() =>
+    [...document.querySelectorAll('[role="menuitem"]')].find(
+      (e) => e.innerText === 'Copy link to block',
+    ),
+  );
+  await copy.click();
+  await sleep(150);
+  const opened = await page.evaluate(() => globalThis.__bloomOpened ?? []);
+  await check(
+    page,
+    opened.some((o) => o.startsWith('block:')),
+    'the block menu copies a link to the block',
+  );
+
+  // Inline equations.
+  await clickInto(page, 'Simple things should be simple.');
+  await press(page, 'End');
+  await type(page, ' $$x^2$$');
+  const eq = await textOf(page, 'Simple things');
+  await check(
+    page,
+    eq.text.some(
+      (x) => x.mention?.attributes?.kind === 'equation' && x.mention.attributes.latex === 'x^2',
+    ),
+    `$$…$$ makes an inline equation (${JSON.stringify(eq.text)})`,
+  );
+  await page.close();
+}
+
 await browser.close();
 assert.deepEqual(errors, [], 'no page errors');
 console.log('verify-editor: all assertions passed');

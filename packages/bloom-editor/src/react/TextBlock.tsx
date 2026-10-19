@@ -1,6 +1,7 @@
 import type { ActiveMarks } from '@oxy.so/bloom-text/model';
 import {
   type KeyCommand,
+  type PasteData,
   type RichTextChange,
   RichTextInput,
   type RichTextInputHandle,
@@ -17,7 +18,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import { Platform, StyleSheet, Text, type TextStyle, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, type TextStyle, View } from 'react-native';
 import {
   applyEdit,
   backspaceAtStart,
@@ -37,18 +38,27 @@ import {
   turnInto,
 } from '../model/commands';
 import { type Block, childrenOf, getBlock, positionOf } from '../model/document';
-import { applyBlockShortcut, applyInlineShortcut, detectBlockShortcut } from '../model/markdown';
-import { pasteIntoBlock } from '../model/paste';
+import { htmlToSnapshot, isPlainSnapshot } from '../model/html';
+import {
+  applyBlockShortcut,
+  applyInlineEquation,
+  applyInlineShortcut,
+  detectBlockShortcut,
+} from '../model/markdown';
+import { pasteIntoBlock, pasteSnapshot } from '../model/paste';
 import type { EditorSelection, Transaction } from '../model/operations';
 import { isStructural, specOf } from '../model/schema';
 import { filterSlashItems, type SlashItem, slashQuery, slashTriggerAt } from '../model/slash';
+import { clearBlockSelection, selectBlocks } from './block-selection';
 import { type MentionItem, useEditorContext } from './context';
 import { FormatBar } from './FormatBar';
 import { InlinePopover } from './InlinePopover';
 import { inlineTargetAt } from './inline-target';
 import { MentionMenu } from './MentionMenu';
+import { MONO_FONT, RunsText } from './RunsText';
 import { SlashMenu } from './SlashMenu';
 import { useUi } from './ui-store';
+import { codeRuns, hasValueOnlyMarks, segmentRuns } from './text-runs';
 import { textStyleFor } from './typography';
 
 const caret = (blockId: string, offset: number): EditorSelection => ({
@@ -70,6 +80,10 @@ export function TextBlock({ block }: { block: Block }) {
     slashItems,
     onSlashAction,
     mentions,
+    onPasteImages,
+    codeLanguages,
+    highlightCode,
+    inlineEquations,
   } = useEditorContext();
   const id = block.id;
   const spec = specOf(store.schema, block.type);
@@ -200,7 +214,11 @@ export function TextBlock({ block }: { block: Block }) {
         );
         return;
       }
-      const inline = applyInlineShortcut(segments, edit);
+      const inline =
+        applyInlineShortcut(segments, edit) ??
+        (inlineEquations && !spec.multiline
+          ? applyInlineEquation(segments, edit, inlineEquations.indicator)
+          : null);
       if (inline) {
         store.dispatch(
           composeCommands(ctx, [
@@ -212,7 +230,27 @@ export function TextBlock({ block }: { block: Block }) {
       }
       store.dispatch(editText(ctx, id, segments));
     },
-    [id, store, ui],
+    [id, inlineEquations, spec.multiline, store, ui],
+  );
+
+  // Web: HTML pasted from a page or another editor becomes blocks. A paste
+  // that says no more than its plain text is left to the input, whose lines
+  // (and their Markdown prefixes) make blocks in `onChange`; code takes
+  // plain text.
+  const onPaste = useCallback(
+    ({ html }: PasteData): boolean => {
+      if (!html || readOnly) return false;
+      const current = store.doc.blocks[id];
+      if (!current || specOf(store.schema, current.type).multiline) return false;
+      const snapshot = htmlToSnapshot(html, { schema: store.schema });
+      if (snapshot.length === 0 || isPlainSnapshot(snapshot)) return false;
+      const { start, end } = selectionRef.current;
+      store.sealHistory();
+      const pasted = store.run((c) => pasteSnapshot(c, id, start, end, snapshot));
+      store.sealHistory();
+      return pasted;
+    },
+    [id, readOnly, store],
   );
 
   const onSelectionChange = useCallback(
@@ -349,6 +387,11 @@ export function TextBlock({ block }: { block: Block }) {
         store.redo();
         return true;
       }
+      if (key.mod && !key.shift && (key.key === 'k' || key.key === 'K')) {
+        // The link field, for the selection or the link the caret is in.
+        controller.openLinkEditor();
+        return true;
+      }
       if (key.key === 'Enter' && key.shift) {
         // Soft line break; `onSubmit` reads this flag.
         shiftEnterRef.current = true;
@@ -399,12 +442,12 @@ export function TextBlock({ block }: { block: Block }) {
           if (parent === null) break;
           selected = parent;
         }
-        ui.set({ selectedBlocks: [selected] });
+        selectBlocks(ui, [selected]);
         return true;
       }
       return false;
     },
-    [chooseMention, focusBlock, id, run, runSlashItem, slashItems, store, ui],
+    [chooseMention, controller, focusBlock, id, run, runSlashItem, slashItems, store, ui],
   );
 
   const onSubmit = useCallback(() => {
@@ -506,42 +549,88 @@ export function TextBlock({ block }: { block: Block }) {
     };
   }, [block.props.checked, block.props.color, block.type, theme]);
 
+  // While the block is not being edited, what its input cannot draw is drawn
+  // over it: colours and highlights in its text, or highlighted code. The
+  // input stays in place, unseen, and takes the press that starts editing.
+  const isCode = block.type === 'code';
+  const language = typeof block.props.language === 'string' ? block.props.language : 'plain';
+  const runs = useMemo(() => {
+    if (focused) return null;
+    const text = block.text ?? [];
+    if (isCode && highlightCode) {
+      const code = segmentsToPlainText(text);
+      return code ? codeRuns(code, highlightCode(code, language)) : null;
+    }
+    return hasValueOnlyMarks(text) ? segmentRuns(text, theme, textStyle, MONO_FONT) : null;
+  }, [focused, block.text, isCode, highlightCode, language, theme, textStyle]);
+  const hovered = useUi(ui, (s) => s.hovered === block.id);
+  const languageLabel = codeLanguages?.find((l) => l.id === language)?.label ?? language;
+  const showLanguage =
+    isCode &&
+    codeLanguages !== undefined &&
+    codeLanguages.length > 0 &&
+    !readOnly &&
+    // Touch has no hover, and a press that blurs the input must still land.
+    (Platform.OS !== 'web' || hovered || focused);
+
   return (
     <View>
-      <RichTextInput
-        ref={inputRef}
-        value={block.text ?? []}
-        onChange={onChange}
-        onSelectionChange={onSelectionChange}
-        onKeyCommand={onKeyCommand}
-        onActiveMarksChange={onActiveMarksChange}
-        mentionIndicators={mentions ? [...mentions.indicators] : undefined}
-        onMentionQuery={mentions ? onMentionQuery : undefined}
-        onSubmit={spec.multiline ? undefined : onSubmit}
-        onFocus={() => {
-          focusedRef.current = true;
-          setFocused(true);
-          ui.set({
-            selectedBlocks: [],
-            focused: id,
-            ...(marksRef.current && { marks: { blockId: id, marks: marksRef.current } }),
-          });
-          // The input reports its caret before it reports focus; claim it now.
-          const { start, end } = selectionRef.current;
-          store.setSelection({ kind: 'text', blockId: id, start, end });
-        }}
-        onBlur={() => {
-          focusedRef.current = false;
-          setFocused(false);
-          if (ui.get().focused === id) ui.set({ focused: null });
-          store.sealHistory();
-        }}
-        editable={!readOnly}
-        textStyle={textStyle}
-        style={block.type === 'code' ? { padding: 12 } : undefined}
-        accessibilityLabel={placeholder}
-        testID={`block-input-${id}`}
-      />
+      <View style={runs ? styles.unseen : undefined}>
+        <RichTextInput
+          ref={inputRef}
+          value={block.text ?? []}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onKeyCommand={onKeyCommand}
+          onActiveMarksChange={onActiveMarksChange}
+          mentionIndicators={mentions ? [...mentions.indicators] : undefined}
+          onMentionQuery={mentions ? onMentionQuery : undefined}
+          onSubmit={spec.multiline ? undefined : onSubmit}
+          onPaste={readOnly ? undefined : onPaste}
+          onPasteImages={
+            onPasteImages && !readOnly ? (images) => onPasteImages(images, id) : undefined
+          }
+          onFocus={() => {
+            focusedRef.current = true;
+            setFocused(true);
+            clearBlockSelection(ui);
+            ui.set({
+              focused: id,
+              ...(marksRef.current && { marks: { blockId: id, marks: marksRef.current } }),
+            });
+            // The input reports its caret before it reports focus; claim it now.
+            const { start, end } = selectionRef.current;
+            store.setSelection({ kind: 'text', blockId: id, start, end });
+          }}
+          onBlur={() => {
+            focusedRef.current = false;
+            setFocused(false);
+            if (ui.get().focused === id) ui.set({ focused: null });
+            store.sealHistory();
+          }}
+          editable={!readOnly}
+          textStyle={textStyle}
+          style={isCode ? styles.codeInput : undefined}
+          accessibilityLabel={placeholder}
+          testID={`block-input-${id}`}
+        />
+      </View>
+      {runs ? (
+        <RunsText runs={runs} textStyle={textStyle} style={isCode ? styles.codeInput : undefined} />
+      ) : null}
+      {showLanguage ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${labels.codeLanguage}: ${languageLabel}`}
+          onPress={() => ui.set({ codeLanguageMenu: id })}
+          style={({ pressed }) => [
+            styles.language,
+            pressed && { backgroundColor: theme.selection },
+          ]}
+        >
+          <Text style={[styles.languageText, { color: theme.textMuted }]}>{languageLabel}</Text>
+        </Pressable>
+      ) : null}
       {placeholder && isEmpty ? (
         // Drawn here rather than passed to the input: the input rebuilds its
         // editing surface whenever its placeholder changes, which would drop
@@ -584,6 +673,17 @@ function textStyleToText(style: RichTextStyle): TextStyle {
 
 const styles = StyleSheet.create({
   placeholder: { position: 'absolute', left: 0, right: 0, top: 0 },
+  unseen: { opacity: 0 },
+  codeInput: { padding: 12 },
+  language: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  languageText: { fontSize: 12 },
   bubble: {
     position: 'absolute',
     bottom: '100%',
