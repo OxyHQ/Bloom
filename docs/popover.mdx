@@ -91,7 +91,7 @@ Padding and margin are read PER SIDE, because the utilities are: `px-4` claims t
 <PopoverContent label="More actions" className="w-[200px] p-2">
 ```
 
-Anything the panel sets no default for (`gap-*`, `flex-row`, margins) is a plain class and needs nothing.
+Panel classes still apply to the outer surface. The shared ScrollArea owns child flow and the inherited row gap; use an explicit `style={{ gap: ... }}` only when mixed content genuinely needs a different rhythm. That gap is forwarded to the scroll content. A gap utility on the outer surface does not space its grandchildren.
 
 A padding override from `style` may use the shorthand (`padding: 0`) — the defaults are longhands, and an inline shorthand still replaces them.
 
