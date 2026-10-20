@@ -26,6 +26,7 @@ export interface CoverImageProps {
 }
 
 export interface CoverHeaderLabels {
+  changeCover: string;
   reposition: string;
   instruction: string;
   save: string;
@@ -59,6 +60,8 @@ export interface CoverHeaderProps {
   onCoverPositionChange?: (position: CoverPosition) => void;
   /** Additional controls, such as choosing or removing a cover. Hidden during editing. */
   actions?: ReactNode;
+  /** Shows the standard shared Change cover action. Omit for read-only covers. */
+  onChangeCover?: () => void;
   labels?: Partial<CoverHeaderLabels>;
   /** Drawn in the band instead of the photo (an editor, a gradient, a video poster). */
   cover?: ReactNode;

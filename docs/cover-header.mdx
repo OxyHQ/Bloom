@@ -1,6 +1,6 @@
 ---
 title: CoverHeader
-description: A cover band with content rising into its bottom edge — a profile's banner and the avatar that overlaps it.
+description: Page and profile cover bands, shared image previews, and explicit crop editing.
 order: 106
 ---
 
@@ -74,7 +74,7 @@ belong to the application.
     await saveCoverPosition(next);
     setPosition(next);
   }}
-  actions={<Button onPress={chooseCover}>Change cover</Button>}
+  onChangeCover={chooseCover}
 >
   <Avatar source={avatarUrl} size={80} />
   <Text variant="title-2-medium">Workspace</Text>
@@ -93,8 +93,12 @@ An already-started application mutation cannot be undone by unmounting.
 `onCoverPositionChange` is an optional preview notification, never a persistence
 callback. Cancellation reports the current controlled value. `labels` overrides
 the localized action names, instructions, directions and save-error text.
-Additional `actions` are hidden while editing. The controls use Bloom Button
-and Surface, inheriting the surrounding appearance scope.
+`onChangeCover` displays the standard localized Change cover Button; omit the
+callback for read-only use. Consumers pass the operation instead of rebuilding
+this action. Additional `actions` remain available for extensions. Both are
+hidden while editing. Each Button provides its own Surface material and
+inherits the surrounding appearance scope; the action layout adds no painted
+panel. Only failure feedback gets a separate Surface for legibility over photos.
 
 The image's intrinsic dimensions and measured frame determine its rendered
 size. A drag delta is divided by the actual cropped overflow on each axis;
@@ -102,7 +106,9 @@ there is no fixed pixel-to-percent conversion. Positions are clamped to 0–1,
 and axes without overflow do not move. `repositionAxes="vertical"` preserves
 horizontal position; the default is `"both"`. Arrow keys move the image 10px,
 Shift increases the step to 40px, Home/End select crop boundaries, Enter saves,
-and Escape cancels. Native accessibility actions expose the allowed directions.
+and Escape cancels. Focus enters the named editor and returns to Reposition after
+saving or cancelling. Escape/Enter are consumed by the editor rather than
+propagating to an enclosing overlay. Native accessibility actions expose the allowed directions.
 
 Editing requires `repositionable`, an image source, `coverFit="cover"` (the
 default) and a commit callback. Custom `cover` content and contained images are
@@ -149,3 +155,14 @@ to BloomImage unchanged.
 When actions are present they occupy a final positioned sibling, above the
 content's overlap in paint order. This keeps controls clickable where a wide
 avatar/content row overlaps the band, without assigning a private z-index.
+
+### Intrinsic dimensions on web
+
+React Native Web can deliver its load event after awaiting `image.decode()`.
+At that point the event may have neither `target` nor `currentTarget`, even
+though the image is complete. BloomImage first reads dimensions from the
+native source or event target, then falls back to the image loader's cached
+`getSize` reader. It never treats the rendered box as the image's natural size.
+The fallback checks source revision, mount state and the current probe before
+reporting results, and invalidates a pending probe when loading fails. This
+prevents an old URL or unmounted image from changing a new crop.

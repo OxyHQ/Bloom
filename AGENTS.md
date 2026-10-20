@@ -174,7 +174,7 @@ Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub
 
 ## Images, refs, insets (RN 0.88 / Expo SDK 58)
 
-- **Raster images render through `image/BloomImage` only** (expo-image native via optional `require`, RN `Image` web/fallback): apps may drop Android GIF/WebP decoders only if nothing draws through RN `Image`. Gate `image-renderer.test.ts`.
+- **Raster images render through `image/BloomImage` only** (expo-image native via optional `require`, RN `Image` web/fallback): apps may drop Android GIF/WebP decoders only if nothing draws through RN `Image`. Gate `image-renderer.test.ts`. RNW intrinsic-size fallback: `docs/cover-header.mdx`.
 - **Refs are `ComponentRef<typeof View>`, never `View`/`ViewInstance`** (0.88 `View` names the function; 0.86 lacks `*Instance`). Exported components annotate with `styles/native-refs.ts`, else emit fails TS2742.
 - **Insets go through `useCssSafeAreaInsets(...)`:** SDK 58 Expo Router gives web ZERO insets; it raises them to CSS `env(safe-area-inset-*)`.
 

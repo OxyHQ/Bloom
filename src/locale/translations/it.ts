@@ -2909,6 +2909,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
+    changeCover: 'Cambia copertina',
     reposition: 'Riposiziona',
     instruction:
       'Trascina per riposizionare. Usa le frecce per spostare, Maiusc per passi più grandi, Invio per salvare o Esc per annullare.',

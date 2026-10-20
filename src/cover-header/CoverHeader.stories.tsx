@@ -63,6 +63,7 @@ function EditablePageCover() {
       coverHeight={280}
       overlap={40}
       coverPosition={position}
+      onChangeCover={() => {}}
       repositionable
       repositionAxes="vertical"
       onCoverPositionCommit={async (next) => {
