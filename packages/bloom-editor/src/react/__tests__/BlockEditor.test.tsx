@@ -529,19 +529,33 @@ describe('clipboard ownership', () => {
     expect(clipboard(input, 'cut').data.size).toBe(0);
     expect(store.doc.blocks.b1).toBeDefined();
   });
-  it('preserves text clipboard inside a custom renderer despite retained block selection', () => {
-    const store = makeStore(PARAGRAPHS);
-    const controller = new EditorController(store);
-    const container = mount(
-      <EditorSurface store={store} controller={controller} slashItems={[]}>
-        <input />
-      </EditorSurface>,
-    );
-    act(() => selectBlocks(controller.ui, ['b1']));
-    const field = container.querySelector('input')!;
-    act(() => field.focus());
-    const before = store.getSnapshot();
-    expect(clipboard(field, 'cut').event.defaultPrevented).toBe(false);
-    expect(store.getSnapshot()).toBe(before);
-  });
+  it.each(['input', 'textarea', '', 'true', 'plaintext-only'])(
+    'preserves clipboard in a custom renderer field (%s)',
+    (editable) => {
+      const store = makeStore(PARAGRAPHS);
+      const controller = new EditorController(store);
+      const container = mount(
+        <EditorSurface store={store} controller={controller} slashItems={[]}>
+          {editable === 'input' ? (
+            <input data-testid="field" />
+          ) : editable === 'textarea' ? (
+            <textarea data-testid="field" />
+          ) : (
+            <div data-testid="field" tabIndex={0} />
+          )}
+        </EditorSurface>,
+      );
+      const field = container.querySelector<HTMLElement>('[data-testid="field"]')!;
+      if (editable !== 'input' && editable !== 'textarea')
+        field.setAttribute('contenteditable', editable);
+      act(() => selectBlocks(controller.ui, ['b1']));
+      act(() => field.focus());
+      expect(document.activeElement).toBe(field);
+      const before = store.getSnapshot();
+      for (const kind of ['copy', 'cut'] as const) {
+        expect(clipboard(field, kind).event.defaultPrevented).toBe(false);
+      }
+      expect(store.getSnapshot()).toBe(before);
+    },
+  );
 });

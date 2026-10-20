@@ -486,8 +486,8 @@ export function EditorSurface({
       if (
         event.defaultPrevented ||
         target?.closest?.('[data-bloom-editor-surface]') !== node ||
-        target.closest('input, textarea, [contenteditable="true"]') ||
-        node.ownerDocument.activeElement?.closest('[data-bloom-editor-surface]') !== node
+        target.closest('input, textarea, [contenteditable]:not([contenteditable="false"])') ||
+        node.ownerDocument.activeElement !== node
       )
         return;
       const selected = ui.get().selectedBlocks;
