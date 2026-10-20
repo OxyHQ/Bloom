@@ -33,7 +33,7 @@ import {
 import { useScreenWindowBinding } from './use-screen-window-scroll';
 import type { ScreenProps } from './types';
 import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
-import { getScreenKeyboardComponents } from './keyboard-components';
+import type { ScreenKeyboardComponents } from './keyboard-components';
 
 export function createScreen(
   ScrollBar: ComponentType<ScrollBarProps>,
@@ -41,6 +41,7 @@ export function createScreen(
     Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>
   >,
   useScrollRestoration: typeof UseScrollRestoration,
+  getKeyboardComponents: (() => ScreenKeyboardComponents) | null,
 ) {
   const ScreenViewportRestoration = createScreenViewportRestoration(useScrollRestoration);
   /** One continuous canvas; chrome overlays it and content reserves its measured footprint. */
@@ -134,7 +135,10 @@ export function createScreen(
         hide.remove();
       };
     }, []);
-    const keyboardFollow = Platform.OS !== 'web' && bottomBarKeyboardBehavior === 'follow';
+    const keyboardFollow =
+      getKeyboardComponents !== null &&
+      Platform.OS !== 'web' &&
+      bottomBarKeyboardBehavior === 'follow';
     const hasBottom =
       (!keyboardVisible || bottomBarKeyboardBehavior !== 'hide') &&
       Boolean(bottomBar || primaryAction || host.bottomBar);
@@ -268,7 +272,8 @@ export function createScreen(
           {primaryAction}
         </View>
       ) : null);
-    const Footer = keyboardFollow ? getScreenKeyboardComponents().KeyboardStickyView : View;
+    const Footer =
+      keyboardFollow && getKeyboardComponents ? getKeyboardComponents().KeyboardStickyView : View;
     const bottomNode = hasBottom ? (
       <Footer
         {...(keyboardFollow ? { enabled: active } : {})}

@@ -35,9 +35,12 @@ import { useScreenScroll } from './use-screen-scroll';
 import { useScreenWindowScroll } from './use-screen-window-scroll';
 import type { ScreenScrollViewProps } from './types';
 import type { RefComponent } from '../styles/native-refs';
-import { getScreenKeyboardComponents } from './keyboard-components';
+import type { ScreenKeyboardComponents } from './keyboard-components';
 
-export function createScreenScrollView(ScrollBar: React.ComponentType<ScrollBarProps>) {
+export function createScreenScrollView(
+  ScrollBar: React.ComponentType<ScrollBarProps>,
+  getKeyboardComponents: (() => ScreenKeyboardComponents) | null,
+) {
   type InnerProps = ScreenScrollViewProps & {
     forwardedRef: React.ForwardedRef<ComponentRef<typeof ScrollView>>;
   };
@@ -155,9 +158,10 @@ export function createScreenScrollView(ScrollBar: React.ComponentType<ScrollBarP
             paddingBottom: scroll.contentInsets.bottom + paddingEdge(contentStyle, 'paddingBottom'),
           },
         ];
-    const ScrollContainer = screen.keyboardFollow
-      ? getScreenKeyboardComponents().KeyboardAwareScrollView
-      : Animated.ScrollView;
+    const ScrollContainer =
+      screen.keyboardFollow && getKeyboardComponents
+        ? getKeyboardComponents().KeyboardAwareScrollView
+        : Animated.ScrollView;
     const content = (
       <ScrollContainer
         {...props}

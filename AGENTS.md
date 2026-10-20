@@ -65,7 +65,7 @@ are not exemptions. Contracts: docs/composition.mdx, docs/unified-api.mdx.
 
 ## Verification
 
-**Read `docs/verification.mdx` before testing or installing a local build.** It preserves the measured Node/Jest crashes, native-resolution gaps and consumer-mirror hazards. Compare crashers with main; verify the exact suite union across shards, never counts alone. Jest does not resolve `.native.*`: explicitly import native subjects and verify device behavior. A green web-resolved suite does not prove native behavior.
+**Read `docs/verification.mdx` before tests/local installs:** Node/Jest crashes, native-resolution gaps, mirror hazards. Compare crashes with main; verify shard suite union, not counts. Jest ignores `.native.*`: import native subjects explicitly; web tests do not prove device behavior.
 
 ## App root provider
 
@@ -160,6 +160,7 @@ Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub
 - **Peers source of truth:** peerDependencies + peerDependenciesMeta. Never duplicate ranges here; stale ranges falsely authorize missing peers.
 - **`@gorhom/bottom-sheet` is no peer/dependency:** the sheet is Bloom's own (name only in comments). **A statically-imported peer is never `optional`:** optionality concerns what RESOLVES; omitting one fails the Metro build rather than degrading.
 - **Optional peers require `require('<literal>')` as a DIRECT try-block statement.** Metro stops at the first enclosing block: nesting an `if` inside try loses optionality. Put typeof-require guards outside. Parameter specifiers previously broke haptics, squircle clip, spinner and native color scoping. Reference `connection-status/netinfo.ts`; gate `optional-peer-imports.test.ts`.
+- Runtime platform guards do not prune optional peers. Inject native adapters into shared factories; `docs/screen.mdx`.
 - Toast engine is vendored: no `sonner`/`sonner-native`/`nanoid`. Web bundles DO import reanimated + gesture-handler.
 
 ## Style and `className`
