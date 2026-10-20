@@ -327,7 +327,9 @@ interface SidebarTreeDrop {
   announced ("Roadmap moved").
 - The rules hold in every path: a row never lands on itself or inside its own
   descendants, nothing lands in a section with `droppable: false` (a list
-  shared with you), and nothing lands inside a row with `droppable: false`.
+  shared with you), nothing lands inside a row with `droppable: false`, and
+  nothing lands beside a row with `dropBeside: false` — a container among
+  containers (a teamspace's row): anywhere on it is inside.
   Drags span sections, so keys must be unique across the tree: a page listed
   twice (a favourite, and its place) takes two keys, and `selected: true` on
   each copy marks both while it is open. Folders' rows do not move.

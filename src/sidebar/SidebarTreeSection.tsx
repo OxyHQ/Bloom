@@ -197,7 +197,7 @@ function SectionLabel({
   const accepts = drag != null && section.droppable !== false;
   useEffect(() => {
     if (!accepts || !drag || IS_WEB) return;
-    return drag.register(`section:${key}`, { section: key, measure, inside: true });
+    return drag.register(`section:${key}`, { section: key, measure, inside: true, beside: false });
   }, [accepts, drag, key, measure]);
   useWebDropTarget(ref, accepts ? drag : null, (_fraction) => ({
     section: key,
@@ -443,8 +443,12 @@ const TreeRow = memo(function TreeRow({
   const expanded = expandable && (open || (searching && children.length > 0));
   const selected = item.selected ?? item.key === selectedTreeItem;
   const canDrag = drag != null && item.draggable === true;
-  const accepts = drag != null && section.droppable !== false;
+  const accepts =
+    drag != null &&
+    section.droppable !== false &&
+    (item.droppable !== false || item.dropBeside !== false);
   const insideAllowed = item.droppable !== false;
+  const besideAllowed = item.dropBeside !== false;
   const key = sectionKey(section);
 
   const ref = useRef<ComponentRef<typeof View>>(null);
@@ -456,12 +460,13 @@ const TreeRow = memo(function TreeRow({
       section: key,
       measure,
       inside: insideAllowed,
+      beside: besideAllowed,
     });
-  }, [accepts, drag, item.key, key, measure, insideAllowed]);
+  }, [accepts, drag, item.key, key, measure, insideAllowed, besideAllowed]);
   useWebDropTarget(ref, accepts ? drag : null, (fraction) => ({
     key: item.key,
     section: key,
-    position: dropPositionAt(fraction, insideAllowed),
+    position: dropPositionAt(fraction, insideAllowed, besideAllowed),
   }));
 
   // Web: the row is an HTML drag source.

@@ -322,23 +322,27 @@ describe('Sidebar tree moves', () => {
             key: 'roadmap',
             section: 'private',
             inside: true,
+            beside: true,
             measure: async () => frames['row:roadmap']!,
           }),
           drag.register('row:notes', {
             key: 'notes',
             section: 'private',
             inside: true,
+            beside: true,
             measure: async () => frames['row:notes']!,
           }),
           drag.register('row:theirs', {
             key: 'theirs',
             section: 'shared',
             inside: true,
+            beside: true,
             measure: async () => frames['row:theirs']!,
           }),
           drag.register('section:private', {
             section: 'private',
             inside: true,
+            beside: false,
             measure: async () => frames['section:private']!,
           }),
         ];

@@ -92,18 +92,22 @@ export function canDrop(
   if (!target) return false;
   if (target.ancestors.includes(sourceKey)) return false;
   if (position === 'inside' && target.item.droppable === false) return false;
+  if (position !== 'inside' && target.item.dropBeside === false) return false;
   return true;
 }
 
 /**
  * The place a pointer at `fraction` of a row's height names: the top quarter
  * is before it, the bottom quarter after it and the middle inside it — or, for
- * a row nothing can go inside, the top half before and the bottom half after.
+ * a row nothing can go inside, the top half before and the bottom half after;
+ * for a row nothing lands beside, anywhere on it is inside.
  */
 export function dropPositionAt(
   fraction: number,
   insideAllowed: boolean,
+  besideAllowed = true,
 ): SidebarTreeDrop['position'] {
+  if (!besideAllowed) return 'inside';
   if (!insideAllowed) return fraction < 0.5 ? 'before' : 'after';
   if (fraction < 0.25) return 'before';
   if (fraction > 0.75) return 'after';

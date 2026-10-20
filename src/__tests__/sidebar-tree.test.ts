@@ -72,6 +72,20 @@ describe('sidebar tree model', () => {
     expect(canDrop(places, 'jan', undefined, SHARED, 'inside')).toBe(false);
   });
 
+  it('takes a container row only inside, wherever on it the row lands', () => {
+    const space: SidebarTree = {
+      key: 'spaces',
+      label: 'Teamspaces',
+      items: [row('team', { draggable: false, dropBeside: false }), row('page')],
+    };
+    const index = indexTree([space]);
+    expect(canDrop(index, 'page', 'team', space, 'inside')).toBe(true);
+    expect(canDrop(index, 'page', 'team', space, 'before')).toBe(false);
+    expect(canDrop(index, 'page', 'team', space, 'after')).toBe(false);
+    expect(dropPositionAt(0.05, true, false)).toBe('inside');
+    expect(treeMoves(index, 'page').up).toBeUndefined();
+  });
+
   it('splits a row in quarters, or halves when nothing can go inside it', () => {
     expect(dropPositionAt(0.1, true)).toBe('before');
     expect(dropPositionAt(0.5, true)).toBe('inside');

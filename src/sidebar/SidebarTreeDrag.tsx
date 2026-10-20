@@ -59,6 +59,8 @@ interface Target {
   measure: Measure;
   /** Whether rows can go inside it (a row's `droppable`, or a section label). */
   inside: boolean;
+  /** Whether rows can land before and after it (a row's `dropBeside`); a label takes none. */
+  beside: boolean;
 }
 
 export interface TreeDragApi {
@@ -229,7 +231,10 @@ export function TreeDragProvider({
       const hover: TreeHover = {
         key: target.key,
         section: target.section,
-        position: target.key === undefined ? 'inside' : dropPositionAt(fraction, target.inside),
+        position:
+          target.key === undefined
+            ? 'inside'
+            : dropPositionAt(fraction, target.inside, target.beside),
       };
       return resolve(active.key, hover) ? hover : null;
     };

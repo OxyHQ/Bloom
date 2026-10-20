@@ -582,6 +582,12 @@ export interface SidebarTreeItem {
   draggable?: boolean;
   /** Rows may be dropped INSIDE this one. Defaults to true. */
   droppable?: boolean;
+  /**
+   * `false`: nothing lands before or after this row — a container among
+   * containers (a teamspace's row, whose neighbours are teamspaces, not pages):
+   * a row dropped on it goes inside. Defaults to true.
+   */
+  dropBeside?: boolean;
 }
 
 /**
