@@ -16,7 +16,7 @@ RN + Web library. Families: `src/<name>/`, published subpaths and root exports.
 - **`scripts/generate-platform-exports.mjs` owns `package.json#exports`, `#typesVersions` and web barrels.** `prebuild` overwrites edits. TS5.9 `moduleResolution: "node"` ignores exports: previously NO subpath typechecked; typesVersions fixes it and is ignored by node16/bundler.
 - **Disambiguate wildcard keys:** `./icons/Ri*`, not `./icons/*`. The latter matches `index`: built `icons/remix/index.js` exists, but Metro's source has index.ts, not index.tsx. Conditions disagree silently. `existsSync` cannot validate `*`; `verify-package.mjs` expands patterns against the tarball and requires IDENTICAL names across conditions.
 - **Forks have TWO barrels:** native `index.ts`, web `index.web.ts` (`browser` condition), never `index.native.*`. Exception: three `theme/native-root-vars.*` files; native imports `react-native-css/native-internal`, unavailable to web/tsc.
-- **Relative imports ignore export conditions.** EVERY web-only importer must name a forked target's `.web` sibling; neutral targets keep bare names (adding `.web` breaks native). `docs/avatar-group.mdx` hoverCard failed despite green reachability and browser checks: one correct importer satisfied the old gate, another used the bare barrel, and Storybook Vite resolved `.web.tsx` anyway. `web-fork-reachability.test.ts` now checks both properties.
+- **Relative imports ignore export conditions.** Web-only importers name forked targets' `.web` sibling; neutral targets stay bare (`.web` breaks native). Avatar-group hoverCard passed old reachability/browser checks because one importer was correct while another used the bare barrel and Storybook Vite resolved `.web.tsx` anyway. `web-fork-reachability.test.ts` checks both; `docs/avatar-group.mdx`.
 - **Keep `react-native` conditions split into `types` + `default`.** Bare strings make consumers typecheck Bloom `.tsx`, importing react-dom and undeclared optional peers.
 - **Required postbuild `verify:package`:** all packed exports must ship; RN has no src fallback. Keep both recursion guards: `--ignore-scripts`, `BLOOM_VERIFY_PACKAGE_RUNNING`.
 - **Toast is not web-forked:** only `ToastHost.native.tsx` splits; exclude `./toast` from `WEB_FORKED_SUBPATHS`.
@@ -33,9 +33,9 @@ General failures: `~/Oxy/AGENTS.md`. Per-direction rule, freeze mechanism (two r
 
 ## Consumer web CSS pipeline (className layout is inert without it)
 
-WEB consumers of Bloom/services className screens MUST wire Tailwind/NativeWind AND `@source`-scan both built `lib/` trees. Otherwise flex-row, gap and arbitrary sizes are silently inert, exposing RNW View resets. Inline colors still work and mask the failure; native is unaffected.
+Web consumers MUST wire Tailwind/NativeWind and `@source`-scan Bloom/services built `lib/` trees. Otherwise flex-row/gap/sizes silently fail under RNW resets while working inline colors mask it; native is unaffected.
 
-Wiring: Expo/Metro apps import `@oxy.so/app-preset/css/base.css` at the top of `global.css` (first import in `app/_layout.tsx`) plus `@tailwindcss/postcss`; Vite apps use `@tailwindcss/vite` plus a stylesheet `@source`-scanning both `lib/`s. Consumer-side only — `create-oxy-app` scaffolds it.
+Expo/Metro: import `@oxy.so/app-preset/css/base.css` atop `global.css`, first import in `app/_layout.tsx`, with `@tailwindcss/postcss`. Vite: `@tailwindcss/vite` and stylesheet scanning both `lib/`s. `create-oxy-app` scaffolds this consumer wiring.
 
 ## Family layout, files and the root barrel
 
@@ -48,33 +48,22 @@ Wiring: Expo/Metro apps import `@oxy.so/app-preset/css/base.css` at the top of `
 
 ## Composition contracts (`docs/composition.mdx`, `docs/adoption-matrix.mdx`)
 
-Contracts: docs/composition.mdx, docs/unified-api.mdx.
+**Read `docs/ui-architecture.mdx` before UI, sizing, layout or consumer work.**
+It defines the product's durable design requirements; existing inconsistencies
+are not exemptions. Contracts: docs/composition.mdx, docs/unified-api.mdx.
+
+- **Normal app size is `md`.** Standardize family proportions and inherited `BloomScope`; never shrink an entire app to `xs` to hide oversized or inconsistent components. Same scale does not mean identical heights.
+- **Use actual Bloom components and the compositor.** Consumers own business data/actions; Bloom owns layout, shared presentation and interaction. Extend the existing component/engine for missing capabilities, remove consumer workarounds, and preserve current main's approved visuals.
+- **Surface owns material; the container owns scroll.** Keep shared rounded paint and backing, with no duplicate chrome. Missing overflow/viewport coordination belongs in the shared owner, not arbitrary nested consumer ScrollViews. Check actual adoption before claiming it is complete.
 
 - **Join Field via `useFieldMembership()`.** Name defers to field (`??`); disabled/invalid combine (`||`); caller ID wins; aria-describedby lists JOIN. `labelPlacement`: above-control labels (TextField/Textarea) yield to Field, beside-control captions keep their own to match visible names. Forward state to composite halves: PhoneInput's picker stayed operable in disabled Field when only input subscribed. Gates: `FieldMembership.test.tsx` (15 families; mutating one `||` to `??` fails18), `FieldAssociation.test.tsx`.
 - **BloomScope is the sole size/tone context.** Explicit prop → nearest scope → family default; sizes xs/sm/md/lg. InputGroup aligns member geometry; domain content density stays separate. Field disabled/invalid are constraints (OR), never overridable defaults.
 - **Modals/sheets need their OWN `layout/ScreenScope`.** Otherwise chrome claims the underlying page edge (padding appears/disappears) and follows an untouched scroller. DialogBody/BottomSheetBase mount it for all three dialog placements and sheets. `ScreenScope.test.tsx` tests both directions.
 - **Adoption matrix is GENERATED:** `bun run generate:adoption-matrix`, shared derivation `src/__tests__/support/adoption-matrix.ts`; manual edits are overwritten. Applicability follows what a family RENDERS; non-adopters require reasoned classifications pinned by EQUALITY (new UNCLASSIFIED and stale entries fail). Never resolve transitively: nearly all families eventually reach text-field, once falsely passing17 raw-TextInput families.
 
-## Complete test passes
+## Verification
 
-**Jest crashes Node vm/contextify** with SIGSEGV/SIGTRAP/SIGABRT, sometimes `# Fatal error in , line 0`. Also on main: compare first. Victims: usually color suites, four color suites at maxWorkers2, six on another tree.
-
-2026-08-26: main passed3/4, branch with~20 extra files0/6; more files/worker worsened it, fewer workers WORSE. Not memory (83GB free) or cache (`--no-cache` crashes). By2026-09-07 Node24.20 `color-preset-registry.test.ts` failed alone AND `--runInBand` with `Context::GetNumberOfEmbedderDataFields Not a native context`; `theme-colors-parity.test.ts` joined on unmodified main2026-09-17. All three also passed full unsharded runs. Node24.14.1 crashes too. 2026-09-28 Node22.17 passed ten crashers with Bun-serialized `jest.config.ts` JSON (`rootDir`, `--config`, no ts-node), but workers crashed PageHeader in a full run.
-
-Shards65/64/64 passed where one193-suite run failed: `bunx jest --watchman=false --shard=N/3` for N=1,2,3. **Verify SUITE union against whole `--listTests`, not just sum.** Test totals changed3502→3514 unchanged; not fingerprints (unverified: gates see lib after build). A partial191/193 names missing suites, never claims completion.
-
-`node --no-opt …jest.js --maxWorkers=3` mitigates focused crashes; `NODE_OPTIONS` forbids that flag. Node24.21 still crashed5/479 suites under nine shards/maxWorkers2 on2026-09-28.
-
-## Jest does not resolve `.native.*`
-
-**No Jest haste/platform setup:** bare `./X` selects `X.tsx`, never `X.native.tsx`. Native files need explicit imports; most have none. The bare target is usually web-safe.
-
-Two consequences, both silent:
-
-- A `.native.*` file can stop compiling and the suite stays green. Precedent in the fleet: **1545 tests passed over a file that did not parse.**
-- Vendored `preset: react-native` suites cannot run unchanged. Teleport tests stay outside the tree, not `.skip`ped into false coverage (`docs/teleport.mdx`).
-
-**Recorded debt:** a platform config needs native peers installed/mocked; asserting native behavior via a web-resolved file measures the wrong file.
+**Read `docs/verification.mdx` before testing or installing a local build.** It preserves the measured Node/Jest crashes, native-resolution gaps and consumer-mirror hazards. Compare crashers with main; verify the exact suite union across shards, never counts alone. Jest does not resolve `.native.*`: explicitly import native subjects and verify device behavior. A green web-resolved suite does not prove native behavior.
 
 ## App root provider
 
@@ -138,14 +127,14 @@ BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via appl
 
 ## Surface material (`surface/`)
 
-`Surface` owns the shared material; Button, Card, Sidebar and BlurIsland consume its paint while retaining their current semantic APIs. `blur/` holds grouping (BlurIsland) and the Android blur-target contracts.
+`Surface` owns material; Button/Card/Sidebar/BlurIsland reuse its paint without changing semantics. `blur/` owns grouping and Android blur targets. Details: `docs/surface.mdx`.
 
-- Surface has ONE material: 90%-opaque body + sheen/rim over one web backdrop blur; no material selector. Button defaults, Card, Sidebar and overlays share it; Button `material="flat"` bypasses Surface paint. Preserve semantic foreground pairs and explicit caller alpha. Publish the fill composited against the actual parent as descendant backing. BottomBar's blur band remains independent.
-- NO SVG filter, displacement or SVG gradient in the material: a refraction filter per surface was the GPU cost and rendered wrong outside Chromium. Web = `backdrop-filter: blur(8px)` (`SURFACE_BLUR_PX`) in `surfaceMaterialCss`; native = ONE `View` (tint + `experimental_backgroundImage` sheen + inset `boxShadow` rim). `experimental_backgroundImage` is dropped by react-native-web, so the web branch uses CSS classes.
-- Native has no per-surface blur by design: expo-blur intensity couples blur+tint, and a BlurView descending from its own BlurTargetView can SIGSEGV on Android. Never wrap the app in a blur target to imitate the web effect; only `BlurWindow` inside a `<Modal>` publishes one. Native blur lives in `overlay/` Backdrop and `ProgressiveBlur`.
-- The blur pane is `inset: 0` inside the host so rounded corners hold; sharing a filter does not remove per-surface compositor cost, so verify dense/large/nested panes.
-- Material self-clips. Keep outer shadows unclipped on native; iOS clipsToBounds removes the shadow. Card clips native content separately while keeping caller layout resolved; web retains its single content layout node.
-- Read PAINTED pixels: computed background-color can name an unused slot. Capture the full viewport before cropping (Chromium screenshot `clip` can trim backdrop input), reload into a canvas and sample. Floors must be independent literals, not derived from the alpha under test.
+- ONE material: 90%-opaque body + sheen/rim + one web backdrop blur; no selector. Button `material="flat"` bypasses paint; BottomBar's blur band is independent. Preserve foreground pairs/caller alpha and publish fill composited against actual backing.
+- NO SVG filter/displacement/gradient: per-surface refraction cost GPU and failed outside Chromium. Web: `backdrop-filter: blur(8px)` (`SURFACE_BLUR_PX`, `surfaceMaterialCss`). Native: ONE View with tint, `experimental_backgroundImage` sheen and inset `boxShadow` rim. RNW drops that backgroundImage; web uses CSS classes.
+- Native has NO per-surface blur: expo-blur couples blur/tint; BlurView under its own BlurTargetView can SIGSEGV Android. Never wrap the app in a blur target. Only `BlurWindow` inside Modal publishes one; native blur lives in overlay Backdrop/ProgressiveBlur.
+- Blur pane is `inset:0` inside the host to preserve rounding. Sharing a filter does not remove per-surface compositor cost: verify dense/large/nested panes.
+- Material self-clips; native outer shadows must not (iOS clipsToBounds removes them). Card clips native content separately while preserving caller layout; web keeps one content node.
+- Read PAINTED pixels, not possibly unused computed background-color. Capture full viewport before cropping (Chromium screenshot clip can trim backdrop input), reload into canvas/sample. Contrast floors are independent literals, not derived from tested alpha.
 
 ## Avatar runtime
 
@@ -177,7 +166,7 @@ Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub
 - Typography uses styled(RNText). With caller className omit inline font-size/line-height/weight/color defaults: react-native-css merges utilities first, so inline defeats text/font/leading. Font family may remain.
 - className belongs on the PARENT-laid-out node. Extra Animated.View press wrapper silently disables native layout classes while visual classes/web still work. One module-scope Animated.createAnimatedComponent shares transform/visuals/style/className (`button/Button.tsx`).
 - Use Bloom styled(), not bare className (only works under NW5; wrapping drops it). Module wrappers: `styles/styled-primitives.ts`. Record<string,string> cast hid two dropped props; gate `classname-interop.test.ts`.
-- **One ring gap, one disabled opacity.** useRingOffsetStyle provides var(--bloom-ring-offset); literal #FFFFFF made2px dark halos across10 components. Token pairs recolor disabled controls (Button); fading uses tokens.DISABLED_OPACITY0.5, not unexplained0.4/0.6. Raw-DOM/dataSet sheets use interactiveWebCss; RNW needs reset:'none' (button inline-flex reset changes View layout). Handwritten sheets drifted all three. Gate: `interactive-recipe.test.ts`.
+- **One ring gap/disabled opacity:** useRingOffsetStyle/var(--bloom-ring-offset); #FFFFFF caused2px dark halos in10 components. Token pairs recolor disabled Button; fading uses tokens.DISABLED_OPACITY0.5, not0.4/0.6. Raw DOM/dataSet use interactiveWebCss; RNW requires reset:'none' (button inline-flex reset breaks View layout). Custom sheets drifted all three. Gate: `interactive-recipe.test.ts`.
 - **RTL: CSS-spelled logical insets, root `useDirectionProps()`, signs via `useIsRtl`.** RNW resolves logical keys against a `dir` PROP, not `<html dir>` (none = LTR physical). RN `paddingStart` in a reanimated mapper is DROPPED on web. Transforms/floating `side` never mirror. Gate `app-shell-rtl-census.test.ts`; `docs/app-shell.mdx`.
 - Caller className replaces defaults and strips chrome: defaults belong in resolved-token inline style. Jest sees structure, not CSS/native resolution; press animation needs device build.
 
@@ -191,17 +180,9 @@ Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub
 
 Pure JS, universal. `ImageResolver = (id, variant?) => string | undefined`; `Avatar` calls it only for a non-URL string `source` (URLs/`{uri}` pass through). Consumer wiring: `~/Oxy/AGENTS.md`.
 
-## Verifying a LOCAL Bloom build in a consumer (four silent wrong passes)
+## Local consumer verification
 
-These silently verify the PUBLISHED package instead:
-
-- **`bun add file:<tgz|dir>` silently no-ops** when the installed version matches. Bump the local version, or symlink.
-- **Metro `resolver.extraNodeModules` is a FALLBACK:** a real `node_modules/@oxy.so/bloom` wins. **`expo export`/`expo start` disagree:** the dev server indexes only `projectRoot` + `watchFolders`; put the local copy inside the consumer repo, gitignored.
-- **Metro port is baked at BUILD time** (`-PreactNativeDevServerPort`, not `RCT_METRO_PORT`); emulators resolve it via host loopback, which `adb reverse` misses. Confirm it in `gradleResValues.xml`.
-
-**Live-edit: `node scripts/mirror-into-consumer.mjs <consumer-root> --watch`** mirrors `src/` into `bloom-local` (`--into=<dir>`: inside what Metro WATCHES, else edits are never seen) and links `node_modules/@oxy.so/bloom` to it; restart Metro for NEW files, `--restore` before trusting a typecheck.
-
-**Assert what you test first:** resolved version plus a marker only the local build produces. **Never write over `node_modules/<pkg>`:** bun hardlinks its global cache, mutating it for every worktree/session.
+Use `scripts/mirror-into-consumer.mjs` and restore it before the published-package typecheck; instructions and the four silent wrong passes are in `docs/verification.mdx`. **Never overwrite node_modules packages:** Bun hardlinks its global cache. Assert the resolved version plus a local-only behavior marker before trusting a consumer check.
 
 ## Local conventions
 

@@ -1,0 +1,167 @@
+---
+title: UI architecture
+description: The design and composition rules for Bloom and the applications that consume it.
+order: 2
+---
+
+# UI architecture
+
+Read this before changing Bloom's visual system, composing an application, or
+porting a product interface. These are design requirements, not a claim that
+every existing family already implements them. Verify implementation through
+the [adoption matrix](/docs/adoption-matrix), source, tests and a running consumer.
+An existing inconsistency is a defect to resolve at its shared owner.
+
+## Bloom owns presentation and composition
+
+Bloom is a general UI library for many kinds of applications. Its components
+must compose into different interfaces through meaningful variants and shared
+contracts. Product-specific names, business state and persistence belong to
+the consuming application.
+
+Use Bloom for controls and complete components as well as application layout.
+A consumer should supply data, permissions, navigation and mutation callbacks
+to the real component. Do not recreate a component with a generic primitive,
+copy its implementation, or replace its presentation with application CSS
+when the complete component already exists.
+
+When a component lacks an integration capability, extend its public API in
+Bloom. Keep the existing renderer and interaction engine shared between
+standalone, embedded and controlled uses. A new controlled mode must not be a
+second renderer that slowly diverges from the original.
+
+A product's visual reference is useful evidence for behavior, hierarchy and
+spacing. It does not override the user's preference for an existing Bloom
+component. Preserve approved visuals, including the established board column
+presentation, unless a change is needed and explicitly agreed. Before
+reworking a family, inspect current main and relevant open changes so another
+agent's improvements are preserved.
+
+## One composition system
+
+Use `BloomProvider`, `AppShell`, panels, `Screen` and their documented slots for
+application framing, navigation, headers, content, side panels and bottom
+chrome. Use explicit local composition scopes for an embedded region, not a
+second application layout.
+
+Components coordinate through the existing contracts: inherited presentation,
+field membership, surface backing, screen scope, edge claims, scroll ownership,
+overlay layers and trigger composition. A component must participate in the
+contracts that apply to what it renders. Importing another component does not,
+by itself, prove that the outer component participates.
+
+Do not duplicate viewport calculations, header measurements, safe-area offsets,
+keyboard avoidance, breakpoint logic or focus management in consumers to
+compensate for a missing library contract. Repair the shared owner and exercise
+the result in a real consumer.
+
+See [Composition](/docs/composition), [App shell](/docs/app-shell),
+[Screen](/docs/screen) and [Unified API](/docs/unified-api) for the APIs.
+
+## A coherent size scale, with md as normal
+
+`md` is the normal application size. `xs`, `sm`, `md` and `lg` describe a
+coherent scale within each component family. Do not set the whole application
+to `xs` merely to compensate for oversized menus, items or inconsistent
+padding.
+
+`BloomScope` is the single inherited size and tone environment:
+
+```tsx
+<BloomScope size="md">
+  <AppShell>{children}</AppShell>
+</BloomScope>
+```
+
+An explicit component prop wins over the nearest scope, which wins over the
+family default. Wrappers, compound parts, portals and submenus must preserve
+the applicable environment. A family supporting only part of the scale must
+document its mapping; silently ignoring inherited size is not a mapping.
+
+Coherence does not mean identical heights. A menu action, a button, an input
+and a descriptive list item have different jobs. Their recipes must coordinate
+type size and line height, icons, padding, gaps, indicator gutters, trailing
+content and corner geometry. Text wrapping and descriptions may grow a row.
+Share recipes where the geometry has the same meaning; do not duplicate magic
+numbers across families.
+
+Normal desktop menus should be compact and legible. Use consistent icon,
+label and trailing columns, quiet section labels and deliberate separators.
+Avoid accumulating panel gaps, row margins and separator margins. The shared
+recipe must preserve usable touch targets and keyboard focus, rather than
+making the consumer choose smaller controls for desktop and repair them on
+mobile.
+
+Keep size, semantic tone, appearance and domain content density separate.
+Use explicit local size overrides only for a real contextual difference.
+
+## Surface owns material
+
+Paint component surfaces through `Surface` and its shared material internals.
+Preserve Bloom's rounded geometry and material: tint, texture, sheen, rim and
+backdrop treatment must not be independently recreated by menus, cards,
+buttons, sidebars or overlays.
+
+This is not an instruction to add a painted wrapper around every layout node.
+Compose against the actual parent backing and avoid duplicate nested chrome.
+Existing intentional flat or plain variants remain semantic choices; a
+consumer must not strip material globally to imitate a reference.
+
+A spacing or density improvement must not silently replace the material.
+Inspect painted output in light and dark themes, including nested surfaces;
+computed CSS alone does not establish the result.
+
+See [Surface](/docs/surface) and [Design tokens](/docs/design-tokens).
+
+## The container owns overflow
+
+A screen, panel, menu, popover or dialog must define its content and scroll
+contract. The owning component constrains content to the available space and
+uses Bloom's shared scroll implementation. Consumers should not insert an
+arbitrary fixed-height `ScrollView` to make the component fit.
+
+One content region has one scroll owner. Headers, toolbars and footers
+coordinate with that owner; content must not acquire a second scrollbar or
+an inset scrolling box by accident. Explicitly independent regions, such as
+board columns or a virtualized list, use the documented ownership boundary.
+
+For floating content, placement, viewport limits, overflow, keyboard navigation
+and focus must work together. Submenus must remain reachable when the parent
+scrolls. A shared scrollbar should sit at the owning region's edge rather than
+inside a consumer-added padding wrapper. Preserve native sheet behavior and
+touch interaction when improving desktop presentation.
+
+Missing overflow behavior is a library defect, not a reason to distribute
+fixed-height workarounds to every application. Document the actual API when
+implementing this contract; do not assume that an existing family already owns
+scrolling without checking.
+
+## Improve at the shared owner
+
+Before implementation:
+
+1. Inspect the current component, its composition contracts, current main and
+   relevant in-flight changes.
+2. Reproduce the behavior in the component and in a consumer. When comparing a
+   reference, inspect interaction as well as appearance.
+3. Locate the owner of the inconsistency: shared recipe, primitive, complete
+   component or application business composition.
+4. Fix that owner with a reusable API. Remove the consumer workaround after
+   the shared behavior works.
+
+Discuss concrete visual alternatives with the user when there is a meaningful
+design choice. Show the relevant component in context. Do not repeatedly ask
+for approval of routine implementation already authorized by the task.
+
+Validate applicable sizes and inherited defaults, explicit overrides, long
+labels, empty and loading states, keyboard use, touch targets, resize and
+overflow, nested overlays and light/dark material. Test real behavior, not just
+the presence of a wrapper or an import. Browser checks must use the browser and
+operating system requested for the session.
+
+Update the family documentation and generated adoption evidence alongside the
+implementation. Track unfinished adoption in issues; do not call the entire
+library standardized after fixing one family. Follow the repository's normal
+review, merge and release workflow, then validate the published package in its
+consumer. Do not leave local mirrors or application overrides as the delivered
+integration.
