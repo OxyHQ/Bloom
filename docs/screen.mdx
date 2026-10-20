@@ -254,9 +254,11 @@ separate from the screen's own action groups.
 ### Screen color recipe
 
 `<Screen colorPreset="teal">` applies the existing Bloom recipe to its content,
-header, footer and enclosing panel surface. The declaration belongs to that
-panel host: sibling columns and the application theme do not change. Leaving
-the screen restores the prior host recipe. Retained route wrappers should omit
+header, footer and enclosing panel surface. In a `split` panel layout the
+active screen's recipe themes the whole shell (sidebar, bottom bar and sibling
+panels), because one page is on screen. In a `deck` each column is its own
+page: the recipe stays in its column and the other columns and the application
+theme do not change. Leaving the screen restores the prior recipe. Retained route wrappers should omit
 `colorPreset` when their own screen is not active. The scope keeps its subtree
 mounted while the recipe changes.
 

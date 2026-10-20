@@ -52,7 +52,12 @@ import { usePanelReveal } from './use-panel-reveal';
 import { usePanelResize, type PanelResizePreview } from './use-panel-resize';
 import { PanelCssContext, panelLayoutCss } from './panel-layout-css';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { AppShellPanelContext, PanelScrollContainerContext } from './context';
+import {
+  AppShellPanelContext,
+  PanelScrollContainerContext,
+  ShellColorClaimContext,
+} from './context';
+import { useColorClaims, type ColorClaim } from './use-color-claims';
 import { PanelNavigation, PanelScrollScope } from './PanelNavigation';
 import { resolvePanelAxis, resolvePanelTracks, type ResolvedPanelTrack } from './panel-layout';
 import type {
@@ -337,20 +342,18 @@ export function createPanelLayoutView(
       () => ({ scrollY, contentHeight, viewportHeight: scrollViewportHeight }),
       [scrollY, contentHeight, scrollViewportHeight],
     );
-    const [screenPreset, setScreenPreset] = useState<BloomColorScopeProps['colorPreset']>();
-    const colorClaims = useRef(new Map<symbol, NonNullable<BloomColorScopeProps['colorPreset']>>());
-    const claimColorPreset = useCallback(
-      (preset: NonNullable<BloomColorScopeProps['colorPreset']>) => {
-        const key = Symbol('screen-color');
-        colorClaims.current.set(key, preset);
-        setScreenPreset(preset);
+    const [screenPreset, claimPanelPreset] = useColorClaims();
+    const claimShellPreset = useContext(ShellColorClaimContext);
+    const claimColorPreset = useCallback<ColorClaim>(
+      (preset) => {
+        const releasePanel = claimPanelPreset(preset);
+        const releaseShell = claimShellPreset?.(preset);
         return () => {
-          colorClaims.current.delete(key);
-          const remaining = [...colorClaims.current.values()];
-          setScreenPreset(remaining[remaining.length - 1]);
+          releasePanel();
+          releaseShell?.();
         };
       },
-      [],
+      [claimPanelPreset, claimShellPreset],
     );
     const host = useMemo(
       () => ({

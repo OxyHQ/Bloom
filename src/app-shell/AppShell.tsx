@@ -28,6 +28,9 @@ import { panelEnvelope } from './panel-layout';
 import { useShellWidth } from './use-shell-width';
 import { PanelCssContext, PanelCssLayoutContext, panelCssScope } from './panel-layout-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
+import { ShellColorClaimContext } from './context';
+import { useColorClaims } from './use-color-claims';
 
 export function resolveNavigationPlacement(
   width: number,
@@ -48,6 +51,7 @@ export function createAppShell(
   Fab: ComponentType<FabProps>,
   { Screen, ScreenScrollView }: ScreenComponents,
   PanelLayoutView?: ComponentType<PanelLayoutViewProps>,
+  ColorScope?: ComponentType<Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>>,
 ) {
   const AppShellEngine = createAppShellEngine();
   function NavigationBottom({
@@ -393,6 +397,7 @@ export function createAppShell(
     const envelope = panelEnvelope(layout, cssLayout ? Number.MAX_SAFE_INTEGER : width, gap);
     const document = layout.flow === 'document' && layout.mode !== 'deck' && Platform.OS === 'web';
     const deck = layout.mode === 'deck';
+    const [shellPreset, claimShellPreset] = useColorClaims();
     const normalized: AppShellProps = {
       ...props,
       panelLayout: undefined,
@@ -414,7 +419,7 @@ export function createAppShell(
         props.children
       ),
     };
-    return (
+    const shell = (
       <View
         onLayout={cssLayout ? undefined : onLayout}
         {...(cssLayout ? { dataSet: { bloomLayout: scope } } : {})}
@@ -434,10 +439,21 @@ export function createAppShell(
       >
         <PanelCssContext.Provider value={cssLayout ? scope : null}>
           <PanelCssLayoutContext.Provider value={{ layout, gap }}>
-            <ComposedAppShell {...normalized} />
+            <ShellColorClaimContext.Provider value={deck ? null : claimShellPreset}>
+              <ComposedAppShell {...normalized} />
+            </ShellColorClaimContext.Provider>
           </PanelCssLayoutContext.Provider>
         </PanelCssContext.Provider>
       </View>
+    );
+    // One scope above the whole shell: a claimed preset themes the sidebar and
+    // bottom bar too, not just the panel whose screen claimed it.
+    return ColorScope ? (
+      <ColorScope colorPreset={deck ? undefined : shellPreset} asChild>
+        {shell}
+      </ColorScope>
+    ) : (
+      shell
     );
   }
   function ComposedAppShell(props: AppShellProps) {
