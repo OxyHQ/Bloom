@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Animated } from 'react-native';
 import * as MotionPreference from '../hooks/use-prefers-reduced-motion';
 import { render } from '@testing-library/react-native';
@@ -81,7 +81,10 @@ describe('Skeleton.Region', () => {
     );
     expect(loop).toHaveBeenCalledTimes(1);
     expect(timing).toHaveBeenCalledTimes(2);
-    for (const call of timing.mock.calls) expect(call[1].isInteraction).toBe(false);
+    for (const call of timing.mock.calls) {
+      expect(call[1].isInteraction).toBe(false);
+      expect(call[1].useNativeDriver).toBe(true);
+    }
     expect(screen.getByTestId('loading').props.accessibilityState).toEqual({ busy: true });
     expect(screen.getByTestId('loading').props.accessibilityLabel).toBe('Loading feed');
     expect(screen.getByTestId('nested').props.accessibilityState).toBeUndefined();

@@ -1,6 +1,6 @@
 # Bloom (`@oxy.so/bloom`)
 
-> Standards: `~/AGENTS.md`, `~/Oxy/AGENTS.md`. Docs: `docs/*.mdx`; history: git. **Rules only, under 24 KB. Compress prose; never delete a measured hazard to meet the budget.** Affects EVERY app — use the `bloom` agent.
+> Standards: `~/AGENTS.md`, `~/Oxy/AGENTS.md`. Docs: `docs/*.mdx`; history: git. **Rules only, under 24 KB. Compress; never delete measured hazards.** Affects EVERY app — use the `bloom` agent.
 
 ```bash
 bun run build       # bob build → lib/ (commonjs + module + typescript)
@@ -24,6 +24,8 @@ RN + Web library. Families: `src/<name>/`, published subpaths and root exports.
 ## Reanimated web layout animations
 
 General failures: `~/Oxy/AGENTS.md`. Per-direction rule, freeze mechanism (two regressions), trade-offs: `docs/motion.mdx`. Reference: `src/motion/motion.web.ts`, `src/toast/animations.ts`.
+
+**Web loaders:** RNW Animated JS-frame renders can starve Suspense retries. Use CSS; `docs/skeleton.mdx`.
 
 ## Web fork CSS
 
