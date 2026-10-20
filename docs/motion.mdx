@@ -27,6 +27,27 @@ fast things feel" happens in one place rather than being renegotiated per
 component. It is also where the web rules below are already applied, which is
 the stronger reason to use them rather than hand-writing an enter.
 
+## Panel layout motion
+
+Declare `transition: 'exit-before-enter'` on the shared panel layout to fade and
+recede outgoing panels, move the surviving tracks, then reveal incoming content
+at a usable width. The default `simultaneous` policy coordinates those changes
+together. Both policies respect reduced motion and keep stable panel identities.
+Web uses compositor-owned CSS; native uses Reanimated. Applications do not add
+route-level enter animations, measurements or timers to implement a layout toggle.
+
+Reordering is a move, not a new entrance. The shared gesture and ordering model
+keeps retained content and its scroll position, commits the controlled permutation
+after the landing completes, and preserves logical accessibility order. Native
+per-frame drag paint stays in shared-value worklets; web updates the existing DOM
+transforms. Measurement, callbacks and domain edge scrolling still require work:
+this is not a promise of zero JavaScript or identical platform paint.
+
+A transient document-Deck `revealPanel` waits for the owning compositor transitions
+to settle before scrolling to a newly inserted panel. It cancels obsolete requests
+and excludes unrelated content animations; reduced-motion and nonanimated layouts
+do not incur an artificial delay. See [AppShell](/docs/bloom/main/app-shell).
+
 ## Three ways animation silently does nothing on web
 
 These are not Bloom quirks; they are how Reanimated behaves in the
@@ -51,8 +72,10 @@ Not on auto-tracked reads. Omit an animating shared value from the deps and the
 mapper runs once and freezes at frame 1. **List every shared value the mapper
 reads** — note the `[progress]` above, which is doing real work.
 
-`useAnimatedReaction` does not fix this: key it on a changing prop, not on a
-shared value.
+`useAnimatedReaction` also needs explicit dependencies in builds without the
+worklets plugin, including every captured shared value. Reactions can observe
+shared values; they do not make missing dependencies or animations started from
+style mappers safe.
 
 ### A custom `Keyframe` as `entering` freezes the element
 

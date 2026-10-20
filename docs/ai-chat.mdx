@@ -38,10 +38,9 @@ import { PageFooter } from '@oxy.so/bloom/page-footer';
 import { ComposerPill } from '@oxy.so/bloom/composer-panel';
 import { AiChatUserMessage, AiChatAssistantMessage, AiChatCodePanel } from '@oxy.so/bloom/ai-chat';
 
-<AppShell contentMaxWidth="none" panelLayout={{
+<AppShell contentMaxWidth="none" drawer="reveal" sidebar={sidebarProps} panelLayout={{
   mode: 'split', flow: 'bounded', activePanel,
   panels: [
-    { id: 'navigation', width: 260, hideBelow: 1024, content: navigation },
     { id: 'conversation', minWidth: 320, content: (
       <Screen scroll="auto" bottomBarKeyboardBehavior="visible"
         header={<PageHeader title={conversationName} actions={conversationActions} />}
@@ -55,23 +54,27 @@ import { AiChatUserMessage, AiChatAssistantMessage, AiChatCodePanel } from '@oxy
       </Screen>
     ) },
     { id: 'context', width: 410, minWidth: 320, maxWidth: 560,
-      hideBelow: 1280, content: <AiChatCodePanel width="100%" code={file} language="tsx" /> },
+      floating: { below: 'xl', open: contextOpen, onOpenChange: setContextOpen, label: 'Context' },
+      content: <AiChatCodePanel width="100%" code={file} language="tsx" /> },
   ],
 }} />
 ```
 
-Give AppShell a sized parent for a bounded workspace. Select compact panels
-through `activePanel`; their header back actions return to conversation.
+Give AppShell a sized parent for a bounded workspace. Supply navigation through
+`sidebarProps`, including its destinations or Sidebar render callback. Open
+compact navigation through `useAppShell()`; use the context panel’s floating
+`open` state below its breakpoint. `activePanel` selects compact inline tracks.
 Existing AiChatShell integrations can retain their sidebar/panel props through
 the compatibility adapter.
 
 ## Shell
 
 New compositions declare the workspace through `AppShell panelLayout`. Keep stable
-IDs for `navigation`, `conversation` and `context`, and let the shell resolve
+IDs for `conversation` and `context`, keep navigation in `sidebar`, and let the shell resolve
 `hideBelow`, panel minima and resizing against its measured container. A split
 with enough room shows all eligible panels; compact layouts show `activePanel`.
-A menu or context action selects that panel. In `AiChatShell` navigation is a
+App navigation is a drawer action; a floating context action changes its open
+state. In `AiChatShell` navigation is a
 `drawer="reveal"` drawer beneath the retained conversation, and below `xl` the
 context panel is a floating side sheet named by `panelLabel` (its own header,
 such as `AiChatCodePanel`'s, carries the title and the close action).
@@ -79,10 +82,9 @@ such as `AiChatCodePanel`'s, carries the title and the close action).
 The conversation declares its own chrome and viewport:
 
 ```tsx
-<AppShell gutter={12} contentMaxWidth="none" panelLayout={{
+<AppShell gutter={12} contentMaxWidth="none" drawer="reveal" sidebar={sidebarProps} panelLayout={{
   mode: 'split', flow: 'bounded', activePanel,
   panels: [
-    { id: 'navigation', width: 260, hideBelow: 1024, content: navigation },
     { id: 'conversation', minWidth: 320, scroll: 'content', content: (
       <Screen scroll="auto" bottomBarKeyboardBehavior="visible"
         header={<PageHeader title={conversationName} actions={conversationActions} />}
@@ -92,7 +94,8 @@ The conversation declares its own chrome and viewport:
       </Screen>
     ) },
     { id: 'context', width: 410, minWidth: 320, maxWidth: 560,
-      hideBelow: 1280, resizable: true, scroll: 'content', content: context },
+      floating: { below: 'xl', open: contextOpen, onOpenChange: setContextOpen, label: 'Context' },
+      resizable: true, scroll: 'content', content: context },
   ],
 }} />
 ```
@@ -105,8 +108,9 @@ in another `AppShellPanel`, paint another frame, or put an existing list inside
 `headerActions`, which PageHeader composes with the route's own actions.
 
 `AiChatShell` preserves `sidebar`, `mobileSidebar`, `panel`, width and controlled
-open props as adapters. `navOpen` / `panelOpen` select navigation / context in
-compact layouts; closing returns to conversation. `panel` receives the width
+open props as adapters. `navOpen` controls the shared drawer and `panelOpen`
+controls the context’s floating presentation on compact layouts; closing leaves
+the conversation in place. `panel` receives the width
 selected by the shared engine. Resize limits remain 320–560px by default, with
 410px as the resting context width. `sidebarCollapsed` and explicit sidebar
 width overrides remain host preferences. `navSwipeEnabled` is retained for API
@@ -224,11 +228,10 @@ a reader midway keeps their offset. An ordinary new turn retains the thread's
 follow behavior. ScreenScrollView forwards the same imperative handle to the
 native list or existing web viewport, avoiding a second scroller.
 
-Compact navigation and context panels retain an interaction adapter for focus,
-Escape and Android back. While the selected panel is alone, focus enters it,
-Tab/Shift+Tab stay inside, and dismissal restores the opener when possible.
-This adapter supplies no layout, width, backdrop or swipe gesture. Portaled
-menus and dialogs still take dismissal priority.
+Compact navigation uses AppShell’s drawer interaction; context uses its floating
+side sheet. Those shared surfaces own focus, dismissal and modal boundaries.
+The adapter supplies no independent backdrop, width calculation or swipe
+gesture. Portaled menus and dialogs retain the shared overlay dismissal order.
 
 ### Document scroll
 

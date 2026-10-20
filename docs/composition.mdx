@@ -24,6 +24,12 @@ an explicit prop  >  the nearest container  >  the component's own default
 
 **State does not travel either.** `checked`, `selected`, a field's value, a business datum: those belong to the component that holds them. A visual context that also carried state would make every container a place state can leak from.
 
+## Application and panel composition
+
+`AppShell.panelLayout` and embedded `AppShellPanels layout` share one compositor. Stable descriptors own geometry, visibility, ordering and optional panel histories. A route’s `Screen` owns vertical scrolling and measured chrome; a horizontal Deck has a separate owner for its horizontal axis. The host supplies these scopes, so descriptor content does not add another ContentPanel or wrapper Screen. An intentionally embedded group uses `AppShellPanels scope="local"`; a canvas Screen uses `scroll="none"` to reserve chrome without a second vertical scroller. See [Compose application layouts](/docs/bloom/main/compose-layouts) for complete examples.
+
+Surface choices remain independent: group `appearance` selects joined or separated panels; panel `appearance="plain"` inherits its enclosing fill; `chrome="none"` removes edge chrome from a painted panel. `surfaceClassName` paints a custom surface and `surfaceColor` publishes its resolved fill to descendants. Header `density="compact"` changes content geometry without changing inherited control sizes.
+
 ## Control presentation — `BloomScope`
 
 `@oxy.so/bloom/appearance`
@@ -128,11 +134,11 @@ Every anchored family (`Popover`, `DropdownMenu`, `ContextMenu`, `Menubar`, `Sel
 
 Gate: `src/__tests__/TriggerComposition.test.tsx`.
 
-## Scroll ownership — `ScrollOffsetProvider`
+## Scroll ownership — Screen and `ScrollOffsetProvider`
 
 `@oxy.so/bloom/layout`
 
-A screen has exactly one scroll owner, and the owner publishes its offset. Chrome reads it. Neither imports the other, so the provider's position in the tree is what pairs them — two panels side by side, each with its own header and its own scroller, resolve correctly.
+Prefer `Screen scroll="auto"` with `ScreenScrollView` for routes. The low-level provider below is for an independently owned scroller. A screen has one primary vertical scroll owner, and the owner publishes its offset. Chrome reads it. Neither imports the other, so the provider's position in the tree is what pairs them — two panels side by side, each with its own header and its own scroller, resolve correctly.
 
 ```tsx
 const scrollY = useSharedValue(0);
@@ -149,7 +155,7 @@ const onScroll = useAnimatedScrollHandler(
 
 The context carries the `SharedValue`, not a number. It crosses once, at mount; every subsequent frame reaches the chrome on the UI thread through `useAnimatedStyle`, with no React render. A context whose value changed per frame would re-render every consumer per frame, which is the cost this exists to avoid.
 
-`PageHeader` resolves its offset as: the `scrollY` prop, then the nearest `Screen`, then this context, then `window.scrollY` on web. Without any of the three on native it stays at rest. The context step is the one that matters for a desktop shell, where `window.scrollY` never moves and a header that followed it looked deliberately inert.
+`PageHeader` resolves its offset from the explicit `scrollY`, then HeaderDock, ScrollMetrics, Screen, this context, and finally the web window fallback. Without a supplied owner on native it stays at rest. The context step is the one that matters for a desktop shell, where `window.scrollY` never moves and a header that followed it looked deliberately inert.
 
 ## Edge claims — `TopEdgeProvider` / `BottomEdgeProvider`
 
@@ -165,7 +171,7 @@ A surface that parks at a window edge CLAIMS its footprint; a surface or a scrol
 
 `BloomProvider` mounts both. A nested provider scopes a subtree to its own claims — which is what the next section is.
 
-A claim registers in an effect, so a reader mounted in the same commit sees `0` on its first render. `PageHeader` narrows that to one frame by claiming its resting height (safe area + 56) immediately and replacing it with the measured height when `onLayout` reports.
+A claim registers in an effect, so a reader mounted in the same commit sees `0` on its first render. `PageHeader` narrows that to one frame by claiming its resting height (safe area + the density’s initial minimum (56 default, 32 compact)) immediately and replacing it with the measured height when `onLayout` reports.
 
 ## Screen scope — `ScreenScope`
 

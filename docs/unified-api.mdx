@@ -9,7 +9,7 @@ Bloom resolves a component from its semantic props and its local environment. Co
 
 ## Visual environment
 
-`BloomScope` is the only inherited control-size channel. It carries `size` (`xs`, `sm`, `md`, `lg`) and `tone`. Explicit props win over the nearest scope, then the component's default. Nested scopes inherit omitted fields independently. A scope adds no layout node and owns no selected value, action or disabled constraint.
+`BloomScope` is the only inherited control-size channel. It carries `size` (`xs`, `sm`, `md`, `lg`), `tone`, and independent `panelRadius` geometry. Explicit props win over the nearest scope, then the component's default. Nested scopes inherit omitted fields independently. A scope adds no layout node and owns no selected value, action or disabled constraint.
 
 ```tsx
 import { BloomScope } from '@oxy.so/bloom/appearance';
@@ -33,6 +33,14 @@ A single internal material resolver chooses the paint fill, applies default 90% 
 `Surface`, `Card` and `BlurIsland` share radius precedence: explicit radius prop, resolved style radius, family default. The host and paint receive the same geometry. Surface does not introduce content padding, layout wrappers or interaction behavior into its consumers.
 
 The published backing is an estimate from known fills, not a sampled image. Web paints one backdrop blur per painted surface, which still costs compositor time on dense screens. Native paints tint, sheen and rim in one view and has no per-surface blur.
+
+## Layout contracts
+
+`AppShell.panelLayout` and `AppShellPanels layout` accept the same panel descriptors. The first owns application regions; the second embeds a bounded, horizontally contained workspace. Use `scope="local"` to establish that workspace inside an existing page panel, instead of nesting page frames. Use stable IDs, declared bounds and controlled order callbacks. Routes supply one Screen with header/footer slots. Do not copy panel coordinates or scroll offsets into application React state on every frame.
+
+Group `appearance: 'joined' | 'separated'` describes structure. Individual panel `appearance="plain"` means transparent inheritance; `chrome="none"` retains a painted surface without an elevated border/shadow. Custom `surfaceClassName` plus `surfaceColor` keeps descendant chrome on that same fill. `BloomScope panelRadius` scopes panel geometry independently of control size. `PageHeader density="compact"` reduces its minimum and padding while preserving measured growth.
+
+Viewport access (`viewportRef`) operates on the existing horizontal owner; panel histories and scroll snapshots remain separate controlled state. [Compose application layouts](/docs/bloom/main/compose-layouts) documents document/contained scrolling, transient reveal requests and platform boundaries.
 
 ## Controls and overlays
 

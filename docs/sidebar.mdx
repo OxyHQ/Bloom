@@ -193,12 +193,18 @@ the top (avatar, name, up/down chevron) and the account the card at the foot
 ```
 
 - `toolbar` is a fixed row under the header (logo, account, collapse control) and above the modes: the header stays. `header` replaces the header row instead; `header={false}` draws none. A conversations sidebar puts its search and tools in `toolbar` ([`ConversationSidebar`](./conversation-sidebar.mdx)).
-- A switch between whole sidebar modes, rendered under the header and above quick search. Standalone it is `SidebarModeSwitcher` (`modes`, `value`, `onValueChange`).
+- The default segmented switch between sidebar modes renders under the header and above quick search. Standalone it is `SidebarModeSwitcher` (`modes`, `value`, `onValueChange`).
 - Track p4, radius 20, background-tertiary (neutral-200 / neutral-800). Rows are 32 tall and 4 apart: an 18px icon in a 32 box, 4 gap, `body-2-medium`. The selected row's 32px pill — card / neutral-700 with shadow-xs, the sidebar theme toggle's thumb — slides 200ms ease between rows, instantly under reduced motion.
 - Rest is text-secondary, selected text-primary. On web a `shortcut` hint (`caption-2`, text-tertiary) appears at the row's end on hover.
 - Collapsed, labels and hints collapse and the icons stay pinned. It is a `radiogroup` of `radio` rows, named `"Mode"` unless `modesLabel` / `accessibilityLabel` says otherwise. The sidebar binds the shortcuts itself — see [Keyboard shortcuts](#keyboard-shortcuts).
 - For exactly two modes, `modesPresentation="toggle"` uses a 28px `FrostedIconButton` in the expanded header, beside collapse. It keeps the second mode's icon and exposes `aria-pressed`; `modesLabel` supplies a stable accessible name. The tooltip names the destination. Collapsed sidebars center it in its own row. Standalone, use `SidebarModeSwitcher presentation="toggle"`. Three or more modes retain the segmented presentation.
 
+
+A mode can select an application layout without navigating. For a Standard/Deck
+switch, control `mode` with layout state and keep the current route mounted in
+the same first panel. Set a stable localized `modesLabel`, such as "Deck mode";
+the compact control is a button with pressed state, while segmented modes are
+radios. See [Compose application layouts](/docs/bloom/main/compose-layouts).
 
 ## Rail
 
@@ -473,7 +479,7 @@ Panel `backgroundSecondary` (`--surface`) with `borderLight` and the existing th
 
 ### Mode switcher in a collapsed panel
 
-Collapsed modes use the sidebar's icon-square size: 30/40/44px for `sm/md/lg`.
+Collapsed segmented modes use the sidebar's icon-square size: 30/40/44px for `sm/md/lg`. The two-mode compact toggle keeps its 28px FrostedIconButton.
 The track adds 4px around those squares and stays centered, extending into the
 panel's horizontal inset. Its selected thumb remains square, the glyph stays
 centered, and hidden labels leave no gap. Expanded mode rows retain their 32px

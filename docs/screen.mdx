@@ -29,7 +29,9 @@ region; the same screen can render as a document page or inside a Deck column.
 
 On web, `scroll="auto"` uses the document in a document-flow host and one local
 viewport in a bounded host. `ScreenScrollView` reuses that owner; it never adds
-another scroller. Changing host flow preserves the screen's content tree.
+another scroller. Changing host flow preserves the screen's content tree and
+transfers its live reading offset between document and bounded owners before
+paint. This layout handoff is separate from navigating to or restoring a route.
 `headerPlacement="overlay"` lets a profile hero or media page extend under its
 header. Insets otherwise reserve the measured header/footer once.
 
@@ -49,6 +51,10 @@ A `PageFooter` in `bottomBar` draws only its content and scrim. Screen owns its
 position and clearance; it does not create a second sticky footer or register
 another inset. Host controls that persist across routes use the panel's `headerActions`.
 The Screen's PageHeader composes them with its existing actions in one header.
+Descriptor `bottomBar` similarly supplies a persistent panel footer, below the
+route’s own bottom bar. The first route Screen measures and positions both;
+nested Screens do not claim that host footer or viewport again. Do not wrap a
+route slot in an outer Screen solely to add panel chrome.
 
 ## Explicit content-owned scrolling
 
@@ -102,6 +108,9 @@ For a standalone action, `primaryAction={<Fab ... />}` anchors a static action
 inside the screen. With navigation, pass the action to `BottomBar.action` instead.
 `headerHeight` and `bottomBarHeight` declare initial footprints for custom chrome;
 defaults match Bloom's 56-point header and 58-point bottom bar plus safe area.
+For compact PageHeader chrome without a top safe area, `headerHeight={32}`
+matches its minimum. Include any native safe-area footprint in an explicit
+estimate; larger controls or text still replace it with their measured height.
 Measured heights replace those estimates. Custom chrome should declare its height
 to prevent the first layout changing the content's padding.
 

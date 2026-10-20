@@ -126,6 +126,16 @@ starts a few points under the islands and looks like a design decision.
 claim already includes that padding. Adding `insets.top` again in the scroll
 container double-counts the notch.
 
+## Compositor viewports
+
+For application tracks and embedded workspaces, use AppShell’s descriptor
+compositor instead of building another horizontal ScrollArea around panels.
+`AppShellPanelViewport` exposes the existing owner’s offset, measurement, relative
+scrolling and panel reveal; observe scroll only when domain gestures require it.
+Bounded Screen viewports contain vertical overscroll while leaving horizontal
+gestures able to reach the Deck’s horizontal owner. ScrollBar observes an owner;
+it never creates one. See [Compose application layouts](/docs/bloom/main/compose-layouts).
+
 ## `ScrollOffsetProvider` / `useScrollOffset` — which scroller
 
 A screen has exactly one scroll owner, and the owner publishes its offset. Chrome
@@ -152,8 +162,10 @@ mount, and every subsequent frame reaches the chrome on the UI thread through
 would re-render every consumer per frame, which is precisely the cost this
 avoids — the same reasoning as the section below.
 
-Without it, chrome falls back to `window.scrollY` on web and to nothing on
-native. That default is right for exactly one layout — a web page whose document
+For ordinary routes, Screen and ScreenScrollView supply this ownership.
+PageHeader first resolves an explicit offset, HeaderDock, ScrollMetrics or Screen
+before this low-level provider. Without any owner, it falls back to `window.scrollY`
+on web and rests on native. That default is right for exactly one layout — a web page whose document
 *is* the scroller — and silently wrong for a desktop panel and for every native
 screen, with no error: the header simply never reacts.
 
