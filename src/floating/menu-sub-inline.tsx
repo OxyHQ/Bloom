@@ -1,3 +1,4 @@
+import { useMenuDensity } from './use-menu-density';
 /**
  * The NATIVE sub-menu: an inline disclosure inside the sheet.
  *
@@ -85,13 +86,14 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
 
   function MenuSubContent({ children, label, className, style, testID }: MenuSubContentProps) {
     const sub = useMenuSub();
+    const density = useMenuDensity();
     if (!sub.open) return null;
     // Indented under its trigger, which is the whole visual statement an inline
     // disclosure makes.
     return (
       <StyledView
         accessibilityLabel={label}
-        className={cx('pl-space-16 gap-space-4', className)}
+        className={cx('pl-space-16', density.groupClass, className)}
         style={style}
         testID={testID}
       >

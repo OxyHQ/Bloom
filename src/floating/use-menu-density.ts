@@ -15,13 +15,14 @@ export function resolveMenuDensity(size: BloomSize, touch: boolean) {
     height: Math.max(touch ? 44 : 0, geometry.height),
     type: CONTROL_LABEL_TYPE[size],
     panelPadding: touch ? 8 : 6,
-    gap: 0,
+    gap: geometry.rowGap,
+    separatorMargin: geometry.separatorMargin,
     leadingSize: geometry.icon,
     gutter: geometry.gutter,
-    groupClass: 'gap-0',
-    panelClass: touch ? 'p-space-8 gap-0' : 'p-[6px] gap-0',
+    groupClass: geometry.groupClass,
+    panelClass: touch ? 'p-space-8' : 'p-[6px]',
     rowClass: `${geometry.rowClass}${touch ? ' min-h-[44px]' : ''}`,
     labelClass: 'px-space-8 py-space-4',
-    separatorClass: touch ? '-mx-space-8 my-space-4 h-px' : '-mx-[6px] my-space-4 h-px',
+    separatorClass: `${touch ? '-mx-space-8' : '-mx-[6px]'} ${geometry.separatorMarginClass} h-px`,
   } as const;
 }

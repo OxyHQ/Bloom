@@ -88,6 +88,8 @@ it('inherits scope through the portal, accepts a surface override, and owns exac
   );
   expect(getComputedStyle(node('action').querySelector('[dir="auto"]')!).fontSize).toBe('12px');
   expect(node('menu').querySelectorAll('[data-bloom-scroll-area]')).toHaveLength(1);
+  const viewport = node('menu').querySelector('[data-bloom-scroll-area]')!;
+  expect(getComputedStyle(viewport.firstElementChild!).gap).toBe('1px');
   expect(Number.parseFloat(getComputedStyle(node('menu')).maxHeight)).toBeLessThanOrEqual(
     window.innerHeight - 16,
   );
@@ -233,5 +235,15 @@ it('updates mounted action and Item targets when the primary pointer changes', (
     expect(getComputedStyle(node('adaptive-item')).minHeight).toBe('36px');
   } finally {
     window.matchMedia = previous;
+  }
+});
+
+it('keeps row gaps separate from icon gaps and avoids accumulating section spacing', () => {
+  expect(
+    (['xs', 'sm', 'md', 'lg'] as const).map((size) => resolveMenuDensity(size, false).gap),
+  ).toEqual([1, 2, 2, 4]);
+  for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
+    const density = resolveMenuDensity(size, false);
+    expect(density.gap + density.separatorMargin).toBe(4);
   }
 });

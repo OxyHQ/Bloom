@@ -242,7 +242,9 @@ control already implements every size or every touch adaptation.
 
 Menu and Item label steps are 12/16, 13/18, 14/20 and 16/22 (font/line height).
 Menus use 8px horizontal inset, 4/4/4/5px vertical inset, and icon slots of
-16/18/20/20px. Menu icon-to-label gaps are 6/6/8/8px. Item horizontal insets are
+16/18/20/20px. Menu icon-to-label gaps inside each row are 6/6/8/8px. Gaps between adjacent
+rows are separately 1/2/2/4px. Section separator margins subtract that row gap
+from a 4px per-side budget, so nested groups do not accumulate extra spacing. Item horizontal insets are
 8/10/12/16px, vertical insets 6/7/8/11px and gaps 6/8/8/12px; subtitles grow
 naturally. Pre-rendered Item icons retain their caller-supplied size.
 
@@ -252,8 +254,8 @@ records actual readers; it is an audit, not a declaration of universal adoption.
 
 ### Migration impact
 
-Normal desktop menu rows change from 36px with 4px between rows to 28px with no
-inter-row gap. Groups use 12/16 labels and 4px separator margins; panel inset is
+Normal desktop menu rows change from 36px with 4px between rows to 28px with a 2px
+inter-row gap. Groups use 12/16 labels and 4px total separation on each side of separators (margin plus row gap); panel inset is
 6px on desktop, 8px for touch. The existing 16px panel and 10px row corners,
 Surface material, theme colours, elevation and keyboard behaviours remain.
 

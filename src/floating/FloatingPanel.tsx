@@ -620,7 +620,7 @@ export function FloatingPanel({
               <ScrollArea
                 style={{ flexShrink: 1, minHeight: 0 }}
                 contentContainerStyle={{
-                  gap: callerStyle?.gap ?? (isMenuSurface ? density.gap : 0),
+                  gap: callerStyle?.gap ?? density.gap,
                 }}
                 keyboardShouldPersistTaps="handled"
               >

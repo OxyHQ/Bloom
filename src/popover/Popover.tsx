@@ -102,6 +102,7 @@ export function PopoverContent({
         contentStyle={[
           styles.body,
           {
+            gap: density.gap,
             paddingLeft: density.panelPadding,
             paddingRight: density.panelPadding,
             paddingBottom: density.panelPadding,

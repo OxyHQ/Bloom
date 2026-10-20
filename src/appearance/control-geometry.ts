@@ -11,6 +11,10 @@ export const CONTROL_LABEL_TYPE: Record<BloomSize, TypeScaleVariant> = {
 export const MENU_GEOMETRY = {
   xs: {
     height: 24,
+    rowGap: 1,
+    groupClass: 'gap-[1px]',
+    separatorMargin: 3,
+    separatorMarginClass: 'my-[3px]',
     icon: 16,
     gap: 6,
     rowClass: 'px-space-8 py-space-4 min-h-[24px] gap-1.5',
@@ -18,6 +22,10 @@ export const MENU_GEOMETRY = {
   },
   sm: {
     height: 26,
+    rowGap: 2,
+    groupClass: 'gap-[2px]',
+    separatorMargin: 2,
+    separatorMarginClass: 'my-[2px]',
     icon: 18,
     gap: 6,
     rowClass: 'px-space-8 py-space-4 min-h-[26px] gap-1.5',
@@ -25,6 +33,10 @@ export const MENU_GEOMETRY = {
   },
   md: {
     height: 28,
+    rowGap: 2,
+    groupClass: 'gap-[2px]',
+    separatorMargin: 2,
+    separatorMarginClass: 'my-[2px]',
     icon: 20,
     gap: 8,
     rowClass: 'px-space-8 py-space-4 min-h-[28px] gap-space-8',
@@ -32,6 +44,10 @@ export const MENU_GEOMETRY = {
   },
   lg: {
     height: 32,
+    rowGap: 4,
+    groupClass: 'gap-space-4',
+    separatorMargin: 0,
+    separatorMarginClass: 'my-0',
     icon: 20,
     gap: 8,
     rowClass: 'px-space-8 py-[5px] min-h-[32px] gap-space-8',

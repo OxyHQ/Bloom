@@ -1,3 +1,4 @@
+import { useMenuDensity } from '../floating/use-menu-density';
 import { BloomScope } from '../appearance';
 /**
  * `DropdownMenu` — NATIVE. Presents through `dialog/SheetShell`, Bloom's
@@ -89,6 +90,7 @@ export function DropdownMenuContent({
   style,
   testID,
 }: DropdownMenuContentProps) {
+  const density = useMenuDensity(size);
   const common = useCommonMessages();
   const label = labelProp ?? common.menu;
   const menu = useDropdownMenu();
@@ -105,7 +107,7 @@ export function DropdownMenuContent({
         label={label}
         onClose={onSheetClose}
         contentClassName={className}
-        contentStyle={style}
+        contentStyle={[{ gap: density.gap }, style]}
         contentTestID={testID}
       >
         <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>

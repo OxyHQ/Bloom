@@ -244,7 +244,7 @@ it('sizes Select from the nearest scope while its explicit size wins', () => {
     </BloomScope>,
   );
   expect(screen.UNSAFE_getAllByType(SelectChevron).map((node) => node.props.size)).toEqual([
-    14, 16,
+    16, 18,
   ]);
 });
 

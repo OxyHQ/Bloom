@@ -1,3 +1,5 @@
+import { BloomScope } from '../appearance';
+import { useMenuDensity } from '../floating/use-menu-density';
 /**
  * `Menubar` — NATIVE: each menu opens the same bottom sheet `DropdownMenu` and
  * `ContextMenu` present, because a phone has no room to hang a panel beside a
@@ -26,8 +28,9 @@ import { useCommonMessages } from '../locale/common-messages';
 
 export { Menubar, MenubarMenu, MenubarTrigger } from './MenubarBase';
 
-export function MenubarContent({ children, label: labelProp, style }: MenubarContentProps) {
+export function MenubarContent({ children, size, label: labelProp, style }: MenubarContentProps) {
   const common = useCommonMessages();
+  const density = useMenuDensity(size);
   const label = labelProp ?? common.menu;
   const menu = useMenubarMenu();
   const { control, onSheetClose } = useSheetOpenBridge(menu.open, menu.setOpen);
@@ -37,9 +40,16 @@ export function MenubarContent({ children, label: labelProp, style }: MenubarCon
   );
 
   return (
-    <SheetShell control={control} label={label} onClose={onSheetClose} contentStyle={style}>
-      <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
-    </SheetShell>
+    <BloomScope size={size}>
+      <SheetShell
+        control={control}
+        label={label}
+        onClose={onSheetClose}
+        contentStyle={[{ gap: density.gap }, style]}
+      >
+        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+      </SheetShell>
+    </BloomScope>
   );
 }
 

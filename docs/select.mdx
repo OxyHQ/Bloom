@@ -74,7 +74,7 @@ Colours are taken from the theme through the same ramps `Button` paints from (`f
 | option row | Inherits BloomScope (normal md 28px, 10px corner) | Same inherited menu recipe |
 
 - **Trigger** — a card-coloured field with the `neutral-200` hairline and the xs contact shadow. Hover washes it `neutral-100` and darkens the border to `neutral-300`; keyboard focus draws a 2px accent ring 2px out; disabled is `neutral-100` with `text-tertiary` and no shadow. The value is `text-primary`, the placeholder `text-placeholder` (`neutral-400`). The chevron turns over while the list is open (web). Bloom's button-like controls are full pills rather than a 10px corner here.
-- **List** (web) — a 266px-minimum panel (it grows to the trigger's width when that is wider), 6px inset (8px touch), 16px corner, `shadow-dropdown`, 4px below the trigger, no inter-row gap, scrolling past 240px. It opens and closes on a 150ms fade + `scale-95` + 2px blur.
+- **List** (web) — a 266px-minimum panel (it grows to the trigger's width when that is wider), 6px inset (8px touch), 16px corner, `shadow-dropdown`, 4px below the trigger, a 2px inter-row gap at md, scrolling past 240px. It opens and closes on a 150ms fade + `scale-95` + 2px blur.
 - **Rows** — hover, keyboard focus and the chosen option share one `neutral-100` wash; the chosen one also carries `SelectItemIndicator`'s `text-secondary` tick. `disabled` options are `text-disabled` and cannot be pressed.
 - **Dark** — surfaces go to `neutral-800` with `neutral-700` hairlines and a `neutral-700`-at-60% wash; disabled text uses `neutral-600` (the semantic dark `text-disabled` is the panel colour, which hides the row).
 

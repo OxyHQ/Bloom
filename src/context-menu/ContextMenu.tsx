@@ -1,3 +1,4 @@
+import { useMenuDensity } from '../floating/use-menu-density';
 import { BloomScope } from '../appearance';
 /**
  * `ContextMenu` — NATIVE. A LONG PRESS opens the same bottom sheet
@@ -92,6 +93,7 @@ export function ContextMenuContent({
   label: labelProp,
   style,
 }: ContextMenuContentProps) {
+  const density = useMenuDensity(size);
   const { messages } = useMessages(CONTEXT_MENU_MESSAGES);
   const label = labelProp ?? messages.contextMenu;
   const menu = useContextMenu();
@@ -109,7 +111,12 @@ export function ContextMenuContent({
 
   return (
     <BloomScope size={size}>
-      <SheetShell control={control} label={label} onClose={onSheetClose} contentStyle={style}>
+      <SheetShell
+        control={control}
+        label={label}
+        onClose={onSheetClose}
+        contentStyle={[{ gap: density.gap }, style]}
+      >
         <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
       </SheetShell>
     </BloomScope>

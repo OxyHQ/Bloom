@@ -210,10 +210,10 @@ Every part takes a `className` and APPENDS it to its own, so a layout class cann
 
 The panel and rows share one menu recipe, used by `DropdownMenu`, `ContextMenu`, `Menubar` and the select list:
 
-- **Panel** (web) — 266px minimum width (a sub-panel is a fixed 266), 6px inset (8px touch), 16px corner, 1px `neutral-200` hairline, card surface, `shadow-dropdown`, no inter-row gap. It opens and closes on a 150ms `ease-out` fade + `scale-95` + 2px blur, with no slide. A popover keeps its own panel and motion (`FloatingPanel`'s `surface` prop).
+- **Panel** (web) — 266px minimum width (a sub-panel is a fixed 266), 6px inset (8px touch), 16px corner, 1px `neutral-200` hairline, card surface, `shadow-dropdown`, a 2px inter-row gap at md. It opens and closes on a 150ms `ease-out` fade + `scale-95` + 2px blur, with no slide. A popover keeps its own panel and motion (`FloatingPanel`'s `surface` prop).
 - **Row** — 28px at normal md (8px horizontal/4px vertical inset, 8px gap, 10px corner), 14/20 regular `text-primary`. Hover, keyboard focus (`:focus-visible` only — a mouse press does not leave a row painted) and a CHECKED checkbox or radio row share the `neutral-100` wash, on a 150ms colour transition (web). Destructive rows are `red-500` (`red-400` dark); disabled rows are `text-disabled` with a not-allowed cursor.
 - **Label** — 8px horizontal inset, 12/16 medium in `text-secondary`, 4px above and below.
-- **Separator** — a full-bleed 1px `neutral-200` rule with 4px vertical margins.
+- **Separator** — a full-bleed 1px `neutral-200` rule with 4px total vertical separation per side (margin plus row gap).
 - **Check, shortcut, sub chevron** — `text-secondary`, Remix glyphs at 16px: `RiCheckLine`, `RiArrowRightSLine` (web flyout), `RiArrowDownSLine` / `RiArrowUpSLine` (native disclosure).
 - **Material and themes** — shared Surface paint uses the menu fill composited against the actual parent, including its sheen, rim and backdrop treatment. Semantic foreground, disabled, border and highlight colours follow the active theme; density does not replace the material.
 
