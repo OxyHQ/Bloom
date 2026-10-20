@@ -7,6 +7,8 @@ import { PageHeader } from '../page-header';
 import { Button } from '../button';
 import { BloomScope } from '../appearance';
 import { RiChat3Line } from '../icons/remix/RiChat3Line';
+import { RiShareLine } from '../icons/remix/RiShareLine';
+import { RiStarLine } from '../icons/remix/RiStarLine';
 import { RiMoreLine } from '../icons/remix/RiMoreLine';
 import { RiHome5Line as HomeIcon, RiSettings3Line, RiUserLine } from '../icons/remix';
 
@@ -90,8 +92,18 @@ export const HeaderCollapse: Story = {
               </BreadcrumbItem>
             </Breadcrumb>
           }
-          actions={
+          actions={({ compact }) => (
             <>
+              {!compact && (
+                <Button
+                  key="favorite"
+                  iconOnly
+                  icon={RiStarLine}
+                  accessibilityLabel="Favorite"
+                  appearance="plain"
+                  tone="neutral"
+                />
+              )}
               <Button
                 iconOnly
                 icon={RiChat3Line}
@@ -99,8 +111,15 @@ export const HeaderCollapse: Story = {
                 appearance="plain"
                 tone="neutral"
               />
-              <Button appearance="plain" tone="neutral">
-                Share
+              <Button
+                key="share"
+                iconOnly={compact}
+                icon={compact ? RiShareLine : undefined}
+                accessibilityLabel="Share"
+                appearance="plain"
+                tone="neutral"
+              >
+                {!compact ? 'Share' : undefined}
               </Button>
               <Button
                 iconOnly
@@ -110,7 +129,7 @@ export const HeaderCollapse: Story = {
                 tone="neutral"
               />
             </>
-          }
+          )}
         />
       </View>
     </BloomScope>

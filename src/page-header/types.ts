@@ -74,6 +74,12 @@ export type PageHeaderScrim = 'auto' | 'always' | 'none';
  */
 export type PageHeaderTitleReveal = 'auto' | 'always' | 'onScroll' | 'onDock';
 
+/** Presentation of actions inside the header's own container; unrelated to control size. */
+export interface PageHeaderActionsState {
+  /** True below Bloom's sm container breakpoint (640px), including initial web layout. */
+  compact: boolean;
+}
+
 export interface PageHeaderProps {
   /** A string renders as the heading; a node renders as-is and determines the header's height, including when centered. Nodes own their accessible semantics. */
   title?: ReactNode;
@@ -114,8 +120,10 @@ export interface PageHeaderProps {
    * wrapped in a `BloomScope` with shared control defaults, so a `ButtonGroup`
    * inside it becomes one island with no prop written on it. Declare the
    * grouping yourself — the header never infers it by reading children.
+   * A render function can adapt action labels/visibility to the header's own
+   * compact width. Keep component types and keys stable to preserve open dialogs.
    */
-  actions?: ReactNode;
+  actions?: ReactNode | ((state: PageHeaderActionsState) => ReactNode);
   /** Full-width chrome below the title/actions row, for tabs or a toolbar.
    * Its measured height joins Screen's header clearance and scroll effects.
    */

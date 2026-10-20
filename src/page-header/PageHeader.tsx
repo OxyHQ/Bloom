@@ -195,12 +195,22 @@ function PageHeaderComponent({
   const [measuredHeight, setMeasuredHeight] = useState(0);
   const lastHeight = useRef(0);
   const width = measuredWidth || windowWidth;
+  // Web starts conservatively until its own box is known. Continuous panel
+  // resizing stays in CSS; React sees only a crossing of the action breakpoint.
+  const [actionsCompact, setActionsCompact] = useState(isWeb || width < BREAKPOINTS.sm);
+  const lastActionsCompact = useRef(actionsCompact);
   const compact = density === 'compact';
   const height = measuredHeight || padTop + (compact ? 32 : BAR_HEIGHT);
   const sideInset = compact ? 12 : width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
 
   const onContainerLayout = (e: LayoutChangeEvent) => {
-    if (!isWeb) setMeasuredWidth(e.nativeEvent.layout.width);
+    const nextWidth = e.nativeEvent.layout.width;
+    if (!isWeb) setMeasuredWidth(nextWidth);
+    const nextCompact = nextWidth < BREAKPOINTS.sm;
+    if (lastActionsCompact.current !== nextCompact) {
+      lastActionsCompact.current = nextCompact;
+      setActionsCompact(nextCompact);
+    }
     const nextHeight = e.nativeEvent.layout.height;
     if (lastHeight.current !== nextHeight) {
       lastHeight.current = nextHeight;
@@ -251,9 +261,13 @@ function PageHeaderComponent({
   const hostActions = positionedByScreen ? host.headerActions : undefined;
   const navigation = positionedByScreen ? host.navigation : undefined;
   const onBack = screenOnBack ?? (navigation?.canGoBack ? navigation.back : undefined);
+  const resolvedActions =
+    typeof screenActions === 'function'
+      ? screenActions({ compact: actionsCompact })
+      : screenActions;
   const actions = hostActions ? (
     <>
-      {screenActions}
+      {resolvedActions}
       <View
         testID={testID ? `${testID}-host-actions` : undefined}
         style={[styles.actions, { gap: floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP }]}
@@ -262,7 +276,7 @@ function PageHeaderComponent({
       </View>
     </>
   ) : (
-    screenActions
+    resolvedActions
   );
   const contextScrollY = useScrollOffset();
   const metrics = useScrollMetricsValue();
