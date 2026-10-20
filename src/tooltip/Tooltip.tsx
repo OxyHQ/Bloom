@@ -1,3 +1,4 @@
+import { useTooltipSize } from './use-tooltip-size';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import {
@@ -138,13 +139,14 @@ export function TooltipTrigger({ children }: { children: React.ReactNode }) {
 export function TooltipContent({
   children,
   label,
-  size = 'sm',
+  size: sizeProp,
 }: {
   children: React.ReactNode;
   label: string;
-  /** `sm` (default) or `md` surface — padding and corner. */
+  /** Explicit size overrides BloomScope; standalone `sm`. Inherited xs/lg clamp to sm/md. */
   size?: TooltipSize;
 }) {
+  const size = useTooltipSize(sizeProp);
   const { position, visible, onVisibleChange } = useContext(TooltipContext);
   const { targetMeasurements } = useContext(TargetContext);
   const requestClose = useCallback(() => {

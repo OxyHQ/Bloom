@@ -77,3 +77,7 @@ photo under it does not change with the theme.
 
 It is text, not a control: no role, the icon hidden, so it reads as its label.
 Inside a pressable card, fold the label into the card's name — `ListingCard` does.
+
+## Inherited size
+
+`OfferingBadge` resolves an explicit `size`, then the nearest `BloomScope`, then its standalone `md` default before choosing the existing Badge label rung. Inherited `xs` uses `sm`; inherited `lg` uses `md`. The offering's semantic color stays fixed.

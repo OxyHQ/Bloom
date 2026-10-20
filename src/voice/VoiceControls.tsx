@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React from 'react';
 
 import { Button } from '../button';
@@ -31,7 +32,7 @@ export function VoiceControls({
   onEnd,
   onTypeInstead,
   disabled = false,
-  size = 'lg',
+  size: sizeProp,
   leading,
   trailing,
   className,
@@ -39,6 +40,11 @@ export function VoiceControls({
   ref,
   testID,
 }: VoiceControlsProps) {
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'lg', tone: 'neutral' },
+  );
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
   const { messages } = useMessages(VOICE_MESSAGES);
   const live = state !== 'idle' && state !== 'error';
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);

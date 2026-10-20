@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo } from 'react';
 
 import { Badge } from '../badge';
@@ -23,11 +24,16 @@ function OfferingBadgeComponent({
   offering,
   label,
   icon = true,
-  size = 'md',
+  size: sizeProp,
   variant = 'tinted',
   style,
   testID,
 }: OfferingBadgeProps) {
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize === 'lg' ? 'md' : inheritedSize;
   const { messages } = useMessages(OFFERING_BADGE_MESSAGES);
   const Icon = icon === true ? OFFERING_ICONS[offering] : icon === false ? undefined : icon;
 
