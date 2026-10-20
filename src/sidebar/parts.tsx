@@ -143,6 +143,13 @@ ${SEL}[data-bloom-sidebar="offset"]:focus-visible {
 ${SEL}[data-bloom-sidebar="inset"]:focus-visible {
   box-shadow: inset 0 0 0 2px var(--bloom-sidebar-ring);
 }
+/* A row's "hover" actions: on a pointer that hovers they show with the row's
+   hover or focus; touch always draws them. */
+@media (hover: hover) {
+  [data-bloom-sidebar-row="hover"] > [data-bloom-sidebar-row-actions] { opacity: 0; transition: opacity 150ms ease; }
+  [data-bloom-sidebar-row="hover"]:hover > [data-bloom-sidebar-row-actions],
+  [data-bloom-sidebar-row="hover"]:focus-within > [data-bloom-sidebar-row-actions] { opacity: 1; }
+}
 [data-bloom-sidebar-scroll] { scrollbar-width: none; }
 [data-bloom-sidebar-scroll]::-webkit-scrollbar { display: none; }
 `;

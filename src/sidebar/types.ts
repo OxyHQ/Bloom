@@ -51,11 +51,19 @@ export interface SidebarNavItem {
   /** Secondary touch action. Also expose it through a keyboard-accessible menu. */
   onLongPress?: () => void;
   /**
-   * Web: a keyboard shortcut, e.g. `⌥⌃1` or `Ctrl+Shift+H`. Shown on hover and
+   * Web: a keyboard shortcut, e.g. `⌥⌃1`, `Ctrl+Shift+H` or `Mod+K` (⌘ on
+   * Apple platforms, Ctrl elsewhere — drawn that way too). Shown on hover and
    * BOUND by the sidebar — pressing it does what pressing the row does. Don't
    * bind it again in the app.
    */
   shortcut?: string;
+  /**
+   * Who binds `shortcut`. `sidebar` (the default): the sidebar does, while it
+   * is mounted, and not while typing in a field. `app`: the app's own keymap
+   * already does — a key that must work from inside an editor, or with the
+   * navigation in a closed drawer — and the row only shows the hint.
+   */
+  shortcutBinding?: 'sidebar' | 'app';
 }
 
 /** One mode of a {@link SidebarModeSwitcherProps.modes} switcher. */

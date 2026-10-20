@@ -25,6 +25,9 @@ import {
   TextInput,
   View,
   type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  type ScrollView,
   type TextStyle,
 } from 'react-native';
 import Animated, {
@@ -55,13 +58,15 @@ import { resolveSidebarGeometry, SidebarGeometryProvider } from './geometry';
 import { SidebarSizeProvider, SIDEBAR_METRICS } from './metrics';
 import { useSidebarPalette, type SidebarPalette } from './palette';
 import { Collapsible, CollapseProvider, MORPH_MS, useSidebarWebCss } from './parts';
-import { SidebarFolder, SidebarTreeRow } from './SidebarFolder';
 import { SidebarItem } from './SidebarItem';
 import { SidebarModeSwitcher } from './SidebarModeSwitcher';
 import { SidebarPlanCard } from './SidebarPlanCard';
 import { SidebarPrimaryAction } from './SidebarPrimaryAction';
 import { SidebarRail } from './SidebarRail';
 import { SidebarScrollArea } from './SidebarScrollArea';
+import { TreeDragProvider } from './SidebarTreeDrag';
+import { SidebarTreeSection } from './SidebarTreeSection';
+import { anyExpandable, filterTreeItems } from './tree';
 import { SidebarTeamMenu } from './SidebarTeamMenu';
 import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarUserMenu } from './SidebarUserMenu';
@@ -225,6 +230,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   tree,
   selectedTreeItem,
   onTreeItemPress,
+  onTreeItemDrop,
   plan,
   style,
   testID,
@@ -737,23 +743,41 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       </AnimatedPressable>
     );
 
-  // Per section: its direct rows that match, and its folders — a folder
-  // matching the query keeps every row, otherwise only its matching rows. A
-  // section with nothing left is not drawn.
+  // Per section: its rows that match (a row with matches below it stays, with
+  // them), and its folders — a folder matching the query keeps every row,
+  // otherwise only its matching rows. A section with nothing left is not drawn,
+  // unless it has a status to show and no query is set.
   const shownSections = useMemo(
     () =>
       sections.flatMap((section) => {
-        const items = normalized
-          ? (section.items ?? []).filter((item) => matchesQuery(item.label, normalized))
-          : (section.items ?? []);
+        const items = filterTreeItems(section.items ?? [], normalized);
         const folders = (section.folders ?? []).flatMap((folder) => {
           if (!normalized || matchesQuery(folder.label, normalized)) return [folder];
           const matching = folder.items.filter((item) => matchesQuery(item.label, normalized));
           return matching.length ? [{ ...folder, items: matching }] : [];
         });
-        return items.length || folders.length ? [{ section, items, folders }] : [];
+        const status =
+          !normalized && (section.loading || section.error != null || section.emptyLabel != null);
+        return items.length || folders.length || status
+          ? [{ section, items, folders, nests: anyExpandable(section.items ?? []) }]
+          : [];
       }),
     [sections, normalized],
+  );
+  // Touch drags scroll the viewport near its edges, and read how far it went.
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const scrollOffset = useRef(0);
+  const readScrollOffset = useCallback(() => scrollOffset.current, []);
+  const treeScroll = useMemo(
+    () => ({ ref: scrollRef, offset: readScrollOffset }),
+    [readScrollOffset],
+  );
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollOffset.current = event.nativeEvent.contentOffset.y;
+      onScroll?.(event);
+    },
+    [onScroll],
   );
   const nothingMatches =
     shownItems.length === 0 &&
@@ -873,6 +897,20 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     </>
   );
 
+  const treeView = shownSections.map(({ section, items: sectionItems, folders, nests }) => (
+    <SidebarTreeSection
+      key={section.key ?? section.label}
+      section={section}
+      items={sectionItems}
+      folders={folders}
+      searching={normalized.length > 0}
+      nests={nests}
+      selectedTreeItem={selectedTreeItem}
+      onTreeItemPress={onTreeItemPress}
+      palette={palette}
+    />
+  ));
+
   const sidebar = (
     <SidebarSizeProvider value={size}>
       <SidebarGeometryProvider value={geometry}>
@@ -961,7 +999,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                     gap: hasSections ? 24 : 0,
                   }}
                   showsVerticalScrollIndicator={false}
-                  onScroll={onScroll}
+                  ref={scrollRef}
+                  onScroll={handleScroll}
                 >
                   {shownItems.length > 0 || !hasTree ? (
                     <Animated.View
@@ -986,58 +1025,18 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                       )}
                     </Animated.View>
                   ) : null}
-                  {collapsed
-                    ? null
-                    : shownSections.map(({ section, items: sectionItems, folders }) => (
-                        <View
-                          key={section.key ?? section.label}
-                          testID={`sidebar-section-${section.key ?? section.label}`}
-                          style={{ width: '100%', gap: 10 }}
-                        >
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                            }}
-                          >
-                            <Text variant="body-medium" style={{ color: palette.textSecondary }}>
-                              {section.label}
-                            </Text>
-                            {section.actions}
-                          </View>
-                          <View
-                            role="navigation"
-                            accessibilityLabel={section.label}
-                            style={{ width: '100%', gap: 4 }}
-                          >
-                            {sectionItems.length > 0 ? (
-                              <View style={{ width: '100%', gap: 2 }}>
-                                {sectionItems.map((item) => (
-                                  <SidebarTreeRow
-                                    key={item.key}
-                                    item={item}
-                                    selected={item.key === selectedTreeItem}
-                                    focusable
-                                    onPress={onTreeItemPress}
-                                    palette={palette}
-                                  />
-                                ))}
-                              </View>
-                            ) : null}
-                            {folders.map((folder) => (
-                              <SidebarFolder
-                                key={folder.key}
-                                folder={folder}
-                                forceOpen={normalized.length > 0}
-                                selectedItem={selectedTreeItem}
-                                onItemPress={onTreeItemPress}
-                                testID={`sidebar-folder-${folder.key}`}
-                              />
-                            ))}
-                          </View>
-                        </View>
-                      ))}
+                  {collapsed || shownSections.length === 0 ? null : onTreeItemDrop ? (
+                    <TreeDragProvider
+                      sections={sections}
+                      onDrop={onTreeItemDrop}
+                      movedLabel={messages.moved}
+                      scroll={treeScroll}
+                    >
+                      {treeView}
+                    </TreeDragProvider>
+                  ) : (
+                    treeView
+                  )}
                   {content != null ? (
                     <Animated.View
                       testID={`${testID ?? 'sidebar'}-content`}

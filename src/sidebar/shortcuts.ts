@@ -1,7 +1,13 @@
+import { Platform } from 'react-native';
+
 /**
  * A shortcut as the sidebar displays it — `⌥⌃1`, `⌘K`, `Ctrl+Shift+P` — parsed
  * into what a `keydown` must carry. The label stays the single source: what the
  * hint says is what the key does.
+ *
+ * `Mod` is the platform's command modifier: ⌘ (meta) on Apple platforms, Ctrl
+ * elsewhere. A label that names it is DRAWN for the platform too — `Mod+K`
+ * reads `⌘K` on a Mac and `Ctrl+K` on Windows — so one label serves both.
  */
 export interface SidebarShortcut {
   key: string;
@@ -30,6 +36,45 @@ const WORDS: Record<string, keyof Omit<SidebarShortcut, 'key'>> = {
   shift: 'shift',
 };
 
+/** Whether the command modifier is ⌘: macOS, iOS and iPadOS. */
+export function isApplePlatform(): boolean {
+  if (Platform.OS === 'ios' || Platform.OS === 'macos') return true;
+  if (Platform.OS !== 'web' || typeof navigator === 'undefined') return false;
+  const platform =
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ??
+    navigator.platform ??
+    '';
+  return /mac|iphone|ipad|ipod/i.test(platform) || /Mac OS X/.test(navigator.userAgent ?? '');
+}
+
+const APPLE_GLYPHS: Record<string, string> = {
+  mod: '⌘',
+  cmd: '⌘',
+  command: '⌘',
+  meta: '⌘',
+  ctrl: '⌃',
+  control: '⌃',
+  alt: '⌥',
+  option: '⌥',
+  opt: '⌥',
+  shift: '⇧',
+};
+
+/**
+ * The label as the hint draws it. A label naming `Mod` is spelled for the
+ * platform — Apple glyphs run together (`Mod+Shift+P` → `⌘⇧P`), elsewhere the
+ * words stay (`Ctrl+Shift+P`); any other label is drawn as written.
+ */
+export function displayShortcut(label: string): string {
+  const parts = label.split('+').map((part) => part.trim());
+  if (!parts.some((part) => part.toLowerCase() === 'mod')) return label;
+  if (isApplePlatform()) {
+    const key = parts.pop() ?? '';
+    return parts.map((part) => APPLE_GLYPHS[part.toLowerCase()] ?? part).join('') + key;
+  }
+  return parts.map((part) => (part.toLowerCase() === 'mod' ? 'Ctrl' : part)).join('+');
+}
+
 /** `undefined` when the label names no key. */
 export function parseShortcut(label: string): SidebarShortcut | undefined {
   const shortcut: SidebarShortcut = { key: '', meta: false, ctrl: false, alt: false, shift: false };
@@ -43,6 +88,10 @@ export function parseShortcut(label: string): SidebarShortcut | undefined {
   const parts = rest.split('+').map((part) => part.trim());
   const key = parts.pop() ?? '';
   for (const part of parts) {
+    if (part.toLowerCase() === 'mod') {
+      shortcut[isApplePlatform() ? 'meta' : 'ctrl'] = true;
+      continue;
+    }
     const modifier = WORDS[part.toLowerCase()] ?? GLYPHS[part];
     if (!modifier) return undefined;
     shortcut[modifier] = true;

@@ -269,6 +269,13 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   manage: 'إدارة',
   accountMenu: 'قائمة الحساب',
   teamMenu: (team) => `قائمة ${team}`,
+  expandRow: (label) => `توسيع ${label}`,
+  collapseRow: (label) => `طي ${label}`,
+  moveUp: 'نقل لأعلى',
+  moveDown: 'نقل لأسفل',
+  moveIn: 'نقل داخل الصف أعلاه',
+  moveOut: 'نقل خارج العنصر الأب',
+  moved: (label) => `تم نقل ${label}`,
 };
 
 const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {

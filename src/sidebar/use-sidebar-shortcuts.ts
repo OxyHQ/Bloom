@@ -19,6 +19,11 @@ export function sidebarItemAction(
   return undefined;
 }
 
+/** An item whose shortcut the sidebar binds, not the app's own keymap. */
+function boundHere(item: SidebarNavItem): boolean {
+  return item.shortcutBinding !== 'app';
+}
+
 /**
  * Web: an item's or a mode's declared `shortcut` does what pressing it does,
  * for as long as the sidebar is mounted. Ignored while typing in a field.
@@ -35,8 +40,8 @@ export function useSidebarShortcuts(bindings: Bindings) {
     latest.current = bindings;
   });
   const declared = [
-    ...(bindings.items ?? []),
-    ...(bindings.secondaryItems ?? []),
+    ...(bindings.items ?? []).filter(boundHere),
+    ...(bindings.secondaryItems ?? []).filter(boundHere),
     ...(bindings.modes ?? []),
   ].some((entry) => entry.shortcut);
   useEffect(() => {
@@ -57,7 +62,7 @@ export function useSidebarShortcuts(bindings: Bindings) {
         onModeChange(mode.key);
         return;
       }
-      for (const item of [...items, ...secondaryItems]) {
+      for (const item of [...items, ...secondaryItems].filter(boundHere)) {
         const shortcut = item.shortcut ? parseShortcut(item.shortcut) : undefined;
         const action =
           shortcut && matchesShortcut(event, shortcut) && sidebarItemAction(item, onNavigate);

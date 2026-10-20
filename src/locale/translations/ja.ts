@@ -250,6 +250,13 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   manage: '管理',
   accountMenu: 'アカウントメニュー',
   teamMenu: (team) => `${team}のメニュー`,
+  expandRow: (label) => `${label}を展開`,
+  collapseRow: (label) => `${label}を折りたたむ`,
+  moveUp: '上へ移動',
+  moveDown: '下へ移動',
+  moveIn: '上の行の中へ移動',
+  moveOut: '親の外へ移動',
+  moved: (label) => `${label}を移動しました`,
 };
 
 const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {

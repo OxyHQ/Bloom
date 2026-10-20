@@ -253,6 +253,13 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   manage: 'পরিচালনা করুন',
   accountMenu: 'অ্যাকাউন্ট মেনু',
   teamMenu: (team) => `${team} মেনু`,
+  expandRow: (label) => `${label} প্রসারিত করুন`,
+  collapseRow: (label) => `${label} সংকুচিত করুন`,
+  moveUp: 'উপরে সরান',
+  moveDown: 'নিচে সরান',
+  moveIn: 'উপরের সারির ভেতরে সরান',
+  moveOut: 'অভিভাবকের বাইরে সরান',
+  moved: (label) => `${label} সরানো হয়েছে`,
 };
 
 const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {

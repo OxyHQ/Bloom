@@ -250,6 +250,13 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   manage: 'प्रबंधित करें',
   accountMenu: 'खाता मेन्यू',
   teamMenu: (team) => `${team} मेन्यू`,
+  expandRow: (label) => `${label} विस्तृत करें`,
+  collapseRow: (label) => `${label} संक्षिप्त करें`,
+  moveUp: 'ऊपर ले जाएँ',
+  moveDown: 'नीचे ले जाएँ',
+  moveIn: 'ऊपर वाली पंक्ति के अंदर ले जाएँ',
+  moveOut: 'मूल से बाहर ले जाएँ',
+  moved: (label) => `${label} ले जाया गया`,
 };
 
 const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {

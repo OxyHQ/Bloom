@@ -254,6 +254,13 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   manage: 'Kelola',
   accountMenu: 'Menu akun',
   teamMenu: (team) => `Menu ${team}`,
+  expandRow: (label) => `Luaskan ${label}`,
+  collapseRow: (label) => `Ciutkan ${label}`,
+  moveUp: 'Pindah ke atas',
+  moveDown: 'Pindah ke bawah',
+  moveIn: 'Pindahkan ke dalam baris di atas',
+  moveOut: 'Keluarkan dari induknya',
+  moved: (label) => `${label} dipindahkan`,
 };
 
 const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {

@@ -34,6 +34,18 @@ export interface SidebarMessages {
   accountMenu: string;
   /** Names a team switcher's menu ("Acme menu"). */
   teamMenu: (team: string) => string;
+  /** Name a tree row's disclosure ("Expand Roadmap" / "Collapse Roadmap"). */
+  expandRow: (label: string) => string;
+  collapseRow: (label: string) => string;
+  /** A draggable tree row's moves, as accessibility actions. */
+  moveUp: string;
+  moveDown: string;
+  /** Nest the row under the one above it. */
+  moveIn: string;
+  /** Take the row out of its parent, to just after it. */
+  moveOut: string;
+  /** Announced after a row was moved ("Roadmap moved"). */
+  moved: (label: string) => string;
 }
 
 export const SIDEBAR_MESSAGES: MessageCatalog<SidebarMessages> = defineMessages<SidebarMessages>(
@@ -56,5 +68,12 @@ export const SIDEBAR_MESSAGES: MessageCatalog<SidebarMessages> = defineMessages<
     manage: 'Manage',
     accountMenu: 'Account menu',
     teamMenu: (team) => `${team} menu`,
+    expandRow: (label) => `Expand ${label}`,
+    collapseRow: (label) => `Collapse ${label}`,
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+    moveIn: 'Move inside the row above',
+    moveOut: 'Move out of its parent',
+    moved: (label) => `${label} moved`,
   },
 );
