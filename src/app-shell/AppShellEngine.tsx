@@ -8,15 +8,17 @@ import {
   View,
   useWindowDimensions,
   type LayoutChangeEvent,
+  type ViewStyle,
 } from 'react-native';
 import Animated, {
-  Easing,
+  runOnJS,
   useAnimatedStyle,
   useDerivedValue,
   useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { GestureDetector } from 'react-native-gesture-handler';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
@@ -54,6 +56,11 @@ import { useShellWidth } from './use-shell-width';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
 import { useCssShellLayout } from './shell-layout-css';
 import { usePanelInteraction } from './use-panel-interaction';
+import {
+  DRAWER_EASE as REVEAL_EASE,
+  DRAWER_MS as REVEAL_MS,
+  useDrawerSwipe,
+} from './use-drawer-swipe';
 
 /**
  * The page frame — one engine, four shapes (`variant`).
@@ -91,9 +98,6 @@ import { usePanelInteraction } from './use-panel-interaction';
  * own anchor — all inside the shell. No negative margin, no `100vw`, no
  * window-width hook, anywhere.
  */
-
-const REVEAL_EASE = Easing.bezier(0.42, 0, 0.58, 1);
-const REVEAL_MS = 325;
 
 /**
  * The page's scroller. `document`: a plain box, the page grows the document.
@@ -179,6 +183,7 @@ export function createAppShellEngine() {
     overlay,
     drawerOpen,
     onDrawerOpenChange,
+    drawerSwipe = false,
     drawerOpenLabel: drawerOpenLabelProp,
     drawerCloseLabel: drawerCloseLabelProp,
     scroll = 'document',
@@ -230,6 +235,9 @@ export function createAppShellEngine() {
           : 'lg');
     const sidebarMetrics = useAppShellSidebarMetrics(sidebar);
     const revealOffset = sidebarMetrics.expanded + 12;
+    // How far `reveal`'s moving part travels from closed to open, which is how
+    // far a `drawerSwipe` finger travels: the PAGE (feed's a further 12).
+    const revealTravel = variant === 'feed' ? revealOffset + 12 : revealOffset;
     const [userCollapsed, setUserCollapsed] = useState(sidebar?.defaultCollapsed ?? false);
     const cssShell = useCssShellLayout(cssScope, {
       sidebar,
@@ -400,6 +408,9 @@ export function createAppShellEngine() {
     });
     const drawerAvailable = hasNav && !wide;
     const isOpen = open && drawerAvailable;
+    // `drawerSwipe` is a native gesture: the web keeps its press-only drawer.
+    const swipeEnabled = drawerSwipe && hasNav && Platform.OS !== 'web';
+    const swipeOverlay = swipeEnabled && drawerStyle === 'overlay';
 
     const revealInteractionOpen = isOpen && drawerStyle === 'reveal';
     const revealDrawerRef = usePanelInteraction(revealInteractionOpen, revealInteractionOpen, () =>
@@ -819,22 +830,95 @@ export function createAppShellEngine() {
         ? { ...rootFrame(mode), height: '100%' as const }
         : rootFrame(mode);
 
-    // ---- the reveal drawer (dashboard's whole-page slide) -------------------
+    // ---- the drawer's open amount ------------------------------------------
+    // `reveal` always animates it; the `overlay` drawer only under
+    // `drawerSwipe`, where a finger drives the same value (below) — without the
+    // swipe it mounts open and unmounts closed, exactly as it always has.
     const reveal = useSharedValue(isOpen ? 1 : 0);
+    // The `overlay` drawer's travel is its whole box sliding in from
+    // off-screen: the panel, 12 either side, and the device's side insets when
+    // the shell owns the safe area.
+    const overlayTravel =
+      sidebarMetrics.expanded + 24 + (ownsSafeArea ? insets.left + insets.right : 0);
+    const swipeStart = useSharedValue(0);
     // Crossing to desktop immediately restores its ordinary layout, including
     // while a native compact reveal was still settling.
     const revealAmount = useDerivedValue(
       () => (revealAvailable ? reveal.value : 0),
       [revealAvailable, reveal],
     );
+    // A swiped `overlay` drawer stays mounted while it is visible but not open:
+    // dragged out from the edge before the release lands, or sliding away after
+    // it closed. Set during render on the closing edge, so no frame unmounts it.
+    const [overlayHeld, setOverlayHeld] = useState(false);
+    const [wasOpen, setWasOpen] = useState(isOpen);
+    if (swipeOverlay && wasOpen !== isOpen) {
+      setWasOpen(isOpen);
+      if (!isOpen) setOverlayHeld(true);
+    }
+    // Bumped by every settled swipe, so the effect below re-reads the state the
+    // swipe asked for — and slides back when a controlled parent declined it.
+    const [swipeSettles, setSwipeSettles] = useState(0);
     useEffect(() => {
-      const target = isOpen && drawerStyle === 'reveal' ? 1 : 0;
+      const target = isOpen && (drawerStyle === 'reveal' || swipeOverlay) ? 1 : 0;
       // The browser interpolates web frames; native keeps its UI-thread timing.
-      reveal.value =
-        Platform.OS === 'web' || reducedMotion
-          ? target
-          : withTiming(target, { duration: REVEAL_MS, easing: REVEAL_EASE });
-    }, [isOpen, drawerStyle, reducedMotion, reveal]);
+      if (Platform.OS === 'web' || reducedMotion || (swipeOverlay && reveal.value === target)) {
+        reveal.value = target;
+        if (swipeOverlay && target === 0) setOverlayHeld(false);
+        return;
+      }
+      reveal.value = withTiming(
+        target,
+        { duration: REVEAL_MS, easing: REVEAL_EASE },
+        swipeOverlay && target === 0
+          ? (finished) => {
+              'worklet';
+              if (finished) runOnJS(setOverlayHeld)(false);
+            }
+          : undefined,
+      );
+    }, [isOpen, drawerStyle, swipeOverlay, reducedMotion, reveal, swipeSettles]);
+    const settleSwipe = useCallback(
+      (next: boolean) => {
+        if (next !== isOpen) setOpen(next);
+        setSwipeSettles((count) => count + 1);
+      },
+      [isOpen, setOpen],
+    );
+    const holdOverlay = useCallback(() => {
+      if (swipeOverlay) setOverlayHeld(true);
+    }, [swipeOverlay]);
+    const swipeGestures = useDrawerSwipe({
+      swipe: swipeEnabled,
+      available: drawerAvailable,
+      open: isOpen,
+      closeOnFrame: drawerStyle === 'reveal',
+      rtl,
+      frameWidth: width,
+      travel: drawerStyle === 'reveal' ? revealTravel : overlayTravel,
+      progress: reveal,
+      start: swipeStart,
+      reducedMotion,
+      onOpenDragStart: holdOverlay,
+      onSettle: settleSwipe,
+    });
+    const overlayDrawerStyle = useAnimatedStyle(
+      () =>
+        swipeOverlay
+          ? { transform: [{ translateX: -dir * overlayTravel * (1 - reveal.value) }] }
+          : {},
+      [swipeOverlay, dir, overlayTravel, reveal],
+    );
+    // The frame's gesture wraps the shell's own root, so the touch's `x` is
+    // measured against the box the start-edge strip belongs to.
+    const withFrameSwipe = (node: React.ReactElement) =>
+      swipeGestures.frame ? (
+        <GestureDetector gesture={swipeGestures.frame} touchAction="pan-y">
+          {node}
+        </GestureDetector>
+      ) : (
+        node
+      );
     // Clip immediately on open; release overflow after the closing transition.
     // A bounded Deck still owns document horizontal scrolling while at rest.
     const revealTransition: WebCssStyle | null =
@@ -1120,40 +1204,77 @@ export function createAppShellEngine() {
 
     const body = canvas ? canvasBody : centred ? centredBody : dashboardBody;
 
+    const overlayFrameStyle: ViewStyle = {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      insetInlineStart: 0,
+      flexDirection: 'row',
+      ...(ownsSafeArea
+        ? {
+            paddingTop: 12 + insets.top,
+            paddingBottom: 12 + insets.bottom,
+            paddingInlineStart: 12 + (rtl ? insets.right : insets.left),
+            paddingInlineEnd: 12 + (rtl ? insets.left : insets.right),
+          }
+        : { padding: 12 }),
+    };
+    const overlayPanel = drawerSidebar ? (
+      <View pointerEvents={isOpen ? 'auto' : 'none'} style={{ height: '100%' }}>
+        <SidebarSlot {...drawerSidebar} mobile onClose={() => setOpen(false)} />
+      </View>
+    ) : null;
+    const overlayFrameProps = {
+      ...dirProps,
+      testID: testID ? `${testID}-navigation-drawer` : undefined,
+    };
+    const overlayDrawer = (
+      <>
+        <Backdrop
+          onPress={() => setOpen(false)}
+          disabled={!isOpen}
+          progress={swipeOverlay ? reveal : undefined}
+          blurIntensity={0}
+          dimOpacity={0.4}
+          accessibilityLabel={drawerCloseLabel}
+        />
+        {/* Under `drawerSwipe` the drawer slides on the open amount, and stays
+            mounted while it is visible but not yet (or no longer) open. Without
+            it the same nodes mount open and unmount closed, as they always have. */}
+        {swipeOverlay ? (
+          <Animated.View
+            {...overlayFrameProps}
+            pointerEvents="box-none"
+            style={[overlayFrameStyle, overlayDrawerStyle]}
+          >
+            {overlayPanel}
+          </Animated.View>
+        ) : (
+          <View {...overlayFrameProps} pointerEvents="box-none" style={overlayFrameStyle}>
+            {overlayPanel}
+          </View>
+        )}
+      </>
+    );
     const drawerRegion =
-      drawerAvailable && isOpen && drawerSidebar ? (
+      drawerAvailable && (isOpen || (swipeOverlay && overlayHeld)) && drawerSidebar ? (
         <Portal>
           <OverlayRoot>
-            <Backdrop
-              onPress={() => setOpen(false)}
-              blurIntensity={0}
-              dimOpacity={0.4}
-              accessibilityLabel={drawerCloseLabel}
-            />
-            <View
-              {...dirProps}
-              pointerEvents="box-none"
-              testID={testID ? `${testID}-navigation-drawer` : undefined}
-              style={{
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                insetInlineStart: 0,
-                flexDirection: 'row',
-                ...(ownsSafeArea
-                  ? {
-                      paddingTop: 12 + insets.top,
-                      paddingBottom: 12 + insets.bottom,
-                      paddingInlineStart: 12 + (rtl ? insets.right : insets.left),
-                      paddingInlineEnd: 12 + (rtl ? insets.left : insets.right),
-                    }
-                  : { padding: 12 }),
-              }}
-            >
-              <View pointerEvents="auto" style={{ height: '100%' }}>
-                <SidebarSlot {...drawerSidebar} mobile onClose={() => setOpen(false)} />
-              </View>
-            </View>
+            {swipeGestures.drawer ? (
+              // The open drawer and its backdrop close under a pan toward the
+              // start edge. A host box, because the detector attaches to its
+              // child's native view.
+              <GestureDetector gesture={swipeGestures.drawer} touchAction="pan-y">
+                <View
+                  pointerEvents="box-none"
+                  style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}
+                >
+                  {overlayDrawer}
+                </View>
+              </GestureDetector>
+            ) : (
+              overlayDrawer
+            )}
           </OverlayRoot>
         </Portal>
       ) : null;
@@ -1198,164 +1319,170 @@ export function createAppShellEngine() {
     if ((variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav) {
       return safeFrame(
         <AppShellProvider value={shell}>
-          <View
-            {...dirProps}
-            testID={testID}
-            onLayout={onLayout}
-            style={[
-              frame,
-              revealTransition,
-              {
-                overflow:
-                  Platform.OS === 'web' ? (isOpen ? WEB_OVERFLOW_CLIP : 'visible') : 'hidden',
-                backgroundColor: background,
-              },
-              style,
-            ]}
-          >
-            {drawerAvailable && drawerSidebar ? (
-              <View
-                ref={revealDrawerRef}
-                tabIndex={-1}
-                testID={testID ? `${testID}-navigation-drawer` : undefined}
-                aria-hidden={!isOpen}
-                accessibilityViewIsModal={isOpen}
-                // The page and its veil are hidden from VoiceOver while this is
-                // modal, so its escape gesture is the way out.
-                onAccessibilityEscape={() => setOpen(false)}
-                accessibilityElementsHidden={!isOpen}
-                importantForAccessibility={isOpen ? 'auto' : 'no-hide-descendants'}
-                {...(Platform.OS === 'web' && !isOpen ? { inert: true } : {})}
-                pointerEvents={isOpen ? 'auto' : 'none'}
-                style={{
-                  position: doc ? WEB_POSITION_FIXED : 'absolute',
-                  top: 0,
-                  bottom: 0,
-                  insetInlineStart: 0,
-                  width: revealOffset,
-                  paddingTop: revealGutter,
-                  paddingBottom: revealGutter + navigationBottomInset,
-                  paddingInlineStart: revealGutter / 2,
-                }}
-              >
-                <Animated.View
-                  style={[
-                    { height: '100%', width: sidebarMetrics.expanded, transformOrigin: railOrigin },
-                    revealTransition,
-                    railStyle,
-                  ]}
-                >
-                  {drawerSidebar && (
-                    <SidebarSlot
-                      {...drawerSidebar}
-                      mobile
-                      surface="plain"
-                      onClose={() => setOpen(false)}
-                    />
-                  )}
-                </Animated.View>
-              </View>
-            ) : null}
-            <Animated.View
-              testID={testID ? `${testID}-reveal-page` : undefined}
+          {withFrameSwipe(
+            <View
+              {...dirProps}
+              testID={testID}
+              onLayout={onLayout}
               style={[
+                frame,
+                revealTransition,
                 {
-                  flexGrow: 1,
-                  minWidth: 0,
                   overflow:
                     Platform.OS === 'web' ? (isOpen ? WEB_OVERFLOW_CLIP : 'visible') : 'hidden',
                   backgroundColor: background,
                 },
-                revealTransition,
-                feedChromeTransition,
-                variant === 'feed' ? feedPageStyle : pageStyle,
-                variant === 'feed' ? feedInsetsStyle : null,
+                style,
               ]}
             >
-              <View
+              {drawerAvailable && drawerSidebar ? (
+                <View
+                  ref={revealDrawerRef}
+                  tabIndex={-1}
+                  testID={testID ? `${testID}-navigation-drawer` : undefined}
+                  aria-hidden={!isOpen}
+                  accessibilityViewIsModal={isOpen}
+                  // The page and its veil are hidden from VoiceOver while this is
+                  // modal, so its escape gesture is the way out.
+                  onAccessibilityEscape={() => setOpen(false)}
+                  accessibilityElementsHidden={!isOpen}
+                  importantForAccessibility={isOpen ? 'auto' : 'no-hide-descendants'}
+                  {...(Platform.OS === 'web' && !isOpen ? { inert: true } : {})}
+                  pointerEvents={isOpen ? 'auto' : 'none'}
+                  style={{
+                    position: doc ? WEB_POSITION_FIXED : 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    insetInlineStart: 0,
+                    width: revealOffset,
+                    paddingTop: revealGutter,
+                    paddingBottom: revealGutter + navigationBottomInset,
+                    paddingInlineStart: revealGutter / 2,
+                  }}
+                >
+                  <Animated.View
+                    style={[
+                      {
+                        height: '100%',
+                        width: sidebarMetrics.expanded,
+                        transformOrigin: railOrigin,
+                      },
+                      revealTransition,
+                      railStyle,
+                    ]}
+                  >
+                    {drawerSidebar && (
+                      <SidebarSlot
+                        {...drawerSidebar}
+                        mobile
+                        surface="plain"
+                        onClose={() => setOpen(false)}
+                      />
+                    )}
+                  </Animated.View>
+                </View>
+              ) : null}
+              <Animated.View
+                testID={testID ? `${testID}-reveal-page` : undefined}
+                style={[
+                  {
+                    flexGrow: 1,
+                    minWidth: 0,
+                    overflow:
+                      Platform.OS === 'web' ? (isOpen ? WEB_OVERFLOW_CLIP : 'visible') : 'hidden',
+                    backgroundColor: background,
+                  },
+                  revealTransition,
+                  feedChromeTransition,
+                  variant === 'feed' ? feedPageStyle : pageStyle,
+                  variant === 'feed' ? feedInsetsStyle : null,
+                ]}
+              >
+                <View
+                  aria-hidden={isOpen}
+                  accessibilityElementsHidden={isOpen}
+                  importantForAccessibility={isOpen ? 'no-hide-descendants' : 'auto'}
+                  {...(Platform.OS === 'web' && isOpen ? { inert: true } : {})}
+                  style={{ flexGrow: 1, minHeight: 0, minWidth: 0 }}
+                >
+                  {topBarNode}
+                  <StyledView className={doc ? undefined : 'flex-1 min-h-0'}>
+                    <View
+                      {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
+                      style={[rowStyle, { flexGrow: 1, minWidth: 0 }]}
+                    >
+                      {navRegion}
+                      {body}
+                    </View>
+                  </StyledView>
+                </View>
+                <Animated.View
+                  pointerEvents={isOpen ? 'auto' : 'none'}
+                  style={[
+                    {
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                    },
+                    revealTransition,
+                    veilStyle,
+                  ]}
+                >
+                  <Pressable
+                    role="button"
+                    accessibilityLabel={drawerCloseLabel}
+                    focusable={isOpen}
+                    tabIndex={isOpen ? 0 : -1}
+                    aria-hidden={!isOpen}
+                    onPress={() => setOpen(false)}
+                    testID={testID ? `${testID}-veil` : undefined}
+                    style={{
+                      flex: 1,
+                      backgroundColor: theme.isDark
+                        ? 'rgba(255, 255, 255, 0.05)'
+                        : 'rgba(0, 0, 0, 0.1)',
+                    }}
+                  />
+                </Animated.View>
+              </Animated.View>
+              <Animated.View
+                pointerEvents={isOpen ? 'none' : 'box-none'}
+                testID={testID ? `${testID}-reveal-bars` : undefined}
                 aria-hidden={isOpen}
                 accessibilityElementsHidden={isOpen}
                 importantForAccessibility={isOpen ? 'no-hide-descendants' : 'auto'}
                 {...(Platform.OS === 'web' && isOpen ? { inert: true } : {})}
-                style={{ flexGrow: 1, minHeight: 0, minWidth: 0 }}
-              >
-                {topBarNode}
-                <StyledView className={doc ? undefined : 'flex-1 min-h-0'}>
-                  <View
-                    {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
-                    style={[rowStyle, { flexGrow: 1, minWidth: 0 }]}
-                  >
-                    {navRegion}
-                    {body}
-                  </View>
-                </StyledView>
-              </View>
-              <Animated.View
-                pointerEvents={isOpen ? 'auto' : 'none'}
                 style={[
                   {
-                    position: 'absolute',
-                    top: 0,
+                    position: doc ? WEB_POSITION_FIXED : 'absolute',
                     left: 0,
                     right: 0,
-                    bottom: 0,
+                    overflow: 'hidden',
                   },
                   revealTransition,
-                  veilStyle,
+                  variant === 'feed' ? feedPageStyle : pageStyle,
+                  variant === 'feed' ? feedBarsStyle : { top: 0, bottom: 0 },
                 ]}
               >
-                <Pressable
-                  role="button"
-                  accessibilityLabel={drawerCloseLabel}
-                  focusable={isOpen}
-                  tabIndex={isOpen ? 0 : -1}
-                  aria-hidden={!isOpen}
-                  onPress={() => setOpen(false)}
-                  testID={testID ? `${testID}-veil` : undefined}
-                  style={{
-                    flex: 1,
-                    backgroundColor: theme.isDark
-                      ? 'rgba(255, 255, 255, 0.05)'
-                      : 'rgba(0, 0, 0, 0.1)',
-                  }}
-                />
+                {bars}
+                {isOpen && (
+                  <StyledView
+                    pointerEvents="none"
+                    className="absolute bottom-0 left-0 right-0"
+                    style={{
+                      height: contentReserve,
+                      backgroundColor: theme.isDark
+                        ? 'rgba(255, 255, 255, 0.05)'
+                        : 'rgba(0, 0, 0, 0.1)',
+                    }}
+                  />
+                )}
               </Animated.View>
-            </Animated.View>
-            <Animated.View
-              pointerEvents={isOpen ? 'none' : 'box-none'}
-              testID={testID ? `${testID}-reveal-bars` : undefined}
-              aria-hidden={isOpen}
-              accessibilityElementsHidden={isOpen}
-              importantForAccessibility={isOpen ? 'no-hide-descendants' : 'auto'}
-              {...(Platform.OS === 'web' && isOpen ? { inert: true } : {})}
-              style={[
-                {
-                  position: doc ? WEB_POSITION_FIXED : 'absolute',
-                  left: 0,
-                  right: 0,
-                  overflow: 'hidden',
-                },
-                revealTransition,
-                variant === 'feed' ? feedPageStyle : pageStyle,
-                variant === 'feed' ? feedBarsStyle : { top: 0, bottom: 0 },
-              ]}
-            >
-              {bars}
-              {isOpen && (
-                <StyledView
-                  pointerEvents="none"
-                  className="absolute bottom-0 left-0 right-0"
-                  style={{
-                    height: contentReserve,
-                    backgroundColor: theme.isDark
-                      ? 'rgba(255, 255, 255, 0.05)'
-                      : 'rgba(0, 0, 0, 0.1)',
-                  }}
-                />
-              )}
-            </Animated.View>
-            {overlay}
-          </View>
+              {overlay}
+            </View>,
+          )}
         </AppShellProvider>,
       );
     }
@@ -1366,43 +1493,47 @@ export function createAppShellEngine() {
     if (topBarNode) {
       return safeFrame(
         <AppShellProvider value={shell}>
-          <View
-            {...dirProps}
-            testID={testID}
-            onLayout={onLayout}
-            style={[frame, { flexDirection: 'column', backgroundColor: background }, style]}
-          >
-            {topBarNode}
+          {withFrameSwipe(
             <View
-              {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
-              style={[rowStyle, { flexGrow: 1, flexShrink: 1, minHeight: 0 }]}
+              {...dirProps}
+              testID={testID}
+              onLayout={onLayout}
+              style={[frame, { flexDirection: 'column', backgroundColor: background }, style]}
             >
-              {navRegion}
-              {drawerRegion}
-              {body}
-            </View>
-            {overlay}
-            {bars}
-          </View>
+              {topBarNode}
+              <View
+                {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
+                style={[rowStyle, { flexGrow: 1, flexShrink: 1, minHeight: 0 }]}
+              >
+                {navRegion}
+                {drawerRegion}
+                {body}
+              </View>
+              {overlay}
+              {bars}
+            </View>,
+          )}
         </AppShellProvider>,
       );
     }
 
     return safeFrame(
       <AppShellProvider value={shell}>
-        <View
-          {...dirProps}
-          {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
-          testID={testID}
-          onLayout={cssScope ? undefined : onLayout}
-          style={[frame, rowStyle, style]}
-        >
-          {navRegion}
-          {drawerRegion}
-          {body}
-          {overlay}
-          {bars}
-        </View>
+        {withFrameSwipe(
+          <View
+            {...dirProps}
+            {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
+            testID={testID}
+            onLayout={cssScope ? undefined : onLayout}
+            style={[frame, rowStyle, style]}
+          >
+            {navRegion}
+            {drawerRegion}
+            {body}
+            {overlay}
+            {bars}
+          </View>,
+        )}
       </AppShellProvider>,
     );
   };
