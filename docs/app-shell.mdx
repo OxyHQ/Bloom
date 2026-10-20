@@ -557,23 +557,23 @@ look like the app that picked the row above it.
 
 | The app | variant | scroll | nav |
 | --- | --- | --- | --- |
-| Product dashboard | `dashboard` | `document` | `card`, `medium` |
-| Social reader | `feed` + `panels` | `fixed` | `plain`, `large` |
-| Long-form feed | `feed` | `document` | `card`, `medium` |
-| Workspace (channels, files) | `dashboard` | `fixed` | `docked`, `small` |
-| Messenger | `dashboard` + `panels`, `joined` | `fixed` | `docked`, `small` |
-| Map / board / editor | `canvas` | one screen | `docked`, `medium` |
+| Product dashboard | `dashboard` | `document` | `card`, `md` |
+| Social reader | `feed` + `panels` | `fixed` | `plain`, `lg` |
+| Long-form feed | `feed` | `document` | `card`, `md` |
+| Workspace (channels, files) | `dashboard` | `fixed` | `docked`, `sm` |
+| Messenger | `dashboard` + `panels`, `joined` | `fixed` | `docked`, `sm` |
+| Map / board / editor | `canvas` | one screen | `docked`, `md` |
 | Marketplace | `dashboard`, no `sidebar`, `topBar` `always` | `document` | — |
 | Sign-in, onboarding, reader | `focus` | `document` | none |
 
 ```tsx
 // Social reader: a framed column that fills the screen, a nav with no edge.
-<AppShell variant="feed" panels scroll="fixed" sidebar={{ items, surface: 'plain', size: 'large' }}>
+<AppShell variant="feed" panels scroll="fixed" sidebar={{ items, surface: 'plain', size: 'lg' }}>
   <AppShellPanel header={<PageHeader title="Home" />}>{feed}</AppShellPanel>
 </AppShell>
 
 // Workspace: a column flush to the window, the page bounded, its own scrollers.
-<AppShell scroll="fixed" sidebar={{ items, surface: 'docked', size: 'small' }} title="Reports">
+<AppShell scroll="fixed" sidebar={{ items, surface: 'docked', size: 'sm' }} title="Reports">
   {report}
 </AppShell>
 
@@ -591,8 +591,8 @@ render three of these side by side with nothing positioned by hand.
 `variant` picks the LAYOUT; `sidebar.surface` and `sidebar.size` pick what the navigation looks like. They are separate axes on purpose — the same shell carries a social reader, a workspace and a product dashboard without any of them re-implementing it:
 
 ```tsx
-<AppShell variant="feed" sidebar={{ items, surface: 'plain', size: 'large' }} />     {/* a reader */}
-<AppShell sidebar={{ items, surface: 'docked', size: 'small' }} />                    {/* a workspace */}
+<AppShell variant="feed" sidebar={{ items, surface: 'plain', size: 'lg' }} />     {/* a reader */}
+<AppShell sidebar={{ items, surface: 'docked', size: 'sm' }} />                    {/* a workspace */}
 <AppShell sidebar={{ items }} />                                                     {/* the floating card */}
 ```
 
