@@ -786,6 +786,7 @@ export const SplitLayoutPanes: Story = {
       <Surface padded={false}>
         <View style={{ height: 620 }}>
           <ChatSplitLayout
+            testID="split"
             listWidth={width}
             onListWidthChange={setWidth}
             list={<ConversationListStub />}

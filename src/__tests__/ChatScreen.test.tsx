@@ -848,7 +848,17 @@ describe('ChatSplitLayout', () => {
     children: <ChatDateHeader label="CONVO" placement="inline" testID="pane-convo" />,
   };
 
-  it('builds all three panes when there is room', () => {
+  // The panes are laid out by AppShellPanels from the MEASURED row, which jsdom
+  // never has: widths, the grip and the wide/compact switch are pinned in
+  // Chrome by `scripts/verify-chat-split-layout.mjs`. What jsdom can see is the
+  // tree: every pane stays mounted, and the unselected ones leave the
+  // accessibility tree and the tab order.
+  function presented(id: string): boolean {
+    const pane = byTestId(id);
+    return pane.getAttribute('aria-hidden') !== 'true' && !pane.hasAttribute('inert');
+  }
+
+  it('mounts all three panes', () => {
     mount(
       <ChatSplitLayout compact={false} list={panes.list} info={panes.info} testID="split">
         {panes.children}
@@ -857,8 +867,6 @@ describe('ChatSplitLayout', () => {
     expect(maybeTestId('pane-list')).not.toBeNull();
     expect(maybeTestId('pane-convo')).not.toBeNull();
     expect(maybeTestId('pane-info')).not.toBeNull();
-    expect(getComputedStyle(byTestId('split-list')).width).toBe('340px');
-    expect(getComputedStyle(byTestId('split-info')).width).toBe('380px');
   });
 
   it('omits the info column when there is no info node', () => {
@@ -870,19 +878,22 @@ describe('ChatSplitLayout', () => {
     expect(maybeTestId('split-info')).toBeNull();
   });
 
-  it('builds exactly ONE pane when compact — the others are not mounted', () => {
-    for (const [pane, present, absent] of [
-      ['conversation', 'pane-convo', ['pane-list', 'pane-info']],
-      ['list', 'pane-list', ['pane-convo', 'pane-info']],
-      ['info', 'pane-info', ['pane-list', 'pane-convo']],
+  it('presents exactly ONE pane when compact, keeping the others mounted and inert', () => {
+    for (const [pane, shown, others] of [
+      ['conversation', 'split-conversation', ['split-list', 'split-info']],
+      ['list', 'split-list', ['split-conversation', 'split-info']],
+      ['info', 'split-info', ['split-list', 'split-conversation']],
     ] as const) {
       mount(
         <ChatSplitLayout compact pane={pane} list={panes.list} info={panes.info} testID="split">
           {panes.children}
         </ChatSplitLayout>,
       );
-      expect(maybeTestId(present)).not.toBeNull();
-      for (const id of absent) expect(maybeTestId(id)).toBeNull();
+      expect([pane, presented(shown)]).toEqual([pane, true]);
+      for (const id of others) expect([pane, id, presented(id)]).toEqual([pane, id, false]);
+      // Retained, so a draft or a scroll position survives the switch.
+      expect(maybeTestId('pane-list')).not.toBeNull();
+      expect(maybeTestId('pane-convo')).not.toBeNull();
     }
   });
 
@@ -892,18 +903,8 @@ describe('ChatSplitLayout', () => {
         {panes.children}
       </ChatSplitLayout>,
     );
-    expect(maybeTestId('pane-convo')).not.toBeNull();
-    expect(maybeTestId('pane-list')).toBeNull();
-  });
-
-  it('honours a CONTROLLED list width and names the grip', () => {
-    mount(
-      <ChatSplitLayout compact={false} listWidth={420} list={panes.list} testID="split">
-        {panes.children}
-      </ChatSplitLayout>,
-    );
-    expect(getComputedStyle(byTestId('split-list')).width).toBe('420px');
-    expect(byTestId('split-grip').getAttribute('aria-label')).toBe('Resize the conversation list');
+    expect(presented('split-conversation')).toBe(true);
+    expect(presented('split-list')).toBe(false);
   });
 
   it('drops the grip when resizing is off', () => {

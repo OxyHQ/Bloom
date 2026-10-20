@@ -48,10 +48,21 @@ import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { resolvedStyle } from './support/rendered-style';
 import { buildTheme } from '../theme/build-theme';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalOutlet, PortalProvider } from '../portal';
 import { pressHost } from './support/press-host';
 
 function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   return render(<BloomThemeProvider mode={mode}>{ui}</BloomThemeProvider>);
+}
+
+/** With an outlet, for a context panel presented as a floating side sheet. */
+function renderWithPortal(ui: React.ReactElement) {
+  return renderIn(
+    <PortalProvider>
+      {ui}
+      <PortalOutlet />
+    </PortalProvider>,
+  );
 }
 
 const WALL: AiChatGeneration[] = [
@@ -349,13 +360,15 @@ describe('AiChatImageGeneration', () => {
 });
 
 describe('AiChatCodePanel', () => {
-  it('gives the tab header a floor of 30, not a fixed height (large fonts)', () => {
-    const { getByLabelText } = renderIn(<AiChatCodePanel code="x" changeCount={1} additions={1} />);
-    let header = getByLabelText('Panel view').parent;
-    while (header && resolvedStyle(header.props.style).flexDirection !== 'row')
+  it('draws its title and tabs in a PageHeader that grows with the system font', () => {
+    const { getByLabelText, getByText } = renderIn(
+      <AiChatCodePanel code="x" changeCount={1} additions={1} />,
+    );
+    expect(getByLabelText('Panel view')).toBeTruthy();
+    let header = getByText('Code').parent;
+    while (header && resolvedStyle(header.props.style).minHeight === undefined)
       header = header.parent;
-    if (!header) throw new Error('no tab header row');
-    expect(resolvedStyle(header.props.style)).toMatchObject({ minHeight: 30, width: '100%' });
+    if (!header) throw new Error('no PageHeader row');
     expect(resolvedStyle(header.props.style).height).toBeUndefined();
   });
 
@@ -454,12 +467,13 @@ describe('AiChatGalleryPanel', () => {
   });
 
   it('drops the Styles tab for `stylePresets={null}`, even when asked to show it', () => {
-    const { getByText, queryByText, getByLabelText } = renderIn(
+    const { getAllByText, queryByText, getByLabelText } = renderIn(
       <AiChatGalleryPanel generations={WALL} tab="styles" stylePresets={null} />,
     );
     expect(queryByText('Styles')).toBeNull();
     expect(queryByText('Style presets')).toBeNull();
-    expect(getByText('Gallery')).toBeTruthy();
+    // The panel's title and its one remaining tab.
+    expect(getAllByText('Gallery')).toHaveLength(2);
     expect(getByLabelText('Enlarge A wide one')).toBeTruthy();
   });
 });
@@ -536,23 +550,24 @@ describe('AiChatContainer host slots', () => {
 });
 
 describe('AiChatShell', () => {
-  it('selects the context panel from the mobile header and returns with back', () => {
-    const { getByLabelText, getByText, queryByText } = renderIn(
-      <AiChatShell sidebar={null} panel={() => null} panelLabel="Code">
+  it('opens the context panel as a side sheet over the retained conversation', () => {
+    // Below `xl` the context panel floats as a side sheet named by `panelLabel`;
+    // the conversation stays mounted beneath it rather than being replaced.
+    const { getByLabelText, getByText } = renderWithPortal(
+      <AiChatShell sidebar={null} panel={() => <Text>Panel body</Text>} panelLabel="Code">
         <AiChatMobileHeader title="Agentic chat" />
       </AiChatShell>,
     );
-    // Context remains a retained panel, selected using AppShell's width rules.
     expect(getByText('Agentic chat')).toBeTruthy();
     pressHost(getByLabelText('Open code'));
-    expect(getByText('Code')).toBeTruthy();
-    expect(queryByText('Agentic chat')).toBeNull();
-    pressHost(getByLabelText('Back'));
-    expect(getByText('Agentic chat')).toBeTruthy();
+    expect(getByLabelText('Code')).toBeTruthy();
+    expect(getByText('Panel body')).toBeTruthy();
+    expect(getByText('Agentic chat', { includeHiddenElements: true })).toBeTruthy();
+    expect(getByLabelText('Dismiss Code', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it("centres a header's own title node between the shell's buttons", () => {
-    const { getByLabelText, getByText, getByTestId } = renderIn(
+    const { getByLabelText, getByText, getByTestId } = renderWithPortal(
       <AiChatShell
         sidebar={null}
         mobileSidebar={<Text>nav</Text>}
@@ -568,7 +583,7 @@ describe('AiChatShell', () => {
     expect(resolvedStyle(getByTestId('header-bar').props.style)).toMatchObject({ minHeight: 56 });
     expect(getByLabelText('Open navigation')).toBeTruthy();
     fireEvent.press(getByLabelText('Open code'));
-    expect(getByText('Code')).toBeTruthy();
+    expect(getByLabelText('Code')).toBeTruthy();
   });
 
   it('draws a header with its title alone outside a shell', () => {
@@ -581,21 +596,16 @@ describe('AiChatShell', () => {
     expect(queryByLabelText('Open navigation')).toBeNull();
   });
 
-  it('lets conversation and context PageHeaders grow with the system font', () => {
-    const { getByText, getByLabelText, getByTestId } = renderIn(
+  it('lets the conversation PageHeader grow with the system font', () => {
+    // The context panel's header is its own (`AiChatCodePanel`, a gallery): the
+    // shell no longer draws one around it.
+    const { getByTestId } = renderIn(
       <AiChatShell sidebar={null} panel={() => null} panelLabel="Code">
         <AiChatMobileHeader testID="header" title="Agentic chat" />
       </AiChatShell>,
     );
     expect(resolvedStyle(getByTestId('header-bar').props.style)).toMatchObject({ minHeight: 56 });
     expect(resolvedStyle(getByTestId('header').props.style).height).toBeUndefined();
-    fireEvent.press(getByLabelText('Open code'));
-    let contextHeader = getByText('Code').parent;
-    while (contextHeader && resolvedStyle(contextHeader.props.style).minHeight === undefined)
-      contextHeader = contextHeader.parent;
-    if (!contextHeader) throw new Error('no context PageHeader row');
-    expect(resolvedStyle(contextHeader.props.style)).toMatchObject({ minHeight: 56 });
-    expect(resolvedStyle(contextHeader.props.style).height).toBeUndefined();
   });
 
   it('names the resize separator', () => {
@@ -787,9 +797,9 @@ describe('AiChatShell safe area ownership', () => {
       expect(tree.getByTestId('inset-reader').props.children).toBe(
         JSON.stringify({ original: insets, bottom: 34 }),
       );
-      // Shared panel framing supplies its own gutter; the retired 272px drawer
-      // must not add safe-area padding a second time.
-      expect(styles.some((style) => style.width === 272)).toBe(false);
+      // The shell owns the device edges ONCE: neither the navigation drawer nor
+      // a panel may pad by the top inset a second time.
+      expect(styles.filter((style) => style.paddingTop === insets.top)).toHaveLength(1);
     },
   );
   it.each(['ios', 'web'] as const)('preserves default geometry and web behavior on %s', (os) => {

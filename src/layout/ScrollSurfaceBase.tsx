@@ -32,7 +32,7 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
           ? colors.card
           : colors.backgroundSecondary;
     // Select the UI-thread metrics binding on native, without a JS observer.
-    const handler = useAnimatedScrollHandler({});
+    const handler = useAnimatedScrollHandler({}, []);
     return (
       <StyledView className={`relative min-h-0 ${className ?? ''}`}>
         <ScrollArea
@@ -62,14 +62,15 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
 
 function ScrollSurfaceEdge({ color, bottom = false }: { color: string; bottom?: boolean }) {
   const metrics = useScrollMetricsValue();
+  const scrollY = metrics?.scrollY;
   const style = useAnimatedStyle(
     () => ({
       opacity: Math.min(
         1,
-        (bottom ? remainingScrollDistance(metrics) : Math.max(0, metrics?.scrollY.value ?? 0)) / 24,
+        (bottom ? remainingScrollDistance(metrics) : Math.max(0, scrollY?.value ?? 0)) / 24,
       ),
     }),
-    [metrics, bottom],
+    [metrics, scrollY, bottom],
   );
   return (
     <Animated.View

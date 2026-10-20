@@ -69,7 +69,7 @@ it('keeps the conversation and its draft mounted when navigation is selected and
   expect(tree.getByTestId('draft', { includeHiddenElements: true }).props.value).toBe(
     'Keep this draft',
   );
-  fireEvent.press(tree.getByLabelText('Close navigation'));
+  fireEvent.press(tree.getByLabelText('Close navigation', { includeHiddenElements: true }));
   expect(tree.getByTestId('draft').props.value).toBe('Keep this draft');
   expect(mounts).toBe(1);
 });

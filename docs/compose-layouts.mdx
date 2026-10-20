@@ -32,8 +32,9 @@ without introducing another scroll container.
 Navigation opens through `useAppShell()` or `AppShellMenuButton`, including when
 the page supplies its own PageHeader. A conversation list is shell navigation;
 it does not replace the conversation with another compact content panel.
-The default compact drawer reveals navigation beneath a displaced, rounded page.
-Use `drawer="overlay"` when an overlay is appropriate for the application.
+The default compact drawer opens over the page (`drawer="overlay"`). Use
+`drawer="reveal"` to keep navigation beneath a displaced, rounded page, as the
+chat shells do.
 
 Opening, hiding and expanding retained panels uses the shell's transition.
 Direct resizing follows the gesture immediately: CSS variables on web and shared
@@ -143,10 +144,10 @@ contain overscroll so a wheel at their edge does not move the document behind th
 
 ### Compose navigation as one Sidebar
 
-Dashboard and feed compact navigation defaults to `drawer="reveal"`: the page
-moves aside and rounds its corners while navigation waits beneath it. Choose
-`drawer="overlay"` explicitly for the overlay form. Feed retains the same
-content subtree across desktop/compact changes.
+Dashboard and feed compact navigation defaults to `drawer="overlay"`. With
+`drawer="reveal"` the page moves aside and rounds its corners while navigation
+waits beneath it, and the shell keeps the same page host across desktop/compact
+changes, so at desktop a reveal shell lays out exactly like an overlay one.
 Desktop navigation retains its normal Sidebar surface; reveal displacement and
 corner rounding apply only below the navigation breakpoint.
 

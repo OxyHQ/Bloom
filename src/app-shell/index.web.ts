@@ -23,7 +23,12 @@ const PanelLayoutView = createPanelLayoutView(
   Dialog,
   Screen,
 );
-export const AppShell = createAppShell(BottomBar, Fab, { Screen, ScreenScrollView }, PanelLayoutView);
+export const AppShell = createAppShell(
+  BottomBar,
+  Fab,
+  { Screen, ScreenScrollView },
+  PanelLayoutView,
+);
 export const { AppShellPanel, AppShellPanels } = createAppShellPanels(
   ContentPanel,
   BloomColorScope,

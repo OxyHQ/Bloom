@@ -161,10 +161,13 @@ it('shares the host owner with route hooks above Screen without adding a scrolle
 });
 
 it('composes host history and actions into the screen header without duplicate back controls', () => {
+  // `docs/page-header.mdx`: an explicit `onBack` takes priority over the panel
+  // navigation adapter and stays enabled at the history root; without one the
+  // header uses panel Back only when that history can go back.
   const back = jest.fn();
   const forward = jest.fn();
   const routeBack = jest.fn();
-  const ui = (canGoBack: boolean, canGoForward: boolean) =>
+  const ui = (canGoBack: boolean, canGoForward: boolean, onBack?: () => void) =>
     wrap(
       <ScreenHostContext.Provider
         value={{
@@ -180,7 +183,7 @@ it('composes host history and actions into the screen header without duplicate b
             <PageHeader
               testID="route-header"
               title="Profile"
-              onBack={routeBack}
+              onBack={onBack}
               actions={<View testID="route-action" />}
             />
           }
@@ -196,9 +199,17 @@ it('composes host history and actions into the screen header without duplicate b
   fireEvent.press(tree.getByTestId('route-header-back'));
   expect(back).toHaveBeenCalledTimes(1);
   expect(tree.queryByTestId('route-header-forward')).toBeNull();
-  expect(routeBack).not.toHaveBeenCalled();
   tree.rerender(ui(false, false));
   expect(tree.queryByTestId('route-header-back')).toBeNull();
+
+  // The route's own back wins, once, and still shows at the history root.
+  tree.rerender(ui(true, false, routeBack));
+  expect(tree.getAllByTestId('route-header-back')).toHaveLength(1);
+  fireEvent.press(tree.getByTestId('route-header-back'));
+  expect(routeBack).toHaveBeenCalledTimes(1);
+  expect(back).toHaveBeenCalledTimes(1);
+  tree.rerender(ui(false, false, routeBack));
+  expect(tree.getAllByTestId('route-header-back')).toHaveLength(1);
 });
 
 it('declares and releases its color recipe on its own host without replacing content', () => {

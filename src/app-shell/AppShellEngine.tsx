@@ -1220,6 +1220,9 @@ export function createAppShellEngine() {
                 testID={testID ? `${testID}-navigation-drawer` : undefined}
                 aria-hidden={!isOpen}
                 accessibilityViewIsModal={isOpen}
+                // The page and its veil are hidden from VoiceOver while this is
+                // modal, so its escape gesture is the way out.
+                onAccessibilityEscape={() => setOpen(false)}
                 accessibilityElementsHidden={!isOpen}
                 importantForAccessibility={isOpen ? 'auto' : 'no-hide-descendants'}
                 {...(Platform.OS === 'web' && !isOpen ? { inert: true } : {})}
@@ -1309,7 +1312,12 @@ export function createAppShellEngine() {
                   aria-hidden={!isOpen}
                   onPress={() => setOpen(false)}
                   testID={testID ? `${testID}-veil` : undefined}
-                  style={{ flex: 1 }}
+                  style={{
+                    flex: 1,
+                    backgroundColor: theme.isDark
+                      ? 'rgba(255, 255, 255, 0.05)'
+                      : 'rgba(0, 0, 0, 0.1)',
+                  }}
                 />
               </Animated.View>
             </Animated.View>

@@ -96,6 +96,7 @@ describe('the field contract', () => {
     // list is the deliverable of the adoption work.
     expect(READERS).toEqual([
       'agent-creator',
+      'card',
       'card-form',
       'checkbox',
       'date-picker',
@@ -104,21 +105,26 @@ describe('the field contract', () => {
       'file-upload',
       'input-group',
       'input-otp',
+      'listing-actions',
+      'listing-editor',
       'mail-compose',
       'payment-method',
       'phone-input',
       'place-picker',
+      'questionnaire',
       'radio',
       'rating',
       'search',
       'segmented-control',
       'select',
+      'shipment-request',
       'slider',
       'stepper',
       'switch',
       'tag-field',
       'text-field',
       'textarea',
+      'vehicle-picker',
     ]);
   });
 

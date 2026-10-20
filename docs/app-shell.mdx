@@ -418,7 +418,7 @@ overlapping another, and no console error.
 ## Layout
 
 - `lg` and up: the rail sits in flow; the content column is centred, max `contentMaxWidth` (1300), header then content 16 apart.
-- Below `lg` the header shows a menu button. `drawer="reveal"` is the default for dashboard and feed; `drawer="overlay"` is an explicit alternative:
+- Below `lg` the header shows a menu button. `drawer="overlay"` is the default; dashboard and feed also take `drawer="reveal"`:
   - `overlay` — a drawer over the page on a 40% black backdrop (portaled through `OverlayRoot`, so it ranks with every other overlay).
   - `reveal` — the rail waits flat beneath the page; the page slides 272 toward the end edge (right in LTR, left in RTL) and rounds to 32 while the rail scales in from 0.94 (325ms). Pressing the page closes it.
 - `drawerOpen` / `onDrawerOpenChange` control it.
@@ -802,7 +802,7 @@ the same layout draws the same frame there as on the web. The sidebar spans the 
 owns the vertical gutter, which still supplies the panel mask and header inset.
 The social template uses an 8px gutter, matching the compact framed layout.
 
-Dashboard and feed use `drawer="reveal"` by default on compact screens: the page slides aside and rounds its corners to expose the sidebar. Set `drawer="overlay"` for a portaled drawer. Feed keeps the same page wrapper and content subtree when navigation crosses between compact and desktop; the desktop navigation stays in the body row. Put `AppShellMenuButton` in a custom header’s `leading` slot; it hides automatically when navigation is in flow. Shells without navigation do not acquire a sidebar or drawer.
+Dashboard and feed take `drawer="reveal"` on compact screens (the default is the portaled `overlay` drawer): the page slides aside and rounds its corners to expose the sidebar. While it is open the drawer is modal: focus moves in and Tab stays inside, Escape, Android back and the VoiceOver escape gesture close it, and the page and its veil leave the accessibility tree. Feed keeps the same page wrapper and content subtree when navigation crosses between compact and desktop; the desktop navigation stays in the body row. Put `AppShellMenuButton` in a custom header’s `leading` slot; it hides automatically when navigation is in flow. Shells without navigation do not acquire a sidebar or drawer.
 
 
 The `bottomBar` slot publishes its measured footprint through the shared bottom-edge registry. Measurement includes the slot’s safe-area padding; embedded bars must not add that inset again. Native feeds and separately positioned FABs can read `useBottomEdgeInset()` without importing the navigation component. Claims combine by maximum, not addition, and disappear when the slot unmounts. The slot never reads its own claim to size itself; repeated equal layout measurements do not trigger another height callback.

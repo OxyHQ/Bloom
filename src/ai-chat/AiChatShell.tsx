@@ -223,6 +223,9 @@ export function AiChatShellBase({
                   }
                 : undefined
             }
+            // Compact navigation waits beneath the conversation, which stays
+            // mounted with its draft rather than being covered by a portal.
+            drawer="reveal"
             drawerOpen={navOpen}
             onDrawerOpenChange={setNavOpen}
             scroll={documentScroll ? 'document' : 'fixed'}

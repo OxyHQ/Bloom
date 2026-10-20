@@ -1,3 +1,4 @@
+import { FieldConstraintScope } from '../field/FieldConstraintScope';
 import { useFieldMembership } from '../field/membership';
 import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import { DISABLED_OPACITY } from '../styles/tokens';
@@ -1240,6 +1241,7 @@ function QuestionnaireComponent({
       ref={rootRef}
       testID={testID}
       role="group"
+      nativeID={field.nativeID}
       aria-labelledby={field.accessibilityLabel ? undefined : headingId}
       accessibilityLabel={field.accessibilityLabel ?? question.question}
       aria-describedby={field.describedBy}
@@ -1250,106 +1252,111 @@ function QuestionnaireComponent({
       style={[cardStyle, style, { backgroundColor: 'transparent', ...material.vars }]}
     >
       <SurfacePaint fill={paintFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
-      <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-        <Animated.View
-          style={[
-            {
-              position: 'relative',
-              overflow: 'hidden',
-              marginLeft: -CARD_PADDING,
-              marginRight: -CARD_PADDING,
-              marginTop: -VIEWPORT_INSET,
-              marginBottom: -VIEWPORT_INSET,
-              paddingLeft: CARD_PADDING,
-              paddingRight: CARD_PADDING,
-              paddingTop: VIEWPORT_INSET,
-              paddingBottom: VIEWPORT_INSET,
-            },
-            viewportStyle,
-          ]}
-        >
-          {leaving && leavingQuestion ? (
-            <SlidingPanel
-              key={`exit-${leaving.key}`}
-              role="exit"
-              direction={direction}
-              animate={!reducedMotion}
-              onExited={clearLeaving}
-            >
-              {renderQuestion(leavingQuestion, false)}
-            </SlidingPanel>
-          ) : null}
-          <SlidingPanel
-            key={`enter-${question.id}`}
-            role="enter"
-            direction={direction}
-            animate={Boolean(leaving) && !reducedMotion}
-            onLayout={onPanelLayout}
-            panelRef={panelRef}
+      {/* The card is the field's member and takes its id, name and error; the
+          answers, pills and buttons are its parts, which freeze with the field
+          but do not repeat the error (`field/FieldConstraintScope.tsx`). */}
+      <FieldConstraintScope>
+        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
+          <Animated.View
+            style={[
+              {
+                position: 'relative',
+                overflow: 'hidden',
+                marginLeft: -CARD_PADDING,
+                marginRight: -CARD_PADDING,
+                marginTop: -VIEWPORT_INSET,
+                marginBottom: -VIEWPORT_INSET,
+                paddingLeft: CARD_PADDING,
+                paddingRight: CARD_PADDING,
+                paddingTop: VIEWPORT_INSET,
+                paddingBottom: VIEWPORT_INSET,
+              },
+              viewportStyle,
+            ]}
           >
-            {renderQuestion(question, true)}
-          </SlidingPanel>
-        </Animated.View>
+            {leaving && leavingQuestion ? (
+              <SlidingPanel
+                key={`exit-${leaving.key}`}
+                role="exit"
+                direction={direction}
+                animate={!reducedMotion}
+                onExited={clearLeaving}
+              >
+                {renderQuestion(leavingQuestion, false)}
+              </SlidingPanel>
+            ) : null}
+            <SlidingPanel
+              key={`enter-${question.id}`}
+              role="enter"
+              direction={direction}
+              animate={Boolean(leaving) && !reducedMotion}
+              onLayout={onPanelLayout}
+              panelRef={panelRef}
+            >
+              {renderQuestion(question, true)}
+            </SlidingPanel>
+          </Animated.View>
 
-        {onDismiss ? (
-          <CloseButton
-            size="xs"
-            accessibilityLabel={text.dismiss}
-            onPress={onDismiss}
-            style={{ position: 'absolute', top: CARD_PADDING, right: CARD_PADDING }}
-            testID={testID ? `${testID}-dismiss` : undefined}
-          />
-        ) : null}
+          {onDismiss ? (
+            <CloseButton
+              size="xs"
+              accessibilityLabel={text.dismiss}
+              onPress={onDismiss}
+              style={{ position: 'absolute', top: CARD_PADDING, right: CARD_PADDING }}
+              testID={testID ? `${testID}-dismiss` : undefined}
+            />
+          ) : null}
 
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: 16,
-            paddingTop: 2,
-          }}
-        >
-          <StepPills
-            questions={questions}
-            step={step}
-            onSelect={goTo}
-            label={text.steps}
-            palette={palette}
-            testID={testID ? `${testID}-step` : undefined}
-          />
           <View
             style={{
               flexDirection: 'row',
-              flexShrink: 0,
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              gap: 8,
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 16,
+              paddingTop: 2,
             }}
           >
-            <Button
-              size="sm"
-              disabled={field.disabled || step === 0}
-              onPress={() => goTo(step - 1)}
-              testID={testID ? `${testID}-previous` : undefined}
-              appearance="subtle"
-              tone="neutral"
+            <StepPills
+              questions={questions}
+              step={step}
+              onSelect={goTo}
+              label={text.steps}
+              palette={palette}
+              testID={testID ? `${testID}-step` : undefined}
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                flexShrink: 0,
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: 8,
+              }}
             >
-              {text.previous}
-            </Button>
-            <Button
-              size="sm"
-              disabled={field.disabled}
-              onPress={() => finish(answersRef.current)}
-              testID={testID ? `${testID}-next` : undefined}
-              appearance="solid"
-              tone="accent"
-            >
-              {isLast ? text.complete : text.next}
-            </Button>
+              <Button
+                size="sm"
+                disabled={field.disabled || step === 0}
+                onPress={() => goTo(step - 1)}
+                testID={testID ? `${testID}-previous` : undefined}
+                appearance="subtle"
+                tone="neutral"
+              >
+                {text.previous}
+              </Button>
+              <Button
+                size="sm"
+                disabled={field.disabled}
+                onPress={() => finish(answersRef.current)}
+                testID={testID ? `${testID}-next` : undefined}
+                appearance="solid"
+                tone="accent"
+              >
+                {isLast ? text.complete : text.next}
+              </Button>
+            </View>
           </View>
-        </View>
-      </SurfaceLevelProvider>
+        </SurfaceLevelProvider>
+      </FieldConstraintScope>
     </View>
   );
 }

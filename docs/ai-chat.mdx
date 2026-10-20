@@ -71,9 +71,10 @@ New compositions declare the workspace through `AppShell panelLayout`. Keep stab
 IDs for `navigation`, `conversation` and `context`, and let the shell resolve
 `hideBelow`, panel minima and resizing against its measured container. A split
 with enough room shows all eligible panels; compact layouts show `activePanel`.
-A menu or context action selects that panel. Its PageHeader back action selects
-`conversation` again. Navigation and context are full panel destinations on a
-small screen, with the same surfaces, bounds and accessibility as other panels.
+A menu or context action selects that panel. In `AiChatShell` navigation is a
+`drawer="reveal"` drawer beneath the retained conversation, and below `xl` the
+context panel is a floating side sheet named by `panelLabel` (its own header,
+such as `AiChatCodePanel`'s, carries the title and the close action).
 
 The conversation declares its own chrome and viewport:
 

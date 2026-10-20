@@ -161,9 +161,13 @@ describe('AppShell reveal drawer', () => {
         bottomBar={<ReactNative.Text>Navigation</ReactNative.Text>}
       />,
     );
-    expect(translateX(resolvedStyle(screen.getByTestId('shell-reveal-bars').props.style))).toBe(
-      expected,
-    );
+    expect(
+      translateX(
+        resolvedStyle(
+          screen.getByTestId('shell-reveal-bars', { includeHiddenElements: true }).props.style,
+        ),
+      ),
+    ).toBe(expected);
   });
 
   it.each([
@@ -181,9 +185,13 @@ describe('AppShell reveal drawer', () => {
         sidebar={{ items: NAV }}
       />,
     );
-    expect(translateX(resolvedStyle(screen.getByTestId('shell-reveal-page').props.style))).toBe(
-      expected,
-    );
+    expect(
+      translateX(
+        resolvedStyle(
+          screen.getByTestId('shell-reveal-page', { includeHiddenElements: true }).props.style,
+        ),
+      ),
+    ).toBe(expected);
   });
 
   it.each([
@@ -254,28 +262,33 @@ describe('AppShell overlay drawer and docked nav', () => {
     expect(shell.paddingLeft).toBeUndefined();
   });
 
-  it('the in-flow reveal rail and the aside are inset from their own edges', () => {
+  it('a desktop reveal shell frames like the overlay shell: one symmetric gutter, no physical side', () => {
+    // At desktop the navigation is in flow and `reveal` does nothing, so the
+    // reveal shell keeps its page host mounted but frames its row exactly like
+    // the overlay shell. A symmetric gutter mirrors by construction; a physical
+    // side on the aside would not.
     setWidth(1440);
-    const screen = renderIn(
-      <AppShell
-        testID="shell"
-        drawer="reveal"
-        sidebar={{ items: NAV }}
-        aside={<ReactNative.Text>Aside</ReactNative.Text>}
-      />,
-    );
-    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({
-      paddingInlineEnd: 12,
-    });
-    expect(
-      resolvedStyle(screen.getByTestId('shell-aside').props.style).paddingRight,
-    ).toBeUndefined();
-    expect(
-      hostStyles(screen).some(
-        (style) =>
-          style.paddingInlineStart === 12 && style.paddingTop === 12 && style.flexShrink === 0,
-      ),
-    ).toBe(true);
+    for (const drawer of ['overlay', 'reveal'] as const) {
+      const screen = renderIn(
+        <AppShell
+          testID="shell"
+          drawer={drawer}
+          sidebar={{ items: NAV }}
+          aside={<ReactNative.Text>Aside</ReactNative.Text>}
+        />,
+      );
+      const aside = resolvedStyle(screen.getByTestId('shell-aside').props.style);
+      expect([drawer, aside.paddingRight, aside.paddingLeft]).toEqual([
+        drawer,
+        undefined,
+        undefined,
+      ]);
+      expect([
+        drawer,
+        hostStyles(screen).some((style) => style.padding === 12 && style.gap === 16),
+      ]).toEqual([drawer, true]);
+      screen.unmount();
+    }
   });
 });
 

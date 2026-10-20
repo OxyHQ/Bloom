@@ -27,7 +27,7 @@
  */
 import React from 'react';
 import { TextInput } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 // The shared react-native mock has no `Easing`, `Animated.parallel` or
 // `stopAnimation`, all three of which `FileUpload`'s native motion uses. Same
@@ -48,17 +48,22 @@ jest.mock('react-native', () => {
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Field } from '../field';
 import { CustomColorPicker } from '../agent-creator/CustomColorPicker';
+import { SelectionCard } from '../card';
 import { CardFormNumber } from '../card-form';
 import { Checkbox } from '../checkbox';
 import { DeliverySlotPicker } from '../delivery-slot';
 import { FileUpload } from '../file-upload';
 import { InputGroup } from '../input-group';
 import { InputOtp } from '../input-otp';
+import { MortgageCalculator } from '../listing-actions';
+import { OfferingEditor, PropertyTypeSelector } from '../listing-editor';
 import { MailRecipientField } from '../mail-compose';
 import { PaymentMethodList } from '../payment-method';
+import { Questionnaire } from '../questionnaire';
 import { Radio, RadioChip, RadioGroup } from '../radio';
 import { RatingInput } from '../rating';
 import { Search } from '../search';
+import { ShipmentLoadPicker } from '../shipment-request';
 import {
   SegmentedControl,
   SegmentedControlItem,
@@ -73,6 +78,7 @@ import { TagField } from '../tag-field';
 import { PlacePicker } from '../place-picker';
 import { TextField, TextFieldInput } from '../text-field';
 import { TimeField } from '../date-picker';
+import { VehiclePicker } from '../vehicle-picker';
 
 function wrap(ui: React.ReactElement) {
   return render(
@@ -97,6 +103,11 @@ interface Subject {
   isInert: ((props: Props) => boolean) | null;
   /** How to find the node carrying the contract. `testID` unless stated. */
   node?: 'testID' | 'byName' | 'textInput';
+  /**
+   * The testID the contract node carries, when the family derives it from its
+   * own (`${testID}-kind`) rather than putting the caller's on that node.
+   */
+  testID?: string;
   /** Whether the control node carries the field's `aria-describedby`. */
   describedBy?: boolean;
   /** Whether the control node carries `aria-invalid`. */
@@ -375,13 +386,121 @@ const SUBJECTS: Subject[] = [
     invalid: true,
     id: true,
   },
+  {
+    // The `radiogroup` around the tiles is the member. The tiles render only
+    // once the selector has measured itself, so here the group is all there is;
+    // the tiles are frozen in the composite block below.
+    name: 'property-type-selector',
+    render: (p) => <PropertyTypeSelector value={null} onValueChange={() => {}} {...p} />,
+    ownNameProp: 'accessibilityLabel',
+    isInert: viewInert,
+    node: 'byName',
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'Property type',
+  },
+  {
+    // The group, not a card: each card keeps the name its own title gives it.
+    name: 'offering-editor',
+    render: ({ accessibilityLabel, ...p }) => (
+      <OfferingEditor
+        value={{ kinds: [] }}
+        onValueChange={() => {}}
+        // The caller names the group through `labels.group`, which is what the
+        // editor hands the membership as the caller's own name.
+        labels={accessibilityLabel ? { group: accessibilityLabel as string } : undefined}
+        {...p}
+      />
+    ),
+    ownNameProp: 'accessibilityLabel',
+    isInert: viewInert,
+    node: 'byName',
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'How is the home offered?',
+  },
+  {
+    // The KIND `radiogroup` is the member; the cards and the size, weight and
+    // quantity controls after it are its parts. Its testID is derived from the
+    // picker's.
+    name: 'shipment-load-picker',
+    render: ({ accessibilityLabel, ...p }) => (
+      <ShipmentLoadPicker
+        testID="shipment"
+        value={{ kind: null, size: null, weight: '', quantity: 1 }}
+        onValueChange={() => {}}
+        labels={accessibilityLabel ? { kind: accessibilityLabel as string } : undefined}
+        {...p}
+      />
+    ),
+    ownNameProp: 'accessibilityLabel',
+    isInert: viewInert,
+    testID: 'shipment-kind',
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'What are we moving?',
+  },
+  {
+    name: 'vehicle-picker',
+    render: (p) => (
+      <VehiclePicker
+        value={null}
+        onValueChange={() => {}}
+        options={[{ value: 'van', label: 'Van', capacity: 'Up to 800 kg' }]}
+        {...p}
+      />
+    ),
+    ownNameProp: 'accessibilityLabel',
+    isInert: viewInert,
+    node: 'byName',
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'Vehicle',
+  },
+  {
+    // The member is the calculator's own `group`; its inputs, slider and term
+    // chips are parts. Its title is a STACKED label, so the field outranks it
+    // and there is no caller name to keep.
+    name: 'mortgage-calculator',
+    render: (p) => <MortgageCalculator testID="mortgage" {...p} />,
+    ownNameProp: null,
+    isInert: viewInert,
+    testID: 'mortgage-group',
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'Mortgage calculator',
+  },
+  {
+    // The card's root `group` is the member; the answers are its parts.
+    name: 'questionnaire',
+    render: (p) => (
+      <Questionnaire
+        testID={TID}
+        questions={[
+          { id: 'q1', question: 'What brings you here?', options: [{ value: 'a', label: 'A' }] },
+        ]}
+        {...p}
+      />
+    ),
+    ownNameProp: null,
+    isInert: viewInert,
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'What brings you here?',
+  },
 ];
 
 /** The node carrying the contract, for a subject whose name is `name`. */
 function subjectProps(screen: ReturnType<typeof wrap>, subject: Subject, name: string): Props {
   if (subject.node === 'textInput') return screen.UNSAFE_getAllByType(TextInput)[0]!.props as Props;
   if (subject.node === 'byName') return screen.getByLabelText(name).props as Props;
-  return screen.getByTestId(TID).props as Props;
+  return screen.getByTestId(subject.testID ?? TID).props as Props;
 }
 
 const FIELD_LABEL = 'Field label';
@@ -606,6 +725,259 @@ describe('a disabled field reaches the controls INSIDE a composite', () => {
     const pressable = screen.getByLabelText('Fruit');
     expect(pressable.props.disabled).toBe(true);
   });
+
+  it('freezes every term chip of a MortgageCalculator, which reads the field itself', () => {
+    // The chips are `listing-actions`' own `SelectChip`; the calculator hands
+    // them no `disabled`, so only their own membership can freeze them.
+    const screen = wrap(
+      <Field label="Mortgage" multiple disabled>
+        <MortgageCalculator testID="mortgage" />
+      </Field>,
+    );
+    expect(screen.getByTestId('mortgage-term-10').props.disabled).toBe(true);
+    expect(screen.getByTestId('mortgage-term-30').props.disabled).toBe(true);
+  });
+
+  it("freezes a PropertyTypeSelector's tiles, which read nothing of their own", () => {
+    const screen = wrap(
+      <Field label="Type" disabled>
+        <PropertyTypeSelector testID="type" value={null} onValueChange={() => {}} />
+      </Field>,
+    );
+    // The tiles render only once the selector knows its width.
+    fireEvent(screen.getByTestId('type'), 'layout', { nativeEvent: { layout: { width: 400 } } });
+    expect(screen.getByTestId('type-house').props.disabled).toBe(true);
+    expect(screen.getByTestId('type-apartment').props.disabled).toBe(true);
+  });
+
+  it('freezes the detail controls an OfferingEditor reveals under a chosen kind', () => {
+    // The deposit row is the editor's own `ChoiceRow`, which reads no field
+    // context: the editor has to hand the constraint down.
+    const screen = wrap(
+      <Field label="Offering" multiple disabled>
+        <OfferingEditor testID="offering" value={{ kinds: ['rent'] }} onValueChange={() => {}} />
+      </Field>,
+    );
+    expect(screen.getByTestId('offering-rent-deposit-0').props.disabled).toBe(true);
+    expect(screen.getByTestId('offering-rent-deposit-3').props.disabled).toBe(true);
+  });
+
+  it("freezes a Questionnaire's answers, its step pills and its Next button", () => {
+    // `Button` reads no field context, so Next is frozen only because the
+    // questionnaire passes its own membership down.
+    const screen = wrap(
+      <Field label="Survey" multiple disabled>
+        <Questionnaire
+          testID="survey"
+          questions={[
+            {
+              id: 'q1',
+              question: 'What brings you here?',
+              options: [{ value: 'a', label: 'A' }],
+              other: true,
+            },
+          ]}
+        />
+      </Field>,
+    );
+    expect(screen.getByTestId('survey-option-a').props.disabled).toBe(true);
+    expect(screen.getByTestId('survey-other-input').props.editable).toBe(false);
+    expect(screen.getByTestId('survey-step-0').props.disabled).toBe(true);
+    const next = screen.getByTestId('survey-next').props as Props;
+    expect(next.disabled ?? next['aria-disabled']).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A composite joins at ONE node; its parts take only the constraints
+// ---------------------------------------------------------------------------
+
+interface Composite {
+  name: string;
+  render: () => React.ReactElement;
+  /** Run after the first render — a family that draws its parts only once measured. */
+  settle?: (screen: ReturnType<typeof wrap>) => void;
+  /** testID → the name that part announces on its own, which the field must not replace. */
+  ownNames: Record<string, string>;
+  /** testID → how that part spells inert; each must be frozen by the field. */
+  frozen: Record<string, (props: Props) => boolean>;
+}
+
+const COMPOSITES: Composite[] = [
+  {
+    name: 'mortgage-calculator',
+    render: () => <MortgageCalculator testID="m" />,
+    ownNames: {
+      'm-price': 'Property price',
+      'm-down-payment': 'Down payment',
+      'm-down-payment-percent': 'Down payment percent',
+      'm-down-payment-slider': 'Down payment percent',
+      'm-terms': 'Loan term',
+      'm-rate': 'Interest rate',
+    },
+    frozen: {
+      'm-price': inputInert,
+      'm-rate': inputInert,
+      'm-down-payment-slider': viewInert,
+      'm-terms': viewInert,
+      'm-term-10': pressableInert,
+    },
+  },
+  {
+    name: 'offering-editor',
+    render: () => (
+      <OfferingEditor testID="o" value={{ kinds: ['rent'] }} onValueChange={() => {}} />
+    ),
+    ownNames: { 'o-rent-control': 'For rent', 'o-rent-amount': 'Monthly rent' },
+    frozen: {
+      'o-rent-control': pressableInert,
+      'o-rent-amount': inputInert,
+      'o-rent-minimum-increment': pressableInert,
+    },
+  },
+  {
+    name: 'shipment-load-picker',
+    render: () => (
+      <ShipmentLoadPicker
+        testID="s"
+        value={{ kind: null, size: null, weight: '', quantity: 1 }}
+        onValueChange={() => {}}
+      />
+    ),
+    ownNames: { 's-weight': 'Weight', 's-size': 'Size', 's-quantity': 'How many' },
+    frozen: {
+      's-kind-parcel-control': pressableInert,
+      's-size-small': pressableInert,
+      's-weight': inputInert,
+      's-quantity-increment': pressableInert,
+    },
+  },
+  {
+    name: 'vehicle-picker',
+    render: () => (
+      <VehiclePicker
+        testID="v"
+        value={null}
+        onValueChange={() => {}}
+        options={[{ value: 'van', label: 'Van', capacity: 'Up to 800 kg' }]}
+      />
+    ),
+    ownNames: { 'v-van-control': 'Van, Up to 800 kg' },
+    frozen: { 'v-van-control': pressableInert },
+  },
+  {
+    name: 'property-type-selector',
+    render: () => <PropertyTypeSelector testID="p" value={null} onValueChange={() => {}} />,
+    settle: (screen) =>
+      fireEvent(screen.getByTestId('p'), 'layout', { nativeEvent: { layout: { width: 400 } } }),
+    ownNames: { 'p-house': 'House' },
+    frozen: { 'p-house': pressableInert },
+  },
+  {
+    name: 'questionnaire',
+    render: () => (
+      <Questionnaire
+        testID="q"
+        questions={[
+          {
+            id: 'q1',
+            question: 'What brings you here?',
+            options: [{ value: 'a', label: 'A' }],
+            other: true,
+          },
+        ]}
+      />
+    ),
+    ownNames: { 'q-option-a': 'A', 'q-other-input': 'Other' },
+    frozen: {
+      'q-option-a': pressableInert,
+      'q-other-input': inputInert,
+      'q-step-0': pressableInert,
+    },
+  },
+];
+
+describe.each(COMPOSITES.map((c) => [c.name, c] as const))(
+  '%s says the field once, in an ORDINARY field',
+  (_name, composite) => {
+    // Not `multiple`: the case a caller writes first, and the one where every
+    // part that reads the field took its id and its error for itself.
+    function renderInField() {
+      const screen = wrap(
+        <Field label={FIELD_LABEL} error="Too short" disabled>
+          {composite.render()}
+        </Field>,
+      );
+      composite.settle?.(screen);
+      return screen;
+    }
+
+    /** Every HOST node, so a prop forwarded through a component is counted once. */
+    function hostNodes(screen: ReturnType<typeof wrap>) {
+      return screen.UNSAFE_root.findAll((node) => typeof node.type === 'string');
+    }
+
+    it("puts the field's id on exactly one node, and that node is the one the field names", () => {
+      const screen = renderInField();
+      const labelId = (screen.getByText(FIELD_LABEL).props as Props).nativeID as string;
+      const fieldId = labelId.replace(/-label$/, '');
+      const carriers = hostNodes(screen).filter((node) => node.props.nativeID === fieldId);
+      expect([composite.name, carriers.map((node) => node.props.accessibilityLabel)]).toEqual([
+        composite.name,
+        [FIELD_LABEL],
+      ]);
+    });
+
+    it("describes exactly one node by the field's error", () => {
+      const screen = renderInField();
+      const errorId = (screen.getByText('Too short').props as Props).nativeID as string;
+      const described = hostNodes(screen).filter((node) =>
+        String(node.props['aria-describedby'] ?? '')
+          .split(/\s+/)
+          .includes(errorId),
+      );
+      expect([composite.name, described.map((node) => node.props.accessibilityLabel)]).toEqual([
+        composite.name,
+        [FIELD_LABEL],
+      ]);
+    });
+
+    it('lets every part keep its own name', () => {
+      const screen = renderInField();
+      const names = Object.fromEntries(
+        Object.keys(composite.ownNames).map((id) => [
+          id,
+          (screen.getByTestId(id).props as Props).accessibilityLabel,
+        ]),
+      );
+      expect([composite.name, names]).toEqual([composite.name, composite.ownNames]);
+    });
+
+    it('still freezes every part with the field', () => {
+      const screen = renderInField();
+      const frozen = Object.fromEntries(
+        Object.entries(composite.frozen).map(([id, isInert]) => [
+          id,
+          isInert(screen.getByTestId(id).props as Props),
+        ]),
+      );
+      expect([composite.name, frozen]).toEqual([
+        composite.name,
+        Object.fromEntries(Object.keys(composite.frozen).map((id) => [id, true])),
+      ]);
+    });
+  },
+);
+
+describe('FieldConstraintScope', () => {
+  it('publishes nothing outside a Field, so the parts see no field at all', () => {
+    const screen = wrap(<MortgageCalculator testID="bare" />);
+    const price = screen.getByTestId('bare-price').props as Props;
+    expect(price.accessibilityLabel).toBe('Property price');
+    expect(price.nativeID).toBeUndefined();
+    expect(price['aria-required']).toBeUndefined();
+    expect(price.editable).not.toBe(false);
+  });
 });
 
 describe('the contract is opt-IN', () => {
@@ -656,4 +1028,43 @@ it('RadioChip joins Field naming, disabled, invalid and description constraints'
   expect(control.props.disabled).toBe(true);
   expect(control.props['aria-invalid']).toBe(true);
   expect(control.props['aria-describedby']).toBeTruthy();
+});
+
+describe('SelectionCard joins a Field with its title as an ADJACENT label', () => {
+  // The title is required and drawn as the card's own text, so it is the name
+  // the field cannot outrank — which is why the card is not a row in the table
+  // above, whose first case is that the field label names the control.
+  const card = (props: Props = {}) => (
+    <SelectionCard
+      testID="card"
+      selection="single"
+      selected={false}
+      onPress={() => {}}
+      title="Monthly plan"
+      {...props}
+    />
+  );
+
+  it('keeps its title as its name, and takes the field id, error and constraints', () => {
+    const screen = wrap(
+      <Field label={FIELD_LABEL} disabled error="Choose a plan">
+        {card({ disabled: false })}
+      </Field>,
+    );
+    const head = screen.getByTestId('card-control').props as Props;
+    const errorId = (screen.getByText('Choose a plan').props as Props).nativeID;
+    const labelId = (screen.getByText(FIELD_LABEL).props as Props).nativeID;
+    expect(head.accessibilityLabel).toBe('Monthly plan');
+    expect(head.disabled).toBe(true);
+    expect(head['aria-invalid']).toBe(true);
+    expect(head['aria-describedby']).toBe(errorId);
+    expect(labelId).toBe(`${head.nativeID as string}-label`);
+  });
+
+  it('keeps a name the caller wrote over its title', () => {
+    const screen = wrap(
+      <Field label={FIELD_LABEL}>{card({ accessibilityLabel: 'Caller name' })}</Field>,
+    );
+    expect(screen.getByTestId('card-control').props.accessibilityLabel).toBe('Caller name');
+  });
 });

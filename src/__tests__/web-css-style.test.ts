@@ -63,6 +63,11 @@ const ALLOWED: Record<string, { count: number; reason: string }> = {
     reason:
       "`marginBottom: calc(-100dvh + …) as ViewStyle['marginBottom']` on `DOCUMENT_LAYER` — the same VALUE-level cast as `Rail`'s `100vh`, pulling the viewport-sized sticky layer back out of the flow by its own height. Local for the same reason: no other family needs a negative viewport margin.",
   },
+  'page-footer/PageFooter.tsx': {
+    count: 1,
+    reason:
+      "`'var(--bloom-page-footer-inset, 16px)' as ViewStyle['paddingLeft']` — a VALUE-level cast like `Rail`'s `100vh`: RN types padding as a number or percentage, while the web inset is a custom property its container-query sheet sets per width, so the footer no longer measures the window on every pixel. Local because no other family reads that property.",
+  },
   'rail/Rail.tsx': {
     count: 1,
     reason:

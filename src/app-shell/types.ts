@@ -94,7 +94,7 @@ export interface AppShellEngineProps {
    */
   sidebar?: AppShellSidebarProps;
   /**
-   * Default `reveal`: how the rail arrives below `navFrom`. It slides the WHOLE page
+   * Default `overlay`: how the rail arrives below `navFrom`. `reveal` slides the WHOLE page
    * sideways for dashboard and compact feed layouts. Feed desktop columns
    * retain their normal layout. Other variants use the overlay drawer.
    */

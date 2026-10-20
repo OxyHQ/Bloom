@@ -99,6 +99,7 @@ Two consequences worth knowing:
 
 - **A control that cannot name itself no longer needs a name prop inside a field.** `accessibilityLabel` on `Stepper`, `RatingInput` and `TimeField`, and `label` on `RadioGroup`, `SegmentedControl` and `SelectTrigger`, were required props and are now optional — with neither the prop nor a field the control announces nothing and warns once in development.
 - **A composite hands the field's state to the halves that cannot read it themselves.** `PhoneInput`'s country picker is the measured case: the number input read the field, the picker did not, so it stayed operable inside a disabled field.
+- **A composite joins at ONE node and hands its parts only the constraints.** The root takes the field's id, name and error; `FieldConstraintScope` re-publishes `disabled`/`invalid`/`required` to everything inside. Measured before it: a `MortgageCalculator` in an ordinary field put the field's id on six nodes and announced all four of its inputs by the field's label, and a `VehiclePicker` described every card by the field's error.
 
 Gates: `src/__tests__/FieldAssociation.test.tsx` (the field publishes) and `src/__tests__/FieldMembership.test.tsx` (fifteen families apply, in both directions, and the subject list is asserted against the matrix).
 

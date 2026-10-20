@@ -700,6 +700,8 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         panels
         navFrom="md"
         sidebar={{ variant: 'panel', collapsed: false, collapseDisabled: true, render: sidebar }}
+        // As in AiChatShell: compact navigation waits beneath the conversation.
+        drawer="reveal"
         drawerOpen={panel === 'navigation'}
         onDrawerOpenChange={(open) =>
           setPanel((current) => (open ? 'navigation' : current === 'navigation' ? null : current))

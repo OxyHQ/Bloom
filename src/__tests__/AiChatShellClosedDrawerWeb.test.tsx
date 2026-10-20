@@ -248,10 +248,11 @@ describe('focusable shell panel owners', () => {
         </BloomThemeProvider>,
       ),
     );
-    const track = container.querySelector<HTMLElement>(
-      '[data-testid="ai-chat-shell-panels-context"]',
+    // Inline when the row is wide enough, otherwise a floating side sheet
+    // portaled to the document (jsdom measures no width, so it floats here).
+    const panel = document.querySelector<HTMLElement>(
+      '[data-testid^="ai-chat-shell-panels-context"][tabindex="-1"], [data-testid="ai-chat-shell-panels-context"] [tabindex="-1"]',
     )!;
-    const panel = track.querySelector<HTMLElement>('[tabindex="-1"]')!;
     expect(panel.tabIndex).toBe(-1);
     act(() => panel.focus());
     expect(document.activeElement).toBe(panel);

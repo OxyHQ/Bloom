@@ -20,9 +20,7 @@ try {
   await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   page.on('pageerror', (error) => report.errors.push(error.message));
   const origin = process.env.AVATAR_TEST_ORIGIN || 'http://localhost:6006';
-  await page.goto(
-    `${origin}/iframe.html?id=agents-agent-avatar-characters--editor&viewMode=story`,
-  );
+  await page.goto(`${origin}/iframe.html?id=agents-agent-avatar-characters--editor&viewMode=story`);
   await page.waitForSelector('[aria-label="Custom avatar color"]', { timeout: 90000 });
   for (const [hex, bounded] of [
     ['#000000', '#7e7e7e'],
