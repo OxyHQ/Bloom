@@ -54,3 +54,98 @@ has broken a profile before:
 Because the content is the later sibling, it paints over the band on iOS,
 Android and web. The measured height is the real one. A list header or
 sticky section placed after a `CoverHeader` starts exactly where its content ends.
+
+## Page covers and explicit repositioning
+
+A page can use a wide band while constraining only its content column. Pass
+`coverHeight={280}` and put the icon/title in `children`; the header still owns
+the overlap and the full band. Domain persistence and signed image sources
+belong to the application.
+
+```tsx
+<CoverHeader
+  coverSource={signedSource}
+  coverPosition={position}
+  coverHeight={280}
+  overlap={40}
+  repositionable
+  repositionAxes="vertical"
+  onCoverPositionCommit={async (next) => {
+    await saveCoverPosition(next);
+    setPosition(next);
+  }}
+  actions={<Button onPress={chooseCover}>Change cover</Button>}
+>
+  <Avatar source={avatarUrl} size={80} />
+  <Text variant="title-2-medium">Workspace</Text>
+</CoverHeader>
+```
+
+`coverPosition` remains the committed, controlled position. The editor owns a
+separate draft. Dragging changes only that draft; releasing the pointer never
+saves. **Save** calls `onCoverPositionCommit(position)`, which can return a
+promise. While it is pending, controls and dragging are disabled. A rejection
+keeps the draft, shows an accessible error and allows retry. **Cancel** or
+**Escape** discards the draft. Changing the source or disabling editing closes
+the editor and invalidates late promise results; unmounting does the same.
+An already-started application mutation cannot be undone by unmounting.
+
+`onCoverPositionChange` is an optional preview notification, never a persistence
+callback. Cancellation reports the current controlled value. `labels` overrides
+the localized action names, instructions, directions and save-error text.
+Additional `actions` are hidden while editing. The controls use Bloom Button
+and Surface, inheriting the surrounding appearance scope.
+
+The image's intrinsic dimensions and measured frame determine its rendered
+size. A drag delta is divided by the actual cropped overflow on each axis;
+there is no fixed pixel-to-percent conversion. Positions are clamped to 0–1,
+and axes without overflow do not move. `repositionAxes="vertical"` preserves
+horizontal position; the default is `"both"`. Arrow keys move the image 10px,
+Shift increases the step to 40px, Home/End select crop boundaries, Enter saves,
+and Escape cancels. Native accessibility actions expose the allowed directions.
+
+Editing requires `repositionable`, an image source, `coverFit="cover"` (the
+default) and a commit callback. Custom `cover` content and contained images are
+not repositionable. The action is disabled until the image has loaded and has
+crop overflow on an allowed axis.
+
+## Reuse the same renderer in previews
+
+`CoverImage` is public from `@oxy.so/bloom/cover-header`. Its `source` accepts
+all BloomImage source forms, including URI descriptors with request headers.
+It uses the same crop calculation as the header, resets natural dimensions when
+the source changes, and renders through BloomImage on every platform.
+
+```tsx
+<CoverImage source={signedSource} position={{ x: 0.5, y: 0.25 }}
+  contentFit="cover" style={{ height: 80, borderRadius: 8 }} />
+<CoverImage source={signedSource} contentFit="contain" style={{ height: 180 }} />
+<CoverFill gradient={{ from: '#4E90AE', to: '#F3A84C', angle: 135 }}
+  style={{ height: 80, borderRadius: 8 }} />
+```
+
+`CoverImage` defaults to a full-width/full-height box; set `style.height` for a
+standalone preview. `position` defaults to the center and `contentFit` accepts
+`cover` or `contain`; contain centers the entire image. `accessibilityLabel`
+provides an image alternative; omission makes this decorative cover hidden from
+assistive technology. `onGeometryChange` optionally reports rendered size and
+crop overflow after image loading or container resizing.
+
+`CoverFill` accepts `color` or `gradient={{from, to, angle?}}` (default angle135°).
+The gradient draws over the optional color. It uses a real CSS gradient on web
+and React Native's `experimental_backgroundImage` on native, matching Bloom's
+existing gradient paint mechanism. Pass it through the header's `cover` slot
+for decorative bands, or use it directly in pickers. There is no raster image,
+repositioning, or substitute flat-color layer in this renderer.
+
+For signed URL renewal, pass `coverSourceKey` to the header or `sourceKey` to
+CoverImage. An existing `source.cacheKey` is used automatically when no explicit
+key is provided. The key must identify the image content, not its current URL.
+Renewing credentials for the same asset preserves its crop geometry and active
+draft; changing the key resets them. Without a key, the complete source
+descriptor identifies the image. Request headers and cache metadata pass through
+to BloomImage unchanged.
+
+When actions are present they occupy a final positioned sibling, above the
+content's overlap in paint order. This keeps controls clickable where a wide
+avatar/content row overlaps the band, without assigning a private z-index.

@@ -2878,6 +2878,16 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    reposition: 'Reposiciona',
+    instruction:
+      'Arrossega per reposicionar. Fes servir les fletxes per moure, Maj per passos més grans, Retorn per desar o Esc per cancel·lar.',
+    saveError: 'No s’ha pogut desar la posició de la portada. Torna-ho a provar.',
+    moveUp: 'Mou la imatge amunt',
+    moveDown: 'Mou la imatge avall',
+    moveLeft: 'Mou la imatge a l’esquerra',
+    moveRight: 'Mou la imatge a la dreta',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

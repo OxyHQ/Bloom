@@ -1,3 +1,4 @@
+import type { COVER_HEADER_MESSAGES } from '../../cover-header/messages';
 import type { VOICE_MESSAGES } from '../../voice/messages';
 import type { AGENT_REPLY_MESSAGES } from '../../agent-reply/messages';
 import type { MULTI_AGENT_CHAT_MESSAGES } from '../../multi-agent-chat/messages';
@@ -143,6 +144,7 @@ import type { CHAT_PEOPLE_MESSAGES } from '../../chat-people/messages';
 import type { EMPTY_STATE_MESSAGES } from '../../empty-state/messages';
 
 export interface Translations {
+  COVER_HEADER_MESSAGES: CatalogMessages<typeof COVER_HEADER_MESSAGES>;
   readonly MULTI_AGENT_CHAT_MESSAGES: CatalogMessages<typeof MULTI_AGENT_CHAT_MESSAGES>;
   readonly AGENT_REPLY_MESSAGES: CatalogMessages<typeof AGENT_REPLY_MESSAGES>;
   AGENT_CREATOR_MESSAGES: CatalogMessages<typeof AGENT_CREATOR_MESSAGES>;

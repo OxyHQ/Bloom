@@ -2915,6 +2915,16 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    reposition: 'Neu positionieren',
+    instruction:
+      'Zum Positionieren ziehen. Pfeiltasten zum Bewegen, Umschalt für größere Schritte, Eingabe zum Speichern oder Escape zum Abbrechen.',
+    saveError: 'Die Titelbildposition konnte nicht gespeichert werden. Erneut versuchen.',
+    moveUp: 'Bild nach oben bewegen',
+    moveDown: 'Bild nach unten bewegen',
+    moveLeft: 'Bild nach links bewegen',
+    moveRight: 'Bild nach rechts bewegen',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

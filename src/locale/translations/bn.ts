@@ -2785,6 +2785,16 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    reposition: 'অবস্থান পরিবর্তন',
+    instruction:
+      'অবস্থান পরিবর্তন করতে টানুন। তীরচিহ্নের কী দিয়ে সরান, বড় ধাপের জন্য Shift, সংরক্ষণ করতে Enter বা বাতিল করতে Escape চাপুন।',
+    saveError: 'কভারের অবস্থান সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।',
+    moveUp: 'ছবি উপরে সরান',
+    moveDown: 'ছবি নিচে সরান',
+    moveLeft: 'ছবি বামে সরান',
+    moveRight: 'ছবি ডানে সরান',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
