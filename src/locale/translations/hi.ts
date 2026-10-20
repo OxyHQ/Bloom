@@ -233,6 +233,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `${label} पर जाएँ`,
   sidebar: 'साइडबार',
   collapse: 'साइडबार छोटा करें',
   expand: 'साइडबार बड़ा करें',
@@ -2151,6 +2152,12 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `${label} का क्रम बदलें`,
+  reorderHint:
+    'क्रम बदलने के लिए खींचें या तीर कुंजियों का उपयोग करें। Home और End पहले और अंतिम स्थान पर ले जाते हैं।',
+  movePanelBefore: 'पहले ले जाएँ',
+  movePanelAfter: 'बाद में ले जाएँ',
+  panelMoved: (label, position, total) => `${label}, ${total} में से स्थान ${position}`,
   openNavigation: 'नेविगेशन खोलें',
   closeNavigation: 'नेविगेशन बंद करें',
   resizePanes: 'पैन का आकार बदलें',

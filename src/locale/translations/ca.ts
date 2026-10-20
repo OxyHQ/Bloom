@@ -240,6 +240,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `Canvia a ${label}`,
   sidebar: 'Barra lateral',
   collapse: 'Redueix la barra lateral',
   expand: 'Amplia la barra lateral',
@@ -2210,6 +2211,12 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `Reordena ${label}`,
+  reorderHint:
+    'Arrossega per reordenar o utilitza les fletxes. Inici i Fi mouen a la primera i última posició.',
+  movePanelBefore: 'Mou abans',
+  movePanelAfter: 'Mou després',
+  panelMoved: (label, position, total) => `${label}, posició ${position} de ${total}`,
   openNavigation: 'Obre la navegació',
   closeNavigation: 'Tanca la navegació',
   resizePanes: 'Canvia la mida dels panells',

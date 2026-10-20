@@ -2,6 +2,7 @@ import React, {
   useEffect,
   useCallback,
   useInsertionEffect,
+  useImperativeHandle,
   useMemo,
   useContext,
   useRef,
@@ -14,6 +15,8 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withTiming,
+  runOnJS,
 } from 'react-native-reanimated';
 import type { ContentPanelProps } from '../content-panel/types';
 import type { DialogProps } from '../dialog/types';
@@ -34,12 +37,17 @@ import { ScreenHostContext } from '../screen/context';
 import type { ScreenProps } from '../screen/types';
 import { ResizeHandle } from '../layout/ResizeHandle';
 import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
-import { animateMotion } from '../motion/recipes';
+import { animatePanelLayout } from './panel-motion';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { useTheme } from '../theme/use-theme';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webViewportHeightMinus, WEB_POSITION_STICKY } from '../styles/web-view-style';
 import { useShellWidth } from './use-shell-width';
+import { Text } from '../typography/Typography';
+import { PanelOrderBoundary } from './PanelOrderBoundary';
+import type { PanelReorderHost, PanelReorderScroll } from './use-panel-reorder';
+import { usePanelReorder } from './use-panel-reorder';
+import { PanelReorderHandle } from './PanelReorderHandle';
 import { usePanelReveal } from './use-panel-reveal';
 import { usePanelResize, type PanelResizePreview } from './use-panel-resize';
 import { PanelCssContext, panelLayoutCss } from './panel-layout-css';
@@ -214,6 +222,9 @@ export function createPanelLayoutView(
   }
   function PanelHost({
     panel,
+    reorderHandle,
+    registerReorder,
+    transition,
     cssScope,
     cssFraming,
     index,
@@ -234,6 +245,9 @@ export function createPanelLayoutView(
     testID,
   }: {
     panel: AppShellPanelDefinition;
+    reorderHandle?: React.ReactNode;
+    registerReorder: (id: string, host: PanelReorderHost) => () => void;
+    transition: AppShellPanelLayout['transition'];
     cssScope: string | null;
     cssFraming: boolean;
     index: number;
@@ -253,6 +267,57 @@ export function createPanelLayoutView(
     hasNext: boolean;
     testID?: string;
   }) {
+    const panelRef = useRef<ComponentRef<typeof View>>(null);
+    const dragOffset = useSharedValue(0);
+    const dragLayer = useSharedValue(0);
+    useEffect(
+      () =>
+        registerReorder(panel.id, {
+          motion: { offset: dragOffset, layer: dragLayer },
+          measure: () =>
+            new Promise((resolve) => {
+              if (!panelRef.current) {
+                resolve(null);
+                return;
+              }
+              panelRef.current.measureInWindow((x, y, width, height) =>
+                resolve({ x, y, width, height }),
+              );
+            }),
+          preview: (delta, dragged, reduced) => {
+            dragOffset.value = dragged || reduced ? delta : withTiming(delta, { duration: 150 });
+            dragLayer.value = dragged ? 3 : 1;
+          },
+          settle: (delta, reduced) => {
+            if (reduced) {
+              dragOffset.value = delta;
+              return Promise.resolve(true);
+            }
+            return new Promise<boolean>((resolve) => {
+              dragOffset.value = withTiming(delta, { duration: 150 }, (finished) => {
+                runOnJS(resolve)(!!finished);
+              });
+            });
+          },
+          reset: () => {
+            dragOffset.value = 0;
+            dragLayer.value = 0;
+          },
+        }),
+      [registerReorder, panel.id, dragOffset, dragLayer],
+    );
+    const reorderStyle = useAnimatedStyle(
+      () =>
+        dragLayer.value
+          ? {
+              transform: vertical
+                ? [{ translateY: dragOffset.value }]
+                : [{ translateX: dragOffset.value }],
+              zIndex: dragLayer.value,
+            }
+          : {},
+      [dragLayer, dragOffset, vertical],
+    );
     const region = useAppShellRegion();
     const theme = useTheme();
     const rtl = useIsRtl();
@@ -297,14 +362,16 @@ export function createPanelLayoutView(
           | 'element',
         scrollRef: screenRef,
         bottomBar: panel.bottomBar,
-        headerActions: track.floating ? (
-          <>
-            {panel.headerActions}
-            <PanelDismissAction />
-          </>
-        ) : (
-          panel.headerActions
-        ),
+        headerActions:
+          reorderHandle || track.floating ? (
+            <>
+              {reorderHandle}
+              {panel.headerActions}
+              {track.floating ? <PanelDismissAction /> : null}
+            </>
+          ) : (
+            panel.headerActions
+          ),
         claimColorPreset,
         metrics,
       }),
@@ -313,6 +380,7 @@ export function createPanelLayoutView(
         document,
         metrics,
         panel.headerActions,
+        reorderHandle,
         panel.bottomBar,
         claimColorPreset,
         track.floating,
@@ -335,13 +403,28 @@ export function createPanelLayoutView(
     );
     const leading = useSharedValue(track.gap);
     const opacity = useSharedValue(track.visible ? 1 : 0);
+    const panelScale = useSharedValue(1);
     const lastHeight = useSharedValue(0);
     useEffect(() => {
       if (cssScope) return;
-      if (width.value !== track.width) animateMotion(width, track.width, 'expand', reduced);
-      animateMotion(leading, track.gap, 'expand', reduced);
-      animateMotion(opacity, track.visible ? 1 : 0, 'expand', reduced);
-    }, [track.width, track.gap, track.visible, width, leading, opacity, reduced, cssScope]);
+      animatePanelLayout(
+        { width, gap: leading, opacity, scale: panelScale },
+        { width: track.width, gap: track.gap, visible: track.visible },
+        transition === 'exit-before-enter',
+        reduced,
+      );
+    }, [
+      track.width,
+      track.gap,
+      track.visible,
+      width,
+      leading,
+      opacity,
+      panelScale,
+      transition,
+      reduced,
+      cssScope,
+    ]);
     const sizing = useAnimatedStyle(
       () =>
         cssScope
@@ -360,12 +443,14 @@ export function createPanelLayoutView(
               marginInlineStart: vertical ? 0 : leading.value,
               marginTop: vertical ? leading.value : 0,
               opacity: opacity.value,
+              transform: [{ scale: panelScale.value }],
               maxHeight: !track.visible && opacity.value <= 0.001 ? 0 : undefined,
             },
       [
         width,
         leading,
         opacity,
+        panelScale,
         lastHeight,
         vertical,
         naturalHeight,
@@ -453,6 +538,7 @@ export function createPanelLayoutView(
       return (
         <>
           <AnimatedView
+            ref={panelRef}
             {...(cssScope
               ? { dataSet: { bloomPanelIndex: String(index), bloomPanelOwner: cssScope } }
               : {})}
@@ -480,6 +566,7 @@ export function createPanelLayoutView(
                 : undefined,
               !track.visible ? { overflow: 'hidden' } : undefined,
               resizable ? { zIndex: 1 } : undefined,
+              Platform.OS !== 'web' ? reorderStyle : undefined,
             ]}
             onLayout={(event) => {
               if (track.visible) {
@@ -627,6 +714,31 @@ export function createPanelLayoutView(
     const ancestorHost = useContext(ScreenHostContext);
     const cssScope = useContext(PanelCssContext);
     const rootRef = useRef<ComponentRef<typeof View>>(null);
+    const reorderScrollRef = useRef<unknown>(null);
+    const reorderScrollOffset = useRef({ x: 0, y: 0 });
+    const nativeReorderScroll = useMemo<PanelReorderScroll>(
+      () => ({
+        measure: () =>
+          new Promise((resolve) => {
+            const node = reorderScrollRef.current as ComponentRef<typeof View> | null;
+            if (!node?.measureInWindow) {
+              resolve(null);
+              return;
+            }
+            node.measureInWindow((x, y, width, height) => resolve({ x, y, width, height }));
+          }),
+        offset: () => reorderScrollOffset.current,
+        scrollBy: (delta) => {
+          const offset = reorderScrollOffset.current;
+          (
+            reorderScrollRef.current as {
+              scrollTo?: (options: { x: number; y: number; animated: boolean }) => void;
+            } | null
+          )?.scrollTo?.({ x: offset.x + delta.x, y: offset.y + delta.y, animated: false });
+        },
+      }),
+      [],
+    );
     const [cssState, setCssState] = useState<{ vertical: boolean; tracks: ResolvedPanelTrack[] }>({
       vertical: false,
       tracks: layout.panels.map((panel) => ({ id: panel.id, width: 0, visible: false, gap: 0 })),
@@ -689,7 +801,9 @@ export function createPanelLayoutView(
         if (!row) return;
         const axis = getComputedStyle(row).getPropertyValue('--bloom-panel-axis').trim();
         const next = layout.panels.map((panel, index) => {
-          const node = root.querySelector<HTMLElement>(`[data-bloom-panel-index="${index}"]`);
+          const node = root.querySelector<HTMLElement>(
+            `[data-bloom-panel-owner="${cssScope}"][data-bloom-panel-index="${index}"]`,
+          );
           const style = node ? getComputedStyle(node) : null;
           return {
             id: panel.id,
@@ -743,6 +857,75 @@ export function createPanelLayoutView(
       rootRef,
       onCommit: commitResize,
     });
+    const reorder = usePanelReorder({
+      layout,
+      tracks,
+      vertical,
+      documentHorizontal,
+      scope: cssScope,
+      rootRef,
+      nativeScroll: nativeReorderScroll,
+    });
+    const readViewportOffset = () => {
+      if (Platform.OS !== 'web') return reorderScrollOffset.current;
+      if (documentHorizontal) return { x: globalThis.window.scrollX, y: globalThis.window.scrollY };
+      const node = reorderScrollRef.current as HTMLElement | null;
+      return { x: node?.scrollLeft ?? 0, y: node?.scrollTop ?? 0 };
+    };
+    const measureViewport = async () => {
+      if (Platform.OS !== 'web') return nativeReorderScroll.measure();
+      if (documentHorizontal)
+        return {
+          x: 0,
+          y: 0,
+          width: globalThis.window.innerWidth,
+          height: globalThis.window.innerHeight,
+        };
+      const rect = (reorderScrollRef.current as HTMLElement | null)?.getBoundingClientRect();
+      return rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height } : null;
+    };
+    const scrollViewport = ({ x = 0, y = 0 }: { x?: number; y?: number }) => {
+      if (Platform.OS !== 'web') {
+        nativeReorderScroll.scrollBy({ x, y });
+        return;
+      }
+      const node = documentHorizontal
+        ? globalThis.window
+        : (reorderScrollRef.current as HTMLElement | null);
+      node?.scrollBy({ left: x, top: y, behavior: 'instant' });
+    };
+    useImperativeHandle(layout.viewportRef, () => ({
+      getOffset: readViewportOffset,
+      measure: measureViewport,
+      scrollBy: scrollViewport,
+      reveal: (id) => {
+        if (!layout.panels.some((panel, index) => panel.id === id && tracks[index]?.visible))
+          return;
+        void Promise.all([reorder.measure(id), measureViewport()]).then(([panel, viewport]) => {
+          if (!panel || !viewport) return;
+          const delta = vertical
+            ? panel.y < viewport.y
+              ? panel.y - viewport.y
+              : Math.max(0, panel.y + panel.height - viewport.y - viewport.height)
+            : panel.x < viewport.x
+              ? panel.x - viewport.x
+              : Math.max(0, panel.x + panel.width - viewport.x - viewport.width);
+          scrollViewport(vertical ? { y: delta } : { x: delta });
+        });
+      },
+    }));
+    const onViewportScroll = useRef(layout.onViewportScroll);
+    onViewportScroll.current = layout.onViewportScroll;
+    const hasViewportScrollObserver = !!layout.onViewportScroll;
+    useEffect(() => {
+      if (Platform.OS !== 'web' || !hasViewportScrollObserver) return;
+      const node = documentHorizontal
+        ? globalThis.window
+        : (reorderScrollRef.current as HTMLElement | null);
+      const report = () => onViewportScroll.current?.(readViewportOffset());
+      node?.addEventListener('scroll', report, { passive: true });
+      return () => node?.removeEventListener('scroll', report);
+    }, [documentHorizontal, hasViewportScrollObserver]);
     const row = (
       <View
         {...(cssScope ? { dataSet: { bloomPanelRow: cssScope } } : {})}
@@ -760,6 +943,22 @@ export function createPanelLayoutView(
           <PanelHost
             key={panel.id}
             panel={panel}
+            registerReorder={reorder.register}
+            transition={layout.transition}
+            reorderHandle={
+              reorder.canReorder(panel.id) ? (
+                <PanelReorderHandle
+                  id={panel.id}
+                  label={panel.reorderLabel ?? panel.id}
+                  onMove={(delta) => reorder.move(panel.id, delta)}
+                  onStart={reorder.start}
+                  onUpdate={reorder.update}
+                  pointer={reorder.pointer}
+                  onFinish={reorder.finish}
+                  testID={`${panel.testID ?? (testID ? `${testID}-${panel.id}` : panel.id)}-reorder`}
+                />
+              ) : undefined
+            }
             cssScope={cssScope}
             cssFraming={!eligibilityFromGroup}
             index={index}
@@ -790,6 +989,11 @@ export function createPanelLayoutView(
     const content = (
       <Viewport
         horizontal={!vertical}
+        scrollRef={reorderScrollRef}
+        onScroll={(event) => {
+          reorderScrollOffset.current = event.nativeEvent.contentOffset;
+          layout.onViewportScroll?.(event.nativeEvent.contentOffset);
+        }}
         enabled={deck && !documentHorizontal}
         document={document}
         testID={testID ? `${testID}-scroll` : undefined}
@@ -798,61 +1002,81 @@ export function createPanelLayoutView(
       </Viewport>
     );
     return (
-      <View
-        ref={rootRef}
-        {...(cssScope ? { dataSet: { bloomPanelGroup: cssScope } } : {})}
-        testID={testID}
-        onLayout={
-          cssScope
-            ? undefined
-            : (event) => {
-                onLayout(event);
-                setMeasuredHeight(event.nativeEvent.layout.height);
+      <PanelOrderBoundary ids={layout.panels.map((panel) => panel.id)} rootRef={rootRef}>
+        <View
+          ref={rootRef}
+          {...(cssScope
+            ? {
+                dataSet: {
+                  bloomPanelGroup: cssScope,
+                  bloomPanelOrdering: reorder.ordering ? 'true' : undefined,
+                },
               }
-        }
-        style={[
-          {
-            minWidth: 0,
-            alignSelf: 'stretch',
-            paddingBottom: document ? (region?.bottomReserve ?? 0) : bottomEdge,
-            ...(cssScope
-              ? {
-                  containerType: document ? 'inline-size' : 'size',
-                  containerName: `${cssScope}-group`,
+            : {})}
+          testID={testID}
+          onLayout={
+            cssScope
+              ? undefined
+              : (event) => {
+                  onLayout(event);
+                  setMeasuredHeight(event.nativeEvent.layout.height);
                 }
-              : {}),
-          } as WebCssStyle,
-          document ? {} : FILL,
-        ]}
-      >
-        {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
-          <DocumentRestoration enabled={document} />
-        ) : null}
-        {joined ? (
-          <ContentPanel
-            framed={cssScope && !eligibilityFromGroup ? true : (region?.framed ?? true)}
-            fill={!document}
-            scrollable={false}
-            overlaySizing={document ? 'viewport' : 'panel'}
-            overlayInset={document ? region?.viewportInset : undefined}
-            surfaceStyle={FILL}
-            contentStyle={FILL}
-          >
-            {content}
-          </ContentPanel>
-        ) : (
-          content
-        )}
-        {documentHorizontal ? <ScrollBar target="document" horizontal offset={bottomEdge} /> : null}
-        {documentHorizontal && layout.trailingAction ? (
-          <View
-            {...{ dataSet: { bloomDeckTrailing: cssScope ?? undefined } }}
-            testID={testID ? `${testID}-trailing-action` : undefined}
-          >
-            {layout.trailingAction}
-          </View>
-        ) : null}
-      </View>
+          }
+          style={[
+            {
+              minWidth: 0,
+              alignSelf: 'stretch',
+              paddingBottom: document ? (region?.bottomReserve ?? 0) : bottomEdge,
+              ...(cssScope
+                ? {
+                    containerType: document ? 'inline-size' : 'size',
+                    containerName: `${cssScope}-group`,
+                  }
+                : {}),
+            } as WebCssStyle,
+            document ? {} : FILL,
+          ]}
+        >
+          {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
+            <DocumentRestoration enabled={document} />
+          ) : null}
+          {joined ? (
+            <ContentPanel
+              framed={cssScope && !eligibilityFromGroup ? true : (region?.framed ?? true)}
+              fill={!document}
+              scrollable={false}
+              overlaySizing={document ? 'viewport' : 'panel'}
+              overlayInset={document ? region?.viewportInset : undefined}
+              surfaceStyle={FILL}
+              contentStyle={FILL}
+            >
+              {content}
+            </ContentPanel>
+          ) : (
+            content
+          )}
+          {layout.onPanelOrderChange ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              aria-live="polite"
+              style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0 }}
+            >
+              {reorder.announcement}
+            </Text>
+          ) : null}
+          {documentHorizontal ? (
+            <ScrollBar target="document" horizontal offset={bottomEdge} />
+          ) : null}
+          {documentHorizontal && layout.trailingAction ? (
+            <View
+              {...{ dataSet: { bloomDeckTrailing: cssScope ?? undefined } }}
+              testID={testID ? `${testID}-trailing-action` : undefined}
+            >
+              {layout.trailingAction}
+            </View>
+          ) : null}
+        </View>
+      </PanelOrderBoundary>
     );
   }
   return PanelLayoutView;

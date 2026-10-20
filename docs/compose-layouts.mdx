@@ -53,6 +53,35 @@ contract: uncontrolled drafts clear after submission; controlled drafts remain
 owned by the host. Disabled restrictions combine across adapters rather than
 being replaced by a nested default.
 
+## Embedded workspaces use the same compositor
+
+Use `AppShellPanels layout={...}` for a board or workspace inside an existing
+screen. It accepts the same descriptors as `AppShell.panelLayout`, defaults to
+bounded panels and contained horizontal scrolling, and does not create another
+application shell. Project Board uses this path for its columns; its template uses
+AppShell for the sidebar, drawer and page insets.
+
+In a deck, `width` is the resting basis and `minWidth` protects usable content.
+An explicit positive `span` shares spare room between columns without squeezing
+them when the viewport is too narrow. For example, `{ width: 273, minWidth: 273,
+span: 1 }` fills available space with equal columns and scrolls when necessary.
+Omitting `span` keeps fixed-width deck columns. CSS flex sizing and the native
+track resolver implement the same constraints.
+
+Domain gestures can access the compositor's existing viewport with
+`layout.viewportRef`, typed as `AppShellPanelViewport`. Its `getOffset`, `measure`,
+`scrollBy` and `reveal` methods work across native and web. Use
+`onViewportScroll` when domain hit targets need updated measurements, rather than
+wrapping the compositor in another horizontal ScrollView. Column order and
+cross-column ticket movement remain separate: the compositor moves panels;
+Project Board applies its ticket data operations inside them.
+
+Keep static layout and styling in NativeWind classes. Let the compositor resolve
+dynamic geometry through CSS on web and Yoga/Reanimated on native. Do not mirror
+scroll offsets or gesture positions into React state on every frame. Subscribe to
+viewport observations only when domain behavior needs them; ordinary scrolling
+and panel motion already have an owner.
+
 ## A reusable screen
 
 This complete component can be a document route, a Deck column, or the body of

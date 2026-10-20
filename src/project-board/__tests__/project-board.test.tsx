@@ -1,5 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
-import React from 'react';
+import type React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { ProjectBoard } from '../ProjectBoard';
@@ -135,6 +135,16 @@ describe('ProjectBoard interactions', () => {
     expect(screen.getByText('Alpha title')).toBeTruthy();
     expect(screen.getByText('No issues here')).toBeTruthy();
     expect(screen.getByLabelText('Open FE-1: Zebra title')).toBeTruthy();
+  });
+  it('reorders columns through the shared compositor without changing their tickets', () => {
+    const onColumnsChange = jest.fn();
+    const screen = renderBoard({ onColumnsChange });
+    const grip = screen.getByTestId('project-board-column-todo-reorder');
+    fireEvent(grip, 'accessibilityAction', { nativeEvent: { actionName: 'increment' } });
+    const next = onColumnsChange.mock.calls.slice(-1)[0]?.[0] as ProjectColumn[] | undefined;
+    expect(next?.map((column) => column.id)).toEqual(['done', 'todo']);
+    expect(next?.find((column) => column.id === 'todo')?.tickets).toEqual(columns[0]?.tickets);
+    expect(screen.getByText('Zebra title')).toBeTruthy();
   });
   it('creates a ticket using the selected destination and calls the data callback', () => {
     const onColumnsChange = jest.fn();

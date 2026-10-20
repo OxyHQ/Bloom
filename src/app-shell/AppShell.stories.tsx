@@ -791,6 +791,7 @@ export const ModularVerticalDocument: Story = {
 /** One route and scroll owner survive a reading layout becoming a workspace. */
 function ContinuousWorkspaceDemo() {
   const [deck, setDeck] = useState(false);
+  const [order, setOrder] = useState(['activity', 'saved', 'notes']);
   return (
     <AppShell
       testID="continuous-workspace"
@@ -802,6 +803,8 @@ function ContinuousWorkspaceDemo() {
         mode: deck ? 'deck' : 'split',
         flow: deck ? 'bounded' : 'document',
         transition: 'exit-before-enter',
+        onPanelOrderChange: (ids) =>
+          setOrder(ids.filter((id) => id !== 'main' && id !== 'context')),
         gap: deck ? 8 : 0,
         panels: [
           {
@@ -836,7 +839,9 @@ function ContinuousWorkspaceDemo() {
             ),
           },
           { id: 'context', width: 350, visible: !deck, content: <WorkspacePanel id="context" /> },
-          ...['activity', 'saved', 'notes'].map((id) => ({
+          ...order.map((id) => ({
+            reorderable: true,
+            reorderLabel: id,
             id,
             width: 390,
             visible: deck,

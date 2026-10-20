@@ -241,6 +241,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `Passa a ${label}`,
   sidebar: 'Barra laterale',
   collapse: 'Comprimi barra laterale',
   expand: 'Espandi barra laterale',
@@ -2237,6 +2238,12 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `Riordina ${label}`,
+  reorderHint:
+    'Trascina per riordinare o usa le frecce. Home e Fine spostano alla prima e ultima posizione.',
+  movePanelBefore: 'Sposta prima',
+  movePanelAfter: 'Sposta dopo',
+  panelMoved: (label, position, total) => `${label}, posizione ${position} di ${total}`,
   openNavigation: 'Apri la navigazione',
   closeNavigation: 'Chiudi la navigazione',
   resizePanes: 'Ridimensiona i riquadri',

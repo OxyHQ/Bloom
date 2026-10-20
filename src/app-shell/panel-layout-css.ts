@@ -127,13 +127,15 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
               : '0px';
       const grow = forced
         ? 1
-        : deck || natural
+        : natural
           ? 0
-          : flexible && dim !== undefined
-            ? 0
-            : (p.span ?? 1);
+          : deck
+            ? Math.max(0, p.span ?? 0)
+            : flexible && dim !== undefined
+              ? 0
+              : (p.span ?? 1);
       rules += `${item(index)}{--bloom-panel-visible:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
-      rules += `@starting-style{${item(index)}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;opacity:0!important;margin-inline-start:0!important;margin-top:0!important}}\n`;
+      rules += `@starting-style{${item(index).replace(group, `${group}:not([data-bloom-panel-ordering])`)}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;opacity:0!important;margin-inline-start:0!important;margin-top:0!important}}\n`;
     }
     if (pageDeck && !vertical) {
       const trackWidths = shown.map((panel) =>

@@ -237,6 +237,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `${label} moduna geç`,
   sidebar: 'Kenar çubuğu',
   collapse: 'Kenar çubuğunu daralt',
   expand: 'Kenar çubuğunu genişlet',
@@ -2172,6 +2173,12 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `${label} sırasını değiştir`,
+  reorderHint:
+    'Sıralamak için sürükleyin veya ok tuşlarını kullanın. Home ve End ilk ve son konuma taşır.',
+  movePanelBefore: 'Öne taşı',
+  movePanelAfter: 'Arkaya taşı',
+  panelMoved: (label, position, total) => `${label}, ${total} içinde ${position}. konum`,
   openNavigation: 'Gezinmeyi aç',
   closeNavigation: 'Gezinmeyi kapat',
   resizePanes: 'Bölmeleri yeniden boyutlandır',

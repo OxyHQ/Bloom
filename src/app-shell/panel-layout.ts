@@ -103,17 +103,21 @@ export function resolvePanelTracks(
     ),
   );
   if ((!deck || layout.expandedPanel) && shown.length === 1) sizes[0] = available;
-  else if (!deck) {
+  else if (!deck || (!natural && shown.some((panel) => (panel.span ?? 0) > 0))) {
     // Water-fill available room, freezing tracks at their min/max boundaries.
     for (let pass = 0; pass <= shown.length; pass++) {
       const delta = room - sizes.reduce((sum, value) => sum + value, 0);
       if (Math.abs(delta) < 0.01) break;
+      // Deck columns may opt into spare room, but never shrink to fit:
+      // overflow remains owned by the compositor's horizontal viewport.
+      if (deck && delta < 0) break;
       let candidates = shown
         .map((panel, index) => ({ panel, index }))
+        .filter(({ panel }) => !deck || (panel.span ?? 0) > 0)
         .filter(({ panel, index }) =>
           delta > 0 ? sizes[index]! < panelMaximum(panel) : sizes[index]! > panelMinimum(panel),
         );
-      if (delta > 0) {
+      if (delta > 0 && !deck) {
         const flexible = candidates.filter(
           ({ panel }) => panel.width === undefined && widths[panel.id] === undefined,
         );

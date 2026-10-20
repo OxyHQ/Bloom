@@ -1,4 +1,6 @@
+import { ScreenScrollView } from '../screen';
 import { Button, CloseButton } from '../button';
+import { AppShellPanels } from '../app-shell';
 import { Dialog } from '../dialog';
 import * as Menu from '../dropdown-menu';
 import { Portal } from '../portal';
@@ -10,6 +12,8 @@ import { ProjectBoardPlatformContext } from './context';
 import type { ProjectBoardProps } from './types';
 
 const platform = {
+  AppShellPanels,
+  ScreenScrollView,
   Tooltip,
   TooltipTrigger,
   TooltipContent,

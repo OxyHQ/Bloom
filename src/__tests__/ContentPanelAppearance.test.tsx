@@ -73,9 +73,7 @@ it.each([
     }
     if (platform === 'web') {
       expect(resolvedStyle(surface.props.style)['--bloom-surface']).toBe('#203040');
-      expect(
-        resolvedStyle(view.getByTestId('content-panel-bleed-mask').props.style).boxShadow,
-      ).toContain('#203040');
+      expect(view.queryByTestId('content-panel-bleed-mask')).toBeNull();
     }
   },
 );

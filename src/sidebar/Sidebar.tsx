@@ -193,6 +193,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   footer,
   secondaryItems = [],
   modes,
+  modesPresentation,
   mode,
   onModeChange,
   modesLabel: modesLabelProp,
@@ -403,6 +404,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // The identity at the top: the account by default, the team when it leads
   // (`teamPlacement="header"`) — the other one is the card at the foot.
   const teamLeads = teamPlacement === 'header' && team != null;
+  const compactModes = modesPresentation === 'toggle' && modes?.length === 2;
+  const inlineModes = compactModes && !collapsed;
   const hasLogo = !!logo;
   const hasAccount = teamLeads || !!account;
   const headerGeometry = useAnimatedStyle(
@@ -414,9 +417,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const headerIdentityGeometry = useAnimatedStyle(
     () => ({
       top: hasLogo ? 0 : 30 * progress.value,
-      insetInlineEnd: (hasLogo ? 28 : 20) * (1 - progress.value),
+      insetInlineEnd: ((hasLogo ? 28 : 20) + (compactModes ? 36 : 0)) * (1 - progress.value),
     }),
-    [progress, hasLogo],
+    [progress, hasLogo, compactModes],
   );
   const headerControlGeometry = useAnimatedStyle(() => {
     const p = progress.value;
@@ -795,6 +798,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     modes && modes.length > 0 ? (
       <SidebarModeSwitcher
         modes={modes}
+        presentation={modesPresentation}
         value={mode ?? modes[0]!.key}
         onValueChange={handleModeChange}
         collapsed={collapsed}
@@ -862,7 +866,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         ) : (
           (accountMenu ?? <View />)
         )}
-        {headerControl}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {inlineModes ? modeSwitcher : null}
+          {headerControl}
+        </View>
       </View>
       {logo ? accountMenu : null}
     </>
@@ -885,6 +892,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
               accountMenu
             )}
           </Animated.View>
+        ) : null}
+        {inlineModes ? (
+          <View style={{ position: 'absolute', insetInlineEnd: 28, top: hasLogo ? 4 : 0 }}>
+            {modeSwitcher}
+          </View>
         ) : null}
         <Animated.View
           testID="sidebar-header-control"
@@ -975,7 +987,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                       : header
                     : headerRow}
                   {typeof toolbar === 'function' ? toolbar({ collapsed }) : toolbar}
-                  {modeSwitcher}
+                  {inlineModes ? null : modeSwitcher}
                   {showSearch && !flatMobile ? searchButton : null}
                 </View>
                 <SidebarScrollArea
