@@ -4,8 +4,8 @@
 import { act, type ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { documentFromSnapshot, EditorStore, type BlockSnapshot } from '../../model';
-import { BlockEditor, type BlockEditorProps } from '../BlockEditor';
-import { useEditorController } from '../controller';
+import { BlockEditor, EditorSurface, type BlockEditorProps } from '../BlockEditor';
+import { EditorController, useEditorController } from '../controller';
 import { BlockDecorations } from '../decorations';
 import { EditorToolbar } from '../EditorToolbar';
 import { selectBlocks } from '../block-selection';
@@ -301,7 +301,7 @@ describe('confirmRemove', () => {
       value: { setData: (type: string, value: string) => data.set(type, value) },
     });
     act(() => {
-      document.dispatchEvent(event);
+      document.activeElement?.dispatchEvent(event);
     });
     expect(data.get('text/plain')?.trim().split(/\n+/)).toEqual(['Hello world', 'Second']);
     expect(confirm).toHaveBeenCalledWith(['b1', 'b2']);
@@ -367,4 +367,195 @@ describe('onPasteText', () => {
     expect(html.defaultPrevented).toBe(true);
     expect(store.doc.root.length).toBeGreaterThan(2);
   });
+});
+
+describe('clipboard ownership', () => {
+  function clipboard(target: EventTarget, kind: 'copy' | 'cut') {
+    const data = new Map<string, string>();
+    const event = new Event(kind, { bubbles: true, cancelable: true }) as ClipboardEvent;
+    const setData = jest.fn((type: string, value: string) => data.set(type, value));
+    Object.defineProperty(event, 'clipboardData', { value: { setData } });
+    act(() => {
+      target.dispatchEvent(event);
+    });
+    return { data, event, setData };
+  }
+
+  it.each([
+    ['copy', 'input'],
+    ['cut', 'input'],
+    ['copy', 'textarea'],
+    ['cut', 'textarea'],
+    ['copy', 'contenteditable'],
+    ['cut', 'contenteditable'],
+  ] as const)('leaves %s in an external %s alone after a block selection', (kind, field) => {
+    const store = makeStore(PARAGRAPHS);
+    const controller = new EditorController(store);
+    const confirmRemove = jest.fn(() => true);
+    const container = mount(
+      <>
+        <BlockEditor
+          store={store}
+          controller={controller}
+          slashItems={[]}
+          confirmRemove={confirmRemove}
+        />
+        {field === 'input' ? (
+          <input data-testid="external" defaultValue="External text" />
+        ) : field === 'textarea' ? (
+          <textarea data-testid="external" defaultValue="External text" />
+        ) : (
+          <div data-testid="external" contentEditable suppressContentEditableWarning>
+            External text
+          </div>
+        )}
+      </>,
+    );
+    act(() => selectBlocks(controller.ui, ['b1']));
+    const input = container.querySelector<HTMLInputElement>('[data-testid="external"]')!;
+    act(() => {
+      input.focus();
+      if ('select' in input) input.select();
+    });
+    const before = store.getSnapshot();
+    const { data, event } = clipboard(input, kind);
+    expect(data.size).toBe(0);
+    expect(event.defaultPrevented).toBe(false);
+    expect(confirmRemove).not.toHaveBeenCalled();
+    expect(store.getSnapshot()).toBe(before);
+  });
+
+  it.each(['copy', 'cut'] as const)(
+    'only the focused editor handles %s when both retain selections',
+    (kind) => {
+      const first = makeStore(PARAGRAPHS);
+      const second = makeStore([{ type: 'paragraph', text: [{ text: 'Other editor' }] }]);
+      const a = new EditorController(first);
+      const b = new EditorController(second);
+      const confirmA = jest.fn(() => true);
+      const confirmB = jest.fn(() => true);
+      mount(
+        <>
+          <BlockEditor store={first} controller={a} slashItems={[]} confirmRemove={confirmA} />
+          <BlockEditor
+            store={second}
+            controller={b}
+            slashItems={[]}
+            domIdPrefix="second-"
+            confirmRemove={confirmB}
+          />
+        </>,
+      );
+      act(() => selectBlocks(a.ui, ['b1']));
+      act(() => selectBlocks(b.ui, ['b1']));
+      const before = first.getSnapshot();
+      const { data, setData } = clipboard(document.getElementById('second-b1')!, kind);
+      expect(setData).toHaveBeenCalledTimes(1);
+      expect(data.get('text/plain')?.trim()).toBe('Other editor');
+      expect(first.getSnapshot()).toBe(before);
+      expect(confirmA).not.toHaveBeenCalled();
+      expect(confirmB).toHaveBeenCalledTimes(kind === 'cut' ? 1 : 0);
+      if (kind === 'cut') {
+        expect(second.doc.blocks.b1).toBeUndefined();
+        act(() => second.undo());
+        expect(second.doc.blocks.b1?.text).toEqual([{ text: 'Other editor' }]);
+      }
+    },
+  );
+
+  it('moves keyboard focus to the whole-block selection without refocusing for unrelated UI changes', () => {
+    const store = makeStore(PARAGRAPHS);
+    const controller = new EditorController(store);
+    const container = mount(
+      <>
+        <BlockEditor store={store} controller={controller} slashItems={[]} />
+        <input />
+      </>,
+    );
+    act(() => selectBlocks(controller.ui, ['b1']));
+    const owner = container.querySelector('[data-bloom-editor-surface]');
+    expect(owner).not.toBeNull();
+    expect(document.activeElement).toBe(owner);
+    const { data } = clipboard(document.activeElement!, 'copy');
+    expect(data.get('text/plain')?.trim()).toBe('Hello world');
+    const input = container.querySelector('input')!;
+    act(() => input.focus());
+    act(() => controller.ui.set({ blockMenu: null }));
+    expect(document.activeElement).toBe(input);
+    expect(clipboard(document, 'cut').event.defaultPrevented).toBe(false);
+    expect(store.doc.blocks.b1).toBeDefined();
+  });
+  it('does not let an enclosing editor intercept a nested editor cut', () => {
+    const first = makeStore(PARAGRAPHS);
+    const second = makeStore([{ type: 'paragraph', text: [{ text: 'Nested text' }] }]);
+    const outer = new EditorController(first),
+      inner = new EditorController(second);
+    const confirmOuter = jest.fn(() => true);
+    mount(
+      <EditorSurface store={first} controller={outer} slashItems={[]} confirmRemove={confirmOuter}>
+        <BlockEditor store={second} controller={inner} slashItems={[]} domIdPrefix="inner-" />
+      </EditorSurface>,
+    );
+    act(() => selectBlocks(outer.ui, ['b1']));
+    act(() => selectBlocks(inner.ui, ['b1']));
+    const before = first.getSnapshot();
+    const result = clipboard(document.activeElement!, 'cut');
+    expect(result.data.get('text/plain')?.trim()).toBe('Nested text');
+    expect(first.getSnapshot()).toBe(before);
+    expect(confirmOuter).not.toHaveBeenCalled();
+    expect(second.doc.blocks.b1).toBeUndefined();
+  });
+
+  it('does not reclaim focus from an external field when callbacks change', () => {
+    const store = makeStore(PARAGRAPHS);
+    const controller = new EditorController(store);
+    const ui = () => (
+      <>
+        <BlockEditor
+          store={store}
+          controller={controller}
+          slashItems={[]}
+          confirmRemove={() => true}
+        />
+        <input />
+      </>
+    );
+    const container = mount(ui());
+    act(() => selectBlocks(controller.ui, ['b1']));
+    const input = container.querySelector('input')!;
+    act(() => input.focus());
+    act(() => root?.render(ui()));
+    expect(document.activeElement).toBe(input);
+    expect(clipboard(input, 'cut').data.size).toBe(0);
+    expect(store.doc.blocks.b1).toBeDefined();
+  });
+  it.each(['input', 'textarea', '', 'true', 'plaintext-only'])(
+    'preserves clipboard in a custom renderer field (%s)',
+    (editable) => {
+      const store = makeStore(PARAGRAPHS);
+      const controller = new EditorController(store);
+      const container = mount(
+        <EditorSurface store={store} controller={controller} slashItems={[]}>
+          {editable === 'input' ? (
+            <input data-testid="field" />
+          ) : editable === 'textarea' ? (
+            <textarea data-testid="field" />
+          ) : (
+            <div data-testid="field" tabIndex={-1} />
+          )}
+        </EditorSurface>,
+      );
+      const field = container.querySelector<HTMLElement>('[data-testid="field"]')!;
+      if (editable !== 'input' && editable !== 'textarea')
+        field.setAttribute('contenteditable', editable);
+      act(() => selectBlocks(controller.ui, ['b1']));
+      act(() => field.focus());
+      expect(document.activeElement).toBe(field);
+      const before = store.getSnapshot();
+      for (const kind of ['copy', 'cut'] as const) {
+        expect(clipboard(field, kind).event.defaultPrevented).toBe(false);
+      }
+      expect(store.getSnapshot()).toBe(before);
+    },
+  );
 });
