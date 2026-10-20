@@ -28,6 +28,7 @@ export const AppShell = createAppShell(
   Fab,
   { Screen, ScreenScrollView },
   PanelLayoutView,
+  BloomColorScope,
 );
 export const { AppShellPanel, AppShellPanels } = createAppShellPanels(
   ContentPanel,

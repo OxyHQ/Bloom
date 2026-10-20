@@ -143,10 +143,12 @@ export function ActivityScreen() {
 
 `PageHeader` follows this Screen's offset, including its surface change while
 scrolling. Insets clear measured chrome once. Use `headerPlacement="overlay"`
-for a hero that extends beneath the header. `colorPreset` on Screen scopes the
-recipe to content, chrome and the enclosing panel, including its border; it does
-not recolor sibling panels. Retained screens must publish their focused `active`
-state so background lists cannot drive foreground navigation.
+for a hero that extends beneath the header. In a `split` layout, the active
+Screen's `colorPreset` themes the whole shell, including the sidebar, bottom bar
+and sibling panels. In a `deck`, it themes only that column's content, chrome
+and enclosing panel, including its border. Leaving the screen restores the prior
+recipe. Retained screens must publish their focused `active` state so background
+lists cannot drive foreground navigation.
 
 ## Compose the workspace
 

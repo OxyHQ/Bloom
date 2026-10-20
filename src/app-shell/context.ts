@@ -4,6 +4,7 @@
  */
 import { createContext, useContext, type RefObject } from 'react';
 import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
+import type { ColorClaim } from './use-color-claims';
 
 export interface AppShellContextValue {
   /**
@@ -77,3 +78,11 @@ export function usePanelScrollContainer<T = unknown>(): RefObject<T | null> | nu
       : (legacy ?? (host.kind === 'document' ? null : (host.scrollRef ?? null)))
   ) as RefObject<T | null> | null;
 }
+
+/**
+ * Where an active screen's colour preset is forwarded so the whole shell — the
+ * sidebar, the bottom bar and every sibling panel — adopts it. Absent when each
+ * panel is its own surface (deck): there a preset themes its own column only.
+ */
+export const ShellColorClaimContext = createContext<ColorClaim | null>(null);
+ShellColorClaimContext.displayName = 'BloomShellColorClaimContext';
