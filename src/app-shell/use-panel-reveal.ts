@@ -28,15 +28,46 @@ export function usePanelReveal({
     if (!tracks.some((track) => track.id === request.id && track.visible)) return;
     const index = panels.findIndex((panel) => panel.id === request.id);
     if (index < 0) return;
-    const node = (rootRef.current as HTMLElement | null)?.querySelector<HTMLElement>(
+    const root = rootRef.current as HTMLElement | null;
+    const node = root?.querySelector<HTMLElement>(
       `[data-bloom-panel-owner="${scope}"][data-bloom-panel-index="${index}"]`,
     );
-    if (!node?.scrollIntoView) return;
-    consumed.current = { ...request };
-    node.scrollIntoView({
-      block: 'nearest',
-      inline: 'nearest',
-      behavior: reducedMotion ? 'instant' : 'smooth',
-    });
+    if (!root || !node?.scrollIntoView) return;
+    let cancelled = false;
+    const revealWhenSettled = () => {
+      if (cancelled) return;
+      // Insertion starts at zero width. Revealing that box consumes the action
+      // without scrolling, then leaves the expanded panel outside the viewport.
+      // Only compositor-owned transitions participate: card animations and
+      // scroll timelines must not delay this explicit navigation action.
+      const envelope = root.closest<HTMLElement>(`[data-bloom-reading-envelope="${scope}"]`);
+      const owners = Array.from(
+        root.querySelectorAll<HTMLElement>(`[data-bloom-panel-owner="${scope}"]`),
+      );
+      if (envelope) owners.push(envelope);
+      const transitions = owners.flatMap((owner) =>
+        (owner.getAnimations?.() ?? []).filter(
+          (animation) =>
+            'transitionProperty' in animation &&
+            (animation.pending || animation.playState === 'running'),
+        ),
+      );
+      if (transitions.length) {
+        void Promise.allSettled(transitions.map((animation) => animation.finished)).then(
+          revealWhenSettled,
+        );
+        return;
+      }
+      consumed.current = { ...request };
+      node.scrollIntoView({
+        block: 'nearest',
+        inline: 'nearest',
+        behavior: reducedMotion ? 'instant' : 'smooth',
+      });
+    };
+    revealWhenSettled();
+    return () => {
+      cancelled = true;
+    };
   }, [rootRef, request, enabled, scope, panels, tracks, reducedMotion]);
 }

@@ -1186,7 +1186,10 @@ host. `PanelRevealRequest` is exported from `@oxy.so/bloom/app-shell`.
 `requestKey` is a string or number identifying the action: change it to reveal
 the same panel again. Bloom consumes each new id/key request once, when the panel is
 eligible in a horizontal document Deck. Rerenders and leaving/re-entering Deck
-do not repeat a consumed request. The browser scrolls the nearest edges using
+do not repeat a consumed request. If the compositor is animating insertion or
+geometry, reveal waits for those transitions to finish before consuming the
+request; replacing the request or unmounting cancels the pending reveal.
+Content animations do not delay it. The browser scrolls the nearest edges using
 smooth motion, or instant motion when reduced motion is enabled. A request does
 not change selection: set `activePanel` separately when the action also selects.
 
