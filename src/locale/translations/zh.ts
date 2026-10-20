@@ -2745,6 +2745,17 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    changeCover: '更换封面',
+    reposition: '调整位置',
+    instruction:
+      '拖动以调整位置。使用方向键移动，按 Shift 加大步幅，按 Enter 保存，按 Escape 取消。',
+    saveError: '无法保存封面位置。请重试。',
+    moveUp: '向上移动图片',
+    moveDown: '向下移动图片',
+    moveLeft: '向左移动图片',
+    moveRight: '向右移动图片',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

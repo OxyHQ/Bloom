@@ -1,65 +1,73 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View, type ImageSourcePropType, type LayoutChangeEvent } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { BloomImage, type BloomImageLoadInfo } from '../image';
+import { CENTER_POSITION, clampPosition, coverGeometry, coverSourceIdentity } from './geometry';
+import type { CoverImageProps } from './types';
 
-/** `object-fit: cover` with an `object-position`: the image sized to cover the box, offset by the fractions. */
+/** One crop renderer for cover bands, compact previews and galleries. */
 export function CoverImage({
   source,
-  position,
+  sourceKey: explicitSourceKey,
+  position = CENTER_POSITION,
+  contentFit = 'cover',
+  style,
+  accessibilityLabel,
   testID,
-}: {
-  source: string | ImageSourcePropType;
-  position: { x: number; y: number };
-  testID?: string;
-}) {
+  onGeometryChange,
+}: CoverImageProps) {
   const [box, setBox] = useState<{ width: number; height: number } | null>(null);
-  const [natural, setNatural] = useState<{ width: number; height: number } | null>(null);
-  const resolved: ImageSourcePropType = typeof source === 'string' ? { uri: source } : source;
-
+  // Associate dimensions with their source, so a changed URL cannot borrow the previous crop.
+  const sourceKey = coverSourceIdentity(source, explicitSourceKey);
+  const [loaded, setLoaded] = useState<{ key: string; size: BloomImageLoadInfo } | null>(null);
+  const natural = loaded?.key === sourceKey ? loaded.size : null;
+  const geometry = box && natural ? coverGeometry(box, natural, contentFit) : null;
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setBox((prev) =>
-      prev && prev.width === width && prev.height === height ? prev : { width, height },
+    setBox((prev) => (prev?.width === width && prev.height === height ? prev : { width, height }));
+  }, []);
+  const onLoad = useCallback(
+    (size: BloomImageLoadInfo) => {
+      if (size.width > 0 && size.height > 0) setLoaded({ key: sourceKey, size });
+    },
+    [sourceKey],
+  );
+  const width = geometry?.width;
+  const height = geometry?.height;
+  const overflowX = geometry?.overflowX;
+  const overflowY = geometry?.overflowY;
+  useEffect(() => {
+    onGeometryChange?.(
+      width === undefined ||
+        height === undefined ||
+        overflowX === undefined ||
+        overflowY === undefined
+        ? null
+        : { width, height, overflowX, overflowY },
     );
-  }, []);
-  const onLoad = useCallback(({ width, height }: BloomImageLoadInfo) => {
-    if (width > 0 && height > 0) setNatural({ width, height });
-  }, []);
-
-  const frame = useMemo(() => {
-    if (!box || !natural) return null;
-    const scale = Math.max(box.width / natural.width, box.height / natural.height);
-    const width = natural.width * scale;
-    const height = natural.height * scale;
-    return {
-      width,
-      height,
-      left: (box.width - width) * position.x,
-      top: (box.height - height) * position.y,
-    };
-  }, [box, natural, position.x, position.y]);
-
+  }, [width, height, overflowX, overflowY, onGeometryChange]);
+  const crop = clampPosition(position);
   return (
     <View
-      style={StyleSheet.absoluteFill}
+      style={[{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }, style]}
       onLayout={onLayout}
       testID={testID ? `${testID}-frame` : undefined}
     >
       <BloomImage
-        testID={testID}
-        source={resolved}
+        source={source}
         onLoad={onLoad}
         accessibilityIgnoresInvertColors
-        aria-hidden
-        contentFit="cover"
+        accessibilityLabel={accessibilityLabel}
+        aria-hidden={accessibilityLabel ? undefined : true}
+        contentFit={contentFit}
+        testID={testID}
         style={
-          frame
+          geometry && box
             ? {
                 position: 'absolute',
-                left: frame.left,
-                top: frame.top,
-                width: frame.width,
-                height: frame.height,
+                width: geometry.width,
+                height: geometry.height,
+                left: (box.width - geometry.width) * (contentFit === 'contain' ? 0.5 : crop.x),
+                top: (box.height - geometry.height) * (contentFit === 'contain' ? 0.5 : crop.y),
               }
             : StyleSheet.absoluteFill
         }

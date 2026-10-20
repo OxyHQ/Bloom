@@ -2818,6 +2818,17 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    changeCover: 'カバーを変更',
+    reposition: '位置を調整',
+    instruction:
+      'ドラッグして位置を調整します。矢印キーで移動、Shiftで大きく移動、Enterで保存、Escapeでキャンセルします。',
+    saveError: 'カバーの位置を保存できませんでした。もう一度お試しください。',
+    moveUp: '画像を上に移動',
+    moveDown: '画像を下に移動',
+    moveLeft: '画像を左に移動',
+    moveRight: '画像を右に移動',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

@@ -3202,6 +3202,17 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    changeCover: 'Изменить обложку',
+    reposition: 'Изменить положение',
+    instruction:
+      'Перетащите изображение. Стрелки перемещают, Shift увеличивает шаг, Enter сохраняет, Escape отменяет.',
+    saveError: 'Не удалось сохранить положение обложки. Повторите попытку.',
+    moveUp: 'Переместить изображение вверх',
+    moveDown: 'Переместить изображение вниз',
+    moveLeft: 'Переместить изображение влево',
+    moveRight: 'Переместить изображение вправо',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

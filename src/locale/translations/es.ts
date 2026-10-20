@@ -2906,6 +2906,17 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    changeCover: 'Cambiar portada',
+    reposition: 'Reposicionar',
+    instruction:
+      'Arrastra para reposicionar. Usa las flechas para mover, Mayús para pasos mayores, Intro para guardar o Escape para cancelar.',
+    saveError: 'No se pudo guardar la posición de la portada. Inténtalo de nuevo.',
+    moveUp: 'Mover imagen arriba',
+    moveDown: 'Mover imagen abajo',
+    moveLeft: 'Mover imagen a la izquierda',
+    moveRight: 'Mover imagen a la derecha',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

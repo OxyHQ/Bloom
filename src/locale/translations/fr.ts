@@ -2923,6 +2923,17 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    changeCover: 'Changer la couverture',
+    reposition: 'Repositionner',
+    instruction:
+      'Faites glisser pour repositionner. Utilisez les flèches pour déplacer, Maj pour de grands pas, Entrée pour enregistrer ou Échap pour annuler.',
+    saveError: 'Impossible d’enregistrer la position de la couverture. Réessayez.',
+    moveUp: 'Déplacer l’image vers le haut',
+    moveDown: 'Déplacer l’image vers le bas',
+    moveLeft: 'Déplacer l’image vers la gauche',
+    moveRight: 'Déplacer l’image vers la droite',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

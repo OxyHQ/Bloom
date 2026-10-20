@@ -2805,6 +2805,17 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    changeCover: 'कवर बदलें',
+    reposition: 'स्थान बदलें',
+    instruction:
+      'स्थान बदलने के लिए खींचें। तीर कुंजियों से चलाएँ, बड़े चरणों के लिए Shift, सहेजने के लिए Enter या रद्द करने के लिए Escape दबाएँ।',
+    saveError: 'कवर की स्थिति सहेजी नहीं जा सकी। फिर कोशिश करें।',
+    moveUp: 'चित्र ऊपर ले जाएँ',
+    moveDown: 'चित्र नीचे ले जाएँ',
+    moveLeft: 'चित्र बाएँ ले जाएँ',
+    moveRight: 'चित्र दाएँ ले जाएँ',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

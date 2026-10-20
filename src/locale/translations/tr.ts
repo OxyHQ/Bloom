@@ -2838,6 +2838,17 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    changeCover: 'Kapağı değiştir',
+    reposition: 'Yeniden konumlandır',
+    instruction:
+      'Yeniden konumlandırmak için sürükleyin. Ok tuşlarıyla taşıyın, büyük adımlar için Shift, kaydetmek için Enter, iptal için Escape kullanın.',
+    saveError: 'Kapak konumu kaydedilemedi. Tekrar deneyin.',
+    moveUp: 'Görseli yukarı taşı',
+    moveDown: 'Görseli aşağı taşı',
+    moveLeft: 'Görseli sola taşı',
+    moveRight: 'Görseli sağa taşı',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

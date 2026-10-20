@@ -2908,6 +2908,17 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    changeCover: 'Cambia copertina',
+    reposition: 'Riposiziona',
+    instruction:
+      'Trascina per riposizionare. Usa le frecce per spostare, Maiusc per passi più grandi, Invio per salvare o Esc per annullare.',
+    saveError: 'Impossibile salvare la posizione della copertina. Riprova.',
+    moveUp: 'Sposta immagine in alto',
+    moveDown: 'Sposta immagine in basso',
+    moveLeft: 'Sposta immagine a sinistra',
+    moveRight: 'Sposta immagine a destra',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
