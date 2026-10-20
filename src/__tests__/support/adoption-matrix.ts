@@ -337,6 +337,11 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     sidebar: { verdict: 'does-not-apply', reason: BARE_INPUT },
     'chat-people': { verdict: 'does-not-apply', reason: SELECTION_ROW },
     'stay-filters': { verdict: 'does-not-apply', reason: SELECTION_ROW },
+    'project-board': {
+      verdict: 'does-not-apply',
+      reason:
+        'the form roles occur in the controlled Board drag exclusion selector: nested checkbox, switch and combobox controls keep their own input gestures. Board renders opaque card slots, not those controls.',
+    },
     'map-marker': { verdict: 'does-not-apply', reason: SELECTION_ROW },
     address: { verdict: 'does-not-apply', reason: SELECTION_ROW },
     'composer-panel': {

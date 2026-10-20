@@ -37,7 +37,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
-| Field membership | 51 | 30 | 0 | 21 | 0 |
+| Field membership | 52 | 30 | 0 | 22 | 0 |
 | Control presentation | 43 | 42 | 1 | 0 | 0 |
 | Trigger composition | 10 | 8 | 0 | 2 | 0 |
 | Controlled / uncontrolled state | 60 | 57 | 2 | 1 | 0 |
@@ -66,6 +66,7 @@ None.
 - `music-library` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
 - `note-card` (does-not-apply) — the `checkbox` role is on the CARD (bulk selection in a list) and on read-only checklist PREVIEW rows. Neither is a form control: a note card is never inside a `Field`, and the preview rows take no press at all.
 - `note-editor` (does-not-apply) — the raw `TextInput` is a DOCUMENT TITLE — it draws no box, no label and no hint, because the words are the document rather than a value being collected. A `Field` around it would put a form label above a heading.
+- `project-board` (does-not-apply) — the form roles occur in the controlled Board drag exclusion selector: nested checkbox, switch and combobox controls keep their own input gestures. Board renders opaque card slots, not those controls.
 - `sidebar` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
 - `stay-filters` (does-not-apply) — writes a selection role on a ROW or a chip rather than on a form control — a list the user picks from, inside its own container, never inside a `Field`.
 - `styles` (does-not-apply) — the roles are CSS attribute selectors in `styles/base-web-css.ts` (`[role="radio"]` and its siblings take no text selection), not a node the family renders — it draws no control at all.
@@ -252,7 +253,7 @@ None.
 | `pressable-scale` | `@oxy.so/bloom/pressable-scale` + barrel | universal | `pressable-scale.mdx` | yes | 1 |  |  |  |  |
 | `price-breakdown` | `@oxy.so/bloom/price-breakdown` + barrel | universal | `price-breakdown.mdx` | yes | 3 |  |  |  | reads |
 | `progressive-blur` | `@oxy.so/bloom/progressive-blur` + barrel | web fork | `progressive-blur.mdx` | yes | 1 |  |  |  |  |
-| `project-board` | `@oxy.so/bloom/project-board` + barrel | web fork | `project-board.mdx` | yes | 2 |  |  |  |  |
+| `project-board` | `@oxy.so/bloom/project-board` + barrel | web fork | `project-board.mdx` | yes | 4 | n/a¹ |  |  |  |
 | `proof-of-delivery` | `@oxy.so/bloom/proof-of-delivery` + barrel | universal | `proof-of-delivery.mdx` | yes | 1 |  |  |  | reads |
 | `property-insights` | `@oxy.so/bloom/property-insights` + barrel | universal | `property-insights.mdx` | yes | 5 |  |  |  | reads |
 | `provider` | `@oxy.so/bloom/provider` | universal | `provider.mdx` | yes | 4 |  |  |  |  |
@@ -300,7 +301,7 @@ None.
 | `tenancy` | `@oxy.so/bloom/tenancy` + barrel | universal | `tenancy.mdx` | yes | 5 |  | reads |  |  |
 | `text-field` | `@oxy.so/bloom/text-field` + barrel | universal | `text-field.mdx` | yes | 19 | reads | reads |  |  |
 | `textarea` | `@oxy.so/bloom/textarea` + barrel | universal | `textarea.mdx` | yes | 4 | reads | reads |  | n/a¹ |
-| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 439 |  |  | n/a¹ | reads |
+| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 441 |  |  | n/a¹ | reads |
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | 2 | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | 18 |  |  |  |  |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | 2 |  |  |  |  |
