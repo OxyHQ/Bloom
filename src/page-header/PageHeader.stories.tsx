@@ -16,7 +16,8 @@ import { RiAddFill, RiBookmarkLine, RiMore2Line, RiSearchLine, RiShare2Line } fr
 import { ScrollOffsetProvider, TopEdgeProvider, useTopEdgeInset } from '../layout';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { PageHeader } from './index';
+import { PageHeader, PageHeaderTitleInput } from './index';
+import { Toolbar } from '../layout';
 
 const meta: Meta<typeof PageHeader> = {
   id: 'blocks-page-header',
@@ -630,3 +631,36 @@ export const ProfileDocking: Story = {
     );
   },
 };
+
+function EditableWorkspaceHeader() {
+  const [title, setTitle] = useState('Projects');
+  const [view, setView] = useState('board');
+  return (
+    <Page>
+      <PageHeader
+        presentation="bar"
+        title={
+          <PageHeaderTitleInput label="Database title" value={title} onChangeText={setTitle} />
+        }
+        accessory={
+          <Toolbar
+            actions={<Button leadingIcon={RiAddFill}>New</Button>}
+            accessory={<Text className="text-text-secondary">12 records</Text>}
+          >
+            <Tabs value={view} onValueChange={setView}>
+              <TabsTrigger value="board" label="Board" />
+              <TabsTrigger value="table" label="Table" />
+            </Tabs>
+            <Button appearance="plain">Filter</Button>
+            <Button appearance="plain">Sort</Button>
+            <Button appearance="plain">Properties</Button>
+          </Toolbar>
+        }
+      />
+      <Rows count={5} />
+    </Page>
+  );
+}
+
+/** Narrow the canvas: tools scroll, while the primary action remains visible. */
+export const EditableWorkspace: Story = { render: () => <EditableWorkspaceHeader /> };

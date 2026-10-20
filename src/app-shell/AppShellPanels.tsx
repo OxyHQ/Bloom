@@ -30,16 +30,17 @@ import type { ScrollAreaProps } from '../layout/types';
  * This legacy surface delegates modular layout to that shared owner.
  */
 import type React from 'react';
-import { Children, isValidElement, useId } from 'react';
+import { Children, isValidElement, useContext, useId } from 'react';
 import { Platform, View, type ViewStyle } from 'react-native';
 
 import type { ContentPanelProps } from '../content-panel/types';
+import { ContentPanelNestingContext } from '../content-panel/context';
 import {
   AppShellRegionContext,
   useAppShellRegion,
   type AppShellRegionValue,
 } from '../layout/app-shell-region';
-import { useBottomEdgeInset } from '../layout/bottom-edge';
+import { BottomEdgeProvider, useBottomEdgeInset } from '../layout/bottom-edge';
 import { useOptionalSurfaceFill } from '../styles/surface-levels';
 import { webViewportHeightMinus, type WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
@@ -219,6 +220,7 @@ export function createAppShellPanels(
 
   /** The JSX family is an adapter: one renderer owns group geometry, chrome and scroll. */
   function AppShellPanels({
+    scope: compositionScope = 'region',
     layout,
     children,
     appearance = 'separated',
@@ -228,7 +230,19 @@ export function createAppShellPanels(
     onWidthsChange,
     testID,
   }: AppShellPanelsProps) {
-    const region = useRegion();
+    const inheritedRegion = useRegion();
+    const nested = useContext(ContentPanelNestingContext);
+    const parentFill = useOptionalSurfaceFill();
+    const local = compositionScope === 'local';
+    const region: AppShellRegionValue = local
+      ? {
+          ...inheritedRegion,
+          flow: 'bounded',
+          viewportInset: { top: 0, bottom: 0 },
+          bottomReserve: 0,
+          maskColor: parentFill ?? inheritedRegion.maskColor,
+        }
+      : inheritedRegion;
     const { width, onLayout } = useShellWidth();
     const scope = panelCssScope(useId());
     const { messages } = useMessages(APP_SHELL_MESSAGES);
@@ -269,26 +283,30 @@ export function createAppShellPanels(
         ]}
       >
         <PanelCssContext.Provider value={css ? scope : null}>
-          <AppShellRegionContext.Provider value={{ ...region, flow: 'bounded' }}>
-            <PanelLayoutView
-              eligibilityFromGroup
-              layout={{
-                panels,
-                appearance,
-                collapseBelow,
-                activePanel: show,
-                widths,
-                onWidthsChange,
-                flow: 'bounded',
-                horizontalScroll: 'contained',
-                gap,
-                ...layout,
-              }}
-              shellWidth={width}
-              gap={gap}
-              testID={testID}
-            />
-          </AppShellRegionContext.Provider>
+          <BottomEdgeProvider inherit={!local}>
+            <ContentPanelNestingContext.Provider value={local ? false : nested}>
+              <AppShellRegionContext.Provider value={{ ...region, flow: 'bounded' }}>
+                <PanelLayoutView
+                  eligibilityFromGroup
+                  layout={{
+                    panels,
+                    appearance,
+                    collapseBelow,
+                    activePanel: show,
+                    widths,
+                    onWidthsChange,
+                    flow: 'bounded',
+                    horizontalScroll: 'contained',
+                    gap,
+                    ...layout,
+                  }}
+                  shellWidth={width}
+                  gap={gap}
+                  testID={testID}
+                />
+              </AppShellRegionContext.Provider>
+            </ContentPanelNestingContext.Provider>
+          </BottomEdgeProvider>
         </PanelCssContext.Provider>
       </View>
     );

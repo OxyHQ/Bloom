@@ -1,0 +1,44 @@
+---
+title: Verification
+description: Test execution, native resolution and local consumer checks, including measured failure modes.
+order: 99
+---
+
+# Verification
+
+Read these failure modes before treating a passing command as evidence about a
+component or a consumer. Follow the normal package gates and release workflow.
+
+## Complete test passes
+
+**Jest crashes Node vm/contextify** with SIGSEGV/SIGTRAP/SIGABRT, sometimes `# Fatal error in , line 0`. Also on main: compare first. Victims: usually color suites, four color suites at maxWorkers2, six on another tree.
+
+2026-08-26: main passed3/4, branch with~20 extra files0/6; more files/worker worsened it, fewer workers WORSE. Not memory (83GB free) or cache (`--no-cache` crashes). By2026-09-07 Node24.20 `color-preset-registry.test.ts` failed alone AND `--runInBand` with `Context::GetNumberOfEmbedderDataFields Not a native context`; `theme-colors-parity.test.ts` joined on unmodified main2026-09-17. All three also passed full unsharded runs. Node24.14.1 crashes too. 2026-09-28 Node22.17 passed ten crashers with Bun-serialized `jest.config.ts` JSON (`rootDir`, `--config`, no ts-node), but workers crashed PageHeader in a full run.
+
+Shards65/64/64 passed where one193-suite run failed: `bunx jest --watchman=false --shard=N/3` for N=1,2,3. **Verify SUITE union against whole `--listTests`, not just sum.** Test totals changed3502→3514 unchanged; not fingerprints (unverified: gates see lib after build). A partial191/193 names missing suites, never claims completion.
+
+`node --no-opt …jest.js --maxWorkers=3` mitigates focused crashes; `NODE_OPTIONS` forbids that flag. Node24.21 still crashed5/479 suites under nine shards/maxWorkers2 on2026-09-28.
+
+## Jest does not resolve `.native.*`
+
+**No Jest haste/platform setup:** bare `./X` selects `X.tsx`, never `X.native.tsx`. Native files need explicit imports; most have none. The bare target is usually web-safe.
+
+Two consequences, both silent:
+
+- A `.native.*` file can stop compiling and the suite stays green. Precedent in the fleet: **1545 tests passed over a file that did not parse.**
+- Vendored `preset: react-native` suites cannot run unchanged. Teleport tests stay outside the tree, not `.skip`ped into false coverage (`docs/teleport.mdx`).
+
+**Recorded debt:** a platform config needs native peers installed/mocked; asserting native behavior via a web-resolved file measures the wrong file.
+
+## Verifying a LOCAL Bloom build in a consumer (four silent wrong passes)
+
+These silently verify the PUBLISHED package instead:
+
+- **`bun add file:<tgz|dir>` silently no-ops** when the installed version matches. Bump the local version, or symlink.
+- **Metro `resolver.extraNodeModules` is a FALLBACK:** a real `node_modules/@oxy.so/bloom` wins. **`expo export`/`expo start` disagree:** the dev server indexes only `projectRoot` + `watchFolders`; put the local copy inside the consumer repo, gitignored.
+- **Metro port is baked at BUILD time** (`-PreactNativeDevServerPort`, not `RCT_METRO_PORT`); emulators resolve it via host loopback, which `adb reverse` misses. Confirm it in `gradleResValues.xml`.
+
+**Live-edit: `node scripts/mirror-into-consumer.mjs <consumer-root> --watch`** mirrors `src/` into `bloom-local` (`--into=<dir>`: inside what Metro WATCHES, else edits are never seen) and links `node_modules/@oxy.so/bloom` to it; restart Metro for NEW files, `--restore` before trusting a typecheck.
+
+**Assert what you test first:** resolved version plus a marker only the local build produces. **Never write over `node_modules/<pkg>`:** bun hardlinks its global cache, mutating it for every worktree/session.
+

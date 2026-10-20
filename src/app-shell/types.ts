@@ -467,6 +467,10 @@ export interface AppShellPanelProps {
 
 /** Several panels side by side, laid out and collapsed by the shell's rules. */
 export interface AppShellPanelsProps {
+  /** A local work area owns its frame and bottom edge inside a page panel.
+   * Region composition remains the default and rejects nested page panels.
+   */
+  scope?: 'region' | 'local';
   /** Embedded descriptor composition, using the same renderer as AppShell.panelLayout.
    * Defaults to bounded flow and contained horizontal scrolling.
    * Supply either layout or JSX children.

@@ -60,8 +60,47 @@ The sidebar does not create a composer or any other application-specific UI.
 | `SidebarTeamMenu` | the team card and its grouped menu with a version footer |
 | `SidebarFolder` | one expandable folder of a `tree` |
 | `SidebarPlanCard` | the plan card (avatar, name, plan, action) |
+| `SidebarOnboardingCard` | a welcome card with app-owned tasks and an optional guide action |
 | `SidebarRailItem` | one `rail` destination: icon on a 48 × 32 pill over a 10px label |
 | `SIDEBAR_RAIL_WIDTH` | the rail's width (80) |
+
+## Onboarding
+
+`onboarding` places the same exported `SidebarOnboardingCard` below navigation and
+above the tree and custom content, inside the sidebar's existing scroll viewport.
+It is absent from a collapsed panel and the navigation rail; a mobile drawer shows
+the expanded card.
+
+```tsx
+<Sidebar
+  items={navigation}
+  onboarding={{
+    title: 'Welcome to your workspace',
+    leading: <ProductMark width={20} height={20} />,
+    onPress: openWelcome,
+    steps: [
+      { key: 'page', label: 'Create a page', completed: hasPages, onPress: createPage },
+      { key: 'team', label: 'Invite your team', completed: hasTeammates, onPress: openMembers },
+      { key: 'project', label: 'Track a project', completed: hasProject, onPress: openProjects },
+    ],
+    onSeeAll: openWelcome,
+  }}
+/>
+```
+
+The first two incomplete steps appear in caller order; `visibleCount` changes the
+limit. Completion is controlled: pressing a task invokes its callback, and only
+updated `completed` data removes it. Omitting `onboarding` hides the entire card,
+including when the app decides onboarding is finished. A step with no callback is
+static text; `disabled` prevents an available action. The title is independently
+clickable only when `onPress` exists. The footer appears only with `onSeeAll`;
+its localized “See all” label can be overridden with `seeAllLabel`.
+
+The card uses Bloom's shared card surface, 16px corners, a subtle border and
+shadow. Its decorative leading slot accepts a product mark or avatar. Web task
+rows are at least 28px high, and native rows at least 44px; labels wrap and grow
+with the system font. Actions retain the sidebar's keyboard focus ring. All
+product names, task labels, destinations and progress belong to the app.
 
 ## Logo
 

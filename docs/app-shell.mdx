@@ -246,6 +246,16 @@ Because a group bounds itself, a route made of several panels needs no `scroll`
 of its own: the shell stays `page` for every route. (Switching `scroll` per route
 is still supported — and never remounts the routes, see below.)
 
+An inline work area, such as a database board inside a document, uses
+`AppShellPanels scope="local"`. This explicitly establishes its own bounded
+composition: page viewport insets and bottom-edge claims stop at that boundary,
+and its mask follows the actual containing surface. Its panels may therefore
+live inside a page panel without pretending to be another page frame.
+Default `scope="region"` still rejects nested page panels, as does a direct
+`ContentPanel` inside any local panel. The host supplies the local work area's
+available space; its deck and column Screens own scrolling within that space.
+`ProjectBoard variant="embedded"` and `"grouped"` establish this scope internally.
+
 ### Where the panel goes
 
 Put it where the layout is DECLARED: around the outlet when every page is one

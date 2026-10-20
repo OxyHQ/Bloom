@@ -315,6 +315,10 @@ interface TabsContextValue {
    */
   selectedValue: string | undefined;
   onValueChange: ((value: string) => void) | undefined;
+  onReorder: TabsProps['onReorder'];
+  draggedValue: React.MutableRefObject<string | null>;
+  reorderableValues: React.MutableRefObject<Set<string>>;
+  reorderNeighbor: (value: string, direction: -1 | 1) => void;
   variant: ResolvedVariant;
   paint: TabsPaint;
   fullWidth: boolean;
@@ -399,6 +403,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   {
     value,
     onValueChange,
+    onReorder,
     hasSelection = true,
     variant = 'underline',
     fullWidth = false,
@@ -708,10 +713,29 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     [dragOffset, dragWidthDelta, indicatorX, indicatorWidth, reducedMotion, slideTiming],
   );
 
+  const draggedValue = useRef<string | null>(null);
+  const reorderableValues = useRef(new Set<string>());
+  const reorderNeighbor = useCallback(
+    (from: string, direction: -1 | 1) => {
+      const values = [...triggerMeasuresRef.current.keys()]
+        .filter((item) => reorderableValues.current.has(item))
+        .sort(
+          (a, b) => (triggerLayoutsRef.current[a]?.x ?? 0) - (triggerLayoutsRef.current[b]?.x ?? 0),
+        );
+      const target = values[values.indexOf(from) + direction];
+      if (target) onReorder?.(from, target);
+    },
+    [onReorder],
+  );
+
   const contextValue = useMemo(
     (): TabsContextValue => ({
       selectedValue: value,
       onValueChange,
+      onReorder,
+      draggedValue,
+      reorderableValues,
+      reorderNeighbor,
       variant: resolvedVariant,
       paint,
       fullWidth,
@@ -723,6 +747,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     [
       value,
       onValueChange,
+      onReorder,
+      reorderNeighbor,
       resolvedVariant,
       paint,
       fullWidth,
@@ -858,6 +884,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   count,
   isFocused,
   disabled = false,
+  reorderable = false,
   onPress: onPressProp,
   onLongPress,
   trailing,
@@ -868,6 +895,10 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   const {
     selectedValue,
     onValueChange,
+    onReorder,
+    draggedValue,
+    reorderableValues,
+    reorderNeighbor,
     variant,
     paint,
     fullWidth,
@@ -893,6 +924,52 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   // as `children` — and because a trigger is the only thing that knows its own
   // value, which is what the geometry has to be keyed by.
   const nodeRef = useRef<ComponentRef<typeof View> | null>(null);
+  const pressRef = useRef<ComponentRef<typeof View> | null>(null);
+  useEffect(() => {
+    if (disabled || !reorderable) return;
+    const values = reorderableValues.current;
+    values.add(value);
+    return () => {
+      values.delete(value);
+    };
+  }, [disabled, reorderable, reorderableValues, value]);
+
+  useEffect(() => {
+    if (!IS_WEB || disabled || !reorderable || !onReorder) return;
+    const element = pressRef.current as unknown as HTMLElement | null;
+    if (!element?.addEventListener) return;
+    const start = (event: DragEvent) => {
+      draggedValue.current = value;
+      event.dataTransfer?.setData('text/plain', value);
+      if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+    };
+    const end = () => {
+      draggedValue.current = null;
+    };
+    const over = (event: DragEvent) => {
+      if (draggedValue.current && draggedValue.current !== value) event.preventDefault();
+    };
+    const drop = (event: DragEvent) => {
+      const source = draggedValue.current;
+      end();
+      if (!source || source === value) return;
+      event.preventDefault();
+      onReorder(source, value);
+    };
+    element.draggable = true;
+    element.addEventListener('dragstart', start);
+    element.addEventListener('dragend', end);
+    element.addEventListener('dragover', over);
+    element.addEventListener('drop', drop);
+    return () => {
+      if (draggedValue.current === value) end();
+      element.draggable = false;
+      element.removeEventListener('dragstart', start);
+      element.removeEventListener('dragend', end);
+      element.removeEventListener('dragover', over);
+      element.removeEventListener('drop', drop);
+    };
+  }, [disabled, reorderable, onReorder, draggedValue, value]);
   const measureSelf = useCallback<TriggerMeasure>((report) => {
     nodeRef.current?.measure((x, _y, width) => {
       report({ x, width });
@@ -933,6 +1010,19 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
             // `nativeEvent.key` under React Native 0.88's `KeyDownEvent`; on
             // web `nativeEvent` is the browser's KeyboardEvent.
             onKeyDown: (event: KeyDownEvent) => {
+              const key = event.nativeEvent as KeyboardEvent;
+              if (
+                reorderable &&
+                !disabled &&
+                onReorder &&
+                key.ctrlKey &&
+                key.shiftKey &&
+                (key.key === 'ArrowLeft' || key.key === 'ArrowRight')
+              ) {
+                event.preventDefault();
+                reorderNeighbor(value, key.key === 'ArrowLeft' ? -1 : 1);
+                return;
+              }
               handleRovingKeyDown(
                 {
                   key: event.nativeEvent.key,
@@ -950,7 +1040,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
             },
           }
         : {},
-    [activation],
+    [activation, reorderable, disabled, onReorder, reorderNeighbor, value],
   );
 
   const labelColor = isSelected ? paint.selectedLabel : paint.idleLabel;
@@ -1019,6 +1109,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   // which carries that padding instead.
   const tab = (
     <Pressable
+      ref={pressRef}
       testID={testID}
       {...webDataSet({ bloomTabsTrigger: variant })}
       {...webKeyboard}

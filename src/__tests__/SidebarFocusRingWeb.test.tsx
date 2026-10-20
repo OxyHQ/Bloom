@@ -8,14 +8,14 @@
  * exactly that way, focusable and invisible while focused. Rendered through
  * react-native-web, so these are the real DOM attributes and inline styles.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { RiHomeLine } from '../icons/remix';
-import { Sidebar, SidebarItem, SidebarModeSwitcher } from '../sidebar';
+import { Sidebar, SidebarItem, SidebarModeSwitcher, SidebarOnboardingCard } from '../sidebar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -60,6 +60,37 @@ function hooked(): HTMLElement[] {
 }
 
 describe('Sidebar focus ring (web)', () => {
+  it('gives each onboarding action its own keyboard target and shared inset focus ring', () => {
+    const open = jest.fn();
+    render(
+      <SidebarOnboardingCard
+        title="Welcome"
+        onPress={open}
+        steps={[
+          { key: 'page', label: 'Create a page', onPress: open },
+          { key: 'invite', label: 'Invite your team', onPress: open, disabled: true },
+        ]}
+        onSeeAll={open}
+      />,
+    );
+    const controls = hooked();
+    expect(controls).toHaveLength(4);
+    for (const control of controls) {
+      expect(control.getAttribute('data-bloom-sidebar')).toBe('inset');
+      expect(ringOf(control)).not.toBe('');
+      if (control.getAttribute('aria-label') === 'Invite your team') {
+        expect(control.getAttribute('aria-disabled')).toBe('true');
+        expect(control.getAttribute('tabindex')).toBe('-1');
+      } else {
+        expect(control.getAttribute('tabindex')).toBe('0');
+        act(() => control.focus());
+        expect(document.activeElement).toBe(control);
+        act(() => control.click());
+      }
+    }
+    expect(open).toHaveBeenCalledTimes(3);
+  });
+
   it('retains the accessible name, tooltip and current-page state without a caption', () => {
     render(
       <Sidebar

@@ -68,7 +68,7 @@ export function useScreenScroll({
     scrollerId: id,
     contentInsets: {
       top: screen.contentInsetsHandled ? 0 : screen.topInset,
-      bottom: screen.contentInsetsHandled ? 0 : screen.bottomInset,
+      bottom: (screen.bottomInsetHandled ?? screen.contentInsetsHandled) ? 0 : screen.bottomInset,
     },
     scrollY: screen.scrollY,
     collapseProgress: screen.collapseProgress,

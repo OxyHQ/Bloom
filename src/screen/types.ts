@@ -8,8 +8,12 @@ export interface ScreenProps extends ViewProps {
   /** Local screen recipe, including its enclosing panel surface. Restored on departure. */
   colorPreset?: AppColorName;
   header?: ReactNode;
-  /** auto uses the host's document/column viewport on web. Native content keeps its own list. */
-  scroll?: 'auto' | 'content';
+  /**
+   * auto uses the host's document/column viewport. content lets an explicit list
+   * bind the scroll/inset contract. none reserves chrome around a bounded canvas
+   * (board, map or editor) without adding a scrolling viewport.
+   */
+  scroll?: 'auto' | 'content' | 'none';
   /** Overlay chrome paints above content without reserving its height. */
   headerPlacement?: 'inset' | 'overlay';
   /** Disable all descendant scroll writers when a navigator retains this screen. */
@@ -19,8 +23,13 @@ export interface ScreenProps extends ViewProps {
   /** Web document flow: bind window scrolling automatically, reserve chrome clearance, and keep chrome sticky within this column. Explicit list bindings take priority. */
   documentScroll?: boolean;
   bottomBar?: ReactNode;
-  /** Navigation hides by default; a chat composer stays visible while typing. */
-  bottomBarKeyboardBehavior?: 'hide' | 'visible';
+  /**
+   * Navigation hides by default; `visible` keeps its position while typing.
+   * Native `follow` moves bottom chrome with the keyboard and makes ScreenScrollView
+   * keep the focused input above it. Requires react-native-keyboard-controller and
+   * its root KeyboardProvider. Web retains the ordinary Screen viewport.
+   */
+  bottomBarKeyboardBehavior?: 'hide' | 'visible' | 'follow';
   /** Standalone action; with navigation use BottomBar.action instead. */
   primaryAction?: ReactNode;
   /** Initial footprint before layout; include any safe area in custom values. */

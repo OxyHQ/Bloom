@@ -191,3 +191,14 @@ The scrolling tab viewport keeps its intrinsic height (`flexGrow: 0`,
 React Native's default ScrollView growth otherwise takes space from the feed,
 even when the caller gives the tab strip a fixed height. Caller `style` still
 styles the strip content, including its height, padding, and separator.
+
+## Reordering controlled tabs
+
+Pass `onReorder(fromValue, toValue)` to `Tabs` and `reorderable` to each movable
+`TabsTrigger`. The callback requests a move to the target tab's position; the
+owner persists the order and renders the children in that order. Selection is
+unchanged. On web, drag a tab onto a movable sibling or press Ctrl+Shift+Left /
+Ctrl+Shift+Right while it is focused. Immutable and disabled tabs are skipped by
+keyboard moves. A drag cannot cross into another strip. Trailing settings buttons
+remain separate from the draggable target. Native apps can expose the same
+persistence action through a trigger's existing long-press menu.

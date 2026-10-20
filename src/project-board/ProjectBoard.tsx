@@ -1,4 +1,5 @@
-import { ScreenScrollView } from '../screen';
+import * as Accordion from '../accordion';
+import { Screen, ScreenScrollView } from '../screen';
 import { Button, CloseButton } from '../button';
 import { AppShellPanels } from '../app-shell';
 import { Dialog } from '../dialog';
@@ -12,6 +13,8 @@ import { ProjectBoardPlatformContext } from './context';
 import type { ProjectBoardProps } from './types';
 
 const platform = {
+  ...Accordion,
+  Screen,
   AppShellPanels,
   ScreenScrollView,
   Tooltip,
@@ -26,7 +29,7 @@ const platform = {
   ...Select,
   ...Menu,
 };
-export function ProjectBoard(props: ProjectBoardProps) {
+export function ProjectBoard<Item>(props: ProjectBoardProps<Item>) {
   return (
     <ProjectBoardPlatformContext.Provider value={platform}>
       <ProjectBoardBase {...props} />

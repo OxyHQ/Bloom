@@ -34,6 +34,8 @@ export interface TabsProps {
   value?: string;
   /** Called when a tab is selected. Controlled path only. */
   onValueChange?: (value: string) => void;
+  /** Web drag or Ctrl+Shift+Arrow requests a move. The owner persists and renders the new order. */
+  onReorder?: (fromValue: string, toValue: string) => void;
   /**
    * Focus-driven path only: whether ANY trigger is currently focused.
    *
@@ -113,6 +115,8 @@ export interface TabsTriggerProps {
   isFocused?: boolean;
   /** Whether this tab is disabled. */
   disabled?: boolean;
+  /** Allow this tab to be moved or accept a moved sibling. Requires Tabs.onReorder. */
+  reorderable?: boolean;
   /** Extra press handler. Runs on both paths, before any selection is reported. */
   onPress?: () => void;
   /**

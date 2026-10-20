@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle, TextInputProps } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 
 /** Where the title sits: after the back button, or centred on the bar. */
@@ -169,4 +169,15 @@ export interface PageHeaderProps {
 
   style?: StyleProp<ViewStyle>;
   testID?: string;
+}
+
+/** Plain editable heading for PageHeader.title; persistence belongs to the caller. */
+export interface PageHeaderTitleInputProps extends TextInputProps {
+  /** Wrap and grow with the title (default true); false uses a single-line input. */
+  multiline?: boolean;
+  /** Minimum native line count / fallback web rows. Default 1. */
+  numberOfLines?: number;
+  label: string;
+  'aria-describedby'?: string;
+  disabled?: boolean;
 }

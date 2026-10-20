@@ -112,6 +112,7 @@ const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: 'nativewind', file: 'theme/color-scope/style-builder.ts' },
   { peer: 'expo-router', file: 'theme/adaptive-colors.ts' },
   { peer: 'react-native-keyboard-controller', file: 'bottom-sheet/BottomSheet.tsx' },
+  { peer: 'react-native-keyboard-controller', file: 'screen/keyboard-components.ts' },
   { peer: 'expo-video', file: 'media-flight/expo-video-module.ts' },
   { peer: 'lottie-react-native', file: 'sticker/lottie-module.ts' },
   { peer: '@lottiefiles/dotlottie-react', file: 'sticker/lottie-module.web.ts' },

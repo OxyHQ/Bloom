@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Button } from '../button';
 import { Text } from '../typography';
-import { Board } from './Board';
+import { ProjectBoard } from './ProjectBoard';
+import { BoardDragHandle } from './BoardGesture';
 import type { BoardColumn, BoardMove } from './types';
 
 type RecordItem = { id: string; title: string; estimate: number };
@@ -36,16 +37,21 @@ function ControlledBoard() {
     });
   };
   return (
-    <Board
+    <ProjectBoard
+      variant="embedded"
       columns={columns}
       getItemId={(item) => item.id}
       onMove={move}
+      dragMode="handle"
+      allowReorder={false}
       accessibilityLabel="Launch board"
       renderCard={(item, column, { isDragging }) => {
         const target = columns.find((entry) => entry.id !== column.id)!;
         return (
           <View style={{ padding: 16, gap: 12, opacity: isDragging ? 0.5 : 1 }}>
-            <Text>{item.title}</Text>
+            <BoardDragHandle accessibilityLabel={`Move ${item.title}`}>
+              <Text>{item.title}</Text>
+            </BoardDragHandle>
             <Text>{item.estimate} points</Text>
             <Button
               size="sm"
@@ -65,6 +71,7 @@ function ControlledBoard() {
 const meta: Meta<typeof ControlledBoard> = {
   title: 'Patterns/Productivity/Controlled Board',
   component: ControlledBoard,
+  parameters: { layout: 'fullscreen' },
 };
 export default meta;
 type Story = StoryObj<typeof ControlledBoard>;

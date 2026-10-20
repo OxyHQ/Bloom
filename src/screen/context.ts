@@ -11,6 +11,11 @@ export interface ScreenContextValue {
   activeScrollerId: SharedValue<string | null>;
   /** Document-flow Screen has already reserved its content clearance. */
   contentInsetsHandled?: boolean;
+  /** A keyboard-following footer reserves native scroll content rather than shrinking its viewport. */
+  bottomInsetHandled?: boolean;
+  /** Native focused-input scrolling follows the Screen's measured keyboard footer. */
+  keyboardFollow?: boolean;
+  keyboardFooterHeight?: number;
   /** Web `documentScroll`: the window is this screen's scroller, so content stays in document flow. */
   documentScroll?: boolean;
   topInset: number;
