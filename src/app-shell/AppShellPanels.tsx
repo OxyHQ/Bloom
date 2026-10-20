@@ -163,6 +163,8 @@ export function createAppShellPanels(
     scroll = 'content',
     appearance,
     chrome,
+    surfaceClassName,
+    surfaceColor,
     colorPreset,
     errorBoundary = false,
     children,
@@ -181,6 +183,8 @@ export function createAppShellPanels(
             maskColor={region.maskColor}
             framed={region.framed || region.revealed}
             chrome={region.revealed ? 'none' : chrome}
+            surfaceClassName={surfaceClassName}
+            surfaceColor={surfaceColor}
             fill={!growing}
             // A growing panel's frame is a screen-tall sticky rectangle pinned
             // where the panel starts; a bounded panel's box IS the visible area.

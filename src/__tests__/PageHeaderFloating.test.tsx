@@ -222,7 +222,10 @@ describe('PageHeader, floating', () => {
     expect(seen).toBe(0);
   });
 
-  it('overlay placement floats over the content AND tells it how much it covers', () => {
+  it.each([
+    ['default', 56],
+    ['compact', 32],
+  ] as const)('%s overlay reports its resting and measured clearance', (density, restingHeight) => {
     let seen = -1;
     function Probe() {
       seen = useTopEdgeInset();
@@ -232,7 +235,7 @@ describe('PageHeader, floating', () => {
       <BloomThemeProvider mode="light" colorPreset="teal">
         <TopEdgeProvider>
           <View>
-            <PageHeader testID="h" title="A" placement="overlay" />
+            <PageHeader testID="h" title="A" placement="overlay" density={density} />
             <Probe />
           </View>
         </TopEdgeProvider>
@@ -243,7 +246,7 @@ describe('PageHeader, floating', () => {
     expect(resolvedStyle(screen.getByTestId('h').props.style).pointerEvents).toBe('box-none');
     // The resting claim: the safe-area inset (0 here) plus the 56pt bar, before
     // any measurement has landed.
-    expect(seen).toBe(56);
+    expect(seen).toBe(restingHeight);
 
     act(() => {
       fireEvent(screen.getByTestId('h'), 'layout', {

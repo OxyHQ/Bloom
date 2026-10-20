@@ -96,6 +96,8 @@ export interface PageHeaderProps {
   presentation?: PageHeaderPresentation;
   /** Default `inline`. */
   placement?: PageHeaderPlacement;
+  /** Compact panel chrome: a 32pt minimum row with 12pt side insets. Controls and content may grow it. */
+  density?: 'default' | 'compact';
 
   /**
    * Renders the back button and is called when it is pressed. The header is

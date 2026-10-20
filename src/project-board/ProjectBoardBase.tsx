@@ -1,4 +1,5 @@
 import { PageHeader } from '../page-header';
+import { BloomScope } from '../appearance';
 import type { AppShellPanelViewport } from '../app-shell/panel-layout-types';
 import { type ComponentRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
@@ -678,190 +679,200 @@ export function ProjectBoardBase({
         </SourceView>
       </SourceView>
       <StyledView ref={boardNode} className="min-h-0 flex-1" onLayout={measure}>
-        <AppShellPanels
-          testID={`${testID}-panels`}
-          layout={{
-            mode: 'deck',
-            gap: 8,
-            viewportRef: viewport,
-            onViewportScroll: measure,
-            onPanelOrderChange: (order) => {
-              const reordered = columnsRef.current
-                .filter((column) => order.includes(column.id))
-                .sort((left, right) => order.indexOf(left.id) - order.indexOf(right.id));
-              commit(
-                columnsRef.current.map((column) =>
-                  order.includes(column.id) ? (reordered.shift() ?? column) : column,
+        <BloomScope panelRadius={20}>
+          <AppShellPanels
+            testID={`${testID}-panels`}
+            layout={{
+              mode: 'deck',
+              gap: 8,
+              viewportRef: viewport,
+              onViewportScroll: measure,
+              onPanelOrderChange: (order) => {
+                const reordered = columnsRef.current
+                  .filter((column) => order.includes(column.id))
+                  .sort((left, right) => order.indexOf(left.id) - order.indexOf(right.id));
+                commit(
+                  columnsRef.current.map((column) =>
+                    order.includes(column.id) ? (reordered.shift() ?? column) : column,
+                  ),
+                );
+              },
+              panels: visibleColumns.map((column) => ({
+                id: column.id,
+                testID: `${testID}-column-${column.id}`,
+                width: 273,
+                minWidth: 273,
+                span: fillColumns ? 1 : 0,
+                reorderable: true,
+                reorderLabel: column.title,
+                chrome: 'none',
+                surfaceColor:
+                  over?.columnId === column.id
+                    ? colors.backgroundTertiary
+                    : colors.backgroundSecondary,
+                surfaceClassName: cx(
+                  'bg-background-secondary-default ring-2 ring-inset ring-transparent transition-[box-shadow,background-color] duration-150 ease-out',
+                  over?.columnId === column.id &&
+                    'bg-background-secondary-hover ring-border-button-hover',
                 ),
-              );
-            },
-            panels: visibleColumns.map((column) => ({
-              id: column.id,
-              testID: `${testID}-column-${column.id}`,
-              width: 273,
-              minWidth: 273,
-              span: fillColumns ? 1 : 0,
-              reorderable: true,
-              reorderLabel: column.title,
-              header: (
-                <PageHeader
-                  safeArea={false}
-                  scrim="none"
-                  title={
-                    <StyledView className="flex min-w-0 flex-row items-center gap-1.5">
-                      <Text variant="body-medium">{column.title}</Text>
-                      <Text variant="body-medium" style={{ color: colors.textSecondary }}>
-                        {column.tickets.length}/{column.limit}
-                      </Text>
-                    </StyledView>
-                  }
-                  actions={
-                    <StyledView className="flex flex-row items-center gap-1">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <StyledPressable
-                            accessibilityLabel={`${m.actions}: ${column.title}`}
-                            className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                          >
-                            <RiMoreLine className="size-5" />
-                          </StyledPressable>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent label={`${m.actions}: ${column.title}`}>
-                          <DropdownMenuItem onPress={() => setCreate({ columnId: column.id })}>
-                            {m.addTicket}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onPress={() => {
-                              setSort('title');
-                              commit(sortColumns(columnsRef.current, 'title'));
-                            }}
-                          >
-                            {m.sortTitle}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <StyledPressable
-                        accessibilityRole="button"
-                        accessibilityLabel={m.addTicketTo(column.title)}
-                        onPress={() => setCreate({ columnId: column.id })}
-                        className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                      >
-                        <RiAddLine width={20} height={20} fill={colors.icon} />
-                      </StyledPressable>
-                    </StyledView>
-                  }
-                />
-              ),
-              content: (
-                <StyledView
-                  ref={(node) => {
-                    columnNodes.current[column.id] = node;
-                  }}
-                  onLayout={measure}
-                  className={cx(
-                    'min-h-0 min-w-0 flex-1',
-                    over?.columnId === column.id && 'bg-background-secondary-hover',
-                  )}
-                >
-                  <StyledView className="relative min-h-0 flex-1">
-                    <ScreenScrollView
-                      ref={(node) => {
-                        columnScrolls.current[column.id] = node;
-                      }}
-                      style={{ flex: 1 }}
-                      contentContainerStyle={{
-                        paddingHorizontal: 6,
-                        paddingTop: 8,
-                      }}
-                      accessibilityLabel={column.title}
-                      onScroll={(event) => {
-                        columnScrollY.current[column.id] = event.nativeEvent.contentOffset.y;
-                        measure();
-                      }}
-                      scrollEventThrottle={16}
-                    >
-                      <TicketPresenceList
-                        tickets={column.tickets}
-                        retainId={beforePointer.current ? activeTicket?.id : undefined}
-                      >
-                        {({ ticket, present }, paintStyle, onHeight) =>
-                          present ||
-                          (activeTicket?.id === ticket.id && beforePointer.current !== null) ? (
-                            <DraggableTicket
-                              key={ticket.id}
-                              nativeID={`${boardId}-${ticket.id}`}
-                              ticket={ticket}
-                              interactive={present}
-                              members={members}
-                              dragging={activeTicket?.id === ticket.id}
-                              landing={droppingId === ticket.id}
-                              paintStyle={paintStyle}
-                              onHeight={onHeight}
-                              target={
-                                over?.columnId === column.id &&
-                                over.index ===
-                                  column.tickets.findIndex((item) => item.id === ticket.id)
-                              }
-                              register={(node) => {
-                                if (present) ticketNodes.current[ticket.id] = node;
-                              }}
-                              onLayout={measure}
-                              onOpen={() => openDetail(ticket.id)}
-                              onStart={(x, y) => beginDrag(ticket.id, x, y)}
-                              onUpdate={dragOver}
-                              onEnd={endDrag}
-                              onAccessibleMove={(key) => {
-                                const sourceIndex = columnsRef.current.findIndex(
-                                  (item) => item.id === column.id,
-                                );
-                                const destination =
-                                  key === 'next'
-                                    ? columnsRef.current[sourceIndex + 1]
-                                    : key === 'previous'
-                                      ? columnsRef.current[sourceIndex - 1]
-                                      : column;
-                                if (destination) {
-                                  const currentIndex =
-                                    columnsRef.current
-                                      .find((item) => item.id === column.id)
-                                      ?.tickets.findIndex((item) => item.id === ticket.id) ?? 0;
-                                  commit(
-                                    moveTicket(
-                                      columnsRef.current,
-                                      ticket.id,
-                                      destination.id,
-                                      destination.id === column.id
-                                        ? currentIndex + (key === 'up' ? -1 : 1)
-                                        : 0,
-                                    ),
-                                  );
-                                }
-                              }}
-                            />
-                          ) : (
-                            <SourceView
-                              onLayout={(event) => onHeight(event.nativeEvent.layout.height)}
+                header: (
+                  <PageHeader
+                    density="compact"
+                    safeArea={false}
+                    scrim="none"
+                    title={
+                      <StyledView className="flex min-w-0 flex-row items-center gap-1.5">
+                        <Text variant="body-medium">{column.title}</Text>
+                        <Text variant="body-medium" style={{ color: colors.textSecondary }}>
+                          {column.tickets.length}/{column.limit}
+                        </Text>
+                      </StyledView>
+                    }
+                    actions={
+                      <StyledView className="flex flex-row items-center gap-1">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <StyledPressable
+                              accessibilityLabel={`${m.actions}: ${column.title}`}
+                              className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                             >
-                              <AnimatedView style={paintStyle}>
-                                <SourceView className="pointer-events-none opacity-20">
-                                  <TicketCard overlay ticket={ticket} members={members} />
-                                </SourceView>
-                              </AnimatedView>
-                            </SourceView>
-                          )
-                        }
-                      </TicketPresenceList>
-                      {over?.columnId === column.id && over.index >= column.tickets.length && (
-                        <StyledView style={{ height: 3, backgroundColor: colors.primary }} />
-                      )}
-                    </ScreenScrollView>
-                    {column.tickets.length === 0 && <ProjectBoardEmptyState />}
+                              <RiMoreLine className="size-5" />
+                            </StyledPressable>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent label={`${m.actions}: ${column.title}`}>
+                            <DropdownMenuItem onPress={() => setCreate({ columnId: column.id })}>
+                              {m.addTicket}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onPress={() => {
+                                setSort('title');
+                                commit(sortColumns(columnsRef.current, 'title'));
+                              }}
+                            >
+                              {m.sortTitle}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <StyledPressable
+                          accessibilityRole="button"
+                          accessibilityLabel={m.addTicketTo(column.title)}
+                          onPress={() => setCreate({ columnId: column.id })}
+                          className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                        >
+                          <RiAddLine width={20} height={20} fill={colors.icon} />
+                        </StyledPressable>
+                      </StyledView>
+                    }
+                  />
+                ),
+                content: (
+                  <StyledView
+                    ref={(node) => {
+                      columnNodes.current[column.id] = node;
+                    }}
+                    onLayout={measure}
+                    className="min-h-0 min-w-0 flex-1"
+                  >
+                    <StyledView className="relative min-h-0 flex-1">
+                      <ScreenScrollView
+                        ref={(node) => {
+                          columnScrolls.current[column.id] = node;
+                        }}
+                        style={{ flex: 1 }}
+                        contentContainerStyle={{
+                          paddingHorizontal: 6,
+                          paddingTop: 8,
+                        }}
+                        accessibilityLabel={column.title}
+                        onScroll={(event) => {
+                          columnScrollY.current[column.id] = event.nativeEvent.contentOffset.y;
+                          measure();
+                        }}
+                        scrollEventThrottle={16}
+                      >
+                        <TicketPresenceList
+                          tickets={column.tickets}
+                          retainId={beforePointer.current ? activeTicket?.id : undefined}
+                        >
+                          {({ ticket, present }, paintStyle, onHeight) =>
+                            present ||
+                            (activeTicket?.id === ticket.id && beforePointer.current !== null) ? (
+                              <DraggableTicket
+                                key={ticket.id}
+                                nativeID={`${boardId}-${ticket.id}`}
+                                ticket={ticket}
+                                interactive={present}
+                                members={members}
+                                dragging={activeTicket?.id === ticket.id}
+                                landing={droppingId === ticket.id}
+                                paintStyle={paintStyle}
+                                onHeight={onHeight}
+                                target={
+                                  over?.columnId === column.id &&
+                                  over.index ===
+                                    column.tickets.findIndex((item) => item.id === ticket.id)
+                                }
+                                register={(node) => {
+                                  if (present) ticketNodes.current[ticket.id] = node;
+                                }}
+                                onLayout={measure}
+                                onOpen={() => openDetail(ticket.id)}
+                                onStart={(x, y) => beginDrag(ticket.id, x, y)}
+                                onUpdate={dragOver}
+                                onEnd={endDrag}
+                                onAccessibleMove={(key) => {
+                                  const sourceIndex = columnsRef.current.findIndex(
+                                    (item) => item.id === column.id,
+                                  );
+                                  const destination =
+                                    key === 'next'
+                                      ? columnsRef.current[sourceIndex + 1]
+                                      : key === 'previous'
+                                        ? columnsRef.current[sourceIndex - 1]
+                                        : column;
+                                  if (destination) {
+                                    const currentIndex =
+                                      columnsRef.current
+                                        .find((item) => item.id === column.id)
+                                        ?.tickets.findIndex((item) => item.id === ticket.id) ?? 0;
+                                    commit(
+                                      moveTicket(
+                                        columnsRef.current,
+                                        ticket.id,
+                                        destination.id,
+                                        destination.id === column.id
+                                          ? currentIndex + (key === 'up' ? -1 : 1)
+                                          : 0,
+                                      ),
+                                    );
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <SourceView
+                                onLayout={(event) => onHeight(event.nativeEvent.layout.height)}
+                              >
+                                <AnimatedView style={paintStyle}>
+                                  <SourceView className="pointer-events-none opacity-20">
+                                    <TicketCard overlay ticket={ticket} members={members} />
+                                  </SourceView>
+                                </AnimatedView>
+                              </SourceView>
+                            )
+                          }
+                        </TicketPresenceList>
+                        {over?.columnId === column.id && over.index >= column.tickets.length && (
+                          <StyledView style={{ height: 3, backgroundColor: colors.primary }} />
+                        )}
+                      </ScreenScrollView>
+                      {column.tickets.length === 0 && <ProjectBoardEmptyState />}
+                    </StyledView>
                   </StyledView>
-                </StyledView>
-              ),
-            })),
-          }}
-        />
+                ),
+              })),
+            }}
+          />
+        </BloomScope>
       </StyledView>
       {activeTicket && (
         <Portal>

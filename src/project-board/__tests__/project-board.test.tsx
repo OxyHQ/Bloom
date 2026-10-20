@@ -3,6 +3,7 @@ import type React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { ProjectBoard } from '../ProjectBoard';
+import { classNamesOn, resolvedStyle } from '../../__tests__/support/rendered-style';
 import { cloneColumns, dropTarget, moveTicket, sortColumns } from '../shared';
 import type { ProjectColumn } from '../types';
 
@@ -135,6 +136,19 @@ describe('ProjectBoard interactions', () => {
     expect(screen.getByText('Alpha title')).toBeTruthy();
     expect(screen.getByText('No issues here')).toBeTruthy();
     expect(screen.getByLabelText('Open FE-1: Zebra title')).toBeTruthy();
+  });
+  it('keeps task columns flat with their original secondary fill', () => {
+    const screen = renderBoard();
+    const surfaces = screen.getAllByTestId('content-panel-surface');
+    expect(surfaces).toHaveLength(columns.length);
+    for (const surface of surfaces) {
+      expect(classNamesOn(surface.props.style).join(' ')).toContain(
+        'bg-background-secondary-default',
+      );
+      expect(classNamesOn(surface.props.style).join(' ')).toContain('ring-transparent');
+      expect(resolvedStyle(surface.props.style).boxShadow).toBeUndefined();
+      expect(resolvedStyle(surface.props.style).borderRadius).toBe(20);
+    }
   });
   it('reorders columns through the shared compositor without changing their tickets', () => {
     const onColumnsChange = jest.fn();

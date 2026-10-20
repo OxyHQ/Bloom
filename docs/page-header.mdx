@@ -24,6 +24,11 @@ import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
 
 Router-agnostic: the back button renders when `onBack` is set. Pass `router.back`, your app's safe-back helper, or omit it on a root screen (`router.canGoBack() ? router.back : undefined`). An explicit `onBack` takes priority over the panel navigation adapter and remains enabled at the panel's history root; without one, the header uses panel Back only when that history can go back.
 
+For compact panel chrome, `density="compact"` uses a 32pt minimum row and 12pt
+side insets without vertical padding. Larger controls, text and accessories grow
+the header naturally; its measured height continues to own content clearance.
+The default retains its 56pt minimum, 8pt vertical padding and responsive side insets.
+
 ## The default is floating
 
 The header is no longer a strip. The back button sits in its own translucent capsule, the actions you declared as a group share one island, the title floats between them, and the whole thing ends in a soft vertical gradient rather than a hairline. Content passes under it.

@@ -17,7 +17,7 @@ import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { HeaderDockProvider, useHeaderDockContext } from '../layout/header-dock';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import type { PageHeaderProps } from '../page-header';
-import { resolvedStyle } from './support/rendered-style';
+import { resolvedStyle, classNamesOn } from './support/rendered-style';
 
 function renderHeader(props: PageHeaderProps, mode: 'light' | 'dark' = 'light') {
   return render(
@@ -98,8 +98,8 @@ describe('PageHeader', () => {
   it('bar is 56 tall with 16 insets below sm and 24 from sm', () => {
     setWidth(390);
     const phone = renderBar({ title: 'A' });
+    expect(classNamesOn(phone.getByTestId('h-bar').props.style)).toContain('min-h-14 py-2');
     expect(resolvedStyle(phone.getByTestId('h-bar').props.style)).toMatchObject({
-      minHeight: 56,
       paddingLeft: 16,
       paddingRight: 16,
     });
@@ -110,6 +110,17 @@ describe('PageHeader', () => {
       paddingLeft: 24,
       paddingRight: 24,
     });
+  });
+
+  it('offers compact panel geometry without fixing the content height', () => {
+    setWidth(1024);
+    const screen = renderBar({ title: 'A', density: 'compact' });
+    expect(classNamesOn(screen.getByTestId('h-bar').props.style)).toContain('min-h-8 py-0');
+    expect(resolvedStyle(screen.getByTestId('h-bar').props.style)).toMatchObject({
+      paddingLeft: 12,
+      paddingRight: 12,
+    });
+    expect(resolvedStyle(screen.getByTestId('h-bar').props.style).height).toBeUndefined();
   });
 
   it('sizes itself from its CONTAINER once measured, not from the window', () => {
