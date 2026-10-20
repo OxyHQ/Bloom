@@ -15,7 +15,7 @@
  *  - `overflow: visible` and its own inset. The menu panel clips and pads for
  *    rows; a hover card's content is arbitrary, and `UserHoverCard`'s `footer`
  *    is documented as unclipped.
- *  - The pointer BRIDGE, on a `View` inside the panel that fills it. It listens
+ *  - The pointer BRIDGE, on the floating panel including its scroll viewport. It listens
  *    to `pointerenter`/`pointerleave`, never to a `Pressable`'s hover: RNW's
  *    `Pressable` dispatches a bubbling `react-gui:hover:lock` on itself, and a
  *    hovered ancestor `Pressable` ends its own hover for any lock it did not

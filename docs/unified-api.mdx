@@ -7,6 +7,8 @@ description: Visual inheritance, material composition, control contracts and mig
 
 Bloom resolves a component from its semantic props and its local environment. Containers publish facts their children need; controls keep ownership of their interaction. The shared contracts below apply on web and native, with platform-specific rendering.
 
+Read [UI architecture](/docs/ui-architecture) for the normative composition, sizing, material and scroll-ownership rules. The APIs below implement those rules; adoption must still be verified per family.
+
 ## Visual environment
 
 `BloomScope` is the only inherited control-size channel. It carries `size` (`xs`, `sm`, `md`, `lg`) and `tone`. Explicit props win over the nearest scope, then the component's default. Nested scopes inherit omitted fields independently. A scope adds no layout node and owns no selected value, action or disabled constraint.
@@ -15,7 +17,7 @@ Bloom resolves a component from its semantic props and its local environment. Co
 import { BloomScope } from '@oxy.so/bloom/appearance';
 import { Button } from '@oxy.so/bloom/button';
 
-<BloomScope size="sm" tone="neutral">
+<BloomScope size="md" tone="neutral">
   <Button>Save for later</Button>
   <BloomScope tone="danger">
     <Button>Delete</Button>

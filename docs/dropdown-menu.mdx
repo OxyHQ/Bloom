@@ -215,7 +215,7 @@ The panel and rows share one menu recipe, used by `DropdownMenu`, `ContextMenu`,
 - **Label** — 8px horizontal inset, 12/16 medium in `text-secondary`, 4px above and below.
 - **Separator** — a full-bleed 1px `neutral-200` rule with 4px vertical margins.
 - **Check, shortcut, sub chevron** — `text-secondary`, Remix glyphs at 16px: `RiCheckLine`, `RiArrowRightSLine` (web flyout), `RiArrowDownSLine` / `RiArrowUpSLine` (native disclosure).
-- **Dark** — `neutral-800` surface, `neutral-700` hairlines, `neutral-700`-at-60% wash, and `neutral-600` disabled text (the semantic dark `text-disabled` equals the panel colour).
+- **Material and themes** — shared Surface paint uses the menu fill composited against the actual parent, including its sheen, rim and backdrop treatment. Semantic foreground, disabled, border and highlight colours follow the active theme; density does not replace the material.
 
 These colours come from the theme through `button/shared.ts`'s ramps (`floating/menu-palette.ts`) and are applied INLINE, since the ramp stops exist as no CSS variable. A caller's `style` still overrides them; a `className` on a label or shortcut drops the inline colour so a `text-*` utility applies. The leading slot no longer dims its icon — pass the glyph in `text-secondary`.
 

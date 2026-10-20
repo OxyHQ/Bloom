@@ -123,7 +123,7 @@ export interface FloatingPanelProps extends FloatingPositionProps {
    * ARIA role of the panel itself. `'menu'` for the three menu families,
    * `'dialog'` for a popover.
    */
-  role: 'menu' | 'dialog';
+  role: 'menu' | 'dialog' | 'listbox';
   /** Floor for the panel width. A menu passes its anchor's width. */
   minWidth?: number;
   maxWidth?: number;

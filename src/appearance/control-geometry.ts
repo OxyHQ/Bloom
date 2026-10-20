@@ -44,3 +44,11 @@ export const ITEM_GEOMETRY = {
   md: { height: 36, paddingHorizontal: 12, paddingVertical: 8, gap: 8, icon: 20 },
   lg: { height: 44, paddingHorizontal: 16, paddingVertical: 11, gap: 12, icon: 24 },
 } as const;
+
+/** Toolbar spacing follows the app scale without changing its children's family proportions. */
+export const TOOLBAR_GEOMETRY = {
+  xs: { padding: 4, gap: 4, accessoryGap: 2 },
+  sm: { padding: 6, gap: 6, accessoryGap: 4 },
+  md: { padding: 8, gap: 8, accessoryGap: 4 },
+  lg: { padding: 12, gap: 12, accessoryGap: 6 },
+} as const;

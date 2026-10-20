@@ -48,9 +48,10 @@ import { Button } from '@oxy.so/bloom/button';
 | | |
 | --- | --- |
 | width | `266` (`w-[266px]`), capped at the viewport minus 32 |
+| height | At most the viewport minus 16, optionally reduced by `maxHeight`; placement keeps 8px from viewport edges |
 | corner | `16` (`rounded-2xl`) |
-| border | 1px `border-button-default` |
-| surface | `background-primary-default` — the theme's card in light, `neutral-800` in dark |
+| border | 1px semantic menu border plus the shared Surface rim |
+| surface | Shared Surface material over the resolved menu fill and actual parent backing; light/dark colours follow the theme |
 | inset | `6` on desktop; `8` on native or coarse-pointer web |
 | elevation | `shadow-dropdown` |
 | motion | 150ms `ease-out`: fade + `scale-95` + 2px blur, in and out, from the corner nearest the trigger |
