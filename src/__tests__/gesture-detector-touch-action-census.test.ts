@@ -79,6 +79,10 @@ const DECISIONS: Record<string, readonly string[]> = {
   'zoomable-media-gallery/ZoomableMediaGalleryBase.tsx': ['default', 'default'],
   // Card drag between columns is 2-D.
   'project-board/BoardGesture.tsx': ['none'],
+  // A cover normally belongs to page scroll content (auto). Explicit crop
+  // editing temporarily owns both drag axes (none); leaving or revoking edit
+  // restores browser panning. CoverHeaderEditing tests both transitions.
+  'cover-header/CoverHeader.tsx': ['dynamic'],
   // Toasts float in an overlay above the page, never inside a scroller; a swipe
   // may dismiss them vertically.
   'toast/ToastSwipeHandler.tsx': ['default'],
@@ -163,6 +167,12 @@ describe('GestureDetector touchAction census', () => {
         "const c = <GestureDetector gesture={g} touchAction={'pan-x'}><V /></GestureDetector>;",
       ),
     ).toEqual(['pan-x']);
+    expect(
+      scan(
+        'e.tsx',
+        "const e = <GestureDetector touchAction={editing ? 'none' : 'auto'}>{c}</GestureDetector>;",
+      ),
+    ).toEqual(['dynamic']);
     expect(scan('d.tsx', 'const d = <GestureDetector {...p}>{c}</GestureDetector>;')).toEqual([
       'spread',
     ]);

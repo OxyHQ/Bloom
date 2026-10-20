@@ -297,3 +297,20 @@ it('owns the standard Change cover action without a second material around butto
   ui.rerender(wrap(header({ repositionable: false })));
   expect(ui.queryByText('Change cover')).toBeNull();
 });
+
+it('lets the browser scroll until explicit crop editing and restores panning on cancel or permission loss', () => {
+  Platform.OS = 'web';
+  const ui = render(wrap(header({ repositionable: false })));
+  const touchPolicy = () => ui.UNSAFE_getByType(GestureDetector).props.gesture.__config;
+  expect(touchPolicy()).toMatchObject({ enabled: false, touchAction: 'auto' });
+  ui.rerender(wrap(header()));
+  load(ui);
+  expect(touchPolicy()).toMatchObject({ enabled: false, touchAction: 'auto' });
+  fireEvent.press(ui.getByText('Reposition'));
+  expect(touchPolicy()).toMatchObject({ enabled: true, touchAction: 'none' });
+  fireEvent.press(ui.getByText('Cancel'));
+  expect(touchPolicy()).toMatchObject({ enabled: false, touchAction: 'auto' });
+  fireEvent.press(ui.getByText('Reposition'));
+  ui.rerender(wrap(header({ repositionable: false })));
+  expect(touchPolicy()).toMatchObject({ enabled: false, touchAction: 'auto' });
+});
