@@ -559,6 +559,11 @@ export interface SidebarTreeItem {
   /** Link target (a real anchor on web). */
   href?: string;
   /**
+   * Draws the row selected whatever `selectedTreeItem` says — the same page
+   * listed in two sections (a favourite and its place) under two keys.
+   */
+  selected?: boolean;
+  /**
    * Rows under this one, one indent deeper, to any depth (pages in pages). The
    * row gains a disclosure; its state is `open` / `defaultOpen` /
    * `onOpenChange`.

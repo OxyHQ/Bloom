@@ -441,7 +441,7 @@ const TreeRow = memo(function TreeRow({
   const expandable = isExpandable(item);
   const children = item.items ?? [];
   const expanded = expandable && (open || (searching && children.length > 0));
-  const selected = item.key === selectedTreeItem;
+  const selected = item.selected ?? item.key === selectedTreeItem;
   const canDrag = drag != null && item.draggable === true;
   const accepts = drag != null && section.droppable !== false;
   const insideAllowed = item.droppable !== false;
@@ -739,7 +739,7 @@ const TreeRow = memo(function TreeRow({
   return (
     <View style={{ width: '100%' }}>
       {canDrag && !IS_WEB ? (
-        <GestureDetector gesture={pan}>
+        <GestureDetector gesture={pan} touchAction="pan-y">
           <Animated.View style={lifted}>{row}</Animated.View>
         </GestureDetector>
       ) : (

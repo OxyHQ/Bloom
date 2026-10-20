@@ -44,6 +44,10 @@ const SRC = join(__dirname, '..');
 const DECISIONS: Record<string, readonly string[]> = {
   // Rows tile a vertically scrolling list.
   'swipe-row/SwipeRow.tsx': ['pan-y'],
+  // Tree rows tile the sidebar's vertically scrolling viewport, lifted by a long
+  // press. Web never mounts the detector (rows drag as HTML5 sources there);
+  // pan-y keeps enabling it from freezing the sidebar's scroll.
+  'sidebar/SidebarTreeSection.tsx': ['pan-y'],
   // Bubbles tile a vertically scrolling transcript. Web never mounts the
   // detector today; pan-y keeps enabling it from freezing the transcript.
   'message-bubble/SwipeToReply.tsx': ['pan-y'],

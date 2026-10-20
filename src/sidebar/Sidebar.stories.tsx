@@ -1,7 +1,7 @@
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
@@ -58,6 +58,7 @@ import type {
   SidebarTeam,
   SidebarTree,
   SidebarTreeFolder,
+  SidebarTreeItem,
 } from './types';
 
 const meta: Meta<typeof Sidebar> = {
@@ -525,6 +526,168 @@ export const TreeSections: Story = {
           ]}
           selectedTreeItem={selected}
           onTreeItemPress={(item) => setSelected(item.key)}
+        />
+      </Frame>
+    );
+  },
+};
+
+interface DemoPage {
+  key: string;
+  label: string;
+  emoji: string;
+  children: DemoPage[];
+}
+
+const DEMO_PAGES: DemoPage[] = [
+  {
+    key: 'roadmap',
+    label: 'Roadmap',
+    emoji: '🗺️',
+    children: [
+      { key: 'q1', label: 'Q1 goals', emoji: '🎯', children: [] },
+      { key: 'q2', label: 'Q2 goals', emoji: '🚀', children: [] },
+    ],
+  },
+  { key: 'notes', label: 'Meeting notes', emoji: '📝', children: [] },
+  { key: 'ideas', label: 'Ideas', emoji: '💡', children: [] },
+];
+
+/** The page `key` taken out of `pages`, and what is left. */
+function takePage(pages: DemoPage[], key: string): [DemoPage | null, DemoPage[]] {
+  let taken: DemoPage | null = null;
+  const rest = pages.flatMap((page) => {
+    if (page.key === key) {
+      taken = page;
+      return [];
+    }
+    const [inner, children] = takePage(page.children, key);
+    if (inner) taken = inner;
+    return [{ ...page, children }];
+  });
+  return [taken, rest];
+}
+
+/** `page` put before, after or inside `target` (absent: at the end). */
+function placePage(
+  pages: DemoPage[],
+  page: DemoPage,
+  target: string | undefined,
+  position: 'before' | 'inside' | 'after',
+): DemoPage[] {
+  if (!target) return [...pages, page];
+  return pages.flatMap((each) => {
+    if (each.key !== target)
+      return [{ ...each, children: placePage(each.children, page, target, position) }];
+    if (position === 'before') return [page, each];
+    if (position === 'after') return [each, page];
+    return [{ ...each, children: [...each.children, page] }];
+  });
+}
+
+/**
+ * A workspace app: the team leads from the header (a choice of workspaces),
+ * the person is the card at the foot, and the pages are a tree — nested,
+ * with icons and hover actions, in collapsible sections, moved by dragging
+ * (or Alt+Shift+Arrows on a focused row).
+ */
+export const Workspace: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [workspace, setWorkspace] = useState('acme');
+    const [pages, setPages] = useState(DEMO_PAGES);
+    const [open, setOpen] = useState<Record<string, boolean>>({ roadmap: true });
+    const [selected, setSelected] = useState('q1');
+    const row = (page: DemoPage): SidebarTreeItem => ({
+      key: page.key,
+      label: page.label,
+      leading: <Text>{page.emoji}</Text>,
+      items: page.children.map(row),
+      expandable: true,
+      emptyLabel: 'No pages inside',
+      open: open[page.key] ?? false,
+      onOpenChange: (next) => setOpen((all) => ({ ...all, [page.key]: next })),
+      draggable: true,
+      actionsVisibility: 'hover',
+      actions: <Badge content="+" />,
+    });
+    const workspaces = [
+      { key: 'acme', label: 'Acme', description: 'Admin', initials: 'A' },
+      { key: 'home', label: 'Home', description: 'Personal', initials: 'H' },
+    ];
+    const current = workspaces.find((w) => w.key === workspace)!;
+    return (
+      <Frame>
+        <Sidebar
+          testID="sidebar"
+          size="sm"
+          surface="docked"
+          showThemeToggle={false}
+          showSearch={false}
+          teamPlacement="header"
+          team={{
+            name: current.label,
+            avatar: { initials: current.initials, shape: 'squircle', color: 'blue' },
+            groups: [
+              {
+                id: 'workspaces',
+                label: 'Your workspaces',
+                selection: 'single',
+                items: workspaces.map((w) => ({
+                  key: w.key,
+                  label: w.label,
+                  description: w.description,
+                  avatar: { initials: w.initials, shape: 'squircle', color: 'blue' },
+                  selected: w.key === workspace,
+                  onPress: () => setWorkspace(w.key),
+                })),
+              },
+              { id: 'create', items: [{ key: 'new', label: 'Create workspace', icon: RiAddLine }] },
+            ],
+          }}
+          account={{
+            name: 'Maya Collins',
+            email: 'maya@oxy.so',
+            avatar: { initials: 'M' },
+            groups: [
+              { id: 'me', items: [{ key: 'settings', label: 'Settings', icon: RiSettings3Line }] },
+              {
+                id: 'out',
+                items: [
+                  { key: 'out', label: 'Sign out', icon: RiLogoutBoxRLine, tone: 'destructive' },
+                ],
+              },
+            ],
+          }}
+          items={[
+            { key: 'search', label: 'Search', icon: RiSearchLine, shortcut: 'Mod+K' },
+            { key: 'home', label: 'Home', icon: RiHomeLine },
+            { key: 'inbox', label: 'Inbox', icon: RiNotification3Line, badge: 3 },
+          ]}
+          tree={[
+            {
+              key: 'favorites',
+              label: 'Favorites',
+              collapsible: true,
+              emptyLabel: 'Star a page to keep it here',
+            },
+            {
+              key: 'private',
+              label: 'Private',
+              collapsible: true,
+              actionsVisibility: 'hover',
+              actions: <Badge content="+" />,
+              items: pages.map(row),
+            },
+          ]}
+          selectedTreeItem={selected}
+          onTreeItemPress={(item) => setSelected(item.key)}
+          onTreeItemDrop={({ item, target, position }) =>
+            setPages((all) => {
+              const [page, rest] = takePage(all, item.key);
+              return page ? placePage(rest, page, target?.key, position) : all;
+            })
+          }
         />
       </Frame>
     );
