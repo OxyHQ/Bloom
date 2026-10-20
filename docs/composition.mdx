@@ -228,11 +228,14 @@ The vocabulary is shared; physical height follows the control's purpose:
 | --- | --- | --- | --- | --- |
 | Menu / listbox action row | 24 | 26 | 28 | 32 |
 | Button | 24 | 32 | 36 | 44 |
-| Text field | 28 | 32 | 36 | 44 |
+| Text field / Select trigger | 28 | 32 | 36 | 44 |
 | Item, one line | 28 | 32 | 36 | 44 |
 
-These are visual heights in pixels/dp before additional content. Menu rows and
+These are visual heights in pixels/dp before additional content. Menu rows, Select triggers and
 interactive Items have a minimum 44px/dp target on native and coarse-pointer web.
+The shared pointer hook updates these targets while mounted, including when
+a keyboard/mouse is attached or removed. Existing press-animation snapshots
+remain separate; this does not claim every pointer-dependent effect subscribes.
 Buttons retain their existing native hit slop (44dp, 48dp on Android); their web
 fork does not acquire native hit slop ([tracked follow-up #414](https://github.com/OxyHQ/Bloom/issues/414)). This change does not claim that every
 control already implements every size or every touch adaptation.

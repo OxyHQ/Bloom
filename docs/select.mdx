@@ -223,3 +223,5 @@ scroll owner remains the only scroller; the floating panel does not wrap it in
 a second viewport. Trigger geometry and the existing `maxHeight` remain.
 
 Select triggers inherit all four sizes: xs 28 / sm 32 / md 36 / lg 44px. Explicit Select.size overrides the scope. The previous sm28/md38px trigger pair changes to these field proportions; option rows use the independent menu recipe.
+
+Select triggers also keep a 44px minimum touch target on native and coarse-pointer web, and update when the input device changes. Explicit fieldStyle remains the final visual override.
