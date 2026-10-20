@@ -1,4 +1,5 @@
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSidebarGeometry } from './geometry';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';

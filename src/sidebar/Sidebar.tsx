@@ -221,6 +221,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   logo,
   account,
   team,
+  teamPlacement = 'footer',
   tree,
   selectedTreeItem,
   onTreeItemPress,
@@ -393,8 +394,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     [progress, dir],
   );
 
+  // The identity at the top: the account by default, the team when it leads
+  // (`teamPlacement="header"`) — the other one is the card at the foot.
+  const teamLeads = teamPlacement === 'header' && team != null;
   const hasLogo = !!logo;
-  const hasAccount = !!account;
+  const hasAccount = teamLeads || !!account;
   const headerGeometry = useAnimatedStyle(
     () => ({
       height: hasLogo ? 36 + 30 * progress.value : hasAccount ? 32 + 30 * progress.value : 20,
@@ -775,25 +779,38 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       />
     ) : null;
 
-  const accountMenu = account ? (
-    <View
-      style={{
-        minWidth: 0,
-        flexShrink: 1,
-        display: flatMobile && searchActive ? 'none' : 'flex',
-        maxWidth: 190,
-      }}
-    >
-      <SidebarUserMenu
-        account={account}
-        collapsed={collapsed}
-        suppressHover={suppressUserHover}
-        onHoverSuppressionEnd={() => setSuppressUserHover(false)}
-        avatarBackground={plain ? palette.avatarFlat : undefined}
-        testID="sidebar-account"
-      />
-    </View>
-  ) : null;
+  const accountMenu =
+    teamLeads || account ? (
+      <View
+        style={{
+          minWidth: 0,
+          flexShrink: 1,
+          display: flatMobile && searchActive ? 'none' : 'flex',
+          maxWidth: 190,
+        }}
+      >
+        {teamLeads ? (
+          <SidebarTeamMenu
+            team={team}
+            form="switcher"
+            collapsed={collapsed}
+            suppressHover={suppressUserHover}
+            onHoverSuppressionEnd={() => setSuppressUserHover(false)}
+            avatarBackground={plain ? palette.avatarFlat : undefined}
+            testID="sidebar-team"
+          />
+        ) : account ? (
+          <SidebarUserMenu
+            account={account}
+            collapsed={collapsed}
+            suppressHover={suppressUserHover}
+            onHoverSuppressionEnd={() => setSuppressUserHover(false)}
+            avatarBackground={plain ? palette.avatarFlat : undefined}
+            testID="sidebar-account"
+          />
+        ) : null}
+      </View>
+    ) : null;
 
   // Keep the same children mounted while the header changes from a row to a
   // column. Numeric positions share the panel clock, including reversals.
@@ -831,7 +848,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         testID="sidebar-header"
         style={[{ width: '100%', position: 'relative' }, headerGeometry]}
       >
-        {logo || account ? (
+        {logo || accountMenu ? (
           <Animated.View
             style={[
               { position: 'absolute', insetInlineStart: 0, minWidth: 0 },
@@ -1107,12 +1124,21 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                   style={plain ? { backgroundColor: palette.panel } : undefined}
                   testID="sidebar-plan"
                 />
-              ) : team ? (
+              ) : team && !teamLeads ? (
                 <SidebarTeamMenu
                   team={team}
                   collapsed={collapsed}
                   style={plain ? { backgroundColor: palette.panel } : undefined}
                   testID="sidebar-team"
+                />
+              ) : null}
+              {teamLeads && account ? (
+                <SidebarUserMenu
+                  account={account}
+                  form="card"
+                  collapsed={collapsed}
+                  style={plain ? { backgroundColor: palette.panel } : undefined}
+                  testID="sidebar-account"
                 />
               ) : null}
               {footer != null ? (
