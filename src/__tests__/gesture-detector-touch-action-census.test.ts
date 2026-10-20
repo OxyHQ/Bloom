@@ -54,6 +54,10 @@ const DECISIONS: Record<string, readonly string[]> = {
   // Horizontal shape carousel inside the agent-creator form; its `touch-pan-y`
   // class always meant this, but the inline `none` overrode it.
   'agent-creator/ShapeArc.tsx': ['pan-y'],
+  // `drawerSwipe`'s frame and drawer pans: horizontal drags over a page and a
+  // sidebar that scroll vertically. Native-only (never mounted on web); pan-y
+  // is what they would need there.
+  'app-shell/AppShellEngine.tsx': ['pan-y', 'pan-y'],
   // Rotary drag — both axes are the gesture, and the dial says `touch-none`.
   'agent-creator/EmotionPicker.tsx': ['default'],
   // 2-D saturation/value field, then a hue rail that takes its value on

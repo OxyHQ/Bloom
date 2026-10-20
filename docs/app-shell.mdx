@@ -422,6 +422,7 @@ overlapping another, and no console error.
   - `overlay` — a drawer over the page on a 40% black backdrop (portaled through `OverlayRoot`, so it ranks with every other overlay).
   - `reveal` — the rail waits flat beneath the page; the page slides 272 toward the end edge (right in LTR, left in RTL) and rounds to 32 while the rail scales in from 0.94 (325ms). Pressing the page closes it.
 - `drawerOpen` / `onDrawerOpenChange` control it.
+- `drawerSwipe` (native, default off) adds the edge swipe expo-router's `Drawer` has: see [Edge swipe](#edge-swipe-native).
 - `sidebar={{ variant: 'rail', … }}` keeps the 80px navigation rail in flow from `sm` instead of `lg`; below `sm` the menu button opens the drawer, which always shows the full panel.
 
 Web reveal writes its target once and uses one CSS transition recipe for the
@@ -434,6 +435,51 @@ containment and focus restoration on web; keyboard dismissal and Android back
 on native. Escape and back yield to overlays above the navigation. The displaced
 page and its bars are inert while navigation is open; its closing veil remains
 interactive. Dashboard and feed share this frame and their ordinary body layout.
+
+### Edge swipe (native)
+
+`drawerSwipe` gives the narrow-screen drawer the gesture expo-router's `Drawer`
+has with `swipeEnabled`, so an app that moves from that navigator to AppShell
+keeps it:
+
+```tsx
+<AppShell sidebar={{ items }} drawerSwipe drawerOpen={open} onDrawerOpenChange={setOpen}>
+```
+
+- **Closed:** a pan that STARTS within 32 of the start edge (the left in LTR,
+  the right in RTL; `DRAWER_SWIPE.edgeWidth`, expo-router's `swipeEdgeWidth`
+  default) and moves toward the end edge drags the drawer open, 1:1 with the
+  finger. A touch outside the strip is turned away on touch-down, so the page
+  keeps its own gestures.
+- **Open:** a pan toward the start edge closes it, from anywhere on the drawer
+  or its backdrop (`overlay`), or on the drawer or the page it pushed aside
+  (`reveal`).
+- **Release:** faster than 500 points/s settles in the fling's direction;
+  slower settles on whichever side of half way the drawer was let go. The
+  remaining distance eases out over at most 325ms; reduced motion snaps.
+- **State:** the landing, and only the landing, reaches React: the shell calls
+  `onDrawerOpenChange` once the drawer is at rest (nothing for a pan that
+  snapped back to where it was), so `drawerOpen` stays the one source of truth,
+  controlled or not. A controlled parent that keeps it closed gets the request,
+  and the drawer slides back.
+- **Scrolling:** 10 points of horizontal travel in the drag's own direction
+  claim the touch and 15 vertical fail it first, so the sidebar's list and the
+  page keep scrolling.
+- **Motion:** the finger drives the drawer's existing open amount on the UI
+  thread (gesture-handler + reanimated worklets). `reveal` moves the page, as
+  its press animation does; `overlay` slides the drawer box in from off-screen
+  over a backdrop that fades with it — and under `drawerSwipe` it also slides
+  in and out (325ms) when the hamburger or the backdrop opens or closes it,
+  rather than appearing.
+
+Off by default: a left-edge pan competes with the iOS native-stack back swipe,
+so only an app whose drawer is ITS edge gesture opts in. The web has no edge
+swipe and ignores the prop. It needs the app-root `GestureHandlerRootView` that
+gesture-handler always does. The gesture is an addition: the hamburger, the
+backdrop, the `reveal` veil and the sidebar's close button stay the accessible
+way to open and close the drawer. Gate: `src/__tests__/AppShellDrawerSwipe.test.tsx`
+drives the recorded pan callbacks; a real finger against a real ScrollView, or
+against iOS's back swipe, is for a device.
 
 ### A complete domain sidebar
 
@@ -666,7 +712,7 @@ That is all a consumer does. Inside, two mechanisms:
   CSS spelling passes through as a real logical property (and Fabric parses it
   on native).
 - **Signs read `useIsRtl()`** (`@oxy.so/bloom/hooks`): the `reveal` slide, the
-  rail's `transformOrigin`, the sidebar's collapse control and glyph, the
+  `drawerSwipe` strip and drag direction, the rail's `transformOrigin`, the sidebar's collapse control and glyph, the
   folder connector, the offer card's shimmer, the tab bar's highlight and scrub
   hit-testing, and the account/team menus' floating `side`/`align` (floating
   sides are physical).

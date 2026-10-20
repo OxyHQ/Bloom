@@ -10,6 +10,8 @@
 // to test a policy that lives inside a gesture callback — e.g. which region of a
 // toast row a tap landed in, which is measured against the row's CAPPED width.
 //
+// `enabled` and the activation offsets land on `__config` as they are set.
+//
 // The detector's web-only props (`touchAction`, `userSelect`,
 // `enableContextMenu`) are copied onto `__config` of every gesture it is given,
 // which is exactly what the real `GestureDetector` does (`propagateDetectorConfig`)
@@ -28,15 +30,21 @@ const gestureBuilder = (): MockGesture => {
     handlers[name] = fn;
     return builder;
   };
+  // Activation settings are recorded on `__config` too, so a suite can assert
+  // which direction claims a touch and whether the gesture is live.
+  const config = (name: string) => (value: unknown) => {
+    builder.__config[name] = value;
+    return builder;
+  };
   const builder = {
-    enabled: () => builder,
+    enabled: config('enabled'),
     simultaneousWithExternalGesture: () => builder,
     withRef: () => builder,
     manualActivation: () => builder,
-    activeOffsetY: () => builder,
-    activeOffsetX: () => builder,
-    failOffsetY: () => builder,
-    failOffsetX: () => builder,
+    activeOffsetY: config('activeOffsetY'),
+    activeOffsetX: config('activeOffsetX'),
+    failOffsetY: config('failOffsetY'),
+    failOffsetX: config('failOffsetX'),
     // Tap tolerances — the tab bar widens both so a drifting finger still taps.
     maxDistance: () => builder,
     minDistance: () => builder,

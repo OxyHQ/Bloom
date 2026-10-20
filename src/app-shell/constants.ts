@@ -65,3 +65,22 @@ export const APP_SHELL_DEFAULTS = {
 export function breakpointPx(value: AppShellBreakpoint): number {
   return typeof value === 'number' ? value : BREAKPOINTS[value];
 }
+
+/**
+ * `drawerSwipe`'s measures (native). Not props: they are what makes the
+ * gesture feel like the platform drawer an app is moving from.
+ */
+export const DRAWER_SWIPE = {
+  /**
+   * The strip at the START edge (left in LTR, right in RTL) a closed drawer's
+   * swipe must begin in: 32, expo-router `Drawer`'s `swipeEdgeWidth` default.
+   * A touch beyond it is never claimed, so the page keeps its own gestures.
+   */
+  edgeWidth: 32,
+  /** Horizontal travel, in the drag's own direction, before the pan claims the touch. */
+  activateOffset: 10,
+  /** Vertical travel that fails the pan first, leaving the touch to a scroller. */
+  failOffset: 15,
+  /** A release faster than this (points/s) settles in its own direction. */
+  flingVelocity: 500,
+} as const;

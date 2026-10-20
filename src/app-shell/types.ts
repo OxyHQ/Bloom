@@ -146,6 +146,26 @@ export interface AppShellEngineProps {
   /** Controlled drawer state (below `lg`). */
   drawerOpen?: boolean;
   onDrawerOpenChange?: (open: boolean) => void;
+  /**
+   * NATIVE: an edge swipe opens and closes the drawer, as expo-router's
+   * `Drawer` does with `swipeEnabled`. Closed, a pan that starts within 32 of
+   * the START edge (the left in LTR, the right in RTL) and moves toward the end
+   * drags the drawer open under the finger; open, a pan toward the start edge on
+   * the drawer, its backdrop or (`reveal`) the page drags it closed. The release
+   * settles by position and velocity and lands in `drawerOpen` /
+   * `onDrawerOpenChange`, controlled or not. Horizontal travel claims the touch
+   * and vertical travel fails it, so lists keep scrolling. Reduced motion snaps.
+   *
+   * With it on, the `overlay` drawer also slides in and out on presses (325ms)
+   * instead of appearing. The web has no edge swipe and ignores the prop. Needs
+   * a `GestureHandlerRootView` at the app root.
+   *
+   * Default false: a left-edge pan competes with the iOS native-stack back
+   * swipe, so only an app whose drawer IS its edge gesture opts in. The
+   * hamburger, the backdrop and the sidebar's close button remain the
+   * accessible way to open and close the drawer.
+   */
+  drawerSwipe?: boolean;
   /** Names the hamburger that opens the drawer (`"Open navigation"` in English). */
   drawerOpenLabel?: string;
   /**
