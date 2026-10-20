@@ -38,6 +38,8 @@ export function physicalDialogSide(side: DialogSidePlacement, rtl: boolean): 'le
  *
  * The common store-drawer case is `{ base: 'bottom', md: 'left' }`; the common
  * dialog-to-sheet case is `{ base: 'bottom', md: 'center' }`.
+ * Dialog resolves a responsive map for each opening and keeps that renderer
+ * through the complete exit, preserving children while dimensions adapt.
  */
 export type ResponsiveDialogPlacement =
   | DialogPlacement

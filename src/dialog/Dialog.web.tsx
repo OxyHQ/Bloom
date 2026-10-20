@@ -1,3 +1,7 @@
+import {
+  usePresentationSession,
+  type DialogPresentationLifecycle,
+} from './use-presentation-session';
 import { BloomColorScope } from '../theme/color-scope/ColorScope.web';
 import {
   DialogFrameContent,
@@ -79,7 +83,6 @@ import {
   DIALOG_SHEET_BACKDROP_TESTID,
   EASE_OUT,
   resolveSideSheetWidth,
-  useResolvedPlacement,
   physicalDialogSide,
   type DialogSidePlacement,
 } from './placement';
@@ -160,19 +163,23 @@ function useDialogCss(): void {
  * animation (no `exiting` layout animation).
  */
 export function Dialog({ placement, frame, children, header, ...props }: DialogProps) {
+  const session = usePresentationSession(placement, props);
   const rest = {
     ...props,
+    startOpen: session.startOpen,
+    onPresentationOpen: session.onPresentationOpen,
+    onPresentationClosed: session.onPresentationClosed,
     header: frame ? { ...header, ...frame.header } : header,
     children: <DialogFrameContent frame={frame}>{children}</DialogFrameContent>,
   };
-  const resolvedPlacement = useResolvedPlacement(placement);
+  const resolvedPlacement = session.placement;
 
   // `bottom` routes to the shared cross-platform `BottomSheet` surface — the
   // SAME component native uses — so drag-to-dismiss works on web too and there
   // is no duplicated CSS slide-up sheet. `center` (default) and the side-sheets
   // keep their DOM-portal implementation below. Each branch is its own
-  // component so the dispatcher only ever calls `useResolvedPlacement`, keeping
-  // the rules-of-hooks contract intact across a responsive placement change.
+  // component so the dispatcher resolves the presentation session, keeping
+  // the rules-of-hooks contract intact across a closed-session placement change.
   if (resolvedPlacement === 'bottom') {
     return (
       <DialogFrameProvider
@@ -210,6 +217,8 @@ function CenterOrSideDialog({
   control,
   open: controlledOpen,
   startOpen,
+  onPresentationOpen,
+  onPresentationClosed,
   presentation = 'default',
   exitDuration: customExitDuration,
   onClose,
@@ -235,7 +244,8 @@ function CenterOrSideDialog({
   containerClassName,
   label,
   children,
-}: Omit<DialogProps, 'placement'> & { placement: 'center' | DialogSidePlacement }) {
+}: Omit<DialogProps, 'placement'> &
+  DialogPresentationLifecycle & { placement: 'center' | DialogSidePlacement }) {
   // Inject the required @keyframes on mount (before the panel ever appears —
   // this component renders once with `isOpen=false` prior to opening, so the
   // stylesheet is present by the time the animated surface mounts).
@@ -250,9 +260,10 @@ function CenterOrSideDialog({
 
   // Seed the initial visible state so a branch that mounts while the surface is
   // already open (the imperative `startOpen` intent) or under a truthy
-  // controlled `open` renders open on its FIRST commit — this is what lets a
-  // responsive Dialog survive a placement swap (centered card ↔ bottom sheet on
-  // resize) without going blank. `startOpen` never flips the close semantics;
+  // controlled `open` renders open on its FIRST commit. A close callback can
+  // reopen in a newly selected responsive placement without going blank; the
+  // active session never changes renderer on resize. `startOpen` never flips
+  // the close semantics;
   // the imperative `control.close()` still drives the exit + post-exit onClose.
   const [isOpen, setIsOpen] = useState(() => controlledOpen ?? startOpen ?? false);
   const [isClosing, setIsClosing] = useState(false);
@@ -263,9 +274,10 @@ function CenterOrSideDialog({
   isControlledRef.current = isControlled;
 
   const open = useCallback(() => {
+    onPresentationOpen?.();
     setIsClosing(false);
     setIsOpen(true);
-  }, []);
+  }, [onPresentationOpen]);
 
   // A dismissal request (backdrop, Escape, action button). In controlled mode
   // it asks the host to close via `onClose` (the host flips `open`); in
@@ -311,6 +323,7 @@ function CenterOrSideDialog({
     const timer = setTimeout(() => {
       setIsOpen(false);
       setIsClosing(false);
+      onPresentationClosed?.();
       const queued = closeCallbacksRef.current;
       closeCallbacksRef.current = [];
       for (const cb of queued) {
@@ -329,7 +342,7 @@ function CenterOrSideDialog({
     }, exitDuration);
 
     return () => clearTimeout(timer);
-  }, [isClosing, exitDuration]);
+  }, [isClosing, exitDuration, onPresentationClosed]);
 
   // The backdrop's fade rides a shared value, NOT a CSS `@keyframes opacity
   // 0 → 1` handed to the layers. A running CSS animation outranks inline styles

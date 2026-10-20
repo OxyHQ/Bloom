@@ -3,6 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
+import { TextField, TextFieldInput } from '../text-field';
 import { Dialog } from './Dialog';
 import { useDialogControl } from './context';
 import { alert } from '../surfaces';
@@ -211,7 +212,7 @@ export const Playground: Story = {
   },
 };
 
-/** Exercises the semantic panel across a responsive placement change. */
+/** Resize while editing: this session stays mounted; reopen uses the new placement. */
 export const ResponsiveAccessibility: Story = {
   args: { title: 'Account settings', description: 'Review your account preferences.' },
   render: function ResponsiveAccessibilityDemo(args) {
@@ -225,6 +226,12 @@ export const ResponsiveAccessibility: Story = {
           onClose={() => setOpen(false)}
           placement={{ base: 'bottom', md: 'center' }}
         >
+          <TextField>
+            <TextFieldInput
+              label="Draft preference"
+              placeholder="Type a draft, then resize"
+            />
+          </TextField>
           <Button onPress={() => setOpen(false)}>Save preferences</Button>
         </Dialog>
       </OverlayInertBoundary>

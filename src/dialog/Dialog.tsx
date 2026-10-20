@@ -1,3 +1,7 @@
+import {
+  usePresentationSession,
+  type DialogPresentationLifecycle,
+} from './use-presentation-session';
 import { BloomColorScope } from '../theme/color-scope/ColorScope';
 import {
   DialogFrameContent,
@@ -61,7 +65,6 @@ import {
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   resolveSideSheetWidth,
-  useResolvedPlacement,
   physicalDialogSide,
   type DialogSidePlacement,
 } from './placement';
@@ -99,18 +102,22 @@ const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
  *   3. Pure children — no `title`/`description`/`actions`.
  */
 export function Dialog({ placement, frame, children, header, ...props }: DialogProps) {
+  const session = usePresentationSession(placement, props);
   const rest = {
     ...props,
+    startOpen: session.startOpen,
+    onPresentationOpen: session.onPresentationOpen,
+    onPresentationClosed: session.onPresentationClosed,
     header: frame ? { ...header, ...frame.header } : header,
     children: <DialogFrameContent frame={frame}>{children}</DialogFrameContent>,
   };
-  const resolvedPlacement = useResolvedPlacement(placement);
+  const resolvedPlacement = session.placement;
 
   // `bottom` routes to the shared cross-platform `BottomSheet` surface — one
   // code path with drag-to-dismiss on web and native. `center` (default) and
   // the side-sheets keep their existing native lifecycle below. Each branch is
-  // its own component so the dispatcher only ever calls `useResolvedPlacement`,
-  // keeping the rules-of-hooks contract intact across a responsive placement
+  // its own component so the dispatcher resolves the presentation session,
+  // keeping the rules-of-hooks contract intact across a closed-session placement
   // change.
   if (resolvedPlacement === 'bottom') {
     return (
@@ -153,6 +160,8 @@ function CenteredOrSideDialog({
   control,
   open: controlledOpen,
   startOpen,
+  onPresentationOpen,
+  onPresentationClosed,
   presentation = 'default',
   exitDuration,
   onClose,
@@ -176,7 +185,8 @@ function CenteredOrSideDialog({
   containerClassName,
   label,
   children,
-}: Omit<DialogProps, 'placement'> & { placement: 'center' | DialogSidePlacement }) {
+}: Omit<DialogProps, 'placement'> &
+  DialogPresentationLifecycle & { placement: 'center' | DialogSidePlacement }) {
   const isControlled = controlledOpen !== undefined;
   const isSide = placement !== 'center';
   const headerController = useDialogHeaderController();
@@ -239,9 +249,10 @@ function CenteredOrSideDialog({
   }, []);
 
   const open = useCallback(() => {
+    onPresentationOpen?.();
     setSideOpen(true);
     ref.current?.present();
-  }, []);
+  }, [onPresentationOpen]);
 
   // A dismissal request (backdrop, pan-to-close, action button). In controlled
   // mode it asks the host to close via `onClose` (the host flips `open`); in
@@ -270,9 +281,10 @@ function CenteredOrSideDialog({
   // drawer routes its own dismissals through `close()`, so it never gets here
   // with `open` true.
   const handleDismiss = useCallback(() => {
+    onPresentationClosed?.();
     callQueuedCallbacks();
     if (!isControlledRef.current || controlledOpenRef.current) onCloseRef.current?.();
-  }, [callQueuedCallbacks]);
+  }, [callQueuedCallbacks, onPresentationClosed]);
 
   // In controlled mode, mirror the `open` prop onto the underlying surface so
   // both modes share one lifecycle. The BottomSheet path presents/dismisses by

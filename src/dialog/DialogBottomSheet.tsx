@@ -1,3 +1,4 @@
+import type { DialogPresentationLifecycle } from './use-presentation-session';
 import { useDialogFrameScrollReset } from './DialogFrameContent';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
@@ -50,6 +51,8 @@ export function DialogBottomSheet({
   control,
   open: controlledOpen,
   startOpen,
+  onPresentationOpen,
+  onPresentationClosed,
   onClose,
   testID,
   title,
@@ -118,8 +121,9 @@ export function DialogBottomSheet({
   }, []);
 
   const open = useCallback(() => {
+    onPresentationOpen?.();
     ref.current?.present();
-  }, []);
+  }, [onPresentationOpen]);
 
   // A dismissal request (backdrop, pan-to-close, action button). In controlled
   // mode it asks the host to close via `onClose` (the host flips `open`); in
@@ -144,9 +148,10 @@ export function DialogBottomSheet({
   // arrives with `open` still true, and the host has to hear about it or its
   // state says open over a closed sheet.
   const handleDismiss = useCallback(() => {
+    onPresentationClosed?.();
     callQueuedCallbacks();
     if (!isControlledRef.current || controlledOpenRef.current) onCloseRef.current?.();
-  }, [callQueuedCallbacks]);
+  }, [callQueuedCallbacks, onPresentationClosed]);
 
   // In controlled mode, mirror the `open` prop onto the underlying sheet so both
   // modes share one lifecycle.
@@ -384,31 +389,32 @@ const FILL_BOUNDED = { flex: 1, minHeight: 0 } as const;
  * of `DialogProps`. `width`, `maxWidth`, and `inset` are placement-specific to
  * the side/centered surfaces and intentionally excluded.
  */
-export type DialogBottomSheetProps = Pick<
-  DialogProps,
-  | 'backdrop'
-  | 'transition'
-  | 'control'
-  | 'open'
-  | 'startOpen'
-  | 'onClose'
-  | 'testID'
-  | 'title'
-  | 'description'
-  | 'actions'
-  | 'header'
-  | 'material'
-  | 'maxHeightRatio'
-  | 'showHandle'
-  | 'dismissOnBackdrop'
-  | 'contentPadding'
-  | 'scrollable'
-  | 'morph'
-  | 'style'
-  | 'panelStyle'
-  | 'panelClassName'
-  | 'containerStyle'
-  | 'containerClassName'
-  | 'label'
-  | 'children'
->;
+export type DialogBottomSheetProps = DialogPresentationLifecycle &
+  Pick<
+    DialogProps,
+    | 'backdrop'
+    | 'transition'
+    | 'control'
+    | 'open'
+    | 'startOpen'
+    | 'onClose'
+    | 'testID'
+    | 'title'
+    | 'description'
+    | 'actions'
+    | 'header'
+    | 'material'
+    | 'maxHeightRatio'
+    | 'showHandle'
+    | 'dismissOnBackdrop'
+    | 'contentPadding'
+    | 'scrollable'
+    | 'morph'
+    | 'style'
+    | 'panelStyle'
+    | 'panelClassName'
+    | 'containerStyle'
+    | 'containerClassName'
+    | 'label'
+    | 'children'
+  >;

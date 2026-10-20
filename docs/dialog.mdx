@@ -132,11 +132,25 @@ type ResponsiveDialogPlacement =
 
 Breakpoints (px): `sm` 640 / `md` 768 / `lg` 1024 / `xl` 1280. The largest breakpoint whose min-width is `<=` the viewport wins; falls back to `base` below all breakpoints.
 
+A responsive map is resolved **when the dialog opens**, and that presentation
+stays fixed until its exit has completely finished. Resizing an open dialog still
+updates its available width/height, but never swaps between the centered, side or
+bottom renderers mid-edit. This preserves the content tree, draft state, focus,
+scroll owner and the current dismissal lifecycle. Close and reopen to use the
+placement for the new viewport. The same session contract applies to imperative
+controls, controlled `open`, and `startOpen`; `startOpen` seeds only the first
+responsive session, so resizing a dismissed dialog cannot reopen it.
+
+Previously, crossing a breakpoint replaced the entire renderer. An imperative
+dialog could disappear because its replacement started closed; even forcing that
+replacement open lost child state. The shared session owner prevents that swap
+without duplicate mounted dialogs or consumer state/scroll workarounds.
+
 Per-placement behavior:
 - `center` — DOM-portal modal (web) / detached floating card (native).
 - `left` / `right` — animated side-sheet anchored to that PHYSICAL viewport edge.
 - `start` / `end` — the same side-sheet on the LOGICAL edge: `start` is the left in a left-to-right layout and the right in a right-to-left one (`end` the reverse), read from `useIsRtl()`, and the panel slides in from that edge. The matching `inset` side applies (`inset.right` for `start` in RTL). On native the panel is positioned with `insetInlineStart`/`insetInlineEnd`, which Yoga resolves against `I18nManager` — a physical `left`/`right` would be swapped by React Native's default `swapLeftAndRightInRTL`. On web the drawer is portaled outside any `dir` context, so it takes the physical edge `useIsRtl()` names. An app that ships Arabic or Hebrew wants `start`/`end`: `{ base: 'bottom', md: 'start' }` is the mirrored store drawer.
-- `bottom` — reuses the cross-platform `BottomSheet` on BOTH web and native (drag-to-dismiss + internal scroll work everywhere). Custom `children` on bottom placement are rendered in a NON-scrollable body — children own scrolling.
+- `bottom` — reuses the cross-platform `BottomSheet` on BOTH web and native (drag-to-dismiss + internal scroll work everywhere). The shared surface owns scrolling by default; `scrollable={false}` delegates it to content with its own bounded scroller.
   The sheet is flush with the bottom of the window, so the Dialog ends its content with a spacer the height of the bottom safe area (the Android gesture bar, the iOS home indicator). This spacer is inside the scroll content. Content keeps its own padding; do not add `insets.bottom` yourself. Without the spacer, the last row sat under the gesture bar. A body taller than the sheet could not scroll it out, because the scroll range ended where the bar began.
 
 ## Nav header: the title beside the ✕
