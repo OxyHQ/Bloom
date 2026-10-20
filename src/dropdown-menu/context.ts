@@ -7,14 +7,28 @@
  */
 import { createContext, useContext } from 'react';
 
+import type { ViewRef } from '../styles/native-refs';
 import type { OverlayShellContextValue } from '../floating/types';
 
-const DropdownMenuContext = createContext<OverlayShellContextValue | null>(null);
+export interface DropdownMenuContextValue extends OverlayShellContextValue {
+  activation?: 'click' | 'hover';
+  onPrimaryOpenChange?: (open: boolean) => void;
+  panelRef?: React.RefObject<ViewRef | null>;
+  hover?: {
+    enter: () => void;
+    show: () => void;
+    hide: () => void;
+    hold: () => void;
+    dismiss: () => void;
+  };
+}
+
+const DropdownMenuContext = createContext<DropdownMenuContextValue | null>(null);
 DropdownMenuContext.displayName = 'BloomDropdownMenuContext';
 
 export const DropdownMenuProvider = DropdownMenuContext.Provider;
 
-export function useDropdownMenu(): OverlayShellContextValue {
+export function useDropdownMenu(): DropdownMenuContextValue {
   const value = useContext(DropdownMenuContext);
   if (!value) {
     throw new Error('DropdownMenu parts must be rendered inside a <DropdownMenu>.');

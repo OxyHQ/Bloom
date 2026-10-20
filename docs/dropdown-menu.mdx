@@ -240,3 +240,27 @@ the browser's new-tab/window behavior and leave the menu open. Disabled rows hav
 no destination. Enter follows the anchor's native activation; Space uses the shared
 menu keyboard engine. Native rows open `href` through `Linking` when no callback is
 supplied. Use the row directly, rather than nesting a link inside another action.
+
+
+## Hover navigation with a primary action
+
+Set `activation="hover"` for a pointer/focus preview using the same menu engine,
+Surface, scrolling, roving keys and dismissal. Defaults are 400ms open intent and
+150ms close intent (`openDelay`/`closeDelay`). Moving into the panel or focusing a
+row keeps it open. Touch hover is ignored; long press opens the same menu on touch web or its usual
+sheet on native. With no primary action, ordinary press also opens the menu.
+
+A trigger child with `href` or `onPress` retains that primary action; ArrowDown
+and ArrowUp enter navigation. `pressTrigger={<PopoverTrigger asChild />}` composes
+an independent primary popup around the same Button after menu handlers, without
+nesting interactive controls. Primary activation cancels pending/open hover and
+its open popup suppresses further hover. Escape returns focus without restarting
+the dismissed preview. Default click activation is unchanged.
+
+Keyboard opening retains its requested first/last row while lazy content loads;
+arrival of an enabled row completes focus, and dismissal cancels the wait. Entering
+with arrows also cancels a pending pointer-leave close.
+
+All shared menu items accept `current` for a current navigation destination. It
+uses existing selected-row paint and sets `aria-current="page"` on the real host;
+combine it with `href` for native and web navigation.

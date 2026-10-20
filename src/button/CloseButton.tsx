@@ -1,6 +1,6 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
-import { StyledPressable } from '../styles/styled-primitives';
+import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import Svg, { Path } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
@@ -10,6 +10,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { BUTTON_TRANSITION_MS, CLOSE_BUTTON_GEOMETRY, resolveCloseButtonPaint } from './shared';
 import type { CloseButtonProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useTouchInput } from '../styles/pointer';
 
 /**
  * `CloseButton`: the compact round dismiss control for announcements, toasts,
@@ -18,10 +19,11 @@ import { IS_WEB } from '../styles/platform';
  * than a scaled glyph.
  *
  *            box    glyph   stroke   inset
- *   2xs      16     6.8     1.6      0.57
+ *   2xs      18     9       2        2
  *   xs       20     10.8    2        2        (default)
  *   sm       24     12.6    2        2
  *   md       32     16.2    2.5      2
+ *   lg       44     20      2.5      2
  *
  *   disc     background/tertiary        neutral-200 / dark neutral-800
  *   glyph    foreground/icon/secondary  neutral-500, text/primary on hover
@@ -57,7 +59,7 @@ ${SELECTOR} path { transition: none; }
 }`,
 });
 
-/** Brings the 16–24px discs up to a 44pt touch target on native. */
+/** Native retains its established invisible padding around the dismiss disc. */
 const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
 function CloseButtonComponent({
@@ -70,6 +72,8 @@ function CloseButtonComponent({
   className,
   testID,
 }: CloseButtonProps) {
+  const touchInput = useTouchInput();
+  const touchTarget = IS_WEB && touchInput;
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, CLOSE_BUTTON_CSS);
   const paint = useMemo(() => resolveCloseButtonPaint(theme), [theme]);
@@ -79,14 +83,31 @@ function CloseButtonComponent({
   const color = !disabled && (hovered || pressed) ? paint.foregroundHover : paint.foreground;
 
   const boxStyle: WebCssStyle = {
-    width: g.box,
-    height: g.box,
+    width: touchTarget ? Math.max(44, g.box) : g.box,
+    height: touchTarget ? Math.max(44, g.box) : g.box,
     borderRadius: g.box / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: paint.background,
+    backgroundColor: touchTarget ? 'transparent' : paint.background,
     '--bloom-button-close-ring': paint.ring,
   };
+
+  const glyph = (
+    <Svg width={g.glyph} height={g.glyph} viewBox={`0 0 ${g.glyph} ${g.glyph}`} fill="none">
+      <Path
+        d={`M${g.inset} ${g.inset}L${g.glyph - g.inset} ${g.glyph - g.inset}`}
+        stroke={color}
+        strokeWidth={g.stroke}
+        strokeLinecap="round"
+      />
+      <Path
+        d={`M${g.glyph - g.inset} ${g.inset}L${g.inset} ${g.glyph - g.inset}`}
+        stroke={color}
+        strokeWidth={g.stroke}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
 
   return (
     <StyledPressable
@@ -110,23 +131,28 @@ function CloseButtonComponent({
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       hitSlop={HIT_SLOP}
-      style={[boxStyle, style]}
+      // Real geometry protects touch input when parent clipping limits hitSlop.
+      // Consumers may grow the control, but cannot shrink its coarse-pointer target.
+      style={[boxStyle, style, touchTarget ? { minWidth: 44, minHeight: 44 } : undefined]}
       testID={testID}
     >
-      <Svg width={g.glyph} height={g.glyph} viewBox={`0 0 ${g.glyph} ${g.glyph}`} fill="none">
-        <Path
-          d={`M${g.inset} ${g.inset}L${g.glyph - g.inset} ${g.glyph - g.inset}`}
-          stroke={color}
-          strokeWidth={g.stroke}
-          strokeLinecap="round"
-        />
-        <Path
-          d={`M${g.glyph - g.inset} ${g.inset}L${g.inset} ${g.glyph - g.inset}`}
-          stroke={color}
-          strokeWidth={g.stroke}
-          strokeLinecap="round"
-        />
-      </Svg>
+      {touchTarget ? (
+        <StyledView
+          pointerEvents="none"
+          style={{
+            width: g.box,
+            height: g.box,
+            borderRadius: g.box / 2,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: paint.background,
+          }}
+        >
+          {glyph}
+        </StyledView>
+      ) : (
+        glyph
+      )}
     </StyledPressable>
   );
 }

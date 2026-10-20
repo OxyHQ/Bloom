@@ -18,7 +18,8 @@ import React, {
 } from 'react';
 
 import { resolveIconSlot } from '../icons/render-icon';
-import { useBloomAppearance } from '../appearance/context';
+import { useBloomAppearance, useBloomControlDensity } from '../appearance/context';
+import { useTouchInput } from '../styles/pointer';
 import { useTheme } from '../theme/use-theme';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
 import { flattenWebStyle } from '../styles/flatten-web-style';
@@ -191,6 +192,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       appearance: appearanceProp,
       tone: toneProp,
       size: sizeProp,
+      density: densityProp,
       style,
       textStyle,
       icon,
@@ -252,7 +254,9 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       { size: sizeProp, tone: toneProp },
       { size: 'md', tone: 'accent' },
     );
-    const geometry = resolveButtonGeometry(size, textVariant);
+    const density = useBloomControlDensity(densityProp);
+    const touch = useTouchInput();
+    const geometry = resolveButtonGeometry(size, textVariant, density, touch);
     const isSquare = iconOnly || (icon != null && children == null);
     const isIconVariant = isSquare;
     const isLink = appearance === 'plain' && (href != null || linkTone != null);
@@ -282,7 +286,9 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0
         ? iconSizeProp
         : isIconVariant
-          ? ICON_BUTTON_ICON_SIZE[size]
+          ? density === 'compact'
+            ? geometry.iconSize
+            : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
 
     const palette = useMemo(

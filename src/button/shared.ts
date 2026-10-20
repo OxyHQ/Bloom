@@ -3,7 +3,8 @@ import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import { isValidElement, type ReactNode } from 'react';
 
 import { resolveBloomColors } from '../appearance/colors';
-import type { BloomAppearance, BloomTone } from '../appearance/types';
+import type { BloomAppearance, BloomTone, BloomControlDensity } from '../appearance/types';
+import { CONTROL_LABEL_TYPE, MENU_GEOMETRY } from '../appearance/control-geometry';
 
 import { borderRadius, animation } from '../styles/tokens';
 import { parseRgba, withAlpha } from '../theme/color-utils';
@@ -57,9 +58,21 @@ function typeFields(type: TypeScaleVariant) {
 export function resolveButtonGeometry(
   size: ButtonResolvedSize,
   textVariant?: TypeScaleVariant,
+  density: BloomControlDensity = 'default',
+  touch = false,
 ): ButtonGeometry {
   const base = BUTTON_GEOMETRY[size];
-  return textVariant ? { ...base, ...typeFields(textVariant) } : base;
+  const contextual =
+    density === 'compact'
+      ? {
+          ...base,
+          height: Math.max(MENU_GEOMETRY[size].height, touch ? 44 : 0),
+          iconSize: size === 'xs' ? 14 : size === 'lg' ? 20 : 16,
+          labelPaddingHorizontal: 0,
+          ...typeFields(CONTROL_LABEL_TYPE[size]),
+        }
+      : base;
+  return textVariant ? { ...contextual, ...typeFields(textVariant) } : contextual;
 }
 
 const CANONICAL_BUTTON_GEOMETRY: Record<ButtonResolvedSize, ButtonGeometry> = {

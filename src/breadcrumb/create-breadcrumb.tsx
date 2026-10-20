@@ -1,4 +1,13 @@
-import React, { Children, Fragment, isValidElement, memo, useState } from 'react';
+import type React from 'react';
+import {
+  Children,
+  cloneElement,
+  forwardRef,
+  Fragment,
+  isValidElement,
+  memo,
+  useState,
+} from 'react';
 import { View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
 import { BloomScope, useBloomAppearance } from '../appearance';
 import { CONTROL_LABEL_TYPE, MENU_GEOMETRY } from '../appearance/control-geometry';
@@ -19,7 +28,8 @@ import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { RiMoreLine } from '../icons/remix/RiMoreLine';
 import { BREADCRUMB_MESSAGES } from './messages';
 import { collapsedAncestorCount } from './shared';
-import type { BreadcrumbItemProps, BreadcrumbProps } from './types';
+import type { MemoRefComponent, ViewRef } from '../styles/native-refs';
+import type { BreadcrumbHoverMenu, BreadcrumbItemProps, BreadcrumbProps } from './types';
 
 type Dependencies = Pick<
   typeof Dropdown,
@@ -115,54 +125,104 @@ export function createBreadcrumb({
     );
   }
 
-  const BreadcrumbItem = memo(function BreadcrumbItem(item: BreadcrumbItemProps) {
-    const {
-      children,
-      href,
-      onPress,
-      current = false,
-      size: sizeProp,
-      accessibilityLabel,
-      style,
-      textStyle,
-      testID,
-    } = item;
-    const geometry = useGeometry(sizeProp);
-    const theme = useTheme();
-    const fill = useSurfaceFill();
-    const paint = surfaceTextOn(theme, fill);
-    const name =
-      accessibilityLabel ??
-      (typeof children === 'string' || typeof children === 'number' ? String(children) : undefined);
-    const rowStyle = {
-      minWidth: 0,
-      minHeight: geometry.height,
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      gap: 6,
-      paddingLeft: 4,
-      paddingRight: 4,
-    };
-    if (current || (href == null && onPress == null)) {
-      return (
-        <View
-          role="listitem"
-          {...(IS_WEB && current ? { 'aria-current': 'page' as const } : {})}
-          accessibilityLabel={accessibilityLabel}
-          style={[rowStyle, style]}
-          testID={testID}
-        >
-          <Label
-            item={item}
-            color={current ? paint.text : paint.textSecondary}
-            geometry={geometry}
-          />
-        </View>
-      );
-    }
+  function HoverNavigation({
+    children,
+    config,
+    trigger,
+  }: {
+    children: React.ReactElement;
+    config: BreadcrumbHoverMenu;
+    trigger: BreadcrumbItemProps['trigger'];
+  }) {
+    // Controlled here: the lazy content and menu read the same open value.
+    const [open, setOpen] = useState(false);
     return (
-      <View role="listitem" style={{ minWidth: 0, flexShrink: 1 }}>
+      <DropdownMenu
+        activation="hover"
+        open={open}
+        onOpenChange={setOpen}
+        openDelay={config.openDelay}
+        closeDelay={config.closeDelay}
+      >
+        <DropdownMenuTrigger
+          asChild
+          pressTrigger={trigger}
+          style={{ minWidth: 0, alignSelf: 'stretch' }}
+        >
+          {children}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          label={config.label}
+          minWidth={config.width ?? 240}
+          maxWidth={config.width ?? 240}
+        >
+          {typeof config.content === 'function' ? config.content({ open }) : config.content}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  const BreadcrumbItem: MemoRefComponent<BreadcrumbItemProps> = memo(
+    forwardRef<ViewRef, BreadcrumbItemProps>(function BreadcrumbItem(item, ref) {
+      const {
+        children,
+        href,
+        onPress,
+        current = false,
+        size: sizeProp,
+        accessibilityLabel,
+        style,
+        textStyle,
+        testID,
+        disabled,
+        trigger,
+        hoverMenu,
+        'aria-expanded': expanded,
+        'aria-haspopup': hasPopup,
+      } = item;
+      const geometry = useGeometry(sizeProp);
+      const theme = useTheme();
+      const fill = useSurfaceFill();
+      const paint = surfaceTextOn(theme, fill);
+      const name =
+        accessibilityLabel ??
+        (typeof children === 'string' || typeof children === 'number'
+          ? String(children)
+          : undefined);
+      const rowStyle = {
+        minWidth: 0,
+        minHeight: geometry.height,
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+        gap: 6,
+        paddingLeft: 4,
+        paddingRight: 4,
+      };
+      if (href == null && onPress == null && trigger == null && hoverMenu == null) {
+        return (
+          <View
+            ref={ref}
+            role="listitem"
+            {...(IS_WEB && current ? { 'aria-current': 'page' as const } : {})}
+            accessibilityLabel={accessibilityLabel}
+            style={[rowStyle, style]}
+            testID={testID}
+          >
+            <Label
+              item={item}
+              color={current ? paint.text : paint.textSecondary}
+              geometry={geometry}
+            />
+          </View>
+        );
+      }
+      const control = (
         <Button
+          ref={ref}
+          disabled={disabled}
+          aria-current={current ? 'page' : undefined}
+          aria-expanded={expanded}
+          aria-haspopup={hasPopup}
           appearance="plain"
           tone="neutral"
           href={href}
@@ -200,9 +260,26 @@ export function createBreadcrumb({
         >
           {children}
         </Button>
-      </View>
-    );
-  });
+      );
+      return (
+        <View role="listitem" style={{ minWidth: 0, flexShrink: 1 }}>
+          {hoverMenu ? (
+            <HoverNavigation config={hoverMenu} trigger={trigger}>
+              {control}
+            </HoverNavigation>
+          ) : trigger ? (
+            cloneElement(trigger, {
+              asChild: true,
+              style: [{ minWidth: 0, alignSelf: 'stretch' }, trigger.props.style],
+              children: control,
+            })
+          ) : (
+            control
+          )}
+        </View>
+      );
+    }),
+  );
 
   const Breadcrumb = memo(function Breadcrumb({
     children,
@@ -233,8 +310,9 @@ export function createBreadcrumb({
     const collapse =
       overflow === 'collapse' &&
       items.every(
-        (item) =>
+        (item, index) =>
           item.type === BreadcrumbItem &&
+          (item.props.trigger == null || index === items.length - 1) &&
           (typeof item.props.children === 'string' || typeof item.props.children === 'number'),
       );
     const keys = items.map(
@@ -260,7 +338,13 @@ export function createBreadcrumb({
           ...(separator == null && rtl ? { transform: [{ scaleX: -1 }] } : {}),
         }}
       >
-        {separator ?? <RiArrowRightSLine width={12} height={12} fill={paint.textSecondary} />}
+        {typeof separator === 'string' || typeof separator === 'number' ? (
+          <Text variant={geometry.type} style={{ color: paint.textSecondary }}>
+            {separator}
+          </Text>
+        ) : (
+          (separator ?? <RiArrowRightSLine width={12} height={12} fill={paint.textSecondary} />)
+        )}
       </View>
     );
     const list = (
@@ -299,7 +383,9 @@ export function createBreadcrumb({
                     key={item.key}
                     href={item.props.href}
                     onPress={item.props.onPress}
-                    disabled={item.props.href == null && item.props.onPress == null}
+                    disabled={
+                      item.props.disabled || (item.props.href == null && item.props.onPress == null)
+                    }
                     accessibilityLabel={item.props.accessibilityLabel}
                     leading={
                       item.props.leading ??
@@ -320,7 +406,10 @@ export function createBreadcrumb({
               <View
                 style={{
                   minWidth: 0,
-                  ...(index === items.length - hidden - 1 ? { flex: 1 } : { flexShrink: 0 }),
+                  // The current control may shrink, but never grows into an
+                  // empty action-sized hit area. Its trigger anchors to the label.
+                  flexShrink: index === items.length - hidden - 1 ? 1 : 0,
+                  flexGrow: 0,
                 }}
               >
                 {item}

@@ -75,3 +75,6 @@ export function useMenuSub(): MenuSubContextValue {
   }
   return value;
 }
+
+/** Private handshake between a secondary trigger and its composed primary surface. */
+export const PrimaryTriggerStateContext = createContext<((open: boolean) => void) | null>(null);

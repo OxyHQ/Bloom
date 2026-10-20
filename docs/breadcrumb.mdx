@@ -37,7 +37,7 @@ Collapse accepts direct `BreadcrumbItem` children with string/number labels. Opa
 
 ## Items and navigation
 
-An item with `href` is a real link; an item with only `onPress` is a button. Without either it is static text. `current` is noninteractive and carries `aria-current="page"` on web.
+An item with `href` is a real link; an item with only `onPress` is a button. Without an action or `trigger` it is static text. `current` identifies the active page with `aria-current="page"` and can also expose an action.
 
 On web, `href` plus `onPress` routes only an ordinary unmodified activation through the callback. Ctrl, Meta, Shift, Alt and middle-click retain browser behavior, as does the link context menu. This also applies to hidden ancestors. On native, a link without `onPress` opens through `Linking`; a callback takes precedence.
 
@@ -67,3 +67,72 @@ The landmark carries the reading direction. The default chevron mirrors once in 
 | `BreadcrumbItem.leading?` | `ReactNode` | — | Passive visual before icon and label, gap 6. |
 | `BreadcrumbItem.accessibilityLabel?` | `string` | text label | Full accessible name. |
 | `BreadcrumbItem.style?` / `textStyle?` | style | — | Overrides. |
+
+
+## Current-page actions
+
+`current` supplies the current-page semantics; it remains a label by default.
+Supply `onPress`, `href` or `trigger` to make it actionable through the same
+Bloom Button. Its ref resolves to that control, with `aria-current="page"`;
+expanded/haspopup state and disabled behavior reach the interactive host.
+
+Keep `BreadcrumbItem` as a direct child when collapsing. The `trigger` slot
+wraps its existing Button through the standard `asChild` contract, preserving
+measurement of its string label without mounting another interactive subtree.
+A trigger on an ancestor retains scroll mode so its popup action is not replaced
+by a navigation-only overflow row:
+
+```tsx
+<Popover>
+  <Breadcrumb overflow="collapse" separator="/">
+    <BreadcrumbItem href="/projects">Projects</BreadcrumbItem>
+    <BreadcrumbItem current trigger={<PopoverTrigger asChild />}>
+      Project notes
+    </BreadcrumbItem>
+  </Breadcrumb>
+  <PopoverContent label="Page details">
+    <TextFieldInput label="Title" value={title} onChangeText={setTitle} />
+  </PopoverContent>
+</Popover>
+```
+
+The consumer owns permissions and persistence. The Popover owns its focus,
+placement, dismissal, scroll and material. `separator` accepts a text string
+or node; the default remains the directional chevron.
+
+
+## Related navigation on hover
+
+`hoverMenu` adds a navigation menu to the same Button. Pointer intent opens after
+400ms; leaving both trigger and menu closes after 150ms. ArrowDown/ArrowUp enter
+the menu, whose existing keyboard and focus-return behavior stays intact. Touch and native
+use long press. A primary `trigger` still handles click/Enter, and its open
+surface suppresses the hover menu until it closes. Without a primary action,
+press also opens the menu.
+
+```tsx
+<Popover>
+  <Breadcrumb overflow="collapse">
+    <BreadcrumbItem href="/projects">Projects</BreadcrumbItem>
+    <BreadcrumbItem
+      current
+      trigger={<PopoverTrigger asChild />}
+      hoverMenu={{
+        label: 'Related pages',
+        width: 240,
+        content: ({ open }) => <RelatedPages enabled={open} />,
+      }}
+    >
+      Project notes
+    </BreadcrumbItem>
+  </Breadcrumb>
+  <PopoverContent label="Page details">…</PopoverContent>
+</Popover>
+```
+
+The consumer supplies data and navigation through `DropdownMenuItem` (with
+`href` and `current` for the selected destination). `content` can be a node or
+render callback receiving the menu's single open state; enable lazy queries only
+when open. Hidden measurements render only labels, never menus or query owners.
+An ancestor with `hoverMenu` and a navigation href can still collapse into the
+standard overflow menu. `openDelay` and `closeDelay` are optional overrides.

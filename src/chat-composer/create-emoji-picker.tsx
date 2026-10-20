@@ -1,5 +1,6 @@
 import { ScrollBar } from '../layout/ScrollBar';
 import { useCardFill } from '../card/use-card-fill';
+import { useSurfaceFill } from '../styles/surface-levels';
 import type { Surface as SurfaceComponent } from '../surface';
 /**
  * A controlled, presentational emoji grid.
@@ -87,6 +88,8 @@ export function createEmojiPicker({
     onSkinToneChange,
     columns = 8,
     height = 288,
+    embedded = false,
+    scrollable = true,
     tabs,
     activeTab,
     onActiveTabChange,
@@ -96,7 +99,9 @@ export function createEmojiPicker({
     accessibilityLabel: accessibilityLabelProp,
   }: EmojiPickerProps) {
     const theme = useTheme();
-    const palette = resolveChatComposerPalette(theme, useCardFill(style));
+    const cardFill = useCardFill(style);
+    const parentFill = useSurfaceFill();
+    const palette = resolveChatComposerPalette(theme, embedded ? parentFill : cardFill);
     useChatComposerWebCss();
     const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
     const accessibilityLabel = accessibilityLabelProp ?? messages.emojiPicker;
@@ -142,15 +147,20 @@ export function createEmojiPicker({
       if (frequentlyUsed && frequentlyUsed.length > 0 && !search.trim()) {
         all.push({ key: 'frequent', label: labels.frequent, emojis: frequentlyUsed });
       }
-      all.push(...visible);
+      // A flowing picker delegates overflow to its parent. Category tabs select
+      // a section instead of trying to scroll a second, hidden list owner.
+      const flowCategory = visible.find((group) => group.key === category) ?? visible[0];
+      all.push(...(!scrollable && !search.trim() ? (flowCategory ? [flowCategory] : []) : visible));
 
       const built: Row[] = [];
       const index: Record<string, number> = {};
       for (const group of all) {
         index[group.key] = built.length;
         built.push({ kind: 'header', key: `h-${group.key}`, label: group.label });
-        chunk(group.emojis, columns).forEach((entries, i) =>
-          built.push({ kind: 'emojis', key: `${group.key}-${i}`, entries }),
+        chunk(group.emojis, scrollable ? columns : Math.max(1, group.emojis.length)).forEach(
+          (entries, i) => {
+            built.push({ kind: 'emojis', key: `${group.key}-${i}`, entries });
+          },
         );
       }
       const rowHeights = built.map((row) => (row.kind === 'header' ? HEADER_HEIGHT : EMOJI_CELL));
@@ -161,16 +171,17 @@ export function createEmojiPicker({
         running += h;
       }
       return { rows: built, offsets: rowOffsets, heights: rowHeights, headerIndex: index };
-    }, [columns, frequentlyUsed, labels.frequent, search, visible]);
+    }, [category, columns, frequentlyUsed, labels.frequent, scrollable, search, visible]);
 
     const jumpTo = useCallback(
       (key: string) => {
         setCategory(key);
+        if (!scrollable) return;
         const at = headerIndex[key];
         if (at === undefined) return;
         listRef.current?.scrollToOffset({ offset: offsets[at] ?? 0, animated: true });
       },
-      [headerIndex, offsets, setCategory],
+      [headerIndex, offsets, scrollable, setCategory],
     );
 
     const renderRow = useCallback(
@@ -185,7 +196,13 @@ export function createEmojiPicker({
           );
         }
         return (
-          <View style={{ flexDirection: 'row', height: EMOJI_CELL }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: scrollable ? undefined : 'wrap',
+              height: scrollable ? EMOJI_CELL : undefined,
+            }}
+          >
             {item.entries.map((entry, i) => {
               const base = emojiChar(entry);
               const char = applySkinTone(base, tone);
@@ -216,15 +233,15 @@ export function createEmojiPicker({
           </View>
         );
       },
-      [onSelectEmoji, palette.textSecondary, testID, tone],
+      [onSelectEmoji, palette.textSecondary, scrollable, testID, tone],
     );
 
     const panel: WebCssStyle = {
       borderRadius: PANEL_RADIUS,
-      paddingTop: 8,
-      paddingBottom: 8,
-      paddingLeft: 8,
-      paddingRight: 8,
+      paddingTop: embedded ? 0 : 8,
+      paddingBottom: embedded ? 0 : 8,
+      paddingLeft: embedded ? 0 : 8,
+      paddingRight: embedded ? 0 : 8,
       gap: 8,
       '--bloom-chat-composer-ring': palette.focusRing,
     };
@@ -235,8 +252,9 @@ export function createEmojiPicker({
     ];
     const activeCustom = tabs?.find((t) => t.key === tab);
 
+    const Container = embedded ? View : Surface;
     return (
-      <Surface accessibilityLabel={accessibilityLabel} style={[panel, style]} testID={testID}>
+      <Container accessibilityLabel={accessibilityLabel} style={[panel, style]} testID={testID}>
         {tabs && tabs.length > 0 ? (
           <View
             accessibilityRole="tablist"
@@ -277,7 +295,7 @@ export function createEmojiPicker({
         ) : null}
 
         {activeCustom ? (
-          <View style={{ height }}>{activeCustom.content}</View>
+          <View style={scrollable ? { height } : undefined}>{activeCustom.content}</View>
         ) : (
           <>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -383,7 +401,11 @@ export function createEmojiPicker({
 
             <View
               accessibilityRole="tablist"
-              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+              style={{
+                flexDirection: 'row',
+                flexWrap: scrollable ? undefined : 'wrap',
+                justifyContent: 'space-between',
+              }}
               testID={testID ? `${testID}-categories` : undefined}
             >
               {groups.map((group) => {
@@ -419,10 +441,22 @@ export function createEmojiPicker({
             </View>
 
             {rows.length === 0 ? (
-              <View style={{ height, alignItems: 'center', justifyContent: 'center' }}>
+              <View
+                style={{
+                  height: scrollable ? height : undefined,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <Text variant="body-2-regular" style={{ color: palette.textSecondary }}>
                   {labels.empty}
                 </Text>
+              </View>
+            ) : !scrollable ? (
+              <View testID={testID ? `${testID}-flow` : undefined}>
+                {rows.map((item) => (
+                  <View key={item.key}>{renderRow({ item })}</View>
+                ))}
               </View>
             ) : (
               <View style={{ position: 'relative', height }}>
@@ -446,7 +480,7 @@ export function createEmojiPicker({
             )}
           </>
         )}
-      </Surface>
+      </Container>
     );
   }
 

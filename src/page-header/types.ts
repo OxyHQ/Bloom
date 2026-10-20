@@ -17,8 +17,11 @@ export type PageHeaderTitleAlign = 'start' | 'center';
  * hairline separator and a scroll-linked shadow. It is still the right shape
  * for a dense tool screen, a split-pane sidebar header or anywhere the chrome
  * must not be mistaken for content; it is no longer the default.
+ *
+ * `navigation` is a 44pt minimum row with 12pt insets and 2pt action gaps.
+ * It supplies compact Button density without changing inherited app size.
  */
-export type PageHeaderPresentation = 'floating' | 'bar';
+export type PageHeaderPresentation = 'floating' | 'bar' | 'navigation';
 
 /**
  * Who reserves the space the header occupies.
@@ -76,6 +79,8 @@ export type PageHeaderTitleReveal = 'auto' | 'always' | 'onScroll' | 'onDock';
 
 /** Presentation of actions inside the header's own container; unrelated to control size. */
 export interface PageHeaderActionsState {
+  /** Header container is at least the xl breakpoint (1280pt); room for secondary metadata. */
+  spacious: boolean;
   /** True below Bloom's sm container breakpoint (640px), including initial web layout. */
   compact: boolean;
 }

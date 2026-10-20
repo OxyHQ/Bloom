@@ -207,10 +207,28 @@ export function useMenuPanelKeys(
   const tick = intent?.tick;
   useEffect(() => {
     if (!open || !panel || !edge?.current) return;
-    const rows = menuRows(panel);
-    const target = edge.current === 'last' ? rows[rows.length - 1] : rows[0];
-    edge.current = null;
-    target?.focus({ preventScroll: true });
+    const land = () => {
+      if (!edge.current) return true;
+      const rows = menuRows(panel);
+      const target = edge.current === 'last' ? rows[rows.length - 1] : rows[0];
+      if (!target) return false;
+      edge.current = null;
+      target.focus({ preventScroll: true });
+      return true;
+    };
+    if (land()) return;
+    // Lazy menus can first render a loading label. Preserve the requested edge
+    // until an enabled row arrives, instead of abandoning keyboard navigation.
+    const observer = new MutationObserver(() => {
+      if (land()) observer.disconnect();
+    });
+    observer.observe(panel, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['role', 'disabled', 'aria-disabled'],
+    });
+    return () => observer.disconnect();
   }, [open, panel, edge, tick]);
 
   useEffect(() => {

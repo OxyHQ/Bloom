@@ -21,6 +21,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { Surface } from '../surface/Surface.web';
 import {
   ChatComposer,
   ComposerAttachmentStrip,
@@ -912,6 +913,93 @@ describe('EmojiPicker', () => {
     expect(cells()[0]).toBe('e-emoji-🎉');
     mount(<EmojiPicker groups={groups} frequentlyUsed={['🎉']} query="laugh" testID="e" />);
     expect(cells()).toEqual(['e-emoji-😂']);
+  });
+
+  it('flows inside one parent surface and scroll owner without a fixed list height', () => {
+    const onSelectEmoji = jest.fn();
+    mount(
+      <Surface>
+        <div style={{ height: 220, overflowY: 'auto' }} data-testid="parent-scroll">
+          <EmojiPicker
+            embedded
+            scrollable={false}
+            groups={groups}
+            onSelectEmoji={onSelectEmoji}
+            testID="e"
+          />
+        </div>
+      </Surface>,
+    );
+    expect(container.querySelectorAll('.bloom-surface')).toHaveLength(1);
+    expect(maybe('e-grid')).toBeNull();
+    expect(byTestId('e-flow')).toBeDefined();
+    const owners = [...container.querySelectorAll<HTMLElement>('*')].filter((node) =>
+      ['auto', 'scroll'].includes(node.style.overflowY),
+    );
+    expect(owners).toEqual([byTestId('parent-scroll')]);
+    const row = byTestId('e-emoji-😂').parentElement;
+    expect(row?.style.flexWrap).toBe('wrap');
+    expect(row?.style.height).toBe('');
+    expect(cells()).toEqual(['e-emoji-😂', 'e-emoji-🙂']);
+    press(byTestId('e-category-people'));
+    expect(cells()).toEqual(['e-emoji-👍']);
+    press(byTestId('e-skin-tone'));
+    press(byTestId('e-skin-tone-2'));
+    press(byTestId('e-emoji-👍'));
+    expect(onSelectEmoji).toHaveBeenCalledWith('👍\u{1F3FC}');
+  });
+
+  it('searches every category in flow mode and retains the selected category afterwards', () => {
+    const render = (query: string) => (
+      <EmojiPicker embedded scrollable={false} groups={groups} query={query} testID="e" />
+    );
+    mount(render(''));
+    press(byTestId('e-category-people'));
+    mount(render('laugh'));
+    expect(cells()).toEqual(['e-emoji-😂']);
+    mount(render(''));
+    expect(cells()).toEqual(['e-emoji-👍']);
+    mount(render('no match'));
+    expect(cells()).toEqual([]);
+    expect(byTestId('e').textContent).toContain('No emoji found');
+  });
+
+  it('lets a custom flow tab and the empty state take their natural height', () => {
+    mount(
+      <EmojiPicker
+        embedded
+        scrollable={false}
+        height={999}
+        groups={groups}
+        activeTab="upload"
+        tabs={[
+          {
+            key: 'upload',
+            label: 'Upload',
+            content: <div data-testid="upload-content">Upload form</div>,
+          },
+        ]}
+        testID="e"
+      />,
+    );
+    expect(byTestId('upload-content').parentElement?.style.height).toBe('');
+    expect(container.querySelectorAll('.bloom-surface')).toHaveLength(0);
+    expect(maybe('e-grid')).toBeNull();
+    mount(
+      <EmojiPicker
+        embedded
+        scrollable={false}
+        height={999}
+        groups={groups}
+        query="missing"
+        testID="e"
+      />,
+    );
+    expect(
+      [...container.querySelectorAll<HTMLElement>('*')].some(
+        (node) => node.style.height === '999px',
+      ),
+    ).toBe(false);
   });
 
   it('swaps the body for a custom tab, and marks the tab selected', () => {

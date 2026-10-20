@@ -27,7 +27,8 @@ import {
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { styled } from 'react-native-css';
 
-import { useBloomAppearance } from '../appearance/context';
+import { useBloomAppearance, useBloomControlDensity } from '../appearance/context';
+import { useTouchInput } from '../styles/pointer';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -352,6 +353,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
     appearance: appearanceProp,
     tone: toneProp,
     size: sizeProp,
+    density: densityProp,
     style,
     textStyle,
     icon,
@@ -390,7 +392,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
     { size: sizeProp, tone: toneProp },
     { size: 'md', tone: 'accent' },
   );
-  const geometry = resolveButtonGeometry(size, textVariant);
+  const density = useBloomControlDensity(densityProp);
+  const touch = useTouchInput();
+  const geometry = resolveButtonGeometry(size, textVariant, density, touch);
   const isSquare = iconOnly || (icon != null && children == null);
   const isIconVariant = isSquare;
   const isLink = appearance === 'plain' && (href != null || linkTone != null);
@@ -399,7 +403,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
     typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0
       ? iconSizeProp
       : isIconVariant
-        ? ICON_BUTTON_ICON_SIZE[size]
+        ? density === 'compact'
+          ? geometry.iconSize
+          : ICON_BUTTON_ICON_SIZE[size]
         : geometry.iconSize;
   const palette = useMemo(
     () =>

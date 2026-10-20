@@ -1,4 +1,5 @@
-import React, { useContext, useMemo, useState } from 'react';
+import type React from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -31,6 +32,8 @@ import { RiTimerLine } from '../icons/remix/RiTimerLine';
 import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { Dialog, useDialogControl } from '../dialog';
+import { Button } from '../button';
 
 const meta: Meta = {
   id: 'blocks-chat-composer',
@@ -681,6 +684,31 @@ export const Emoji: Story = {
       <BothModes width={390}>
         <Demo />
       </BothModes>
+    );
+  },
+};
+
+/** The same picker delegates material, fitting and scrolling to the dialog. */
+export const EmojiInDialog: Story = {
+  render: function EmojiDialogDemo() {
+    const control = useDialogControl();
+    const [picked, setPicked] = useState('');
+    return (
+      <View style={{ gap: 12 }}>
+        <Button onPress={() => control.open()}>Choose an emoji</Button>
+        <Caption>{picked || 'Try a narrow or short viewport with the picker open.'}</Caption>
+        <Dialog control={control} header={{ title: 'Choose an emoji' }}>
+          <EmojiPicker
+            embedded
+            scrollable={false}
+            groups={EMOJI}
+            onSelectEmoji={(emoji) => {
+              setPicked(emoji);
+              control.close();
+            }}
+          />
+        </Dialog>
+      </View>
     );
   },
 };

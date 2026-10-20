@@ -28,7 +28,7 @@ An `icon` without children makes a square action. Labelled actions use `leadingI
 
 The pressable is the parent's layout child: `className` and `style` are applied there, without an extra wrapper. Web styles flatten RN style arrays and register their interaction CSS using constructed stylesheets. `asChild` composes an existing web link; disabled state guards the composed handler.
 
-`CloseButton` remains a semantic dismiss control with a required accessible name and sizes `xs | sm | md | lg`. Its optional `className` lands on the dismiss pressable, so positioning utilities work on both platforms. `onPress` receives the press event, and `stopPropagation` (default false) keeps the press from also activating a pressable parent, as on `Button`: the dismiss X on a pressable card.
+`CloseButton` remains a semantic dismiss control with a required accessible name and sizes `2xs | xs | sm | md | lg` (18/20/24/32/44px discs). On coarse-pointer web it reserves a real minimum 44×44px pressable while preserving the selected disc and glyph sizes; the target reacts to input-device changes and explicit styles may grow it but cannot shrink it below 44px. Desktop geometry and native `hitSlop` remain unchanged. Its optional `className` lands on the dismiss pressable, so positioning utilities work on both platforms. `onPress` receives the press event, and `stopPropagation` (default false) keeps the press from also activating a pressable parent, as on `Button`: the dismiss X on a pressable card.
 
 See [Component contract](./appearance.mdx) for inheritance and [Migration](./coherent-system-migration.mdx) for the clean API cut.
 
@@ -201,3 +201,19 @@ ordinary joined actions; selected items retain their selection surface.
 PageHeader's Back button uses it inside its existing island as well, so grouped
 and standalone neutral outline icons have the same foreground in light and
 dark themes. Plain text and link actions keep their existing emphasis.
+
+
+## Contextual navigation density
+
+`density="compact"` or the nearest `BloomScope controlDensity="compact"`
+selects the compact action recipe without changing `size`: xs/sm/md/lg remain
+24/26/28/32pt on desktop, with matching 12/13/14/16pt label text. Native and
+coarse-pointer compact actions use a 44pt minimum; a mounted web action follows
+pointer changes. Explicit `density="default"` restores the ordinary button
+recipe. Geometry is shared by web/native implementations, while appearance,
+Surface material, tone, disabled/loading state and focus remain unchanged.
+
+PageHeader's navigation presentation supplies this local environment. Overlays
+and independent ScreenScopes reset density to default while retaining size,
+tone and panel radius; form controls inside an opened dialog are not navigation
+actions. A scope inside the overlay may deliberately opt in again.

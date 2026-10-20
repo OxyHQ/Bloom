@@ -1,3 +1,4 @@
+import { BloomScope } from '../appearance/BloomScope';
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { ScreenScope } from '../layout/screen-scope';
 /**
@@ -136,7 +137,7 @@ export function OverlayRoot({
   // rest of the session.
   return zIndex === undefined ? (
     <StackedOverlayRoot className={className} style={style} testID={testID} modal={modal}>
-      {children}
+      <BloomScope controlDensity="default">{children}</BloomScope>
     </StackedOverlayRoot>
   ) : (
     <PinnedOverlayRoot
@@ -146,7 +147,7 @@ export function OverlayRoot({
       testID={testID}
       modal={modal}
     >
-      {children}
+      <BloomScope controlDensity="default">{children}</BloomScope>
     </PinnedOverlayRoot>
   );
 }
