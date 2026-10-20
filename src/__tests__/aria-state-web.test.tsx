@@ -600,13 +600,12 @@ describe('Slider', () => {
   });
 });
 
-// ARIA gives `role="radio"` a checked state, not a selected one. Both forks are
-// asserted from one place so the platforms cannot drift apart again.
+// Web listbox options use selected; native radio choices use checked.
 describe.each([
   ['web', WebSelect, WebSelectItem, WebSelectItemText] as const,
   ['native', NativeSelect, NativeSelectItem, NativeSelectItemText] as const,
 ])('SelectItem (%s fork) through react-native-web', (_p, Select, SelectItem, SelectItemText) => {
-  it('emits aria-checked reflecting the current value', () => {
+  it('emits the selection state appropriate to its platform role', () => {
     const c = mount(
       <Select value="a">
         <SelectItem value="a" label="Option A">
@@ -617,10 +616,11 @@ describe.each([
         </SelectItem>
       </Select>,
     );
-    const options = allByRole(c, 'radio');
+    const options = allByRole(c, _p === 'web' ? 'option' : 'radio');
+    const state = _p === 'web' ? 'aria-selected' : 'aria-checked';
     expect(options).toHaveLength(2);
-    expect(options[0]?.getAttribute('aria-checked')).toBe('true');
-    expect(options[1]?.getAttribute('aria-checked')).toBe('false');
+    expect(options[0]?.getAttribute(state)).toBe('true');
+    expect(options[1]?.getAttribute(state)).toBe('false');
   });
 });
 
@@ -943,7 +943,7 @@ describe('menu rows spell their state per role', () => {
       ),
     );
     const el = byTestId(c, 'row');
-    expect(el.getAttribute('role')).toBe('checkbox');
+    expect(el.getAttribute('role')).toBe('menuitemcheckbox');
     expect(el.getAttribute('aria-checked')).toBe('true');
   });
 
@@ -967,7 +967,7 @@ describe('menu rows spell their state per role', () => {
         </DropdownMenuRadioGroup>,
       ),
     );
-    const options = allByRole(c, 'radio');
+    const options = allByRole(c, 'menuitemradio');
     expect(options).toHaveLength(2);
     expect(options[0]?.getAttribute('aria-checked')).toBe('false');
     expect(options[1]?.getAttribute('aria-checked')).toBe('true');

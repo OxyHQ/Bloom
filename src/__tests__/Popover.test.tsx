@@ -198,7 +198,7 @@ describe('PopoverContent (web)', () => {
     expect(props.sideOffset).toBe(8);
     expect(props.align).toBe('center');
     const [chrome, caller] = props.style as [Record<string, unknown>, unknown];
-    expect(chrome).toMatchObject({ width: 266, borderRadius: 16, borderWidth: 1, paddingTop: 10 });
+    expect(chrome).toMatchObject({ width: 266, borderRadius: 16, borderWidth: 1, paddingTop: 8 });
     expect(caller).toBe(callerStyle);
     expect(resolvedStyle(props.style).width).toBe(302);
     // No retired shadcn class survives as a default.
@@ -303,8 +303,8 @@ describe('panel parts', () => {
       resolvedStyle(screen.getByTestId('separator', { includeHiddenElements: true }).props.style),
     ).toMatchObject({
       height: 1,
-      marginLeft: -10,
-      marginRight: -10,
+      marginLeft: -8,
+      marginRight: -8,
       backgroundColor: p.border,
     });
 

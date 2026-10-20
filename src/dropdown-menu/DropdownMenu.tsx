@@ -1,3 +1,4 @@
+import { BloomScope } from '../appearance';
 /**
  * `DropdownMenu` — NATIVE. Presents through `dialog/SheetShell`, Bloom's
  * established native-overlay convention (shared with `Select`, `ContextMenu`
@@ -82,6 +83,7 @@ export function DropdownMenuTrigger({
 
 export function DropdownMenuContent({
   children,
+  size,
   label: labelProp,
   className,
   style,
@@ -97,16 +99,18 @@ export function DropdownMenuContent({
   );
 
   return (
-    <SheetShell
-      control={control}
-      label={label}
-      onClose={onSheetClose}
-      contentClassName={className}
-      contentStyle={style}
-      contentTestID={testID}
-    >
-      <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
-    </SheetShell>
+    <BloomScope size={size}>
+      <SheetShell
+        control={control}
+        label={label}
+        onClose={onSheetClose}
+        contentClassName={className}
+        contentStyle={style}
+        contentTestID={testID}
+      >
+        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+      </SheetShell>
+    </BloomScope>
   );
 }
 

@@ -213,3 +213,48 @@ The [composition audit](/docs/composition-audit) records the broader review: scr
 - **Custom choice groups need a separate keyboard review.** Field constraints and single-choice activation do not establish the complete arrow-key and roving-focus behavior of a RadioGroup.
 - **No adaptive action overflow.** Headers do not automatically collapse excess actions into a menu.
 - **Native device coverage remains outstanding.** The current composition audit includes TypeScript and browser inspection; it does not claim iOS or Android device validation.
+
+## Normal application size and family proportions
+
+Applications normally provide `<BloomScope size="md">` once around their shell.
+Size inherits through React portals and nested overlays; an explicit component
+size overrides it. Do not shrink the whole application to `xs` to compensate
+for a component with the wrong geometry. Fix that family's recipe in Bloom.
+The architecture rules live in `docs/ui-architecture.mdx`.
+
+The vocabulary is shared; physical height follows the control's purpose:
+
+| Family | xs | sm | md (normal) | lg |
+| --- | --- | --- | --- | --- |
+| Menu / listbox action row | 24 | 26 | 28 | 32 |
+| Button | 24 | 32 | 36 | 44 |
+| Text field | 28 | 32 | 36 | 44 |
+| Item, one line | 28 | 32 | 36 | 44 |
+
+These are visual heights in pixels/dp before additional content. Menu rows and
+interactive Items have a minimum 44px/dp target on native and coarse-pointer web.
+Buttons retain their existing native hit slop (44dp, 48dp on Android); their web
+fork does not acquire native hit slop ([tracked follow-up #414](https://github.com/OxyHQ/Bloom/issues/414)). This change does not claim that every
+control already implements every size or every touch adaptation.
+
+Menu and Item label steps are 12/16, 13/18, 14/20 and 16/22 (font/line height).
+Menus use 8px horizontal inset, 4/4/4/5px vertical inset, and icon slots of
+16/18/20/20px. Menu icon-to-label gaps are 6/6/8/8px. Item horizontal insets are
+8/10/12/16px, vertical insets 6/7/8/11px and gaps 6/8/8/12px; subtitles grow
+naturally. Pre-rendered Item icons retain their caller-supplied size.
+
+`appearance/control-geometry.ts` owns these menu/Item recipes. Existing button
+and field recipes remain in their shared modules. The generated adoption matrix
+records actual readers; it is an audit, not a declaration of universal adoption.
+
+### Migration impact
+
+Normal desktop menu rows change from 36px with 4px between rows to 28px with no
+inter-row gap. Groups use 12/16 labels and 4px separator margins; panel inset is
+6px on desktop, 8px for touch. The existing 16px panel and 10px row corners,
+Surface material, theme colours, elevation and keyboard behaviours remain.
+
+Item now inherits size when `density` is omitted. Explicit legacy `density`
+keeps its old geometry, and an explicit `size` selects the new recipe. Plain
+normal Items therefore move from the old 44px default to 36px; interactive touch
+Items retain a 44px floor. Caller styles remain explicit overrides.

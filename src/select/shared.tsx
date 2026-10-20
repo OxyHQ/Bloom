@@ -1,3 +1,4 @@
+import { useMenuDensity } from '../floating/use-menu-density';
 /**
  * The parts of `Select` that are the SAME on both platforms, plus the contexts
  * the two forks publish.
@@ -13,15 +14,14 @@
  * The barrels export them from here directly, so each part still has exactly one
  * owner and neither fork re-exports the other's work.
  */
-import React, { createContext, useContext } from 'react';
+import type React from 'react';
+import { createContext, useContext } from 'react';
 import Svg, { Path } from 'react-native-svg';
 
 import {
   ROW_ICON_SIZE,
   ROW_INDICATOR_END_CLASS,
-  ROW_LABEL_CLASS,
   SELECT_ITEM_TEXT_CLASS,
-  SELECT_SEPARATOR_CLASS,
 } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
 import { useMessages } from '../locale/messages';
@@ -69,7 +69,7 @@ SelectTriggerStateContext.displayName = 'SelectTriggerStateContext';
 // ---------------------------------------------------------------------------
 
 /** `gap-[5px]` on `md`, `gap-1` on `sm` — the trigger value's own gap. */
-const VALUE_LEADING_GAP = { md: 5, sm: 4 } as const;
+const VALUE_LEADING_GAP = { xs: 4, sm: 6, md: 8, lg: 8 } as const;
 
 /**
  * `SelectValue` with a `leading` node: `flex min-w-0 items-center`, so a dot
@@ -182,7 +182,7 @@ export const SelectScrollProvider = SelectScrollContext.Provider;
 export function SelectGroup({ children, className, style }: SelectGroupProps) {
   // `group` carries no ARIA state, so there is no `aria-*` counterpart here.
   return (
-    <StyledView role="group" className={cx('gap-space-4', className)} style={style}>
+    <StyledView role="group" className={cx(useMenuDensity().groupClass, className)} style={style}>
       {children}
     </StyledView>
   );
@@ -191,6 +191,7 @@ SelectGroup.displayName = 'SelectGroup';
 
 /** The heading of a `SelectGroup`. */
 export function SelectLabel({ children, className, style }: SelectLabelProps) {
+  const density = useMenuDensity();
   const palette = useMenuPalette();
   // The group label (`pl-2 text-body-medium text-text-secondary`), the same
   // heading a menu group carries. Colour inline only without a caller
@@ -198,13 +199,13 @@ export function SelectLabel({ children, className, style }: SelectLabelProps) {
   return (
     <StyledText
       className={cx(
-        ROW_LABEL_CLASS,
-        menuTypeClass('body-medium', className),
+        density.labelClass,
+        menuTypeClass('caption-1-medium', className),
         className && 'text-muted-foreground',
         className,
       )}
       style={[
-        menuType('body-medium', className),
+        menuType('caption-1-medium', className),
         className ? null : { color: palette.textSecondary },
         style,
       ]}
@@ -276,7 +277,12 @@ SelectScrollDownButton.displayName = 'SelectScrollDownButton';
 // ---------------------------------------------------------------------------
 
 /** The type ramp an option's label takes, per list size. */
-export const VALUE_TYPE = { md: 'body-medium', sm: 'body-2-medium' } as const;
+export const VALUE_TYPE = {
+  xs: 'caption-1-medium',
+  sm: 'body-2-medium',
+  md: 'body-medium',
+  lg: 'headline-medium',
+} as const;
 
 /**
  * An option's label. The selected option is marked by the check and the row
@@ -286,6 +292,7 @@ export const VALUE_TYPE = { md: 'body-medium', sm: 'body-2-medium' } as const;
  * outranks a class on native, so a `text-*` utility would be silently dead.
  */
 export function SelectItemText({ children, className, style }: SelectItemTextProps) {
+  const density = useMenuDensity();
   const { disabled, size } = useSelectItemContext();
   const palette = useMenuPalette();
   return (
@@ -293,12 +300,12 @@ export function SelectItemText({ children, className, style }: SelectItemTextPro
       numberOfLines={1}
       className={cx(
         SELECT_ITEM_TEXT_CLASS[size],
-        menuTypeClass(VALUE_TYPE[size], className),
+        menuTypeClass(density.type, className),
         className && 'text-foreground',
         className,
       )}
       style={[
-        menuType(VALUE_TYPE[size], className),
+        menuType(density.type, className),
         className ? null : { color: disabled ? palette.textDisabled : palette.text },
         style,
       ]}
@@ -323,11 +330,16 @@ SelectItemText.displayName = 'SelectItemText';
 export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
   const palette = useMenuPalette();
   const { selected } = useSelectItemContext();
+  const density = useMenuDensity();
 
   if (!selected) return null;
 
   return (
-    <StyledView className={ROW_INDICATOR_END_CLASS} pointerEvents="none">
+    <StyledView
+      className={ROW_INDICATOR_END_CLASS}
+      style={{ width: density.leadingSize }}
+      pointerEvents="none"
+    >
       <IconComponent width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
     </StyledView>
   );
@@ -340,9 +352,10 @@ SelectItemIndicator.displayName = 'SelectItemIndicator';
  * border on a stretched one.
  */
 export function SelectSeparator() {
+  const density = useMenuDensity();
   const palette = useMenuPalette();
   return (
-    <StyledView className={SELECT_SEPARATOR_CLASS} style={{ backgroundColor: palette.border }} />
+    <StyledView className={density.separatorClass} style={{ backgroundColor: palette.border }} />
   );
 }
 SelectSeparator.displayName = 'SelectSeparator';

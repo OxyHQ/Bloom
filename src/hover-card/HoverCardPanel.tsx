@@ -81,12 +81,10 @@ export function HoverCardPanel({
       className={className}
       style={[styles.panel, style]}
       testID={testID}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
     >
-      <View
-        onPointerEnter={onPointerEnter}
-        onPointerLeave={onPointerLeave}
-        style={padded ? styles.padded : null}
-      >
+      <View style={padded ? styles.padded : null}>
         <HoverCardSurfaceProvider value>{children}</HoverCardSurfaceProvider>
       </View>
     </FloatingPanel>

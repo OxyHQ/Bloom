@@ -1,3 +1,4 @@
+import type { BloomSize } from '../appearance';
 /**
  * The shared internals of Bloom's ANCHORED families — `dropdown-menu`,
  * `context-menu`, `menubar` and `popover`.
@@ -83,6 +84,12 @@ export interface FloatingPositionProps {
 }
 
 export interface FloatingPanelProps extends FloatingPositionProps {
+  /** Pointer boundary includes the viewport, padding and scrollbar. */
+  onPointerEnter?: () => void;
+  onPointerLeave?: () => void;
+  maxHeight?: number;
+  /** Select already supplies its list scroller. All other anchored surfaces own one here. */
+  scroll?: 'auto' | 'external';
   material?: 'surface' | 'flat';
   /** Rendered only while true — `OverlayRoot` takes its stack rank on mount. */
   open: boolean;
@@ -234,6 +241,10 @@ export interface OverlayTriggerProps {
 
 /** Props shared by the anchored surfaces of the three menus and the popover. */
 export interface OverlaySurfaceProps extends FloatingPositionProps {
+  /** Overrides the nearest BloomScope size for this surface and its descendants. */
+  size?: BloomSize;
+  /** Optional ceiling; the surface always stays inside the viewport and owns scrolling. */
+  maxHeight?: number;
   children?: React.ReactNode;
   /** Accessible name of the surface. */
   label?: string;

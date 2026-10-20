@@ -134,15 +134,13 @@ export const MENU_MOTION_BLUR = 2;
 /* -------------------------------------------------------------------------- */
 
 /**
- * The menu panel: `rounded-2xl border p-2.5
- * max-w-[calc(100vw-32px)]`, with the rows 4px apart (`gap-1` on the panel's
- * flex column). Colour — `bg-background-primary-default`,
+ * The menu panel chrome: `rounded-2xl border
+ * max-w-[calc(100vw-32px)]`. Density supplies padding and row spacing. Colour — `bg-background-primary-default`,
  * `border-border-button-default`, `shadow-dropdown` — is NOT a class here: it is
  * resolved from the theme by `menu-palette.ts` and applied inline by
  * `FloatingPanel`, because the ramp stops it uses exist as no CSS variable.
  */
-export const MENU_PANEL_CLASS =
-  'overflow-hidden rounded-radius-16 border p-[10px] gap-space-4 max-w-[calc(100vw-32px)]';
+export const MENU_PANEL_CLASS = 'overflow-hidden rounded-radius-16 border max-w-[calc(100vw-32px)]';
 
 /**
  * The select's listbox panel: the same surface, `p-2` rather than `p-2.5`
@@ -150,7 +148,7 @@ export const MENU_PANEL_CLASS =
  * tighter than the action-menu Dropdown").
  */
 export const LISTBOX_PANEL_CLASS =
-  'overflow-hidden rounded-radius-16 border p-space-8 max-w-[calc(100vw-32px)]';
+  'overflow-hidden rounded-radius-16 border max-w-[calc(100vw-32px)]';
 
 /**
  * `w-[266px]`, as a FLOOR: a menu of short rows is exactly that
@@ -193,8 +191,7 @@ export const MENU_SUB_SCROLL_CLASS =
  * `min-w-0` is on the row as well as the label, because a flex item's default
  * `min-width: auto` is what stops a long label from ever shrinking.
  */
-export const ROW_CLASS =
-  'relative flex-row items-center select-none ' + 'p-space-8 gap-space-8 min-w-0 rounded-[10px]';
+export const ROW_CLASS = 'relative flex-row items-center select-none min-w-0 rounded-[10px]';
 
 /**
  * `cursor-pointer`, applied only while the row is ENABLED.
@@ -343,8 +340,10 @@ export const MENUBAR_TRIGGER_TEXT_CLASS = '';
  */
 export const SELECT_TRIGGER_CLASS = 'flex-row items-center justify-between border';
 export const SELECT_TRIGGER_SIZE_CLASS = {
-  md: 'gap-1.5 px-[10px] py-space-8',
-  sm: 'gap-space-4 px-[7px] py-space-4',
+  xs: 'gap-space-4 px-space-8 py-[5px] min-h-[28px]',
+  sm: 'gap-1.5 px-[10px] py-[6px] min-h-[32px]',
+  md: 'gap-space-8 px-space-12 py-[7px] min-h-[36px]',
+  lg: 'gap-space-8 px-space-16 py-[10px] min-h-[44px]',
 } as const;
 
 /**
@@ -353,12 +352,14 @@ export const SELECT_TRIGGER_SIZE_CLASS = {
  * `leading-*` class (see {@link ROW_TEXT_CLASS} for why that one is a trap).
  */
 export const SELECT_VALUE_CLASS = {
-  md: 'shrink min-w-0',
+  xs: 'shrink min-w-0',
   sm: 'shrink min-w-0',
+  md: 'shrink min-w-0',
+  lg: 'shrink min-w-0',
 } as const;
 
 /** The chevron: `size-4` (`md`) / `size-3.5` (`sm`). */
-export const SELECT_CHEVRON_SIZE = { md: 16, sm: 14 } as const;
+export const SELECT_CHEVRON_SIZE = { xs: 14, sm: 16, md: 18, lg: 20 } as const;
 
 /**
  * A select option — the same menu item recipe (`p-2 gap-2 rounded-2lg`), with a
@@ -366,8 +367,7 @@ export const SELECT_CHEVRON_SIZE = { md: 16, sm: 14 } as const;
  * tick sits on. `sm` rows are `px-2 py-1.5 text-body-2-medium`.
  */
 export const SELECT_ITEM_CLASS =
-  'relative flex-row items-center w-full min-w-0 select-none ' +
-  'gap-space-8 pr-space-32 rounded-[10px]';
+  'relative flex-row items-center w-full min-w-0 select-none ' + 'rounded-[10px]';
 export const SELECT_ITEM_SIZE_CLASS = {
   md: 'pl-space-8 py-space-8',
   sm: 'pl-space-8 py-1.5',
@@ -375,6 +375,8 @@ export const SELECT_ITEM_SIZE_CLASS = {
 
 /** The option's label; colour inline (`text-primary` / `text-disabled`). */
 export const SELECT_ITEM_TEXT_CLASS = {
-  md: 'flex-1 min-w-0',
+  xs: 'flex-1 min-w-0',
   sm: 'flex-1 min-w-0',
+  md: 'flex-1 min-w-0',
+  lg: 'flex-1 min-w-0',
 } as const;

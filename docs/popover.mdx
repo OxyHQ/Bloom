@@ -51,7 +51,7 @@ import { Button } from '@oxy.so/bloom/button';
 | corner | `16` (`rounded-2xl`) |
 | border | 1px `border-button-default` |
 | surface | `background-primary-default` — the theme's card in light, `neutral-800` in dark |
-| inset | `10` on every side (`p-2.5`) |
+| inset | `6` on desktop; `8` on native or coarse-pointer web |
 | elevation | `shadow-dropdown` |
 | motion | 150ms `ease-out`: fade + `scale-95` + 2px blur, in and out, from the corner nearest the trigger |
 | offset | `8` from the trigger |
@@ -65,14 +65,14 @@ The colours come from the same theme ramps as `Button` and the menus (`floating/
 | `PopoverHeader` | `flex items-center gap-2 px-2 pt-1` | A heading row; `leading` takes an avatar or icon beside the text column |
 | `PopoverTitle` | `text-body-medium text-text-primary` | `tone="secondary"` is the group-label colour ("Users with access") |
 | `PopoverDescription` | `text-body-regular text-text-secondary` | One line by default; `numberOfLines={0}` for prose |
-| `PopoverFooter` | `flex items-center gap-3 px-2 pb-2` | Actions — `px-2 pb-2` puts them 18px from the panel edge on every side |
-| `PopoverSeparator` | `-mx-2.5 my-2.5 h-px bg-border-button-default` | Full-bleed rule between sections |
+| `PopoverFooter` | `flex items-center gap-3 px-2 pb-2` | Actions with their own 8px inset inside the surface |
+| `PopoverSeparator` | negative surface inset, 4px vertical margin, 1px rule | Full-bleed rule between sections |
 
-The `px-2` of the header and footer is measured against the panel's `p-2.5`, and the separator bleeds back through exactly that inset — so they line up only inside a `PopoverContent` that keeps its default padding.
+Header and footer inset their content by 8px inside the surface. Separators use the same surface inset and 4px vertical margins.
 
 ## The inset: row lists and prose share it
 
-The panel keeps its `p-2.5` whatever the body is. A row list (an option picker, the dialog header's overflow) puts its rows straight inside — rows carry their own `p-2` and their own 10px corner, so a hover wash sits 10px in from the border, which is the intended look, not a missing full-bleed highlight. Prose pads itself through the parts (`PopoverHeader`'s `px-2`), not through an extra wrapper.
+Put `PopoverItem` directly in a mixed action/form panel. Its inherited menu recipe supplies row spacing, typography and the 10px corner. Prose uses the header/description parts. `FloatingPanel` supplies the single bounded ScrollArea; consumers do not add a wrapper to create popup scrolling.
 
 ## Overriding the panel
 
@@ -122,7 +122,7 @@ This is `FloatingPanel`'s behaviour, so it is every menu, popover and select's; 
 
 ## Native
 
-The popover is a bottom sheet on native: a phone has no room to float a panel beside a control, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system. The sheet is the chrome (its surface, corner and drag handle), so the placement props are ignored and only the body takes the panel geometry — the same 10px inset on the sides and bottom, below the handle's clearance — so the panel parts line up exactly as they do on web. `className`, `style` and `testID` land on that body.
+The popover is a bottom sheet on native: a phone has no room to float a panel beside a control, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system. The sheet is the chrome (its surface, corner and drag handle), so the placement props are ignored and only the body takes the panel geometry — an 8px inset on the sides and bottom, below the handle's clearance — so the panel parts line up exactly as they do on web. `className`, `style` and `testID` land on that body.
 
 ## `asChild` and `disabled`
 
@@ -154,3 +154,18 @@ uses the same flat fill. Padding, radius, shadow and keyboard/placement behavior
 are unchanged; the default `material="surface"` preserves the standard treatment.
 
 On web, closing with Escape or an action inside the panel returns focus to its trigger without scrolling. Focus deliberately moved to another control is preserved. This also applies when the caller conditionally unmounts `PopoverContent` on close; the native sheet retains its existing focus lifecycle.
+
+## Mixed action and form panels
+
+`PopoverItem` composes an action row from the same recipe as menu rows, with a
+button role appropriate inside a dialog. It takes `title`, `leading`, `trailing`,
+`disabled`, `destructive` and `onPress`; it inherits `BloomScope` and never closes
+the panel automatically. This supports an anchored panel that switches between
+actions, a rename field and settings without custom row geometry.
+
+`PopoverContent` inherits the application size (normally `md`); `size` is an
+optional local override. Its shared floating base owns the scroll viewport and
+Bloom scrollbar, caps the panel to the window and accepts an optional numeric
+`maxHeight`. Consumers render their content directly and must not add a nested
+ScrollView just to bound the popup. Native content retains the sheet's scroll
+owner. The panel keeps Surface material and its existing rounded shape.

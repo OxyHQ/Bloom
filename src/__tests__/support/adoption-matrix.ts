@@ -571,6 +571,10 @@ export function renderAdoptionMatrix(): string {
   }
   out.push('');
 
+  out.push(
+    'The control-presentation census detects families declaring canonical size props; blank entries do not prove inherited sizing. Fixed-size controls and composite layouts need a separate visual audit. This table does not certify touch-target geometry.',
+  );
+  out.push('');
   out.push('## What remains — the named adaptations');
   out.push('');
   const anyAdaptation = CONTRACTS.some((c) => withVerdict(rows, c.key, 'adaptation').length > 0);

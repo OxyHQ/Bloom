@@ -9,6 +9,7 @@ import {
   PopoverDescription,
   PopoverFooter,
   PopoverHeader,
+  PopoverItem,
   PopoverSeparator,
   PopoverTitle,
   PopoverTrigger,
@@ -40,16 +41,11 @@ export default meta;
 
 type Story = StoryObj;
 
-/**
- * A menu row as the floating panels draw it: `flex items-center gap-2 rounded-2lg
- * p-2`, a 20px secondary icon and a `text-body-medium` label, washed with the
- * dropdown hover colour. Story-local — a popover whose body is ONLY rows wants
- * `DropdownMenu`, which ships them with keyboard state and ARIA roles.
- */
+/** Mixed popovers reuse the same action-row geometry as menus. */
 function PanelRow({
   icon: Icon,
   label,
-  onPress,
+  onPress = () => {},
 }: {
   icon: BloomIconComponent;
   label: string;
@@ -57,24 +53,11 @@ function PanelRow({
 }) {
   const palette = useMenuPalette();
   return (
-    <Pressable
-      role="button"
-      accessibilityLabel={label}
+    <PopoverItem
+      title={label}
       onPress={onPress}
-      style={({ hovered, pressed }: { hovered?: boolean; pressed: boolean }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        padding: 8,
-        borderRadius: 10,
-        backgroundColor: hovered || pressed ? palette.rowHighlight : 'transparent',
-      })}
-    >
-      <Icon width={20} height={20} fill={palette.textSecondary} />
-      <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text, flex: 1 }}>
-        {label}
-      </Text>
-    </Pressable>
+      leading={<Icon width={20} height={20} fill={palette.textSecondary} />}
+    />
   );
 }
 

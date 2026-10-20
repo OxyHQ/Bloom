@@ -1,3 +1,5 @@
+import { ScrollArea } from '../layout/ScrollArea.web';
+import { useMenuDensity } from './use-menu-density';
 import { MOTION_RECIPES } from '../motion/recipes';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { surfaceStyle } from '../shapes/surface-style';
@@ -71,7 +73,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, type View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -208,6 +210,10 @@ export function FloatingPanel({
   role,
   minWidth,
   maxWidth,
+  maxHeight,
+  scroll = 'auto',
+  onPointerEnter,
+  onPointerLeave,
   className,
   style,
   testID,
@@ -218,6 +224,20 @@ export function FloatingPanel({
   const common = useCommonMessages();
   const parentFill = useSurfaceFill();
   const chrome = SURFACE[surface];
+  const density = useMenuDensity();
+  const { height: viewportHeight } = useWindowDimensions();
+  const callerStyle = StyleSheet.flatten(style);
+  const heightCeiling = Math.max(
+    0,
+    Math.min(
+      viewportHeight - VIEWPORT_GUTTER * 2,
+      maxHeight ?? Infinity,
+      typeof callerStyle?.maxHeight === 'number' ? callerStyle.maxHeight : Infinity,
+    ),
+  );
+  const panelClass = [chrome.className, surface !== 'popover' ? density.panelClass : '']
+    .filter(Boolean)
+    .join(' ');
   const isMenuSurface = surface !== 'popover';
   const palette = useMenuPalette();
   const ownFill = StyleSheet.flatten(style)?.backgroundColor ?? palette.surface;
@@ -526,9 +546,11 @@ export function FloatingPanel({
           role={role}
           aria-label={label}
           testID={testID}
+          onPointerEnter={onPointerEnter}
+          onPointerLeave={onPointerLeave}
           className={cx(
             surfaceMaterial !== 'flat' && 'bloom-floating-surface',
-            chrome.className,
+            panelClass,
             className,
           )}
           style={[
@@ -576,6 +598,7 @@ export function FloatingPanel({
             motionStyle,
             style,
             materialStyle,
+            { maxHeight: heightCeiling },
           ]}
         >
           {/*
@@ -591,7 +614,19 @@ export function FloatingPanel({
             exists for.
           */}
           <SurfaceLevelProvider level={transparentFill ? 0 : 1} fill={publishedFill}>
-            {children}
+            {scroll === 'external' ? (
+              children
+            ) : (
+              <ScrollArea
+                style={{ flexShrink: 1, minHeight: 0 }}
+                contentContainerStyle={{
+                  gap: callerStyle?.gap ?? (isMenuSurface ? density.gap : 0),
+                }}
+                keyboardShouldPersistTaps="handled"
+              >
+                {children}
+              </ScrollArea>
+            )}
           </SurfaceLevelProvider>
         </AnimatedPanel>
       </OverlayRoot>

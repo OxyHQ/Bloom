@@ -1,3 +1,5 @@
+import { useMenuDensity } from '../floating/use-menu-density';
+import { BloomScope } from '../appearance';
 /**
  * `Popover` — WEB. An anchored panel positioned, portaled, ranked and dismissed
  * by `floating/FloatingPanel`, which is also what the three menu families
@@ -8,7 +10,8 @@
  * on its trigger by default (shadcn's `align="center"`) and does not take the
  * trigger's width as a floor.
  */
-import React, { useCallback, useMemo, useRef } from 'react';
+import type React from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useWindowDimensions, type View } from 'react-native';
 
 import { POPOVER_TRIGGER_POPUP } from '../floating/constants';
@@ -88,6 +91,8 @@ export function PopoverTrigger({
 export function PopoverContent({
   material,
   children,
+  size,
+  maxHeight,
   label: labelProp,
   side,
   align = 'center',
@@ -112,6 +117,7 @@ export function PopoverContent({
   );
   const close = useCallback(() => popover.setOpen(false), [popover]);
   const palette = useMenuPalette();
+  const density = useMenuDensity(size);
   const { width: viewportWidth } = useWindowDimensions();
   const overridden = useMemo(() => classChromeOverrides(className), [className]);
   const chrome = useMemo(
@@ -120,34 +126,38 @@ export function PopoverContent({
         palette,
         overridden,
         maxWidth === undefined ? viewportWidth : undefined,
+        density.panelPadding,
       ),
-    [palette, overridden, maxWidth, viewportWidth],
+    [palette, overridden, maxWidth, viewportWidth, density.panelPadding],
   );
 
   return (
-    <FloatingPanel
-      material={material}
-      panelRef={attachPanel}
-      open={popover.open}
-      anchor={anchor}
-      role="dialog"
-      label={label}
-      side={side}
-      align={align}
-      sideOffset={sideOffset}
-      alignOffset={alignOffset}
-      dismissible={dismissible}
-      modal={popover.modal}
-      minWidth={minWidth}
-      maxWidth={maxWidth}
-      onDismiss={close}
-      className={className}
-      // The resolved panel FIRST, so the caller's `style` overrides any of it;
-      // properties the caller's `className` names were already left out.
-      style={[chrome, style]}
-      testID={testID}
-    >
-      {children}
-    </FloatingPanel>
+    <BloomScope size={size}>
+      <FloatingPanel
+        maxHeight={maxHeight}
+        material={material}
+        panelRef={attachPanel}
+        open={popover.open}
+        anchor={anchor}
+        role="dialog"
+        label={label}
+        side={side}
+        align={align}
+        sideOffset={sideOffset}
+        alignOffset={alignOffset}
+        dismissible={dismissible}
+        modal={popover.modal}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
+        onDismiss={close}
+        className={className}
+        // The resolved panel FIRST, so the caller's `style` overrides any of it;
+        // properties the caller's `className` names were already left out.
+        style={[chrome, style]}
+        testID={testID}
+      >
+        {children}
+      </FloatingPanel>
+    </BloomScope>
   );
 }

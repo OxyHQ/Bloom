@@ -200,7 +200,7 @@ On WEB none of this applies — the browser owns focus and the hooks return earl
 
 Every row is one pressable node built from Bloom's `styled()` primitives, shared by all three menu families through `floating/shared.tsx` — so the disabled treatment, the destructive colour, the pointer highlight and the ARIA state stay in one place and a fix lands in every menu at once.
 
-Its shape is a class string, not resolved numbers, because that is how the originals are built and it is the only form a consumer can override with a utility (an inline `style` outranks a class on web whatever the array order). `floating/constants.ts` holds the vocabulary: `relative flex-row items-center p-2 gap-2 rounded-[10px]` on a row, `pl-8 pr-2` on the two that carry an indicator. Type is NOT a class: rows and labels are `text-body-medium` and shortcuts `text-caption-1-medium`, applied inline as `TYPE_SCALE` + Inter by `floating/menu-type.ts` — the class-only `text-sm font-medium` rendered in the browser's system stack, never Inter. With a caller `className` on a label or shortcut the inline size/weight step back (only `fontFamily` stays inline) and the matching utilities are appended instead, so the caller's `text-*` still cascades. There is no `sm:` breakpoint — the row is the same density at every window width.
+`appearance/control-geometry.ts` owns the size recipes; `floating/constants.ts` owns shared chrome. Rows resolve their size through BloomScope, including across portals. Normal md uses 28px rows and 14/20 regular labels; section labels use 12/16 medium and shortcuts use the caption ramp. Native and coarse-pointer web keep at least 44px targets. Typography is applied as TYPE_SCALE + Inter by `floating/menu-type.ts`; caller text classes retain precedence.
 
 Every part takes a `className` and APPENDS it to its own, so a layout class cannot strip the chrome. Two utilities for one property are then resolved by Tailwind's own emission order, exactly as in any shadcn consumer; `style` remains the unambiguous override.
 
@@ -210,11 +210,23 @@ Every part takes a `className` and APPENDS it to its own, so a layout class cann
 
 The panel and rows share one menu recipe, used by `DropdownMenu`, `ContextMenu`, `Menubar` and the select list:
 
-- **Panel** (web) — 266px minimum width (a sub-panel is a fixed 266), `p-2.5`, 16px corner, 1px `neutral-200` hairline, card surface, `shadow-dropdown`, rows 4px apart. It opens and closes on a 150ms `ease-out` fade + `scale-95` + 2px blur, with no slide. A popover keeps its own panel and motion (`FloatingPanel`'s `surface` prop).
-- **Row** — 36px (`p-2`, 8px gap, 10px corner), 14/20 medium `text-primary`. Hover, keyboard focus (`:focus-visible` only — a mouse press does not leave a row painted) and a CHECKED checkbox or radio row share the `neutral-100` wash, on a 150ms colour transition (web). Destructive rows are `red-500` (`red-400` dark); disabled rows are `text-disabled` with a not-allowed cursor.
-- **Label** — `pl-2`, 14/20 medium in `text-secondary`, 4px above and 6px to the first row.
-- **Separator** — a full-bleed 1px `neutral-200` rule with 10px either side.
+- **Panel** (web) — 266px minimum width (a sub-panel is a fixed 266), 6px inset (8px touch), 16px corner, 1px `neutral-200` hairline, card surface, `shadow-dropdown`, no inter-row gap. It opens and closes on a 150ms `ease-out` fade + `scale-95` + 2px blur, with no slide. A popover keeps its own panel and motion (`FloatingPanel`'s `surface` prop).
+- **Row** — 28px at normal md (8px horizontal/4px vertical inset, 8px gap, 10px corner), 14/20 regular `text-primary`. Hover, keyboard focus (`:focus-visible` only — a mouse press does not leave a row painted) and a CHECKED checkbox or radio row share the `neutral-100` wash, on a 150ms colour transition (web). Destructive rows are `red-500` (`red-400` dark); disabled rows are `text-disabled` with a not-allowed cursor.
+- **Label** — 8px horizontal inset, 12/16 medium in `text-secondary`, 4px above and below.
+- **Separator** — a full-bleed 1px `neutral-200` rule with 4px vertical margins.
 - **Check, shortcut, sub chevron** — `text-secondary`, Remix glyphs at 16px: `RiCheckLine`, `RiArrowRightSLine` (web flyout), `RiArrowDownSLine` / `RiArrowUpSLine` (native disclosure).
 - **Dark** — `neutral-800` surface, `neutral-700` hairlines, `neutral-700`-at-60% wash, and `neutral-600` disabled text (the semantic dark `text-disabled` equals the panel colour).
 
 These colours come from the theme through `button/shared.ts`'s ramps (`floating/menu-palette.ts`) and are applied INLINE, since the ramp stops exist as no CSS variable. A caller's `style` still overrides them; a `className` on a label or shortcut drops the inline colour so a `text-*` utility applies. The leading slot no longer dims its icon — pass the glyph in `text-secondary`.
+
+## Size and viewport ownership
+
+Action rows inherit the app's `BloomScope size` through portals and submenus;
+`DropdownMenuContent size` optionally overrides the local subtree. Normal `md`
+rows are 28px on desktop; xs/sm/lg are 24/26/32px. Native and coarse-pointer rows
+keep a 44px minimum target. Context menus and menubars use the same recipe.
+
+The floating base owns scrolling and the Bloom scrollbar, including flyouts.
+An optional `maxHeight` on Content lowers its viewport ceiling; every panel is
+bounded by the window. Do not add a consumer scroll container around menu rows.
+Surface paint and panel/row radii are unchanged.

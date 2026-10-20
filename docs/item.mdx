@@ -93,3 +93,12 @@ real pointer calls them, and a disabled row does not.
 It paints the title in the error role. It does not add a confirmation step —
 if the action is irreversible, `confirm()` from
 [`surfaces`](/docs/bloom/main/surfaces) is what asks.
+
+## Inherited size
+
+`Item size` uses xs/sm/md/lg and otherwise reads `BloomScope`; normal md is a
+36px one-line row, with 28/32/44px for xs/sm/lg. Additional text grows the row.
+Interactive touch rows keep a 44px minimum target. Explicit legacy `density`
+retains its previous geometry unless `size` is also supplied; prefer size for
+new composition. Menus use their menu row parts, and mixed popovers use
+`PopoverItem`, since menu rows have distinct proportions from navigation Items.

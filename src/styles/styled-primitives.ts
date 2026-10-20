@@ -113,8 +113,10 @@ export interface WebAriaProps {
  * checker's limit again, and the mapping only ever names `className`. The same
  * goes for {@link WebAriaProps}.
  */
-export type StyledPressableProps = StyledPressableBase &
+export type StyledPressableProps = Omit<StyledPressableBase, 'role'> &
   WebAriaProps & {
+    /** RNW supports these menu roles; native callers retain checkbox/radio. */
+    role?: PressableProps['role'] | 'menuitemcheckbox' | 'menuitemradio';
     ref?: Ref<ComponentRef<typeof View>>;
   };
 

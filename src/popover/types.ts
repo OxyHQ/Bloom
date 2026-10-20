@@ -1,3 +1,4 @@
+import type { MenuRowProps } from '../floating/types';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { OverlayOpenProps, OverlaySurfaceProps, OverlayTriggerProps } from '../floating/types';
@@ -80,4 +81,11 @@ export interface PopoverSeparatorProps {
   className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
+}
+
+/** An action row in a mixed popover; activation and closing remain caller-owned. */
+export interface PopoverItemProps extends Omit<MenuRowProps, 'children' | 'keepOpen'> {
+  onPress: () => void;
+  title: string;
+  destructive?: boolean;
 }

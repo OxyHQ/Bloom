@@ -1,3 +1,4 @@
+import { BloomScope } from '../appearance';
 /**
  * `DropdownMenu` — WEB. An anchored panel rather than a sheet, positioned,
  * portaled, ranked and dismissed by `floating/FloatingPanel`.
@@ -98,6 +99,8 @@ export function DropdownMenuTrigger({
 
 export function DropdownMenuContent({
   children,
+  size,
+  maxHeight,
   label: labelProp,
   side,
   align = 'start',
@@ -125,30 +128,33 @@ export function DropdownMenuContent({
   useMenuPanelKeys(hostElement(panel), { open: menu.open, onTab: close, intent: menu.focusIntent });
 
   return (
-    <FloatingPanel
-      panelRef={setPanel}
-      open={menu.open}
-      anchor={anchor}
-      role="menu"
-      surface="menu"
-      label={label}
-      side={side}
-      align={align}
-      sideOffset={sideOffset}
-      alignOffset={alignOffset}
-      dismissible={dismissible}
-      minWidth={minWidth}
-      maxWidth={maxWidth}
-      onDismiss={close}
-      // `min-w-40` — 160px, as a CLASS rather than an inline `minWidth`, so a
-      // caller's own `min-w-*` can reach it. The placement resolver reads the
-      // laid-out box, which the class is already part of.
-      className={cx(MENU_MIN_WIDTH_CLASS, className)}
-      style={style}
-      testID={testID}
-    >
-      <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
-    </FloatingPanel>
+    <BloomScope size={size}>
+      <FloatingPanel
+        maxHeight={maxHeight}
+        panelRef={setPanel}
+        open={menu.open}
+        anchor={anchor}
+        role="menu"
+        surface="menu"
+        label={label}
+        side={side}
+        align={align}
+        sideOffset={sideOffset}
+        alignOffset={alignOffset}
+        dismissible={dismissible}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
+        onDismiss={close}
+        // `min-w-40` — 160px, as a CLASS rather than an inline `minWidth`, so a
+        // caller's own `min-w-*` can reach it. The placement resolver reads the
+        // laid-out box, which the class is already part of.
+        className={cx(MENU_MIN_WIDTH_CLASS, className)}
+        style={style}
+        testID={testID}
+      >
+        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+      </FloatingPanel>
+    </BloomScope>
   );
 }
 

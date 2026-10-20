@@ -1,3 +1,4 @@
+import type { BloomSize } from '../appearance';
 import type {
   AccessibilityRole,
   MouseEvent as NativeMouseEvent,
@@ -7,6 +8,8 @@ import type {
 } from 'react-native';
 
 export interface ItemProps {
+  /** Inherits BloomScope; md is the normal row. */
+  size?: BloomSize;
   /** Primary title text. */
   title?: React.ReactNode;
   /** Secondary text rendered below the title. */
@@ -50,7 +53,7 @@ export interface ItemProps {
    * nothing: the row is neither chosen (`selected`) nor current (`active`).
    */
   highlighted?: boolean;
-  /** Vertical density. Defaults to `'comfortable'`. */
+  /** Legacy explicit geometry. Prefer size for new composition; omitted density inherits BloomScope. */
   density?: 'comfortable' | 'compact';
   style?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
