@@ -47,8 +47,8 @@ const gestureBuilder = (): MockGesture => {
     failOffsetX: config('failOffsetX'),
     // Tap tolerances — the tab bar widens both so a drifting finger still taps.
     maxDistance: () => builder,
-    minDistance: () => builder,
-    activateAfterLongPress: () => builder,
+    minDistance: config('minDistance'),
+    activateAfterLongPress: config('activateAfterLongPress'),
     runOnJS: () => builder,
     maxDuration: () => builder,
     // Tap count and pointer bounds — the image gallery distinguishes a

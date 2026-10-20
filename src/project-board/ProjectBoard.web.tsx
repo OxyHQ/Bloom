@@ -27,7 +27,7 @@ const platform = {
   ...Select,
   ...Menu,
 };
-export function ProjectBoard(props: ProjectBoardProps) {
+export function ProjectBoard<Item>(props: ProjectBoardProps<Item>) {
   return (
     <ProjectBoardPlatformContext.Provider value={platform}>
       <ProjectBoardBase {...props} />

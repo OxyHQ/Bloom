@@ -4,11 +4,13 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export { ProjectBoard } from './ProjectBoard.web';
-export { Board } from './Board.web';
+export { BoardDragHandle } from './BoardGesture';
 export type {
   BoardColumn,
+  BoardDragHandleProps,
   BoardMove,
-  BoardProps,
+  ControlledProjectBoardProps,
+  ProjectBoardTemplateProps,
   BoardSort,
   NewProjectTicket,
   ProjectBoardProps,

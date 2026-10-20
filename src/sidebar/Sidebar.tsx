@@ -61,6 +61,7 @@ import { Collapsible, CollapseProvider, MORPH_MS, useSidebarWebCss } from './par
 import { SidebarItem } from './SidebarItem';
 import { SidebarModeSwitcher } from './SidebarModeSwitcher';
 import { SidebarPlanCard } from './SidebarPlanCard';
+import { SidebarOnboardingCard } from './SidebarOnboardingCard';
 import { SidebarPrimaryAction } from './SidebarPrimaryAction';
 import { SidebarRail } from './SidebarRail';
 import { SidebarScrollArea } from './SidebarScrollArea';
@@ -233,6 +234,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   onTreeItemPress,
   onTreeItemDrop,
   plan,
+  onboarding,
   style,
   testID,
 }) => {
@@ -1036,6 +1038,12 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                         shownItems.map(renderRow)
                       )}
                     </Animated.View>
+                  ) : null}
+                  {onboarding && !collapsed ? (
+                    <SidebarOnboardingCard
+                      {...onboarding}
+                      testID={onboarding.testID ?? `${testID ?? 'sidebar'}-onboarding`}
+                    />
                   ) : null}
                   {collapsed || shownSections.length === 0 ? null : onTreeItemDrop ? (
                     <TreeDragProvider

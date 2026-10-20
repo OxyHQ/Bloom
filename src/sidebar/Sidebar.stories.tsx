@@ -5,6 +5,7 @@ import { Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
+import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
 import {
   RiSearchLine,
@@ -72,6 +73,68 @@ const meta: Meta<typeof Sidebar> = {
 export default meta;
 
 type Story = StoryObj<typeof Sidebar>;
+
+function OnboardingDemo() {
+  const [completed, setCompleted] = useState<string[]>([]);
+  const [active, setActive] = useState<string | null>(null);
+  const [all, setAll] = useState(false);
+  const tasks = [
+    { key: 'page', label: 'Create a page' },
+    { key: 'team', label: 'Invite your team' },
+    { key: 'project', label: 'Track a project' },
+  ];
+  return (
+    <View style={{ flexDirection: 'row', height: 600, gap: 24 }}>
+      <Sidebar
+        surface="docked"
+        size="sm"
+        showSearch={false}
+        showThemeToggle={false}
+        items={[{ key: 'home', label: 'Home', icon: RiHomeLine }]}
+        onboarding={{
+          title: 'Welcome to Bloom',
+          leading: <RiGuideLine width={20} height={20} />,
+          onPress: () => setAll(true),
+          steps: tasks.map((task) => ({
+            ...task,
+            completed: completed.includes(task.key),
+            onPress: () => setActive(task.key),
+          })),
+          visibleCount: all ? tasks.length : 2,
+          onSeeAll: () => setAll(true),
+        }}
+        tree={{
+          label: 'Workspace',
+          items: [{ key: 'notes', label: 'Notes', icon: RiFolder6Line }],
+        }}
+      />
+      <View style={{ flex: 1, gap: 16, paddingTop: 24 }}>
+        <Text>
+          {active ? tasks.find((task) => task.key === active)?.label : 'Choose a task to begin.'}
+        </Text>
+        {active ? (
+          <Button
+            onPress={() => {
+              setCompleted((previous) => [...previous, active]);
+              setActive(null);
+            }}
+          >
+            Complete task
+          </Button>
+        ) : null}
+        {completed.length ? (
+          <Button onPress={() => setCompleted([])} appearance="subtle">
+            Reset progress
+          </Button>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+export const Onboarding: Story = {
+  render: () => <OnboardingDemo />,
+};
 
 /** Demo navigation items. */
 export const DEMO_NAV: SidebarNavItem[] = [

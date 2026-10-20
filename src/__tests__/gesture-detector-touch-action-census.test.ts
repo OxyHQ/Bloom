@@ -78,7 +78,7 @@ const DECISIONS: Record<string, readonly string[]> = {
   // every axis.
   'zoomable-media-gallery/ZoomableMediaGalleryBase.tsx': ['default', 'default'],
   // Card drag between columns is 2-D.
-  'project-board/ProjectBoardBase.tsx': ['default'],
+  'project-board/BoardGesture.tsx': ['none'],
   // Toasts float in an overlay above the page, never inside a scroller; a swipe
   // may dismiss them vertically.
   'toast/ToastSwipeHandler.tsx': ['default'],

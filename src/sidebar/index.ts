@@ -5,6 +5,7 @@ export { SidebarToolbar } from './SidebarToolbar';
 export { SIDEBAR_METRICS } from './metrics';
 export { SidebarModeSwitcher } from './SidebarModeSwitcher';
 export { SidebarPlanCard } from './SidebarPlanCard';
+export { SidebarOnboardingCard } from './SidebarOnboardingCard';
 export { SIDEBAR_RAIL_WIDTH } from './SidebarRail';
 export { SidebarRailItem } from './SidebarRailItem';
 export { SidebarTeamMenu } from './SidebarTeamMenu';
@@ -27,6 +28,8 @@ export type {
   SidebarMode,
   SidebarModeSwitcherProps,
   SidebarNavItem,
+  SidebarOnboardingCardProps,
+  SidebarOnboardingStep,
   SidebarPlan,
   SidebarPlanCardProps,
   SidebarProps,

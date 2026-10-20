@@ -529,6 +529,9 @@ export interface SidebarProps {
   /** The plan card at the foot of the rail, in place of the team card. */
   plan?: SidebarPlan;
 
+  /** Getting-started card below navigation and above content. Hidden in a collapsed panel or rail. */
+  onboarding?: SidebarOnboardingCardProps;
+
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -689,6 +692,33 @@ export interface SidebarPlanCardProps {
   /** The 36px avatar-only form for a collapsed rail. */
   collapsed?: boolean;
   /** Repaints the card (the flat variant sits it on the panel colour). */
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+/** An app-owned task. Pressing starts its flow; only `completed` removes it from the card. */
+export interface SidebarOnboardingStep {
+  key: string;
+  label: string;
+  completed?: boolean;
+  disabled?: boolean;
+  onPress?: () => void;
+}
+
+export interface SidebarOnboardingCardProps {
+  title: string;
+  /** Product mark or avatar, centred in a decorative 20px slot. */
+  leading?: ReactNode;
+  steps: ReadonlyArray<SidebarOnboardingStep>;
+  /** Number of incomplete steps shown, in caller order. Default 2. */
+  visibleCount?: number;
+  /** Opens the welcome flow from the header; without it the title is static. */
+  onPress?: () => void;
+  /** Opens the full guide. Omit to hide the footer action. */
+  onSeeAll?: () => void;
+  /** Localized "See all" by default. */
+  seeAllLabel?: string;
+  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

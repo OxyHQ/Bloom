@@ -3,10 +3,10 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
-
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
-import { Board } from '../Board.web';
-import type { BoardColumn, BoardProps } from '../types';
+import { ProjectBoard } from '../ProjectBoard.web';
+import { BoardDragHandle } from '../BoardGesture';
+import type { BoardColumn, ControlledProjectBoardProps } from '../types';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 type Item = { id: string; name: string; custom: number };
@@ -16,8 +16,8 @@ const originalColumns: BoardColumn<Item>[] = [
 ];
 let host: HTMLDivElement;
 let root: Root;
-
 beforeEach(() => {
+  jest.useFakeTimers();
   host = document.createElement('div');
   document.body.appendChild(host);
   root = createRoot(host);
@@ -25,18 +25,29 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   host.remove();
+  jest.useRealTimers();
 });
-
-function board(props: Partial<BoardProps<Item>> = {}) {
+function board(props: Partial<ControlledProjectBoardProps<Item>> = {}, onOpen = jest.fn()) {
   return (
-    <Board
+    <ProjectBoard
+      variant="embedded"
       columns={originalColumns}
       getItemId={(item) => item.id}
-      renderCard={(item, _column, state) => (
-        <div role="button" tabIndex={0} data-dragging={state.isDragging}>
-          {item.name} {item.custom}
+      dragMode="handle"
+      allowReorder={false}
+      renderCard={(item) => (
+        <div>
+          <BoardDragHandle
+            accessibilityLabel={`Drag ${item.name}`}
+            onPress={onOpen}
+            style={{ flex: 1 }}
+          >
+            {item.name} {item.custom}
+          </BoardDragHandle>
           <input aria-label="Edit name" />
-          <button type="button">Move</button>
+          <button type="button" onClick={onOpen}>
+            Open
+          </button>
         </div>
       )}
       renderColumnFooter={(column) => <span>Footer {column.title}</span>}
@@ -45,128 +56,94 @@ function board(props: Partial<BoardProps<Item>> = {}) {
     />
   );
 }
-function mount(props: Partial<BoardProps<Item>> = {}) {
-  act(() => root.render(<BloomThemeProvider>{board(props)}</BloomThemeProvider>));
+function mount(props: Partial<ControlledProjectBoardProps<Item>> = {}, onOpen = jest.fn()) {
+  act(() => root.render(<BloomThemeProvider>{board(props, onOpen)}</BloomThemeProvider>));
 }
-function item(scope: ParentNode = host) {
-  return scope.querySelector<HTMLElement>('[data-bloom-board-item="a"]')!;
+function handle(scope: ParentNode = host) {
+  return scope.querySelector<HTMLElement>('[aria-label="Drag Alpha"]')!;
 }
-function column(id: string, scope: ParentNode = host) {
-  return scope.querySelector<HTMLElement>(`[data-bloom-board-column="${id}"]`)!;
-}
-function transfer() {
-  const data = new Map<string, string>();
-  return {
-    get types() {
-      return [...data.keys()];
-    },
-    setData: (type: string, value: string) => data.set(type, value),
-    getData: (type: string) => data.get(type) ?? '',
-    effectAllowed: 'none',
-    dropEffect: 'none',
-  };
-}
-function drag(target: HTMLElement, type: string, dataTransfer: ReturnType<typeof transfer>) {
-  const event = new Event(type, { bubbles: true, cancelable: true });
-  Object.defineProperty(event, 'dataTransfer', { value: dataTransfer });
+function key(target: HTMLElement, key: string) {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
   act(() => target.dispatchEvent(event));
   return event;
 }
-function pointerDown(target: Element) {
-  act(() => target.dispatchEvent(new Event('pointerdown', { bubbles: true })));
-}
 
-it('requests a move without modifying opaque data, then reflects caller updates', () => {
+it('moves opaque items using the shared keyboard controller and returns focus to the destination handle', () => {
   const onMove = jest.fn();
   mount({ onMove });
-  const data = transfer();
-  drag(item(), 'dragstart', data);
-  expect(item().querySelector('[data-dragging="true"]')).not.toBeNull();
-  expect(drag(column('done'), 'dragover', data).defaultPrevented).toBe(true);
-  drag(column('done'), 'drop', data);
-  expect(onMove).toHaveBeenCalledWith({
-    itemId: 'a',
-    fromColumnId: 'todo',
-    toColumnId: 'done',
-  });
-  expect(column('todo').textContent).toContain('Alpha 42');
-  expect(originalColumns[0]?.items).toHaveLength(1);
-  expect(item().querySelector('[data-dragging="true"]')).toBeNull();
+  const source = handle();
+  source.focus();
+  expect(key(source, ' ').defaultPrevented).toBe(true);
+  key(source, 'ArrowRight');
+  expect(onMove).not.toHaveBeenCalled();
+  expect(
+    host.querySelector('[data-bloom-board-column="done"] [aria-label="Drag Alpha"]'),
+  ).not.toBeNull();
+  key(document.body, ' ');
+  expect(onMove).toHaveBeenCalledWith(
+    expect.objectContaining({ itemId: 'a', fromColumnId: 'todo', toColumnId: 'done' }),
+  );
   mount({
     onMove,
     columns: [
       { ...originalColumns[0]!, items: [] },
-      { ...originalColumns[1]!, items: [{ id: 'a', name: 'Updated', custom: 99 }] },
+      { ...originalColumns[1]!, items: originalColumns[0]!.items },
     ],
   });
-  expect(column('done').textContent).toContain('Updated 99');
-  expect(column('todo').textContent).toContain('Empty column');
-  expect(column('done').textContent).toContain('Footer Done');
+  act(() => jest.advanceTimersByTime(20));
+  expect(document.activeElement).toBe(handle());
 });
 
-it('ignores same-column, external, sibling-board and cancelled drops', () => {
+it('cancels keyboard moves and suppresses accidental activation immediately after a move', () => {
   const onMove = jest.fn();
+  const onOpen = jest.fn();
+  mount({ onMove }, onOpen);
+  act(() => handle().click());
+  expect(onOpen).toHaveBeenCalledTimes(1);
+  key(handle(), ' ');
+  key(document.body, 'ArrowRight');
+  key(document.body, 'Escape');
+  expect(onMove).not.toHaveBeenCalled();
+  expect(
+    host.querySelector('[data-bloom-board-column="todo"] [aria-label="Drag Alpha"]'),
+  ).not.toBeNull();
+  act(() => handle().click());
+  expect(onOpen).toHaveBeenCalledTimes(1);
+  act(() => jest.advanceTimersByTime(351));
+  act(() => handle().click());
+  expect(onOpen).toHaveBeenCalledTimes(2);
+});
+
+it('leaves inputs and explicit card actions operable and ignores another board', () => {
+  const first = jest.fn();
+  const second = jest.fn();
+  const onOpen = jest.fn();
   act(() =>
     root.render(
       <BloomThemeProvider>
-        <section data-first>{board({ onMove })}</section>
-        <section data-second>{board({ onMove })}</section>
+        <section>{board({ onMove: first }, onOpen)}</section>
+        <section>{board({ onMove: second })}</section>
       </BloomThemeProvider>,
     ),
   );
-  const first = host.querySelector('[data-first]')!;
-  const second = host.querySelector('[data-second]')!;
-  const data = transfer();
-  data.setData('application/x-bloom-board-item', 'external');
-  expect(drag(column('done', first), 'dragover', data).defaultPrevented).toBe(false);
-  drag(column('done', first), 'drop', data);
-  drag(item(first), 'dragstart', data);
-  drag(column('todo', first), 'drop', data);
-  expect(drag(column('done', second), 'dragover', data).defaultPrevented).toBe(false);
-  drag(column('done', second), 'drop', data);
-  drag(item(first), 'dragend', data);
-  drag(column('done', first), 'drop', data);
-  expect(onMove).not.toHaveBeenCalled();
+  const sections = host.querySelectorAll('section');
+  const input = sections[0]!.querySelector('input')!;
+  expect(key(input, ' ').defaultPrevented).toBe(false);
+  key(handle(sections[0]), ' ');
+  key(document.body, 'ArrowRight');
+  key(document.body, ' ');
+  expect(first).toHaveBeenCalledTimes(1);
+  expect(second).not.toHaveBeenCalled();
+  act(() => sections[0]!.querySelector<HTMLButtonElement>('button:not([aria-label])')!.click());
+  expect(onOpen).toHaveBeenCalledTimes(1);
 });
 
-it('disables dragging without a callback and rechecks permissions and source existence at drop', () => {
+it('read-only and callback-free boards render inert handles without intercepting keys', () => {
+  mount({ readOnly: true, onMove: jest.fn() });
+  expect(handle()).toBeNull();
   mount();
-  expect(item().draggable).toBe(false);
-  const onMove = jest.fn();
-  mount({ onMove });
-  const data = transfer();
-  drag(item(), 'dragstart', data);
-  mount({ onMove, readOnly: true });
-  expect(item().draggable).toBe(false);
-  drag(column('done'), 'drop', data);
-  expect(onMove).not.toHaveBeenCalled();
-  mount({ onMove });
-  drag(item(), 'dragstart', data);
-  mount({ onMove, columns: originalColumns.map((entry) => ({ ...entry, items: [] })) });
-  drag(column('done'), 'drop', data);
-  expect(onMove).not.toHaveBeenCalled();
-});
-
-it('preserves embedded controls while letting the whole-card action start a drag', () => {
-  const onMove = jest.fn();
-  mount({ onMove });
-  const data = transfer();
-  pointerDown(item().querySelector('input')!);
-  expect(drag(item(), 'dragstart', data).defaultPrevented).toBe(true);
-  pointerDown(item().querySelector('button')!);
-  expect(drag(item(), 'dragstart', data).defaultPrevented).toBe(true);
-  pointerDown(item().firstElementChild!);
-  expect(drag(item(), 'dragstart', data).defaultPrevented).toBe(false);
-  drag(column('done'), 'drop', data);
-  expect(onMove).toHaveBeenCalledTimes(1);
-});
-
-it('rejects a payload from another drag even while this board has an active card', () => {
-  const onMove = jest.fn();
-  mount({ onMove });
-  const data = transfer();
-  drag(item(), 'dragstart', data);
-  data.setData('application/x-bloom-board-item', 'another-board');
-  drag(column('done'), 'drop', data);
-  expect(onMove).not.toHaveBeenCalled();
+  expect(handle()).toBeNull();
+  expect(host.textContent).toContain('Alpha 42');
+  expect(host.textContent).toContain('Footer To do');
+  expect(host.textContent).toContain('Empty column');
 });

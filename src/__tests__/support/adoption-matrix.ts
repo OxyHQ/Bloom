@@ -340,7 +340,7 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     'project-board': {
       verdict: 'does-not-apply',
       reason:
-        'the form roles occur in the controlled Board drag exclusion selector: nested checkbox, switch and combobox controls keep their own input gestures. Board renders opaque card slots, not those controls.',
+        "the form roles occur in ProjectBoard's drag exclusion selector: nested checkbox, switch and combobox controls keep their own input gestures. ProjectBoard renders opaque card slots, not those controls.",
     },
     'map-marker': { verdict: 'does-not-apply', reason: SELECTION_ROW },
     address: { verdict: 'does-not-apply', reason: SELECTION_ROW },

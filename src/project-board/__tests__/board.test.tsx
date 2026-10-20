@@ -1,13 +1,14 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { Pressable, Text } from 'react-native';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
-import { Board } from '../Board';
+import { ProjectBoard } from '../ProjectBoard';
 
 it('keeps native card actions operable and renders controlled column updates', () => {
   const move = jest.fn();
   const renderBoard = (destination: boolean) => (
     <BloomThemeProvider>
-      <Board
+      <ProjectBoard
+        variant="embedded"
         columns={[
           { id: 'todo', title: 'To do', items: destination ? [] : [{ id: 'a', title: 'Alpha' }] },
           { id: 'done', title: 'Done', items: destination ? [{ id: 'a', title: 'Alpha' }] : [] },

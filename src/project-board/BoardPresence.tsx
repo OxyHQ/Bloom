@@ -11,78 +11,80 @@ import Animated, {
   type AnimatedStyle,
 } from 'react-native-reanimated';
 import { StyledView } from '../styles/styled-primitives';
-import type { ProjectTicket } from './types';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 const DURATION = 320;
 const WEB = Platform.OS === 'web';
 
-export interface PresentTicket {
-  ticket: ProjectTicket;
+export interface PresentBoardItem<Item> {
+  item: Item;
   present: boolean;
   initial: boolean;
 }
 
-/** Removed tickets retain only their pixels; interactive nodes leave immediately. */
-export function reconcileTicketPresence(
-  previous: PresentTicket[],
-  tickets: ProjectTicket[],
-): PresentTicket[] {
-  const ids = new Set(tickets.map((ticket) => ticket.id));
-  const next = tickets.map((ticket) => ({
-    ticket,
+/** Removed items retain only their pixels; interactive nodes leave immediately. */
+export function reconcileBoardPresence<Item>(
+  previous: PresentBoardItem<Item>[],
+  items: readonly Item[],
+  getItemId: (item: Item) => string,
+): PresentBoardItem<Item>[] {
+  const ids = new Set(items.map((item) => getItemId(item)));
+  const next = items.map((item) => ({
+    item,
     present: true,
-    initial: previous.find((entry) => entry.ticket.id === ticket.id)?.initial ?? false,
+    initial: previous.find((entry) => getItemId(entry.item) === getItemId(item))?.initial ?? false,
   }));
   previous.forEach((entry, index) => {
-    if (!ids.has(entry.ticket.id))
+    if (!ids.has(getItemId(entry.item)))
       next.splice(Math.min(index, next.length), 0, { ...entry, present: false });
   });
   return next;
 }
 
-export function TicketPresenceList({
-  tickets,
+export function BoardPresenceList<Item>({
+  items,
   retainId,
+  getItemId,
   children,
 }: {
-  tickets: ProjectTicket[];
+  items: readonly Item[];
+  getItemId: (item: Item) => string;
   retainId?: string | null;
   children: (
-    entry: PresentTicket,
+    entry: PresentBoardItem<Item>,
     paintStyle: AnimatedStyle<ViewStyle>,
     onHeight: (height: number) => void,
   ) => ReactNode;
 }) {
   const [state, setState] = useState(() => ({
-    tickets,
-    entries: tickets.map((ticket) => ({ ticket, present: true, initial: true })),
+    items,
+    entries: items.map((item) => ({ item, present: true, initial: true })),
   }));
-  if (state.tickets !== tickets) {
-    setState({ tickets, entries: reconcileTicketPresence(state.entries, tickets) });
+  if (state.items !== items) {
+    setState({ items, entries: reconcileBoardPresence(state.entries, items, getItemId) });
   }
   return state.entries.map((entry) => (
-    <TicketPresence
-      key={entry.ticket.id}
+    <BoardPresence
+      key={getItemId(entry.item)}
       present={entry.present}
       initial={entry.initial}
-      retain={entry.ticket.id === retainId}
+      retain={getItemId(entry.item) === retainId}
       onExit={() =>
         setState((current) => ({
           ...current,
           entries: current.entries.filter(
-            (item) => item.present || item.ticket.id !== entry.ticket.id,
+            (item) => item.present || getItemId(item.item) !== getItemId(entry.item),
           ),
         }))
       }
     >
       {(paintStyle, onHeight) => children(entry, paintStyle, onHeight)}
-    </TicketPresence>
+    </BoardPresence>
   ));
 }
 
 /** A shared-value timeline avoids web layout-animation clones and frozen positions. */
-function TicketPresence({
+function BoardPresence({
   present,
   initial,
   retain,
@@ -135,11 +137,11 @@ function TicketPresence({
       className="relative shrink-0 pb-1.5"
       layout={reduced ? undefined : LinearTransition.duration(260)}
       style={slotStyle}
-      pointerEvents={present ? 'auto' : 'none'}
+      pointerEvents={present || retain ? 'auto' : 'none'}
       aria-hidden={!present}
       accessibilityElementsHidden={!present}
       importantForAccessibility={present ? 'auto' : 'no-hide-descendants'}
-      {...(WEB && !present ? { inert: true } : {})}
+      {...(WEB && !present && !retain ? { inert: true } : {})}
     >
       {children(paintStyle, (value) => {
         height.value = value;
