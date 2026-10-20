@@ -69,7 +69,23 @@ Wrap a composed placeholder in `Skeleton.Region`. It announces a busy group with
 assistive technology. The region adds no sizing, padding or layout decisions.
 Use `style` or NativeWind `className` to match the incoming content.
 
-Shapes in a region share one shimmer driver. Nested regions inherit that driver
-and do not repeat the loading announcement. Without a region, shapes still work
-independently. Reduced motion keeps placeholders static. Shimmer never reserves
-an interaction handle, so native virtualized lists can continue rendering rows.
+Shapes in a region share a shimmer phase. Nested regions inherit it and do not
+repeat the loading announcement. Without a region, shapes still work independently.
+Reduced motion keeps placeholders static, including changes to the OS preference.
+`blend` reduces a shape's opacity; an explicit `style.opacity` on Box, Circle or
+Pill replaces its animated opacity.
+
+The public components and composition are shared across native and web. Native
+uses one non-interactive native animation driver per region, so virtualized lists
+can continue rendering rows. Web installs its CSS keyframes through Bloom's
+stylesheet owner and uses ordinary views. New shapes align with the region phase
+once on mount; CSS owns subsequent frames without React state updates.
+
+Loading placeholders must leave the scheduler free to reveal loaded content. The
+previous React Native Animated web driver scheduled React updates per shape per
+frame; a composed feed with 40 shapes in each of four suspended panels could
+schedule 160 updates per frame. In the compiled consumer, pending route retries
+sometimes remained behind those updates after every import had resolved. The
+regression checks that animated fallbacks do not keep committing React renders
+and that a resolved suspended child replaces them. Browser release checks also
+exercise cold route loading with ordinary motion enabled.
